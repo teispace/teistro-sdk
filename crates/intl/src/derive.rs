@@ -572,11 +572,12 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 795,
+            derived.entities, 1224,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
-             charts and the navamsha's short form (SR-36)"
+             charts and the navamsha's short form (SR-36), 795 until the 429 \
+             festivals were named in Sanskrit"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -633,8 +634,11 @@ mod tests {
         // takes, which the shipped overrides restore. 343 with the year's
         // rulers, each named in the texts' own Sanskrit. 475 once every
         // listed member was named (SR-12), each Sanskrit term with its IAST.
+        // 518 with the festivals in Sanskrit: 43 of the 151 that carry an
+        // IAST form are the text's closed compound it spells; the rest
+        // differ by a space or by taking the texts' name over the print's.
         assert_eq!(
-            derived.agreeing, 475,
+            derived.agreeing, 518,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

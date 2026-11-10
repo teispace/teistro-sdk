@@ -2701,6 +2701,1875 @@
       "prose": "डिसेनियल्स"
     }
   },
+  "festival": {
+    "RAMA_NAVAMI": {
+      "name": "रामनवमी",
+      "prose": "रामनवमी",
+      "iast": "Rāmanavamī"
+    },
+    "JANMASHTAMI": {
+      "name": "कृष्णजन्माष्टमी",
+      "prose": "कृष्णजन्माष्टमी",
+      "iast": "Kṛṣṇajanmāṣṭamī"
+    },
+    "VIJAYA_DASHAMI": {
+      "name": "विजयादशमी",
+      "prose": "विजयादशमी",
+      "iast": "Vijayādaśamī"
+    },
+    "LAKSHMI_PUJA": {
+      "name": "लक्ष्मीपूजा",
+      "prose": "लक्ष्मीपूजा",
+      "iast": "Lakṣmīpūjā"
+    },
+    "HARITALIKA": {
+      "name": "हरितालिका",
+      "prose": "हरितालिका",
+      "iast": "Haritālikā"
+    },
+    "NAVARATRA_ARAMBHA": {
+      "name": "नवरात्रारम्भ",
+      "prose": "नवरात्रारम्भ",
+      "iast": "Navarātrārambha"
+    },
+    "YAMA_DWITIYA": {
+      "name": "यमद्वितीया",
+      "prose": "यमद्वितीया",
+      "iast": "Yamadvitīyā"
+    },
+    "SHIVARATRI": {
+      "name": "महाशिवरात्रि",
+      "prose": "महाशिवरात्रि",
+      "iast": "Mahāśivarātri"
+    },
+    "RAKSHABANDHAN": {
+      "name": "रक्षाबन्धन",
+      "prose": "रक्षाबन्धन",
+      "iast": "Rakṣābandhana"
+    },
+    "BALI_PRATIPADA": {
+      "name": "बलिप्रतिपदा",
+      "prose": "बलिप्रतिपदा",
+      "iast": "Balipratipadā"
+    },
+    "HOLIKA": {
+      "name": "होलिकादहन",
+      "prose": "होलिकादहन",
+      "iast": "Holikādahana"
+    },
+    "UPAKARMA_MADHYANDINA": {
+      "name": "माध्यन्दिनोपाकर्म",
+      "prose": "माध्यन्दिनोपाकर्म",
+      "iast": "Mādhyandina Upākarma"
+    },
+    "UPAKARMA_TAITTIRIYA": {
+      "name": "तैत्तिरीयोपाकर्म",
+      "prose": "तैत्तिरीयोपाकर्म",
+      "iast": "Taittirīya Upākarma"
+    },
+    "UPAKARMA_SAMAVEDI": {
+      "name": "सामवेदोपाकर्म",
+      "prose": "सामवेदोपाकर्म",
+      "iast": "Sāmavedī Upākarma"
+    },
+    "PURNIMA_VRATA": {
+      "name": "पूर्णिमाव्रत",
+      "prose": "पूर्णिमाव्रत",
+      "iast": "Pūrṇimāvrata"
+    },
+    "HOLI_HILLS": {
+      "name": "पर्वतीय होलिकोत्सव",
+      "prose": "पर्वतीय होलिकोत्सव",
+      "iast": "Pahāḍī Holī"
+    },
+    "HOLI_TERAI": {
+      "name": "तराई होलिकोत्सव",
+      "prose": "तराई होलिकोत्सव",
+      "iast": "Tarāī Holī"
+    },
+    "EKADASHI_SMARTA": {
+      "name": "स्मार्तैकादशी",
+      "prose": "स्मार्तैकादशी",
+      "iast": "Smārta Ekādaśī"
+    },
+    "EKADASHI_SMARTA_RENUNCIANT": {
+      "name": "संन्यास्येकादशी",
+      "prose": "संन्यास्येकादशी",
+      "iast": "Saṃnyāsī Ekādaśī"
+    },
+    "EKADASHI_VAISHNAVA": {
+      "name": "वैष्णवैकादशी",
+      "prose": "वैष्णवैकादशी",
+      "iast": "Vaiṣṇava Ekādaśī"
+    },
+    "EKADASHI_GAUDIYA": {
+      "name": "गौडीयैकादशी",
+      "prose": "गौडीयैकादशी",
+      "iast": "Gauḍīya Ekādaśī"
+    },
+    "JANMASHTAMI_VAISHNAVA": {
+      "name": "वैष्णवजन्माष्टमी",
+      "prose": "वैष्णवजन्माष्टमी",
+      "iast": "Vaiṣṇava Janmāṣṭamī"
+    },
+    "RAMA_NAVAMI_VAISHNAVA": {
+      "name": "वैष्णवरामनवमी",
+      "prose": "वैष्णवरामनवमी",
+      "iast": "Vaiṣṇava Rāmanavamī"
+    },
+    "NRISIMHA_CHATURDASHI": {
+      "name": "नृसिंहचतुर्दशी",
+      "prose": "नृसिंहचतुर्दशी",
+      "iast": "Nṛsiṃhacaturdaśī"
+    },
+    "RADHASHTAMI_VAISHNAVA": {
+      "name": "वैष्णवराधाष्टमी",
+      "prose": "वैष्णवराधाष्टमी",
+      "iast": "Vaiṣṇava Rādhāṣṭamī"
+    },
+    "GAURA_PURNIMA": {
+      "name": "गौरपूर्णिमा",
+      "prose": "गौरपूर्णिमा",
+      "iast": "Gaurapūrṇimā"
+    },
+    "CHAITE_DASHAIN": {
+      "name": "चैते दशैं",
+      "prose": "चैते दशैं",
+      "iast": "Caite Daśaĩ"
+    },
+    "SETO_MACHHINDRANATH_JATRA": {
+      "name": "श्वेतमत्स्येन्द्रनाथरथयात्रा",
+      "prose": "श्वेतमत्स्येन्द्रनाथरथयात्रा",
+      "iast": "Śveta Matsyendranātha Rathayātrā"
+    },
+    "PARASHURAMA_JAYANTI": {
+      "name": "परशुरामजयन्ती",
+      "prose": "परशुरामजयन्ती",
+      "iast": "Paraśurāma Jayantī"
+    },
+    "SHANKARACHARYA_JAYANTI": {
+      "name": "शङ्कराचार्यजयन्ती",
+      "prose": "शङ्कराचार्यजयन्ती",
+      "iast": "Śaṅkarācārya Jayantī"
+    },
+    "GANGA_SAPTAMI": {
+      "name": "गङ्गासप्तमी",
+      "prose": "गङ्गासप्तमी",
+      "iast": "Gaṅgā Saptamī"
+    },
+    "SITA_NAVAMI": {
+      "name": "सीतानवमी",
+      "prose": "सीतानवमी",
+      "iast": "Sītā Navamī"
+    },
+    "KURMA_JAYANTI": {
+      "name": "कूर्मजयन्ती",
+      "prose": "कूर्मजयन्ती",
+      "iast": "Kūrma Jayantī"
+    },
+    "DASHAHARA_SNANA_ARAMBHA": {
+      "name": "दशहरास्नानारम्भ",
+      "prose": "दशहरास्नानारम्भ",
+      "iast": "Daśaharā Snānārambha"
+    },
+    "GOSAIKUNDA_SNANA_ARAMBHA": {
+      "name": "गोसाइकुण्डस्नानारम्भ",
+      "prose": "गोसाइकुण्डस्नानारम्भ",
+      "iast": "Gosāĩkuṇḍa Snānārambha"
+    },
+    "KUMARA_JATRA": {
+      "name": "कुमारयात्रा",
+      "prose": "कुमारयात्रा",
+      "iast": "Kumāra Yātrā"
+    },
+    "GANGA_DASHAHARA": {
+      "name": "गङ्गादशहरा",
+      "prose": "गङ्गादशहरा",
+      "iast": "Gaṅgā Daśaharā"
+    },
+    "GOSAIKUNDA_SNANA_SAMAPTI": {
+      "name": "गोसाइकुण्डस्नानसमाप्ति",
+      "prose": "गोसाइकुण्डस्नानसमाप्ति",
+      "iast": "Gosāĩkuṇḍa Snāna Samāpti"
+    },
+    "HATYAMOCHANA_SNANA": {
+      "name": "हत्यामोचनतीर्थस्नान",
+      "prose": "हत्यामोचनतीर्थस्नान",
+      "iast": "Hatyāmocana Tīrthasnāna"
+    },
+    "NIRJALA_EKADASHI": {
+      "name": "निर्जलैकादशी",
+      "prose": "निर्जलैकादशी",
+      "iast": "Nirjalā Ekādaśī"
+    },
+    "ANALA_PUNHI": {
+      "name": "अनला पुन्हि",
+      "prose": "अनला पुन्हि",
+      "iast": "Analā Punhi"
+    },
+    "DILA_CHARHE": {
+      "name": "दिला चह्रे",
+      "prose": "दिला चह्रे",
+      "iast": "Dilā Carhe"
+    },
+    "DURVA_ASHTAMI": {
+      "name": "दूर्वाष्टमी",
+      "prose": "दूर्वाष्टमी",
+      "iast": "Dūrvāṣṭamī"
+    },
+    "AJA_EKADASHI": {
+      "name": "अजैकादशी",
+      "prose": "अजैकादशी",
+      "iast": "Ajā Ekādaśī"
+    },
+    "CHATHA": {
+      "name": "चथा",
+      "prose": "चथा",
+      "iast": "Cathā"
+    },
+    "GANESHA_CHATURTHI": {
+      "name": "गणेशचतुर्थी",
+      "prose": "गणेशचतुर्थी",
+      "iast": "Gaṇeśa Caturthī"
+    },
+    "RISHI_PANCHAMI": {
+      "name": "ऋषिपञ्चमी",
+      "prose": "ऋषिपञ्चमी",
+      "iast": "Ṛṣi Pañcamī"
+    },
+    "GAURA_SAPTAMI": {
+      "name": "गौरासप्तमी",
+      "prose": "गौरासप्तमी",
+      "iast": "Gaurā Saptamī"
+    },
+    "AMUKTABHARANA_SAPTAMI": {
+      "name": "अमुक्ताभरणसप्तमी",
+      "prose": "अमुक्ताभरणसप्तमी",
+      "iast": "Amuktābharaṇa Saptamī"
+    },
+    "HILE_JATRA": {
+      "name": "हिलेजात्रा",
+      "prose": "हिलेजात्रा",
+      "iast": "Hile Jātrā"
+    },
+    "VAMANA_DWADASHI": {
+      "name": "वामनद्वादशी",
+      "prose": "वामनद्वादशी",
+      "iast": "Vāmana Dvādaśī"
+    },
+    "PRATIPADA_SHRADDHA": {
+      "name": "प्रतिपदाश्राद्ध",
+      "prose": "प्रतिपदाश्राद्ध",
+      "iast": "Pratipadā Śrāddha"
+    },
+    "DWITIYA_SHRADDHA": {
+      "name": "द्वितीयाश्राद्ध",
+      "prose": "द्वितीयाश्राद्ध",
+      "iast": "Dvitīyā Śrāddha"
+    },
+    "TRITIYA_SHRADDHA": {
+      "name": "तृतीयाश्राद्ध",
+      "prose": "तृतीयाश्राद्ध",
+      "iast": "Tṛtīyā Śrāddha"
+    },
+    "CHATURTHI_SHRADDHA": {
+      "name": "चतुर्थीश्राद्ध",
+      "prose": "चतुर्थीश्राद्ध",
+      "iast": "Caturthī Śrāddha"
+    },
+    "PANCHAMI_SHRADDHA": {
+      "name": "पञ्चमीश्राद्ध",
+      "prose": "पञ्चमीश्राद्ध",
+      "iast": "Pañcamī Śrāddha"
+    },
+    "SHASHTHI_SHRADDHA": {
+      "name": "षष्ठीश्राद्ध",
+      "prose": "षष्ठीश्राद्ध",
+      "iast": "Ṣaṣṭhī Śrāddha"
+    },
+    "SAPTAMI_SHRADDHA": {
+      "name": "सप्तमीश्राद्ध",
+      "prose": "सप्तमीश्राद्ध",
+      "iast": "Saptamī Śrāddha"
+    },
+    "ASHTAMI_SHRADDHA": {
+      "name": "अष्टमीश्राद्ध",
+      "prose": "अष्टमीश्राद्ध",
+      "iast": "Aṣṭamī Śrāddha"
+    },
+    "NAVAMI_SHRADDHA": {
+      "name": "नवमीश्राद्ध",
+      "prose": "नवमीश्राद्ध",
+      "iast": "Navamī Śrāddha"
+    },
+    "DASHAMI_SHRADDHA": {
+      "name": "दशमीश्राद्ध",
+      "prose": "दशमीश्राद्ध",
+      "iast": "Daśamī Śrāddha"
+    },
+    "EKADASHI_SHRADDHA": {
+      "name": "एकादशीश्राद्ध",
+      "prose": "एकादशीश्राद्ध",
+      "iast": "Ekādaśī Śrāddha"
+    },
+    "DWADASHI_SHRADDHA": {
+      "name": "द्वादशीश्राद्ध",
+      "prose": "द्वादशीश्राद्ध",
+      "iast": "Dvādaśī Śrāddha"
+    },
+    "TRAYODASHI_SHRADDHA": {
+      "name": "त्रयोदशीश्राद्ध",
+      "prose": "त्रयोदशीश्राद्ध",
+      "iast": "Trayodaśī Śrāddha"
+    },
+    "CHATURDASHI_SHRADDHA": {
+      "name": "चतुर्दशीश्राद्ध",
+      "prose": "चतुर्दशीश्राद्ध",
+      "iast": "Caturdaśī Śrāddha"
+    },
+    "AMAVASYA_SHRADDHA": {
+      "name": "अमावस्याश्राद्ध",
+      "prose": "अमावस्याश्राद्ध",
+      "iast": "Amāvasyā Śrāddha"
+    },
+    "SORHA_SHRADDHA_ARAMBHA": {
+      "name": "षोडशश्राद्धारम्भ",
+      "prose": "षोडशश्राद्धारम्भ",
+      "iast": "Ṣoḍaśa Śrāddha Ārambha"
+    },
+    "KALI_YUGADI": {
+      "name": "कलियुगादि",
+      "prose": "कलियुगादि",
+      "iast": "Kaliyugādi"
+    },
+    "UPANGA_LALITA_VRATA": {
+      "name": "उपाङ्गललिताव्रत",
+      "prose": "उपाङ्गललिताव्रत",
+      "iast": "Upāṅgalalitā Vrata"
+    },
+    "KUCHHI_BHOYE": {
+      "name": "कुछि भ्वय्",
+      "prose": "कुछि भ्वय्",
+      "iast": "Kuchi Bhvay"
+    },
+    "YAMAPANCHAKA_ARAMBHA": {
+      "name": "यमपञ्चकारम्भ",
+      "prose": "यमपञ्चकारम्भ",
+      "iast": "Yamapañcaka Ārambha"
+    },
+    "DHANVANTARI_JAYANTI": {
+      "name": "धन्वन्तरिजयन्ती",
+      "prose": "धन्वन्तरिजयन्ती",
+      "iast": "Dhanvantari Jayantī"
+    },
+    "LAXMI_PRASAD_DEVKOTA_JAYANTI": {
+      "name": "लक्ष्मीप्रसाद देवकोटा जयन्ती",
+      "prose": "लक्ष्मीप्रसाद देवकोटा जयन्ती",
+      "iast": "Lakṣmīprasāda Devakoṭā Jayantī"
+    },
+    "MHA_PUJA": {
+      "name": "म्हपूजा",
+      "prose": "म्हपूजा",
+      "iast": "Mhapūjā"
+    },
+    "NEPAL_SAMBAT_NEW_YEAR": {
+      "name": "नेपालसंवत्प्रारम्भ",
+      "prose": "नेपालसंवत्प्रारम्भ",
+      "iast": "Nepāla Saṃvat Navavarṣa"
+    },
+    "HARIBODHINI_EKADASHI": {
+      "name": "हरिबोधिन्येकादशी",
+      "prose": "हरिबोधिन्येकादशी",
+      "iast": "Haribodhinī Ekādaśī"
+    },
+    "BHISHMA_PANCHAKA_ARAMBHA": {
+      "name": "भीष्मपञ्चकारम्भ",
+      "prose": "भीष्मपञ्चकारम्भ",
+      "iast": "Bhīṣmapañcaka Ārambha"
+    },
+    "TULASI_VIVAHA": {
+      "name": "तुलसीविवाह",
+      "prose": "तुलसीविवाह",
+      "iast": "Tulasī Vivāha"
+    },
+    "PASHUPATI_HALESI_MELA": {
+      "name": "पशुपतिनाथहलेसीमहादेवमेला",
+      "prose": "पशुपतिनाथहलेसीमहादेवमेला",
+      "iast": "Paśupatinātha Halesī Mahādeva Melā"
+    },
+    "BALA_CHATURDASHI": {
+      "name": "बालाचतुर्दशी",
+      "prose": "बालाचतुर्दशी",
+      "iast": "Bālā Caturdaśī"
+    },
+    "DATTATREYA_JAYANTI": {
+      "name": "दत्तात्रेयजयन्ती",
+      "prose": "दत्तात्रेयजयन्ती",
+      "iast": "Dattātreya Jayantī"
+    },
+    "NUWAKOT_DUPCHESHWAR_MELA": {
+      "name": "नुवाकोट दुप्चेश्वरमेला",
+      "prose": "नुवाकोट दुप्चेश्वरमेला",
+      "iast": "Nuvākoṭa Dupceśvara Melā"
+    },
+    "PISHACHAMOCHANA_SHRADDHA": {
+      "name": "पिशाचमोचनश्राद्ध",
+      "prose": "पिशाचमोचनश्राद्ध",
+      "iast": "Piśācamocana Śrāddha"
+    },
+    "GAIDU_PUJA": {
+      "name": "गैडुपूजा",
+      "prose": "गैडुपूजा",
+      "iast": "Gaiḍu Pūjā"
+    },
+    "PAUSHA_PUTRADA_EKADASHI": {
+      "name": "पौषपुत्रदैकादशी",
+      "prose": "पौषपुत्रदैकादशी",
+      "iast": "Pauṣa Putradā Ekādaśī"
+    },
+    "LAI_CHARHE": {
+      "name": "लै चह्रे",
+      "prose": "लै चह्रे",
+      "iast": "Lai Carhe"
+    },
+    "TILAKUNDA_CHATURTHI": {
+      "name": "तिलकुन्दचतुर्थी",
+      "prose": "तिलकुन्दचतुर्थी",
+      "iast": "Tilakunda Caturthī"
+    },
+    "CHAMPA_SHASHTHI": {
+      "name": "चम्पाषष्ठी",
+      "prose": "चम्पाषष्ठी",
+      "iast": "Campā Ṣaṣṭhī"
+    },
+    "BHIMA_EKADASHI": {
+      "name": "भैम्येकादशी",
+      "prose": "भैम्येकादशी",
+      "iast": "Bhīmā Ekādaśī"
+    },
+    "VIJAYA_EKADASHI": {
+      "name": "विजयैकादशी",
+      "prose": "विजयैकादशी",
+      "iast": "Vijayā Ekādaśī"
+    },
+    "SHILA_CHARHE": {
+      "name": "सिला चह्रे",
+      "prose": "सिला चह्रे",
+      "iast": "Silā Carhe"
+    },
+    "DVAPARA_YUGADI": {
+      "name": "द्वापरयुगादि",
+      "prose": "द्वापरयुगादि",
+      "iast": "Dvāparayugādi"
+    },
+    "PAHAN_CHARHE": {
+      "name": "पाशा चह्रे",
+      "prose": "पाशा चह्रे",
+      "iast": "Pāśā Carhe"
+    },
+    "GHODE_JATRA": {
+      "name": "घोडेजात्रा",
+      "prose": "घोडेजात्रा",
+      "iast": "Ghoḍe Jātrā"
+    },
+    "MATSYANARAYANA_MELA": {
+      "name": "मत्स्यनारायणमेला",
+      "prose": "मत्स्यनारायणमेला",
+      "iast": "Matsyanārāyaṇa Melā"
+    },
+    "MATSYA_JAYANTI": {
+      "name": "मत्स्यजयन्ती",
+      "prose": "मत्स्यजयन्ती",
+      "iast": "Matsya Jayantī"
+    },
+    "VAISHAKHA_SNANA_ARAMBHA": {
+      "name": "वैशाखस्नानारम्भ",
+      "prose": "वैशाखस्नानारम्भ",
+      "iast": "Vaiśākha Snāna Ārambha"
+    },
+    "PRADOSHA_VRATA": {
+      "name": "प्रदोषव्रत",
+      "prose": "प्रदोषव्रत",
+      "iast": "Pradoṣavrata"
+    },
+    "MANGALA_CHATURTHI": {
+      "name": "अङ्गारकचतुर्थी",
+      "prose": "अङ्गारकचतुर्थी",
+      "iast": "Maṅgalacaturthī"
+    },
+    "RAVI_SAPTAMI": {
+      "name": "रविसप्तमी",
+      "prose": "रविसप्तमी",
+      "iast": "Ravisaptamī"
+    },
+    "BHAUMASHTAMI": {
+      "name": "भौमाष्टमी",
+      "prose": "भौमाष्टमी",
+      "iast": "Bhaumāṣṭamī"
+    },
+    "BUDHASHTAMI": {
+      "name": "बुधाष्टमी",
+      "prose": "बुधाष्टमी",
+      "iast": "Budhāṣṭamī"
+    },
+    "SOMAVATI_AMAVASYA": {
+      "name": "सोमवत्यमावस्या",
+      "prose": "सोमवत्यमावस्या",
+      "iast": "Somavatī Amāvāsyā"
+    },
+    "CHANDRODAYA": {
+      "name": "चन्द्रोदय",
+      "prose": "चन्द्रोदय",
+      "iast": "Candrodaya"
+    },
+    "SANKASHTA_CHATURTHI": {
+      "name": "सङ्कष्टचतुर्थी",
+      "prose": "सङ्कष्टचतुर्थी",
+      "iast": "Saṅkaṣṭacaturthī"
+    },
+    "KARAKA_CHATURTHI": {
+      "name": "करकचतुर्थी",
+      "prose": "करकचतुर्थी",
+      "iast": "Karakacaturthī"
+    },
+    "MESHA_SANKRANTI": {
+      "name": "मेषसङ्क्रान्ति",
+      "prose": "मेषसङ्क्रान्ति",
+      "iast": "Meṣasaṅkrānti"
+    },
+    "VRISHABHA_SANKRANTI": {
+      "name": "वृषभसङ्क्रान्ति",
+      "prose": "वृषभसङ्क्रान्ति",
+      "iast": "Vṛṣabhasaṅkrānti"
+    },
+    "MITHUNA_SANKRANTI": {
+      "name": "मिथुनसङ्क्रान्ति",
+      "prose": "मिथुनसङ्क्रान्ति",
+      "iast": "Mithunasaṅkrānti"
+    },
+    "KARKATA_SANKRANTI": {
+      "name": "कर्कसङ्क्रान्ति",
+      "prose": "कर्कसङ्क्रान्ति",
+      "iast": "Karkaṭasaṅkrānti"
+    },
+    "SIMHA_SANKRANTI": {
+      "name": "सिंहसङ्क्रान्ति",
+      "prose": "सिंहसङ्क्रान्ति",
+      "iast": "Siṃhasaṅkrānti"
+    },
+    "KANYA_SANKRANTI": {
+      "name": "कन्यासङ्क्रान्ति",
+      "prose": "कन्यासङ्क्रान्ति",
+      "iast": "Kanyāsaṅkrānti"
+    },
+    "TULA_SANKRANTI": {
+      "name": "तुलासङ्क्रान्ति",
+      "prose": "तुलासङ्क्रान्ति",
+      "iast": "Tulāsaṅkrānti"
+    },
+    "VRISHCHIKA_SANKRANTI": {
+      "name": "वृश्चिकसङ्क्रान्ति",
+      "prose": "वृश्चिकसङ्क्रान्ति",
+      "iast": "Vṛścikasaṅkrānti"
+    },
+    "DHANU_SANKRANTI": {
+      "name": "धनुःसङ्क्रान्ति",
+      "prose": "धनुःसङ्क्रान्ति",
+      "iast": "Dhanusaṅkrānti"
+    },
+    "MAKARA_SANKRANTI": {
+      "name": "मकरसङ्क्रान्ति",
+      "prose": "मकरसङ्क्रान्ति",
+      "iast": "Makarasaṅkrānti"
+    },
+    "KUMBHA_SANKRANTI": {
+      "name": "कुम्भसङ्क्रान्ति",
+      "prose": "कुम्भसङ्क्रान्ति",
+      "iast": "Kumbhasaṅkrānti"
+    },
+    "MINA_SANKRANTI": {
+      "name": "मीनसङ्क्रान्ति",
+      "prose": "मीनसङ्क्रान्ति",
+      "iast": "Mīnasaṅkrānti"
+    },
+    "LOKTANTRA_DIWAS": {
+      "name": "लोकतन्त्र दिवस",
+      "prose": "लोकतन्त्र दिवस",
+      "iast": "Lokatantra divasa"
+    },
+    "CONSTITUTION_DAY": {
+      "name": "संविधान दिवस",
+      "prose": "संविधान दिवस",
+      "iast": "Saṃvidhāna divasa"
+    },
+    "PRITHVI_JAYANTI": {
+      "name": "पृथ्वी जयन्ती",
+      "prose": "पृथ्वी जयन्ती",
+      "iast": "Pṛthvī jayantī"
+    },
+    "EARTHQUAKE_SAFETY_DAY": {
+      "name": "राष्ट्रिय भूकम्प सुरक्षा दिवस",
+      "prose": "राष्ट्रिय भूकम्प सुरक्षा दिवस",
+      "iast": "Rāṣṭriya bhūkampa surakṣā divasa"
+    },
+    "SONAM_LHOSAR": {
+      "name": "सोनम ल्होसार",
+      "prose": "सोनम ल्होसार",
+      "iast": "Sonam Lhosar"
+    },
+    "TAMU_LHOSAR": {
+      "name": "तमु ल्होछार",
+      "prose": "तमु ल्होछार",
+      "iast": "Tamu Lhosar"
+    },
+    "MARTYRS_DAY": {
+      "name": "सहिद दिवस",
+      "prose": "सहिद दिवस",
+      "iast": "Sahida divasa"
+    },
+    "DEMOCRACY_DAY": {
+      "name": "राष्ट्रिय प्रजातन्त्र दिवस",
+      "prose": "राष्ट्रिय प्रजातन्त्र दिवस",
+      "iast": "Rāṣṭriya prajātantra divasa"
+    },
+    "GYALPO_LHOSAR": {
+      "name": "ग्याल्पो ल्होसार",
+      "prose": "ग्याल्पो ल्होसार",
+      "iast": "Gyalpo Lhosar"
+    },
+    "SAMVATSARA_ARAMBHA": {
+      "name": "संवत्सरारम्भ",
+      "prose": "संवत्सरारम्भ"
+    },
+    "GAURI_VRAT": {
+      "name": "गौरीव्रत",
+      "prose": "गौरीव्रत"
+    },
+    "MAHAVIR_JAYANTI": {
+      "name": "महावीरजयन्ती",
+      "prose": "महावीरजयन्ती"
+    },
+    "BALAJU_BAISDHARA_MELA": {
+      "name": "बालाजु बाइसधारा मेला",
+      "prose": "बालाजु बाइसधारा मेला"
+    },
+    "HANUMAN_JAYANTI": {
+      "name": "हनुमज्जयन्ती",
+      "prose": "हनुमज्जयन्ती"
+    },
+    "BISHALNAGAR_VAISHNAVI_DEVI_JATRA": {
+      "name": "विशालनगर वैष्णवीदेवीयात्रा",
+      "prose": "विशालनगर वैष्णवीदेवीयात्रा"
+    },
+    "CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA": {
+      "name": "चाङ्गुनारायण छिन्नमस्ता कीलेश्वर मूलरथयात्रा",
+      "prose": "चाङ्गुनारायण छिन्नमस्ता कीलेश्वर मूलरथयात्रा"
+    },
+    "MATA_TIRTHA_AUNSI": {
+      "name": "मातातीर्थामावस्या",
+      "prose": "मातातीर्थामावस्या"
+    },
+    "RATO_MACHHINDRANATH_RATHAROHAN": {
+      "name": "रक्तमत्स्येन्द्रनाथरथारोहण",
+      "prose": "रक्तमत्स्येन्द्रनाथरथारोहण"
+    },
+    "AKSHAYA_TRITIYA": {
+      "name": "अक्षयतृतीया",
+      "prose": "अक्षयतृतीया"
+    },
+    "TRETAYUGADI": {
+      "name": "त्रेतायुगादि",
+      "prose": "त्रेतायुगादि"
+    },
+    "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS": {
+      "name": "रक्तमत्स्येन्द्रनाथरथयात्रारम्भ",
+      "prose": "रक्तमत्स्येन्द्रनाथरथयात्रारम्भ"
+    },
+    "PASHUPATINATH_DAMAN_PUSHPARPAN": {
+      "name": "पशुपतिनाथदमनार्पण",
+      "prose": "पशुपतिनाथदमनार्पण"
+    },
+    "MOHINI_EKADASHI": {
+      "name": "मोहिन्येकादशी",
+      "prose": "मोहिन्येकादशी"
+    },
+    "BAISAKH_SNAN_ENDS": {
+      "name": "वैशाखस्नानसमाप्ति",
+      "prose": "वैशाखस्नानसमाप्ति"
+    },
+    "BUDDHA_JAYANTI": {
+      "name": "बुद्धजयन्ती",
+      "prose": "बुद्धजयन्ती"
+    },
+    "CHANDI_PURNIMA": {
+      "name": "चण्डीपूर्णिमा",
+      "prose": "चण्डीपूर्णिमा"
+    },
+    "GORAKHNATH_JAYANTI": {
+      "name": "गोरक्षनाथजयन्ती",
+      "prose": "गोरक्षनाथजयन्ती"
+    },
+    "UBHAULI": {
+      "name": "उभौली",
+      "prose": "उभौली"
+    },
+    "APARA_EKADASHI": {
+      "name": "अपरैकादशी",
+      "prose": "अपरैकादशी"
+    },
+    "SHANI_JAYANTI": {
+      "name": "शनिजयन्ती",
+      "prose": "शनिजयन्ती"
+    },
+    "BHAKTAPUR_CHANDI_BHAGAWATI_JATRA": {
+      "name": "भक्तपुर चण्डीभगवतीयात्रा",
+      "prose": "भक्तपुर चण्डीभगवतीयात्रा"
+    },
+    "KUMAR_SHASHTHI": {
+      "name": "कुमारषष्ठी",
+      "prose": "कुमारषष्ठी"
+    },
+    "SITHI_NAKHA": {
+      "name": "सिथि नखः",
+      "prose": "सिथि नखः"
+    },
+    "VAYU_ASHTAMI": {
+      "name": "वाय्वष्टमी",
+      "prose": "वाय्वष्टमी"
+    },
+    "GANGA_PUJA": {
+      "name": "गङ्गापूजा",
+      "prose": "गङ्गापूजा"
+    },
+    "GURU_PADMASAMBHAVA_JAYANTI": {
+      "name": "गुरुपद्मसम्भवजयन्ती",
+      "prose": "गुरुपद्मसम्भवजयन्ती"
+    },
+    "RAMESHWAR_PUJA": {
+      "name": "रामेश्वरपूजा",
+      "prose": "रामेश्वरपूजा"
+    },
+    "JYA_PUNHI": {
+      "name": "ज्या पुन्ही",
+      "prose": "ज्या पुन्ही"
+    },
+    "KABIR_JAYANTI": {
+      "name": "कबीर जयन्ती",
+      "prose": "कबीर जयन्ती"
+    },
+    "MASTA_PURNIMA": {
+      "name": "मष्टपूर्णिमा",
+      "prose": "मष्टपूर्णिमा"
+    },
+    "BHAL_BHAL_ASHTAMI": {
+      "name": "भलभलाष्टमी",
+      "prose": "भलभलाष्टमी"
+    },
+    "DEOPATAN_TRISHUL_JATRA": {
+      "name": "देवपत्तन त्रिशूलयात्रा",
+      "prose": "देवपत्तन त्रिशूलयात्रा"
+    },
+    "NAKWA_DISHI": {
+      "name": "नक्वः दिसि",
+      "prose": "नक्वः दिसि"
+    },
+    "JAGANNATH_RATH_JATRA": {
+      "name": "जगन्नाथरथयात्रा",
+      "prose": "जगन्नाथरथयात्रा"
+    },
+    "DEOPATAN_GANGAMAI_RATH_JATRA": {
+      "name": "देवपत्तन गङ्गामातृरथयात्रा",
+      "prose": "देवपत्तन गङ्गामातृरथयात्रा"
+    },
+    "SURYA_PUJA": {
+      "name": "सूर्यपूजा",
+      "prose": "सूर्यपूजा"
+    },
+    "CHATURMAS_BEGINS": {
+      "name": "चातुर्मास्यव्रतारम्भ",
+      "prose": "चातुर्मास्यव्रतारम्भ"
+    },
+    "HARISHAYANI_EKADASHI": {
+      "name": "हरिशयन्येकादशी",
+      "prose": "हरिशयन्येकादशी"
+    },
+    "DAKSHINAMURTI_PUJA": {
+      "name": "दक्षिणामूर्तिपूजा",
+      "prose": "दक्षिणामूर्तिपूजा"
+    },
+    "DILLA_PUNHI": {
+      "name": "दिल्ला पुन्ही",
+      "prose": "दिल्ला पुन्ही"
+    },
+    "GURU_PURNIMA": {
+      "name": "गुरुपूर्णिमा",
+      "prose": "गुरुपूर्णिमा"
+    },
+    "KAMIKA_EKADASHI": {
+      "name": "कामिकैकादशी",
+      "prose": "कामिकैकादशी"
+    },
+    "GUNLA_BEGINS": {
+      "name": "गुंलाधर्मारम्भ",
+      "prose": "गुंलाधर्मारम्भ"
+    },
+    "DHAPAKHEL_NAGDAHA": {
+      "name": "धापाखेल नागदह",
+      "prose": "धापाखेल नागदह"
+    },
+    "NAG_PANCHAMI": {
+      "name": "नागपञ्चमी",
+      "prose": "नागपञ्चमी"
+    },
+    "TULSIDAS_JAYANTI": {
+      "name": "तुलसीदास जयन्ती",
+      "prose": "तुलसीदास जयन्ती"
+    },
+    "YALA_PANCHADAN": {
+      "name": "ललितपुर पञ्चदान",
+      "prose": "ललितपुर पञ्चदान"
+    },
+    "SHRAWAN_PUTRADA_EKADASHI": {
+      "name": "श्रावणपुत्रदैकादशी",
+      "prose": "श्रावणपुत्रदैकादशी"
+    },
+    "KWATI_PUNHI": {
+      "name": "क्वाति पुन्ही",
+      "prose": "क्वाति पुन्ही"
+    },
+    "SANSKRIT_DAY": {
+      "name": "संस्कृत दिवस",
+      "prose": "संस्कृत दिवस"
+    },
+    "GAI_JATRA": {
+      "name": "गाईजात्रा",
+      "prose": "गाईजात्रा"
+    },
+    "ROPAI_JATRA": {
+      "name": "रोपाईजात्रा",
+      "prose": "रोपाईजात्रा"
+    },
+    "CHANDRA_SHASHTHI": {
+      "name": "चन्द्रषष्ठी",
+      "prose": "चन्द्रषष्ठी"
+    },
+    "GUGA_NAVAMI": {
+      "name": "गुगा नवमी",
+      "prose": "गुगा नवमी"
+    },
+    "KUSHE_AUNSI": {
+      "name": "कुशोत्पाटिन्यमावस्या",
+      "prose": "कुशोत्पाटिन्यमावस्या"
+    },
+    "MOTIRAM_JAYANTI": {
+      "name": "मोतीराम जयन्ती",
+      "prose": "मोतीराम जयन्ती"
+    },
+    "GUNLA_ENDS": {
+      "name": "गुंलाधर्मसमाप्ति",
+      "prose": "गुंलाधर्मसमाप्ति"
+    },
+    "DAR_KHANE_DIN": {
+      "name": "दर खाने दिन",
+      "prose": "दर खाने दिन"
+    },
+    "KOKHAJA_BIYE": {
+      "name": "कोखजा बिये",
+      "prose": "कोखजा बिये"
+    },
+    "SURYA_SHASHTHI": {
+      "name": "सूर्यषष्ठी",
+      "prose": "सूर्यषष्ठी"
+    },
+    "KAYA_ASHTAMI": {
+      "name": "कायाष्टमी",
+      "prose": "कायाष्टमी"
+    },
+    "ADUKHA_NAVAMI": {
+      "name": "अदुःखनवमी",
+      "prose": "अदुःखनवमी"
+    },
+    "HARIPARIVARTINI_EKADASHI": {
+      "name": "हरिपरिवर्तिन्येकादशी",
+      "prose": "हरिपरिवर्तिन्येकादशी"
+    },
+    "INDRADHWAJA_UTTHAN": {
+      "name": "इन्द्रध्वजोत्थान",
+      "prose": "इन्द्रध्वजोत्थान"
+    },
+    "ANANTA_CHATURDASHI": {
+      "name": "अनन्तचतुर्दशी",
+      "prose": "अनन्तचतुर्दशी"
+    },
+    "INDRA_JATRA": {
+      "name": "इन्द्रयात्रा",
+      "prose": "इन्द्रयात्रा"
+    },
+    "BHAKTAPUR_SIDDHA_POKHARI_MELA": {
+      "name": "भक्तपुर सिद्धपोखरीमेला",
+      "prose": "भक्तपुर सिद्धपोखरीमेला"
+    },
+    "CHONAM_PARVA": {
+      "name": "चोनाम पर्व",
+      "prose": "चोनाम पर्व"
+    },
+    "INDRADAHA_SNAN": {
+      "name": "इन्द्रदहस्नान",
+      "prose": "इन्द्रदहस्नान"
+    },
+    "PUNCHALI_BHUJA": {
+      "name": "पुञ्चली भुजा",
+      "prose": "पुञ्चली भुजा"
+    },
+    "GATILA": {
+      "name": "गातिला",
+      "prose": "गातिला"
+    },
+    "JITIYA": {
+      "name": "जीमूतवाहनव्रत",
+      "prose": "जीमूतवाहनव्रत"
+    },
+    "INDIRA_EKADASHI": {
+      "name": "इन्दिरैकादशी",
+      "prose": "इन्दिरैकादशी"
+    },
+    "MAGHA_SHRADDHA": {
+      "name": "मघाश्राद्ध",
+      "prose": "मघाश्राद्ध"
+    },
+    "AVIDHAVA_NAVAMI": {
+      "name": "अविधवानवमी",
+      "prose": "अविधवानवमी"
+    },
+    "SANYASI_MAHALAYA": {
+      "name": "संन्यासिमहालय",
+      "prose": "संन्यासिमहालय"
+    },
+    "BHARANI_SHRADDHA": {
+      "name": "भरणीश्राद्ध",
+      "prose": "भरणीश्राद्ध"
+    },
+    "PACHALI_BHAIRAV_JATRA": {
+      "name": "पचली भैरवयात्रा",
+      "prose": "पचली भैरवयात्रा"
+    },
+    "BILVA_NIMANTRAN": {
+      "name": "बिल्वनिमन्त्रण",
+      "prose": "बिल्वनिमन्त्रण"
+    },
+    "PHULPATI": {
+      "name": "नवपत्रिकाप्रवेश",
+      "prose": "नवपत्रिकाप्रवेश"
+    },
+    "MAHA_ASHTAMI": {
+      "name": "महाष्टमी",
+      "prose": "महाष्टमी"
+    },
+    "BUDDHAVATAR": {
+      "name": "बुद्धावतार",
+      "prose": "बुद्धावतार"
+    },
+    "MAHA_NAVAMI": {
+      "name": "महानवमी",
+      "prose": "महानवमी"
+    },
+    "SYAKWA_TYAKWA": {
+      "name": "स्याक्वत्याक्व",
+      "prose": "स्याक्वत्याक्व"
+    },
+    "CHAALA": {
+      "name": "चालं",
+      "prose": "चालं"
+    },
+    "DEVI_VISARJAN": {
+      "name": "देवीविसर्जन",
+      "prose": "देवीविसर्जन"
+    },
+    "KHADGA_JATRA": {
+      "name": "खड्गयात्रा",
+      "prose": "खड्गयात्रा"
+    },
+    "ANNAPURNA_JATRA": {
+      "name": "अन्नपूर्णायात्रा",
+      "prose": "अन्नपूर्णायात्रा"
+    },
+    "PAPANKUSHA_EKADASHI": {
+      "name": "पापाङ्कुशैकादशी",
+      "prose": "पापाङ्कुशैकादशी"
+    },
+    "KHANCHI_SARAI_PARVA": {
+      "name": "खाञ्ची सरायपर्व",
+      "prose": "खाञ्ची सरायपर्व"
+    },
+    "AKHILBALI_PURTI": {
+      "name": "अखिलबलिपूर्ति",
+      "prose": "अखिलबलिपूर्ति"
+    },
+    "SHREEGHA_JATRA": {
+      "name": "श्रीघः जात्रा",
+      "prose": "श्रीघः जात्रा"
+    },
+    "ARGHA_SARAI_PARVA": {
+      "name": "अर्घा सरायपर्व",
+      "prose": "अर्घा सरायपर्व"
+    },
+    "KARTIK_SNAN_BEGINS": {
+      "name": "कार्तिकस्नानारम्भ",
+      "prose": "कार्तिकस्नानारम्भ"
+    },
+    "KATIN_PUNHI": {
+      "name": "कतिं पुन्ही",
+      "prose": "कतिं पुन्ही"
+    },
+    "RADHASHTAMI": {
+      "name": "राधाष्टमी",
+      "prose": "राधाष्टमी"
+    },
+    "RAMA_EKADASHI": {
+      "name": "रमैकादशी",
+      "prose": "रमैकादशी"
+    },
+    "DHANTERAS": {
+      "name": "धनत्रयोदशी",
+      "prose": "धनत्रयोदशी"
+    },
+    "KAG_TIHAR": {
+      "name": "कागतिहार",
+      "prose": "कागतिहार"
+    },
+    "SWONTI_CHARHE": {
+      "name": "स्वन्ति चह्रे",
+      "prose": "स्वन्ति चह्रे"
+    },
+    "KUKUR_TIHAR": {
+      "name": "कुकुरतिहार",
+      "prose": "कुकुरतिहार"
+    },
+    "NARAK_CHATURDASHI": {
+      "name": "नरकचतुर्दशी",
+      "prose": "नरकचतुर्दशी"
+    },
+    "GOVARDHAN_PUJA": {
+      "name": "गोवर्धनपूजा",
+      "prose": "गोवर्धनपूजा"
+    },
+    "HALI_TIHAR": {
+      "name": "हलितिहार",
+      "prose": "हलितिहार"
+    },
+    "CHHATH": {
+      "name": "प्रतिहारषष्ठी",
+      "prose": "प्रतिहारषष्ठी"
+    },
+    "GOPASHTAMI": {
+      "name": "गोपाष्टमी",
+      "prose": "गोपाष्टमी"
+    },
+    "MUKHA_ASHTAMI": {
+      "name": "मुखाष्टमी",
+      "prose": "मुखाष्टमी"
+    },
+    "SILANGA_MAHARUDRA_KOTIHOM_MELA": {
+      "name": "सिलङ्गा महारुद्रकोटिहोममेला",
+      "prose": "सिलङ्गा महारुद्रकोटिहोममेला"
+    },
+    "HETAUDA_KUSHMANDA_SAROBAR_MELA": {
+      "name": "हेटौडा कूष्माण्डसरोवरमेला",
+      "prose": "हेटौडा कूष्माण्डसरोवरमेला"
+    },
+    "KUSHMANDA_NAVAMI": {
+      "name": "कूष्माण्डनवमी",
+      "prose": "कूष्माण्डनवमी"
+    },
+    "SAKWO_CHANGU_WONE": {
+      "name": "सक्व चाङ्गु वने",
+      "prose": "सक्व चाङ्गु वने"
+    },
+    "SATYAYUGADI": {
+      "name": "कृतयुगादि",
+      "prose": "कृतयुगादि"
+    },
+    "BALAMBU_MAHALAXMI_JATRA": {
+      "name": "बलम्बु महालक्ष्मीयात्रा",
+      "prose": "बलम्बु महालक्ष्मीयात्रा"
+    },
+    "FULKHARKA_GANGAJAMUNA_MELA": {
+      "name": "फूलखर्क गङ्गायमुनामेला",
+      "prose": "फूलखर्क गङ्गायमुनामेला"
+    },
+    "CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN": {
+      "name": "चाङ्गुनारायण अखण्डदीपदर्शन",
+      "prose": "चाङ्गुनारायण अखण्डदीपदर्शन"
+    },
+    "SHIVA_BAIKUNTHA_CHATURDASHI": {
+      "name": "वैकुण्ठचतुर्दशी",
+      "prose": "वैकुण्ठचतुर्दशी"
+    },
+    "CHATURMAS_ENDS": {
+      "name": "चातुर्मास्यव्रतसमाप्ति",
+      "prose": "चातुर्मास्यव्रतसमाप्ति"
+    },
+    "GURU_NANAK_JAYANTI": {
+      "name": "गुरु नानक जयन्ती",
+      "prose": "गुरु नानक जयन्ती"
+    },
+    "KARTIK_SNAN_ENDS": {
+      "name": "कार्तिकस्नानसमाप्ति",
+      "prose": "कार्तिकस्नानसमाप्ति"
+    },
+    "THANKOT_MAHALAXMI_JATRA": {
+      "name": "थानकोट महालक्ष्मीयात्रा",
+      "prose": "थानकोट महालक्ष्मीयात्रा"
+    },
+    "GUHYESHWARI_JATRA": {
+      "name": "गुह्येश्वरीयात्रा",
+      "prose": "गुह्येश्वरीयात्रा"
+    },
+    "UTPATTIKA_EKADASHI": {
+      "name": "उत्पत्तिकैकादशी",
+      "prose": "उत्पत्तिकैकादशी"
+    },
+    "BALA_CHATURDASHI_BALA": {
+      "name": "बालाचतुर्दशी",
+      "prose": "बालाचतुर्दशी"
+    },
+    "SHADANANDA_JAYANTI": {
+      "name": "षडानन्द जयन्ती",
+      "prose": "षडानन्द जयन्ती"
+    },
+    "VIVAH_PANCHAMI": {
+      "name": "विवाहपञ्चमी",
+      "prose": "विवाहपञ्चमी"
+    },
+    "BAKHUMADA": {
+      "name": "बखुमद",
+      "prose": "बखुमद"
+    },
+    "PANGA_VAISHNAVI_DEVI_JATRA": {
+      "name": "पाङ्गा वैष्णवीदेवीयात्रा",
+      "prose": "पाङ्गा वैष्णवीदेवीयात्रा"
+    },
+    "KIRTIPUR_INDRAYANI_JATRA": {
+      "name": "कीर्तिपुर इन्द्राणीयात्रा",
+      "prose": "कीर्तिपुर इन्द्राणीयात्रा"
+    },
+    "GITA_JAYANTI": {
+      "name": "गीताजयन्ती",
+      "prose": "गीताजयन्ती"
+    },
+    "MOKSHADA_EKADASHI": {
+      "name": "मोक्षदैकादशी",
+      "prose": "मोक्षदैकादशी"
+    },
+    "DHANYA_PURNIMA": {
+      "name": "धान्यपूर्णिमा",
+      "prose": "धान्यपूर्णिमा"
+    },
+    "UDHAULI": {
+      "name": "उधौली",
+      "prose": "उधौली"
+    },
+    "YOMARI_PUNHI": {
+      "name": "योमरी पुन्ही",
+      "prose": "योमरी पुन्ही"
+    },
+    "SAFALA_EKADASHI": {
+      "name": "सफलैकादशी",
+      "prose": "सफलैकादशी"
+    },
+    "GAYA_MAUNI_AUNSI": {
+      "name": "गयामौन्यमावस्या",
+      "prose": "गयामौन्यमावस्या"
+    },
+    "TOL_LHOSAR": {
+      "name": "तोल ल्होसार",
+      "prose": "तोल ल्होसार"
+    },
+    "SETO_MACHHINDRANATH_SNAN": {
+      "name": "श्वेतमत्स्येन्द्रनाथस्नान",
+      "prose": "श्वेतमत्स्येन्द्रनाथस्नान"
+    },
+    "MUSYADULI": {
+      "name": "मुस्याडुली",
+      "prose": "मुस्याडुली"
+    },
+    "CHANGUNARAYAN_KALASH_JATRA": {
+      "name": "चाङ्गुनारायण कलशयात्रा",
+      "prose": "चाङ्गुनारायण कलशयात्रा"
+    },
+    "MAGH_SNAN_BEGINS": {
+      "name": "माघस्नानारम्भ",
+      "prose": "माघस्नानारम्भ"
+    },
+    "SWASTHANI_VRAT_BEGINS": {
+      "name": "स्वस्थानीव्रतारम्भ",
+      "prose": "स्वस्थानीव्रतारम्भ"
+    },
+    "SHATTILA_EKADASHI": {
+      "name": "षट्तिलैकादशी",
+      "prose": "षट्तिलैकादशी"
+    },
+    "ARYAGHAT_MADHAV_NARAYAN_MELA": {
+      "name": "आर्यघाट माधवनारायणमेला",
+      "prose": "आर्यघाट माधवनारायणमेला"
+    },
+    "SHREE_BALLABH_JAYANTI": {
+      "name": "श्रीवल्लभजयन्ती",
+      "prose": "श्रीवल्लभजयन्ती"
+    },
+    "BASANTA_PANCHAMI": {
+      "name": "वसन्तपञ्चमी",
+      "prose": "वसन्तपञ्चमी"
+    },
+    "SKANDA_SHASHTHI": {
+      "name": "स्कन्दषष्ठी",
+      "prose": "स्कन्दषष्ठी"
+    },
+    "ACHALA_SAPTAMI": {
+      "name": "अचलासप्तमी",
+      "prose": "अचलासप्तमी"
+    },
+    "BHISHMASHTAMI": {
+      "name": "भीष्माष्टमी",
+      "prose": "भीष्माष्टमी"
+    },
+    "DRONA_NAVAMI": {
+      "name": "द्रोणनवमी",
+      "prose": "द्रोणनवमी"
+    },
+    "SHALYA_DASHAMI": {
+      "name": "शल्यदशमी",
+      "prose": "शल्यदशमी"
+    },
+    "BHISHMA_DWADASHI": {
+      "name": "भीष्मद्वादशी",
+      "prose": "भीष्मद्वादशी"
+    },
+    "CHANGU_MADHAV_NARAYAN_MELA": {
+      "name": "चाङ्गु माधवनारायणमेला",
+      "prose": "चाङ्गु माधवनारायणमेला"
+    },
+    "WATU_MAGH_JATRA": {
+      "name": "वटुमाघयात्रा",
+      "prose": "वटुमाघयात्रा"
+    },
+    "MAGH_SNAN_ENDS": {
+      "name": "माघस्नानसमाप्ति",
+      "prose": "माघस्नानसमाप्ति"
+    },
+    "SWASTHANI_VRAT_ENDS": {
+      "name": "स्वस्थानीव्रतसमाप्ति",
+      "prose": "स्वस्थानीव्रतसमाप्ति"
+    },
+    "CHIR_SWAYEGU": {
+      "name": "चिरोत्थान",
+      "prose": "चिरोत्थान"
+    },
+    "AMALAKI_EKADASHI": {
+      "name": "आमलक्येकादशी",
+      "prose": "आमलक्येकादशी"
+    },
+    "GOVINDA_DWADASHI": {
+      "name": "गोविन्दद्वादशी",
+      "prose": "गोविन्दद्वादशी"
+    },
+    "NALA_MACHHINDRANATH_RATH_JATRA": {
+      "name": "नाला मत्स्येन्द्रनाथरथयात्रा",
+      "prose": "नाला मत्स्येन्द्रनाथरथयात्रा"
+    },
+    "SHITALASHTAMI": {
+      "name": "शीतलाष्टमी",
+      "prose": "शीतलाष्टमी"
+    },
+    "PAPMOCHANI_EKADASHI": {
+      "name": "पापमोचन्येकादशी",
+      "prose": "पापमोचन्येकादशी"
+    },
+    "KOKA_KAUSHIKI_SANGAM_MELA": {
+      "name": "कौशिकीकोकासङ्गममेला",
+      "prose": "कौशिकीकोकासङ्गममेला"
+    },
+    "VARUTHINI_EKADASHI": {
+      "name": "वरूथिन्येकादशी",
+      "prose": "वरूथिन्येकादशी"
+    },
+    "YOGINI_EKADASHI": {
+      "name": "योगिन्येकादशी",
+      "prose": "योगिन्येकादशी"
+    },
+    "KOJAGRAT_PURNIMA": {
+      "name": "कोजागरपूर्णिमा",
+      "prose": "कोजागरपूर्णिमा"
+    },
+    "KAMADA_EKADASHI": {
+      "name": "कामदैकादशी",
+      "prose": "कामदैकादशी"
+    },
+    "SI_PUNHI": {
+      "name": "सिपुन्ही",
+      "prose": "सिपुन्ही"
+    },
+    "HAYAGRIVA_JAYANTI": {
+      "name": "हयग्रीवजयन्ती",
+      "prose": "हयग्रीवजयन्ती"
+    },
+    "SHIVA_PAVITRAROPAN": {
+      "name": "शिवपवित्रारोपण",
+      "prose": "शिवपवित्रारोपण"
+    },
+    "ARJUNDHARA_MELA": {
+      "name": "अर्जुनधारामेला",
+      "prose": "अर्जुनधारामेला"
+    },
+    "WALKE_PARVA": {
+      "name": "वल्केपर्व",
+      "prose": "वल्केपर्व"
+    },
+    "KALKI_JAYANTI": {
+      "name": "कल्किजयन्ती",
+      "prose": "कल्किजयन्ती"
+    },
+    "VARAHA_JAYANTI": {
+      "name": "वराहजयन्ती",
+      "prose": "वराहजयन्ती"
+    },
+    "PANAUTI_JATRA": {
+      "name": "पनौती रथयात्रा",
+      "prose": "पनौती रथयात्रा"
+    },
+    "PANAUTI_SNAN_MELA": {
+      "name": "पनौती स्नानमेला",
+      "prose": "पनौती स्नानमेला"
+    },
+    "BAHIDYO_BOYEGU": {
+      "name": "बहीद्यः बोयेगु",
+      "prose": "बहीद्यः बोयेगु"
+    },
+    "LALITPUR_NARSINGH_JATRA": {
+      "name": "ललितपुर नृसिंहयात्रा",
+      "prose": "ललितपुर नृसिंहयात्रा"
+    },
+    "GOVATSA_DWADASHI": {
+      "name": "गोवत्सद्वादशी",
+      "prose": "गोवत्सद्वादशी"
+    },
+    "KASHI_BADA_GANESH_UTSAV": {
+      "name": "काशी बडागणेश उत्सव",
+      "prose": "काशी बडागणेश उत्सव"
+    },
+    "NARASIMHA_JAYANTI": {
+      "name": "नृसिंहजयन्ती",
+      "prose": "नृसिंहजयन्ती"
+    },
+    "PADMINI_EKADASHI": {
+      "name": "पद्मिन्येकादशी",
+      "prose": "पद्मिन्येकादशी"
+    },
+    "PARAMA_EKADASHI": {
+      "name": "परमैकादशी",
+      "prose": "परमैकादशी"
+    },
+    "TOKHA_SAPAN_TIRTHA_SNAN": {
+      "name": "टोखा सपनतीर्थस्नान",
+      "prose": "टोखा सपनतीर्थस्नान"
+    },
+    "YOSIN_PATAN": {
+      "name": "भक्तपुर विश्वध्वजपतन",
+      "prose": "भक्तपुर विश्वध्वजपतन"
+    },
+    "BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA": {
+      "name": "भक्तपुर महाकालीमहालक्ष्मीयात्रा",
+      "prose": "भक्तपुर महाकालीमहालक्ष्मीयात्रा"
+    },
+    "TOKHA_CHANDESHWARI_JATRA": {
+      "name": "टोखा चण्डेश्वरीयात्रा",
+      "prose": "टोखा चण्डेश्वरीयात्रा"
+    },
+    "THIMI_BALKUMARI_JATRA": {
+      "name": "मध्यपुर बालकुमारीयात्रा",
+      "prose": "मध्यपुर बालकुमारीयात्रा"
+    },
+    "BHAKTAPUR_BRAHMAYANI_JATRA": {
+      "name": "भक्तपुर ब्रह्मायणीयात्रा",
+      "prose": "भक्तपुर ब्रह्मायणीयात्रा"
+    },
+    "BHAKTAPUR_CHHUMA_GANESH_JATRA": {
+      "name": "भक्तपुर छुमागणेशयात्रा",
+      "prose": "भक्तपुर छुमागणेशयात्रा"
+    },
+    "BISKET_JATRA_ENDS": {
+      "name": "भक्तपुर भैरवभद्रकालीरथयात्रासमाप्ति",
+      "prose": "भक्तपुर भैरवभद्रकालीरथयात्रासमाप्ति"
+    },
+    "KANDAKARAK_PUJA": {
+      "name": "कण्डारकपूजा",
+      "prose": "कण्डारकपूजा"
+    },
+    "KHEER_KHANE_DIN": {
+      "name": "खीर खाने दिन",
+      "prose": "खीर खाने दिन"
+    },
+    "KIRTIPUR_BAGH_BHAIRAV_JATRA": {
+      "name": "कीर्तिपुर व्याघ्रभैरवयात्रा",
+      "prose": "कीर्तिपुर व्याघ्रभैरवयात्रा"
+    },
+    "VISHWAKARMA_PUJA": {
+      "name": "विश्वकर्मपूजा",
+      "prose": "विश्वकर्मपूजा"
+    },
+    "MAGHI_THARU": {
+      "name": "माघी",
+      "prose": "माघी"
+    },
+    "MAKAR_SNAN": {
+      "name": "मकरस्नान",
+      "prose": "मकरस्नान"
+    },
+    "DEVGHAT_MAKAR_SNAN": {
+      "name": "देवघाट मकरस्नान",
+      "prose": "देवघाट मकरस्नान"
+    },
+    "BISKET_JATRA_BEGINS": {
+      "name": "भक्तपुर भैरवभद्रकालीरथयात्रारम्भ",
+      "prose": "भक्तपुर भैरवभद्रकालीरथयात्रारम्भ"
+    },
+    "BHUMIRAJ": {
+      "name": "भूमिरज",
+      "prose": "भूमिरज"
+    },
+    "BHUMI_PUJA": {
+      "name": "भूमिपूजा",
+      "prose": "भूमिपूजा"
+    },
+    "CHHANDA_DIWAS": {
+      "name": "छन्द दिवस",
+      "prose": "छन्द दिवस"
+    },
+    "KIRAT_SAMAJ_SUDHAR_DIWAS": {
+      "name": "किरात समाज सुधार दिवस",
+      "prose": "किरात समाज सुधार दिवस"
+    },
+    "LAW_DAY": {
+      "name": "कानुन दिवस",
+      "prose": "कानुन दिवस"
+    },
+    "REPUBLIC_DAY": {
+      "name": "गणतन्त्र दिवस",
+      "prose": "गणतन्त्र दिवस"
+    },
+    "CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY": {
+      "name": "जातीय भेदभाव तथा छुवाछूत उन्मूलन दिवस",
+      "prose": "जातीय भेदभाव तथा छुवाछूत उन्मूलन दिवस"
+    },
+    "NATIONAL_PADDY_DAY": {
+      "name": "राष्ट्रिय धान दिवस",
+      "prose": "राष्ट्रिय धान दिवस"
+    },
+    "BHANU_JAYANTI": {
+      "name": "भानु जयन्ती",
+      "prose": "भानु जयन्ती"
+    },
+    "NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING": {
+      "name": "मानव बेचबिखन विरुद्धको राष्ट्रिय दिवस",
+      "prose": "मानव बेचबिखन विरुद्धको राष्ट्रिय दिवस"
+    },
+    "CIVIL_SERVICE_DAY": {
+      "name": "निजामती सेवा दिवस",
+      "prose": "निजामती सेवा दिवस"
+    },
+    "NATIONAL_CHILDREN_S_DAY": {
+      "name": "राष्ट्रिय बाल दिवस",
+      "prose": "राष्ट्रिय बाल दिवस"
+    },
+    "VASTU_DIWAS": {
+      "name": "वास्तु दिवस",
+      "prose": "वास्तु दिवस"
+    },
+    "FALGUNANDA_JAYANTI": {
+      "name": "फाल्गुनन्द जयन्ती",
+      "prose": "फाल्गुनन्द जयन्ती"
+    },
+    "LEKHNATH_PAUDYAL_JAYANTI": {
+      "name": "कविशिरोमणि लेखनाथ पौड्याल जयन्ती",
+      "prose": "कविशिरोमणि लेखनाथ पौड्याल जयन्ती"
+    },
+    "ARANIKO_MEMORIAL_DAY": {
+      "name": "अरनिको स्मृति दिवस",
+      "prose": "अरनिको स्मृति दिवस"
+    },
+    "ELECTION_DAY": {
+      "name": "निर्वाचन दिवस",
+      "prose": "निर्वाचन दिवस"
+    },
+    "NEW_YEAR_S_DAY_AD": {
+      "name": "ईस्वी नववर्ष",
+      "prose": "ईस्वी नववर्ष"
+    },
+    "INTERNATIONAL_WOMEN_S_DAY": {
+      "name": "अन्तर्राष्ट्रिय नारी दिवस",
+      "prose": "अन्तर्राष्ट्रिय नारी दिवस"
+    },
+    "WORLD_WATER_DAY": {
+      "name": "विश्व जल दिवस",
+      "prose": "विश्व जल दिवस"
+    },
+    "WORLD_TUBERCULOSIS_DAY": {
+      "name": "विश्व क्षयरोग दिवस",
+      "prose": "विश्व क्षयरोग दिवस"
+    },
+    "INTERNATIONAL_LABOUR_DAY": {
+      "name": "अन्तर्राष्ट्रिय श्रमिक दिवस",
+      "prose": "अन्तर्राष्ट्रिय श्रमिक दिवस"
+    },
+    "WORLD_PRESS_FREEDOM_DAY": {
+      "name": "विश्व प्रेस स्वतन्त्रता दिवस",
+      "prose": "विश्व प्रेस स्वतन्त्रता दिवस"
+    },
+    "WORLD_RED_CROSS_DAY": {
+      "name": "विश्व रेडक्रस दिवस",
+      "prose": "विश्व रेडक्रस दिवस"
+    },
+    "WORLD_NO_TOBACCO_DAY": {
+      "name": "विश्व सुर्तीजन्य पदार्थ निषेध दिवस",
+      "prose": "विश्व सुर्तीजन्य पदार्थ निषेध दिवस"
+    },
+    "WORLD_ENVIRONMENT_DAY": {
+      "name": "विश्व वातावरण दिवस",
+      "prose": "विश्व वातावरण दिवस"
+    },
+    "INTERNATIONAL_SPORTS_JOURNALISTS_DAY": {
+      "name": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस",
+      "prose": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस"
+    },
+    "WORLD_POPULATION_DAY": {
+      "name": "विश्व जनसङ्ख्या दिवस",
+      "prose": "विश्व जनसङ्ख्या दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES": {
+      "name": "विश्व आदिवासी दिवस",
+      "prose": "विश्व आदिवासी दिवस"
+    },
+    "INTERNATIONAL_LITERACY_DAY": {
+      "name": "अन्तर्राष्ट्रिय साक्षरता दिवस",
+      "prose": "अन्तर्राष्ट्रिय साक्षरता दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_PEACE": {
+      "name": "अन्तर्राष्ट्रिय शान्ति दिवस",
+      "prose": "अन्तर्राष्ट्रिय शान्ति दिवस"
+    },
+    "WORLD_TOURISM_DAY": {
+      "name": "विश्व पर्यटन दिवस",
+      "prose": "विश्व पर्यटन दिवस"
+    },
+    "UNITED_NATIONS_DAY": {
+      "name": "संयुक्त राष्ट्रसङ्घ दिवस",
+      "prose": "संयुक्त राष्ट्रसङ्घ दिवस"
+    },
+    "WORLD_DIABETES_DAY": {
+      "name": "विश्व मधुमेह दिवस",
+      "prose": "विश्व मधुमेह दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES": {
+      "name": "अन्तर्राष्ट्रिय अपाङ्गता दिवस",
+      "prose": "अन्तर्राष्ट्रिय अपाङ्गता दिवस"
+    },
+    "HUMAN_RIGHTS_DAY": {
+      "name": "मानव अधिकार दिवस",
+      "prose": "मानव अधिकार दिवस"
+    },
+    "CHRISTMAS": {
+      "name": "क्रिसमस",
+      "prose": "क्रिसमस"
+    },
+    "INDIA_REPUBLIC_DAY": {
+      "name": "भारतीय गणतन्त्र दिवस",
+      "prose": "भारतीय गणतन्त्र दिवस"
+    },
+    "INDIA_INDEPENDENCE_DAY": {
+      "name": "भारतीय स्वतन्त्रता दिवस",
+      "prose": "भारतीय स्वतन्त्रता दिवस"
+    },
+    "GANDHI_JAYANTI": {
+      "name": "महात्मा गान्धी जयन्ती",
+      "prose": "महात्मा गान्धी जयन्ती"
+    },
+    "GOOD_FRIDAY": {
+      "name": "गुड फ्राइडे",
+      "prose": "गुड फ्राइडे"
+    },
+    "HOLI": {
+      "name": "धूलिवन्दन",
+      "prose": "धूलिवन्दन"
+    },
+    "FAGU_PURNIMA": {
+      "name": "फाल्गुनपूर्णिमा",
+      "prose": "फाल्गुनपूर्णिमा"
+    },
+    "ASHUNYA_SHAYANA": {
+      "name": "अशून्यशयनव्रत",
+      "prose": "अशून्यशयनव्रत",
+      "iast": "Aśūnyaśayanavrata"
+    },
+    "MAHAVIR_NIRVANA": {
+      "name": "महावीरनिर्वाण",
+      "prose": "महावीरनिर्वाण",
+      "iast": "Mahāvīra Nirvāṇa"
+    },
+    "VIRA_NIRVANA_NEW_YEAR": {
+      "name": "वीरनिर्वाणसंवत्प्रारम्भ",
+      "prose": "वीरनिर्वाणसंवत्प्रारम्भ",
+      "iast": "Vīra Nirvāṇa Navavarṣa"
+    },
+    "PARYUSHANA": {
+      "name": "पर्युषणारम्भ",
+      "prose": "पर्युषणारम्भ",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI": {
+      "name": "सांवत्सरी",
+      "prose": "सांवत्सरी",
+      "iast": "Sāṃvatsarī"
+    },
+    "PARYUSHANA_TRAYODASHI": {
+      "name": "कृष्णत्रयोदशीतः पर्युषणारम्भ",
+      "prose": "कृष्णत्रयोदशीतः पर्युषणारम्भ",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI_PANCHAMI": {
+      "name": "शुक्लपञ्चम्यां सांवत्सरी",
+      "prose": "शुक्लपञ्चम्यां सांवत्सरी",
+      "iast": "Sāṃvatsarī"
+    },
+    "DASA_LAKSHANA": {
+      "name": "दशलक्षणपर्वारम्भ",
+      "prose": "दशलक्षणपर्वारम्भ",
+      "iast": "Daśalakṣaṇa Parva"
+    },
+    "CHAITRA_AYAMBIL_OLI": {
+      "name": "चैत्र आयम्बिल ओली आरम्भ",
+      "prose": "चैत्र आयम्बिल ओली आरम्भ",
+      "iast": "Āyambila Olī"
+    },
+    "CHAITRA_AYAMBIL_OLI_END": {
+      "name": "चैत्र आयम्बिल ओली समाप्ति",
+      "prose": "चैत्र आयम्बिल ओली समाप्ति",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI": {
+      "name": "आश्विन आयम्बिल ओली आरम्भ",
+      "prose": "आश्विन आयम्बिल ओली आरम्भ",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI_END": {
+      "name": "आश्विन आयम्बिल ओली समाप्ति",
+      "prose": "आश्विन आयम्बिल ओली समाप्ति",
+      "iast": "Āyambila Olī"
+    },
+    "JAIN_PARVA_DVITIYA": {
+      "name": "पर्वतिथि: द्वितीया",
+      "prose": "पर्वतिथि: द्वितीया",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PANCHAMI": {
+      "name": "पर्वतिथि: पञ्चमी",
+      "prose": "पर्वतिथि: पञ्चमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_ASHTAMI": {
+      "name": "पर्वतिथि: अष्टमी",
+      "prose": "पर्वतिथि: अष्टमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_EKADASHI": {
+      "name": "पर्वतिथि: एकादशी",
+      "prose": "पर्वतिथि: एकादशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_CHATURDASHI": {
+      "name": "पर्वतिथि: चतुर्दशी",
+      "prose": "पर्वतिथि: चतुर्दशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PURNIMA": {
+      "name": "पर्वतिथि: पूर्णिमा",
+      "prose": "पर्वतिथि: पूर्णिमा",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_AMAVASYA": {
+      "name": "पर्वतिथि: अमावस्या",
+      "prose": "पर्वतिथि: अमावस्या",
+      "iast": "Parva Tithi"
+    },
+    "MAUNA_PANCHAMI": {
+      "name": "मौनापञ्चमी",
+      "prose": "मौनापञ्चमी",
+      "iast": "Maunā Pañcamī"
+    },
+    "MADHUSHRAVANI_ARAMBHA": {
+      "name": "मधुश्रावणीपूजारम्भ",
+      "prose": "मधुश्रावणीपूजारम्भ",
+      "iast": "Madhuśrāvaṇī Ārambha"
+    },
+    "MADHUSHRAVANI_SAMAPTI": {
+      "name": "मधुश्रावणीपूजासमाप्ति",
+      "prose": "मधुश्रावणीपूजासमाप्ति",
+      "iast": "Madhuśrāvaṇī Samāpti"
+    },
+    "CHAURCHAN": {
+      "name": "चौठचन्द्र",
+      "prose": "चौठचन्द्र",
+      "iast": "Cauṭhacandra"
+    },
+    "OTHGAN": {
+      "name": "ओठगन",
+      "prose": "ओठगन"
+    },
+    "SAMA_CHAKEVA_ARAMBHA": {
+      "name": "सामापूजारम्भ",
+      "prose": "सामापूजारम्भ"
+    },
+    "SAMA_CHAKEVA_VISARJANA": {
+      "name": "सामाविसर्जन",
+      "prose": "सामाविसर्जन"
+    },
+    "VIDYAPATI_SMRITI_DIVAS": {
+      "name": "विद्यापति स्मृति दिवस",
+      "prose": "विद्यापति स्मृति दिवस",
+      "iast": "Vidyāpati Smṛti Divasa"
+    },
+    "JUR_SITAL": {
+      "name": "जूडिशीतल",
+      "prose": "जूडिशीतल"
+    },
+    "CHHATRAPATI_SHIVAJI_JAYANTI": {
+      "name": "छत्रपति शिवाजी महाराज जयन्ती",
+      "prose": "छत्रपति शिवाजी महाराज जयन्ती"
+    },
+    "AMBEDKAR_JAYANTI": {
+      "name": "डा. बाबासाहेब आम्बेडकर जयन्ती",
+      "prose": "डा. बाबासाहेब आम्बेडकर जयन्ती"
+    },
+    "MAHARASHTRA_DAY": {
+      "name": "महाराष्ट्र दिवस",
+      "prose": "महाराष्ट्र दिवस"
+    },
+    "BANK_ACCOUNTS_CLOSING": {
+      "name": "बैंक खातों का वार्षिक समापन",
+      "prose": "बैंक खातों का वार्षिक समापन"
+    },
+    "VIVEKANANDA_JAYANTI": {
+      "name": "स्वामी विवेकानन्द जयन्ती",
+      "prose": "स्वामी विवेकानन्द जयन्ती"
+    },
+    "NETAJI_JAYANTI": {
+      "name": "नेताजी सुभाषचन्द्र बोस जयन्ती",
+      "prose": "नेताजी सुभाषचन्द्र बोस जयन्ती"
+    },
+    "THAKUR_PANCHANAN_BARMA_JAYANTI": {
+      "name": "ठाकुर पञ्चानन बर्मा जयन्ती",
+      "prose": "ठाकुर पञ्चानन बर्मा जयन्ती"
+    },
+    "DOLA_YATRA": {
+      "name": "दोलयात्रा",
+      "prose": "दोलयात्रा"
+    },
+    "HARICHAND_THAKUR_JAYANTI": {
+      "name": "हरिचाँद ठाकुर जयन्ती",
+      "prose": "हरिचाँद ठाकुर जयन्ती"
+    },
+    "EASTER_SATURDAY": {
+      "name": "ईस्टर शनिवार",
+      "prose": "ईस्टर शनिवार"
+    },
+    "POHELA_BOISHAKH": {
+      "name": "पोहेला बैशाख (वङ्गीय नववर्ष)",
+      "prose": "पोहेला बैशाख (वङ्गीय नववर्ष)"
+    },
+    "RABINDRA_JAYANTI": {
+      "name": "रवीन्द्रनाथ ठाकुर जयन्ती",
+      "prose": "रवीन्द्रनाथ ठाकुर जयन्ती"
+    },
+    "HUL_DIWAS": {
+      "name": "हूल दिवस",
+      "prose": "हूल दिवस"
+    },
+    "DURGA_CHATURTHI": {
+      "name": "दुर्गापूजा: महाचतुर्थी",
+      "prose": "दुर्गापूजा: महाचतुर्थी"
+    },
+    "DURGA_PANCHAMI": {
+      "name": "दुर्गापूजा: महापञ्चमी",
+      "prose": "दुर्गापूजा: महापञ्चमी"
+    },
+    "DURGA_SHASHTHI": {
+      "name": "दुर्गापूजा: महाषष्ठी",
+      "prose": "दुर्गापूजा: महाषष्ठी"
+    },
+    "KALI_PUJA": {
+      "name": "कालीपूजा",
+      "prose": "कालीपूजा"
+    },
+    "BIRSA_MUNDA_JAYANTI": {
+      "name": "बिरसा मुण्डा जयन्ती",
+      "prose": "बिरसा मुण्डा जयन्ती"
+    },
+    "VISHU": {
+      "name": "विषु",
+      "prose": "विषु"
+    },
+    "MANNAM_JAYANTHI": {
+      "name": "मन्नम् जयन्ती",
+      "prose": "मन्नम् जयन्ती"
+    },
+    "MAUNDY_THURSDAY": {
+      "name": "पवित्र गुरुवार",
+      "prose": "पवित्र गुरुवार"
+    },
+    "EASTER": {
+      "name": "ईस्टर",
+      "prose": "ईस्टर"
+    },
+    "KARKIDAKA_VAVU": {
+      "name": "कर्किडक वावु",
+      "prose": "कर्किडक वावु"
+    },
+    "FIRST_ONAM": {
+      "name": "प्रथम ओणम् (उत्राडम्)",
+      "prose": "प्रथम ओणम् (उत्राडम्)"
+    },
+    "THIRUVONAM": {
+      "name": "तिरुवोणम्",
+      "prose": "तिरुवोणम्"
+    },
+    "THIRD_ONAM": {
+      "name": "तृतीय ओणम्",
+      "prose": "तृतीय ओणम्"
+    },
+    "FOURTH_ONAM": {
+      "name": "चतुर्थ ओणम्",
+      "prose": "चतुर्थ ओणम्"
+    },
+    "SREE_NARAYANA_GURU_JAYANTHI": {
+      "name": "श्री नारायण गुरु जयन्ती",
+      "prose": "श्री नारायण गुरु जयन्ती"
+    },
+    "SREE_NARAYANA_GURU_SAMADHI": {
+      "name": "श्री नारायण गुरु समाधि दिवस",
+      "prose": "श्री नारायण गुरु समाधि दिवस"
+    },
+    "AYYANKALI_JAYANTHI": {
+      "name": "अय्यन्काली जयन्ती",
+      "prose": "अय्यन्काली जयन्ती"
+    },
+    "AVANI_AVITTOM": {
+      "name": "आवणि अवित्तम्",
+      "prose": "आवणि अवित्तम्"
+    },
+    "AYYA_VAIKUNDA_SWAMI_JAYANTHI": {
+      "name": "अय्या वैकुण्ड स्वामी जयन्ती",
+      "prose": "अय्या वैकुण्ड स्वामी जयन्ती"
+    }
+  },
   "year_office": {
     "RAJA": {
       "name": "राजा",
