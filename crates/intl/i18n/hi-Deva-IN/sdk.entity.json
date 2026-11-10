@@ -3756,5 +3756,167 @@
       "name": "नाड्यंश",
       "prose": "नाड्यंश"
     }
+  },
+  "tithi_class": {
+    "NANDA": {
+      "name": "नन्दा",
+      "prose": "नन्दा",
+      "iast": "Nandā"
+    },
+    "BHADRA": {
+      "name": "भद्रा",
+      "prose": "भद्रा",
+      "iast": "Bhadrā"
+    },
+    "JAYA": {
+      "name": "जया",
+      "prose": "जया",
+      "iast": "Jayā"
+    },
+    "RIKTA": {
+      "name": "रिक्ता",
+      "prose": "रिक्ता",
+      "iast": "Riktā"
+    },
+    "PURNA": {
+      "name": "पूर्णा",
+      "prose": "पूर्णा",
+      "iast": "Pūrṇā"
+    }
+  },
+  "modality": {
+    "CHARA": {
+      "name": "चर",
+      "prose": "चर",
+      "iast": "Cara"
+    },
+    "STHIRA": {
+      "name": "स्थिर",
+      "prose": "स्थिर",
+      "iast": "Sthira"
+    },
+    "DWISWABHAVA": {
+      "name": "द्विस्वभाव",
+      "prose": "द्विस्वभाव",
+      "iast": "Dvisvabhāva"
+    }
+  },
+  "muhurta_nature": {
+    "DHRUVA": {
+      "name": "ध्रुव",
+      "prose": "ध्रुव",
+      "iast": "Dhruva"
+    },
+    "CHARA": {
+      "name": "चर",
+      "prose": "चर",
+      "iast": "Cara"
+    },
+    "UGRA": {
+      "name": "उग्र",
+      "prose": "उग्र",
+      "iast": "Ugra"
+    },
+    "KSHIPRA": {
+      "name": "क्षिप्र",
+      "prose": "क्षिप्र",
+      "iast": "Kṣipra"
+    },
+    "MRIDU": {
+      "name": "मृदु",
+      "prose": "मृदु",
+      "iast": "Mṛdu"
+    },
+    "MISHRA": {
+      "name": "मिश्र",
+      "prose": "मिश्र",
+      "iast": "Miśra"
+    },
+    "TIKSHNA": {
+      "name": "तीक्ष्ण",
+      "prose": "तीक्ष्ण",
+      "iast": "Tīkṣṇa"
+    }
+  },
+  "guna": {
+    "SATTVA": {
+      "name": "सत्त्व",
+      "prose": "सत्त्व",
+      "iast": "Sattva"
+    },
+    "RAJAS": {
+      "name": "रज",
+      "prose": "रज",
+      "iast": "Rajas"
+    },
+    "TAMAS": {
+      "name": "तम",
+      "prose": "तम",
+      "iast": "Tamas"
+    }
+  },
+  "gender": {
+    "MALE": {
+      "name": "पुरुष",
+      "prose": "पुरुष",
+      "iast": "Puruṣa"
+    },
+    "FEMALE": {
+      "name": "स्त्री",
+      "prose": "स्त्री",
+      "iast": "Strī"
+    },
+    "NEUTRAL": {
+      "name": "नपुंसक",
+      "prose": "नपुंसक",
+      "iast": "Napuṃsaka"
+    }
+  },
+  "rising": {
+    "SIRSHODAYA": {
+      "name": "शीर्षोदय",
+      "prose": "शीर्षोदय",
+      "iast": "Śīrṣodaya"
+    },
+    "PRISHTODAYA": {
+      "name": "पृष्ठोदय",
+      "prose": "पृष्ठोदय",
+      "iast": "Pṛṣṭhodaya"
+    },
+    "UBHAYODAYA": {
+      "name": "उभयोदय",
+      "prose": "उभयोदय",
+      "iast": "Ubhayodaya"
+    }
+  },
+  "blackout_kind": {
+    "KHARMAS": {
+      "name": "खरमास",
+      "prose": "खरमास"
+    },
+    "ECLIPSE_STAR": {
+      "name": "ग्रहण नक्षत्र",
+      "prose": "ग्रहण नक्षत्र"
+    },
+    "ECLIPSE_VEDHA": {
+      "name": "ग्रहण सूतक",
+      "prose": "ग्रहण सूतक"
+    }
+  },
+  "lunar_eclipse_kind": {
+    "PENUMBRAL": {
+      "name": "उपच्छाया",
+      "prose": "उपच्छाया"
+    }
+  },
+  "solar_eclipse_kind": {
+    "ANNULAR": {
+      "name": "वलयाकार",
+      "prose": "वलयाकार"
+    },
+    "HYBRID": {
+      "name": "संकर",
+      "prose": "संकर"
+    }
   }
 }
