@@ -246,3 +246,49 @@ fn a_drawing_the_document_does_not_have_is_refused() {
     assert_eq!(error.field(), Some("drawing"));
     assert!(error.message.contains("3 drawings"), "{error}");
 }
+
+#[test]
+fn a_round_chart_names_itself_in_its_hub_as_a_patrika_does() {
+    // ल for the lagna's chart and न for the navamsha, as the third scan's
+    // hubs print them; the English short forms beside them.
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(1400.0).unwrap(),
+    );
+    let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700).unwrap())
+        .with_vargas([Varga::D9])
+        .with_drawings([
+            (ChartLayout::NepaliCircle, Varga::D1),
+            (ChartLayout::NepaliCircle, Varga::D9),
+            (ChartLayout::NorthIndian, Varga::D1),
+        ]);
+    for (locale, lagna, navamsha) in [
+        ("ne-Deva-NP", "ल", "न"),
+        ("hi-Deva-IN", "ल", "न"),
+        ("sa-Deva", "ल", "न"),
+        ("en-Latn", "As", "D9"),
+    ] {
+        let sdk = context(locale);
+        let document = sdk
+            .chart()
+            .reading(JulianDay::<Utc>::literal(2_460_537.5), &request)
+            .unwrap()
+            .value;
+        let hub = |drawing: usize| {
+            sdk.chart()
+                .labels(&document, drawing, &Content::default())
+                .unwrap()
+                .hub
+        };
+        assert_eq!(hub(0).as_deref(), Some(lagna), "{locale}");
+        assert_eq!(hub(1).as_deref(), Some(navamsha), "{locale}");
+        // A layout with no hub is given no name to write.
+        assert_eq!(hub(2), None, "{locale}");
+        let svg = sdk.chart().svg(&document, 1, &Theme::light()).unwrap();
+        assert!(
+            svg.contains(&format!("data-hub=\"true\">{navamsha}</text>")),
+            "{locale}"
+        );
+    }
+}

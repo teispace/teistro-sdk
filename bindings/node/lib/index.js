@@ -7387,6 +7387,7 @@ function drawingFrom({ varga, placed }, svg) {
     marks: placed.marks.map((mark) =>
       Object.freeze({ body: mark.body, ring: mark.ring, at: mark.at, longitudeDeg: mark.longitude_deg }),
     ),
+    ...(placed.hub ? { hub: Object.freeze({ centre: placed.hub.centre, radius: placed.hub.radius }) } : {}),
   });
 }
 

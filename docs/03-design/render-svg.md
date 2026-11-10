@@ -105,7 +105,9 @@ Document + Context + Content ─compose──▶  Labels
   script:
   - one per body key;
   - one per cell's label;
-  - an optional title for the drawing's accessible name.
+  - an optional title for the drawing's accessible name;
+  - an optional name for the chart, written in the layout's hub where it
+    has one (the Nepali round chart's ल or न, chart-geometry §7g).
 
   A body the labels do not name is refused by its key rather than drawn
   blank.
@@ -127,6 +129,9 @@ composing is in Rust, every binding gets the same labels.
   - its label's `<text>`;
   - one `<text data-body>` per body.
 - The frame's paths, stroked and unfilled.
+- For a layout with a hub and labels naming the chart, one
+  `<text data-hub="true">` at the hub's centre in the accent, at a body's
+  size or smaller, so its estimated box stays inside the hub's circle.
 - For a layout with marks (the wheel), one `<line data-body>` tick and one
   `<text data-body>` per mark (§6), and no bodies stacked in cells, since
   the marks already draw every body once.

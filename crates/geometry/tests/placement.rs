@@ -129,14 +129,24 @@ fn the_fixed_layouts_keep_what_they_fix_whatever_the_lagna() {
 
 #[test]
 fn a_placed_chart_reads_back_from_its_own_json() {
-    let placed = place(&rows::nepali_lotus(), &chart(Rashi::Scorpio)).unwrap();
-    let json = serde_json::to_string(&placed).unwrap();
-    assert!(
-        json.contains("\"graha.SUN\""),
-        "a body is its catalogue key"
-    );
-    let read: teistro_geometry::Placed = serde_json::from_str(&json).unwrap();
-    assert_eq!(read, placed);
+    for layout in [rows::nepali_lotus(), rows::nepali_circle()] {
+        let placed = place(&layout, &chart(Rashi::Scorpio)).unwrap();
+        let json = serde_json::to_string(&placed).unwrap();
+        assert!(
+            json.contains("\"graha.SUN\""),
+            "a body is its catalogue key"
+        );
+        // A hub is written only where the layout has one, so a chart drawn
+        // in any other layout reads as it did before hubs.
+        assert_eq!(
+            json.contains("\"hub\""),
+            placed.hub.is_some(),
+            "{}",
+            layout.key
+        );
+        let read: teistro_geometry::Placed = serde_json::from_str(&json).unwrap();
+        assert_eq!(read, placed);
+    }
 }
 
 /// The sector of `ring` that holds the point `minutes` minutes clockwise of

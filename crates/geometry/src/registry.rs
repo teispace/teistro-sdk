@@ -1,4 +1,4 @@
-//! The layouts a context can draw in: the six the SDK ships, and any a
+//! The layouts a context can draw in: the seven the SDK ships, and any a
 //! consumer registers (ADR-0026 §1).
 //!
 //! A regional layout is a row, not a fork. A consumer builds a [`Layout`]
@@ -55,7 +55,7 @@ impl Definition for Layout {
 /// use teistro_geometry::Layouts;
 ///
 /// let layouts = Layouts::default();
-/// assert_eq!(layouts.iter().count(), 6);
+/// assert_eq!(layouts.iter().count(), 7);
 /// ```
 #[derive(Clone, Debug)]
 pub struct Layouts {

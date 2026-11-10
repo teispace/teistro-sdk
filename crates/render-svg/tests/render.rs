@@ -63,6 +63,7 @@ fn labels(placed: &Placed, script: &[&str; 9]) -> Labels {
             .map(|(graha, name)| (graha.key_id(), (*name).to_owned()))
             .collect::<BTreeMap<_, _>>(),
         lagna: Some(String::from("As")),
+        hub: Some(String::from("ल")),
     }
 }
 
@@ -278,6 +279,63 @@ fn a_crowded_cell_keeps_every_line_inside_it_and_off_its_label() {
 #[expect(clippy::cast_precision_loss, reason = "a label is a few characters")]
 const fn to_f64(count: usize) -> f64 {
     count as f64
+}
+
+#[test]
+fn a_hub_names_the_chart_once_inside_its_circle_and_no_other_layout_does() {
+    let style = Style::light();
+    for layout in rows::shipped() {
+        let placed = drawn(&layout);
+        let svg = render(&placed, &labels(&placed, &DEVANAGARI), &style).unwrap();
+        let document = Document::parse(&svg).unwrap();
+        let names: Vec<_> = all(&document, "text")
+            .into_iter()
+            .filter(|text| text.attribute("data-hub") == Some("true"))
+            .collect();
+        let Some(hub) = placed.hub else {
+            assert!(
+                names.is_empty(),
+                "{}: a layout with no hub names its chart",
+                layout.key
+            );
+            continue;
+        };
+        assert_eq!(names.len(), 1, "{}", layout.key);
+        let name = names[0];
+        assert_eq!(name.text(), Some("ल"));
+        assert_eq!(name.attribute("fill"), Some(style.accent.as_str()));
+        // Its estimated box stays inside the hub's circle.
+        let scale = style.size;
+        let size = number(&name, "font-size") / scale;
+        let (x, y) = (
+            number(&name, "x") / scale,
+            number(&name, "y") / scale - size * style.baseline_shift,
+        );
+        let (half_w, half_h) = (style.advance * size / 2.0, style.line_height * size / 2.0);
+        let slack = 0.01 / scale;
+        for (dx, dy) in [(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)] {
+            let (cx, cy) = (
+                x + dx * half_w - hub.centre.x,
+                y + dy * half_h - hub.centre.y,
+            );
+            assert!(
+                (cx * cx + cy * cy).sqrt() <= hub.radius + slack,
+                "{}: the name leaves the hub",
+                layout.key
+            );
+        }
+    }
+    // A long name shrinks to fit rather than spilling out.
+    let round = drawn(&rows::nepali_circle());
+    let mut long = labels(&round, &LATIN);
+    long.hub = Some(String::from("Navamsha"));
+    let svg = render(&round, &long, &style).unwrap();
+    let document = Document::parse(&svg).unwrap();
+    let name = all(&document, "text")
+        .into_iter()
+        .find(|text| text.attribute("data-hub").is_some())
+        .unwrap();
+    assert!(number(&name, "font-size") < style.body_size * style.size);
 }
 
 #[test]

@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15. It builds the first two parts of
+Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15; §7g, the Nepali lotus and round chart redrawn from printed janma patrikas, built 2026-11-10. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is built ([`render-svg.md`](render-svg.md)). The research this page rests on was
@@ -40,12 +40,17 @@ Three sources were read against each other:
    render North, South, East, lotus and Sudarshan views to readers
    today.
 
+A fourth was read for the Nepali charts on 2026-11-10 (§7g): three
+printed janma patrikas, photographed, two of one printer's form and one
+of another's.
+
 | layout | what is fixed | where it starts | direction | agreement |
 |---|---|---|---|---|
 | North Indian | the **houses** | house 1 is the top diamond | anticlockwise | figure, tutorials and the application agree |
 | South Indian | the **signs** | Pisces top-left, Aries beside it | clockwise | figure, tutorials and the application agree |
 | East Indian | the **signs** | Aries in the top-centre cell | anticlockwise | figure and tutorials agree; **the application does not** (C47) |
-| Nepali lotus | the **houses** | as North Indian | anticlockwise | the application's own drawing; no second source |
+| Nepali lotus | the **houses** | house 1 the top petal | anticlockwise | printed janma patrikas, three scans, 2026-11-10: two draw the lotus, and agree |
+| Nepali round chart | the **houses** | house 1 the cell above the hub | anticlockwise | printed janma patrikas, three scans, 2026-11-10: the third draws four round charts, and they agree |
 | Sudarshan Chakra | three rings of **houses** | house 1 at the top | the application draws clockwise | the ring order (lagna inner, Moon, Sun outer) agrees across tutorials; the direction is the application's alone (C47) |
 | Western wheel | the **cusps** | the ascendant at nine o'clock | anticlockwise | every tutorial agrees |
 
@@ -65,8 +70,8 @@ Two corrections to ADR-0026 follow.
   row) and a **radial** kind (sectors computed from the chart).
 
 And one refinement: the lotus's cells are not polygons. Its petals are
-quadratic curves over the North Indian topology, so a cell's outline is
-a path of line **and** quadratic segments.
+lines and quadratic curves, and the round chart's cells end on arcs, so
+a cell's outline is a path of line, quadratic **and** arc segments.
 
 ## 3. The model
 
@@ -81,12 +86,14 @@ Layout
   sources        citations, as every catalogue row carries
   shape          Grid | Radial
 
-Grid                            (North, South, East Indian, the lotus)
-  cells [12]     each: outline (a closed path: MoveTo, LineTo, QuadTo)
+Grid                            (North, South, East Indian, the Nepali charts)
+  cells [12]     each: outline (a closed path: MoveTo, LineTo, QuadTo, ArcTo)
                        holds    Sign(Rashi) | House(1..=12)
                        label    the anchor of the sign or house number
                        bodies   the anchor the cell's bodies stack about
   frame          paths that are drawn but hold nothing (the border)
+  hub            optional: a circle no cell holds, where the chart's name
+                 is written (the round chart's ल or न)
 
 Radial                          (the chakra, the wheel)
   rings          each: inner and outer radius, the reference the ring
@@ -170,8 +177,9 @@ that figure puts there. The test places a chart and asserts that each
 point lies in the cell holding that number. A swapped sign is then a
 failed point, found by name.
 
-- **The lotus** is held to the North Indian figure's points, which is
-  the claim that it shares North Indian's topology.
+- **The two Nepali charts** are held to the printed patrikas they are
+  drawn from, the same way: each number a photographed patrika prints is
+  transcribed as a point and the sign it names (§7g).
 - **The Sudarshan Chakra and the wheel** have no numbered reference
   figure. They are held by §5 and by placement tests that compute a
   sector's angle from a known lagna.
@@ -181,9 +189,12 @@ failed point, found by name.
 The renderer's output is gated byte for byte (ADR-0026). Geometry is
 where that is won or lost.
 
-- **The four grid rows** are rational coordinates, and placement only
-  selects cells. There is no arithmetic that could differ between
+- **The three square grid rows** are rational coordinates, and placement
+  only selects cells. There is no arithmetic that could differ between
   architectures.
+- **The two Nepali rows** are clock directions (§7a) times radii in 32nds,
+  and one correctly rounded square root (where the hub's side lines meet
+  the circle). IEEE 754 fixes both.
 - **The chakra's sectors** fall at multiples of 30°, whose sines and
   cosines are exact constants in a table, not calls to a platform's
   `sin`.
@@ -391,6 +402,59 @@ bindings.
     before the unread-key check runs. The message names it, and the field
     is the row's root.
 
+## 7g. The Nepali charts, from printed janma patrikas (SR-36)
+
+A consumer asked for the Nepali lotus to match printed janma patrikas,
+and sent three, photographed. The scans are private and are not in the
+repository: only the charts' geometry and their numbers were transcribed,
+and the placement test uses the charts' pattern without any birth data.
+
+- **The lotus the print draws is not the one the SDK drew.** Two patrikas
+  (one printer's form, headed जन्मकुण्डली, चलितकुण्डली and राशिकुण्डली)
+  draw twelve equal petals radiating from the centre inside a circle in a
+  decorated square. House 1's petal is at twelve o'clock and the numbers
+  rise anticlockwise, a clock hour apart: North Indian's houses in North
+  Indian's order, on a different figure. The row it replaces drew the
+  North Indian diamonds with curved edges, and had only the baseline
+  application behind it, so the print replaces it under the same key.
+- **The petal.** A petal shares with its neighbour the line half an hour
+  off its axis for its inner half, as the printed petals touch, then
+  curves to a tip on the circle along a quadratic pulled towards that
+  line; the background shows between the tips. It is widest (0.064 of
+  the square) about 0.27 from the centre, which is where its bodies go;
+  its number sits towards the tip. The first scan's numbers stand within
+  5° of their petal's axis at about 0.55 of the radius.
+- **The round chart is a square grid, not twelve wedges.** The third
+  patrika (another printer) draws four round charts, ल, रा, न and भा,
+  each a circle cut by the lines of a central square's sides and by the
+  square's diagonals, run out to the circle: the East Indian topology
+  clipped to a circle, but houses fixed, house 1 above the square and
+  anticlockwise. Measured from the photograph, the square's half-side is
+  0.205 of the radius down and 0.209 across, so the row takes a fifth;
+  an edge cell spans about 23° of the circle and a corner cell about 34°.
+  It ships as a new row, `NEPALI_CIRCLE`, catalogue id 6.
+- **The hub names the chart.** The print writes the chart's initial in a
+  small circle in the square. A grid gained an optional `hub` (a centre
+  and a radius) that validation holds clear of every cell, `Placed`
+  carries it, and the renderer writes `Labels.hub` there in the accent,
+  shrunk to fit. The façade says the lagna's short form for D1 (ल, `As`)
+  and a divisional chart's short form, which only the navamsha has (न,
+  `D9`); other vargas are written by name. The रा chart (the Moon's) and
+  the भा chart (the bhava chalit) are not drawings the SDK makes yet.
+- **A photograph is foreshortened.** Its circle is an oval, so each
+  figure is measured across and down separately, from the chart's own
+  centre (where the petals meet, or the hub's centre), and scaled to the
+  row's circle. Every printed number lands in its cell; the first scan's
+  grahas (the lagna in sign 1, three in 2, one each in 3, 4 and 9, three
+  in 5) land in the cells the patrikas write them in, in both charts.
+  Turned by one petal, the lotus passes every structural check and fails
+  its patrika.
+- **The default is not changed.** Which layout a Nepali reader sees is
+  the consumer's setting; the SDK's default stays North Indian.
+- **Reckoning.** The second patrika notes its chart was reckoned by the
+  Surya Siddhanta. That is the chart's computation, not its drawing, and
+  changes nothing here.
+
 ## 8. Order of work
 
 1. **This page**, crux C47, and the corrections to ADR-0026 recorded
@@ -419,5 +483,8 @@ bindings.
   a declared, overridable property of its row.
 - **Other regional rows** (Kerala, Sri Lanka): each is a registered row
   away, and none ships until something cites it.
+- **The Moon's chart and the bhava chalit as drawings.** The round
+  chart's रा and भा hubs name charts the SDK computes but does not yet
+  draw; a drawing is a varga.
 - **Canvas, PDF and native drawing**: out of scope, as the ADR says.
   They consume the same geometry.

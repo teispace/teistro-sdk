@@ -460,6 +460,7 @@ fn render() -> Section {
                     .map(|(body, name)| (body.key, name.to_owned()))
                     .collect(),
                 lagna: Some(String::from("As")),
+                hub: None,
             };
             let Ok(svg) = render_svg(&placed, &labels, &style) else {
                 continue;
