@@ -929,7 +929,7 @@
     "KARTIKEYA": {
       "name": "Kartikeya",
       "prose": "Kartikeya",
-      "iast": "Kārttikeya"
+      "iast": "Kārtikeya"
     },
     "SHANI": {
       "name": "Shani",
@@ -2731,7 +2731,7 @@
     "SHATTRIMSHA_SAMA": {
       "name": "Shattrimsha Sama Dasha",
       "prose": "Shattrimsha Sama Dasha",
-      "iast": "Ṣaṭtriṁśatsama Daśā"
+      "iast": "Ṣaṭtriṃśatsama Daśā"
     },
     "TITHI_ASHTOTTARI": {
       "name": "Tithi Ashtottari Dasha",
@@ -2746,7 +2746,7 @@
     "YOGA_VIMSHOTTARI": {
       "name": "Yoga Vimshottari Dasha",
       "prose": "Yoga Vimshottari Dasha",
-      "iast": "Yoga Viṁśottarī Daśā"
+      "iast": "Yoga Viṃśottarī Daśā"
     },
     "KARANA_CHATURASHITI": {
       "name": "Karana Chaturashiti Sama Dasha",
@@ -5828,7 +5828,7 @@
     "PUSHKARA_NAVAMSA": {
       "name": "Pushkara Navamsa",
       "prose": "Pushkara Navamsa",
-      "iast": "Puṣkara Navāṃśa"
+      "iast": "Puṣkaranavāṃśa"
     },
     "PUSHKARA_BHAGA": {
       "name": "Pushkara Bhaga",
@@ -5843,7 +5843,7 @@
     "MARANA_KARAKA_STHANA": {
       "name": "Marana Karaka Sthana",
       "prose": "Marana Karaka Sthana",
-      "iast": "Maraṇakāraka Sthāna"
+      "iast": "Maraṇakārakasthāna"
     },
     "ECLIPSED": {
       "name": "Eclipsed",
