@@ -309,6 +309,13 @@ impl EphemerisProvider for VakyaSky {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
+    #![allow(
+        clippy::panic,
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "tests fail by panicking"
+    )]
+
     use teistro_core::catalogue::Ayanamsha;
     use teistro_port_ephemeris::TestProvider;
 
@@ -392,27 +399,35 @@ mod tests {
     fn every_other_part_of_the_sky_is_the_texts() {
         let sky = sky();
         let parts = &sky.parts;
-        assert_eq!(
-            sky.obliquity(NOON, TimeScale::Ut1).unwrap(),
-            parts.obliquity(NOON, TimeScale::Ut1).unwrap()
+        let same = |ours: String, text: String| assert_eq!(ours, text);
+        same(
+            format!("{:?}", sky.obliquity(NOON, TimeScale::Ut1)),
+            format!("{:?}", parts.obliquity(NOON, TimeScale::Ut1)),
         );
-        assert_eq!(
-            sky.delta_t_seconds(NOON).unwrap(),
-            parts.delta_t_seconds(NOON).unwrap()
+        // Delta T is the text sky's answer, a refusal included.
+        same(
+            format!("{:?}", sky.delta_t_seconds(NOON)),
+            format!("{:?}", parts.delta_t_seconds(NOON)),
         );
-        assert_eq!(
-            sky.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
-                .unwrap(),
-            parts
-                .ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
-                .unwrap()
+        same(
+            format!(
+                "{:?}",
+                sky.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+            ),
+            format!(
+                "{:?}",
+                parts.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+            ),
         );
         let angles = AnglesRequest {
             jd: NOON,
             scale: TimeScale::Ut1,
             place: CHENNAI,
         };
-        assert_eq!(sky.angles(&angles).unwrap(), parts.angles(&angles).unwrap());
+        same(
+            format!("{:?}", sky.angles(&angles)),
+            format!("{:?}", parts.angles(&angles)),
+        );
         let rise = HorizonRequest {
             body: Body::Sun,
             kind: HorizonEventKind::Rise,
@@ -421,9 +436,9 @@ mod tests {
             window_days: 1.0,
             horizon: Horizon::UPPER_LIMB_REFRACTION,
         };
-        assert_eq!(
-            sky.horizon_event(&rise).unwrap(),
-            parts.horizon_event(&rise).unwrap()
+        same(
+            format!("{:?}", sky.horizon_event(&rise)),
+            format!("{:?}", parts.horizon_event(&rise)),
         );
     }
 }
