@@ -459,62 +459,6 @@ fn every_key_type_is_declared(written: &[Output]) -> i32 {
 /// no longer on this list fails there, so the two cannot drift.
 pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
     (
-        "tithi_class",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["BHADRA", "JAYA", "NANDA", "PURNA", "RIKTA"],
-    ),
-    (
-        "modality",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["CHARA", "DWISWABHAVA", "STHIRA"],
-    ),
-    (
-        "muhurta_nature",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &[
-            "CHARA", "DHRUVA", "KSHIPRA", "MISHRA", "MRIDU", "TIKSHNA", "UGRA",
-        ],
-    ),
-    (
-        "guna",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["RAJAS", "SATTVA", "TAMAS"],
-    ),
-    (
-        "gender",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["FEMALE", "MALE", "NEUTRAL"],
-    ),
-    (
-        "rising",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["PRISHTODAYA", "SIRSHODAYA", "UBHAYODAYA"],
-    ),
-    (
-        "blackout_kind",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["ECLIPSE_STAR", "ECLIPSE_VEDHA", "KHARMAS"],
-    ),
-    (
-        "lunar_eclipse_kind",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["PENUMBRAL"],
-    ),
-    (
-        "solar_eclipse_kind",
-        "a day page shows these; names are proposed in `amrit-kalam-and-lagnas.md` §3.2 from the \
-         texts' own Sanskrit terms, and wait there for a reviewer of each language",
-        &["ANNULAR", "HYBRID"],
-    ),
-    (
         "auspiciousness",
         "a reading or a match shows these, and no name table in Devanagari from a rank-1 or \
          rank-2 source has been read for them",

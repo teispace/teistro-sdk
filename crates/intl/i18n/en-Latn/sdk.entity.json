@@ -2793,6 +2793,18 @@
     "SHUKRA_ASTA": {
       "name": "Shukra Asta",
       "prose": "Shukra Asta"
+    },
+    "KHARMAS": {
+      "name": "Kharmas",
+      "prose": "Kharmas"
+    },
+    "ECLIPSE_STAR": {
+      "name": "Eclipse nakshatra",
+      "prose": "Eclipse nakshatra"
+    },
+    "ECLIPSE_VEDHA": {
+      "name": "Eclipse sutak",
+      "prose": "Eclipse sutak"
     }
   },
   "lunar_eclipse_kind": {
@@ -2803,6 +2815,10 @@
     "TOTAL": {
       "name": "Total",
       "prose": "total"
+    },
+    "PENUMBRAL": {
+      "name": "Penumbral",
+      "prose": "penumbral"
     }
   },
   "solar_eclipse_kind": {
@@ -2813,6 +2829,14 @@
     "TOTAL": {
       "name": "Total",
       "prose": "total"
+    },
+    "ANNULAR": {
+      "name": "Annular",
+      "prose": "annular"
+    },
+    "HYBRID": {
+      "name": "Hybrid",
+      "prose": "hybrid"
     }
   },
   "varga": {
@@ -5460,6 +5484,138 @@
       "name": "Mundane chart",
       "prose": "mundane chart",
       "iast": "Medinīkuṇḍalī"
+    }
+  },
+  "tithi_class": {
+    "NANDA": {
+      "name": "Nanda",
+      "prose": "Nanda",
+      "iast": "Nandā"
+    },
+    "BHADRA": {
+      "name": "Bhadra",
+      "prose": "Bhadra",
+      "iast": "Bhadrā"
+    },
+    "JAYA": {
+      "name": "Jaya",
+      "prose": "Jaya",
+      "iast": "Jayā"
+    },
+    "RIKTA": {
+      "name": "Rikta",
+      "prose": "Rikta",
+      "iast": "Riktā"
+    },
+    "PURNA": {
+      "name": "Purna",
+      "prose": "Purna",
+      "iast": "Pūrṇā"
+    }
+  },
+  "modality": {
+    "CHARA": {
+      "name": "Movable",
+      "prose": "movable",
+      "iast": "Cara"
+    },
+    "STHIRA": {
+      "name": "Fixed",
+      "prose": "fixed",
+      "iast": "Sthira"
+    },
+    "DWISWABHAVA": {
+      "name": "Dual",
+      "prose": "dual",
+      "iast": "Dvisvabhāva"
+    }
+  },
+  "muhurta_nature": {
+    "DHRUVA": {
+      "name": "Fixed",
+      "prose": "fixed",
+      "iast": "Dhruva"
+    },
+    "CHARA": {
+      "name": "Movable",
+      "prose": "movable",
+      "iast": "Cara"
+    },
+    "UGRA": {
+      "name": "Fierce",
+      "prose": "fierce",
+      "iast": "Ugra"
+    },
+    "KSHIPRA": {
+      "name": "Swift",
+      "prose": "swift",
+      "iast": "Kṣipra"
+    },
+    "MRIDU": {
+      "name": "Soft",
+      "prose": "soft",
+      "iast": "Mṛdu"
+    },
+    "MISHRA": {
+      "name": "Mixed",
+      "prose": "mixed",
+      "iast": "Miśra"
+    },
+    "TIKSHNA": {
+      "name": "Sharp",
+      "prose": "sharp",
+      "iast": "Tīkṣṇa"
+    }
+  },
+  "guna": {
+    "SATTVA": {
+      "name": "Sattva",
+      "prose": "Sattva",
+      "iast": "Sattva"
+    },
+    "RAJAS": {
+      "name": "Rajas",
+      "prose": "Rajas",
+      "iast": "Rajas"
+    },
+    "TAMAS": {
+      "name": "Tamas",
+      "prose": "Tamas",
+      "iast": "Tamas"
+    }
+  },
+  "gender": {
+    "MALE": {
+      "name": "Male",
+      "prose": "male",
+      "iast": "Puruṣa"
+    },
+    "FEMALE": {
+      "name": "Female",
+      "prose": "female",
+      "iast": "Strī"
+    },
+    "NEUTRAL": {
+      "name": "Neuter",
+      "prose": "neuter",
+      "iast": "Napuṃsaka"
+    }
+  },
+  "rising": {
+    "SIRSHODAYA": {
+      "name": "Head-rising",
+      "prose": "head-rising",
+      "iast": "Śīrṣodaya"
+    },
+    "PRISHTODAYA": {
+      "name": "Back-rising",
+      "prose": "back-rising",
+      "iast": "Pṛṣṭhodaya"
+    },
+    "UBHAYODAYA": {
+      "name": "Rising both ways",
+      "prose": "rising both ways",
+      "iast": "Ubhayodaya"
     }
   }
 }
