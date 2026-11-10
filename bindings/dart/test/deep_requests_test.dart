@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 492 of the examples' 507 members.
+/// The cases compare 532 of the examples' 547 members.
 library;
 
 import 'dart:convert';
@@ -205,6 +205,288 @@ void main() {
           ],
         ),
       ).toJson(),
+    );
+  });
+
+  test('almanac.cells: CellsRequest', () {
+    _holds(
+      'almanac.cells',
+      path: [],
+      dropping: [['festivals']],
+      members: 1,
+      written: CellsRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        first: DayAsked(day: 1, month: 1, year: 1),
+        last: DayAsked(day: 1, month: 1, year: 1),
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'Asia/Kathmandu'},
+      ).toJson(),
+    );
+  });
+
+  test('almanac.cells at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.cells',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.cells at festivals.published[0]: PublishedSet', () {
+    _holds(
+      'almanac.cells',
+      path: ['festivals', 'published', 0],
+      dropping: [['entries', 0, 'window']],
+      members: 5,
+      written: PublishedSet(
+        entries: [
+          PublishedEntryAdd(
+            day: CalendarDay(
+              calendar: Calendar.julian,
+              day: 1,
+              era: EraNumber(era: Era.shaka, year: 1),
+              leap: Leap.day,
+              month: 1,
+              year: 1,
+            ),
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
+            source: 'x',
+            subjectTo: SubjectTo.moonSighting,
+          ),
+        ],
+        format: 'x',
+        id: 'x',
+        publisher: 'x',
+        version: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.cells at festivals.rules: FestivalRules', () {
+    _holds(
+      'almanac.cells',
+      path: ['festivals', 'rules'],
+      dropping: [],
+      members: 32,
+      written: FestivalRulesValue([
+        FestivalRuleItemSaitRule(SaitRule(
+          choose: SaitChoice.latest,
+          rising: SaitRising(
+            freeOf: [Graha.moon],
+            modalities: [Modality.sthira],
+            of: RisingOf.lagna,
+          ),
+          rule: 'x',
+          source: 'x',
+          windows: [
+            SaitWindowRule(
+              avoid: [SaitAvoidNakshatra(nakshatra: Nakshatra.bharani, quarters: 1)],
+              within: SaitWindowDayMuhurta(from: 1, to: 1),
+            ),
+          ],
+        )),
+        FestivalRuleItemEkadashiRule(EkadashiRule(
+          key: 'x',
+          mahadvadashi: MahadvadashiRule(
+            joining: NakshatraJoining.outlastsTwelfth,
+            kinds: [MahadvadashiKind.vyanjuli],
+            sampurna: true,
+            trisprisha: TrisprishaAt.arunodaya,
+            vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          parana: ParanaRule(
+            at: [WindowDayMuhurta(from: 1, to: 1)],
+            bars: [
+              <String, Object?>{'month': 'masa.VAISHAKHA', 'nakshatra': 'nakshatra.BHARANI', 'portion': <String, Object?>{'parts': 1, 'which': 1}, 'tithi': 'tithi.SHUKLA_DVITIYA'},
+            ],
+            hariVasara: true,
+          ),
+          source: 'x',
+          table: EkadashiTable(
+            pierced: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+            pure: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+          ),
+          vedha: EkadashiVedha.sunrise,
+        )),
+        FestivalRuleItemAnniversary(Anniversary(
+          firstYearAdhika: FirstYearAdhika.nija,
+          inSamsarpa: InSamsarpa.nija,
+          janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+          key: 'x',
+          kind: AnniversaryKind.ekoddishta,
+          origin: OriginLunar(
+            adhika: true,
+            at: 1.5,
+            half: TithiHalf.second,
+            month: Masa.vaishakha,
+            tithi: Tithi.shuklaDvitiya,
+          ),
+          window: WindowDayMuhurta(from: 1, to: 1),
+        )),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
+        FestivalRuleItemDatedRule(DatedRule(
+          civilDate: DatedRuleCivilDate(
+            calendar: Calendar.julian,
+            day: 1,
+            month: 1,
+            skipped: SkippedDay.after,
+          ),
+          civilWeekday: DatedRuleCivilWeekday(
+            calendar: Calendar.julian,
+            month: 1,
+            nth: 1,
+            weekday: Vara.somavara,
+          ),
+          easter: DatedRuleEaster(computus: Computus.julian, days: 1),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
+          source: 'x',
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
+        )),
+        FestivalRuleItemFestivalRule(FestivalRule(
+          at: WindowDayMuhurta(from: 1, to: 1),
+          convention: LunarMonth.purnimanta,
+          dayOfPaksha: 1,
+          decide: [
+            Guard(
+              choose: FestivalChoice.later,
+              when: [
+                PredicateJoined(
+                  at: WindowDayMuhurta(from: 1, to: 1),
+                  day: FestivalWhich.later,
+                  nakshatra: Nakshatra.bharani,
+                  portion: Portion(parts: 1, which: 1),
+                ),
+              ],
+            ),
+          ],
+          inAdhika: InAdhikaValue(true),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          month: Masa.vaishakha,
+          nakshatra: Nakshatra.bharani,
+          otherwise: FestivalChoice.later,
+          paksha: Paksha.krishna,
+          parana: [VrataParanaTithiEnd(nakshatra: Nakshatra.bharani, yamas: 1)],
+          source: 'x',
+          tithi: Tithi.shuklaDvitiya,
+        )),
+      ]).toJson(),
     );
   });
 

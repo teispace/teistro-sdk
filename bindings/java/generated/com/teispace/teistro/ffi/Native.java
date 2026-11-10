@@ -4132,6 +4132,7 @@ public final class Native {
         "ts_almanac_anniversaries",
         "ts_almanac_festival_pack",
         "ts_almanac_changes",
+        "ts_almanac_cells",
         "ts_almanac_sky_view",
         "ts_naam_milan",
         "ts_matching_band",
@@ -5066,6 +5067,17 @@ public final class Native {
     public final MethodHandle ts_almanac_changes;
 
     /**
+     * What a month grid prints of every date in a range, as sealed JSON
+     * (`03-design/month-cells.md`). `request_json` is the record: `first`,
+     * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+     * `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+     * festival request. The answer is `{cells, observances}`: each cell
+     * `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+     * kind, festivals}`, `observances` only when festivals were asked.
+     */
+    public final MethodHandle ts_almanac_cells;
+
+    /**
      * The sky at a place and an instant (`03-design/sky-view.md`), answered
      * with `{value, provenance}` as canonical JSON.
      *
@@ -5787,6 +5799,7 @@ public final class Native {
         ts_almanac_anniversaries = linker.downcallHandle(symbols.find("ts_almanac_anniversaries").orElseThrow(() -> missing("ts_almanac_anniversaries")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_cells = linker.downcallHandle(symbols.find("ts_almanac_cells").orElseThrow(() -> missing("ts_almanac_cells")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sky_view = linker.downcallHandle(symbols.find("ts_almanac_sky_view").orElseThrow(() -> missing("ts_almanac_sky_view")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_matching_band = linker.downcallHandle(symbols.find("ts_matching_band").orElseThrow(() -> missing("ts_matching_band")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

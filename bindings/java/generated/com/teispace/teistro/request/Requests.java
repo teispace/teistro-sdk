@@ -15,6 +15,7 @@ public final class Requests {
             Map.entry("almanac.ashauch", AshauchQuery::of),
             Map.entry("almanac.ashauchKin", KinQuery::of),
             Map.entry("almanac.ashauchRite", RiteQuery::of),
+            Map.entry("almanac.cells", CellsRequest::of),
             Map.entry("almanac.changes", ChangesRequest::of),
             Map.entry("almanac.days", AlmanacDaysRequest::of),
             Map.entry("almanac.deathTime", DeathTimeQuery::of),
@@ -79,6 +80,9 @@ public final class Requests {
 
     /** {@code almanac.ashauchRite}, whose request is {@link RiteQuery}. */
     public static final RecordOf<RiteQuery> ALMANAC_ASHAUCH_RITE = new RecordOf<>("almanac.ashauchRite");
+
+    /** {@code almanac.cells}, whose request is {@link CellsRequest}. */
+    public static final RecordOf<CellsRequest> ALMANAC_CELLS = new RecordOf<>("almanac.cells");
 
     /** {@code almanac.changes}, whose request is {@link ChangesRequest}. */
     public static final RecordOf<ChangesRequest> ALMANAC_CHANGES = new RecordOf<>("almanac.changes");

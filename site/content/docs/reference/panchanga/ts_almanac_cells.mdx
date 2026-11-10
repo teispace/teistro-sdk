@@ -1,0 +1,30 @@
+---
+title: ts_almanac_cells
+description: "What a month grid prints of every date in a range, as sealed JSON (`03-design/month-cells.md`)."
+---
+
+What a month grid prints of every date in a range, as sealed JSON (`03-design/month-cells.md`). `request_json` is the record: `first`, optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a festival request. The answer is `{cells, observances}`: each cell `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends, kind, festivals}`, `observances` only when festivals were asked.
+
+```c
+ts_status ts_almanac_cells(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

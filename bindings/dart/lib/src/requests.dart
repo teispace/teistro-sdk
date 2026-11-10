@@ -216,6 +216,60 @@ final class RiteQuery extends _Request {
 }
 
 /// The request as a binding writes it.
+final class CellsRequest extends _Request {
+  const CellsRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.festivals,
+    required this.first,
+    this.last,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.utcOffsetSeconds,
+    this.zone,
+  });
+
+  final double altitudeM;
+
+  /// The calendar the dates are written in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The festivals to list on each cell, as a festival request; none when left out.
+  final FestivalRequest? festivals;
+
+  final DayAsked first;
+
+  /// The last date; the first when left out. At most 366 dates in all.
+  final DayAsked? last;
+
+  final double latitudeDeg;
+
+  final double longitudeDeg;
+
+  /// The clock's offset; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone, each date on its own offset; or `utcOffsetSeconds`, not both.
+  final Object? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
+    'first': first._wire,
+    if (last case final lastValue?) 'last': lastValue._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
+}
+
+/// The request as a binding writes it.
 final class ChangesRequest extends _Request {
   const ChangesRequest({
     this.altitudeM = 0.0,
@@ -15252,6 +15306,9 @@ abstract final class Records {
   /// `almanac.ashauchRite`, whose request is [RiteQuery].
   static const almanacAshauchRite = RecordOf<RiteQuery>._('almanac.ashauchRite');
 
+  /// `almanac.cells`, whose request is [CellsRequest].
+  static const almanacCells = RecordOf<CellsRequest>._('almanac.cells');
+
   /// `almanac.changes`, whose request is [ChangesRequest].
   static const almanacChanges = RecordOf<ChangesRequest>._('almanac.changes');
 
@@ -15406,6 +15463,7 @@ abstract final class Records {
     almanacAshauch,
     almanacAshauchKin,
     almanacAshauchRite,
+    almanacCells,
     almanacChanges,
     almanacDays,
     almanacDeathTime,

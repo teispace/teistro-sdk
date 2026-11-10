@@ -2074,6 +2074,8 @@ typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, f
 typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacCellsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacCellsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSkyViewNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSkyViewDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
@@ -2217,6 +2219,7 @@ final class TeistroLibrary {
         ts_almanac_anniversaries = library.lookupFunction<TsAlmanacAnniversariesNative, TsAlmanacAnniversariesDart>('ts_almanac_anniversaries'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
+        ts_almanac_cells = library.lookupFunction<TsAlmanacCellsNative, TsAlmanacCellsDart>('ts_almanac_cells'),
         ts_almanac_sky_view = library.lookupFunction<TsAlmanacSkyViewNative, TsAlmanacSkyViewDart>('ts_almanac_sky_view'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_matching_band = library.lookupFunction<TsMatchingBandNative, TsMatchingBandDart>('ts_matching_band'),
@@ -3005,6 +3008,15 @@ final class TeistroLibrary {
   /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
   /// `utcOffsetSeconds` or `zone`, and optional `kinds`.
   final TsAlmanacChangesDart ts_almanac_changes;
+
+  /// What a month grid prints of every date in a range, as sealed JSON
+  /// (`03-design/month-cells.md`). `request_json` is the record: `first`,
+  /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+  /// `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+  /// festival request. The answer is `{cells, observances}`: each cell
+  /// `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+  /// kind, festivals}`, `observances` only when festivals were asked.
+  final TsAlmanacCellsDart ts_almanac_cells;
 
   /// The sky at a place and an instant (`03-design/sky-view.md`), answered
   /// with `{value, provenance}` as canonical JSON.
@@ -7637,6 +7649,24 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_changes(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// What a month grid prints of every date in a range, as sealed JSON
+  /// (`03-design/month-cells.md`). `request_json` is the record: `first`,
+  /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+  /// `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+  /// festival request. The answer is `{cells, observances}`: each cell
+  /// `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+  /// kind, festivals}`, `observances` only when festivals were asked.
+  String almanacCells(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_cells(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });
