@@ -23,6 +23,7 @@ __all__ = [
     "AshauchQuery",
     "KinQuery",
     "RiteQuery",
+    "CellsRequest",
     "ChangesRequest",
     "AlmanacDaysRequest",
     "DeathTimeQuery",
@@ -86,9 +87,9 @@ __all__ = [
     "KinTable",
     "AshauchRiteAsked",
     "AshauchRiteTable",
+    "FestivalRequest",
     "DayAsked",
     "ChangeKind",
-    "FestivalRequest",
     "MuhurtaRequest",
     "DeathTimeTable",
     "FeedAlarm",
@@ -870,6 +871,33 @@ class RiteQuery(TypedDict, total=False):
 
     table: Optional[AshauchRiteTable]
     """The table, every row data; the *Dharmasindhu*'s when left out."""
+
+
+class CellsRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar the dates are written in; Gregorian when left out."""
+
+    festivals: Optional[FestivalRequest]
+    """The festivals to list on each cell, as a festival request; none when left out."""
+
+    first: Required[DayAsked]
+
+    last: Optional[DayAsked]
+    """The last date; the first when left out. At most 366 dates in all."""
+
+    latitudeDeg: Required[float]
+
+    longitudeDeg: Required[float]
+
+    utcOffsetSeconds: Optional[int]
+    """The clock's offset; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone, each date on its own offset; or `utcOffsetSeconds`, not both."""
 
 
 class ChangesRequest(TypedDict, total=False):
@@ -2248,6 +2276,22 @@ class AshauchRiteTable(TypedDict, total=False):
     """The rows."""
 
 
+class FestivalRequest(TypedDict, total=False):
+    """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
+
+    hijriOffset: Optional[int]
+    """The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out."""
+
+    only: Optional[MetaFilter]
+    """What the answer keeps, by the rules' `meta`; every rule when left out."""
+
+    published: Sequence[PublishedSet]
+    """The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence."""
+
+    rules: Required[FestivalRules]
+    """The rules: a pack's name, or a list of names and rules spelt out."""
+
+
 class DayAsked(TypedDict, total=False):
     """A civil day as a request names it."""
 
@@ -2269,22 +2313,6 @@ ChangeKind: TypeAlias = Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'MOON_SI
 `SUN_SIGN`: The Sun's sign: the sankranti.
 `VARA`: The vara, at sunrise.
 """
-
-
-class FestivalRequest(TypedDict, total=False):
-    """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
-
-    hijriOffset: Optional[int]
-    """The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out."""
-
-    only: Optional[MetaFilter]
-    """What the answer keeps, by the rules' `meta`; every rule when left out."""
-
-    published: Sequence[PublishedSet]
-    """The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence."""
-
-    rules: Required[FestivalRules]
-    """The rules: a pack's name, or a list of names and rules spelt out."""
 
 
 class MuhurtaRequest(TypedDict, total=False):
@@ -10461,7 +10489,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10482,6 +10510,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['almanac.ashauchRite'], request: RiteQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.cells'], request: CellsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['almanac.changes'], request: ChangesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

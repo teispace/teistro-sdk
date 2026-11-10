@@ -1444,6 +1444,27 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_cells`: What a month grid prints of every date in a range, as sealed JSON
+     * (`03-design/month-cells.md`). `request_json` is the record: `first`,
+     * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+     * `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+     * festival request. The answer is `{cells, observances}`: each cell
+     * `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+     * kind, festivals}`, `observances` only when festivals were asked.
+     */
+    static String almanacCells(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_cells.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_almanac_sky_view`: The sky at a place and an instant (`03-design/sky-view.md`), answered
      * with `{value, provenance}` as canonical JSON.
      *

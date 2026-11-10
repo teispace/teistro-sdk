@@ -4522,6 +4522,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_changes.restype = ctypes.c_int32
+        self.ts_almanac_cells: Any = library.ts_almanac_cells
+        self.ts_almanac_cells.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_cells.restype = ctypes.c_int32
         self.ts_almanac_sky_view: Any = library.ts_almanac_sky_view
         self.ts_almanac_sky_view.argtypes = [
             ctypes.POINTER(_Context),
@@ -6429,6 +6436,31 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_changes(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_cells(self, request_json: str) -> str:
+        """What a month grid prints of every date in a range, as sealed JSON
+        (`03-design/month-cells.md`). `request_json` is the record: `first`,
+        optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+        `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+        festival request. The answer is `{cells, observances}`: each cell
+        `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+        kind, festivals}`, `observances` only when festivals were asked.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_cells(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

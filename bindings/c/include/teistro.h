@@ -11061,6 +11061,19 @@ ts_status ts_almanac_festival_pack(const ts_context * context, const char * requ
 ts_status ts_almanac_changes(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * What a month grid prints of every date in a range, as sealed JSON
+ * (`03-design/month-cells.md`). `request_json` is the record: `first`,
+ * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+ * `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+ * festival request. The answer is `{cells, observances}`: each cell
+ * `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+ * kind, festivals}`, `observances` only when festivals were asked.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_cells(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * The sky at a place and an instant (`03-design/sky-view.md`), answered
  * with `{value, provenance}` as canonical JSON.
  *

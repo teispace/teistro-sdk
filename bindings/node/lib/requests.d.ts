@@ -143,6 +143,36 @@ export interface RiteQuery {
 /**
  * The request as a binding writes it.
  */
+export interface CellsRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar the dates are written in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The festivals to list on each cell, as a festival request; none when left out.
+   */
+  readonly festivals?: FestivalRequest | null;
+  readonly first: DayAsked;
+  /**
+   * The last date; the first when left out. At most 366 dates in all.
+   */
+  readonly last?: DayAsked | null;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  /**
+   * The clock's offset; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone, each date on its own offset; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface ChangesRequest {
   readonly altitudeM?: number;
   /**
@@ -1756,28 +1786,6 @@ export interface AshauchRiteTable {
 }
 
 /**
- * A civil day as a request names it.
- */
-export interface DayAsked {
-  readonly day: number;
-  readonly month: number;
-  readonly year: number;
-}
-
-/**
- * What a change point changes. The order is the order two points on one instant stand in.
- *
- * `TITHI`: The tithi.
- * `NAKSHATRA`: The Moon's nakshatra.
- * `YOGA`: The nitya yoga.
- * `KARANA`: The karana.
- * `MOON_SIGN`: The Moon's sign.
- * `SUN_SIGN`: The Sun's sign: the sankranti.
- * `VARA`: The vara, at sunrise.
- */
-export type ChangeKind = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'MOON_SIGN' | 'SUN_SIGN' | 'VARA';
-
-/**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
@@ -1798,6 +1806,28 @@ export interface FestivalRequest {
    */
   readonly rules: FestivalRules;
 }
+
+/**
+ * A civil day as a request names it.
+ */
+export interface DayAsked {
+  readonly day: number;
+  readonly month: number;
+  readonly year: number;
+}
+
+/**
+ * What a change point changes. The order is the order two points on one instant stand in.
+ *
+ * `TITHI`: The tithi.
+ * `NAKSHATRA`: The Moon's nakshatra.
+ * `YOGA`: The nitya yoga.
+ * `KARANA`: The karana.
+ * `MOON_SIGN`: The Moon's sign.
+ * `SUN_SIGN`: The Sun's sign: the sankranti.
+ * `VARA`: The vara, at sunrise.
+ */
+export type ChangeKind = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'MOON_SIGN' | 'SUN_SIGN' | 'VARA';
 
 /**
  * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
@@ -10384,6 +10414,7 @@ export interface RecordRequests {
   readonly 'almanac.ashauch': AshauchQuery;
   readonly 'almanac.ashauchKin': KinQuery;
   readonly 'almanac.ashauchRite': RiteQuery;
+  readonly 'almanac.cells': CellsRequest;
   readonly 'almanac.changes': ChangesRequest;
   readonly 'almanac.days': AlmanacDaysRequest;
   readonly 'almanac.deathTime': DeathTimeQuery;

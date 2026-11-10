@@ -5719,6 +5719,28 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// What a month grid prints of every date in a range, as sealed JSON
+    /// (`03-design/month-cells.md`). `request_json` is the record: `first`,
+    /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+    /// `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+    /// festival request. The answer is `{cells, observances}`: each cell
+    /// `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+    /// kind, festivals}`, `observances` only when festivals were asked.
+    #[napi]
+    pub fn almanac_cells(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_cells(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// The sky at a place and an instant (`03-design/sky-view.md`), answered
     /// with `{value, provenance}` as canonical JSON.
     ///
