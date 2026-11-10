@@ -107,6 +107,8 @@ mod aayadi_request;
 mod antiscia;
 mod ashauch_request;
 #[cfg(feature = "chart")]
+mod band_request;
+#[cfg(feature = "chart")]
 mod compose;
 #[cfg(feature = "western")]
 mod declinations;
@@ -556,6 +558,9 @@ pub use teistro_western::{
 pub use matching_chart::{Matched, PartnerMatching};
 #[cfg(feature = "chart")]
 pub use naam_request::NaamRequest;
+// A guna total graded into bands and said in words (SR-39).
+#[cfg(feature = "chart")]
+pub use band_request::{BandRequest, BandWords};
 // Naming a child (nāmakaraṇa) by the same cakra, and a consumer's name
 // book, which read no sky (`03-design/namakarana.md`).
 #[cfg(feature = "chart")]
@@ -642,7 +647,7 @@ pub use crate::first_year_request::FirstYearQuery;
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]
 pub use crate::research_request::{DatasetAnswer, ResearchAnswer, ResearchRequest, ResearchStudy};
-pub use crate::sankalpa_request::SankalpaRequest;
+pub use crate::sankalpa_request::{SankalpaRequest, SankalpaWordsRequest};
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;
 // Remedies: a lagna's functional natures after Laghu Parashari and BPHS

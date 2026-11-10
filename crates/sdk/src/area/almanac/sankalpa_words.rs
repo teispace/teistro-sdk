@@ -113,8 +113,8 @@ impl SankalpaFor {
     }
 
     /// Refuses a slot left empty, which the template would speak as
-    /// nothing.
-    fn check(&self) -> Result<(), Error> {
+    /// nothing, naming it under `root`.
+    pub(crate) fn check_under(&self, root: &str) -> Result<(), Error> {
         let mut named = vec![
             ("performer", self.performer.as_str()),
             ("gotra", self.gotra.as_str()),
@@ -135,7 +135,7 @@ impl SankalpaFor {
             Some((field, _)) => Err(Error::invalid_arg(format!(
                 "`{field}` is empty, and a sankalpa does not speak a blank"
             ))
-            .with_field(format!("{SANKALPA}.{field}"))),
+            .with_field(format!("{root}.{field}"))),
             None => Ok(()),
         }
     }
@@ -282,7 +282,7 @@ impl AlmanacArea<'_> {
         tradition: &str,
         locale: Option<&str>,
     ) -> Result<SankalpaWords, Error> {
-        asked.check()?;
+        asked.check_under(SANKALPA)?;
         let intl = self.context.locale_engine();
         let tag = locale.map_or_else(|| intl.locale().to_owned(), str::to_owned);
         if !intl.locales().any(|loaded| loaded.tag == tag) {
