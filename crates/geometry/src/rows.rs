@@ -728,3 +728,31 @@ pub fn north_indian_petals() -> Layout {
         }),
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn four_quarter_turns_give_every_segment_back_bit_for_bit() {
+        let outline = Path {
+            start: p(0.25, 0.125),
+            segments: vec![
+                Segment::Line { to: p(0.75, 0.125) },
+                Segment::Quad {
+                    control: p(0.875, 0.5),
+                    to: p(0.75, 0.875),
+                },
+                Segment::Arc {
+                    centre: p(0.5, 0.5),
+                    clockwise: true,
+                    to: p(0.25, 0.125),
+                },
+            ],
+        };
+        assert_eq!(turned(&outline, 4), outline);
+        assert_eq!(turned(&turned(&outline, 1), 3), outline);
+        assert_ne!(turned(&outline, 1), outline);
+    }
+}

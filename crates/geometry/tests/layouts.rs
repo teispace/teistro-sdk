@@ -587,12 +587,21 @@ fn each_check_refuses_the_row_it_should() {
         radius: 0.05,
     });
     refuses(&held, "shape.hub");
-    let mut beyond = rows::nepali_circle();
-    grid(&mut beyond).hub = Some(Hub {
-        centre: Point::new(0.98, 0.5),
-        radius: 0.05,
-    });
-    refuses(&beyond, "shape.hub");
+    // A hub past each edge of the square, and one with no size.
+    for (x, y, radius) in [
+        (0.98, 0.5, 0.05),
+        (0.02, 0.5, 0.05),
+        (0.5, 0.02, 0.05),
+        (0.5, 0.98, 0.05),
+        (0.5, 0.5, 0.0),
+    ] {
+        let mut beyond = rows::nepali_circle();
+        grid(&mut beyond).hub = Some(Hub {
+            centre: Point::new(x, y),
+            radius,
+        });
+        refuses(&beyond, "shape.hub");
+    }
 
     // No source, and a key that is not one.
     let mut uncited = rows::north_indian();

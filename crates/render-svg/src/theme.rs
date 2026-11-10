@@ -612,6 +612,18 @@ mod tests {
     }
 
     #[test]
+    fn a_theme_extends_only_a_shipped_theme_by_its_name() {
+        for text in [r#"{"extends": "SEPIA"}"#, r#"{"extends": 2}"#] {
+            let err = Theme::from_json(text).unwrap_err();
+            assert_eq!(err.field(), Some("theme.extends"), "{text}");
+        }
+        assert_eq!(
+            Theme::from_json(r#"{"extends": "DARK"}"#).unwrap(),
+            Theme::dark()
+        );
+    }
+
+    #[test]
     fn the_shipped_styles_are_valid() {
         Style::light().validate().unwrap();
         Style::dark().validate().unwrap();
