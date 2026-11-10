@@ -11,7 +11,7 @@ use super::Source;
 pub static DRAFTED: &[Source] = &[
     Source {
         file: "sa",
-        sha256: "e196a65dcca8f3c8da35ef8d602005e2a857582323d096317670a9c416459d38",
+        sha256: "0f065589839f5e3d38f01ca780e093f562917b606fa38cb8eb5bb8dbbb91d463",
         rules: r"%spellout-cardinal:
 -x: ऋणम् >>;
 0: शून्यम्;

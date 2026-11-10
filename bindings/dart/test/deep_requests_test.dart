@@ -3229,6 +3229,7 @@ void main() {
             zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
           ),
         ],
+        plans: true,
       ).toJson(),
     );
   });

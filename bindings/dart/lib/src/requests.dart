@@ -1675,25 +1675,30 @@ final class MundaneRequest extends _Request {
   List<Object?> get _fields => [altitudeM, event, from, ingress, kind, latitudeDeg, longitudeDeg, utcOffsetSeconds, year, zone];
 }
 
-/// Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
+/// Many periods as a binding writes them, the period the baseline engine's score is read for, when it is asked, and whether each sign's reading is said in words.
 final class BatchAsked extends _Request {
   const BatchAsked({
     this.baseline,
     required this.periods,
+    this.plans = false,
   });
 
   final BaselinePeriod? baseline;
 
   final List<PeriodAsked> periods;
 
+  /// Whether each sign's reading is composed into a narrative plan.
+  final bool plans;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (baseline case final baselineValue?) 'baseline': baselineValue.key,
     'periods': [for (final e0 in periods) e0._wire],
+    'plans': plans,
   };
 
   @override
-  List<Object?> get _fields => [baseline, periods];
+  List<Object?> get _fields => [baseline, periods, plans];
 }
 
 /// A chart's instant recast at other places.

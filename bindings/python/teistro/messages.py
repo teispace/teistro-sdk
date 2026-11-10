@@ -1546,6 +1546,11 @@ class MessagesSdk:
         return MessagesSdkPhala(self._r)
 
     @property
+    def rashifal(self) -> MessagesSdkRashifal:
+        """The messages under `rashifal`."""
+        return MessagesSdkRashifal(self._r)
+
+    @property
     def reading(self) -> MessagesSdkReading:
         """The messages under `reading`."""
         return MessagesSdkReading(self._r)
@@ -2041,6 +2046,35 @@ class MessagesSdkReading:
         return self._r.render(
             "sdk.reading.timing",
             {"reading": {"$entity": reading}, "rule": rule},
+        )
+
+
+class MessagesSdkRashifal:
+    """The messages under `MessagesSdkRashifal`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ingress(self, *, good: str, graha: GrahaKey, house: int, rashi: RashiKey) -> str:
+        """`sdk.rashifal.ingress`"""
+        return self._r.render(
+            "sdk.rashifal.ingress",
+            {"good": good, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}},
+        )
+
+    def saturn(self, *, house: int, phase: str, spell: str) -> str:
+        """`sdk.rashifal.saturn`"""
+        return self._r.render(
+            "sdk.rashifal.saturn",
+            {"house": house, "phase": phase, "spell": spell},
+        )
+
+    def station(self, *, good: str, graha: GrahaKey, house: int, rashi: RashiKey, turns: str) -> str:
+        """`sdk.rashifal.station`"""
+        return self._r.render(
+            "sdk.rashifal.station",
+            {"good": good, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "turns": turns},
         )
 
 
