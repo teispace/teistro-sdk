@@ -454,7 +454,7 @@ their generated request types.
 
 ```
 intl.time  {at: {hour, minute, second?}, style?, hour12?, locale?, digits?}
-intl.date  {at: <CalendarDay>, style?, locale?, digits?}
+intl.date  {at: <CalendarDay>, style?, until?, locale?, digits?}
 answer     {text, parts: [{kind, text}], locale, resolvedFrom,
             isFallback, isDraft, warnings}
 ```
@@ -498,6 +498,69 @@ pack can still say what it is; `crates/intl/tests/draft.rs` pins every
 shipped list empty and tests the mark on a tree it marks itself. The
 Sanskrit number words are the SDK's own rules (`teistro/sa/...`), final
 like the rest.
+
+### A month and its year (SR-86)
+
+A month view's title ("October 2026", "२०८३ कात्तिक") had no message, so
+a consumer joined `monthName` and the year with a space, which is wrong
+for a language that writes the year first or adds the era. Every
+calendar that names its months now carries two patterns in every shipped
+locale:
+
+```
+sdk.calendar.<CALENDAR>.monthYear       {$monthName} {$year}
+sdk.calendar.<CALENDAR>.monthYearRange  .match $greatest YEAR … * …
+```
+
+`intl.date` reaches them with `style: MONTH_YEAR`, and a run of months
+with `until`, a day in the run's last month:
+
+```
+intl.date  {at: <CalendarDay>, style: MONTH_YEAR, until?: <CalendarDay>, locale?, digits?}
+```
+
+**The engine chooses the form.** `monthYearRange` is given the first
+month's date parameters, the last month's as `untilYear`, `untilMonth`
+and `untilMonthName`, and `greatest`, CLDR's greatest difference: `YEAR`
+when the years differ, `MONTH` when only the months do. A run inside one
+month is that month's `monthYear`. MF2 cannot compare two variables, so
+the engine compares and the message selects. The parts are typed as a
+date's: both years are `YEAR`, both months `MONTH`.
+
+**Sources.** The patterns are CLDR 48's `yMMMM` and its interval
+formats, the version the `hi` and `sa` drafts already cite, with each
+locale's own digits (`{$year :integer useGrouping=false}`, as `date.long`
+writes the year) and each pack's own era, placed where its `date.long`
+places it:
+
+| Locale | `monthYear` | Same year | Across years |
+|---|---|---|---|
+| `en` | `MMMM y` (`MMMM y G`) | `MMMM – MMMM y` | `MMMM y – MMMM y` |
+| `ne` | `y MMMM` (`G y MMMM`) | `y MMMM–MMMM` | `y MMMM – y MMMM` |
+| `hi` | `MMMM y` | `MMMM – MMMM y` | `MMMM y – MMMM y` |
+| `sa` | `MMMM y` | `MMMM–MMMM y` | `MMMM y – MMMM y` |
+
+English and Nepali (and Sanskrit's across-year form) write CLDR's thin
+spaces (U+2009) about the en dash; Hindi writes plain spaces, as CLDR
+`hi` does. An era is written once, with the last year, as CLDR's
+`MMMM y – MMMM y G` writes it: "Chaitra 2083 – Baishakh 2084 BS",
+"चैत्र २०८३ – वैशाख वि.सं. २०८४". Two departures, each a choice:
+
+- **Nepali writes the year first**, CLDR `ne`'s `y MMMM`, which is also
+  the order of the pack's own `date.long` (`२०८३ कात्तिक १५ गते`). The
+  title is "२०८३ कात्तिक", not the "कात्तिक २०८३" a consumer's join
+  gave. An application that wants the other order overrides one message.
+- **Sanskrit keeps its own order.** CLDR `sa`'s interval formats are
+  root's (`y MMMM–MMMM`), which contradict its own `yMMMM` (`MMMM y`);
+  the draft follows `yMMMM` in all three.
+
+They ship final in every locale, as the maintainer's policy of
+2026-11-10 asks (the maintainer reviews and corrects later); `sa-Latn`
+derives them from `sa-Deva`. `ISO_WEEK` names no months and has no
+title: `MONTH_YEAR` there is `UNSUPPORTED`. `until` with another style,
+in another calendar, or before `at` is `INVALID_ARG` on `until`.
+
+### Text not yet reviewed (SR-75, Q42)
 
 Q42 decided that drafts stay behind a `draft` status a strict locale
 refuses, and nothing had built it: `ne-Deva-NP`'s text carries no status

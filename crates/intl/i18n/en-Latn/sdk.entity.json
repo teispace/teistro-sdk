@@ -198,162 +198,189 @@
   "nakshatra": {
     "ASHWINI": {
       "short": "Ash",
+      "abbrev": "Ashw.",
       "name": "Ashwini",
       "prose": "Ashwini",
       "iast": "Aśvinī"
     },
     "BHARANI": {
       "short": "Bha",
+      "abbrev": "Bhar.",
       "name": "Bharani",
       "prose": "Bharani",
       "iast": "Bharaṇī"
     },
     "KRITTIKA": {
       "short": "Kri",
+      "abbrev": "Krit.",
       "name": "Krittika",
       "prose": "Krittika",
       "iast": "Kṛttikā"
     },
     "ROHINI": {
       "short": "Roh",
+      "abbrev": "Roh.",
       "name": "Rohini",
       "prose": "Rohini",
       "iast": "Rohiṇī"
     },
     "MRIGASHIRA": {
       "short": "Mri",
+      "abbrev": "Mrig.",
       "name": "Mrigashira",
       "prose": "Mrigashira",
       "iast": "Mṛgaśirā"
     },
     "ARDRA": {
       "short": "Ard",
+      "abbrev": "Ardra",
       "name": "Ardra",
       "prose": "Ardra",
       "iast": "Ārdrā"
     },
     "PUNARVASU": {
       "short": "Pun",
+      "abbrev": "Pun.",
       "name": "Punarvasu",
       "prose": "Punarvasu",
       "iast": "Punarvasu"
     },
     "PUSHYA": {
       "short": "Pus",
+      "abbrev": "Pushya",
       "name": "Pushya",
       "prose": "Pushya",
       "iast": "Puṣya"
     },
     "ASHLESHA": {
       "short": "Asl",
+      "abbrev": "Ashl.",
       "name": "Ashlesha",
       "prose": "Ashlesha",
       "iast": "Āśleṣā"
     },
     "MAGHA": {
       "short": "Mag",
+      "abbrev": "Magha",
       "name": "Magha",
       "prose": "Magha",
       "iast": "Maghā"
     },
     "PURVA_PHALGUNI": {
       "short": "PPh",
+      "abbrev": "P.Phal.",
       "name": "Purva Phalguni",
       "prose": "Purva Phalguni",
       "iast": "Pūrvaphālgunī"
     },
     "UTTARA_PHALGUNI": {
       "short": "UPh",
+      "abbrev": "U.Phal.",
       "name": "Uttara Phalguni",
       "prose": "Uttara Phalguni",
       "iast": "Uttaraphālgunī"
     },
     "HASTA": {
       "short": "Has",
+      "abbrev": "Hasta",
       "name": "Hasta",
       "prose": "Hasta",
       "iast": "Hasta"
     },
     "CHITRA": {
       "short": "Chi",
+      "abbrev": "Chitra",
       "name": "Chitra",
       "prose": "Chitra",
       "iast": "Citrā"
     },
     "SWATI": {
       "short": "Swa",
+      "abbrev": "Swati",
       "name": "Swati",
       "prose": "Swati",
       "iast": "Svātī"
     },
     "VISHAKHA": {
       "short": "Vis",
+      "abbrev": "Vish.",
       "name": "Vishakha",
       "prose": "Vishakha",
       "iast": "Viśākhā"
     },
     "ANURADHA": {
       "short": "Anu",
+      "abbrev": "Anu.",
       "name": "Anuradha",
       "prose": "Anuradha",
       "iast": "Anurādhā"
     },
     "JYESHTHA": {
       "short": "Jye",
+      "abbrev": "Jye.",
       "name": "Jyeshtha",
       "prose": "Jyeshtha",
       "iast": "Jyeṣṭhā"
     },
     "MULA": {
       "short": "Mul",
+      "abbrev": "Mula",
       "name": "Mula",
       "prose": "Mula",
       "iast": "Mūla"
     },
     "PURVA_ASHADHA": {
       "short": "PAs",
+      "abbrev": "P.Ash.",
       "name": "Purva Ashadha",
       "prose": "Purva Ashadha",
       "iast": "Pūrvāṣāḍhā"
     },
     "UTTARA_ASHADHA": {
       "short": "UAs",
+      "abbrev": "U.Ash.",
       "name": "Uttara Ashadha",
       "prose": "Uttara Ashadha",
       "iast": "Uttarāṣāḍhā"
     },
     "SHRAVANA": {
       "short": "Shr",
+      "abbrev": "Shr.",
       "name": "Shravana",
       "prose": "Shravana",
       "iast": "Śravaṇa"
     },
     "DHANISHTHA": {
       "short": "Dha",
+      "abbrev": "Dhan.",
       "name": "Dhanishtha",
       "prose": "Dhanishtha",
       "iast": "Dhaniṣṭhā"
     },
     "SHATABHISHA": {
       "short": "Sha",
+      "abbrev": "Shat.",
       "name": "Shatabhisha",
       "prose": "Shatabhisha",
       "iast": "Śatabhiṣā"
     },
     "PURVA_BHADRAPADA": {
       "short": "PBh",
+      "abbrev": "P.Bha.",
       "name": "Purva Bhadrapada",
       "prose": "Purva Bhadrapada",
       "iast": "Pūrvabhādrapadā"
     },
     "UTTARA_BHADRAPADA": {
       "short": "UBh",
+      "abbrev": "U.Bha.",
       "name": "Uttara Bhadrapada",
       "prose": "Uttara Bhadrapada",
       "iast": "Uttarabhādrapadā"
     },
     "REVATI": {
       "short": "Rev",
+      "abbrev": "Rev.",
       "name": "Revati",
       "prose": "Revati",
       "iast": "Revatī"
@@ -1667,180 +1694,210 @@
   "tithi": {
     "SHUKLA_PRATIPADA": {
       "short": "S1",
+      "abbrev": "Su. 1",
       "name": "Pratipada",
       "prose": "Pratipada",
       "iast": "Pratipadā"
     },
     "SHUKLA_DVITIYA": {
       "short": "S2",
+      "abbrev": "Su. 2",
       "name": "Dvitiya",
       "prose": "Dvitiya",
       "iast": "Dvitīyā"
     },
     "SHUKLA_TRITIYA": {
       "short": "S3",
+      "abbrev": "Su. 3",
       "name": "Tritiya",
       "prose": "Tritiya",
       "iast": "Tṛtīyā"
     },
     "SHUKLA_CHATURTHI": {
       "short": "S4",
+      "abbrev": "Su. 4",
       "name": "Chaturthi",
       "prose": "Chaturthi",
       "iast": "Caturthī"
     },
     "SHUKLA_PANCHAMI": {
       "short": "S5",
+      "abbrev": "Su. 5",
       "name": "Panchami",
       "prose": "Panchami",
       "iast": "Pañcamī"
     },
     "SHUKLA_SHASHTHI": {
       "short": "S6",
+      "abbrev": "Su. 6",
       "name": "Shashthi",
       "prose": "Shashthi",
       "iast": "Ṣaṣṭhī"
     },
     "SHUKLA_SAPTAMI": {
       "short": "S7",
+      "abbrev": "Su. 7",
       "name": "Saptami",
       "prose": "Saptami",
       "iast": "Saptamī"
     },
     "SHUKLA_ASHTAMI": {
       "short": "S8",
+      "abbrev": "Su. 8",
       "name": "Ashtami",
       "prose": "Ashtami",
       "iast": "Aṣṭamī"
     },
     "SHUKLA_NAVAMI": {
       "short": "S9",
+      "abbrev": "Su. 9",
       "name": "Navami",
       "prose": "Navami",
       "iast": "Navamī"
     },
     "SHUKLA_DASHAMI": {
       "short": "S10",
+      "abbrev": "Su. 10",
       "name": "Dashami",
       "prose": "Dashami",
       "iast": "Daśamī"
     },
     "SHUKLA_EKADASHI": {
       "short": "S11",
+      "abbrev": "Su. 11",
       "name": "Ekadashi",
       "prose": "Ekadashi",
       "iast": "Ekādaśī"
     },
     "SHUKLA_DWADASHI": {
       "short": "S12",
+      "abbrev": "Su. 12",
       "name": "Dwadashi",
       "prose": "Dwadashi",
       "iast": "Dvādaśī"
     },
     "SHUKLA_TRAYODASHI": {
       "short": "S13",
+      "abbrev": "Su. 13",
       "name": "Trayodashi",
       "prose": "Trayodashi",
       "iast": "Trayodaśī"
     },
     "SHUKLA_CHATURDASHI": {
       "short": "S14",
+      "abbrev": "Su. 14",
       "name": "Chaturdashi",
       "prose": "Chaturdashi",
       "iast": "Caturdaśī"
     },
     "PURNIMA": {
       "short": "Pur",
+      "abbrev": "Su. 15",
       "name": "Purnima",
       "prose": "Purnima",
       "iast": "Pūrṇimā"
     },
     "KRISHNA_PRATIPADA": {
       "short": "K1",
+      "abbrev": "Ba. 1",
       "name": "Pratipada",
       "prose": "Pratipada",
       "iast": "Pratipadā"
     },
     "KRISHNA_DVITIYA": {
       "short": "K2",
+      "abbrev": "Ba. 2",
       "name": "Dvitiya",
       "prose": "Dvitiya",
       "iast": "Dvitīyā"
     },
     "KRISHNA_TRITIYA": {
       "short": "K3",
+      "abbrev": "Ba. 3",
       "name": "Tritiya",
       "prose": "Tritiya",
       "iast": "Tṛtīyā"
     },
     "KRISHNA_CHATURTHI": {
       "short": "K4",
+      "abbrev": "Ba. 4",
       "name": "Chaturthi",
       "prose": "Chaturthi",
       "iast": "Caturthī"
     },
     "KRISHNA_PANCHAMI": {
       "short": "K5",
+      "abbrev": "Ba. 5",
       "name": "Panchami",
       "prose": "Panchami",
       "iast": "Pañcamī"
     },
     "KRISHNA_SHASHTHI": {
       "short": "K6",
+      "abbrev": "Ba. 6",
       "name": "Shashthi",
       "prose": "Shashthi",
       "iast": "Ṣaṣṭhī"
     },
     "KRISHNA_SAPTAMI": {
       "short": "K7",
+      "abbrev": "Ba. 7",
       "name": "Saptami",
       "prose": "Saptami",
       "iast": "Saptamī"
     },
     "KRISHNA_ASHTAMI": {
       "short": "K8",
+      "abbrev": "Ba. 8",
       "name": "Ashtami",
       "prose": "Ashtami",
       "iast": "Aṣṭamī"
     },
     "KRISHNA_NAVAMI": {
       "short": "K9",
+      "abbrev": "Ba. 9",
       "name": "Navami",
       "prose": "Navami",
       "iast": "Navamī"
     },
     "KRISHNA_DASHAMI": {
       "short": "K10",
+      "abbrev": "Ba. 10",
       "name": "Dashami",
       "prose": "Dashami",
       "iast": "Daśamī"
     },
     "KRISHNA_EKADASHI": {
       "short": "K11",
+      "abbrev": "Ba. 11",
       "name": "Ekadashi",
       "prose": "Ekadashi",
       "iast": "Ekādaśī"
     },
     "KRISHNA_DWADASHI": {
       "short": "K12",
+      "abbrev": "Ba. 12",
       "name": "Dwadashi",
       "prose": "Dwadashi",
       "iast": "Dvādaśī"
     },
     "KRISHNA_TRAYODASHI": {
       "short": "K13",
+      "abbrev": "Ba. 13",
       "name": "Trayodashi",
       "prose": "Trayodashi",
       "iast": "Trayodaśī"
     },
     "KRISHNA_CHATURDASHI": {
       "short": "K14",
+      "abbrev": "Ba. 14",
       "name": "Chaturdashi",
       "prose": "Chaturdashi",
       "iast": "Caturdaśī"
     },
     "AMAVASYA": {
       "short": "Ama",
+      "abbrev": "Ba. 15",
       "name": "Amavasya",
       "prose": "Amavasya",
       "iast": "Amāvasyā"
@@ -2533,61 +2590,73 @@
   },
   "masa": {
     "CHAITRA": {
+      "abbrev": "Chai.",
       "name": "Chaitra",
       "prose": "Chaitra",
       "iast": "Caitra"
     },
     "VAISHAKHA": {
+      "abbrev": "Vai.",
       "name": "Vaishakha",
       "prose": "Vaishakha",
       "iast": "Vaiśākha"
     },
     "JYESHTHA": {
+      "abbrev": "Jye.",
       "name": "Jyeshtha",
       "prose": "Jyeshtha",
       "iast": "Jyeṣṭha"
     },
     "ASHADHA": {
+      "abbrev": "Asha.",
       "name": "Ashadha",
       "prose": "Ashadha",
       "iast": "Āṣāḍha"
     },
     "SHRAVANA": {
+      "abbrev": "Shra.",
       "name": "Shravana",
       "prose": "Shravana",
       "iast": "Śrāvaṇa"
     },
     "BHADRAPADA": {
+      "abbrev": "Bhad.",
       "name": "Bhadrapada",
       "prose": "Bhadrapada",
       "iast": "Bhādrapada"
     },
     "ASHWINA": {
+      "abbrev": "Ashv.",
       "name": "Ashvin",
       "prose": "Ashvin",
       "iast": "Āśvina"
     },
     "KARTIKA": {
+      "abbrev": "Kart.",
       "name": "Kartika",
       "prose": "Kartika",
       "iast": "Kārtika"
     },
     "MARGASHIRSHA": {
+      "abbrev": "Marg.",
       "name": "Margashirsha",
       "prose": "Margashirsha",
       "iast": "Mārgaśīrṣa"
     },
     "PAUSHA": {
+      "abbrev": "Paus.",
       "name": "Pausha",
       "prose": "Pausha",
       "iast": "Pauṣa"
     },
     "MAGHA": {
+      "abbrev": "Magha",
       "name": "Magha",
       "prose": "Magha",
       "iast": "Māgha"
     },
     "PHALGUNA": {
+      "abbrev": "Phal.",
       "name": "Phalguna",
       "prose": "Phalguna",
       "iast": "Phālguna"

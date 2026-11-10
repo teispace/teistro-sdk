@@ -9,6 +9,8 @@
   "GREGORIAN": {
     "monthName": ".input {$month :integer} .match $month 1 {{जनवरी}} 2 {{फ़रवरी}} 3 {{मार्च}} 4 {{अप्रैल}} 5 {{मई}} 6 {{जून}} 7 {{जुलाई}} 8 {{अगस्त}} 9 {{सितंबर}} 10 {{अक्टूबर}} 11 {{नवंबर}} 12 {{दिसंबर}} * {{{$month}}}",
     "monthShort": ".input {$month :integer} .match $month 1 {{जन॰}} 2 {{फ़र॰}} 3 {{मार्च}} 4 {{अप्रैल}} 5 {{मई}} 6 {{जून}} 7 {{जुल॰}} 8 {{अग॰}} 9 {{सित॰}} 10 {{अक्टू॰}} 11 {{नव॰}} 12 {{दिस॰}} * {{{$month}}}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "{$day :integer minimumIntegerDigits=2}/{$month :integer minimumIntegerDigits=2}/{$year :integer useGrouping=false}",
       "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
@@ -18,6 +20,8 @@
   "JULIAN": {
     "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
     "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+    "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
     "date": {
       "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
       "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -27,6 +31,8 @@
   "MIXED": {
     "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
     "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+    "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
     "date": {
       "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
       "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -43,6 +49,8 @@
   "BIKRAM_SAMBAT": {
     "monthName": ".input {$month :integer} .match $month 1 {{वैशाख}} 2 {{ज्येष्ठ}} 3 {{आषाढ़}} 4 {{श्रावण}} 5 {{भाद्रपद}} 6 {{आश्विन}} 7 {{कार्तिक}} 8 {{मार्गशीर्ष}} 9 {{पौष}} 10 {{माघ}} 11 {{फाल्गुन}} 12 {{चैत्र}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.BIKRAM_SAMBAT.monthName :msg}",
+    "monthYear": "{$monthName} वि.सं. {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} वि.सं. {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} वि.सं. {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "वि.सं. {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} वि.सं. {$year :integer useGrouping=false}",
@@ -52,6 +60,8 @@
   "INDIAN_NATIONAL": {
     "monthName": ".input {$month :integer} .match $month 1 {{चैत्र}} 2 {{वैशाख}} 3 {{ज्येष्ठ}} 4 {{आषाढ़}} 5 {{श्रावण}} 6 {{भाद्र}} 7 {{आश्विन}} 8 {{कार्तिक}} 9 {{अग्रहायण}} 10 {{पौष}} 11 {{माघ}} 12 {{फाल्गुन}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.INDIAN_NATIONAL.monthName :msg}",
+    "monthYear": "{$monthName} शक {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} शक {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} शक {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "शक {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} शक {$year :integer useGrouping=false}",
@@ -61,6 +71,8 @@
   "HIJRI_TABULAR": {
     "monthName": ".input {$month :integer} .match $month 1 {{मुहर्रम}} 2 {{सफ़र}} 3 {{रबी-उल-अव्वल}} 4 {{रबी-उस-सानी}} 5 {{जुमादा-उल-अव्वल}} 6 {{जुमादा-उस-सानी}} 7 {{रजब}} 8 {{शाबान}} 9 {{रमज़ान}} 10 {{शव्वाल}} 11 {{ज़ी-क़ादा}} 12 {{ज़ी-हिज्जा}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false} हिजरी",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} हिजरी}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} हिजरी}}",
     "date": {
       "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} हिजरी",
       "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} हिजरी",
@@ -70,6 +82,8 @@
   "TIBETAN_PHUGPA": {
     "monthName": ".input {$leap :string} .match $leap MONTH {{अधिक मास {$month :integer}}} MONTH_AND_DAY {{अधिक मास {$month :integer}}} * {{मास {$month :integer}}}",
     "monthShort": ".input {$leap :string} .match $leap MONTH {{अधिक {$month :integer}}} MONTH_AND_DAY {{अधिक {$month :integer}}} * {{{$month :integer}}}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (अधिक मास)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (वृद्धि तिथि)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (अधिक मास, वृद्धि तिथि)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
       "long": ".input {$leap :string} .match $leap DAY {{{$monthName}, तिथि {$day :integer} (वृद्धि तिथि), {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$monthName}, तिथि {$day :integer} (वृद्धि तिथि), {$year :integer useGrouping=false}}} * {{{$monthName}, तिथि {$day :integer}, {$year :integer useGrouping=false}}}",
@@ -79,6 +93,8 @@
   "BANGLADESHI": {
     "monthName": ".input {$month :integer} .match $month 1 {{वैशाख}} 2 {{ज्येष्ठ}} 3 {{आषाढ़}} 4 {{श्रावण}} 5 {{भाद्र}} 6 {{आश्विन}} 7 {{कार्तिक}} 8 {{अग्रहायण}} 9 {{पौष}} 10 {{माघ}} 11 {{फाल्गुन}} 12 {{चैत्र}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.BANGLADESHI.monthName :msg}",
+    "monthYear": "{$monthName} बंगाब्द {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} बंगाब्द {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} बंगाब्द {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "बंगाब्द {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} बंगाब्द {$year :integer useGrouping=false}",
@@ -88,6 +104,8 @@
   "ASSAM_SOLAR": {
     "monthName": ".input {$month :integer} .match $month 1 {{वैशाख}} 2 {{ज्येष्ठ}} 3 {{आषाढ़}} 4 {{श्रावण}} 5 {{भाद्र}} 6 {{आश्विन}} 7 {{कार्तिक}} 8 {{अग्रहायण}} 9 {{पौष}} 10 {{माघ}} 11 {{फाल्गुन}} 12 {{चैत्र}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.ASSAM_SOLAR.monthName :msg}",
+    "monthYear": "{$monthName} भास्कराब्द {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} भास्कराब्द {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} भास्कराब्द {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "भास्कराब्द {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} भास्कराब्द {$year :integer useGrouping=false}",

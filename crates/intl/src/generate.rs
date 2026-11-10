@@ -2247,6 +2247,8 @@ mod tests {
             GUARANTEED_FORMS.iter().map(|f| (*f).to_owned()).collect()
         );
         assert!(model.forms.1.contains("short"), "{:?}", model.forms.1);
+        // The printed abbreviation (SR-85) is a record's own too.
+        assert!(model.forms.1.contains("abbrev"), "{:?}", model.forms.1);
         assert!(!model.forms.1.contains("iast"), "{:?}", model.forms.1);
         assert!(ts.contains("export type TithiKey = 'tithi.SHUKLA_PRATIPADA'"));
         assert!(dart.contains("enum SamvatsaraKey {"));

@@ -91,6 +91,10 @@ pub enum DateStyle {
     Long,
     /// With the weekday's name too.
     Full,
+    /// The month and its year alone, as a month view's title (SR-86):
+    /// `sdk.calendar.<CALENDAR>.monthYear`, or `monthYearRange` for a
+    /// run of months up to `until`.
+    MonthYear,
 }
 
 impl DateStyle {
@@ -107,6 +111,7 @@ impl DateStyle {
             DateStyle::Numeric => "numeric",
             DateStyle::Long => "long",
             DateStyle::Full => "full",
+            DateStyle::MonthYear => "monthYear",
         }
     }
 }
@@ -182,6 +187,11 @@ pub struct DateTextRequest {
     /// How much of it.
     #[serde(default)]
     pub style: DateStyle,
+    /// With `MONTH_YEAR`, the last month of a run that starts at `at`'s,
+    /// in the same calendar and not before it: "October – November 2026",
+    /// "December 2026 – January 2027". Any day of the month will do.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub until: Option<CalendarDay>,
     /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one
     /// when left out.
     #[serde(default)]
@@ -222,9 +232,10 @@ impl DateTextRequest {
 #[cfg_attr(feature = "words-schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CivilPartKind {
-    /// The year.
+    /// A year: in a run of months, either end's.
     Year,
-    /// The month, by number or name; an ISO week date's week.
+    /// The month, by number or name; an ISO week date's week; in a run
+    /// of months, either end's.
     Month,
     /// The day of the month.
     Day,
@@ -248,8 +259,8 @@ impl CivilPartKind {
     /// The part a pattern's variable writes.
     fn of(variable: &str) -> CivilPartKind {
         match variable {
-            "year" => CivilPartKind::Year,
-            "month" | "monthName" => CivilPartKind::Month,
+            "year" | "untilYear" => CivilPartKind::Year,
+            "month" | "monthName" | "untilMonth" | "untilMonthName" => CivilPartKind::Month,
             "day" => CivilPartKind::Day,
             "weekday" | "weekdayName" => CivilPartKind::Weekday,
             "era" => CivilPartKind::Era,
@@ -428,7 +439,8 @@ impl Intl {
     /// # Errors
     ///
     /// Named under `date`: `INVALID_ARG` for a date its calendar does not
-    /// hold; `UNSUPPORTED` for a locale not loaded, a calendar not shipped,
+    /// hold, or an `until` in another calendar, before `at`, or with a
+    /// style other than `MONTH_YEAR`; `UNSUPPORTED` for a locale not loaded, a calendar not shipped,
     /// or one the locale chain has no pattern for.
     pub fn date(&self, request: &DateTextRequest) -> Result<CivilText, Error> {
         self.date_unnamed(request).map_err(|e| e.under(DATE))
@@ -443,10 +455,40 @@ impl Intl {
             ))
             .with_field("at.calendar")
         })?;
-        system.fixed_of(&date).map_err(|e| e.under("at"))?;
+        let first = system.fixed_of(&date).map_err(|e| e.under("at"))?;
+        let until = match &request.until {
+            None => None,
+            Some(_) if request.style != DateStyle::MonthYear => {
+                return Err(Error::invalid_arg(format!(
+                    "a run of months is written in the `MONTH_YEAR` style, not `{}`",
+                    request.style.key()
+                ))
+                .with_field("until"));
+            }
+            Some(day) => {
+                let until = day.date();
+                if until.calendar != date.calendar {
+                    return Err(Error::invalid_arg(format!(
+                        "`until` is in `{}` and `at` in `{}`; a run of months is in one calendar",
+                        until.calendar.key(),
+                        date.calendar.key()
+                    ))
+                    .with_field("until.calendar"));
+                }
+                let last = system.fixed_of(&until).map_err(|e| e.under("until"))?;
+                if last < first {
+                    return Err(Error::invalid_arg("`until` falls before `at`").with_field("until"));
+                }
+                Some(until)
+            }
+        };
         let tag = request.locale.as_deref().unwrap_or(self.locale());
         let locale = self.loaded_locale(tag)?;
-        let (key, rendered) = self.civil_date(locale, tag, &date, request.style.key());
+        let (key, rendered) = if request.style == DateStyle::MonthYear {
+            self.civil_month_year(locale, tag, &date, until.as_ref())
+        } else {
+            self.civil_date(locale, tag, &date, request.style.key())
+        };
         answer(tag, &key, rendered, request.digits, "at.calendar")
     }
 }

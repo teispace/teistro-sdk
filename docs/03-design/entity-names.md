@@ -532,6 +532,80 @@ texts' *dina* is the word the two readings split on, and *dinamāna* is not
 exactly the reading's rule (the day whose daylight holds the ingress). So
 it names the reading without taking a side on what *dina* meant.
 
+## 4e. Printed abbreviations (SR-85, 2026-11-10)
+
+A consumer's narrowest day cell fits neither a tithi's `name` nor its
+`short`, which is a code in English (`S13`, `K14`) and, in Devanagari, a
+bare stem (`चद` for चतुर्दशी) that no printed calendar writes. They asked
+for `abbrev`, the abbreviation printed calendars use where the full name
+does not fit, for tithis, nakshatras and lunar months, in every shipped
+locale.
+
+**The form.** `abbrev` is a record's form like `short`: in the source
+beside `name`, carried by packs and overlays, translated in XLIFF, typed
+in every binding as an optional field, and kept out of the lexicon's
+lookups (`अ`, `का` and `Su. 5` name too little to be looked up by). A
+message reads it with `{$m :entity form=abbrev}`; a record without one
+renders its `name`, with a warning. Every tithi, nakshatra and lunar
+month carries one in `en`, `ne`, `hi` and `sa-Deva`, and `sa-Latn`
+derives its own from `sa-Deva`. `crates/intl/tests/month_year.rs` holds
+each no wider than its name (in characters) and distinct within its
+kind (Devanagari's tithis repeat across the two fortnights, as their
+names do).
+
+### What the sources print
+
+| Source | Tithi | Nakshatra | Lunar month |
+|---|---|---|---|
+| CLDR 48, `ne` `ca-indian`, abbreviated format months | – | – | `चै बै जे अ श्रा भा अश्वि का मं पौ मा फा` |
+| CLDR 48, `hi`, `sa`, `en` `ca-indian` | – | – | none: the abbreviated months are the wide names |
+| Sewell and Dikshit, *The Indian Calendar* (1896) | by its number in the fortnight ("Sukla 15th"); *sudi*, *vadi* or *badi* for the fortnight (§11) | full names (Table VIII) | full names (Tables II, III) |
+| Swamikannu Pillai, *An Indian Ephemeris* (1922), §23 and the chart key in Vol. I | "su." for *sukla*; *bahula* for the dark fortnight; tithis by number | numbers in place of names | full names |
+| A Nepali almanac's month grid (web edition, Kartik 2082) | the full name in every cell (`षष्ठी`, `त्रयोदशी`, `औंसी`) | not in the cell | – |
+| The packs' own era marks (`वि.सं.`, `vi.saṃ.`) | Devanagari abbreviates with a full stop after the kept syllables | | |
+
+Only CLDR `ne` prints a whole set. Everything else was chosen, under the
+maintainer's policy of 2026-11-10 (ship final; the maintainer reviews
+and corrects), by the conventions above:
+
+- **Nepali lunar months: CLDR 48 `ne`**, as printed, without full stops.
+  CLDR's wide names are the vernacular ones (बैशाख, मङसिर), so `बै` and
+  `मं` stand beside the pack's tatsama `name` (वैशाख, मार्गशीर्ष).
+- **English tithis: the fortnight and the number**, as Sewell and
+  Dikshit and Pillai write a tithi: `Su. 1` to `Su. 15` (Purnima) and
+  `Ba. 1` to `Ba. 15` (Amavasya, the dark fortnight's fifteenth). `Su.`
+  is Pillai's abbreviation; `Ba.` is *bahula*, the word both books
+  print for the dark fortnight, and also the initial of the *badi* Sewell
+  and Dikshit record in popular use. An English tithi name does not say its fortnight and the
+  abbreviation does; it is never wider than the name.
+- **Devanagari tithis: the name's opening syllables and a full stop**,
+  the Devanagari abbreviation the packs already print (`वि.सं.`), the
+  shortest stem that tells the sixteen names apart: `प्र.`, `द्वि.`, `तृ.`,
+  `चतु.`, `पं.`, `ष.`, `स.`, `अ.`, `न.`, `द.`, `ए.`, `द्वा.`, `त्र.`,
+  `चतुर्द.`, `पू.`, `अमा.`. चतुर्थी and चतुर्दशी share three syllables, so
+  the fourteenth keeps its `र्द`. The fortnight is not written: a
+  Devanagari tithi name does not carry it either, and `शु. १०` would be
+  wider than `दशमी`. A grid shows the fortnight once, in its header.
+- **Nakshatras: the same stems**, and the paired asterisms by their two
+  initials, `पू.फा.`, `उ.फा.`, `पू.षा.`, `उ.षा.`, `पू.भा.`, `उ.भा.`, in
+  English `P.Phal.`, `U.Phal.`, `P.Ash.`, `U.Ash.`, `P.Bha.`, `U.Bha.`.
+  A name of one or two syllables is its own abbreviation (`मघा`, `मूल`,
+  `हस्त`, `चित्रा`, `स्वाती`, `आर्द्रा`, `पुष्य`; `Magha`, `Mula`,
+  `Hasta`, `Chitra`, `Swati`, `Ardra`, `Pushya`): cutting it saves a
+  letter and costs the reading.
+- **Hindi, Sanskrit and English lunar months: the same stems** (`चै.`,
+  `वै.`, `ज्ये.`, `आषा.`, `श्रा.`, `भा.`, `आश्वि.`, `का.`, `मार्ग.`, `पौ.`,
+  `माघ`, `फा.`; `Chai.`, `Vai.`, `Jye.`, `Asha.`, `Shra.`, `Bhad.`,
+  `Ashv.`, `Kart.`, `Marg.`, `Paus.`, `Magha`, `Phal.`). आषाढ keeps two
+  syllables so that it does not read as the आ of आश्विन; मार्गशीर्ष is
+  `मार्ग.`, its common short name.
+
+The common panchanga stems for the paired nakshatras were looked for in
+a source that could be cited and not found as text; they are what the
+packs' own full-stop convention gives, and the choice is recorded here
+for the maintainer's review. No kind falls back to `name`: no stem
+chosen here reads as another member.
+
 ## 5. What this does not settle
 
 - **The maintainer's review.** The names ship final and are corrected

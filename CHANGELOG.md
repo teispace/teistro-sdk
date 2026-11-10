@@ -87,6 +87,21 @@ read; a `sunEnters` rule left without `reckoning` is the civil day, with its spe
   meet the print. The two that part are named, none fitted: Karkidaka Vavu 2024 (C1322) and Sreekrishna Jayanthi
   2025 (C1320).
 
+**A month view's title, and a printed abbreviation for the narrowest cells (SR-86, SR-85).**
+**Numbers:** none. No computed value moves; text only.
+- `sdk.calendar.<CALENDAR>.monthYear` and `monthYearRange` in every shipped locale for the nine
+  calendars that name their months, from CLDR 48's `yMMMM` and its interval formats: "October 2026",
+  "October – November 2026", "December 2026 – January 2027", "२०८३ कात्तिक", "चैत्र २०८३ – वैशाख
+  वि.सं. २०८४". `intl.date` takes `style: MONTH_YEAR` and an optional `until`; the engine passes
+  `greatest` (`YEAR` or `MONTH`) and the last month's `untilYear` and `untilMonthName`, and types both
+  ends' parts. An `until` in another calendar, before `at`, or with another style is refused on `until`.
+- `abbrev`, a record's new form, for every tithi, nakshatra and lunar month in `en`, `ne`, `hi` and
+  `sa` (`sa-Latn` derived): CLDR 48 `ne`'s abbreviated months, and elsewhere the conventions Sewell and
+  Dikshit, Pillai and the packs' own full stops print (`Su. 13`, `Ba. 15`, `चतुर्द.`, `पू.फा.`,
+  `P.Phal.`), each no wider than its name (`docs/03-design/entity-names.md` §4e). Typed in every
+  binding, translated in XLIFF, not looked up by the lexicon.
+- Every locale's pack budget is raised about a tenth over its new size.
+
 **Names for the ashauch, rite and first-year answers (SR-31).**
 **Numbers:** none.
 - A new namespace, `sdk.rite`, names every member those answers carry, each message a `.match` on the

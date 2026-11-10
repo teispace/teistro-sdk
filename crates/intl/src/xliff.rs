@@ -34,7 +34,7 @@ use crate::source::{ENTITY_NAMESPACE, Entity, Entry, LocaleSource, Namespace, Tr
 /// // The glyph and the gender are not translated.
 /// assert!(!TRANSLATED_FORMS.contains(&"glyph"));
 /// ```
-pub const TRANSLATED_FORMS: [&str; 4] = ["name", "prose", "short", "iast"];
+pub const TRANSLATED_FORMS: [&str; 5] = ["name", "prose", "short", "abbrev", "iast"];
 
 /// What an export produced.
 ///
