@@ -15,6 +15,7 @@ import unittest
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
+    CellsRequest,
     Detail,
     SankalpaRequest,
     BandRequest,
@@ -4421,7 +4422,7 @@ class AnEngine(WithLibrary):
         their dates only when asked (`03-design/month-cells.md`)."""
         from teistro.catalogue import Tithi
 
-        record = {
+        record: CellsRequest = {
             "first": {"year": 2026, "month": 10, "day": 1},
             "last": {"year": 2026, "month": 10, "day": 31},
             "latitudeDeg": 27.7172,
@@ -4448,7 +4449,9 @@ class AnEngine(WithLibrary):
             self.assertTrue(any(cell.festivals for cell in kept.cells))
             self.assertEqual([cell.sunrise for cell in kept.cells], [cell.sunrise for cell in month.cells])
             with self.assertRaises(TeistroError) as refused:
-                ctx.almanac.cells({**record, "kinds": []})
+                # A field the record does not have, refused by its name.
+                unknown: Any = {**record, "kinds": []}
+                ctx.almanac.cells(unknown)
             self.assertEqual(refused.exception.field, "cells.kinds")
 
     def test_a_measure_reads_into_its_aayadi_without_a_sky(self) -> None:
