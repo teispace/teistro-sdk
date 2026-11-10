@@ -35,9 +35,9 @@ columns against each other, not as a model's bill.
 | written in | bytes | scalar values | tokens | tokens a chart | tokens against keys |
 |---|---|---|---|---|---|
 | keys (language-neutral) | 2 681 190 | 2 681 190 | 1 547 721 | 29 202 | 1.00 |
-| `en-Latn` names | 2 953 608 | 2 953 608 | 1 636 802 | 30 883 | 1.06 |
-| `hi-Deva-IN` names | 4 437 887 | 2 773 849 | 2 156 695 | 40 692 | 1.39 |
-| `ne-Deva-NP` names | 4 440 839 | 2 771 835 | 2 157 923 | 40 715 | 1.39 |
-| `sa-Deva` names | 4 440 279 | 2 774 423 | 2 157 621 | 40 709 | 1.39 |
-| `sa-Latn` names | 3 172 389 | 2 860 526 | 1 854 938 | 34 998 | 1.20 |
+| `en-Latn` names | 2 953 396 | 2 953 396 | 1 636 749 | 30 882 | 1.06 |
+| `hi-Deva-IN` names | 4 291 044 | 2 751 386 | 2 105 869 | 39 733 | 1.36 |
+| `ne-Deva-NP` names | 4 293 996 | 2 749 372 | 2 107 097 | 39 756 | 1.36 |
+| `sa-Deva` names | 4 293 436 | 2 751 960 | 2 106 795 | 39 750 | 1.36 |
+| `sa-Latn` names | 3 144 303 | 2 838 010 | 1 838 110 | 34 681 | 1.19 |
 | the document's canonical JSON | 7 149 254 | 7 148 971 | 4 006 309 | 75 590 | 2.59 |

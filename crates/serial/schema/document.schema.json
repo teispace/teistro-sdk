@@ -1682,6 +1682,33 @@
       ],
       "type": "object"
     },
+    "ChartFrame": {
+      "anyOf": [
+        {
+          "description": "A key of the `chart_frame` catalogue, as a document writes it.",
+          "enum": [
+            "LAGNA",
+            "MOON",
+            "SUN",
+            "BHAVA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `chart_frame` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "chart_frame.LAGNA",
+            "chart_frame.MOON",
+            "chart_frame.SUN",
+            "chart_frame.BHAVA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `chart_frame` catalogue, bare or full.",
+      "x-teistro-kind": "chart_frame"
+    },
     "ChartKind": {
       "anyOf": [
         {
@@ -2842,6 +2869,10 @@
     "Drawing": {
       "description": "One chart placed in one layout.",
       "properties": {
+        "counts_from": {
+          "$ref": "#/$defs/ChartFrame",
+          "description": "What its houses count from: the lagna unless the request named another, and left out of the document then."
+        },
         "placed": {
           "$ref": "#/$defs/Placed",
           "description": "The chart, placed."
