@@ -5832,5 +5832,197 @@
       "name": "Eclipsed",
       "prose": "eclipsed"
     }
+  },
+  "ayanamsha_category": {
+    "VEDIC_STANDARD": {
+      "name": "Vedic standard",
+      "prose": "vedic standard"
+    },
+    "VEDIC_CLASSICAL": {
+      "name": "Vedic classical",
+      "prose": "vedic classical"
+    },
+    "STAR_ANCHORED": {
+      "name": "Star-anchored",
+      "prose": "star-anchored"
+    },
+    "WESTERN_SIDEREAL": {
+      "name": "Western sidereal",
+      "prose": "western sidereal"
+    },
+    "GALACTIC": {
+      "name": "Galactic",
+      "prose": "galactic"
+    },
+    "HISTORICAL": {
+      "name": "Historical",
+      "prose": "historical"
+    },
+    "EPOCH": {
+      "name": "Epoch",
+      "prose": "epoch"
+    }
+  },
+  "bala_scheme": {
+    "PARASHARA": {
+      "name": "Parashara",
+      "prose": "Parashara",
+      "iast": "Pārāśara"
+    },
+    "PARASHARA_EXTENDED": {
+      "name": "Parashara (extended)",
+      "prose": "Parashara (extended)"
+    }
+  },
+  "body_class": {
+    "LUMINARY": {
+      "name": "Luminary",
+      "prose": "luminary",
+      "iast": "Prakāśagraha"
+    },
+    "PLANET": {
+      "name": "Planet",
+      "prose": "planet",
+      "iast": "Tārāgraha"
+    },
+    "NODE": {
+      "name": "Node",
+      "prose": "node",
+      "iast": "Chāyāgraha"
+    },
+    "OUTER": {
+      "name": "Outer planet",
+      "prose": "outer planet"
+    }
+  },
+  "chart_layout": {
+    "NORTH_INDIAN": {
+      "name": "North Indian",
+      "prose": "North Indian"
+    },
+    "SOUTH_INDIAN": {
+      "name": "South Indian",
+      "prose": "South Indian"
+    },
+    "EAST_INDIAN": {
+      "name": "East Indian",
+      "prose": "East Indian"
+    },
+    "NEPALI_LOTUS": {
+      "name": "Nepali lotus (Ashtadala Padma)",
+      "prose": "Nepali lotus (Ashtadala Padma)"
+    },
+    "SUDARSHAN_CHAKRA": {
+      "name": "Sudarshana Chakra",
+      "prose": "Sudarshana Chakra"
+    },
+    "WESTERN_WHEEL": {
+      "name": "Western wheel",
+      "prose": "Western wheel"
+    }
+  },
+  "dasha_family": {
+    "UDU": {
+      "name": "Nakshatra (udu)",
+      "prose": "Nakshatra (udu)"
+    },
+    "RASHI": {
+      "name": "Rashi",
+      "prose": "Rashi"
+    },
+    "GRAHA": {
+      "name": "Graha",
+      "prose": "Graha"
+    },
+    "KALACHAKRA": {
+      "name": "Kalachakra",
+      "prose": "Kalachakra"
+    },
+    "SCALE": {
+      "name": "Scaled to a year",
+      "prose": "scaled to a year"
+    },
+    "COMPOSITION": {
+      "name": "Composed",
+      "prose": "composed"
+    },
+    "OWN": {
+      "name": "Own rule",
+      "prose": "own rule"
+    },
+    "RELEASING": {
+      "name": "Zodiacal Releasing",
+      "prose": "Zodiacal Releasing"
+    },
+    "PROFECTION": {
+      "name": "Profection",
+      "prose": "Profection"
+    },
+    "FIRDARIA": {
+      "name": "Firdaria",
+      "prose": "Firdaria"
+    },
+    "DECENNIALS": {
+      "name": "Decennials",
+      "prose": "Decennials"
+    }
+  },
+  "degeneracy": {
+    "NONE": {
+      "name": "Defined at every latitude",
+      "prose": "defined at every latitude"
+    },
+    "POLAR_UNDEFINED": {
+      "name": "Undefined near the poles",
+      "prose": "undefined near the poles"
+    }
+  },
+  "point_family": {
+    "ANGLE": {
+      "name": "Angle",
+      "prose": "angle"
+    },
+    "SPECIAL_LAGNA": {
+      "name": "Special lagna",
+      "prose": "Special lagna"
+    },
+    "UPAGRAHA_SOLAR": {
+      "name": "Upagraha (from the Sun)",
+      "prose": "Upagraha (from the Sun)"
+    },
+    "UPAGRAHA_DAY": {
+      "name": "Upagraha (from the day)",
+      "prose": "Upagraha (from the day)"
+    },
+    "ARUDHA": {
+      "name": "Arudha",
+      "prose": "Arudha"
+    },
+    "SPHUTA": {
+      "name": "Sphuta",
+      "prose": "Sphuta"
+    },
+    "JAIMINI": {
+      "name": "Jaimini",
+      "prose": "Jaimini"
+    },
+    "MIDPOINT": {
+      "name": "Midpoint",
+      "prose": "midpoint"
+    }
+  },
+  "star_class": {
+    "STAR": {
+      "name": "Star",
+      "prose": "star"
+    },
+    "RADIO_SOURCE": {
+      "name": "Radio source",
+      "prose": "radio source"
+    },
+    "DIRECTION": {
+      "name": "Direction on the sky",
+      "prose": "direction on the sky"
+    }
   }
 }
