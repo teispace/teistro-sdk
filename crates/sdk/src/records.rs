@@ -990,10 +990,27 @@ const FOUND_BRIEF: Brief = Brief::Keeps(&[
     "western",
 ]);
 
-/// The chart's records: founding, comparing, and matching two names.
+/// The chart's records: founding, comparing, matching two names, and
+/// grading a guna total into bands.
 #[cfg(feature = "chart")]
-fn chart_records() -> [Record; 3] {
+fn chart_records() -> [Record; 4] {
     [
+        Record {
+            name: "matching.band",
+            boundary: "ts_matching_band",
+            title: "Grade a guna total out of 36 into bands, by a shipped table or a consumer's own, and say the band in words",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .matching()
+                        .band_words(&crate::BandRequest::from_json(json)?)?,
+                )
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::BandRequest => crate::BandWords),
+        },
         Record {
             name: "matching.naam",
             boundary: "ts_naam_milan",
@@ -1467,8 +1484,9 @@ fn ashauch_records() -> [Record; 6] {
 }
 
 /// The rest of the almanac's records: what a pack holds, a digest, the next
-/// day of a rule, why a published day differs, and a sankalpa's time.
-fn almanac_lookup_records() -> [Record; 6] {
+/// day of a rule, why a published day differs, a sankalpa's time, and
+/// the sankalpa in words.
+fn almanac_lookup_records() -> [Record; 7] {
     [
         Record {
             name: "almanac.festivalPack",
@@ -1566,6 +1584,19 @@ fn almanac_lookup_records() -> [Record; 6] {
             compares: None,
             brief: Brief::Whole,
             schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
+        },
+        Record {
+            name: "almanac.sankalpaWords",
+            boundary: "ts_almanac_sankalpa_words",
+            title: "A sankalpa said in words by a tradition's template, filled with the time at an instant and a place and the performer, gotra, purpose, place and pitris given",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::SankalpaWordsRequest::from_json(json)?;
+                Answered::sealed(context.almanac().sankalpa_words_request(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::sankalpa_request::SankalpaWordsAsked => crate::SankalpaWords),
         },
     ]
 }

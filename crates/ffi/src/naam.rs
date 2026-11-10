@@ -1,4 +1,5 @@
-//! Naam milan at the C boundary: two names matched star to star, answered
+//! Naam milan at the C boundary, and a guna total graded into bands
+//! (`ts_matching_band`, SR-39). Two names are matched star to star, answered
 //! as the `naam` blob (`03-design/matching.md`, C291 to C296).
 //!
 //! The Ashta Koota and the ten considerations cross in the sections and
@@ -17,6 +18,7 @@ use teistro_idl::blob::{ColumnData, Writer};
 use crate::blob::TsBlob;
 use crate::chart::{MatchingColumns, PoruthamColumns};
 use crate::context::TsContext;
+use crate::string::TsString;
 use crate::support::{text, with_context, write_plain};
 
 /// Which of the eight letter groups a name begins in, by the animal
@@ -208,5 +210,66 @@ pub unsafe extern "C" fn ts_naam_milan(
         let encoded = encode(&asked.answer()?)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
+    })
+}
+
+/// A guna total graded into bands and said in words
+/// (`03-design/matching.md`, "Grading a total into bands", SR-39),
+/// answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+/// words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+/// `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+/// it, `words` the band in words and `text` the total with it.
+///
+/// `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+/// stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+/// table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+/// `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+/// rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+/// (the context's when left out). A key it does not read, a total outside
+/// 0 to 36, an unknown table, both tables or a table that leaves a total
+/// ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+/// `UNSUPPORTED` on `band.locale`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::naam::ts_matching_band;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let request = c"{\"total\": 28, \"shipped\": \"NEPALI_ALMANAC\", \"locale\": \"en-Latn\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_matching_band(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let bytes = unsafe { core::slice::from_raw_parts(out.data, out.len) };
+/// let answer: serde_json::Value = serde_json::from_slice(bytes)?;
+/// assert_eq!(answer["band"], "GOOD");
+/// assert_eq!(answer["text"], "28 of 36 gunas: a good match");
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut out) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_matching_band(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::BandRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.sdk().matching().band_words(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
     })
 }

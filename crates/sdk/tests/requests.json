@@ -90,6 +90,15 @@
     }
   },
   {
+    "record": "matching.band",
+    "request": {
+      "total": 17,
+      "dushkuta": true,
+      "shipped": "NEPALI_ALMANAC",
+      "locale": "ne-Deva-NP"
+    }
+  },
+  {
     "record": "naming.syllables",
     "request": {
       "of": {
@@ -894,6 +903,24 @@
       "altitudeM": 1400,
       "utcOffsetSeconds": 20700,
       "ayana": "TROPICAL"
+    }
+  },
+  {
+    "record": "almanac.sankalpaWords",
+    "request": {
+      "at": 2461055.59375,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "slots": {
+        "performer": "हरिनाथशर्मा",
+        "gotra": "कौण्डिन्य",
+        "purpose": "वाग्मतीस्नानम्",
+        "river": "वाग्मती",
+        "kshetra": "पाशुपत"
+      },
+      "locale": "sa-Deva"
     }
   },
   {

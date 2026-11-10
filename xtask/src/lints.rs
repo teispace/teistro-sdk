@@ -3450,9 +3450,11 @@ const NOT_A_TOOL: [(&str, &str); 6] = [
 /// The JSON readers a tool reaches inside another record rather than by
 /// their own call, each with the record that carries it; the carrier must
 /// itself be reached.
-const CARRIED: [(&str, &str); 3] = [
+const CARRIED: [(&str, &str); 5] = [
+    ("GunaBands", "BandRequest"),
     ("PerfectionRules", "PerfectionRequest"),
     ("PublishedSet", "FestivalRequest"),
+    ("SankalpaFor", "SankalpaWordsRequest"),
     ("SynastryRequest", "PartnerSynastry"),
 ];
 
