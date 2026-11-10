@@ -91,6 +91,17 @@ pub enum FestivalPack {
     /// marked subject to the sighting, and the days added around a
     /// festival.
     IndiaWestBengal,
+    /// Kerala's public holidays (`03-design/kerala-holidays.md`,
+    /// [`FestivalRule::india_kerala`]): the General Administration
+    /// (Co-ordination) Department's yearly notification by rule, each day
+    /// the central list also holds by [`FestivalPack::IndiaCentral`]'s
+    /// rule, Kerala's own days by the Malayalam month (Vishu on the first
+    /// sunrise after the Mesha sankranti, Onam and Sree Narayana Guru's
+    /// birthday on their stars in Chingam, his Samadhi on Kanni 5), and the
+    /// days the notifications print rather than reckon: the four set by the
+    /// moon, marked subject to the sighting, and Ayya Vaikunda Swami's
+    /// birthday.
+    IndiaKerala,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -112,7 +123,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 10] = [
+    pub const ALL: [FestivalPack; 11] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -123,6 +134,7 @@ impl FestivalPack {
         FestivalPack::Mithila,
         FestivalPack::IndiaMaharashtra,
         FestivalPack::IndiaWestBengal,
+        FestivalPack::IndiaKerala,
     ];
 
     /// Its key, as a request names it.
@@ -139,6 +151,7 @@ impl FestivalPack {
             FestivalPack::Mithila => "MITHILA",
             FestivalPack::IndiaMaharashtra => "INDIA_MAHARASHTRA",
             FestivalPack::IndiaWestBengal => "INDIA_WEST_BENGAL",
+            FestivalPack::IndiaKerala => "INDIA_KERALA",
         }
     }
 
@@ -160,6 +173,7 @@ impl FestivalPack {
             FestivalPack::Mithila => FestivalRule::mithila(),
             FestivalPack::IndiaMaharashtra => FestivalRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => FestivalRule::india_west_bengal(),
+            FestivalPack::IndiaKerala => FestivalRule::india_kerala(),
         }
     }
 
@@ -176,7 +190,8 @@ impl FestivalPack {
             | FestivalPack::Jain
             | FestivalPack::Mithila
             | FestivalPack::IndiaMaharashtra
-            | FestivalPack::IndiaWestBengal => Vec::new(),
+            | FestivalPack::IndiaWestBengal
+            | FestivalPack::IndiaKerala => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -197,6 +212,7 @@ impl FestivalPack {
             FestivalPack::Mithila => DatedRule::mithila(),
             FestivalPack::IndiaMaharashtra => DatedRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => DatedRule::india_west_bengal(),
+            FestivalPack::IndiaKerala => DatedRule::india_kerala(),
         }
     }
 
@@ -212,7 +228,8 @@ impl FestivalPack {
             | FestivalPack::Jain
             | FestivalPack::Mithila
             | FestivalPack::IndiaMaharashtra
-            | FestivalPack::IndiaWestBengal => Vec::new(),
+            | FestivalPack::IndiaWestBengal
+            | FestivalPack::IndiaKerala => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -240,6 +257,7 @@ impl FestivalPack {
             FestivalPack::Mithila => FollowingRule::mithila(),
             FestivalPack::IndiaMaharashtra => FollowingRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => FollowingRule::india_west_bengal(),
+            FestivalPack::IndiaKerala => FollowingRule::india_kerala(),
         }
     }
 
@@ -250,6 +268,7 @@ impl FestivalPack {
             FestivalPack::IndiaCentral => vec![PublishedSet::india_central()],
             FestivalPack::IndiaMaharashtra => vec![PublishedSet::india_maharashtra()],
             FestivalPack::IndiaWestBengal => vec![PublishedSet::india_west_bengal()],
+            FestivalPack::IndiaKerala => vec![PublishedSet::india_kerala()],
             _ => Vec::new(),
         }
     }

@@ -36,6 +36,7 @@ mod ekadashi;
 mod following;
 mod gaudiya;
 mod india_central;
+mod india_kerala;
 mod india_maharashtra;
 mod india_west_bengal;
 mod jain;
@@ -52,7 +53,7 @@ pub use anniversary::{
     Anniversary, AnniversaryDay, AnniversaryKind, DayClause, DayRule, FirstYearAdhika, Half,
     InSamsarpa, JanmaOptions, MonthClause, Origin, OriginFound, TithiShape, anniversaries,
 };
-pub use dated::{Dated, DatedObservance, DatedRule, dated};
+pub use dated::{Dated, DatedObservance, DatedRule, DayReckoning, dated};
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, JoinedNakshatra,
     Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraBar, NakshatraJoining, Parana,
@@ -127,6 +128,7 @@ pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -238,6 +240,7 @@ impl DayPart {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -424,6 +427,7 @@ pub enum Which {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -520,6 +524,7 @@ pub enum Case {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -687,6 +692,7 @@ pub enum Predicate {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -784,6 +790,7 @@ pub enum Edge {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -1383,6 +1390,7 @@ impl FestivalRule {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })
@@ -1540,6 +1548,7 @@ impl FestivalRule {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })
@@ -1760,6 +1769,7 @@ fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -1814,6 +1824,10 @@ pub struct FestivalDay {
     /// midnight, read only for a rule kept on that entry
     /// ([`Dated::SunEnters`]).
     pub sun_entry: SunEntry,
+    /// The nakshatra the Sun entered from this sunrise to the next, read
+    /// only for a rule kept on the sunrise day of that entry
+    /// ([`DayReckoning::Sunrise`]).
+    pub sunrise_entry: SunEntry,
     /// The Moon's stays in the arcs a parana bar names, found only for a
     /// rule that reads them ([`ParanaRule::bars`]).
     pub moon_arcs: MoonArcs,
@@ -1869,6 +1883,7 @@ pub struct FestivalDay {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -1944,9 +1959,11 @@ impl MoonArc {
     }
 }
 
-/// Whether the sidereal Sun entered a nakshatra in a civil day, local
-/// midnight to the next. The Sun is never retrograde and stays more than
-/// thirteen days in a nakshatra, so a day holds one entry at most.
+/// Whether the sidereal Sun entered a nakshatra in a day: the civil day,
+/// local midnight to the next ([`FestivalDay::sun_entry`]), or the day
+/// from sunrise to the next ([`FestivalDay::sunrise_entry`]). The Sun is
+/// never retrograde and stays more than thirteen days in a nakshatra, so a
+/// day holds one entry at most.
 ///
 /// ```
 /// use teistro_core::catalogue::Nakshatra;
@@ -1961,9 +1978,9 @@ pub enum SunEntry {
     /// Not read: no rule asked. A rule asking over such a day is refused
     /// rather than read as a day the Sun entered none.
     Unsearched,
-    /// The Sun stood in one nakshatra the whole civil day.
+    /// The Sun stood in one nakshatra the whole day.
     Stayed,
-    /// The Sun entered this nakshatra in the civil day.
+    /// The Sun entered this nakshatra in the day.
     Entered(Nakshatra),
 }
 
@@ -2017,6 +2034,7 @@ pub enum SunEntry {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2116,6 +2134,7 @@ impl FestivalDay {
             nakshatra,
             moonrise: Moonrise::Unsearched,
             sun_entry: SunEntry::Unsearched,
+            sunrise_entry: SunEntry::Unsearched,
             moon_arcs: MoonArcs::Unsearched,
         }
     }
@@ -2179,6 +2198,7 @@ impl FestivalDay {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })
@@ -2302,6 +2322,7 @@ impl FestivalDay {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2391,6 +2412,7 @@ pub struct Extent {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2491,6 +2513,7 @@ pub enum Decided {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2624,6 +2647,7 @@ pub struct Observance {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2719,6 +2743,7 @@ pub struct Unjudged {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -2911,6 +2936,7 @@ impl Observances {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })
@@ -3012,6 +3038,7 @@ impl Observances {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })
@@ -3111,6 +3138,7 @@ impl Observances {
 /// #             nakshatra: Vec::new(),
 /// #             moonrise: Moonrise::Unsearched,
 /// #             sun_entry: SunEntry::Unsearched,
+/// #             sunrise_entry: SunEntry::Unsearched,
 /// #             moon_arcs: MoonArcs::Unsearched,
 /// #         }
 /// #     })
@@ -4098,6 +4126,7 @@ impl FestivalRule {
     /// #             nakshatra: Vec::new(),
     /// #             moonrise: Moonrise::Unsearched,
     /// #             sun_entry: SunEntry::Unsearched,
+    /// #             sunrise_entry: SunEntry::Unsearched,
     /// #             moon_arcs: MoonArcs::Unsearched,
     /// #         }
     /// #     })

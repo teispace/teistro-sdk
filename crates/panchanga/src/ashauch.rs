@@ -79,6 +79,7 @@ pub use rite::{Rite, RiteAnswer, RiteAsked, RiteBeginning, RiteRow, RiteTable, R
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -145,6 +146,7 @@ pub const FULL_DAYS: u8 = 10;
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -224,6 +226,7 @@ const JOINED: f64 = 1e-6;
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -312,6 +315,7 @@ pub enum NightRule {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -437,6 +441,7 @@ impl Length {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -517,6 +522,7 @@ pub enum PakshiniNight {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -595,6 +601,7 @@ pub enum Sex {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -684,6 +691,7 @@ pub enum Upanayana {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -786,6 +794,7 @@ pub struct Deceased {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -973,6 +982,7 @@ impl AshauchEvent {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1048,6 +1058,7 @@ pub enum AshauchKind {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1176,6 +1187,7 @@ pub enum Relation {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1401,6 +1413,7 @@ pub struct LossRow {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1481,6 +1494,7 @@ pub struct LateRow {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1631,6 +1645,7 @@ pub struct AshauchTable {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1739,6 +1754,7 @@ pub struct AshauchRequest {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1861,6 +1877,7 @@ impl From<&Ashauch> for Running {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -1939,6 +1956,7 @@ pub enum DayOneBy {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -2067,6 +2085,7 @@ pub enum Clause {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -2163,6 +2182,7 @@ pub enum Overlapped {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();
@@ -2289,6 +2309,7 @@ impl Ashauch {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -2474,6 +2495,7 @@ impl AshauchRequest {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -2622,6 +2644,7 @@ impl AshauchRequest {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -2691,6 +2714,7 @@ impl AshauchRequest {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -2762,6 +2786,7 @@ impl AshauchRequest {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -2839,6 +2864,7 @@ impl AshauchRequest {
     /// #         nakshatra: Vec::new(),
     /// #         moonrise: Moonrise::Unsearched,
     /// #         sun_entry: SunEntry::Unsearched,
+    /// #         sunrise_entry: SunEntry::Unsearched,
     /// #         moon_arcs: MoonArcs::Unsearched,
     /// #     })
     /// #     .collect();
@@ -3267,6 +3293,7 @@ fn no_row(table: &AshauchTable, request: &AshauchRequest) -> Error {
 /// #         nakshatra: Vec::new(),
 /// #         moonrise: Moonrise::Unsearched,
 /// #         sun_entry: SunEntry::Unsearched,
+/// #         sunrise_entry: SunEntry::Unsearched,
 /// #         moon_arcs: MoonArcs::Unsearched,
 /// #     })
 /// #     .collect();

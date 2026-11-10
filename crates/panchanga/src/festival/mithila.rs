@@ -194,10 +194,10 @@ impl DatedRule {
     ///
     /// ```
     /// use teistro_core::catalogue::Nakshatra;
-    /// use teistro_panchanga::festival::{Dated, DatedRule};
+    /// use teistro_panchanga::festival::{Dated, DatedRule, DayReckoning};
     ///
     /// let jur_sital = &DatedRule::mithila()[0];
-    /// assert_eq!(jur_sital.on, Dated::SunEnters { nakshatra: Nakshatra::Ashwini, days: 1 });
+    /// assert_eq!(jur_sital.on, Dated::SunEnters { nakshatra: Nakshatra::Ashwini, days: 1, reckoning: DayReckoning::Civil });
     /// ```
     #[must_use]
     pub fn mithila() -> Vec<DatedRule> {
@@ -209,6 +209,7 @@ impl DatedRule {
             on: Dated::SunEnters {
                 nakshatra: Nakshatra::Ashwini,
                 days: 1,
+                reckoning: super::DayReckoning::Civil,
             },
             meta: maithil(),
         }]

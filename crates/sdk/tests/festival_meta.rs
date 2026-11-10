@@ -198,6 +198,57 @@ fn west_bengal_counts_its_puja_days_and_keeps_its_new_year_by_the_sun() -> Resul
 }
 
 #[test]
+fn kerala_keeps_its_own_days_by_the_malayalam_month() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_KERALA"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for key in [
+        "VISHU",
+        "FIRST_ONAM",
+        "THIRUVONAM",
+        "FOURTH_ONAM",
+        "SREE_NARAYANA_GURU_JAYANTHI",
+        "SREE_NARAYANA_GURU_SAMADHI",
+        "MAUNDY_THURSDAY",
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().form,
+            PackForm::Dated,
+            "{key}"
+        );
+    }
+    for key in [
+        "KARKIDAKA_VAVU",
+        "JANMASHTAMI",
+        "AVANI_AVITTOM",
+        "LAKSHMI_PUJA",
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().form,
+            PackForm::Lunar,
+            "{key}"
+        );
+    }
+    let avittom = row(&listed.rules, "AVANI_AVITTOM").unwrap();
+    assert!(avittom.meta.optional);
+    assert_eq!(avittom.meta.communities, ["BRAHMIN"]);
+    assert_eq!(
+        row(&listed.rules, "EID_AL_FITR").unwrap().form,
+        PackForm::Published
+    );
+    let state = MetaFilter {
+        regions: vec!["KERALA".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");
