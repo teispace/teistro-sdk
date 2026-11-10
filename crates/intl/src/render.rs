@@ -650,6 +650,20 @@ pub fn engine_params(key: &str) -> &'static [&'static str] {
         "weekdayName",
         "monthName",
     ];
+    // A month range: the first month's date parameters, the last's year
+    // and month, and which of them differs (`YEAR` or `MONTH`), CLDR's
+    // greatest difference.
+    const RANGE: &[&str] = &[
+        "year",
+        "month",
+        "leap",
+        "era",
+        "monthName",
+        "untilYear",
+        "untilMonth",
+        "untilMonthName",
+        "greatest",
+    ];
     let Some(rest) = key.strip_prefix("sdk.calendar.") else {
         return &[];
     };
@@ -658,7 +672,8 @@ pub fn engine_params(key: &str) -> &'static [&'static str] {
         _ if rest.starts_with("time.") => TIME,
         "join" => &["date", "time"],
         "numeric" | "long" | "full" if rest.contains(".date.") => DATE,
-        "monthName" | "monthShort" | "weekdayName" | "weekdayShort" => DATE,
+        "monthName" | "monthShort" | "monthYear" | "weekdayName" | "weekdayShort" => DATE,
+        "monthYearRange" => RANGE,
         _ if rest.starts_with("ghati.") => &["ghati", "pala", "vipala"],
         "daysHours" | "hoursMinutes" | "hoursMinutesSeconds" if rest.starts_with("duration.") => {
             &["seconds"]
@@ -1774,6 +1789,51 @@ impl Intl {
         let mut eval = Eval::new(self, locale, tag, &empty, 0);
         let params = eval.date_params(date);
         let key = format!("sdk.calendar.{}.date.{style}", date.calendar.key());
+        let rendered = self.render_from(tag, &key, &params, 0, true);
+        (key, eval.joined(rendered))
+    }
+
+    /// A month and its year, or a run of months, through the locale's
+    /// pattern (`sdk.calendar.<CALENDAR>.monthYear`, or `monthYearRange`
+    /// when `until` falls in another month), with its fields marked.
+    pub(crate) fn civil_month_year(
+        &self,
+        locale: &LocaleSource,
+        tag: &str,
+        date: &CalendarDate,
+        until: Option<&CalendarDate>,
+    ) -> (String, Rendered) {
+        let empty = Params::new();
+        let mut eval = Eval::new(self, locale, tag, &empty, 0);
+        let mut params = eval.date_params(date);
+        let calendar = date.calendar.key();
+        let last = until.map(|until| eval.date_params(until));
+        let differs = |name: &str, other: &Params| params.get(name) != other.get(name);
+        let greatest = last.as_ref().and_then(|other| {
+            if differs("year", other) {
+                Some("YEAR")
+            } else if differs("month", other) || differs("leap", other) {
+                Some("MONTH")
+            } else {
+                None
+            }
+        });
+        let key = match (greatest, last) {
+            (Some(greatest), Some(mut other)) => {
+                for (from, to) in [
+                    ("year", "untilYear"),
+                    ("month", "untilMonth"),
+                    ("monthName", "untilMonthName"),
+                ] {
+                    if let Some(value) = other.remove(from) {
+                        params.insert(String::from(to), value);
+                    }
+                }
+                params.insert(String::from("greatest"), Value::Str(greatest.to_owned()));
+                format!("sdk.calendar.{calendar}.monthYearRange")
+            }
+            _ => format!("sdk.calendar.{calendar}.monthYear"),
+        };
         let rendered = self.render_from(tag, &key, &params, 0, true);
         (key, eval.joined(rendered))
     }

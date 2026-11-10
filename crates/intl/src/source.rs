@@ -409,7 +409,7 @@ impl Entity {
     pub fn source_json(&self) -> serde_json::Value {
         use serde_json::Value as Json;
         let mut object = serde_json::Map::new();
-        for form in ["short", NAME_FORM, "prose", "iast"] {
+        for form in ["short", "abbrev", NAME_FORM, "prose", "iast"] {
             if let Some(value) = self.forms.get(form) {
                 object.insert(form.to_owned(), Json::String(value.clone()));
             }

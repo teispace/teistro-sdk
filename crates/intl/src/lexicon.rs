@@ -42,7 +42,7 @@ const LONGEST_NAME: usize = 4;
 
 /// The forms a locale writes, in the order a listing gives them; any other
 /// form the locale adds follows, by name.
-const FORMS: [&str; 4] = ["name", "prose", "short", "iast"];
+const FORMS: [&str; 5] = ["name", "prose", "short", "abbrev", "iast"];
 
 /// The derived form: the name in the Latin letters a person types.
 pub const ROMANISED: &str = "romanised";
@@ -177,7 +177,7 @@ impl LookupRequest {
 #[cfg_attr(feature = "words-schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct LexiconForm {
-    /// The form: `name`, `prose`, `short`, `iast`, any the locale adds, or
+    /// The form: `name`, `prose`, `short`, `abbrev`, `iast`, any the locale adds, or
     /// `romanised`, derived.
     pub form: String,
     /// Its text.
@@ -345,7 +345,9 @@ impl Index {
     fn insert(&mut self, entry: LexiconEntry) {
         let at = self.entries.len();
         for (form_at, form) in entry.forms.iter().enumerate() {
-            if form.form == "short" {
+            // A code or a printed abbreviation (`अ`, `का`) names too
+            // little to be looked up by.
+            if form.form == "short" || form.form == "abbrev" {
                 continue;
             }
             let folded = fold(&form.text);
@@ -401,9 +403,9 @@ impl Intl {
     /// let months = intl.lexicon(&asked)?;
     /// let mangsir = months.entries.iter().find(|e| e.key == "masa.MARGASHIRSHA").ok_or("the month")?;
     /// let texts: Vec<&str> = mangsir.forms.iter().map(|f| f.text.as_str()).collect();
-    /// // The name, its IAST and the romanised spelling first, then any
-    /// // spelling a vernacular locale adds.
-    /// assert_eq!(&texts[..3], ["मार्गशीर्ष", "Mārgaśīrṣa", "Margashirsha"]);
+    /// // The name, its printed abbreviation, its IAST and the romanised
+    /// // spelling first, then any spelling a vernacular locale adds.
+    /// assert_eq!(&texts[..4], ["मार्गशीर्ष", "मं", "Mārgaśīrṣa", "Margashirsha"]);
     /// let bad = LexiconRequest::from_json(r#"{"kinds": ["planet"]}"#)?;
     /// assert_eq!(intl.lexicon(&bad).unwrap_err().field(), Some("lexicon.kinds"));
     /// # Ok::<(), Box<dyn std::error::Error>>(())

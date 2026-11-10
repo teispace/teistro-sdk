@@ -9,6 +9,8 @@
  "GREGORIAN": {
   "monthName": ".input {$month :integer} .match $month 1 {{January}} 2 {{February}} 3 {{March}} 4 {{April}} 5 {{May}} 6 {{June}} 7 {{July}} 8 {{August}} 9 {{September}} 10 {{October}} 11 {{November}} 12 {{December}} * {{{$month}}}",
   "monthShort": ".input {$month :integer} .match $month 1 {{Jan}} 2 {{Feb}} 3 {{Mar}} 4 {{Apr}} 5 {{May}} 6 {{Jun}} 7 {{Jul}} 8 {{Aug}} 9 {{Sep}} 10 {{Oct}} 11 {{Nov}} 12 {{Dec}} * {{{$month}}}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false}",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false}}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
@@ -18,6 +20,8 @@
  "JULIAN": {
   "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
   "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+  "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
   "date": {
    "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
    "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -27,6 +31,8 @@
  "MIXED": {
   "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
   "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+  "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+  "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
   "date": {
    "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
    "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -43,6 +49,8 @@
  "BIKRAM_SAMBAT": {
   "monthName": ".input {$month :integer} .match $month 1 {{Baishakh}} 2 {{Jestha}} 3 {{Asar}} 4 {{Shrawan}} 5 {{Bhadra}} 6 {{Ashwin}} 7 {{Kartik}} 8 {{Mangsir}} 9 {{Poush}} 10 {{Magh}} 11 {{Falgun}} 12 {{Chaitra}} * {{{$month}}}",
   "monthShort": ".input {$month :integer} .match $month 1 {{Bai}} 2 {{Jes}} 3 {{Asa}} 4 {{Shr}} 5 {{Bha}} 6 {{Ash}} 7 {{Kar}} 8 {{Man}} 9 {{Pou}} 10 {{Mag}} 11 {{Fal}} 12 {{Cha}} * {{{$month}}}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false} BS",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} BS}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} BS}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} BS",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} BS",
@@ -52,6 +60,8 @@
  "INDIAN_NATIONAL": {
   "monthName": ".input {$month :integer} .match $month 1 {{Chaitra}} 2 {{Vaisakha}} 3 {{Jyaistha}} 4 {{Asadha}} 5 {{Sravana}} 6 {{Bhadra}} 7 {{Asvina}} 8 {{Kartika}} 9 {{Agrahayana}} 10 {{Pausa}} 11 {{Magha}} 12 {{Phalguna}} * {{{$month}}}",
   "monthShort": ".input {$month :integer} .match $month 1 {{Cha}} 2 {{Vai}} 3 {{Jya}} 4 {{Asa}} 5 {{Sra}} 6 {{Bha}} 7 {{Asv}} 8 {{Kar}} 9 {{Agr}} 10 {{Pau}} 11 {{Mag}} 12 {{Pha}} * {{{$month}}}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false} Saka",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} Saka}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} Saka}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Saka",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Saka",
@@ -61,6 +71,8 @@
  "HIJRI_TABULAR": {
   "monthName": ".input {$month :integer} .match $month 1 {{Muharram}} 2 {{Safar}} 3 {{Rabiʻ I}} 4 {{Rabiʻ II}} 5 {{Jumada I}} 6 {{Jumada II}} 7 {{Rajab}} 8 {{Shaʻban}} 9 {{Ramadan}} 10 {{Shawwal}} 11 {{Dhuʻl-Qiʻdah}} 12 {{Dhuʻl-Hijjah}} * {{{$month}}}",
   "monthShort": ".input {$month :integer} .match $month 1 {{Muh.}} 2 {{Saf.}} 3 {{Rab. I}} 4 {{Rab. II}} 5 {{Jum. I}} 6 {{Jum. II}} 7 {{Raj.}} 8 {{Sha.}} 9 {{Ram.}} 10 {{Shaw.}} 11 {{Dhuʻl-Q.}} 12 {{Dhuʻl-H.}} * {{{$month}}}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false} AH",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} AH}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} AH}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} AH",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} AH",
@@ -70,6 +82,8 @@
  "TIBETAN_PHUGPA": {
   "monthName": ".input {$leap :string} .match $leap MONTH {{leap month {$month :integer}}} MONTH_AND_DAY {{leap month {$month :integer}}} * {{month {$month :integer}}}",
   "monthShort": ".input {$leap :string} .match $leap MONTH {{leap {$month :integer}}} MONTH_AND_DAY {{leap {$month :integer}}} * {{{$month :integer}}}",
+  "monthYear": "{$monthName}, {$year :integer useGrouping=false}",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName}, {$year :integer useGrouping=false} – {$untilMonthName}, {$untilYear :integer useGrouping=false}}} * {{{$monthName} – {$untilMonthName}, {$untilYear :integer useGrouping=false}}}",
   "date": {
    "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap month)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap day)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (leap month, leap day)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
    "long": ".input {$leap :string} .match $leap DAY {{{$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$monthName}, leap day {$day :integer}, {$year :integer useGrouping=false}}} * {{{$monthName}, day {$day :integer}, {$year :integer useGrouping=false}}}",
@@ -79,6 +93,8 @@
  "BANGLADESHI": {
   "monthName": ".input {$month :integer} .match $month 1 {{Boishakh}} 2 {{Joishtho}} 3 {{Asharh}} 4 {{Srabon}} 5 {{Bhadro}} 6 {{Ashwin}} 7 {{Kartik}} 8 {{Ogrohayon}} 9 {{Poush}} 10 {{Magh}} 11 {{Falgun}} 12 {{Choitro}} * {{{$month}}}",
   "monthShort": "{sdk.calendar.BANGLADESHI.monthName :msg}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false} Bangabda",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} Bangabda}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} Bangabda}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Bangabda",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Bangabda",
@@ -88,6 +104,8 @@
  "ASSAM_SOLAR": {
   "monthName": ".input {$month :integer} .match $month 1 {{Bohag}} 2 {{Jeth}} 3 {{Ahar}} 4 {{Saon}} 5 {{Bhado}} 6 {{Ahin}} 7 {{Kati}} 8 {{Aghun}} 9 {{Puh}} 10 {{Magh}} 11 {{Phagun}} 12 {{Chot}} * {{{$month}}}",
   "monthShort": "{sdk.calendar.ASSAM_SOLAR.monthName :msg}",
+  "monthYear": "{$monthName} {$year :integer useGrouping=false} Bhaskarabda",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} Bhaskarabda}} * {{{$monthName} – {$untilMonthName} {$untilYear :integer useGrouping=false} Bhaskarabda}}",
   "date": {
    "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Bhaskarabda",
    "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Bhaskarabda",

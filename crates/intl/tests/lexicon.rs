@@ -255,7 +255,12 @@ fn the_folds_collisions_are_the_ones_listed() {
     let mut by_fold: std::collections::BTreeMap<String, std::collections::BTreeSet<String>> =
         std::collections::BTreeMap::new();
     for entry in &english.entries {
-        for form in entry.forms.iter().filter(|f| f.form != "short") {
+        // Codes and printed abbreviations are listed, not looked up.
+        for form in entry
+            .forms
+            .iter()
+            .filter(|f| f.form != "short" && f.form != "abbrev")
+        {
             by_fold
                 .entry(fold(&form.text))
                 .or_default()
