@@ -4410,7 +4410,7 @@ class AnEngine(WithLibrary):
             self.assertEqual([cell.sunrise for cell in kept.cells], [cell.sunrise for cell in month.cells])
             with self.assertRaises(TeistroError) as refused:
                 ctx.almanac.cells({**record, "kinds": []})
-            self.assertEqual(refused.exception.field, "cells")
+            self.assertEqual(refused.exception.field, "cells.kinds")
 
     def test_a_measure_reads_into_its_aayadi_without_a_sky(self) -> None:
         """*Muhurta Chintamani* XII v. 3 with Mahidhara's gloss: Anuradha's

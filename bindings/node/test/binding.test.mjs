@@ -3641,7 +3641,7 @@ test('a month of cells is its full days\' own', () => {
     assert.equal(month.cells[i].sunrise, month.cells[i - 1].nextSunrise);
   }
   const days = ctx.almanac.of({ from: gregorian(2026, 10, 1), to: gregorian(2026, 10, 1), place, utcOffsetSeconds: 20700 });
-  assert.equal(days[0].day.sunrise, month.cells[0].sunrise);
+  assert.equal(days.at(0).day.sunrise, month.cells[0].sunrise);
   const kept = ctx.almanac.cells({
     from: gregorian(2026, 10, 1),
     to: { year: 2026, month: 10, day: 31 },
