@@ -61,8 +61,8 @@ pub mod place;
 pub mod registry;
 pub mod rows;
 
-pub use drawing::{Drawing, draw};
+pub use drawing::{Drawing, draw, draw_from};
 pub use layout::{Cell, Direction, Grid, Holds, Hub, Layout, Radial, Reference, Ring, Shape};
 pub use path::{Path, Point, Segment};
-pub use place::{Body, Mark, Placed, PlacedCell, Placements, place};
+pub use place::{Body, Mark, Placed, PlacedCell, Placements, place, place_from};
 pub use registry::Layouts;

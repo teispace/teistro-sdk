@@ -17,7 +17,7 @@
     reason = "tests fail by panicking and index their own fixtures"
 )]
 
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::catalogue::{ChartFrame, Graha, Rashi, Varga};
 use teistro_geometry::layout::{Cell, Direction, Grid, Holds, Hub, Reference};
 use teistro_geometry::path::{Point, Segment};
 use teistro_geometry::{Body, Layout, Placements, place, rows};
@@ -650,4 +650,26 @@ fn a_layout_reads_back_from_its_own_json() {
         assert_eq!(read, layout);
         read.validate().unwrap();
     }
+}
+
+#[test]
+fn a_drawing_counted_from_the_lagna_writes_no_frame_and_another_writes_its_own() {
+    let foundation = teistro_chart::sample::foundation().unwrap();
+    let lagna = teistro_geometry::draw(&rows::nepali_circle(), &foundation, Varga::D1).unwrap();
+    let written = serde_json::to_value(&lagna).unwrap();
+    assert!(written.get("counts_from").is_none(), "{written}");
+    let moon = teistro_geometry::draw_from(
+        &rows::nepali_circle(),
+        &foundation,
+        Varga::D1,
+        ChartFrame::Moon,
+    )
+    .unwrap();
+    let written = serde_json::to_value(&moon).unwrap();
+    assert_eq!(written["counts_from"], "MOON");
+    let read: teistro_geometry::Drawing = serde_json::from_value(written).unwrap();
+    assert_eq!(read, moon);
+    let read: teistro_geometry::Drawing =
+        serde_json::from_value(serde_json::to_value(&lagna).unwrap()).unwrap();
+    assert_eq!(read.counts_from, ChartFrame::Lagna);
 }

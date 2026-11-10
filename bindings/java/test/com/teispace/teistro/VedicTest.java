@@ -173,6 +173,42 @@ final class VedicTest {
                 }
             }
         });
+        tests.put("a Moon chart and a bhava chalit count their houses from what they name", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                List<Drawing> drawn = sky.chart().found(2_451_545.0, KATHMANDU, 20_700, ChartOptions.builder()
+                        .drawing(ChartLayout.NORTH_INDIAN, Varga.D1)
+                        .drawing(ChartLayout.NORTH_INDIAN, Varga.D1, ChartFrame.MOON)
+                        .drawing(ChartLayout.NORTH_INDIAN, Varga.D1, ChartFrame.BHAVA)
+                        .build()).drawings();
+                same(List.of(ChartFrame.LAGNA, ChartFrame.MOON, ChartFrame.BHAVA),
+                        drawn.stream().map(Drawing::countsFrom).toList(), "each drawing names its frame");
+                java.util.function.Function<Drawing, Map<Rashi, List<String>>> bySign = drawing -> {
+                    Map<Rashi, List<String>> signs = new java.util.TreeMap<>();
+                    drawing.cells().forEach(cell -> signs.put(cell.sign(), cell.bodies()));
+                    return signs;
+                };
+                java.util.function.Function<Drawing, DrawnCell> first = drawing -> drawing.cells().stream()
+                        .filter(cell -> cell.house() == 1).findFirst().orElseThrow();
+                Drawing lagna = drawn.get(0);
+                Drawing moon = drawn.get(1);
+                Drawing bhava = drawn.get(2);
+                // The Moon's chart moves the houses, not the grahas: each sign holds what it
+                // held, the Moon stands in house 1, and the lagna keeps its own sign.
+                same(bySign.apply(lagna), bySign.apply(moon), "every sign holds the same grahas");
+                check(first.apply(moon).bodies().contains("graha.MOON"), "the Moon stands in house 1");
+                same(List.of(first.apply(lagna).sign()),
+                        moon.cells().stream().filter(DrawnCell::lagna).map(DrawnCell::sign).toList(),
+                        "the lagna flag stays on the lagna's sign");
+                // The bhava chalit keeps the lagna chart's houses and moves the grahas.
+                same(lagna.cells().stream().map(cell -> cell.house() + ":" + cell.sign()).toList(),
+                        bhava.cells().stream().map(cell -> cell.house() + ":" + cell.sign()).toList(),
+                        "the same houses on the same signs");
+                same(bySign.apply(lagna).values().stream().flatMap(List::stream).sorted().toList(),
+                        bySign.apply(bhava).values().stream().flatMap(List::stream).sorted().toList(),
+                        "every graha drawn once");
+            }
+        });
         tests.put("a chart is drawn in every shipped layout, each sign and house once a ring, every point on the page", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

@@ -10,7 +10,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_chart::bhava::Bhavas;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::math;
@@ -23,7 +23,7 @@ use crate::path::{Path, Point, Segment};
 /// One body as placement reads it.
 ///
 /// ```
-/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
 /// use teistro_geometry::Body;
 ///
 /// let mars = Body::at(Graha::Mars.key_id(), 95.0);
@@ -44,7 +44,7 @@ impl Body {
     /// A body known by its sign alone.
     ///
     /// ```
-    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
     /// use teistro_geometry::Body;
     ///
     /// // A divisional chart's body: a sign and no degree.
@@ -63,7 +63,7 @@ impl Body {
     /// A body at a longitude, which also gives its sign.
     ///
     /// ```
-    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
     /// use teistro_geometry::Body;
     ///
     /// assert_eq!(Body::at(Graha::Sun.key_id(), 0.0).sign, Rashi::Aries);
@@ -82,7 +82,7 @@ impl Body {
 /// What placement reads of a chart.
 ///
 /// ```
-/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
 /// use teistro_geometry::{Body, Placements};
 ///
 /// let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Moon.key_id(), Rashi::Virgo));
@@ -126,7 +126,7 @@ impl Placements {
     /// The same chart with a body added.
     ///
     /// ```
-    /// use teistro_core::catalogue::{Graha, Rashi};
+    /// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
     /// use teistro_geometry::{Body, Placements};
     ///
     /// let chart = Placements::new(Rashi::Aries)
@@ -199,7 +199,7 @@ impl Placements {
 /// One cell of a placed chart.
 ///
 /// ```
-/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
 /// use teistro_geometry::{Body, Placements, place, rows};
 ///
 /// let chart = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Mars.key_id(), Rashi::Aries));
@@ -300,7 +300,7 @@ pub struct Placed {
 /// longitude for a chart whose lagna or bodies have no degree.
 ///
 /// ```
-/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
 /// use teistro_geometry::{Body, Placements, place, rows};
 ///
 /// // A Cancer lagna with the Sun in Leo, in the North Indian chart.
@@ -315,26 +315,90 @@ pub struct Placed {
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 pub fn place(layout: &Layout, chart: &Placements) -> Result<Placed, Error> {
+    place_from(layout, chart, ChartFrame::Lagna)
+}
+
+/// Places a chart in a layout, its houses counted as `frame` says: from the
+/// lagna (as [`place`]), from the Moon's or the Sun's sign, or the bhava
+/// chalit, where each house keeps the sign the lagna gives it and each body
+/// stands in the bhava the chart's cusps put it in.
+///
+/// A radial layout's rings say for themselves what they count from, so it
+/// is drawn from the lagna alone.
+///
+/// # Errors
+///
+/// As [`place`]; and a frame a radial layout cannot take, a Moon or Sun the
+/// chart does not list, or a bhava chalit for a chart with no cusps or a
+/// body with no degree, each refused under `from`.
+///
+/// ```
+/// use teistro_core::catalogue::{ChartFrame, Graha, Rashi};
+/// use teistro_geometry::{Body, Placements, place_from, rows};
+///
+/// // A Cancer lagna with the Moon in Virgo: the Moon's chart puts Virgo in
+/// // house 1 and keeps the lagna's mark on Cancer, its eleventh house.
+/// let chart = Placements::new(Rashi::Cancer).with(Body::in_sign(Graha::Moon.key_id(), Rashi::Virgo));
+/// let placed = place_from(&rows::north_indian(), &chart, ChartFrame::Moon)?;
+/// assert_eq!((placed.cells[0].house, placed.cells[0].sign), (1, Rashi::Virgo));
+/// let lagna = placed.cells.iter().find(|cell| cell.lagna).unwrap();
+/// assert_eq!((lagna.house, lagna.sign), (11, Rashi::Cancer));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+pub fn place_from(layout: &Layout, chart: &Placements, frame: ChartFrame) -> Result<Placed, Error> {
     match &layout.shape {
         Shape::Grid(grid) => Ok(Placed {
             layout: layout.key.clone(),
-            cells: place_grid(grid, chart),
+            cells: place_grid(&layout.key, grid, chart, frame)?,
             frame: grid.frame.clone(),
             marks: Vec::new(),
             hub: grid.hub,
         }),
+        Shape::Radial(_) if frame != ChartFrame::Lagna => Err(Error::invalid_arg(format!(
+            "the {} layout's rings say what each counts from, so it is drawn from the lagna, not \
+             from {}",
+            layout.key,
+            frame.full_key()
+        ))
+        .with_field("from")
+        .with_hint("draw the chart in a grid layout, or ask for chart_frame.LAGNA")),
         Shape::Radial(radial) => place_radial(&layout.key, radial, chart),
     }
 }
 
-fn place_grid(grid: &Grid, chart: &Placements) -> Vec<PlacedCell> {
-    let lagna = chart.lagna.id();
-    grid.cells
+fn place_grid(
+    key: &str,
+    grid: &Grid,
+    chart: &Placements,
+    frame: ChartFrame,
+) -> Result<Vec<PlacedCell>, Error> {
+    // The lagna's sign is house 1 for the janma kundali and the bhava
+    // chalit alike: the chalit moves the bodies, not the houses.
+    let first = match frame {
+        ChartFrame::Moon => sign_of_body(key, chart, Graha::Moon).map_err(under_from)?,
+        ChartFrame::Sun => sign_of_body(key, chart, Graha::Sun).map_err(under_from)?,
+        _ => chart.lagna,
+    };
+    let bhavas = if frame == ChartFrame::Bhava {
+        Some(bhavas_of(key, chart)?)
+    } else {
+        None
+    };
+    Ok(grid
+        .cells
         .iter()
         .map(|cell| {
             let (sign, house) = match cell.holds {
-                Holds::Sign(sign) => (sign, house_of(sign.id(), lagna)),
-                Holds::House(house) => (sign_after(lagna, house), house),
+                Holds::Sign(sign) => (sign, house_of(sign.id(), first.id())),
+                Holds::House(house) => (sign_after(first.id(), house), house),
+            };
+            let bodies = match &bhavas {
+                Some(bhavas) => bhavas
+                    .iter()
+                    .filter(|(_, bhava)| *bhava == house)
+                    .map(|(body, _)| *body)
+                    .collect(),
+                None => in_sign(chart, sign),
             };
             PlacedCell {
                 outline: cell.outline.clone(),
@@ -344,10 +408,38 @@ fn place_grid(grid: &Grid, chart: &Placements) -> Vec<PlacedCell> {
                 ring: 0,
                 label: cell.label,
                 anchor: cell.bodies,
-                bodies: in_sign(chart, sign),
+                bodies,
             }
         })
+        .collect())
+}
+
+/// Each body with the bhava the chart's cusps put it in, for a bhava
+/// chalit: refused under `from` for a chart with no cusps or a body with
+/// no degree, as a divisional chart's are.
+fn bhavas_of(key: &str, chart: &Placements) -> Result<Vec<(KeyId, u8)>, Error> {
+    let houses = chart.houses.as_ref().ok_or_else(|| {
+        Error::invalid_arg(format!(
+            "the bhava chalit places each body by the chart's cusps, and the chart drawn in {key} \
+             has none"
+        ))
+        .with_field("from")
+        .with_hint("a bhava chalit is drawn from D1, whose cusps the founded chart has")
+    })?;
+    chart
+        .bodies
+        .iter()
+        .enumerate()
+        .map(|(position, body)| {
+            let degree = degree_of(key, position, body).map_err(under_from)?;
+            Ok((body.key, houses.place(degree).bhava))
+        })
         .collect()
+}
+
+/// A refusal of what a frame needs, named by the frame that needs it.
+fn under_from(error: Error) -> Error {
+    error.with_field("from")
 }
 
 /// The square's centre, which every ring turns about.

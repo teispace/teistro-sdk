@@ -19,6 +19,7 @@ import {
   RashiById,
   SahamById,
   ChartKind,
+  ChartFrame,
   ChartLayout,
   Leap,
   Lilith,
@@ -849,8 +850,9 @@ test('every catalogue enum has a complete id table', () => {
   // since `TsCalendar` gained `TAMIL_VAKYA`; 1546 since `TsTradition`
   // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two;
   // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`;
-  // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`.
-  assert.equal(entries, 1552, 'every member of every enum is in a table');
+  // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`;
+  // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`.
+  assert.equal(entries, 1557, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1182,6 +1184,54 @@ test('a drawing names a layout and a varga or is refused', () => {
   assert.throws(
     () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: {} }),
     /expected an array/u,
+  );
+  ctx.dispose();
+});
+
+/**
+ * A drawing counts its houses from the lagna unless it names the Moon, the
+ * Sun or the bhavas: the Moon's chart keeps each sign's grahas and puts the
+ * Moon in house 1; the bhava chalit keeps the houses and moves the grahas
+ * (`03-design/chart-geometry.md` §7h).
+ */
+test('a Moon chart and a bhava chalit count their houses from what they name', () => {
+  const ctx = context();
+  const [lagna, moon, bhava] = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 0 },
+    utcOffsetSeconds: 20700,
+    drawings: [
+      { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
+      { layout: ChartLayout.NorthIndian, varga: Varga.D1, countsFrom: ChartFrame.Moon },
+      { layout: ChartLayout.NorthIndian, varga: Varga.D1, countsFrom: ChartFrame.Bhava },
+    ],
+  }).drawings;
+  assert.deepEqual(
+    [lagna, moon, bhava].map((drawing) => drawing.countsFrom),
+    [ChartFrame.Lagna, ChartFrame.Moon, ChartFrame.Bhava],
+  );
+  const bySign = (drawing) => Object.fromEntries(drawing.cells.map((cell) => [cell.sign, cell.bodies]));
+  const first = (drawing) => drawing.cells.find((cell) => cell.house === 1);
+  assert.deepEqual(bySign(moon), bySign(lagna), 'every sign holds the same grahas');
+  assert.ok(first(moon).bodies.includes('graha.MOON'), 'the Moon stands in house 1');
+  assert.deepEqual(
+    moon.cells.filter((cell) => cell.lagna).map((cell) => cell.sign),
+    [first(lagna).sign],
+    "the lagna flag stays on the lagna's sign",
+  );
+  const houses = (drawing) => drawing.cells.map((cell) => `${cell.house}:${cell.sign}`);
+  assert.deepEqual(houses(bhava), houses(lagna), 'the same houses on the same signs');
+  const every = (drawing) => drawing.cells.flatMap((cell) => cell.bodies).sort();
+  assert.deepEqual(every(bhava), every(lagna), 'every graha drawn once');
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant: 2451545,
+        place: { latitude: 0, longitude: 0 },
+        utcOffsetSeconds: 0,
+        drawings: [{ layout: ChartLayout.NorthIndian, varga: Varga.D1, countsFrom: 'chart_frame.MARS' }],
+      }),
+    /drawings\[0\]\.countsFrom/u,
   );
   ctx.dispose();
 });

@@ -1470,10 +1470,10 @@ void main() {
       DashaSystem.registered('ACME_PARITY'),
     ],
     drawings: [
-      (ChartLayout.northIndian, Varga.d1),
-      (ChartLayout.southIndian, Varga.d9),
-      (ChartLayout.westernWheel, Varga.d1),
-      (ChartLayout.registered('ACME_KERALA'), Varga.d9),
+      ChartDrawing(ChartLayout.northIndian, Varga.d1),
+      ChartDrawing(ChartLayout.southIndian, Varga.d9),
+      ChartDrawing(ChartLayout.westernWheel, Varga.d1),
+      ChartDrawing(ChartLayout.registered('ACME_KERALA'), Varga.d9),
     ],
     theme: ChartTheme.dark,
     rules: const RuleRequest(

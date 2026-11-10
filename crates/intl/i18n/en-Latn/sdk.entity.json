@@ -6080,6 +6080,28 @@
       "prose": "North Indian with petals"
     }
   },
+  "chart_frame": {
+    "LAGNA": {
+      "short": "As",
+      "name": "Lagna chart",
+      "prose": "Lagna chart"
+    },
+    "MOON": {
+      "short": "Mo",
+      "name": "Moon chart",
+      "prose": "Moon chart"
+    },
+    "SUN": {
+      "short": "Su",
+      "name": "Sun chart",
+      "prose": "Sun chart"
+    },
+    "BHAVA": {
+      "short": "Bh",
+      "name": "Bhava chalit",
+      "prose": "Bhava chalit"
+    }
+  },
   "dasha_family": {
     "UDU": {
       "name": "Nakshatra (udu)",

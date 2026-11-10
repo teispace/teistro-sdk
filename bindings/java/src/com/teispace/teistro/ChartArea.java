@@ -221,7 +221,7 @@ public final class ChartArea {
         return ids;
     }
 
-    /** Each drawing as the boundary takes it: {@code layout << 16 | varga}. */
+    /** Each drawing as the boundary takes it: {@code layout << 16 | frame << 8 | varga}. */
     private long[] drawings(List<ChartOptions.Drawing> drawings) {
         long[] bits = new long[drawings.size()];
         for (int at = 0; at < bits.length; at += 1) {
@@ -232,7 +232,12 @@ public final class ChartArea {
             }
             int layout = member(drawing.layout(), Kind.CHART_LAYOUT, field,
                     "a ChartLayout, or the chart_layout.* key of a layout this context registered");
-            bits[at] = ((long) layout << 16) | Values.id(field, drawing.varga());
+            if (drawing.countsFrom() == null) {
+                throw new IllegalArgumentException("`" + field + "` names no frame to count from");
+            }
+            bits[at] = ((long) layout << 16)
+                    | ((long) Values.id(field + ".countsFrom", drawing.countsFrom()) << 8)
+                    | Values.id(field, drawing.varga());
         }
         return bits;
     }

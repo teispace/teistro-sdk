@@ -20,7 +20,7 @@ use std::sync::Arc;
 use teistro_chart::{Apogee, Carried, OuterPlanets};
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
-use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
+use teistro_core::catalogue::{Catalogued, ChartFrame, ChartKind, Varga};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Place, Utc};
@@ -136,7 +136,7 @@ pub struct ChartRequest {
     clock: DayClock,
     kind: ChartKind,
     vargas: Vec<Varga>,
-    drawings: Vec<(KeyId, Varga)>,
+    drawings: Vec<ChartDrawing>,
     dashas: Vec<KeyId>,
     lot_rules: LotRequest,
     pub(crate) sections: Sections,
@@ -623,28 +623,38 @@ impl ChartRequest {
     /// other chart in it, and a pair that cannot be drawn (a Western wheel of
     /// the D9, which has no degrees) is refused by name when the reading runs.
     ///
+    /// A pair counts its houses from the lagna; a triple names what else to
+    /// count from ([`ChartFrame`]): the Moon's chart, the Sun's, or the
+    /// bhava chalit.
+    ///
     /// Replaces rather than accumulates, as every setter here does.
     ///
     /// ```
-    /// use teistro::catalogue::{ChartLayout, Varga};
+    /// use teistro::catalogue::{ChartFrame, ChartLayout, Varga};
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-    /// use teistro::{ChartRequest, UtcOffset};
+    /// use teistro::{ChartDrawing, ChartRequest, UtcOffset};
     ///
     /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
     /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700)?)
     ///     .with_drawings([(ChartLayout::NorthIndian, Varga::D1), (ChartLayout::NorthIndian, Varga::D9)]);
     /// assert_eq!(request.drawings().len(), 2);
+    /// // The four round charts a Nepali patrika prints: ल, रा, न and भा.
+    /// let round = ChartLayout::NepaliCircle;
+    /// let request = request.with_drawings([
+    ///     ChartDrawing::from((round, Varga::D1)),
+    ///     ChartDrawing::from((round, Varga::D1, ChartFrame::Moon)),
+    ///     ChartDrawing::from((round, Varga::D9)),
+    ///     ChartDrawing::from((round, Varga::D1, ChartFrame::Bhava)),
+    /// ]);
+    /// assert_eq!(request.drawings()[3].counts_from, ChartFrame::Bhava);
     /// # Ok::<(), teistro::Error>(())
     /// ```
     #[must_use]
-    pub fn with_drawings<L: Into<KeyId>>(
+    pub fn with_drawings<D: Into<ChartDrawing>>(
         mut self,
-        drawings: impl IntoIterator<Item = (L, Varga)>,
+        drawings: impl IntoIterator<Item = D>,
     ) -> ChartRequest {
-        self.drawings = drawings
-            .into_iter()
-            .map(|(layout, varga)| (layout.into(), varga))
-            .collect();
+        self.drawings = drawings.into_iter().map(Into::into).collect();
         self
     }
 
@@ -787,10 +797,54 @@ impl ChartRequest {
         self.lot_rules
     }
 
-    /// The charts to draw, as layout ids and the chart drawn in each.
+    /// The charts to draw: each a layout id, the chart drawn in it, and
+    /// what its houses count from.
     #[must_use]
-    pub fn drawings(&self) -> &[(KeyId, Varga)] {
+    pub fn drawings(&self) -> &[ChartDrawing] {
         &self.drawings
+    }
+}
+
+/// One chart a request draws: a layout, the chart placed in it (`D1` for
+/// the founded chart), and what its houses count from.
+///
+/// ```
+/// use teistro::catalogue::{ChartFrame, ChartLayout, Varga};
+/// use teistro::ChartDrawing;
+///
+/// let ninth = ChartDrawing::from((ChartLayout::NorthIndian, Varga::D9));
+/// assert_eq!(ninth.counts_from, ChartFrame::Lagna);
+/// let chalit = ChartDrawing::from((ChartLayout::NorthIndian, Varga::D1, ChartFrame::Bhava));
+/// assert_eq!(chalit.layout, ChartLayout::NorthIndian.into());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ChartDrawing {
+    /// A shipped [`ChartLayout`](teistro_core::catalogue::ChartLayout)'s id,
+    /// or one the context was built with.
+    pub layout: KeyId,
+    /// Which chart is placed: `D1`, or a divisional one.
+    pub varga: Varga,
+    /// What its houses count from.
+    pub counts_from: ChartFrame,
+}
+
+impl<L: Into<KeyId>> From<(L, Varga)> for ChartDrawing {
+    fn from((layout, varga): (L, Varga)) -> ChartDrawing {
+        ChartDrawing {
+            layout: layout.into(),
+            varga,
+            counts_from: ChartFrame::Lagna,
+        }
+    }
+}
+
+impl<L: Into<KeyId>> From<(L, Varga, ChartFrame)> for ChartDrawing {
+    fn from((layout, varga, counts_from): (L, Varga, ChartFrame)) -> ChartDrawing {
+        ChartDrawing {
+            layout: layout.into(),
+            varga,
+            counts_from,
+        }
     }
 }
 

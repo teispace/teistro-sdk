@@ -40,6 +40,16 @@ as Nepali Lhosar reports name them. `intl.entity("graha.PLUTO")` and every
 other catalogue key now resolve, so the Node and Dart tests of a refused
 entity ask for a key no catalogue has.
 
+**The Moon's chart and the bhava chalit as drawings (SR-36).**
+**Numbers:** none computed; new drawings, and every existing drawing keeps its bytes and its JSON.
+- A new catalogue kind, `chart_frame` (number 162): `LAGNA`, `MOON`, `SUN`, `BHAVA`. A drawing names what its
+  houses count from (`ChartDrawing`, `countsFrom` in requests, `counts_from` in the document, written only when
+  it is not `LAGNA`). The Moon's and the Sun's charts keep every graha in its sign; the bhava chalit keeps the
+  lagna chart's houses and places each graha by the cusps. A radial layout refuses a frame under `from`.
+- The C ABI packs a drawing as `layout << 16 | frame << 8 | varga`; an old packing reads as the lagna's chart.
+- A founded chart's hub names its frame: ल, रा, सू, भा (As, Mo, Su, Bh in English).
+- Every binding takes the frame and reads it back (`Drawing.countsFrom` / `counts_from`).
+
 **North Indian drawn with petals, and four theme options a Nepali app's chart writes (SR-36).**
 **Numbers:** none computed; a new layout's drawing, and every existing drawing keeps its bytes under a theme that names none of the new options.
 - A new layout, `NORTH_INDIAN_PETALS` (`chart_layout` id 7), from a consumer's screenshot of a Nepali app's

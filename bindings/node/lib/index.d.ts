@@ -33,6 +33,7 @@ import type {
   Leap,
   ChartKind,
   ChartLayout,
+  ChartFrame,
   Choghadiya,
   DashaSystem,
   DayPart,
@@ -5133,6 +5134,8 @@ export interface Drawing {
   readonly layout: ChartLayout | LayoutKey;
   /** Which chart: `varga.D1` for the founded chart, or a divisional one. */
   readonly varga: Varga;
+  /** What its houses count from: `chart_frame.LAGNA` unless the request named another. */
+  readonly countsFrom: ChartFrame;
   /** The cells, in the layout's order. */
   readonly cells: readonly DrawnCell[];
   /** The lines drawn that hold nothing. */
@@ -7237,7 +7240,15 @@ export interface ChartRequest {
    * The charts to draw, each a layout and which chart to place in it
    * (`Varga.D1` for the founded chart), in the order wanted; none by default.
    */
-  readonly drawings?: readonly { readonly layout: ChartLayout | LayoutKey; readonly varga: Varga }[];
+  readonly drawings?: readonly {
+    readonly layout: ChartLayout | LayoutKey;
+    readonly varga: Varga;
+    /**
+     * What the houses count from: the lagna by default, the Moon (the
+     * rashi kundali), the Sun, or the bhavas (the bhava chalit).
+     */
+    readonly countsFrom?: ChartFrame;
+  }[];
   /**
    * The theme to write every drawing as SVG in, read back as each drawing's
    * `svg`; no SVG by default.

@@ -54,9 +54,11 @@ from teistro import (
     Balance,
     Body,
     Calendar,
+    ChartFrame,
     ChartLayout,
     DashaSystem,
     Drawing,
+    DrawnCell,
     Ekadhipatya,
     LayoutRow,
     Ephemeris,
@@ -1883,6 +1885,43 @@ class AnEngine(WithLibrary):
         last = self.ctx.last_error
         self.assertEqual(last.status, Status.UNSUPPORTED)
         self.assertIn("SUNN", last.message)
+
+    def test_a_moon_chart_and_a_bhava_chalit_count_their_houses_from_what_they_name(self) -> None:
+        """The Moon's chart keeps each sign's grahas and puts the Moon in
+        house 1; the bhava chalit keeps the houses and moves the grahas
+        (`03-design/chart-geometry.md` §7h)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)
+        )
+        lagna, moon, bhava = self.ctx.chart.found(
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            drawings=[
+                (ChartLayout.NORTH_INDIAN, Varga.D1),
+                (ChartLayout.NORTH_INDIAN, Varga.D1, ChartFrame.MOON),
+                (ChartLayout.NORTH_INDIAN, Varga.D1, ChartFrame.BHAVA),
+            ],
+        ).drawings
+        self.assertEqual(
+            [d.counts_from for d in (lagna, moon, bhava)], [ChartFrame.LAGNA, ChartFrame.MOON, ChartFrame.BHAVA]
+        )
+
+        def by_sign(drawing: Drawing) -> dict[Rashi, list[str]]:
+            return {cell.sign: list(cell.bodies) for cell in drawing.cells}
+
+        def first(drawing: Drawing) -> DrawnCell:
+            return next(cell for cell in drawing.cells if cell.house == 1)
+
+        self.assertEqual(by_sign(moon), by_sign(lagna), "every sign holds the same grahas")
+        self.assertIn("graha.MOON", first(moon).bodies, "the Moon stands in house 1")
+        self.assertEqual([c.sign for c in moon.cells if c.lagna], [first(lagna).sign])
+        self.assertEqual(
+            [(c.house, c.sign) for c in bhava.cells], [(c.house, c.sign) for c in lagna.cells]
+        )
+        self.assertEqual(
+            sorted(b for c in bhava.cells for b in c.bodies), sorted(b for c in lagna.cells for b in c.bodies)
+        )
 
     def test_a_theme_writes_each_drawing_as_svg_and_a_wrong_one_is_refused(self) -> None:
         """A theme writes every drawing as SVG in the context's locale, and

@@ -893,11 +893,20 @@ final class VedicReads {
         return new Drawing(
                 layoutOf(JsonRead.text(JsonRead.at(placed, "layout"))),
                 JsonRead.member(Varga::byKey, "Varga", JsonRead.at(raw, "varga")),
+                countsFrom(raw),
                 cells,
                 JsonRead.list(JsonRead.at(placed, "frame")).stream().map(VedicReads::outline).toList(),
                 marks,
                 hub(placed),
                 svg);
+    }
+
+    /** What a drawing counts from, which the JSON writes only when it is not the lagna. */
+    private static ChartFrame countsFrom(Object raw) {
+        Object written = JsonRead.object(raw).get("counts_from");
+        return written == null
+                ? ChartFrame.LAGNA
+                : JsonRead.member(ChartFrame::byKey, "ChartFrame", written);
     }
 
     /** A drawing's hub, which the JSON writes only for a layout that has one. */

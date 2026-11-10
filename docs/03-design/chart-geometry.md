@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15; §7g, the Nepali lotus and round chart redrawn from printed janma patrikas, built 2026-11-10; §7h, North Indian drawn with petals, built 2026-11-10. It builds the first two parts of
+Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15; §7g, the Nepali lotus and round chart redrawn from printed janma patrikas, built 2026-11-10; §7h, North Indian drawn with petals, built 2026-11-10; §7i, the Moon's chart and the bhava chalit as drawings, built 2026-11-11. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is built ([`render-svg.md`](render-svg.md)). The research this page rests on was
@@ -505,6 +505,43 @@ the name (`content.retrograde_place`, `*श`), the nodes marked too
 digits (`content.minutes`, `र २६°३२'`). The view writes no space between
 the name and the degree; the SDK keeps its one.
 
+## 7i. What a drawing counts from (SR-36)
+
+The printed janma patrikas draw the founded chart more than once: the
+lagna's chart (ल), the Moon's (रा) and the bhava chalit (भा), each in the
+round layout with its name in the hub. A drawing is therefore a layout,
+a varga and a frame, the new catalogue kind `chart_frame`:
+
+| Frame | id | Houses count from | Grahas stand by | Source |
+|---|---|---|---|---|
+| `LAGNA` | 0 | the lagna's sign | their signs | every scan |
+| `MOON` | 1 | the Moon's sign | their signs | the scans' रा charts |
+| `SUN` | 2 | the Sun's sign | their signs | BPHS's Sudarshana chakra, its middle ring |
+| `BHAVA` | 3 | the lagna's sign | the bhava the cusps put them in | the scans' भा charts |
+
+- **A frame moves the houses, not the signs' contents.** In a Moon or Sun
+  chart every sign holds what it holds in the lagna's chart; house 1 is
+  the Moon's or the Sun's sign, and the lagna flag stays on the lagna's
+  own sign, as the scans mark it.
+- **The bhava chalit keeps the houses.** Each cell keeps the sign the
+  lagna's chart gives it, and each graha is placed by
+  `houses.place(longitude).bhava` under the profile's house system: a
+  graha before its sign's cusp moves to the house behind.
+- **A grid only.** A radial layout's rings already count from the Moon
+  and the Sun, so a non-lagna frame on one is refused under `from`.
+- **The lagna's frame is not written.** `Drawing.counts_from` is skipped
+  when it is `LAGNA`, so every existing drawing keeps its bytes; requests
+  spell it `countsFrom`. Across the C ABI each drawing is one `u32`,
+  `layout << 16 | frame << 8 | varga`, so an old packing reads as before.
+- **The hub names the frame.** A founded chart's hub writes its frame's
+  short form (ल, रा, सू, भा in Nepali; As, Mo, Su, Bh in English), a
+  divisional one its varga's.
+
+Every binding takes the frame beside the layout and varga (Rust
+`ChartDrawing`, Node `{ layout, varga, countsFrom }`, Python a triple,
+Dart `ChartDrawing(..., countsFrom:)`, Java `drawing(layout, varga,
+frame)`) and reads it back on each drawing.
+
 ## 8. Order of work
 
 1. **This page**, crux C47, and the corrections to ADR-0026 recorded
@@ -533,8 +570,5 @@ the name and the degree; the SDK keeps its one.
   a declared, overridable property of its row.
 - **Other regional rows** (Kerala, Sri Lanka): each is a registered row
   away, and none ships until something cites it.
-- **The Moon's chart and the bhava chalit as drawings.** The round
-  chart's रा and भा hubs name charts the SDK computes but does not yet
-  draw; a drawing is a varga.
 - **Canvas, PDF and native drawing**: out of scope, as the ADR says.
   They consume the same geometry.

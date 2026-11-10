@@ -33,7 +33,7 @@ use teistro::{ChartRecords, ChartRequest, DayClock};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, Kind, Varga};
+use teistro_core::catalogue::{ChartFrame, ChartKind, Kind, Varga};
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
@@ -7381,7 +7381,7 @@ unsafe fn chart_request_of(
     let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
     let mut drawings = Vec::with_capacity(asked_drawings.len());
     for (index, packed) in asked_drawings.iter().enumerate() {
-        let (layout, varga) = (packed >> 16, packed & 0xFFFF);
+        let (layout, from, varga) = (packed >> 16, (packed >> 8) & 0xFF, packed & 0xFF);
         let varga = u16::try_from(varga)
             .ok()
             .and_then(Varga::from_id)
@@ -7391,8 +7391,17 @@ unsafe fn chart_request_of(
                 ))
                 .with_field(format!("drawings[{index}]"))
             })?;
+        let from = u16::try_from(from)
+            .ok()
+            .and_then(ChartFrame::from_id)
+            .ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "drawing {index} counts from chart_frame id {from}, which is none"
+                ))
+                .with_field(format!("drawings[{index}]"))
+            })?;
         let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
-        drawings.push((layout, varga));
+        drawings.push((layout, varga, from));
     }
     let request = sections_of(
         asked.sections,

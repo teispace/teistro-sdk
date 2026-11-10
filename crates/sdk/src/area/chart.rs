@@ -40,7 +40,7 @@ use teistro_dasha::{
     KalachakraDasha, KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules,
     Rules as DashaRules, Wheel,
 };
-use teistro_geometry::{Layout, draw};
+use teistro_geometry::{Layout, draw_from};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
     DignityRequest, Dispositions, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace,
@@ -817,16 +817,18 @@ impl<'a> ChartArea<'a> {
         if request.sections.has(Sections::MOMENT) {
             document = document.with_moment(self.moment_of(founder, foundation)?);
         }
-        for (index, (layout, varga)) in request.drawings().iter().enumerate() {
+        for (index, asked) in request.drawings().iter().enumerate() {
             let at = format!("drawings[{index}]");
-            let row = self.context.layouts().by_id(*layout).ok_or_else(|| {
+            let layout = asked.layout;
+            let row = self.context.layouts().by_id(layout).ok_or_else(|| {
                 Error::invalid_arg(format!(
                     "{layout} is not a layout this context knows; the shipped ones are the \
                      `chart_layout` catalogue, and a consumer's own is given to the builder"
                 ))
                 .with_field(at.clone())
             })?;
-            let drawing = draw(row, foundation, *varga).map_err(|error| error.under(&at))?;
+            let drawing = draw_from(row, foundation, asked.varga, asked.counts_from)
+                .map_err(|error| error.under(&at))?;
             document = document.with_drawing(drawing);
         }
         // A dasha begun from the strongest graha reads the chart's

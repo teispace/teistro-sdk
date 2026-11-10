@@ -8,6 +8,8 @@ import java.util.List;
  * @param layout The layout it is drawn in: a {@code ChartLayout}, or a layout the context
  *     registered, by its full key as a {@code String} ({@code chart_layout.ACME_KERALA}).
  * @param varga Which chart: {@code Varga.D1} for the founded chart, or a divisional one.
+ * @param countsFrom What its houses count from: {@code ChartFrame.LAGNA} unless the request
+ *     named the Moon, the Sun or the bhavas.
  * @param cells The cells, in the layout's order.
  * @param frame The lines drawn that hold nothing.
  * @param marks Each body at its own degree, on a wheel; empty for a grid.
@@ -19,6 +21,7 @@ import java.util.List;
 public record Drawing(
         Object layout,
         Varga varga,
+        ChartFrame countsFrom,
         List<DrawnCell> cells,
         List<Outline> frame,
         List<DrawnMark> marks,
