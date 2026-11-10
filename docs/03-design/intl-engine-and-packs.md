@@ -488,7 +488,16 @@ not loaded, a calendar that is not shipped, or a calendar with no pattern
 stand-in to give: the built-in default of `:date` exists so that a
 sentence survives, and an answer with typed parts has nothing to warn in.
 
-### Text not yet reviewed (SR-75, Q42)
+### Draft text (SR-75, Q42)
+
+**No shipped namespace is a draft (2026-11-10).** The maintainer took the
+review on: every pack ships final, Hindi, Sanskrit and Nepali alike, and
+the maintainer corrects it after shipping (QUESTIONS.md Q42, reopened and
+decided again). The mark below stays built, so a third party's unreviewed
+pack can still say what it is; `crates/intl/tests/draft.rs` pins every
+shipped list empty and tests the mark on a tree it marks itself. The
+Sanskrit number words are the SDK's own rules (`teistro/sa/...`), final
+like the rest.
 
 Q42 decided that drafts stay behind a `draft` status a strict locale
 refuses, and nothing had built it: `ne-Deva-NP`'s text carries no status

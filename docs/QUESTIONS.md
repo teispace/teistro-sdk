@@ -542,11 +542,18 @@ these.
 ## Q42. Who reviews the Hindi, Sanskrit and Nepali text a consumer asks for: `decided`
 
 Raised 2026-10-29 by the consumer's addendum 3 (`consumers/addendum-3.md`,
-SR-12, SR-13, SR-29, SR-31, SR-37 and SR-38). **Decided 2026-10-29 by the
-consumer's addendum 4: B.** The consumer supplies the native reviewers, and
-each is named here when found. Until a reviewer signs a pack off, its drafts
-stay behind a `draft` status that a strict locale refuses. No name is
-machine-stubbed.
+SR-12, SR-13, SR-29, SR-31, SR-37 and SR-38). Decided 2026-10-29 by the
+consumer's addendum 4: B, the consumer to supply native reviewers, drafts
+held behind a `draft` status until one signed a pack off.
+
+**Decided again 2026-11-10 by the maintainer: the SDK owns the text.**
+Every namespace ships final, written from cited sources and cross-checked
+across more than one where they exist; the maintainer and the consumer
+review after shipping and correct what they find. No shipped pack is
+marked draft (`crates/intl/tests/draft.rs` pins it), and the mark stays
+built for third-party packs. Names still come from sources, not a
+translator's guess: a member no source names is named by the
+best-supported usage, its reasoning in `03-design/entity-names.md`.
 
 ## Decisions log
 

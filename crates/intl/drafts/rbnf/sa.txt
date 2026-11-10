@@ -1,13 +1,13 @@
 # Sanskrit cardinals, in RBNF (UTS #35 Part 3 §6), for `intl.inWords`.
 #
-# A DRAFT the SDK wrote, not CLDR's (CLDR 48 has no sa.xml): every word
-# here waits for the consumer's Sanskrit reviewer (QUESTIONS.md Q42) and
-# every answer spelt from it says `isDraft`. Hand-kept: `cargo xtask gen
+# The SDK's own rules, not CLDR's (CLDR 48 has no sa.xml), shipped final:
+# the maintainer reviews after shipping (QUESTIONS.md Q42). Its answers'
+# `rules` read `teistro/sa/...`. Hand-kept: `cargo xtask gen
 # intl` reads this file, drops the lines starting `#`, parses the rest with
 # the engine's own parser and writes `crates/intl/src/words/drafted.rs`.
 # Change the words here, never in the generated file.
 # docs/03-design/amounts-in-words.md §5 gives the reasoning; C1310 to
-# C1319 the choices a reviewer is asked to confirm.
+# C1319 the choices it makes.
 #
 # Sources:
 #   K  M. R. Kale, A Higher Sanskrit Grammar (1894; 7th ed. 1931),

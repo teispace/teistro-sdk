@@ -273,7 +273,10 @@ impl Meta {
     /// #
     /// # let tree = Tree::load(&sdk_root())?;
     ///
-    /// let hindi = &tree.locales["hi-Deva-IN"].meta;
+    /// // No shipped namespace is marked; a third party's pack may be.
+    /// let mut hindi = tree.locales["hi-Deva-IN"].meta.clone();
+    /// assert!(!hindi.is_draft("sdk.calendar.time.numeric"));
+    /// hindi.draft = vec![String::from("sdk.calendar")];
     /// assert!(hindi.is_draft("sdk.calendar.time.numeric"));
     /// assert!(!hindi.is_draft("sdk.entity.graha.SUN"));
     /// assert!(!hindi.is_draft("sdk.calendarish"));

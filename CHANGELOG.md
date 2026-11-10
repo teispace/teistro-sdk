@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every shipped pack is final: no namespace is a draft (Q42).**
+**Numbers:** 0 draft namespaces in any shipped locale, from 10 in `hi-Deva-IN`, 10 in `sa-Deva` and `sa-Latn`, and 3 in `ne-Deva-NP`.
+The maintainer took the review of the Hindi, Sanskrit and Nepali text on,
+correcting it after shipping, so every `_meta.json` `draft` list is gone
+and a render, a day's sentences and an amount in words say `isDraft:
+false` in every shipped locale. The Sanskrit number words' `rules` read
+`teistro/sa/...` (were `draft/sa/...`): the SDK's own rules, CLDR having
+none. The mark itself stays built for a third party's pack, and
+`crates/intl/tests/draft.rs` now pins every shipped list empty and tests
+the mark on a tree it marks itself.
+
 **Names for the ashauch, rite and first-year answers (SR-31).**
 **Numbers:** none.
 - A new namespace, `sdk.rite`, names every member those answers carry, each message a `.match` on the

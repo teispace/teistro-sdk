@@ -277,7 +277,7 @@ fn a_time_and_a_date_are_written_and_a_bad_request_is_refused() {
     let answer = answer.unwrap();
     assert_eq!(answer["text"], "सुबह ६:०५");
     assert_eq!(answer["parts"][0]["kind"], "DAY_PERIOD");
-    assert_eq!(answer["isDraft"], true);
+    assert_eq!(answer["isDraft"], false);
 
     let (status, day) = json_call(
         &ctx,
@@ -536,13 +536,13 @@ fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
     let (status, answer) = json_call(&ctx, ts_almanac_sentences, &asked("ne-Deva-NP"));
     assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
     let value = &answer.unwrap()["value"];
-    assert_eq!(value["draft"], true);
+    assert_eq!(value["draft"], false);
     assert_eq!(value["sentences"][0]["key"], "sdk.day.vara");
 
     let (status, hindi) = json_call(&ctx, ts_almanac_sentences, &asked("hi-Deva-IN"));
     assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
     let value = &hindi.unwrap()["value"];
-    assert_eq!(value["draft"], true);
+    assert_eq!(value["draft"], false);
     assert_eq!(value["sentences"][0]["text"], "यह दिन बुधवार है।");
     let unknown = json_call(&ctx, ts_almanac_sentences, &asked("xx-Latn"));
     refused(&ctx, &unknown, Status::Unsupported, "locale");

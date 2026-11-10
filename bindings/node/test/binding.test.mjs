@@ -3496,7 +3496,7 @@ test('a date and a time as text and parts, in the locale\'s pattern', () => {
   assert.equal(dawn.text, 'सुबह ६:०५');
   assert.deepEqual(dawn.parts[0], { kind: 'DAY_PERIOD', text: 'सुबह' });
   assert.equal(dawn.parts.map((part) => part.text).join(''), dawn.text);
-  assert.deepEqual([dawn.resolvedFrom, dawn.isFallback, dawn.isDraft], ['hi-Deva-IN', false, true]);
+  assert.deepEqual([dawn.resolvedFrom, dawn.isFallback, dawn.isDraft], ['hi-Deva-IN', false, false]);
   assert.equal(ctx.intl.time({ at: { hour: 18, minute: 30 }, hour12: true }).text, '6:30 pm');
   const day = ctx.intl.date({ at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 }, style: 'FULL' });
   assert.equal(day.text, 'Saturday, 31 October 2026');
@@ -3520,11 +3520,11 @@ test('a number and an amount in words, by CLDR, in every language it has', () =>
   assert.equal(ctx.intl.inWords({ number: 1500000 }).text, 'one million five hundred thousand');
   const hindi = ctx.intl.inWords({ number: 10000000, locale: 'hi-Deva-IN' });
   assert.deepEqual([hindi.text, hindi.rules, hindi.amount, hindi.isDraft], ['एक करोड़', 'cldr-48/hi/spellout-cardinal', null, false]);
-  // Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's 1892).
+  // Sanskrit by the SDK's own rules (Kale §161's 1892).
   const sanskrit = ctx.intl.inWords({ number: 1892, locale: 'sa-Deva' });
   assert.deepEqual(
     [sanskrit.text, sanskrit.rules, sanskrit.isDraft],
-    ['द्वानवत्यधिकाष्टशताधिकसहस्रम्', 'draft/sa/spellout-cardinal', true],
+    ['द्वानवत्यधिकाष्टशताधिकसहस्रम्', 'teistro/sa/spellout-cardinal', false],
   );
   for (const [request, field] of [
     [{ number: 1, locale: 'sa-Deva', grouping: 'INTERNATIONAL' }, 'inWords.grouping'],
@@ -4799,11 +4799,11 @@ test('a day is said in sentences and a locale without templates is refused', () 
   assert.equal(en.draft, false);
   const ne = ctx.almanac.sentences({ ...asked, locale: 'ne-Deva-NP' });
   assert.equal(ne.sentences[0].text, 'यो दिन बुधबार हो।');
-  assert.equal(ne.draft, true);
+  assert.equal(ne.draft, false);
   assert.ok(Object.isFrozen(ne));
   const hi = ctx.almanac.sentences({ ...asked, locale: 'hi-Deva-IN' });
   assert.equal(hi.sentences[0].text, 'यह दिन बुधवार है।');
-  assert.equal(hi.draft, true);
+  assert.equal(hi.draft, false);
   assert.throws(
     () => ctx.almanac.sentences({ ...asked, locale: 'xx-Latn' }),
     (e) => e instanceof TeistroError && e.field === 'locale',

@@ -36,17 +36,5 @@
       "middle": "{0}, {1}",
       "end": "{0} और {1}"
     }
-  },
-  "draft": [
-    "sdk.aspect",
-    "sdk.calendar",
-    "sdk.condition",
-    "sdk.day",
-    "sdk.karaka",
-    "sdk.naming",
-    "sdk.phala",
-    "sdk.rashifal",
-    "sdk.reading",
-    "sdk.reason"
-  ]
+  }
 }

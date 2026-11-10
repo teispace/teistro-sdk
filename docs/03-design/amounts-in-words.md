@@ -174,7 +174,7 @@ reads the context's locale when the request names none.
 
 The answer: `text`, the whole; `figure`, the figures; `rules`, the CLDR
 file and rule set the words came from (`cldr-48/en_IN/spellout-cardinal`),
-or the drafted one (`draft/sa/spellout-cardinal`, with `/iast` when
+or the drafted one (`teistro/sa/spellout-cardinal`, with `/iast` when
 transliterated for `sa-Latn`); `isDraft`, whether any of the text is
 unreviewed, the drafted words or a unit word from a namespace its locale
 marks draft; and for an amount its parts, the major and minor counts, each

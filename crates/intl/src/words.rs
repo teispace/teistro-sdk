@@ -1,8 +1,8 @@
 //! Numbers and amounts in words, by CLDR's rule-based number formats
 //! (`docs/03-design/amounts-in-words.md`): Nepali, Hindi and English with
 //! the Indian grouping (hazar, lakh, crore, arab, kharab), English with the
-//! international one too, Sanskrit by the SDK's own drafted rules in the
-//! same syntax (unreviewed, so every Sanskrit answer says `is_draft`), a
+//! international one too, Sanskrit by the SDK's own rules in the same
+//! syntax (`crates/intl/drafts/rbnf/sa.txt`, CLDR having no Sanskrit), a
 //! currency's units from the locale's messages, and the figures in Latin
 //! or Devanagari digits.
 //!
@@ -47,7 +47,7 @@ const IN_WORDS: &str = "inWords";
 
 /// One file's rules, as `cargo xtask gen intl` keeps them: the text of the
 /// cardinal rule sets and every set they reach, each rule as written. A
-/// CLDR file is in [`SOURCES`]; the SDK's own drafted one, for a language
+/// CLDR file is in [`SOURCES`]; the SDK's own one, for a language
 /// CLDR has no rules for, in [`DRAFTED`].
 ///
 /// ```
@@ -63,7 +63,7 @@ const IN_WORDS: &str = "inWords";
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Source {
     /// The file's name without its extension: `ne`, `hi`, `en`, `en_IN`
-    /// from CLDR, `sa` drafted.
+    /// from CLDR, `sa` the SDK's own.
     pub file: &'static str,
     /// The SHA-256 of the file (`crates/intl/cldr/rbnf/<file>.xml`, or
     /// `crates/intl/drafts/rbnf/<file>.txt` for a draft), as hex.
@@ -325,16 +325,15 @@ pub struct InWords {
     /// The figures, grouped, in the digits asked for.
     pub figure: String,
     /// Where the words came from: `cldr-<release>/<file>/<rule set>`, or
-    /// `draft/<file>/<rule set>` for the SDK's own unreviewed rules, with
+    /// `teistro/<file>/<rule set>` for the SDK's own rules, with
     /// `/iast` when they were transliterated into a Latin-script locale.
     pub rules: String,
     /// The locale the words and units are in.
     pub locale: String,
     /// An amount's parts; none for a number.
     pub amount: Option<AmountInWords>,
-    /// Whether any of the text is unreviewed: words from the SDK's drafted
-    /// rules (Sanskrit), or a unit word from a namespace its locale marks
-    /// draft.
+    /// Whether any of the text is unreviewed: a unit word from a namespace
+    /// its locale marks draft. No shipped namespace is marked.
     pub is_draft: bool,
 }
 
@@ -392,7 +391,7 @@ impl Speller<'_> {
         let words = spell(self.sets, self.index, n, &self.digits).map_err(|why| {
             Error::internal(format!("`{}` could not spell {n}: {why}", self.rules.file))
         })?;
-        let words = if self.rules.drafted {
+        let words = if self.rules.own {
             joined(&words)
         } else {
             words
@@ -410,29 +409,27 @@ impl Speller<'_> {
 }
 
 /// The rules a language and a grouping read: a CLDR file, or the SDK's
-/// drafted one.
+/// own one.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Rules {
     file: &'static str,
-    /// From [`DRAFTED`], not CLDR: unreviewed, and its `+` joins sandhi.
-    drafted: bool,
+    /// From [`DRAFTED`], the SDK's own rules rather than CLDR's: its `+`
+    /// joins sandhi.
+    own: bool,
 }
 
 impl Rules {
     const fn cldr(file: &'static str) -> Rules {
-        Rules {
-            file,
-            drafted: false,
-        }
+        Rules { file, own: false }
     }
 
     /// Where the words came from, as the answer's `rules` says it.
     fn origin(self, rule_set: &str, latin: bool) -> String {
         let file = self.file;
-        match (self.drafted, latin) {
+        match (self.own, latin) {
             (false, _) => format!("cldr-{CLDR_RELEASE}/{file}/{rule_set}"),
-            (true, false) => format!("draft/{file}/{rule_set}"),
-            (true, true) => format!("draft/{file}/{rule_set}/iast"),
+            (true, false) => format!("teistro/{file}/{rule_set}"),
+            (true, true) => format!("teistro/{file}/{rule_set}/iast"),
         }
     }
 }
@@ -452,7 +449,7 @@ fn rules_for(language: &str, grouping: WordsGrouping) -> Result<Rules, Error> {
         ("en", WordsGrouping::International) => Ok(Rules::cldr("en")),
         ("sa", WordsGrouping::Indian) => Ok(Rules {
             file: "sa",
-            drafted: true,
+            own: true,
         }),
         ("ne" | "hi", WordsGrouping::International) => Err(Error::unsupported(format!(
             "CLDR {CLDR_RELEASE} gives `{language}` no international grouping's words"
@@ -460,7 +457,7 @@ fn rules_for(language: &str, grouping: WordsGrouping) -> Result<Rules, Error> {
         .with_field("grouping")
         .with_hint(String::from("`INDIAN`, the only grouping its rules have"))),
         ("sa", WordsGrouping::International) => Err(Error::unsupported(String::from(
-            "the drafted Sanskrit rules count in lakhs and crores alone (C1314)",
+            "the SDK's Sanskrit rules count in lakhs and crores alone (C1314)",
         ))
         .with_field("grouping")
         .with_hint(String::from("`INDIAN`, the only grouping its rules have"))),
@@ -472,7 +469,7 @@ fn rules_for(language: &str, grouping: WordsGrouping) -> Result<Rules, Error> {
     }
 }
 
-/// The rule sets of every file, CLDR's then the drafted ones, parsed once
+/// The rule sets of every file, CLDR's then the SDK's own, parsed once
 /// from the generated tables.
 fn parsed() -> &'static [Result<Vec<RuleSet>, String>] {
     static PARSED: OnceLock<Vec<Result<Vec<RuleSet>, String>>> = OnceLock::new();
@@ -488,7 +485,7 @@ fn parsed() -> &'static [Result<Vec<RuleSet>, String>] {
 /// A file's rule sets and the index of the set named `name`.
 fn rule_set(rules: Rules, name: &str) -> Result<(&'static [RuleSet], usize), Error> {
     let file = rules.file;
-    let position = if rules.drafted {
+    let position = if rules.own {
         DRAFTED
             .iter()
             .position(|source| source.file == file)
@@ -506,8 +503,8 @@ fn rule_set(rules: Rules, name: &str) -> Result<(&'static [RuleSet], usize), Err
         .iter()
         .position(|set| set.name == name)
         .ok_or_else(|| {
-            let whose = if rules.drafted {
-                String::from("the drafted")
+            let whose = if rules.own {
+                String::from("the SDK's own")
             } else {
                 format!("CLDR {CLDR_RELEASE}'s")
             };
@@ -518,7 +515,7 @@ fn rule_set(rules: Rules, name: &str) -> Result<(&'static [RuleSet], usize), Err
     Ok((sets.as_slice(), index))
 }
 
-/// A drafted rule set's words with each `+` joint closed: where a
+/// The SDK's own rule set's words with each `+` joint closed: where a
 /// consonant's inherent `a` meets an initial vowel the two make one
 /// (`अधिक+अष्ट` is `अधिकाष्ट`, a + a = ā; `+एक` after it `ैक`, a + e = ai),
 /// and anywhere else the mark is dropped (`docs/03-design/amounts-in-words.md`
@@ -651,8 +648,8 @@ impl Intl {
     /// digits past 4, or an `EXACT` decimal that needs rounding;
     /// `UNSUPPORTED` for a locale not loaded, a language without rules,
     /// a grouping or style the language's rules lack, or a currency the
-    /// locale names no units for. Sanskrit is spelt by the SDK's drafted
-    /// rules and says `is_draft`.
+    /// locale names no units for. Sanskrit is spelt by the SDK's own
+    /// rules, CLDR having none.
     pub fn in_words(&self, request: &InWordsRequest) -> Result<InWords, Error> {
         self.in_words_unnamed(request)
             .map_err(|e| e.under(IN_WORDS))
@@ -671,9 +668,9 @@ impl Intl {
         );
         let rules = rules_for(language, grouping)?;
         let (sets, index) = rule_set(rules, request.style.rule_set())?;
-        // The drafted Sanskrit rules are Devanagari; a Latin-script locale
+        // The SDK's Sanskrit rules are Devanagari; a Latin-script locale
         // reads them transliterated, as `sa-Latn` is derived from `sa-Deva`.
-        let latin = rules.drafted && tag.split('-').nth(1) == Some("Latn");
+        let latin = rules.own && tag.split('-').nth(1) == Some("Latn");
         let system: &str = match request.digits {
             Some(asked) => asked.system(),
             None => &locale.meta.numbering_system,
@@ -698,7 +695,7 @@ impl Intl {
                 rules: origin,
                 locale: tag.to_owned(),
                 amount: None,
-                is_draft: rules.drafted,
+                is_draft: false,
             }),
             (None, Some(amount)) => {
                 let (text, figure, parts, units_draft) = self.amount(tag, &speller, amount)?;
@@ -708,7 +705,7 @@ impl Intl {
                     rules: origin,
                     locale: tag.to_owned(),
                     amount: Some(parts),
-                    is_draft: rules.drafted || units_draft,
+                    is_draft: units_draft,
                 })
             }
             (Some(_), Some(_)) => Err(Error::invalid_arg(String::from(
