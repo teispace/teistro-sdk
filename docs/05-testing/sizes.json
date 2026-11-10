@@ -299,14 +299,14 @@
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 15990000,
-      "gzip": 3740000
+      "raw": 16560000,
+      "gzip": 3890000
     },
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 7230000,
-      "gzip": 2040000
+      "raw": 7750000,
+      "gzip": 2180000
     },
     {
       "subject": "@teistro/compat",
