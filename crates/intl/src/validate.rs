@@ -1078,14 +1078,14 @@ mod tests {
                 .get(name)
                 .unwrap_or_else(|| panic!("no coverage row for {name}"))
         };
-        assert!(kind("graha").present >= 9 && kind("graha").total == 12);
+        assert_eq!((kind("graha").present, kind("graha").total), (12, 12));
         assert_eq!(kind("rashi").present, 12);
         assert_eq!(kind("nakshatra").present, 27);
-        // The lagna, the seven upagrahas the baseline engine names, and
-        // the eleven points BPHS names (`docs/03-design/entity-names.md`
-        // §4c).
-        assert_eq!(kind("point").present, 19);
-        assert_eq!(kind("era").present, 11);
+        // Every point: the lagna, the seven upagrahas the baseline engine
+        // names, the eleven BPHS names and the thirty named since
+        // (`docs/03-design/entity-names.md` §4c, §4e).
+        assert_eq!(kind("point").present, 49);
+        assert_eq!(kind("era").present, 12);
         for (name, total) in [
             ("tithi", 30),
             ("karana", 11),
@@ -1259,6 +1259,11 @@ mod tests {
             .entries
             .remove("lordship");
         sabotage_entities(&mut t);
+        // Every catalogue key is named now, so the base forgets one for a
+        // message to name before it is described.
+        namespace(&mut t, "en-Latn", ENTITY_NAMESPACE)
+            .entries
+            .remove("graha.PLUTO");
         let report = validate(&t);
         let found = errors(&report).join("\n");
         for expected in [

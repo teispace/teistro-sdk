@@ -71,6 +71,30 @@
       "iast": "Ketu",
       "glyph": "☋",
       "gender": "n"
+    },
+    "URANUS": {
+      "short": "Ur",
+      "name": "Uranus",
+      "prose": "Uranus",
+      "iast": "Aruṇa",
+      "glyph": "♅",
+      "gender": "m"
+    },
+    "NEPTUNE": {
+      "short": "Ne",
+      "name": "Neptune",
+      "prose": "Neptune",
+      "iast": "Varuṇa",
+      "glyph": "♆",
+      "gender": "m"
+    },
+    "PLUTO": {
+      "short": "Pl",
+      "name": "Pluto",
+      "prose": "Pluto",
+      "iast": "Yama",
+      "glyph": "♇",
+      "gender": "m"
     }
   },
   "rashi": {
@@ -422,6 +446,142 @@
     "A12": {
       "name": "Upapada",
       "prose": "Upapada"
+    },
+    "MC": {
+      "short": "MC",
+      "name": "Midheaven",
+      "prose": "the Midheaven",
+      "glyph": "MC"
+    },
+    "DESCENDANT": {
+      "short": "Ds",
+      "name": "Descendant",
+      "prose": "the Descendant",
+      "glyph": "Dsc"
+    },
+    "IC": {
+      "short": "IC",
+      "name": "Imum Coeli",
+      "prose": "the Imum Coeli",
+      "glyph": "IC"
+    },
+    "VIGHATI_LAGNA": {
+      "name": "Vighati Lagna",
+      "prose": "Vighati Lagna"
+    },
+    "SREE_LAGNA": {
+      "name": "Sree Lagna",
+      "prose": "Sree Lagna"
+    },
+    "INDU_LAGNA": {
+      "name": "Indu Lagna",
+      "prose": "Indu Lagna"
+    },
+    "BHRIGU_BINDU": {
+      "name": "Bhrigu Bindu",
+      "prose": "Bhrigu Bindu"
+    },
+    "YOGI": {
+      "name": "Yogi Point",
+      "prose": "Yogi Point"
+    },
+    "AVAYOGI": {
+      "name": "Avayogi Point",
+      "prose": "Avayogi Point"
+    },
+    "SAHAYOGI": {
+      "name": "Sahayogi Point",
+      "prose": "Sahayogi Point"
+    },
+    "TRISPHUTA": {
+      "name": "Trisphuta",
+      "prose": "Trisphuta"
+    },
+    "CHATUSSPHUTA": {
+      "name": "Chatussphuta",
+      "prose": "Chatussphuta"
+    },
+    "PANCHASPHUTA": {
+      "name": "Panchasphuta",
+      "prose": "Panchasphuta"
+    },
+    "PRANA_SPHUTA": {
+      "name": "Prana Sphuta",
+      "prose": "Prana Sphuta"
+    },
+    "DEHA_SPHUTA": {
+      "name": "Deha Sphuta",
+      "prose": "Deha Sphuta"
+    },
+    "MRITYU_SPHUTA": {
+      "name": "Mrityu Sphuta",
+      "prose": "Mrityu Sphuta"
+    },
+    "BEEJA_SPHUTA": {
+      "name": "Beeja Sphuta",
+      "prose": "Beeja Sphuta"
+    },
+    "KSHETRA_SPHUTA": {
+      "name": "Kshetra Sphuta",
+      "prose": "Kshetra Sphuta"
+    },
+    "YAMAGHANTAKA": {
+      "name": "Yamaghantaka",
+      "prose": "Yamaghantaka"
+    },
+    "SWAMSHA": {
+      "name": "Swamsha",
+      "prose": "Swamsha"
+    },
+    "A2": {
+      "name": "Dhana Pada",
+      "prose": "Dhana Pada",
+      "glyph": "A2"
+    },
+    "A3": {
+      "name": "Bhratri Pada",
+      "prose": "Bhratri Pada",
+      "glyph": "A3"
+    },
+    "A4": {
+      "name": "Matri Pada",
+      "prose": "Matri Pada",
+      "glyph": "A4"
+    },
+    "A5": {
+      "name": "Mantra Pada",
+      "prose": "Mantra Pada",
+      "glyph": "A5"
+    },
+    "A6": {
+      "name": "Shatru Pada",
+      "prose": "Shatru Pada",
+      "glyph": "A6"
+    },
+    "A7": {
+      "name": "Dara Pada",
+      "prose": "Dara Pada",
+      "glyph": "A7"
+    },
+    "A8": {
+      "name": "Mrityu Pada",
+      "prose": "Mrityu Pada",
+      "glyph": "A8"
+    },
+    "A9": {
+      "name": "Bhagya Pada",
+      "prose": "Bhagya Pada",
+      "glyph": "A9"
+    },
+    "A10": {
+      "name": "Rajya Pada",
+      "prose": "Rajya Pada",
+      "glyph": "A10"
+    },
+    "A11": {
+      "name": "Labha Pada",
+      "prose": "Labha Pada",
+      "glyph": "A11"
     }
   },
   "era": {
@@ -490,6 +650,11 @@
       "name": "Bhaskarabda",
       "prose": "the Bhaskarabda",
       "iast": "Bhāskarābda"
+    },
+    "HIJRI": {
+      "short": "AH",
+      "name": "Hijri",
+      "prose": "the Hijri era"
     }
   },
   "avastha_baladi": {
@@ -2515,6 +2680,81 @@
     "SUDARSHANA_CHAKRA": {
       "name": "Sudarshana Chakra Dasha",
       "prose": "Sudarshana Chakra Dasha"
+    },
+    "SHATTRIMSHA_SAMA": {
+      "name": "Shattrimsha Sama Dasha",
+      "prose": "Shattrimsha Sama Dasha",
+      "iast": "Ṣaṭtriṁśatsama Daśā"
+    },
+    "TITHI_ASHTOTTARI": {
+      "name": "Tithi Ashtottari Dasha",
+      "prose": "Tithi Ashtottari Dasha",
+      "iast": "Tithi Aṣṭottarī Daśā"
+    },
+    "TITHI_YOGINI": {
+      "name": "Tithi Yogini Dasha",
+      "prose": "Tithi Yogini Dasha",
+      "iast": "Tithi Yoginī Daśā"
+    },
+    "YOGA_VIMSHOTTARI": {
+      "name": "Yoga Vimshottari Dasha",
+      "prose": "Yoga Vimshottari Dasha",
+      "iast": "Yoga Viṁśottarī Daśā"
+    },
+    "KARANA_CHATURASHITI": {
+      "name": "Karana Chaturashiti Sama Dasha",
+      "prose": "Karana Chaturashiti Sama Dasha",
+      "iast": "Karaṇa Caturaśītisama Daśā"
+    },
+    "AAYU": {
+      "name": "Ayur Dasha",
+      "prose": "Ayur Dasha",
+      "iast": "Āyurdaśā"
+    },
+    "SUDASA": {
+      "name": "Sudasa",
+      "prose": "Sudasa",
+      "iast": "Sudaśā"
+    },
+    "PATYAYINI": {
+      "name": "Patyayini Dasha",
+      "prose": "Patyayini Dasha",
+      "iast": "Pātyāyinī Daśā"
+    },
+    "MUDDA": {
+      "name": "Mudda Dasha",
+      "prose": "Mudda Dasha",
+      "iast": "Muddā Daśā"
+    },
+    "VARSHA_NARAYANA": {
+      "name": "Varsha Narayana Dasha",
+      "prose": "Varsha Narayana Dasha",
+      "iast": "Varṣa Nārāyaṇa Daśā"
+    },
+    "VARSHA_YOGINI": {
+      "name": "Varsha Yogini Dasha",
+      "prose": "Varsha Yogini Dasha",
+      "iast": "Varṣa Yoginī Daśā"
+    },
+    "RELEASING_FORTUNE": {
+      "name": "Zodiacal Releasing from Fortune",
+      "prose": "Zodiacal Releasing from Fortune"
+    },
+    "RELEASING_DAIMON": {
+      "name": "Zodiacal Releasing from Daimon",
+      "prose": "Zodiacal Releasing from Daimon"
+    },
+    "PROFECTION": {
+      "name": "Annual Profection",
+      "prose": "Annual Profection"
+    },
+    "FIRDARIA": {
+      "name": "Firdaria",
+      "prose": "Firdaria"
+    },
+    "DECENNIALS": {
+      "name": "Decennials",
+      "prose": "Decennials"
     }
   },
   "blackout_kind": {
@@ -2635,6 +2875,30 @@
     "D60": {
       "name": "Shashtiamsha",
       "prose": "Shashtiamsha"
+    },
+    "D1": {
+      "name": "Rashi",
+      "prose": "Rashi"
+    },
+    "D5": {
+      "name": "Panchamsha",
+      "prose": "Panchamsha"
+    },
+    "D6": {
+      "name": "Shashthamsha",
+      "prose": "Shashthamsha"
+    },
+    "D8": {
+      "name": "Ashtamsha",
+      "prose": "Ashtamsha"
+    },
+    "D11": {
+      "name": "Rudramsha",
+      "prose": "Rudramsha"
+    },
+    "D150": {
+      "name": "Nadiamsha",
+      "prose": "Nadiamsha"
     }
   },
   "vaiseshikamsa": {
@@ -2745,6 +3009,18 @@
     "GOLOKA": {
       "name": "Goloka",
       "prose": "Goloka"
+    },
+    "KUSUMA": {
+      "name": "Kusuma",
+      "prose": "Kusuma"
+    },
+    "CHAKRASIMHASANA": {
+      "name": "Shakrasimhasana",
+      "prose": "Shakrasimhasana"
+    },
+    "SHRIVALLABHA": {
+      "name": "Shrivallabha",
+      "prose": "Shrivallabha"
     }
   },
   "avastha_sayanadi": {
@@ -2819,6 +3095,10 @@
     "MALEFIC": {
       "name": "Malefic",
       "prose": "Malefic"
+    },
+    "NEUTRAL": {
+      "name": "Neutral",
+      "prose": "Neutral"
     }
   },
   "festival": {
@@ -5069,6 +5349,117 @@
       "name": "Yaksha",
       "prose": "Yaksha",
       "iast": "Yakṣa"
+    }
+  },
+  "calendar": {
+    "GREGORIAN": {
+      "name": "Gregorian calendar",
+      "prose": "Gregorian calendar"
+    },
+    "JULIAN": {
+      "name": "Julian calendar",
+      "prose": "Julian calendar"
+    },
+    "MIXED": {
+      "name": "Julian–Gregorian calendar",
+      "prose": "Julian–Gregorian calendar"
+    },
+    "ISO_WEEK": {
+      "name": "ISO week date",
+      "prose": "ISO week date"
+    },
+    "BIKRAM_SAMBAT": {
+      "name": "Bikram Sambat",
+      "prose": "Bikram Sambat",
+      "iast": "Vikrama Saṃvat"
+    },
+    "INDIAN_LUNISOLAR": {
+      "name": "Hindu lunisolar calendar",
+      "prose": "Hindu lunisolar calendar",
+      "iast": "Cāndrasaura Pañcāṅga"
+    },
+    "INDIAN_NATIONAL": {
+      "name": "Indian National Calendar",
+      "prose": "Indian National Calendar",
+      "iast": "Bhāratīya Rāṣṭriya Pañcāṅga"
+    },
+    "HIJRI_TABULAR": {
+      "name": "Tabular Hijri calendar",
+      "prose": "Tabular Hijri calendar"
+    },
+    "TIBETAN_PHUGPA": {
+      "name": "Tibetan calendar (Phugpa)",
+      "prose": "Tibetan calendar (Phugpa)"
+    },
+    "BANGLADESHI": {
+      "name": "Bangladeshi Bengali calendar",
+      "prose": "Bangladeshi Bengali calendar"
+    },
+    "TAMIL_SOLAR": {
+      "name": "Tamil solar calendar",
+      "prose": "Tamil solar calendar"
+    },
+    "BENGAL_SOLAR": {
+      "name": "Bengali solar calendar",
+      "prose": "Bengali solar calendar"
+    },
+    "ODIA_SOLAR": {
+      "name": "Odia solar calendar",
+      "prose": "Odia solar calendar"
+    },
+    "MALAYALAM_SOLAR": {
+      "name": "Malayalam solar calendar",
+      "prose": "Malayalam solar calendar"
+    },
+    "TAMIL_VAKYA": {
+      "name": "Tamil vakya calendar",
+      "prose": "Tamil vakya calendar"
+    },
+    "ASSAM_SOLAR": {
+      "name": "Assamese solar calendar",
+      "prose": "Assamese solar calendar"
+    }
+  },
+  "chart_kind": {
+    "NATAL": {
+      "name": "Natal chart",
+      "prose": "natal chart",
+      "iast": "Janmakuṇḍalī"
+    },
+    "TRANSIT": {
+      "name": "Transit chart",
+      "prose": "transit chart",
+      "iast": "Gocarakuṇḍalī"
+    },
+    "EVENT": {
+      "name": "Event chart",
+      "prose": "event chart",
+      "iast": "Ghaṭanākuṇḍalī"
+    },
+    "PRASHNA": {
+      "name": "Prashna chart",
+      "prose": "Prashna chart",
+      "iast": "Praśnakuṇḍalī"
+    },
+    "RETURN": {
+      "name": "Return chart",
+      "prose": "return chart",
+      "iast": "Punarāgamanakuṇḍalī"
+    },
+    "RELOCATED": {
+      "name": "Relocated chart",
+      "prose": "relocated chart",
+      "iast": "Sthānāntaritakuṇḍalī"
+    },
+    "COMPOSITE": {
+      "name": "Composite chart",
+      "prose": "composite chart",
+      "iast": "Saṃyuktakuṇḍalī"
+    },
+    "MUNDANE": {
+      "name": "Mundane chart",
+      "prose": "mundane chart",
+      "iast": "Medinīkuṇḍalī"
     }
   }
 }

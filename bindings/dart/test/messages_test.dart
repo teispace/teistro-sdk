@@ -117,7 +117,7 @@ void main() {
     final ctx = context();
     addTearDown(ctx.dispose);
     expect(
-      () => ctx.intl.entity('graha.PLUTO'),
+      () => ctx.intl.entity('graha.NOT_A_GRAHA'),
       throwsA(
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.unsupported)
