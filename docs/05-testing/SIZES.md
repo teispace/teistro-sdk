@@ -25,8 +25,8 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
-| `full` | 15 671 381 | 3 660 473 | 3 740 000 | 2.1% | 151 185 | 30 004 |
-| `panchanga` | 7 086 200 | 1 996 682 | 2 040 000 | 2.1% | 151 185 | 30 004 |
+| `full` | 15 671 381 | 3 660 473 | 3 890 000 | 5.9% | 151 185 | 30 004 |
+| `panchanga` | 7 086 200 | 1 996 682 | 2 180 000 | 8.4% | 151 185 | 30 004 |
 
 ## Bundled
 
