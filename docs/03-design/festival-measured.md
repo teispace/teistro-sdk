@@ -1717,3 +1717,178 @@ The days the notifications print are not reckoned: the four set by the moon, eac
 | 2026 | MAWLID | 8/25 | subject to sighting |
 | 2026 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/4 | printed |
 
+## 13. Tamil Nadu's public holidays against the orders
+
+`INDIA_TAMIL_NADU` at Chennai on India's clock, against each year's public holidays of the Public (Miscellaneous) Department's orders. The pack ships for the `tamil-vakya` profile, the vakya almanac's tithi and nakshatra (C1350): 162 of 166 rows agree there. Under the modern sky (the built-in ephemeris, the default profile) 158 of 166 agree. The Tamil months are the vakya school's under both (`TAMIL_VAKYA`, C1351).
+
+- 2019: G.O.Ms. No. 840, 29 October 2018: rank 1 as copied, a staff site's copy with its number and table
+- 2020: G.O.Ms. No. 762, 22 October 2019: rank 1 as copied, a staff site's copy with its number and table
+- 2021: G.O.Ms. No. 554, 27 October 2020: rank 1 as copied; Thai Poosam added by a later order of January 2021
+- 2022: G.O.(Ms.) No. 935, 2 November 2021, Gazette Extraordinary Part II(1) No. 525: rank 3, a list whose first rows match the gazette's
+- 2023: G.O.(Ms.) No. 682, 11 October 2022, amended by G.O.(Ms.) No. 528, 31 August 2023: rank 1 as copied
+- 2024: G.O.(Ms.) No. 692, 9 November 2023: rank 1 as copied, a staff site's copy with its number and table
+- 2025: G.O.(Ms.) No. 792, 22 November 2024: rank 1, the signed order and its appendix
+- 2026: G.O.(Ms.) No. 708, 11 November 2025: rank 1, the signed order and its appendix
+
+| year | rule | listed | vakya | modern |
+| --- | --- | --- | --- | --- |
+| 2019 | THAI_PONGAL | 1/15 | 1/15 | 1/15 |
+| 2019 | THIRUVALLUVAR_DAY | 1/16 | 1/16 | 1/16 |
+| 2019 | UZHAVAR_THIRUNAL | 1/17 | 1/17 | 1/17 |
+| 2019 | SAMVATSARA_ARAMBHA | 4/6 | 4/6 | 4/6 |
+| 2019 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2019 | MAHAVIR_JAYANTI | 4/17 | 4/17 | 4/17 |
+| 2019 | GOOD_FRIDAY | 4/19 | 4/19 | 4/19 |
+| 2019 | JANMASHTAMI | 8/23 | 8/23 | 8/23 |
+| 2019 | GANESHA_CHATURTHI | 9/2 | 9/2 | 9/2 |
+| 2019 | AYUDHA_PUJA | 10/7 | 10/7 | 10/7 |
+| 2019 | VIJAYA_DASHAMI | 10/8 | 10/8 | 10/8 |
+| 2019 | NARAK_CHATURDASHI | 10/27 | 10/27 | 10/27 |
+| 2020 | THAI_PONGAL | 1/15 | 1/15 | 1/15 |
+| 2020 | THIRUVALLUVAR_DAY | 1/16 | 1/16 | 1/16 |
+| 2020 | UZHAVAR_THIRUNAL | 1/17 | 1/17 | 1/17 |
+| 2020 | SAMVATSARA_ARAMBHA | 3/25 | 3/25 | 3/25 |
+| 2020 | MAHAVIR_JAYANTI | 4/6 | 4/6 | 4/6 |
+| 2020 | GOOD_FRIDAY | 4/10 | 4/10 | 4/10 |
+| 2020 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2020 | JANMASHTAMI | 8/11 | 8/11 | 8/11 |
+| 2020 | GANESHA_CHATURTHI | 8/22 | 8/22 | 8/22 |
+| 2020 | AYUDHA_PUJA | 10/25 | 10/25 | 10/25 |
+| 2020 | VIJAYA_DASHAMI | 10/26 | 10/26 | 10/26 |
+| 2020 | NARAK_CHATURDASHI | 11/14 | 11/14 | 11/14 |
+| 2021 | THAI_PONGAL | 1/14 | 1/14 | 1/14 |
+| 2021 | THIRUVALLUVAR_DAY | 1/15 | 1/15 | 1/15 |
+| 2021 | UZHAVAR_THIRUNAL | 1/16 | 1/16 | 1/16 |
+| 2021 | THAI_POOSAM | 1/28 | 1/28 | 1/28 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 | 4/2 |
+| 2021 | SAMVATSARA_ARAMBHA | 4/13 | 4/13 | 4/13 |
+| 2021 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2021 | MAHAVIR_JAYANTI | 4/25 | 4/25 | 4/25 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 | 8/30 |
+| 2021 | GANESHA_CHATURTHI | 9/10 | 9/10 | 9/10 |
+| 2021 | AYUDHA_PUJA | 10/14 | 10/14 | 10/14 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 | 10/15 |
+| 2021 | NARAK_CHATURDASHI | 11/4 | 11/3 ✗ | 11/4 |
+| 2022 | THAI_PONGAL | 1/14 | 1/14 | 1/14 |
+| 2022 | THIRUVALLUVAR_DAY | 1/15 | 1/15 | 1/15 |
+| 2022 | UZHAVAR_THIRUNAL | 1/16 | 1/16 | 1/16 |
+| 2022 | THAI_POOSAM | 1/18 | 1/18 | 1/18 |
+| 2022 | SAMVATSARA_ARAMBHA | 4/2 | 4/2 | 4/2 |
+| 2022 | MAHAVIR_JAYANTI | 4/14 | 4/14 | 4/14 |
+| 2022 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 | 4/15 |
+| 2022 | JANMASHTAMI | 8/19 | 8/19 | 8/18 ✗ |
+| 2022 | GANESHA_CHATURTHI | 8/31 | 8/31 | 8/31 |
+| 2022 | AYUDHA_PUJA | 10/4 | 10/4 | 10/4 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/5 | 10/5 |
+| 2022 | NARAK_CHATURDASHI | 10/24 | 10/24 | 10/24 |
+| 2023 | THAI_PONGAL | 1/15 | 1/15 | 1/15 |
+| 2023 | THIRUVALLUVAR_DAY | 1/16 | 1/16 | 1/16 |
+| 2023 | UZHAVAR_THIRUNAL | 1/17 | 1/17 | 1/17 |
+| 2023 | THAI_POOSAM | 2/5 | 2/5 | 2/5 |
+| 2023 | SAMVATSARA_ARAMBHA | 3/22 | 3/22 | 3/22 |
+| 2023 | MAHAVIR_JAYANTI | 4/4 | 4/4 | 4/4 |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 | 4/7 |
+| 2023 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2023 | JANMASHTAMI | 9/6 | 9/6 | 9/6 |
+| 2023 | GANESHA_CHATURTHI | 9/18 | 9/18 | 9/19 ✗ |
+| 2023 | AYUDHA_PUJA | 10/23 | 10/23 | 10/23 |
+| 2023 | VIJAYA_DASHAMI | 10/24 | 10/24 | 10/24 |
+| 2023 | NARAK_CHATURDASHI | 11/12 | 11/12 | 11/12 |
+| 2024 | THAI_PONGAL | 1/15 | 1/15 | 1/15 |
+| 2024 | THIRUVALLUVAR_DAY | 1/16 | 1/16 | 1/16 |
+| 2024 | UZHAVAR_THIRUNAL | 1/17 | 1/17 | 1/17 |
+| 2024 | THAI_POOSAM | 1/25 | 1/26 ✗ | 1/26 ✗ |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 | 3/29 |
+| 2024 | SAMVATSARA_ARAMBHA | 4/9 | 4/9 | 4/9 |
+| 2024 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2024 | MAHAVIR_JAYANTI | 4/21 | 4/21 | 4/21 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 | 8/26 |
+| 2024 | GANESHA_CHATURTHI | 9/7 | 9/7 | 9/7 |
+| 2024 | AYUDHA_PUJA | 10/11 | 10/11 | 10/12 ✗ |
+| 2024 | VIJAYA_DASHAMI | 10/12 | 10/12 | 10/13 ✗ |
+| 2024 | NARAK_CHATURDASHI | 10/31 | 10/31 | 10/31 |
+| 2025 | THAI_PONGAL | 1/14 | 1/14 | 1/14 |
+| 2025 | THIRUVALLUVAR_DAY | 1/15 | 1/15 | 1/15 |
+| 2025 | UZHAVAR_THIRUNAL | 1/16 | 1/16 | 1/16 |
+| 2025 | THAI_POOSAM | 2/11 | 2/11 | 2/11 |
+| 2025 | SAMVATSARA_ARAMBHA | 3/30 | 3/30 | 3/30 |
+| 2025 | MAHAVIR_JAYANTI | 4/10 | 4/10 | 4/10 |
+| 2025 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 | 4/18 |
+| 2025 | JANMASHTAMI | 8/16 | 8/16 | 8/15 ✗ |
+| 2025 | GANESHA_CHATURTHI | 8/27 | 8/27 | 8/27 |
+| 2025 | AYUDHA_PUJA | 10/1 | 10/1 | 10/1 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 | 10/2 |
+| 2025 | NARAK_CHATURDASHI | 10/20 | 10/20 | 10/20 |
+| 2026 | THAI_PONGAL | 1/15 | 1/15 | 1/15 |
+| 2026 | THIRUVALLUVAR_DAY | 1/16 | 1/16 | 1/16 |
+| 2026 | UZHAVAR_THIRUNAL | 1/17 | 1/17 | 1/17 |
+| 2026 | THAI_POOSAM | 2/1 | 2/1 | 2/1 |
+| 2026 | SAMVATSARA_ARAMBHA | 3/19 | 3/19 | 3/19 |
+| 2026 | MAHAVIR_JAYANTI | 3/31 | 3/31 | 3/31 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 | 4/3 |
+| 2026 | PUTHANDU | 4/14 | 4/14 | 4/14 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 | 9/4 |
+| 2026 | GANESHA_CHATURTHI | 9/14 | 9/14 | 9/14 |
+| 2026 | AYUDHA_PUJA | 10/19 | 10/20 ✗ | 10/20 ✗ |
+| 2026 | VIJAYA_DASHAMI | 10/20 | 10/21 ✗ | 10/21 ✗ |
+| 2026 | NARAK_CHATURDASHI | 11/8 | 11/8 | 11/8 |
+
+The 8 civil days stand on their date in all 8 years, under both skies.
+
+Under the vakya sky:
+
+- 2021 NARAK_CHATURDASHI: the vakya chaturdashi runs from 07:26 on 3 November to 05:41 on the 4th, holding neither sunrise, so the sunrise reading takes the 3rd; the order lists the 4th, whose arunodaya the chaturdashi holds (C1356)
+- 2024 THAI_POOSAM: Pushya runs from 09:09 on 25 January to 11:06 on the 26th, so its first sunrise is the 26th's; the order lists the 25th, the full moon's day, whose daylight Pushya holds the most of (C1352)
+- 2026 AYUDHA_PUJA: counted from Vijaya Dasami, which the sunrise reading puts on the 21st (C1357); the order lists the 19th, the day before its Vijaya Dasami (C1353)
+- 2026 VIJAYA_DASHAMI: the vakya dashami runs from 10:37 on 20 October to 11:47 on the 21st, so the sunrise reading takes the 21st; the order lists the 20th, whose aparahna the dashami holds (C1357)
+
+Under the modern sky:
+
+- 2022 JANMASHTAMI: the drik ashtami begins at 21:21 on 18 August and holds its midnight; the vakya ashtami begins at 01:40 on the 19th, the order's day (C1355)
+- 2023 GANESHA_CHATURTHI: the drik chaturthi runs from 12:39 on 18 September to 13:43 on the 19th and holds the 19th's madhyahna; G.O.(Ms.) No. 528 declared the 18th, the vakya day (C1296)
+- 2024 AYUDHA_PUJA: counted from the drik Vijaya Dasami, 13 October; the order lists the 11th (C1353)
+- 2024 THAI_POOSAM: Pushya runs from 08:16 on 25 January to 10:28 on the 26th, so its first sunrise is the 26th's, under both skies (C1352)
+- 2024 VIJAYA_DASHAMI: the drik dashami runs from 10:59 on 12 October to 09:09 on the 13th, so the sunrise reading takes the 13th; the vakya dashami holds the 12th's sunrise (C1350)
+- 2025 JANMASHTAMI: the drik ashtami begins at 23:50 on 15 August and holds its midnight; the vakya ashtami begins at 01:28 on the 16th, the order's day (C1355)
+- 2026 AYUDHA_PUJA: counted from Vijaya Dasami, the 21st under both skies (C1357)
+- 2026 VIJAYA_DASHAMI: the drik dashami runs from 12:50 on 20 October to 14:12 on the 21st, so the sunrise reading takes the 21st, as under the vakya sky (C1357)
+
+The days the orders print are not reckoned: the four set by the moon, each marked. 2031, with no order, holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2019 | EID_AL_FITR | 6/5 | subject to sighting |
+| 2019 | EID_AL_ADHA | 8/12 | subject to sighting |
+| 2019 | MUHARRAM | 9/10 | subject to sighting |
+| 2019 | MAWLID | 11/10 | subject to sighting |
+| 2020 | EID_AL_FITR | 5/25 | subject to sighting |
+| 2020 | EID_AL_ADHA | 8/1 | subject to sighting |
+| 2020 | MUHARRAM | 8/30 | subject to sighting |
+| 2020 | MAWLID | 10/30 | subject to sighting |
+| 2021 | EID_AL_FITR | 5/14 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/21 | subject to sighting |
+| 2021 | MUHARRAM | 8/20 | subject to sighting |
+| 2021 | MAWLID | 10/19 | subject to sighting |
+| 2022 | EID_AL_FITR | 5/3 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/10 | subject to sighting |
+| 2022 | MUHARRAM | 8/9 | subject to sighting |
+| 2022 | MAWLID | 10/9 | subject to sighting |
+| 2023 | EID_AL_FITR | 4/22 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/29 | subject to sighting |
+| 2023 | MUHARRAM | 7/29 | subject to sighting |
+| 2023 | MAWLID | 9/28 | subject to sighting |
+| 2024 | EID_AL_FITR | 4/11 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/17 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/7 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2026 | EID_AL_FITR | 3/21 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/28 | subject to sighting |
+| 2026 | MUHARRAM | 6/26 | subject to sighting |
+| 2026 | MAWLID | 8/26 | subject to sighting |
+
