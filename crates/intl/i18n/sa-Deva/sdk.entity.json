@@ -3372,5 +3372,557 @@
       "name": "आकाशदिशा",
       "prose": "आकाशदिशा"
     }
+  },
+  "star": {
+    "SHERATAN": {
+      "name": "अश्विनी",
+      "prose": "अश्विनी",
+      "iast": "Aśvinī"
+    },
+    "BHARANI": {
+      "name": "भरणी",
+      "prose": "भरणी",
+      "iast": "Bharaṇī"
+    },
+    "ALCYONE": {
+      "name": "कृत्तिका",
+      "prose": "कृत्तिका",
+      "iast": "Kṛttikā"
+    },
+    "ALDEBARAN": {
+      "name": "रोहिणी",
+      "prose": "रोहिणी",
+      "iast": "Rohiṇī"
+    },
+    "MEISSA": {
+      "name": "मृगशिरा",
+      "prose": "मृगशिरा",
+      "iast": "Mṛgaśirā"
+    },
+    "BETELGEUSE": {
+      "name": "आर्द्रा",
+      "prose": "आर्द्रा",
+      "iast": "Ārdrā"
+    },
+    "POLLUX": {
+      "name": "पुनर्वसु",
+      "prose": "पुनर्वसु",
+      "iast": "Punarvasu"
+    },
+    "ASELLUS_AUSTRALIS": {
+      "name": "पुष्य",
+      "prose": "पुष्य",
+      "iast": "Puṣya"
+    },
+    "ASHLESHA": {
+      "name": "आश्लेषा",
+      "prose": "आश्लेषा",
+      "iast": "Āśleṣā"
+    },
+    "REGULUS": {
+      "name": "मघा",
+      "prose": "मघा",
+      "iast": "Maghā"
+    },
+    "ZOSMA": {
+      "name": "पूर्वफाल्गुनी",
+      "prose": "पूर्वफाल्गुनी",
+      "iast": "Pūrvaphālgunī"
+    },
+    "DENEBOLA": {
+      "name": "उत्तरफाल्गुनी",
+      "prose": "उत्तरफाल्गुनी",
+      "iast": "Uttaraphālgunī"
+    },
+    "ALGORAB": {
+      "name": "हस्त",
+      "prose": "हस्त",
+      "iast": "Hasta"
+    },
+    "SPICA": {
+      "name": "चित्रा",
+      "prose": "चित्रा",
+      "iast": "Citrā"
+    },
+    "ARCTURUS": {
+      "name": "स्वाती",
+      "prose": "स्वाती",
+      "iast": "Svātī"
+    },
+    "ZUBENELGENUBI": {
+      "name": "विशाखा",
+      "prose": "विशाखा",
+      "iast": "Viśākhā"
+    },
+    "DSCHUBBA": {
+      "name": "अनुराधा",
+      "prose": "अनुराधा",
+      "iast": "Anurādhā"
+    },
+    "ANTARES": {
+      "name": "ज्येष्ठा",
+      "prose": "ज्येष्ठा",
+      "iast": "Jyeṣṭhā"
+    },
+    "SHAULA": {
+      "name": "मूल",
+      "prose": "मूल",
+      "iast": "Mūla"
+    },
+    "KAUS_MEDIA": {
+      "name": "पूर्वाषाढा",
+      "prose": "पूर्वाषाढा",
+      "iast": "Pūrvāṣāḍhā"
+    },
+    "NUNKI": {
+      "name": "उत्तराषाढा",
+      "prose": "उत्तराषाढा",
+      "iast": "Uttarāṣāḍhā"
+    },
+    "VEGA": {
+      "name": "अभिजित्",
+      "prose": "अभिजित्",
+      "iast": "Abhijit"
+    },
+    "ALTAIR": {
+      "name": "श्रवण",
+      "prose": "श्रवण",
+      "iast": "Śravaṇa"
+    },
+    "ROTANEV": {
+      "name": "धनिष्ठा",
+      "prose": "धनिष्ठा",
+      "iast": "Dhaniṣṭhā"
+    },
+    "HYDOR": {
+      "name": "शतभिषा",
+      "prose": "शतभिषा",
+      "iast": "Śatabhiṣā"
+    },
+    "MARKAB": {
+      "name": "पूर्वभाद्रपदा",
+      "prose": "पूर्वभाद्रपदा",
+      "iast": "Pūrvabhādrapadā"
+    },
+    "ALGENIB": {
+      "name": "उत्तरभाद्रपदा",
+      "prose": "उत्तरभाद्रपदा",
+      "iast": "Uttarabhādrapadā"
+    },
+    "REVATI": {
+      "name": "रेवती",
+      "prose": "रेवती",
+      "iast": "Revatī"
+    },
+    "CANOPUS": {
+      "name": "अगस्त्य",
+      "prose": "अगस्त्य",
+      "iast": "Agastya"
+    },
+    "SIRIUS": {
+      "name": "लुब्धक",
+      "prose": "लुब्धक",
+      "iast": "Lubdhaka"
+    },
+    "CAPELLA": {
+      "name": "ब्रह्महृदय",
+      "prose": "ब्रह्महृदय",
+      "iast": "Brahmahṛdaya"
+    },
+    "POLARIS": {
+      "name": "ध्रुव",
+      "prose": "ध्रुव",
+      "iast": "Dhruva"
+    },
+    "DUBHE": {
+      "name": "क्रतु",
+      "prose": "क्रतु",
+      "iast": "Kratu"
+    },
+    "MERAK": {
+      "name": "पुलह",
+      "prose": "पुलह",
+      "iast": "Pulaha"
+    },
+    "PHECDA": {
+      "name": "पुलस्त्य",
+      "prose": "पुलस्त्य",
+      "iast": "Pulastya"
+    },
+    "ALIOTH": {
+      "name": "अङ्गिरस्",
+      "prose": "अङ्गिरस्",
+      "iast": "Aṅgiras"
+    },
+    "MIZAR": {
+      "name": "वसिष्ठ",
+      "prose": "वसिष्ठ",
+      "iast": "Vasiṣṭha"
+    },
+    "ALKAID": {
+      "name": "मरीचि",
+      "prose": "मरीचि",
+      "iast": "Marīci"
+    },
+    "ACHERNAR": {
+      "name": "एकर्नार",
+      "prose": "एकर्नार"
+    },
+    "ACRUX": {
+      "name": "एक्रक्स",
+      "prose": "एक्रक्स"
+    },
+    "ADHARA": {
+      "name": "अधारा",
+      "prose": "अधारा"
+    },
+    "AIN": {
+      "name": "ऐन",
+      "prose": "ऐन"
+    },
+    "ALBALDAH": {
+      "name": "अलबल्दाह",
+      "prose": "अलबल्दाह"
+    },
+    "ALBIREO": {
+      "name": "अल्बीरियो",
+      "prose": "अल्बीरियो"
+    },
+    "ALDERAMIN": {
+      "name": "अल्डेरामिन",
+      "prose": "अल्डेरामिन"
+    },
+    "ALGEDI": {
+      "name": "अल्गेदी",
+      "prose": "अल्गेदी"
+    },
+    "ALGIEBA": {
+      "name": "अल्जीबा",
+      "prose": "अल्जीबा"
+    },
+    "ALGOL": {
+      "name": "अल्गोल",
+      "prose": "अल्गोल"
+    },
+    "ALHENA": {
+      "name": "अलहेना",
+      "prose": "अलहेना"
+    },
+    "ALJANAH": {
+      "name": "अलजनाह",
+      "prose": "अलजनाह"
+    },
+    "ALMACH": {
+      "name": "अलमाक",
+      "prose": "अलमाक"
+    },
+    "ALNAIR": {
+      "name": "अलनायर",
+      "prose": "अलनायर"
+    },
+    "ALNASL": {
+      "name": "अलनस्ल",
+      "prose": "अलनस्ल"
+    },
+    "ALNILAM": {
+      "name": "अलनिलाम",
+      "prose": "अलनिलाम"
+    },
+    "ALNITAK": {
+      "name": "अलनिटाक",
+      "prose": "अलनिटाक"
+    },
+    "ALPHARD": {
+      "name": "अल्फर्ड",
+      "prose": "अल्फर्ड"
+    },
+    "ALPHECCA": {
+      "name": "अल्फेका",
+      "prose": "अल्फेका"
+    },
+    "ALPHERATZ": {
+      "name": "अल्फेरात्ज",
+      "prose": "अल्फेरात्ज"
+    },
+    "ALSEPHINA": {
+      "name": "अल्सेफीना",
+      "prose": "अल्सेफीना"
+    },
+    "ALSHAIN": {
+      "name": "अलशैन",
+      "prose": "अलशैन"
+    },
+    "ALUDRA": {
+      "name": "अलूद्रा",
+      "prose": "अलूद्रा"
+    },
+    "ANKAA": {
+      "name": "अंका",
+      "prose": "अंका"
+    },
+    "ASCELLA": {
+      "name": "असेला",
+      "prose": "असेला"
+    },
+    "ASPIDISKE": {
+      "name": "एस्पिडिस्के",
+      "prose": "एस्पिडिस्के"
+    },
+    "ATRIA": {
+      "name": "एट्रिया",
+      "prose": "एट्रिया"
+    },
+    "AVIOR": {
+      "name": "एवियर",
+      "prose": "एवियर"
+    },
+    "BELLATRIX": {
+      "name": "बेलाट्रिक्स",
+      "prose": "बेलाट्रिक्स"
+    },
+    "CAPH": {
+      "name": "कैफ",
+      "prose": "कैफ"
+    },
+    "CASTOR": {
+      "name": "कैस्टर",
+      "prose": "कैस्टर"
+    },
+    "CHAMUKUY": {
+      "name": "चामुकुय",
+      "prose": "चामुकुय"
+    },
+    "DENEB": {
+      "name": "डेनेब",
+      "prose": "डेनेब"
+    },
+    "DIPHDA": {
+      "name": "डिफ्दा",
+      "prose": "डिफ्दा"
+    },
+    "ELNATH": {
+      "name": "एलनाथ",
+      "prose": "एलनाथ"
+    },
+    "ENIF": {
+      "name": "एनिफ",
+      "prose": "एनिफ"
+    },
+    "ERRAI": {
+      "name": "एराई",
+      "prose": "एराई"
+    },
+    "FANG": {
+      "name": "फैंग",
+      "prose": "फैंग"
+    },
+    "FOMALHAUT": {
+      "name": "फोमलहोट",
+      "prose": "फोमलहोट"
+    },
+    "GACRUX": {
+      "name": "गैक्रक्स",
+      "prose": "गैक्रक्स"
+    },
+    "HADAR": {
+      "name": "हदार",
+      "prose": "हदार"
+    },
+    "HAMAL": {
+      "name": "हमाल",
+      "prose": "हमाल"
+    },
+    "HEZE": {
+      "name": "हीजी",
+      "prose": "हीजी"
+    },
+    "IZAR": {
+      "name": "इजार",
+      "prose": "इजार"
+    },
+    "KAUS_AUSTRALIS": {
+      "name": "कौस ओस्ट्रेलिस",
+      "prose": "कौस ओस्ट्रेलिस"
+    },
+    "KAUS_BOREALIS": {
+      "name": "कौस बोरियालिस",
+      "prose": "कौस बोरियालिस"
+    },
+    "KITALPHA": {
+      "name": "किटाल्फा",
+      "prose": "किटाल्फा"
+    },
+    "KORNEPHOROS": {
+      "name": "कोर्नेफोरोस",
+      "prose": "कोर्नेफोरोस"
+    },
+    "MARFIK": {
+      "name": "मारफिक",
+      "prose": "मारफिक"
+    },
+    "MENKALINAN": {
+      "name": "मेनकालिनन",
+      "prose": "मेनकालिनन"
+    },
+    "MENKAR": {
+      "name": "मेनकार",
+      "prose": "मेनकार"
+    },
+    "MENKENT": {
+      "name": "मेनकेंट",
+      "prose": "मेनकेंट"
+    },
+    "MIAPLACIDUS": {
+      "name": "मियाप्लासिडस",
+      "prose": "मियाप्लासिडस"
+    },
+    "MIMOSA": {
+      "name": "मिमोसा",
+      "prose": "मिमोसा"
+    },
+    "MINTAKA": {
+      "name": "मिंटाका",
+      "prose": "मिंटाका"
+    },
+    "MIRACH": {
+      "name": "मिराक",
+      "prose": "मिराक"
+    },
+    "MIRFAK": {
+      "name": "मिरफाक",
+      "prose": "मिरफाक"
+    },
+    "NAOS": {
+      "name": "नेओस",
+      "prose": "नेओस"
+    },
+    "NIHAL": {
+      "name": "निहाल",
+      "prose": "निहाल"
+    },
+    "PEACOCK": {
+      "name": "पीकोक",
+      "prose": "पीकोक"
+    },
+    "PROCYON": {
+      "name": "प्रोसियोन",
+      "prose": "प्रोसियोन"
+    },
+    "RASALGETHI": {
+      "name": "रासलगेथी",
+      "prose": "रासलगेथी"
+    },
+    "RASALHAGUE": {
+      "name": "रासलहेग",
+      "prose": "रासलहेग"
+    },
+    "RIGEL": {
+      "name": "रिगेल",
+      "prose": "रिगेल"
+    },
+    "RIGIL_KENTAURUS": {
+      "name": "रिजिल केंटोरस",
+      "prose": "रिजिल केंटोरस"
+    },
+    "SABIK": {
+      "name": "साबिक",
+      "prose": "साबिक"
+    },
+    "SADALBARI": {
+      "name": "सदलबारी",
+      "prose": "सदलबारी"
+    },
+    "SADALMELIK": {
+      "name": "सदलमेलिक",
+      "prose": "सदलमेलिक"
+    },
+    "SADALSUUD": {
+      "name": "सदलसुऊद",
+      "prose": "सदलसुऊद"
+    },
+    "SADR": {
+      "name": "सद्र",
+      "prose": "सद्र"
+    },
+    "SAIPH": {
+      "name": "सैफ",
+      "prose": "सैफ"
+    },
+    "SARGAS": {
+      "name": "सारगस",
+      "prose": "सारगस"
+    },
+    "SCHEAT": {
+      "name": "शीट",
+      "prose": "शीट"
+    },
+    "SCHEDAR": {
+      "name": "शेडार",
+      "prose": "शेडार"
+    },
+    "SEGINUS": {
+      "name": "सेगिनस",
+      "prose": "सेगिनस"
+    },
+    "SHELIAK": {
+      "name": "शेलियाक",
+      "prose": "शेलियाक"
+    },
+    "SKAT": {
+      "name": "स्कैट",
+      "prose": "स्कैट"
+    },
+    "SUHAIL": {
+      "name": "सुहैल",
+      "prose": "सुहैल"
+    },
+    "SYRMA": {
+      "name": "सिर्मा",
+      "prose": "सिर्मा"
+    },
+    "THUBAN": {
+      "name": "थुबान",
+      "prose": "थुबान"
+    },
+    "TUREIS": {
+      "name": "ट्यूरेइस",
+      "prose": "ट्यूरेइस"
+    },
+    "UNUKALHAI": {
+      "name": "उनुकलहाई",
+      "prose": "उनुकलहाई"
+    },
+    "VINDEMIATRIX": {
+      "name": "विन्डेमियाट्रिक्स",
+      "prose": "विन्डेमियाट्रिक्स"
+    },
+    "WEZEN": {
+      "name": "वेजेन",
+      "prose": "वेजेन"
+    },
+    "YED_PRIOR": {
+      "name": "येद प्रायर",
+      "prose": "येद प्रायर"
+    },
+    "ZANIAH": {
+      "name": "जानियाह",
+      "prose": "जानियाह"
+    },
+    "ZUBENESCHAMALI": {
+      "name": "जुबेनेस्कमाली",
+      "prose": "जुबेनेस्कमाली"
+    },
+    "SGR_A_STAR": {
+      "name": "धनु A*",
+      "prose": "धनु A*"
+    },
+    "GALACTIC_POLE": {
+      "name": "आकाशगङ्गाया उत्तरध्रुव",
+      "prose": "आकाशगङ्गाया उत्तरध्रुव"
+    },
+    "GALACTIC_POLE_IAU1958": {
+      "name": "आकाशगङ्गाया उत्तरध्रुव (IAU 1958)",
+      "prose": "आकाशगङ्गाया उत्तरध्रुव (IAU 1958)"
+    }
   }
 }

@@ -238,5 +238,353 @@
   "star_class.RADIO_SOURCE": {
     "name": "Radio source",
     "prose": "Radio source"
+  },
+  "star.ACHERNAR": {
+    "name": "Achernar",
+    "prose": "Achernar"
+  },
+  "star.ACRUX": {
+    "name": "Acrux",
+    "prose": "Acrux"
+  },
+  "star.ADHARA": {
+    "name": "Adhara",
+    "prose": "Adhara"
+  },
+  "star.AIN": {
+    "name": "Ain",
+    "prose": "Ain"
+  },
+  "star.ALBALDAH": {
+    "name": "Albaldah",
+    "prose": "Albaldah"
+  },
+  "star.ALBIREO": {
+    "name": "Albireo",
+    "prose": "Albireo"
+  },
+  "star.ALDERAMIN": {
+    "name": "Alderamin",
+    "prose": "Alderamin"
+  },
+  "star.ALGEDI": {
+    "name": "Algedi",
+    "prose": "Algedi"
+  },
+  "star.ALGIEBA": {
+    "name": "Algieba",
+    "prose": "Algieba"
+  },
+  "star.ALGOL": {
+    "name": "Algol",
+    "prose": "Algol"
+  },
+  "star.ALHENA": {
+    "name": "Alhena",
+    "prose": "Alhena"
+  },
+  "star.ALJANAH": {
+    "name": "Aljanah",
+    "prose": "Aljanah"
+  },
+  "star.ALMACH": {
+    "name": "Almach",
+    "prose": "Almach"
+  },
+  "star.ALNAIR": {
+    "name": "Alnair",
+    "prose": "Alnair"
+  },
+  "star.ALNASL": {
+    "name": "Alnasl",
+    "prose": "Alnasl"
+  },
+  "star.ALNILAM": {
+    "name": "Alnilam",
+    "prose": "Alnilam"
+  },
+  "star.ALNITAK": {
+    "name": "Alnitak",
+    "prose": "Alnitak"
+  },
+  "star.ALPHARD": {
+    "name": "Alphard",
+    "prose": "Alphard"
+  },
+  "star.ALPHECCA": {
+    "name": "Alphecca",
+    "prose": "Alphecca"
+  },
+  "star.ALPHERATZ": {
+    "name": "Alpheratz",
+    "prose": "Alpheratz"
+  },
+  "star.ALSEPHINA": {
+    "name": "Alsephina",
+    "prose": "Alsephina"
+  },
+  "star.ALSHAIN": {
+    "name": "Alshain",
+    "prose": "Alshain"
+  },
+  "star.ALUDRA": {
+    "name": "Aludra",
+    "prose": "Aludra"
+  },
+  "star.ANKAA": {
+    "name": "Ankaa",
+    "prose": "Ankaa"
+  },
+  "star.ASCELLA": {
+    "name": "Ascella",
+    "prose": "Ascella"
+  },
+  "star.ASPIDISKE": {
+    "name": "Aspidiske",
+    "prose": "Aspidiske"
+  },
+  "star.ATRIA": {
+    "name": "Atria",
+    "prose": "Atria"
+  },
+  "star.AVIOR": {
+    "name": "Avior",
+    "prose": "Avior"
+  },
+  "star.BELLATRIX": {
+    "name": "Bellatrix",
+    "prose": "Bellatrix"
+  },
+  "star.CAPH": {
+    "name": "Caph",
+    "prose": "Caph"
+  },
+  "star.CASTOR": {
+    "name": "Castor",
+    "prose": "Castor"
+  },
+  "star.CHAMUKUY": {
+    "name": "Chamukuy",
+    "prose": "Chamukuy"
+  },
+  "star.DENEB": {
+    "name": "Deneb",
+    "prose": "Deneb"
+  },
+  "star.DIPHDA": {
+    "name": "Diphda",
+    "prose": "Diphda"
+  },
+  "star.ELNATH": {
+    "name": "Elnath",
+    "prose": "Elnath"
+  },
+  "star.ENIF": {
+    "name": "Enif",
+    "prose": "Enif"
+  },
+  "star.ERRAI": {
+    "name": "Errai",
+    "prose": "Errai"
+  },
+  "star.FANG": {
+    "name": "Fang",
+    "prose": "Fang"
+  },
+  "star.FOMALHAUT": {
+    "name": "Fomalhaut",
+    "prose": "Fomalhaut"
+  },
+  "star.GACRUX": {
+    "name": "Gacrux",
+    "prose": "Gacrux"
+  },
+  "star.HADAR": {
+    "name": "Hadar",
+    "prose": "Hadar"
+  },
+  "star.HAMAL": {
+    "name": "Hamal",
+    "prose": "Hamal"
+  },
+  "star.HEZE": {
+    "name": "Heze",
+    "prose": "Heze"
+  },
+  "star.IZAR": {
+    "name": "Izar",
+    "prose": "Izar"
+  },
+  "star.KAUS_AUSTRALIS": {
+    "name": "Kaus Australis",
+    "prose": "Kaus Australis"
+  },
+  "star.KAUS_BOREALIS": {
+    "name": "Kaus Borealis",
+    "prose": "Kaus Borealis"
+  },
+  "star.KITALPHA": {
+    "name": "Kitalpha",
+    "prose": "Kitalpha"
+  },
+  "star.KORNEPHOROS": {
+    "name": "Kornephoros",
+    "prose": "Kornephoros"
+  },
+  "star.MARFIK": {
+    "name": "Marfik",
+    "prose": "Marfik"
+  },
+  "star.MENKALINAN": {
+    "name": "Menkalinan",
+    "prose": "Menkalinan"
+  },
+  "star.MENKAR": {
+    "name": "Menkar",
+    "prose": "Menkar"
+  },
+  "star.MENKENT": {
+    "name": "Menkent",
+    "prose": "Menkent"
+  },
+  "star.MIAPLACIDUS": {
+    "name": "Miaplacidus",
+    "prose": "Miaplacidus"
+  },
+  "star.MIMOSA": {
+    "name": "Mimosa",
+    "prose": "Mimosa"
+  },
+  "star.MINTAKA": {
+    "name": "Mintaka",
+    "prose": "Mintaka"
+  },
+  "star.MIRACH": {
+    "name": "Mirach",
+    "prose": "Mirach"
+  },
+  "star.MIRFAK": {
+    "name": "Mirfak",
+    "prose": "Mirfak"
+  },
+  "star.NAOS": {
+    "name": "Naos",
+    "prose": "Naos"
+  },
+  "star.NIHAL": {
+    "name": "Nihal",
+    "prose": "Nihal"
+  },
+  "star.PEACOCK": {
+    "name": "Peacock",
+    "prose": "Peacock"
+  },
+  "star.PROCYON": {
+    "name": "Procyon",
+    "prose": "Procyon"
+  },
+  "star.RASALGETHI": {
+    "name": "Rasalgethi",
+    "prose": "Rasalgethi"
+  },
+  "star.RASALHAGUE": {
+    "name": "Rasalhague",
+    "prose": "Rasalhague"
+  },
+  "star.RIGEL": {
+    "name": "Rigel",
+    "prose": "Rigel"
+  },
+  "star.RIGIL_KENTAURUS": {
+    "name": "Rigil Kentaurus",
+    "prose": "Rigil Kentaurus"
+  },
+  "star.SABIK": {
+    "name": "Sabik",
+    "prose": "Sabik"
+  },
+  "star.SADALBARI": {
+    "name": "Sadalbari",
+    "prose": "Sadalbari"
+  },
+  "star.SADALMELIK": {
+    "name": "Sadalmelik",
+    "prose": "Sadalmelik"
+  },
+  "star.SADALSUUD": {
+    "name": "Sadalsuud",
+    "prose": "Sadalsuud"
+  },
+  "star.SADR": {
+    "name": "Sadr",
+    "prose": "Sadr"
+  },
+  "star.SAIPH": {
+    "name": "Saiph",
+    "prose": "Saiph"
+  },
+  "star.SARGAS": {
+    "name": "Sargas",
+    "prose": "Sargas"
+  },
+  "star.SCHEAT": {
+    "name": "Scheat",
+    "prose": "Scheat"
+  },
+  "star.SCHEDAR": {
+    "name": "Schedar",
+    "prose": "Schedar"
+  },
+  "star.SEGINUS": {
+    "name": "Seginus",
+    "prose": "Seginus"
+  },
+  "star.SHELIAK": {
+    "name": "Sheliak",
+    "prose": "Sheliak"
+  },
+  "star.SKAT": {
+    "name": "Skat",
+    "prose": "Skat"
+  },
+  "star.SUHAIL": {
+    "name": "Suhail",
+    "prose": "Suhail"
+  },
+  "star.SYRMA": {
+    "name": "Syrma",
+    "prose": "Syrma"
+  },
+  "star.THUBAN": {
+    "name": "Thuban",
+    "prose": "Thuban"
+  },
+  "star.TUREIS": {
+    "name": "Tureis",
+    "prose": "Tureis"
+  },
+  "star.UNUKALHAI": {
+    "name": "Unukalhai",
+    "prose": "Unukalhai"
+  },
+  "star.VINDEMIATRIX": {
+    "name": "Vindemiatrix",
+    "prose": "Vindemiatrix"
+  },
+  "star.WEZEN": {
+    "name": "Wezen",
+    "prose": "Wezen"
+  },
+  "star.YED_PRIOR": {
+    "name": "Yed Prior",
+    "prose": "Yed Prior"
+  },
+  "star.ZANIAH": {
+    "name": "Zaniah",
+    "prose": "Zaniah"
+  },
+  "star.ZUBENESCHAMALI": {
+    "name": "Zubeneschamali",
+    "prose": "Zubeneschamali"
   }
 }

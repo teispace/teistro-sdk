@@ -6024,5 +6024,557 @@
       "name": "Direction on the sky",
       "prose": "direction on the sky"
     }
+  },
+  "star": {
+    "SHERATAN": {
+      "name": "Sheratan",
+      "prose": "Sheratan",
+      "iast": "Aśvinī"
+    },
+    "BHARANI": {
+      "name": "Bharani",
+      "prose": "Bharani",
+      "iast": "Bharaṇī"
+    },
+    "ALCYONE": {
+      "name": "Alcyone",
+      "prose": "Alcyone",
+      "iast": "Kṛttikā"
+    },
+    "ALDEBARAN": {
+      "name": "Aldebaran",
+      "prose": "Aldebaran",
+      "iast": "Rohiṇī"
+    },
+    "MEISSA": {
+      "name": "Meissa",
+      "prose": "Meissa",
+      "iast": "Mṛgaśirā"
+    },
+    "BETELGEUSE": {
+      "name": "Betelgeuse",
+      "prose": "Betelgeuse",
+      "iast": "Ārdrā"
+    },
+    "POLLUX": {
+      "name": "Pollux",
+      "prose": "Pollux",
+      "iast": "Punarvasu"
+    },
+    "ASELLUS_AUSTRALIS": {
+      "name": "Asellus Australis",
+      "prose": "Asellus Australis",
+      "iast": "Puṣya"
+    },
+    "ASHLESHA": {
+      "name": "Ashlesha",
+      "prose": "Ashlesha",
+      "iast": "Āśleṣā"
+    },
+    "REGULUS": {
+      "name": "Regulus",
+      "prose": "Regulus",
+      "iast": "Maghā"
+    },
+    "ZOSMA": {
+      "name": "Zosma",
+      "prose": "Zosma",
+      "iast": "Pūrvaphālgunī"
+    },
+    "DENEBOLA": {
+      "name": "Denebola",
+      "prose": "Denebola",
+      "iast": "Uttaraphālgunī"
+    },
+    "ALGORAB": {
+      "name": "Algorab",
+      "prose": "Algorab",
+      "iast": "Hasta"
+    },
+    "SPICA": {
+      "name": "Spica",
+      "prose": "Spica",
+      "iast": "Citrā"
+    },
+    "ARCTURUS": {
+      "name": "Arcturus",
+      "prose": "Arcturus",
+      "iast": "Svātī"
+    },
+    "ZUBENELGENUBI": {
+      "name": "Zubenelgenubi",
+      "prose": "Zubenelgenubi",
+      "iast": "Viśākhā"
+    },
+    "DSCHUBBA": {
+      "name": "Dschubba",
+      "prose": "Dschubba",
+      "iast": "Anurādhā"
+    },
+    "ANTARES": {
+      "name": "Antares",
+      "prose": "Antares",
+      "iast": "Jyeṣṭhā"
+    },
+    "SHAULA": {
+      "name": "Shaula",
+      "prose": "Shaula",
+      "iast": "Mūla"
+    },
+    "KAUS_MEDIA": {
+      "name": "Kaus Media",
+      "prose": "Kaus Media",
+      "iast": "Pūrvāṣāḍhā"
+    },
+    "NUNKI": {
+      "name": "Nunki",
+      "prose": "Nunki",
+      "iast": "Uttarāṣāḍhā"
+    },
+    "VEGA": {
+      "name": "Vega",
+      "prose": "Vega",
+      "iast": "Abhijit"
+    },
+    "ALTAIR": {
+      "name": "Altair",
+      "prose": "Altair",
+      "iast": "Śravaṇa"
+    },
+    "ROTANEV": {
+      "name": "Rotanev",
+      "prose": "Rotanev",
+      "iast": "Dhaniṣṭhā"
+    },
+    "HYDOR": {
+      "name": "Hydor",
+      "prose": "Hydor",
+      "iast": "Śatabhiṣā"
+    },
+    "MARKAB": {
+      "name": "Markab",
+      "prose": "Markab",
+      "iast": "Pūrvabhādrapadā"
+    },
+    "ALGENIB": {
+      "name": "Algenib",
+      "prose": "Algenib",
+      "iast": "Uttarabhādrapadā"
+    },
+    "REVATI": {
+      "name": "Revati",
+      "prose": "Revati",
+      "iast": "Revatī"
+    },
+    "CANOPUS": {
+      "name": "Canopus",
+      "prose": "Canopus",
+      "iast": "Agastya"
+    },
+    "SIRIUS": {
+      "name": "Sirius",
+      "prose": "Sirius",
+      "iast": "Lubdhaka"
+    },
+    "CAPELLA": {
+      "name": "Capella",
+      "prose": "Capella",
+      "iast": "Brahmahṛdaya"
+    },
+    "POLARIS": {
+      "name": "Polaris",
+      "prose": "Polaris",
+      "iast": "Dhruva"
+    },
+    "DUBHE": {
+      "name": "Dubhe",
+      "prose": "Dubhe",
+      "iast": "Kratu"
+    },
+    "MERAK": {
+      "name": "Merak",
+      "prose": "Merak",
+      "iast": "Pulaha"
+    },
+    "PHECDA": {
+      "name": "Phecda",
+      "prose": "Phecda",
+      "iast": "Pulastya"
+    },
+    "ALIOTH": {
+      "name": "Alioth",
+      "prose": "Alioth",
+      "iast": "Aṅgiras"
+    },
+    "MIZAR": {
+      "name": "Mizar",
+      "prose": "Mizar",
+      "iast": "Vasiṣṭha"
+    },
+    "ALKAID": {
+      "name": "Alkaid",
+      "prose": "Alkaid",
+      "iast": "Marīci"
+    },
+    "ACHERNAR": {
+      "name": "Achernar",
+      "prose": "Achernar"
+    },
+    "ACRUX": {
+      "name": "Acrux",
+      "prose": "Acrux"
+    },
+    "ADHARA": {
+      "name": "Adhara",
+      "prose": "Adhara"
+    },
+    "AIN": {
+      "name": "Ain",
+      "prose": "Ain"
+    },
+    "ALBALDAH": {
+      "name": "Albaldah",
+      "prose": "Albaldah"
+    },
+    "ALBIREO": {
+      "name": "Albireo",
+      "prose": "Albireo"
+    },
+    "ALDERAMIN": {
+      "name": "Alderamin",
+      "prose": "Alderamin"
+    },
+    "ALGEDI": {
+      "name": "Algedi",
+      "prose": "Algedi"
+    },
+    "ALGIEBA": {
+      "name": "Algieba",
+      "prose": "Algieba"
+    },
+    "ALGOL": {
+      "name": "Algol",
+      "prose": "Algol"
+    },
+    "ALHENA": {
+      "name": "Alhena",
+      "prose": "Alhena"
+    },
+    "ALJANAH": {
+      "name": "Aljanah",
+      "prose": "Aljanah"
+    },
+    "ALMACH": {
+      "name": "Almach",
+      "prose": "Almach"
+    },
+    "ALNAIR": {
+      "name": "Alnair",
+      "prose": "Alnair"
+    },
+    "ALNASL": {
+      "name": "Alnasl",
+      "prose": "Alnasl"
+    },
+    "ALNILAM": {
+      "name": "Alnilam",
+      "prose": "Alnilam"
+    },
+    "ALNITAK": {
+      "name": "Alnitak",
+      "prose": "Alnitak"
+    },
+    "ALPHARD": {
+      "name": "Alphard",
+      "prose": "Alphard"
+    },
+    "ALPHECCA": {
+      "name": "Alphecca",
+      "prose": "Alphecca"
+    },
+    "ALPHERATZ": {
+      "name": "Alpheratz",
+      "prose": "Alpheratz"
+    },
+    "ALSEPHINA": {
+      "name": "Alsephina",
+      "prose": "Alsephina"
+    },
+    "ALSHAIN": {
+      "name": "Alshain",
+      "prose": "Alshain"
+    },
+    "ALUDRA": {
+      "name": "Aludra",
+      "prose": "Aludra"
+    },
+    "ANKAA": {
+      "name": "Ankaa",
+      "prose": "Ankaa"
+    },
+    "ASCELLA": {
+      "name": "Ascella",
+      "prose": "Ascella"
+    },
+    "ASPIDISKE": {
+      "name": "Aspidiske",
+      "prose": "Aspidiske"
+    },
+    "ATRIA": {
+      "name": "Atria",
+      "prose": "Atria"
+    },
+    "AVIOR": {
+      "name": "Avior",
+      "prose": "Avior"
+    },
+    "BELLATRIX": {
+      "name": "Bellatrix",
+      "prose": "Bellatrix"
+    },
+    "CAPH": {
+      "name": "Caph",
+      "prose": "Caph"
+    },
+    "CASTOR": {
+      "name": "Castor",
+      "prose": "Castor"
+    },
+    "CHAMUKUY": {
+      "name": "Chamukuy",
+      "prose": "Chamukuy"
+    },
+    "DENEB": {
+      "name": "Deneb",
+      "prose": "Deneb"
+    },
+    "DIPHDA": {
+      "name": "Diphda",
+      "prose": "Diphda"
+    },
+    "ELNATH": {
+      "name": "Elnath",
+      "prose": "Elnath"
+    },
+    "ENIF": {
+      "name": "Enif",
+      "prose": "Enif"
+    },
+    "ERRAI": {
+      "name": "Errai",
+      "prose": "Errai"
+    },
+    "FANG": {
+      "name": "Fang",
+      "prose": "Fang"
+    },
+    "FOMALHAUT": {
+      "name": "Fomalhaut",
+      "prose": "Fomalhaut"
+    },
+    "GACRUX": {
+      "name": "Gacrux",
+      "prose": "Gacrux"
+    },
+    "HADAR": {
+      "name": "Hadar",
+      "prose": "Hadar"
+    },
+    "HAMAL": {
+      "name": "Hamal",
+      "prose": "Hamal"
+    },
+    "HEZE": {
+      "name": "Heze",
+      "prose": "Heze"
+    },
+    "IZAR": {
+      "name": "Izar",
+      "prose": "Izar"
+    },
+    "KAUS_AUSTRALIS": {
+      "name": "Kaus Australis",
+      "prose": "Kaus Australis"
+    },
+    "KAUS_BOREALIS": {
+      "name": "Kaus Borealis",
+      "prose": "Kaus Borealis"
+    },
+    "KITALPHA": {
+      "name": "Kitalpha",
+      "prose": "Kitalpha"
+    },
+    "KORNEPHOROS": {
+      "name": "Kornephoros",
+      "prose": "Kornephoros"
+    },
+    "MARFIK": {
+      "name": "Marfik",
+      "prose": "Marfik"
+    },
+    "MENKALINAN": {
+      "name": "Menkalinan",
+      "prose": "Menkalinan"
+    },
+    "MENKAR": {
+      "name": "Menkar",
+      "prose": "Menkar"
+    },
+    "MENKENT": {
+      "name": "Menkent",
+      "prose": "Menkent"
+    },
+    "MIAPLACIDUS": {
+      "name": "Miaplacidus",
+      "prose": "Miaplacidus"
+    },
+    "MIMOSA": {
+      "name": "Mimosa",
+      "prose": "Mimosa"
+    },
+    "MINTAKA": {
+      "name": "Mintaka",
+      "prose": "Mintaka"
+    },
+    "MIRACH": {
+      "name": "Mirach",
+      "prose": "Mirach"
+    },
+    "MIRFAK": {
+      "name": "Mirfak",
+      "prose": "Mirfak"
+    },
+    "NAOS": {
+      "name": "Naos",
+      "prose": "Naos"
+    },
+    "NIHAL": {
+      "name": "Nihal",
+      "prose": "Nihal"
+    },
+    "PEACOCK": {
+      "name": "Peacock",
+      "prose": "Peacock"
+    },
+    "PROCYON": {
+      "name": "Procyon",
+      "prose": "Procyon"
+    },
+    "RASALGETHI": {
+      "name": "Rasalgethi",
+      "prose": "Rasalgethi"
+    },
+    "RASALHAGUE": {
+      "name": "Rasalhague",
+      "prose": "Rasalhague"
+    },
+    "RIGEL": {
+      "name": "Rigel",
+      "prose": "Rigel"
+    },
+    "RIGIL_KENTAURUS": {
+      "name": "Rigil Kentaurus",
+      "prose": "Rigil Kentaurus"
+    },
+    "SABIK": {
+      "name": "Sabik",
+      "prose": "Sabik"
+    },
+    "SADALBARI": {
+      "name": "Sadalbari",
+      "prose": "Sadalbari"
+    },
+    "SADALMELIK": {
+      "name": "Sadalmelik",
+      "prose": "Sadalmelik"
+    },
+    "SADALSUUD": {
+      "name": "Sadalsuud",
+      "prose": "Sadalsuud"
+    },
+    "SADR": {
+      "name": "Sadr",
+      "prose": "Sadr"
+    },
+    "SAIPH": {
+      "name": "Saiph",
+      "prose": "Saiph"
+    },
+    "SARGAS": {
+      "name": "Sargas",
+      "prose": "Sargas"
+    },
+    "SCHEAT": {
+      "name": "Scheat",
+      "prose": "Scheat"
+    },
+    "SCHEDAR": {
+      "name": "Schedar",
+      "prose": "Schedar"
+    },
+    "SEGINUS": {
+      "name": "Seginus",
+      "prose": "Seginus"
+    },
+    "SHELIAK": {
+      "name": "Sheliak",
+      "prose": "Sheliak"
+    },
+    "SKAT": {
+      "name": "Skat",
+      "prose": "Skat"
+    },
+    "SUHAIL": {
+      "name": "Suhail",
+      "prose": "Suhail"
+    },
+    "SYRMA": {
+      "name": "Syrma",
+      "prose": "Syrma"
+    },
+    "THUBAN": {
+      "name": "Thuban",
+      "prose": "Thuban"
+    },
+    "TUREIS": {
+      "name": "Tureis",
+      "prose": "Tureis"
+    },
+    "UNUKALHAI": {
+      "name": "Unukalhai",
+      "prose": "Unukalhai"
+    },
+    "VINDEMIATRIX": {
+      "name": "Vindemiatrix",
+      "prose": "Vindemiatrix"
+    },
+    "WEZEN": {
+      "name": "Wezen",
+      "prose": "Wezen"
+    },
+    "YED_PRIOR": {
+      "name": "Yed Prior",
+      "prose": "Yed Prior"
+    },
+    "ZANIAH": {
+      "name": "Zaniah",
+      "prose": "Zaniah"
+    },
+    "ZUBENESCHAMALI": {
+      "name": "Zubeneschamali",
+      "prose": "Zubeneschamali"
+    },
+    "SGR_A_STAR": {
+      "name": "Sagittarius A*",
+      "prose": "Sagittarius A*"
+    },
+    "GALACTIC_POLE": {
+      "name": "North Galactic Pole",
+      "prose": "North Galactic Pole"
+    },
+    "GALACTIC_POLE_IAU1958": {
+      "name": "North Galactic Pole (IAU 1958)",
+      "prose": "North Galactic Pole (IAU 1958)"
+    }
   }
 }
