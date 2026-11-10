@@ -1392,8 +1392,11 @@ class AnEngine(WithLibrary):
             ne = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="ne-Deva-NP")
             self.assertEqual(ne.sentences[0].text, "यो दिन बुधबार हो।")
             self.assertTrue(ne.draft)
+            hi = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="hi-Deva-IN")
+            self.assertEqual(hi.sentences[0].text, "यह दिन बुधवार है।")
+            self.assertTrue(hi.draft)
             with self.assertRaises(TeistroError) as refused:
-                sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="hi-Deva-IN")
+                sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="xx-Latn")
             self.assertEqual(refused.exception.field, "locale")
             # The same day asked on Nepal's zone is the day on +05:45; both
             # clocks together are refused naming `zone`.

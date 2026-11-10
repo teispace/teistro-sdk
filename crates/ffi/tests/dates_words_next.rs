@@ -520,8 +520,9 @@ fn a_next_request_is_refused_as_its_contract_says() {
     );
 }
 
-/// **A day in sentences** across the boundary: a day answers in English
-/// and Nepali, and each refusal its contract names has its status and field.
+/// **A day in sentences** across the boundary: a day answers in English,
+/// Nepali and Hindi, and each refusal its contract names has its status
+/// and field.
 #[test]
 fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
     let ctx = test_ctx();
@@ -538,8 +539,13 @@ fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
     assert_eq!(value["draft"], true);
     assert_eq!(value["sentences"][0]["key"], "sdk.day.vara");
 
-    let hindi = json_call(&ctx, ts_almanac_sentences, &asked("hi-Deva-IN"));
-    refused(&ctx, &hindi, Status::Unsupported, "locale");
+    let (status, hindi) = json_call(&ctx, ts_almanac_sentences, &asked("hi-Deva-IN"));
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let value = &hindi.unwrap()["value"];
+    assert_eq!(value["draft"], true);
+    assert_eq!(value["sentences"][0]["text"], "यह दिन बुधवार है।");
+    let unknown = json_call(&ctx, ts_almanac_sentences, &asked("xx-Latn"));
+    refused(&ctx, &unknown, Status::Unsupported, "locale");
     let wrong = json_call(&ctx, ts_almanac_sentences, &serde_json::json!({"date": 1}));
     refused(&ctx, &wrong, Status::InvalidArg, "sentences");
 }

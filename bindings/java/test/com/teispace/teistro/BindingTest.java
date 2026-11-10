@@ -523,8 +523,11 @@ public final class BindingTest {
                 DaySentences ne = committee.almanac().sentences(day, kathmandu, 20_700, "ne-Deva-NP");
                 same("यो दिन बुधबार हो।", ne.sentences().get(0).text(), "the vara in Nepali");
                 same(true, ne.draft(), "Nepali waits on review");
-                same("locale", refusal(() -> committee.almanac().sentences(day, kathmandu, 20_700, "hi-Deva-IN"))
-                        .field(), "no Hindi templates");
+                DaySentences hi = committee.almanac().sentences(day, kathmandu, 20_700, "hi-Deva-IN");
+                same("यह दिन बुधवार है।", hi.sentences().get(0).text(), "the vara in Hindi");
+                same(true, hi.draft(), "Hindi waits on review");
+                same("locale", refusal(() -> committee.almanac().sentences(day, kathmandu, 20_700, "xx-Latn"))
+                        .field(), "a locale not loaded");
                 same(en, committee.almanac().sentences(day, kathmandu, Civil.ianaZone("Asia/Kathmandu"), "en-Latn"),
                         "the day on Nepal's zone");
             }

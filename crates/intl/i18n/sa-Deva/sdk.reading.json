@@ -1,0 +1,10 @@
+{
+  "effect": ".input {$rule :string} {{{$text}}}",
+  "says": ".input {$rule :string} {{{$reading :entity kind=rule}}}",
+  "timing": ".input {$rule :string} {{{$reading :entity kind=rule form=timing}}}",
+  "lifeSpan": ".input {$rule :string} .input {$unit :string} .input {$count :integer} .match $unit days {{आयुः {$count} दिनानि}} months {{आयुः {$count} मासाः}} * {{आयुः {$count} वर्षाणि}}",
+  "lifeClass": ".input {$rule :string} .input {$class :string} .match $class balarishta {{बालारिष्टम्}} yogarishta {{योगारिष्टम्}} short {{अल्पायुः}} medium {{मध्यायुः}} long {{दीर्घायुः}} divine {{दिव्यायुः}} * {{अमितायुः}}",
+  "participants": ".input {$rule :string} .input {$count :integer} .match $count 1 {{भागी ग्रहः: {$grahas :list type=and}}} 2 {{भागिनौ ग्रहौ: {$grahas :list type=and}}} * {{भागिनो ग्रहाः: {$grahas :list type=and}}}",
+  "status": ".input {$rule :string} .input {$status :string} .match $status fully-cancelled {{निरस्तम्}} partially-cancelled {{अंशतो निरस्तम्}} * {{प्रवृत्तम्}}",
+  "severity": ".input {$rule :string} {{तीव्रता {$severity :integer}}}"
+}

@@ -1,0 +1,20 @@
+{
+  "vara": "यह दिन {$vara :entity kind=vara} है।",
+  "tithi": ".input {$ends :string} .match $ends sameDay {{तिथि {$paksha :entity kind=paksha} पक्ष की {$tithi :entity kind=tithi} {$until :time} तक है।}} nextDay {{तिथि {$paksha :entity kind=paksha} पक्ष की {$tithi :entity kind=tithi} अगले दिन {$until :time} तक है।}} allDay {{तिथि {$paksha :entity kind=paksha} पक्ष की {$tithi :entity kind=tithi} पूरे दिन है।}} * {{तिथि {$paksha :entity kind=paksha} पक्ष की {$tithi :entity kind=tithi} शेष दिन भर है।}}",
+  "nakshatra": ".input {$ends :string} .match $ends sameDay {{नक्षत्र {$nakshatra :entity kind=nakshatra} {$until :time} तक है।}} nextDay {{नक्षत्र {$nakshatra :entity kind=nakshatra} अगले दिन {$until :time} तक है।}} allDay {{नक्षत्र {$nakshatra :entity kind=nakshatra} पूरे दिन है।}} * {{नक्षत्र {$nakshatra :entity kind=nakshatra} शेष दिन भर है।}}",
+  "yoga": ".input {$ends :string} .match $ends sameDay {{योग {$yoga :entity kind=yoga} {$until :time} तक है।}} nextDay {{योग {$yoga :entity kind=yoga} अगले दिन {$until :time} तक है।}} allDay {{योग {$yoga :entity kind=yoga} पूरे दिन है।}} * {{योग {$yoga :entity kind=yoga} शेष दिन भर है।}}",
+  "karana": ".input {$ends :string} .match $ends sameDay {{करण {$karana :entity kind=karana} {$until :time} तक है।}} nextDay {{करण {$karana :entity kind=karana} अगले दिन {$until :time} तक है।}} allDay {{करण {$karana :entity kind=karana} पूरे दिन है।}} * {{करण {$karana :entity kind=karana} शेष दिन भर है।}}",
+  "sun": "सूर्योदय {$rise :time} पर और सूर्यास्त {$set :time} पर होता है।",
+  "sunUp": "सूर्य दिन भर क्षितिज के ऊपर रहता है।",
+  "sunDown": "सूर्य दिन भर क्षितिज के नीचे रहता है।",
+  "sunSign": "सूर्य {$rashi :entity kind=rashi} राशि में है।",
+  "sankranti": ".input {$when :string} .match $when nextDay {{अगले दिन {$at :time} पर सूर्य {$rashi :entity kind=rashi} राशि में प्रवेश करता है।}} * {{सूर्य {$at :time} पर {$rashi :entity kind=rashi} राशि में प्रवेश करता है।}}",
+  "moonSign": ".input {$ends :string} .match $ends sameDay {{चंद्रमा {$rashi :entity kind=rashi} राशि में {$until :time} तक है।}} nextDay {{चंद्रमा {$rashi :entity kind=rashi} राशि में अगले दिन {$until :time} तक है।}} allDay {{चंद्रमा {$rashi :entity kind=rashi} राशि में पूरे दिन है।}} * {{चंद्रमा {$rashi :entity kind=rashi} राशि में शेष दिन भर है।}}",
+  "moonrise": ".input {$when :string} .match $when nextDay {{अगले दिन चंद्रोदय {$at :time} पर होता है।}} * {{चंद्रोदय {$at :time} पर होता है।}}",
+  "moonset": ".input {$when :string} .match $when nextDay {{अगले दिन चंद्रास्त {$at :time} पर होता है।}} * {{चंद्रास्त {$at :time} पर होता है।}}",
+  "month": ".input {$kind :string} .match $kind adhika {{चांद्र मास अधिक {$masa :entity kind=masa} है।}} * {{चांद्र मास {$masa :entity kind=masa} है।}}",
+  "ritu": "ऋतु {$ritu :entity kind=ritu} है।",
+  "ayana": "अयन {$ayana :entity kind=ayana} है।",
+  "kaala": "{$kaala :entity kind=kaala} {$from :time} से {$to :time} तक है।",
+  "abhijit": "अभिजित मुहूर्त {$from :time} से {$to :time} तक है।"
+}

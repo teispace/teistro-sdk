@@ -163,12 +163,12 @@ fn templates_in(intl: &Intl, tag: &str) -> Result<(), Error> {
         return Ok(());
     }
     Err(Error::unsupported(format!(
-        "`{tag}` has no templates for a day in sentences: Hindi and Sanskrit wait on \
-         their reviewers (Q42), and no sentence is machine-written"
+        "`{tag}` has no templates for a day in sentences, and no sentence is \
+         machine-written"
     ))
     .with_field("locale")
     .with_hint(String::from(
-        "ask `en-Latn` or `ne-Deva-NP`, or load a pack that carries `sdk.day`",
+        "ask a locale that carries `sdk.day`, or load a pack that carries it",
     )))
 }
 

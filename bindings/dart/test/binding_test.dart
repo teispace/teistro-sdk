@@ -556,7 +556,7 @@ void main() {
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.
-  test('a day is said in sentences and Hindi is refused', () {
+  test('a day is said in sentences, Hindi as a draft', () {
     final ctx = teistro.context(
       profile: 'nepali-committee',
       ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
@@ -583,12 +583,20 @@ void main() {
     );
     expect(ne.sentences.first.text, 'यो दिन बुधबार हो।');
     expect(ne.draft, isTrue);
+    final hi = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      locale: 'hi-Deva-IN',
+    );
+    expect(hi.sentences.first.text, 'यह दिन बुधवार है।');
+    expect(hi.draft, isTrue);
     expect(
       () => ctx.almanac.sentences(
         date: day,
         place: kathmandu,
         utcOffsetSeconds: 20700,
-        locale: 'hi-Deva-IN',
+        locale: 'xx-Latn',
       ),
       throwsA(
         isA<TeistroException>().having((e) => e.field, 'field', 'locale'),

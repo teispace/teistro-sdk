@@ -38,8 +38,15 @@
     }
   },
   "draft": [
+    "sdk.aspect",
     "sdk.calendar",
+    "sdk.condition",
+    "sdk.day",
+    "sdk.karaka",
+    "sdk.naming",
+    "sdk.phala",
     "sdk.rashifal",
+    "sdk.reading",
     "sdk.reason"
   ]
 }

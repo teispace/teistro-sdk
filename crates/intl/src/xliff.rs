@@ -488,8 +488,8 @@ mod tests {
     ///
     /// [`what_was_exported_imports_back_unchanged`] walks `ne-Deva-NP`,
     /// which is complete: every target is full and the empty-target path
-    /// is never taken. `hi-Deva-IN` carries `sdk.entity` and no `sdk.*`
-    /// message at all, so its export is mostly **empty targets** — and
+    /// is never taken. `hi-Deva-IN` names about three entities in five of
+    /// the base's, so its export holds hundreds of **empty targets** — and
     /// an import that wrote them would replace a locale's records with
     /// blanks, which is the shape of the bug `load_pack` already had
     /// once (`03-design/state-readings.md`). This is that path at full

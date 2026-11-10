@@ -1,0 +1,13 @@
+{
+  "dignity": "{$graha :entity kind=graha form=prose} {$dignity :entity kind=dignity} में है",
+  "navamsha": "नवांश में {$graha :entity kind=graha} {$rashi :entity kind=rashi} में",
+  "vargottama": "{$graha :entity kind=graha form=prose} वर्गोत्तम है",
+  "retrograde": "{$graha :entity kind=graha form=prose} वक्री है",
+  "combust": "{$graha :entity kind=graha form=prose} अस्त है",
+  "friendship": "{#b}{$graha :entity kind=graha}{/b} अपने राशीश {$dispositor :entity kind=graha} का {$compound :entity kind=relationship} है: नैसर्गिक रूप से {$natural :entity kind=relationship} और उस स्वामी की स्थिति से {$temporary :entity kind=relationship}",
+  "age": "{$graha :entity kind=graha} अपनी राशि में {$age :entity kind=avastha_baladi} अवस्था में है",
+  "wakefulness": "{$graha :entity kind=graha} {$wakefulness :entity kind=avastha_jagradadi} अवस्था में है",
+  "brightness": "{$graha :entity kind=graha} {$deeptadi :entity kind=avastha_deeptadi} है",
+  "lajjitadi": "{$graha :entity kind=graha} {$states :list type=and} है",
+  "undecided": ".input {$graha :entity kind=graha} .input {$count :integer} .match $count one {{कुंडली यह तय नहीं करती कि {$graha} {$states :list type=or} है या नहीं}} * {{कुंडली {$graha} के लिए इनमें से कुछ भी तय नहीं करती: {$states :list type=or}}}"
+}
