@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 52 records
+## Over 54 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 344 132 | 101 063 | 29.4% |
-| the value | 325 560 | 97 867 | 30.1% |
-| the provenance | 18 026 | 2390 | 13.3% |
+| the envelope | 346 029 | 102 464 | 29.6% |
+| the value | 326 841 | 99 148 | 30.3% |
+| the provenance | 18 621 | 2479 | 13.3% |
 
-18 of the 52 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+18 of the 54 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 243 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -67,6 +67,7 @@ value.
 | `almanac.people` | 3742 | 1744 | 46.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
 | `almanac.publishedReasons` | 747 | 118 | 15.8% | the whole value |
 | `almanac.sankalpa` | 1214 | 709 | 58.4% | the whole value |
+| `almanac.sankalpaWords` | 1782 | 1286 | 72.2% | the whole value |
 | `almanac.sentences` | 3630 | 1011 | 27.9% | `sentences.text`, `locale`, `withheld`, `draft` |
 | `almanac.skyView` | 3724 | 622 | 16.7% | `at`, `grahas`, `stars` |
 | `calendar.add` | 149 | 149 | 100.0% | the whole value |
@@ -84,6 +85,7 @@ value.
 | `intl.lexicon` | 3593 | 3593 | 100.0% | the whole value |
 | `intl.lookup` | 329 | 329 | 100.0% | the whole value |
 | `intl.time` | 183 | 183 | 100.0% | the whole value |
+| `matching.band` | 115 | 115 | 100.0% | the whole value |
 | `matching.naam` | 1293 | 1293 | 100.0% | the whole value |
 | `naming.check` | 1013 | 1013 | 100.0% | the whole value |
 | `naming.of` | 120 | 120 | 100.0% | the whole value |
@@ -152,6 +154,7 @@ marked.
 - `almanac.people`: `people` 2853 (kept), `day` 59 (kept), `nextSunrise` 13 (kept), `sunrise` 13 (kept), `dasha` 10 (kept), `nakshatra` 10 (kept), `moonSign` 9 (kept).
 - `almanac.publishedReasons`: `reasons` 7 (kept).
 - `almanac.sankalpa`: `year` 226 (kept), `date` 82 (kept), `month` 75 (kept), `tithi` 15 (kept), `nakshatra` 14 (kept), `ayana` 13 (kept), `nextSunrise` 13 (kept), `sunrise` 13 (kept), `jupiter` 12 (kept), `karana` 12 (kept), `paksha` 12 (kept), `sun` 12 (kept), `ayanaReckoning` 11 (kept), `moon` 11 (kept), `rituReckoning` 11 (kept), `at` 10 (kept), `ritu` 10 (kept), `vara` 10 (kept), `yoga` 10 (kept).
+- `almanac.sankalpaWords`: `text` 691 (kept), `params` 450 (kept), `tradition` 17 (kept), `locale` 10 (kept).
 - `almanac.sentences`: `sentences` 2833 (kept), `locale` 12 (kept), `draft` 7 (kept), `withheld` 7 (kept).
 - `almanac.skyView`: `ecliptic` 1687, `horizon` 796, `grahas` 262 (kept), `stars` 227 (kept), `atmosphere` 26, `siderealTimeDeg` 14, `obliquityDeg` 13, `at` 9 (kept), `eclipticStepDeg` 8, `horizonStepDeg` 8.
 - `chart.astrocartography`: `lines` 3496 (kept), `greenwichRamcDeg` 14 (kept), `obliquityDeg` 13 (kept), `projection` 12 (kept), `instant` 10 (kept), `toleranceDeg` 10 (kept), `latitudeLimitDeg` 8 (kept), `stepDeg` 6 (kept).

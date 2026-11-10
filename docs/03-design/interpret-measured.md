@@ -458,8 +458,8 @@ repository by hand.
 |---|---:|---:|
 | `hi-Deva-IN` | 3982 | 890 |
 | `ne-Deva-NP` | 3982 | 8 |
-| `sa-Deva` | 3982 | 1456 |
-| `sa-Latn` | 3982 | 1456 |
+| `sa-Deva` | 3982 | 465 |
+| `sa-Latn` | 3982 | 465 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

@@ -29,18 +29,24 @@ pub enum ChartLayout {
     SouthIndian = 1,
     /// The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
     EastIndian = 2,
-    /// The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+    /// The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise
     NepaliLotus = 3,
     /// The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
     SudarshanChakra = 4,
     /// The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
     WesternWheel = 5,
+    /// The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise
+    NepaliCircle = 6,
+    /// North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub
+    NorthIndianPetals = 7,
 }
 
-const BY_KEY: [(&str, ChartLayout); 6] = [
+const BY_KEY: [(&str, ChartLayout); 8] = [
     ("EAST_INDIAN", ChartLayout::EastIndian),
+    ("NEPALI_CIRCLE", ChartLayout::NepaliCircle),
     ("NEPALI_LOTUS", ChartLayout::NepaliLotus),
     ("NORTH_INDIAN", ChartLayout::NorthIndian),
+    ("NORTH_INDIAN_PETALS", ChartLayout::NorthIndianPetals),
     ("SOUTH_INDIAN", ChartLayout::SouthIndian),
     ("SUDARSHAN_CHAKRA", ChartLayout::SudarshanChakra),
     ("WESTERN_WHEEL", ChartLayout::WesternWheel),
@@ -54,13 +60,15 @@ impl ChartLayout {
     pub const KIND: Kind = Kind::ChartLayout;
 
     /// Every member, in id order.
-    pub const ALL: [ChartLayout; 6] = [
+    pub const ALL: [ChartLayout; 8] = [
         ChartLayout::NorthIndian,
         ChartLayout::SouthIndian,
         ChartLayout::EastIndian,
         ChartLayout::NepaliLotus,
         ChartLayout::SudarshanChakra,
         ChartLayout::WesternWheel,
+        ChartLayout::NepaliCircle,
+        ChartLayout::NorthIndianPetals,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -79,6 +87,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => "NEPALI_LOTUS",
             ChartLayout::SudarshanChakra => "SUDARSHAN_CHAKRA",
             ChartLayout::WesternWheel => "WESTERN_WHEEL",
+            ChartLayout::NepaliCircle => "NEPALI_CIRCLE",
+            ChartLayout::NorthIndianPetals => "NORTH_INDIAN_PETALS",
         }
     }
 
@@ -98,6 +108,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => "chart_layout.NEPALI_LOTUS",
             ChartLayout::SudarshanChakra => "chart_layout.SUDARSHAN_CHAKRA",
             ChartLayout::WesternWheel => "chart_layout.WESTERN_WHEEL",
+            ChartLayout::NepaliCircle => "chart_layout.NEPALI_CIRCLE",
+            ChartLayout::NorthIndianPetals => "chart_layout.NORTH_INDIAN_PETALS",
         }
     }
 
@@ -114,9 +126,11 @@ impl ChartLayout {
             ChartLayout::NorthIndian => "The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise",
             ChartLayout::SouthIndian => "The South Indian chart: signs fixed, Pisces top-left, running clockwise",
             ChartLayout::EastIndian => "The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise",
-            ChartLayout::NepaliLotus => "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals",
+            ChartLayout::NepaliLotus => "The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise",
             ChartLayout::SudarshanChakra => "The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun",
             ChartLayout::WesternWheel => "The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock",
+            ChartLayout::NepaliCircle => "The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise",
+            ChartLayout::NorthIndianPetals => "North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub",
         }
     }
 
@@ -136,6 +150,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => None,
             ChartLayout::SudarshanChakra => None,
             ChartLayout::WesternWheel => None,
+            ChartLayout::NepaliCircle => None,
+            ChartLayout::NorthIndianPetals => None,
         }
     }
 
@@ -155,6 +171,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => Mark::Verified,
             ChartLayout::SudarshanChakra => Mark::Traditional,
             ChartLayout::WesternWheel => Mark::Verified,
+            ChartLayout::NepaliCircle => Mark::Verified,
+            ChartLayout::NorthIndianPetals => Mark::Verified,
         }
     }
 
@@ -174,6 +192,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => false,
             ChartLayout::SudarshanChakra => false,
             ChartLayout::WesternWheel => false,
+            ChartLayout::NepaliCircle => false,
+            ChartLayout::NorthIndianPetals => false,
         }
     }
 
@@ -191,9 +211,11 @@ impl ChartLayout {
             ChartLayout::NorthIndian => &[Source { text: "Wikipedia, Kundali (astrology)", reference: "figure Kundali_02a.png" }],
             ChartLayout::SouthIndian => &[Source { text: "Wikipedia, Kundali (astrology)", reference: "figure Kundali_01a.png" }],
             ChartLayout::EastIndian => &[Source { text: "Wikipedia, Kundali (astrology)", reference: "figure Kundali_03a.png" }],
-            ChartLayout::NepaliLotus => &[Source { text: "baseline-engine", reference: "the application's kundali lotus frame" }],
+            ChartLayout::NepaliLotus => &[Source { text: "printed Nepali janma patrikas", reference: "two scans of one printer's form, read 2026-11-10: the जन\u{94d}मक\u{941}ण\u{94d}डली, चलितक\u{941}ण\u{94d}डली and राशिक\u{941}ण\u{94d}डली lotuses" }],
             ChartLayout::SudarshanChakra => &[Source { text: "tutorials on the Sudarshana chakra", reference: "the order of its rings" }, Source { text: "baseline-engine", reference: "the application's Sudarshan chakra view: its proportions, start and direction (crux C47)" }],
             ChartLayout::WesternWheel => &[Source { text: "tutorials on reading an astrological chart wheel", reference: "the first house's cusp at nine o'clock, the houses anticlockwise" }],
+            ChartLayout::NepaliCircle => &[Source { text: "printed Nepali janma patrikas", reference: "one scan of a second printer's form, read 2026-11-10: the ल, रा, न and भा charts" }],
+            ChartLayout::NorthIndianPetals => &[Source { text: "a Nepali app's kundali view, read 2026-11-10", reference: "one screenshot: the curves' midpoints and vertices, the hub, and each house's number" }],
         }
     }
 
@@ -213,6 +235,8 @@ impl ChartLayout {
             ChartLayout::NepaliLotus => &[],
             ChartLayout::SudarshanChakra => &[],
             ChartLayout::WesternWheel => &[],
+            ChartLayout::NepaliCircle => &[],
+            ChartLayout::NorthIndianPetals => &[],
         }
     }
 
@@ -261,7 +285,7 @@ impl ChartLayout {
     /// use teistro_core::catalogue::ChartLayout;
     ///
     /// assert_eq!(ChartLayout::from_id(0), Some(ChartLayout::NorthIndian));
-    /// assert_eq!(ChartLayout::from_id(6), None);
+    /// assert_eq!(ChartLayout::from_id(8), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<ChartLayout> {
@@ -272,6 +296,8 @@ impl ChartLayout {
             3 => Some(ChartLayout::NepaliLotus),
             4 => Some(ChartLayout::SudarshanChakra),
             5 => Some(ChartLayout::WesternWheel),
+            6 => Some(ChartLayout::NepaliCircle),
+            7 => Some(ChartLayout::NorthIndianPetals),
             _ => None,
         }
     }
