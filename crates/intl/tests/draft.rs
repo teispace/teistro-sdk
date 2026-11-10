@@ -58,7 +58,10 @@ fn hindi_and_sanskrit_text_ships_marked() {
     // Hindi drafts the rashifal (SR-37) beside the composed text; Sanskrit
     // its currency words (SR-49). sa-Latn carries sa-Deva's drafts across
     // with the text it derives: transliterating a draft does not review it.
-    assert_eq!(tree.locales["hi-Deva-IN"].meta.draft, drafted("sdk.rashifal"));
+    assert_eq!(
+        tree.locales["hi-Deva-IN"].meta.draft,
+        drafted("sdk.rashifal")
+    );
     for tag in ["sa-Deva", "sa-Latn"] {
         assert_eq!(tree.locales[tag].meta.draft, drafted("sdk.amount"), "{tag}");
     }
