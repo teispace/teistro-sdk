@@ -109,7 +109,11 @@ Document + Context + Content ─compose──▶  Labels
   - whether the degree is written, in the locale's digits;
   - whether the minute follows it (`minutes`), two digits and a prime,
     `र २६°३२'`. Off by default. The minute is the floor of the degree's
-    fraction, so a degree and its minute never read 60.
+    fraction, so a degree and its minute never read 60. With its minute a
+    degree is two digits too (`श ०९°००'`), as `DD°MM'` is written;
+  - what stands between the name and the degree (`degree_separator`): a
+    space by default, nothing for the joined form a consumer's app writes,
+    `र२६°३२'`.
 
   Each option's default writes what the SDK wrote before it existed, so a
   theme that names none of them draws the same bytes (chart-geometry

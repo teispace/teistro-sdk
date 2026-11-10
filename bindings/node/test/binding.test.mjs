@@ -848,8 +848,9 @@ test('every catalogue enum has a complete id table', () => {
   // and `TsVyayaKind`, three, each with its member of `TsKind`; 1545
   // since `TsCalendar` gained `TAMIL_VAKYA`; 1546 since `TsTradition`
   // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two;
-  // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`.
-  assert.equal(entries, 1550, 'every member of every enum is in a table');
+  // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`;
+  // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`.
+  assert.equal(entries, 1552, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1502,11 +1503,12 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
       mark_nodes: true,
       degrees: true,
       minutes: true,
+      degree_separator: '',
     },
   };
   const custom = ctx.chart.found({ ...request, theme: every }).drawings[0].svg;
   assert.match(custom, /viewBox="0 0 600 600"/u);
-  assert.match(custom, /fill="#e53935" text-anchor="middle" data-body="graha\.SUN">☉ [०-९]+°[०-९]{2}'/u, 'its own colour, and the minute in the locale\'s digits');
+  assert.match(custom, /fill="#e53935" text-anchor="middle" data-body="graha\.SUN">☉[०-९]{2}°[०-९]{2}&#39;/u, 'its own colour, joined, and the degree and minute in two of the locale\'s digits');
 
   assert.throws(
     () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),

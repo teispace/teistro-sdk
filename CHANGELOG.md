@@ -38,8 +38,9 @@ entity ask for a key no catalogue has.
 - `Style.body_colours`: a colour per body by its key, validated as `#rrggbb`; a body it does not name is
   written in the ink.
 - `Content.retrograde_place` (`AFTER`, the default, or `BEFORE`, as `*श`), `Content.mark_nodes` (off by
-  default) and `Content.minutes` (off by default: `र २६°३२'`, in the locale's digits). Typed in Node,
-  Python and Dart (`MarkPlace`).
+  default), `Content.minutes` (off by default: `र २६°३२'`, in the locale's digits, the degree then in two)
+  and `Content.degree_separator` (a space by default; `""` writes `र२६°३२'`). Typed in Node, Python and
+  Dart (`MarkPlace`).
 
 **The Nepali charts as printed janma patrikas draw them (SR-36).**
 **Numbers:** none computed; the `NEPALI_LOTUS` drawing changes (its cells' outlines, anchors and frame), and a drawing in any other layout keeps its bytes.

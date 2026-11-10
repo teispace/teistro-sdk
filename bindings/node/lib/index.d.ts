@@ -5035,8 +5035,10 @@ export interface ThemeContent {
   readonly mark_nodes?: boolean;
   /** Whether a graha's degree follows its name, on the founded chart, in the locale's digits. */
   readonly degrees?: boolean;
-  /** Whether a degree is followed by its minute, two digits and a prime. */
+  /** Whether a degree is followed by its minute, two digits and a prime, the degree then in two digits too. */
   readonly minutes?: boolean;
+  /** What is written between a body's name and its degree: a space by default, `""` for the joined form `र२६°३२'`. */
+  readonly degree_separator?: string;
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

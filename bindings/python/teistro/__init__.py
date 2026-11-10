@@ -16098,6 +16098,7 @@ class ThemeContent(TypedDict, total=False):
     mark_nodes: bool
     degrees: bool
     minutes: bool
+    degree_separator: str
 
 
 ShippedTheme = Literal["LIGHT", "DARK"]
