@@ -960,6 +960,7 @@ from .catalogue import (
     Centre,
     ChartKind,
     ChartLayout,
+    ChartFrame,
     Choghadiya,
     Gowri,
     DashaSystem,
@@ -1182,6 +1183,7 @@ __all__ = [
     # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
     "ChartLayout",
     "Drawing",
+    "DrawingAsk",
     "LayoutRow",
     "PlanItem",
     "PlanRequest",
@@ -3417,7 +3419,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         dashas: Sequence[Union[DashaSystem, str]] = (),
-        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
+        drawings: Sequence[DrawingAsk] = (),
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
@@ -3549,7 +3551,7 @@ class ChartArea(_Area):
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         dashas: Sequence[Union[DashaSystem, str]] = (),
-        drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
+        drawings: Sequence[DrawingAsk] = (),
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
@@ -3610,7 +3612,8 @@ class ChartArea(_Area):
         chart should not pay for twenty-one of them
         (`03-design/chart-reading.md` §4). `drawings` names charts to draw,
         each a `(ChartLayout, Varga)` pair with `Varga.D1` the founded chart,
-        in the order to answer them. `dashas` names the dasha systems to
+        or that pair and the `ChartFrame` its houses count from, in the order
+        to answer them. `dashas` names the dasha systems to
         compute, their periods to the settings' `dasha.depth`
         (`03-design/dasha-kernels.md`). `aspects` asks for the drishti.
         `lilith` names the lunar apogee to place beside the nine,
@@ -19631,6 +19634,10 @@ class Drawing:
     """The layout's hub, where the chart's name is written; `None` for a
     layout with none."""
 
+    counts_from: ChartFrame = ChartFrame.LAGNA
+    """What its houses count from: the lagna unless the request named the
+    Moon, the Sun or the bhavas."""
+
 
 def _member(kind: Any, key: str) -> Any:
     """A catalogue member by its bare key, or a refusal naming both."""
@@ -19672,6 +19679,7 @@ def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
         svg=svg,
         layout=_layout_of(placed["layout"]),
         varga=_member(Varga, raw["varga"]),
+        counts_from=_member(ChartFrame, raw.get("counts_from", "LAGNA")),
         cells=[
             DrawnCell(
                 outline=_outline(cell["outline"]),
@@ -19767,33 +19775,48 @@ def _dasha_system(id: int, names: Mapping[int, str]) -> Union[DashaSystem, str]:
     return DashaSystem(id)
 
 
-def _drawing_bits(
-    drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]], registered: Mapping[str, int]
-) -> list[int]:
+DrawingAsk = Union[
+    Tuple[Union[ChartLayout, str], Varga],
+    Tuple[Union[ChartLayout, str], Varga, ChartFrame],
+]
+"""A chart to draw: a layout (a `ChartLayout`, or a registered layout's full
+key), the chart placed in it (`Varga.D1` for the founded chart), and, third,
+what its houses count from: the lagna when left out, or `ChartFrame.MOON`
+(the rashi kundali), `ChartFrame.SUN` or `ChartFrame.BHAVA` (the bhava
+chalit)."""
+
+
+def _drawing_bits(drawings: Sequence[DrawingAsk], registered: Mapping[str, int]) -> list[int]:
     """The drawings asked for, as the packed ids the boundary takes:
-    `layout << 16 | varga` each, so a caller names pairs and nothing else
-    writes bits (`03-design/chart-geometry.md`).
+    `layout << 16 | frame << 8 | varga` each, so a caller names pairs or
+    triples and nothing else writes bits (`03-design/chart-geometry.md`).
 
     A layout is a `ChartLayout`, or a consumer's own by its full key
     (`chart_layout.ACME_KERALA`), from the ids its context resolved when it
     was made (§7f)."""
     bits = []
-    for at, pair in enumerate(drawings):
-        layout, varga = pair if isinstance(pair, tuple) and len(pair) == 2 else (None, None)
+    for at, asked in enumerate(drawings):
+        frame: object = ChartFrame.LAGNA
+        if isinstance(asked, tuple) and len(asked) == 3:
+            layout, varga, frame = asked
+        elif isinstance(asked, tuple) and len(asked) == 2:
+            layout, varga = asked
+        else:
+            layout, varga = None, None
         if isinstance(layout, str):
             member = registered.get(layout, -1)
         elif isinstance(layout, ChartLayout):
             member = int(layout)
         else:
             member = -1
-        if member < 0 or not isinstance(varga, Varga):
+        if member < 0 or not isinstance(varga, Varga) or not isinstance(frame, ChartFrame):
             raise TeistroError(
                 Status.INVALID_ARG,
                 f"drawings[{at}] is not a (ChartLayout, or the chart_layout.* key of a layout this "
-                "context registered, Varga) pair",
+                "context registered, Varga) pair, or that pair and a ChartFrame",
                 field=f"drawings[{at}]",
             )
-        bits.append((member << 16) | int(varga))
+        bits.append((member << 16) | (int(frame) << 8) | int(varga))
     return bits
 
 

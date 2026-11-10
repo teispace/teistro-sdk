@@ -60,6 +60,7 @@ import {
   SunriseById,
   ChartKind,
   ChartLayoutById,
+  ChartFrameById,
   DayPartById,
   ChartKindById,
   ChoghadiyaById,
@@ -3389,9 +3390,10 @@ export class ChartArea extends Area {
    * @param {boolean} [request.houses] whether to compute the houses
    *   service — each bhava's sign, its lord and its quadrant; false by
    *   default
-   * @param {ReadonlyArray<{layout: string, varga: string}>} [request.drawings]
+   * @param {ReadonlyArray<{layout: string, varga: string, countsFrom?: string}>} [request.drawings]
    *   the charts to draw, each a `ChartLayout` and a `Varga` (`Varga.D1` for
-   *   the founded chart), in the order to answer them; none by default
+   *   the founded chart), counted from the lagna unless `countsFrom` names
+   *   another `ChartFrame`, in the order to answer them; none by default
    * @param {boolean} [request.state] whether to compute what each graha
    *   *is* — its dignity, its friendships, what the Sun does to it, its
    *   avasthas and any war it is in; false by default
@@ -7366,11 +7368,12 @@ function drawingsOf(batch) {
  * A drawing as the boundary's JSON writes it, in this layer's shape, with
  * its SVG when the request gave a theme.
  */
-function drawingFrom({ varga, placed }, svg) {
+function drawingFrom({ varga, counts_from: countsFrom = 'LAGNA', placed }, svg) {
   return Object.freeze({
     svg,
     layout: `chart_layout.${placed.layout}`,
     varga: `varga.${varga}`,
+    countsFrom: `chart_frame.${countsFrom}`,
     cells: placed.cells.map((cell) =>
       Object.freeze({
         outline: cell.outline,
@@ -7451,6 +7454,7 @@ function dashaIds(asked, registered) {
   });
 }
 const VARGA_IDS = idOf(VargaById);
+const FRAME_IDS = idOf(ChartFrameById);
 
 /**
  * The drawings a request asked for, as the packed ids the boundary takes:
@@ -7481,7 +7485,13 @@ function drawingBits(asked, registered) {
     if (varga === undefined) {
       throw new TypeError(`drawings[${at}].varga: expected a Varga key`);
     }
-    return ((layout << 16) | varga) >>> 0;
+    // What the houses count from: the lagna unless the drawing names the
+    // Moon, the Sun or the bhavas.
+    const from = drawing.countsFrom === undefined ? 0 : FRAME_IDS.get(drawing.countsFrom);
+    if (from === undefined) {
+      throw new TypeError(`drawings[${at}].countsFrom: expected a ChartFrame key`);
+    }
+    return ((layout << 16) | (from << 8) | varga) >>> 0;
   });
 }
 

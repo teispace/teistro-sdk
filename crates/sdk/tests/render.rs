@@ -10,7 +10,7 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-use teistro::catalogue::{ChartLayout, Graha, Varga};
+use teistro::catalogue::{ChartFrame, ChartLayout, Graha, Varga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::render_svg::{BodyForm, CellLabel, Content, MarkPlace, Theme, render};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
@@ -249,8 +249,9 @@ fn a_drawing_the_document_does_not_have_is_refused() {
 
 #[test]
 fn a_round_chart_names_itself_in_its_hub_as_a_patrika_does() {
-    // ल for the lagna's chart and न for the navamsha, as the third scan's
-    // hubs print them; the English short forms beside them.
+    // ल for the lagna's chart, न for the navamsha, रा for the Moon's chart
+    // and भा for the bhava chalit, as the scans' hubs print them; the
+    // English short forms beside them.
     let place = Place::new(
         Latitude::try_new(27.7172).unwrap(),
         Longitude::try_new(85.324).unwrap(),
@@ -259,15 +260,17 @@ fn a_round_chart_names_itself_in_its_hub_as_a_patrika_does() {
     let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20700).unwrap())
         .with_vargas([Varga::D9])
         .with_drawings([
-            (ChartLayout::NepaliCircle, Varga::D1),
-            (ChartLayout::NepaliCircle, Varga::D9),
-            (ChartLayout::NorthIndian, Varga::D1),
+            (ChartLayout::NepaliCircle, Varga::D1, ChartFrame::Lagna),
+            (ChartLayout::NepaliCircle, Varga::D9, ChartFrame::Lagna),
+            (ChartLayout::NorthIndian, Varga::D1, ChartFrame::Lagna),
+            (ChartLayout::NepaliCircle, Varga::D1, ChartFrame::Moon),
+            (ChartLayout::NepaliCircle, Varga::D1, ChartFrame::Bhava),
         ]);
-    for (locale, lagna, navamsha) in [
-        ("ne-Deva-NP", "ल", "न"),
-        ("hi-Deva-IN", "ल", "न"),
-        ("sa-Deva", "ल", "न"),
-        ("en-Latn", "As", "D9"),
+    for (locale, lagna, navamsha, moon, bhava) in [
+        ("ne-Deva-NP", "ल", "न", "रा", "भा"),
+        ("hi-Deva-IN", "ल", "न", "चं", "भा"),
+        ("sa-Deva", "ल", "न", "चं", "भा"),
+        ("en-Latn", "As", "D9", "Mo", "Bh"),
     ] {
         let sdk = context(locale);
         let document = sdk
@@ -285,6 +288,8 @@ fn a_round_chart_names_itself_in_its_hub_as_a_patrika_does() {
         assert_eq!(hub(1).as_deref(), Some(navamsha), "{locale}");
         // A layout with no hub is given no name to write.
         assert_eq!(hub(2), None, "{locale}");
+        assert_eq!(hub(3).as_deref(), Some(moon), "{locale}");
+        assert_eq!(hub(4).as_deref(), Some(bhava), "{locale}");
         let svg = sdk.chart().svg(&document, 1, &Theme::light()).unwrap();
         assert!(
             svg.contains(&format!("data-hub=\"true\">{navamsha}</text>")),

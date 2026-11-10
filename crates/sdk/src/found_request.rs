@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use teistro_core::catalogue::{Catalogued, ChartKind, ChartLayout, DashaSystem, Varga};
+use teistro_core::catalogue::{Catalogued, ChartFrame, ChartKind, ChartLayout, DashaSystem, Varga};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -72,13 +72,13 @@ pub struct FoundRequest {
 #[derive(Clone, Debug)]
 struct Unresolved {
     dashas: Vec<Keyed<DashaSystem>>,
-    drawings: Vec<(Keyed<ChartLayout>, Varga)>,
+    drawings: Vec<(Keyed<ChartLayout>, Varga, ChartFrame)>,
 }
 
 impl FoundRequest {
     /// What a JSON chart request is, for a caller choosing it by name (the
     /// agent server's `chart.found`).
-    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each birth then read at the offset the zone had then (Kathmandu +05:30 in 1985, +05:45 now) and each chart founded on a zone or local mean time carrying it as its foundation's `clock`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent; its `provenance.time.clock` states the first birth's clock.";
+    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each birth then read at the offset the zone had then (Kathmandu +05:30 in 1985, +05:45 now) and each chart founded on a zone or local mean time carrying it as its foundation's `clock`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga, countsFrom}`, `countsFrom` one of `LAGNA` (the default), `MOON`, `SUN` and `BHAVA`, the bhava chalit) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent; its `provenance.time.clock` states the first birth's clock.";
 
     /// The sections beside the foundation a request asks for by a `true`
     /// flag, by the flag every binding writes (`shadbala`, `bhavaBala`).
@@ -148,21 +148,19 @@ impl FoundRequest {
             .into_iter()
             .fold(at, |request, add| add(request))
             .with_vargas(asked.vargas);
-        let drawings: Vec<(Keyed<ChartLayout>, Varga)> = asked
+        let drawings: Vec<(Keyed<ChartLayout>, Varga, ChartFrame)> = asked
             .drawings
             .into_iter()
-            .map(|drawing| (drawing.layout, drawing.varga))
+            .map(|drawing| (drawing.layout, drawing.varga, drawing.counts_from))
             .collect();
         let catalogued = asked.dashas.iter().all(Keyed::is_catalogued)
-            && drawings.iter().all(|(layout, _)| layout.is_catalogued());
+            && drawings.iter().all(|(layout, _, _)| layout.is_catalogued());
         let (request, unresolved) = if catalogued {
             let request = request
                 .with_dashas(asked.dashas.iter().filter_map(Keyed::catalogued))
-                .with_drawings(
-                    drawings
-                        .iter()
-                        .filter_map(|(layout, varga)| Some((layout.catalogued()?, *varga))),
-                );
+                .with_drawings(drawings.iter().filter_map(|(layout, varga, from)| {
+                    Some((layout.catalogued()?, *varga, *from))
+                }));
             (request, None)
         } else {
             let unresolved = Unresolved {
@@ -216,10 +214,11 @@ impl FoundRequest {
             .drawings
             .iter()
             .enumerate()
-            .map(|(at, (layout, varga))| {
+            .map(|(at, (layout, varga, from))| {
                 Ok((
                     layout.id(keys, || format!("drawings[{at}].layout"))?,
                     *varga,
+                    *from,
                 ))
             })
             .collect::<Result<Vec<_>, Error>>()?;
@@ -368,13 +367,20 @@ pub(crate) struct Asked {
     drawings: Vec<DrawingAsked>,
 }
 
-/// A drawing: a layout of a divisional chart.
+/// A drawing: a layout of a divisional chart, its houses counted from the
+/// lagna unless `countsFrom` names the Moon, the Sun or the bhavas.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 struct DrawingAsked {
     layout: Keyed<ChartLayout>,
     varga: Varga,
+    #[serde(default = "lagna", rename = "countsFrom")]
+    counts_from: ChartFrame,
+}
+
+const fn lagna() -> ChartFrame {
+    ChartFrame::Lagna
 }
 
 impl Asked {

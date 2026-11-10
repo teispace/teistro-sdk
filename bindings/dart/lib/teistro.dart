@@ -1162,8 +1162,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
-    List<(KeyOf<ChartLayout>, Varga)> drawings =
-        const <(KeyOf<ChartLayout>, Varga)>[],
+    List<ChartDrawing> drawings = const <ChartDrawing>[],
     ChartTheme? theme,
     RuleRequest? rules,
     PlanRequest? interpret,
@@ -1295,8 +1294,7 @@ final class ChartArea extends _Area {
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
-    List<(KeyOf<ChartLayout>, Varga)> drawings =
-        const <(KeyOf<ChartLayout>, Varga)>[],
+    List<ChartDrawing> drawings = const <ChartDrawing>[],
     ChartTheme? theme,
     RuleRequest? rules,
     PlanRequest? interpret,
@@ -7403,6 +7401,7 @@ final class Drawing {
   const Drawing({
     required this.layout,
     required this.varga,
+    this.countsFrom = ChartFrame.lagna,
     required this.cells,
     required this.frame,
     required this.marks,
@@ -7420,6 +7419,10 @@ final class Drawing {
 
   /// Which chart: `Varga.d1` for the founded chart, or a divisional one.
   final Varga varga;
+
+  /// What its houses count from: the lagna unless the request named the
+  /// Moon, the Sun or the bhavas.
+  final ChartFrame countsFrom;
 
   /// The cells, in the layout's order.
   final List<DrawnCell> cells;
@@ -7444,6 +7447,9 @@ final class Drawing {
           ChartLayout.byKey(placed['layout']! as String) ??
           ChartLayout.registered(placed['layout']! as String),
       varga: Varga.byKey(raw['varga']! as String) ?? Varga.unknown,
+      countsFrom:
+          ChartFrame.byKey(raw['counts_from'] as String? ?? 'LAGNA') ??
+          ChartFrame.unknown,
       cells: [
         for (final cell in (placed['cells']! as List<Object?>).map(object))
           DrawnCell(
@@ -31704,28 +31710,70 @@ List<List<Drawing>> _parseDrawings(Charts batch) {
   ];
 }
 
-/// The drawings asked for, as the packed ids the boundary takes: `layout << 16
-/// | varga` each, so a caller names pairs and nothing else writes bits
+/// One chart a request draws: a layout, the chart placed in it
+/// (`Varga.d1` for the founded chart), and what its houses count from
 /// (`03-design/chart-geometry.md`).
+///
+/// ```dart
+/// // The four round charts a Nepali patrika prints: ल, रा, न and भा.
+/// const round = ChartLayout.nepaliCircle;
+/// const drawings = [
+///   ChartDrawing(round, Varga.d1),
+///   ChartDrawing(round, Varga.d1, countsFrom: ChartFrame.moon),
+///   ChartDrawing(round, Varga.d9),
+///   ChartDrawing(round, Varga.d1, countsFrom: ChartFrame.bhava),
+/// ];
+/// ```
+final class ChartDrawing {
+  const ChartDrawing(
+    this.layout,
+    this.varga, {
+    this.countsFrom = ChartFrame.lagna,
+  });
+
+  /// A [ChartLayout], or one the context registered.
+  final KeyOf<ChartLayout> layout;
+
+  /// Which chart is placed: `Varga.d1`, or a divisional one.
+  final Varga varga;
+
+  /// What its houses count from: the lagna, the Moon (the rashi kundali),
+  /// the Sun, or the bhavas (the bhava chalit).
+  final ChartFrame countsFrom;
+}
+
+/// The drawings asked for, as the packed ids the boundary takes: `layout << 16
+/// | frame << 8 | varga` each, so a caller names drawings and nothing else
+/// writes bits (`03-design/chart-geometry.md`).
 List<int> _drawingBits(
-  List<(KeyOf<ChartLayout>, Varga)> drawings,
+  List<ChartDrawing> drawings,
   Map<String, int> registered,
 ) => [
-  for (final (index, (layout, varga)) in drawings.indexed)
-    ((switch (layout) {
+  for (final (index, drawing) in drawings.indexed)
+    (switch (drawing.layout) {
               ChartLayout(:final id) => id,
               // A consumer's own, from the ids its context resolved when it
               // was made (§7f).
-              _ =>
+              final layout =>
                 registered[layout.fullKey] ??
                     (throw ArgumentError.value(
                       layout.fullKey,
                       'drawings[$index].layout',
                       'not a layout this context registered',
                     )),
-            }) <<
+            } <<
             16) |
-        varga.id,
+        (switch (drawing.countsFrom) {
+              ChartFrame.unknown =>
+                throw ArgumentError.value(
+                  drawing.countsFrom,
+                  'drawings[$index].countsFrom',
+                  'not a frame this build knows',
+                ),
+              final frame => frame.id,
+            } <<
+            8) |
+        drawing.varga.id,
 ];
 
 /// One divisional chart of one founded moment.

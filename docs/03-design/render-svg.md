@@ -127,7 +127,8 @@ Document + Context + Content ─compose──▶  Labels
   - one per cell's label;
   - an optional title for the drawing's accessible name;
   - an optional name for the chart, written in the layout's hub where it
-    has one (the Nepali round chart's ल or न, chart-geometry §7g).
+    has one (the Nepali round chart's ल, न, रा or भा: the frame's short form for a
+    founded chart, the varga's for a divisional one; chart-geometry §7g, §7i).
 
   A body the labels do not name is refused by its key rather than drawn
   blank.

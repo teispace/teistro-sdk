@@ -58,7 +58,7 @@ void main() {
     points: true,
     houses: true,
     state: true,
-    drawings: const [(ChartLayout.northIndian, Varga.d9)],
+    drawings: const [ChartDrawing(ChartLayout.northIndian, Varga.d9)],
   );
   final navamsha = chart.vargas[0];
   final dasamsha = chart.vargas[1];

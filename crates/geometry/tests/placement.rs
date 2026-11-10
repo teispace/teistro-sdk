@@ -13,10 +13,10 @@
 )]
 
 use teistro_chart::bhava::{Bhavas, Chalit};
-use teistro_core::catalogue::{Graha, HouseSystem, Rashi};
+use teistro_core::catalogue::{ChartFrame, Graha, HouseSystem, Rashi};
 use teistro_geometry::Point;
 use teistro_geometry::layout::{Direction, Holds};
-use teistro_geometry::{Body, Placements, place, rows};
+use teistro_geometry::{Body, Placements, place, place_from, rows};
 
 /// A chart with the lagna in `lagna` and one graha in every sign, so each
 /// cell must receive exactly the graha of its own sign.
@@ -454,4 +454,120 @@ fn a_wheel_refuses_a_chart_without_what_it_draws_from() {
         place(&wheel, &signless).unwrap_err().field(),
         Some("bodies[2].longitude_deg")
     );
+}
+
+#[test]
+fn a_moon_chart_puts_the_moons_sign_in_house_one_in_every_grid() {
+    for layout in [
+        rows::north_indian(),
+        rows::south_indian(),
+        rows::east_indian(),
+        rows::nepali_circle(),
+        rows::nepali_lotus(),
+        rows::north_indian_petals(),
+    ] {
+        for lagna in Rashi::ALL {
+            let chart = chart(lagna);
+            let moon = chart
+                .bodies
+                .iter()
+                .find(|body| body.key == Graha::Moon.key_id())
+                .unwrap()
+                .sign;
+            for (frame, first) in [(ChartFrame::Moon, moon), (ChartFrame::Lagna, lagna)] {
+                let placed = place_from(&layout, &chart, frame).unwrap();
+                for cell in &placed.cells {
+                    let house = (cell.sign.id() + 12 - first.id()) % 12 + 1;
+                    assert_eq!(
+                        u16::from(cell.house),
+                        house,
+                        "{} {lagna:?} {frame:?}",
+                        layout.key
+                    );
+                    // The grahas keep their signs, and the lagna's mark its own.
+                    let in_sign: Vec<_> = chart
+                        .bodies
+                        .iter()
+                        .filter(|body| body.sign == cell.sign)
+                        .map(|body| body.key)
+                        .collect();
+                    assert_eq!(cell.bodies, in_sign, "{}", layout.key);
+                    assert_eq!(cell.lagna, cell.sign == lagna, "{}", layout.key);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn a_bhava_chalit_keeps_the_houses_signs_and_moves_each_body_to_its_bhava() {
+    let chart = wheel_chart();
+    let houses = chart.houses.as_ref().unwrap();
+    for layout in [
+        rows::north_indian(),
+        rows::nepali_circle(),
+        rows::south_indian(),
+    ] {
+        let signs = place(&layout, &chart).unwrap();
+        let chalit = place_from(&layout, &chart, ChartFrame::Bhava).unwrap();
+        for (cell, by_sign) in chalit.cells.iter().zip(&signs.cells) {
+            assert_eq!((cell.sign, cell.house), (by_sign.sign, by_sign.house));
+            for body in &chart.bodies {
+                let bhava = houses.place(body.longitude_deg.unwrap()).bhava;
+                assert_eq!(
+                    cell.bodies.contains(&body.key),
+                    bhava == cell.house,
+                    "{}",
+                    layout.key
+                );
+            }
+        }
+        // Saturn at 99°, a degree short of the lagna's cusp, is in Cancer by
+        // sign and in the twelfth bhava: the chalit moves it.
+        let saturn = |placed: &teistro_geometry::Placed| {
+            placed
+                .cells
+                .iter()
+                .find(|cell| cell.bodies.contains(&Graha::Saturn.key_id()))
+                .unwrap()
+                .house
+        };
+        assert_eq!((saturn(&signs), saturn(&chalit)), (1, 12), "{}", layout.key);
+    }
+}
+
+#[test]
+fn a_frame_a_chart_cannot_count_from_is_refused_under_from() {
+    let refused = |layout: &teistro_geometry::Layout, chart: &Placements, frame| {
+        place_from(layout, chart, frame)
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    let from = Some(String::from("from"));
+    // A wheel's rings say what they count from.
+    assert_eq!(
+        refused(&rows::western_wheel(), &wheel_chart(), ChartFrame::Moon),
+        from
+    );
+    assert_eq!(
+        refused(&rows::sudarshan_chakra(), &wheel_chart(), ChartFrame::Bhava),
+        from
+    );
+    // A chart with no Sun, no cusps, or a body with no degree.
+    let bare = Placements::new(Rashi::Leo).with(Body::in_sign(Graha::Moon.key_id(), Rashi::Aries));
+    assert_eq!(refused(&rows::north_indian(), &bare, ChartFrame::Sun), from);
+    assert_eq!(
+        refused(&rows::north_indian(), &bare, ChartFrame::Bhava),
+        from
+    );
+    let mut undegreed = wheel_chart();
+    undegreed
+        .bodies
+        .push(Body::in_sign(Graha::Venus.key_id(), Rashi::Leo));
+    assert_eq!(
+        refused(&rows::north_indian(), &undegreed, ChartFrame::Bhava),
+        from
+    );
+    assert!(place_from(&rows::western_wheel(), &wheel_chart(), ChartFrame::Lagna).is_ok());
 }

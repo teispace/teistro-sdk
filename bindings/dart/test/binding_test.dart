@@ -2214,6 +2214,66 @@ void _engineTests() {
     expect(ctx.keys.name(ctx.keys.id('graha.SUN')), 'graha.SUN');
   });
 
+  test('a Moon chart and a bhava chalit count their houses from what they '
+      'name', () {
+    final ctx = context();
+    final [lagna, moon, bhava] =
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(0),
+              ),
+              utcOffsetSeconds: 20700,
+              drawings: const [
+                ChartDrawing(ChartLayout.northIndian, Varga.d1),
+                ChartDrawing(
+                  ChartLayout.northIndian,
+                  Varga.d1,
+                  countsFrom: ChartFrame.moon,
+                ),
+                ChartDrawing(
+                  ChartLayout.northIndian,
+                  Varga.d1,
+                  countsFrom: ChartFrame.bhava,
+                ),
+              ],
+            )
+            .drawings;
+    expect([lagna, moon, bhava].map((drawing) => drawing.countsFrom), [
+      ChartFrame.lagna,
+      ChartFrame.moon,
+      ChartFrame.bhava,
+    ]);
+    Map<Rashi, List<String>> bySign(Drawing drawing) => {
+      for (final cell in drawing.cells) cell.sign: cell.bodies,
+    };
+    DrawnCell first(Drawing drawing) =>
+        drawing.cells.firstWhere((cell) => cell.house == 1);
+    // The Moon's chart moves the houses, not the grahas.
+    expect(bySign(moon), bySign(lagna));
+    expect(first(moon).bodies, contains('graha.MOON'));
+    expect(
+      [
+        for (final cell in moon.cells)
+          if (cell.lagna) cell.sign,
+      ],
+      [first(lagna).sign],
+      reason: "the lagna flag stays on the lagna's sign",
+    );
+    // The bhava chalit keeps the houses and moves the grahas.
+    List<String> houses(Drawing drawing) => [
+      for (final cell in drawing.cells) '${cell.house}:${cell.sign.key}',
+    ];
+    List<String> every(Drawing drawing) =>
+        [for (final cell in drawing.cells) ...cell.bodies]..sort();
+    expect(houses(bhava), houses(lagna));
+    expect(every(bhava), every(lagna));
+    ctx.dispose();
+  });
+
   test('a theme writes each drawing as SVG, and a wrong one is refused by its '
       'field', () {
     final ctx = context();
@@ -2228,8 +2288,8 @@ void _engineTests() {
               ),
               utcOffsetSeconds: 20700,
               drawings: const [
-                (ChartLayout.northIndian, Varga.d1),
-                (ChartLayout.westernWheel, Varga.d1),
+                ChartDrawing(ChartLayout.northIndian, Varga.d1),
+                ChartDrawing(ChartLayout.westernWheel, Varga.d1),
               ],
               theme: theme,
             )
@@ -2771,7 +2831,10 @@ void _engineTests() {
                 altitudeM: Altitude(1400),
               ),
               utcOffsetSeconds: 20700,
-              drawings: [(ChartLayout.southIndian, Varga.d1), (own, Varga.d1)],
+              drawings: [
+                ChartDrawing(ChartLayout.southIndian, Varga.d1),
+                ChartDrawing(own, Varga.d1),
+              ],
             )
             .drawings;
     expect(drawn.layout, own);
@@ -2789,7 +2852,7 @@ void _engineTests() {
           altitudeM: Altitude(0),
         ),
         utcOffsetSeconds: 0,
-        drawings: [(ChartLayout.registered('ACME_ODIA'), Varga.d1)],
+        drawings: [ChartDrawing(ChartLayout.registered('ACME_ODIA'), Varga.d1)],
       ),
       throwsArgumentError,
     );

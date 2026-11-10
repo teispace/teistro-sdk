@@ -88,12 +88,25 @@ public record ChartOptions(
 
     /**
      * A drawing to make: a layout, a {@link ChartLayout} or the full key of one
-     * the context registered, of a divisional chart.
+     * the context registered, of a divisional chart, its houses counted from
+     * the lagna unless {@code countsFrom} names the Moon (the rashi kundali),
+     * the Sun or the bhavas (the bhava chalit).
      *
      * @param layout the layout
      * @param varga the chart to draw, {@link Varga#D1} for the founded one
+     * @param countsFrom what its houses count from
      */
-    public record Drawing(Object layout, Varga varga) {}
+    public record Drawing(Object layout, Varga varga, ChartFrame countsFrom) {
+        /**
+         * A drawing counted from the lagna.
+         *
+         * @param layout the layout
+         * @param varga the chart to draw
+         */
+        public Drawing(Object layout, Varga varga) {
+            this(layout, varga, ChartFrame.LAGNA);
+        }
+    }
 
     /**
      * Options with nothing asked for beyond the foundation.
@@ -338,6 +351,20 @@ public record ChartOptions(
          */
         public Builder drawing(Object layout, Varga varga) {
             this.drawings.add(new Drawing(layout, varga));
+            return this;
+        }
+
+        /**
+         * A drawing whose houses count from {@code countsFrom}: the Moon's chart,
+         * the Sun's, or the bhava chalit.
+         *
+         * @param layout a {@link ChartLayout}, or the full key of a layout the context registered
+         * @param varga the chart to draw
+         * @param countsFrom what its houses count from
+         * @return this builder
+         */
+        public Builder drawing(Object layout, Varga varga, ChartFrame countsFrom) {
+            this.drawings.add(new Drawing(layout, varga, countsFrom));
             return this;
         }
 
