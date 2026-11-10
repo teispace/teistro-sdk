@@ -391,8 +391,8 @@ each printed syllable reads back to its own cell.
 avakahada adds paya (gold, silver, copper or iron), disha and tatwa.
 None of them is given by *Manasagari* (1904), *Muhurta Chintamani*
 (1954), *Svarodaya* (1946) or the Sanskrit quoted in the undated *Brihad
-Avakahada Chakra* scans, so disha and tatwa wait on a rank 1 text, as
-the recommendation bands do. Paya is now shipped, below (SR-32).
+Avakahada Chakra* scans, so disha and tatwa wait on a rank 1 text. The
+recommendation bands are graded below (SR-39). Paya is now shipped, below (SR-32).
 
 **The avakahada is the Moon's natives gathered** (C301). What the
 janma-patrika prints is varna, vashya, yoni, gana, nadi, the nakshatra
@@ -465,6 +465,80 @@ named in English and Nepali, each with the panchang's fruit.
 **Acceptance** is the panchang's own lists: each of the 27 stars and
 the 12 houses reads back to the paya the page prints for it, and a
 Kathmandu chart whose Moon and lagna are known reads both.
+
+## Grading a total into bands, decided
+
+SR-39 asks for a total out of 36 said as a band ("good match"). The bands
+are a table a consumer can replace, `GunaBands`, not thresholds in code.
+
+**What the sources say.**
+
+- *Muhurta Martanda* (Narayana, 1571), Vivaha-prakarana v. 1 (Khemraj
+  Shrikrishnadas, Bombay 1904, printed pp. 32–33; archive.org
+  `gxdx-muhurta-martanda-with-martandavallabha-and-martand`, PDF p. 46),
+  rank 1: *varṇādyā balino yathottaram ahīndūrdhvaguṇaikyaṃ śubham*. The
+  eight grow in weight in order, and a sum of gunas above *ahi-indu*
+  (8 and 1, read right to left: 18) is auspicious. The author's own gloss
+  reads "above eighteen … more the better", and the Hindi tika "गुणोंका ऐक्य
+  १८ अठारहसे ऊपर शुभ होय". The verse sets a floor and names no band above
+  it. The *Aryavarta Panchanga* VS 2082 (PDF p. 6) quotes this verse.
+- *Muhurta Chintamani* VI.21 with *Piyushadhara* gives the eight points
+  (1 to 8) and no threshold.
+- *Surya Panchanga* VS 2082, printed p. 10 (archive.org
+  `NepaliPanchanga2082`, PDF p. 12): fewer than 18 does not join; up to
+  20 middling, 20 to 30 *uttama*, 30 to 36 *ati uttama*; when the signs
+  stand clear of 2/12, 6/8 and 9/5, above 16 is auspicious.
+- *Kashyapa Panchanga* VS 2082 (same item), p. 12, over its grid: below 18
+  no marriage, 20 middling, up to 30 *uttama*, above 30 *ati uttama*; nadi
+  and 6/8 must agree. Its p. 15: satkuta up to 16 and dushkuta up to 18
+  are not auspicious, up to 20 middling and above it *uttama* (C1340).
+- *Aryavarta Panchanga* VS 2082, PDF p. 7: up to 16 blamed (*nindya*),
+  17 to 20 middling, 20 to 30 *śreṣṭha*, above 30 *uttama*.
+- *Toyanath Panchanga* 2082, PDF p. 22: at least 18 is needed. *Himal
+  Panchanga* VS 2082, over its grid (PDF p. 9): above 18 is auspicious.
+- *Kundali Prakash* (Madhav Prasad Pandey, Kathmandu 2022), §3.15, p. 33:
+  above 18 fit for marriage, the more the better.
+- Uttarakhand Open University, BAJY-302 (rank 3 course text): 16½ to
+  permit, 18 for an easy married life, 25 *uttama*, 30 to 36 exceptional;
+  its unit 4 makes 18 to 21 middling.
+
+No rank 1 text read names a band above the floor. The middling, good and
+excellent bands are the almanacs' convention, printed alike in three
+Nepal almanacs of VS 2082, and the SDK says so.
+
+**What ships.** Three tables, each a `GunaBands` with its `source`:
+
+| table | rows |
+|---|---|
+| `MUHURTA_MARTANDA` (the default) | `UNFIT` from 0; `FIT` above 18 |
+| `NEPALI_ALMANAC` | `UNFIT` from 0; `MIDDLING` above 16 when satkuta, 18 or more otherwise; `GOOD` above 20; `EXCELLENT` above 30 |
+| `ARYAVARTA` | `UNFIT` from 0; `MIDDLING` above 16; `GOOD` above 20; `EXCELLENT` above 30 |
+
+A row is `{ band, from, clears, bhakoot }`: `clears` is `AT_LEAST` or
+`ABOVE`, and `bhakoot` is `ANY`, `SATKUTA` or `DUSHKUTA`, read from the
+signs alone (2/12, 6/8 and 9/5), lifted or not. The last row that applies
+gives the band. A consumer's own table is the same record as JSON
+(`GunaBands::from_json`), checked so its first row takes every total.
+The default is the rank 1 text's floor; a consumer wanting the almanacs'
+bands asks for `NEPALI_ALMANAC`.
+
+The edges are the SDK's reading where the print is loose: 20 and 30 fall
+in the lower band, since "up to 20" and "20 to 30" both hold 20 and the
+almanac that says "17–20" puts it in the lower (C1341); satkuta above 16
+is middling, not good, since the almanacs give it only as a floor (C1342).
+
+**In words.** `sdk.matching.band` says the band by its `GunaBand`
+spelling, and `sdk.matching.graded` says the total with it ("28 of 36
+gunas: a good match"), in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and
+`sa-Deva`, with `sa-Latn` derived. The Nepali words are the almanacs'
+(विवाह जुर्दैन, मध्यम, उत्तम, अति उत्तम); the Sanskrit are *Muhurta
+Martanda*'s *śubha* and its opposite with the almanacs' grades.
+
+**The surface.** `GunaBands::grade(&AshtaKoota) -> Graded { total,
+dushkuta, band, bands, row }` in `crates/matching`, and
+`sdk.matching().band(&koota, &bands)`. The bindings render the words
+through `ts_intl_render` today; the grade itself is not yet an IDL call
+(SR-39's note).
 
 ## The surface
 
