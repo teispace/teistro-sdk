@@ -3528,6 +3528,16 @@
       "name": "निरसेश",
       "prose": "निरसेश",
       "iast": "Niraseśa"
+    },
+    "SENADHIPATI": {
+      "name": "सेनाधिपति",
+      "prose": "सेनाधिपति",
+      "iast": "Senādhipati"
+    },
+    "ARGHADHIPATI": {
+      "name": "अर्घाधिपति",
+      "prose": "अर्घाधिपति",
+      "iast": "Arghādhipati"
     }
   },
   "ruler_text": {
@@ -3535,6 +3545,11 @@
       "name": "नारदसंहिता",
       "prose": "नारदसंहिता",
       "iast": "Nāradasaṃhitā"
+    },
+    "NAVANAYAKA": {
+      "name": "नवनायक",
+      "prose": "नवनायक",
+      "iast": "Navanāyaka"
     }
   },
   "mundane_kind": {
@@ -4876,6 +4891,85 @@
     "GALACTIC_POLE_IAU1958": {
       "name": "आकाशगंगा का उत्तरी ध्रुव (IAU 1958)",
       "prose": "आकाशगंगा का उत्तरी ध्रुव (IAU 1958)"
+    }
+  },
+  "tibetan_element": {
+    "WOOD": {
+      "name": "काष्ठ",
+      "prose": "काष्ठ"
+    },
+    "FIRE": {
+      "name": "अग्नि",
+      "prose": "अग्नि"
+    },
+    "EARTH": {
+      "name": "पृथ्वी",
+      "prose": "पृथ्वी"
+    },
+    "IRON": {
+      "name": "लौह",
+      "prose": "लौह"
+    },
+    "WATER": {
+      "name": "जल",
+      "prose": "जल"
+    }
+  },
+  "tibetan_animal": {
+    "MOUSE": {
+      "name": "चूहा",
+      "prose": "चूहा"
+    },
+    "OX": {
+      "name": "बैल",
+      "prose": "बैल"
+    },
+    "TIGER": {
+      "name": "बाघ",
+      "prose": "बाघ"
+    },
+    "RABBIT": {
+      "name": "खरगोश",
+      "prose": "खरगोश"
+    },
+    "DRAGON": {
+      "name": "ड्रैगन",
+      "prose": "ड्रैगन"
+    },
+    "SNAKE": {
+      "name": "सर्प",
+      "prose": "सर्प"
+    },
+    "HORSE": {
+      "name": "घोड़ा",
+      "prose": "घोड़ा"
+    },
+    "SHEEP": {
+      "name": "भेड़",
+      "prose": "भेड़"
+    },
+    "MONKEY": {
+      "name": "बंदर",
+      "prose": "बंदर"
+    },
+    "BIRD": {
+      "name": "पक्षी",
+      "prose": "पक्षी"
+    },
+    "DOG": {
+      "name": "कुत्ता",
+      "prose": "कुत्ता"
+    },
+    "PIG": {
+      "name": "सूअर",
+      "prose": "सूअर"
+    }
+  },
+  "ruler_day_rule": {
+    "DAYLIGHT": {
+      "name": "दिनमान",
+      "prose": "दिनमान",
+      "iast": "Dinamāna"
     }
   }
 }
