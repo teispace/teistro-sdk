@@ -72,6 +72,23 @@ pub unsafe extern "C" fn ts_chart_disagreements(
     })
 }
 
+/// `ts_matching_band`, refused: grading a guna total is matching, which the
+/// chart area holds.
+///
+/// # Safety
+///
+/// `context` must be a live handle; nothing else is read.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_matching_band(
+    context: *const TsContext,
+    _request_json: *const c_char,
+    _out_json: *mut TsString,
+) -> Status {
+    with_context(context, |_| {
+        Err(teistro_core::error::Error::left_out("chart"))
+    })
+}
+
 /// `ts_naam_milan`, refused: naam milan is matching, which the chart area
 /// holds.
 ///

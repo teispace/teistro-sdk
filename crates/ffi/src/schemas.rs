@@ -946,6 +946,7 @@ mod tests {
     /// section that lost its shape would still work and would quietly
     /// double the surface (`03-design/chart-at-the-boundary.md` §8).
     #[test]
+    #[cfg(feature = "chart")]
     fn the_day_section_declares_its_shape() {
         let chart = schema(CHARTS).expect("the charts schema");
         let (_, day) = chart.section("day").expect("a day section");
