@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A guna total's band and a sankalpa's words are IDL calls (SR-39, SR-29).**
+`matching.band` grades a total out of 36 by a shipped table
+(`MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or `ARYAVARTA`) or a
+consumer's own `GunaBands`, and answers the band with
+`sdk.matching.band` and `sdk.matching.graded` said in the request's
+locale. `almanac.sankalpaWords` fills a tradition's template with the
+time at an instant and place and the caller's slots, sealed with its
+provenance. Both are C calls (`ts_matching_band`,
+`ts_almanac_sankalpa_words`), MCP tools, and typed calls in Node,
+Python, Dart and Java, each with a test; every refusal is named under
+`band` or `sankalpaWords`. No computed number moves.
+
 **Every catalogue member has a name (SR-12).**
 **Numbers:** 348 members named in each of `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva` (1,392 records), across 38 kinds, 128 of them stars; `sa-Latn` derives them, with 111 more overrides; the unnamed list holds 0, from 348. No computed number moves.
 The SDK now owns its text: a name ships from the best-supported source

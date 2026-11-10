@@ -536,9 +536,14 @@ Martanda*'s *śubha* and its opposite with the almanacs' grades.
 
 **The surface.** `GunaBands::grade(&AshtaKoota) -> Graded { total,
 dushkuta, band, bands, row }` in `crates/matching`, and
-`sdk.matching().band(&koota, &bands)`. The bindings render the words
-through `ts_intl_render` today; the grade itself is not yet an IDL call
-(SR-39's note).
+`sdk.matching().band(&koota, &bands)`. A total alone is graded and said
+by the `matching.band` record (`BandRequest { total, dushkuta, shipped |
+bands, locale }` answering `BandWords { total, dushkuta, band, bands, row,
+locale, words, text }`): `ts_matching_band` at the C boundary, the MCP
+tool of the same name, and `matching.band(request)` in Node, Python, Dart
+and Java. A request names a shipped table or carries its own, never both;
+each refusal is named under `band` (`band.total`, `band.shipped`,
+`band.bands.rows[0]`, `band.locale`).
 
 ## The surface
 

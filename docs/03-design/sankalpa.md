@@ -119,6 +119,16 @@ parameters are the ones `sankalpa_params` lists, so a template may use
 any of them and leave the rest. A key no loaded locale carries is refused
 `UNSUPPORTED` on `tradition`.
 
+**The call.** The `almanac.sankalpaWords` record takes the time's request
+(the instant, the place and its clock, the ayana) with `slots`,
+`tradition` (Himavatkhande when left out) and `locale`, and answers
+`SankalpaWords` sealed with its provenance: `ts_almanac_sankalpa_words`
+at the C boundary, the MCP tool of the same name, and
+`almanac.sankalpaWords(request)` (`sankalpa_words` in Python) in Node,
+Python, Dart and Java. Every refusal is named under `sankalpaWords`
+(`sankalpaWords.slots.gotra`, `sankalpaWords.tradition`,
+`sankalpaWords.utcOffsetSeconds` …).
+
 **The slots** (`SankalpaFor`): `performer` (the name with its title, in
 the nominative, as spoken before *aham*), `gotra` (the stem), `purpose`
 (the rite in the accusative), and optionally `river`, `kshetra` and
