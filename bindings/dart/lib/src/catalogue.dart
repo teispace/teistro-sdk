@@ -2870,6 +2870,8 @@ enum Calendar implements KeyOf<Calendar> {
   malayalamSolar(13, 'MALAYALAM_SOLAR'),
   /// Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
   tamilVakya(14, 'TAMIL_VAKYA'),
+  /// Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
+  assamSolar(15, 'ASSAM_SOLAR'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -2929,6 +2931,8 @@ enum Era implements KeyOf<Era> {
   hijri(9, 'HIJRI'),
   /// Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
   viraNirvana(10, 'VIRA_NIRVANA'),
+  /// Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
+  bhaskarabda(11, 'BHASKARABDA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

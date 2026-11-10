@@ -359,7 +359,8 @@ enum EraKey {
   bengali('era.BENGALI'),
   commonEra('era.COMMON_ERA'),
   beforeCommonEra('era.BEFORE_COMMON_ERA'),
-  viraNirvana('era.VIRA_NIRVANA');
+  viraNirvana('era.VIRA_NIRVANA'),
+  bhaskarabda('era.BHASKARABDA');
 
   const EraKey(this.key);
 
@@ -1646,6 +1647,31 @@ final class MessagesSdkAspect {
       _r.render('sdk.aspect.mutual', {'first': {r'$entity': first.key}, 'second': {r'$entity': second.key}});
 }
 
+final class MessagesSdkCalendarAssamSolarDate {
+  const MessagesSdkCalendarAssamSolarDate(this._r);
+
+  final Renderer _r;
+
+  String full({required int day, required String monthName, required String weekdayName, required int year}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.date.full', {'day': day, 'monthName': monthName, 'weekdayName': weekdayName, 'year': year});
+  String long({required int day, required String monthName, required int year}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.date.long', {'day': day, 'monthName': monthName, 'year': year});
+  String numeric({required int day, required int month, required int year}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.date.numeric', {'day': day, 'month': month, 'year': year});
+}
+
+final class MessagesSdkCalendarAssamSolar {
+  const MessagesSdkCalendarAssamSolar(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkCalendarAssamSolarDate get date => MessagesSdkCalendarAssamSolarDate(_r);
+  String monthName({required int month}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.monthName', {'month': month});
+  String monthShort({required int month}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.monthShort', {'month': month});
+}
+
 final class MessagesSdkCalendarBangladeshiDate {
   const MessagesSdkCalendarBangladeshiDate(this._r);
 
@@ -1943,6 +1969,7 @@ final class MessagesSdkCalendar {
 
   final Renderer _r;
 
+  MessagesSdkCalendarAssamSolar get assamSolar => MessagesSdkCalendarAssamSolar(_r);
   MessagesSdkCalendarBangladeshi get bangladeshi => MessagesSdkCalendarBangladeshi(_r);
   MessagesSdkCalendarBikramSambat get bikramSambat => MessagesSdkCalendarBikramSambat(_r);
   MessagesSdkCalendarGregorian get gregorian => MessagesSdkCalendarGregorian(_r);
@@ -2382,6 +2409,7 @@ final class MessagesSdkEntityEra {
 
   EntityForms get beforeCommonEra => _r.entity('era.BEFORE_COMMON_ERA');
   EntityForms get bengali => _r.entity('era.BENGALI');
+  EntityForms get bhaskarabda => _r.entity('era.BHASKARABDA');
   EntityForms get buddha => _r.entity('era.BUDDHA');
   EntityForms get commonEra => _r.entity('era.COMMON_ERA');
   EntityForms get kali => _r.entity('era.KALI');

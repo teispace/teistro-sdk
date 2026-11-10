@@ -830,7 +830,9 @@ public final class Messages {
         /** `era.BEFORE_COMMON_ERA`. */
         BEFORE_COMMON_ERA("era.BEFORE_COMMON_ERA"),
         /** `era.VIRA_NIRVANA`. */
-        VIRA_NIRVANA("era.VIRA_NIRVANA");
+        VIRA_NIRVANA("era.VIRA_NIRVANA"),
+        /** `era.BHASKARABDA`. */
+        BHASKARABDA("era.BHASKARABDA");
 
         private final String value;
 
@@ -2815,6 +2817,101 @@ public final class Messages {
             SdkCalendar(Renderer r) {
                 this.r = r;
             }
+
+            /**
+             * The messages under `ASSAM_SOLAR`.
+             *
+             * @return the group
+             */
+            public SdkCalendarAssamSolar assamSolar() {
+                return new SdkCalendarAssamSolar(r);
+            }
+
+            /** The messages under `SdkCalendarAssamSolar`, each rendered by its own key. */
+            public static final class SdkCalendarAssamSolar {
+                private final Renderer r;
+
+                SdkCalendarAssamSolar(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarAssamSolarDate date() {
+                    return new SdkCalendarAssamSolarDate(r);
+                }
+
+                /** The messages under `SdkCalendarAssamSolarDate`, each rendered by its own key. */
+                public static final class SdkCalendarAssamSolarDate {
+                    private final Renderer r;
+
+                    SdkCalendarAssamSolarDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.ASSAM_SOLAR.date.full`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.ASSAM_SOLAR.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.ASSAM_SOLAR.date.long`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.ASSAM_SOLAR.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.ASSAM_SOLAR.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.ASSAM_SOLAR.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.ASSAM_SOLAR.monthName`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.ASSAM_SOLAR.monthName", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.ASSAM_SOLAR.monthShort`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.ASSAM_SOLAR.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+            }
+
 
             /**
              * The messages under `BANGLADESHI`.
@@ -6605,6 +6702,15 @@ public final class Messages {
                  */
                 public EntityForms bengali() {
                     return r.entity("era.BENGALI");
+                }
+
+                /**
+                 * The forms of `era.BHASKARABDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhaskarabda() {
+                    return r.entity("era.BHASKARABDA");
                 }
 
                 /**

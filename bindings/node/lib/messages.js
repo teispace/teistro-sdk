@@ -22,6 +22,15 @@ export function messages(r) {
         mutual: (p) => r.render('sdk.aspect.mutual', { first: { '$entity': p.first }, second: { '$entity': p.second } }),
       },
       calendar: {
+        assamSolar: {
+          date: {
+            full: (p) => r.render('sdk.calendar.ASSAM_SOLAR.date.full', { day: p.day, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
+            long: (p) => r.render('sdk.calendar.ASSAM_SOLAR.date.long', { day: p.day, monthName: p.monthName, year: p.year }),
+            numeric: (p) => r.render('sdk.calendar.ASSAM_SOLAR.date.numeric', { day: p.day, month: p.month, year: p.year }),
+          },
+          monthName: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthName', { month: p.month }),
+          monthShort: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthShort', { month: p.month }),
+        },
         bangladeshi: {
           date: {
             full: (p) => r.render('sdk.calendar.BANGLADESHI.date.full', { day: p.day, monthName: p.monthName, weekdayName: p.weekdayName, year: p.year }),
@@ -414,6 +423,7 @@ export function messages(r) {
         era: {
           beforeCommonEra: () => r.entity('era.BEFORE_COMMON_ERA'),
           bengali: () => r.entity('era.BENGALI'),
+          bhaskarabda: () => r.entity('era.BHASKARABDA'),
           buddha: () => r.entity('era.BUDDHA'),
           commonEra: () => r.entity('era.COMMON_ERA'),
           kali: () => r.entity('era.KALI'),

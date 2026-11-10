@@ -2359,6 +2359,9 @@ class Calendar(Catalogued):
     TAMIL_VAKYA = 14
     """Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha"""
 
+    ASSAM_SOLAR = 15
+    """Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -2400,6 +2403,9 @@ class Era(Catalogued):
 
     VIRA_NIRVANA = 10
     """Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada"""
+
+    BHASKARABDA = 11
+    """Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -6974,6 +6980,7 @@ _KEYS: dict[str, dict[int, str]] = {
         12: "ODIA_SOLAR",
         13: "MALAYALAM_SOLAR",
         14: "TAMIL_VAKYA",
+        15: "ASSAM_SOLAR",
         -1: "UNKNOWN",
     },
     "Era": {
@@ -6988,6 +6995,7 @@ _KEYS: dict[str, dict[int, str]] = {
         8: "BEFORE_COMMON_ERA",
         9: "HIJRI",
         10: "VIRA_NIRVANA",
+        11: "BHASKARABDA",
         -1: "UNKNOWN",
     },
     "BodyClass": {

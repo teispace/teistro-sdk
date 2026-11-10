@@ -37,6 +37,7 @@
     }
   },
   "draft": [
+    "sdk.amount",
     "sdk.calendar"
   ]
 }

@@ -3101,6 +3101,10 @@ typedef enum ts_calendar {
      * Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
      */
     TS_CALENDAR_TAMIL_VAKYA = 14,
+    /**
+     * Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
+     */
+    TS_CALENDAR_ASSAM_SOLAR = 15,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;
@@ -3153,6 +3157,10 @@ typedef enum ts_era {
      * Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
      */
     TS_ERA_VIRA_NIRVANA = 10,
+    /**
+     * Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
+     */
+    TS_ERA_BHASKARABDA = 11,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_ERA_UNKNOWN = -1,
 } ts_era;
@@ -8594,7 +8602,8 @@ struct ts_context_options {
     /**
      * The shipped profile's id (`parashari-classical`, `nepali-drik`,
      * `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-     * `kp-default`, `western-tropical-default`, `conformance-baseline`).
+     * `tamil-vakya`, `kp-default`, `western-tropical-default`,
+     * `conformance-baseline`).
      * Example: parashari-classical. May be null.
      */
     const char * profile;
@@ -10459,8 +10468,9 @@ ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * ou
  * value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
  * A key it does not read, both or neither of `number` and `amount`, or
  * a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
- * Sanskrit (not yet reviewed), a grouping or style the language's rules
- * lack, or a currency the locale names no units for is `UNSUPPORTED`.
+ * a grouping or style the language's rules lack, or a currency the locale
+ * names no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's
+ * drafted rules, and its answer's `isDraft` is true.
  * Safety: `context` must be a live handle; `request_json` NUL-terminated;
  * `out_json` valid for a write.
  */

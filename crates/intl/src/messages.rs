@@ -336,6 +336,190 @@ pub mod sdk {
 
     /// The `calendar` group.
     pub mod calendar {
+        /// The `ASSAM_SOLAR` group.
+        pub mod assam_solar {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.ASSAM_SOLAR.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.ASSAM_SOLAR.date.full");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.ASSAM_SOLAR.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.ASSAM_SOLAR.date.long");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.ASSAM_SOLAR.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.ASSAM_SOLAR.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.ASSAM_SOLAR.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.ASSAM_SOLAR.monthName");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.ASSAM_SOLAR.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.ASSAM_SOLAR.monthShort");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `BANGLADESHI` group.
         pub mod bangladeshi {
             /// The `date` group.

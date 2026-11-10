@@ -84,6 +84,11 @@ public enum Calendar implements Catalogued {
      */
     TAMIL_VAKYA(14, "TAMIL_VAKYA"),
 
+    /**
+     * Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
+     */
+    ASSAM_SOLAR(15, "ASSAM_SOLAR"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

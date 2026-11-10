@@ -706,7 +706,8 @@
     "BENGAL_SOLAR": {},
     "ODIA_SOLAR": {},
     "MALAYALAM_SOLAR": {},
-    "TAMIL_VAKYA": {}
+    "TAMIL_VAKYA": {},
+    "ASSAM_SOLAR": {}
   },
   "era": {
     "VIKRAMA": {},
@@ -719,7 +720,8 @@
     "COMMON_ERA": {},
     "BEFORE_COMMON_ERA": {},
     "HIJRI": {},
-    "VIRA_NIRVANA": {}
+    "VIRA_NIRVANA": {},
+    "BHASKARABDA": {}
   },
   "body_class": {
     "LUMINARY": {},

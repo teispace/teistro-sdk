@@ -6,21 +6,21 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 447 of 535 | 83.6% | 184 of 184 | 100.0% |
-| `hi-Deva-IN` | base | 333 of 535 | 62.2% | 77 of 184 | 41.8% |
-| `ne-Deva-NP` | strict | 447 of 535 | 83.6% | 184 of 184 | 100.0% |
-| `sa-Deva` | base | 332 of 535 | 62.1% | 71 of 184 | 38.6% |
-| `sa-Latn` | base | 332 of 535 | 62.1% | 71 of 184 | 38.6% |
+| `en-Latn` | strict | 448 of 537 | 83.4% | 202 of 202 | 100.0% |
+| `hi-Deva-IN` | base | 333 of 537 | 62.0% | 82 of 202 | 40.6% |
+| `ne-Deva-NP` | strict | 448 of 537 | 83.4% | 202 of 202 | 100.0% |
+| `sa-Deva` | base | 332 of 537 | 61.8% | 82 of 202 | 40.6% |
+| `sa-Latn` | base | 332 of 537 | 61.8% | 82 of 202 | 40.6% |
 
-535 members of 43 kinds, 184 messages.
+537 members of 43 kinds, 202 messages.
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
-`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`.
+`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`, `sdk.rite`.
 
-`sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
+`sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.amount`, `sdk.calendar`.
 
-`sa-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
+`sa-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.amount`, `sdk.calendar`.
 
 ## By kind
 
@@ -34,14 +34,14 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `avastha_sayanadi` | 12 | 12 | 0 | 12 | 0 | 0 |
 | `ayana` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `ayanamsha` | 47 | 47 | 47 | 47 | 47 | 47 |
-| `calendar` | 15 | 0 | 0 | 0 | 0 | 0 |
+| `calendar` | 16 | 0 | 0 | 0 | 0 | 0 |
 | `chart_kind` | 8 | 0 | 0 | 0 | 0 | 0 |
 | `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
 | `dasha_system` | 45 | 29 | 18 | 29 | 18 | 18 |
 | `day_marker` | 3 | 3 | 0 | 3 | 0 | 0 |
 | `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `era` | 11 | 10 | 1 | 10 | 0 | 0 |
+| `era` | 12 | 11 | 1 | 11 | 0 | 0 |
 | `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `gowri` | 8 | 8 | 0 | 8 | 0 | 0 |
 | `graha` | 12 | 9 | 9 | 9 | 9 | 9 |

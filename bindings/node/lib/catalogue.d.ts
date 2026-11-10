@@ -3949,6 +3949,7 @@ export type Calendar =
   | 'calendar.ODIA_SOLAR'
   | 'calendar.MALAYALAM_SOLAR'
   | 'calendar.TAMIL_VAKYA'
+  | 'calendar.ASSAM_SOLAR'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -4013,6 +4014,10 @@ export declare const Calendar: {
    * Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
    */
   readonly TamilVakya: 'calendar.TAMIL_VAKYA';
+  /**
+   * Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
+   */
+  readonly AssamSolar: 'calendar.ASSAM_SOLAR';
 };
 
 /**
@@ -4036,6 +4041,7 @@ export type Era =
   | 'era.BEFORE_COMMON_ERA'
   | 'era.HIJRI'
   | 'era.VIRA_NIRVANA'
+  | 'era.BHASKARABDA'
   | 'unknown';
 
 /** Every Era by name; the values are the strings the union accepts. */
@@ -4084,6 +4090,10 @@ export declare const Era: {
    * Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
    */
   readonly ViraNirvana: 'era.VIRA_NIRVANA';
+  /**
+   * Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
+   */
+  readonly Bhaskarabda: 'era.BHASKARABDA';
 };
 
 /**

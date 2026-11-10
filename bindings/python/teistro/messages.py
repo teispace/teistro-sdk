@@ -326,6 +326,7 @@ class EraKey(enum.StrEnum):
     COMMON_ERA = "era.COMMON_ERA"
     BEFORE_COMMON_ERA = "era.BEFORE_COMMON_ERA"
     VIRA_NIRVANA = "era.VIRA_NIRVANA"
+    BHASKARABDA = "era.BHASKARABDA"
 
 
 class FastKindKey(enum.StrEnum):
@@ -7106,6 +7107,11 @@ class MessagesSdkEntityEra:
         return self._r.entity("era.BENGALI")
 
     @property
+    def bhaskarabda(self) -> EntityForms:
+        """The forms of `era.BHASKARABDA` in the current locale."""
+        return self._r.entity("era.BHASKARABDA")
+
+    @property
     def buddha(self) -> EntityForms:
         """The forms of `era.BUDDHA` in the current locale."""
         return self._r.entity("era.BUDDHA")
@@ -8514,6 +8520,11 @@ class MessagesSdkCalendar:
 
 
     @property
+    def assam_solar(self) -> MessagesSdkCalendarAssamSolar:
+        """The messages under `ASSAM_SOLAR`."""
+        return MessagesSdkCalendarAssamSolar(self._r)
+
+    @property
     def bangladeshi(self) -> MessagesSdkCalendarBangladeshi:
         """The messages under `BANGLADESHI`."""
         return MessagesSdkCalendarBangladeshi(self._r)
@@ -9288,6 +9299,62 @@ class MessagesSdkCalendarBangladeshiDate:
         """`sdk.calendar.BANGLADESHI.date.numeric`"""
         return self._r.render(
             "sdk.calendar.BANGLADESHI.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkCalendarAssamSolar:
+    """The messages under `MessagesSdkCalendarAssamSolar`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarAssamSolarDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarAssamSolarDate(self._r)
+
+    def month_name(self, *, month: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.monthName`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.monthName",
+            {"month": month},
+        )
+
+    def month_short(self, *, month: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.monthShort`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.monthShort",
+            {"month": month},
+        )
+
+
+class MessagesSdkCalendarAssamSolarDate:
+    """The messages under `MessagesSdkCalendarAssamSolarDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.date.full`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, month_name: str, year: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.date.long`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, month: int, year: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.date.numeric",
             {"day": day, "month": month, "year": year},
         )
 

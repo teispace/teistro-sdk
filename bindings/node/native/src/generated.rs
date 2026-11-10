@@ -296,6 +296,7 @@ pub fn calendar_from_str(value: &str) -> Result<u16> {
         "calendar.ODIA_SOLAR" => Ok(12),
         "calendar.MALAYALAM_SOLAR" => Ok(13),
         "calendar.TAMIL_VAKYA" => Ok(14),
+        "calendar.ASSAM_SOLAR" => Ok(15),
         other => Err(Error::from_reason(format!("`{other}` is not a Calendar"))),
     }
 }
@@ -319,6 +320,7 @@ pub fn calendar_to_str(value: u16) -> String {
         12 => "calendar.ODIA_SOLAR",
         13 => "calendar.MALAYALAM_SOLAR",
         14 => "calendar.TAMIL_VAKYA",
+        15 => "calendar.ASSAM_SOLAR",
         _ => "unknown",
     }
     .to_string()
@@ -338,6 +340,7 @@ pub fn era_from_str(value: &str) -> Result<u16> {
         "era.BEFORE_COMMON_ERA" => Ok(8),
         "era.HIJRI" => Ok(9),
         "era.VIRA_NIRVANA" => Ok(10),
+        "era.BHASKARABDA" => Ok(11),
         other => Err(Error::from_reason(format!("`{other}` is not a Era"))),
     }
 }
@@ -357,6 +360,7 @@ pub fn era_to_str(value: u16) -> String {
         8 => "era.BEFORE_COMMON_ERA",
         9 => "era.HIJRI",
         10 => "era.VIRA_NIRVANA",
+        11 => "era.BHASKARABDA",
         _ => "unknown",
     }
     .to_string()
@@ -1549,7 +1553,8 @@ pub struct ContextOptions {
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
     /// `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-    /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
+    /// `tamil-vakya`, `kp-default`, `western-tropical-default`,
+    /// `conformance-baseline`).
     /// Example: `parashari-classical`. May be null.
     pub profile: Option<String>,
     /// A JSON settings patch over the profile: an object whose groups and
@@ -4778,8 +4783,9 @@ impl Context {
     /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
     /// A key it does not read, both or neither of `number` and `amount`, or
     /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
-    /// Sanskrit (not yet reviewed), a grouping or style the language's rules
-    /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+    /// a grouping or style the language's rules lack, or a currency the locale
+    /// names no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's
+    /// drafted rules, and its answer's `isDraft` is true.
     #[napi]
     pub fn intl_in_words(&self, env: Env, request_json: String) -> Result<String> {
         let request_json =

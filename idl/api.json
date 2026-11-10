@@ -4474,6 +4474,12 @@
           "value": 14,
           "doc": "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha",
           "key": "TAMIL_VAKYA"
+        },
+        {
+          "name": "AssamSolar",
+          "value": 15,
+          "doc": "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)",
+          "key": "ASSAM_SOLAR"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4549,6 +4555,12 @@
           "value": 10,
           "doc": "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada",
           "key": "VIRA_NIRVANA"
+        },
+        {
+          "name": "Bhaskarabda",
+          "value": 11,
+          "doc": "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name",
+          "key": "BHASKARABDA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -13020,7 +13032,7 @@
             },
             "mutable": false
           },
-          "doc": "The shipped profile's id (`parashari-classical`, `nepali-drik`,\n`nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,\n`kp-default`, `western-tropical-default`, `conformance-baseline`).",
+          "doc": "The shipped profile's id (`parashari-classical`, `nepali-drik`,\n`nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,\n`tamil-vakya`, `kp-default`, `western-tropical-default`,\n`conformance-baseline`).",
           "meta": {
             "example": "parashari-classical",
             "nullable": true
@@ -17215,7 +17227,7 @@
     },
     {
       "name": "ts_intl_in_words",
-      "doc": "A number or an amount of money in words and in figures, by CLDR's\nrule-based number formats (`03-design/amounts-in-words.md`), answered\nas canonical JSON: `{text, figure, rules, locale, amount}`, `amount`\nfor an amount the major and minor counts, each in words with its unit\nword, and whether a decimal was rounded.\n\n`request_json` is `{\"number\"}` (an integer, a negative spelt with the\nlanguage's minus) or `{\"amount\": {\"currency\", \"value\", \"minorDigits\",\n\"rounding\", \"only\"}}`, never both, with `\"locale\"` (the context's when\nleft out), `\"grouping\"` (`INDIAN`, `INTERNATIONAL`), `\"digits\"`\n(`LATN`, `DEVA`) and `\"style\"` (`PLAIN`, `VERBOSE`). An amount's\nvalue is `{\"minor\": units}` or `{\"decimal\": \"1234.56\"}`, never a float.\nA key it does not read, both or neither of `number` and `amount`, or\na malformed decimal or code is `INVALID_ARG`, named under `inWords`;\nSanskrit (not yet reviewed), a grouping or style the language's rules\nlack, or a currency the locale names no units for is `UNSUPPORTED`.",
+      "doc": "A number or an amount of money in words and in figures, by CLDR's\nrule-based number formats (`03-design/amounts-in-words.md`), answered\nas canonical JSON: `{text, figure, rules, locale, amount}`, `amount`\nfor an amount the major and minor counts, each in words with its unit\nword, and whether a decimal was rounded.\n\n`request_json` is `{\"number\"}` (an integer, a negative spelt with the\nlanguage's minus) or `{\"amount\": {\"currency\", \"value\", \"minorDigits\",\n\"rounding\", \"only\"}}`, never both, with `\"locale\"` (the context's when\nleft out), `\"grouping\"` (`INDIAN`, `INTERNATIONAL`), `\"digits\"`\n(`LATN`, `DEVA`) and `\"style\"` (`PLAIN`, `VERBOSE`). An amount's\nvalue is `{\"minor\": units}` or `{\"decimal\": \"1234.56\"}`, never a float.\nA key it does not read, both or neither of `number` and `amount`, or\na malformed decimal or code is `INVALID_ARG`, named under `inWords`;\na grouping or style the language's rules lack, or a currency the locale\nnames no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's\ndrafted rules, and its answer's `isDraft` is true.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {

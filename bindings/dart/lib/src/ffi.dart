@@ -602,7 +602,8 @@ final class ContextOptionsStruct extends ffi.Struct {
 
   /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
   /// `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-  /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
+  /// `tamil-vakya`, `kp-default`, `western-tropical-default`,
+  /// `conformance-baseline`).
   /// Example: parashari-classical. May be null.
   external ffi.Pointer<ffi.Char> profile;
 
@@ -2532,8 +2533,9 @@ final class TeistroLibrary {
   /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
   /// A key it does not read, both or neither of `number` and `amount`, or
   /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
-  /// Sanskrit (not yet reviewed), a grouping or style the language's rules
-  /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+  /// a grouping or style the language's rules lack, or a currency the locale
+  /// names no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's
+  /// drafted rules, and its answer's `isDraft` is true.
   final TsIntlInWordsDart ts_intl_in_words;
 
   /// A time of day as text and parts, through the locale's pattern and its
@@ -4254,7 +4256,8 @@ final class ContextOptions {
 
   /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
   /// `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-  /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
+  /// `tamil-vakya`, `kp-default`, `western-tropical-default`,
+  /// `conformance-baseline`).
   /// Example: parashari-classical. May be null.
   final String? profile;
 
@@ -6863,8 +6866,9 @@ final class TeistroContext implements ffi.Finalizable {
   /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
   /// A key it does not read, both or neither of `number` and `amount`, or
   /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
-  /// Sanskrit (not yet reviewed), a grouping or style the language's rules
-  /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+  /// a grouping or style the language's rules lack, or a currency the locale
+  /// names no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's
+  /// drafted rules, and its answer's `isDraft` is true.
   String intlInWords(String requestJson) {
     _alive();
     return pkg_ffi.using((arena) {

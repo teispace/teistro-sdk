@@ -348,7 +348,8 @@
             "BENGAL_SOLAR",
             "ODIA_SOLAR",
             "MALAYALAM_SOLAR",
-            "TAMIL_VAKYA"
+            "TAMIL_VAKYA",
+            "ASSAM_SOLAR"
           ],
           "type": "string"
         },
@@ -369,7 +370,8 @@
             "calendar.BENGAL_SOLAR",
             "calendar.ODIA_SOLAR",
             "calendar.MALAYALAM_SOLAR",
-            "calendar.TAMIL_VAKYA"
+            "calendar.TAMIL_VAKYA",
+            "calendar.ASSAM_SOLAR"
           ],
           "type": "string",
           "writeOnly": true
@@ -1130,7 +1132,8 @@
             "COMMON_ERA",
             "BEFORE_COMMON_ERA",
             "HIJRI",
-            "VIRA_NIRVANA"
+            "VIRA_NIRVANA",
+            "BHASKARABDA"
           ],
           "type": "string"
         },
@@ -1147,7 +1150,8 @@
             "era.COMMON_ERA",
             "era.BEFORE_COMMON_ERA",
             "era.HIJRI",
-            "era.VIRA_NIRVANA"
+            "era.VIRA_NIRVANA",
+            "era.BHASKARABDA"
           ],
           "type": "string",
           "writeOnly": true
