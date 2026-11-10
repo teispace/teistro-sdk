@@ -712,44 +712,52 @@
     "UTTARAYANA": {
       "name": "Uttarayana",
       "prose": "Uttarayana",
-      "iast": "Uttarāyaṇa"
+      "iast": "Uttarāyaṇa",
+      "locative": "uttarāyaṇe"
     },
     "DAKSHINAYANA": {
       "name": "Dakshinayana",
       "prose": "Dakshinayana",
-      "iast": "Dakṣiṇāyana"
+      "iast": "Dakṣiṇāyana",
+      "locative": "dakṣiṇāyane"
     }
   },
   "ritu": {
     "VASANTA": {
       "name": "Vasanta",
       "prose": "Vasanta",
-      "iast": "Vasanta"
+      "iast": "Vasanta",
+      "locative": "vasantartau"
     },
     "GRISHMA": {
       "name": "Grishma",
       "prose": "Grishma",
-      "iast": "Grīṣma"
+      "iast": "Grīṣma",
+      "locative": "grīṣmartau"
     },
     "VARSHA": {
       "name": "Varsha",
       "prose": "Varsha",
-      "iast": "Varṣā"
+      "iast": "Varṣā",
+      "locative": "varṣartau"
     },
     "SHARAD": {
       "name": "Sharad",
       "prose": "Sharad",
-      "iast": "Śarad"
+      "iast": "Śarad",
+      "locative": "śaradṛtau"
     },
     "HEMANTA": {
       "name": "Hemanta",
       "prose": "Hemanta",
-      "iast": "Hemanta"
+      "iast": "Hemanta",
+      "locative": "hemantartau"
     },
     "SHISHIRA": {
       "name": "Shishira",
       "prose": "Shishira",
-      "iast": "Śiśira"
+      "iast": "Śiśira",
+      "locative": "śiśirartau"
     }
   },
   "chara_karaka": {

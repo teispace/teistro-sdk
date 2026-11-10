@@ -332,3 +332,93 @@ fn a_chart_carries_its_moons_avakahada_and_a_tropical_one_refuses_it() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("avakahada"));
 }
+
+#[test]
+fn a_total_is_graded_and_said_in_each_locale() {
+    use teistro::matching::{GunaBand, GunaBands};
+    use teistro::{Value, params};
+
+    let sdk = context(None);
+    // Two Moons in Rohini: 28 of 36, one sign, so no 2/12, 6/8 or 9/5.
+    let moon = Native::of_moon(45.0).unwrap();
+    let koota = ashta_koota(moon, moon, KootaRules::default());
+    let martanda = sdk.matching().band(&koota, &GunaBands::default());
+    assert_eq!(
+        (martanda.band, martanda.bands.as_str()),
+        (GunaBand::Fit, "MUHURTA_MARTANDA")
+    );
+    let almanac = sdk.matching().band(&koota, &GunaBands::nepali_almanac());
+    assert_eq!(
+        (almanac.total, almanac.band, almanac.dushkuta),
+        (28.0, GunaBand::Good, false)
+    );
+
+    let engine = sdk.locale_engine();
+    let said = |tag: &str, band: GunaBand| {
+        let spelled = serde_json::to_value(band).unwrap();
+        let rendered = engine.render_in(
+            tag,
+            "sdk.matching.graded",
+            &params([
+                ("total", Value::Num(28.0)),
+                ("band", Value::from(spelled.as_str().unwrap())),
+            ]),
+        );
+        assert!(
+            rendered.warnings.is_empty(),
+            "{tag}: {:?}",
+            rendered.warnings
+        );
+        assert_eq!(
+            rendered.resolved_from.as_deref(),
+            Some(tag),
+            "{tag} carries it"
+        );
+        rendered.text
+    };
+    assert_eq!(
+        said("en-Latn", GunaBand::Good),
+        "28 of 36 gunas: a good match"
+    );
+    assert_eq!(said("ne-Deva-NP", GunaBand::Good), "३६ मध्ये २८ गुण: उत्तम");
+    assert_eq!(
+        said("hi-Deva-IN", GunaBand::Excellent),
+        "३६ में से २८ गुण: अति उत्तम मिलान"
+    );
+    assert_eq!(said("sa-Deva", GunaBand::Fit), "षट्त्रिंशतः २८ गुणाः: शुभम्");
+    // Every band has its own words in every locale.
+    for tag in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN", "sa-Deva"] {
+        let words: std::collections::BTreeSet<String> =
+            GunaBand::ALL.iter().map(|band| said(tag, *band)).collect();
+        assert_eq!(words.len(), GunaBand::ALL.len(), "{tag}");
+    }
+}
+
+#[test]
+fn a_dushkuta_match_needs_eighteen_and_a_satkuta_one_sixteen() {
+    use teistro::matching::{BhakootDosha, GunaBand, GunaBands};
+
+    // Moons in Ashvini (Aries) and Anuradha (Scorpio): the 8th apart.
+    let koota = ashta_koota(
+        Native::of_moon(5.0).unwrap(),
+        Native::of_moon(215.0).unwrap(),
+        KootaRules::default(),
+    );
+    let Some(KootaReading::Bhakoot { dosha, .. }) =
+        koota.row(Koota::Bhakoot).map(|row| row.reading)
+    else {
+        unreachable!("the eight always read Bhakoot")
+    };
+    assert_eq!(dosha, Some(BhakootDosha::SixEight));
+    let bands = GunaBands::nepali_almanac();
+    let graded = bands.grade(&koota);
+    assert!(graded.dushkuta);
+    assert_eq!(
+        graded.band,
+        bands.grade_total(koota.total, true).band,
+        "a koota is graded by its own Bhakoot"
+    );
+    // The same total with the signs standing well clears the lower floor.
+    assert_eq!(bands.grade_total(17.0, true).band, GunaBand::Unfit);
+    assert_eq!(bands.grade_total(17.0, false).band, GunaBand::Middling);
+}

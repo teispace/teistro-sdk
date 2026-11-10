@@ -300,3 +300,174 @@ fn the_record_answers_the_facade_in_full() {
         .unwrap_err();
     assert_eq!(refused.field(), Some("sankalpa.when"));
 }
+
+/// A slot's spoken form in a locale: the entity's form, with what the
+/// template joins to it.
+fn spoken(sdk: &Context, tag: &str, key: &str, form: &str, joined: &str) -> String {
+    let engine = sdk.locale_engine();
+    let entity = engine.entity_from(tag, key).unwrap();
+    format!("{}{joined}", entity.form(form).unwrap())
+}
+
+#[test]
+fn the_himavatkhande_template_speaks_the_time_the_almanac_reckons() {
+    use teistro::{HIMAVATKHANDE, Pitris, SankalpaFor, sankalpa_params};
+
+    let sdk = context();
+    let (place, clock) = kathmandu();
+    let asked = SankalpaFor {
+        performer: "हरिनाथशर्मा".to_owned(),
+        gotra: "कौण्डिन्य".to_owned(),
+        purpose: "तर्पणम्".to_owned(),
+        river: Some("वाग्मती".to_owned()),
+        kshetra: Some("पाशुपत".to_owned()),
+        pitris: Some(Pitris {
+            father: "राम".to_owned(),
+            grandfather: "कृष्ण".to_owned(),
+            great_grandfather: "हरि".to_owned(),
+        }),
+    };
+    for at in [
+        nepal(2026, 1, 15, 8.0),
+        nepal(2026, 4, 20, 14.5),
+        nepal(2026, 8, 28, 22.25),
+    ] {
+        let time = sdk
+            .almanac()
+            .sankalpa(at, &place, clock, AyanaReckoning::Sidereal)
+            .unwrap()
+            .value;
+        let params = sankalpa_params(&time, &asked);
+        for tag in ["sa-Deva", "ne-Deva-NP", "hi-Deva-IN", "en-Latn"] {
+            let rendered = sdk.locale_engine().render_in(tag, HIMAVATKHANDE, &params);
+            assert!(
+                rendered.warnings.is_empty(),
+                "{tag}: {:?}",
+                rendered.warnings
+            );
+            assert_eq!(rendered.resolved_from.as_deref(), Some(tag));
+            let said = sdk
+                .almanac()
+                .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some(tag))
+                .unwrap();
+            assert_eq!(said.text, rendered.text);
+            assert_eq!(
+                (said.tradition.as_str(), said.locale.as_str()),
+                (HIMAVATKHANDE, tag)
+            );
+        }
+        let text = sdk
+            .almanac()
+            .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some("sa-Deva"))
+            .unwrap()
+            .text;
+        let tag = "sa-Deva";
+        for piece in [
+            spoken(
+                &sdk,
+                tag,
+                time.year.samvatsara.full_key(),
+                "name",
+                "नाम्नि संवत्सरे",
+            ),
+            spoken(&sdk, tag, time.ayana.full_key(), "locative", " "),
+            spoken(&sdk, tag, time.ritu.full_key(), "locative", " "),
+            spoken(&sdk, tag, time.paksha.full_key(), "name", "पक्षे"),
+            format!(
+                "{}वासरान्वितायां",
+                match time.vara.key() {
+                    "RAVIVARA" => "रवि",
+                    "SOMAVARA" => "सोम",
+                    "MANGALAVARA" => "भौम",
+                    "BUDHAVARA" => "बुध",
+                    "GURUVARA" => "गुरु",
+                    "SHUKRAVARA" => "शुक्र",
+                    _ => "शनि",
+                }
+            ),
+            spoken(&sdk, tag, time.tithi.full_key(), "name", "पुण्यतिथौ"),
+            spoken(&sdk, tag, time.nakshatra.full_key(), "name", "नक्षत्रे"),
+            spoken(&sdk, tag, time.yoga.full_key(), "name", "योगे"),
+            spoken(&sdk, tag, time.karana.full_key(), "name", "करणे"),
+            spoken(&sdk, tag, time.sun.full_key(), "name", "राशिस्थिते श्रीसूर्ये"),
+            spoken(&sdk, tag, time.moon.full_key(), "name", "राशिस्थिते चन्द्रमसि"),
+            spoken(&sdk, tag, time.jupiter.full_key(), "name", "राशिस्थिते देवगुरौ"),
+            spoken(&sdk, tag, time.month.month.full_key(), "name", "मासे"),
+            String::from("हिमवत्पर्वतैकदेशे नेपालदेशे वाग्मतीनद्याः समीपे पाशुपतक्षेत्रे पुण्यभूमौ"),
+            String::from("कौण्डिन्यगोत्रोत्पन्नः हरिनाथशर्मा अहं कौण्डिन्यसगोत्राणाम्"),
+            String::from("रामकृष्णहरिशर्मणां वसुरुद्रादित्यस्वरूपाणां तर्पणम् करिष्ये ।"),
+        ] {
+            assert!(text.contains(&piece), "{piece} in {text}");
+        }
+        let year = format!("{} वैक्रमाब्दे", digits(time.year.vikrama));
+        assert!(text.contains(&year), "{year} in {text}");
+    }
+}
+
+/// A year in Devanagari digits.
+fn digits(year: i32) -> String {
+    year.to_string()
+        .chars()
+        .map(|digit| {
+            let at = digit.to_digit(10).unwrap();
+            char::from_u32(0x0966 + at).unwrap()
+        })
+        .collect()
+}
+
+#[test]
+fn the_slots_left_out_are_not_spoken_and_a_blank_is_refused() {
+    use teistro::{HIMAVATKHANDE, SankalpaFor};
+
+    let sdk = context();
+    let (place, clock) = kathmandu();
+    let time = sdk
+        .almanac()
+        .sankalpa(
+            nepal(2026, 1, 15, 8.0),
+            &place,
+            clock,
+            AyanaReckoning::Sidereal,
+        )
+        .unwrap()
+        .value;
+    let asked = SankalpaFor::from_json(
+        r#"{"performer": "हरिनाथशर्मा", "gotra": "कौण्डिन्य", "purpose": "गणेशपूजनम्"}"#,
+    )
+    .unwrap();
+    let said = sdk
+        .almanac()
+        .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some("sa-Deva"))
+        .unwrap();
+    assert!(said.text.contains("नेपालदेशे पुण्यभूमौ"), "{}", said.text);
+    assert!(said.text.contains("हरिनाथशर्मा अहं गणेशपूजनम् करिष्ये ।"));
+    assert!(!said.text.contains("सगोत्राणाम्"));
+    // The IAST is the same template, in en-Latn.
+    let latin = sdk
+        .almanac()
+        .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some("en-Latn"))
+        .unwrap();
+    assert!(latin.text.starts_with("hariḥ oṃ tatsat"), "{}", latin.text);
+    assert!(latin.text.contains("nepāladeśe puṇyabhūmau"));
+
+    let blank = SankalpaFor {
+        gotra: " ".to_owned(),
+        ..asked.clone()
+    };
+    let refused = sdk
+        .almanac()
+        .sankalpa_words(&time, &blank, HIMAVATKHANDE, None)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("sankalpa.gotra"));
+    let unknown = sdk
+        .almanac()
+        .sankalpa_words(&time, &asked, "app.sankalpa.kashi", None)
+        .unwrap_err();
+    assert_eq!(unknown.field(), Some("tradition"));
+    let typo =
+        SankalpaFor::from_json(r#"{"performer": "a", "gotra": "b", "purpos": "c"}"#).unwrap_err();
+    assert!(
+        typo.field()
+            .is_some_and(|field| field.starts_with("sankalpa"))
+    );
+}
