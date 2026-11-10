@@ -293,7 +293,11 @@ fn the_festivals_are_the_festival_requests_own() {
         .value;
     let observances = answer.value.observances.clone().expect("the observances");
     assert_eq!(observances, found);
-    assert_ne!(found.observances.len(), 0, "a Nepal October keeps festivals");
+    assert_ne!(
+        found.observances.len(),
+        0,
+        "a Nepal October keeps festivals"
+    );
     for cell in &answer.value.cells {
         assert_eq!(cell.festivals, found.keys_on(&cell.date), "{}", cell.date);
     }
