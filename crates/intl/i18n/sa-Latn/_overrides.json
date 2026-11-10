@@ -586,5 +586,73 @@
   "star.ZUBENESCHAMALI": {
     "name": "Zubeneschamali",
     "prose": "Zubeneschamali"
+  },
+  "festival.SONAM_LHOSAR": {
+    "name": "Sonam Lhosar",
+    "prose": "Sonam Lhosar, the Tamang new year"
+  },
+  "festival.TAMU_LHOSAR": {
+    "name": "Tamu Lhosar",
+    "prose": "Tamu Lhosar, the Gurung new year, Poush 15"
+  },
+  "festival.GYALPO_LHOSAR": {
+    "name": "Gyalpo Lhosar",
+    "prose": "Gyalpo Lhosar, the Sherpa and Tibetan new year"
+  },
+  "festival.TOL_LHOSAR": {
+    "name": "Tol Lhosar",
+    "prose": "Tol Lhosar"
+  },
+  "festival.WORLD_PRESS_FREEDOM_DAY": {
+    "name": "World Press Freedom Day",
+    "prose": "World Press Freedom Day, 3 May"
+  },
+  "festival.WORLD_RED_CROSS_DAY": {
+    "name": "World Red Cross Day",
+    "prose": "World Red Cross Day, 8 May"
+  },
+  "festival.CHRISTMAS": {
+    "name": "Christmas",
+    "prose": "Christmas, 25 December"
+  },
+  "festival.GOOD_FRIDAY": {
+    "name": "Good Friday",
+    "prose": "Good Friday"
+  },
+  "festival.AMBEDKAR_JAYANTI": {
+    "name": "Dr Babasaheb Ambedkar Jayanti",
+    "prose": "Dr Babasaheb Ambedkar Jayanti"
+  },
+  "festival.BANK_ACCOUNTS_CLOSING": {
+    "name": "Yearly closing of bank accounts",
+    "prose": "Yearly closing of bank accounts"
+  },
+  "festival.NETAJI_JAYANTI": {
+    "name": "Netaji Subhas Chandra Bose Jayanti",
+    "prose": "Netaji Subhas Chandra Bose Jayanti"
+  },
+  "festival.HARICHAND_THAKUR_JAYANTI": {
+    "name": "Harichand Thakur Jayanti",
+    "prose": "Harichand Thakur Jayanti"
+  },
+  "festival.EASTER_SATURDAY": {
+    "name": "Easter Saturday",
+    "prose": "Easter Saturday"
+  },
+  "festival.POHELA_BOISHAKH": {
+    "name": "Pohela Boishakh (Bengali New Year)",
+    "prose": "Pohela Boishakh (Bengali New Year)"
+  },
+  "festival.BIRSA_MUNDA_JAYANTI": {
+    "name": "Birsa Munda Jayanti",
+    "prose": "Birsa Munda Jayanti"
+  },
+  "festival.EASTER": {
+    "name": "Easter",
+    "prose": "Easter"
+  },
+  "festival.FIRST_ONAM": {
+    "name": "First Onam (Uthradom)",
+    "prose": "First Onam (Uthradom)"
   }
 }

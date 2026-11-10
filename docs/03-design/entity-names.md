@@ -532,6 +532,72 @@ texts' *dina* is the word the two readings split on, and *dinamāna* is not
 exactly the reading's rule (the day whose daylight holds the ingress). So
 it names the reading without taking a side on what *dina* meant.
 
+### The festivals in Sanskrit (2026-11-10)
+
+`sa-Deva` had no `festival` group, so a Sanskrit reader saw every
+observance in the English fallback. All 429 keys the packs answer with are
+now named, in the same order as the other locales. Each record is `name`
+and `prose`; `iast` is the record's own where Nepali carries one (151
+keys), since `iast` is the same in every locale (§3). Where the Sanskrit
+name differs from that `iast` (कृष्णजन्माष्टमी beside *Kṛṣṇajanmāṣṭamī* agrees;
+अङ्गारकचतुर्थी beside *Maṅgalacaturthī* does not), the `iast` stays as the
+other locales have it and the name is the text's.
+
+**The form.** A name is the stem, as `graha` and `chart_layout` already
+are (सूर्य, not सूर्यः), written as one closed compound with its sandhi:
+जन्माष्टमी, विजयादशमी, होलिकादहन, स्मार्तैकादशी, सोमवत्यमावस्या,
+हनुमज्जयन्ती, धनुःसङ्क्रान्ति. The nasals are the conjuncts `sa-Deva` writes
+elsewhere (पञ्चमी, सङ्क्रान्ति, गङ्गा), not the anusvara Hindi prints, and
+a Nepali chandrabindu, which Sanskrit does not write and which derives as
+`m̐`, takes the conjunct the print itself uses (चाङ्गुनारायण as the print's
+पाङ्गा, गोसाइकुण्ड as its गोसाइकुण्डस्नानारम्भ, रोपाईजात्रा, उधौली). A
+place that qualifies an observance stands apart from it, as a heading
+would print it, and the observance is the compound: भक्तपुर
+चण्डीभगवतीयात्रा, देवपत्तन त्रिशूलयात्रा. Only the Jain observances that
+need a case are written as phrases (कृष्णत्रयोदशीतः पर्युषणारम्भ,
+शुक्लपञ्चम्यां सांवत्सरी), which keeps brackets out of the derived Latin.
+
+**The sources, group by group.** The printed forms quoted below are the
+ones the packs' own rules quote from their pages (`festival/*.rs`), so
+they were read; a text cited without a page names where the term is found
+and was not re-read for this pass, as above.
+
+| group | names | source and reasoning |
+|---|---|---|
+| the vratas and festivals of the texts | रामनवमी, कृष्णजन्माष्टमी, विजयादशमी, महाशिवरात्रि, होलिकादहन, रक्षाबन्धन, बलिप्रतिपदा, यमद्वितीया, नरकचतुर्दशी, धनत्रयोदशी, अक्षयतृतीया, अनन्तचतुर्दशी, ऋषिपञ्चमी, हरितालिका, उपाङ्गललिताव्रत, अदुःखनवमी, कूष्माण्डनवमी, अविधवानवमी, the four युगादि, and the like | the names *Dharmasindhu* and *Nirnayasindhu* give the days (their tithi chapters), which Nepal's national panchanga prints in the same compounds (दशहरास्नानारम्भ, भीष्मपञ्चकारम्भ, तुलसीविवाह, कूर्मजयन्ती). Dhanteras is धनत्रयोदशी, the texts' name for the day; Satyayugadi is कृतयुगादि, as *Dharmasindhu* names the yuga; Holi, the morning after the fire, is धूलिवन्दन, the rite *Dharmasindhu* p. 95 keeps on the pratipada |
+| the days named for the weekday | अङ्गारकचतुर्थी, रविसप्तमी, भौमाष्टमी, बुधाष्टमी, सोमवत्यमावस्या | *Dharmasindhu*'s अङ्गारकचतुर्थी for a Tuesday's 4th, where Nepali and Hindi say *Maṅgala*; the rest as the packs' `iast` |
+| the ekadashis | निर्जलैकादशी, कामिकैकादशी, मोहिन्येकादशी, हरिशयन्येकादशी, हरिबोधिन्येकादशी, आमलक्येकादशी, वरूथिन्येकादशी, …; स्मार्तैकादशी, वैष्णवैकादशी, गौडीयैकादशी, संन्यास्येकादशी | the Puranic names (the *Padma Purāṇa*'s ekadashi mahatmyas) compounded with एकादशी, so the name's final vowel takes the sandhi (*mohinī* + *ekādaśī* is मोहिन्येकादशी). वरूथिनी is the Sanskrit spelling of the print's बरुथिनी. Magha's bright 11th is भैम्येकादशी, the *bhaimī* the texts name it by, where the print says भीमा |
+| the shraddhas | प्रतिपदाश्राद्ध … अमावस्याश्राद्ध, षोडशश्राद्धारम्भ, मघाश्राद्ध, भरणीश्राद्ध, संन्यासिमहालय, पिशाचमोचनश्राद्ध | the tithi as `tithi` names it in `sa-Deva`, then श्राद्ध; *Dharmasindhu* pp. 61–62 for the Bharani shraddha, the widows' ninth and the ascetics' mahalaya |
+| the sankrantis | मेषसङ्क्रान्ति … मीनसङ्क्रान्ति | the rashi as `rashi` names it in `sa-Deva` (कर्क, वृषभ), then सङ्क्रान्ति; the national panchanga names the ingresses by the solar month instead (वैशाखसंक्रान्ति), but the keys are the signs' |
+| the jayantis of gods, sages and teachers | परशुरामजयन्ती, नृसिंहजयन्ती, कल्किजयन्ती, हनुमज्जयन्ती, दत्तात्रेयजयन्ती, शङ्कराचार्यजयन्ती, बुद्धजयन्ती, महावीरजयन्ती, गोरक्षनाथजयन्ती, गुरुपद्मसम्भवजयन्ती, श्रीवल्लभजयन्ती | compounds, as the print writes them (कूर्मजयन्ती, गीताजयन्ती), with the Sanskrit stem of the name: *hanumat* gives हनुमज्जयन्ती and Gorakhnath is गोरक्षनाथ |
+| Mithila's days | जीमूतवाहनव्रत, प्रतिहारषष्ठी, मौनापञ्चमी, मधुश्रावणीपूजारम्भ, चौठचन्द्र, सामापूजारम्भ, सामाविसर्जन, ओठगन, जूडिशीतल | the Sanskrit almanac the Mithila pack is read from (the Vishwavidyalaya Panchang of KSDSU Darbhanga) prints जीमूतवाहनव्रतम् (जितिया), प्रतिहारषष्ठी for Chhath's evening, मधुश्रावणीपूजाकथारम्भः, सामापूजारम्भः and सामाविसर्जनम्. So Jitiya and Chhath take those names in every pack that keeps them; Chaurchan, Othgan and Jur Sital keep the print's own regional words |
+| Nepal's jatras, melas and snanas | श्वेतमत्स्येन्द्रनाथरथयात्रा, रक्तमत्स्येन्द्रनाथरथारोहण, इन्द्रयात्रा, कुमारयात्रा, खड्गयात्रा, भक्तपुर भैरवभद्रकालीरथयात्रारम्भ, भक्तपुर विश्वध्वजपतन, मध्यपुर बालकुमारीयात्रा, ललितपुर नृसिंहयात्रा, पशुपतिनाथदमनार्पण, गुँलाधर्मारम्भ, चिरोत्थान, नवपत्रिकाप्रवेश, … | Nepal's national panchanga (VS 2082 and 2083) prints most of these in Sanskrit: श्रीश्वेतमत्स्येन्द्रनाथ रथयात्रा, ल.पु.मत्स्येन्द्रनाथ रथारोहण, भ.पु.भैरवभद्रकाली रथयात्रारम्भ for Bisket, भ.पु विश्वध्वजपतन for Yosin patan, मध्यपुरठिमी for Thimi, दमनार्पण, गुँलाधर्मारम्भ, चिरोत्थान for Chir swayegu. The rest follow the same scheme: जात्रा is यात्रा, a deity or town takes its Sanskrit name where it has one (Rato Machhindranath रक्तमत्स्येन्द्रनाथ, after the print's श्वेत for Seto; Deopatan देवपत्तन; Yala ललितपुर; Bagh Bhairav व्याघ्रभैरव), and a town with none keeps the Nepali (टोखा, पनौती, थानकोट). Phulpati is नवपत्रिकाप्रवेश, *Dharmasindhu*'s name for bringing in the nine leaves on the seventh |
+| the Newar, Kirat, Tharu and other regional days | अनला पुन्हि, दिला चह्रे, सिथि नखः, योमरी पुन्ही, गाईजात्रा, घोडेजात्रा, कागतिहार, कुकुरतिहार, उभौली, उँधौली, माघी, चैते दशैं, … | no text names them: they keep the Nepali record's name, in the print's compound where it closes one (कागतिहार, हिलेजात्रा, वल्केपर्व). Chaite Dashain is not given the texts' अशोकाष्टमी, which falls on the same tithi but is another rite |
+| Nepal's civic and international days | लोकतन्त्र दिवस, संविधान दिवस, सहिद दिवस, विश्व जल दिवस, … | the Nepali record's name, unchanged: a civic day has no Sanskrit name to give it. New Year's Day is ईस्वी नववर्ष, which every Devanagari reader reads, rather than the Nepali नयाँ वर्ष (ईस्वी) |
+| India's state days and persons' jayantis | भारतीय गणतन्त्र दिवस, महाराष्ट्र दिवस, छत्रपति शिवाजी महाराज जयन्ती, रवीन्द्रनाथ ठाकुर जयन्ती, दोलयात्रा, कालीपूजा, विषु, तिरुवोणम्, प्रथम ओणम् (उत्राडम्), … | a person's name as their region writes it, then जयन्ती, kept apart; Tagore is ठाकुर, the Bengali surname. India's two national days take भारतीय for the Nepali genitive. Dol Jatra is दोलयात्रा, the texts' *dolayātrā*; Vishu is विषु, the Sanskrit *viṣu*; the Onam days keep their Malayalam names with Sanskrit ordinals |
+| the Christian days | क्रिसमस, गुड फ्राइडे, ईस्टर, ईस्टर शनिवार, पवित्र गुरुवार | the names Hindi prints; Maundy Thursday is पवित्र गुरुवार, which is already Sanskrit |
+| the Jain observances | महावीरनिर्वाण, वीरनिर्वाणसंवत्प्रारम्भ, पर्युषणारम्भ, सांवत्सरी, दशलक्षणपर्वारम्भ, पर्वतिथि: अष्टमी, चैत्र आयम्बिल ओली आरम्भ | the Jain terms as the packs' `iast` gives them; आयम्बिल ओली is the Gujarati name the observance is kept by, and stays so. The two era years start with प्रारम्भ, as the national panchanga prints ने.सं. ११४६ प्रारम्भ |
+
+**`sa-Latn`.** The transliteration of a Sanskrit name is right, and of a
+Nepali or Newar name it is the same romanisation the Nepali record's own
+`iast` uses (*Hile Jātrā*, *Dilā Carhe*), so those derive. Seventeen names
+would come out as nonsense, and carry the English record's name as an
+override (§3): the four Lhosars (Tibetan, `Sonama Lhosāra`), the four
+Christian days and the two with an English word (`Presa`, `Reḍakrasa`),
+four persons whose names the scheme mangles (Ambedkar, Netaji Subhas
+Chandra Bose, Birsa Munda, Harichand Thakur), Pohela Boishakh, the banks'
+closing (बैंक) and First Onam, whose bracket the casing does not reach.
+
+**The names least sure.** संन्यास्येकादशी (the texts speak of the *yati*'s
+ekadashi; the record keeps the reader's word), भैम्येकादशी (the print's
+भीमा against the texts' *bhaimī*), कुशोत्पाटिन्यमावस्या for Kushe Aunsi (the
+almanacs' *kuśotpāṭinī*; the national panchanga prints only कुशेऔंसी),
+गयामौन्यमावस्या, मातातीर्थामावस्या (the print names the day मातातीर्थस्नान),
+कोजागरपूर्णिमा (the texts' *kojāgara* where Nepal says कोजाग्रत),
+देवपत्तन गङ्गामातृरथयात्रा (गङ्गामाई rendered), कीर्तिपुर
+व्याघ्रभैरवयात्रा, and नवपत्रिकाप्रवेश for Phulpati. A correction that finds
+a text saying otherwise overturns the name.
+
 ## 4e. Printed abbreviations (SR-85, 2026-11-10)
 
 A consumer's narrowest day cell fits neither a tithi's `name` nor its
