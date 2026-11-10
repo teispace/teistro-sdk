@@ -1118,8 +1118,9 @@ mod tests {
                 "{name}"
             );
         }
-        // The engine names 27 of the catalogue's 37 deities.
-        assert!(kind("deity").present == 27 && kind("deity").total == 37);
+        // The engine names 27 of the catalogue's 37 deities, and the
+        // tithi lords name the other ten (`entity-names.md` §4e).
+        assert!(kind("deity").present == 37 && kind("deity").total == 37);
         assert_eq!(report.coverage.len(), 5, "four written, `sa-Latn` derived");
         assert!(
             !report.catalogue.contains_key("rule"),
