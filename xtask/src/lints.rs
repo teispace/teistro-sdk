@@ -3577,7 +3577,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 23] = [
+const JAVA_UNTYPED: [(&str, &str); 24] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -3619,6 +3619,10 @@ const JAVA_UNTYPED: [(&str, &str); 23] = [
     ("RashifalRequest.RashifalRequest(events)", MEMBER_OR_KEY),
     ("RashifalRequest.withEvents(grahas)", MEMBER_OR_KEY),
     ("Remedies.Remedies(rules)", ANSWERED),
+    (
+        "SankalpaWords.SankalpaWords(params)",
+        "an answer's slots, handed back to `intl.render` as they came",
+    ),
 ];
 
 /// A catalogue member or a key registered at run time, as the caller has it.

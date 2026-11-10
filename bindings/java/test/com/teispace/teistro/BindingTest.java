@@ -2747,7 +2747,7 @@ public final class BindingTest {
             // A total graded by Muhurta Martanda's floor, by the bands Nepal's
             // almanacs print and by a consumer's own table, and said in English
             // and Nepali (03-design/matching.md, SR-39).
-            try (Context sky = teistro.context()) {
+            try (Context sky = teistro.context(ContextOptions.builder().build())) {
                 var good = com.teispace.teistro.request.GunaBand.GOOD;
                 BandWords said = sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
                         .total(28).shipped("NEPALI_ALMANAC").locale("en-Latn").build());
