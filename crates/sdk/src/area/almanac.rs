@@ -102,6 +102,7 @@ mod pack;
 pub(crate) mod people;
 mod reasons;
 mod sait;
+mod sankalpa_words;
 mod sentences;
 
 #[cfg(feature = "schema")]
@@ -137,6 +138,9 @@ pub(crate) use reasons::ReasonsAsked;
 pub use reasons::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
+};
+pub use sankalpa_words::{
+    HIMAVATKHANDE, Pitris, SANKALPA_TRADITIONS, SankalpaFor, SankalpaWords, sankalpa_params,
 };
 #[cfg(feature = "schema")]
 pub(crate) use sentences::SentencesAsked;

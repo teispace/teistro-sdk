@@ -1,0 +1,4 @@
+{
+  "band": ".input {$band :string} .match $band UNFIT {{विवाह जुर्दैन}} FIT {{विवाहयोग्य}} MIDDLING {{मध्यम}} GOOD {{उत्तम}} EXCELLENT {{अति उत्तम}} * {{{$band}}}",
+  "graded": ".input {$total :number} {{३६ मध्ये {$total} गुण: {sdk.matching.band :msg}}}"
+}

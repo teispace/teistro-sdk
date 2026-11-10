@@ -5225,6 +5225,73 @@ pub mod sdk {
 
     }
 
+    /// The `matching` group.
+    pub mod matching {
+        /// The message `sdk.matching.band`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::matching::Band;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Band { band: String::from("band") };
+        /// assert_eq!(Band::KEY, "sdk.matching.band");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Band {
+            /// The `band` parameter.
+            pub band: String,
+        }
+
+        impl crate::TypedMessage for Band {
+            const KEY: &'static str = "sdk.matching.band";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("band", crate::Value::Str(self.band.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.matching.graded`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::matching::Graded;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Graded { band: String::from("band"), total: 2.5 };
+        /// assert_eq!(Graded::KEY, "sdk.matching.graded");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Graded {
+            /// The `band` parameter.
+            pub band: String,
+            /// The `total` parameter.
+            pub total: f64,
+        }
+
+        impl crate::TypedMessage for Graded {
+            const KEY: &'static str = "sdk.matching.graded";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("band", crate::Value::Str(self.band.clone())),
+                    ("total", crate::Value::Num(self.total)),
+                ])
+            }
+        }
+
+    }
+
     /// The `naming` group.
     pub mod naming {
         /// The message `sdk.naming.by`.
@@ -8214,6 +8281,314 @@ pub mod sdk {
             fn params(&self) -> crate::Params {
                 crate::params([
                     ("at", crate::Value::Str(self.at.clone())),
+                ])
+            }
+        }
+
+    }
+
+    /// The `sankalpa` group.
+    pub mod sankalpa {
+        /// The message `sdk.sankalpa.himavatkhande`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::sankalpa::Himavatkhande;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Himavatkhande {
+        ///     adhika: String::from("adhika"),
+        ///     ayana: teistro_core::catalogue::Ayana::ALL[0],
+        ///     father: String::from("father"),
+        ///     gotra: String::from("gotra"),
+        ///     grandfather: String::from("grandfather"),
+        ///     great_grandfather: String::from("greatGrandfather"),
+        ///     has_kshetra: String::from("hasKshetra"),
+        ///     has_pitris: String::from("hasPitris"),
+        ///     has_river: String::from("hasRiver"),
+        ///     jupiter: teistro_core::catalogue::Rashi::ALL[0],
+        ///     karana: teistro_core::catalogue::Karana::ALL[0],
+        ///     kshetra: String::from("kshetra"),
+        ///     masa: teistro_core::catalogue::Masa::ALL[0],
+        ///     moon: teistro_core::catalogue::Rashi::ALL[0],
+        ///     nakshatra: teistro_core::catalogue::Nakshatra::ALL[0],
+        ///     paksha: teistro_core::catalogue::Paksha::ALL[0],
+        ///     performer: String::from("performer"),
+        ///     purpose: String::from("purpose"),
+        ///     ritu: teistro_core::catalogue::Ritu::ALL[0],
+        ///     river: String::from("river"),
+        ///     samvatsara: teistro_core::catalogue::Samvatsara::ALL[0],
+        ///     sun: teistro_core::catalogue::Rashi::ALL[0],
+        ///     tithi: teistro_core::catalogue::Tithi::ALL[0],
+        ///     vara: teistro_core::catalogue::Vara::ALL[0],
+        ///     vara_key: String::from("varaKey"),
+        ///     vikrama: 2,
+        ///     yoga: teistro_core::catalogue::Yoga::ALL[0],
+        /// };
+        /// assert_eq!(Himavatkhande::KEY, "sdk.sankalpa.himavatkhande");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Himavatkhande {
+            /// The `adhika` parameter.
+            pub adhika: String,
+            /// The `ayana` parameter.
+            pub ayana: teistro_core::catalogue::Ayana,
+            /// The `father` parameter.
+            pub father: String,
+            /// The `gotra` parameter.
+            pub gotra: String,
+            /// The `grandfather` parameter.
+            pub grandfather: String,
+            /// The `greatGrandfather` parameter.
+            pub great_grandfather: String,
+            /// The `hasKshetra` parameter.
+            pub has_kshetra: String,
+            /// The `hasPitris` parameter.
+            pub has_pitris: String,
+            /// The `hasRiver` parameter.
+            pub has_river: String,
+            /// The `jupiter` parameter.
+            pub jupiter: teistro_core::catalogue::Rashi,
+            /// The `karana` parameter.
+            pub karana: teistro_core::catalogue::Karana,
+            /// The `kshetra` parameter.
+            pub kshetra: String,
+            /// The `masa` parameter.
+            pub masa: teistro_core::catalogue::Masa,
+            /// The `moon` parameter.
+            pub moon: teistro_core::catalogue::Rashi,
+            /// The `nakshatra` parameter.
+            pub nakshatra: teistro_core::catalogue::Nakshatra,
+            /// The `paksha` parameter.
+            pub paksha: teistro_core::catalogue::Paksha,
+            /// The `performer` parameter.
+            pub performer: String,
+            /// The `purpose` parameter.
+            pub purpose: String,
+            /// The `ritu` parameter.
+            pub ritu: teistro_core::catalogue::Ritu,
+            /// The `river` parameter.
+            pub river: String,
+            /// The `samvatsara` parameter.
+            pub samvatsara: teistro_core::catalogue::Samvatsara,
+            /// The `sun` parameter.
+            pub sun: teistro_core::catalogue::Rashi,
+            /// The `tithi` parameter.
+            pub tithi: teistro_core::catalogue::Tithi,
+            /// The `vara` parameter.
+            pub vara: teistro_core::catalogue::Vara,
+            /// The `varaKey` parameter.
+            pub vara_key: String,
+            /// The `vikrama` parameter.
+            pub vikrama: i64,
+            /// The `yoga` parameter.
+            pub yoga: teistro_core::catalogue::Yoga,
+        }
+
+        impl crate::TypedMessage for Himavatkhande {
+            const KEY: &'static str = "sdk.sankalpa.himavatkhande";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("adhika", crate::Value::Str(self.adhika.clone())),
+                    ("ayana", crate::Value::catalogued(self.ayana)),
+                    ("father", crate::Value::Str(self.father.clone())),
+                    ("gotra", crate::Value::Str(self.gotra.clone())),
+                    ("grandfather", crate::Value::Str(self.grandfather.clone())),
+                    ("greatGrandfather", crate::Value::Str(self.great_grandfather.clone())),
+                    ("hasKshetra", crate::Value::Str(self.has_kshetra.clone())),
+                    ("hasPitris", crate::Value::Str(self.has_pitris.clone())),
+                    ("hasRiver", crate::Value::Str(self.has_river.clone())),
+                    ("jupiter", crate::Value::catalogued(self.jupiter)),
+                    ("karana", crate::Value::catalogued(self.karana)),
+                    ("kshetra", crate::Value::Str(self.kshetra.clone())),
+                    ("masa", crate::Value::catalogued(self.masa)),
+                    ("moon", crate::Value::catalogued(self.moon)),
+                    ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                    ("paksha", crate::Value::catalogued(self.paksha)),
+                    ("performer", crate::Value::Str(self.performer.clone())),
+                    ("purpose", crate::Value::Str(self.purpose.clone())),
+                    ("ritu", crate::Value::catalogued(self.ritu)),
+                    ("river", crate::Value::Str(self.river.clone())),
+                    ("samvatsara", crate::Value::catalogued(self.samvatsara)),
+                    ("sun", crate::Value::catalogued(self.sun)),
+                    ("tithi", crate::Value::catalogued(self.tithi)),
+                    ("vara", crate::Value::catalogued(self.vara)),
+                    ("varaKey", crate::Value::Str(self.vara_key.clone())),
+                    ("vikrama", crate::Value::Int(self.vikrama)),
+                    ("yoga", crate::Value::catalogued(self.yoga)),
+                ])
+            }
+        }
+
+        /// The message `sdk.sankalpa.himavatkhandeMonth`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandeMonth;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = HimavatkhandeMonth {
+        ///     adhika: String::from("adhika"),
+        ///     masa: teistro_core::catalogue::Masa::ALL[0],
+        /// };
+        /// assert_eq!(HimavatkhandeMonth::KEY, "sdk.sankalpa.himavatkhandeMonth");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct HimavatkhandeMonth {
+            /// The `adhika` parameter.
+            pub adhika: String,
+            /// The `masa` parameter.
+            pub masa: teistro_core::catalogue::Masa,
+        }
+
+        impl crate::TypedMessage for HimavatkhandeMonth {
+            const KEY: &'static str = "sdk.sankalpa.himavatkhandeMonth";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("adhika", crate::Value::Str(self.adhika.clone())),
+                    ("masa", crate::Value::catalogued(self.masa)),
+                ])
+            }
+        }
+
+        /// The message `sdk.sankalpa.himavatkhandePitris`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandePitris;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = HimavatkhandePitris {
+        ///     father: String::from("father"),
+        ///     gotra: String::from("gotra"),
+        ///     grandfather: String::from("grandfather"),
+        ///     great_grandfather: String::from("greatGrandfather"),
+        ///     has_pitris: String::from("hasPitris"),
+        ///     purpose: String::from("purpose"),
+        /// };
+        /// assert_eq!(HimavatkhandePitris::KEY, "sdk.sankalpa.himavatkhandePitris");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct HimavatkhandePitris {
+            /// The `father` parameter.
+            pub father: String,
+            /// The `gotra` parameter.
+            pub gotra: String,
+            /// The `grandfather` parameter.
+            pub grandfather: String,
+            /// The `greatGrandfather` parameter.
+            pub great_grandfather: String,
+            /// The `hasPitris` parameter.
+            pub has_pitris: String,
+            /// The `purpose` parameter.
+            pub purpose: String,
+        }
+
+        impl crate::TypedMessage for HimavatkhandePitris {
+            const KEY: &'static str = "sdk.sankalpa.himavatkhandePitris";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("father", crate::Value::Str(self.father.clone())),
+                    ("gotra", crate::Value::Str(self.gotra.clone())),
+                    ("grandfather", crate::Value::Str(self.grandfather.clone())),
+                    ("greatGrandfather", crate::Value::Str(self.great_grandfather.clone())),
+                    ("hasPitris", crate::Value::Str(self.has_pitris.clone())),
+                    ("purpose", crate::Value::Str(self.purpose.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.sankalpa.himavatkhandePlace`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandePlace;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = HimavatkhandePlace {
+        ///     has_kshetra: String::from("hasKshetra"),
+        ///     has_river: String::from("hasRiver"),
+        ///     kshetra: String::from("kshetra"),
+        ///     river: String::from("river"),
+        /// };
+        /// assert_eq!(HimavatkhandePlace::KEY, "sdk.sankalpa.himavatkhandePlace");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct HimavatkhandePlace {
+            /// The `hasKshetra` parameter.
+            pub has_kshetra: String,
+            /// The `hasRiver` parameter.
+            pub has_river: String,
+            /// The `kshetra` parameter.
+            pub kshetra: String,
+            /// The `river` parameter.
+            pub river: String,
+        }
+
+        impl crate::TypedMessage for HimavatkhandePlace {
+            const KEY: &'static str = "sdk.sankalpa.himavatkhandePlace";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("hasKshetra", crate::Value::Str(self.has_kshetra.clone())),
+                    ("hasRiver", crate::Value::Str(self.has_river.clone())),
+                    ("kshetra", crate::Value::Str(self.kshetra.clone())),
+                    ("river", crate::Value::Str(self.river.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.sankalpa.himavatkhandeVara`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandeVara;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = HimavatkhandeVara {
+        ///     vara: teistro_core::catalogue::Vara::ALL[0],
+        ///     vara_key: String::from("varaKey"),
+        /// };
+        /// assert_eq!(HimavatkhandeVara::KEY, "sdk.sankalpa.himavatkhandeVara");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct HimavatkhandeVara {
+            /// The `vara` parameter.
+            pub vara: teistro_core::catalogue::Vara,
+            /// The `varaKey` parameter.
+            pub vara_key: String,
+        }
+
+        impl crate::TypedMessage for HimavatkhandeVara {
+            const KEY: &'static str = "sdk.sankalpa.himavatkhandeVara";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("vara", crate::Value::catalogued(self.vara)),
+                    ("varaKey", crate::Value::Str(self.vara_key.clone())),
                 ])
             }
         }

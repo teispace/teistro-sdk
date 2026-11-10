@@ -54,6 +54,28 @@ entity ask for a key no catalogue has.
 - Both are held to points transcribed from the scans, and the first scan's grahas to the cells it writes
   them in (`03-design/chart-geometry.md` §7g). The default layout is unchanged.
 
+**A guna total graded into bands (SR-39).**
+**Numbers:** none.
+- `teistro_matching::GunaBands` is a table of rows `{band, from, clears, bhakoot}` a consumer can replace
+  (`GunaBands::from_json`). `grade(&AshtaKoota)` answers `Graded { total, dushkuta, band, bands, row }`, and
+  `sdk.matching().band(&koota, &bands)` is the façade's call.
+- Three tables ship. `MUHURTA_MARTANDA` is the default: *Muhurta Martanda* vivaha v. 1's floor, auspicious above 18,
+  the one rank-1 rule found. `NEPALI_ALMANAC` and `ARYAVARTA` are the bands printed in Nepal's almanacs of VS 2082,
+  marked as their convention (`03-design/matching.md`, C1340–C1342).
+- `sdk.matching.band` and `sdk.matching.graded` say a band in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva`;
+  `sa-Latn` derives them.
+
+**The sankalpa in words, by a tradition's template (SR-29).**
+**Numbers:** none.
+- `sdk.almanac().sankalpa_words(&sankalpa, &asked, tradition, locale)` fills a tradition's template with the time
+  `sankalpa` reckons. `asked` is a `SankalpaFor` holding the performer, gotra, purpose, river, kshetra and
+  `Pitris`. The answer is `SankalpaWords`, which names its tradition. `sankalpa_params` lists the slots a
+  template is given.
+- `sdk.sankalpa.himavatkhande` is the Nepal form, from *Karmakanda Bhaskara* (Mahendra Sanskrit University, VS 2054)
+  pp. 500, 164 and 477 (`03-design/sankalpa.md` §5, C1343–C1347). A consumer registers another tradition by loading
+  a pack with its own key.
+- `sdk.entity` gains the `locative` of `ayana` and `ritu` in every locale, for the template.
+
 **Every shipped pack is final: no namespace is a draft (Q42).**
 **Numbers:** 0 draft namespaces in any shipped locale, from 10 in `hi-Deva-IN`, 10 in `sa-Deva` and `sa-Latn`, and 3 in `ne-Deva-NP`.
 The maintainer took the review of the Hindi, Sanskrit and Nepali text on,

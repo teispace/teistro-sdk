@@ -30,44 +30,52 @@
     "UTTARAYANA": {
       "name": "Uttarāyaṇa",
       "prose": "Uttarāyaṇa",
-      "iast": "Uttarāyaṇa"
+      "iast": "Uttarāyaṇa",
+      "locative": "Uttarāyaṇe"
     },
     "DAKSHINAYANA": {
       "name": "Dakṣiṇāyana",
       "prose": "Dakṣiṇāyana",
-      "iast": "Dakṣiṇāyana"
+      "iast": "Dakṣiṇāyana",
+      "locative": "Dakṣiṇāyane"
     }
   },
   "ritu": {
     "VASANTA": {
       "name": "Vasanta",
       "prose": "Vasanta",
-      "iast": "Vasanta"
+      "iast": "Vasanta",
+      "locative": "Vasantartau"
     },
     "GRISHMA": {
       "name": "Grīṣma",
       "prose": "Grīṣma",
-      "iast": "Grīṣma"
+      "iast": "Grīṣma",
+      "locative": "Grīṣmartau"
     },
     "VARSHA": {
       "name": "Varṣā",
       "prose": "Varṣā",
-      "iast": "Varṣā"
+      "iast": "Varṣā",
+      "locative": "Varṣartau"
     },
     "SHARAD": {
       "name": "Śarad",
       "prose": "Śarad",
-      "iast": "Śarad"
+      "iast": "Śarad",
+      "locative": "Śaradṛtau"
     },
     "HEMANTA": {
       "name": "Hemanta",
       "prose": "Hemanta",
-      "iast": "Hemanta"
+      "iast": "Hemanta",
+      "locative": "Hemantartau"
     },
     "SHISHIRA": {
       "name": "Śiśira",
       "prose": "Śiśira",
-      "iast": "Śiśira"
+      "iast": "Śiśira",
+      "locative": "Śiśirartau"
     }
   },
   "chara_karaka": {

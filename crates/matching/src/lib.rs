@@ -23,6 +23,7 @@
 
 mod ashta;
 mod avakahada;
+mod band;
 mod doshas;
 mod ghata;
 mod kuja;
@@ -40,6 +41,7 @@ pub use ashta::{
     sign_varna, vashya_relation, yoni_relation,
 };
 pub use avakahada::{Avakahada, avakahada};
+pub use band::{BandRow, BhakootStanding, Clears, Graded, GunaBand, GunaBands};
 pub use doshas::{DoshaSystem, MarriageDosha, marriage_doshas};
 pub use ghata::Ghata;
 pub use kuja::{
@@ -62,6 +64,9 @@ pub use porutham::{
 };
 pub use role::MatchRole;
 
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod band_names;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod doshas_tests;

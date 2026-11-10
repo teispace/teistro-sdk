@@ -230,10 +230,11 @@ pub fn derive(
 /// The message namespaces a derived locale carries beside its entities,
 /// so a Latin-script reader of Sanskrit gets its weekdays, months and
 /// dates, the composed text (SR-38) and the currency words an amount in
-/// words is closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5)
-/// in Sanskrit rather than in the fallback's English. A namespace listed
-/// here and absent from the source is skipped, so the list may name what
-/// the source has yet to write.
+/// words is closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5),
+/// a match's bands (`sdk.matching`, SR-39) and the sankalpa
+/// (`sdk.sankalpa`, SR-29) in Sanskrit rather than in the fallback's
+/// English. A namespace listed here and absent from the source is
+/// skipped, so the list may name what the source has yet to write.
 ///
 /// ```
 /// use teistro_intl::derive::DERIVED_MESSAGES;
@@ -242,7 +243,7 @@ pub fn derive(
 /// assert!(DERIVED_MESSAGES.contains(&"sdk.reason"));
 /// assert!(DERIVED_MESSAGES.contains(&"sdk.amount"));
 /// ```
-pub const DERIVED_MESSAGES: [&str; 10] = [
+pub const DERIVED_MESSAGES: [&str; 12] = [
     "sdk.calendar",
     "sdk.reason",
     "sdk.condition",
@@ -253,6 +254,8 @@ pub const DERIVED_MESSAGES: [&str; 10] = [
     "sdk.naming",
     "sdk.day",
     "sdk.amount",
+    "sdk.matching",
+    "sdk.sankalpa",
 ];
 
 /// The namespaces whose messages are sentences, which a Latin script
