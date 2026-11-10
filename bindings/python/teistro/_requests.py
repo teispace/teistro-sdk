@@ -1589,11 +1589,14 @@ MundaneRequest = TypedDict(
 
 
 class BatchAsked(TypedDict, total=False):
-    """Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked."""
+    """Many periods as a binding writes them, the period the baseline engine's score is read for, when it is asked, and whether each sign's reading is said in words."""
 
     baseline: Optional[BaselinePeriod]
 
     periods: Required[Sequence[PeriodAsked]]
+
+    plans: bool
+    """Whether each sign's reading is composed into a narrative plan."""
 
 
 class RelocationRequest(TypedDict, total=False):

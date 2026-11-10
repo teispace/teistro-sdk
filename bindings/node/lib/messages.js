@@ -1386,6 +1386,11 @@ export function messages(r) {
         yoga: (p) => r.render('sdk.phala.yoga', { yoga: { '$entity': p.yoga } }),
         yoni: (p) => r.render('sdk.phala.yoni', { yoni: { '$entity': p.yoni } }),
       },
+      rashifal: {
+        ingress: (p) => r.render('sdk.rashifal.ingress', { good: p.good, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi } }),
+        saturn: (p) => r.render('sdk.rashifal.saturn', { house: p.house, phase: p.phase, spell: p.spell }),
+        station: (p) => r.render('sdk.rashifal.station', { good: p.good, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, turns: p.turns }),
+      },
       reading: {
         effect: (p) => r.render('sdk.reading.effect', { rule: p.rule, text: p.text }),
         lifeClass: (p) => r.render('sdk.reading.lifeClass', { class: p.class, rule: p.rule }),

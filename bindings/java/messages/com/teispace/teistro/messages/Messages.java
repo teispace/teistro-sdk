@@ -15439,6 +15439,64 @@ public final class Messages {
 
 
         /**
+         * The messages under `rashifal`.
+         *
+         * @return the group
+         */
+        public SdkRashifal rashifal() {
+            return new SdkRashifal(r);
+        }
+
+        /** The messages under `SdkRashifal`, each rendered by its own key. */
+        public static final class SdkRashifal {
+            private final Renderer r;
+
+            SdkRashifal(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.rashifal.ingress`
+             *
+             * @param good `good`
+             * @param graha `graha`
+             * @param house `house`
+             * @param rashi `rashi`
+             * @return the text
+             */
+            public String ingress(String good, GrahaKey graha, long house, RashiKey rashi) {
+                return r.render("sdk.rashifal.ingress", Map.ofEntries(Map.entry("good", good), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value()))));
+            }
+
+            /**
+             * `sdk.rashifal.saturn`
+             *
+             * @param house `house`
+             * @param phase `phase`
+             * @param spell `spell`
+             * @return the text
+             */
+            public String saturn(long house, String phase, String spell) {
+                return r.render("sdk.rashifal.saturn", Map.ofEntries(Map.entry("house", house), Map.entry("phase", phase), Map.entry("spell", spell)));
+            }
+
+            /**
+             * `sdk.rashifal.station`
+             *
+             * @param good `good`
+             * @param graha `graha`
+             * @param house `house`
+             * @param rashi `rashi`
+             * @param turns `turns`
+             * @return the text
+             */
+            public String station(String good, GrahaKey graha, long house, RashiKey rashi, String turns) {
+                return r.render("sdk.rashifal.station", Map.ofEntries(Map.entry("good", good), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("turns", turns)));
+            }
+        }
+
+
+        /**
          * The messages under `reading`.
          *
          * @return the group

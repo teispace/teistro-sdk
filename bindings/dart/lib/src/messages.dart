@@ -3690,6 +3690,19 @@ final class MessagesSdkPhala {
       _r.render('sdk.phala.yoni', {'yoni': {r'$entity': yoni.key}});
 }
 
+final class MessagesSdkRashifal {
+  const MessagesSdkRashifal(this._r);
+
+  final Renderer _r;
+
+  String ingress({required String good, required GrahaKey graha, required int house, required RashiKey rashi}) =>
+      _r.render('sdk.rashifal.ingress', {'good': good, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}});
+  String saturn({required int house, required String phase, required String spell}) =>
+      _r.render('sdk.rashifal.saturn', {'house': house, 'phase': phase, 'spell': spell});
+  String station({required String good, required GrahaKey graha, required int house, required RashiKey rashi, required String turns}) =>
+      _r.render('sdk.rashifal.station', {'good': good, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'turns': turns});
+}
+
 final class MessagesSdkReading {
   const MessagesSdkReading(this._r);
 
@@ -3873,6 +3886,7 @@ final class MessagesSdk {
   MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
   MessagesSdkNaming get naming => MessagesSdkNaming(_r);
   MessagesSdkPhala get phala => MessagesSdkPhala(_r);
+  MessagesSdkRashifal get rashifal => MessagesSdkRashifal(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
   MessagesSdkRite get rite => MessagesSdkRite(_r);

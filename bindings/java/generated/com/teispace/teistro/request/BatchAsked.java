@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
+ * Many periods as a binding writes them, the period the baseline engine's score is read for, when it is asked, and whether each sign's reading is said in words.
  *
  * @param baseline The period a score is weighed for, which sets the Moon's weight. Null leaves the SDK's default.
  * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
+ * @param plans Whether each sign's reading is composed into a narrative plan. Null leaves the SDK's default.
  */
-public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) implements RequestJson {
+public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boolean plans) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -34,7 +35,7 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) imp
      * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
      */
     public BatchAsked(List<PeriodAsked> periods) {
-        this(null, periods);
+        this(null, periods, null);
     }
 
     /**
@@ -51,6 +52,7 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) imp
     public static final class Builder {
         private BaselinePeriod baseline;
         private List<PeriodAsked> periods;
+        private Boolean plans;
 
         private Builder() {}
 
@@ -77,13 +79,24 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) imp
         }
 
         /**
+         * Sets {@code plans}.
+         *
+         * @param plans Whether each sign's reading is composed into a narrative plan. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder plans(boolean plans) {
+            this.plans = plans;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public BatchAsked build() {
-            return new BatchAsked(baseline, periods);
+            return new BatchAsked(baseline, periods, plans);
         }
     }
 
@@ -98,7 +111,8 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) imp
         Map<String, Object> json = Read.object(raw, "BatchAsked");
         return new BatchAsked(
             Read.orNull(json.get("baseline"), present -> Read.member(present, "BatchAsked.baseline", BaselinePeriod::byKey)),
-            Read.list(Read.required(json.get("periods"), "BatchAsked.periods"), "BatchAsked.periods", item0 -> PeriodAsked.of(item0)));
+            Read.list(Read.required(json.get("periods"), "BatchAsked.periods"), "BatchAsked.periods", item0 -> PeriodAsked.of(item0)),
+            Read.orNull(json.get("plans"), present -> Read.bool(present, "BatchAsked.plans")));
     }
 
     @Override
@@ -108,6 +122,9 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods) imp
             json.put("baseline", baseline.toJson());
         }
         json.put("periods", periods.stream().map(item0 -> item0.toJson()).toList());
+        if (plans != null) {
+            json.put("plans", plans);
+        }
         return json;
     }
 }
