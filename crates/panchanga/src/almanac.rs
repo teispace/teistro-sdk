@@ -44,13 +44,14 @@ use crate::ashauch::{
     self, Ashauch, AshauchRequest, AshauchTable, Household, HouseholdAnswer, HouseholdPeriods,
     Running,
 };
+use crate::cell::{self, CellDay, DayCell};
 use crate::change::{ChangeDay, ChangePoints};
 use crate::death_time::{self, DeathInstant, DeathTime, DeathTimeTable};
 use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, MoonriseAt, Origin, OriginFound, SunEntry,
 };
 use crate::first_year::{self, FirstYear, FirstYearSchedule};
-use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
+use crate::limb::{self, Limbs, RangeCrossings, Reach, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
@@ -1804,6 +1805,128 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Envelope::new(days, provenance))
     }
 
+    /// What [`cell::cells`] reads of a range and of the day either side
+    /// of it ([`CellDay`]), founded as one run and stamped as the range:
+    /// the day before lends its sunrise (a vriddhi on the first date) and
+    /// the day after its tithis (a tithi ending before the last date's
+    /// next sunrise, whatever the window). Each part is the one
+    /// [`Almanac::festival_days`] holds, to the bit, from the same steps
+    /// less the nakshatras, the yogas and the signs, which a cell does not
+    /// read and a day's search spent most of its time on.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    ///
+    /// let days = almanac.cell_days(&date(11, 25), &date(11, 26), &kathmandu)?.value;
+    /// // The range and a day either side, stamped as the range.
+    /// assert_eq!(days.len(), 4);
+    /// assert_eq!(days[0].next_sunrise, days[1].sunrise);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::festival_days`] over the widened run; `OUT_OF_RANGE`
+    /// for a range of more than [`MOST_DAYS`] days.
+    pub fn cell_days(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<Vec<CellDay>>, Error> {
+        let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
+        days_in(first, last, from, to, MOST_DAYS)?;
+        let (before, after) = (
+            self.calendar.date_of(first.plus_days(-1))?,
+            self.calendar.date_of(last.plus_days(1))?,
+        );
+        self.run_over(
+            (&before, &after, MOST_DAYS + 2),
+            (from, to),
+            place,
+            Moon::Unread,
+            Self::cell_value,
+        )
+    }
+
+    /// **What a month grid prints of every date in a range**, inclusive of
+    /// both ends (`03-design/month-cells.md`): each date's sunrise, the
+    /// tithi then and its paksha, the lunar month, the tithis ending before
+    /// the next sunrise, and whether one is skipped or repeated. Read off
+    /// [`Almanac::cell_days`], so each sunrise and tithi is the one
+    /// [`Almanac::between`] gives that day, to the bit, and stamped as the
+    /// range.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    ///
+    /// let days = almanac.between(&date(11, 25), &date(11, 26), &kathmandu)?.value;
+    /// let cells = almanac.cells(&date(11, 25), &date(11, 26), &kathmandu)?.value;
+    /// // The same sunrises and sunrise tithis, to the bit.
+    /// assert_eq!(cells[1].sunrise, days[1].day.sunrise);
+    /// assert_eq!(Some(cells[1].tithi), days[1].tithi_at(days[1].day.sunrise).map(|span| span.member));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::cell_days`].
+    pub fn cells(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<Vec<DayCell>>, Error> {
+        let Envelope { value, provenance } = self.cell_days(from, to, place)?;
+        Ok(Envelope::new(cell::cells(&value)?, provenance))
+    }
+
     /// Every instant in a range at which a limb, the Moon's or the Sun's
     /// sign or the vara changes, one sorted list
     /// (`docs/03-design/change-points.md`). The range's own walker over its
@@ -2358,8 +2481,22 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         moon: Moon,
         value: impl Fn(&Self, &CalendarDate, &Place, &mut Memo) -> Result<(T, Frame), Error>,
     ) -> Result<Envelope<Vec<T>>, Error> {
+        self.run_over((from, to, MOST_DAYS), (from, to), place, moon, value)
+    }
+
+    /// [`Almanac::run`] over the days from `from` to `to`, at most `most`
+    /// of them, stamped as the range `stamped` names: a run founded wider
+    /// than the range a caller asked for is stamped as that range.
+    fn run_over<T>(
+        &self,
+        (from, to, most): (&CalendarDate, &CalendarDate, usize),
+        (stamp_from, stamp_to): (&CalendarDate, &CalendarDate),
+        place: &Place,
+        moon: Moon,
+        value: impl Fn(&Self, &CalendarDate, &Place, &mut Memo) -> Result<(T, Frame), Error>,
+    ) -> Result<Envelope<Vec<T>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
-        let count = days_in(first, last, from, to, MOST_DAYS)?;
+        let count = days_in(first, last, from, to, most)?;
         let mut values = Vec::with_capacity(count);
         // The frame is the first day's: the batch asks the provider for
         // one frame, so one is what the stamp names -- and it comes back
@@ -2385,14 +2522,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         };
         let provenance = self.provenance_from(
             content_hash(&RangeInput {
-                from: from.to_string(),
-                to: to.to_string(),
+                from: stamp_from.to_string(),
+                to: stamp_to.to_string(),
                 latitude_deg: place.latitude.get(),
                 longitude_deg: place.longitude.get(),
                 altitude_m: place.altitude.get(),
             }),
             frame,
-            first,
+            self.calendar.fixed_of(stamp_from)?,
         );
         Ok(Envelope::new(values, provenance))
     }
@@ -3353,12 +3490,51 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         }
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
         let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
-        let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
+        let month = self.month(&longitudes, window, &limbs.tithi, (zodiac, frame), memo)?;
         memo.known = known.map(|known| (frame, known));
         Ok((
             FestivalDay::of(&day, month, limbs.tithi, limbs.nakshatra),
             frame,
         ))
+    }
+
+    /// What a cell reads of one day, unstamped, and its frame: the steps
+    /// of [`Almanac::festival_value`] over the same memo, the limbs cut to
+    /// the tithis and the range's crossings to the elongation's.
+    fn cell_value(
+        &self,
+        date: &CalendarDate,
+        place: &Place,
+        memo: &mut Memo,
+    ) -> Result<(CellDay, Frame), Error> {
+        let date = self.calendar.date_of(self.calendar.fixed_of(date)?)?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let (day, _) = self.local_day_of(&date, fixed, place, memo)?;
+        let window = self.window(&day)?;
+        // Refused as a festival day's are.
+        Interval::new(day.sunrise, day.sunset)?;
+        Interval::new(day.sunset, day.next_sunrise)?;
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        let known = memo.crossings_for(
+            Reach::Elongation,
+            &longitudes,
+            (zodiac, frame),
+            window,
+            fixed,
+        )?;
+        let tithi = limb::tithis_with(&longitudes, window, zodiac, known.as_ref())?;
+        let month = self.month(&longitudes, window, &tithi, (zodiac, frame), memo)?;
+        memo.known = known.map(|known| (frame, known));
+        Ok((CellDay::of(&day, month, tithi), frame))
     }
 
     /// What a day gives a range's change points: as
@@ -3454,7 +3630,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         memo.day = Some((fixed, day.clone()));
         let muhurtas = period::muhurtas(daylight, night, previous_night, day.vara);
         let durmuhurtas = period::durmuhurtas(&muhurtas, day.vara, settings.panchanga.durmuhurta)?;
-        let month = self.month(&longitudes, window, &limbs, (zodiac, frame), memo)?;
+        let month = self.month(&longitudes, window, &limbs.tithi, (zodiac, frame), memo)?;
         // The Moon's own day reads geocentric longitudes, which are the
         // range's crossings' source unless the almanac is topocentric.
         let geocentric = known
@@ -3646,12 +3822,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         &self,
         longitudes: &S,
         window: Interval,
-        limbs: &Limbs,
+        tithi: &[Span<Tithi>],
         (zodiac, frame): (Zodiac, Frame),
         memo: &mut Memo,
     ) -> Result<LunarMonth, Error> {
-        let at_sunrise = limbs
-            .tithi
+        let at_sunrise = tithi
             .first()
             .map(|span| span.member)
             .ok_or_else(|| Error::internal("a day with no tithi"))?;
@@ -4183,9 +4358,21 @@ impl Memo {
         window: Interval,
         day: FixedDay,
     ) -> Result<Option<RangeCrossings>, Error> {
+        self.crossings_for(Reach::Whole, longitudes, (zodiac, frame), window, day)
+    }
+
+    /// As [`Memo::crossings`], found for no more than `reach`.
+    fn crossings_for<S: teistro_astro::events::Longitudes + ?Sized>(
+        &mut self,
+        reach: Reach,
+        longitudes: &S,
+        (zodiac, frame): (Zodiac, Frame),
+        window: Interval,
+        day: FixedDay,
+    ) -> Result<Option<RangeCrossings>, Error> {
         if let Some((read_in, known)) = self.known.take()
             && read_in == frame
-            && known.answers(zodiac, window)
+            && known.answers_for(reach, zodiac, window)
         {
             return Ok(Some(known));
         }
@@ -4203,7 +4390,7 @@ impl Memo {
         )]
         let to = window.from.get() + left as f64 + 2.0;
         let run = Interval::new(window.from, JulianDay::<Utc>::literal(to))?;
-        RangeCrossings::over(longitudes, zodiac, run).map(Some)
+        RangeCrossings::found(longitudes, zodiac, run, reach).map(Some)
     }
 }
 

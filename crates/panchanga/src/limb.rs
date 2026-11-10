@@ -492,14 +492,15 @@ pub fn limbs_with<S: Longitudes + ?Sized>(
     // the karanas alike, a tithi being two karanas: its boundaries are
     // the karana boundaries that fall on a multiple of twelve degrees.
     let elongation = found(Limb::Karana)?;
-    let tithi_edges: Vec<f64> = elongation
-        .iter()
-        .filter(|(_, boundary)| is_tithi_boundary(*boundary))
-        .map(|(instant, _)| *instant)
-        .collect();
     let karana_edges: Vec<f64> = elongation.iter().map(|(instant, _)| *instant).collect();
     Ok(Limbs {
-        tithi: spans(&source, Limb::Tithi, window, &tithi_edges, known)?,
+        tithi: spans(
+            &source,
+            Limb::Tithi,
+            window,
+            &tithi_edges(&elongation),
+            known,
+        )?,
         karana: spans(&source, Limb::Karana, window, &karana_edges, known)?,
         nakshatra: spans(
             &source,
@@ -516,6 +517,51 @@ pub fn limbs_with<S: Longitudes + ?Sized>(
             known,
         )?,
     })
+}
+
+/// A window's tithi spans, as [`limbs_with`] gives them, to the bit, and
+/// nothing else: what a month grid's cells read
+/// ([`crate::cell`]). The elongation's crossings come from `known` when it
+/// answers for them, and are searched for otherwise.
+pub(crate) fn tithis_with<S: Longitudes + ?Sized>(
+    tropical: &S,
+    window: Interval,
+    zodiac: Zodiac,
+    known: Option<&RangeCrossings>,
+) -> Result<Vec<Span<Tithi>>, Error> {
+    let source = Sidereal::over(tropical, zodiac);
+    let known = known.filter(|known| known.answers_for(Reach::Elongation, zodiac, window));
+    let elongation = match known {
+        Some(known) => known.limb(Limb::Karana, window),
+        None => boundaries(&source, Limb::Karana, window)?,
+    };
+    spans(
+        &source,
+        Limb::Tithi,
+        window,
+        &tithi_edges(&elongation),
+        known,
+    )
+}
+
+/// The tithis' edges among the elongation's crossings: those on a
+/// multiple of twelve degrees, a tithi being two karanas.
+fn tithi_edges(elongation: &[(f64, f64)]) -> Vec<f64> {
+    elongation
+        .iter()
+        .filter(|(_, boundary)| is_tithi_boundary(*boundary))
+        .map(|(instant, _)| *instant)
+        .collect()
+}
+
+/// Which crossings a [`RangeCrossings`] holds: every limb's and both
+/// signs', or the elongation's alone, which is all a tithi reads.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Reach {
+    /// Every limb and both bodies' signs.
+    Whole,
+    /// The elongation's crossings, the tithis' and the karanas'.
+    Elongation,
 }
 
 /// The crossings a run of days reads its limbs and its signs from,
@@ -562,6 +608,8 @@ pub fn limbs_with<S: Longitudes + ?Sized>(
 #[derive(Clone, Debug)]
 pub struct RangeCrossings {
     zodiac: Zodiac,
+    /// Which crossings were searched for.
+    reach: Reach,
     /// The windows this answers for lie inside it.
     run: Interval,
     elongation: Vec<(f64, f64)>,
@@ -641,6 +689,19 @@ impl RangeCrossings {
         zodiac: Zodiac,
         run: Interval,
     ) -> Result<RangeCrossings, Error> {
+        Self::found(tropical, zodiac, run, Reach::Whole)
+    }
+
+    /// As [`RangeCrossings::over`], searching only what `reach` names: a
+    /// crossing searched is the one the whole search finds, to the bit,
+    /// and one not searched is answered for by no window
+    /// ([`RangeCrossings::answers_for`]).
+    pub(crate) fn found<S: Longitudes + ?Sized>(
+        tropical: &S,
+        zodiac: Zodiac,
+        run: Interval,
+        reach: Reach,
+    ) -> Result<RangeCrossings, Error> {
         let source = Sidereal::over(tropical, zodiac);
         let signs = |body: Body| -> Result<Vec<f64>, Error> {
             let reach = sign_reach_days(body);
@@ -651,14 +712,16 @@ impl RangeCrossings {
             Ok(events.iter().map(|event| event.instant.get()).collect())
         };
         let elongation = boundaries(&source, Limb::Karana, run)?;
-        let nakshatra = boundaries(&source, Limb::Nakshatra, run)?;
-        let yoga = boundaries(&source, Limb::Yoga, run)?;
-        let (moon_signs, sun_signs) = (signs(Body::Moon)?, signs(Body::Sun)?);
-        let tithi: Vec<f64> = elongation
-            .iter()
-            .filter(|(_, boundary)| is_tithi_boundary(*boundary))
-            .map(|(instant, _)| *instant)
-            .collect();
+        let (nakshatra, yoga, moon_signs, sun_signs) = match reach {
+            Reach::Whole => (
+                boundaries(&source, Limb::Nakshatra, run)?,
+                boundaries(&source, Limb::Yoga, run)?,
+                signs(Body::Moon)?,
+                signs(Body::Sun)?,
+            ),
+            Reach::Elongation => Default::default(),
+        };
+        let tithi = tithi_edges(&elongation);
         let karana = instants(elongation.clone());
         let nakshatra_at = instants(nakshatra.clone());
         let yoga_at = instants(yoga.clone());
@@ -704,6 +767,7 @@ impl RangeCrossings {
         }
         Ok(RangeCrossings {
             zodiac,
+            reach,
             run,
             elongation,
             nakshatra,
@@ -762,7 +826,15 @@ impl RangeCrossings {
     /// ```
     #[must_use]
     pub fn answers(&self, zodiac: Zodiac, window: Interval) -> bool {
-        self.zodiac == zodiac
+        self.answers_for(Reach::Whole, zodiac, window)
+    }
+
+    /// Whether these crossings answer for what `reach` names over a
+    /// window: as [`RangeCrossings::answers`], and found for at least
+    /// that.
+    pub(crate) fn answers_for(&self, reach: Reach, zodiac: Zodiac, window: Interval) -> bool {
+        (self.reach == Reach::Whole || self.reach == reach)
+            && self.zodiac == zodiac
             && self.run.from.get() <= window.from.get()
             && window.to.get() <= self.run.to.get()
     }

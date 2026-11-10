@@ -6876,6 +6876,36 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a month of cells is the full days own', () {
+    final ctx = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    // October 2026 at Kathmandu (`03-design/month-cells.md`).
+    const request = CellsRequest(
+      first: DayAsked(year: 2026, month: 10, day: 1),
+      last: DayAsked(year: 2026, month: 10, day: 31),
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+    );
+    final month = ctx.almanac.cells(request);
+    expect(month.cells, hasLength(31));
+    expect(month.observances, isNull);
+    expect(month.cells.every((cell) => cell.tithi != Tithi.unknown), isTrue);
+    expect(
+      month.cells.every(
+        (cell) => cell.ends.every((end) => end.at <= cell.nextSunrise),
+      ),
+      isTrue,
+    );
+    for (var i = 1; i < month.cells.length; i++) {
+      expect(month.cells[i].sunrise, month.cells[i - 1].nextSunrise);
+    }
+    ctx.dispose();
+  });
+
   test('a measure reads into its aayadi without a sky', () {
     final ctx = teistro.context(
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],

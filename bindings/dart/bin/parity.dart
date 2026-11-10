@@ -3802,6 +3802,27 @@ void main() {
     'almanac-changes',
     '${changes.points.length} ${point.kind.key} ${point.from} ${point.to}',
   );
+  // November 2026's calendar cells (`03-design/month-cells.md`).
+  final cells =
+      zoned.almanac
+          .cells(
+            CellsRequest(
+              first: const DayAsked(year: 2026, month: 11, day: 1),
+              last: const DayAsked(year: 2026, month: 11, day: 30),
+              latitudeDeg: place.latitudeDeg,
+              longitudeDeg: place.longitudeDeg,
+              altitudeM: place.altitudeM,
+              utcOffsetSeconds: 20700,
+            ),
+          )
+          .cells;
+  int ofKind(CellKind kind) => cells.where((cell) => cell.kind == kind).length;
+  put(
+    'almanac-cells',
+    '${cells.length} ${cells.first.tithi.fullKey} ${cells.first.kind.key} '
+        '${ofKind(CellKind.kshaya)} ${ofKind(CellKind.vriddhi)} '
+        '${cells.fold<int>(0, (sum, cell) => sum + cell.ends.length)}',
+  );
   zoned.dispose();
 
   final western = teistro.context(
@@ -4106,6 +4127,7 @@ void main() {
     ('almanac.published_reasons', ctx.almanac.publishedReasons),
     ('almanac.published_from_signed', ctx.almanac.publishedFromSigned),
     ('almanac.changes', ctx.almanac.changes),
+    ('almanac.cells', ctx.almanac.cells),
     ('almanac.in_zone', ctx.almanac.inZone),
     ('time.load_zones', ctx.time.loadZones),
     ('time.zone_database', ctx.time.zoneDatabase),

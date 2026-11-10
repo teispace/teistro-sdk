@@ -243,6 +243,10 @@ name = "peak_memory"
 required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
 [[test]]
+name = "cells"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "changes"
 required-features = ["builtin-ephemeris"]
 

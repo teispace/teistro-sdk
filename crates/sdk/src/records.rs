@@ -911,6 +911,7 @@ pub fn records() -> Vec<Record> {
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
+    all.push(cells_record());
     all.push(sky_view_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
@@ -1606,6 +1607,23 @@ fn sankalpa_records() -> [Record; 2] {
             schemas: schemas!(crate::sankalpa_request::SankalpaWordsAsked => crate::SankalpaWords),
         },
     ]
+}
+
+/// `almanac.cells`: a month grid's cells (SR-84).
+fn cells_record() -> Record {
+    Record {
+        name: "almanac.cells",
+        boundary: "ts_almanac_cells",
+        title: "What a month grid prints of every date in a range: the sunrise tithi and its paksha, the lunar month, the tithis ending before the next sunrise, kshaya or vriddhi, and the festivals when asked",
+        reads: None,
+        run: |context, json| {
+            let asked = crate::CellsRequest::from_json(json)?;
+            Answered::sealed(context.almanac().cells(&asked)?)
+        },
+        compares: None,
+        brief: Brief::Whole,
+        schemas: schemas!(crate::area::CellsAsked => crate::DayCells),
+    }
 }
 
 /// The sky view at a place and an instant (`03-design/sky-view.md`).

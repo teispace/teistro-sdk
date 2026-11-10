@@ -2775,6 +2775,19 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **What a month grid prints of every date in a range**
+  /// (`03-design/month-cells.md`): each date's weekday and sunrise, the
+  /// tithi at the sunrise and its paksha, the lunar month, the tithis
+  /// ending before the next sunrise and whether one is skipped
+  /// ([CellKind.kshaya]) or repeated ([CellKind.vriddhi]), and, when
+  /// `festivals` is asked, the keys kept on it with the observances beside.
+  /// Each sunrise and tithi is the full day's, to the bit; no Moon rise or
+  /// set, period or muhurta is computed. At most 366 dates; the clock is
+  /// `utcOffsetSeconds` or a `zone`.
+  DayCells cells(CellsRequest request) => _cells(
+    _context._guarded(() => _context._inner.almanacCells(jsonEncode(request))),
+  );
+
   /// **The times a muhurta rule set leaves, ranked**
   /// (`03-design/election-search.md`): the search [days] runs with
   /// `muhurta`, asked on its own, each window ranked from 1 with the
@@ -2880,6 +2893,183 @@ final class ChangePoints {
 
   /// What computed it, and the clock it was asked on.
   final Provenance provenance;
+}
+
+/// How a cell's tithis stand against its sunrises
+/// (`03-design/month-cells.md`).
+enum CellKind {
+  /// The sunrise tithi is not the one the sunrise before held, and every
+  /// tithi ending before the next sunrise held a sunrise.
+  plain('PLAIN'),
+
+  /// A tithi began after this sunrise and ended before the next, so no
+  /// date is named by it.
+  kshaya('KSHAYA'),
+
+  /// The tithi at this sunrise held the sunrise before as well, so it
+  /// names two dates running and this is the second.
+  vriddhi('VRIDDHI'),
+
+  /// Both at once.
+  vriddhiAndKshaya('VRIDDHI_AND_KSHAYA');
+
+  const CellKind(this.key);
+
+  /// The key the answer spells it with.
+  final String key;
+}
+
+/// A tithi that ends after a cell's sunrise and at or before the next.
+final class TithiEnd {
+  const TithiEnd({required this.tithi, required this.at, required this.kshaya});
+
+  /// The tithi.
+  final Tithi tithi;
+
+  /// The instant it ends, a UTC Julian day.
+  final double at;
+
+  /// Whether it also began after the cell's sunrise: a kshaya tithi, which
+  /// names no date.
+  final bool kshaya;
+}
+
+/// What a month grid prints of one date (`03-design/month-cells.md`).
+final class DayCell {
+  const DayCell({
+    required this.date,
+    required this.vara,
+    required this.sunrise,
+    required this.nextSunrise,
+    required this.normal,
+    required this.tithi,
+    required this.paksha,
+    required this.month,
+    required this.ends,
+    required this.kind,
+    required this.festivals,
+  });
+
+  /// The civil date, in the calendar asked.
+  final CalendarDate date;
+
+  /// Its weekday, from this sunrise to the next.
+  final Vara vara;
+
+  /// Its sunrise, a UTC Julian day: the full day's, to the bit.
+  final double sunrise;
+
+  /// The next sunrise, a UTC Julian day.
+  final double nextSunrise;
+
+  /// Whether the Sun rose and set; a polar day is read under the profile's
+  /// policy.
+  final bool normal;
+
+  /// The tithi at the sunrise: the date's name.
+  final Tithi tithi;
+
+  /// That tithi's paksha.
+  final Paksha paksha;
+
+  /// The lunar month at the sunrise, with its kind.
+  final Month month;
+
+  /// Every tithi ending after the sunrise and at or before the next, in
+  /// order.
+  final List<TithiEnd> ends;
+
+  /// Whether a tithi is skipped or repeated here.
+  final CellKind kind;
+
+  /// The keys of what is kept on this date; empty unless festivals were
+  /// asked.
+  final List<String> festivals;
+}
+
+/// A range's calendar cells (`03-design/month-cells.md`).
+final class DayCells {
+  const DayCells({
+    required this.cells,
+    required this.observances,
+    required this.provenance,
+  });
+
+  /// One cell a date, in order.
+  final List<DayCell> cells;
+
+  /// The observances the cells' `festivals` name; null when none were
+  /// asked.
+  final FestivalAnswer? observances;
+
+  /// What computed it, and the clock it was asked on.
+  final Provenance provenance;
+}
+
+/// `ts_almanac_cells`'s answer: each cell a value, members as this
+/// binding's enums, and the observances when festivals were asked.
+DayCells _cells(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final value = envelope['value']! as Map<String, Object?>;
+  double jd(Object? raw) => (raw! as num).toDouble();
+  T must<T>(Object? key, T? Function(String) byKey, String kind) =>
+      byKey(key! as String) ??
+      (throw ArgumentError.value(key, kind, 'not a $kind'));
+  DayCell cell(Map<String, Object?> raw) {
+    final month = raw['month']! as Map<String, Object?>;
+    return DayCell(
+      date: _serdeDate(raw['date']! as Map<String, Object?>),
+      vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
+      sunrise: jd(raw['sunrise']),
+      nextSunrise: jd(raw['nextSunrise']),
+      normal: raw['normal']! as bool,
+      tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+      paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
+      month: Month(
+        month: _key(month['month'], Masa.byKey, Masa.unknown),
+        amanta: _key(month['amanta'], Masa.byKey, Masa.unknown),
+        purnimanta: _key(month['purnimanta'], Masa.byKey, Masa.unknown),
+        paksha: _key(month['paksha'], Paksha.byKey, Paksha.unknown),
+        convention: must(month['convention'], LunarMonth.byKey, 'LunarMonth'),
+        kind: must(month['kind'], MonthKind.byKey, 'MonthKind'),
+      ),
+      ends: List.unmodifiable(
+        (raw['ends']! as List<Object?>).cast<Map<String, Object?>>().map(
+          (end) => TithiEnd(
+            tithi: _key(end['tithi'], Tithi.byKey, Tithi.unknown),
+            at: jd(end['at']),
+            kshaya: end['kshaya']! as bool,
+          ),
+        ),
+      ),
+      kind: CellKind.values.firstWhere(
+        (kind) => kind.key == raw['kind'],
+        orElse: () => throw ArgumentError.value(raw['kind'], 'CellKind'),
+      ),
+      festivals: List.unmodifiable(
+        ((raw['festivals'] as List<Object?>?) ?? const []).cast<String>(),
+      ),
+    );
+  }
+
+  final observances = value['observances'];
+  return DayCells(
+    cells: List.unmodifiable(
+      (value['cells']! as List<Object?>).cast<Map<String, Object?>>().map(cell),
+    ),
+    observances:
+        observances == null
+            ? null
+            : _festivalAnswer(
+              jsonEncode({
+                'value': observances,
+                'provenance': envelope['provenance'],
+              }),
+            ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
 }
 
 /// One sentence of [AlmanacArea.sentences].

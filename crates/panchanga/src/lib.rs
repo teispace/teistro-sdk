@@ -42,6 +42,7 @@
 
 pub mod almanac;
 pub mod ashauch;
+pub mod cell;
 pub mod change;
 pub mod death_time;
 pub mod festival;

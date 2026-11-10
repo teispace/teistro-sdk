@@ -3623,6 +3623,37 @@ test('a birth star reads into its navatara chakra without a sky', () => {
   ctx.dispose();
 });
 
+test('a month of cells is its full days\' own', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  // October 2026 at Kathmandu (`03-design/month-cells.md`).
+  const month = ctx.almanac.cells({
+    from: gregorian(2026, 10, 1),
+    to: { year: 2026, month: 10, day: 31 },
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(month.cells.length, 31);
+  assert.equal(month.observances, null);
+  assert.ok(Object.isFrozen(month.cells[0]), 'frozen');
+  assert.ok(month.cells.every((cell) => cell.tithi.startsWith('tithi.') && cell.month.amanta.startsWith('masa.')));
+  for (let i = 1; i < month.cells.length; i++) {
+    assert.equal(month.cells[i].sunrise, month.cells[i - 1].nextSunrise);
+  }
+  const days = ctx.almanac.of({ from: gregorian(2026, 10, 1), to: gregorian(2026, 10, 1), place, utcOffsetSeconds: 20700 });
+  assert.equal(days[0].day.sunrise, month.cells[0].sunrise);
+  const kept = ctx.almanac.cells({
+    from: gregorian(2026, 10, 1),
+    to: { year: 2026, month: 10, day: 31 },
+    place,
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'NEPAL' },
+  });
+  assert.ok(kept.observances.observances.length > 0);
+  assert.ok(kept.cells.some((cell) => cell.festivals.length > 0));
+  ctx.dispose();
+});
+
 test('a measure reads into its aayadi without a sky', () => {
   const ctx = context({ testProvider: false, ephemeris: 'NONE' });
   // Muhurta Chintamani XII v. 3 with Mahidhara's gloss: Anuradha's owner,

@@ -214,6 +214,7 @@ the rise and set solver when the port was promoted.
 | [`setup-disagreements.md`](setup-disagreements.md) | where the official (committee) and the modern reckoning name another day, and the instants that say why (draft, P1-10) |
 | [`icalendar.md`](icalendar.md) | the iCalendar feed of a range's observances: the writer, the stable UID, the almanac call (built, P2-2) |
 | [`change-points.md`](change-points.md) | a range's change points: one sorted list of tagged instants read from the spans a range already finds (built, SR-07) |
+| [`month-cells.md`](month-cells.md) | a month grid's cells: the sunrise tithi and paksha, the tithis ending before the next sunrise, kshaya and vriddhi, the lunar month and, on request, the festivals, read off slim cell days (built, SR-84) |
 | [`zone-packs.md`](zone-packs.md) | the zone database from a signed pack: IANA's compiled TZif as data, the shared signature check, the per-context fallback (built, SR-09) |
 | [`day-in-sentences.md`](day-in-sentences.md) | one day's facts as short sentences from templates, every value from the answer, in `en` and `ne`; a locale without templates refused; what a polar day says (built, SR-13) |
 | [`next-occurrence.md`](next-occurrence.md) | the next day a festival rule or a kind of day (Ekadashi, Purnima, Amavasya, Sankranti) falls on after an instant, with no year asked: the kinds' rules, the 400-day limit, the growing windows (built, SR-06) |

@@ -740,6 +740,19 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         scale: TimeScale,
         steps: &mut Vec<Step>,
     ) -> Result<Obliquity, CompletionError> {
+        self.obliquity_by(jd, scale, steps).map(|(value, _)| value)
+    }
+
+    /// [`Completion::obliquity`] and which implementation answered it: an
+    /// SDK obliquity carries the IAU 2000B nutation in longitude the
+    /// corrections step adds, summed once rather than twice an instant (the
+    /// series was half of a month of calendar cells' time).
+    fn obliquity_by(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        steps: &mut Vec<Step>,
+    ) -> Result<(Obliquity, Implementation), CompletionError> {
         let implementation = self.choose(Overrides::OBLIQUITY, "obliquity")?;
         let value = if implementation == Implementation::Native {
             self.provider.obliquity(jd, scale)?
@@ -754,7 +767,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 implementation,
             },
         );
-        Ok(value)
+        Ok((value, implementation))
     }
 
     /// The provider's positions, asked as the port asks: validated, and
@@ -1155,13 +1168,20 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         for (jd_index, jd) in request.jds.iter().enumerate() {
             let tt = self.tt_at(*jd, request.scale, steps)?;
             let earth = sky::earth_at_fitted(tt);
-            let obliquity = self.obliquity(*jd, request.scale, steps)?;
+            let (obliquity, implementation) = self.obliquity_by(*jd, request.scale, steps)?;
             // Nutation in longitude, which on the ecliptic is added to the
             // longitude directly. The obliquity alone carries only the
             // nutation in obliquity, and a step that applied one and not
-            // the other would be wrong by up to seventeen arcseconds.
-            let (date1, date2) = tt.split();
-            let nutation = iau::nut00b(date1, date2);
+            // the other would be wrong by up to seventeen arcseconds. The
+            // SDK's obliquity summed the same series at the same instant
+            // and kept it, to the bit; a provider's obliquity is its own,
+            // so the series is summed here.
+            let nutation_lon_deg = if implementation == Implementation::Sdk {
+                obliquity.nutation_lon_deg
+            } else {
+                let (date1, date2) = tt.split();
+                iau::nut00b(date1, date2).dpsi.to_degrees()
+            };
             for (body_index, body) in request.bodies.iter().enumerate() {
                 let Some(cell) = columns.at(jd_index, body_index) else {
                     continue;
@@ -1178,7 +1198,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                         wanted,
                         &earth,
                         (obliquity.mean_deg, obliquity.true_deg),
-                        nutation.dpsi.to_degrees(),
+                        nutation_lon_deg,
                         native.coordinates,
                     ),
                 );

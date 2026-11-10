@@ -2519,6 +2519,51 @@ pub unsafe extern "C" fn ts_almanac_changes(
     })
 }
 
+/// What a month grid prints of every date in a range, as sealed JSON
+/// (`03-design/month-cells.md`). `request_json` is the record: `first`,
+/// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`,
+/// `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a
+/// festival request. The answer is `{cells, observances}`: each cell
+/// `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends,
+/// kind, festivals}`, `observances` only when festivals were asked.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_cells;
+/// use teistro_ffi::string::TsString;
+///
+/// let asked = c"{\"first\": {\"year\": 2026, \"month\": 11, \"day\": 1}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_cells(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_cells(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::CellsRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().cells(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// The sky at a place and an instant (`03-design/sky-view.md`), answered
 /// with `{value, provenance}` as canonical JSON.
 ///

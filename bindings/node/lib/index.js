@@ -9065,6 +9065,79 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **What a month grid prints of every date in a range**
+   * (`03-design/month-cells.md`): each date's vara and sunrise, the tithi
+   * at the sunrise and its paksha, the lunar month, the tithis ending
+   * before the next sunrise and whether one is skipped (`KSHAYA`) or
+   * repeated (`VRIDDHI`), and, when `festivals` is asked, the keys kept on
+   * it with the observances beside. Each sunrise and tithi is the full
+   * day's, to the bit; no Moon rise or set, period or muhurta is computed.
+   * At most 366 dates.
+   *
+   * @example
+   * const { cells } = sdk.almanac.cells({
+   *   from: { calendar: 'BIKRAM_SAMBAT', year: 2083, month: 1, day: 1 },
+   *   to: { year: 2083, month: 1, day: 31 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   zone: { kind: 'IANA', zone: 'Asia/Kathmandu' },
+   * });
+   * // cells[0].tithi === 'tithi.SHUKLA_...'; cells[0].kind === 'PLAIN'
+   *
+   * @param {object} request
+   * @param {object} request.from the first date, and the calendar the dates are in
+   * @param {object} [request.to] the last date, in the same calendar; `from` when left out
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} [request.utcOffsetSeconds] the clock's offset from UTC, east positive; or `request.zone`
+   * @param {object} [request.festivals] a festivals request record, to list on each cell
+   * @returns {object} `{ cells, observances, provenance }`
+   */
+  cells(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('cells: expected a request, e.g. { from, to, place, utcOffsetSeconds }');
+    }
+    const { from: given, to, place: where, utcOffsetSeconds, zone, festivals } = request;
+    const day = (at, what) => ({
+      year: finite(at?.year, `${what}.year`),
+      month: finite(at?.month, `${what}.month`),
+      day: finite(at?.day, `${what}.day`),
+    });
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      ...clockOf(utcOffsetSeconds, zone),
+    };
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
+    if (record !== undefined) asked.festivals = JSON.parse(record);
+    const { value, provenance } = JSON.parse(run(this, (inner) => inner.almanacCells(JSON.stringify(asked))));
+    const keyed = (kind, key) => `${kind}.${key}`;
+    const cells = value.cells.map((cell) => ({
+      ...cell,
+      date: dateFrom(cell.date),
+      vara: keyed('vara', cell.vara),
+      tithi: keyed('tithi', cell.tithi),
+      paksha: keyed('paksha', cell.paksha),
+      month: {
+        ...cell.month,
+        month: keyed('masa', cell.month.month),
+        amanta: keyed('masa', cell.month.amanta),
+        purnimanta: keyed('masa', cell.month.purnimanta),
+        paksha: keyed('paksha', cell.month.paksha),
+      },
+      ends: cell.ends.map((end) => ({ ...end, tithi: keyed('tithi', end.tithi) })),
+      festivals: cell.festivals ?? [],
+    }));
+    const observances =
+      value.observances == null ? null : festivalsFrom(JSON.stringify({ value: value.observances, provenance }));
+    return deepFreeze({ cells, observances, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
    * Every rule of a festival pack with what it is: `{ pack, rules }`, each
    * row `{ key, form, source, meta, unsourced }`, `meta` its kind, tradition,
    * communities and regions and `unsourced` the fields no source gives

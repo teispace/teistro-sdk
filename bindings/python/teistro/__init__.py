@@ -154,6 +154,7 @@ from ._requests import (
     ChangeKind as ChangeKind,
     AnniversariesRequest as AnniversariesRequest,
     ChangesRequest as ChangesRequest,
+    CellsRequest as CellsRequest,
     MahadvadashiKind as MahadvadashiKind,
     MuhurtaRequest as MuhurtaRequest,
     AngleMethod as AngleMethod,
@@ -1144,6 +1145,9 @@ __all__ = [
     "DateSpan",
     "ChangePoint",
     "ChangePoints",
+    "TithiEnd",
+    "DayCell",
+    "DayCells",
     "NextOccurrence",
     "DaySentence",
     "DaySentences",
@@ -4752,6 +4756,28 @@ class AlmanacArea(_Area):
             window=_interval(value["window"]),
             provenance=decode_provenance(envelope["provenance"]),
         )
+
+    def cells(self, request: CellsRequest) -> "DayCells":
+        """**What a month grid prints of every date in a range**
+        (`03-design/month-cells.md`): each date's weekday and sunrise, the
+        tithi at the sunrise and its paksha, the lunar month, the tithis
+        ending before the next sunrise and whether one is skipped
+        (`KSHAYA`) or repeated (`VRIDDHI`), and, when `festivals` is asked,
+        the keys kept on it with the observances beside. Each sunrise and
+        tithi is the full day's, to the bit; no Moon rise or set, period or
+        muhurta is computed. At most 366 dates; the clock is
+        `utcOffsetSeconds` or a `zone`.
+
+        >>> # month = ctx.almanac.cells({"first": {"year": 2083, "month": 1, "day": 1},
+        >>> #     "last": {"year": 2083, "month": 1, "day": 31}, "calendar": "BIKRAM_SAMBAT",
+        >>> #     "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        >>> #     "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}})
+        >>> # month.cells[0].tithi, month.cells[0].kind
+        """
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_cells(json.dumps(_written(request)))
+        )
+        return _cells_answer(answered)
 
     def published_reasons(
         self,
@@ -11091,6 +11117,79 @@ class ChangePoint:
 
     to_key: str
     """The catalogue key of the member that began."""
+
+
+@dataclass(frozen=True)
+class TithiEnd:
+    """A tithi that ends after a cell's sunrise and at or before the next
+    (`03-design/month-cells.md`)."""
+
+    tithi: Tithi
+    """The tithi."""
+
+    at: float
+    """The instant it ends, a UTC Julian day."""
+
+    kshaya: bool
+    """Whether it also began after the cell's sunrise: a kshaya tithi,
+    which names no date."""
+
+
+@dataclass(frozen=True)
+class DayCell:
+    """What a month grid prints of one date (`03-design/month-cells.md`)."""
+
+    date: CalendarDate
+    """The civil date, in the calendar asked."""
+
+    vara: Vara
+    """Its weekday, from this sunrise to the next."""
+
+    sunrise: float
+    """Its sunrise, a UTC Julian day: the full day's, to the bit."""
+
+    next_sunrise: float
+    """The next sunrise, a UTC Julian day."""
+
+    normal: bool
+    """Whether the Sun rose and set; a polar day is read under the
+    profile's policy."""
+
+    tithi: Tithi
+    """The tithi at the sunrise: the date's name."""
+
+    paksha: Paksha
+    """That tithi's paksha."""
+
+    month: "Month"
+    """The lunar month at the sunrise, with its kind."""
+
+    ends: Tuple[TithiEnd, ...]
+    """Every tithi ending after the sunrise and at or before the next, in
+    order."""
+
+    kind: str
+    """Whether a tithi is skipped or repeated here: `PLAIN`, `KSHAYA`,
+    `VRIDDHI` or `VRIDDHI_AND_KSHAYA`."""
+
+    festivals: Tuple[str, ...]
+    """The keys of what is kept on this date; empty unless festivals were
+    asked."""
+
+
+@dataclass(frozen=True)
+class DayCells:
+    """A range's calendar cells (`03-design/month-cells.md`)."""
+
+    cells: Tuple[DayCell, ...]
+    """One cell a date, in order."""
+
+    observances: Optional["FestivalAnswer"]
+    """The observances the cells' `festivals` name; None when none were
+    asked."""
+
+    provenance: Provenance
+    """What computed it, and the clock it was asked on."""
 
 
 @dataclass(frozen=True)
@@ -18693,6 +18792,53 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
         jovian=tuple(jovian(j) for j in raw["jovian"]),
         lupta=None if lupta is None else _member(Samvatsara, lupta),
         rulers=tuple(ruler(r) for r in raw["rulers"]),
+    )
+
+
+def _lunar_month(raw: Mapping[str, Any]) -> "Month":
+    """A day's lunar month as the Rust types serialise it, members as this
+    binding's enums."""
+    return Month(
+        month=_member(Masa, raw["month"]),
+        amanta=_member(Masa, raw["amanta"]),
+        purnimanta=_member(Masa, raw["purnimanta"]),
+        paksha=_member(Paksha, raw["paksha"]),
+        convention=_member(LunarMonth, raw["convention"]),
+        kind=_member(MonthKind, raw["kind"]),
+    )
+
+
+def _cells_answer(text: str) -> DayCells:
+    """`ts_almanac_cells`'s answer: each cell as a frozen record, members as
+    this binding's enums, and the observances when festivals were asked."""
+    envelope = json.loads(text)
+    value = envelope["value"]
+    cells = tuple(
+        DayCell(
+            date=_serde_date(raw["date"]),
+            vara=_member(Vara, raw["vara"]),
+            sunrise=raw["sunrise"],
+            next_sunrise=raw["nextSunrise"],
+            normal=raw["normal"],
+            tithi=_member(Tithi, raw["tithi"]),
+            paksha=_member(Paksha, raw["paksha"]),
+            month=_lunar_month(raw["month"]),
+            ends=tuple(
+                TithiEnd(tithi=_member(Tithi, end["tithi"]), at=end["at"], kshaya=end["kshaya"])
+                for end in raw["ends"]
+            ),
+            kind=raw["kind"],
+            festivals=tuple(raw.get("festivals", ())),
+        )
+        for raw in value["cells"]
+    )
+    observances = value.get("observances")
+    return DayCells(
+        cells=cells,
+        observances=None
+        if observances is None
+        else _festivals_answer(json.dumps({"value": observances, "provenance": envelope["provenance"]})),
+        provenance=decode_provenance(envelope["provenance"]),
     )
 
 

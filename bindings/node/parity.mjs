@@ -2424,6 +2424,18 @@ geo.dispose();
   });
   const [point] = changes.points;
   put('almanac-changes', `${changes.points.length} ${point.kind} ${point.from} ${point.to}`);
+  // November 2026's calendar cells (`03-design/month-cells.md`).
+  const { cells } = sky.almanac.cells({
+    from: { year: 2026, month: 11, day: 1 },
+    to: { year: 2026, month: 11, day: 30 },
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  const counted = (kind) => cells.filter((cell) => cell.kind === kind).length;
+  put(
+    'almanac-cells',
+    `${cells.length} ${cells[0].tithi} ${cells[0].kind} ${counted('KSHAYA')} ${counted('VRIDDHI')} ${cells.reduce((sum, cell) => sum + cell.ends.length, 0)}`,
+  );
   sky.dispose();
 }
 {
@@ -2639,6 +2651,7 @@ for (const [path, member] of [
   ['almanac.published_reasons', shape.almanac.publishedReasons],
   ['almanac.published_from_signed', shape.almanac.publishedFromSigned],
   ['almanac.changes', shape.almanac.changes],
+  ['almanac.cells', shape.almanac.cells],
   ['almanac.in_zone', shape.almanac.inZone],
   ['time.load_zones', shape.time.loadZones],
   ['time.zone_database', shape.time.zoneDatabase],

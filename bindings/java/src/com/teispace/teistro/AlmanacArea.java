@@ -380,6 +380,24 @@ public final class AlmanacArea {
                 com.teispace.teistro.record.Provenance.of(Reads.field(envelope, "provenance")));
     }
 
+    /**
+     * <b>What a month grid prints of every date in a range</b>
+     * ({@code 03-design/month-cells.md}): each date's weekday and sunrise, the
+     * tithi at the sunrise and its paksha, the lunar month, the tithis ending
+     * before the next sunrise and whether one is skipped ({@code KSHAYA}) or
+     * repeated ({@code VRIDDHI}), and, when {@code festivals} is asked, the
+     * keys kept on it with the observances beside. Each sunrise and tithi is
+     * the full day's, to the bit; no Moon rise or set, period or muhurta is
+     * computed. At most 366 dates.
+     *
+     * @param request the range, its clock and the festivals wanted
+     * @return the cells, the observances when asked and the provenance
+     */
+    public DayCells cells(com.teispace.teistro.request.CellsRequest request) {
+        String json = Json.write(request);
+        return AlmanacReads.cellsAnswer(context.locked((lib, raw) -> Calls.almanacCells(lib, raw, json)));
+    }
+
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals, long sections) {

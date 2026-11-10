@@ -20,12 +20,12 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rectification::{Rules, Window};
 use teistro::verify::ClaimsRequest;
 use teistro::{
-    AnniversariesRequest, AshauchQuery, AyanaReckoning, CalendarDate, ChartRequest, Context,
-    DayClock, DeathTimeQuery, DisagreementRequest, Envelope, Ephemeris, FestivalCalendarRequest,
-    FestivalRequest, FirstYearQuery, HouseholdQuery, MuhurtaRequest, MundaneRequest, NextRequest,
-    PakshiRequest, PartnerMatching, PartnerSynastry, PublishedReasonsRequest, RashifalBatch,
-    RectificationRequest, ResearchAnswer, ResearchRequest, SankalpaRequest, SentencesRequest,
-    UtcOffset, ZoneSource, ZoneSpec, content_hash,
+    AnniversariesRequest, AshauchQuery, AyanaReckoning, CalendarDate, CellsRequest, ChartRequest,
+    Context, DayClock, DeathTimeQuery, DisagreementRequest, Envelope, Ephemeris,
+    FestivalCalendarRequest, FestivalRequest, FirstYearQuery, HouseholdQuery, MuhurtaRequest,
+    MundaneRequest, NextRequest, PakshiRequest, PartnerMatching, PartnerSynastry,
+    PublishedReasonsRequest, RashifalBatch, RectificationRequest, ResearchAnswer, ResearchRequest,
+    SankalpaRequest, SentencesRequest, UtcOffset, ZoneSource, ZoneSpec, content_hash,
 };
 
 fn context() -> Context {
@@ -894,6 +894,24 @@ fn a_festival_calendar_on_a_zone_reads_the_days_on_their_own_offset() {
         &feed_record(2026),
         "festivalCalendar",
     );
+}
+
+fn cells_record(year: i32) -> String {
+    format!(
+        r#"{{"first": {}, "last": {}, {PLACE}, CLOCK, "festivals": {{"rules": "NEPAL"}}}}"#,
+        day(year, 10, 1),
+        day(year, 10, 31)
+    )
+}
+
+#[test]
+fn cells_on_a_zone_read_each_date_on_its_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = CellsRequest::from_json(&clocked(&cells_record(year), seconds));
+        sdk.almanac().cells(&asked.unwrap()).unwrap()
+    });
+    refuses_both(CellsRequest::from_json, &cells_record(2026), "cells");
 }
 
 fn disagreement_record(year: i32) -> String {

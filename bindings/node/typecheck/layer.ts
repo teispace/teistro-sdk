@@ -153,6 +153,9 @@ import type {
   NavataraRow,
   SpecialStar,
   Aayadi,
+  CellKind,
+  DayCell,
+  DayCells,
   AayadiReckoned,
   Tara,
   DashaPeriod,
@@ -2978,3 +2981,19 @@ function theSentences(ctx: Context): string {
 }
 void theSentences;
 void maps;
+
+// Cells: the range typed, the kind one of four, the members keys.
+function theCells(ctx: Context): string {
+  const month: DayCells = ctx.almanac.cells({
+    from: { year: 2026, month: 11, day: 1 },
+    to: { year: 2026, month: 11, day: 30 },
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+  });
+  const cell: DayCell | undefined = month.cells[0];
+  const kind: CellKind | undefined = cell?.kind;
+  // @ts-expect-error a cell's kind is one of four
+  const wrong: CellKind = 'SKIPPED';
+  return `${kind} ${cell?.tithi} ${cell?.ends[0]?.at} ${month.observances?.observances.length} ${wrong}`;
+}
+void theCells;
