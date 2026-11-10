@@ -73,7 +73,7 @@ fn a_day_says_its_own_answer_in_english_and_nepali() {
         .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("ne-Deva-NP")))
         .unwrap()
         .value;
-    assert!(ne.draft, "a Nepali template waits on its reviewer (Q42)");
+    assert!(!ne.draft, "the Nepali templates ship final (Q42)");
     assert_eq!(ne.sentences.len(), en.sentences.len());
     assert_eq!(ne.sentences[0].text, "यो दिन बुधबार हो।");
     let sun = ne
@@ -93,11 +93,11 @@ fn a_day_says_its_own_answer_in_english_and_nepali() {
     );
 }
 
-/// Hindi and Sanskrit say the day in their own drafts (SR-38), every
-/// sentence in each and each answer marked a draft until Q42's reviewers
-/// sign it; `sa-Latn` is `sa-Deva`'s text in the Latin script.
+/// Hindi and Sanskrit say the day in their own text (SR-38), every
+/// sentence in each and each answer final (Q42); `sa-Latn` is `sa-Deva`'s
+/// text in the Latin script.
 #[test]
-fn hindi_and_sanskrit_say_the_day_as_drafts() {
+fn hindi_and_sanskrit_say_the_day() {
     let sdk = context("{}");
     let english = sdk
         .almanac()
@@ -114,7 +114,7 @@ fn hindi_and_sanskrit_say_the_day_as_drafts() {
             .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some(locale)))
             .unwrap()
             .value;
-        assert!(said.draft, "{locale} waits on its reviewer (Q42)");
+        assert!(!said.draft, "{locale} ships final (Q42)");
         assert_eq!(said.locale, locale);
         assert_eq!(said.sentences.len(), english.sentences.len(), "{locale}");
         assert_eq!(said.sentences[0].text, vara, "{locale}");
@@ -128,13 +128,12 @@ fn hindi_and_sanskrit_say_the_day_as_drafts() {
 #[test]
 fn a_locale_without_templates_is_refused_and_says_why() {
     let sdk = context("{}");
-    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n");
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../intl/i18n");
     let tree = teistro::Tree::load(&root).unwrap();
     let mut marathi = tree.locales["hi-Deva-IN"].clone();
     marathi.tag = String::from("mr-Deva-IN");
     marathi.meta.locale = String::from("mr-Deva-IN");
     marathi.namespaces.remove("sdk.day");
-    marathi.meta.draft.retain(|name| name != "sdk.day");
     sdk.intl()
         .load_pack(&teistro::pack::build_bundle(&marathi).unwrap())
         .unwrap();

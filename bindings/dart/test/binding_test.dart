@@ -556,7 +556,7 @@ void main() {
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.
-  test('a day is said in sentences, Hindi as a draft', () {
+  test('a day is said in sentences, Hindi final', () {
     final ctx = teistro.context(
       profile: 'nepali-committee',
       ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],

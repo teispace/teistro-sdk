@@ -1,0 +1,9 @@
+{
+  "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada 1 {{{$nakshatra}nakṣatrasya prathamapāde nāmākṣaraṃ {$syllable}}} 2 {{{$nakshatra}nakṣatrasya dvitīyapāde nāmākṣaraṃ {$syllable}}} 3 {{{$nakshatra}nakṣatrasya tṛtīyapāde nāmākṣaraṃ {$syllable}}} 4 {{{$nakshatra}nakṣatrasya caturthapāde nāmākṣaraṃ {$syllable}}} * {{{$nakshatra}nakṣatrasya {$pada}tamapāde nāmākṣaraṃ {$syllable}}}",
+  "by": ".input {$by :string} .match $by CELL {{pādasya svākṣaram}} PAIRED {{yugmarūpeṇa paṭhitam akṣaram}} SUBSTITUTE {{pratinidhyakṣaram}} * {{pādākṣaram}}",
+  "syllables": ".input {$count :integer} .match $count 1 {{{$count} akṣaram}} 2 {{{$count} akṣare}} * {{{$count} akṣarāṇi}}",
+  "counted": ".input {$counted :string} .match $counted SOUNDED {{likhitānusāraṃ gaṇitam, antyākārasahitam}} SILENT {{uccāraṇānusāraṃ gaṇitam, antyākāraṃ vinā}} * {{svarānusāraṃ gaṇitam}}",
+  "clause": ".input {$clause :string} .match $clause SONANT_INITIAL {{ghoṣavadādi}} SEMIVOWEL_WITHIN {{prathamavarṇāt param antaḥsthayuktam}} VISARGA_FINAL {{visargāntam}} TWO_OR_FOUR_SYLLABLES {{dvyakṣaraṃ caturakṣaraṃ vā}} EVEN_FOR_A_BOY {{puṃso yugmākṣaram}} ODD_FOR_A_GIRL {{striyā ayugmākṣaram}} LONG_A_FOR_A_GIRL {{striyā ākārāntam}} NO_FINAL_L_OR_R {{na lāntaṃ na rāntam}} * {{anyo niyamaḥ}}",
+  "holds": ".input {$holds :string} .match $holds yes {{siddham}} * {{asiddham}}",
+  "source": ".input {$source :string} .match $source PARASKARA {{pāraskaragṛhyasūtram}} ASHVALAYANA {{āśvalāyanagṛhyasūtram}} APASTAMBA_HIRANYAKESHIN {{dharmasindhūddhṛtau āpastambahiraṇyakeśinau}} * {{gṛhyasūtram}}"
+}
