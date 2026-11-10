@@ -1,0 +1,32 @@
+---
+title: ts_almanac_sankalpa_words
+description: "A sankalpa said in words by a tradition's template (`03-design/sankalpa.md` §5, SR-29), answered with `{value, provenance}` as canonical JSON: `value` is `{tradition, locale, params, text}`, `params` the slots the template was given (each as `ts_intl_render` takes it, to say it again in another locale) and `text` the words; the provenance is the time's."
+---
+
+A sankalpa said in words by a tradition's template (`03-design/sankalpa.md` §5, SR-29), answered with `{value, provenance}` as canonical JSON: `value` is `{tradition, locale, params, text}`, `params` the slots the template was given (each as `ts_intl_render` takes it, to say it again in another locale) and `text` the words; the provenance is the time's.
+
+`request_json` is `ts_almanac_sankalpa`'s request with `"slots"` (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris` `{father, grandfather, greatGrandfather}`), and optionally `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande` when left out) and `"locale"` (the context's when left out). A key it does not read, an instant, place or offset out of range, or a slot left blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not loaded or a tradition no loaded pack carries is `UNSUPPORTED` on `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as `ts_almanac_sankalpa`.
+
+```c
+ts_status ts_almanac_sankalpa_words(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

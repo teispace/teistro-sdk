@@ -3318,6 +3318,35 @@
     }
   },
   {
+    "record": "almanac.sankalpaWords",
+    "request": {
+      "altitudeM": 1.5,
+      "at": 1.5,
+      "ayana": "TROPICAL",
+      "latitudeDeg": 1.5,
+      "locale": "sa-Deva",
+      "longitudeDeg": 1.5,
+      "slots": {
+        "gotra": "कौण्डिन्य",
+        "kshetra": "पाशुपत",
+        "performer": "हरिनाथशर्मा",
+        "pitris": {
+          "father": "x",
+          "grandfather": "x",
+          "greatGrandfather": "x"
+        },
+        "purpose": "वाग्मतीस्नानम्",
+        "river": "वाग्मती"
+      },
+      "tradition": "x",
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
+    }
+  },
+  {
     "record": "almanac.sentences",
     "request": {
       "altitudeM": 1.5,
@@ -4998,6 +5027,27 @@
       "hour12": true,
       "locale": "ne-Deva-NP",
       "style": "LONG"
+    }
+  },
+  {
+    "record": "matching.band",
+    "request": {
+      "bands": {
+        "name": "x",
+        "rows": [
+          {
+            "band": "FIT",
+            "bhakoot": "SATKUTA",
+            "clears": "ABOVE",
+            "from": 1.5
+          }
+        ],
+        "source": "x"
+      },
+      "dushkuta": true,
+      "locale": "ne-Deva-NP",
+      "shipped": "NEPALI_ALMANAC",
+      "total": 1.5
     }
   },
   {

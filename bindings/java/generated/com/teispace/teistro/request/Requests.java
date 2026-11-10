@@ -31,6 +31,7 @@ public final class Requests {
             Map.entry("almanac.people", PeopleRequest::of),
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
+            Map.entry("almanac.sankalpaWords", SankalpaWordsRequest::of),
             Map.entry("almanac.sentences", SentencesRequest::of),
             Map.entry("almanac.skyView", SkyViewRequest::of),
             Map.entry("calendar.add", AddAsked::of),
@@ -48,6 +49,7 @@ public final class Requests {
             Map.entry("intl.lexicon", LexiconRequest::of),
             Map.entry("intl.lookup", LookupRequest::of),
             Map.entry("intl.time", TimeTextRequest::of),
+            Map.entry("matching.band", BandRequest::of),
             Map.entry("matching.naam", NaamRequest::of),
             Map.entry("naming.check", NamingCheckRequest::of),
             Map.entry("naming.of", NamingOfRequest::of),
@@ -126,6 +128,9 @@ public final class Requests {
     /** {@code almanac.sankalpa}, whose request is {@link SankalpaRequest}. */
     public static final RecordOf<SankalpaRequest> ALMANAC_SANKALPA = new RecordOf<>("almanac.sankalpa");
 
+    /** {@code almanac.sankalpaWords}, whose request is {@link SankalpaWordsRequest}. */
+    public static final RecordOf<SankalpaWordsRequest> ALMANAC_SANKALPA_WORDS = new RecordOf<>("almanac.sankalpaWords");
+
     /** {@code almanac.sentences}, whose request is {@link SentencesRequest}. */
     public static final RecordOf<SentencesRequest> ALMANAC_SENTENCES = new RecordOf<>("almanac.sentences");
 
@@ -176,6 +181,9 @@ public final class Requests {
 
     /** {@code intl.time}, whose request is {@link TimeTextRequest}. */
     public static final RecordOf<TimeTextRequest> INTL_TIME = new RecordOf<>("intl.time");
+
+    /** {@code matching.band}, whose request is {@link BandRequest}. */
+    public static final RecordOf<BandRequest> MATCHING_BAND = new RecordOf<>("matching.band");
 
     /** {@code matching.naam}, whose request is {@link NaamRequest}. */
     public static final RecordOf<NaamRequest> MATCHING_NAAM = new RecordOf<>("matching.naam");

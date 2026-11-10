@@ -1,0 +1,32 @@
+---
+title: ts_matching_band
+description: "A guna total graded into bands and said in words (`03-design/matching.md`, \"Grading a total into bands\", SR-39), answered as canonical JSON `{total, dushkuta, band, bands, row, locale, words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`, `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave it, `words` the band in words and `text` the total with it."
+---
+
+A guna total graded into bands and said in words (`03-design/matching.md`, "Grading a total into bands", SR-39), answered as canonical JSON `{total, dushkuta, band, bands, row, locale, words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`, `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave it, `words` the band in words and `text` the total with it.
+
+`request_json` is `{"total"}`, with `"dushkuta"` (whether the signs stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source, rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"` (the context's when left out). A key it does not read, a total outside 0 to 36, an unknown table, both tables or a table that leaves a total ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is `UNSUPPORTED` on `band.locale`.
+
+```c
+ts_status ts_matching_band(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naam.rs`.

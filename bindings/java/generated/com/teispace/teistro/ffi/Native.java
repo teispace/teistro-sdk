@@ -4118,6 +4118,7 @@ public final class Native {
         "ts_almanac_disagreements",
         "ts_almanac_published_reasons",
         "ts_almanac_sankalpa",
+        "ts_almanac_sankalpa_words",
         "ts_almanac_ashauch",
         "ts_almanac_household",
         "ts_almanac_ashauch_kin",
@@ -4133,6 +4134,7 @@ public final class Native {
         "ts_almanac_changes",
         "ts_almanac_sky_view",
         "ts_naam_milan",
+        "ts_matching_band",
         "ts_chart_relocated",
         "ts_chart_astrocartography",
         "ts_chart_mundane",
@@ -4787,6 +4789,27 @@ public final class Native {
     public final MethodHandle ts_almanac_sankalpa;
 
     /**
+     * A sankalpa said in words by a tradition's template
+     * (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+     * provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+     * text}`, `params` the slots the template was given (each as
+     * `ts_intl_render` takes it, to say it again in another locale) and
+     * `text` the words; the provenance is the time's.
+     *
+     * `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+     * (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+     * `{father, grandfather, greatGrandfather}`), and optionally
+     * `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+     * when left out) and `"locale"` (the context's when left out). A key it
+     * does not read, an instant, place or offset out of range, or a slot left
+     * blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+     * loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+     * `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+     * `ts_almanac_sankalpa`.
+     */
+    public final MethodHandle ts_almanac_sankalpa_words;
+
+    /**
      * The period of impurity after a birth or a death at a place
      * (`03-design/ashauch.md`), answered with `{value, provenance}` as
      * canonical JSON.
@@ -5086,6 +5109,26 @@ public final class Native {
      * named under `naam.bride` or `naam.groom`.
      */
     public final MethodHandle ts_naam_milan;
+
+    /**
+     * A guna total graded into bands and said in words
+     * (`03-design/matching.md`, "Grading a total into bands", SR-39),
+     * answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+     * words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+     * `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+     * it, `words` the band in words and `text` the total with it.
+     *
+     * `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+     * stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+     * table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+     * `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+     * rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+     * (the context's when left out). A key it does not read, a total outside
+     * 0 to 36, an unknown table, both tables or a table that leaves a total
+     * ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+     * `UNSUPPORTED` on `band.locale`.
+     */
+    public final MethodHandle ts_matching_band;
 
     /**
      * **A chart recast at other places** (`03-design/astrocartography.md`):
@@ -5730,6 +5773,7 @@ public final class Native {
         ts_almanac_disagreements = linker.downcallHandle(symbols.find("ts_almanac_disagreements").orElseThrow(() -> missing("ts_almanac_disagreements")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_published_reasons = linker.downcallHandle(symbols.find("ts_almanac_published_reasons").orElseThrow(() -> missing("ts_almanac_published_reasons")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sankalpa = linker.downcallHandle(symbols.find("ts_almanac_sankalpa").orElseThrow(() -> missing("ts_almanac_sankalpa")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_sankalpa_words = linker.downcallHandle(symbols.find("ts_almanac_sankalpa_words").orElseThrow(() -> missing("ts_almanac_sankalpa_words")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_ashauch = linker.downcallHandle(symbols.find("ts_almanac_ashauch").orElseThrow(() -> missing("ts_almanac_ashauch")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_household = linker.downcallHandle(symbols.find("ts_almanac_household").orElseThrow(() -> missing("ts_almanac_household")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_ashauch_kin = linker.downcallHandle(symbols.find("ts_almanac_ashauch_kin").orElseThrow(() -> missing("ts_almanac_ashauch_kin")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
@@ -5745,6 +5789,7 @@ public final class Native {
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sky_view = linker.downcallHandle(symbols.find("ts_almanac_sky_view").orElseThrow(() -> missing("ts_almanac_sky_view")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_matching_band = linker.downcallHandle(symbols.find("ts_matching_band").orElseThrow(() -> missing("ts_matching_band")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_relocated = linker.downcallHandle(symbols.find("ts_chart_relocated").orElseThrow(() -> missing("ts_chart_relocated")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_astrocartography = linker.downcallHandle(symbols.find("ts_chart_astrocartography").orElseThrow(() -> missing("ts_chart_astrocartography")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_mundane = linker.downcallHandle(symbols.find("ts_chart_mundane").orElseThrow(() -> missing("ts_chart_mundane")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

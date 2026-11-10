@@ -2461,6 +2461,34 @@ void main() {
     );
   });
 
+  test('almanac.sankalpaWords: SankalpaWordsRequest', () {
+    _holds(
+      'almanac.sankalpaWords',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: SankalpaWordsRequest(
+        altitudeM: 1.5,
+        at: 1.5,
+        ayana: AyanaReckoning.tropical,
+        latitudeDeg: 1.5,
+        locale: 'sa-Deva',
+        longitudeDeg: 1.5,
+        slots: SankalpaFor(
+          gotra: 'कौण्डिन्य',
+          kshetra: 'पाशुपत',
+          performer: 'हरिनाथशर्मा',
+          pitris: Pitris(father: 'x', grandfather: 'x', greatGrandfather: 'x'),
+          purpose: 'वाग्मतीस्नानम्',
+          river: 'वाग्मती',
+        ),
+        tradition: 'x',
+        utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
+      ).toJson(),
+    );
+  });
+
   test('almanac.sentences: SentencesRequest', () {
     _holds(
       'almanac.sentences',
@@ -3418,6 +3446,33 @@ void main() {
         hour12: true,
         locale: 'ne-Deva-NP',
         style: TimeStyle.long,
+      ).toJson(),
+    );
+  });
+
+  test('matching.band: BandRequest', () {
+    _holds(
+      'matching.band',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: BandRequest(
+        bands: GunaBands(
+          name: 'x',
+          rows: [
+            BandRow(
+              band: GunaBand.fit,
+              bhakoot: BhakootStanding.satkuta,
+              clears: Clears.above,
+              from: 1.5,
+            ),
+          ],
+          source: 'x',
+        ),
+        dushkuta: true,
+        locale: 'ne-Deva-NP',
+        shipped: 'NEPALI_ALMANAC',
+        total: 1.5,
       ).toJson(),
     );
   });

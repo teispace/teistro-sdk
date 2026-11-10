@@ -39,6 +39,7 @@ __all__ = [
     "PeopleRequest",
     "PublishedReasonsRequest",
     "SankalpaRequest",
+    "SankalpaWordsRequest",
     "SentencesRequest",
     "SkyViewRequest",
     "AddAsked",
@@ -56,6 +57,7 @@ __all__ = [
     "LexiconRequest",
     "LookupRequest",
     "TimeTextRequest",
+    "BandRequest",
     "NaamRequest",
     "NamingCheckRequest",
     "NamingOfRequest",
@@ -102,6 +104,7 @@ __all__ = [
     "PeoplePerson",
     "ReckonedPlace",
     "AyanaReckoning",
+    "SankalpaFor",
     "Projection",
     "AntisciaRequest",
     "ConsiderationRules",
@@ -147,6 +150,7 @@ __all__ = [
     "WordsStyle",
     "ClockTime",
     "TimeStyle",
+    "GunaBands",
     "NaamRules",
     "Birth",
     "NamingRules",
@@ -226,6 +230,7 @@ __all__ = [
     "PakshiClock",
     "PakshiRelations",
     "PakshiSubLengths",
+    "Pitris",
     "OrbModel",
     "OrbModelLeo",
     "OrbModelMoieties",
@@ -293,6 +298,7 @@ __all__ = [
     "EraNumber",
     "WordsRounding",
     "WordsAmountValue",
+    "BandRow",
     "NameRules",
     "FinalA",
     "NasalInitial",
@@ -564,6 +570,9 @@ __all__ = [
     "VarsheshaTied",
     "MoonBenefic",
     "TambiraMover",
+    "GunaBand",
+    "BhakootStanding",
+    "Clears",
     "AbhijitPada",
     "LatinName",
     "BirthReduction",
@@ -1315,6 +1324,40 @@ class SankalpaRequest(TypedDict, total=False):
     """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
+class SankalpaWordsRequest(TypedDict, total=False):
+    """The words' request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The instant of the rite, a UTC Julian day."""
+
+    ayana: AyanaReckoning
+    """How the ayana is reckoned: `SIDEREAL` when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    locale: Optional[str]
+    """The locale the words are in; the context's when left out."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    slots: Required[SankalpaFor]
+    """The performer, gotra, purpose, and optionally the river, the holy ground and the three generations of pitris."""
+
+    tradition: Optional[str]
+    """The tradition, its template's message key: `sdk.sankalpa.himavatkhande` when left out, or a key a loaded pack carries."""
+
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
+
+
 class SentencesRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -1705,6 +1748,25 @@ class TimeTextRequest(TypedDict, total=False):
 
     style: TimeStyle
     """How much of it."""
+
+
+class BandRequest(TypedDict, total=False):
+    """A total to grade, the table to grade it by and the locale to say it in."""
+
+    bands: Optional[GunaBands]
+    """A consumer's own table; or `shipped`, not both."""
+
+    dushkuta: bool
+    """Whether the two Moons' signs stand 2/12, 6/8 or 9/5 (*dushkuta*), lifted or not; `false` when left out."""
+
+    locale: Optional[str]
+    """The locale the words are in; the context's when left out."""
+
+    shipped: Optional[str]
+    """A shipped table by name (`MUHURTA_MARTANDA`, `NEPALI_ALMANAC` or `ARYAVARTA`); or `bands`, not both. `MUHURTA_MARTANDA` when both are left out."""
+
+    total: Required[float]
+    """The total, out of 36."""
 
 
 class NaamRequest(TypedDict, total=False):
@@ -2484,6 +2546,28 @@ AyanaReckoning: TypeAlias = Literal['SIDEREAL', 'TROPICAL']
 """
 
 
+class SankalpaFor(TypedDict, total=False):
+    """Who resolves, where, and to what: the slots a tradition's template leaves to the caller, written as they are to be spoken."""
+
+    gotra: Required[str]
+    """The gotra's stem (`कौण्डिन्य`), which the template compounds."""
+
+    kshetra: Optional[str]
+    """The holy ground, as a stem (`पाशुपत`); left out, the template says none."""
+
+    performer: Required[str]
+    """The performer's name with its title, in the nominative, as spoken before *aham* (`हरिनाथशर्मा`)."""
+
+    pitris: Optional[Pitris]
+    """The three generations, for a rite for the forebears (a shraddha, a tarpana); left out, the template names none."""
+
+    purpose: Required[str]
+    """The rite resolved on, in the accusative (`गणेशपूजनम्`), as spoken before *kariṣye*."""
+
+    river: Optional[str]
+    """The river the place is near, as a stem (`वाग्मती`); left out, the template says none."""
+
+
 Projection: TypeAlias = Literal['IN_MUNDO', 'ZODIACAL']
 """How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
 
@@ -3170,6 +3254,19 @@ TimeStyle: TypeAlias = Literal['NUMERIC', 'LONG']
 `NUMERIC`: Hours and minutes.
 `LONG`: Hours, minutes and seconds.
 """
+
+
+class GunaBands(TypedDict, total=False):
+    """A table of bands: rows in order, the last that applies giving the band. The first row must take every total (`from` 0, `AT_LEAST`, `ANY`), so no total is left without one."""
+
+    name: Required[str]
+    """The table's name, which the grade carries."""
+
+    rows: Required[Sequence[BandRow]]
+    """The rows, in order: the last that applies gives the band."""
+
+    source: Required[str]
+    """Where its rows come from."""
 
 
 class NaamRules(TypedDict, total=False):
@@ -4090,6 +4187,19 @@ PakshiSubLengths: TypeAlias = Literal['AGASTYA', 'PULIPPANI']
 """
 
 
+class Pitris(TypedDict, total=False):
+    """The three generations of pitris a rite for the forebears names, the father first, each as the stem the template compounds (*Rāma*, not *Rāmaśarmā*)."""
+
+    father: Required[str]
+    """The father (*pitṛ*)."""
+
+    grandfather: Required[str]
+    """The father's father (*pitāmaha*)."""
+
+    greatGrandfather: Required[str]
+    """The father's father's father (*prapitāmaha*)."""
+
+
 OrbModel: TypeAlias = "Union[OrbModelLeo, OrbModelMoieties, OrbModelByAspect]"
 """How wide an aspect may be before it no longer holds (C240)."""
 
@@ -4941,6 +5051,23 @@ class _WordsAmountValueMinor(TypedDict, total=False):
 class _WordsAmountValueDecimal(TypedDict, total=False):
     decimal: Required[str]
     """ASCII digits with at most one `.`, no sign and no exponent, rounded to the minor unit by the amount's `rounding`."""
+
+
+# One row of a table: the band a total takes when it clears `from` and the signs stand as `bhakoot` says.
+BandRow = TypedDict(
+    "BandRow",
+    {
+        # The band.
+        "band": "Required[GunaBand]",
+        # How the signs must stand; `ANY` when left out.
+        "bhakoot": "BhakootStanding",
+        # How the total clears it; `AT_LEAST` when left out.
+        "clears": "Clears",
+        # The threshold, out of 36.
+        "from": "Required[float]",
+    },
+    total=False,
+)
 
 
 class NameRules(TypedDict, total=False):
@@ -8179,6 +8306,34 @@ TambiraMover: TypeAlias = Literal['KARYESHA', 'EITHER_LORD']
 """
 
 
+GunaBand: TypeAlias = Literal['UNFIT', 'FIT', 'MIDDLING', 'GOOD', 'EXCELLENT']
+"""A band a total falls in. The words for each are the `sdk.matching.band` message's, in every locale that carries it.
+
+`UNFIT`: Not fit for marriage: below the floor (*aśubha*, *nindya*, "does not join").
+`FIT`: Above the floor, with no band named above it: *Muhurta Martanda*'s *śubha*.
+`MIDDLING`: *Madhyama*: above the floor, up to 20.
+`GOOD`: *Uttama* (*śreṣṭha* in one almanac): above 20, up to 30.
+`EXCELLENT`: *Ati-uttama* (*uttama* in one almanac): above 30.
+"""
+
+
+BhakootStanding: TypeAlias = Literal['ANY', 'SATKUTA', 'DUSHKUTA']
+"""How the two signs must stand for a row to apply: the almanacs' *satkuta* and *dushkuta*, read from the signs alone (2/12, 6/8 and 9/5 are the dushkuta), whether or not a lift restores the Bhakoot.
+
+`ANY`: Either way.
+`SATKUTA`: The signs stand well: no 2/12, 6/8 or 9/5.
+`DUSHKUTA`: The signs stand 2/12, 6/8 or 9/5.
+"""
+
+
+Clears: TypeAlias = Literal['AT_LEAST', 'ABOVE']
+"""How a total clears a row's threshold.
+
+`AT_LEAST`: The total is the threshold or more ("18 or more").
+`ABOVE`: The total is more than the threshold ("above 18").
+"""
+
+
 AbhijitPada: TypeAlias = Literal['REFUSE', 'UTTARA_ASHADHA', 'SHRAVANA']
 """Where a name in Abhijit's row stands when a koota needs one of the 108 padas (C292).
 
@@ -10306,7 +10461,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10377,6 +10532,9 @@ class RecordCalls:
     def record(self, name: Literal['almanac.sankalpa'], request: SankalpaRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
+    def record(self, name: Literal['almanac.sankalpaWords'], request: SankalpaWordsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
     def record(self, name: Literal['almanac.sentences'], request: SentencesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
@@ -10426,6 +10584,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['intl.time'], request: TimeTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['matching.band'], request: BandRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['matching.naam'], request: NaamRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
