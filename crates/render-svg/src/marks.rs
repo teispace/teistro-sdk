@@ -302,6 +302,34 @@ mod tests {
     }
 
     #[test]
+    fn a_mark_at_the_centre_or_a_ring_of_no_radius_stays_where_it_is() {
+        let centred = Mark {
+            at: CENTRE,
+            ..mark(0.0)
+        };
+        assert_eq!(towards(CENTRE, 0.35), CENTRE, "no direction to move along");
+        assert_eq!(spread(&[centred], RADII, ROOM), [CENTRE]);
+        let flat = Radii {
+            words: 0.0,
+            outer: 0.0,
+        };
+        assert_eq!(
+            spread(&[mark(10.0), mark(12.0)], flat, ROOM),
+            [CENTRE, CENTRE],
+            "a ring of no radius has no room to spread round"
+        );
+    }
+
+    #[test]
+    fn marks_close_all_the_way_round_are_one_cluster() {
+        // Twelve marks a sign apart, each needing more than a sign of ring:
+        // every gap is close, so the run goes round the whole ring.
+        let laid: Vec<f64> = (0..12).map(|step| f64::from(step) * 30.0).collect();
+        assert_eq!(clusters(&laid, 31.0), [(0..12).collect::<Vec<_>>()]);
+        assert_eq!(clusters(&laid, 29.0).len(), 12, "a sign apart is clear");
+    }
+
+    #[test]
     fn every_spread_coordinate_sits_on_the_grain() {
         let marks = [mark(101.0), mark(103.5), mark(104.0)];
         for at in spread(&marks, RADII, ROOM) {
