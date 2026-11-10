@@ -7029,6 +7029,7 @@ final class ThemeContent {
     this.markNodes,
     this.degrees,
     this.minutes,
+    this.degreeSeparator,
   });
 
   /// The locale form a body is written in.
@@ -7053,8 +7054,13 @@ final class ThemeContent {
   /// the locale's digits.
   final bool? degrees;
 
-  /// Whether a degree is followed by its minute, two digits and a prime.
+  /// Whether a degree is followed by its minute, two digits and a prime,
+  /// the degree then in two digits too.
   final bool? minutes;
+
+  /// What is written between a body's name and its degree: a space by
+  /// default, `''` for the joined form `र२६°३२'`.
+  final String? degreeSeparator;
 
   // Only what is named: an absent field is the extended theme's.
   Map<String, Object?> _json() => <String, Object?>{
@@ -7066,6 +7072,7 @@ final class ThemeContent {
     'mark_nodes': markNodes,
     'degrees': degrees,
     'minutes': minutes,
+    'degree_separator': degreeSeparator,
   }..removeWhere((_, value) => value == null);
 }
 

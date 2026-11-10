@@ -320,6 +320,7 @@ fn a_patrika_app_writes_the_mark_first_the_nodes_marked_and_the_minute_in_its_di
         mark_nodes: true,
         degrees: true,
         minutes: true,
+        degree_separator: String::new(),
         ..Content::default()
     };
     let names = sdk.chart().labels(&document, 0, &plain).unwrap();
@@ -332,9 +333,9 @@ fn a_patrika_app_writes_the_mark_first_the_nodes_marked_and_the_minute_in_its_di
         let minute = ((within - degree) * 60.0).floor();
         let mark = if position.is_retrograde() { "*" } else { "" };
         let expected = format!(
-            "{mark}{} {}°{}'",
+            "{mark}{}{}°{}'",
             names.bodies[&key],
-            devanagari(&format!("{degree}")),
+            devanagari(&format!("{degree:02}")),
             devanagari(&format!("{minute:02}"))
         );
         assert_eq!(written.bodies[&key], expected, "{:?}", position.graha);

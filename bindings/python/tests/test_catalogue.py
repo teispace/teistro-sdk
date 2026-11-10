@@ -166,6 +166,8 @@ class TheCatalogue(unittest.TestCase):
             # A record call's `Detail`, `FULL` and `BRIEF`.
             + 2
             # `Calendar`'s `ASSAM_SOLAR` and `Era`'s `BHASKARABDA`.
+            + 2
+            # `ChartLayout`'s `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`.
             + 2,
         )
 

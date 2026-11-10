@@ -193,7 +193,12 @@ impl<'c> Composer<'c> {
                             // up to 60 is still the degree's last.
                             (((within - degree) * 60.0).floor() as u32).min(59),
                         );
-                        words.push(' ');
+                        words.push_str(&self.content.degree_separator);
+                        // With its minute a degree is two digits, as
+                        // `DD°MM'` is written.
+                        if self.content.minutes && degree < 10 {
+                            words.push_str(&self.number(0));
+                        }
                         words.push_str(&self.number(degree));
                         words.push('°');
                         if self.content.minutes {

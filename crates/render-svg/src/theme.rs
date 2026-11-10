@@ -104,9 +104,13 @@ pub struct Content {
     /// Whether a graha's degree in its sign follows its name, on a drawing
     /// of the founded chart, in the locale's digits.
     pub degrees: bool,
-    /// Whether a degree is followed by its minute, two digits and a prime:
-    /// `र २६°३२'`. Off by default, the degree alone.
+    /// Whether a degree is followed by its minute, two digits and a prime,
+    /// the degree then written in two digits too: `र २६°३२'`, `श ०९°००'`.
+    /// Off by default, the degree alone.
     pub minutes: bool,
+    /// What is written between a body's name and its degree: a space by
+    /// default, nothing for the joined form `र२६°३२'`.
+    pub degree_separator: String,
 }
 
 /// Where a mark is written beside a body's name.
@@ -282,6 +286,7 @@ impl Default for Content {
             mark_nodes: false,
             degrees: false,
             minutes: false,
+            degree_separator: String::from(" "),
         }
     }
 }
