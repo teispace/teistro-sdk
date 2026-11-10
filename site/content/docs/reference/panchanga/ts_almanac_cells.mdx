@@ -5,11 +5,52 @@ description: "What a month grid prints of every date in a range, as sealed JSON 
 
 What a month grid prints of every date in a range, as sealed JSON (`03-design/month-cells.md`). `request_json` is the record: `first`, optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds` or `zone`, and optional `festivals`, a festival request. The answer is `{cells, observances}`: each cell `{date, vara, sunrise, nextSunrise, normal, tithi, paksha, month, ends, kind, festivals}`, `observances` only when festivals were asked.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.cells
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.cells
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.cells
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().cells
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().cells
+```
+
+</Tab>
+<Tab value="C">
+
 ```c
 ts_status ts_almanac_cells(const ts_context * context, const char * request_json, ts_string * out_json);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `almanac.cells` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 
