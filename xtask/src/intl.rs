@@ -5,7 +5,7 @@
 //! checked-in surface can never drift from the sources.
 
 use std::collections::BTreeSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use teistro_core::catalogue::{Kind, key_of};
 use teistro_core::key::KeyId;
@@ -174,6 +174,14 @@ fn spellout_rules(xml: &str) -> Option<&str> {
 
 fn outputs(root: &Path) -> Vec<Output> {
     let tree = Tree::load(&root.join(SOURCES)).expect("the i18n/ sources load");
+    let overrides = overrides_of(&root.join(SOURCES), DERIVED.1)
+        .unwrap_or_else(|e| panic!("the derived locale's overrides load: {e}"));
+    let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides, Casing::Names)
+        .unwrap_or_else(|e| panic!("{} derives from {}: {e}", DERIVED.1, DERIVED.0));
+    // Validated with the derived locale as this pass writes it, so a source
+    // change that leaves the derived files stale (a calendar added to
+    // sa-Deva) does not stop the regeneration that brings them up to date.
+    let tree = with_derived(root, &derived.files);
     let report = validate::validate(&tree);
     if report.passed() {
         eprintln!("{}", report.markdown().lines().next().unwrap_or_default());
@@ -182,10 +190,6 @@ fn outputs(root: &Path) -> Vec<Output> {
         panic!("the i18n/ sources do not validate");
     }
     let model = Model::of_tree(&tree).expect("every message parses");
-    let overrides = overrides_of(&root.join(SOURCES), DERIVED.1)
-        .unwrap_or_else(|e| panic!("the derived locale's overrides load: {e}"));
-    let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides, Casing::Names)
-        .unwrap_or_else(|e| panic!("{} derives from {}: {e}", DERIVED.1, DERIVED.0));
     if !derived.stale.is_empty() {
         println!(
             "FAIL  {SOURCES}/{}/_overrides.json corrects entities the sources no longer have: {}",
@@ -209,6 +213,38 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(JAVA_MESSAGES, java(&model, JAVA_MESSAGES_PACKAGE)),
     ]);
     outputs
+}
+
+/// The sources as they stand once `files`, the derived locale this pass
+/// writes, replace what is checked in: a copy in a scratch directory,
+/// loaded and removed.
+fn with_derived(root: &Path, files: &[(PathBuf, String)]) -> Tree {
+    fn copy(from: &Path, to: &Path) {
+        std::fs::create_dir_all(to).unwrap_or_else(|e| panic!("{}: {e}", to.display()));
+        let entries = std::fs::read_dir(from).unwrap_or_else(|e| panic!("{}: {e}", from.display()));
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let target = to.join(entry.file_name());
+            if path.is_dir() {
+                copy(&path, &target);
+            } else {
+                std::fs::copy(&path, &target).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+            }
+        }
+    }
+    let scratch = std::env::temp_dir().join(format!("teistro-gen-intl-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&scratch);
+    copy(&root.join(SOURCES), &scratch);
+    for (path, text) in files {
+        let target = scratch.join(path);
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent).unwrap_or_else(|e| panic!("{}: {e}", parent.display()));
+        }
+        std::fs::write(&target, text).unwrap_or_else(|e| panic!("{}: {e}", target.display()));
+    }
+    let tree = Tree::load(&scratch).expect("the sources with the derived locale load");
+    let _ = std::fs::remove_dir_all(&scratch);
+    tree
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
