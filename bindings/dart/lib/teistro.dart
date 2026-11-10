@@ -17711,7 +17711,17 @@ enum FestivalPack {
   /// Puja counted from its Saptami, Bengali New Year on the Bengal solar
   /// calendar), and the days the notifications print rather than reckon,
   /// those set by the moon marked so (`03-design/west-bengal-holidays.md`).
-  indiaWestBengal('INDIA_WEST_BENGAL');
+  indiaWestBengal('INDIA_WEST_BENGAL'),
+
+  /// Kerala's public holidays: the General Administration (Co-ordination)
+  /// Department's yearly notification by rule, each day the central list
+  /// also holds by [indiaCentral]'s rule, Kerala's own days by the
+  /// Malayalam month (Vishu on the first sunrise after the Mesha
+  /// sankranti, Onam and Sree Narayana Guru's birthday on their stars in
+  /// Chingam, his Samadhi on Kanni 5), and the days the notifications
+  /// print rather than reckon, those set by the moon marked so
+  /// (`03-design/kerala-holidays.md`).
+  indiaKerala('INDIA_KERALA');
 
   const FestivalPack(this.key);
 

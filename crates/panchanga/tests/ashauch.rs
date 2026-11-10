@@ -69,6 +69,7 @@ fn day(k: usize) -> FestivalDay {
         nakshatra: Vec::new(),
         moonrise: Moonrise::Unsearched,
         sun_entry: SunEntry::Unsearched,
+        sunrise_entry: SunEntry::Unsearched,
         moon_arcs: MoonArcs::Unsearched,
     }
 }

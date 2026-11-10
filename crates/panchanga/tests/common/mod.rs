@@ -80,6 +80,7 @@ pub(crate) fn days_over(
                 nakshatra: spans(nakshatras, window),
                 moonrise: Moonrise::Unsearched,
                 sun_entry: SunEntry::Unsearched,
+                sunrise_entry: SunEntry::Unsearched,
                 moon_arcs: MoonArcs::Unsearched,
             }
         })

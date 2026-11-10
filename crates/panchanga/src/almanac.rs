@@ -1997,32 +1997,99 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             self.settings().provider.overrides,
             self.delta_t,
         );
-        let at_midnight = |fixed: FixedDay| -> Result<Nakshatra, Error> {
-            let midnight = local_midnight(self.clock, fixed)?;
-            let (frame, zodiac) = self.at_instant(&completion, midnight)?;
-            let mut longitudes = completion.longitudes(frame);
-            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-                longitudes = longitudes.with_observer(*place);
-            }
-            limb::sun_nakshatra_at(&longitudes, midnight, zodiac)
-        };
         let mut read: Option<(FixedDay, Nakshatra)> = None;
         for day in days.iter_mut() {
             let fixed = self.calendar.fixed_of(&day.date)?;
             let opening = match read {
                 Some((at, nakshatra)) if at == fixed => nakshatra,
-                _ => at_midnight(fixed)?,
+                _ => self.sun_nakshatra(&completion, local_midnight(self.clock, fixed)?, place)?,
             };
             let next = fixed.plus_days(1);
-            let closing = at_midnight(next)?;
+            let closing =
+                self.sun_nakshatra(&completion, local_midnight(self.clock, next)?, place)?;
             read = Some((next, closing));
-            day.sun_entry = if closing == opening {
-                SunEntry::Stayed
-            } else {
-                SunEntry::Entered(closing)
-            };
+            day.sun_entry = entry(opening, closing);
         }
         Ok(())
+    }
+
+    /// Fills each day's entry of the sidereal Sun into a nakshatra from its
+    /// sunrise to the next ([`FestivalDay::sunrise_entry`]), for the rules
+    /// kept on the sunrise day of one
+    /// ([`crate::festival::DayReckoning::Sunrise`]): the Sun's nakshatra at
+    /// each sunrise, in the same sky and zodiac as
+    /// [`Almanac::sun_entries`]. A day's next sunrise is the following
+    /// day's sunrise, so a range of `n` days reads the Sun `n + 1` times at
+    /// most.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let kochi = Place::new(Latitude::literal(9.9312), Longitude::literal(76.2673), Altitude::literal(0.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 30, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// use teistro_panchanga::festival::SunEntry;
+    ///
+    /// let mut days = almanac.festival_days(&date(4, 12), &date(4, 16), &kochi)?.value;
+    /// almanac.sunrise_entries(&mut days, &kochi)?;
+    /// assert!(days.iter().all(|day| day.sunrise_entry != SunEntry::Unsearched));
+    /// assert!(days.iter().all(|day| day.sun_entry == SunEntry::Unsearched), "not asked for");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A reading the provider refuses.
+    pub fn sunrise_entries(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let mut read: Option<(f64, Nakshatra)> = None;
+        for day in days.iter_mut() {
+            let opening = match read {
+                Some((at, nakshatra)) if at.to_bits() == day.sunrise.get().to_bits() => nakshatra,
+                _ => self.sun_nakshatra(&completion, day.sunrise, place)?,
+            };
+            let closing = self.sun_nakshatra(&completion, day.next_sunrise, place)?;
+            read = Some((day.next_sunrise.get(), closing));
+            day.sunrise_entry = entry(opening, closing);
+        }
+        Ok(())
+    }
+
+    /// The sidereal Sun's nakshatra at `at`, in the sky and zodiac a day's
+    /// sankranti is found in.
+    fn sun_nakshatra(
+        &self,
+        completion: &Completion<'_, P>,
+        at: JulianDay<Utc>,
+        place: &Place,
+    ) -> Result<Nakshatra, Error> {
+        let (frame, zodiac) = self.at_instant(completion, at)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        limb::sun_nakshatra_at(&longitudes, at, zodiac)
     }
 
     /// Fills each day's homa ahuti ([`Panchanga::homa_ahuti`]): the Sun's
@@ -4204,6 +4271,15 @@ async fn events_with<'a>(
 }
 
 /// The first of a day's events, under a reading that names one.
+/// A day's entry, from the Sun's nakshatra at its opening and closing.
+fn entry(opening: Nakshatra, closing: Nakshatra) -> SunEntry {
+    if closing == opening {
+        SunEntry::Stayed
+    } else {
+        SunEntry::Entered(closing)
+    }
+}
+
 fn first_only(mut events: Vec<JulianDay<Utc>>) -> Vec<JulianDay<Utc>> {
     events.truncate(1);
     events

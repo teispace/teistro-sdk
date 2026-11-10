@@ -64,6 +64,29 @@ none. The mark itself stays built for a third party's pack, and
 `crates/intl/tests/draft.rs` now pins every shipped list empty and tests
 the mark on a tree it marks itself.
 
+**Kerala's public holidays (SR-03, the third state set), and two dated forms.**
+**Numbers:** none for any existing pack: a new pack, and two new forms that a rule written before them does not
+read; a `sunEnters` rule left without `reckoning` is the civil day, with its spelling and hash unchanged.
+- `sunEnters` takes `reckoning: SUNRISE` (`DayReckoning`), which keeps the Sun's entry on the day from one sunrise to
+  the next; the SDK reads the Sun at each sunrise only when a rule asks (`Almanac::sunrise_entries`,
+  `FestivalDay::sunrise_entry`). Vishu is the entry into Ashwini by sunrise, one day on (C1301, closed).
+- A fifth dated form, `nakshatraInMonth`, keeps the day a nakshatra holds in a calendar's month: the first day whose
+  sunrise it holds, or the day it runs in when it holds none; `twice` names which of two occurrences in one month
+  keeps the day, and `days` counts up to 15 civil days either way from it. A range is widened by a month on each
+  side to find the other occurrence. Serialised, schema'd and passed through every binding's request types.
+- The pack `INDIA_KERALA` (`FestivalPack::IndiaKerala`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_kerala`) holds the General Administration (Co-ordination) Department's lists of 2021 to 2026:
+  Onam's four days and Sree Narayana Guru Jayanthi on Thiruvonam and Chatayam in Chingam, the later of two (C1323),
+  his Samadhi on Kanni 5, Vishu, Karkidaka Vavu, Mahanavami and Vijayadasami at sunrise (C1321), Sreekrishna
+  Jayanthi as *Dharmasindhu*'s Janmashtami (C1320), Avani Avittom as its Taittiriya upakarma, the central list's
+  Sivarathri, Deepavali and fixed days, and the state's dated days. The four days set by the moon ship as printed,
+  marked `MOON_SIGHTING`; Ayya Vaikunda Swami's birthday ships as printed (`03-design/kerala-holidays.md`, C1304,
+  closed).
+- Names in en-Latn, ne-Deva-NP and hi-Deva-IN for the fourteen new keys.
+- `festival-measured.md` §12 holds it at Thiruvananthapuram: 100 of the 102 rows beside the nine every-year dates
+  meet the print. The two that part are named, none fitted: Karkidaka Vavu 2024 (C1322) and Sreekrishna Jayanthi
+  2025 (C1320).
+
 **Names for the ashauch, rite and first-year answers (SR-31).**
 **Numbers:** none.
 - A new namespace, `sdk.rite`, names every member those answers carry, each message a `.match` on the

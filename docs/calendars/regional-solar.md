@@ -226,19 +226,16 @@ part when the sankranti falls between sunrise and the three-fifths mark
 (08:41 and 09:33). A test runs the solar engine under
 `SUNRISE_TO_SUNRISE` at Thiruvananthapuram over the regional tables' sky
 and finds the gazette's six days one day after it
-(`crates/ephemeris-builtin/tests/vishu.rs`). No festival pack ships it:
-the rule language keeps a solar day as a calendar's date or as the civil
-day, midnight to midnight, of the Sun's entry into a nakshatra
-(`sunEnters`, the form Mithila's Jur Sital uses, C1230), and Vishu is the
-sunrise day, which no form says; a `sunEnters` one day on gives 4 of the
-6 (C1301).
+(`crates/ephemeris-builtin/tests/vishu.rs`). The festival rule language
+keeps it as the Sun's entry into Ashwini by the sunrise day, one day on
+(`sunEnters` with `reckoning: SUNRISE`), and `INDIA_KERALA` ships it
+(C1301, `03-design/kerala-holidays.md`).
 
-**A Kerala holiday pack is not built.** The notifications' dated pairs are
-what this page reads; their holiday rows (Onam, Sree Narayana Guru
-Jayanthi and Samadhi, Mannam Jayanthi, Karkidaka Vavu and the rest) are
-not transcribed, and the commonest of them keep a nakshatra or a day in
-a solar month (Thiruvonam in Chingam, Chatayam in Chingam, Kanni 5),
-which the festival rule language has no form for (C1304).
+**The Kerala holiday pack is built** (`03-design/kerala-holidays.md`,
+SR-03): the notifications' holiday rows are transcribed, and the days
+kept by a star in a solar month (Thiruvonam and Chatayam in Chingam) are
+a dated rule of their own, `nakshatraInMonth`; Kanni 5 is a `civilDate`
+on `MALAYALAM_SOLAR` (C1304).
 
 ## The two Tamil schools
 

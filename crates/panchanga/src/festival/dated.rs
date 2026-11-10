@@ -406,10 +406,11 @@ pub enum Dated {
         /// Which of them; never 0, at most 5 either way.
         nth: i8,
     },
-    /// The civil day, local midnight to the next, in which the sidereal
-    /// Sun enters `nakshatra` in the almanac's own sky, or the day `days`
-    /// civil days after it: भूमिरज on the Sun's entry into Ardra, and the
-    /// भूमि पूजा three days on (C696).
+    /// The day in which the sidereal Sun enters `nakshatra` in the
+    /// almanac's own sky, or the day `days` civil days after it: भूमिरज on
+    /// the civil day of the Sun's entry into Ardra, and the भूमि पूजा three
+    /// days on (C696); Vishu on the day after the sunrise day of its entry
+    /// into Ashwini, the first of Mesha (C1301).
     SunEnters {
         /// The nakshatra entered.
         nakshatra: Nakshatra,
@@ -417,6 +418,33 @@ pub enum Dated {
         /// [`Dated::MOST_DAYS`].
         #[serde(default)]
         days: u8,
+        /// Which day holds the entry: the civil day, midnight to midnight,
+        /// when left out, or the day from sunrise to the next.
+        #[serde(default, skip_serializing_if = "DayReckoning::is_civil")]
+        reckoning: DayReckoning,
+    },
+    /// The day `nakshatra` holds in a month of `calendar`, a solar
+    /// calendar's for the days Kerala keeps by the star of a Malayalam
+    /// month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's
+    /// birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of
+    /// the star is kept on the first day whose sunrise it holds, or, when
+    /// it holds no sunrise, on the day it runs in; a month holding two
+    /// occurrences keeps the one `twice` names. `days` counts civil days
+    /// from that day, as the Onam days around Thiruvonam are kept.
+    NakshatraInMonth {
+        /// The calendar the month is in.
+        calendar: Calendar,
+        /// The month, 1 for the first.
+        month: u8,
+        /// The nakshatra.
+        nakshatra: Nakshatra,
+        /// Which of two occurrences in one month keeps the day.
+        twice: super::Which,
+        /// How many civil days after the star's day, before it when
+        /// negative, 0 for that day; at most [`Dated::MOST_DAYS`] either
+        /// way.
+        #[serde(default)]
+        days: i8,
     },
     /// The day `days` days after Easter Sunday by `computus`, before it
     /// when negative: Good Friday at -2, Pentecost at 49. A year the
@@ -431,14 +459,57 @@ pub enum Dated {
     },
 }
 
+/// Which day holds an instant, for a rule kept on the day of the Sun's
+/// entry ([`Dated::SunEnters`]).
+///
+/// ```
+/// use teistro_panchanga::festival::DayReckoning;
+///
+/// assert_eq!(DayReckoning::default(), DayReckoning::Civil);
+/// assert_eq!(serde_json::to_string(&DayReckoning::Sunrise)?, r#""SUNRISE""#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum DayReckoning {
+    /// The civil day, local midnight to the next: the day a patro prints
+    /// the entry on (C696).
+    #[default]
+    Civil,
+    /// The day from its sunrise to the next: the day a Kerala almanac
+    /// reckons the sankranti in, whose next day is Vishu (C1301).
+    Sunrise,
+}
+
+impl DayReckoning {
+    /// Whether this is the civil day, which a rule leaves out.
+    #[must_use]
+    pub const fn is_civil(&self) -> bool {
+        matches!(self, DayReckoning::Civil)
+    }
+}
+
 impl Dated {
     /// The key each kind of date is written under, in the order of the
     /// variants: a [`DatedRule`] gives exactly one.
-    pub const KEYS: [&'static str; 4] = ["civilDate", "civilWeekday", "sunEnters", "easter"];
+    pub const KEYS: [&'static str; 5] = [
+        "civilDate",
+        "civilWeekday",
+        "sunEnters",
+        "nakshatraInMonth",
+        "easter",
+    ];
 
-    /// The most days a rule counts from the Sun's entry: a fortnight,
-    /// which is about the Sun's stay in a nakshatra, past which the next
-    /// entry names the day better than a count.
+    /// The most days a solar month runs, which a rule kept on a star in
+    /// one reads around its day to find the month's other occurrence.
+    pub const MONTH_DAYS: u8 = 32;
+
+    /// The most days a rule counts from the Sun's entry, or either way
+    /// from a star's day in a month: a fortnight, which is about the
+    /// Sun's stay in a nakshatra, past which the next entry names the day
+    /// better than a count.
     pub const MOST_DAYS: u8 = 15;
 
     /// The most days a rule counts from Easter, either way: ten weeks,
@@ -457,7 +528,7 @@ impl Dated {
             | Dated::CivilWeekday {
                 calendar, month, ..
             } => Some((calendar, month)),
-            Dated::SunEnters { .. } | Dated::Easter { .. } => None,
+            Dated::SunEnters { .. } | Dated::NakshatraInMonth { .. } | Dated::Easter { .. } => None,
         }
     }
 
@@ -489,35 +560,102 @@ impl Dated {
                 };
                 vara == weekday && nth == i16::from(wanted)
             }
-            Dated::SunEnters { .. } | Dated::Easter { .. } => false,
+            Dated::SunEnters { .. } | Dated::NakshatraInMonth { .. } | Dated::Easter { .. } => {
+                false
+            }
         }
     }
 }
 
 impl DatedRule {
-    /// Whether the rule is kept on the Sun's entry into a nakshatra, which
-    /// the days are read for only when a rule asks.
+    /// Whether the rule is kept on the civil day of the Sun's entry into a
+    /// nakshatra, which the days are read for only when a rule asks
+    /// ([`FestivalDay::sun_entry`]).
     #[must_use]
     pub fn reads_sun_entry(&self) -> bool {
-        matches!(self.on, Dated::SunEnters { .. })
+        matches!(
+            self.on,
+            Dated::SunEnters {
+                reckoning: DayReckoning::Civil,
+                ..
+            }
+        )
+    }
+
+    /// Whether the rule is kept on the sunrise day of the Sun's entry into
+    /// a nakshatra ([`FestivalDay::sunrise_entry`]), read only when a rule
+    /// asks.
+    #[must_use]
+    pub fn reads_sunrise_entry(&self) -> bool {
+        matches!(
+            self.on,
+            Dated::SunEnters {
+                reckoning: DayReckoning::Sunrise,
+                ..
+            }
+        )
     }
 
     /// How many civil days the rule counts from the day it is kept by,
-    /// which the days before a range are founded to reach.
+    /// which the days before a range are founded to reach; a star in a
+    /// month adds the month's length, over which its other occurrence is
+    /// sought.
     #[must_use]
     pub fn reach(&self) -> u8 {
         match self.on {
             Dated::SunEnters { days, .. } => days,
+            // The month's other occurrence may lie a month either side.
+            Dated::NakshatraInMonth { days, .. } => {
+                Dated::MONTH_DAYS.saturating_add(days.unsigned_abs())
+            }
             // Easter is reckoned from the year alone, so its count needs
             // no day before the range.
             Dated::CivilDate { .. } | Dated::CivilWeekday { .. } | Dated::Easter { .. } => 0,
         }
     }
 
+    /// Refuses a count of days past its form's limit.
+    fn check_count(&self) -> Result<(), Error> {
+        match self.on {
+            Dated::SunEnters { days, .. } if days > Dated::MOST_DAYS => {
+                Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days from the Sun's entry, not {days}; past a fortnight, name the next entry",
+                    self.key,
+                    Dated::MOST_DAYS
+                ))
+                .with_field("sunEnters.days"))
+            }
+            Dated::Easter { days, .. }
+                if days.unsigned_abs() > Dated::EASTER_DAYS.unsigned_abs() =>
+            {
+                Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days either way from Easter, not {days}",
+                    self.key,
+                    Dated::EASTER_DAYS
+                ))
+                .with_field("easter.days"))
+            }
+            Dated::NakshatraInMonth { days, .. } if days.unsigned_abs() > Dated::MOST_DAYS => {
+                Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days either way from a star's day, not {days}",
+                    self.key,
+                    Dated::MOST_DAYS
+                ))
+                .with_field("nakshatraInMonth.days"))
+            }
+            Dated::CivilDate { .. }
+            | Dated::CivilWeekday { .. }
+            | Dated::SunEnters { .. }
+            | Dated::NakshatraInMonth { .. }
+            | Dated::Easter { .. } => Ok(()),
+        }
+    }
+
     /// Refuses a rule that could not be kept: an empty key, a calendar
     /// the SDK does not ship, month 0, a day of 0 or past 32 either way,
     /// an nth of 0 or past 5 either way, a count from the Sun's entry
-    /// past [`Dated::MOST_DAYS`], or one from Easter past
+    /// past [`Dated::MOST_DAYS`], one from a star's day in a month past
+    /// it either way, or one from Easter past
     /// [`Dated::EASTER_DAYS`] either way.
     ///
     /// # Errors
@@ -527,6 +665,7 @@ impl DatedRule {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg("a festival rule needs a key").with_field("key"));
         }
+        self.check_count()?;
         let (form, calendar, month) = match self.on {
             Dated::CivilDate {
                 calendar, month, ..
@@ -534,24 +673,9 @@ impl DatedRule {
             Dated::CivilWeekday {
                 calendar, month, ..
             } => ("civilWeekday", calendar, month),
-            Dated::SunEnters { days, .. } if days > Dated::MOST_DAYS => {
-                return Err(Error::invalid_arg(format!(
-                    "{}: a rule counts at most {} days from the Sun's entry, not {days}; past a fortnight, name the next entry",
-                    self.key,
-                    Dated::MOST_DAYS
-                ))
-                .with_field("sunEnters.days"));
-            }
-            Dated::Easter { days, .. }
-                if days.unsigned_abs() > Dated::EASTER_DAYS.unsigned_abs() =>
-            {
-                return Err(Error::invalid_arg(format!(
-                    "{}: a rule counts at most {} days either way from Easter, not {days}",
-                    self.key,
-                    Dated::EASTER_DAYS
-                ))
-                .with_field("easter.days"));
-            }
+            Dated::NakshatraInMonth {
+                calendar, month, ..
+            } => ("nakshatraInMonth", calendar, month),
             Dated::SunEnters { .. } | Dated::Easter { .. } => return Ok(()),
         };
         if shipped(calendar).is_none() {
@@ -775,6 +899,7 @@ impl DatedRule {
             on: Dated::SunEnters {
                 nakshatra: Nakshatra::Ardra,
                 days,
+                reckoning: DayReckoning::Civil,
             },
             meta: super::FestivalMeta::default(),
         };
@@ -832,11 +957,26 @@ pub fn dated(
                 Dated::SunEnters {
                     nakshatra,
                     days: count,
-                } => entered(days, at, nakshatra, count)?.map(|from| from.date.clone()),
+                    reckoning,
+                } => {
+                    entered(days, at, (nakshatra, reckoning), count)?.map(|from| from.date.clone())
+                }
                 Dated::Easter {
                     computus,
                     days: count,
                 } => from_easter(fixed, computus, count)?,
+                Dated::NakshatraInMonth {
+                    calendar,
+                    month,
+                    nakshatra,
+                    twice,
+                    days: count,
+                } => match at.checked_add_signed(-isize::from(count)) {
+                    Some(from) => {
+                        starred(days, from, (system(calendar)?, month), nakshatra, twice)?
+                    }
+                    None => None,
+                },
                 Dated::CivilDate {
                     calendar: Calendar::TibetanPhugpa,
                     month,
@@ -871,6 +1011,83 @@ pub fn dated(
     Ok(answer)
 }
 
+/// Whether `nakshatra` holds `day`'s sunrise.
+fn at_sunrise(day: &FestivalDay, nakshatra: Nakshatra) -> bool {
+    crate::span::at(&day.nakshatra, day.sunrise).is_some_and(|span| span.member == nakshatra)
+}
+
+/// Whether `days[at]` keeps an occurrence of `nakshatra`: the first day
+/// whose sunrise it holds, or, when it holds no sunrise, the day it runs
+/// in. A day whose neighbour the decision needs and the days do not hold
+/// keeps none: the caller founds days beside the range.
+fn keeps_star(days: &[FestivalDay], at: usize, nakshatra: Nakshatra) -> bool {
+    let Some(day) = days.get(at) else {
+        return false;
+    };
+    if at_sunrise(day, nakshatra) {
+        return at
+            .checked_sub(1)
+            .and_then(|before| days.get(before))
+            .is_some_and(|before| !at_sunrise(before, nakshatra));
+    }
+    day.nakshatra.iter().any(|span| span.member == nakshatra)
+        && days
+            .get(at + 1)
+            .is_some_and(|after| !at_sunrise(after, nakshatra))
+}
+
+/// The day of `calendar`'s `month` that `days[at]` is, when it keeps
+/// `nakshatra` there and is the occurrence `twice` names among the
+/// month's.
+///
+/// # Errors
+///
+/// A day the calendar cannot convert.
+fn starred(
+    days: &[FestivalDay],
+    at: usize,
+    (calendar, month): (&dyn CalendarSystem, u8),
+    nakshatra: Nakshatra,
+    twice: super::Which,
+) -> Result<Option<CalendarDate>, Error> {
+    let date_at = |index: usize| -> Result<Option<CalendarDate>, Error> {
+        let Some(day) = days.get(index) else {
+            return Ok(None);
+        };
+        let fixed = system(day.date.calendar)?.fixed_of(&day.date)?;
+        calendar.date_of(fixed).map(Some)
+    };
+    if !keeps_star(days, at, nakshatra) {
+        return Ok(None);
+    }
+    let Some(on) = date_at(at)? else {
+        return Ok(None);
+    };
+    if on.month != month {
+        return Ok(None);
+    }
+    // The month's other occurrence, on the side `twice` passes over.
+    let mut index = at;
+    loop {
+        index = match twice {
+            super::Which::Earlier => match index.checked_sub(1) {
+                Some(before) => before,
+                None => break,
+            },
+            super::Which::Later => index + 1,
+        };
+        match date_at(index)? {
+            Some(other) if other.year == on.year && other.month == on.month => {
+                if keeps_star(days, index, nakshatra) {
+                    return Ok(None);
+                }
+            }
+            _ => break,
+        }
+    }
+    Ok(Some(on))
+}
+
 /// Easter Sunday in `computus`'s own calendar, when `fixed` is `count`
 /// days after it; none in a year the computus does not reckon, whose
 /// churches kept no such Easter.
@@ -900,17 +1117,18 @@ fn from_easter(
 }
 
 /// The day `count` days before `days[at]`, when the Sun entered
-/// `nakshatra` in it. A day the count reaches back past is none: the
-/// caller founds the days a rule counts from before its range.
+/// `nakshatra` in it, reckoned as `reckoning` says. A day the count
+/// reaches back past is none: the caller founds the days a rule counts
+/// from before its range.
 ///
 /// # Errors
 ///
 /// `INVALID_ARG` for a day whose entry was not read
-/// (`Almanac::sun_entries`).
+/// (`Almanac::sun_entries`, `Almanac::sunrise_entries`).
 fn entered(
     days: &[FestivalDay],
     at: usize,
-    nakshatra: Nakshatra,
+    (nakshatra, reckoning): (Nakshatra, DayReckoning),
     count: u8,
 ) -> Result<Option<&FestivalDay>, Error> {
     let Some(from) = at
@@ -919,11 +1137,15 @@ fn entered(
     else {
         return Ok(None);
     };
-    match from.sun_entry {
+    let (entry, filled) = match reckoning {
+        DayReckoning::Civil => (from.sun_entry, "Almanac::sun_entries"),
+        DayReckoning::Sunrise => (from.sunrise_entry, "Almanac::sunrise_entries"),
+    };
+    match entry {
         SunEntry::Entered(into) => Ok((into == nakshatra).then_some(from)),
         SunEntry::Stayed => Ok(None),
         SunEntry::Unsearched => Err(Error::invalid_arg(format!(
-            "a rule reads the Sun's entry on {}, which nothing read; fill the days' entries first (`Almanac::sun_entries`)",
+            "a rule reads the Sun's entry on {}, which nothing read; fill the days' entries first (`{filled}`)",
             from.date
         ))),
     }
@@ -973,6 +1195,7 @@ mod tests {
             r#"{"calendar": "BIKRAM_SAMBAT", "month": 10, "day": 1}"#,
             r#"{"calendar": "GREGORIAN", "month": 11, "weekday": "GURUVARA", "nth": 4}"#,
             r#"{"nakshatra": "ARDRA"}"#,
+            r#"{"calendar": "MALAYALAM_SOLAR", "month": 1, "nakshatra": "SHRAVANA", "twice": "LATER"}"#,
             r#"{"computus": "JULIAN"}"#,
         ];
         for (key, date) in Dated::KEYS.iter().zip(dates) {
@@ -1005,7 +1228,7 @@ mod tests {
             .unwrap();
         assert!(
             easter.ends_with(
-                "Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."
+                "Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."
             ),
             "{easter}"
         );

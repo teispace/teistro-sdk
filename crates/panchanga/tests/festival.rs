@@ -1260,6 +1260,7 @@ fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
         on: Dated::SunEnters {
             nakshatra: Nakshatra::Ardra,
             days: Dated::MOST_DAYS + 1,
+            reckoning: teistro_panchanga::festival::DayReckoning::Civil,
         },
         meta: teistro_panchanga::festival::FestivalMeta::default(),
     };
@@ -1275,6 +1276,124 @@ fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
         text.contains(r#""sunEnters":{"nakshatra":"ARDRA","days":3}"#),
         "{text}"
     );
+}
+
+/// Vishu on the day after the sunrise day of the Sun's entry into Ashwini
+/// (C1301): the sunrise reckoning reads the entry between two sunrises,
+/// and a day whose sunrise entry was not read is refused by its own
+/// method's name.
+#[test]
+fn a_rule_on_the_suns_entry_by_sunrise_reads_the_sunrise_day() {
+    let mut days = days_of(
+        &[(Tithi::Purnima, 9.0)],
+        &[],
+        Masa::Chaitra,
+        MonthKind::Nija,
+    );
+    for (k, day) in days.iter_mut().enumerate() {
+        day.sunrise_entry = match k {
+            1 => SunEntry::Entered(Nakshatra::Ashwini),
+            _ => SunEntry::Stayed,
+        };
+        // The civil reading puts the entry a day apart; the sunrise rule
+        // does not read it.
+        day.sun_entry = match k {
+            2 => SunEntry::Entered(Nakshatra::Ashwini),
+            _ => SunEntry::Stayed,
+        };
+    }
+    let vishu = DatedRule::india_kerala()
+        .into_iter()
+        .find(|rule| rule.key == "VISHU")
+        .unwrap();
+    assert!(vishu.reads_sunrise_entry() && !vishu.reads_sun_entry());
+    assert_eq!(vishu.reach(), 1);
+    let found = dated(std::slice::from_ref(&vishu), &days, HijriOffset::NONE).unwrap();
+    let kept: Vec<(u8, u8)> = found
+        .dated
+        .iter()
+        .map(|one| (one.day.day - 1, one.on.day - 1))
+        .collect();
+    assert_eq!(kept, [(2, 1)]);
+    days[1].sunrise_entry = SunEntry::Unsearched;
+    let refused = dated(std::slice::from_ref(&vishu), &days, HijriOffset::NONE).unwrap_err();
+    assert!(refused.message.contains("sunrise_entries"), "{refused:?}");
+    let text = serde_json::to_string(&vishu).unwrap();
+    assert!(
+        text.contains(r#""sunEnters":{"nakshatra":"ASHWINI","days":1,"reckoning":"SUNRISE"}"#),
+        "{text}"
+    );
+}
+
+/// A star in a month (C1304): an occurrence is kept on the first day whose
+/// sunrise it holds, or on the day it runs in when it holds none, and a
+/// month holding two keeps the one `twice` names; `days` counts from it.
+#[test]
+fn a_rule_on_a_star_in_a_month_keeps_the_occurrence_it_names() {
+    // January 2024 of the synthetic days: Rohini holds the sunrises of the
+    // 4th and the 5th (from 2.3 to 4.6), and runs again within the 30th
+    // alone (from 29.2 to 29.9).
+    let days = days_over(
+        31,
+        &[(Tithi::Purnima, 40.0)],
+        &[
+            (Nakshatra::Ashwini, 2.3),
+            (Nakshatra::Rohini, 4.6),
+            (Nakshatra::Mrigashira, 29.2),
+            (Nakshatra::Rohini, 29.9),
+            (Nakshatra::Ardra, 40.0),
+        ],
+        Masa::Pausha,
+        MonthKind::Nija,
+    );
+    let rule = |twice: Which, count: i8| DatedRule {
+        key: "ROHINI_DAY".to_owned(),
+        source: "a test".to_owned(),
+        on: Dated::NakshatraInMonth {
+            calendar: teistro_core::catalogue::Calendar::Gregorian,
+            month: 1,
+            nakshatra: Nakshatra::Rohini,
+            twice,
+            days: count,
+        },
+        meta: teistro_panchanga::festival::FestivalMeta::default(),
+    };
+    let kept = |twice: Which, count: i8| -> Vec<(u8, u8)> {
+        dated(&[rule(twice, count)], &days, HijriOffset::NONE)
+            .unwrap()
+            .dated
+            .iter()
+            .map(|one| (one.day.day, one.on.day))
+            .collect()
+    };
+    assert_eq!(kept(Which::Earlier, 0), [(4, 4)]);
+    assert_eq!(kept(Which::Later, 0), [(30, 30)]);
+    assert_eq!(kept(Which::Later, -1), [(29, 30)]);
+    assert_eq!(kept(Which::Earlier, 2), [(6, 4)]);
+    // Another month holds none of it.
+    let february = DatedRule {
+        on: Dated::NakshatraInMonth {
+            calendar: teistro_core::catalogue::Calendar::Gregorian,
+            month: 2,
+            nakshatra: Nakshatra::Rohini,
+            twice: Which::Later,
+            days: 0,
+        },
+        ..rule(Which::Later, 0)
+    };
+    let kept = dated(&[february], &days, HijriOffset::NONE).unwrap().dated;
+    assert_eq!(kept.len(), 0, "February holds no January star");
+    assert_eq!(rule(Which::Later, -1).reach(), Dated::MONTH_DAYS + 1);
+    let far = rule(Which::Later, 16);
+    assert_eq!(
+        far.check().unwrap_err().field(),
+        Some("nakshatraInMonth.days")
+    );
+    let spelt: DatedRule = serde_json::from_str(
+        r#"{"key": "ROHINI_DAY", "source": "a test", "nakshatraInMonth": {"calendar": "GREGORIAN", "month": 1, "nakshatra": "ROHINI", "twice": "LATER"}}"#,
+    )
+    .unwrap();
+    assert_eq!(spelt, rule(Which::Later, 0));
 }
 
 #[test]

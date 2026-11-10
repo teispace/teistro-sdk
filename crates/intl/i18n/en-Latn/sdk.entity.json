@@ -4966,6 +4966,62 @@
     "BIRSA_MUNDA_JAYANTI": {
       "name": "Birsa Munda Jayanti",
       "prose": "Birsa Munda Jayanti"
+    },
+    "VISHU": {
+      "name": "Vishu",
+      "prose": "Vishu"
+    },
+    "MANNAM_JAYANTHI": {
+      "name": "Mannam Jayanthi",
+      "prose": "Mannam Jayanthi"
+    },
+    "MAUNDY_THURSDAY": {
+      "name": "Maundy Thursday",
+      "prose": "Maundy Thursday"
+    },
+    "EASTER": {
+      "name": "Easter",
+      "prose": "Easter"
+    },
+    "KARKIDAKA_VAVU": {
+      "name": "Karkidaka Vavu",
+      "prose": "Karkidaka Vavu"
+    },
+    "FIRST_ONAM": {
+      "name": "First Onam (Uthradom)",
+      "prose": "First Onam (Uthradom)"
+    },
+    "THIRUVONAM": {
+      "name": "Thiruvonam",
+      "prose": "Thiruvonam"
+    },
+    "THIRD_ONAM": {
+      "name": "Third Onam",
+      "prose": "Third Onam"
+    },
+    "FOURTH_ONAM": {
+      "name": "Fourth Onam",
+      "prose": "Fourth Onam"
+    },
+    "SREE_NARAYANA_GURU_JAYANTHI": {
+      "name": "Sree Narayana Guru Jayanthi",
+      "prose": "Sree Narayana Guru Jayanthi"
+    },
+    "SREE_NARAYANA_GURU_SAMADHI": {
+      "name": "Sree Narayana Guru Samadhi Day",
+      "prose": "Sree Narayana Guru Samadhi Day"
+    },
+    "AYYANKALI_JAYANTHI": {
+      "name": "Ayyankali Jayanthi",
+      "prose": "Ayyankali Jayanthi"
+    },
+    "AVANI_AVITTOM": {
+      "name": "Avani Avittom",
+      "prose": "Avani Avittom"
+    },
+    "AYYA_VAIKUNDA_SWAMI_JAYANTHI": {
+      "name": "Ayya Vaikunda Swami Jayanthi",
+      "prose": "Ayya Vaikunda Swami Jayanthi"
     }
   },
   "agni_vasa": {

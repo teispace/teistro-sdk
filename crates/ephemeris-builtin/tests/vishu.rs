@@ -5,10 +5,9 @@
 //! Medam on the sankranti's own day when it falls in the first three
 //! fifths of the daylight, and Vishu waits for the next sunrise.
 //!
-//! The festival rule language keeps a solar day by a calendar's date or by
-//! the civil day, midnight to midnight, of the Sun's entry into a
-//! nakshatra; neither is the sunrise day, so Vishu is measured here, over
-//! the regional calendars' own sky, rather than shipped as a rule.
+//! This measures the rule over the regional calendars' own sky; the
+//! festival pack `INDIA_KERALA` ships it as the Sun's entry into Ashwini
+//! by the sunrise day, one day on (`sunEnters`, `reckoning: SUNRISE`).
 
 #![allow(
     clippy::unwrap_used,

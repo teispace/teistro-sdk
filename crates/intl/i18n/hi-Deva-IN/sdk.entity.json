@@ -3483,6 +3483,62 @@
     "BIRSA_MUNDA_JAYANTI": {
       "name": "बिरसा मुंडा जयंती",
       "prose": "बिरसा मुंडा जयंती"
+    },
+    "VISHU": {
+      "name": "विषु",
+      "prose": "विषु"
+    },
+    "MANNAM_JAYANTHI": {
+      "name": "मन्नम जयंती",
+      "prose": "मन्नम जयंती"
+    },
+    "MAUNDY_THURSDAY": {
+      "name": "पवित्र गुरुवार",
+      "prose": "पवित्र गुरुवार"
+    },
+    "EASTER": {
+      "name": "ईस्टर",
+      "prose": "ईस्टर"
+    },
+    "KARKIDAKA_VAVU": {
+      "name": "कर्किडक वावु",
+      "prose": "कर्किडक वावु"
+    },
+    "FIRST_ONAM": {
+      "name": "प्रथम ओणम (उत्राडम)",
+      "prose": "प्रथम ओणम (उत्राडम)"
+    },
+    "THIRUVONAM": {
+      "name": "तिरुवोणम",
+      "prose": "तिरुवोणम"
+    },
+    "THIRD_ONAM": {
+      "name": "तृतीय ओणम",
+      "prose": "तृतीय ओणम"
+    },
+    "FOURTH_ONAM": {
+      "name": "चतुर्थ ओणम",
+      "prose": "चतुर्थ ओणम"
+    },
+    "SREE_NARAYANA_GURU_JAYANTHI": {
+      "name": "श्री नारायण गुरु जयंती",
+      "prose": "श्री नारायण गुरु जयंती"
+    },
+    "SREE_NARAYANA_GURU_SAMADHI": {
+      "name": "श्री नारायण गुरु समाधि दिवस",
+      "prose": "श्री नारायण गुरु समाधि दिवस"
+    },
+    "AYYANKALI_JAYANTHI": {
+      "name": "अय्यंकाली जयंती",
+      "prose": "अय्यंकाली जयंती"
+    },
+    "AVANI_AVITTOM": {
+      "name": "आवणि अवित्तम",
+      "prose": "आवणि अवित्तम"
+    },
+    "AYYA_VAIKUNDA_SWAMI_JAYANTHI": {
+      "name": "अय्या वैकुंड स्वामी जयंती",
+      "prose": "अय्या वैकुंड स्वामी जयंती"
     }
   },
   "era": {

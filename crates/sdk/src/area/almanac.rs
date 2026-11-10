@@ -519,7 +519,8 @@ impl<'a> AlmanacArea<'a> {
 
     /// Fills what a day's view holds only for a rule that reads it: a
     /// moonrise is most of a day's requests, the Sun's nakshatra at each
-    /// midnight is read for a rule kept on its entry into one, and the
+    /// midnight or sunrise is read for a rule kept on its entry into one,
+    /// and the
     /// Moon's stay in a share of a nakshatra for a parana that bars it.
     fn searched(
         self,
@@ -535,6 +536,11 @@ impl<'a> AlmanacArea<'a> {
         if request.dated().iter().any(DatedRule::reads_sun_entry) {
             self.with_almanac(calendar, offset, |almanac| {
                 almanac.sun_entries(viewed, place)
+            })?;
+        }
+        if request.dated().iter().any(DatedRule::reads_sunrise_entry) {
+            self.with_almanac(calendar, offset, |almanac| {
+                almanac.sunrise_entries(viewed, place)
             })?;
         }
         let mut arcs = Vec::new();

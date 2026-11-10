@@ -400,6 +400,51 @@ and only when a rule asks. `on` in the answer names the entry's day.
 Nautapa (the Sun's entry into Rohini) and the Tamil Agni nakshatram are
 the same form.
 
+**The entry's sunrise day.** `reckoning` says which day holds the entry:
+`CIVIL`, midnight to midnight, when left out, or `SUNRISE`, the day from
+one sunrise to the next. Kerala keeps Vishu on the first civil day whose
+sunrise follows the Mesha sankranti, the day after the sankranti's
+sunrise day, so it is the Sun's entry into Ashwini, the first of Mesha,
+by sunrise, one day on (C1301):
+
+```json
+{"key": "VISHU", "source": "...", "sunEnters": {"nakshatra": "ASHWINI", "days": 1, "reckoning": "SUNRISE"}}
+```
+
+It parts from Medam 1 when the sankranti falls between sunrise and the
+three-fifths mark (2022 and 2026), and from `CIVIL` when it falls between
+midnight and sunrise. The form reads the Sun's nakshatra at each sunrise
+of the range, `n + 1` readings, only when a rule asks
+(`Almanac::sunrise_entries`), and the left-out default keeps every rule
+written before its spelling and its hash. This is the form C1230 waits
+on for a night ingress in Mithila; `JUR_SITAL` keeps the civil day until
+a print settles it.
+
+**A star in a solar month.** A fifth form keeps the day a nakshatra holds
+in a month of a calendar, as Kerala keeps its days by the star of a
+Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana
+Guru's birthday on Chatayam (Shatabhisha) in it (C1304). A lunar rule's
+month is the lunation's; this one's is the civil month the calendar
+gives the day, so a solar calendar's month is read directly:
+
+```json
+{"key": "THIRUVONAM", "source": "...", "nakshatraInMonth": {"calendar": "MALAYALAM_SOLAR", "month": 1, "nakshatra": "SHRAVANA", "twice": "LATER"}}
+{"key": "FIRST_ONAM", "source": "...", "nakshatraInMonth": {"calendar": "MALAYALAM_SOLAR", "month": 1, "nakshatra": "SHRAVANA", "twice": "LATER", "days": -1}}
+```
+
+An occurrence of the star is kept on the first day whose sunrise it
+holds, the earlier of two sunrises, or, when it holds no sunrise, on the
+day it runs in. A month of 29 to 32 days can hold a star twice, 27.3 days
+apart, and `twice` names which keeps the day: Chingam 1200 held
+Thiruvonam on its 3rd and its 30th, and the gazette kept Onam on the
+30th, 15 September 2024. `days` counts civil days from the star's day,
+at most 15 either way, which keeps the Onam days around Thiruvonam: a
+`FollowingRule` counts from a karmakala rule's observance, and the star's
+day is not one. `on` in the answer names the star's day. To find the
+month's other occurrence the form reads the days a month either side of
+the range, which the request founds only when such a rule asks
+(`Dated::MONTH_DAYS`, 32).
+
 **A count from Easter.** A fourth form keeps the day `days` days after
 Easter Sunday, before it when negative, by the Western (`GREGORIAN`) or
 the Eastern (`JULIAN`) computus:
