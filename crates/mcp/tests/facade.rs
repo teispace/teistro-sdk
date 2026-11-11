@@ -945,13 +945,19 @@ fn the_lean_list_names_each_part_and_keeps_only_what_it_reaches() {
         .iter()
         .find(|tool| tool["name"] == "chart.found")
         .unwrap();
-    let kp = &found["inputSchema"]["properties"]["request"]["properties"]["kp"];
+    for part in ["kp", "place"] {
+        let named = &found["inputSchema"]["properties"]["request"]["properties"][part];
+        assert!(
+            named["description"]
+                .as_str()
+                .unwrap()
+                .contains("schema.describe"),
+            "{named}"
+        );
+    }
     assert!(
-        kp["description"]
-            .as_str()
-            .unwrap()
-            .contains("schema.describe"),
-        "{kp}"
+        !found["inputSchema"].to_string().contains("ResolvedPlace"),
+        "the lean chart.found states the place it names"
     );
     let size = |tools: &[Value]| Value::Array(tools.to_vec()).to_string().len();
     let (lean, full) = (size(&lean), size(&full));

@@ -565,9 +565,10 @@ impl Record {
     }
 
     /// The records the request carries inside it by name, each read by
-    /// its own reader (`chart.found`'s `kp`, `almanac.days`'s `muhurta`):
-    /// the parts a caller may ask the schema of one at a time, where the
-    /// whole would be more than a tool list should carry.
+    /// its own reader (`chart.found`'s `kp`, `almanac.days`'s `muhurta`),
+    /// and the `place` `geo.resolve` answers: the parts a caller may ask
+    /// the schema of one at a time, where the whole would be more than a
+    /// tool list should carry.
     #[cfg(feature = "schema")]
     #[must_use]
     pub fn parts(&self) -> &'static [&'static str] {
@@ -1049,7 +1050,7 @@ fn chart_records() -> [Record; 4] {
             },
             compares: None,
             brief: FOUND_BRIEF,
-            schemas: schemas!(fn crate::found_request::schema => crate::Composed<'static>, parts: crate::ChartRecords::NAMES),
+            schemas: schemas!(fn crate::found_request::schema => crate::Composed<'static>, parts: crate::found_request::PARTS),
         },
         Record {
             name: "chart.disagreements",

@@ -147,9 +147,10 @@ fn with_muhurta(_beside: AlmanacRequest, _json: &str) -> Result<AlmanacRequest, 
     Err(Error::left_out(MUHURTA).with_field(MUHURTA))
 }
 
-/// The records a range of days carries inside it by name.
+/// The records a range of days carries inside it by name, and the
+/// resolved place, each a part a tool list names rather than states.
 #[cfg(feature = "schema")]
-pub(crate) const PARTS: [&str; 2] = [MUHURTA, FESTIVALS];
+pub(crate) const PARTS: [&str; 3] = [MUHURTA, FESTIVALS, crate::asked::PLACE];
 
 /// What `almanac.days` answers: the days, their own hashes, and each
 /// section asked beside them, laid flat.
