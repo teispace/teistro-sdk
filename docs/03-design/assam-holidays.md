@@ -40,7 +40,7 @@ notifications are not shipped.
 ## 2. The pack
 
 `INDIA_ASSAM` holds the list at any place. It is measured at Guwahati (26.1445 N,
-91.7362 E) on India's clock. Every day is kept in `["IN", "ASSAM"]` and is
+91.7362 E) on India's clock. Every day is kept in `["IN", "IN-AS"]` (ISO 3166-2; `ASSAM`, its first key, is read as an alias, SR-89) and is
 `GAZETTED`. The banks' closing of accounts names the community `BANKS`.
 
 | holiday | key | form | the day's rule is cited to |

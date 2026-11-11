@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A region is its ISO 3166 code, and names its pack (SR-89).**
+**Numbers:** none. The state holiday sets keep their days in
+`["IN", "IN-TN"]` rather than `["IN", "TAMIL_NADU"]`, and likewise `IN-AS`,
+`IN-KL`, `IN-MH` and `IN-WB`. A filter or a caller's rule that names a
+state by its old key still matches, read as the code; an answer's
+`meta.regions` now carries the code. A request may name a region wherever
+it names a pack: `{"rules": ["IN-TN"]}` reckons `INDIA_TAMIL_NADU`, a
+state with no pack of its own keeps its country's (`IN-KA` keeps
+`INDIA_CENTRAL`, `NP-P3` `NEPAL_PANCHANGA`), and `almanac.festivalPack`
+takes the same. `teistro_panchanga::festival::region` (`REGIONS`,
+`canonical`, `country`) and `FestivalPack::region` and `for_region` are
+new (`03-design/festival-metadata.md` §2a).
+
 **A tag is a version, and publishes nothing by itself.** **Numbers:** none.
 A `v*` tag now makes the GitHub release, with its archives, digests and
 provenance, and stops there. The registries (npm, pub.dev, PyPI, Maven

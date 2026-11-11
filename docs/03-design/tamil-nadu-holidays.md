@@ -34,7 +34,7 @@ lieu of 29 January; that is a one-year substitution and is not shipped.
 ## 2. The pack
 
 `INDIA_TAMIL_NADU` holds the list at any place. It is measured at Chennai on India's
-clock. Every day is kept in `["IN", "TAMIL_NADU"]` and is `GAZETTED`. The banks'
+clock. Every day is kept in `["IN", "IN-TN"]` (ISO 3166-2; `TAMIL_NADU`, its first key, is read as an alias, SR-89) and is `GAZETTED`. The banks'
 closing of accounts names the community `BANKS`.
 
 | holiday | key | form | the day's rule is cited to |

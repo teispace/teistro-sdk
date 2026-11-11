@@ -476,3 +476,67 @@ mod reckoned {
         assert!(set.entries.iter().all(|entry| matches!(entry, PublishedEntry::Add { meta, .. } if meta.tradition == Some(Tradition::Islamic))));
     }
 }
+
+/// SR-89: a state's days are kept under its ISO 3166-2 code, the name it
+/// was first shipped under reads as that code, and a region names its pack
+/// wherever a pack is named, a state with no pack of its own falling to its
+/// country's.
+#[test]
+fn a_region_is_kept_by_its_iso_code_and_names_its_pack() -> Result<(), teistro::Error> {
+    let states = [
+        (FestivalPack::IndiaMaharashtra, "IN-MH", "MAHARASHTRA"),
+        (FestivalPack::IndiaWestBengal, "IN-WB", "WEST_BENGAL"),
+        (FestivalPack::IndiaKerala, "IN-KL", "KERALA"),
+        (FestivalPack::IndiaTamilNadu, "IN-TN", "TAMIL_NADU"),
+        (FestivalPack::IndiaAssam, "IN-AS", "ASSAM"),
+    ];
+    let keeping = |key: &str| MetaFilter {
+        regions: vec![key.to_owned()],
+        ..MetaFilter::default()
+    };
+    for (pack, code, alias) in states {
+        let listed = pack.listing();
+        assert!(!listed.rules.is_empty(), "{code}");
+        for row in &listed.rules {
+            assert_eq!(row.meta.regions, ["IN", code], "{code} {}", row.key);
+            assert!(keeping(code).admits(&row.meta), "{code} {}", row.key);
+            assert!(keeping(alias).admits(&row.meta), "{alias} {}", row.key);
+            assert!(keeping("IN").admits(&row.meta), "IN {}", row.key);
+        }
+        assert_eq!(pack.region(), Some(code));
+        for name in [code, alias] {
+            let asked = PackRequest::from_json(&format!(r#"{{"pack": "{name}"}}"#))?;
+            assert_eq!(asked.pack, pack, "{name}");
+        }
+        let text = format!(r#"{{"rules": ["{code}"]}}"#);
+        assert!(FestivalRequest::from_json(&text).is_ok(), "{text}");
+    }
+    // A day kept in one state is not kept in another, by code or by alias.
+    let tamil = FestivalPack::IndiaTamilNadu.listing();
+    let pongal = tamil
+        .rules
+        .iter()
+        .find(|row| row.key == "THAI_PONGAL")
+        .unwrap();
+    assert!(!keeping("IN-KL").admits(&pongal.meta));
+    assert!(!keeping("KERALA").admits(&pongal.meta));
+    // A state with no pack keeps its country's list; a part of Nepal no ISO
+    // code names is a filter, not a pack; a country no pack keeps is refused.
+    assert_eq!(
+        PackRequest::from_json(r#"{"pack": "IN-KA"}"#)?.pack,
+        FestivalPack::IndiaCentral
+    );
+    assert_eq!(
+        PackRequest::from_json(r#"{"pack": "NP"}"#)?.pack,
+        FestivalPack::NepalPanchanga
+    );
+    for refused in ["US", "US-CA", "KATHMANDU_VALLEY", "in-tn"] {
+        let err = PackRequest::from_json(&format!(r#"{{"pack": "{refused}"}}"#)).unwrap_err();
+        assert_eq!(err.field(), Some("pack.pack"), "{refused}");
+        assert!(
+            err.to_string().contains("IN-TN"),
+            "{refused}: the refusal names the regions"
+        );
+    }
+    Ok(())
+}

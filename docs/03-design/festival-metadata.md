@@ -73,6 +73,41 @@ that would be inferring from a name. C850 holds what would close them.
 `*Dharmasindhu*`'s packs (`DHARMASINDHU`, `PITRI_PAKSHA`) and `GAUDIYA` are
 `RELIGIOUS_CULTURAL` and `HINDU` by their text, and name no region.
 
+## 2a. Regions by ISO code (SR-89)
+
+`regions` names a country by its ISO 3166-1 alpha-2 code (`IN`, `NP`) and a
+state by its ISO 3166-2 code, so a place a geo provider resolves (SR-87)
+selects its days with no table of the consumer's. `region::REGIONS` lists
+every key a shipped set names:
+
+| key | first shipped as | kept by |
+|---|---|---|
+| `IN` | | `INDIA_CENTRAL`, and every state's days besides its own code |
+| `IN-AS` | `ASSAM` | `INDIA_ASSAM` |
+| `IN-KL` | `KERALA` | `INDIA_KERALA` |
+| `IN-MH` | `MAHARASHTRA` | `INDIA_MAHARASHTRA` |
+| `IN-TN` | `TAMIL_NADU` | `INDIA_TAMIL_NADU` |
+| `IN-WB` | `WEST_BENGAL` | `INDIA_WEST_BENGAL` |
+| `NP` | | `NEPAL_PANCHANGA` and `NEPAL` |
+| `KATHMANDU_VALLEY`, `HILLS`, `TERAI` | | rules of Nepal's packs a notice limits |
+
+**Aliases.** The name a state was first shipped under is read as its code
+wherever a region is read, in a filter or in a caller's own rule, so
+`{"regions": ["TAMIL_NADU"]}` keeps what `{"regions": ["IN-TN"]}` keeps. An
+answer carries the code. Nepal's three parts keep their own keys because no
+ISO code names them: ISO 3166-2's codes for Nepal are its provinces, and the
+Kathmandu valley's three districts are a part of one, the 56 hill districts
+and the 21 of the Terai parts of several.
+
+**A region names its pack.** Wherever a request names a pack, in `rules`
+or in `almanac.festivalPack`, it may name a region instead
+(`FestivalPack::for_region`): the pack whose `region()` it is, else its
+country's, so `IN-KA`, a state with no pack of its own, keeps
+`INDIA_CENTRAL`, and `NP-P3` keeps `NEPAL_PANCHANGA`, the national print's
+set. A code is read as written, upper case; a country no pack keeps, or a
+key no ISO code is, is refused under the request's field with the regions
+listed.
+
 ## 3. Reading a pack
 
 `almanac.festivalPack`, `ts_almanac_festival_pack`, answers every row of a pack:

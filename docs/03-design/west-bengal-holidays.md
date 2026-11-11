@@ -38,7 +38,7 @@ Maharashtra's copies of the same kind are; C1279):
 ## 2. The pack
 
 `INDIA_WEST_BENGAL` holds the list at any place, and is measured at Kolkata on India's
-clock. Every day is kept in `["IN", "WEST_BENGAL"]`, `GAZETTED`. The pack holds the
+clock. Every day is kept in `["IN", "IN-WB"]` (ISO 3166-2; `WEST_BENGAL`, its first key, is read as an alias, SR-89), `GAZETTED`. The pack holds the
 latest list's rows; a row new to the list (Rathayatra from 2021, Rakhi Bandhan from
 2023, Ram Navami from 2025, Viswakarma Puja in 2026) is measured only in the years its
 notice lists it.

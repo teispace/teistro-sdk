@@ -38,7 +38,7 @@ use super::{
 };
 
 /// Where the list is kept: India, then the state the notice names.
-const REGIONS: [&str; 2] = ["IN", "WEST_BENGAL"];
+const REGIONS: [&str; 2] = ["IN", "IN-WB"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
@@ -578,7 +578,7 @@ impl FestivalRule {
     /// let of = |key: &str| rules.iter().find(|rule| rule.key == key);
     /// let kali = of("KALI_PUJA").ok_or("shipped")?;
     /// assert_eq!(kali.at, Window::Nishitha);
-    /// assert_eq!(kali.meta.regions, ["IN", "WEST_BENGAL"]);
+    /// assert_eq!(kali.meta.regions, ["IN", "IN-WB"]);
     /// // The central list's Diwali, Dasara and Holika are not the state's.
     /// assert!(of("LAKSHMI_PUJA").is_none() && of("HOLIKA").is_none());
     /// assert!(of("JANMASHTAMI").ok_or("shipped")?.source.starts_with("Dharmasindhu"));
@@ -664,7 +664,7 @@ impl DatedRule {
     ///     new_year.on,
     ///     Dated::CivilDate { calendar: Calendar::BengalSolar, month: 1, day: 1, skipped: None }
     /// );
-    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "WEST_BENGAL"]));
+    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "IN-WB"]));
     /// # Ok::<(), &str>(())
     /// ```
     #[must_use]

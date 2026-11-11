@@ -44,9 +44,10 @@ pub struct FestivalMeta {
     /// source names one, which does not say it is kept by all.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub communities: Vec<String>,
-    /// Where it is kept, as open keys: an ISO 3166 country first (`NP`,
-    /// `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty
-    /// when no source says.
+    /// Where it is kept, as open keys: an ISO 3166-1 country first (`NP`,
+    /// `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO
+    /// code names (`KATHMANDU_VALLEY`), as [`super::region::REGIONS`] lists
+    /// them; empty when no source says.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub regions: Vec<String>,
     /// Whether the notice leaves it to each office's list: one of the
@@ -315,13 +316,22 @@ impl MetaFilter {
         let one_of = |wanted: &[String], held: &[String]| {
             wanted.is_empty() || wanted.iter().any(|want| held.contains(want))
         };
+        // A region is read by its key, so an alias asked (`TAMIL_NADU`) or
+        // held by a caller's own rule matches the ISO code (`IN-TN`).
+        let in_region = |wanted: &[String], held: &[String]| {
+            wanted.is_empty()
+                || wanted.iter().any(|want| {
+                    let want = super::region::canonical(want);
+                    held.iter().any(|one| super::region::canonical(one) == want)
+                })
+        };
         (self.kinds.is_empty() || meta.kind.is_some_and(|kind| self.kinds.contains(&kind)))
             && (self.traditions.is_empty()
                 || meta
                     .tradition
                     .is_some_and(|tradition| self.traditions.contains(&tradition)))
             && one_of(&self.communities, &meta.communities)
-            && one_of(&self.regions, &meta.regions)
+            && in_region(&self.regions, &meta.regions)
     }
 }
 

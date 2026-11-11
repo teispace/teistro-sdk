@@ -33,7 +33,7 @@ year, published in the Kerala Gazette Extraordinary. It lists:
 ## 2. The pack
 
 `INDIA_KERALA` holds the list at any place, and is measured at Thiruvananthapuram on
-India's clock. Every day is kept in `["IN", "KERALA"]`, `GAZETTED`; a restricted day
+India's clock. Every day is kept in `["IN", "IN-KL"]` (ISO 3166-2; `KERALA`, its first key, is read as an alias, SR-89), `GAZETTED`; a restricted day
 is `optional` and names its community.
 
 | holiday | key | form | the day's rule is cited to |

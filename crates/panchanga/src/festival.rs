@@ -48,6 +48,7 @@ mod mithila;
 mod nepal_panchanga;
 mod next;
 mod published;
+pub mod region;
 mod sait;
 mod vrata;
 
