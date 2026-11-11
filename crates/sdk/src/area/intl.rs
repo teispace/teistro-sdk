@@ -34,7 +34,7 @@ pub struct IntlArea<'a> {
 /// The refusal of a locale tag, the same from the builder and from a change:
 /// a consumer who mistyped a tag wants the same sentence wherever they did.
 pub(crate) fn refused_locale(engine: &Intl, tag: &str, why: &str) -> Error {
-    let known: Vec<&str> = engine.locales().map(|l| l.tag.as_str()).collect();
+    let known: Vec<&str> = engine.locale_tags().collect();
     Error::unsupported(why)
         .with_field("locale")
         .with_hint(format!(

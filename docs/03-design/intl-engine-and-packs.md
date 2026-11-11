@@ -734,6 +734,37 @@ one over sources (tested). Per-namespace slicing stays a build option
 (`build` against `build --bundle`). Interpretation packs use the same
 container with citation fields and a licence.
 
+**Embedded locales are decoded when first read** (2026-11-11). The SDK
+embeds every locale as a bundle (about 944 KB for the five) and once
+decoded all of them, every message and entity copied into owned text,
+before a process's first context could render: about 59,000
+allocations and 6.3 MB, though an application reads one locale and its
+fallbacks. An engine is now built over `Locales`
+(`crates/intl/src/locales.rs`): each locale is either decoded already
+(sources, packs, a locale a runtime pack added) or a bundle verified up
+front (magic, version, checksums, key order, metadata, so a bad bundle
+is refused when the locales are made, as before) and decoded behind a
+`OnceLock` the first time an engine reads it. Every reader goes through
+one accessor, so listing the locales (`Intl::locale_tags`), looking one
+up and choosing it read tags and decode nothing; a render decodes its
+locale's chain; `Intl::locales`, the runtime report, the lexicon over
+every locale and reading month names in every locale decode what they
+read. A locale's plural rules are built the same way, the first time a
+plural is selected in it. Engines over clones of one `Locales` (every
+context of a process, and each context's forks) share each decoded
+locale and its rules; a runtime pack copies only the locale it changes,
+for its engine alone, as `Arc::make_mut` did before. Decoding is per
+locale rather than per namespace because `LocaleSource`, which
+`chain_from` and every resolution hand out, is a public record of
+decoded namespaces. Measured on macOS (instructions retired by
+`teistro-scenario entry chart.found 0`, the cost record's floor): 71.0
+million before, 25.6 million after; the first context's allocations
+59,010 (6.3 MB) before, 434 (52 KB) after, and its first Nepali render
+then decodes Nepali and English (25,936 allocations, 2.8 MB). Held by
+`crates/sdk/tests/lazy_locales.rs` and the unit tests in `locales.rs`,
+which also hold every bundle to the same decoding as
+`locales_from_packs`.
+
 **What stands, wherever it came from** (decided 2026-09-25). An engine
 holds, from the bottom:
 - the locales it was built over (the SDK's embedded bundles);

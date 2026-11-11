@@ -779,7 +779,7 @@ impl Intl {
             return Arc::clone(months);
         }
         let mut months = Months::default();
-        let tags: Vec<String> = self.locales.keys().cloned().collect();
+        let tags: Vec<String> = self.locale_tags().map(str::to_owned).collect();
         for calendar in READ {
             let named = format!("sdk.calendar.{}", calendar.key());
             for tag in &tags {

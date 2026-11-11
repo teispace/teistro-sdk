@@ -7,7 +7,6 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
-use std::sync::Arc;
 
 use serde::Serialize;
 
@@ -192,11 +191,7 @@ fn read_file(bytes: &[u8]) -> Result<FileContent, IntlError> {
         return Ok(FileContent {
             tag: bundle.locale().to_string(),
             meta: Some(bundle.meta().map_err(pack_error)?),
-            namespaces: bundle
-                .packs()
-                .iter()
-                .map(|pack| (pack.namespace().to_string(), pack.to_namespace()))
-                .collect(),
+            namespaces: bundle.namespaces().collect(),
             sha256: bundle.content_sha256(),
         });
     }
@@ -259,28 +254,26 @@ impl Intl {
         // What the file says of its own review: a reviewer's pack lifts a
         // draft, and a pack with no metadata says nothing.
         let drafts = file.meta.as_ref().map(|meta| meta.draft.clone());
-        if !self.locales.contains_key(&file.tag) {
+        if !self.locales.contains(&file.tag) {
             let meta = file.meta.ok_or_else(|| {
                 IntlError(format!(
                     "{}: the pack carries no metadata and the locale is not loaded",
                     file.tag
                 ))
             })?;
-            self.plurals
-                .insert(file.tag.clone(), Arc::new(plurals_for(&file.tag)?));
-            self.locales.insert(
-                file.tag.clone(),
-                Arc::new(LocaleSource {
+            let plurals = plurals_for(&file.tag)?;
+            self.locales.add(
+                LocaleSource {
                     tag: file.tag.clone(),
                     meta,
                     namespaces: BTreeMap::new(),
-                }),
+                },
+                plurals,
             );
         }
         let locale = self
             .locales
-            .get_mut(&file.tag)
-            .map(Arc::make_mut)
+            .source_mut(&file.tag)
             .ok_or_else(|| IntlError(format!("no locale {}", file.tag)))?;
         let mut entries = 0;
         let mut replaced = 0;
@@ -341,7 +334,7 @@ impl Intl {
     /// An unknown locale, or a source that does not parse (with its
     /// offset).
     pub fn set_override(&mut self, tag: &str, key: &str, source: &str) -> Result<(), IntlError> {
-        if !self.locales.contains_key(tag) {
+        if !self.locales.contains(tag) {
             return Err(IntlError(format!("unknown locale {tag}")));
         }
         parse(source)
@@ -502,11 +495,11 @@ impl Intl {
     pub fn report(&self) -> RuntimeReport {
         let base_keys: Option<BTreeSet<String>> = self
             .locales
-            .get(BASE_LOCALE)
+            .source(BASE_LOCALE)
             .map(|base| base.keys().collect());
         let locales = self
             .locales
-            .values()
+            .sources()
             .map(|locale| {
                 let overrides = self.overrides.get(&locale.tag);
                 let coverage = base_keys.as_ref().map(|keys| {
@@ -549,6 +542,8 @@ mod tests {
     )]
 
     use super::*;
+    use std::sync::Arc;
+
     use crate::pack;
     use crate::render::{Value, params};
     use crate::source::{ENTITY_NAMESPACE, Entity, Tree, sdk_root};
@@ -679,7 +674,7 @@ mod tests {
     #[test]
     fn a_pack_lays_an_entity_record_over_the_one_standing() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
+        let nepali = intl.locales.source("ne-Deva-NP").unwrap().clone();
         let standing = intl
             .entity_from("ne-Deva-NP", "nakshatra.ASHWINI")
             .unwrap()
@@ -776,7 +771,7 @@ mod tests {
         );
         assert_eq!(said(&open()), built, "and so does one opened after");
         assert!(
-            Arc::ptr_eq(&other.locales["ne-Deva-NP"], &nepali),
+            Arc::ptr_eq(other.locales.shared("ne-Deva-NP").unwrap(), &nepali),
             "the engines that changed nothing still share the decoding"
         );
     }
@@ -784,7 +779,7 @@ mod tests {
     #[test]
     fn what_stands_is_the_build_then_each_pack_in_load_order_then_the_overrides() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
+        let nepali = intl.locales.source("ne-Deva-NP").unwrap().clone();
         let pack_saying = |text: &str| {
             let mut patched = nepali.clone();
             patched.namespaces = [(String::from("sdk.reason"), namespace(&[("appName", text)]))]
@@ -828,7 +823,7 @@ mod tests {
     #[test]
     fn a_pack_loaded_at_runtime_adds_a_namespace_and_replaces_entries() {
         let mut intl = engine("ne-Deva-NP");
-        let nepali = (**intl.locales.get("ne-Deva-NP").unwrap()).clone();
+        let nepali = intl.locales.source("ne-Deva-NP").unwrap().clone();
         // A new namespace for a known locale, in a pack with metadata.
         let mut ui = nepali.clone();
         ui.namespaces = [(
@@ -895,7 +890,7 @@ mod tests {
             .find(|l| l.tag == "mr-Deva-IN")
             .unwrap();
         assert_eq!(marathi_row.entries, 1);
-        let base_keys = intl.locales.get(BASE_LOCALE).unwrap().keys().count();
+        let base_keys = intl.locales.source(BASE_LOCALE).unwrap().keys().count();
         assert_eq!(
             marathi_row.coverage.map(|(_, total)| total),
             Some(base_keys)

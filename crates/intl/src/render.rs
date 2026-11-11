@@ -27,6 +27,7 @@ use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_timezone::TimeZoneProvider;
 
+use crate::locales::Locales;
 use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
 
 /// A time of day, for `:time` and `:datetime`.
@@ -1035,12 +1036,11 @@ pub fn ascii_decimal(value: f64, min: usize, max: usize) -> String {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub struct Intl {
-    /// Shared, so engines over the same decoded sources hold one copy; a
-    /// locale a runtime pack changes is copied for this engine alone
-    /// (`Arc::make_mut`).
-    pub(crate) locales: BTreeMap<String, Arc<LocaleSource>>,
-    /// Shared, so a copy of the engine ([`Intl::clone`]) builds none.
-    pub(crate) plurals: BTreeMap<String, Arc<Plurals>>,
+    /// Shared, so engines over the same locales decode each once, the
+    /// first time any of them reads it, and build its plural rules once;
+    /// a locale a runtime pack changes is copied for this engine alone
+    /// ([`Locales`]).
+    pub(crate) locales: Locales,
     pub(crate) current: String,
     /// Messages parsed once, by locale and key; parsing costs four times a
     /// render, and an entry changes only through the runtime API, which
@@ -1099,7 +1099,6 @@ impl Clone for Intl {
     fn clone(&self) -> Intl {
         Intl {
             locales: self.locales.clone(),
-            plurals: self.plurals.clone(),
             current: self.current.clone(),
             parsed: RwLock::new(
                 self.parsed
@@ -1131,7 +1130,7 @@ impl Clone for Intl {
 impl fmt::Debug for Intl {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Intl")
-            .field("locales", &self.locales.keys().collect::<Vec<_>>())
+            .field("locales", &self.locales.tags().collect::<Vec<_>>())
             .field("current", &self.current)
             .finish_non_exhaustive()
     }
@@ -1166,10 +1165,14 @@ impl fmt::Display for IntlError {
 
 impl std::error::Error for IntlError {}
 
+/// A tag as ICU4X reads it, or the refusal naming it.
+fn icu_locale(tag: &str) -> Result<Locale, IntlError> {
+    tag.parse()
+        .map_err(|e| IntlError(format!("{tag}: not a locale: {e}")))
+}
+
 pub(crate) fn plurals_for(tag: &str) -> Result<Plurals, IntlError> {
-    let locale: Locale = tag
-        .parse()
-        .map_err(|e| IntlError(format!("{tag}: not a locale: {e}")))?;
+    let locale = icu_locale(tag)?;
     let cardinal = PluralRules::try_new_cardinal((&locale).into())
         .map_err(|e| IntlError(format!("{tag}: no cardinal plural rules: {e}")))?;
     let ordinal = PluralRules::try_new_ordinal((&locale).into())
@@ -1206,19 +1209,14 @@ impl Intl {
     ///
     /// # Errors
     ///
-    /// A locale tag ICU4X cannot parse or has no plural rules for.
+    /// As [`Intl::over`].
     pub fn new(locales: BTreeMap<String, LocaleSource>) -> Result<Intl, IntlError> {
-        Intl::shared(
-            locales
-                .into_iter()
-                .map(|(tag, locale)| (tag, Arc::new(locale)))
-                .collect(),
-        )
+        Intl::over(Locales::from(locales))
     }
 
     /// An engine over sources decoded once and shared: what many engines
-    /// over the same packs build from, each at the cost of the plural
-    /// rules rather than of decoding every message again. A locale one
+    /// over the same packs build from, each at the cost of checking the
+    /// tags rather than of decoding every message again. A locale one
     /// engine changes ([`Intl::load_pack`]) is copied for it alone, so
     /// the others never see the change.
     ///
@@ -1238,20 +1236,56 @@ impl Intl {
     ///
     /// # Errors
     ///
-    /// As [`Intl::new`].
+    /// As [`Intl::over`].
     pub fn shared(locales: BTreeMap<String, Arc<LocaleSource>>) -> Result<Intl, IntlError> {
-        let mut plurals = BTreeMap::new();
-        for tag in locales.keys() {
-            plurals.insert(tag.clone(), Arc::new(plurals_for(tag)?));
+        Intl::over(Locales::from(locales))
+    }
+
+    /// An engine over [`Locales`], which engines built over its clones
+    /// share: each locale is decoded, and its plural rules built, the
+    /// first time any of them reads it. What an application embedding
+    /// bundles builds from ([`Locales::from_bundles`]), so an engine pays
+    /// for the locales it renders from and their fallbacks, and nothing
+    /// for the rest.
+    ///
+    /// ```
+    /// use teistro_intl::locales::Locales;
+    /// use teistro_intl::source::Tree;
+    /// use teistro_intl::{Intl, sdk_root};
+    ///
+    /// let locales = Locales::from(Tree::load(&sdk_root())?.locales);
+    /// let english = Intl::over(locales.clone())?;
+    /// let mut nepali = Intl::over(locales)?;
+    /// nepali.set_locale("ne")?;
+    /// assert_eq!((english.locale(), nepali.locale()), ("en-Latn", "ne-Deva-NP"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// No locales, or a locale tag ICU4X cannot parse.
+    pub fn over(locales: Locales) -> Result<Intl, IntlError> {
+        // The tags are checked now, as building every locale's plural
+        // rules here once checked them; the rules wait for a plural.
+        // ICU4X's compiled data falls back to the root locale's rules for
+        // a tag it parses, so a later build is not expected to refuse one
+        // this accepted, and every shipped locale's is tested
+        // (`every_shipped_locale_has_plural_rules`); a locale whose build
+        // did fail would select as one without plural categories.
+        for tag in locales.tags() {
+            icu_locale(tag)?;
         }
-        let current = locales
-            .contains_key(BASE_LOCALE)
-            .then(|| BASE_LOCALE.to_string())
-            .or_else(|| locales.keys().next().cloned())
-            .ok_or_else(|| IntlError(String::from("no locales")))?;
+        let current = if locales.contains(BASE_LOCALE) {
+            BASE_LOCALE
+        } else {
+            locales
+                .tags()
+                .next()
+                .ok_or_else(|| IntlError(String::from("no locales")))?
+        }
+        .to_string();
         Ok(Intl {
             locales,
-            plurals,
             current,
             parsed: RwLock::new(HashMap::new()),
             lexicons: RwLock::new(HashMap::new()),
@@ -1372,7 +1406,7 @@ impl Intl {
     /// A tag no loaded locale answers, or one several answer with nothing to
     /// settle which, naming them.
     pub fn lookup_locale(&self, tag: &str) -> Result<&str, IntlError> {
-        let loaded: Vec<&str> = self.locales.keys().map(String::as_str).collect();
+        let loaded: Vec<&str> = self.locale_tags().collect();
         crate::lookup::lookup(tag, &loaded).map_err(|missed| match missed {
             crate::lookup::Missed::Unknown => IntlError(format!("unknown locale {tag}")),
             crate::lookup::Missed::Ambiguous(tags) => {
@@ -1443,7 +1477,25 @@ impl Intl {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn locales(&self) -> impl Iterator<Item = &LocaleSource> {
-        self.locales.values().map(Arc::as_ref)
+        self.locales.sources()
+    }
+
+    /// The tags of the locales loaded, sorted: what listing them needs,
+    /// without decoding any ([`Intl::locales`] decodes every one).
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let intl = Intl::from_tree(&tree)?;
+    ///
+    /// let tags: Vec<&str> = intl.locale_tags().collect();
+    /// assert_eq!(tags, ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn locale_tags(&self) -> impl Iterator<Item = &str> {
+        self.locales.tags()
     }
 
     /// The resolution chain from a locale: itself, then its declared
@@ -1463,7 +1515,7 @@ impl Intl {
     /// ```
     #[must_use]
     pub fn chain_from(&self, tag: &str) -> Vec<&LocaleSource> {
-        let Some(first) = self.locales.get(tag).map(Arc::as_ref) else {
+        let Some(first) = self.locales.source(tag) else {
             return Vec::new();
         };
         let mut chain = vec![first];
@@ -1472,7 +1524,7 @@ impl Intl {
                 .meta
                 .fallback
                 .iter()
-                .filter_map(|t| self.locales.get(t).map(Arc::as_ref)),
+                .filter_map(|t| self.locales.source(t)),
         );
         chain
     }
@@ -1687,10 +1739,13 @@ impl Intl {
     /// The source does not parse.
     pub fn render_source(&self, source: &str, params: &Params) -> Result<Rendered, ParseError> {
         let message = parse(source)?;
-        let locale = self.locales.get(&self.current).ok_or_else(|| ParseError {
-            offset: None,
-            message: String::from("no current locale"),
-        })?;
+        let locale = self
+            .locales
+            .source(&self.current)
+            .ok_or_else(|| ParseError {
+                offset: None,
+                message: String::from("no current locale"),
+            })?;
         let mut eval = Eval::new(self, locale, &self.current, params, 0);
         let parts = eval.message(&message);
         Ok(rendered(
@@ -1854,7 +1909,7 @@ impl Intl {
     /// ```
     #[must_use]
     pub fn categories(&self, tag: &str, ordinal: bool) -> Vec<&'static str> {
-        let Some(rules) = self.plurals.get(tag) else {
+        let Some(rules) = self.locales.plurals(tag) else {
             return Vec::new();
         };
         let rules = if ordinal {
@@ -1891,7 +1946,7 @@ impl Intl {
     }
 
     fn category(&self, tag: &str, decimal: &str, ordinal: bool) -> Option<&'static str> {
-        let rules = self.plurals.get(tag)?;
+        let rules = self.locales.plurals(tag)?;
         let rules = if ordinal {
             &rules.ordinal
         } else {
