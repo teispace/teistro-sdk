@@ -1,0 +1,37 @@
+{
+  "source": {
+    "name": "teistro-test-places",
+    "version": "1",
+    "dataVersion": "2026.11.0",
+    "tzdb": "2026c"
+  },
+  "areas": [
+    {
+      "south": 26.3,
+      "west": 80.0,
+      "north": 30.5,
+      "east": 88.2,
+      "zone": "Asia/Kathmandu",
+      "admin": [{"level": 0, "code": "NP", "name": "Nepal"}]
+    },
+    {
+      "south": 27.6,
+      "west": 85.2,
+      "north": 27.8,
+      "east": 85.5,
+      "height": {"metres": 1337, "source": "the test table", "resolutionM": 30, "datum": "EGM2008"},
+      "admin": [
+        {"level": 0, "code": "NP", "name": "Nepal"},
+        {"level": 1, "code": "NP-P3", "name": "Bagmati"},
+        {"level": 2, "code": null, "name": "Kathmandu"}
+      ]
+    },
+    {
+      "south": 10.0,
+      "west": 80.0,
+      "north": 20.0,
+      "east": 90.0,
+      "zone": "Asia/Kolkata"
+    }
+  ]
+}

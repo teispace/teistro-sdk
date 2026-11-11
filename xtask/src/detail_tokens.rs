@@ -24,6 +24,8 @@ const PAGE: &str = "docs/03-design/result-detail-measured.md";
 
 /// The fixture holding one request of each record's.
 const EXAMPLES: &str = "crates/sdk/tests/requests.json";
+/// The geo table `geo.resolve`'s example is answered from.
+const GEO_TABLE: &str = "crates/sdk/tests/geo-table.json";
 
 /// Records whose example is not answered here, each with why. Refused
 /// both ways: a listed record that answers, or is gone, fails the page.
@@ -135,6 +137,11 @@ fn measure(root: &Path) -> Result<Measured, String> {
         .ephemeris([Ephemeris::Builtin])
         .build()
         .map_err(|why| why.to_string())?;
+    // `geo.resolve` answers from a provider, which no context has unless
+    // given one: the test table every binding's tests load.
+    let table = std::fs::read_to_string(root.join(GEO_TABLE))
+        .map_err(|why| format!("{GEO_TABLE}: {why}"))?;
+    sdk.geo().load(&table).map_err(|why| why.to_string())?;
     let mut measured = Measured {
         rows: Vec::new(),
         set_aside: Vec::new(),

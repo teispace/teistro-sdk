@@ -198,6 +198,13 @@
     }
   },
   {
+    "record": "geo.resolve",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324
+    }
+  },
+  {
     "record": "time.civil",
     "request": {
       "instant": 2447986.4583333335,

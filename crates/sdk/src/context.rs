@@ -23,6 +23,7 @@ use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
     Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
 };
+use teistro_port_geo::GeoProvider;
 use teistro_time::{EmbeddedTzdb, TimeZoneProvider, ZonePack};
 
 use crate::area::{ZoneDatabase, ZoneDatabaseSource};
@@ -33,7 +34,8 @@ use crate::area::NumerologyArea;
 #[cfg(feature = "research")]
 use crate::area::ResearchArea;
 use crate::area::{
-    AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea, VerifyArea,
+    AlmanacArea, CalendarArea, EngineArea, FrameArea, GeoArea, IntlArea, KeysArea, TimeArea,
+    VerifyArea,
 };
 #[cfg(feature = "chart")]
 use crate::area::{ChartArea, InterpretArea, MatchingArea, NamingArea};
@@ -85,6 +87,9 @@ pub struct Context {
     /// The zone database every resolution reads: the embedded one, until a
     /// signed pack replaces it (`03-design/zone-packs.md`).
     zones: RefCell<Zones>,
+    /// The geo provider a caller resolves places through, when it was given
+    /// one: never consulted on its own (`03-design/geo-port.md`).
+    geo: RefCell<Option<Arc<dyn GeoProvider>>>,
     /// The name books loaded into this context, by their identity: the
     /// one thing a context gains after it is built, and only by
     /// [`NamingArea::load`], which adds and never replaces (the same book
@@ -124,6 +129,7 @@ struct Core {
 struct State {
     intl: Intl,
     zones: Zones,
+    geo: Option<Arc<dyn GeoProvider>>,
     #[cfg(feature = "chart")]
     books: Books,
 }
@@ -238,6 +244,7 @@ impl Context {
             core,
             intl: RefCell::new(state.intl),
             zones: RefCell::new(state.zones),
+            geo: RefCell::new(state.geo),
             #[cfg(feature = "chart")]
             books: RefCell::new(state.books),
         }
@@ -248,6 +255,7 @@ impl Context {
         State {
             intl: self.intl.borrow().clone(),
             zones: self.zones.borrow().clone(),
+            geo: self.geo.borrow().clone(),
             #[cfg(feature = "chart")]
             books: self.books.borrow().clone(),
         }
@@ -426,6 +434,17 @@ impl Context {
             .borrow_mut()
             .set_time_zones(Arc::clone(&zones.provider));
         *self.zones.borrow_mut() = zones;
+    }
+
+    /// The geo provider this context resolves places through, when it has
+    /// one.
+    pub(crate) fn geo_provider(&self) -> Option<Arc<dyn GeoProvider>> {
+        self.geo.borrow().clone()
+    }
+
+    /// Replaces the geo provider, for every resolution from here on.
+    pub(crate) fn install_geo(&self, provider: Arc<dyn GeoProvider>) {
+        *self.geo.borrow_mut() = Some(provider);
     }
 
     /// The ephemeris this context computes positions with, when it has
@@ -697,6 +716,13 @@ impl Context {
         EngineArea::of(self)
     }
 
+    /// A place resolved through the geo provider: its zone, ground height
+    /// and admin codes (`03-design/geo-port.md`).
+    #[must_use]
+    pub fn geo(&self) -> GeoArea<'_> {
+        GeoArea::of(self)
+    }
+
     /// A catalogue key to its packed id and back.
     #[must_use]
     pub fn keys(&self) -> KeysArea<'_> {
@@ -755,6 +781,7 @@ pub struct ContextBuilder {
     wrap: Option<Wrap>,
     layouts: Vec<Layout>,
     zones: Option<Arc<ZonePack>>,
+    geo: Option<Arc<dyn GeoProvider>>,
     #[cfg(feature = "chart")]
     dashas: Vec<DashaDefinition>,
 }
@@ -769,6 +796,10 @@ impl core::fmt::Debug for ContextBuilder {
             .field("locale", &self.locale)
             .field("ephemeris", &self.chain)
             .field("wrapped", &self.wrap.is_some())
+            .field(
+                "geo",
+                &self.geo.as_ref().map(|geo| geo.source().name.clone()),
+            )
             .finish_non_exhaustive()
     }
 }
@@ -818,6 +849,28 @@ impl ContextBuilder {
     #[must_use]
     pub fn zones(mut self, pack: Arc<ZonePack>) -> ContextBuilder {
         self.zones = Some(pack);
+        self
+    }
+
+    /// A geo provider a caller resolves places through
+    /// ([`Context::geo`]): never consulted on its own, so a context with
+    /// one answers every other question as one without
+    /// (`03-design/geo-port.md`).
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceRequest};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "places", "version": "1", "dataVersion": "2026.11.0", "tzdb": null},
+    ///     "areas": [{"south": 26.3, "west": 80.0, "north": 30.5, "east": 88.2, "zone": "Asia/Kathmandu"}]}"#)?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let place = sdk.geo().resolve(&PlaceRequest { latitude_deg: 27.7172, longitude_deg: 85.324 })?;
+    /// assert_eq!(place.zone.as_deref(), Some("Asia/Kathmandu"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn geo(mut self, provider: Arc<dyn GeoProvider>) -> ContextBuilder {
+        self.geo = Some(provider);
         self
     }
 
@@ -996,6 +1049,7 @@ impl ContextBuilder {
             State {
                 intl,
                 zones,
+                geo: self.geo,
                 #[cfg(feature = "chart")]
                 books: Books::new(),
             },

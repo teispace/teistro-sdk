@@ -16,6 +16,13 @@ use teistro::{Context, Ephemeris};
 use teistro_idl::emit::without_rust_examples;
 use teistro_mcp::{Adapter, AnswerDetail, Detail, Engine, Server};
 
+/// The geo test table every binding's tests load, for `geo.resolve`.
+fn geo() -> std::sync::Arc<teistro::GeoTable> {
+    std::sync::Arc::new(
+        teistro::GeoTable::from_json(include_str!("../../sdk/tests/geo-table.json")).unwrap(),
+    )
+}
+
 /// The engine passthrough's tools ask an engine with operations of its
 /// own, which the built-in is not: they run over the test adapter.
 fn asks_an_engine(name: &str) -> bool {
@@ -181,9 +188,11 @@ fn an_observance_reckons_another_tradition_under_other() {
 
 #[test]
 fn a_tool_answers_as_the_facade_does() {
-    let mut server = Server::new(Engine::Builtin);
+    let mut server = Server::new(Engine::Builtin).with_geo(geo());
     for profile in [None, Some("conformance-baseline")] {
-        let mut builder = Context::builder().ephemeris([Ephemeris::Builtin]);
+        let mut builder = Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .geo(geo());
         if let Some(profile) = profile {
             builder = builder.profile(profile);
         }
@@ -583,10 +592,13 @@ fn first_field(value: &Value) -> Option<String> {
 /// envelope holds to the tool's own `outputSchema`.
 #[test]
 fn every_tool_answers_a_mask_as_the_facade_does() {
-    let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
+    let mut server = Server::new(Engine::Builtin)
+        .with_detail(Detail::Full)
+        .with_geo(geo());
     let tools = listed(&mut server);
     let context = Context::builder()
         .ephemeris([Ephemeris::Builtin])
+        .geo(geo())
         .build()
         .unwrap();
     for (name, request) in examples() {
@@ -662,7 +674,9 @@ fn a_tool_refuses_a_mask_by_its_path() {
 fn every_example_and_its_answer_hold_to_the_tools_schemas() {
     let (plugged, _) = over_the_test_adapter();
     let mut plugged = plugged.with_detail(Detail::Full);
-    let mut builtin = Server::new(Engine::Builtin).with_detail(Detail::Full);
+    let mut builtin = Server::new(Engine::Builtin)
+        .with_detail(Detail::Full)
+        .with_geo(geo());
     let lean = listed(&mut Server::new(Engine::Builtin));
     for (name, request) in examples() {
         let server = if asks_an_engine(name) {

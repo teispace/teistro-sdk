@@ -67,6 +67,9 @@ audit-as-crates-io = false
 [policy.teistro-port-ephemeris]
 audit-as-crates-io = false
 
+[policy.teistro-port-geo]
+audit-as-crates-io = false
+
 [policy.teistro-port-timezone]
 audit-as-crates-io = false
 

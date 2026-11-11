@@ -95,6 +95,12 @@ pub use area::{
     DigestRequest, DigestSpan, digest_schema,
 };
 pub use area::{DaySentence, DaySentences, SentencesRequest};
+// The geo port: a place's zone, ground height and admin codes, resolved
+// only when a caller asks (`03-design/geo-port.md`, SR-87).
+pub use area::{GeoArea, PlaceRequest};
+pub use teistro_port_geo::{
+    AdminUnit, GeoBox, GeoPoint, GeoProvider, GeoSource, GeoTable, GroundHeight, ResolvedPlace,
+};
 // The sankalpa said by a tradition's template (SR-29).
 pub use area::{
     HIMAVATKHANDE, Pitris, SANKALPA_TRADITIONS, SankalpaFor, SankalpaWords, sankalpa_params,

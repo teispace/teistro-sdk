@@ -11,6 +11,7 @@ use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::strict;
+use teistro_port_geo::ResolvedPlace;
 use teistro_time::ZoneSpec;
 
 use crate::asked::place_of;
@@ -78,7 +79,7 @@ struct Unresolved {
 impl FoundRequest {
     /// What a JSON chart request is, for a caller choosing it by name (the
     /// agent server's `chart.found`).
-    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each birth then read at the offset the zone had then (Kathmandu +05:30 in 1985, +05:45 now) and each chart founded on a zone or local mean time carrying it as its foundation's `clock`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga, countsFrom}`, `countsFrom` one of `LAGNA` (the default), `MOON`, `SUN` and `BHAVA`, the bhava chalit) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent; its `provenance.time.clock` states the first birth's clock.";
+    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, or in place of the first three and the zone a `place` as `geo.resolve` answers it (its coordinates, its ground height and its zone, or `utcOffsetSeconds` where it has none, kept in the request so a receipt replays without the provider), each birth then read at the offset the zone had then (Kathmandu +05:30 in 1985, +05:45 now) and each chart founded on a zone or local mean time carrying it as its foundation's `clock`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga, countsFrom}`, `countsFrom` one of `LAGNA` (the default), `MOON`, `SUN` and `BHAVA`, the bhava chalit) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent; its `provenance.time.clock` states the first birth's clock.";
 
     /// The sections beside the foundation a request asks for by a `true`
     /// flag, by the flag every binding writes (`shadbala`, `bhavaBala`).
@@ -136,10 +137,7 @@ impl FoundRequest {
         }
         let asked: Asked = strict::read_value(&Value::Object(fields), "")?;
         let instants = asked.instants()?;
-        let at = ChartRequest::on(
-            place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)?,
-            DayClock::asked(asked.utc_offset_seconds, asked.zone)?,
-        );
+        let at = asked.at()?;
         let at = match asked.kind {
             Some(kind) => at.with_kind(kind),
             None => at,
@@ -347,10 +345,18 @@ pub(crate) struct Asked {
     instant: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     instants: Option<Vec<f64>>,
-    latitude_deg: f64,
-    longitude_deg: f64,
-    #[serde(default)]
-    altitude_m: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    latitude_deg: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    longitude_deg: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    altitude_m: Option<f64>,
+    /// A place as `geo.resolve` answered it, in place of `latitudeDeg`,
+    /// `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground
+    /// height and its zone, kept in the request so a receipt replays
+    /// without the provider.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    place: Option<ResolvedPlace>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     utc_offset_seconds: Option<i32>,
     /// The zone, in place of `utcOffsetSeconds`: each birth read at the
@@ -384,6 +390,43 @@ const fn lagna() -> ChartFrame {
 }
 
 impl Asked {
+    /// Where and on which clock: the coordinates, height and clock written
+    /// out, or a resolved `place` and nothing beside it but an offset
+    /// where it has no zone.
+    fn at(&self) -> Result<ChartRequest, Error> {
+        let Some(place) = &self.place else {
+            let (Some(latitude), Some(longitude)) = (self.latitude_deg, self.longitude_deg) else {
+                let field = if self.latitude_deg.is_none() {
+                    "latitudeDeg"
+                } else {
+                    "longitudeDeg"
+                };
+                return Err(Error::invalid_arg("a chart request names where it is cast")
+                    .with_field(field)
+                    .with_hint("write `latitudeDeg` and `longitudeDeg`, or a `place` as `geo.resolve` answers it"));
+            };
+            return Ok(ChartRequest::on(
+                place_of(latitude, longitude, self.altitude_m.unwrap_or_default())?,
+                DayClock::asked(self.utc_offset_seconds, self.zone.clone())?,
+            ));
+        };
+        for (field, given) in [
+            ("latitudeDeg", self.latitude_deg.is_some()),
+            ("longitudeDeg", self.longitude_deg.is_some()),
+            ("altitudeM", self.altitude_m.is_some()),
+            ("zone", self.zone.is_some()),
+        ] {
+            if given {
+                return Err(Error::invalid_arg(format!(
+                    "`{field}` is the resolved place's, so it is not written beside `place`"
+                ))
+                .with_field(field)
+                .with_hint("leave it out, or write the place out without `place`"));
+            }
+        }
+        ChartRequest::on_resolved(place, self.utc_offset_seconds)
+    }
+
     /// The births, from `instant` or `instants` and never both.
     fn instants(&self) -> Result<Vec<JulianDay<Utc>>, Error> {
         let (asked, field): (&[f64], &str) = match (&self.instant, &self.instants) {

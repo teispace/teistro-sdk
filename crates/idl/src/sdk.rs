@@ -46,7 +46,7 @@ pub const ABI_VERSION_CONSTANT: &str = "TS_ABI_VERSION";
 /// assert_eq!(SOURCES[0], "crates/core/src/error.rs");
 /// assert!(SOURCES.iter().all(|relative| root.join(relative).is_file()));
 /// ```
-pub const SOURCES: [&str; 36] = [
+pub const SOURCES: [&str; 37] = [
     "crates/core/src/error.rs",
     "crates/port-ephemeris/src/body.rs",
     "crates/port-ephemeris/src/capabilities.rs",
@@ -63,6 +63,7 @@ pub const SOURCES: [&str; 36] = [
     "crates/ffi/src/chart_request.rs",
     "crates/ffi/src/chart.rs",
     "crates/ffi/src/time.rs",
+    "crates/ffi/src/geo.rs",
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",

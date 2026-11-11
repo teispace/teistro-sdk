@@ -917,6 +917,7 @@ pub fn records() -> Vec<Record> {
     all.extend(almanac_lookup_records());
     all.extend(sankalpa_records());
     all.extend(time_records());
+    all.extend(geo_records());
     all.extend(engine_records());
     all.push(verify_record());
     all.extend(receipt_records());
@@ -1884,6 +1885,27 @@ fn engine_answer<T: serde::Serialize>(
         vec![format!("engine.{step}")],
     );
     Answered::sealed(Envelope::sealing(value, provenance))
+}
+
+/// The geo port's record: a place resolved through the context's provider
+/// (`03-design/geo-port.md`).
+fn geo_records() -> [Record; 1] {
+    [Record {
+        name: "geo.resolve",
+        boundary: "ts_geo_resolve",
+        title: "A place's IANA zone, ground height and ISO 3166 admin codes, from the context's geo provider",
+        reads: None,
+        run: |context, json| {
+            Answered::plain(
+                &context
+                    .geo()
+                    .resolve(&crate::PlaceRequest::from_json(json)?)?,
+            )
+        },
+        compares: None,
+        brief: Brief::Whole,
+        schemas: schemas!(crate::PlaceRequest => crate::ResolvedPlace),
+    }]
 }
 
 /// The clock and calendar records: what `TimeArea` and `CalendarArea`

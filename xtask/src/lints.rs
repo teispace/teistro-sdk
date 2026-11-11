@@ -28,7 +28,7 @@ use std::path::{Path, PathBuf};
 /// and the two surfaces (`ffi`, the C boundary, and `sdk`, the Rust
 /// façade) are held to the compiler's lints alone — a surface composes
 /// what these compute and rounds nothing itself.
-const COMPUTATION: [&str; 9] = [
+const COMPUTATION: [&str; 10] = [
     "core",
     "calendar",
     "time",
@@ -36,6 +36,7 @@ const COMPUTATION: [&str; 9] = [
     "siddhanta",
     "port-ephemeris",
     "port-timezone",
+    "port-geo",
     "intl",
     "research",
 ];
