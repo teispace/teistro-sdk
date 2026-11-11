@@ -1139,7 +1139,7 @@ gates, the IDL, every binding, and an MCP tool where it asks for one.
 | **P2** | SR-14, 16 (A2-8), 22, 41–44, 54, 55; the regional festival packs (SR-03); SR-34's other rites; the Tamil school (A2-9) | about three weeks |
 | **P3 and later** | SR-35, 45–48, 56, 57, SR-58's device pose | v1.x |
 | **Addendum 5** | First: SR-63, 75, 76. Then P0: SR-66. To P1: SR-64, 67, 68, 70–73. To P2: SR-58's sky view, Teimeris's side of SR-74 | about two weeks more, across the waves |
-| **Addendum 7** | P1: SR-87 (built), then SR-88 after the geo engine's first tag. SR-89 (built). P2: SR-90. P3: SR-91. SR-69 waits on the no-publishing rule | the adapter about a week after the tag |
+| **Addendum 7** | P1: SR-87 (built), then SR-88 after the geo engine's first tag. SR-89 (built). P2: SR-90 (built). P3: SR-91. SR-69 waits on the no-publishing rule | the adapter about a week after the tag |
 
 Text in Hindi, Sanskrit and Nepali (SR-12, 13, 29, 31, 37, 38) is drafted in its
 wave and ships only when one of the consumer's reviewers signs it off (`QUESTIONS.md` Q42, decided). The licence
@@ -1153,7 +1153,8 @@ tags stay behind the no-publishing rule; the plain-checkout build of SR-68 goes 
 Addendum 7's rows are answered in the same page, §13. SR-87's geo port is built
 (`03-design/geo-port.md`): a provider the SDK never consults on its own, whose answer a chart
 request carries so its receipt replays without it. SR-88 adapts the geo engine to it after that
-engine's first tag, and SR-90 reads the height it resolves.
+engine's first tag. SR-90 is built: a resolved height is the sunrise's observer height
+unless the caller states one, and the provenance says where it came from.
 
 ## v1.0 release and baseline migration
 

@@ -147,8 +147,9 @@ With `place`:
 
 - the coordinates come from it, the height from `place.height.metres` (0 when
   it has none, as an omitted `altitudeM` is), and the clock from `place.zone`;
-- `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone` beside it are refused
-  as a contradiction, named by the field;
+- `latitudeDeg`, `longitudeDeg` and `zone` beside it are refused as a
+  contradiction, named by the field; `altitudeM` beside it is the caller's
+  own height and wins (§6a);
 - a place with no zone needs `utcOffsetSeconds`; one with a zone refuses it.
 
 `latitudeDeg` and `longitudeDeg` become optional in the request's schema, and
@@ -170,6 +171,50 @@ The receipt already carries the request, and a second copy of the place would
 be a second thing to keep equal; the provenance is stamped by every answer and
 the geo port reaches one of them. A record that reads a resolved place carries
 it in its request, and that is where a replay reads it.
+
+## 6a. The height into the sunrise (SR-90)
+
+`horizon-atmosphere.md` measured the observer's height as the term that
+matters for a sunrise: about half a minute at Kathmandu, through the dip and
+the pressure (`Atmosphere::at`, `rise_set::horizon_refraction_arcmin`,
+`centre_altitude_deg`). Both already read the place's `altitude` under the
+sunrise convention that names its air (`ATMOSPHERIC`, the pressure from the
+height when it is left out), so a resolved place needs no new path to the
+sunrise, only a height in its place:
+
+- `chart.found` and `almanac.days` take `place`, and the observer stands at
+  `altitudeM` when the caller states one, else at the provider's ground
+  height, else at sea level where the provider knows none;
+- the answer's provenance gains an applied convention, `observer.height`,
+  whose value is the height used (`1337 m`) and whose reason names where it
+  came from: the provider, its version and data release, and the height's
+  own source, resolution and datum; or "stated by the caller as `altitudeM`,
+  over the provider's ground height of 1337 m"; or that the provider knows
+  no height there, so sea level;
+- a request written out with coordinates records nothing new, so no stored
+  answer moves.
+
+The receipt holds both: the request keeps the place with its height, and the
+answer it digests carries the convention, so a replay without the provider
+answers `HELD` with the same record of where the height came from. A
+Kathmandu sunrise on the test table's 1337 m is the sunrise with
+`altitudeM: 1337` written by hand, to the bit (`crates/sdk/tests/geo.rs`).
+
+**The convention is the settings', not the place's.** The shipped profiles
+reckon the sunrise by the almanac's fixed 34 arcminutes (`NAMED`), which
+reads no height, and a resolved place does not switch it: a resolved place
+must found what its parts written out found under the same settings, which
+is the acceptance, and turning the convention on for every profile would
+move every stored sunrise. A consumer who wants the height in its sunrise
+names the air once in its settings, `{"kind": "ATMOSPHERIC", "which":
+"UPPER_LIMB_REFRACTION", "air": {}}`, and every resolved height then reaches
+it: at Kathmandu the test table's 1337 m moves the sunrise from sea level's,
+and `altitudeM: 0` beside the place moves it back. Whether a shipped profile
+should name the air is the maintainer's call, left open here.
+
+The typed C entry points (`ts_panchanga_days`, `ts_chart_found`) take
+coordinates and not a place; a binding reaches a resolved place through the
+records, `record("almanac.days", ...)` and `record("chart.found", ...)`.
 
 ## 7. The table provider
 
@@ -227,9 +272,6 @@ replays it on a context with no provider: `HELD`.
   first tag): `GeoProvider` for its engine, the grid conversion, its pack's
   release as `dataVersion`, and its zone rules through `time_zones()` if it
   carries them, with the context side of §8.
-- **SR-90**, the sunrise's observer pressure from a known height: the
-  resolved height is in the chart request and the place, which is where a
-  pressure model would read it; the settings that would name the model are not
-  built.
+- **SR-90** is built (§6a).
 - A conformance kit for geo providers like `ephemeris-kit`, when there is a
   second provider to hold to the first.
