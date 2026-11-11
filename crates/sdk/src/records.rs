@@ -1035,9 +1035,14 @@ fn chart_records() -> [Record; 4] {
                     context
                         .chart()
                         .compose(&found.instants, &found.request, &found.records)?;
+                let mut provenance = composed.founded.provenance.clone();
+                // Where a resolved place's height came from (SR-90).
+                provenance
+                    .applied_conventions
+                    .extend(found.height().cloned());
                 Ok(Answered {
                     value: written(&composed)?,
-                    provenance: Some(composed.founded.provenance.clone()),
+                    provenance: Some(provenance),
                     detail: Detail::Full,
                     fields: None,
                 })
@@ -2089,12 +2094,18 @@ fn base64(bytes: &[u8]) -> String {
 /// days' provenance is the answer's.
 fn days(context: &Context, json: &str) -> Result<Answered, Error> {
     let asked = crate::DaysRequest::from_json(json)?;
-    let answer = asked.clock.asked_on(
+    let mut answer = asked.clock.asked_on(
         context.almanac(),
         (&asked.first, &asked.last),
         &asked.place,
         &asked.beside,
     )?;
+    // Where a resolved place's height came from (SR-90).
+    answer
+        .days
+        .provenance
+        .applied_conventions
+        .extend(asked.height.clone());
     let value = written(&crate::days_request::DaysWritten {
         days: &answer.days.value,
         day_hashes: &answer.day_hashes,
