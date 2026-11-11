@@ -113,14 +113,15 @@ fn a_day_keeps_nothing_and_a_range_shares_its_lunation() {
     assert!(
         later * 8 <= one.allocations,
         "a later day of a range allocates {later} times against the first day's {}, \
-         measured at 318 against 3,340: the lunation, found once, is shared; without \
-         its memo a later day costs 807",
+         measured at 214 (318 before a round's one-instant wait was held in place): \
+         the lunation, found once, is shared; without its memo a later day cost 807",
         one.allocations
     );
     assert!(
-        festival_later * 2 <= later && festival_month.allocations < month.allocations,
+        festival_later * 3 <= later * 2 && festival_month.allocations < month.allocations,
         "a festival day allocates {festival_later} times past the first against a \
-         panchanga day's {later}, measured at 133 against 318: it does not compute \
-         the parts festival rules do not read, the Moon's rises and sets least of all"
+         panchanga day's {later}, measured at 114 against 214: it does not compute \
+         the parts festival rules do not read, the Moon's rises and sets least of all \
+         (133 against 318 while each of the Moon's lockstep waits allocated twice)"
     );
 }
