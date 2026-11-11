@@ -692,7 +692,7 @@
       "artefact": "module",
       "raw": 7768773,
       "gzip": 2172418,
-      "why": "geo.resolve and the Body graha fix grow the panchanga module and every glue file; measured on verify 43098669884"
+      "why": "The geo port (geo.load and geo.resolve, SR-87) grows the panchanga module and every glue file; measured on verify 43098669884"
     }
   ]
 }
