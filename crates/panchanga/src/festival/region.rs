@@ -33,10 +33,11 @@ pub struct Region {
 ///
 /// assert!(REGIONS.iter().any(|region| region.key == "KATHMANDU_VALLEY" && region.alias.is_none()));
 /// ```
-pub const REGIONS: [Region; 10] = [
+pub const REGIONS: [Region; 11] = [
     region("HILLS", None),
     region("IN", None),
     region("IN-AS", Some("ASSAM")),
+    region("IN-KA", None),
     region("IN-KL", Some("KERALA")),
     region("IN-MH", Some("MAHARASHTRA")),
     region("IN-TN", Some("TAMIL_NADU")),
@@ -61,7 +62,7 @@ const fn region(key: &'static str, alias: Option<&'static str>) -> Region {
 /// assert_eq!(region::canonical("TAMIL_NADU"), "IN-TN");
 /// assert_eq!(region::canonical("IN-TN"), "IN-TN");
 /// assert_eq!(region::canonical("KATHMANDU_VALLEY"), "KATHMANDU_VALLEY");
-/// assert_eq!(region::canonical("IN-KA"), "IN-KA");
+/// assert_eq!(region::canonical("IN-UP"), "IN-UP");
 /// ```
 #[must_use]
 pub fn canonical(key: &str) -> &str {

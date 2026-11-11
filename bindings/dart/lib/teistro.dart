@@ -18129,7 +18129,16 @@ enum FestivalPack {
   /// Bathou San on Magh's second Tuesday), the Vaishnava saints' days and
   /// Janmastomi on a tithi of an Assamese month, and the days set by the
   /// moon as printed, marked so (`03-design/assam-holidays.md`).
-  indiaAssam('INDIA_ASSAM');
+  indiaAssam('INDIA_ASSAM'),
+
+  /// Karnataka's public holidays: the Department of Personnel and
+  /// Administrative Reforms' yearly Notification-I by rule, its Annexure's
+  /// restricted holidays marked optional, each day the central list also
+  /// holds by [indiaCentral]'s rule, Karnataka's own days by the amanta
+  /// month (Ugadi, Basava Jayanti, Mahalaya Amavasye, Valmiki and
+  /// Kanakadasa Jayanti) and its solar days by the Sun, and the days set by
+  /// the moon as printed, marked so (`03-design/karnataka-holidays.md`).
+  indiaKarnataka('INDIA_KARNATAKA');
 
   const FestivalPack(this.key);
 

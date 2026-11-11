@@ -701,3 +701,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "kerala"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "karnataka"
+required-features = ["builtin-ephemeris"]
