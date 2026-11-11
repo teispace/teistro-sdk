@@ -8147,6 +8147,10 @@ export interface FestivalRule {
    */
   readonly inAdhika?: InAdhika;
   /**
+   * A calendar's month the day must fall in, in place of `month`: the rule is judged in every lunar month and keeps the day in this one, as Kerala keeps the dark 8th in Chingam (C1320).
+   */
+  readonly inMonth?: InMonth | null;
+  /**
    * The rule's key in its pack, `"JANMASHTAMI"`.
    */
   readonly key: string;
@@ -9264,6 +9268,24 @@ export interface Guard {
  * Which of a doubled month's two a rule is kept in.
  */
 export type InAdhika = 'NIJA' | 'ALSO' | 'ONLY' | 'FIRST' | boolean;
+
+/**
+ * The month of a calendar a lunar rule's day must fall in, and which of two days in one such month is kept.
+ */
+export interface InMonth {
+  /**
+   * The calendar the month is in, a solar one as a rule.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The month, 1 for the first.
+   */
+  readonly month: number;
+  /**
+   * Which of two days the rule keeps in one such month is kept.
+   */
+  readonly twice: FestivalWhich;
+}
 
 /**
  * What a guard, or a rule's `otherwise`, decides.

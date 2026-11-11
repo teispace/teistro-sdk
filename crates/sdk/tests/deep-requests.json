@@ -583,6 +583,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [
@@ -985,6 +990,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [
@@ -1617,6 +1627,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [
@@ -2264,6 +2279,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [
@@ -2860,6 +2880,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [
@@ -3241,6 +3266,11 @@
                   }
                 ],
                 "inAdhika": true,
+                "inMonth": {
+                  "calendar": "calendar.JULIAN",
+                  "month": 1,
+                  "twice": "LATER"
+                },
                 "key": "x",
                 "meta": {
                   "communities": [
@@ -3679,6 +3709,11 @@
               }
             ],
             "inAdhika": true,
+            "inMonth": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "twice": "LATER"
+            },
             "key": "x",
             "meta": {
               "communities": [

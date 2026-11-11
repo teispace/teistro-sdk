@@ -11944,6 +11944,7 @@ final class FestivalRule extends _Request {
     this.dayOfPaksha,
     required this.decide,
     this.inAdhika,
+    this.inMonth,
     required this.key,
     this.meta,
     this.month,
@@ -11969,6 +11970,9 @@ final class FestivalRule extends _Request {
 
   /// Which of a doubled month's two holds it (C171): the nija month by default.
   final InAdhika? inAdhika;
+
+  /// A calendar's month the day must fall in, in place of `month`: the rule is judged in every lunar month and keeps the day in this one, as Kerala keeps the dark 8th in Chingam (C1320).
+  final InMonth? inMonth;
 
   /// The rule's key in its pack, `"JANMASHTAMI"`.
   final String key;
@@ -12004,6 +12008,7 @@ final class FestivalRule extends _Request {
     if (dayOfPaksha case final dayOfPakshaValue?) 'dayOfPaksha': dayOfPakshaValue,
     'decide': [for (final e0 in decide) e0._wire],
     if (inAdhika case final inAdhikaValue?) 'inAdhika': inAdhikaValue._wire,
+    if (inMonth case final inMonthValue?) 'inMonth': inMonthValue._wire,
     'key': key,
     if (meta case final metaValue?) 'meta': metaValue._wire,
     if (month case final monthValue?) 'month': monthValue.key,
@@ -12016,7 +12021,7 @@ final class FestivalRule extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
+  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
 }
 
 /// The threshold table a criterion compares its measure against.
@@ -14196,6 +14201,34 @@ final class InAdhikaValue extends InAdhika {
 
   @override
   List<Object?> get _fields => [value];
+}
+
+/// The month of a calendar a lunar rule's day must fall in, and which of two days in one such month is kept.
+final class InMonth extends _Request {
+  const InMonth({
+    required this.calendar,
+    required this.month,
+    required this.twice,
+  });
+
+  /// The calendar the month is in, a solar one as a rule.
+  final Calendar calendar;
+
+  /// The month, 1 for the first.
+  final int month;
+
+  /// Which of two days the rule keeps in one such month is kept.
+  final FestivalWhich twice;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calendar': calendar.key,
+    'month': month,
+    'twice': twice.key,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, month, twice];
 }
 
 /// What a guard, or a rule's `otherwise`, decides.

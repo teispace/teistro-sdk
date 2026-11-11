@@ -1563,7 +1563,7 @@ The days the notifications print are not reckoned: the five set by the moon, eac
 
 ## 12. Kerala's public holidays against the notifications
 
-`INDIA_KERALA` at Thiruvananthapuram on India's clock, against each year's public holidays to the public offices of the General Administration (Co-ordination) Department's notifications, the occasions they name as falling on a Sunday or a second Saturday, and their restricted holidays. 154 of 156 rows agree.
+`INDIA_KERALA` at Thiruvananthapuram on India's clock, against each year's public holidays to the public offices of the General Administration (Co-ordination) Department's notifications, the occasions they name as falling on a Sunday or a second Saturday, and their restricted holidays. 155 of 156 rows agree.
 
 - 2021: G.O.(P) No. 16/2020/GAD, 22 October 2020: rank 1, a staff site's text of the signed order
 - 2022: G.O.(P) No. 29/2021/GAD, 21 October 2021, Kerala Gazette Extraordinary No. 3060: rank 1, gad.kerala.gov.in
@@ -1654,7 +1654,7 @@ The days the notifications print are not reckoned: the five set by the moon, eac
 | 2025 | THIRD_ONAM | 9/6 | 9/6 |
 | 2025 | FOURTH_ONAM | 9/7 | 9/7 |
 | 2025 | SREE_NARAYANA_GURU_JAYANTHI | 9/7 | 9/7 |
-| 2025 | JANMASHTAMI | 9/14 | 8/15 ✗ |
+| 2025 | JANMASHTAMI | 9/14 | 9/14 |
 | 2025 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
 | 2025 | MAHA_NAVAMI | 10/1 | 10/1 |
 | 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
@@ -1680,7 +1680,6 @@ The days the notifications print are not reckoned: the five set by the moon, eac
 The 9 civil days stand on their date in all 6 years.
 
 - 2024 KARKIDAKA_VAVU: the new moon runs from 15:51 on 3 August to 16:43 on the 4th, so the sunrise reading takes the 4th; the notice lists the 3rd, the day the new moon holds the sunset (C1322)
-- 2025 JANMASHTAMI: *Dharmasindhu*'s rule keeps the 8th of the lunar month in August, which fell in Karkidakam; the notice lists 14 September, the dark 8th in Chingam (C1320)
 
 The days the notifications print are not reckoned: the four set by the moon, each marked, and Ayya Vaikunda Swami's birthday. 2031, with no notification, holds none.
 

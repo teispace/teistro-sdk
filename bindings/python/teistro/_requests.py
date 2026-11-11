@@ -678,6 +678,7 @@ __all__ = [
     "DatedRuleTithiInMonth",
     "Guard",
     "InAdhika",
+    "InMonth",
     "FestivalChoice",
     "VrataParana",
     "VrataParanaTithiEnd",
@@ -8581,6 +8582,9 @@ class FestivalRule(TypedDict, total=False):
     inAdhika: InAdhika
     """Which of a doubled month's two holds it (C171): the nija month by default."""
 
+    inMonth: Optional[InMonth]
+    """A calendar's month the day must fall in, in place of `month`: the rule is judged in every lunar month and keeps the day in this one, as Kerala keeps the dark 8th in Chingam (C1320)."""
+
     key: Required[str]
     """The rule's key in its pack, `"JANMASHTAMI"`."""
 
@@ -9529,6 +9533,19 @@ class Guard(TypedDict, total=False):
 
 InAdhika: TypeAlias = "Union[Literal['NIJA', 'ALSO', 'ONLY', 'FIRST'], bool]"
 """Which of a doubled month's two a rule is kept in."""
+
+
+class InMonth(TypedDict, total=False):
+    """The month of a calendar a lunar rule's day must fall in, and which of two days in one such month is kept."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar the month is in, a solar one as a rule."""
+
+    month: Required[int]
+    """The month, 1 for the first."""
+
+    twice: Required[FestivalWhich]
+    """Which of two days the rule keeps in one such month is kept."""
 
 
 FestivalChoice: TypeAlias = Literal['EARLIER', 'LATER', 'BY_YUGMA', 'NONE']
