@@ -355,6 +355,50 @@ fn assam_keeps_its_own_days_by_the_assamese_month() -> Result<(), teistro::Error
 }
 
 #[test]
+fn karnataka_keeps_its_restricted_days_optional() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_KARNATAKA"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for (key, form) in [
+        ("SAMVATSARA_ARAMBHA", PackForm::Lunar),
+        ("BASAVA_JAYANTI", PackForm::Lunar),
+        ("KANAKADASA_JAYANTI", PackForm::Lunar),
+        ("SOURAMANA_UGADI", PackForm::Dated),
+        ("UTTARAYANA_PUNYAKALA", PackForm::Dated),
+        ("KANNADA_RAJYOTSAVA", PackForm::Dated),
+        ("RAMANUJACHARYA_JAYANTI", PackForm::Dated),
+        ("HUTTARI", PackForm::Published),
+        ("MAWLID", PackForm::Published),
+    ] {
+        assert_eq!(row(&listed.rules, key).unwrap().form, form, "{key}");
+    }
+    for (key, restricted) in [
+        ("VALMIKI_JAYANTI", false),
+        ("AMAVASYA_SHRADDHA", false),
+        ("MADHVA_NAVAMI", true),
+        ("SWARNA_GOWRI_VRATA", true),
+        ("HUTTARI", true),
+        ("SHAB_E_QADR", true),
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().meta.optional,
+            restricted,
+            "{key}"
+        );
+    }
+    let general = MetaFilter {
+        regions: vec!["IN-KA".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| general.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");
@@ -523,9 +567,20 @@ fn a_region_is_kept_by_its_iso_code_and_names_its_pack() -> Result<(), teistro::
     // A state with no pack keeps its country's list; a part of Nepal no ISO
     // code names is a filter, not a pack; a country no pack keeps is refused.
     assert_eq!(
-        PackRequest::from_json(r#"{"pack": "IN-KA"}"#)?.pack,
+        PackRequest::from_json(r#"{"pack": "IN-UP"}"#)?.pack,
         FestivalPack::IndiaCentral
     );
+    // A state first shipped under its code has no alias.
+    let karnataka = FestivalPack::IndiaKarnataka;
+    assert_eq!(karnataka.region(), Some("IN-KA"));
+    assert_eq!(
+        PackRequest::from_json(r#"{"pack": "IN-KA"}"#)?.pack,
+        karnataka
+    );
+    for row in &karnataka.listing().rules {
+        assert_eq!(row.meta.regions, ["IN", "IN-KA"], "{}", row.key);
+        assert!(!keeping("IN-TN").admits(&row.meta), "{}", row.key);
+    }
     assert_eq!(
         PackRequest::from_json(r#"{"pack": "NP"}"#)?.pack,
         FestivalPack::NepalPanchanga

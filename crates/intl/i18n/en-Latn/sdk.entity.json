@@ -5195,6 +5195,54 @@
     "ASOM_DIVAS": {
       "name": "Asom Divas (Sukapha Divas)",
       "prose": "Asom Divas (Sukapha Divas)"
+    },
+    "BASAVA_JAYANTI": {
+      "name": "Basava Jayanti",
+      "prose": "Basava Jayanti"
+    },
+    "DEVARA_DASIMAYYA_JAYANTI": {
+      "name": "Devara Dasimayya Jayanti",
+      "prose": "Devara Dasimayya Jayanti"
+    },
+    "MADHVA_NAVAMI": {
+      "name": "Madhva Navami",
+      "prose": "Madhva Navami"
+    },
+    "VALMIKI_JAYANTI": {
+      "name": "Maharshi Valmiki Jayanti",
+      "prose": "Maharshi Valmiki Jayanti"
+    },
+    "KANAKADASA_JAYANTI": {
+      "name": "Kanakadasa Jayanti",
+      "prose": "Kanakadasa Jayanti"
+    },
+    "SWARNA_GOWRI_VRATA": {
+      "name": "Swarna Gowri Vrata",
+      "prose": "Swarna Gowri Vrata"
+    },
+    "KANNADA_RAJYOTSAVA": {
+      "name": "Kannada Rajyotsava",
+      "prose": "Kannada Rajyotsava"
+    },
+    "KANYA_MARIYAMMA_JAYANTI": {
+      "name": "Kanya Mariyamma Jayanti",
+      "prose": "Kanya Mariyamma Jayanti"
+    },
+    "CHRISTMAS_EVE": {
+      "name": "Christmas Eve",
+      "prose": "Christmas Eve"
+    },
+    "SOURAMANA_UGADI": {
+      "name": "Souramana Ugadi",
+      "prose": "Souramana Ugadi"
+    },
+    "UTTARAYANA_PUNYAKALA": {
+      "name": "Uttarayana Punyakala, Makara Sankranti",
+      "prose": "Uttarayana Punyakala, Makara Sankranti"
+    },
+    "RAMANUJACHARYA_JAYANTI": {
+      "name": "Sri Ramanujacharya Jayanti",
+      "prose": "Sri Ramanujacharya Jayanti"
     }
   },
   "agni_vasa": {

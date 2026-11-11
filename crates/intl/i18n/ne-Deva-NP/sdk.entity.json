@@ -5205,6 +5205,54 @@
     "ASOM_DIVAS": {
       "name": "असम दिवस (सुकाफा दिवस)",
       "prose": "असम दिवस (सुकाफा दिवस)"
+    },
+    "BASAVA_JAYANTI": {
+      "name": "बसव जयन्ती",
+      "prose": "बसव जयन्ती"
+    },
+    "DEVARA_DASIMAYYA_JAYANTI": {
+      "name": "देवर दासिमय्य जयन्ती",
+      "prose": "देवर दासिमय्य जयन्ती"
+    },
+    "MADHVA_NAVAMI": {
+      "name": "मध्व नवमी",
+      "prose": "मध्व नवमी"
+    },
+    "VALMIKI_JAYANTI": {
+      "name": "महर्षि वाल्मीकि जयन्ती",
+      "prose": "महर्षि वाल्मीकि जयन्ती"
+    },
+    "KANAKADASA_JAYANTI": {
+      "name": "कनकदास जयन्ती",
+      "prose": "कनकदास जयन्ती"
+    },
+    "SWARNA_GOWRI_VRATA": {
+      "name": "स्वर्ण गौरी व्रत",
+      "prose": "स्वर्ण गौरी व्रत"
+    },
+    "KANNADA_RAJYOTSAVA": {
+      "name": "कन्नड राज्योत्सव",
+      "prose": "कन्नड राज्योत्सव"
+    },
+    "KANYA_MARIYAMMA_JAYANTI": {
+      "name": "कन्या मरियम्मा जयन्ती",
+      "prose": "कन्या मरियम्मा जयन्ती"
+    },
+    "CHRISTMAS_EVE": {
+      "name": "क्रिसमस पूर्वसन्ध्या",
+      "prose": "क्रिसमस पूर्वसन्ध्या"
+    },
+    "SOURAMANA_UGADI": {
+      "name": "सौरमान उगादि",
+      "prose": "सौरमान उगादि"
+    },
+    "UTTARAYANA_PUNYAKALA": {
+      "name": "उत्तरायण पुण्यकाल, मकर सङ्क्रान्ति",
+      "prose": "उत्तरायण पुण्यकाल, मकर सङ्क्रान्ति"
+    },
+    "RAMANUJACHARYA_JAYANTI": {
+      "name": "श्री रामानुजाचार्य जयन्ती",
+      "prose": "श्री रामानुजाचार्य जयन्ती"
     }
   },
   "agni_vasa": {

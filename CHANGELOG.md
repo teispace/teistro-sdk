@@ -31,6 +31,30 @@ ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
 Assam's and Kerala's public holidays, and a rule held to a calendar's month
 (`inMonth`).
 
+**Karnataka's public holidays (SR-03, the sixth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-KA` now reckons `INDIA_KARNATAKA`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_KARNATAKA` (`FestivalPack::IndiaKarnataka`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_karnataka`) holds the Department of Personnel and Administrative Reforms' notifications of
+  2019 to 2026: Notification-I's general holidays with the days its Note 1 names on a Sunday or a second or fourth
+  Saturday, the Annexure's restricted holidays (`optional`), and the banks' closing of accounts:
+  - the state's lunar days at sunrise: Devara Dasimayya Jayanti, Madhva Navami, the Navami and Vijayadashami,
+    Valmiki and Kanakadasa Jayanti, and Balipadyami, Sri Ramanavami and Shankaracharya Jayanti, which other
+    lists keep by another window (C1375);
+  - Makara Sankranti and Tula Sankramana on `MALAYALAM_SOLAR`'s Makaram 1 and Thulam 1 (C1373), Souramana Ugadi on
+    the civil day of the Sun's entry into Mesha (C1372), Onam and Narayana Guru's birthday as Kerala keeps them, and
+    Ramanujacharya Jayanti on Ardra in Chittirai (C1374);
+  - Nepal's printed panchanga's and *Dharmasindhu*'s rules for the days they share, and the central list's;
+  - Kannada Rajyotsava, Kanya Mariyamma Jayanti, Vishwakarma Jayanti, Christmas Eve and Holy Saturday on their
+    dates.
+
+  The four general days and three restricted days set by the moon ship as printed, marked `MOON_SIGHTING`;
+  Varamahalakshmi Vrata, Rig Upakarma and Huttari ship as printed (C1376 to C1378). Kodagu's district holidays
+  are left out (C1379) (`03-design/karnataka-holidays.md`).
+- `festival-measured.md` §15 holds it at Bengaluru, 246 of the 263 rows meeting the print and the seventeen that
+  part named (C1373, C1374, C1380 to C1387). `crates/sdk/tests/karnataka.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the twelve new keys.
+
 **The MCP server's lean tool list states the festival rules apart.**
 **Numbers:** none. The festival rule language a request carries
 (`festivals` in `almanac.cells`, `almanac.digest`,
@@ -96,7 +120,7 @@ unknown field.
 state by its old key still matches, read as the code; an answer's
 `meta.regions` now carries the code. A request may name a region wherever
 it names a pack: `{"rules": ["IN-TN"]}` reckons `INDIA_TAMIL_NADU`, a
-state with no pack of its own keeps its country's (`IN-KA` keeps
+state with no pack of its own keeps its country's (`IN-UP` keeps
 `INDIA_CENTRAL`, `NP-P3` `NEPAL_PANCHANGA`), and `almanac.festivalPack`
 takes the same. `teistro_panchanga::festival::region` (`REGIONS`,
 `canonical`, `country`) and `FestivalPack::region` and `for_region` are

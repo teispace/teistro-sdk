@@ -38,6 +38,7 @@ mod gaudiya;
 mod in_month;
 mod india_assam;
 mod india_central;
+mod india_karnataka;
 mod india_kerala;
 mod india_maharashtra;
 mod india_tamil_nadu;
