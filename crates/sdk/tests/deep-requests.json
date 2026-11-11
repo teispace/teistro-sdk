@@ -4855,6 +4855,30 @@
           "withinSign": true
         }
       },
+      "place": {
+        "admin": [
+          {
+            "code": "x",
+            "level": 1,
+            "name": "x"
+          }
+        ],
+        "height": {
+          "datum": "x",
+          "metres": 1.5,
+          "resolutionM": 1.5,
+          "source": "x"
+        },
+        "latitudeDeg": 1.5,
+        "longitudeDeg": 1.5,
+        "source": {
+          "dataVersion": "x",
+          "name": "x",
+          "tzdb": "x",
+          "version": "x"
+        },
+        "zone": "x"
+      },
       "points": true,
       "prashna": {
         "question": {
@@ -5418,6 +5442,13 @@
           "longitudeDeg": 1.5
         }
       ]
+    }
+  },
+  {
+    "record": "geo.resolve",
+    "request": {
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5
     }
   },
   {

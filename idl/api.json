@@ -20,6 +20,7 @@
     "crates/ffi/src/chart_request.rs",
     "crates/ffi/src/chart.rs",
     "crates/ffi/src/time.rs",
+    "crates/ffi/src/geo.rs",
     "crates/ffi/src/intl.rs",
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
@@ -17035,6 +17036,108 @@
       },
       "meta": {},
       "source": "crates/ffi/src/time.rs"
+    },
+    {
+      "name": "ts_geo_resolve",
+      "doc": "A place resolved through the context's geo provider, answered as\ncanonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin,\nsource}`: the IANA zone (or null), the ground height\n`{metres, source, resolutionM, datum}` (or null), the admin units\nholding the point coarse to fine, each `{level, code, name}` with its\nISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's\n`{name, version, dataVersion, tzdb}`. A chart request's `place` takes\nit as it is, so the request a receipt keeps replays without the\nprovider.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\"}`. A key it does not\nread is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on\n`latitudeDeg` or `longitudeDeg`; a context with no provider is\n`CAPABILITY` on `geo`; an answer of the provider's that is not well\nformed is `PROVIDER`, named by its field (`admin[1].code`).",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/geo.rs"
+    },
+    {
+      "name": "ts_geo_load",
+      "doc": "Installs a geo table as the context's geo provider, in place of any it\nhad, answering the table's source as canonical JSON\n`{name, version, dataVersion, tzdb}`.\n\n`table_json` is `{\"source\", \"areas\"}`: `source` as answered, and\n`areas` a list of boxes `{south, west, north, east}` in degrees (`west`\neast of `east` for a box across the antimeridian), each with any of\n`zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each\nquestion is answered by the last box holding the point that answers\nit, so a table is written coarse to fine. A key it does not read, an\nedge out of range or a malformed answer is `INVALID_ARG` named under\n`geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.",
+      "safety": "`context` must be a live handle; `table_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "table_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/geo.rs"
     },
     {
       "name": "ts_intl_load_pack",

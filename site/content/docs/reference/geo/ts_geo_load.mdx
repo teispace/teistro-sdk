@@ -1,0 +1,73 @@
+---
+title: ts_geo_load
+description: "Installs a geo table as the context's geo provider, in place of any it had, answering the table's source as canonical JSON `{name, version, dataVersion, tzdb}`."
+---
+
+Installs a geo table as the context's geo provider, in place of any it had, answering the table's source as canonical JSON `{name, version, dataVersion, tzdb}`.
+
+`table_json` is `{"source", "areas"}`: `source` as answered, and `areas` a list of boxes `{south, west, north, east}` in degrees (`west` east of `east` for a box across the antimeridian), each with any of `zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each question is answered by the last box holding the point that answers it, so a table is written coarse to fine. A key it does not read, an edge out of range or a malformed answer is `INVALID_ARG` named under `geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.geo.load
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.geo.load
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.geo.load
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.geo().load
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.geo().load
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_geo_load(const ts_context * context, const char * table_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `geo.load` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `table_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `table_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/geo.rs`.

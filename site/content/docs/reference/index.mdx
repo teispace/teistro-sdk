@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 106 entry points over 28 structs and 187 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 108 entry points over 28 structs and 187 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -93,6 +93,13 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_time_load_zones`](time/ts_time_load_zones) | Verifies a signed zone pack and replaces the context's zone database with it, answering the database as `ts_time_zone_database` does. |
 | [`ts_time_convert`](time/ts_time_convert) | Converts an instant between UT1, TT and UTC under the context's Delta T model, reporting what was applied. |
 | [`ts_time_delta_t`](time/ts_time_delta_t) | Delta T (TT less UT1) at a UT1 instant under the context's model, with what produced it and its uncertainty where the source has one. |
+
+### Geo
+
+| entry point | what it does |
+|---|---|
+| [`ts_geo_resolve`](geo/ts_geo_resolve) | A place resolved through the context's geo provider, answered as canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin, source}`: the IANA zone (or null), the ground height `{metres, source, resolutionM, datum}` (or null), the admin units holding the point coarse to fine, each `{level, code, name}` with its ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's `{name, version, dataVersion, tzdb}`. |
+| [`ts_geo_load`](geo/ts_geo_load) | Installs a geo table as the context's geo provider, in place of any it had, answering the table's source as canonical JSON `{name, version, dataVersion, tzdb}`. |
 
 ### Locale engine
 
@@ -285,6 +292,7 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/chart_request.rs`
 - `crates/ffi/src/chart.rs`
 - `crates/ffi/src/time.rs`
+- `crates/ffi/src/geo.rs`
 - `crates/ffi/src/intl.rs`
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
