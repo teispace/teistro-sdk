@@ -204,7 +204,10 @@ export interface ChangesRequest {
  * The request as a binding writes it, the records taken out.
  */
 export interface AlmanacDaysRequest {
-  readonly altitudeM?: number;
+  /**
+   * The observer's height, metres; over a resolved `place`'s own.
+   */
+  readonly altitudeM?: number | null;
   readonly calendar?: Member<catalogue.Calendar> | null;
   readonly eclipses?: boolean;
   readonly festivals?: FestivalRequest;
@@ -213,11 +216,15 @@ export interface AlmanacDaysRequest {
   readonly homaAhuti?: boolean;
   readonly lagnas?: boolean;
   readonly last?: DayAsked | null;
-  readonly latitudeDeg: number;
-  readonly longitudeDeg: number;
+  readonly latitudeDeg?: number | null;
+  readonly longitudeDeg?: number | null;
   readonly markers?: boolean;
   readonly muhurta?: MuhurtaRequest;
   readonly nepalSambat?: boolean;
+  /**
+   * A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one.
+   */
+  readonly place?: ResolvedPlace | null;
   readonly sky?: boolean;
   /**
    * The sky's step, minutes; ten when left out.
@@ -927,7 +934,7 @@ export interface ChartFoundRequest {
   readonly parallels?: ParallelRequest;
   readonly perfection?: PerfectionRequest;
   /**
-   * A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider.
+   * A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one, kept in the request so a receipt replays without the provider.
    */
   readonly place?: ResolvedPlace | null;
   readonly points?: boolean;
@@ -1867,6 +1874,36 @@ export interface MuhurtaRequest {
 }
 
 /**
+ * A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered.
+ */
+export interface ResolvedPlace {
+  /**
+   * The admin units holding the point, coarse to fine.
+   */
+  readonly admin: readonly AdminUnit[];
+  /**
+   * The ground height there, or `null` where the data has none.
+   */
+  readonly height?: GroundHeight | null;
+  /**
+   * The latitude asked, in degrees.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The longitude asked, in degrees.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * Who answered, and from which data.
+   */
+  readonly source: GeoSource;
+  /**
+   * The IANA zone holding the point, or `null` where the data has none.
+   */
+  readonly zone?: string | null;
+}
+
+/**
  * A tradition's lists, every one data.
  */
 export interface DeathTimeTable {
@@ -2547,36 +2584,6 @@ export interface PerfectionRequest {
    * How the perfection is read.
    */
   readonly rules?: PerfectionRules;
-}
-
-/**
- * A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered.
- */
-export interface ResolvedPlace {
-  /**
-   * The admin units holding the point, coarse to fine.
-   */
-  readonly admin: readonly AdminUnit[];
-  /**
-   * The ground height there, or `null` where the data has none.
-   */
-  readonly height?: GroundHeight | null;
-  /**
-   * The latitude asked, in degrees.
-   */
-  readonly latitudeDeg: number;
-  /**
-   * The longitude asked, in degrees.
-   */
-  readonly longitudeDeg: number;
-  /**
-   * Who answered, and from which data.
-   */
-  readonly source: GeoSource;
-  /**
-   * The IANA zone holding the point, or `null` where the data has none.
-   */
-  readonly zone?: string | null;
 }
 
 /**
@@ -4058,6 +4065,68 @@ export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
 export type MuhurtaRequestRules = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE' | 'RAMAN_NAMAKARANA' | 'RAMAN_ANNAPRASANA' | 'RAMAN_UPANAYANA' | 'RAMAN_GRIHA_PRAVESHA' | 'RAMAN_KARNAVEDHA' | 'RAMAN_CHUDAKARANA' | 'RAMAN_VIDYARAMBHA' | 'RAMAN_YATRA' | 'RAMAN_TRADE_PURCHASE' | 'RAMAN_SELLING' | 'RAMAN_NEW_CLOTHES' | 'RAMAN_VEHICLE' | 'CHINTAMANI_GRIHARAMBHA' | 'CHINTAMANI_BHUMI_PUJA' | 'CHINTAMANI_VASTU_SHANTI' | 'CHINTAMANI_VIPANI' | 'CHINTAMANI_VIVAHA' | ActivityRules;
 
 /**
+ * An admin unit holding a point.
+ */
+export interface AdminUnit {
+  /**
+   * Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none.
+   */
+  readonly code?: string | null;
+  /**
+   * Its level: 0 for a country, then coarse to fine.
+   */
+  readonly level: number;
+  /**
+   * Its name as the provider gives it, or `null`.
+   */
+  readonly name?: string | null;
+}
+
+/**
+ * The ground height at a point, and where it comes from.
+ */
+export interface GroundHeight {
+  /**
+   * The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid.
+   */
+  readonly datum: string;
+  /**
+   * The height in metres above the datum.
+   */
+  readonly metres: number;
+  /**
+   * The data's horizontal resolution, the step between its samples, in metres.
+   */
+  readonly resolutionM: number;
+  /**
+   * The dataset it was read from, as the provider names it (`SRTM GL1`).
+   */
+  readonly source: string;
+}
+
+/**
+ * Who answers a resolution, and from which data.
+ */
+export interface GeoSource {
+  /**
+   * The release of the data it answered from (`2026.11.0`).
+   */
+  readonly dataVersion: string;
+  /**
+   * The provider's name.
+   */
+  readonly name: string;
+  /**
+   * The tzdb release its zone names come from (`2026c`), or `null` where it does not say.
+   */
+  readonly tzdb?: string | null;
+  /**
+   * The provider's own version, its code's.
+   */
+  readonly version: string;
+}
+
+/**
  * How a feed's event came to be, which a [`FeedSelector`] can name.
  *
  * `OBSERVANCE`: A yearly rule's observance.
@@ -4604,68 +4673,6 @@ export interface PerfectionRules {
    * Whether a contact with a third planet counts only when the planet applying perfects it before leaving its sign, as Lilly's void of course bounds an application (p. 112) and his p. 387 figure reads a void Moon's six contacts as no prohibition (crux C234); `false` counts every contact inside the horizon. It bounds the impediments, a translator's next contact and a collector's.
    */
   readonly withinSign?: boolean;
-}
-
-/**
- * An admin unit holding a point.
- */
-export interface AdminUnit {
-  /**
-   * Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none.
-   */
-  readonly code?: string | null;
-  /**
-   * Its level: 0 for a country, then coarse to fine.
-   */
-  readonly level: number;
-  /**
-   * Its name as the provider gives it, or `null`.
-   */
-  readonly name?: string | null;
-}
-
-/**
- * The ground height at a point, and where it comes from.
- */
-export interface GroundHeight {
-  /**
-   * The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid.
-   */
-  readonly datum: string;
-  /**
-   * The height in metres above the datum.
-   */
-  readonly metres: number;
-  /**
-   * The data's horizontal resolution, the step between its samples, in metres.
-   */
-  readonly resolutionM: number;
-  /**
-   * The dataset it was read from, as the provider names it (`SRTM GL1`).
-   */
-  readonly source: string;
-}
-
-/**
- * Who answers a resolution, and from which data.
- */
-export interface GeoSource {
-  /**
-   * The release of the data it answered from (`2026.11.0`).
-   */
-  readonly dataVersion: string;
-  /**
-   * The provider's name.
-   */
-  readonly name: string;
-  /**
-   * The tzdb release its zone names come from (`2026c`), or `null` where it does not say.
-   */
-  readonly tzdb?: string | null;
-  /**
-   * The provider's own version, its code's.
-   */
-  readonly version: string;
 }
 
 /**

@@ -326,7 +326,7 @@ final class ChangesRequest extends _Request {
 /// The request as a binding writes it, the records taken out.
 final class AlmanacDaysRequest extends _Request {
   const AlmanacDaysRequest({
-    this.altitudeM = 0.0,
+    this.altitudeM,
     this.calendar,
     this.eclipses = false,
     this.festivals,
@@ -335,11 +335,12 @@ final class AlmanacDaysRequest extends _Request {
     this.homaAhuti = false,
     this.lagnas = false,
     this.last,
-    required this.latitudeDeg,
-    required this.longitudeDeg,
+    this.latitudeDeg,
+    this.longitudeDeg,
     this.markers = false,
     this.muhurta,
     this.nepalSambat = false,
+    this.place,
     this.sky = false,
     this.skyStepMinutes,
     this.utcOffsetSeconds,
@@ -347,7 +348,8 @@ final class AlmanacDaysRequest extends _Request {
     this.zone,
   });
 
-  final double altitudeM;
+  /// The observer's height, metres; over a resolved `place`'s own.
+  final double? altitudeM;
 
   final Calendar? calendar;
 
@@ -365,15 +367,18 @@ final class AlmanacDaysRequest extends _Request {
 
   final DayAsked? last;
 
-  final double latitudeDeg;
+  final double? latitudeDeg;
 
-  final double longitudeDeg;
+  final double? longitudeDeg;
 
   final bool markers;
 
   final MuhurtaRequest? muhurta;
 
   final bool nepalSambat;
+
+  /// A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one.
+  final ResolvedPlace? place;
 
   final bool sky;
 
@@ -389,7 +394,7 @@ final class AlmanacDaysRequest extends _Request {
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
-    'altitudeM': altitudeM,
+    if (altitudeM case final altitudeMValue?) 'altitudeM': altitudeMValue,
     if (calendar case final calendarValue?) 'calendar': calendarValue.key,
     'eclipses': eclipses,
     if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
@@ -398,11 +403,12 @@ final class AlmanacDaysRequest extends _Request {
     'homaAhuti': homaAhuti,
     'lagnas': lagnas,
     if (last case final lastValue?) 'last': lastValue._wire,
-    'latitudeDeg': latitudeDeg,
-    'longitudeDeg': longitudeDeg,
+    if (latitudeDeg case final latitudeDegValue?) 'latitudeDeg': latitudeDegValue,
+    if (longitudeDeg case final longitudeDegValue?) 'longitudeDeg': longitudeDegValue,
     'markers': markers,
     if (muhurta case final muhurtaValue?) 'muhurta': muhurtaValue._wire,
     'nepalSambat': nepalSambat,
+    if (place case final placeValue?) 'place': placeValue._wire,
     'sky': sky,
     if (skyStepMinutes case final skyStepMinutesValue?) 'skyStepMinutes': skyStepMinutesValue,
     if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
@@ -411,7 +417,7 @@ final class AlmanacDaysRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
 }
 
 /// The query as a binding writes it.
@@ -1621,7 +1627,7 @@ final class ChartFoundRequest extends _Request {
 
   final PerfectionRequest? perfection;
 
-  /// A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider.
+  /// A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one, kept in the request so a receipt replays without the provider.
   final ResolvedPlace? place;
 
   final bool? points;
@@ -3048,6 +3054,49 @@ enum ChangeKind implements _Keyed {
   final String key;
 }
 
+/// A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered.
+final class ResolvedPlace extends _Request {
+  const ResolvedPlace({
+    required this.admin,
+    this.height,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.source,
+    this.zone,
+  });
+
+  /// The admin units holding the point, coarse to fine.
+  final List<AdminUnit> admin;
+
+  /// The ground height there, or `null` where the data has none.
+  final GroundHeight? height;
+
+  /// The latitude asked, in degrees.
+  final double latitudeDeg;
+
+  /// The longitude asked, in degrees.
+  final double longitudeDeg;
+
+  /// Who answered, and from which data.
+  final GeoSource source;
+
+  /// The IANA zone holding the point, or `null` where the data has none.
+  final String? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'admin': [for (final e0 in admin) e0._wire],
+    if (height case final heightValue?) 'height': heightValue._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'source': source._wire,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [admin, height, latitudeDeg, longitudeDeg, source, zone];
+}
+
 /// A tradition's lists, every one data.
 final class DeathTimeTable extends _Request {
   const DeathTimeTable({
@@ -3741,49 +3790,6 @@ final class ParallelRequest extends _Request {
 
   @override
   List<Object?> get _fields => [orbDeg];
-}
-
-/// A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered.
-final class ResolvedPlace extends _Request {
-  const ResolvedPlace({
-    required this.admin,
-    this.height,
-    required this.latitudeDeg,
-    required this.longitudeDeg,
-    required this.source,
-    this.zone,
-  });
-
-  /// The admin units holding the point, coarse to fine.
-  final List<AdminUnit> admin;
-
-  /// The ground height there, or `null` where the data has none.
-  final GroundHeight? height;
-
-  /// The latitude asked, in degrees.
-  final double latitudeDeg;
-
-  /// The longitude asked, in degrees.
-  final double longitudeDeg;
-
-  /// Who answered, and from which data.
-  final GeoSource source;
-
-  /// The IANA zone holding the point, or `null` where the data has none.
-  final String? zone;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'admin': [for (final e0 in admin) e0._wire],
-    if (height case final heightValue?) 'height': heightValue._wire,
-    'latitudeDeg': latitudeDeg,
-    'longitudeDeg': longitudeDeg,
-    'source': source._wire,
-    if (zone case final zoneValue?) 'zone': zoneValue,
-  };
-
-  @override
-  List<Object?> get _fields => [admin, height, latitudeDeg, longitudeDeg, source, zone];
 }
 
 /// What a chart's remedies are read under: the instant whose running daśā names subjects, when one is asked about, and the readings.
@@ -6207,6 +6213,100 @@ final class MuhurtaRequestRulesValue extends MuhurtaRequestRules {
   List<Object?> get _fields => [value];
 }
 
+/// An admin unit holding a point.
+final class AdminUnit extends _Request {
+  const AdminUnit({
+    this.code,
+    required this.level,
+    this.name,
+  });
+
+  /// Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none.
+  final String? code;
+
+  /// Its level: 0 for a country, then coarse to fine.
+  final int level;
+
+  /// Its name as the provider gives it, or `null`.
+  final String? name;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (code case final codeValue?) 'code': codeValue,
+    'level': level,
+    if (name case final nameValue?) 'name': nameValue,
+  };
+
+  @override
+  List<Object?> get _fields => [code, level, name];
+}
+
+/// The ground height at a point, and where it comes from.
+final class GroundHeight extends _Request {
+  const GroundHeight({
+    required this.datum,
+    required this.metres,
+    required this.resolutionM,
+    required this.source,
+  });
+
+  /// The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid.
+  final String datum;
+
+  /// The height in metres above the datum.
+  final double metres;
+
+  /// The data's horizontal resolution, the step between its samples, in metres.
+  final double resolutionM;
+
+  /// The dataset it was read from, as the provider names it (`SRTM GL1`).
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'datum': datum,
+    'metres': metres,
+    'resolutionM': resolutionM,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [datum, metres, resolutionM, source];
+}
+
+/// Who answers a resolution, and from which data.
+final class GeoSource extends _Request {
+  const GeoSource({
+    required this.dataVersion,
+    required this.name,
+    this.tzdb,
+    required this.version,
+  });
+
+  /// The release of the data it answered from (`2026.11.0`).
+  final String dataVersion;
+
+  /// The provider's name.
+  final String name;
+
+  /// The tzdb release its zone names come from (`2026c`), or `null` where it does not say.
+  final String? tzdb;
+
+  /// The provider's own version, its code's.
+  final String version;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'dataVersion': dataVersion,
+    'name': name,
+    if (tzdb case final tzdbValue?) 'tzdb': tzdbValue,
+    'version': version,
+  };
+
+  @override
+  List<Object?> get _fields => [dataVersion, name, tzdb, version];
+}
+
 /// How a feed's event came to be, which a [`FeedSelector`] can name.
 enum FeedForm implements _Keyed {
   /// A yearly rule's observance.
@@ -6766,100 +6866,6 @@ final class KootaRules extends _Request {
 
   @override
   List<Object?> get _fields => [bhakootLift, devaBride, equalVarna, gana, nadiDosha, vashya];
-}
-
-/// An admin unit holding a point.
-final class AdminUnit extends _Request {
-  const AdminUnit({
-    this.code,
-    required this.level,
-    this.name,
-  });
-
-  /// Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none.
-  final String? code;
-
-  /// Its level: 0 for a country, then coarse to fine.
-  final int level;
-
-  /// Its name as the provider gives it, or `null`.
-  final String? name;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    if (code case final codeValue?) 'code': codeValue,
-    'level': level,
-    if (name case final nameValue?) 'name': nameValue,
-  };
-
-  @override
-  List<Object?> get _fields => [code, level, name];
-}
-
-/// The ground height at a point, and where it comes from.
-final class GroundHeight extends _Request {
-  const GroundHeight({
-    required this.datum,
-    required this.metres,
-    required this.resolutionM,
-    required this.source,
-  });
-
-  /// The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid.
-  final String datum;
-
-  /// The height in metres above the datum.
-  final double metres;
-
-  /// The data's horizontal resolution, the step between its samples, in metres.
-  final double resolutionM;
-
-  /// The dataset it was read from, as the provider names it (`SRTM GL1`).
-  final String source;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'datum': datum,
-    'metres': metres,
-    'resolutionM': resolutionM,
-    'source': source,
-  };
-
-  @override
-  List<Object?> get _fields => [datum, metres, resolutionM, source];
-}
-
-/// Who answers a resolution, and from which data.
-final class GeoSource extends _Request {
-  const GeoSource({
-    required this.dataVersion,
-    required this.name,
-    this.tzdb,
-    required this.version,
-  });
-
-  /// The release of the data it answered from (`2026.11.0`).
-  final String dataVersion;
-
-  /// The provider's name.
-  final String name;
-
-  /// The tzdb release its zone names come from (`2026c`), or `null` where it does not say.
-  final String? tzdb;
-
-  /// The provider's own version, its code's.
-  final String version;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'dataVersion': dataVersion,
-    'name': name,
-    if (tzdb case final tzdbValue?) 'tzdb': tzdbValue,
-    'version': version,
-  };
-
-  @override
-  List<Object?> get _fields => [dataVersion, name, tzdb, version];
 }
 
 /// What was asked.

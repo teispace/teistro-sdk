@@ -92,6 +92,7 @@ __all__ = [
     "DayAsked",
     "ChangeKind",
     "MuhurtaRequest",
+    "ResolvedPlace",
     "DeathTimeTable",
     "FeedAlarm",
     "SuppliedEvent",
@@ -126,7 +127,6 @@ __all__ = [
     "MidpointRequest",
     "ParallelRequest",
     "PerfectionRequest",
-    "ResolvedPlace",
     "PrashnaRequest",
     "ProgressionsRequest",
     "RectificationRequest",
@@ -221,6 +221,9 @@ __all__ = [
     "MuhurtaNative",
     "MuhurtaRanking",
     "MuhurtaRequestRules",
+    "AdminUnit",
+    "GroundHeight",
+    "GeoSource",
     "FeedForm",
     "FirstAbdika",
     "SapindanaAt",
@@ -258,9 +261,6 @@ __all__ = [
     "PoruthamRules",
     "KootaRules",
     "PerfectionRules",
-    "AdminUnit",
-    "GroundHeight",
-    "GeoSource",
     "PrashnaQuestion",
     "PrashnaRequestRules",
     "AngleMethod",
@@ -937,7 +937,8 @@ class ChangesRequest(TypedDict, total=False):
 class AlmanacDaysRequest(TypedDict, total=False):
     """The request as a binding writes it, the records taken out."""
 
-    altitudeM: float
+    altitudeM: Optional[float]
+    """The observer's height, metres; over a resolved `place`'s own."""
 
     calendar: Optional[Union[_catalogue.Calendar, str]]
 
@@ -955,15 +956,18 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     last: Optional[DayAsked]
 
-    latitudeDeg: Required[float]
+    latitudeDeg: Optional[float]
 
-    longitudeDeg: Required[float]
+    longitudeDeg: Optional[float]
 
     markers: bool
 
     muhurta: MuhurtaRequest
 
     nepalSambat: bool
+
+    place: Optional[ResolvedPlace]
+    """A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one."""
 
     sky: bool
 
@@ -1594,7 +1598,7 @@ class ChartFoundRequest(TypedDict, total=False):
     perfection: PerfectionRequest
 
     place: Optional[ResolvedPlace]
-    """A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider."""
+    """A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one, kept in the request so a receipt replays without the provider."""
 
     points: bool
 
@@ -2355,6 +2359,28 @@ class MuhurtaRequest(TypedDict, total=False):
     """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
+class ResolvedPlace(TypedDict, total=False):
+    """A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered."""
+
+    admin: Required[Sequence[AdminUnit]]
+    """The admin units holding the point, coarse to fine."""
+
+    height: Optional[GroundHeight]
+    """The ground height there, or `null` where the data has none."""
+
+    latitudeDeg: Required[float]
+    """The latitude asked, in degrees."""
+
+    longitudeDeg: Required[float]
+    """The longitude asked, in degrees."""
+
+    source: Required[GeoSource]
+    """Who answered, and from which data."""
+
+    zone: Optional[str]
+    """The IANA zone holding the point, or `null` where the data has none."""
+
+
 class DeathTimeTable(TypedDict, total=False):
     """A tradition's lists, every one data."""
 
@@ -2908,28 +2934,6 @@ class PerfectionRequest(TypedDict, total=False):
 
     rules: Union[PerfectionRules, _layer.PerfectionRules]
     """How the perfection is read."""
-
-
-class ResolvedPlace(TypedDict, total=False):
-    """A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered."""
-
-    admin: Required[Sequence[AdminUnit]]
-    """The admin units holding the point, coarse to fine."""
-
-    height: Optional[GroundHeight]
-    """The ground height there, or `null` where the data has none."""
-
-    latitudeDeg: Required[float]
-    """The latitude asked, in degrees."""
-
-    longitudeDeg: Required[float]
-    """The longitude asked, in degrees."""
-
-    source: Required[GeoSource]
-    """Who answered, and from which data."""
-
-    zone: Optional[str]
-    """The IANA zone holding the point, or `null` where the data has none."""
 
 
 class PrashnaRequest(TypedDict, total=False):
@@ -4147,6 +4151,51 @@ MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARR
 """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
+class AdminUnit(TypedDict, total=False):
+    """An admin unit holding a point."""
+
+    code: Optional[str]
+    """Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none."""
+
+    level: Required[int]
+    """Its level: 0 for a country, then coarse to fine."""
+
+    name: Optional[str]
+    """Its name as the provider gives it, or `null`."""
+
+
+class GroundHeight(TypedDict, total=False):
+    """The ground height at a point, and where it comes from."""
+
+    datum: Required[str]
+    """The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid."""
+
+    metres: Required[float]
+    """The height in metres above the datum."""
+
+    resolutionM: Required[float]
+    """The data's horizontal resolution, the step between its samples, in metres."""
+
+    source: Required[str]
+    """The dataset it was read from, as the provider names it (`SRTM GL1`)."""
+
+
+class GeoSource(TypedDict, total=False):
+    """Who answers a resolution, and from which data."""
+
+    dataVersion: Required[str]
+    """The release of the data it answered from (`2026.11.0`)."""
+
+    name: Required[str]
+    """The provider's name."""
+
+    tzdb: Optional[str]
+    """The tzdb release its zone names come from (`2026c`), or `null` where it does not say."""
+
+    version: Required[str]
+    """The provider's own version, its code's."""
+
+
 FeedForm: TypeAlias = Literal['OBSERVANCE', 'EKADASHI', 'DATED', 'ANNIVERSARY', 'ADDED', 'PARANA', 'SUPPLIED']
 """How a feed's event came to be, which a `FeedSelector` can name.
 
@@ -4611,51 +4660,6 @@ class PerfectionRules(TypedDict, total=False):
 
     withinSign: bool
     """Whether a contact with a third planet counts only when the planet applying perfects it before leaving its sign, as Lilly's void of course bounds an application (p. 112) and his p. 387 figure reads a void Moon's six contacts as no prohibition (crux C234); `false` counts every contact inside the horizon. It bounds the impediments, a translator's next contact and a collector's."""
-
-
-class AdminUnit(TypedDict, total=False):
-    """An admin unit holding a point."""
-
-    code: Optional[str]
-    """Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none."""
-
-    level: Required[int]
-    """Its level: 0 for a country, then coarse to fine."""
-
-    name: Optional[str]
-    """Its name as the provider gives it, or `null`."""
-
-
-class GroundHeight(TypedDict, total=False):
-    """The ground height at a point, and where it comes from."""
-
-    datum: Required[str]
-    """The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid."""
-
-    metres: Required[float]
-    """The height in metres above the datum."""
-
-    resolutionM: Required[float]
-    """The data's horizontal resolution, the step between its samples, in metres."""
-
-    source: Required[str]
-    """The dataset it was read from, as the provider names it (`SRTM GL1`)."""
-
-
-class GeoSource(TypedDict, total=False):
-    """Who answers a resolution, and from which data."""
-
-    dataVersion: Required[str]
-    """The release of the data it answered from (`2026.11.0`)."""
-
-    name: Required[str]
-    """The provider's name."""
-
-    tzdb: Optional[str]
-    """The tzdb release its zone names come from (`2026c`), or `null` where it does not say."""
-
-    version: Required[str]
-    """The provider's own version, its code's."""
 
 
 class PrashnaQuestion(TypedDict, total=False):

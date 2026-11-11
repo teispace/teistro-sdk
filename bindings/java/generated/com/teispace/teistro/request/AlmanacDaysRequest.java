@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * The request as a binding writes it, the records taken out.
  *
- * @param altitudeM The {@code altitudeM} field. Null leaves the SDK's default.
+ * @param altitudeM The observer's height, metres; over a resolved `place`'s own. Null leaves the SDK's default.
  * @param calendar The {@code calendar} field. Null leaves the SDK's default.
  * @param eclipses The {@code eclipses} field. Null leaves the SDK's default.
  * @param festivals Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer. Null leaves the SDK's default.
@@ -20,18 +20,19 @@ import java.util.Objects;
  * @param homaAhuti The {@code homaAhuti} field. Null leaves the SDK's default.
  * @param lagnas The {@code lagnas} field. Null leaves the SDK's default.
  * @param last A civil day as a request names it. Null leaves the SDK's default.
- * @param latitudeDeg The {@code latitudeDeg} field.
- * @param longitudeDeg The {@code longitudeDeg} field.
+ * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
+ * @param longitudeDeg The {@code longitudeDeg} field. Null leaves the SDK's default.
  * @param markers The {@code markers} field. Null leaves the SDK's default.
  * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
  * @param nepalSambat The {@code nepalSambat} field. Null leaves the SDK's default.
+ * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one. Null leaves the SDK's default.
  * @param sky The {@code sky} field. Null leaves the SDK's default.
  * @param skyStepMinutes The sky's step, minutes; ten when left out. Null leaves the SDK's default.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
  * @param years The {@code years} field. Null leaves the SDK's default.
  * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
  */
-public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, Boolean lagnas, DayAsked last, double latitudeDeg, double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
+public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, Boolean lagnas, DayAsked last, Double latitudeDeg, Double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, ResolvedPlace place, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -51,11 +52,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      * default stands.
      *
      * @param first A civil day as a request names it.
-     * @param latitudeDeg The {@code latitudeDeg} field.
-     * @param longitudeDeg The {@code longitudeDeg} field.
      */
-    public AlmanacDaysRequest(DayAsked first, double latitudeDeg, double longitudeDeg) {
-        this(null, null, null, null, first, null, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null, null, null, null);
+    public AlmanacDaysRequest(DayAsked first) {
+        this(null, null, null, null, first, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -84,6 +83,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         private Boolean markers;
         private MuhurtaRequest muhurta;
         private Boolean nepalSambat;
+        private ResolvedPlace place;
         private Boolean sky;
         private Integer skyStepMinutes;
         private Integer utcOffsetSeconds;
@@ -95,7 +95,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code altitudeM}.
          *
-         * @param altitudeM The {@code altitudeM} field. Null leaves the SDK's default.
+         * @param altitudeM The observer's height, metres; over a resolved `place`'s own. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder altitudeM(double altitudeM) {
@@ -194,7 +194,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code latitudeDeg}.
          *
-         * @param latitudeDeg The {@code latitudeDeg} field.
+         * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder latitudeDeg(double latitudeDeg) {
@@ -205,7 +205,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code longitudeDeg}.
          *
-         * @param longitudeDeg The {@code longitudeDeg} field.
+         * @param longitudeDeg The {@code longitudeDeg} field. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder longitudeDeg(double longitudeDeg) {
@@ -243,6 +243,17 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          */
         public Builder nepalSambat(boolean nepalSambat) {
             this.nepalSambat = nepalSambat;
+            return this;
+        }
+
+        /**
+         * Sets {@code place}.
+         *
+         * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder place(ResolvedPlace place) {
+            this.place = place;
             return this;
         }
 
@@ -308,7 +319,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          * @throws NullPointerException naming a required field left unset
          */
         public AlmanacDaysRequest build() {
-            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, Objects.requireNonNull(latitudeDeg, "`AlmanacDaysRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AlmanacDaysRequest.longitudeDeg` is required"), markers, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
+            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
         }
     }
 
@@ -331,11 +342,12 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
             Read.orNull(json.get("homaAhuti"), present -> Read.bool(present, "AlmanacDaysRequest.homaAhuti")),
             Read.orNull(json.get("lagnas"), present -> Read.bool(present, "AlmanacDaysRequest.lagnas")),
             Read.orNull(json.get("last"), present -> DayAsked.of(present)),
-            Read.number(Read.required(json.get("latitudeDeg"), "AlmanacDaysRequest.latitudeDeg"), "AlmanacDaysRequest.latitudeDeg"),
-            Read.number(Read.required(json.get("longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"),
+            Read.orNull(json.get("latitudeDeg"), present -> Read.number(present, "AlmanacDaysRequest.latitudeDeg")),
+            Read.orNull(json.get("longitudeDeg"), present -> Read.number(present, "AlmanacDaysRequest.longitudeDeg")),
             Read.orNull(json.get("markers"), present -> Read.bool(present, "AlmanacDaysRequest.markers")),
             Read.orNull(json.get("muhurta"), present -> MuhurtaRequest.of(present)),
             Read.orNull(json.get("nepalSambat"), present -> Read.bool(present, "AlmanacDaysRequest.nepalSambat")),
+            Read.orNull(json.get("place"), present -> ResolvedPlace.of(present)),
             Read.orNull(json.get("sky"), present -> Read.bool(present, "AlmanacDaysRequest.sky")),
             Read.orNull(json.get("skyStepMinutes"), present -> Read.int32(present, "AlmanacDaysRequest.skyStepMinutes")),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "AlmanacDaysRequest.utcOffsetSeconds")),
@@ -371,8 +383,12 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         if (last != null) {
             json.put("last", last.toJson());
         }
-        json.put("latitudeDeg", latitudeDeg);
-        json.put("longitudeDeg", longitudeDeg);
+        if (latitudeDeg != null) {
+            json.put("latitudeDeg", latitudeDeg);
+        }
+        if (longitudeDeg != null) {
+            json.put("longitudeDeg", longitudeDeg);
+        }
         if (markers != null) {
             json.put("markers", markers);
         }
@@ -381,6 +397,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
         if (nepalSambat != null) {
             json.put("nepalSambat", nepalSambat);
+        }
+        if (place != null) {
+            json.put("place", place.toJson());
         }
         if (sky != null) {
             json.put("sky", sky);
