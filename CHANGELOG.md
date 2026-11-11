@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A place's zone, height and admin codes through a geo port.** **Numbers:**
+none. The new crate `teistro-port-geo` names a `GeoProvider`: the IANA
+zone at a point, the ground height with its source, resolution and
+datum, and the ISO 3166-1 and 3166-2 codes of the admin units holding
+it, with the provider's name and data version, and optionally the zone
+rules of its tzdb release. The SDK never consults one on its own: a
+context has one when built with `ContextBuilder::geo` or given a table
+with `geo.load` (`ts_geo_load`), and the MCP server with `--geo PATH`.
+`geo.resolve` (`ts_geo_resolve`, an MCP tool, `geo.resolve` in every
+binding) answers the place; `chart.found` takes it as `place`, so the
+receipt's request keeps the zone, the height and the data version and
+replays `HELD` without the provider. `GeoTable`, a list of boxes read
+from JSON, is the test provider and a small place catalogue. A request
+without `place` reads as before (`03-design/geo-port.md`, SR-87).
+
 **Sreekrishna Jayanthi in Kerala is the dark 8th in Chingam (C1320).**
 **Numbers:** `INDIA_KERALA`'s `JANMASHTAMI` moves in a year whose amanta
 Shravana 8th falls before Chingam 1: 2025's moves from 15 August to 14
