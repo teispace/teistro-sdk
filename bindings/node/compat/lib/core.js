@@ -223,7 +223,7 @@ export class Contexts {
   /** @param {object} [options] the context options, without `profile` and `settings` */
   constructor(options = {}) {
     if (typeof options !== 'object' || options === null || Array.isArray(options)) {
-      throw new TypeError("options: expected the context options, e.g. { ephemeris: [teimeris()], locale: 'ne-Deva-NP' }");
+      throw new TypeError("options: expected the context options, e.g. { ephemeris: [engine], locale: 'ne-Deva-NP' }");
     }
     for (const field of DECIDED) {
       if (options[field] !== undefined) {

@@ -5,11 +5,11 @@
 //! - `check-docs`: the documentation gates.
 //! - `check-guides`: every program a hand-written guide shows is an
 //!   excerpt of a file a gate runs or type-checks, named in its `title`.
-//! - `check-teimeris-adapter`: the Teimeris adapter's tests, the provider
-//!   kit over it, and every binding loading it as a plugin, from a
-//!   Teimeris checkout beside the SDK's.
-//! - `relock-teimeris-adapter`: the adapter's committed `Cargo.lock`
-//!   resolved again after an SDK crate's dependencies change.
+//! - `check-adapter [--adapter DIR]`: an ephemeris adapter's tests, the
+//!   provider kit over it, and every binding loading it as a plugin; the
+//!   adapter named by its directory (`docs/06-cicd/adapter-gate.md`).
+//! - `relock-adapter [--adapter DIR]`: the adapter's committed
+//!   `Cargo.lock` resolved again after an SDK crate's dependencies change.
 //! - `check-dco BASE HEAD`: every commit in `BASE..HEAD` carries a sign-off.
 //! - `check-fixtures`: the golden-vector corpus is well formed and listed.
 //! - `check-catalogue` and `gen catalogue`: the entity catalogue's generated
@@ -273,6 +273,7 @@ mod ab;
 mod abi_stability;
 mod absence;
 mod accuracy;
+mod adapter;
 mod agreement;
 mod almanac;
 mod answers;
@@ -404,7 +405,6 @@ mod state_readings;
 mod stations;
 mod surface;
 mod synastry;
-mod teimeris_adapter;
 mod teimeris_ranges;
 mod terms;
 mod time;
@@ -747,8 +747,8 @@ fn binding_gate(command: &str, args: &[String]) -> Option<i32> {
         "check-packages" => crate_packages::check(&root),
         "check-site" => site::check(&root),
         "check-guides" => guides::check(&root),
-        "check-teimeris-adapter" => teimeris_adapter::check(&root),
-        "relock-teimeris-adapter" => teimeris_adapter::relock(&root),
+        "check-adapter" => adapter::check(&root, &args[1..]),
+        "relock-adapter" => adapter::relock(&root, &args[1..]),
         "check-properties" => properties::check(&root),
         _ => return None,
     })
@@ -883,7 +883,7 @@ fn usage() -> i32 {
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
          check-versions | check-packages | zone-pack --from DIR --version V --out FILE | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
-         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | coverage --bindings DIR | check-coverage [--from FILE] [--bindings DIR] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | relock-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
+         check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | coverage --bindings DIR | check-coverage [--from FILE] [--bindings DIR] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-adapter [--adapter DIR] | relock-adapter [--adapter DIR] | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
          costs --measure FILE | costs --from FILE | costs --render | check-costs [--from FILE] | \

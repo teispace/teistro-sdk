@@ -13,6 +13,19 @@ license = "Apache-2.0"
 publish = false
 description = "The Teimeris adapter of the Teistro SDK's ephemeris port, outside the SDK workspace (ADR-0019); links Teimeris under Teimeris's own terms"
 
+# What the SDK's generic adapter gate needs to know of the engine that
+# this directory's layout cannot say (`cargo xtask check-adapter`,
+# `docs/06-cicd/adapter-gate.md`): listed here, never spelled in the SDK.
+[package.metadata.teistro-adapter]
+engine = "teimeris"
+library-variable = "TEISTRO_TEIMERIS_ADAPTER"
+java-module = "com.teispace.teistro.teimeris"
+engine-checkout = "../../../../teimeris"
+# Teimeris built from its source with its modern data compiled in, as a
+# phone has it, never a host library a developer's shell points at.
+embedded-env = { TM_EMBED_TIER = "MODERN" }
+embedded-unset = ["TEIMERIS_LIB_DIR"]
+
 # Standalone on purpose: the adapter depends on the SDK, never the
 # reverse, and the SDK workspace builds without it.
 [workspace]

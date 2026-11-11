@@ -962,19 +962,31 @@ test('an area is a value that can be destructured and kept', () => {
 });
 
 /**
+ * The engine a plugged-in adapter should report: `TEISTRO_ADAPTER_ENGINE`,
+ * which `cargo xtask check-adapter` sets from the adapter's own manifest.
+ */
+function expectedEngine() {
+  const engine = process.env.TEISTRO_ADAPTER_ENGINE;
+  assert.ok(engine, 'set TEISTRO_ADAPTER_ENGINE to the engine the adapter reports');
+  return engine;
+}
+
+/**
  * **An engine, plugged in** (ADR-0029): the 98% path, where a consumer
  * names an adapter's platform binary and never sees a vtable.
  *
  * It runs only where the adapter has been built and its data is present,
  * because a checkout has neither and a test that failed for that would
- * fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the library — the
- * same variable `crates/ffi/tests/abi.rs` reads for the same reason.
+ * fail for everyone. `TEISTRO_ADAPTER_LIBRARY` names the library — the
+ * same variable `crates/ffi/tests/abi.rs` reads for the same reason — and
+ * `TEISTRO_ADAPTER_ENGINE` the engine it should report, both set by
+ * `cargo xtask check-adapter`.
  */
 test('an ephemeris is plugged in by naming its platform binary', () => {
-  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  const plugin = process.env.TEISTRO_ADAPTER_LIBRARY;
   if (!plugin) {
     console.log(
-      "skipped: the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library",
+      "skipped: the adapter is built separately; set TEISTRO_ADAPTER_LIBRARY to its library",
     );
     return;
   }
@@ -992,9 +1004,13 @@ test('an ephemeris is plugged in by naming its platform binary', () => {
       Math.abs(sky.at(0, 0).longitude - 280.37) < 0.5,
       `the Sun at J2000 came back as ${sky.at(0, 0).longitude}`,
     );
-    // And its own functions came with it, which no SDK operation offers.
-    assert.equal(ctx.engine.manifest.engine, 'teimeris');
-    assert.equal(ctx.engine.call('tm_body_name', { body: 0 }).buf, 'Sun');
+    // And its own functions came with it, which no SDK operation offers:
+    // the engine names itself and describes each of them.
+    assert.equal(ctx.engine.manifest.engine, expectedEngine());
+    assert.ok(ctx.engine.names.length > 0, 'the engine brought none of its own operations');
+    for (const name of ctx.engine.names) {
+      assert.ok(ctx.engine.signature(name), `${name} came without its signature`);
+    }
   } finally {
     ctx.dispose();
   }
@@ -1053,17 +1069,20 @@ test('the Surya Siddhanta takes its sunrise from the adapter after it', () => {
   } finally {
     fellBack.dispose();
   }
-  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  const plugin = process.env.TEISTRO_ADAPTER_LIBRARY;
   if (!plugin) {
-    console.log('skipped the engine: set TEISTRO_TEIMERIS_ADAPTER to its library');
+    console.log('skipped the engine: set TEISTRO_ADAPTER_LIBRARY to its library');
     return;
   }
   const official = new Context({
-    ...nepalOfficial({ plugin, config: { data: 'embedded' } }),
+    ...nepalOfficial({ plugin }),
     locale: 'en-Latn',
   });
   try {
-    assert.match(stamp(official), /sunrise from teimeris/u);
+    assert.ok(
+      stamp(official).includes(`sunrise from ${expectedEngine()}`),
+      `the engine's sunrise: ${stamp(official)}`,
+    );
   } finally {
     official.dispose();
   }

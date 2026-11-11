@@ -56,7 +56,7 @@ applies to what ships, and what ships is the crate.
 All but `naming`, which reads no sky, name `Ephemeris::Builtin`, the analytic ephemeris the SDK
 carries, so that they run anywhere with nothing to install. It is the
 fallback and not the intended path: in most cases a consumer belongs on
-a real engine — Teimeris, Swiss Ephemeris — linked as its own crate
+a real engine — Swiss Ephemeris, say — linked as its own crate
 under its own licence (ADR-0029). Do that, or hand in an ephemeris of
 your own as [`your_own_ephemeris.rs`](your_own_ephemeris.rs) shows, and
 every one of these programs is unchanged, which is what the port is for.

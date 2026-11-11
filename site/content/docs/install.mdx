@@ -249,63 +249,49 @@ carries (`BUILTIN`, `TEST`, `NONE`), a **descriptor** exported by an
 adapter's own package, or a **provider you write yourself** — a
 JavaScript, Dart, Python or Java object the SDK calls into.
 
-```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
-import { Context, nepalOfficial } from '@teistro/sdk';
-import { teimerisWeb, type TeimerisWasm } from '@teistro/ephemeris-teimeris/web';
-import teimeris, { engine } from '@teistro/ephemeris-teimeris';
-// …
-// The descriptor is what an `ephemeris` chain takes.
+Your engine's adapter is the descriptor its own package exports, or its
+platform binary named directly, which every binding takes the same way:
+
+```ts fragment
+const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
 const sdk = new Context({
   profile: 'parashari-classical',
-  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
+  ephemeris: [engine, 'BUILTIN'],
 });
 ```
 
-```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
-import 'package:teistro/teistro.dart';
-import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
-
-void main() {
-  final teistro = Teistro.open();
-
-  // A real engine, and the SDK's own only if it is not there.
-  final ctx = teistro.context(
-    profile: 'parashari-classical',
-    ephemeris: [
-      teimeris(dataDir: './ephe'),
-      const NamedEphemeris(Ephemeris.builtin),
-    ],
-  );
-```
-
-```python title="adapters/ephemeris-teimeris/python/typecheck/consumer.py"
-import teistro
-from teistro import Body, Ephemeris
-
-from teistro_ephemeris_teimeris import engine, teimeris
-# …
-    sdk = teistro.Teistro.open()
-
-    # A real engine, and the SDK's own only if it is not there.
-    with sdk.context(
-        profile="parashari-classical",
-        ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN],
-    ) as ctx:
-```
-
-```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
-import com.teispace.teistro.teimeris.Teimeris;
-// …
-Teistro sdk = Teistro.open();
+```dart fragment
 // A real engine, and the SDK's own only if it is not there.
+final ctx = teistro.context(
+  profile: 'parashari-classical',
+  ephemeris: [
+    const PluginEphemeris(plugin: '/path/to/your-engine-adapter.so'),
+    const NamedEphemeris(Ephemeris.builtin),
+  ],
+);
+```
+
+```python fragment
+# A real engine, and the SDK's own only if it is not there.
+engine = Plugin("/path/to/your-engine-adapter.so")
+with sdk.context(
+    profile="parashari-classical",
+    ephemeris=[engine, Ephemeris.BUILTIN],
+) as ctx:
+    ...
+```
+
+```java fragment
+// A real engine, and the SDK's own only if it is not there.
+Plugin engine = Plugin.of("/path/to/your-engine-adapter.so");
 ContextOptions options = ContextOptions.builder()
         .profile("parashari-classical")
-        .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
+        .ephemeris(engine, EphemerisChoice.of(Ephemeris.BUILTIN))
         .build();
 ```
 
 **A real engine is the intended path.** In most cases a consumer belongs
-on Teimeris or Swiss Ephemeris, each installed as its own package under
+on a real engine such as Swiss Ephemeris, installed as its own package under
 its own licence, and the SDK's `BUILTIN` is the fallback that makes a
 chart compute with nothing else installed. It is real astronomy —
 VSOP87A and ELP2000-82B — and it is still the fallback. `test` selects
@@ -321,8 +307,8 @@ names, and they are reachable at `ctx.engine` — with a typed façade over
 them carried by the adapter's package.
 
 Why a separate package rather than a build flag: the SDK is Apache-2.0
-and both engines are AGPL-3.0. An adapter is its own package under its
-own terms, so the licence follows the engine a consumer chose rather
+and an engine has its own licence (Swiss Ephemeris is AGPL-3.0). An
+adapter is its own package under its own terms, so the licence follows the engine a consumer chose rather
 than the SDK everyone gets.
 
 ## From source

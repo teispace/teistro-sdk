@@ -250,9 +250,6 @@ const PARITY_MAIN: &str = "com.teispace.teistro.ParityRunner";
 /// Where the parity runner's classes are written, apart from the tests'.
 const PARITY_CLASSES: &str = "target/java-parity";
 
-/// The Teimeris adapter's Java package.
-const ADAPTER: &str = "adapters/ephemeris-teimeris/java";
-
 /// The file whose whole purpose is to be wrong: every `// expect:` line
 /// must be answered by an error on the statement after it, which is how
 /// the Java half of "a swapped latitude and longitude does not compile"
@@ -373,13 +370,25 @@ fn held_to(expected: &[(usize, &str)], errors: &[(usize, String)]) -> Vec<String
     failures
 }
 
-/// Compiles the Teimeris adapter's module against the binding's, and its
-/// typecheck consumer against both, each at the floor's release with every
-/// lint an error: the gate the other bindings' adapters get from their own
-/// type checkers. The consumer is compiled and never run, since it needs
-/// the engine's data.
+/// Compiles an adapter's module against the binding's, and its typecheck
+/// consumer against both, each at the floor's release with every lint an
+/// error: the gate the other bindings' adapters get from their own type
+/// checkers. The consumer is compiled and never run, since it needs the
+/// engine's data. The adapter is the one `check-adapter` names
+/// (`crate::adapter`), or none.
 fn adapter(root: &Path, classes: &Path, main: &Path) -> Result<(), ()> {
-    let package = root.join(ADAPTER);
+    let Some(found) = crate::adapter::for_packages(root, "java")? else {
+        return Ok(());
+    };
+    let shown = found.shown("java");
+    let Some(module_name) = found.java_module() else {
+        println!(
+            "FAIL  {shown}: the adapter's manifest names no `java-module` under \
+             `[package.metadata.teistro-adapter]`"
+        );
+        return Err(());
+    };
+    let package = found.part("java");
     let module = classes.join("adapter");
     let mut sources = Vec::new();
     java_files(&package.join("src"), &mut sources);
@@ -390,7 +399,7 @@ fn adapter(root: &Path, classes: &Path, main: &Path) -> Result<(), ()> {
             .arg(argfile(classes, "adapter", &sources)?)
             .current_dir(root),
         "",
-        &format!("{ADAPTER} does not compile clean"),
+        &format!("{shown} does not compile clean"),
     )?;
     let mut consumer = Vec::new();
     java_files(&package.join("typecheck"), &mut consumer);
@@ -399,11 +408,11 @@ fn adapter(root: &Path, classes: &Path, main: &Path) -> Result<(), ()> {
         javac(&classes.join("adapter-typecheck"))
             .arg("--module-path")
             .arg(format!("{}{separator}{}", main.display(), module.display()))
-            .args(["--add-modules", "com.teispace.teistro.teimeris"])
+            .args(["--add-modules", module_name])
             .arg(argfile(classes, "adapter-typecheck", &consumer)?)
             .current_dir(root),
-        &format!("{ADAPTER} and its README's consumer compile against the binding"),
-        &format!("{ADAPTER}'s typecheck consumer does not compile"),
+        &format!("{shown} and its README's consumer compile against the binding"),
+        &format!("{shown}'s typecheck consumer does not compile"),
     )
 }
 

@@ -214,9 +214,9 @@ final class Teistro {
   /// positions answer `Status.capability`.
   ///
   /// `ephemeris` is an **ordered chain**, tried in order (ADR-0029). An
-  /// entry is an adapter's own descriptor — [PluginEphemeris], what a
-  /// package like `teistro_ephemeris_teimeris` exports, carrying the
-  /// platform binary it ships and its own configuration —, an ephemeris
+  /// entry is an adapter's own descriptor — [PluginEphemeris], what your
+  /// engine's adapter package exports, carrying the platform binary it
+  /// ships and its own configuration —, an ephemeris
   /// written in Dart, [ProviderEphemeris], as `provider` takes one, or one
   /// of the SDK's own by name, [NamedEphemeris].
   ///
@@ -430,8 +430,9 @@ final class Teistro {
   /// after the text.
   ///
   /// ```dart
+  /// final engine = PluginEphemeris(plugin: '/path/to/your-engine-adapter.so'); // your engine's adapter
   /// final official = sdk.nepalOfficial(
-  ///   modern: [teimeris()],
+  ///   modern: [engine],
   ///   locale: 'ne-Deva-NP',
   /// );
   /// ```
@@ -1193,7 +1194,8 @@ final class ChartArea extends _Area {
   /// rules are compared when either side names some.
   ///
   /// ```dart
-  /// final kp = teistro.context(profile: 'kp-default', ephemeris: [teimeris()]);
+  /// final engine = PluginEphemeris(plugin: '/path/to/your-engine-adapter.so'); // your engine's adapter
+  /// final kp = teistro.context(profile: 'kp-default', ephemeris: [engine]);
   /// final found = classical.chart.disagreements(
   ///   kp,
   ///   first: ComparedBirth(instant: 2447000.25, place: kathmandu, utcOffsetSeconds: 20700),
@@ -2504,10 +2506,11 @@ final class AlmanacArea extends _Area {
   /// read at each day's offset then.
   ///
   /// ```dart
-  /// final official = teistro.nepalOfficial(modern: [teimeris()]);
+  /// final engine = PluginEphemeris(plugin: '/path/to/your-engine-adapter.so'); // your engine's adapter
+  /// final official = teistro.nepalOfficial(modern: [engine]);
   /// final modern = teistro.context(
   ///   profile: 'nepali-drik',
-  ///   ephemeris: [teimeris()],
+  ///   ephemeris: [engine],
   /// );
   /// final found = official.almanac.disagreements(
   ///   modern,

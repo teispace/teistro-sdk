@@ -90,7 +90,7 @@ impl Drop for Loaded {
 /// use teistro_port_ephemeris::load::Adapter;
 ///
 /// // SAFETY: the adapter is a file this program installed and trusts.
-/// let adapter = unsafe { Adapter::load("/opt/adapters/libteimeris_teistro.so", None) }?;
+/// let adapter = unsafe { Adapter::load("/opt/adapters/libyour_engine.so", None) }?;
 /// let provider = adapter.provider()?;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```

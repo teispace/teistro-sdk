@@ -1209,13 +1209,13 @@ fn read_lines(stdout: &str) -> Result<Lines, String> {
 pub(crate) fn measure(root: &Path) -> i32 {
     let (Ok(_), Ok(_), Ok(_), Ok(_)) = (
         std::env::var("TEISTRO_AB_BASELINE"),
-        std::env::var("TEISTRO_TEIMERIS_ADAPTER"),
+        std::env::var(crate::adapter::LIBRARY_VARIABLE),
         std::env::var("TEISTRO_AB_PYTHON"),
         std::env::var("SE_EPHE_PATH"),
     ) else {
         println!(
             "FAIL  set TEISTRO_AB_BASELINE to the baseline engine's adapter, \
-             TEISTRO_TEIMERIS_ADAPTER to the Teimeris library (`03-design/ab-baseline.md` §1), \
+             TEISTRO_ADAPTER_LIBRARY to the SDK side's adapter library (`03-design/ab-baseline.md` §1), \
              TEISTRO_AB_PYTHON to a Python with pyswisseph and SE_EPHE_PATH to its files (§11)"
         );
         return 1;

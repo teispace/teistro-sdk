@@ -3195,8 +3195,9 @@ export class ChartArea extends Area {
    * settings hash in the record.
    *
    * @example
-   * const classical = new Context({ ephemeris: teimeris() });
-   * const kp = new Context({ profile: 'kp-default', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const classical = new Context({ ephemeris: engine });
+   * const kp = new Context({ profile: 'kp-default', ephemeris: engine });
    * const found = classical.chart.disagreements(kp, {
    *   first: { instant: 2447000.25, place: { latitude: 27.7172, longitude: 85.324 }, utcOffsetSeconds: 20700 },
    * });
@@ -8268,7 +8269,8 @@ export class AlmanacArea extends Area {
    * envelope.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: engine });
    * const { value } = sdk.almanac.sankalpa({
    *   at: 2461055.59375, // 2026-01-15 08:00 in Kathmandu
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
@@ -8358,7 +8360,8 @@ export class AlmanacArea extends Area {
    * one `ashauchRunning(earlier.value)`.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: engine });
    * const { value } = sdk.almanac.ashauch({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -8585,7 +8588,8 @@ export class AlmanacArea extends Area {
    * the barkhi in the ordinary month.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: engine });
    * const { value } = sdk.almanac.firstYear({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -8710,8 +8714,9 @@ export class AlmanacArea extends Area {
    * provenance, with the other's profile and settings hash in its value.
    *
    * @example
-   * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const official = new Context(nepalOfficial(engine));
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: engine });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date(2025, 11, 1),
    *   to: date(2025, 11, 30),
@@ -8845,7 +8850,8 @@ export class AlmanacArea extends Area {
    * the day and the place. The same request writes the same bytes.
    *
    * @example
-   * const sdk = new Context(nepalOfficial(teimeris()));
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const sdk = new Context(nepalOfficial(engine));
    * const ics = sdk.almanac.festivalCalendar({
    *   from: date(2026, 1, 1),
    *   to: date(2026, 12, 31),
@@ -9419,9 +9425,9 @@ export class Context {
    *   which ephemeris to compute with, or an **ordered chain** of them,
    *   tried in order (ADR-0029).
    *
-   *   An entry is an adapter's own descriptor — what
-   *   `@teistro/ephemeris-teimeris` and its like export, carrying the
-   *   platform binary they ship and their own configuration — an
+   *   An entry is an adapter's own descriptor — what your engine's
+   *   adapter package exports, carrying the platform binary it ships and
+   *   its own configuration — an
    *   ephemeris written in JavaScript (as `provider` takes one), which is
    *   how a browser puts an engine behind the Surya Siddhanta, or one of
    *   the SDK's own by name: `BUILTIN` is the analytic ephemeris the SDK
@@ -9843,8 +9849,8 @@ function text(rest, settled) {
  * Spread it into a context's options, beside anything else:
  *
  * ```js
- * import { teimeris } from '@teistro/ephemeris-teimeris';
- * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
+ * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+ * const official = new Context({ ...nepalOfficial(engine), locale: 'ne-Deva-NP' });
  * ```
  *
  * `modern` is an adapter's descriptor or an ephemeris written in

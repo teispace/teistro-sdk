@@ -108,17 +108,18 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names it, or names an **ordered chain**
 tried in order (ADR-0029):
 
-```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
-import teimeris, { engine } from '@teistro/ephemeris-teimeris';
-// …
+```ts fragment
+// Your engine's adapter: the descriptor its package exports, or its
+// platform binary named directly.
+const engine = { plugin: '/path/to/your-engine-adapter.so' };
 const sdk = new Context({
   profile: 'parashari-classical',
-  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
+  ephemeris: [engine, 'BUILTIN'],
 });
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
-real engine — Teimeris, Swiss Ephemeris — installed as its own package
+real engine — Swiss Ephemeris, say — installed as its own adapter package
 under its own licence, and the SDK's `'BUILTIN'` is the fallback that
 makes a chart compute with nothing else installed. `'TEST'` (or the older
 `{ testProvider: true }`) selects the analytic test provider, whose

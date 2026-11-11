@@ -1,10 +1,11 @@
-//! `cargo xtask app-speed-device ROW`: `teistro-ephemeris-teimeris-app-speed`
+//! `cargo xtask app-speed-device ROW`: an adapter's `<package>-app-speed`
 //! run where an app runs, its record written beside the desktop ones in
 //! `docs/05-testing/app-speed/` and the page regenerated.
 //!
 //! The binary is cross-built for the row the way its libraries are
-//! (`crate::mobile::cross`), with Teimeris's data built in, as a phone
-//! has it. It runs on the Android device or emulator `adb` reaches, or on
+//! (`crate::mobile::cross`), with the engine's data built in, as a phone
+//! has it. The adapter is the one `check-adapter` names
+//! (`crate::adapter`): `TEISTRO_ADAPTER_DIR`, or the one in this tree. It runs on the Android device or emulator `adb` reaches, or on
 //! the booted iOS simulator through `simctl spawn`, and what it prints is
 //! the record. An iPhone itself needs a signed app to run code, so the
 //! `ios-arm64` row is refused here; the simulator runs the Mac's own
@@ -21,8 +22,6 @@ use crate::binding::step;
 use crate::mobile::{Mobile, Os, cross};
 
 const RECORDED: &str = "docs/05-testing/app-speed";
-const ADAPTER: &str = "adapters/ephemeris-teimeris/rust";
-const BINARY: &str = "teistro-ephemeris-teimeris-app-speed";
 
 /// Where the binary is put on an Android device: the one directory a
 /// shell user may write to and execute from.
@@ -46,22 +45,35 @@ pub(crate) fn run(root: &Path, name: Option<&str>) -> i32 {
         );
         return 1;
     }
-    let dir = root.join(ADAPTER);
+    let adapter = match crate::adapter::Adapter::find(root, None) {
+        Ok(Some(adapter)) => adapter,
+        Ok(None) => {
+            println!(
+                "FAIL  no adapter: name one with {}",
+                crate::adapter::DIR_VARIABLE
+            );
+            return 1;
+        }
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
+    };
+    let dir = adapter.part("rust");
+    let binary_name = adapter.binary("app-speed");
     let Ok(mut command) = cross(
         root,
         row,
         &dir,
-        &["--features", "app-speed", "--bin", BINARY],
+        &["--features", "app-speed", "--bin", &binary_name],
     ) else {
         return 1;
     };
-    command
-        .env("TM_EMBED_TIER", "MODERN")
-        .env_remove("TEIMERIS_LIB_DIR");
+    adapter.embedded(&mut command);
     if step(
         &mut command,
         "",
-        &format!("{BINARY} did not build for {}", row.triple),
+        &format!("{binary_name} did not build for {}", row.triple),
     )
     .is_err()
     {
@@ -71,7 +83,7 @@ pub(crate) fn run(root: &Path, name: Option<&str>) -> i32 {
         .join("target")
         .join(row.triple)
         .join("release")
-        .join(BINARY);
+        .join(&binary_name);
     let commit = crate::app_speed::recorded_commit(root);
     let printed = match row.os {
         Os::Android => android(row, &binary, &commit),

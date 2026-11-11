@@ -19,6 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use crate::adapter::{self, Adapter};
 use crate::binding::{LIBRARY_STEM, StaticLink, present, step, tool};
 use crate::package;
 use crate::platform::{COMPAT_DIR, NPM_COMPAT, NPM_MCP, NPM_SCOPE, Platform};
@@ -511,15 +512,6 @@ fn installed(
 
 // ── The adapter ────────────────────────────────────────────────────────────
 
-/// Where the Teimeris adapter's npm package lives, which is the package
-/// itself rather than a staged copy: it ships no per-platform binary yet,
-/// so there is nothing to assemble.
-const ADAPTER_NODE: &str = "adapters/ephemeris-teimeris/node";
-
-/// The environment variable naming the engine's data directory, which a
-/// checkout of the SDK does not have.
-const ENGINE_DATA: &str = "TEISTRO_TEIMERIS_DATA";
-
 /// The adapter package, installed beside the SDK's and run.
 ///
 /// This is what ADR-0029 meant by `check-package` having to cover the
@@ -528,23 +520,39 @@ const ENGINE_DATA: &str = "TEISTRO_TEIMERIS_DATA";
 /// which the adapter's own type-check can fail, because that imports
 /// `../index.js` by path.
 ///
-/// It needs two things a checkout does not have, and skips rather than
-/// fails without them: the adapter's built library
-/// (`TEISTRO_TEIMERIS_ADAPTER`, as every plugin test uses) and the
-/// engine's data (`TEISTRO_TEIMERIS_DATA`). A skip is not a pass and
-/// says which it wanted.
+/// The adapter is the one `check-adapter` names (`crate::adapter`), and
+/// its npm package is the package itself rather than a staged copy: it
+/// ships no per-platform binary yet, so there is nothing to assemble.
+///
+/// It needs what a checkout does not have, and skips rather than fails
+/// without it: the adapter's built library
+/// (`TEISTRO_ADAPTER_LIBRARY`, as every plugin test uses), and whatever
+/// the engine's data needs, which the run inherits from the environment.
+/// A skip is not a pass and says which it wanted.
 fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
     let Some(npm) = tool("npm", "--version") else {
         crate::skip::skip("the adapter package: no `npm` on this machine");
         return Ok(());
     };
-    let Some(library) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
+    let Some(library) = std::env::var_os(adapter::LIBRARY_VARIABLE) else {
         crate::skip::excused(
-            "the adapter package: set TEISTRO_TEIMERIS_ADAPTER to its library",
+            format_args!(
+                "the adapter package: set {} to its library",
+                adapter::LIBRARY_VARIABLE
+            ),
             "the adapter is built in its own repository",
         );
         return Ok(());
     };
+    let Some(found) = Adapter::find(root, None).map_err(|why| println!("FAIL  {why}"))? else {
+        println!(
+            "FAIL  {} names a library and no adapter is named by {}",
+            adapter::LIBRARY_VARIABLE,
+            adapter::DIR_VARIABLE
+        );
+        return Err(());
+    };
+    let node = found.part("node");
     let into = check.join("adapter-node");
     let tarballs = into.join("tarballs");
     fs::create_dir_all(&tarballs).map_err(|err| println!("FAIL  {CHECK}/adapter-node: {err}"))?;
@@ -569,7 +577,7 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
         Command::new(&npm)
             .args(["pack", "--silent", "--pack-destination"])
             .arg(&tarballs)
-            .arg(root.join(ADAPTER_NODE))
+            .arg(&node)
             .current_dir(root),
         "",
         "the adapter package did not pack",
@@ -602,19 +610,15 @@ fn adapter_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform)
     // consumer is: a script inside the repository would resolve the
     // package to the repository itself.
     let consumer = into.join("consumer.mjs");
-    fs::copy(
-        root.join(ADAPTER_NODE).join("packaging/consumer.mjs"),
-        &consumer,
-    )
-    .map_err(|err| println!("FAIL  the adapter consumer did not copy: {err}"))?;
+    fs::copy(node.join("packaging/consumer.mjs"), &consumer)
+        .map_err(|err| println!("FAIL  the adapter consumer did not copy: {err}"))?;
     let mut run = Command::new("node");
     run.arg(&consumer)
         .current_dir(&into)
         .env_remove("TEISTRO_ADDON")
-        .env("TEISTRO_TEIMERIS_ADAPTER", &library);
-    if let Some(data) = std::env::var_os(ENGINE_DATA) {
-        run.env(ENGINE_DATA, data);
-    }
+        .env(adapter::LIBRARY_VARIABLE, &library);
+    // The variable the adapter's own package reads, as an app sets it.
+    found.own_library(&mut run, &library);
     step(
         &mut run,
         "the installed adapter package answers as the engine does",

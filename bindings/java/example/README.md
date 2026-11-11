@@ -45,7 +45,7 @@ that is a code page with neither, and every one of them prints as `?`.
 All but `naming`, which reads no sky, name `Ephemeris.BUILTIN`, the analytic ephemeris the SDK carries,
 so that they run anywhere with nothing to install. It is the fallback and
 not the intended path: in most cases a consumer belongs on a real engine —
-Teimeris, Swiss Ephemeris — installed as its own package under its own
+Swiss Ephemeris, say — installed as its own package under its own
 licence and named the same way. Do that, or hand in an ephemeris of your
 own as [`YourOwnEphemeris.java`](YourOwnEphemeris.java) shows, and every
 one of these programs is unchanged, which is what the port is for.

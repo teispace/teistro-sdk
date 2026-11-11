@@ -22,6 +22,6 @@ assert!((0.0..360.0).contains(&columns.at(0, 0).expect("the Sun").lon));
 ```
 
 The frame completion, the IAU routines and the rise and set solver live
-in `teistro-astro`; the conformance kit in `teistro-ephemeris-kit`; the
-adapters for Teimeris and the Swiss Ephemeris outside the workspace
-under `adapters/` (ADR-0019).
+in `teistro-astro`; the conformance kit in `teistro-ephemeris-kit`; an
+engine's adapter outside the workspace, the Swiss Ephemeris's under
+`adapters/` (ADR-0019).

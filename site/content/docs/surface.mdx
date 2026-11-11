@@ -138,11 +138,12 @@ the manifest, an operation's signature — and calls one by name.
 The adapter's own package carries a **typed façade** over them, which is
 a value you take rather than a method the SDK promises:
 
-```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+```ts fragment
+// `engine` is the typed façade your engine's adapter package exports.
 const typed = engine(sdk.engine);
 
-// One value comes back as itself, typed.
-const name: string = typed.tmBodyName({ body: 0 });
+// One value comes back as itself, typed: an operation the engine names.
+const answer = typed.someOperation({ body: 0 });
 ```
 
 That way nothing type-checks that the SDK has not installed, and the port

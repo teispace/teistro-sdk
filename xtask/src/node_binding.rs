@@ -34,15 +34,6 @@ const TYPECHECK: &str = "bindings/node/typecheck";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
 /// The layer's members against its declarations, from `bindings/node`.
 const SURFACE: &str = "typecheck/surface.mjs";
-/// The Teimeris adapter's own package, which the SDK does not depend on
-/// and which depends on the SDK.
-///
-/// Checked here rather than in a gate of its own, because what it needs
-/// is this ecosystem's type checker and this ecosystem's strictness: an
-/// adapter package that did not compile against the SDK's declarations
-/// would be a broken package however green the SDK's own gate was. The
-/// generated façade is most of what it holds (ADR-0030).
-const ADAPTER_TSCONFIG: &str = "adapters/ephemeris-teimeris/node/tsconfig.json";
 /// `@teistro/compat`, the baseline engine's inputs forwarded to the SDK
 /// (`docs/03-design/compat-shim.md`): a package of plain JavaScript that
 /// takes the SDK as a peer, so its tests run here, after the binding's,
@@ -253,14 +244,29 @@ pub(crate) fn check(root: &Path) -> i32 {
     if surface.is_err() {
         return 1;
     }
-    let adapter = step(
-        Command::new(&tsc)
-            .args(&args)
-            .args(["-p", ADAPTER_TSCONFIG])
-            .current_dir(root),
-        &format!("{ADAPTER_TSCONFIG}: the typed engine façade composes with the SDK"),
-        &format!("{ADAPTER_TSCONFIG} does not type-check"),
-    );
+    // An adapter's own package, which the SDK does not depend on and which
+    // depends on the SDK, checked here rather than in a gate of its own,
+    // because what it needs is this ecosystem's type checker and this
+    // ecosystem's strictness: an adapter package that did not compile
+    // against the SDK's declarations would be a broken package however
+    // green the SDK's own gate was. The generated façade is most of what
+    // it holds (ADR-0030). The adapter is the one `check-adapter` names
+    // (`crate::adapter`), or none.
+    let adapter = crate::adapter::for_packages(root, "node").and_then(|found| {
+        let Some(found) = found else {
+            return Ok(());
+        };
+        let tsconfig = format!("{}/tsconfig.json", found.shown("node"));
+        step(
+            Command::new(&tsc)
+                .args(&args)
+                .arg("-p")
+                .arg(found.part("node").join("tsconfig.json"))
+                .current_dir(root),
+            &format!("{tsconfig}: the typed engine façade composes with the SDK"),
+            &format!("{tsconfig} does not type-check"),
+        )
+    });
     if adapter.is_err() {
         return 1;
     }

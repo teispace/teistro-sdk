@@ -13,9 +13,10 @@ cargo run --release -p teistro-ephemeris-kit            # the test provider, in 
 cargo run --release -p teistro-ephemeris-kit -- --out target/kit
 ```
 
-An adapter's binary opens its provider, adds its direct-binding row and
-calls `runner::run` (`adapters/ephemeris-teimeris/rust`), then
-`runner::charts` for the two checks made through the façade:
+An adapter's kit binary (`<package>-kit`, which `cargo xtask
+check-adapter` runs; `adapters/ephemeris-sweph/rust` has the smallest)
+opens its provider, adds its direct-binding row and calls `runner::run`,
+then `runner::charts` for the two checks made through the façade:
 
 - `sdk_only`: under the `sdk-only` policy a chart is the provider's
   native positions and nothing else it offers, byte for byte;
@@ -29,8 +30,8 @@ direction and distance under its class's `jpl.geometric.*` band, every
 miss one of `jpl::KNOWN` and every entry of it used.
 
 ```sh
-cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml \
-  --bin teistro-ephemeris-teimeris-kit -- \
+cargo run --release --manifest-path ADAPTER/rust/Cargo.toml \
+  --bin PACKAGE-kit -- \
   --corpus fixtures --class same-ephemeris --out target/kit
 ```
 

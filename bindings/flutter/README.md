@@ -71,8 +71,8 @@ other platform's does.
 
 ## Without the built-in ephemeris
 
-An app that plugs a real engine in, such as Teimeris through
-`teistro_ephemeris_teimeris_flutter`, never opens the built-in ephemeris.
+An app that plugs a real engine in, through that engine's own Flutter
+adapter package, never opens the built-in ephemeris.
 It can bundle the library built without it:
 
 ```yaml

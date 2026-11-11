@@ -42,7 +42,7 @@ server, asking which ephemeris to compute with.
 ```sh
 teistro-mcp                       # the built-in ephemeris
 teistro-mcp --ephemeris SURYA_SIDDHANTA
-teistro-mcp --plugin /opt/adapters/libteimeris_teistro.so   # a real engine, the built-in behind it
+teistro-mcp --plugin /opt/adapters/libyour_engine.so       # a real engine, the built-in behind it
 teistro-mcp --http 127.0.0.1:8080                            # Streamable HTTP at /mcp
 ```
 

@@ -143,6 +143,18 @@ from teistro.catalogue import (
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
+def _expected_engine() -> str:
+    """The engine a plugged-in adapter should report.
+
+    `TEISTRO_ADAPTER_ENGINE`, which `cargo xtask check-adapter` sets from
+    the adapter's own manifest.
+    """
+    engine = os.environ.get("TEISTRO_ADAPTER_ENGINE")
+    if not engine:
+        raise AssertionError("set TEISTRO_ADAPTER_ENGINE to the engine the adapter reports")
+    return engine
+
+
 class TheLibrary(WithLibrary):
     def test_it_says_what_it_is(self) -> None:
         self.assertEqual(self.teistro.abi, 1)
@@ -1020,14 +1032,16 @@ class AnEngine(WithLibrary):
         vtable. It runs only where the adapter has been built and its
         data is present, because a checkout has neither and a test that
         failed for that would fail for everyone.
-        `TEISTRO_TEIMERIS_ADAPTER` names the library -- the same variable
-        `crates/ffi/tests/abi.rs` reads for the same reason.
+        `TEISTRO_ADAPTER_LIBRARY` names the library -- the same variable
+        `crates/ffi/tests/abi.rs` reads for the same reason -- and
+        `TEISTRO_ADAPTER_ENGINE` the engine it should report, both set by
+        `cargo xtask check-adapter`.
         """
-        plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
+        plugin = os.environ.get("TEISTRO_ADAPTER_LIBRARY")
         if not plugin:
             self.skipTest(
                 "the adapter is built separately; "
-                "set TEISTRO_TEIMERIS_ADAPTER to its library"
+                "set TEISTRO_ADAPTER_LIBRARY to its library"
             )
         with self.teistro.context(profile=PROFILE, ephemeris=Plugin(plugin)) as ctx:
             sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
@@ -1036,9 +1050,11 @@ class AnEngine(WithLibrary):
             # engine answered.
             self.assertAlmostEqual(sky.at(0, 0).longitude, 280.37, delta=0.5)
             # And its own functions came with it, which no SDK operation
-            # offers.
-            self.assertEqual(ctx.engine.manifest["engine"], "teimeris")
-            self.assertEqual(ctx.engine.call("tm_body_name", body=0)["buf"], "Sun")
+            # offers: the engine names itself and describes each of them.
+            self.assertEqual(ctx.engine.manifest["engine"], _expected_engine())
+            self.assertTrue(ctx.engine.names, "the engine brought none of its own operations")
+            for name in ctx.engine.names:
+                self.assertIsNotNone(ctx.engine.signature(name), name)
 
     def test_an_ephemeris_chain_is_tried_in_order_and_refuses_naming_each(
         self,
@@ -1092,11 +1108,11 @@ class AnEngine(WithLibrary):
         # passes over it, and the text keeps the built-in's sunrise.
         with self.teistro.context(**nepal_official(Plugin("/nowhere/adapter.so"))) as fell_back:
             self.assertIn("sunrise from teistro-builtin", stamp(fell_back))
-        plugin = os.environ.get("TEISTRO_TEIMERIS_ADAPTER")
+        plugin = os.environ.get("TEISTRO_ADAPTER_LIBRARY")
         if not plugin:
-            self.skipTest("set TEISTRO_TEIMERIS_ADAPTER to the adapter's library")
+            self.skipTest("set TEISTRO_ADAPTER_LIBRARY to the adapter's library")
         with self.teistro.context(**nepal_official(Plugin(plugin)), locale="en-Latn") as official:
-            self.assertIn("sunrise from teimeris", stamp(official))
+            self.assertIn(f"sunrise from {_expected_engine()}", stamp(official))
 
     def test_two_reckonings_say_where_they_disagree_and_why(self) -> None:
         """November 2025 at Kathmandu, the committee's reckoning over the

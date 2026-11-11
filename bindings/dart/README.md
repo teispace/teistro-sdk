@@ -80,21 +80,20 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names an **ordered chain**, tried in
 order (ADR-0029):
 
-```dart title="adapters/ephemeris-teimeris/dart/example/consumer.dart"
-import 'package:teistro_ephemeris_teimeris/teistro_ephemeris_teimeris.dart';
-// …
-  // A real engine, and the SDK's own only if it is not there.
-  final ctx = teistro.context(
-    profile: 'parashari-classical',
-    ephemeris: [
-      teimeris(dataDir: './ephe'),
-      const NamedEphemeris(Ephemeris.builtin),
-    ],
-  );
+```dart fragment
+// A real engine, and the SDK's own only if it is not there. Your engine's
+// adapter: the descriptor its package exports, or its platform binary.
+final ctx = teistro.context(
+  profile: 'parashari-classical',
+  ephemeris: [
+    const PluginEphemeris(plugin: '/path/to/your-engine-adapter.so'),
+    const NamedEphemeris(Ephemeris.builtin),
+  ],
+);
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
-real engine — Teimeris, Swiss Ephemeris — installed as its own package
+real engine — Swiss Ephemeris, say — installed as its own adapter package
 under its own licence, and `Ephemeris.builtin` is the fallback that makes
 a chart compute with nothing else installed. `Ephemeris.test` (or the
 older `testProvider: true`) selects the analytic test provider, whose

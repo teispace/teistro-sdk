@@ -312,33 +312,37 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
 ///
 /// It runs only where the adapter has been built and its data is present,
 /// because neither can be assumed of a checkout; where they are, it is
-/// the test that the whole seam holds. `TEISTRO_TEIMERIS_ADAPTER` names
-/// the library.
+/// the test that the whole seam holds. `TEISTRO_ADAPTER_LIBRARY` names
+/// the library, as every binding's plugin test reads it, and
+/// `TEISTRO_ADAPTER_ENGINE` the engine it should report. The engine's own
+/// operations differ by engine, so one is called only when
+/// `TEISTRO_ADAPTER_PROBE` names it: the operation's name, a space, and
+/// its arguments as JSON (`tm_delta_t {"jd_ut1": 2451545.0}`, say).
 #[test]
 fn an_engine_is_loaded_from_a_shared_library_and_computes() {
-    let Some(path) = std::env::var_os("TEISTRO_TEIMERIS_ADAPTER") else {
+    let Some(path) = std::env::var_os("TEISTRO_ADAPTER_LIBRARY") else {
         // A checkout has neither the adapter built nor the engine's data,
         // and a test that failed for that would fail for everyone.
         println!(
-            "skipped: the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library"
+            "skipped: the adapter is built separately; set TEISTRO_ADAPTER_LIBRARY to its library"
         );
         return;
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
-    let (manifest, said) = a_loaded_engine_answers(
-        &path,
-        279.0..=282.0,
-        "tm_delta_t",
-        r#"{"jd_ut1": 2451545.0}"#,
-    );
-    assert!(
-        !manifest.contains("tm_context_close"),
-        "the manifest lists not what the adapter owns"
-    );
-    assert!(
-        said.contains("out_seconds"),
-        "the engine's out-parameter comes back under its own name: {said}"
-    );
+    let probe = std::env::var("TEISTRO_ADAPTER_PROBE").ok();
+    let probe = probe
+        .as_deref()
+        .map(|probe| probe.split_once(' ').unwrap_or((probe, "{}")));
+    let (manifest, said) = a_loaded_engine_answers(&path, 279.0..=282.0, probe);
+    if let Ok(engine) = std::env::var("TEISTRO_ADAPTER_ENGINE") {
+        assert!(
+            manifest.contains(&format!("\"engine\":\"{engine}\"")),
+            "the manifest names another engine than {engine}: {manifest}"
+        );
+    }
+    if let Some(said) = said {
+        assert!(!said.is_empty(), "the engine's own operation said nothing");
+    }
 }
 
 /// A load refused at the boundary leaves no handle and an owned record
@@ -395,21 +399,22 @@ fn the_test_adapter_is_loaded_and_answers_by_name() {
     .unwrap()
     .lon;
     let (manifest, said) =
-        a_loaded_engine_answers(&path, sun..=sun, "tp_sum", r#"{"values": [1, 2]}"#);
+        a_loaded_engine_answers(&path, sun..=sun, Some(("tp_sum", r#"{"values": [1, 2]}"#)));
     assert!(manifest.contains("tp_echo"), "{manifest}");
+    let said = said.unwrap_or_default();
     assert!(said.contains("\"total\":3.0"), "{said}");
 }
 
 /// Loads the adapter at `path`, founds a context on it and frees the
 /// handle first, computes the Sun at J2000 through it, and calls the
-/// engine's own `function` by name: the whole seam at the boundary. The
-/// manifest and the answer come back for the caller's own assertions.
+/// engine's own operation by name when `call` names one: the whole seam at
+/// the boundary. The manifest and the answer come back for the caller's
+/// own assertions.
 fn a_loaded_engine_answers(
     path: &CStr,
     sun_at_j2000: core::ops::RangeInclusive<f64>,
-    function: &str,
-    arguments: &str,
-) -> (String, String) {
+    call: Option<(&str, &str)>,
+) -> (String, Option<String>) {
     let mut provider: *mut TsProvider = ptr::null_mut();
     let mut error = blank_error();
     // SAFETY: a live path and writable slots.
@@ -494,6 +499,11 @@ fn a_loaded_engine_answers(
     // SAFETY: a descriptor the library wrote.
     unsafe { ts_string_free(&raw mut json) };
     let manifest = String::from_utf8(manifest).expect("the manifest is text");
+    let Some((function, arguments)) = call else {
+        // SAFETY: a live context, freed once.
+        unsafe { ts_context_free(context) };
+        return (manifest, None);
+    };
     assert!(
         manifest.contains(function),
         "the manifest lists what can be called"
@@ -516,7 +526,7 @@ fn a_loaded_engine_answers(
 
     // SAFETY: a live context, freed once.
     unsafe { ts_context_free(context) };
-    (manifest, said)
+    (manifest, Some(said))
 }
 
 /// **Phase 3's promise at the boundary a consumer actually crosses.**

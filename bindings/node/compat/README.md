@@ -104,8 +104,8 @@ const read: [string, unknown][] = facts('chart', charts[0], { window: { from: 0,
 const family: Family | undefined = FAMILIES['longitude'];
 ```
 
-In an application the chain is a real engine, such as
-`[teimeris({ dataDir: './ephe' })]` from `@teistro/ephemeris-teimeris`.
+In an application the chain is a real engine: your engine's adapter,
+its package's descriptor or `{ plugin: '/path/to/its/library' }`.
 `profile` and `settings` are not options: each stored snapshot decides
 them. The locale given here is used for a snapshot that stores none.
 

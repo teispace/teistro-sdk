@@ -2429,8 +2429,8 @@ def nepal_official(
 
     Unpack it into a context's arguments, beside anything else::
 
-        from teistro_ephemeris_teimeris import teimeris
-        official = sdk.context(**nepal_official(teimeris()), locale="ne-Deva-NP")
+        engine = Plugin("/path/to/your-engine-adapter.so")  # your engine's adapter
+        official = sdk.context(**nepal_official(engine), locale="ne-Deva-NP")
 
     `modern` is an adapter's descriptor or an ephemeris written in
     Python, or a sequence of them tried in order; with none, the sunrise
@@ -2571,9 +2571,8 @@ class Teistro:
 
         `ephemeris` is one entry or an **ordered chain**, tried in order
         (ADR-0029). An entry is an adapter's own descriptor -- `Plugin`,
-        what a package like `teistro_ephemeris_teimeris` exports,
-        carrying the platform binary it ships and that adapter's own
-        configuration --, an ephemeris written in Python, as `provider`
+        what your engine's adapter package exports, carrying the
+        platform binary it ships and that adapter's own configuration --, an ephemeris written in Python, as `provider`
         takes one (so one can stand behind `Ephemeris.SURYA_SIDDHANTA`),
         or one of the SDK's own by name.
 
@@ -3426,7 +3425,8 @@ class ChartArea(_Area):
         read under Vimshottari; the rules are compared when either side
         names `rules`.
 
-        >>> # kp = Context(profile="kp-default", ephemeris=teimeris())
+        >>> # engine = Plugin("/path/to/your-engine-adapter.so")  # your engine's adapter
+        >>> # kp = Context(profile="kp-default", ephemeris=engine)
         >>> # birth = ComparedBirth(instant=2447000.25, place=kathmandu, utc_offset_seconds=20700)
         >>> # found = classical.chart.disagreements(kp, first=birth)
         >>> # found.lagna  # None when both lagnas fall in one sign
@@ -4613,8 +4613,9 @@ class AlmanacArea(_Area):
         The clock is `utc_offset_seconds` or a `zone`, never both; a zone
         is read at each day's offset then.
 
-        >>> # official = Context(**nepal_official(teimeris()))
-        >>> # modern = Context(profile="nepali-drik", ephemeris=teimeris())
+        >>> # engine = Plugin("/path/to/your-engine-adapter.so")  # your engine's adapter
+        >>> # official = Context(**nepal_official(engine))
+        >>> # modern = Context(profile="nepali-drik", ephemeris=engine)
         >>> # found = official.almanac.disagreements(modern, from_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL"})
         """

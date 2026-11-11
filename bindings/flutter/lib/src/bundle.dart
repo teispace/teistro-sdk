@@ -41,7 +41,8 @@ const String libraryDefine = 'library';
 
 /// The user define choosing the SDK's library **without the built-in
 /// ephemeris**: `builtin: false`, for an app that plugs a real engine in
-/// (`teistro_ephemeris_teimeris_flutter`) and so never opens the built-in.
+/// (through that engine's own Flutter adapter package) and so never opens
+/// the built-in.
 /// The release ships that slice beside each default one, and
 /// `docs/05-testing/mobile-sizes-measured.md` says what it saves per
 /// platform. Absent or `true`, the default slice is bundled. A library the

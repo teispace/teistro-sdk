@@ -140,7 +140,7 @@ class Shim {
     return this.#on('positions', snapshot, (natal) => natal.positions(request));
   }
 
-  /** One of the engine's own operations, on the snapshot's natal context: a Teimeris chain's. */
+  /** One of the engine's own operations, on the snapshot's natal context: its chain's engine's. */
   engine(snapshot, name, args) {
     return this.#on('engine', snapshot, (natal) => natal.engine.call(name, args));
   }
@@ -634,9 +634,9 @@ class Shim {
  *
  * ```js
  * import { compat } from '@teistro/compat';
- * import teimeris from '@teistro/ephemeris-teimeris';
  *
- * const shim = compat({ ephemeris: [teimeris({ dataDir: './ephe' })], locale: 'ne-Deva-NP' });
+ * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+ * const shim = compat({ ephemeris: [engine], locale: 'ne-Deva-NP' });
  * ```
  *
  * It keeps a natal context per distinct translated snapshot, and a KP

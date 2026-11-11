@@ -920,7 +920,7 @@ impl ContextBuilder {
     /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::{Context, NEPAL_OFFICIAL_PROFILE};
     ///
-    /// // An app passes its engine, `Ephemeris::Provider(teimeris)`.
+    /// // An app passes its engine's adapter, `Ephemeris::Provider(engine)`.
     /// let official = Context::builder().nepal_official([]).build()?;
     /// assert_eq!(official.profile(), NEPAL_OFFICIAL_PROFILE);
     /// # }
