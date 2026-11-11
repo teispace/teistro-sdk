@@ -21,7 +21,7 @@ or Streamable HTTP
 usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                    [--schemas DETAIL] [--max-message-bytes N] [--max-items N]
                    [--max-days N] [--max-years N] [--task-after MS]
-                   [--pack PATH]... [--zones PATH]
+                   [--pack PATH]... [--zones PATH] [--geo PATH]
                    [--layouts PATH]...
                    [--dashas PATH]...
                    [--http ADDRESS [--http-workers N] [--http-rate N]
@@ -42,6 +42,9 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
   --zones PATH           a zone pack (`teistro.zones/1`) every context reads in
                          place of the embedded database, verified by the
                          operator; read at start
+  --geo PATH             a geo table (`{source, areas}`, as `geo.load` takes
+                         it) every context resolves places through with
+                         `geo.resolve`; checked at start
   --layouts PATH         a JSON array of chart layouts of the operator's own,
                          each drawn when a request names its key; checked at
                          start by the rules a shipped layout passes; repeatable
@@ -109,6 +112,7 @@ struct Options {
 struct Added {
     packs: Vec<(String, Arc<[u8]>)>,
     zones: Option<Arc<teistro::ZonePack>>,
+    geo: Option<Arc<teistro::GeoTable>>,
     layouts: Vec<(String, Vec<teistro::Layout>)>,
     dashas: Vec<(String, Vec<teistro::DashaDefinition>)>,
 }
@@ -130,6 +134,11 @@ impl Added {
             return Ok(());
         }
         let text = std::fs::read_to_string(&path).map_err(|e| why(&e))?;
+        if option == "--geo" {
+            let table = teistro::GeoTable::from_json(&text).map_err(|e| why(&e))?;
+            self.geo = Some(Arc::new(table));
+            return Ok(());
+        }
         if option == "--layouts" {
             let read =
                 teistro::registrations::layouts_from_json(&text, option).map_err(|e| why(&e))?;
@@ -327,6 +336,9 @@ fn server(options: &Options) -> Result<Server, teistro::Error> {
     if let Some(zones) = &options.added.zones {
         server = server.with_zones(Arc::clone(zones));
     }
+    if let Some(geo) = &options.added.geo {
+        server = server.with_geo(Arc::clone(geo) as Arc<dyn teistro::GeoProvider>);
+    }
     // The file's path before the registry's refusal, which names the row
     // by its place among the server's (`dashas[0].span`).
     let from = |option: &str, path: &str| {
@@ -421,7 +433,9 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
                         .ok_or_else(|| format!("`--http-workers` takes a count, not `{count}`"))?,
                 );
             }
-            "--pack" | "--zones" | "--layouts" | "--dashas" => added.read(&arg, args.next())?,
+            "--pack" | "--zones" | "--geo" | "--layouts" | "--dashas" => {
+                added.read(&arg, args.next())?;
+            }
             "--http-rate" => rate = Some(bound::<u32>(&arg, args.next())?),
             "--allow-origin" => {
                 origins.push(args.next().ok_or("`--allow-origin` takes an origin")?);

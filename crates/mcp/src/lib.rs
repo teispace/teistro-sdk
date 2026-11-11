@@ -350,6 +350,7 @@ struct Own {
     dashas: Vec<teistro::DashaDefinition>,
     packs: Vec<Pack>,
     zones: Option<Arc<teistro::ZonePack>>,
+    geo: Option<Arc<dyn teistro::GeoProvider>>,
 }
 
 impl Own {
@@ -365,6 +366,10 @@ impl Own {
         });
         let builder = match &self.zones {
             Some(zones) => builder.zones(Arc::clone(zones)),
+            None => builder,
+        };
+        let builder = match &self.geo {
+            Some(geo) => builder.geo(Arc::clone(geo)),
             None => builder,
         };
         let context = builder.build()?;
@@ -645,6 +650,27 @@ impl Server {
     pub fn with_zones(mut self, pack: Arc<teistro::ZonePack>) -> Server {
         self.own.zones = Some(pack);
         // A context built before the pack would answer without it.
+        self.contexts.clear();
+        self
+    }
+
+    /// A geo provider every context resolves places through
+    /// (`03-design/geo-port.md`): `geo.resolve` answers from it, and nothing
+    /// else consults it.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::GeoTable;
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "places", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// let _server = Server::new(Engine::None).with_geo(Arc::new(table));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_geo(mut self, provider: Arc<dyn teistro::GeoProvider>) -> Server {
+        self.own.geo = Some(provider);
+        // A context built before the provider would answer without it.
         self.contexts.clear();
         self
     }

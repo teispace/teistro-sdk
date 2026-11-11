@@ -71,6 +71,7 @@ pub mod ephemeris;
 mod family;
 pub mod finders;
 pub mod frame;
+pub mod geo;
 pub mod intl;
 pub mod key;
 #[cfg(feature = "chart")]

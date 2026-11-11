@@ -26,6 +26,7 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::{ClockReading, LocalClock, UtcOffset};
 use teistro_hellenistic::LotRequest;
+use teistro_port_geo::ResolvedPlace;
 use teistro_time::{ProviderClock, TimeZoneProvider, ZoneSpec};
 
 use crate::DayClock;
@@ -182,6 +183,66 @@ impl ChartRequest {
     #[must_use]
     pub fn in_zone(place: Place, zone: ZoneSpec) -> ChartRequest {
         ChartRequest::on(place, DayClock::Zone(zone))
+    }
+
+    /// A reading at a place a geo provider resolved (`03-design/geo-port.md`):
+    /// its coordinates, its ground height (0 m where it has none) and its
+    /// zone's clock.
+    ///
+    /// ```
+    /// use teistro::{ChartRequest, DayClock, ResolvedPlace};
+    ///
+    /// let place: ResolvedPlace = serde_json::from_str(r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+    ///     "zone": "Asia/Kathmandu", "height": {"metres": 1337, "source": "survey", "resolutionM": 30, "datum": "EGM2008"},
+    ///     "admin": [], "source": {"name": "places", "version": "1", "dataVersion": "2026.11.0", "tzdb": null}}"#)?;
+    /// let request = ChartRequest::resolved(&place)?;
+    /// assert_eq!(request.place().altitude.get(), 1337.0);
+    /// assert!(matches!(request.clock(), DayClock::Zone(_)));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` under `place` for a place that is not well formed, and
+    /// on `place.zone` for one with no zone, whose clock must be stated.
+    pub fn resolved(place: &ResolvedPlace) -> Result<ChartRequest, Error> {
+        ChartRequest::on_resolved(place, None)
+    }
+
+    /// A reading at a resolved place, on its zone's clock or, where it has
+    /// none, the offset stated.
+    pub(crate) fn on_resolved(
+        place: &ResolvedPlace,
+        offset_seconds: Option<i32>,
+    ) -> Result<ChartRequest, Error> {
+        let point = place
+            .checked(teistro_core::error::Status::InvalidArg)
+            .map_err(|why| why.under("place"))?;
+        let clock = match (&place.zone, offset_seconds) {
+            (Some(zone), None) => DayClock::Zone(ZoneSpec::iana(zone.clone())),
+            (None, Some(seconds)) => DayClock::Offset(crate::asked::offset_of(seconds)?),
+            (Some(_), Some(_)) => {
+                return Err(Error::invalid_arg(
+                    "the resolved place has a zone, so the request states no offset",
+                )
+                .with_field("utcOffsetSeconds")
+                .with_hint("leave the offset out, or write the place out without `place`"));
+            }
+            (None, None) => {
+                return Err(Error::invalid_arg(
+                    "the resolved place has no zone, so the request states its clock",
+                )
+                .with_field("place.zone")
+                .with_hint("write `utcOffsetSeconds` beside the place"));
+            }
+        };
+        let height = place.height.as_ref().map_or(0.0, |height| height.metres);
+        let altitude = teistro_core::quantity::Altitude::try_new(height)
+            .map_err(|why| why.with_field("place.height.metres"))?;
+        Ok(ChartRequest::on(
+            Place::new(point.latitude, point.longitude, altitude),
+            clock,
+        ))
     }
 
     /// A reading at a place on either clock: an offset stated, or a zone.

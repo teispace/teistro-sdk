@@ -77,6 +77,9 @@ fn moved(check: &ReceiptCheck) -> Vec<&str> {
 #[test]
 fn every_example_record_holds_when_checked() {
     let sdk = context("nepali-drik");
+    // `geo.resolve` answers from a provider, which no context is given
+    // unless asked: the test table's.
+    sdk.geo().load(include_str!("geo-table.json")).unwrap();
     let examples: Vec<serde_json::Value> =
         serde_json::from_str(include_str!("requests.json")).unwrap();
     let mut held = 0;

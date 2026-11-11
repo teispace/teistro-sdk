@@ -47,6 +47,7 @@ teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.1", optional = true 
 teistro-kp = { path = "../kp", version = "=1.0.0-rc.1", optional = true }
 teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.1", optional = true }
 teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
+teistro-port-geo = { path = "../port-geo", version = "=1.0.0-rc.1" }
 teistro-serial = { path = "../serial", version = "=1.0.0-rc.1", optional = true }
 teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.1" }
 teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.1" }
@@ -134,6 +135,7 @@ schema = [
     "teistro-panchanga/schema",
     "teistro-points/schema",
     "teistro-port-ephemeris/schema",
+    "teistro-port-geo/schema",
     "teistro-siddhanta/schema",
     "teistro-state/schema",
     "teistro-time/schema",
@@ -280,6 +282,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "receipt"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "geo"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

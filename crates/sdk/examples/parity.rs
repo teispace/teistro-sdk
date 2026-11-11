@@ -870,6 +870,8 @@ fn the_surface(report: &mut Report) {
         ("frame.canonical", "present"),
         ("frame.pack", "present"),
         ("frame.unpack", "present"),
+        ("geo.load", "present"),
+        ("geo.resolve", "present"),
         ("intl.entity", "present"),
         ("intl.has", "present"),
         ("intl.load_pack", "present"),

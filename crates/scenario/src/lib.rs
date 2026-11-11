@@ -1064,6 +1064,10 @@ fn push_numbers(section: &mut Section, value: Option<&serde_json::Value>) {
 /// (`crates/sdk/tests/requests.json`), one request a record.
 const EXAMPLES: &str = include_str!("../../sdk/tests/requests.json");
 
+/// The geo table `geo.resolve`'s example is answered from
+/// (`crates/sdk/tests/geo-table.json`), as every binding's tests load it.
+const GEO_TABLE: &str = include_str!("../../sdk/tests/geo-table.json");
+
 /// The entry point every other is priced against: one chart founded at
 /// Kathmandu, nothing read of it but the chart itself.
 pub const UNIT: &str = "unit";
@@ -1172,6 +1176,11 @@ pub fn priced(name: &str, calls: u32) -> Result<usize, String> {
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .map_err(|e| e.to_string())?;
+    // `geo.resolve` answers from a provider, which no context has unless
+    // given one: the test table every binding's tests load.
+    if entry.record.starts_with("geo.") {
+        sdk.geo().load(GEO_TABLE).map_err(|e| e.to_string())?;
+    }
     let record = teistro::records::record(&entry.record)
         .ok_or_else(|| format!("no record named `{}`", entry.record))?;
     let request = entry.request.to_string();

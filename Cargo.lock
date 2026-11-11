@@ -1709,6 +1709,7 @@ dependencies = [
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-port-geo",
  "teistro-prashna",
  "teistro-rashifal",
  "teistro-rectification",
@@ -2107,6 +2108,17 @@ dependencies = [
  "sha2",
  "teistro-core",
  "teistro-test-adapter",
+]
+
+[[package]]
+name = "teistro-port-geo"
+version = "1.0.0-rc.1"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-port-timezone",
 ]
 
 [[package]]

@@ -1,0 +1,31 @@
+[package]
+name = "teistro-port-geo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "Teistro SDK geo port: a place's IANA zone, ground height and ISO 3166 admin codes from a provider"
+readme = "README.md"
+keywords = ["geo", "timezone", "elevation", "astrology"]
+categories = ["science::geo"]
+# Publishes for real at the first release, as the other ports do
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the types a request carries, so the
+# records' schemas describe a resolved place (`docs/03-design/geo-port.md`).
+schema = ["dep:schemars", "teistro-core/schema"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-port-timezone = { path = "../port-timezone", version = "=1.0.0-rc.1" }
+schemars = { version = "1.2", optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

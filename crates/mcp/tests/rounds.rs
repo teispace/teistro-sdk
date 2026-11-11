@@ -42,10 +42,11 @@ fn chart(
     ask(server, "tools/call", params, capabilities)["result"].clone()
 }
 
-/// **A birth's missing place, then its instant, is asked for**: first
-/// the fields the record's schema requires and the call lacks, in one
-/// form whose fields a form can carry, then the instant the SDK refuses a
-/// chart without; the retry's answers complete the call.
+/// **A birth's missing instant, then its place, is asked for**: the
+/// instant the SDK refuses a chart without first, then the coordinates
+/// one at a time, each with what to give; the last retry's answers
+/// complete the call. The coordinates are not schema-required since a
+/// resolved `place` may stand for them (`03-design/geo-port.md` §6).
 #[test]
 fn a_missing_input_is_asked_for_and_the_retry_is_answered() {
     let mut server = Server::new(Engine::Builtin);
@@ -59,28 +60,6 @@ fn a_missing_input_is_asked_for_and_the_retry_is_answered() {
     assert_eq!(form["method"], "elicitation/create");
     assert_eq!(form["params"]["mode"], "form");
     let schema = &form["params"]["requestedSchema"];
-    assert_eq!(
-        schema["required"],
-        json!(["latitudeDeg", "longitudeDeg"]),
-        "{schema}"
-    );
-    assert_eq!(schema["properties"]["latitudeDeg"]["type"], "number");
-    assert!(schema["properties"]["latitudeDeg"].get("format").is_none());
-    assert!(
-        schema["properties"]["latitudeDeg"]
-            .get("description")
-            .is_none()
-    );
-    let message = form["params"]["message"].as_str().unwrap();
-    assert!(
-        message.starts_with("`chart.found` needs `latitudeDeg` and `longitudeDeg`: "),
-        "{message}"
-    );
-
-    let place = json!({ KEY: { "action": "accept", "content": { "latitudeDeg": 27.7, "longitudeDeg": 85.3 } } });
-    let asked = chart(&mut server, &offset, &forms, Some(place));
-    assert_eq!(asked["resultType"], "input_required", "{asked}");
-    let schema = &asked["inputRequests"][KEY]["params"]["requestedSchema"];
     assert_eq!(schema["required"], json!(["instant"]), "{schema}");
     assert_eq!(schema["properties"]["instant"]["type"], "number");
     assert!(
@@ -90,9 +69,29 @@ fn a_missing_input_is_asked_for_and_the_retry_is_answered() {
             .contains("Julian day")
     );
 
-    let placed = json!({ "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20_700 });
-    let instant = json!({ KEY: { "action": "accept", "content": { "instant": 2_460_000.5 } } });
-    let answered = chart(&mut server, &placed, &forms, Some(instant));
+    let timed = json!({ "instant": 2_460_000.5, "utcOffsetSeconds": 20_700 });
+    let asked = chart(&mut server, &timed, &forms, None);
+    assert_eq!(asked["resultType"], "input_required", "{asked}");
+    let form = &asked["inputRequests"][KEY];
+    let schema = &form["params"]["requestedSchema"];
+    assert_eq!(schema["required"], json!(["latitudeDeg"]), "{schema}");
+    assert_eq!(schema["properties"]["latitudeDeg"]["type"], "number");
+    assert!(schema["properties"]["latitudeDeg"].get("format").is_none());
+    let message = form["params"]["message"].as_str().unwrap();
+    assert!(
+        message.starts_with("`chart.found` needs `latitudeDeg`: "),
+        "{message}"
+    );
+
+    let latitude = json!({ KEY: { "action": "accept", "content": { "latitudeDeg": 27.7 } } });
+    let asked = chart(&mut server, &timed, &forms, Some(latitude));
+    assert_eq!(asked["resultType"], "input_required", "{asked}");
+    let schema = &asked["inputRequests"][KEY]["params"]["requestedSchema"];
+    assert_eq!(schema["required"], json!(["longitudeDeg"]), "{schema}");
+
+    let placed = json!({ "instant": 2_460_000.5, "latitudeDeg": 27.7, "utcOffsetSeconds": 20_700 });
+    let longitude = json!({ KEY: { "action": "accept", "content": { "longitudeDeg": 85.3 } } });
+    let answered = chart(&mut server, &placed, &forms, Some(longitude));
     assert_eq!(answered["resultType"], "complete", "{answered}");
     assert_eq!(answered["isError"], false, "{answered}");
 }

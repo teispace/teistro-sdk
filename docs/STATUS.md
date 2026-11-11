@@ -2910,6 +2910,7 @@ Teimeris's output), from `consumers/addendum-3.md`.
    | `astro` | the ERFA ports, precession, the ayanamsha catalogue, 22 house systems, rise and set, crossings, the phenomena, the star table |
    | `siddhanta` | the Surya Siddhanta as a provider |
    | `time`, `port-timezone` | the scales, Delta T, the zones, the ghati and the hora, the local day |
+   | `port-geo` | the geo port: a place's IANA zone, ground height and ISO 3166 admin codes from a provider, and the table provider (`03-design/geo-port.md`, SR-87) |
    | `panchanga` | the almanac of one day at one place: the limbs as spans, the periods as divisions of the arcs, the month, the omens and the Moon's and Sun's day |
    | `vargas` | the divisional charts: one evaluator, twenty-one rows, arbitrary D-N, the mixed axis, vargottama and the change search |
    | `state` | what a graha is: the dignity ladder, the three friendships, combustion under two cited orb tables, the ages, the war, the avasthas it can decide and the six it will not |

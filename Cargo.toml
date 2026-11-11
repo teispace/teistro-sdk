@@ -10,6 +10,7 @@ members = [
     "crates/astro",
     "crates/siddhanta",
     "crates/port-timezone",
+    "crates/port-geo",
     "crates/time",
     "crates/calendar",
     "crates/chart",

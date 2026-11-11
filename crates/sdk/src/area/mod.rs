@@ -23,6 +23,7 @@ mod calendar;
 mod chart;
 mod engine;
 mod frame;
+mod geo;
 #[cfg(feature = "chart")]
 mod interpret;
 pub(crate) mod intl;
@@ -133,6 +134,7 @@ pub use chart::{
 };
 pub use engine::EngineArea;
 pub use frame::FrameArea;
+pub use geo::{GeoArea, PlaceRequest};
 #[cfg(feature = "chart")]
 pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
