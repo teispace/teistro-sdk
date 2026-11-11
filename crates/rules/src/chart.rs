@@ -1191,10 +1191,17 @@ impl RuleChart {
     /// assert_eq!(chart.placement(Body::Graha(Graha::Venus)).dignity, Dignity::Neutral);
     /// assert_eq!(chart.placement(Body::Lagna).sign, Rashi::Aries);
     /// ```
+    ///
+    /// # Panics
+    ///
+    /// For a graha past the nine (Uranus, Neptune, Pluto), which no rule
+    /// names and a rule chart does not place; [`Body::graha`] refuses one.
     #[must_use]
     pub fn placement(&self, body: Body) -> &Placement {
-        // `Body::index` is below ten by construction.
-        #[allow(clippy::indexing_slicing, reason = "a body's index is below ten")]
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "every body of Body::ALL has a placement; a graha past the nine is documented to panic"
+        )]
         &self.placements[body.index()]
     }
 
