@@ -11,16 +11,17 @@ import java.util.Objects;
 /**
  * An observance on a date of a calendar.
  *
- * @param civilDate A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
- * @param civilWeekday The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
- * @param easter The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param civilDate A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param civilWeekday The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param easter The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
  * @param key The rule's key in its pack, `"MAKARA_SANKRANTI"`.
  * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
- * @param nakshatraInMonth The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param nakshatraInMonth The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
  * @param source Where the rule is stated.
- * @param sunEnters The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param sunEnters The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
+ * @param tithiInMonth The day `tithi` holds in a month of `calendar`, as Assam keeps Sankardeva's birthday on the bright 10th in Ahin (C1361): the day holding more of the window `at`, the earlier on a tie, or the day the tithi runs in when no day holds any; `twice` and `days` as for `Dated::NakshatraInMonth`. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
  */
-public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civilWeekday, DatedRuleEaster easter, String key, FestivalMeta meta, DatedRuleNakshatraInMonth nakshatraInMonth, String source, DatedRuleSunEnters sunEnters) implements RequestJson {
+public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civilWeekday, DatedRuleEaster easter, String key, FestivalMeta meta, DatedRuleNakshatraInMonth nakshatraInMonth, String source, DatedRuleSunEnters sunEnters, DatedRuleTithiInMonth tithiInMonth) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -41,7 +42,7 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
      * @param source Where the rule is stated.
      */
     public DatedRule(String key, String source) {
-        this(null, null, null, key, null, null, source, null);
+        this(null, null, null, key, null, null, source, null, null);
     }
 
     /**
@@ -64,13 +65,14 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         private DatedRuleNakshatraInMonth nakshatraInMonth;
         private String source;
         private DatedRuleSunEnters sunEnters;
+        private DatedRuleTithiInMonth tithiInMonth;
 
         private Builder() {}
 
         /**
          * Sets {@code civilDate}.
          *
-         * @param civilDate A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @param civilDate A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder civilDate(DatedRuleCivilDate civilDate) {
@@ -81,7 +83,7 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         /**
          * Sets {@code civilWeekday}.
          *
-         * @param civilWeekday The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @param civilWeekday The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder civilWeekday(DatedRuleCivilWeekday civilWeekday) {
@@ -92,7 +94,7 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         /**
          * Sets {@code easter}.
          *
-         * @param easter The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @param easter The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder easter(DatedRuleEaster easter) {
@@ -125,7 +127,7 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         /**
          * Sets {@code nakshatraInMonth}.
          *
-         * @param nakshatraInMonth The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @param nakshatraInMonth The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder nakshatraInMonth(DatedRuleNakshatraInMonth nakshatraInMonth) {
@@ -147,11 +149,22 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         /**
          * Sets {@code sunEnters}.
          *
-         * @param sunEnters The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @param sunEnters The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder sunEnters(DatedRuleSunEnters sunEnters) {
             this.sunEnters = sunEnters;
+            return this;
+        }
+
+        /**
+         * Sets {@code tithiInMonth}.
+         *
+         * @param tithiInMonth The day `tithi` holds in a month of `calendar`, as Assam keeps Sankardeva's birthday on the bright 10th in Ahin (C1361): the day holding more of the window `at`, the earlier on a tie, or the day the tithi runs in when no day holds any; `twice` and `days` as for `Dated::NakshatraInMonth`. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder tithiInMonth(DatedRuleTithiInMonth tithiInMonth) {
+            this.tithiInMonth = tithiInMonth;
             return this;
         }
 
@@ -162,7 +175,7 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
          * @throws NullPointerException naming a required field left unset
          */
         public DatedRule build() {
-            return new DatedRule(civilDate, civilWeekday, easter, key, meta, nakshatraInMonth, source, sunEnters);
+            return new DatedRule(civilDate, civilWeekday, easter, key, meta, nakshatraInMonth, source, sunEnters, tithiInMonth);
         }
     }
 
@@ -183,7 +196,8 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
             Read.orNull(json.get("meta"), present -> FestivalMeta.of(present)),
             Read.orNull(json.get("nakshatraInMonth"), present -> DatedRuleNakshatraInMonth.of(present)),
             Read.text(Read.required(json.get("source"), "DatedRule.source"), "DatedRule.source"),
-            Read.orNull(json.get("sunEnters"), present -> DatedRuleSunEnters.of(present)));
+            Read.orNull(json.get("sunEnters"), present -> DatedRuleSunEnters.of(present)),
+            Read.orNull(json.get("tithiInMonth"), present -> DatedRuleTithiInMonth.of(present)));
     }
 
     @Override
@@ -208,6 +222,9 @@ public record DatedRule(DatedRuleCivilDate civilDate, DatedRuleCivilWeekday civi
         json.put("source", source);
         if (sunEnters != null) {
             json.put("sunEnters", sunEnters.toJson());
+        }
+        if (tithiInMonth != null) {
+            json.put("tithiInMonth", tithiInMonth.toJson());
         }
         return json;
     }

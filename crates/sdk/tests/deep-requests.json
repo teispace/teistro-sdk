@@ -539,6 +539,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {
@@ -929,6 +941,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {
@@ -1549,6 +1573,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {
@@ -2184,6 +2220,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {
@@ -2768,6 +2816,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {
@@ -3137,6 +3197,18 @@
                   "days": 1,
                   "nakshatra": "nakshatra.BHARANI",
                   "reckoning": "SUNRISE"
+                },
+                "tithiInMonth": {
+                  "at": {
+                    "window": "DAY_MUHURTA",
+                    "from": 1,
+                    "to": 1
+                  },
+                  "calendar": "calendar.JULIAN",
+                  "days": 1,
+                  "month": 1,
+                  "tithi": "tithi.SHUKLA_DVITIYA",
+                  "twice": "LATER"
                 }
               },
               {
@@ -3563,6 +3635,18 @@
               "days": 1,
               "nakshatra": "nakshatra.BHARANI",
               "reckoning": "SUNRISE"
+            },
+            "tithiInMonth": {
+              "at": {
+                "window": "DAY_MUHURTA",
+                "from": 1,
+                "to": 1
+              },
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "tithi": "tithi.SHUKLA_DVITIYA",
+              "twice": "LATER"
             }
           },
           {

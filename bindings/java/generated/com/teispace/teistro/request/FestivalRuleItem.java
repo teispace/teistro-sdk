@@ -46,6 +46,9 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
     /** {@code INDIA_TAMIL_NADU}. */
     FestivalRuleItem INDIA_TAMIL_NADU = Key.INDIA_TAMIL_NADU;
 
+    /** {@code INDIA_ASSAM}. */
+    FestivalRuleItem INDIA_ASSAM = Key.INDIA_ASSAM;
+
     /**
      * The value, as a {@code FestivalRuleItem}.
      *
@@ -138,7 +141,7 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
             if (object.containsKey("after")) {
                 return FestivalRuleItemFollowingRule.of(raw);
             }
-            if (object.containsKey("civilDate") || object.containsKey("civilWeekday") || object.containsKey("easter") || object.containsKey("nakshatraInMonth") || object.containsKey("sunEnters")) {
+            if (object.containsKey("civilDate") || object.containsKey("civilWeekday") || object.containsKey("easter") || object.containsKey("nakshatraInMonth") || object.containsKey("sunEnters") || object.containsKey("tithiInMonth")) {
                 return FestivalRuleItemDatedRule.of(raw);
             }
         }
@@ -194,7 +197,11 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
         /**
          * {@code INDIA_TAMIL_NADU}.
          */
-        INDIA_TAMIL_NADU("INDIA_TAMIL_NADU");
+        INDIA_TAMIL_NADU("INDIA_TAMIL_NADU"),
+        /**
+         * {@code INDIA_ASSAM}.
+         */
+        INDIA_ASSAM("INDIA_ASSAM");
 
         private final String key;
 

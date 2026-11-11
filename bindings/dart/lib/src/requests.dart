@@ -5789,6 +5789,17 @@ final class FestivalRulesIndiaTamilNadu extends FestivalRules {
   List<Object?> get _fields => const [];
 }
 
+/// `INDIA_ASSAM`.
+final class FestivalRulesIndiaAssam extends FestivalRules {
+  const FestivalRulesIndiaAssam();
+
+  @override
+  Object? get _wire => 'INDIA_ASSAM';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class FestivalRulesValue extends FestivalRules {
   const FestivalRulesValue(this.value);
@@ -8183,6 +8194,17 @@ final class FestivalRuleItemIndiaTamilNadu extends FestivalRuleItem {
   List<Object?> get _fields => const [];
 }
 
+/// `INDIA_ASSAM`.
+final class FestivalRuleItemIndiaAssam extends FestivalRuleItem {
+  const FestivalRuleItemIndiaAssam();
+
+  @override
+  Object? get _wire => 'INDIA_ASSAM';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value, picked by `windows`.
 final class FestivalRuleItemSaitRule extends FestivalRuleItem {
   const FestivalRuleItemSaitRule(this.value);
@@ -8239,7 +8261,7 @@ final class FestivalRuleItemFollowingRule extends FestivalRuleItem {
   List<Object?> get _fields => [value];
 }
 
-/// The value, picked by `civilDate` or `civilWeekday` or `easter` or `nakshatraInMonth` or `sunEnters`.
+/// The value, picked by `civilDate` or `civilWeekday` or `easter` or `nakshatraInMonth` or `sunEnters` or `tithiInMonth`.
 final class FestivalRuleItemDatedRule extends FestivalRuleItem {
   const FestivalRuleItemDatedRule(this.value);
 
@@ -11867,15 +11889,16 @@ final class DatedRule extends _Request {
     this.nakshatraInMonth,
     required this.source,
     this.sunEnters,
+    this.tithiInMonth,
   });
 
-  /// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+  /// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
   final DatedRuleCivilDate? civilDate;
 
-  /// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+  /// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
   final DatedRuleCivilWeekday? civilWeekday;
 
-  /// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+  /// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
   final DatedRuleEaster? easter;
 
   /// The rule's key in its pack, `"MAKARA_SANKRANTI"`.
@@ -11884,14 +11907,17 @@ final class DatedRule extends _Request {
   /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
   final FestivalMeta? meta;
 
-  /// The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+  /// The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
   final DatedRuleNakshatraInMonth? nakshatraInMonth;
 
   /// Where the rule is stated.
   final String source;
 
-  /// The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+  /// The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
   final DatedRuleSunEnters? sunEnters;
+
+  /// The day `tithi` holds in a month of `calendar`, as Assam keeps Sankardeva's birthday on the bright 10th in Ahin (C1361): the day holding more of the window `at`, the earlier on a tie, or the day the tithi runs in when no day holds any; `twice` and `days` as for [`Dated::NakshatraInMonth`]. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
+  final DatedRuleTithiInMonth? tithiInMonth;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -11903,10 +11929,11 @@ final class DatedRule extends _Request {
     if (nakshatraInMonth case final nakshatraInMonthValue?) 'nakshatraInMonth': nakshatraInMonthValue._wire,
     'source': source,
     if (sunEnters case final sunEntersValue?) 'sunEnters': sunEntersValue._wire,
+    if (tithiInMonth case final tithiInMonthValue?) 'tithiInMonth': tithiInMonthValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [civilDate, civilWeekday, easter, key, meta, nakshatraInMonth, source, sunEnters];
+  List<Object?> get _fields => [civilDate, civilWeekday, easter, key, meta, nakshatraInMonth, source, sunEnters, tithiInMonth];
 }
 
 /// A rule: when an observance falls, and how its day is decided.
@@ -13887,7 +13914,7 @@ enum EkadashiVedha implements _Keyed {
   final String key;
 }
 
-/// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+/// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
 final class DatedRuleCivilDate extends _Request {
   const DatedRuleCivilDate({
     required this.calendar,
@@ -13920,7 +13947,7 @@ final class DatedRuleCivilDate extends _Request {
   List<Object?> get _fields => [calendar, day, month, skipped];
 }
 
-/// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+/// The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
 final class DatedRuleCivilWeekday extends _Request {
   const DatedRuleCivilWeekday({
     required this.calendar,
@@ -13953,7 +13980,7 @@ final class DatedRuleCivilWeekday extends _Request {
   List<Object?> get _fields => [calendar, month, nth, weekday];
 }
 
-/// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+/// The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
 final class DatedRuleEaster extends _Request {
   const DatedRuleEaster({
     required this.computus,
@@ -13976,7 +14003,7 @@ final class DatedRuleEaster extends _Request {
   List<Object?> get _fields => [computus, days];
 }
 
-/// The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+/// The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
 final class DatedRuleNakshatraInMonth extends _Request {
   const DatedRuleNakshatraInMonth({
     required this.calendar,
@@ -14014,7 +14041,7 @@ final class DatedRuleNakshatraInMonth extends _Request {
   List<Object?> get _fields => [calendar, days, month, nakshatra, twice];
 }
 
-/// The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+/// The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
 final class DatedRuleSunEnters extends _Request {
   const DatedRuleSunEnters({
     this.days = 0,
@@ -14040,6 +14067,49 @@ final class DatedRuleSunEnters extends _Request {
 
   @override
   List<Object?> get _fields => [days, nakshatra, reckoning];
+}
+
+/// The day `tithi` holds in a month of `calendar`, as Assam keeps Sankardeva's birthday on the bright 10th in Ahin (C1361): the day holding more of the window `at`, the earlier on a tie, or the day the tithi runs in when no day holds any; `twice` and `days` as for [`Dated::NakshatraInMonth`]. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
+final class DatedRuleTithiInMonth extends _Request {
+  const DatedRuleTithiInMonth({
+    this.at,
+    required this.calendar,
+    this.days = 0,
+    required this.month,
+    required this.tithi,
+    required this.twice,
+  });
+
+  /// The window judged: the sunrise when left out; never the moonrise (C1362).
+  final Window? at;
+
+  /// The calendar the month is in.
+  final Calendar calendar;
+
+  /// How many civil days after the tithi's day, before it when negative, 0 for that day; at most [`Dated::MOST_DAYS`] either way.
+  final int days;
+
+  /// The month, 1 for the first.
+  final int month;
+
+  /// The tithi.
+  final Tithi tithi;
+
+  /// Which of two occurrences in one month keeps the day.
+  final FestivalWhich twice;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (at case final atValue?) 'at': atValue._wire,
+    'calendar': calendar.key,
+    'days': days,
+    'month': month,
+    'tithi': tithi.key,
+    'twice': twice.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, calendar, days, month, tithi, twice];
 }
 
 /// A choice when every predicate holds.
