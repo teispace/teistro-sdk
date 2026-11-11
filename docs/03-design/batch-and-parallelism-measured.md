@@ -33,10 +33,10 @@ its own cost.
 | charts | 2 | 146 | 160 | 88 | 8 | 1.10 | 73.0 |
 | charts | 10 | 730 | 800 | 296 | 8 | 1.10 | 73.0 |
 | charts | 50 | 3434 | 3784 | 1336 | 8 | 1.10 | 68.7 |
-| almanac | 1 | 202 | 455 | 419 | 48 | 2.25 | 202.0 |
-| almanac | 2 | 198 | 680 | 635 | 70 | 3.43 | 99.0 |
-| almanac | 10 | 257 | 2087 | 1958 | 158 | 8.12 | 25.7 |
-| almanac | 50 | 364 | 8645 | 8191 | 598 | 23.75 | 7.3 |
+| almanac | 1 | 200 | 451 | 419 | 48 | 2.25 | 200.0 |
+| almanac | 2 | 196 | 672 | 635 | 70 | 3.43 | 98.0 |
+| almanac | 10 | 255 | 2045 | 1958 | 158 | 8.02 | 25.5 |
+| almanac | 50 | 362 | 8439 | 8191 | 598 | 23.31 | 7.2 |
 | sunrise | 1 | 18 | 18 | 18 | 1 | 1.00 | 18.0 |
 
 Read the first row and the last of each operation together. A
@@ -45,7 +45,7 @@ grid of positions is **one call** whether it holds one instant or
 everything else is compared with. A batch of 50 charts is 3434 calls
 — 69 per chart, the same as one chart costs on its own: a loop
 that shares a provenance stamp, and no batch the ephemeris can see.
-A range of 50 almanac days is 364 calls, 1.8 days' worth of the 202
+A range of 50 almanac days is 362 calls, 1.8 days' worth of the 200
 one day makes alone. It is a batch the ephemeris sees: the range
 finds its days' local days and moonrises together, every day's
 searches stepping in lockstep so that a round of all of them is one
@@ -58,7 +58,7 @@ asked for alone to the bit; the content hashes say so.
 
 The widest call a batch of charts makes is 8 cells — the grahas of one
 chart, asked for once — and the widest an almanac makes is 598. The
-mean width is 1.10 for charts and 23.75 for an almanac range: a chart
+mean width is 1.10 for charts and 23.31 for an almanac range: a chart
 still asks its ephemeris for one cell at a time, through a port whose
 one required operation takes a grid, where an almanac range's rounds ask
 for every day's next instants together.
@@ -69,7 +69,7 @@ is serial by construction — each instant is computed from the sample
 before it, so there is no grid to ask for alone. Beside other days it
 is: a range's sunrises step in lockstep, so its days ask a round of them
 at a time, and a day of a range costs 7 calls on average where one day
-alone costs 202.
+alone costs 200.
 
 ## 4. How much of the work is asked for twice
 
@@ -81,7 +81,7 @@ the engine.
 | operation | 1 item | largest batch |
 |---|---:|---:|
 | charts | 22.5% | 64.7% of 50 items |
-| almanac | 7.9% | 5.3% of 50 items |
+| almanac | 7.1% | 2.9% of 50 items |
 
 The share **rises with the batch**, which is the finding. Within one
 chart 22.5% of the cells are asked for more than once; across 50 charts
@@ -107,25 +107,25 @@ answers are identical cell for cell.
 
 | days | calls | cells | calls, cached | cells, cached | answered from memory |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 202 | 455 | 114 | 334 | 5.9% |
-| 2 | 198 | 680 | 111 | 500 | 5.0% |
-| 10 | 257 | 2087 | 145 | 1411 | 5.0% |
-| 50 | 364 | 8645 | 224 | 5595 | 3.9% |
+| 1 | 200 | 451 | 114 | 334 | 5.4% |
+| 2 | 196 | 672 | 111 | 500 | 4.2% |
+| 10 | 255 | 2045 | 144 | 1411 | 3.6% |
+| 50 | 362 | 8439 | 223 | 5595 | 2.2% |
 
-The share answered from memory **falls with the batch** — 5.9% for a
-single day, 3.9% across 50 — since the almanac's range walk already
+The share answered from memory **falls with the batch** — 5.4% for a
+single day, 2.2% across 50 — since the almanac's range walk already
 shares between its days what a memo would (a lunation found once for
 every day it holds), and the memo answers what each day repeats of its
 own. A range of 50 days asks the ephemeris for 5595 cells instead of
-8645, in 224 calls instead of 364.
+8439, in 223 calls instead of 362.
 
-Of the 454 cells the 50-day range asks for again, the memo answers 228
-with a cell. The other 226 are **refusals it remembers**: the completion
+Of the 248 cells the 50-day range asks for again, the memo answers 125
+with a cell. The other 123 are **refusals it remembers**: the completion
 asks a provider for the frame it wants before completing that frame from
 the native one, the provider measured here produces its canonical frame
 alone, and a refusal as unsupported is a property of the request's
 shape, so the memo keeps it by everything but the instants and refuses
-again without asking (2831 cells refused from memory). This pass refuses
+again without asking (2728 cells refused from memory). This pass refuses
 a page on which the remembered refusals cannot account for every repeat
 the memo left.
 
@@ -161,11 +161,11 @@ might wrap.
 |---|---|---|
 | a batch of positions is one call whatever its size | **holds** | 1 call for 50 instants, 150 cells wide |
 | a batch of charts is one call whatever its size | falsified | 3434 calls for 50, 69 per item |
-| a batch of almanac is one call whatever its size | falsified | 364 calls for 50, 7 per item |
-| a range of almanac days costs less than three of its days alone | **holds** | 364 calls for 50 days, where one day alone makes 202: 1.8 days' worth |
-| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 23.75; the widest either makes is 8 and 598 |
-| a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 5.3% of 50 almanac days are cells already fetched |
-| a memo answers a repeated cell without touching the engine | **holds** | 228 of the 454 cells a range of 50 days asks for again are answered from memory, and the other 226 are refusals it remembers; 3.9% of all its cells: 5595 asked of the engine instead of 8645 |
+| a batch of almanac is one call whatever its size | falsified | 362 calls for 50, 7 per item |
+| a range of almanac days costs less than three of its days alone | **holds** | 362 calls for 50 days, where one day alone makes 200: 1.8 days' worth |
+| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 23.31; the widest either makes is 8 and 598 |
+| a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 2.9% of 50 almanac days are cells already fetched |
+| a memo answers a repeated cell without touching the engine | **holds** | 125 of the 248 cells a range of 50 days asks for again are answered from memory, and the other 123 are refusals it remembers; 2.2% of all its cells: 5595 asked of the engine instead of 8439 |
 | a consumer can reach what their engine offers beyond the port | **holds** | the port names 8 and an engine's own manifest is read through it; the provider measured here declares 2 beyond them |
 
 four of the eight claims are falsified, and they are falsified in an
