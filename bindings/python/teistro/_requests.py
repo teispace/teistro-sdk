@@ -8456,7 +8456,7 @@ class FestivalMeta(TypedDict, total=False):
     """Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it."""
 
     regions: Sequence[str]
-    """Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says."""
+    """Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says."""
 
     tradition: Optional[Union[_catalogue.Tradition, str]]
     """Its religion; unset when no source places it."""
