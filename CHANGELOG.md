@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A resolved place's height reaches the sunrise, and says where it came
+from.** **Numbers:** none for a request written out with coordinates.
+`chart.found` and `almanac.days` take a `place` as `geo.resolve` answers
+it: the observer stands at the caller's `altitudeM` when one is stated,
+else at the provider's ground height, else at sea level, and the
+provenance carries the applied convention `observer.height` naming the
+height and its source. A Kathmandu sunrise on a resolved 1337 m is the
+sunrise with `altitudeM: 1337` written by hand, and its receipt replays
+without the provider. The height moves a sunrise reckoned under the air
+(`ATMOSPHERIC`); the shipped profiles' fixed 34′ reads none, and a
+resolved place does not change the convention (`03-design/geo-port.md`
+§6a, SR-90).
+
 **A place's zone, height and admin codes through a geo port.** **Numbers:**
 none. The new crate `teistro-port-geo` names a `GeoProvider`: the IANA
 zone at a point, the ground height with its source, resolution and
