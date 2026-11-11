@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 55 records
+## Over 56 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 356 595 | 112 525 | 31.6% |
-| the value | 336 787 | 109 094 | 32.4% |
+| the envelope | 356 824 | 112 754 | 31.6% |
+| the value | 337 009 | 109 316 | 32.4% |
 | the provenance | 19 227 | 2570 | 13.4% |
 
-18 of the 55 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+18 of the 56 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 243 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -80,6 +80,7 @@ value.
 | `chart.mundane` | 752 | 182 | 24.2% | the whole value |
 | `chart.rashifal` | 17 500 | 4641 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
 | `chart.relocated` | 1053 | 494 | 46.9% | the whole value |
+| `geo.resolve` | 229 | 229 | 100.0% | the whole value |
 | `intl.date` | 238 | 238 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
 | `intl.inWords` | 218 | 218 | 100.0% | the whole value |
