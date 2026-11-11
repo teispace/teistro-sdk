@@ -343,6 +343,26 @@ mod tests {
     }
 
     #[test]
+    fn an_engine_over_no_base_starts_on_its_first_locale_and_over_none_is_refused() {
+        let (_, tree) = embedded();
+        let nepali: BTreeMap<String, LocaleSource> = tree
+            .locales
+            .into_iter()
+            .filter(|(tag, _)| tag == "ne-Deva-NP")
+            .collect();
+        let intl = Intl::over(Locales::from(nepali)).unwrap();
+        assert_eq!(intl.locale(), "ne-Deva-NP", "no base, so the first");
+        assert_eq!(
+            intl.categories("hi-Deva-IN", false),
+            Vec::<&str>::new(),
+            "a locale the engine does not hold has no plural categories"
+        );
+        assert_eq!(intl.categories("ne-Deva-NP", false), ["one", "other"]);
+        let none = Intl::over(Locales::from(BTreeMap::<String, LocaleSource>::new()));
+        assert!(none.is_err_and(|e| e.to_string().contains("no locales")));
+    }
+
+    #[test]
     fn an_engine_decodes_the_locales_it_reads_and_no_others() {
         let (bundles, _) = embedded();
         let locales = Locales::from_bundles(&bundles).unwrap();
