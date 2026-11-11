@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The rise and set solver reads each instant once.** **Numbers:** none.
+The reading at a window's start, which the iteration, the scan, the step
+rule and the absence proof each took again, is taken once; the solver
+reuses its last reading when an iteration lands on the same instant; and
+a lockstep round hands a one-instant wait its answer without a list. The
+nutation's and the fundamental arguments' remainders use an exact fused
+multiply-add form (`teistro_core::math::rem`, tested to the operator's
+bit), and the equation of the equinoxes' terms take one `sin_cos`. A
+year of `almanac.days` at Kathmandu takes 11 % fewer instructions and
+39 % fewer allocations once warm, a festival year 6 % fewer
+instructions, a month of cells 6.5 %. Every answer compared byte for
+byte with the previous build under both shipped profiles.
+`teistro-core` gains `math::rem` and `math::rem_euclid`;
+`teistro-astro`'s lockstep `Round` gains `apparent_at`.
+
 **A context decodes only the locales it reads.** **Numbers:** none.
 The first context in a process decoded all five embedded locale bundles
 before it could render, about 59,000 allocations and 6.3 MB, though an

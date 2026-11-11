@@ -195,6 +195,37 @@ them apart: `Ok(None)` means "it did not cross", `Err` means "ask again
 differently". Sizing the cap from the span changes only calls that
 previously failed, so no number moved.
 
+**A reading is taken once** (2026-11-11). Each reading of the sky costs
+an apparent sidereal time, and the IAU 2000B nutation inside it (77
+terms, a remainder and a sine and cosine each) is most of the solver's
+own work. Three things read the same instant twice, and now do not:
+
+- the reading at the start of the window, which the iteration, the
+  scan, the step rule (`cannot_cross`) and the absence proof
+  (`proves_none`, at its first step) each took again, is read once by
+  `event_with` and handed to all four, still counted as one evaluation
+  by each that counted it;
+- the solver keeps its last single reading keyed by the instant's bits
+  (`Solver::last`), so an iteration that lands on the instant it has
+  just read, as a converged pass does, reuses it;
+- a lockstep round hands a search waiting on one instant its answer in
+  place (`Round::apparent_at`) rather than as a one-element list.
+
+Two cheaper routines underneath answer the same bits by construction.
+`math::rem` is the remainder computed as `|x| − n|y|` in one fused
+multiply-add where the quotient's whole part `n` is exact (below 2⁵²),
+falling back to `%` elsewhere; a remainder is exact, so any exact
+method gives the operator's bits, which a test checks on random draws,
+exact multiples and the special values. `eect00`'s terms take
+`math::sin_cos` of their argument, which is libm's sine and cosine to
+the bit (also tested). A year of `almanac.days` at Kathmandu over
+Teimeris fell from 7,799 to 6,938 million instructions (−11 %) and its
+warm allocations from 112,784 to 68,732; a festival year from 2,417 to
+2,276 million (−6 %); a month of `almanac.cells` from 207 to 194
+million. Every answer of the three, under both shipped profiles and for
+1990 as well as the current year, compared byte for byte with the
+build before the change. No number moved.
+
 **The day** (`Solver::day`). The rise inside the day that begins at a
 local mean midnight, then the set that follows that rise (the day's arc,
 which past the polar circles may end after the next civil midnight, as
