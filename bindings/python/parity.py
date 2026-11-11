@@ -898,10 +898,19 @@ def put_numerology(ctx: Context) -> None:
         )
 
 
+def put_plan(ctx: Context, key: str, items: Sequence[PlanItem]) -> None:
+    """One plan as the report prints it under `key`: its count, then each
+    item as its key and what the locale engine says for it."""
+    put(f"{key}-count", len(items))
+    for n, item in enumerate(items):
+        said = ctx.intl.render(item["key"], item["params"]).text
+        put(f"{key}-{n}", f"{item['key']}: {said}")
+
+
 def put_rashifal(geo: Context, place: Observer) -> None:
     """The rashifal batch every runner sends: a week read at sunrise with
     the baseline's weekly scores, and a day read at 06:00 reporting only
-    Mars's and Saturn's events."""
+    Mars's and Saturn's events; both with each sign's plan."""
     week: RashifalRequest = {
         "first": date(Calendar.GREGORIAN, 2024, 6, 17),
         "last": date(Calendar.GREGORIAN, 2024, 6, 23),
@@ -919,7 +928,7 @@ def put_rashifal(geo: Context, place: Observer) -> None:
     def ymd(day: CalendarDate) -> str:
         return f"{day.year}-{day.month}-{day.day}"
 
-    sealed = geo.chart.rashifal_many([week, one_day], "WEEKLY")
+    sealed = geo.chart.rashifal_many([week, one_day], "WEEKLY", plans=True)
     put("rashifal-hash", sealed.provenance.input_hash)
     for n, answer in enumerate(sealed.value):
         period = answer.period
@@ -952,6 +961,8 @@ def put_rashifal(geo: Context, place: Observer) -> None:
                     f"rashifal-{n}-{r}-baseline",
                     f"{score.overall} {','.join(str(value) for _, value in score.areas)} {named or 'none'} {lucky.colour} {lucky.number} {lucky.day.full_key} {lucky.direction.full_key}",
                 )
+            if answer.plans is not None:
+                put_plan(geo, f"rashifal-{n}-{r}-plan", answer.plans[r])
 
 
 def put_pakshi(geo: Context) -> None:
@@ -1821,10 +1832,7 @@ def main() -> None:
                 for composer, items in plans.items()
             ]
             for composer, items in composed:
-                put(f"chart-{i}-plan-{composer}-count", len(items))
-                for n, item in enumerate(items):
-                    said = ctx.intl.render(item["key"], item["params"]).text
-                    put(f"chart-{i}-plan-{composer}-{n}", f"{item['key']}: {said}")
+                put_plan(ctx, f"chart-{i}-plan-{composer}", items)
             for d, drawing in enumerate(chart.drawings):
                 key = f"chart-{i}-drawing-{d}"
                 put(key, drawing.layout_key)

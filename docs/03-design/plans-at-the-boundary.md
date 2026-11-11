@@ -249,3 +249,6 @@ that were asked for.
    `ne-Deva-NP`, so the first parity over text is a parity over Devanagari,
    and it compares the composers, the params shape and the locale engine at
    once. No area was added, and the surface pages hold as they were.
+   The rashifal batch asks `plans` too (SR-37), so each sign's plan of
+   both periods is said under `rashifal-N-R-plan-*` by the same helper
+   that says a chart's.

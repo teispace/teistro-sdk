@@ -975,15 +975,30 @@ public final class ParityRunner {
     }
 
     /**
+     * One plan as the report prints it under {@code at}: its count, then each
+     * item as its key and what {@code sdk}'s locale engine says for it.
+     */
+    private static void putPlan(Context sdk, String at, List<?> items) {
+        put(at + "-count", items.size());
+        for (int n = 0; n < items.size(); n += 1) {
+            Object item = items.get(n);
+            String key = String.valueOf(dig(item, "key"));
+            Object params = dig(item, "params");
+            String said = sdk.intl().renderJson(key, Json.write(params == null ? Map.of() : params)).text();
+            put(at + "-" + n, key + ": " + said);
+        }
+    }
+
+    /**
      * The rashifal batch every runner sends: a week read at sunrise with the
      * baseline's weekly scores, and a day read at 06:00 reporting only Mars's
-     * and Saturn's events.
+     * and Saturn's events; both with each sign's plan.
      */
     private static void putRashifal(Context geo, Observer place) {
         RashifalRequest week = new RashifalRequest(date(2024, 6, 17), date(2024, 6, 23), place, 20700, null, null, null);
         RashifalRequest oneDay = new RashifalRequest(date(2024, 6, 17), null, place, 20700,
                 Snapshot.of(map("at", "CLOCK", "hour", 6, "minute", 0)), List.of(Graha.MARS, Graha.SATURN), null);
-        RashifalAnswers sealed = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY");
+        RashifalAnswers sealed = geo.chart().rashifalMany(List.of(week, oneDay), "WEEKLY", true);
         put("rashifal-hash", sealed.provenance().inputHash());
         List<RashifalAnswer> answers = sealed.value();
         for (int n = 0; n < answers.size(); n += 1) {
@@ -1023,6 +1038,9 @@ public final class ParityRunner {
                             + join(",", score.areas(), area -> String.valueOf(area.getValue())) + " " + orNone(named)
                             + " " + lucky.colour() + " " + lucky.number() + " " + lucky.day().fullKey() + " "
                             + lucky.direction().fullKey());
+                }
+                if (answer.plans() != null) {
+                    putPlan(geo, "rashifal-" + n + "-" + r + "-plan", answer.plans().get(r));
                 }
             }
         }
@@ -2041,15 +2059,7 @@ public final class ParityRunner {
         // asked for rather than a list written here.
         Map<String, Object> plans = chart.plans().orElseThrow();
         for (Map.Entry<String, Object> composed : plans.entrySet()) {
-            List<?> items = list(composed.getValue());
-            put(c + "-plan-" + composed.getKey() + "-count", items.size());
-            for (int n = 0; n < items.size(); n += 1) {
-                Object item = items.get(n);
-                String key = String.valueOf(dig(item, "key"));
-                Object params = dig(item, "params");
-                String said = ctx.intl().renderJson(key, Json.write(params == null ? Map.of() : params)).text();
-                put(c + "-plan-" + composed.getKey() + "-" + n, key + ": " + said);
-            }
+            putPlan(ctx, c + "-plan-" + composed.getKey(), list(composed.getValue()));
         }
         for (int d = 0; d < chart.drawings().size(); d += 1) {
             Drawing drawing = chart.drawings().get(d);

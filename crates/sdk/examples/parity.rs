@@ -225,20 +225,31 @@ fn the_plans(
             ),
         ];
         for (composer, plan) in composed {
-            put(
+            said(
                 report,
-                &format!("chart-{index}-plan-{composer}-count"),
-                plan.items.len().to_string(),
+                sdk,
+                &format!("chart-{index}-plan-{composer}"),
+                &plan,
             );
-            for (at, item) in plan.items.iter().enumerate() {
-                let said = sdk.intl().render(&item.key, &item.params).text;
-                put(
-                    report,
-                    &format!("chart-{index}-plan-{composer}-{at}"),
-                    format!("{}: {said}", item.key),
-                );
-            }
         }
+    }
+}
+
+/// One plan as the report prints it under `key`: its count, then each item
+/// as its key and what the locale engine says for it.
+fn said(report: &mut Report, sdk: &teistro::Context, key: &str, plan: &teistro::Plan) {
+    put(
+        report,
+        &format!("{key}-count"),
+        plan.items.len().to_string(),
+    );
+    for (at, item) in plan.items.iter().enumerate() {
+        let text = sdk.intl().render(&item.key, &item.params).text;
+        put(
+            report,
+            &format!("{key}-{at}"),
+            format!("{}: {text}", item.key),
+        );
     }
 }
 
@@ -8066,9 +8077,10 @@ fn scored(window: &teistro::muhurta::Judgement) -> String {
 /// whose unwanted placements cross with their houses and grahas; and a
 /// house's beginning, whose bull of the house no other rite reads.
 /// Each sign's line of a rashifal answer: Saturn, the verdicts, each
-/// event, and the baseline's score when asked.
+/// event, and the baseline's score and the sign's plan when asked.
 fn rashifal_signs(
     report: &mut Report,
+    geo: &Context,
     key: &dyn Fn(&str) -> String,
     answer: &teistro::RashifalAnswer,
 ) {
@@ -8140,17 +8152,20 @@ fn rashifal_signs(
                 ),
             );
         }
+        if let Some(plan) = answer.plans.as_ref().and_then(|plans| plans.get(r)) {
+            said(report, geo, &key(&format!("-{r}-plan")), plan);
+        }
     }
 }
 
 /// The rashifal batch every runner sends: a week read at sunrise with the
 /// baseline's weekly scores, and a day read at 06:00 reporting only Mars's
-/// and Saturn's events.
-const RASHIFAL_JSON: &str = r#"{"periods":[{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"last":{"year":2024,"month":6,"day":23},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700},{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"snapshot":{"at":"CLOCK","hour":6,"minute":0},"events":["MARS","SATURN"]}],"baseline":"WEEKLY"}"#;
+/// and Saturn's events; both with each sign's plan.
+const RASHIFAL_JSON: &str = r#"{"periods":[{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"last":{"year":2024,"month":6,"day":23},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700},{"calendar":"GREGORIAN","first":{"year":2024,"month":6,"day":17},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"snapshot":{"at":"CLOCK","hour":6,"minute":0},"events":["MARS","SATURN"]}],"baseline":"WEEKLY","plans":true}"#;
 
 /// Each rashifal period as the other three print it: its days and
 /// instant, the reference day's limbs, each graha's transit, and each
-/// sign's Saturn, verdicts, events and baseline score.
+/// sign's Saturn, verdicts, events, baseline score and plan.
 fn the_rashifal(report: &mut Report, geo: &Context) {
     let batch = teistro::RashifalBatch::from_json(RASHIFAL_JSON).expect("a rashifal batch");
     let sealed = geo
@@ -8200,7 +8215,7 @@ fn the_rashifal(report: &mut Report, geo: &Context) {
                 ),
             );
         }
-        rashifal_signs(report, &key, answer);
+        rashifal_signs(report, geo, &key, answer);
     }
 }
 

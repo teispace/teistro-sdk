@@ -928,6 +928,17 @@ void putNumerology(Context ctx) {
   }
 }
 
+/// One plan as the report prints it under [at]: its count, then each item
+/// as its key and what [sdk]'s locale engine says for it.
+void putPlan(Context sdk, String at, List<Map<String, Object?>> items) {
+  put('$at-count', items.length);
+  for (final (n, item) in items.indexed) {
+    final key = item['key']! as String;
+    final params = item['params']! as Map<String, Object?>;
+    put('$at-$n', '$key: ${sdk.intl.render(key, params).text}');
+  }
+}
+
 void putDay(String prefix, LocalDay day) {
   put('$prefix-vara', day.vara.fullKey);
   put('$prefix-sunrise', day.sunrise);
@@ -1842,17 +1853,11 @@ void main() {
     // bindings are compared on text, which exercises the composers, the
     // params shape and the locale engine at once.
     for (final composed in chart.plans!.entries) {
-      final items =
-          (composed.value! as List<Object?>).cast<Map<String, Object?>>();
-      put('chart-$i-plan-${composed.key}-count', items.length);
-      for (var n = 0; n < items.length; n += 1) {
-        final key = items[n]['key']! as String;
-        final said =
-            ctx.intl
-                .render(key, items[n]['params']! as Map<String, Object?>)
-                .text;
-        put('chart-$i-plan-${composed.key}-$n', '$key: $said');
-      }
+      putPlan(
+        ctx,
+        'chart-$i-plan-${composed.key}',
+        (composed.value! as List<Object?>).cast<Map<String, Object?>>(),
+      );
     }
     final drawings = chart.drawings;
     for (var d = 0; d < drawings.length; d += 1) {
@@ -3456,7 +3461,7 @@ void main() {
 
   // The rashifal batch every runner sends: a week read at sunrise with the
   // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
-  // and Saturn's events.
+  // and Saturn's events; both with each sign's plan.
   String ymd(CalendarDate day) => '${day.year}-${day.month}-${day.day}';
   final rashifal = geo.chart.rashifalMany([
     RashifalRequest(
@@ -3472,7 +3477,7 @@ void main() {
       snapshot: const AtClock(hour: 6),
       events: const [Graha.mars, Graha.saturn],
     ),
-  ], baseline: BaselinePeriod.weekly);
+  ], baseline: BaselinePeriod.weekly, plans: true);
   put('rashifal-hash', rashifal.provenance.inputHash);
   for (final (n, answer) in rashifal.value.indexed) {
     final period = answer.period;
@@ -3530,6 +3535,9 @@ void main() {
               '${named.isEmpty ? 'none' : named.join(',')} ${lucky.colour} '
               '${lucky.number} ${lucky.day.fullKey} ${lucky.direction.fullKey}',
         );
+      }
+      if (answer.plans case final plans?) {
+        putPlan(geo, 'rashifal-$n-$r-plan', plans[r]);
       }
     }
   }
