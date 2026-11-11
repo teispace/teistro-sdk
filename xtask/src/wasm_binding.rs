@@ -1040,6 +1040,10 @@ pub(crate) fn check(root: &Path) -> i32 {
                 Command::new("node")
                     .args(["--test", crate::node_binding::SUITE])
                     .env("TEISTRO_FIXTURES", root.join(FIXTURES))
+                    // The suite reads the SDK's test files from the
+                    // checkout, which a staged copy is not under when the
+                    // build directory is shared.
+                    .env("TEISTRO_SDK_ROOT", root)
                     // A plugin is a shared library, which a wasm module
                     // cannot open (ADR-0029); the suite's plugin tests
                     // skip without an adapter, and here there is none.

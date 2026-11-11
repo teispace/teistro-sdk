@@ -620,6 +620,7 @@ dependencies = [
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",
+ "teistro-port-geo",
  "teistro-prashna",
  "teistro-rashifal",
  "teistro-rectification",
@@ -794,6 +795,7 @@ dependencies = [
  "teistro-gochar",
  "teistro-houses",
  "teistro-intl",
+ "teistro-rashifal",
  "teistro-rules",
  "teistro-state",
  "teistro-strength",
@@ -910,6 +912,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-port-geo"
+version = "1.0.0-rc.1"
+dependencies = [
+ "serde",
+ "teistro-core",
+ "teistro-port-timezone",
+]
+
+[[package]]
 name = "teistro-port-timezone"
 version = "1.0.0-rc.1"
 dependencies = [
@@ -971,6 +982,7 @@ name = "teistro-research"
 version = "1.0.0-rc.1"
 dependencies = [
  "serde",
+ "serde_json",
  "teistro-core",
 ]
 
