@@ -122,7 +122,7 @@ pub(crate) fn resolved(
 ) -> Result<Placed, Error> {
     let point = place
         .checked(teistro_core::error::Status::InvalidArg)
-        .map_err(|why| why.under("place"))?;
+        .map_err(|why| why.under(PLACE))?;
     let clock = match (&place.zone, offset_seconds) {
         (Some(zone), None) => DayClock::Zone(ZoneSpec::iana(zone.clone())),
         (None, Some(seconds)) => DayClock::Offset(offset_of(seconds)?),
@@ -195,6 +195,9 @@ fn height_from(place: &ResolvedPlace, altitude_m: Option<f64>) -> Convention {
         reason,
     }
 }
+
+/// The field a request takes a resolved place in.
+pub(crate) const PLACE: &str = "place";
 
 /// The knob a resolved place's height is recorded under.
 pub(crate) const HEIGHT_KNOB: &str = "observer.height";

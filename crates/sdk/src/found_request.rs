@@ -331,6 +331,21 @@ impl<T: Catalogued + schemars::JsonSchema> schemars::JsonSchema for Keyed<T> {
 #[cfg(feature = "schema")]
 const REGISTERED_KEY: &str = "^([a-z_]+\\.)?[A-Z][A-Z0-9_]*$";
 
+/// The parts a tool list names rather than states: each record read off
+/// the charts, then the resolved place.
+#[cfg(feature = "schema")]
+pub(crate) const PARTS: [&str; ChartRecords::NAMES.len() + 1] = {
+    let mut parts = [crate::asked::PLACE; ChartRecords::NAMES.len() + 1];
+    let mut slots: &mut [&str] = &mut parts;
+    let mut names: &[&str] = &ChartRecords::NAMES;
+    while let ([slot, after @ ..], [name, more @ ..]) = (slots, names) {
+        *slot = *name;
+        slots = after;
+        names = more;
+    }
+    parts
+};
+
 /// The record's schema: the request as [`Asked`] reads it, each section
 /// a flag beside it, and each record by its own reader's schema.
 #[cfg(feature = "schema")]

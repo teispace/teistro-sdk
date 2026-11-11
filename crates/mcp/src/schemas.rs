@@ -298,7 +298,7 @@ pub(crate) fn lean(mut input: Value, record: &Record) -> Value {
         for part in record.parts() {
             if properties.contains_key(*part) {
                 let said = format!(
-                    "The `{part}` record, read by its own reader: `{DESCRIBE}` with \
+                    "The `{part}` part, stated apart: `{DESCRIBE}` with \
                      {{\"tool\": \"{}\", \"part\": \"{part}\"}} answers its schema.",
                     record.name
                 );
