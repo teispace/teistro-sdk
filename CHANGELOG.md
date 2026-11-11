@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A tag is a version, and publishes nothing by itself.** **Numbers:** none.
+A `v*` tag now makes the GitHub release, with its archives, digests and
+provenance, and stops there. The registries (npm, pub.dev, PyPI, Maven
+Central, the MCP Registry) and the read-back from them run only when the
+repository's `PUBLISH_REGISTRIES` variable is `true`, so the SDK can be
+versioned and pinned by tag before any package is published
+(`06-cicd/03-release-process.md`).
+
 **The rise and set solver reads each instant once.** **Numbers:** none.
 The reading at a window's start, which the iteration, the scan, the step
 rule and the absence proof each took again, is taken once; the solver

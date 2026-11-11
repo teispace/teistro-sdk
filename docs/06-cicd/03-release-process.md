@@ -70,7 +70,8 @@ release the installers fetch from included, keeps the version's own.
 | `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
 | `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome, Cloudflare's workerd, Deno, Bun and Next.js's edge runtime each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
-| `publish` | after `verify` and `stage`: the GitHub release with every archive and `checksums.txt`; then every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart package; last, the agent server's MCP Registry entry, by the runner's OIDC token |
+| `publish` | after `verify` and `stage`: the GitHub release with every archive, `checksums.txt`, the manifests and their build provenance; nothing leaves for a registry here |
+| `registries` | only when the repository variable `PUBLISH_REGISTRIES` is `true`, after `publish`: every platform package and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages, then the agent server's platform packages and `@teistro/mcp`; then the Dart packages, PyPI and Maven Central; last, the agent server's MCP Registry entry, by the runner's OIDC token |
 
 Every job runs under `TEISTRO_STRICT`, so a gate that skips part of
 itself for a missing tool fails rather than passing on what it did not
@@ -81,10 +82,20 @@ them, because npm resolves an optional dependency at install time and a
 consumer who installs in the seconds between would get a package whose
 addon does not exist yet.
 
-Publishing runs in a GitHub environment called `release`, so it can be
-held for a review, and only on a tag: a `workflow_dispatch` builds,
-stages and checks everything and publishes nothing, which is how the whole
-chain is rehearsed before a tag exists.
+Publishing to the registries runs in a GitHub environment called
+`release`, so it can be held for a review, and only on a tag: a
+`workflow_dispatch` builds, stages and checks everything and publishes
+nothing, which is how the whole chain is rehearsed before a tag exists.
+
+**A tag is a version, not a publish.** The maintainer decided on
+2026-11-11 that the SDK is versioned by tags, each with its changelog
+section and its GitHub release, while no package goes to npm, pub.dev,
+PyPI, Maven Central or the MCP Registry. So `registries` and the
+`published` read-back after it run only when the repository variable
+`PUBLISH_REGISTRIES` is `true`; unset, as it is, a tag stops at the
+GitHub release. A consumer pins a tag, and the release's archives and
+digests are what they fetch. Setting the variable is the one step that
+starts publishing, and it is the maintainer's.
 
 ## What is set up, and what is not
 
