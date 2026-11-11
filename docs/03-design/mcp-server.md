@@ -324,13 +324,16 @@ field serialised `with` a module to naming the schema it writes. The
 whole list measured nearly a megabyte, most of it `chart.found` and its
 answer, which is more than a model should read to pick a tool. So the
 list is **lean** by default: each record a request carries by name
-(`chart.found`'s `kp`, `almanac.days`'s `muhurta`) is one line naming
-`schema.describe`, the definitions nothing then reaches are dropped,
+(`chart.found`'s `kp`, `almanac.days`'s `muhurta`), and the festival
+rule language six almanac requests carry (`festivals`, and
+`almanac.observance`'s `traditions`, about 400 KB of an 834 KB list
+until they were parts), is one line naming `schema.describe` with the part's
+own type, the definitions nothing then reaches are dropped,
 and no `outputSchema` is listed (the revision makes it optional).
 `schema.describe` answers a tool's input and output schemas in full, or
 one part's with the definitions it reaches. `--schemas full` lists
 everything inline for a client that validates structured content. The
-lean list is about a fourteenth of the full one, a gate holds it under
+lean list is about an eighth of the full one, a gate holds it under
 a quarter, and the server builds it once and keeps it. Every example
 holds to both details, and every chart record its reader takes holds to
 the full schema and to the part `schema.describe` answers.

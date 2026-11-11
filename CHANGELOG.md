@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The MCP server's lean tool list states the festival rules apart.**
+**Numbers:** none. The festival rule language a request carries
+(`festivals` in `almanac.cells`, `almanac.digest`,
+`almanac.festival_calendar`, `almanac.next` and
+`almanac.publishedReasons`; `traditions` in `almanac.observance`) is a
+part of each record, as `chart.found`'s `kp` is: the lean list names
+`schema.describe` in its place, which answers the part's schema alone,
+and the full list (`--schemas full`) is unchanged. The six tools carried
+about 400 KB of the 834 KB list, which is now 438 KB, an eighth of the
+3.3 MB full one. A lean placeholder keeps the part's own type, so `traditions`
+stays an array.
+
 **A resolved place's height reaches the sunrise, and says where it came
 from.** **Numbers:** none for a request written out with coordinates.
 `chart.found` and `almanac.days` take a `place` as `geo.resolve` answers

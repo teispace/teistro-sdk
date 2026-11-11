@@ -296,16 +296,19 @@ fn request_parts(input: &mut Value) -> Option<&mut Map<String, Value>> {
 pub(crate) fn lean(mut input: Value, record: &Record) -> Value {
     if let Some(properties) = request_parts(&mut input) {
         for part in record.parts() {
-            if properties.contains_key(*part) {
+            if let Some(stated) = properties.get_mut(*part) {
                 let said = format!(
                     "The `{part}` part, stated apart: `{DESCRIBE}` with \
                      {{\"tool\": \"{}\", \"part\": \"{part}\"}} answers its schema.",
                     record.name
                 );
-                properties.insert(
-                    (*part).to_owned(),
-                    json!({ "type": "object", "description": said }),
-                );
+                // The part's own type, where it states one (`kp` is an
+                // object, `traditions` an array), so a lean schema
+                // refuses no value the full one takes.
+                *stated = match stated.get("type") {
+                    Some(kind) => json!({ "type": kind, "description": said }),
+                    None => json!({ "description": said }),
+                };
             }
         }
     }

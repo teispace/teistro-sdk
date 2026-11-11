@@ -959,6 +959,15 @@ fn the_lean_list_names_each_part_and_keeps_only_what_it_reaches() {
         !found["inputSchema"].to_string().contains("ResolvedPlace"),
         "the lean chart.found states the place it names"
     );
+    // The festival rule language is a part wherever a request carries it,
+    // and no lean tool states it: it was about 400 KB of an 834 KB list.
+    for tool in &lean {
+        assert!(
+            !tool["inputSchema"].to_string().contains("\"DatedRule\""),
+            "{} states the festival rule language",
+            tool["name"]
+        );
+    }
     let size = |tools: &[Value]| Value::Array(tools.to_vec()).to_string().len();
     let (lean, full) = (size(&lean), size(&full));
     assert!(lean * 4 < full, "lean {lean} bytes, full {full}");
