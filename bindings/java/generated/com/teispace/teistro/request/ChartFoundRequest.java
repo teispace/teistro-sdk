@@ -45,7 +45,7 @@ import java.util.Objects;
  * @param outerPlanets The {@code outerPlanets} field. Null leaves the SDK's default.
  * @param parallels What the parallels are asked: how close two distances from the equator must stand. Null leaves the SDK's default.
  * @param perfection Whose perfection is asked: the two significators, named or found by Lilly's rule, and the rules it is read under. Null leaves the SDK's default.
- * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
+ * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
  * @param points The {@code points} field. Null leaves the SDK's default.
  * @param prashna A question put to the chart of its moment, and the readings it is answered under. Null leaves the SDK's default.
  * @param progressions `ProgressionsRequest` as the bindings write it. Null leaves the SDK's default.
@@ -542,7 +542,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         /**
          * Sets {@code place}.
          *
-         * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
+         * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder place(ResolvedPlace place) {

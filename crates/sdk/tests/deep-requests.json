@@ -1264,6 +1264,30 @@
         }
       },
       "nepalSambat": true,
+      "place": {
+        "admin": [
+          {
+            "code": "x",
+            "level": 1,
+            "name": "x"
+          }
+        ],
+        "height": {
+          "datum": "x",
+          "metres": 1.5,
+          "resolutionM": 1.5,
+          "source": "x"
+        },
+        "latitudeDeg": 1.5,
+        "longitudeDeg": 1.5,
+        "source": {
+          "dataVersion": "x",
+          "name": "x",
+          "tzdb": "x",
+          "version": "x"
+        },
+        "zone": "x"
+      },
       "sky": true,
       "skyStepMinutes": 1,
       "utcOffsetSeconds": 1,
