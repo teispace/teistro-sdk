@@ -573,6 +573,7 @@ impl Anniversary {
             by_share()
         };
         FestivalRule {
+            in_month: None,
             key: self.key.clone(),
             source: kind.source().to_owned(),
             month: Some(month),

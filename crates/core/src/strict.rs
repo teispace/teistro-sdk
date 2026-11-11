@@ -19,6 +19,17 @@
 //! let typo = read::<Ring>(r#"{"inner": 0.2, "outer": 0.4, "outr": 0.5}"#, "ring").unwrap_err();
 //! assert_eq!(typo.field(), Some("ring.outr"));
 //!
+//! // An optional field left empty is left out, not written `null`.
+//! #[derive(Debug, serde::Serialize, serde::Deserialize)]
+//! struct Band {
+//!     #[serde(default, skip_serializing_if = "Option::is_none")]
+//!     width: Option<f64>,
+//! }
+//! let empty = read::<Band>(r#"{"width": null}"#, "band").unwrap_err();
+//! assert_eq!(empty.field(), Some("band.width"));
+//! assert!(empty.to_string().contains("is null"), "{empty}");
+//! assert!(read::<Band>("{}", "band").is_ok());
+//!
 //! // A value of the wrong kind is named where it stands, not by its record.
 //! let wide = read::<Ring>(r#"{"inner": "wide", "outer": 0.4}"#, "ring").unwrap_err();
 //! assert_eq!(wide.field(), Some("ring.inner"));
@@ -218,13 +229,22 @@ pub fn read_value<T: Serialize + DeserializeOwned>(given: &Value, root: &str) ->
     }
     match unread(given, &read, root) {
         None => Ok(value),
-        Some(path) => Err(
-            Error::invalid_arg(format!("`{path}` is not a field this reads"))
-                .with_field(path)
-                .with_hint(String::from(
-                    "check the spelling against the record's fields",
-                )),
-        ),
+        // An optional field left empty is not written back, so a `null`
+        // given for it lands here; name that, not a misspelling.
+        Some((path, true)) => Err(Error::invalid_arg(format!(
+            "`{path}` is null, which is not a value; an empty field is left out"
+        ))
+        .with_field(path)
+        .with_hint(String::from(
+            "leave the key out for its default, or check its spelling",
+        ))),
+        Some((path, false)) => Err(Error::invalid_arg(format!(
+            "`{path}` is not a field this reads"
+        ))
+        .with_field(path)
+        .with_hint(String::from(
+            "check the spelling against the record's fields",
+        ))),
     }
 }
 
@@ -250,13 +270,13 @@ fn listed_record(given: &Value, read: &Value, path: &str) -> Option<String> {
 }
 
 /// The path of the first key in `given` that `read` does not have, walking
-/// objects and arrays together.
-fn unread(given: &Value, read: &Value, path: &str) -> Option<String> {
+/// objects and arrays together, and whether its given value is `null`.
+fn unread(given: &Value, read: &Value, path: &str) -> Option<(String, bool)> {
     match (given, read) {
         (Value::Object(given), Value::Object(read)) => given.iter().find_map(|(key, inner)| {
             let at = format!("{path}.{key}");
             match read.get(key) {
-                None => Some(at),
+                None => Some((at, inner.is_null())),
                 Some(back) => unread(inner, back, &at),
             }
         }),

@@ -12,6 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Sreekrishna Jayanthi in Kerala is the dark 8th in Chingam (C1320).**
+**Numbers:** `INDIA_KERALA`'s `JANMASHTAMI` moves in a year whose amanta
+Shravana 8th falls before Chingam 1: 2025's moves from 15 August to 14
+September, the notice's day; 2021 to 2024 and 2026 are unchanged. A lunar
+rule (`FestivalRule`) may now leave out `month` and name `inMonth`
+(`{"calendar", "month", "twice"}`, the new `InMonth`): it is judged in every
+lunar month by its own window and guards, and keeps the day falling in
+that calendar's month, the earlier or the later of two
+(`03-design/festival-rule-language.md`). Kerala's pack now meets 101 of
+its 102 reckoned rows.
+
+**A rule's default window can be written.** **Numbers:** none.
+`tithiInMonth`'s `at` is now always written, so a request giving
+`"at": {"window": "SUNRISE"}` is read, not refused as a field the rule
+does not read. A `null` given for an
+optional field is now refused as null ("leave the key out"), not as an
+unknown field.
+
 **A region is its ISO 3166 code, and names its pack (SR-89).**
 **Numbers:** none. The state holiday sets keep their days in
 `["IN", "IN-TN"]` rather than `["IN", "TAMIL_NADU"]`, and likewise `IN-AS`,

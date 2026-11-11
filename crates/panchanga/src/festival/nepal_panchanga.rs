@@ -173,6 +173,7 @@ impl Fit {
     ) -> FestivalRule {
         let (at, decide, otherwise, reading) = self.decide();
         FestivalRule {
+            in_month: None,
             key: key.to_owned(),
             source: format!("{cited}: {reading}"),
             month,
