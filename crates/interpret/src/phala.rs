@@ -13,7 +13,6 @@
 //! would not be language-neutral, and the same chart would compose
 //! differently for two people.
 
-use teistro_core::catalogue::Graha;
 use teistro_intl::messages::sdk::phala;
 use teistro_intl::source::graha_bhava_key;
 use teistro_rules::{Body, RuleChart};
@@ -82,10 +81,7 @@ const NAMAKARANA_FORM: &str = "namakarana";
 #[must_use]
 pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();
-    for graha in Graha::ALL.into_iter().take(9) {
-        let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
-            continue;
-        };
+    for (graha, at) in chart.grahas() {
         let key = graha_bhava_key(graha.key(), at.house.get());
         if vocabulary.has_form(&key, NAME_FORM) {
             plan.say(&phala::GrahaInBhava {
@@ -95,10 +91,9 @@ pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
             });
         }
     }
-    if let Some(at) = chart.placements.get(Body::Lagna.index())
-        && vocabulary.has_form(at.sign.full_key(), LAGNA_FORM)
-    {
-        plan.say(&phala::LagnaRashi { rashi: at.sign });
+    let lagna = chart.placement(Body::Lagna);
+    if vocabulary.has_form(lagna.sign.full_key(), LAGNA_FORM) {
+        plan.say(&phala::LagnaRashi { rashi: lagna.sign });
     }
     let Some(panchanga) = chart.panchanga.as_ref() else {
         return plan;

@@ -1198,6 +1198,42 @@ impl RuleChart {
         &self.placements[body.index()]
     }
 
+    /// The nine grahas' placements, the Sun to Ketu, each with its graha:
+    /// what a composer walks when it says something of every graha.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Dignity, Rashi};
+    /// # use teistro_rules::{House, Placement, RuleChart};
+    /// #
+    /// # let mut chart = RuleChart {
+    /// #     placements: [Placement {
+    /// #         longitude: 15.0,
+    /// #         sign: Rashi::Aries,
+    /// #         house: House::try_new(1).unwrap(),
+    /// #         dignity: Dignity::Neutral,
+    /// #         retrograde: false,
+    /// #         combust: false,
+    /// #         karaka7: None,
+    /// #         karaka8: None,
+    /// #         navamsha: Rashi::Aries,
+    /// #     }; 10],
+    /// #     panchanga: None,
+    /// #     strengths: None,
+    /// # };
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// chart.placements[8].sign = Rashi::Libra;
+    /// let nine: Vec<_> = chart.grahas().collect();
+    /// assert_eq!(nine.len(), 9, "the lagna is not a graha");
+    /// assert_eq!(nine[0].0, Graha::Sun);
+    /// assert_eq!((nine[8].0, nine[8].1.sign), (Graha::Ketu, Rashi::Libra));
+    /// ```
+    pub fn grahas(&self) -> impl Iterator<Item = (Graha, &Placement)> {
+        // `placements` holds the Sun to Ketu in `Graha::ALL`'s order, then
+        // the lagna, so the first nine pair off with the first nine grahas.
+        Graha::ALL.into_iter().zip(&self.placements).take(9)
+    }
+
     /// The lagna's sign.
     ///
     /// ```

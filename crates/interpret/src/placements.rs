@@ -15,7 +15,7 @@
 //! vocabulary was bought before the message was written. A chart carrying
 //! more of those points would say them through the same message.
 
-use teistro_core::catalogue::{Graha, Point, Rashi};
+use teistro_core::catalogue::{Point, Rashi};
 use teistro_intl::Value;
 use teistro_intl::messages::sdk::reason;
 use teistro_rules::{Body, RuleChart};
@@ -59,16 +59,11 @@ pub fn placements(chart: &RuleChart) -> Plan {
     // The lagna first, because it is the frame every other placement is
     // read against — and it says only its sign: its house is the first by
     // definition, and "the Ascendant in the first house" says nothing.
-    if let Some(at) = chart.placements.get(Body::Lagna.index()) {
-        plan.say(&reason::PointInRashi {
-            point: Point::Lagna,
-            rashi: at.sign,
-        });
-    }
-    for graha in Graha::ALL.into_iter().take(9) {
-        let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
-            continue;
-        };
+    plan.say(&reason::PointInRashi {
+        point: Point::Lagna,
+        rashi: chart.placement(Body::Lagna).sign,
+    });
+    for (graha, at) in chart.grahas() {
         plan.say(&reason::GrahaInRashi {
             graha,
             rashi: at.sign,
@@ -79,16 +74,10 @@ pub fn placements(chart: &RuleChart) -> Plan {
         });
     }
     for rashi in Rashi::ALL {
-        let together: Vec<Value> = Graha::ALL
-            .into_iter()
-            .take(9)
-            .filter(|graha| {
-                chart
-                    .placements
-                    .get(Body::Graha(*graha).index())
-                    .is_some_and(|at| at.sign == rashi)
-            })
-            .map(Value::catalogued)
+        let together: Vec<Value> = chart
+            .grahas()
+            .filter(|(_, at)| at.sign == rashi)
+            .map(|(graha, _)| Value::catalogued(graha))
             .collect();
         if together.len() > 1 {
             plan.say(&reason::Occupants {
@@ -111,7 +100,7 @@ pub(crate) mod tests {
         reason = "tests unwrap what they build and fail by panicking"
     )]
 
-    use teistro_core::catalogue::Dignity;
+    use teistro_core::catalogue::{Dignity, Graha};
     use teistro_rules::{House, Placement};
 
     use super::*;

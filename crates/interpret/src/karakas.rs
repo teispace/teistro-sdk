@@ -25,9 +25,8 @@
 //! a chara karaka is Jaimini's reading of a placement rather than a
 //! Parashari condition of it, and apart, the tradition is a knob.
 
-use teistro_core::catalogue::Graha;
 use teistro_intl::messages::sdk::karaka;
-use teistro_rules::{Body, RuleChart};
+use teistro_rules::RuleChart;
 
 use crate::Plan;
 
@@ -62,10 +61,7 @@ use crate::Plan;
 #[must_use]
 pub fn karakas(chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();
-    for graha in Graha::ALL.into_iter().take(9) {
-        let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
-            continue;
-        };
+    for (graha, at) in chart.grahas() {
         if let Some(held) = at.karaka7 {
             plan.say(&karaka::OfSeven {
                 graha,
@@ -92,8 +88,8 @@ mod tests {
         reason = "tests unwrap what they build and fail by panicking"
     )]
 
-    use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi};
-    use teistro_rules::{EightKarakas, House, Placement};
+    use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+    use teistro_rules::{Body, EightKarakas, House, Placement};
 
     use super::*;
     use crate::{Item, KEYS};

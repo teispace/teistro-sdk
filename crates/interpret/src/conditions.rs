@@ -29,10 +29,10 @@
 //! conditions that **are** absences — not retrograde, not burnt, not
 //! vargottama — are said only where they hold.
 
-use teistro_core::catalogue::{Graha, State};
+use teistro_core::catalogue::State;
 use teistro_intl::messages::sdk::condition;
 use teistro_intl::messages::sdk::phala as phala_messages;
-use teistro_rules::{Body, RuleChart};
+use teistro_rules::RuleChart;
 
 use crate::{Plan, Vocabulary};
 
@@ -74,10 +74,7 @@ const PHALA_FORM: &str = "phala";
 #[must_use]
 pub fn conditions(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();
-    for graha in Graha::ALL.into_iter().take(9) {
-        let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
-            continue;
-        };
+    for (graha, at) in chart.grahas() {
         plan.say(&condition::Dignity {
             graha,
             dignity: at.dignity,
@@ -133,8 +130,8 @@ mod tests {
         reason = "tests unwrap what they build and fail by panicking"
     )]
 
-    use teistro_core::catalogue::{Dignity, Rashi};
-    use teistro_rules::{House, Placement};
+    use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    use teistro_rules::{Body, House, Placement};
 
     use super::*;
     use crate::NoReadings;

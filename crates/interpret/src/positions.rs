@@ -28,7 +28,7 @@
 //! the other reads it rounded, and rounding the sign to match would make the
 //! plan disagree with the chart.
 
-use teistro_core::catalogue::{Graha, Point};
+use teistro_core::catalogue::Point;
 use teistro_intl::messages::sdk::reason;
 use teistro_rules::{Body, RuleChart};
 
@@ -65,16 +65,11 @@ use crate::Plan;
 #[must_use]
 pub fn positions(chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();
-    if let Some(at) = chart.placements.get(Body::Lagna.index()) {
-        plan.say(&reason::PointAt {
-            point: Point::Lagna,
-            longitude: at.longitude,
-        });
-    }
-    for graha in Graha::ALL.into_iter().take(9) {
-        let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
-            continue;
-        };
+    plan.say(&reason::PointAt {
+        point: Point::Lagna,
+        longitude: chart.placement(Body::Lagna).longitude,
+    });
+    for (graha, at) in chart.grahas() {
         plan.say(&reason::GrahaAt {
             graha,
             longitude: at.longitude,
@@ -93,7 +88,7 @@ mod tests {
         reason = "tests unwrap what they build and fail by panicking"
     )]
 
-    use teistro_core::catalogue::{Dignity, Rashi};
+    use teistro_core::catalogue::{Dignity, Graha, Rashi};
     use teistro_intl::Value;
     use teistro_rules::{House, Placement};
 
