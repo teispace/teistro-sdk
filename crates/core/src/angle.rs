@@ -36,7 +36,7 @@ use crate::quantity::{Degrees, InvalidValue, NakshatraIndex, PadaIndex, SignInde
 /// ```
 #[must_use]
 pub fn normalise_deg(deg: f64) -> f64 {
-    let wrapped = deg.rem_euclid(360.0);
+    let wrapped = math::rem_euclid(deg, 360.0);
     if wrapped >= 360.0 { 0.0 } else { wrapped }
 }
 
@@ -53,7 +53,7 @@ pub fn normalise_deg(deg: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn difference_deg(a: f64, b: f64) -> f64 {
-    let d = (a - b).rem_euclid(360.0);
+    let d = math::rem_euclid(a - b, 360.0);
     if d > 180.0 { d - 360.0 } else { d }
 }
 

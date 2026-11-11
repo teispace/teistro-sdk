@@ -246,7 +246,7 @@ pub fn centuries(date1: f64, date2: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn anp(a: f64) -> f64 {
-    let mut w = a % D2PI;
+    let mut w = math::rem(a, D2PI);
     if w < 0.0 {
         w += D2PI;
     }
@@ -270,7 +270,7 @@ pub fn era00(dj1: f64, dj2: f64) -> f64 {
     let (d1, d2) = if dj1 < dj2 { (dj1, dj2) } else { (dj2, dj1) };
     let t = d1 + (d2 - DJ00);
     // Fractional part of T (days).
-    let f = d1 % 1.0 + d2 % 1.0;
+    let f = math::rem(d1, 1.0) + math::rem(d2, 1.0);
     // Earth rotation angle at this UT1.
     anp(D2PI * (f + 0.779_057_273_264_0 + 0.002_737_811_911_354_48 * t))
 }
@@ -439,27 +439,29 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
     // Fundamental arguments from Simon et al. (1994), in the truncated
     // form the model uses.
     // Mean anomaly of the Moon.
-    let el = (485_868.249_036 + (1_717_915_923.217_8) * t) % TURNAS * DAS2R;
+    let el = math::rem(485_868.249_036 + (1_717_915_923.217_8) * t, TURNAS) * DAS2R;
     // Mean anomaly of the Sun.
-    let elp = (1_287_104.793_05 + (129_596_581.048_1) * t) % TURNAS * DAS2R;
+    let elp = math::rem(1_287_104.793_05 + (129_596_581.048_1) * t, TURNAS) * DAS2R;
     // Mean argument of the latitude of the Moon.
-    let f = (335_779.526_232 + (1_739_527_262.847_8) * t) % TURNAS * DAS2R;
+    let f = math::rem(335_779.526_232 + (1_739_527_262.847_8) * t, TURNAS) * DAS2R;
     // Mean elongation of the Moon from the Sun.
-    let d = (1_072_260.703_69 + (1_602_961_601.209_0) * t) % TURNAS * DAS2R;
+    let d = math::rem(1_072_260.703_69 + (1_602_961_601.209_0) * t, TURNAS) * DAS2R;
     // Mean longitude of the ascending node of the Moon.
-    let om = (450_160.398_036 + (-6_962_890.543_1) * t) % TURNAS * DAS2R;
+    let om = math::rem(450_160.398_036 + (-6_962_890.543_1) * t, TURNAS) * DAS2R;
 
     // Summation of luni-solar nutation series (smallest terms first).
     let mut dp = 0.0;
     let mut de = 0.0;
     for term in nut00b::TERMS.iter().rev() {
         // Argument and functions.
-        let arg = (f64::from(term.nl) * el
-            + f64::from(term.nlp) * elp
-            + f64::from(term.nf) * f
-            + f64::from(term.nd) * d
-            + f64::from(term.nom) * om)
-            % D2PI;
+        let arg = math::rem(
+            f64::from(term.nl) * el
+                + f64::from(term.nlp) * elp
+                + f64::from(term.nf) * f
+                + f64::from(term.nd) * d
+                + f64::from(term.nom) * om,
+            D2PI,
+        );
         let (sarg, carg) = math::sin_cos(arg);
         // Term.
         dp += (term.ps + term.pst * t) * sarg + term.pc * carg;
@@ -488,10 +490,11 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
 /// ```
 #[must_use]
 pub fn fal03(t: f64) -> f64 {
-    (485_868.249_036
-        + t * (1_717_915_923.217_8 + t * (31.879_2 + t * (0.051_635 + t * (-0.000_244_70)))))
-        % TURNAS
-        * DAS2R
+    math::rem(
+        485_868.249_036
+            + t * (1_717_915_923.217_8 + t * (31.879_2 + t * (0.051_635 + t * (-0.000_244_70)))),
+        TURNAS,
+    ) * DAS2R
 }
 
 /// Mean anomaly of the Sun (IERS Conventions 2003). Port of `eraFalp03`.
@@ -506,10 +509,11 @@ pub fn fal03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn falp03(t: f64) -> f64 {
-    (1_287_104.793_048
-        + t * (129_596_581.048_1 + t * (-0.553_2 + t * (0.000_136 + t * (-0.000_011_49)))))
-        % TURNAS
-        * DAS2R
+    math::rem(
+        1_287_104.793_048
+            + t * (129_596_581.048_1 + t * (-0.553_2 + t * (0.000_136 + t * (-0.000_011_49)))),
+        TURNAS,
+    ) * DAS2R
 }
 
 /// Mean longitude of the Moon minus that of the ascending node (IERS
@@ -525,10 +529,11 @@ pub fn falp03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn faf03(t: f64) -> f64 {
-    (335_779.526_232
-        + t * (1_739_527_262.847_8 + t * (-12.751_2 + t * (-0.001_037 + t * (0.000_004_17)))))
-        % TURNAS
-        * DAS2R
+    math::rem(
+        335_779.526_232
+            + t * (1_739_527_262.847_8 + t * (-12.751_2 + t * (-0.001_037 + t * (0.000_004_17)))),
+        TURNAS,
+    ) * DAS2R
 }
 
 /// Mean elongation of the Moon from the Sun (IERS Conventions 2003). Port
@@ -544,10 +549,11 @@ pub fn faf03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn fad03(t: f64) -> f64 {
-    (1_072_260.703_692
-        + t * (1_602_961_601.209_0 + t * (-6.370_6 + t * (0.006_593 + t * (-0.000_031_69)))))
-        % TURNAS
-        * DAS2R
+    math::rem(
+        1_072_260.703_692
+            + t * (1_602_961_601.209_0 + t * (-6.370_6 + t * (0.006_593 + t * (-0.000_031_69)))),
+        TURNAS,
+    ) * DAS2R
 }
 
 /// Mean longitude of the Moon's ascending node (IERS Conventions 2003).
@@ -563,10 +569,11 @@ pub fn fad03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn faom03(t: f64) -> f64 {
-    (450_160.398_036
-        + t * (-6_962_890.543_1 + t * (7.472_2 + t * (0.007_702 + t * (-0.000_059_39)))))
-        % TURNAS
-        * DAS2R
+    math::rem(
+        450_160.398_036
+            + t * (-6_962_890.543_1 + t * (7.472_2 + t * (0.007_702 + t * (-0.000_059_39)))),
+        TURNAS,
+    ) * DAS2R
 }
 
 /// Mean longitude of Venus (IERS Conventions 2003). Port of `eraFave03`.
@@ -581,7 +588,7 @@ pub fn faom03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn fave03(t: f64) -> f64 {
-    (3.176_146_697 + 1_021.328_554_621_1 * t) % D2PI
+    math::rem(3.176_146_697 + 1_021.328_554_621_1 * t, D2PI)
 }
 
 /// Mean longitude of Earth (IERS Conventions 2003). Port of `eraFae03`.
@@ -596,7 +603,7 @@ pub fn fave03(t: f64) -> f64 {
 /// ```
 #[must_use]
 pub fn fae03(t: f64) -> f64 {
-    (1.753_470_314 + 628.307_584_999_1 * t) % D2PI
+    math::rem(1.753_470_314 + 628.307_584_999_1 * t, D2PI)
 }
 
 /// General accumulated precession in longitude (IERS Conventions 2003).
@@ -677,7 +684,10 @@ fn eect_sum(terms: &[EectTerm], fa: &[f64; 8]) -> f64 {
             .iter()
             .zip(fa)
             .fold(0.0, |acc, (n, value)| acc + f64::from(*n) * value);
-        sum += term.s * math::sin(a) + term.c * math::cos(a);
+        // One reduction for both: `sin_cos` is `sin` and `cos` to the bit
+        // (`teistro_core::math`'s tests hold it), at the cost of one.
+        let (sin, cos) = math::sin_cos(a);
+        sum += term.s * sin + term.c * cos;
     }
     sum
 }
