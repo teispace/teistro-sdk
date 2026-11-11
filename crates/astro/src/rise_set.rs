@@ -21,6 +21,7 @@
 //! and the panchanga reckon from sea level, and a dip is a custom
 //! altitude of the convention when a caller wants one.
 
+use core::cell::Cell;
 use core::fmt;
 use teistro_core::math;
 
@@ -544,6 +545,7 @@ impl DayEvents {
     clippy::struct_field_names,
     reason = "each field is a quantity in degrees and says so"
 )]
+#[derive(Clone, Copy)]
 struct Sample {
     /// The body's altitude above the horizon, degrees, geocentric.
     altitude_deg: f64,
@@ -588,6 +590,13 @@ pub struct Solver<'a> {
     /// Whether to try proving no event of the kind asked for in a window
     /// before walking it ([`Solver::proves_none`]).
     none_proof: bool,
+    /// The last instant read alone and its reading, by the instant's
+    /// bits. A day's moonrise and moonset searches open at the same
+    /// instant and are polled one after the other, so the second reads
+    /// the first's reading rather than reckoning the sidereal time again;
+    /// a reading is a function of the instant alone, so it is the same
+    /// to the bit.
+    last: Cell<Option<(u64, Sample)>>,
 }
 
 impl fmt::Debug for Solver<'_> {
@@ -636,6 +645,7 @@ impl<'a> Solver<'a> {
             chunk: SCAN_CHUNK,
             absence_check: true,
             none_proof: true,
+            last: Cell::new(None),
         }
     }
 
@@ -901,8 +911,28 @@ impl<'a> Solver<'a> {
     fn sample(&self, t: f64, evaluations: &mut u32) -> Result<Sample, Error> {
         let ut1 = JulianDay::<Ut1>::try_new(t)?;
         *evaluations += 1;
+        if let Some(kept) = self.kept(t) {
+            return Ok(kept);
+        }
         let apparent = self.sky.apparent(self.body, ut1)?;
-        self.reading(ut1, &apparent)
+        self.keep(t, self.reading(ut1, &apparent)?)
+    }
+
+    /// The reading [`Solver::keep`] last kept, when it was of `t`.
+    fn kept(&self, t: f64) -> Option<Sample> {
+        self.last
+            .get()
+            .and_then(|(bits, sample)| (bits == t.to_bits()).then_some(sample))
+    }
+
+    /// Keeps a reading of `t` as the last read alone, and answers it.
+    #[expect(
+        clippy::unnecessary_wraps,
+        reason = "it closes the paths that read, each of which may fail"
+    )]
+    fn keep(&self, t: f64, sample: Sample) -> Result<Sample, Error> {
+        self.last.set(Some((t.to_bits(), sample)));
+        Ok(sample)
     }
 
     /// [`Solver::sample`] on the spot, or in `round`'s request.
@@ -917,11 +947,17 @@ impl<'a> Solver<'a> {
         };
         let ut1 = JulianDay::<Ut1>::try_new(t)?;
         *evaluations += 1;
-        let apparent = round.apparent(self.sky, self.body, &[ut1]).await?;
-        let apparent = apparent
-            .first()
-            .ok_or_else(|| Error::internal("a lockstep round answered no position"))?;
-        self.reading(ut1, apparent)
+        if let Some(kept) = self.kept(t) {
+            return Ok(kept);
+        }
+        let apparent = round.apparent_at(self.sky, self.body, ut1).await?;
+        // Kept by another search between the asking and the answer: the
+        // round's searches that opened at this instant answer after one
+        // another, and only the first reckons it.
+        if let Some(kept) = self.kept(t) {
+            return Ok(kept);
+        }
+        self.keep(t, self.reading(ut1, &apparent)?)
     }
 
     /// [`Solver::samples`] on the spot, or in `round`'s request.
@@ -1042,8 +1078,12 @@ impl<'a> Solver<'a> {
             ))
             .with_field("window_days"));
         }
+        if !matches!(kind, HorizonEventKind::Rise | HorizonEventKind::Set) {
+            return Ok(false);
+        }
         let start = from.get();
-        spot(self.proves_none(None, kind, start, start + window_days, &mut 0))
+        let first = self.sample(start, &mut 0)?;
+        spot(self.proves_none(None, kind, (start, first), start + window_days, &mut 0))
     }
 
     /// The next event of a kind at or after `from`, inside a window of so
@@ -1145,8 +1185,11 @@ impl<'a> Solver<'a> {
         let start = from.get();
         let end = start + window_days;
         let mut evaluations = 0u32;
+        // The window's first reading, which the iteration starts from and
+        // the scan's proofs start from too: read once for both.
+        let first = self.sample_in(round, start, &mut evaluations).await?;
         match self
-            .iterate(round, kind, start, end, &mut evaluations)
+            .iterate(round, kind, (start, first), end, &mut evaluations)
             .await?
         {
             Some(instant) => Ok(Some(HorizonEvent {
@@ -1154,7 +1197,10 @@ impl<'a> Solver<'a> {
                 method: Method::Iterated,
                 evaluations,
             })),
-            None => self.scan(round, kind, start, end, evaluations).await,
+            None => {
+                self.scan(round, kind, (start, first), end, evaluations)
+                    .await
+            }
         }
     }
 
@@ -1224,7 +1270,7 @@ impl<'a> Solver<'a> {
         &self,
         round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
-        start: f64,
+        (start, first): (f64, Sample),
         end: f64,
         evaluations: &mut u32,
     ) -> Result<bool, Error> {
@@ -1235,8 +1281,14 @@ impl<'a> Solver<'a> {
         };
         let (_, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
         let mut t = start;
-        for _ in 0..ONE_SIDE_READINGS {
-            let reading = self.sample_in(round, t, evaluations).await?;
+        for step in 0..ONE_SIDE_READINGS {
+            let reading = if step == 0 {
+                // The window's first reading, counted as the walk's.
+                *evaluations += 1;
+                first
+            } else {
+                self.sample_in(round, t, evaluations).await?
+            };
             let gap = reading.altitude_deg - reading.target_deg;
             let reach = if gap.abs() >= 2.0 * ONE_SIDE_FLOOR_DEG {
                 // Short of the full reach by the floor, so the next
@@ -1278,7 +1330,7 @@ impl<'a> Solver<'a> {
         &self,
         round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
-        start: f64,
+        (start, first): (f64, Sample),
         end: f64,
         evaluations: &mut u32,
     ) -> Result<bool, Error> {
@@ -1303,7 +1355,8 @@ impl<'a> Solver<'a> {
         let Some(margin) = declination_chord_margin(self.body) else {
             return Ok(false);
         };
-        let first = self.sample_in(round, start, evaluations).await?;
+        // The window's first reading, counted as this bound's.
+        *evaluations += 1;
         let last = self.sample_in(round, end, evaluations).await?;
 
         let (dec_lo, dec_hi) = (
@@ -1336,12 +1389,11 @@ impl<'a> Solver<'a> {
         &self,
         round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
-        start: f64,
+        (start, first): (f64, Sample),
         end: f64,
         evaluations: &mut u32,
     ) -> Result<Option<f64>, Error> {
         let sidereal_day = 360.0 / HOUR_ANGLE_RATE_DEG_PER_DAY;
-        let first = self.sample_in(round, start, evaluations).await?;
         let Some(target_hour_angle) = self.event_hour_angle_deg(kind, &first) else {
             return Ok(None);
         };
@@ -1396,7 +1448,7 @@ impl<'a> Solver<'a> {
         &self,
         round: Option<&Lockstep<'a>>,
         kind: HorizonEventKind,
-        start: f64,
+        (start, first): (f64, Sample),
         end: f64,
         evaluations: u32,
     ) -> Result<Option<HorizonEvent>, Error> {
@@ -1415,14 +1467,14 @@ impl<'a> Solver<'a> {
         let mut counted = evaluations;
         if self.absence_check
             && self
-                .cannot_cross(round, kind, start, end, &mut counted)
+                .cannot_cross(round, kind, (start, first), end, &mut counted)
                 .await?
         {
             return Ok(None);
         }
         if self.none_proof
             && self
-                .proves_none(round, kind, start, end, &mut counted)
+                .proves_none(round, kind, (start, first), end, &mut counted)
                 .await?
         {
             return Ok(None);
@@ -1628,7 +1680,8 @@ mod tests {
             end: f64,
             evaluations: u32,
         ) -> Result<Option<HorizonEvent>, Error> {
-            spot(self.scan(None, kind, start, end, evaluations))
+            let first = self.sample(start, &mut 0)?;
+            spot(self.scan(None, kind, (start, first), end, evaluations))
         }
 
         /// The absence proof alone, read on the spot.
@@ -1639,7 +1692,8 @@ mod tests {
             end: f64,
             evaluations: &mut u32,
         ) -> Result<bool, Error> {
-            spot(self.proves_none(None, kind, start, end, evaluations))
+            let first = self.sample(start, &mut 0)?;
+            spot(self.proves_none(None, kind, (start, first), end, evaluations))
         }
     }
 

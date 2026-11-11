@@ -51,14 +51,38 @@ pub fn finished<T>(future: impl Future<Output = T>) -> Option<T> {
 
 /// Where a round leaves one wait's answer: empty until the round is
 /// asked.
-type Slot = Rc<RefCell<Option<Result<Vec<Apparent>, Error>>>>;
+type Slot = Rc<RefCell<Option<Result<Answer, Error>>>>;
+
+/// The instants one wait asks for. A search reads one instant a step and
+/// a grid now and then, so the one is held in place rather than in a
+/// vector of its own: a year of almanac days waits some twenty thousand
+/// times, and each wait was two allocations before it was a reading.
+enum Asked {
+    One(JulianDay<Ut1>),
+    Many(Vec<JulianDay<Ut1>>),
+}
+
+/// The positions a round hands one wait back, in the shape it asked.
+enum Answer {
+    One(Apparent),
+    Many(Vec<Apparent>),
+}
+
+impl Asked {
+    fn instants(&self) -> &[JulianDay<Ut1>] {
+        match self {
+            Asked::One(instant) => core::slice::from_ref(instant),
+            Asked::Many(instants) => instants,
+        }
+    }
+}
 
 /// One search's wait: the instants it asked for and, once the round is
 /// asked, their answer.
 struct Wait<'s> {
     sky: &'s dyn ApparentPositions,
     body: Body,
-    instants: Vec<JulianDay<Ut1>>,
+    instants: Asked,
     answer: Slot,
 }
 
@@ -159,11 +183,65 @@ impl<'s> Lockstep<'s> {
         body: Body,
         instants: &[JulianDay<Ut1>],
     ) -> Result<Vec<Apparent>, Error> {
+        match self.wait(sky, body, Asked::Many(instants.to_vec())).await? {
+            Answer::Many(read) => Ok(read),
+            Answer::One(read) => Ok(vec![read]),
+        }
+    }
+
+    /// [`Lockstep::apparent`] at one instant: the same request, without a
+    /// vector each way.
+    ///
+    /// ```
+    /// use teistro_astro::completion::Completion;
+    /// use teistro_astro::delta_t::DeltaTModel;
+    /// use teistro_astro::lockstep::Lockstep;
+    /// use teistro_astro::sky::ApparentPositions;
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{Body, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// let sky: &dyn ApparentPositions = &sky;
+    /// let j2000 = JulianDay::<Ut1>::J2000;
+    /// let lockstep = Lockstep::new();
+    /// let read = lockstep.run([lockstep.apparent_at(sky, Body::Moon, j2000)]);
+    /// let moon = read.into_iter().next().expect("one search")?;
+    /// assert_eq!(moon, sky.apparent(Body::Moon, j2000)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Lockstep::apparent`].
+    pub async fn apparent_at(
+        &self,
+        sky: &'s dyn ApparentPositions,
+        body: Body,
+        instant: JulianDay<Ut1>,
+    ) -> Result<Apparent, Error> {
+        match self.wait(sky, body, Asked::One(instant)).await? {
+            Answer::One(read) => Ok(read),
+            Answer::Many(read) => read
+                .first()
+                .copied()
+                .ok_or_else(|| Error::internal("a lockstep round answered no position")),
+        }
+    }
+
+    /// Joins the round's next request and waits for its answer.
+    async fn wait(
+        &self,
+        sky: &'s dyn ApparentPositions,
+        body: Body,
+        instants: Asked,
+    ) -> Result<Answer, Error> {
         let answer = Rc::new(RefCell::new(None));
         self.waits.borrow_mut().push(Wait {
             sky,
             body,
-            instants: instants.to_vec(),
+            instants,
             answer: Rc::clone(&answer),
         });
         Answered { answer }.await
@@ -248,7 +326,7 @@ impl<'s> Lockstep<'s> {
                 .collect();
             let instants: Vec<JulianDay<Ut1>> = mine
                 .iter()
-                .flat_map(|wait| wait.instants.iter().copied())
+                .flat_map(|wait| wait.instants.instants().iter().copied())
                 .collect();
             let mut apparent = Vec::with_capacity(instants.len());
             let asked = sky
@@ -266,14 +344,22 @@ impl<'s> Lockstep<'s> {
                 });
             let mut at = 0;
             for wait in mine {
-                let share = match &asked {
-                    Ok(()) => Ok(apparent
-                        .get(at..at + wait.instants.len())
-                        .map(<[Apparent]>::to_vec)
-                        .unwrap_or_default()),
-                    Err(error) => Err(error.clone()),
+                let asked_for = wait.instants.instants().len();
+                let share = match (&asked, &wait.instants) {
+                    (Ok(()), Asked::One(_)) => apparent
+                        .get(at)
+                        .copied()
+                        .map(Answer::One)
+                        .ok_or_else(|| Error::internal("a lockstep round answered no position")),
+                    (Ok(()), Asked::Many(_)) => Ok(Answer::Many(
+                        apparent
+                            .get(at..at + asked_for)
+                            .map(<[Apparent]>::to_vec)
+                            .unwrap_or_default(),
+                    )),
+                    (Err(error), _) => Err(error.clone()),
                 };
-                at += wait.instants.len();
+                at += asked_for;
                 *wait.answer.borrow_mut() = Some(share);
             }
         }
@@ -286,7 +372,7 @@ struct Answered {
 }
 
 impl Future for Answered {
-    type Output = Result<Vec<Apparent>, Error>;
+    type Output = Result<Answer, Error>;
 
     fn poll(self: Pin<&mut Self>, _: &mut Context<'_>) -> Poll<Self::Output> {
         match self.answer.borrow_mut().take() {
