@@ -60,6 +60,17 @@ function fnv(text) {
 const put = (key, value) => report.set(key, typeof value === 'number' ? number(value) : String(value));
 
 /**
+ * One plan as the report prints it under `key`: its count, then each item
+ * as its key and what `sdk`'s locale engine says for it.
+ */
+const putPlan = (sdk, key, items) => {
+  put(`${key}-count`, items.length);
+  items.forEach((item, n) => {
+    put(`${key}-${n}`, `${item.key}: ${sdk.intl.render(item.key, item.params).text}`);
+  });
+};
+
+/**
  * A local day's every field, under the same keys for a chart's day and an
  * almanac's, because the two layers hand back one record.
  */
@@ -886,10 +897,7 @@ for (const chart of charts) {
   // four bindings are compared on text, and it exercises the composers,
   // the params shape and the locale engine in one comparison.
   for (const [composer, items] of Object.entries(chart.plans)) {
-    put(`chart-${i}-plan-${composer}-count`, items.length);
-    items.forEach((item, n) => {
-      put(`chart-${i}-plan-${composer}-${n}`, `${item.key}: ${ctx.intl.render(item.key, item.params).text}`);
-    });
+    putPlan(ctx, `chart-${i}-plan-${composer}`, items);
   }
   chart.drawings.forEach((drawing, d) => {
     const key = `chart-${i}-drawing-${d}`;
@@ -2233,15 +2241,15 @@ for (const [name, rules, published, hijriOffset] of [
 
 // The rashifal batch every runner sends: a week read at sunrise with the
 // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
-// and Saturn's events.
+// and Saturn's events; both with each sign's plan.
 {
   const week = { first: gregorian(2024, 6, 17), last: gregorian(2024, 6, 23), place, utcOffsetSeconds: 20700 };
   const day = { first: gregorian(2024, 6, 17), place, utcOffsetSeconds: 20700, snapshot: { at: 'CLOCK', hour: 6, minute: 0 }, events: ['MARS', 'SATURN'] };
   const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
   const bare = (key) => key.slice(key.indexOf('.') + 1);
-  const sealed = geo.chart.rashifalMany([week, day], 'WEEKLY');
+  const sealed = geo.chart.rashifalMany([week, day], 'WEEKLY', true);
   put('rashifal-hash', sealed.provenance.inputHash);
-  sealed.value.forEach(({ period, baseline }, n) => {
+  sealed.value.forEach(({ period, baseline, plans }, n) => {
     const key = (what) => `rashifal-${n}${what}`;
     put(key('-period'), `${ymd(period.first)} ${ymd(period.last)} ${ymd(period.reference)} ${number(period.instant)}`);
     put(key('-panchanga'), `${period.panchanga.tithi} ${period.panchanga.yoga} ${period.panchanga.muhurtaYogas}`);
@@ -2264,6 +2272,7 @@ for (const [name, rules, published, hijriOffset] of [
           `${score.overall} ${score.areas.map((a) => a.score).join(',')} ${named.length ? named.join(',') : 'none'} ${score.lucky.colour} ${score.lucky.number} ${score.lucky.day} ${score.lucky.direction}`,
         );
       }
+      if (plans) putPlan(geo, key(`-${r}-plan`), plans[r]);
     });
   });
 }
