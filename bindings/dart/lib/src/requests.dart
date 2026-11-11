@@ -5877,6 +5877,17 @@ final class FestivalRulesIndiaAssam extends FestivalRules {
   List<Object?> get _fields => const [];
 }
 
+/// `INDIA_KARNATAKA`.
+final class FestivalRulesIndiaKarnataka extends FestivalRules {
+  const FestivalRulesIndiaKarnataka();
+
+  @override
+  Object? get _wire => 'INDIA_KARNATAKA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class FestivalRulesValue extends FestivalRules {
   const FestivalRulesValue(this.value);
@@ -8371,6 +8382,17 @@ final class FestivalRuleItemIndiaAssam extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'INDIA_ASSAM';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_KARNATAKA`.
+final class FestivalRuleItemIndiaKarnataka extends FestivalRuleItem {
+  const FestivalRuleItemIndiaKarnataka();
+
+  @override
+  Object? get _wire => 'INDIA_KARNATAKA';
 
   @override
   List<Object?> get _fields => const [];
