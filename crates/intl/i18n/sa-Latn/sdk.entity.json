@@ -4664,6 +4664,54 @@
     "ASOM_DIVAS": {
       "name": "Asama Divasa (sukāphā Divasa)",
       "prose": "Asama Divasa (sukāphā Divasa)"
+    },
+    "BASAVA_JAYANTI": {
+      "name": "Basavajayantī",
+      "prose": "Basavajayantī"
+    },
+    "DEVARA_DASIMAYYA_JAYANTI": {
+      "name": "Devara Dāsimayya Jayantī",
+      "prose": "Devara Dāsimayya Jayantī"
+    },
+    "MADHVA_NAVAMI": {
+      "name": "Madhvanavamī",
+      "prose": "Madhvanavamī"
+    },
+    "VALMIKI_JAYANTI": {
+      "name": "Maharṣivālmīkijayantī",
+      "prose": "Maharṣivālmīkijayantī"
+    },
+    "KANAKADASA_JAYANTI": {
+      "name": "Kanakadāsajayantī",
+      "prose": "Kanakadāsajayantī"
+    },
+    "SWARNA_GOWRI_VRATA": {
+      "name": "Svarṇagaurīvratam",
+      "prose": "Svarṇagaurīvratam"
+    },
+    "KANNADA_RAJYOTSAVA": {
+      "name": "Kannaḍa Rājyotsava",
+      "prose": "Kannaḍa Rājyotsava"
+    },
+    "KANYA_MARIYAMMA_JAYANTI": {
+      "name": "Kanyā Mariyammā Jayantī",
+      "prose": "Kanyā Mariyammā Jayantī"
+    },
+    "CHRISTMAS_EVE": {
+      "name": "Krisamasa Pūrvasandhyā",
+      "prose": "Krisamasa Pūrvasandhyā"
+    },
+    "SOURAMANA_UGADI": {
+      "name": "Sauramānayugādiḥ",
+      "prose": "Sauramānayugādiḥ"
+    },
+    "UTTARAYANA_PUNYAKALA": {
+      "name": "Uttarāyaṇapuṇyakālaḥ, Makarasaṅkrāntiḥ",
+      "prose": "Uttarāyaṇapuṇyakālaḥ, Makarasaṅkrāntiḥ"
+    },
+    "RAMANUJACHARYA_JAYANTI": {
+      "name": "Śrīrāmānujācāryajayantī",
+      "prose": "Śrīrāmānujācāryajayantī"
     }
   },
   "year_office": {
