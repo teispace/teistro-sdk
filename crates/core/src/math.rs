@@ -289,6 +289,69 @@ pub fn powi(x: f64, n: i32) -> f64 {
     if n < 0 { 1.0 / result } else { result }
 }
 
+/// The remainder of `x` divided by `y`, the sign of `x`: `x % y` (C's
+/// `fmod`) to the bit, sooner.
+///
+/// The remainder is exact, so any routine that computes it exactly gives
+/// the same bits. `%` calls the C library's `fmod`, which divides a bit
+/// at a time, and the nutation series takes one for each of its 77 terms
+/// at every reading of the sky: a fifth of a year of almanac days went
+/// there. This takes the quotient's whole part and subtracts that many
+/// `y`s in one fused multiply-add, which rounds once, and the exact result
+/// is representable, so it is exact too; the quotient can only be one too
+/// large (the division rounded up onto a whole number), which leaves the
+/// result one `y` below zero and is mended by adding it back, again
+/// exactly. A quotient past 2⁵² (where its whole part is no longer the
+/// division's), a zero, an infinite or a NaN, and a target that has no
+/// fused multiply-add instruction take `%` itself.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::rem(7.5, 2.0), 1.5);
+/// assert_eq!(math::rem(-7.5, 2.0), -1.5);
+/// assert_eq!(math::rem(-4.0, 2.0).to_bits(), (-0.0f64).to_bits());
+/// let x = 1_717_915_923.217_8 * 0.25;
+/// assert_eq!(math::rem(x, 1_296_000.0).to_bits(), (x % 1_296_000.0).to_bits());
+/// ```
+#[inline]
+#[must_use]
+pub fn rem(x: f64, y: f64) -> f64 {
+    #[cfg(any(target_arch = "aarch64", target_feature = "fma"))]
+    {
+        /// 2⁵²: below it a double's whole part is exact.
+        const EXACT_WHOLE: f64 = 4_503_599_627_370_496.0;
+        let (ax, ay) = (x.abs(), y.abs());
+        let whole = (ax / ay).trunc();
+        // A NaN anywhere fails the comparison and takes `%`.
+        if whole < EXACT_WHOLE && ax.is_finite() && ay.is_finite() && ay > 0.0 {
+            let mut r = (-whole).mul_add(ay, ax);
+            if r < 0.0 {
+                r += ay;
+            }
+            return r.copysign(x);
+        }
+    }
+    x % y
+}
+
+/// The least non-negative remainder of `x` by `y`: `f64::rem_euclid` to
+/// the bit, by [`rem`], which is how the standard library writes it over
+/// `%`.
+///
+/// ```
+/// use teistro_core::math;
+///
+/// assert_eq!(math::rem_euclid(-30.0, 360.0), 330.0);
+/// assert_eq!(math::rem_euclid(-30.0, 360.0).to_bits(), (-30.0f64).rem_euclid(360.0).to_bits());
+/// ```
+#[inline]
+#[must_use]
+pub fn rem_euclid(x: f64, y: f64) -> f64 {
+    let r = rem(x, y);
+    if r < 0.0 { r + y.abs() } else { r }
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
@@ -304,6 +367,98 @@ mod tests {
         assert_eq!(bits(powi(7.5, 0)), bits(1.0));
         assert_eq!(bits(powi(2.0, -2)), bits(0.25));
         assert_eq!(bits(powi(0.1, 2)), bits(0.1 * 0.1));
+    }
+
+    /// `sin_cos` is `sin` and `cos` to the bit wherever a series reads
+    /// it, so a caller that needs both may take one reduction for two.
+    #[test]
+    fn sin_cos_is_sin_and_cos_to_the_bit() {
+        for i in -200_000..=200_000 {
+            let x = f64::from(i) * 0.000_731 + f64::from(i % 7) * 1e-9;
+            let (s, c) = sin_cos(x);
+            assert_eq!(
+                (s.to_bits(), c.to_bits()),
+                (sin(x).to_bits(), cos(x).to_bits()),
+                "{x:e}"
+            );
+        }
+        for x in [0.0, -0.0, 1e-300, -1e-20, 1e5, -3e7, 1e300] {
+            let (s, c) = sin_cos(x);
+            assert_eq!(
+                (s.to_bits(), c.to_bits()),
+                (sin(x).to_bits(), cos(x).to_bits()),
+                "{x:e}"
+            );
+        }
+    }
+
+    /// The quick remainder is `%` to the bit: over the arguments the
+    /// nutation and the sidereal time reduce, both signs, values a hair
+    /// either side of a whole multiple, and the special values.
+    #[test]
+    fn the_remainder_is_the_operators_to_the_bit() {
+        let same = |x: f64, y: f64| {
+            assert_eq!(rem(x, y).to_bits(), (x % y).to_bits(), "{x:e} % {y:e}");
+            assert_eq!(
+                rem_euclid(x, y).to_bits(),
+                x.rem_euclid(y).to_bits(),
+                "{x:e} rem_euclid {y:e}"
+            );
+        };
+        let divisors = [
+            core::f64::consts::TAU,
+            1_296_000.0,
+            1.0,
+            360.0,
+            -360.0,
+            0.1,
+            3.0,
+            f64::MIN_POSITIVE,
+            1e300,
+        ];
+        // A fixed walk of a 64-bit generator, so the inputs are the same
+        // on every run.
+        let mut state = 0x9E37_79B9_7F4A_7C15_u64;
+        let mut next = move || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        for &y in &divisors {
+            for _ in 0..20_000 {
+                let bits = next();
+                // Magnitudes from a millionth to ten million of the divisor.
+                #[allow(clippy::cast_precision_loss, reason = "a generator's draw scaled")]
+                let scale = (bits >> 11) as f64 / (1u64 << 53) as f64;
+                let x = y * libm::exp(scale * 30.0 - 14.0);
+                same(x, y);
+                same(-x, y);
+                for k in [1.0, 2.0, 7.0, 1e6] {
+                    let multiple = k * y;
+                    same(multiple, y);
+                    same(-multiple, y);
+                    same(f64::from_bits(multiple.to_bits() + 1), y);
+                    same(f64::from_bits(multiple.to_bits() - 1), y);
+                }
+            }
+            for x in [
+                0.0,
+                -0.0,
+                f64::INFINITY,
+                f64::NEG_INFINITY,
+                f64::NAN,
+                1e308,
+                -1e-310,
+            ] {
+                same(x, y);
+            }
+        }
+        for x in [1.0, -2.5, 0.0] {
+            same(x, 0.0);
+            same(x, f64::INFINITY);
+            same(x, f64::NAN);
+        }
     }
 
     /// Each function is the one its name says, to within an ulp of the
