@@ -210,6 +210,18 @@ macro_rules! schemas {
             examples: &$examples,
         }
     };
+    ($request:ty => $answer:ty, parts: $parts:expr) => {
+        Schemas {
+            #[cfg(feature = "schema")]
+            request: Some(schemars::SchemaGenerator::subschema_for::<$request>),
+            #[cfg(feature = "schema")]
+            answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
+            #[cfg(feature = "schema")]
+            parts: &$parts,
+            #[cfg(feature = "schema")]
+            examples: &[],
+        }
+    };
     ($request:ty => $answer:ty, examples: $examples:expr) => {
         Schemas {
             #[cfg(feature = "schema")]
@@ -566,9 +578,10 @@ impl Record {
 
     /// The records the request carries inside it by name, each read by
     /// its own reader (`chart.found`'s `kp`, `almanac.days`'s `muhurta`),
-    /// and the `place` `geo.resolve` answers: the parts a caller may ask
-    /// the schema of one at a time, where the whole would be more than a
-    /// tool list should carry.
+    /// the `place` `geo.resolve` answers, and the festival rule language
+    /// (`almanac.cells`'s `festivals`, `almanac.observance`'s
+    /// `traditions`): the parts a caller may ask the schema of one at a
+    /// time, where the whole would be more than a tool list should carry.
     #[cfg(feature = "schema")]
     #[must_use]
     pub fn parts(&self) -> &'static [&'static str] {
@@ -1384,7 +1397,7 @@ fn almanac_records() -> [Record; 4] {
             run: festival_calendar,
             compares: None,
             brief: Brief::Whole,
-            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+            schemas: schemas!(crate::area::FestivalCalendarAsked => String, parts: ["festivals"]),
         },
     ]
 }
@@ -1524,7 +1537,7 @@ fn almanac_lookup_records() -> [Record; 5] {
             run: digest,
             compares: None,
             brief: Brief::Keeps(&["format", "days", "size", "seal"]),
-            schemas: schemas!(crate::area::DigestAsked => DigestWritten),
+            schemas: schemas!(crate::area::DigestAsked => DigestWritten, parts: ["festivals"]),
         },
         Record {
             name: "almanac.next",
@@ -1549,7 +1562,7 @@ fn almanac_lookup_records() -> [Record; 5] {
                 "festivals.ekadashis",
                 "festivals.unjudged",
             ]),
-            schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
+            schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence, parts: ["festivals"]),
         },
         Record {
             name: "almanac.sentences",
@@ -1578,7 +1591,7 @@ fn almanac_lookup_records() -> [Record; 5] {
             },
             compares: None,
             brief: Brief::Whole,
-            schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons),
+            schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons, parts: ["festivals"]),
         },
     ]
 }
@@ -1629,7 +1642,7 @@ fn cells_record() -> Record {
         },
         compares: None,
         brief: Brief::Whole,
-        schemas: schemas!(crate::area::CellsAsked => crate::DayCells),
+        schemas: schemas!(crate::area::CellsAsked => crate::DayCells, parts: ["festivals"]),
     }
 }
 
@@ -1800,7 +1813,7 @@ fn finder_records() -> Vec<Record> {
                 "unjudged",
                 "parted",
             ]),
-            schemas: schemas!(crate::area::almanac::observance::ObservanceAsked => crate::finders::ObservanceFinding, examples: OBSERVANCE_EXAMPLES),
+            schemas: schemas!(crate::area::almanac::observance::ObservanceAsked => crate::finders::ObservanceFinding, parts: ["traditions"], examples: OBSERVANCE_EXAMPLES),
         },
         #[cfg(all(feature = "chart", feature = "muhurta"))]
         Record {
