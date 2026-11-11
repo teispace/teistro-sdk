@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 547 of the examples' 562 members.
+/// The cases compare 554 of the examples' 569 members.
 library;
 
 import 'dart:convert';
@@ -294,7 +294,7 @@ void main() {
       'almanac.cells',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -469,6 +469,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -613,7 +614,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -788,6 +789,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -1044,7 +1046,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1219,6 +1221,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -1492,7 +1495,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1667,6 +1670,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -1934,7 +1938,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2109,6 +2113,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -2225,7 +2230,7 @@ void main() {
       'almanac.observance',
       path: ['traditions', 0, 'festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2400,6 +2405,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
@@ -2557,7 +2563,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 34,
+      members: 35,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2732,6 +2738,7 @@ void main() {
             ),
           ],
           inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
