@@ -149,6 +149,22 @@ fn a_date_converts_to_the_calendar_the_option_names() {
 }
 
 #[test]
+fn a_date_asked_for_in_its_own_calendar_is_left_as_it_is() {
+    let nepali = engine("ne-Deva-NP");
+    for date in [
+        CalendarDate::defined(Calendar::Gregorian, 2024, 9, 4),
+        CalendarDate::defined(Calendar::BikramSambat, 2081, 5, 19),
+    ] {
+        let own = format!("{{$v :date calendar={} style=long}}", date.calendar.key());
+        assert_eq!(
+            text(&nepali, &own, Value::Date(date.clone())),
+            text(&nepali, "{$v :date style=long}", Value::Date(date)),
+            "{own}"
+        );
+    }
+}
+
+#[test]
 fn a_twelve_hour_clock_reads_as_each_locale_reads_it() {
     let english = engine("en-Latn");
     let nepali = engine("ne-Deva-NP");
@@ -783,7 +799,9 @@ fn an_instant_without_a_zone_and_a_zone_without_an_instant_warn() {
         .unwrap();
     assert!(moved.warnings.iter().any(|w| w.contains("already a civil")));
     assert_eq!(moved.text, text(&english, "{$v :time}", civil_time));
-    for bad in ["+5:4", "+2500", "+05:60"] {
+    // Too few digits, too many, a letter among them, an hour past the
+    // offsets a clock keeps, a minute past the hour.
+    for bad in ["+5:4", "+5", "+123", "+05:450", "+0a45", "+2500", "+05:60"] {
         let refused = english
             .render_source(
                 &format!("{{$v :time timeZone=|{bad}|}}"),
@@ -791,6 +809,30 @@ fn an_instant_without_a_zone_and_a_zone_without_an_instant_warn() {
             )
             .unwrap();
         assert!(!refused.warnings.is_empty(), "{bad}");
+    }
+}
+
+/// An instant past any day the calendar places is not read as a clock
+/// time: the function says it cannot place it rather than inventing one.
+#[test]
+fn an_instant_too_far_to_place_warns() {
+    let english = engine("en-Latn");
+    let far = Value::Instant(JulianDay::literal(5.0e8));
+    for function in ["date", "time", "datetime"] {
+        let rendered = english
+            .render_source(
+                &format!("{{$v :{function} timeZone=|UTC|}}"),
+                &params([("v", far.clone())]),
+            )
+            .unwrap();
+        assert!(
+            rendered
+                .warnings
+                .iter()
+                .any(|w| w.contains("cannot place the instant")),
+            "{function}: {:?}",
+            rendered.warnings
+        );
     }
 }
 
