@@ -12,7 +12,7 @@ filesystem.
 | ephemeris provider | vtable or host object implementing the port | positions, houses, ayanamsha, and optional features | capabilities checked; conformance kit available |
 | calendar | `Calendar` trait or a data-driven month-length table | arithmetic or table calendar; lunisolar via the ephemeris | range and round-trip checks |
 | timezone data | provider trait or a tzdb blob | newer tzdb | version stamp |
-| geo data | provider trait | coordinates to zone, place catalogue | none |
+| geo data | `GeoProvider` (`port-geo`, **built**, `03-design/geo-port.md`), or a `GeoTable` of boxes read from JSON | a point's IANA zone, ground height with its source, resolution and datum, and ISO 3166 admin codes; a place catalogue (`reverse`, `search`) is SR-88's | every answer checked: zone shape, height within `Altitude`, ISO 3166 code shapes and nesting; a table by its path |
 | locale pack | `.tpack` blob | any language | `teistro-intl validate` at build; manifest and CRC at load |
 | interpretation pack | `.tpack` blob | texts with citations | same plus citation presence |
 | rule pack | `.rpack` blob compiled from YAML rules and tables (`03-design/rules-engine.md`) | yogas, doshas with cancellations and severity, classifying rules, cited lookup tables, muhurta rules, matching tables, remedy rules, Western configurations, custom yogas | schema, citations present, referenced keys and tables exist, acyclic references, classify arms exhaustive, positive and negative fixtures embedded |
