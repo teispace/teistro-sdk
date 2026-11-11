@@ -3463,21 +3463,25 @@ void main() {
   // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
   // and Saturn's events; both with each sign's plan.
   String ymd(CalendarDate day) => '${day.year}-${day.month}-${day.day}';
-  final rashifal = geo.chart.rashifalMany([
-    RashifalRequest(
-      first: Calendar.gregorian.date(2024, 6, 17),
-      last: Calendar.gregorian.date(2024, 6, 23),
-      place: place,
-      utcOffsetSeconds: 20700,
-    ),
-    RashifalRequest(
-      first: Calendar.gregorian.date(2024, 6, 17),
-      place: place,
-      utcOffsetSeconds: 20700,
-      snapshot: const AtClock(hour: 6),
-      events: const [Graha.mars, Graha.saturn],
-    ),
-  ], baseline: BaselinePeriod.weekly, plans: true);
+  final rashifal = geo.chart.rashifalMany(
+    [
+      RashifalRequest(
+        first: Calendar.gregorian.date(2024, 6, 17),
+        last: Calendar.gregorian.date(2024, 6, 23),
+        place: place,
+        utcOffsetSeconds: 20700,
+      ),
+      RashifalRequest(
+        first: Calendar.gregorian.date(2024, 6, 17),
+        place: place,
+        utcOffsetSeconds: 20700,
+        snapshot: const AtClock(hour: 6),
+        events: const [Graha.mars, Graha.saturn],
+      ),
+    ],
+    baseline: BaselinePeriod.weekly,
+    plans: true,
+  );
   put('rashifal-hash', rashifal.provenance.inputHash);
   for (final (n, answer) in rashifal.value.indexed) {
     final period = answer.period;
