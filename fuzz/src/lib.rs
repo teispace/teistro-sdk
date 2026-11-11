@@ -1647,8 +1647,9 @@ mod tests {
             let call = serde_json::json!({ "method": "tools/call", "params": {
                 "name": tool, "arguments": { "request": example["request"] } } });
             // An engine's own operations are an adapter's, so the
-            // built-in ephemeris refuses them.
-            let answered = !tool.starts_with("engine.");
+            // built-in ephemeris refuses them; a place is resolved only
+            // through a geo table loaded first, and a fresh server has none.
+            let answered = !tool.starts_with("engine.") && tool != "geo.resolve";
             (format!("tool-{tool}"), answered, message(100 + id, call))
         });
         protocol.chain(tools).collect()
