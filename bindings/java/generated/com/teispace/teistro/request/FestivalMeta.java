@@ -15,7 +15,7 @@ import java.util.Objects;
  * @param fast The fast kept on its day, one reading for each way a text keeps it, in the text's order (SR-62); empty when no source in hand says, which does not say there is none. Null leaves the SDK's default.
  * @param kind Its kind; unset when no source classes it. Null leaves the SDK's default.
  * @param optional Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it. Null leaves the SDK's default.
- * @param regions Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says. Null leaves the SDK's default.
+ * @param regions Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says. Null leaves the SDK's default.
  * @param tradition Its religion; unset when no source places it. Null leaves the SDK's default.
  */
 public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, com.teispace.teistro.Tradition tradition) implements RequestJson {
@@ -109,7 +109,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         /**
          * Sets {@code regions}.
          *
-         * @param regions Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says. Null leaves the SDK's default.
+         * @param regions Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder regions(List<String> regions) {

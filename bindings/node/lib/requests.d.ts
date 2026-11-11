@@ -7978,7 +7978,7 @@ export interface FestivalMeta {
    */
   readonly optional?: boolean;
   /**
-   * Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says.
+   * Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as [`super::region::REGIONS`] lists them; empty when no source says.
    */
   readonly regions?: readonly string[];
   /**
