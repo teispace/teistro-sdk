@@ -146,6 +146,34 @@ none. The mark itself stays built for a third party's pack, and
 `crates/intl/tests/draft.rs` now pins every shipped list empty and tests
 the mark on a tree it marks itself.
 
+**Assam's public holidays (SR-03, the fifth state set), and a tithi in a solar month.**
+**Numbers:** none for any existing pack: a new pack, and one new dated form that a rule written before it does not
+use. `nakshatraInMonth` reads as it did.
+- The pack `INDIA_ASSAM` (`FestivalPack::IndiaAssam`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_assam`) holds the General Administration Department's notifications of 2019 to 2026:
+  - the Bihus on `ASSAM_SOLAR`'s month ends: Magh Bihu on Puh's last day and Magh 1, Bohag Bihu on Chot's last day
+    and Bohag 1 and 2, and Kati Bihu on Ahin's last day;
+  - Sati Sadhani Divas on Bohag 7, and Gwthar Bathou San on Magh's second Tuesday;
+  - Bir Chilarai Divas and Karam Puja on their lunar days;
+  - the Vaishnava saints' days and Janmastomi on a tithi of an Assamese month (C1361), and the Tirobhav days and
+    Damodardeva's Tithi over the daylight (C1362);
+  - West Bengal's Dol Jatra, Navami and Kali Puja, with Vijaya Dashami the day after the Navami;
+  - Nepal's printed panchanga's Saptami, Ashtami, Lakshmi Puja and Chhath;
+  - *Dharmasindhu*'s Bhatri Dwitiya;
+  - the central list's shared days, the state's fixed days, and the banks' closing of accounts.
+
+  Id-ul-Fitr, Id-ul-Zuha and Muharram ship as printed, marked `MOON_SIGHTING` (`03-design/assam-holidays.md`).
+- The dated form `tithiInMonth` keeps a tithi in a calendar's month: `calendar`, `month`, `tithi`, `twice` and
+  `days`, as `nakshatraInMonth`, and `at`, the window it is judged at. At `SUNRISE`, the default and left out of the
+  JSON, it reads as `nakshatraInMonth` does. At another window it keeps the day holding more of that window, the
+  earlier on a tie. A moonrise is refused (`festival-rule-language.md`).
+- `festival-measured.md` §14 holds it at Guwahati, 211 of the 218 reckoned rows meeting the print and the seven that part named: Sankardeva's Tirobhav 2019 and 2023 (C1364), Janmastomi 2020 and 2023 (C1363), Karam Puja 2021 and 2023 (C1365) and Lakshmi Puja 2021 (C1366). `crates/sdk/tests/assam.rs` holds each year's
+  notification.
+- The 2024 and 2026 lists were read (C1303, closed for Assam). Their 24 Bhaskarabda month beginnings are held in
+  `regional_solar`'s tests. The 2026 list begins Bhada and Ahin 1433 a day after `ASSAM_SOLAR` does, so C1302 stays
+  open on IST midnight.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the eighteen new keys.
+
 **Tamil Nadu's public holidays (SR-03, the fourth state set), held to the print under the vakya sky.**
 **Numbers:** none for any existing pack: a new pack, with no new form. `xtask festival` measures a list under a
 named sky; the four packs measured before keep the modern one, and their rows are unchanged.

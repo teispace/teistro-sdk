@@ -302,6 +302,59 @@ fn tamil_nadu_keeps_its_own_days_by_the_vakya_month() -> Result<(), teistro::Err
 }
 
 #[test]
+fn assam_keeps_its_own_days_by_the_assamese_month() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_ASSAM"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for key in [
+        "MAGH_BIHU",
+        "BOHAG_BIHU_SECOND",
+        "KATI_BIHU",
+        "GWTHAR_BATHOU_SAN",
+        "SANKARDEVA_JANMOTSAV",
+        "MADHABDEVA_TIROBHAV",
+        "JANMASHTAMI",
+        "ASOM_DIVAS",
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().form,
+            PackForm::Dated,
+            "{key}"
+        );
+    }
+    for key in [
+        "DOLA_YATRA",
+        "KALI_PUJA",
+        "BIR_CHILARAI_DIVAS",
+        "KARAM_PUJA",
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().form,
+            PackForm::Lunar,
+            "{key}"
+        );
+    }
+    assert_eq!(
+        row(&listed.rules, "VIJAYA_DASHAMI").unwrap().form,
+        PackForm::Following
+    );
+    assert_eq!(
+        row(&listed.rules, "MUHARRAM").unwrap().form,
+        PackForm::Published
+    );
+    let state = MetaFilter {
+        regions: vec!["ASSAM".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");

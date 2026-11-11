@@ -1396,6 +1396,83 @@ fn a_rule_on_a_star_in_a_month_keeps_the_occurrence_it_names() {
     assert_eq!(spelt, rule(Which::Later, 0));
 }
 
+/// A tithi in a month (C1361, C1362): at the sunrise, the first day whose
+/// sunrise holds it, as a star's; at the daylight, the day holding more of
+/// it, the earlier on a tie.
+#[test]
+fn a_rule_on_a_tithi_in_a_month_keeps_the_day_its_window_names() {
+    // January 2024 of the synthetic days: the dark 5th runs from 9.2 to
+    // 10.1, holding the sunrise of the 11th but more of the 10th's
+    // daylight (0.3 of a day against 0.1).
+    let days = days_over(
+        31,
+        &[
+            (Tithi::KrishnaChaturthi, 9.2),
+            (Tithi::KrishnaPanchami, 10.1),
+            (Tithi::KrishnaShashthi, 40.0),
+        ],
+        &[(Nakshatra::Ashwini, 40.0)],
+        Masa::Pausha,
+        MonthKind::Nija,
+    );
+    let rule = |at: Window| DatedRule {
+        key: "PASSING".to_owned(),
+        source: "a test".to_owned(),
+        on: Dated::TithiInMonth {
+            calendar: teistro_core::catalogue::Calendar::Gregorian,
+            month: 1,
+            tithi: Tithi::KrishnaPanchami,
+            twice: Which::Earlier,
+            at,
+            days: 0,
+        },
+        meta: teistro_panchanga::festival::FestivalMeta::default(),
+    };
+    let kept = |at: Window| -> Vec<u8> {
+        dated(&[rule(at)], &days, HijriOffset::NONE)
+            .unwrap()
+            .dated
+            .iter()
+            .map(|one| one.on.day)
+            .collect()
+    };
+    let daylight = Window::DayMuhurta { from: 1, to: 15 };
+    assert_eq!(kept(Window::Sunrise), [11]);
+    assert_eq!(kept(daylight), [10]);
+    // The first fifth of the daylight holds it on the 11th alone.
+    assert_eq!(
+        kept(Window::Part {
+            part: DayPart::Pratah
+        }),
+        [11]
+    );
+    assert_eq!(rule(daylight).reach(), Dated::MONTH_DAYS);
+    assert_eq!(
+        rule(Window::Moonrise).check().unwrap_err().field(),
+        Some("tithiInMonth.at")
+    );
+    assert_eq!(
+        rule(Window::DayMuhurta { from: 1, to: 16 })
+            .check()
+            .unwrap_err()
+            .field(),
+        Some("tithiInMonth.at.to")
+    );
+    // The sunrise is the window left out, and is not written.
+    let spelt: DatedRule = serde_json::from_str(
+        r#"{"key": "PASSING", "source": "a test", "tithiInMonth": {"calendar": "GREGORIAN", "month": 1, "tithi": "KRISHNA_PANCHAMI", "twice": "EARLIER"}}"#,
+    )
+    .unwrap();
+    assert_eq!(spelt, rule(Window::Sunrise));
+    let text = serde_json::to_string(&spelt).unwrap();
+    assert!(!text.contains(r#""at""#), "{text}");
+    let text = serde_json::to_string(&rule(daylight)).unwrap();
+    assert!(
+        text.contains(r#""at":{"window":"DAY_MUHURTA","from":1,"to":15}"#),
+        "{text}"
+    );
+}
+
 #[test]
 fn a_following_rule_that_cannot_be_judged_is_refused_by_its_field() {
     let terai = FollowingRule::nepal().remove(1);

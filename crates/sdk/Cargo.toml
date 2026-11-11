@@ -687,3 +687,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "tamil_nadu"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "assam"
+required-features = ["builtin-ephemeris"]
