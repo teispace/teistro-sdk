@@ -172,18 +172,11 @@ const CIVIL: [(&str, MonthDay); 9] = [
 ];
 
 /// Why a rule parts from a notification, per (year, rule).
-const PARTS: [(i32, &str, &str); 2] = [
-    (
-        2024,
-        "KARKIDAKA_VAVU",
-        "the new moon runs from 15:51 on 3 August to 16:43 on the 4th, so the sunrise reading takes the 4th; the notice lists the 3rd, the day the new moon holds the sunset (C1322)",
-    ),
-    (
-        2025,
-        "JANMASHTAMI",
-        "*Dharmasindhu*'s rule keeps the 8th of the lunar month in August, which fell in Karkidakam; the notice lists 14 September, the dark 8th in Chingam (C1320)",
-    ),
-];
+const PARTS: [(i32, &str, &str); 1] = [(
+    2024,
+    "KARKIDAKA_VAVU",
+    "the new moon runs from 15:51 on 3 August to 16:43 on the 4th, so the sunrise reading takes the 4th; the notice lists the 3rd, the day the new moon holds the sunset (C1322)",
+)];
 
 /// The days each year's notification prints rather than reckons: the four
 /// set by the moon and Ayya Vaikunda Swami's birthday.

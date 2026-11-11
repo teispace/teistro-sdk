@@ -469,6 +469,28 @@ all fifteen of its muhurtas, the day holding more of it (C1362). `twice`,
 `days`, `on` and the month either side of the range are as for a star.
 The moonrise is refused, its search being one no dated rule founds.
 
+**A lunar rule held to a calendar's month: `inMonth`.** A karmakala rule
+(`FestivalRule`) may leave out its lunar `month` and name a calendar's
+month instead: it is judged in every lunar month by its own window and
+guards, and only a day falling in the named month is kept, `twice` saying
+which of two in one such month. Kerala keeps Sreekrishna Jayanthi on
+*Dharmasindhu*'s day for the dark 8th, the one in Chingam
+(`03-design/kerala-holidays.md`, C1320): Shravana's 8th (amanta) in most
+years, Bhadrapada's in 2025, when Chingam began on 17 August, after it.
+`tithiInMonth` cannot say this, its window being one instant or span
+without the text's Rohini guards; the probe of 2021 to 2026 met 4 of 6 at
+midnight, at sunrise and at midday, and *Dharmasindhu*'s rule held to
+Chingam meets 6 of 6.
+
+```json
+{"key": "JANMASHTAMI", "source": "...", "inMonth": {"calendar": "MALAYALAM_SOLAR", "month": 1, "twice": "LATER"},
+ "tithi": "KRISHNA_ASHTAMI", "at": {"window": "NISHITHA"}, "decide": [], "otherwise": "LATER"}
+```
+
+A rule naming both `month` and `inMonth` is refused, as is a calendar the
+SDK does not ship and month 0. Two days in one month are compared only
+when both fall in the range asked.
+
 **A count from Easter.** A fourth form keeps the day `days` days after
 Easter Sunday, before it when negative, by the Western (`GREGORIAN`) or
 the Eastern (`JULIAN`) computus:

@@ -50,6 +50,7 @@ fn rule(
     parana: Vec<VrataParana>,
 ) -> FestivalRule {
     FestivalRule {
+        in_month: None,
         key: key.to_owned(),
         source: source.to_owned(),
         month: Some(month),

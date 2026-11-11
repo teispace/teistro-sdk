@@ -469,7 +469,7 @@ pub enum Dated {
         twice: super::Which,
         /// The window judged: the sunrise when left out; never the
         /// moonrise (C1362).
-        #[serde(default = "sunrise", skip_serializing_if = "Window::is_sunrise")]
+        #[serde(default = "sunrise")]
         at: Window,
         /// How many civil days after the tithi's day, before it when
         /// negative, 0 for that day; at most [`Dated::MOST_DAYS`] either
@@ -1325,7 +1325,7 @@ fn keeps_tibetan(fixed: FixedDay, year: i32, month: u8, day: i8, skipped: Skippe
         .any(|year| tibetan::observed(year, month, number, skipped).is_ok_and(|kept| kept == fixed))
 }
 
-fn system(calendar: Calendar) -> Result<&'static dyn CalendarSystem, Error> {
+pub(super) fn system(calendar: Calendar) -> Result<&'static dyn CalendarSystem, Error> {
     shipped(calendar).ok_or_else(|| {
         Error::unsupported(format!(
             "the SDK does not ship the `{}` calendar",

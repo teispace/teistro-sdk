@@ -13,7 +13,7 @@
 //! Thiruvonam in Chingam with the three days around it, Sree Narayana
 //! Guru's birthday on Chatayam in Chingam, and his Samadhi on Kanni 5
 //! (C1304). Sreekrishna Jayanthi is *Dharmasindhu*'s Janmashtami, the
-//! ashtami's day rather than Rohini's (C1320). `festival-measured.md`
+//! ashtami's day rather than Rohini's, held to Chingam (C1320). `festival-measured.md`
 //! §12 holds every rule to six years of notifications at
 //! Thiruvananthapuram.
 //!
@@ -30,7 +30,7 @@ use super::india_central::{Named, OnDay, PrintedDays, StateList, find, on_civil_
 use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{
-    Dated, DatedRule, DayReckoning, FestivalMeta, FestivalRule, FollowingRule, InAdhika,
+    Dated, DatedRule, DayReckoning, FestivalMeta, FestivalRule, FollowingRule, InAdhika, InMonth,
     PublishedSet, Which,
 };
 
@@ -78,6 +78,12 @@ const NOTIFICATIONS: [(i32, &str); 6] = [
 ];
 
 /// Kerala's convention for a lunar day, as a new rule cites it.
+/// Where Sreekrishna Jayanthi's month is stated.
+const JAYANTHI: &str = "the notifications of 2021 to 2026 keep it (14 September 2025, the 8th in \
+     Chingam, not August's in Karkidakam) and Kerala Tourism's festival calendar names Ashtami \
+     Rohini a Chingam festival; which of two 8ths in one Chingam is kept is not stated, and the \
+     later is the one the notices keep of a star twice in Chingam (C1323)";
+
 const ALMANAC: &str = "Kerala's almanacs, as the state's notifications of 2021 to 2026 keep the \
      day; no almanac's page is read, so the rule is held to the notifications and the citation is \
      open (C1321)";
@@ -229,9 +235,9 @@ fn restricted(tradition: Option<Tradition>, communities: &[&str]) -> FestivalMet
 impl FestivalRule {
     /// The lunar days of Kerala's public holidays: the central list's
     /// rules for Sivarathri and Deepavali, *Dharmasindhu*'s Janmashtami
-    /// for Sreekrishna Jayanthi and its Taittiriya upakarma for Avani
-    /// Avittom, and Kerala's own for Karkidaka Vavu,
-    /// Mahanavami and Vijayadasami.
+    /// held to Chingam for Sreekrishna Jayanthi (C1320) and its
+    /// Taittiriya upakarma for Avani Avittom, and Kerala's own for
+    /// Karkidaka Vavu, Mahanavami and Vijayadasami.
     ///
     /// ```
     /// use teistro_panchanga::festival::{FestivalRule, Window};
@@ -241,8 +247,11 @@ impl FestivalRule {
     /// let vavu = of("KARKIDAKA_VAVU").ok_or("shipped")?;
     /// assert_eq!(vavu.at, Window::Sunrise);
     /// assert_eq!(vavu.meta.regions, ["IN", "IN-KL"]);
-    /// // Sreekrishna Jayanthi is the ashtami's day, not Rohini's (C1320).
-    /// assert!(of("JANMASHTAMI").ok_or("shipped")?.source.starts_with("Dharmasindhu"));
+    /// // Sreekrishna Jayanthi is the ashtami's day, not Rohini's, the one
+    /// // in Chingam (C1320).
+    /// let jayanthi = of("JANMASHTAMI").ok_or("shipped")?;
+    /// assert!(jayanthi.source.starts_with("Dharmasindhu"));
+    /// assert_eq!((jayanthi.month, jayanthi.in_month.map(|held| held.month)), (None, Some(1)));
     /// # Ok::<(), &str>(())
     /// ```
     #[must_use]
@@ -255,7 +264,28 @@ impl FestivalRule {
                 ..rule
             })
             .collect();
-        rules.extend(STATE.by_text(&[("JANMASHTAMI", false)]));
+        // The ashtami's day by the text's midnight rule, of the dark 8th in
+        // Chingam: Kerala keeps Ashtami Rohini in Chingam by its solar
+        // calendar, and in 2025, when Chingam began after Shravana's 8th,
+        // the notice kept the next month's (C1320).
+        rules.extend(
+            STATE
+                .by_text(&[("JANMASHTAMI", false)])
+                .into_iter()
+                .map(|rule| FestivalRule {
+                    source: format!(
+                        "{}; the dark 8th in Chingam of Kerala's solar calendar, the later of two, as {JAYANTHI}",
+                        rule.source
+                    ),
+                    month: None,
+                    in_month: Some(InMonth {
+                        calendar: Calendar::MalayalamSolar,
+                        month: 1,
+                        twice: Which::Later,
+                    }),
+                    ..rule
+                }),
+        );
         rules.extend(
             find(&FestivalRule::dharmasindhu(), "UPAKARMA_TAITTIRIYA").map(|rule| FestivalRule {
                 key: "AVANI_AVITTOM".to_owned(),

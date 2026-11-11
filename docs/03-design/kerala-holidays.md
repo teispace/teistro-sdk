@@ -45,7 +45,7 @@ is `optional` and names its community.
 | Vishu | `VISHU` | the Sun's entry into Ashwini, by sunrise, one day on | the notifications (C1301) |
 | First Onam (Uthradom), Thiruvonam, Third Onam, Fourth Onam | `FIRST_ONAM`, `THIRUVONAM`, `THIRD_ONAM`, `FOURTH_ONAM` | Shravana in Chingam, the later of two; −1, 0, +1, +2 days | the notifications (C1323) |
 | Sree Narayana Guru Jayanthi | `SREE_NARAYANA_GURU_JAYANTHI` | Shatabhisha in Chingam, the later of two | the notifications (C1323) |
-| Sreekrishna Jayanthi (Ashtami Rohini) | `JANMASHTAMI` | `DHARMASINDHU`'s rule | *Dharmasindhu* (C1320) |
+| Sreekrishna Jayanthi (Ashtami Rohini) | `JANMASHTAMI` | `DHARMASINDHU`'s rule, the dark 8th in Chingam (`inMonth`) | *Dharmasindhu*; the notifications and Kerala Tourism for the month (C1320) |
 | Sree Narayana Guru Samadhi | `SREE_NARAYANA_GURU_SAMADHI` | Kanni 5 of `MALAYALAM_SOLAR` | the notification |
 | Karkidaka Vavu, Maha Navami, Vijaya Dasami | `KARKIDAKA_VAVU`, `MAHA_NAVAMI`, `VIJAYA_DASHAMI` | Ashadha's (amanta) new moon, Ashwina's bright 9th and 10th, at sunrise | Kerala's almanacs, page not read (C1321) |
 | Avani Avittom (restricted, Brahmins) | `AVANI_AVITTOM` | *Dharmasindhu*'s Taittiriya upakarma | *Dharmasindhu* |
@@ -71,8 +71,14 @@ when Kanni began on the 18th.
 rule on Rohini in Chingam meets 2 of the 6 years: the printed day is the one the dark
 8th holds at midnight, Rohini or not (2022's Rohini began on the 20th, the print keeps
 the 18th). *Dharmasindhu*'s Janmashtami (`JANMASHTAMI`, as West Bengal's list keeps
-it) is shipped under its own key and parts only in 2025, when the month's 8th fell in
-Karkidakam and the notice kept the next one, in Chingam (C1320).
+it) parted only in 2025, when the month's 8th fell in Karkidakam and the notice kept the
+next one, in Chingam. Kerala keeps Ashtami Rohini in Chingam by its solar calendar, so
+the rule is held to that month (`inMonth`, `festival-rule-language.md`): the text's
+midnight rule and Rohini guards decide the day, Chingam the month, and it meets all six
+years. A plain tithi in Chingam (`tithiInMonth`) met 4 of 6 at midnight, at sunrise and
+at midday. Which of two 8ths in one Chingam is kept is stated nowhere read; the rule
+keeps the later, as the notices keep the later of a star twice in Chingam (C1323), and
+no year of the six tests it (C1320).
 
 **Deepavali** is the central list's `LAKSHMI_PUJA`, the key `INDIA_CENTRAL` keeps
 Diwali under; Kerala's list prints it on the central list's day in all six years.
@@ -90,16 +96,17 @@ Diwali under; Kerala's list prints it on the central list's day in all six years
 
 ## 4. Against the print
 
-At Thiruvananthapuram over the built-in ephemeris, 100 of the 102 rows beside the nine
+At Thiruvananthapuram over the built-in ephemeris, 101 of the 102 rows beside the nine
 every-year dates meet the print (`festival-measured.md` §12). The 102 are the lunar,
 solar and starred days and the Christian days counted from Easter, 17 a year, with the
 Sunday and second-Saturday rows among them; the nine fixed dates stand in all six years.
-Two part, and each is named with its cause; no rule was moved to meet them:
+One parts, named with its cause; no rule was moved to meet it:
 
 - **Karkidaka Vavu, 2024** (C1322): the new moon began at 15:51 on 3 August; the sunrise
   reading takes the 4th, the notice lists the 3rd.
-- **Sreekrishna Jayanthi, 2025** (C1320): the notice keeps the dark 8th in Chingam, 14
-  September; *Dharmasindhu*'s rule keeps August's, which fell in Karkidakam.
+
+Sreekrishna Jayanthi 2025 parted until the rule was held to Chingam (C1320), a month the
+sources name, not a fit to the year.
 
 Vishu meets all six years, 2022 and 2026 among them, when it is Medam 2. The four Onam
 days and Sree Narayana Guru Jayanthi meet all six, Onam 2024 on Chingam 30, the later of

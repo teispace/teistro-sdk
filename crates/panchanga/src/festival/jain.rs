@@ -248,6 +248,7 @@ fn at_sunrise(
     }
     let reckoned = if parva { UMASVATI } else { SUNRISE };
     FestivalRule {
+        in_month: None,
         key: key.to_owned(),
         source: format!("{}; {reckoned}", cited(source, communities)),
         month,

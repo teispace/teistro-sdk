@@ -25,7 +25,7 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
     DayClause, DayPart, DayRule, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
-    FollowingRule, Guard, Half, InAdhika, MonthClause, MoonArcs, Moonrise, MoonriseAt,
+    FollowingRule, Guard, Half, InAdhika, InMonth, MonthClause, MoonArcs, Moonrise, MoonriseAt,
     NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate, Published,
     PublishedStatus, Sait, SaitCandidate, SunEntry, TithiShape, Unjudged, Unplaced, VrataEdge,
     VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
@@ -149,6 +149,7 @@ fn the_yugma_verse_pairs_what_it_names_and_nothing_else() {
 
 fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
     FestivalRule {
+        in_month: None,
         key: "TEST".to_owned(),
         source: "a test".to_owned(),
         month: Some(Masa::Shravana),
@@ -1458,14 +1459,18 @@ fn a_rule_on_a_tithi_in_a_month_keeps_the_day_its_window_names() {
             .field(),
         Some("tithiInMonth.at.to")
     );
-    // The sunrise is the window left out, and is not written.
+    // The sunrise is the window left out. It is written all the same, so a
+    // caller's strict read of an explicit `"at": {"window": "SUNRISE"}`
+    // finds the key it gave in what was read back.
     let spelt: DatedRule = serde_json::from_str(
         r#"{"key": "PASSING", "source": "a test", "tithiInMonth": {"calendar": "GREGORIAN", "month": 1, "tithi": "KRISHNA_PANCHAMI", "twice": "EARLIER"}}"#,
     )
     .unwrap();
     assert_eq!(spelt, rule(Window::Sunrise));
     let text = serde_json::to_string(&spelt).unwrap();
-    assert!(!text.contains(r#""at""#), "{text}");
+    assert!(text.contains(r#""at":{"window":"SUNRISE"}"#), "{text}");
+    let explicit: DatedRule = teistro_core::strict::read(&text, "rule").unwrap();
+    assert_eq!(explicit, spelt);
     let text = serde_json::to_string(&rule(daylight)).unwrap();
     assert!(
         text.contains(r#""at":{"window":"DAY_MUHURTA","from":1,"to":15}"#),
@@ -1816,6 +1821,74 @@ fn a_day_of_either_paksha_is_kept_in_both() {
     // day 14's sunrise; the dark 13th day 29's.
     let given: Vec<u8> = kept.observances.iter().map(|o| o.day.day - 1).collect();
     assert_eq!(given, [13, 28]);
+}
+
+/// A rule held to a calendar's month keeps only the days in it, the one
+/// `twice` names of two, and is refused with a lunar month beside it or
+/// month 0 (C1320).
+#[test]
+fn a_rule_held_to_a_calendar_month_keeps_its_day_in_that_month() {
+    let tithis: Vec<(Tithi, f64)> = Tithi::ALL
+        .iter()
+        .enumerate()
+        .map(|(k, &tithi)| (tithi, ghati(k + 1, 20.0)))
+        .collect();
+    // 1 to 31 January 2024: both 13ths, on the 14th and the 29th, fall in
+    // January.
+    let days = days_over(31, &tithis, &[], Masa::Shravana, MonthKind::Nija);
+    let held = |month: u8, twice: Which| FestivalRule {
+        month: None,
+        in_month: Some(InMonth {
+            calendar: teistro_core::catalogue::Calendar::Gregorian,
+            month,
+            twice,
+        }),
+        occurs: Occurs::DayOfPaksha { day_of_paksha: 13 },
+        at: Window::Sunrise,
+        ..a_rule(
+            Tithi::KrishnaEkadashi,
+            vec![Guard::new(
+                [Predicate::Case {
+                    case: Case::LaterOnly,
+                }],
+                Choice::Later,
+            )],
+            Choice::Earlier,
+        )
+    };
+    let kept = |rule: FestivalRule| -> Vec<u8> {
+        observances(&[rule], &days)
+            .unwrap()
+            .observances
+            .iter()
+            .map(|one| one.day.day)
+            .collect()
+    };
+    assert_eq!(kept(held(1, Which::Earlier)), [14]);
+    assert_eq!(kept(held(1, Which::Later)), [29]);
+    assert_eq!(kept(held(2, Which::Earlier)), Vec::<u8>::new());
+
+    let both = FestivalRule {
+        month: Some(Masa::Shravana),
+        ..held(1, Which::Earlier)
+    };
+    assert_eq!(both.check().unwrap_err().field(), Some("inMonth"));
+    assert_eq!(
+        held(0, Which::Earlier).check().unwrap_err().field(),
+        Some("inMonth.month")
+    );
+
+    let text = serde_json::to_string(&held(1, Which::Later)).unwrap();
+    assert!(
+        text.contains(r#""inMonth":{"calendar":"GREGORIAN","month":1,"twice":"LATER"}"#),
+        "{text}"
+    );
+    let read: FestivalRule = teistro_core::strict::read(&text, "rule").unwrap();
+    assert_eq!(read, held(1, Which::Later));
+    // A rule with none writes none.
+    let plain =
+        serde_json::to_string(&a_rule(Tithi::KrishnaEkadashi, Vec::new(), Choice::Later)).unwrap();
+    assert!(!plain.contains("inMonth"), "{plain}");
 }
 
 #[test]
