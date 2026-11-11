@@ -4110,6 +4110,8 @@ void main() {
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),
     ('frame.unpack', ctx.frame.unpack),
+    ('geo.load', ctx.geo.load),
+    ('geo.resolve', ctx.geo.resolve),
     ('chart.layout', ctx.chart.layout),
     ('chart.found', ctx.chart.found),
     ('chart.found_many', ctx.chart.foundMany),

@@ -3551,6 +3551,44 @@ test('a receipt issued, checked again, and caught when edited', () => {
   ctx.dispose();
 });
 
+test('a place resolved through a geo table, and a chart on it that replays without one', () => {
+  // The SDK's test table (`crates/sdk/tests/geo-table.json`), the same the
+  // Rust suite loads.
+  const table = readFileSync(new URL('../../../crates/sdk/tests/geo-table.json', import.meta.url), 'utf8');
+  const bare = context();
+  // No provider unless one is given.
+  assert.throws(
+    () => bare.geo.resolve({ latitudeDeg: 27.7172, longitudeDeg: 85.324 }),
+    (error) => error instanceof TeistroError && error.status === 'CAPABILITY' && error.field === 'geo',
+  );
+  const ctx = context();
+  assert.equal(ctx.geo.load(table).dataVersion, '2026.11.0');
+  const place = ctx.geo.resolve({ latitudeDeg: 27.7172, longitudeDeg: 85.324 });
+  assert.ok(Object.isFrozen(place) && Object.isFrozen(place.admin), 'frozen');
+  // Each question: the zone, the height with its source, resolution and
+  // datum, the admin codes, and who answered from which data.
+  assert.equal(place.zone, 'Asia/Kathmandu');
+  assert.deepEqual(place.height, { metres: 1337, source: 'the test table', resolutionM: 30, datum: 'EGM2008' });
+  assert.deepEqual(place.admin.map((unit) => unit.code), ['NP', 'NP-P3', null]);
+  assert.deepEqual([place.source.name, place.source.dataVersion, place.source.tzdb], ['teistro-test-places', '2026.11.0', '2026c']);
+  // At sea: a zone and nothing else.
+  const bay = ctx.geo.resolve({ latitudeDeg: 15, longitudeDeg: 88 });
+  assert.deepEqual([bay.zone, bay.height, bay.admin], ['Asia/Kolkata', null, []]);
+  assert.throws(
+    () => ctx.geo.resolve({ latitudeDeg: 91, longitudeDeg: 0 }),
+    (error) => error instanceof TeistroError && error.field === 'latitudeDeg',
+  );
+  // A chart on the place keeps it in its receipt, and replays on a context
+  // with no provider.
+  const { receipt } = ctx.verify.issue({ record: 'chart.found', request: { instant: 2461192.760417, place, state: true } });
+  assert.equal(receipt.request.place.zone, 'Asia/Kathmandu');
+  assert.equal(receipt.request.place.height.metres, 1337);
+  assert.equal(receipt.request.place.source.dataVersion, '2026.11.0');
+  assert.equal(bare.verify.receipt(receipt).verdict, 'HELD');
+  bare.dispose();
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

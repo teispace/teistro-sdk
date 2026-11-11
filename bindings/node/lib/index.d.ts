@@ -235,6 +235,11 @@ import type {
   FollowingRule,
   FortitudeRequest,
   GeoPlace,
+  AdminUnit,
+  PlaceRequest,
+  GeoSource,
+  GroundHeight,
+  ResolvedPlace,
   HarmonicRequest,
   HarshaRules,
   HitRequest,
@@ -7956,6 +7961,34 @@ export declare class KeysArea {
   name(id: number): string;
 }
 
+/**
+ * `sdk.geo` — a place's IANA zone, ground height and ISO 3166 admin codes,
+ * from the context's geo provider, which the SDK never consults on its own.
+ */
+export declare class GeoArea {
+  /** Installs a geo table as this context's provider, answering its source. */
+  load(table: GeoTable | string): GeoSource;
+  /** A place resolved: zone, height, admin units and the provider's source. */
+  resolve(request: PlaceRequest): ResolvedPlace;
+}
+
+/** A geo table `GeoArea.load` reads: boxes written coarse to fine. */
+export interface GeoTable {
+  readonly source: GeoSource;
+  readonly areas: readonly GeoBox[];
+}
+
+/** One box of a `GeoTable`, west east of east across the antimeridian. */
+export interface GeoBox {
+  readonly south: number;
+  readonly west: number;
+  readonly north: number;
+  readonly east: number;
+  readonly zone?: string | null;
+  readonly height?: GroundHeight | null;
+  readonly admin?: readonly AdminUnit[];
+}
+
 /** `sdk.frame` — the coordinate conventions a request is expressed in. */
 export declare class FrameArea {
   /** The SDK's canonical frame. */
@@ -10066,6 +10099,8 @@ export declare class Context {
   readonly intl: IntlArea;
   /** The catalogue's keys and their packed ids. */
   readonly keys: KeysArea;
+  /** A place's zone, ground height and admin codes, from a geo provider. */
+  readonly geo: GeoArea;
   /** The coordinate conventions a request is expressed in. */
   readonly frame: FrameArea;
   /** A chart founded at an instant and a place. */

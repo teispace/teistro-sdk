@@ -788,6 +788,48 @@ class TheLocaleEngine(WithLibrary):
             sky.verify.issue({"record": "almanac.nothing", "request": {}})
         self.assertEqual(refused.exception.field, "issue.record")
 
+    def test_a_place_resolved_through_a_geo_table_replays_without_one(self) -> None:
+        from pathlib import Path
+
+        from teistro import ResolvedPlace
+
+        # The SDK's test table, the same the Rust suite loads.
+        table = (Path(__file__).resolve().parents[3] / "crates" / "sdk" / "tests" / "geo-table.json").read_text()
+        bare = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(bare.close)
+        # No provider unless one is given.
+        with self.assertRaises(TeistroError) as refused:
+            bare.geo.resolve({"latitudeDeg": 27.7172, "longitudeDeg": 85.324})
+        self.assertEqual((refused.exception.status, refused.exception.field), (Status.CAPABILITY, "geo"))
+        sky = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        self.assertEqual(sky.geo.load(table)["dataVersion"], "2026.11.0")
+        place: ResolvedPlace = sky.geo.resolve({"latitudeDeg": 27.7172, "longitudeDeg": 85.324})
+        # Each question, and who answered from which data.
+        self.assertEqual(place["zone"], "Asia/Kathmandu")
+        self.assertEqual(
+            place["height"], {"metres": 1337, "source": "the test table", "resolutionM": 30, "datum": "EGM2008"}
+        )
+        self.assertEqual([unit["code"] for unit in place["admin"]], ["NP", "NP-P3", None])
+        self.assertEqual(
+            (place["source"]["name"], place["source"]["dataVersion"], place["source"]["tzdb"]),
+            ("teistro-test-places", "2026.11.0", "2026c"),
+        )
+        bay = sky.geo.resolve({"latitudeDeg": 15.0, "longitudeDeg": 88.0})
+        self.assertEqual((bay["zone"], bay["height"], bay["admin"]), ("Asia/Kolkata", None, []))
+        with self.assertRaises(TeistroError) as far:
+            sky.geo.resolve({"latitudeDeg": 91.0, "longitudeDeg": 0.0})
+        self.assertEqual(far.exception.field, "latitudeDeg")
+        # A chart on the place keeps it in its receipt and replays on a
+        # context with no provider.
+        issued = sky.verify.issue(
+            {"record": "chart.found", "request": {"instant": 2461192.760417, "place": place, "state": True}}
+        )
+        kept = issued.receipt["request"]["place"]
+        self.assertEqual((kept["zone"], kept["height"]["metres"]), ("Asia/Kathmandu", 1337))
+        self.assertEqual(kept["source"]["dataVersion"], "2026.11.0")
+        self.assertEqual(bare.verify.receipt(issued.receipt).verdict, "HELD")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

@@ -1073,6 +1073,83 @@ final class KeysArea extends _Area {
   String name(int id) => _context._inner.keyName(id);
 }
 
+/// `sdk.geo` — a place's IANA zone, ground height and ISO 3166 admin
+/// codes, from the context's geo provider (`03-design/geo-port.md`). The
+/// SDK never consults it on its own: a context has one only once [load]
+/// gives it a table.
+final class GeoArea extends _Area {
+  const GeoArea._(super.context);
+
+  /// Installs a geo table, its JSON, as this context's provider in place
+  /// of any it had: `{source, areas}`, each area a box
+  /// `{south, west, north, east}` with any of `zone`, `height` and
+  /// `admin`, written coarse to fine. Answers the table's source; a refused
+  /// table, `INVALID_ARG` named under `geo`, leaves the provider as it was.
+  GeoSource load(String table) => _geoSource(
+    jsonDecode(_context._guarded(() => _context._inner.geoLoad(table)))
+        as Map<String, Object?>,
+  );
+
+  /// A place resolved: the IANA zone, the ground height with its source,
+  /// resolution and datum, the admin units coarse to fine with their ISO
+  /// 3166 codes, and the provider's name and data version. A chart
+  /// request's `place` takes it as it is, so a receipt replays without
+  /// the provider. [Status.capability] on `geo` with no provider.
+  ///
+  /// ```dart
+  /// final place = sdk.geo.resolve(
+  ///   const PlaceRequest(latitudeDeg: 27.7172, longitudeDeg: 85.324),
+  /// );
+  /// final zone = place.zone; // Asia/Kathmandu
+  /// ```
+  ResolvedPlace resolve(PlaceRequest request) => _resolvedPlace(
+    jsonDecode(
+          _context._guarded(
+            () => _context._inner.geoResolve(jsonEncode(request)),
+          ),
+        )
+        as Map<String, Object?>,
+  );
+}
+
+/// `ts_geo_load`'s answer, read into the generated record.
+GeoSource _geoSource(Map<String, Object?> json) => GeoSource(
+  name: json['name']! as String,
+  version: json['version']! as String,
+  dataVersion: json['dataVersion']! as String,
+  tzdb: json['tzdb'] as String?,
+);
+
+/// `ts_geo_resolve`'s answer, read into the generated records a chart
+/// request's `place` takes.
+ResolvedPlace _resolvedPlace(Map<String, Object?> json) {
+  final height = json['height'] as Map<String, Object?>?;
+  return ResolvedPlace(
+    latitudeDeg: (json['latitudeDeg']! as num).toDouble(),
+    longitudeDeg: (json['longitudeDeg']! as num).toDouble(),
+    zone: json['zone'] as String?,
+    height:
+        height == null
+            ? null
+            : GroundHeight(
+              metres: (height['metres']! as num).toDouble(),
+              source: height['source']! as String,
+              resolutionM: (height['resolutionM']! as num).toDouble(),
+              datum: height['datum']! as String,
+            ),
+    admin: [
+      for (final unit
+          in (json['admin']! as List<Object?>).cast<Map<String, Object?>>())
+        AdminUnit(
+          level: unit['level']! as int,
+          code: unit['code'] as String?,
+          name: unit['name'] as String?,
+        ),
+    ],
+    source: _geoSource(json['source']! as Map<String, Object?>),
+  );
+}
+
 /// `sdk.frame` — the coordinate conventions a request is expressed in.
 final class FrameArea extends _Area {
   const FrameArea._(super.context);
@@ -3984,6 +4061,9 @@ final class Context {
 
   /// The catalogue's keys and their packed ids.
   late final KeysArea keys = KeysArea._(this);
+
+  /// A place's zone, ground height and admin codes, from a geo provider.
+  late final GeoArea geo = GeoArea._(this);
 
   /// The coordinate conventions a request is expressed in.
   late final FrameArea frame = FrameArea._(this);

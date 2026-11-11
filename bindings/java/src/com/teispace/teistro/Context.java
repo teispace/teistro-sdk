@@ -41,6 +41,7 @@ public final class Context implements AutoCloseable {
     private final TimeArea time = new TimeArea(this);
     private final IntlArea intl = new IntlArea(this);
     private final KeysArea keys = new KeysArea(this);
+    private final GeoArea geo = new GeoArea(this);
     private final ChartArea chart = new ChartArea(this);
     private final AlmanacArea almanac = new AlmanacArea(this);
     private final MatchingArea matching = new MatchingArea(this);
@@ -495,6 +496,16 @@ public final class Context implements AutoCloseable {
      */
     public KeysArea keys() {
         return keys;
+    }
+
+    /**
+     * A place's IANA zone, ground height and ISO 3166 admin codes, from the
+     * context's geo provider, which the SDK never consults on its own.
+     *
+     * @return the geo area of this context
+     */
+    public GeoArea geo() {
+        return geo;
     }
 
     /**

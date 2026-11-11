@@ -4,6 +4,8 @@
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
 import type {
+  ResolvedPlace,
+  GeoSource,
   DispositorChain,
   DispositorEnd,
   Dispositions,
@@ -2997,3 +2999,15 @@ function theCells(ctx: Context): string {
   return `${kind} ${cell?.tithi} ${cell?.ends[0]?.at} ${month.observances?.observances.length} ${wrong}`;
 }
 void theCells;
+
+// Geo: a resolved place typed, its height optional, and a chart request
+// taking it whole.
+function thePlace(ctx: Context): string {
+  const source: GeoSource = ctx.geo.load('{"source": {}, "areas": []}');
+  const place: ResolvedPlace = ctx.geo.resolve({ latitudeDeg: 27.7172, longitudeDeg: 85.324 });
+  // @ts-expect-error a place is asked by its coordinates in degrees
+  ctx.geo.resolve({ latitude: 27.7172, longitude: 85.324 });
+  const chart = ctx.record('chart.found', { instant: 2461192.760417, place });
+  return `${source.dataVersion} ${place.zone} ${place.height?.metres} ${place.admin[0]?.code} ${String(chart)}`;
+}
+void thePlace;

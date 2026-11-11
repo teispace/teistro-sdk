@@ -9854,6 +9854,65 @@ void _engineTests() {
   /// The annual charts cross: a request's `varsha` answers each chart's
   /// returns in year order, ragged per chart, and the instant founds as a
   /// chart of its own.
+  test('a place resolved through a geo table, and a chart on it that '
+      'replays without one', () {
+    // The SDK's test table, the same the Rust suite loads.
+    var dir = Directory.current.absolute;
+    while (!File('${dir.path}/crates/sdk/tests/geo-table.json').existsSync()) {
+      if (dir.parent.path == dir.path) throw StateError('no geo-table.json');
+      dir = dir.parent;
+    }
+    final table =
+        File('${dir.path}/crates/sdk/tests/geo-table.json').readAsStringSync();
+    const kathmandu = PlaceRequest(latitudeDeg: 27.7172, longitudeDeg: 85.324);
+    final bare = context();
+    // No provider unless one is given.
+    expect(
+      () => bare.geo.resolve(kathmandu),
+      throwsA(
+        isA<TeistroException>()
+            .having((e) => e.status, 'status', Status.capability)
+            .having((e) => e.field, 'field', 'geo'),
+      ),
+    );
+    final ctx = context();
+    expect(ctx.geo.load(table).dataVersion, '2026.11.0');
+    final place = ctx.geo.resolve(kathmandu);
+    // Each question, and who answered from which data.
+    expect(place.zone, 'Asia/Kathmandu');
+    expect(place.height?.metres, 1337.0);
+    expect(place.height?.resolutionM, 30.0);
+    expect(place.height?.datum, 'EGM2008');
+    expect(place.admin.map((unit) => unit.code), ['NP', 'NP-P3', null]);
+    expect(place.source.tzdb, '2026c');
+    final bay = ctx.geo.resolve(
+      const PlaceRequest(latitudeDeg: 15, longitudeDeg: 88),
+    );
+    expect([bay.zone, bay.height, bay.admin], ['Asia/Kolkata', null, isEmpty]);
+    expect(
+      () =>
+          ctx.geo.resolve(const PlaceRequest(latitudeDeg: 91, longitudeDeg: 0)),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'latitudeDeg'),
+      ),
+    );
+    // A chart on the place keeps it in its receipt and replays on a
+    // context with no provider.
+    final issued = ctx.verify.issue(
+      IssueRequest(
+        record: 'chart.found',
+        request: {'instant': 2461192.760417, 'place': place, 'state': true},
+      ),
+    );
+    final kept = (issued.receipt['request']! as Map)['place']! as Map;
+    expect(kept['zone'], 'Asia/Kathmandu');
+    expect((kept['height']! as Map)['metres'], 1337.0);
+    expect((kept['source']! as Map)['dataVersion'], '2026.11.0');
+    expect(bare.verify.receipt(issued.receipt).verdict, 'HELD');
+    bare.dispose();
+    ctx.dispose();
+  });
+
   test('a chart carries the annual charts its birth opens', () {
     final ctx = context();
     final place = Observer(

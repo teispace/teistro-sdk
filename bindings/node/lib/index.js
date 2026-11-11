@@ -3095,6 +3095,45 @@ export class KeysArea extends Area {
   }
 }
 
+/**
+ * `sdk.geo` — a place's IANA zone, ground height and ISO 3166 admin codes,
+ * from the context's geo provider (`03-design/geo-port.md`). The SDK never
+ * consults it on its own: a context has one only once `load` gives it a
+ * table.
+ */
+export class GeoArea extends Area {
+  /**
+   * Installs a geo table as this context's provider, in place of any it
+   * had: `{source, areas}`, each area a box `{south, west, north, east}`
+   * with any of `zone`, `height` and `admin`, written coarse to fine.
+   *
+   * @param {object|string} table the table, or its JSON
+   * @returns {{ name: string, version: string, dataVersion: string, tzdb: string | null }}
+   * @throws {TeistroError} `INVALID_ARG` naming the part under `geo`; the
+   *   context keeps the provider it had
+   */
+  load(table) {
+    const json = typeof table === 'string' ? table : JSON.stringify(table);
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoLoad(json))));
+  }
+
+  /**
+   * A place resolved: the IANA zone, the ground height with its source,
+   * resolution and datum, the admin units coarse to fine with their ISO
+   * 3166 codes, and the provider's name and data version. A chart
+   * request's `place` takes it as it is, so a receipt replays without the
+   * provider.
+   *
+   * @param {{ latitudeDeg: number, longitudeDeg: number }} request
+   * @returns {object} the place, frozen
+   * @throws {TeistroError} `CAPABILITY` on `geo` with no provider;
+   *   `INVALID_ARG` on a point out of range
+   */
+  resolve(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoResolve(JSON.stringify(request)))));
+  }
+}
+
 /** `sdk.frame` — the coordinate conventions a request is expressed in. */
 export class FrameArea extends Area {
   /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
@@ -9446,6 +9485,8 @@ export class Context {
     this.intl = new IntlArea(reach);
     /** The catalogue's keys and their packed ids. */
     this.keys = new KeysArea(reach);
+    /** A place's zone, ground height and admin codes, from a geo provider. */
+    this.geo = new GeoArea(reach);
     /** The coordinate conventions a request is expressed in. */
     this.frame = new FrameArea(reach);
     /** A chart founded at an instant and a place. */

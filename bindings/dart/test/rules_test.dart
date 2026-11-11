@@ -321,6 +321,7 @@ const Map<String, Type> _records = {
   'chart.mundane': MundaneRequest,
   'chart.rashifal': BatchAsked,
   'chart.relocated': RelocationRequest,
+  'geo.resolve': PlaceRequest,
   'intl.date': DateTextRequest,
   'intl.inWords': InWordsRequest,
   'intl.lexicon': LexiconRequest,

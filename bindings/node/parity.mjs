@@ -2631,6 +2631,8 @@ for (const [path, member] of [
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],
+  ['geo.load', shape.geo.load],
+  ['geo.resolve', shape.geo.resolve],
   ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
   ['chart.found_many', shape.chart.foundMany],

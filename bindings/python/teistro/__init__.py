@@ -33,7 +33,7 @@ from dataclasses import fields as dataclass_fields
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
-from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Required, Sequence, Tuple, TypedDict, TypeVar, Union, get_type_hints
+from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Required, Sequence, Tuple, TypedDict, TypeVar, Union, cast, get_type_hints
 
 from . import messages as intl
 from ._blob import (
@@ -460,6 +460,11 @@ from ._requests import (
     FunctionalScheme as FunctionalScheme,
     GanaPoints as GanaPoints,
     GeoPlace as GeoPlace,
+    AdminUnit as AdminUnit,
+    PlaceRequest as PlaceRequest,
+    GeoSource as GeoSource,
+    GroundHeight as GroundHeight,
+    ResolvedPlace as ResolvedPlace,
     GradedRule as GradedRule,
     GrahaClass as GrahaClass,
     GulikaAt as GulikaAt,
@@ -3339,6 +3344,34 @@ class KeysArea(_Area):
         return self._context.inner.key_name(identifier)
 
 
+class GeoArea(_Area):
+    """`sdk.geo` — a place's IANA zone, ground height and ISO 3166 admin
+    codes, from the context's geo provider (`03-design/geo-port.md`). The
+    SDK never consults it on its own: a context has one only once `load`
+    gives it a table."""
+
+    def load(self, table: Union[Mapping[str, Any], str]) -> GeoSource:
+        """Installs a geo table as this context's provider, in place of any
+        it had: `{source, areas}`, each area a box `{south, west, north,
+        east}` with any of `zone`, `height` and `admin`, written coarse to
+        fine. Answers the table's source; a refused table, `INVALID_ARG`
+        named under `geo`, leaves the provider as it was."""
+        text = table if isinstance(table, str) else json.dumps(table)
+        return cast(GeoSource, json.loads(self._context.inner.geo_load(text)))
+
+    def resolve(self, request: PlaceRequest) -> ResolvedPlace:
+        """A place resolved: the IANA zone, the ground height with its
+        source, resolution and datum, the admin units coarse to fine with
+        their ISO 3166 codes, and the provider's name and data version. A
+        chart request's `place` takes it as it is, so a receipt replays
+        without the provider. `CAPABILITY` on `geo` with no provider.
+
+        >>> # place = sdk.geo.resolve({"latitudeDeg": 27.7172, "longitudeDeg": 85.324})
+        >>> # place["zone"]  # 'Asia/Kathmandu'
+        """
+        return cast(ResolvedPlace, json.loads(self._context.inner.geo_resolve(json.dumps(request))))
+
+
 class FrameArea(_Area):
     """`sdk.frame` — the coordinate conventions a request is expressed in."""
 
@@ -5922,6 +5955,11 @@ class Context(RecordCalls):
     def keys(self) -> KeysArea:
         """The catalogue's keys and their packed ids."""
         return KeysArea(self)
+
+    @cached_property
+    def geo(self) -> GeoArea:
+        """A place's zone, ground height and admin codes, from a geo provider."""
+        return GeoArea(self)
 
     @cached_property
     def frame(self) -> FrameArea:
