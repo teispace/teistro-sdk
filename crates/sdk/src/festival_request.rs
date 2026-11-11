@@ -12,7 +12,7 @@ use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
     Anniversary, Dated, DatedRule, EkadashiRule, FestivalMeta, FestivalRule, FollowingRule,
-    KindRules, MetaFilter, PublishedEntry, PublishedSet, SaitRule,
+    KindRules, MetaFilter, PublishedEntry, PublishedSet, SaitRule, region,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -175,6 +175,61 @@ impl FestivalPack {
             FestivalPack::IndiaTamilNadu => "INDIA_TAMIL_NADU",
             FestivalPack::IndiaAssam => "INDIA_ASSAM",
         }
+    }
+
+    /// The region whose public holidays it is, by the key its rules carry
+    /// (`festival-metadata.md` §2a, SR-89): an ISO 3166-1 country or
+    /// 3166-2 state. Nepal's is `NEPAL_PANCHANGA`, the national print's
+    /// set, which holds `NEPAL`'s; a pack of a text or a tradition has none.
+    ///
+    /// ```
+    /// use teistro::FestivalPack;
+    ///
+    /// assert_eq!(FestivalPack::IndiaTamilNadu.region(), Some("IN-TN"));
+    /// assert_eq!(FestivalPack::Dharmasindhu.region(), None);
+    /// ```
+    #[must_use]
+    pub const fn region(self) -> Option<&'static str> {
+        match self {
+            FestivalPack::NepalPanchanga => Some("NP"),
+            FestivalPack::IndiaCentral => Some("IN"),
+            FestivalPack::IndiaMaharashtra => Some("IN-MH"),
+            FestivalPack::IndiaWestBengal => Some("IN-WB"),
+            FestivalPack::IndiaKerala => Some("IN-KL"),
+            FestivalPack::IndiaTamilNadu => Some("IN-TN"),
+            FestivalPack::IndiaAssam => Some("IN-AS"),
+            FestivalPack::Dharmasindhu
+            | FestivalPack::Nepal
+            | FestivalPack::PitriPaksha
+            | FestivalPack::Gaudiya
+            | FestivalPack::Jain
+            | FestivalPack::Mithila => None,
+        }
+    }
+
+    /// The pack of a region a place resolves to: its own, else its
+    /// country's, so a state with no pack of its own keeps the national
+    /// list. An alias a state was first shipped under is read as its code.
+    ///
+    /// ```
+    /// use teistro::FestivalPack;
+    ///
+    /// assert_eq!(FestivalPack::for_region("IN-TN"), Some(FestivalPack::IndiaTamilNadu));
+    /// assert_eq!(FestivalPack::for_region("TAMIL_NADU"), Some(FestivalPack::IndiaTamilNadu));
+    /// assert_eq!(FestivalPack::for_region("IN-KA"), Some(FestivalPack::IndiaCentral));
+    /// assert_eq!(FestivalPack::for_region("NP-P3"), Some(FestivalPack::NepalPanchanga));
+    /// assert_eq!(FestivalPack::for_region("US-CA"), None);
+    /// assert_eq!(FestivalPack::for_region("KATHMANDU_VALLEY"), None);
+    /// ```
+    #[must_use]
+    pub fn for_region(key: &str) -> Option<FestivalPack> {
+        let key = region::canonical(key);
+        let of = |wanted: &str| {
+            FestivalPack::ALL
+                .into_iter()
+                .find(|pack| pack.region() == Some(wanted))
+        };
+        of(key).or_else(|| region::country(key).and_then(of))
     }
 
     /// Its karmakala rules.
@@ -1159,11 +1214,19 @@ pub(crate) fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
     FestivalPack::ALL
         .into_iter()
         .find(|pack| pack.key() == name)
+        .or_else(|| FestivalPack::for_region(name))
         .ok_or_else(|| {
             let known: Vec<&str> = FestivalPack::ALL.iter().map(|pack| pack.key()).collect();
+            let regions: Vec<&str> = FestivalPack::ALL
+                .iter()
+                .filter_map(|pack| pack.region())
+                .collect();
             Error::invalid_arg(format!(
-                "`{name}` is not a pack the SDK ships; it ships {}, or a rule may be spelt out",
-                known.join(", ")
+                "`{name}` is not a pack the SDK ships nor a region one keeps; it ships {}, \
+                 a region's by its ISO 3166 code ({} or a state of either country), or a rule \
+                 may be spelt out",
+                known.join(", "),
+                regions.join(", ")
             ))
             .with_field(field)
         })

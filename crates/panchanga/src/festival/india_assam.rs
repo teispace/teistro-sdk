@@ -33,7 +33,7 @@ use super::{
 };
 
 /// Where the list is kept: India, then the state the notice names.
-const REGIONS: [&str; 2] = ["IN", "ASSAM"];
+const REGIONS: [&str; 2] = ["IN", "IN-AS"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
@@ -275,7 +275,7 @@ impl FestivalRule {
     /// let of = |key: &str| rules.iter().find(|rule| rule.key == key);
     /// let kali = of("KALI_PUJA").ok_or("shipped")?;
     /// assert_eq!(kali.at, Window::Nishitha);
-    /// assert_eq!(kali.meta.regions, ["IN", "ASSAM"]);
+    /// assert_eq!(kali.meta.regions, ["IN", "IN-AS"]);
     /// // Janmastomi is kept by the Assamese month, not the lunar one.
     /// assert!(of("JANMASHTAMI").is_none());
     /// # Ok::<(), &str>(())
@@ -378,7 +378,7 @@ impl DatedRule {
     ///         days: 0,
     ///     })
     /// );
-    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "ASSAM"]));
+    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "IN-AS"]));
     /// ```
     #[must_use]
     pub fn india_assam() -> Vec<DatedRule> {

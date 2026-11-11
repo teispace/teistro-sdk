@@ -31,7 +31,7 @@ use super::{
 };
 
 /// Where the list is kept: India, then the state the order names.
-const REGIONS: [&str; 2] = ["IN", "TAMIL_NADU"];
+const REGIONS: [&str; 2] = ["IN", "IN-TN"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
@@ -201,7 +201,7 @@ impl FestivalRule {
     /// let of = |key: &str| rules.iter().find(|rule| rule.key == key);
     /// let dasami = of("VIJAYA_DASHAMI").ok_or("shipped")?;
     /// assert_eq!(dasami.at, Window::Sunrise);
-    /// assert_eq!(dasami.meta.regions, ["IN", "TAMIL_NADU"]);
+    /// assert_eq!(dasami.meta.regions, ["IN", "IN-TN"]);
     /// // Deepavali is the Naraka Chaturdashi, not the central list's Diwali.
     /// assert!(of("NARAK_CHATURDASHI").is_some() && of("LAKSHMI_PUJA").is_none());
     /// assert!(of("JANMASHTAMI").ok_or("shipped")?.source.starts_with("Dharmasindhu"));
@@ -287,7 +287,7 @@ impl DatedRule {
     ///         days: 0,
     ///     })
     /// );
-    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "TAMIL_NADU"]));
+    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "IN-TN"]));
     /// ```
     #[must_use]
     pub fn india_tamil_nadu() -> Vec<DatedRule> {

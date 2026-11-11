@@ -35,7 +35,7 @@ use super::{
 };
 
 /// Where the list is kept: India, then the state the notice names.
-const REGIONS: [&str; 2] = ["IN", "KERALA"];
+const REGIONS: [&str; 2] = ["IN", "IN-KL"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
@@ -240,7 +240,7 @@ impl FestivalRule {
     /// let of = |key: &str| rules.iter().find(|rule| rule.key == key);
     /// let vavu = of("KARKIDAKA_VAVU").ok_or("shipped")?;
     /// assert_eq!(vavu.at, Window::Sunrise);
-    /// assert_eq!(vavu.meta.regions, ["IN", "KERALA"]);
+    /// assert_eq!(vavu.meta.regions, ["IN", "IN-KL"]);
     /// // Sreekrishna Jayanthi is the ashtami's day, not Rohini's (C1320).
     /// assert!(of("JANMASHTAMI").ok_or("shipped")?.source.starts_with("Dharmasindhu"));
     /// # Ok::<(), &str>(())
@@ -321,7 +321,7 @@ impl DatedRule {
     ///         days: 0,
     ///     })
     /// );
-    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "KERALA"]));
+    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "IN-KL"]));
     /// ```
     #[must_use]
     pub fn india_kerala() -> Vec<DatedRule> {

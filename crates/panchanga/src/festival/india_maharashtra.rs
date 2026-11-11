@@ -23,7 +23,7 @@ use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
 
 /// Where the list is kept: India, then the state the notice names.
-const REGIONS: [&str; 2] = ["IN", "MAHARASHTRA"];
+const REGIONS: [&str; 2] = ["IN", "IN-MH"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
@@ -137,7 +137,7 @@ impl FestivalRule {
     /// // A day both lists hold is the central list's rule, kept in the state.
     /// let shivaratri = of(&rules, "SHIVARATRI").ok_or("shipped")?;
     /// assert_eq!(shivaratri.at, of(&central, "SHIVARATRI").ok_or("shipped")?.at);
-    /// assert_eq!(shivaratri.meta.regions, ["IN", "MAHARASHTRA"]);
+    /// assert_eq!(shivaratri.meta.regions, ["IN", "IN-MH"]);
     /// assert!(!shivaratri.meta.optional);
     /// // Bhaubeej is added by its own notification, not every year.
     /// assert!(of(&rules, "YAMA_DWITIYA").ok_or("shipped")?.meta.optional);
@@ -187,7 +187,7 @@ impl DatedRule {
     ///
     /// let rules = DatedRule::india_maharashtra();
     /// assert_eq!(rules.len(), 9);
-    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "MAHARASHTRA"]));
+    /// assert!(rules.iter().all(|rule| rule.meta.regions == ["IN", "IN-MH"]));
     /// let banks = rules.iter().find(|rule| rule.key == "BANK_ACCOUNTS_CLOSING").ok_or("shipped")?;
     /// assert_eq!(banks.meta.communities, ["BANKS"]);
     /// # Ok::<(), &str>(())

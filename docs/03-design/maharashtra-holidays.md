@@ -41,7 +41,7 @@ with its rank, and the three rank-3 years wait on their gazette (C1244).
 `INDIA_MAHARASHTRA` holds the list at any place, and is measured at Mumbai on India's
 clock. No rule is new. A day the central list also holds is `INDIA_CENTRAL`'s rule,
 taken from that pack, not copied, so the two cannot drift apart; in the state's pack
-it is on every year's list, and kept in `["IN", "MAHARASHTRA"]`.
+it is on every year's list, and kept in `["IN", "IN-MH"]` (ISO 3166-2; `MAHARASHTRA`, its first key, is read as an alias, SR-89).
 
 | holiday | key | form | the day's rule is cited to |
 |---|---|---|---|
