@@ -31,6 +31,14 @@ ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
 Assam's and Kerala's public holidays, and a rule held to a calendar's month
 (`inMonth`).
 
+**A graha past the nine no longer reads the lagna in a rule chart.**
+**Numbers:** none for any rule: every body a rule names keeps its place.
+`teistro_rules::Body::index` gave Uranus the lagna's place, so
+`RuleChart::placement(Body::Graha(Graha::Uranus))` answered the lagna;
+Uranus, Neptune and Pluto now have places past `Body::ALL`'s end, and
+`placement` documents that it panics for them. `Body::graha` is the
+checked constructor, `None` for a graha no rule names.
+
 **Karnataka's public holidays (SR-03, the sixth state set).**
 **Numbers:** none for any existing pack's days: a new pack. A request naming the
 region `IN-KA` now reckons `INDIA_KARNATAKA`, where it kept `INDIA_CENTRAL`.

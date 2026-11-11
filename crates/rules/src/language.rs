@@ -109,7 +109,32 @@ impl Body {
         Body::Graha(Graha::Saturn),
     ];
 
-    /// Its place in [`Body::ALL`].
+    /// The body a rule names for `graha`: one of the nine, the Sun to
+    /// Ketu, and none for a graha past them (Uranus, Neptune, Pluto), which
+    /// no rule names and no rule chart places.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Graha;
+    /// use teistro_rules::Body;
+    ///
+    /// assert_eq!(Body::graha(Graha::Ketu), Some(Body::Graha(Graha::Ketu)));
+    /// assert_eq!(Body::graha(Graha::Uranus), None);
+    /// ```
+    #[must_use]
+    pub const fn graha(graha: Graha) -> Option<Body> {
+        if (graha as usize) < Body::LAGNA {
+            Some(Body::Graha(graha))
+        } else {
+            None
+        }
+    }
+
+    /// The lagna's place in [`Body::ALL`], after the nine grahas.
+    const LAGNA: usize = 9;
+
+    /// Its place in [`Body::ALL`]. A graha past the nine has a place past
+    /// its end, so it never reads the lagna's: a rule chart holds no
+    /// placement there.
     ///
     /// ```
     /// use teistro_core::catalogue::Graha;
@@ -117,12 +142,16 @@ impl Body {
     ///
     /// assert_eq!(Body::Graha(Graha::Moon).index(), 1);
     /// assert_eq!(Body::Lagna.index(), 9);
+    /// assert_eq!(Body::Graha(Graha::Uranus).index(), 10);
+    /// assert!(Body::Graha(Graha::Pluto).index() >= Body::ALL.len());
     /// ```
     #[must_use]
     pub const fn index(self) -> usize {
         match self {
-            Body::Graha(graha) => graha as usize,
-            Body::Lagna => 9,
+            Body::Graha(graha) if (graha as usize) < Body::LAGNA => graha as usize,
+            // Uranus is 9 in the catalogue, the lagna's place here.
+            Body::Graha(graha) => graha as usize + 1,
+            Body::Lagna => Body::LAGNA,
         }
     }
 
