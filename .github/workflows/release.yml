@@ -11,11 +11,16 @@
 #   build    each platform builds its own artefacts and manifest
 #   wasm     the wasm package, one artefact for every host, built once
 #   stage    the manifests are merged and the two published packages staged
-#   publish  the GitHub release, then npm, pub.dev and PyPI
+#   publish  the GitHub release: the archives, their digests and provenance
+#   registries npm, pub.dev, PyPI, Maven Central and the MCP Registry
 #   published every package installed back from its registry and run
 #
 # A dispatch runs everything except `publish`, which is how the whole
-# chain is rehearsed before a tag exists; only a tag publishes.
+# chain is rehearsed before a tag exists. A tag makes the GitHub release
+# and nothing more: a version is tagged without any package leaving the
+# repository. `registries` runs only when the repository variable
+# `PUBLISH_REGISTRIES` is `true`, which the maintainer sets when the
+# packages are to go out (`06-cicd/03-release-process.md`).
 name: release
 
 on:
@@ -39,6 +44,7 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       publish: ${{ github.event_name == 'push' }}
+      registries: ${{ github.event_name == 'push' && vars.PUBLISH_REGISTRIES == 'true' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -354,12 +360,9 @@ jobs:
     needs: [gate, verify, stage]
     if: needs.gate.outputs.publish == 'true'
     runs-on: ubuntu-latest
-    environment: release
     permissions:
       contents: write
-      # npm's and PyPI's trusted publishing, npm provenance, pub.dev's
-      # automated publishing and the build attestations all take the
-      # runner's OIDC token instead of a long-lived credential.
+      # The build attestations take the runner's OIDC token.
       id-token: write
       attestations: write
     steps:
@@ -370,15 +373,6 @@ jobs:
         with:
           name: release
           path: dist
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          registry-url: https://registry.npmjs.org
-      - uses: dart-lang/setup-dart@v1
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
       - uses: dtolnay/rust-toolchain@stable
       # Which workflow, at which commit, built each file, signed and
       # recorded in a public log: `gh attestation verify <file> --repo
@@ -406,6 +400,39 @@ jobs:
             --notes-file notes.md \
             dist/*.gz dist/*.mcpb dist/*.cdx.json dist/checksums.txt dist/manifest.json \
             dist/maven/com/teispace/teistro/*/*.jar dist/maven/com/teispace/teistro/*/*.pom
+
+  # The packages, after the GitHub release they point at. Gated on
+  # `PUBLISH_REGISTRIES` as well as the tag, so a version can be tagged
+  # and released on GitHub while nothing reaches a registry.
+  registries:
+    name: registries
+    needs: [gate, publish]
+    if: needs.gate.outputs.registries == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      # npm's and PyPI's trusted publishing, npm provenance, pub.dev's
+      # automated publishing and the MCP Registry all take the runner's
+      # OIDC token instead of a long-lived credential.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: dist
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://registry.npmjs.org
+      - uses: dart-lang/setup-dart@v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@stable
 
       # npm 11.5.1 is the first to publish by the runner's OIDC token, which
       # it tries before any token. A package's first publish still takes
@@ -516,8 +543,8 @@ jobs:
   # in a rehearsal.
   published:
     name: published (${{ matrix.os }})
-    needs: [gate, publish]
-    if: needs.gate.outputs.publish == 'true'
+    needs: [gate, registries]
+    if: needs.gate.outputs.registries == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
