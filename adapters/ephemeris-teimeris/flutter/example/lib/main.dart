@@ -2,7 +2,9 @@
 // SDK's library and `teistro_ephemeris_teimeris_flutter` the adapter, its
 // data built in. No file is copied out and no path is named.
 
-import 'package:flutter/material.dart';
+// `widgets.dart`, not `material.dart`: one line of text needs no design
+// library, and Flutter 3.47 deprecated Material's place in the framework.
+import 'package:flutter/widgets.dart';
 import 'package:teistro_flutter/teistro_flutter.dart';
 
 import 'month.dart';
@@ -23,9 +25,12 @@ class TeimerisExample extends StatelessWidget {
       ...monthHashes(teistro),
     ];
     lines.forEach(debugPrint);
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
+    return WidgetsApp(
+      color: const Color(0xFFFFFFFF),
+      textStyle: const TextStyle(color: Color(0xFF000000), fontSize: 18),
+      builder: (context, _) => ColoredBox(
+        color: const Color(0xFFFFFFFF),
+        child: Center(
           child: Text(lines.join('\n'), textAlign: TextAlign.center),
         ),
       ),

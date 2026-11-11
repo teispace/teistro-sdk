@@ -2,7 +2,9 @@
 // whose build hook bundled the library this opens. Nothing is installed
 // and no path is named; `Teistro.open()` finds the bundled library.
 
-import 'package:flutter/material.dart';
+// `widgets.dart`, not `material.dart`: one line of text needs no design
+// library, and Flutter 3.47 deprecated Material's place in the framework.
+import 'package:flutter/widgets.dart';
 import 'package:teistro_flutter/teistro_flutter.dart';
 
 void main() => runApp(const TeistroExample());
@@ -30,9 +32,12 @@ class TeistroExample extends StatelessWidget {
       ),
       Calendar.bikramSambat,
     );
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
+    return WidgetsApp(
+      color: const Color(0xFFFFFFFF),
+      textStyle: const TextStyle(color: Color(0xFF000000), fontSize: 18),
+      builder: (context, _) => ColoredBox(
+        color: const Color(0xFFFFFFFF),
+        child: Center(
           child: Text(
             'Teistro ${teistro.version}\n'
             'Today is ${bs.year}-${bs.month}-${bs.day} BS',
