@@ -257,7 +257,6 @@ fn a_resolved_place_is_refused_beside_what_it_already_says() {
     for (key, value) in [
         ("latitudeDeg", json!(27.7)),
         ("longitudeDeg", json!(85.3)),
-        ("altitudeM", json!(1400)),
         ("zone", json!({"kind": "IANA", "zone": "Asia/Kathmandu"})),
     ] {
         let mut request = json!({"instant": BIRTH, "place": place});
@@ -304,4 +303,153 @@ fn a_resolved_place_is_refused_beside_what_it_already_says() {
         ChartRequest::resolved(&far).unwrap_err().field(),
         Some("place.latitudeDeg")
     );
+}
+
+/// The convention a resolved place's height is recorded under, from an
+/// answer's provenance.
+fn height_of(answered: &teistro::records::Answered) -> (String, String) {
+    let convention = answered
+        .provenance
+        .as_ref()
+        .unwrap()
+        .applied_conventions
+        .iter()
+        .find(|convention| convention.knob == "observer.height")
+        .unwrap();
+    (convention.value.clone(), convention.reason.clone())
+}
+
+#[test]
+fn a_resolved_height_reaches_the_sunrise_and_says_where_it_came_from() {
+    // SR-90: a Kathmandu sunrise on the provider's height is the sunrise
+    // on the same height given by hand, and the provenance names the
+    // provider, its data and the height's own source. The height moves a
+    // sunrise reckoned under the air (`horizon-atmosphere.md`): the
+    // standard air at the observer's height, the engines' own convention.
+    // The almanac's fixed 34' of the shipped profiles reads no height.
+    let sdk = airy();
+    let place = sdk.geo().resolve(&KATHMANDU).unwrap();
+    let days = teistro::records::record("almanac.days").unwrap();
+    let first = json!({"year": 2026, "month": 6, "day": 1});
+    let resolved = days
+        .answer(&sdk, &json!({"first": first, "place": place}).to_string())
+        .unwrap();
+    let by_hand = days
+        .answer(
+            &sdk,
+            &json!({"first": first, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+                "altitudeM": 1337, "zone": ZoneSpec::iana("Asia/Kathmandu")})
+            .to_string(),
+        )
+        .unwrap();
+    assert_eq!(
+        numbers(&resolved.value["days"]),
+        numbers(&by_hand.value["days"])
+    );
+    let (value, reason) = height_of(&resolved);
+    assert_eq!(value, "1337 m");
+    assert!(
+        reason.contains("teistro-test-places") && reason.contains("2026.11.0"),
+        "{reason}"
+    );
+    assert!(
+        reason.contains("the test table") && reason.contains("EGM2008"),
+        "{reason}"
+    );
+    // A place written out records nothing: its height is the request's.
+    assert!(
+        by_hand
+            .provenance
+            .as_ref()
+            .unwrap()
+            .applied_conventions
+            .iter()
+            .all(|convention| convention.knob != "observer.height")
+    );
+    // The height moves the sunrise: sea level is another answer.
+    let sea = days
+        .answer(
+            &sdk,
+            &json!({"first": first, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+                "zone": ZoneSpec::iana("Asia/Kathmandu")})
+            .to_string(),
+        )
+        .unwrap();
+    let sunrise = |answered: &teistro::records::Answered| {
+        find(&answered.value["days"][0], "sunrise")
+            .cloned()
+            .unwrap()
+    };
+    assert_ne!(sunrise(&resolved), sunrise(&sea));
+
+    // The caller's own altitude wins over the provider's, and says so.
+    let stated = days
+        .answer(
+            &sdk,
+            &json!({"first": first, "place": place, "altitudeM": 0}).to_string(),
+        )
+        .unwrap();
+    assert_eq!(numbers(&stated.value["days"]), numbers(&sea.value["days"]));
+    let (value, reason) = height_of(&stated);
+    assert_eq!(value, "0 m");
+    assert!(reason.starts_with("stated by the caller"), "{reason}");
+    assert!(reason.contains("1337 m"), "{reason}");
+
+    // A place the provider knows no height for stands at sea level, and
+    // says that too.
+    let pokhara = sdk.geo().resolve(&POKHARA).unwrap();
+    let low = days
+        .answer(&sdk, &json!({"first": first, "place": pokhara}).to_string())
+        .unwrap();
+    let (value, reason) = height_of(&low);
+    assert_eq!(value, "0 m");
+    assert!(reason.contains("knows no height here"), "{reason}");
+}
+
+/// A context with the test table whose sunrise is reckoned under the
+/// standard air at the observer's height, the engines' own convention.
+fn airy() -> Context {
+    Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .settings_json(
+            r#"{"day": {"sunrise": {"kind": "ATMOSPHERIC", "which": "UPPER_LIMB_REFRACTION", "air": {"pressure_hpa": null, "temperature_c": null}}}}"#,
+        )
+        .geo(Arc::new(GeoTable::from_json(TABLE).unwrap()))
+        .build()
+        .unwrap()
+}
+
+#[test]
+fn a_resolved_height_is_recorded_in_a_chart_and_a_receipt() {
+    let sdk = airy();
+    let place = sdk.geo().resolve(&KATHMANDU).unwrap();
+    let first = json!({"year": 2026, "month": 6, "day": 1});
+    // A chart says the same in its own provenance, and a receipt keeps it
+    // and replays it without the provider.
+    let found = teistro::records::record("chart.found").unwrap();
+    let chart = found
+        .answer(&sdk, &json!({"instant": BIRTH, "place": place}).to_string())
+        .unwrap();
+    assert_eq!(height_of(&chart).0, "1337 m");
+    let issued = sdk
+        .verify()
+        .issue(&IssueRequest {
+            record: String::from("almanac.days"),
+            request: json!({"first": first, "place": place}),
+        })
+        .unwrap();
+    let conventions = &issued.answer["provenance"]["applied_conventions"];
+    assert!(
+        conventions
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|convention| convention["knob"] == "observer.height"
+                && convention["reason"]
+                    .as_str()
+                    .is_some_and(|reason| reason.contains("the test table"))),
+        "{conventions}"
+    );
+    let check = context(false).verify().receipt(&issued.receipt);
+    assert_eq!(check.verdict, ReceiptVerdict::Held, "{check:?}");
 }

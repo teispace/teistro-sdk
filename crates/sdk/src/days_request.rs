@@ -9,13 +9,14 @@ use serde_json::Value;
 use teistro_astro::day_sky::SkyStep;
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
+use teistro_core::envelope::Convention;
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::strict;
 use teistro_time::ZoneSpec;
 
 use crate::area::DayClock;
-use crate::asked::{DayAsked, place_of};
+use crate::asked::{DayAsked, Where};
 use crate::{AlmanacRequest, FestivalRequest};
 
 /// A range of days read from JSON: the first and last day, the place and
@@ -44,12 +45,16 @@ pub struct DaysRequest {
     pub clock: DayClock,
     /// What is asked beside the days.
     pub beside: AlmanacRequest,
+    /// Where the observer's height came from, for days on a resolved
+    /// `place` (`03-design/geo-port.md` §6a): `almanac.days` adds it to
+    /// the provenance. `None` for a place written out.
+    pub height: Option<Convention>,
 }
 
 impl DaysRequest {
     /// What a JSON days request is, for a caller choosing it by name (the
     /// agent server's `almanac.days`).
-    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`; and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out). The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
+    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`, or in place of the coordinates and the zone a `place` as `geo.resolve` answers it (its zone or `utcOffsetSeconds` where it has none, and its ground height as the observer's for the sunrise unless `altitudeM` states one, the provenance naming where the height came from); and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out). The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
 
     /// The request a binding writes for a range of days, read and checked;
     /// a refusal names the field as written, a record's from the record's
@@ -101,12 +106,22 @@ impl DaysRequest {
             }
             (false, None) => {}
         }
+        let placed = Where {
+            latitude_deg: asked.latitude_deg,
+            longitude_deg: asked.longitude_deg,
+            altitude_m: asked.altitude_m,
+            utc_offset_seconds: asked.utc_offset_seconds,
+            zone: asked.zone,
+            place: asked.place.as_ref(),
+        }
+        .placed()?;
         Ok(DaysRequest {
             first: asked.first.in_calendar(calendar),
             last: asked.last.unwrap_or(asked.first).in_calendar(calendar),
-            place: place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)?,
-            clock: DayClock::asked(asked.utc_offset_seconds, asked.zone)?,
+            place: placed.place,
+            clock: placed.clock,
             beside,
+            height: placed.height,
         })
     }
 }
@@ -174,10 +189,18 @@ pub(crate) struct Asked {
     first: DayAsked,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     last: Option<DayAsked>,
-    latitude_deg: f64,
-    longitude_deg: f64,
-    #[serde(default)]
-    altitude_m: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    latitude_deg: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    longitude_deg: Option<f64>,
+    /// The observer's height, metres; over a resolved `place`'s own.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    altitude_m: Option<f64>,
+    /// A place as `geo.resolve` answered it, in place of `latitudeDeg`,
+    /// `longitudeDeg` and `zone`: its coordinates, its zone, and its ground
+    /// height as the observer's unless `altitudeM` states one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    place: Option<teistro_port_geo::ResolvedPlace>,
     #[serde(default)]
     utc_offset_seconds: Option<i32>,
     /// The zone, in place of `utcOffsetSeconds`.

@@ -206,43 +206,8 @@ impl ChartRequest {
     /// `INVALID_ARG` under `place` for a place that is not well formed, and
     /// on `place.zone` for one with no zone, whose clock must be stated.
     pub fn resolved(place: &ResolvedPlace) -> Result<ChartRequest, Error> {
-        ChartRequest::on_resolved(place, None)
-    }
-
-    /// A reading at a resolved place, on its zone's clock or, where it has
-    /// none, the offset stated.
-    pub(crate) fn on_resolved(
-        place: &ResolvedPlace,
-        offset_seconds: Option<i32>,
-    ) -> Result<ChartRequest, Error> {
-        let point = place
-            .checked(teistro_core::error::Status::InvalidArg)
-            .map_err(|why| why.under("place"))?;
-        let clock = match (&place.zone, offset_seconds) {
-            (Some(zone), None) => DayClock::Zone(ZoneSpec::iana(zone.clone())),
-            (None, Some(seconds)) => DayClock::Offset(crate::asked::offset_of(seconds)?),
-            (Some(_), Some(_)) => {
-                return Err(Error::invalid_arg(
-                    "the resolved place has a zone, so the request states no offset",
-                )
-                .with_field("utcOffsetSeconds")
-                .with_hint("leave the offset out, or write the place out without `place`"));
-            }
-            (None, None) => {
-                return Err(Error::invalid_arg(
-                    "the resolved place has no zone, so the request states its clock",
-                )
-                .with_field("place.zone")
-                .with_hint("write `utcOffsetSeconds` beside the place"));
-            }
-        };
-        let height = place.height.as_ref().map_or(0.0, |height| height.metres);
-        let altitude = teistro_core::quantity::Altitude::try_new(height)
-            .map_err(|why| why.with_field("place.height.metres"))?;
-        Ok(ChartRequest::on(
-            Place::new(point.latitude, point.longitude, altitude),
-            clock,
-        ))
+        let placed = crate::asked::resolved(place, None, None)?;
+        Ok(ChartRequest::on(placed.place, placed.clock))
     }
 
     /// A reading at a place on either clock: an offset stated, or a zone.
