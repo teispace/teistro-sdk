@@ -6,6 +6,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
@@ -3553,8 +3554,10 @@ test('a receipt issued, checked again, and caught when edited', () => {
 
 test('a place resolved through a geo table, and a chart on it that replays without one', () => {
   // The SDK's test table (`crates/sdk/tests/geo-table.json`), the same the
-  // Rust suite loads.
-  const table = readFileSync(new URL('../../../crates/sdk/tests/geo-table.json', import.meta.url), 'utf8');
+  // Rust suite loads. The wasm check runs a staged copy of this suite
+  // from the build directory and names the checkout it came from.
+  const root = process.env.TEISTRO_SDK_ROOT ?? fileURLToPath(new URL('../../..', import.meta.url));
+  const table = readFileSync(join(root, 'crates', 'sdk', 'tests', 'geo-table.json'), 'utf8');
   const bare = context();
   // No provider unless one is given.
   assert.throws(
