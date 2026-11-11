@@ -11,6 +11,10 @@
 
 import 'dart:convert';
 import 'dart:io';
+// `dart:mirrors` is deprecated from Dart 3.14.0 but still supported on the
+// VM, the only place these tests run. Replacing the reflection with a
+// generated table of the surface is tracked in gates/HANDOFF.md.
+// ignore: deprecated_member_use
 import 'dart:mirrors';
 
 import 'package:teistro/teistro.dart';
