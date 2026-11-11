@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+ * The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given.
  *
  * @param calendar The calendar the month is in.
  * @param days How many civil days after the star's day, before it when negative, 0 for that day; at most `Dated::MOST_DAYS` either way. Null leaves the SDK's default.

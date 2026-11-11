@@ -3901,8 +3901,10 @@ class PanchangaRequest:
     `nakshatra`, or its sunrise day when `reckoning` is `SUNRISE`, or
     `days` after it, one with a `nakshatraInMonth` a rule kept on the
     day a `nakshatra` holds in a `month` of a `calendar`, the later or
-    earlier of two as `twice` says, or `days` from it, one with an
-    `easter` a rule kept
+    earlier of two as `twice` says, or `days` from it, one with a
+    `tithiInMonth` a rule kept on the day a `tithi` holds in a `month`
+    of a `calendar`, judged at its sunrise or at the window `at`, one
+    with an `easter` a rule kept
     `days` from Easter Sunday by a `GREGORIAN` or `JULIAN` `computus`
     (`festival-rule-language.md` §3.6), the rest festival rules,
     each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A

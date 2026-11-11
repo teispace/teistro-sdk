@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 533 of the examples' 548 members.
+/// The cases compare 547 of the examples' 562 members.
 library;
 
 import 'dart:convert';
@@ -294,7 +294,7 @@ void main() {
       'almanac.cells',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -441,6 +441,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -605,7 +613,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -752,6 +760,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -1028,7 +1044,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1175,6 +1191,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -1468,7 +1492,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1615,6 +1639,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -1902,7 +1934,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2049,6 +2081,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -2185,7 +2225,7 @@ void main() {
       'almanac.observance',
       path: ['traditions', 0, 'festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2332,6 +2372,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
@@ -2509,7 +2557,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 32,
+      members: 34,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2656,6 +2704,14 @@ void main() {
             days: 1,
             nakshatra: Nakshatra.bharani,
             reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
           ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(

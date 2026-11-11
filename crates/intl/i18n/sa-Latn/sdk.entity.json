@@ -4592,6 +4592,78 @@
     "AYUDHA_PUJA": {
       "name": "Āyudhapūjā",
       "prose": "Āyudhapūjā"
+    },
+    "MAGH_BIHU": {
+      "name": "Māgha Bihu",
+      "prose": "Māgha Bihu"
+    },
+    "MAGH_BIHU_SECOND": {
+      "name": "Māgha Bihu (dvitīya Divasa)",
+      "prose": "Māgha Bihu (dvitīya Divasa)"
+    },
+    "BOHAG_BIHU": {
+      "name": "Bohāga Bihu",
+      "prose": "Bohāga Bihu"
+    },
+    "BOHAG_BIHU_SECOND": {
+      "name": "Bohāga Bihu (dvitīya Divasa)",
+      "prose": "Bohāga Bihu (dvitīya Divasa)"
+    },
+    "BOHAG_BIHU_THIRD": {
+      "name": "Bohāga Bihu (tṛtīya Divasa)",
+      "prose": "Bohāga Bihu (tṛtīya Divasa)"
+    },
+    "KATI_BIHU": {
+      "name": "Kātī Bihu",
+      "prose": "Kātī Bihu"
+    },
+    "GWTHAR_BATHOU_SAN": {
+      "name": "Gvathāra Bāthau Sāna",
+      "prose": "Gvathāra Bāthau Sāna"
+    },
+    "ME_DAM_ME_PHI": {
+      "name": "Me-dāma-me-phī",
+      "prose": "Me-dāma-me-phī"
+    },
+    "BIR_CHILARAI_DIVAS": {
+      "name": "Bīra Cilārāya Divasa",
+      "prose": "Bīra Cilārāya Divasa"
+    },
+    "SATI_SADHANI_DIVAS": {
+      "name": "Satī Sādhanī Divasa",
+      "prose": "Satī Sādhanī Divasa"
+    },
+    "DAMODARDEVA_TITHI": {
+      "name": "Dāmodaradeva Tithi",
+      "prose": "Dāmodaradeva Tithi"
+    },
+    "MADHABDEVA_JANMOTSAV": {
+      "name": "Mādhavadeva Janmotsava",
+      "prose": "Mādhavadeva Janmotsava"
+    },
+    "MADHABDEVA_TIROBHAV": {
+      "name": "Mādhavadeva Tirobhāva Tithi",
+      "prose": "Mādhavadeva Tirobhāva Tithi"
+    },
+    "SANKARDEVA_JANMOTSAV": {
+      "name": "Śrīmanta Śaṅkaradeva Janmotsava",
+      "prose": "Śrīmanta Śaṅkaradeva Janmotsava"
+    },
+    "SANKARDEVA_TIROBHAV": {
+      "name": "Śrīmanta Śaṅkaradeva Tirobhāva Tithi",
+      "prose": "Śrīmanta Śaṅkaradeva Tirobhāva Tithi"
+    },
+    "KARAM_PUJA": {
+      "name": "Karama Pūjā",
+      "prose": "Karama Pūjā"
+    },
+    "LACHIT_DIVAS": {
+      "name": "Lācita Divasa",
+      "prose": "Lācita Divasa"
+    },
+    "ASOM_DIVAS": {
+      "name": "Asama Divasa (sukāphā Divasa)",
+      "prose": "Asama Divasa (sukāphā Divasa)"
     }
   },
   "year_office": {
