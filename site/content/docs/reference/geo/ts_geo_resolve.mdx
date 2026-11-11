@@ -1,0 +1,73 @@
+---
+title: ts_geo_resolve
+description: "A place resolved through the context's geo provider, answered as canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin, source}`: the IANA zone (or null), the ground height `{metres, source, resolutionM, datum}` (or null), the admin units holding the point coarse to fine, each `{level, code, name}` with its ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's `{name, version, dataVersion, tzdb}`."
+---
+
+A place resolved through the context's geo provider, answered as canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin, source}`: the IANA zone (or null), the ground height `{metres, source, resolutionM, datum}` (or null), the admin units holding the point coarse to fine, each `{level, code, name}` with its ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's `{name, version, dataVersion, tzdb}`. A chart request's `place` takes it as it is, so the request a receipt keeps replays without the provider.
+
+`request_json` is `{"latitudeDeg", "longitudeDeg"}`. A key it does not read is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on `latitudeDeg` or `longitudeDeg`; a context with no provider is `CAPABILITY` on `geo`; an answer of the provider's that is not well formed is `PROVIDER`, named by its field (`admin[1].code`).
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.geo.resolve
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.geo.resolve
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.geo.resolve
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.geo().resolve
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.geo().resolve
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_geo_resolve(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `geo.resolve` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/geo.rs`.

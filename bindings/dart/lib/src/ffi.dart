@@ -2012,6 +2012,10 @@ typedef TsTimeConvertNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Doubl
 typedef TsTimeConvertDart = int Function(ffi.Pointer<Context>, double, int, int, ffi.Pointer<TimeConversionStruct>);
 typedef TsTimeDeltaTNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Double, ffi.Pointer<DeltaTStruct>);
 typedef TsTimeDeltaTDart = int Function(ffi.Pointer<Context>, double, ffi.Pointer<DeltaTStruct>);
+typedef TsGeoResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsGeoResolveDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsGeoLoadNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsGeoLoadDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlLoadPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<IntlLoadedStruct>);
 typedef TsIntlLoadPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<IntlLoadedStruct>);
 typedef TsIntlSetLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>);
@@ -2190,6 +2194,8 @@ final class TeistroLibrary {
         ts_time_load_zones = library.lookupFunction<TsTimeLoadZonesNative, TsTimeLoadZonesDart>('ts_time_load_zones'),
         ts_time_convert = library.lookupFunction<TsTimeConvertNative, TsTimeConvertDart>('ts_time_convert'),
         ts_time_delta_t = library.lookupFunction<TsTimeDeltaTNative, TsTimeDeltaTDart>('ts_time_delta_t'),
+        ts_geo_resolve = library.lookupFunction<TsGeoResolveNative, TsGeoResolveDart>('ts_geo_resolve'),
+        ts_geo_load = library.lookupFunction<TsGeoLoadNative, TsGeoLoadDart>('ts_geo_load'),
         ts_intl_load_pack = library.lookupFunction<TsIntlLoadPackNative, TsIntlLoadPackDart>('ts_intl_load_pack'),
         ts_intl_set_locale = library.lookupFunction<TsIntlSetLocaleNative, TsIntlSetLocaleDart>('ts_intl_set_locale'),
         ts_intl_lookup_locale = library.lookupFunction<TsIntlLookupLocaleNative, TsIntlLookupLocaleDart>('ts_intl_lookup_locale'),
@@ -2509,6 +2515,37 @@ final class TeistroLibrary {
   /// Delta T (TT less UT1) at a UT1 instant under the context's model, with
   /// what produced it and its uncertainty where the source has one.
   final TsTimeDeltaTDart ts_time_delta_t;
+
+  /// A place resolved through the context's geo provider, answered as
+  /// canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin,
+  /// source}`: the IANA zone (or null), the ground height
+  /// `{metres, source, resolutionM, datum}` (or null), the admin units
+  /// holding the point coarse to fine, each `{level, code, name}` with its
+  /// ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's
+  /// `{name, version, dataVersion, tzdb}`. A chart request's `place` takes
+  /// it as it is, so the request a receipt keeps replays without the
+  /// provider.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg"}`. A key it does not
+  /// read is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on
+  /// `latitudeDeg` or `longitudeDeg`; a context with no provider is
+  /// `CAPABILITY` on `geo`; an answer of the provider's that is not well
+  /// formed is `PROVIDER`, named by its field (`admin[1].code`).
+  final TsGeoResolveDart ts_geo_resolve;
+
+  /// Installs a geo table as the context's geo provider, in place of any it
+  /// had, answering the table's source as canonical JSON
+  /// `{name, version, dataVersion, tzdb}`.
+  ///
+  /// `table_json` is `{"source", "areas"}`: `source` as answered, and
+  /// `areas` a list of boxes `{south, west, north, east}` in degrees (`west`
+  /// east of `east` for a box across the antimeridian), each with any of
+  /// `zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each
+  /// question is answered by the last box holding the point that answers
+  /// it, so a table is written coarse to fine. A key it does not read, an
+  /// edge out of range or a malformed answer is `INVALID_ARG` named under
+  /// `geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.
+  final TsGeoLoadDart ts_geo_load;
 
   /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
   /// namespace it brings is laid over what was loaded under the same keys —
@@ -6853,6 +6890,55 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_time_delta_t(_handle, jdUt1, outDeltaT);
         if (status != 0) _fail(status);
         return DeltaT.read(outDeltaT);
+    });
+  }
+
+  /// A place resolved through the context's geo provider, answered as
+  /// canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin,
+  /// source}`: the IANA zone (or null), the ground height
+  /// `{metres, source, resolutionM, datum}` (or null), the admin units
+  /// holding the point coarse to fine, each `{level, code, name}` with its
+  /// ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's
+  /// `{name, version, dataVersion, tzdb}`. A chart request's `place` takes
+  /// it as it is, so the request a receipt keeps replays without the
+  /// provider.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg"}`. A key it does not
+  /// read is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on
+  /// `latitudeDeg` or `longitudeDeg`; a context with no provider is
+  /// `CAPABILITY` on `geo`; an answer of the provider's that is not well
+  /// formed is `PROVIDER`, named by its field (`admin[1].code`).
+  String geoResolve(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_geo_resolve(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Installs a geo table as the context's geo provider, in place of any it
+  /// had, answering the table's source as canonical JSON
+  /// `{name, version, dataVersion, tzdb}`.
+  ///
+  /// `table_json` is `{"source", "areas"}`: `source` as answered, and
+  /// `areas` a list of boxes `{south, west, north, east}` in degrees (`west`
+  /// east of `east` for a box across the antimeridian), each with any of
+  /// `zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each
+  /// question is answered by the last box holding the point that answers
+  /// it, so a table is written coarse to fine. A key it does not read, an
+  /// edge out of range or a malformed answer is `INVALID_ARG` named under
+  /// `geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.
+  String geoLoad(String tableJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawtableJson = tableJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_geo_load(_handle, rawtableJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

@@ -544,6 +544,61 @@ final class Calls {
     }
 
     /**
+     * `ts_geo_resolve`: A place resolved through the context's geo provider, answered as
+     * canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin,
+     * source}`: the IANA zone (or null), the ground height
+     * `{metres, source, resolutionM, datum}` (or null), the admin units
+     * holding the point coarse to fine, each `{level, code, name}` with its
+     * ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's
+     * `{name, version, dataVersion, tzdb}`. A chart request's `place` takes
+     * it as it is, so the request a receipt keeps replays without the
+     * provider.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg"}`. A key it does not
+     * read is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on
+     * `latitudeDeg` or `longitudeDeg`; a context with no provider is
+     * `CAPABILITY` on `geo`; an answer of the provider's that is not well
+     * formed is `PROVIDER`, named by its field (`admin[1].code`).
+     */
+    static String geoResolve(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_geo_resolve.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_geo_load`: Installs a geo table as the context's geo provider, in place of any it
+     * had, answering the table's source as canonical JSON
+     * `{name, version, dataVersion, tzdb}`.
+     *
+     * `table_json` is `{"source", "areas"}`: `source` as answered, and
+     * `areas` a list of boxes `{south, west, north, east}` in degrees (`west`
+     * east of `east` for a box across the antimeridian), each with any of
+     * `zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each
+     * question is answered by the last box holding the point that answers
+     * it, so a table is written coarse to fine. A key it does not read, an
+     * edge out of range or a malformed answer is `INVALID_ARG` named under
+     * `geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.
+     */
+    static String geoLoad(Native lib, MemorySegment context, String tableJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment tableJsonRaw = Boundary.cString(arena, Objects.requireNonNull(tableJson, "tableJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_geo_load.invokeExact(context, tableJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_intl_load_pack`: Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
      * namespace it brings is laid over what was loaded under the same keys —
      * a message replaces, and two entity records merge their forms, so a pack

@@ -4103,6 +4103,8 @@ public final class Native {
         "ts_time_load_zones",
         "ts_time_convert",
         "ts_time_delta_t",
+        "ts_geo_resolve",
+        "ts_geo_load",
         "ts_intl_load_pack",
         "ts_intl_set_locale",
         "ts_intl_lookup_locale",
@@ -4500,6 +4502,41 @@ public final class Native {
      * what produced it and its uncertainty where the source has one.
      */
     public final MethodHandle ts_time_delta_t;
+
+    /**
+     * A place resolved through the context's geo provider, answered as
+     * canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin,
+     * source}`: the IANA zone (or null), the ground height
+     * `{metres, source, resolutionM, datum}` (or null), the admin units
+     * holding the point coarse to fine, each `{level, code, name}` with its
+     * ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's
+     * `{name, version, dataVersion, tzdb}`. A chart request's `place` takes
+     * it as it is, so the request a receipt keeps replays without the
+     * provider.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg"}`. A key it does not
+     * read is `INVALID_ARG` under `geo`, a point out of range `INVALID_ARG` on
+     * `latitudeDeg` or `longitudeDeg`; a context with no provider is
+     * `CAPABILITY` on `geo`; an answer of the provider's that is not well
+     * formed is `PROVIDER`, named by its field (`admin[1].code`).
+     */
+    public final MethodHandle ts_geo_resolve;
+
+    /**
+     * Installs a geo table as the context's geo provider, in place of any it
+     * had, answering the table's source as canonical JSON
+     * `{name, version, dataVersion, tzdb}`.
+     *
+     * `table_json` is `{"source", "areas"}`: `source` as answered, and
+     * `areas` a list of boxes `{south, west, north, east}` in degrees (`west`
+     * east of `east` for a box across the antimeridian), each with any of
+     * `zone`, `height` and `admin` as `ts_geo_resolve` answers them. Each
+     * question is answered by the last box holding the point that answers
+     * it, so a table is written coarse to fine. A key it does not read, an
+     * edge out of range or a malformed answer is `INVALID_ARG` named under
+     * `geo` (`geo.areas[2].admin[0].code`), and leaves the context as it was.
+     */
+    public final MethodHandle ts_geo_load;
 
     /**
      * Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
@@ -5770,6 +5807,8 @@ public final class Native {
         ts_time_load_zones = linker.downcallHandle(symbols.find("ts_time_load_zones").orElseThrow(() -> missing("ts_time_load_zones")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, ADDRESS));
         ts_time_convert = linker.downcallHandle(symbols.find("ts_time_convert").orElseThrow(() -> missing("ts_time_convert")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, JAVA_INT, JAVA_INT, ADDRESS));
         ts_time_delta_t = linker.downcallHandle(symbols.find("ts_time_delta_t").orElseThrow(() -> missing("ts_time_delta_t")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, ADDRESS));
+        ts_geo_resolve = linker.downcallHandle(symbols.find("ts_geo_resolve").orElseThrow(() -> missing("ts_geo_resolve")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_geo_load = linker.downcallHandle(symbols.find("ts_geo_load").orElseThrow(() -> missing("ts_geo_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_load_pack = linker.downcallHandle(symbols.find("ts_intl_load_pack").orElseThrow(() -> missing("ts_intl_load_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS));
         ts_intl_set_locale = linker.downcallHandle(symbols.find("ts_intl_set_locale").orElseThrow(() -> missing("ts_intl_set_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_lookup_locale = linker.downcallHandle(symbols.find("ts_intl_lookup_locale").orElseThrow(() -> missing("ts_intl_lookup_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

@@ -44,6 +44,7 @@ public final class Requests {
             Map.entry("chart.mundane", MundaneRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
             Map.entry("chart.relocated", RelocationRequest::of),
+            Map.entry("geo.resolve", PlaceRequest::of),
             Map.entry("intl.date", DateTextRequest::of),
             Map.entry("intl.dates", DatesRequest::of),
             Map.entry("intl.inWords", InWordsRequest::of),
@@ -167,6 +168,9 @@ public final class Requests {
 
     /** {@code chart.relocated}, whose request is {@link RelocationRequest}. */
     public static final RecordOf<RelocationRequest> CHART_RELOCATED = new RecordOf<>("chart.relocated");
+
+    /** {@code geo.resolve}, whose request is {@link PlaceRequest}. */
+    public static final RecordOf<PlaceRequest> GEO_RESOLVE = new RecordOf<>("geo.resolve");
 
     /** {@code intl.date}, whose request is {@link DateTextRequest}. */
     public static final RecordOf<DateTextRequest> INTL_DATE = new RecordOf<>("intl.date");

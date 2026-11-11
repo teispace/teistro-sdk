@@ -35,8 +35,8 @@ import java.util.Objects;
  * @param kind The {@code kind} field. Null leaves the SDK's default.
  * @param kp `KpRequest` as the bindings write it, camel-cased as every request record is; every member optional. Null leaves the SDK's default.
  * @param lalkitab What a chart's Lal Kitab is read under: where the 35-year cycle starts, a year of life to read, and the varshphal list its annual teva comes from. Null leaves the SDK's default.
- * @param latitudeDeg The {@code latitudeDeg} field.
- * @param longitudeDeg The {@code longitudeDeg} field.
+ * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
+ * @param longitudeDeg The {@code longitudeDeg} field. Null leaves the SDK's default.
  * @param lots How a chart's lots are read: its sect's rule and Fortune's by night. Null leaves the SDK's default.
  * @param masaPravesha One year's months, or one month's days, of a birth. Null leaves the SDK's default.
  * @param matching A match against a partner's birth, as a binding asks it: the partner, the side the partner stands on, every chart of the batch on the other, and the rules of each system. Null leaves the SDK's default.
@@ -45,6 +45,7 @@ import java.util.Objects;
  * @param outerPlanets The {@code outerPlanets} field. Null leaves the SDK's default.
  * @param parallels What the parallels are asked: how close two distances from the equator must stand. Null leaves the SDK's default.
  * @param perfection Whose perfection is asked: the two significators, named or found by Lilly's rule, and the rules it is read under. Null leaves the SDK's default.
+ * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
  * @param points The {@code points} field. Null leaves the SDK's default.
  * @param prashna A question put to the chart of its moment, and the readings it is answered under. Null leaves the SDK's default.
  * @param progressions `ProgressionsRequest` as the bindings write it. Null leaves the SDK's default.
@@ -68,7 +69,7 @@ import java.util.Objects;
  * @param westernHouses What a chart's Western houses are asked with. Null leaves the SDK's default.
  * @param zone The zone, in place of `utcOffsetSeconds`: each birth read at the zone's offset then. Null leaves the SDK's default.
  */
-public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierRequest dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, double latitudeDeg, double longitudeDeg, LotRequest lots, MasaPraveshaRequest masaPravesha, MatchingRequest matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, Integer utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, WesternAspectRequest westernAspects, ConfigurationRequest westernConfigurations, HouseRequest westernHouses, ZoneSpec zone) implements RequestJson {
+public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Boolean ashtakavarga, Boolean aspects, Boolean avakahada, Boolean bhavaBala, ConsiderationRules considerations, Boolean dashaPhala, List<Keyed<com.teispace.teistro.DashaSystem>> dashas, DignityRequest dignities, DossierRequest dossier, List<DrawingAsked> drawings, FortitudeRequest fortitudes, GocharRequest gochar, HarmonicRequest harmonic, HitRequest hits, Boolean houses, Double instant, List<Double> instants, PlanRequest interpret, Boolean jaimini, com.teispace.teistro.ChartKind kind, KpRequest kp, LalKitabRequest lalkitab, Double latitudeDeg, Double longitudeDeg, LotRequest lots, MasaPraveshaRequest masaPravesha, MatchingRequest matching, MidpointRequest midpoints, Boolean moment, Boolean outerPlanets, ParallelRequest parallels, PerfectionRequest perfection, ResolvedPlace place, Boolean points, PrashnaRequest prashna, ProgressionsRequest progressions, RectificationRequest rectification, RemedyRequest remedies, RuleRequest rules, SadeSatiRequest sadeSati, SarvatobhadraRequest sarvatobhadra, Boolean shadbala, Boolean state, PartnerSynastry synastry, ThemePatch theme, TithiPraveshaRequest tithiPravesha, Integer utcOffsetSeconds, Boolean vaiseshikamsa, List<com.teispace.teistro.Varga> vargas, VarshaRequest varsha, Boolean vimshopaka, WesternAspectRequest westernAspects, ConfigurationRequest westernConfigurations, HouseRequest westernHouses, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -87,11 +88,9 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
-     * @param latitudeDeg The {@code latitudeDeg} field.
-     * @param longitudeDeg The {@code longitudeDeg} field.
      */
-    public ChartFoundRequest(double latitudeDeg, double longitudeDeg) {
-        this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    public ChartFoundRequest() {
+        this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -140,6 +139,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         private Boolean outerPlanets;
         private ParallelRequest parallels;
         private PerfectionRequest perfection;
+        private ResolvedPlace place;
         private Boolean points;
         private PrashnaRequest prashna;
         private ProgressionsRequest progressions;
@@ -432,7 +432,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         /**
          * Sets {@code latitudeDeg}.
          *
-         * @param latitudeDeg The {@code latitudeDeg} field.
+         * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder latitudeDeg(double latitudeDeg) {
@@ -443,7 +443,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         /**
          * Sets {@code longitudeDeg}.
          *
-         * @param longitudeDeg The {@code longitudeDeg} field.
+         * @param longitudeDeg The {@code longitudeDeg} field. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder longitudeDeg(double longitudeDeg) {
@@ -536,6 +536,17 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          */
         public Builder perfection(PerfectionRequest perfection) {
             this.perfection = perfection;
+            return this;
+        }
+
+        /**
+         * Sets {@code place}.
+         *
+         * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder place(ResolvedPlace place) {
+            this.place = place;
             return this;
         }
 
@@ -788,7 +799,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
          * @throws NullPointerException naming a required field left unset
          */
         public ChartFoundRequest build() {
-            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, Objects.requireNonNull(latitudeDeg, "`ChartFoundRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ChartFoundRequest.longitudeDeg` is required"), lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses, zone);
+            return new ChartFoundRequest(altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, place, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses, zone);
         }
     }
 
@@ -826,8 +837,8 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("kind"), present -> Read.member(present, "ChartFoundRequest.kind", com.teispace.teistro.ChartKind::byKey)),
             Read.orNull(json.get("kp"), present -> KpRequest.of(present)),
             Read.orNull(json.get("lalkitab"), present -> LalKitabRequest.of(present)),
-            Read.number(Read.required(json.get("latitudeDeg"), "ChartFoundRequest.latitudeDeg"), "ChartFoundRequest.latitudeDeg"),
-            Read.number(Read.required(json.get("longitudeDeg"), "ChartFoundRequest.longitudeDeg"), "ChartFoundRequest.longitudeDeg"),
+            Read.orNull(json.get("latitudeDeg"), present -> Read.number(present, "ChartFoundRequest.latitudeDeg")),
+            Read.orNull(json.get("longitudeDeg"), present -> Read.number(present, "ChartFoundRequest.longitudeDeg")),
             Read.orNull(json.get("lots"), present -> LotRequest.of(present)),
             Read.orNull(json.get("masaPravesha"), present -> MasaPraveshaRequest.of(present)),
             Read.orNull(json.get("matching"), present -> MatchingRequest.of(present)),
@@ -836,6 +847,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
             Read.orNull(json.get("outerPlanets"), present -> Read.bool(present, "ChartFoundRequest.outerPlanets")),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),
             Read.orNull(json.get("perfection"), present -> PerfectionRequest.of(present)),
+            Read.orNull(json.get("place"), present -> ResolvedPlace.of(present)),
             Read.orNull(json.get("points"), present -> Read.bool(present, "ChartFoundRequest.points")),
             Read.orNull(json.get("prashna"), present -> PrashnaRequest.of(present)),
             Read.orNull(json.get("progressions"), present -> ProgressionsRequest.of(present)),
@@ -935,8 +947,12 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         if (lalkitab != null) {
             json.put("lalkitab", lalkitab.toJson());
         }
-        json.put("latitudeDeg", latitudeDeg);
-        json.put("longitudeDeg", longitudeDeg);
+        if (latitudeDeg != null) {
+            json.put("latitudeDeg", latitudeDeg);
+        }
+        if (longitudeDeg != null) {
+            json.put("longitudeDeg", longitudeDeg);
+        }
         if (lots != null) {
             json.put("lots", lots.toJson());
         }
@@ -960,6 +976,9 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         }
         if (perfection != null) {
             json.put("perfection", perfection.toJson());
+        }
+        if (place != null) {
+            json.put("place", place.toJson());
         }
         if (points != null) {
             json.put("points", points);

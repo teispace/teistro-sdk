@@ -52,6 +52,7 @@ __all__ = [
     "MundaneRequest",
     "BatchAsked",
     "RelocationRequest",
+    "PlaceRequest",
     "DateTextRequest",
     "DatesRequest",
     "InWordsRequest",
@@ -125,6 +126,7 @@ __all__ = [
     "MidpointRequest",
     "ParallelRequest",
     "PerfectionRequest",
+    "ResolvedPlace",
     "PrashnaRequest",
     "ProgressionsRequest",
     "RectificationRequest",
@@ -256,6 +258,9 @@ __all__ = [
     "PoruthamRules",
     "KootaRules",
     "PerfectionRules",
+    "AdminUnit",
+    "GroundHeight",
+    "GeoSource",
     "PrashnaQuestion",
     "PrashnaRequestRules",
     "AngleMethod",
@@ -1520,7 +1525,7 @@ class ChartDisagreementsRequest(TypedDict, total=False):
 class ChartFoundRequest(TypedDict, total=False):
     """The request as a binding writes it, the sections and records taken out."""
 
-    altitudeM: float
+    altitudeM: Optional[float]
 
     antiscia: AntisciaRequest
 
@@ -1568,9 +1573,9 @@ class ChartFoundRequest(TypedDict, total=False):
 
     lalkitab: LalKitabRequest
 
-    latitudeDeg: Required[float]
+    latitudeDeg: Optional[float]
 
-    longitudeDeg: Required[float]
+    longitudeDeg: Optional[float]
 
     lots: LotRequest
 
@@ -1587,6 +1592,9 @@ class ChartFoundRequest(TypedDict, total=False):
     parallels: ParallelRequest
 
     perfection: PerfectionRequest
+
+    place: Optional[ResolvedPlace]
+    """A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg`, `altitudeM` and `zone`: its coordinates, its ground height and its zone, kept in the request so a receipt replays without the provider."""
 
     points: bool
 
@@ -1685,6 +1693,16 @@ class RelocationRequest(TypedDict, total=False):
 
     places: Required[Sequence[RelocationPlace]]
     """The places, one to 256."""
+
+
+class PlaceRequest(TypedDict, total=False):
+    """A place to resolve, as `geo.resolve` reads it."""
+
+    latitudeDeg: Required[float]
+    """The latitude, in degrees, north positive."""
+
+    longitudeDeg: Required[float]
+    """The longitude, in degrees, east positive."""
 
 
 class DateTextRequest(TypedDict, total=False):
@@ -2890,6 +2908,28 @@ class PerfectionRequest(TypedDict, total=False):
 
     rules: Union[PerfectionRules, _layer.PerfectionRules]
     """How the perfection is read."""
+
+
+class ResolvedPlace(TypedDict, total=False):
+    """A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered."""
+
+    admin: Required[Sequence[AdminUnit]]
+    """The admin units holding the point, coarse to fine."""
+
+    height: Optional[GroundHeight]
+    """The ground height there, or `null` where the data has none."""
+
+    latitudeDeg: Required[float]
+    """The latitude asked, in degrees."""
+
+    longitudeDeg: Required[float]
+    """The longitude asked, in degrees."""
+
+    source: Required[GeoSource]
+    """Who answered, and from which data."""
+
+    zone: Optional[str]
+    """The IANA zone holding the point, or `null` where the data has none."""
 
 
 class PrashnaRequest(TypedDict, total=False):
@@ -4571,6 +4611,51 @@ class PerfectionRules(TypedDict, total=False):
 
     withinSign: bool
     """Whether a contact with a third planet counts only when the planet applying perfects it before leaving its sign, as Lilly's void of course bounds an application (p. 112) and his p. 387 figure reads a void Moon's six contacts as no prohibition (crux C234); `false` counts every contact inside the horizon. It bounds the impediments, a translator's next contact and a collector's."""
+
+
+class AdminUnit(TypedDict, total=False):
+    """An admin unit holding a point."""
+
+    code: Optional[str]
+    """Its ISO 3166-1 alpha-2 code at level 0 (`NP`), its ISO 3166-2 code below (`NP-P3`), or `null` for a unit with none."""
+
+    level: Required[int]
+    """Its level: 0 for a country, then coarse to fine."""
+
+    name: Optional[str]
+    """Its name as the provider gives it, or `null`."""
+
+
+class GroundHeight(TypedDict, total=False):
+    """The ground height at a point, and where it comes from."""
+
+    datum: Required[str]
+    """The vertical datum the height is above: `EGM2008`, `EGM96`, or `WGS84` for the ellipsoid."""
+
+    metres: Required[float]
+    """The height in metres above the datum."""
+
+    resolutionM: Required[float]
+    """The data's horizontal resolution, the step between its samples, in metres."""
+
+    source: Required[str]
+    """The dataset it was read from, as the provider names it (`SRTM GL1`)."""
+
+
+class GeoSource(TypedDict, total=False):
+    """Who answers a resolution, and from which data."""
+
+    dataVersion: Required[str]
+    """The release of the data it answered from (`2026.11.0`)."""
+
+    name: Required[str]
+    """The provider's name."""
+
+    tzdb: Optional[str]
+    """The tzdb release its zone names come from (`2026c`), or `null` where it does not say."""
+
+    version: Required[str]
+    """The provider's own version, its code's."""
 
 
 class PrashnaQuestion(TypedDict, total=False):
@@ -10534,7 +10619,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10642,6 +10727,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['chart.relocated'], request: RelocationRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['geo.resolve'], request: PlaceRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['intl.date'], request: DateTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

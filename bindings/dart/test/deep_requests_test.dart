@@ -3005,6 +3005,14 @@ void main() {
         moment: true,
         outerPlanets: true,
         parallels: ParallelRequest(orbDeg: 1.5),
+        place: ResolvedPlace(
+          admin: [AdminUnit(code: 'x', level: 1, name: 'x')],
+          height: GroundHeight(datum: 'x', metres: 1.5, resolutionM: 1.5, source: 'x'),
+          latitudeDeg: 1.5,
+          longitudeDeg: 1.5,
+          source: GeoSource(dataVersion: 'x', name: 'x', tzdb: 'x', version: 'x'),
+          zone: 'x',
+        ),
         points: true,
         remedies: RemedyRequest(
           at: 1.5,
@@ -3692,6 +3700,16 @@ void main() {
           RelocationPlace(altitudeM: 1.5, latitudeDeg: 1.5, longitudeDeg: 1.5),
         ],
       ).toJson(),
+    );
+  });
+
+  test('geo.resolve: PlaceRequest', () {
+    _holds(
+      'geo.resolve',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceRequest(latitudeDeg: 1.5, longitudeDeg: 1.5).toJson(),
     );
   });
 
