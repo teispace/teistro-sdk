@@ -56,7 +56,7 @@ Each binding's own layer, its generated readers and its ergonomic code, under it
 
 | binding | lines | branches | counted by | at 80% |
 |---|---:|---:|---|---|
-| dart | 65% | 48% | `dart 3.13.7` | no |
-| java | 59% | 50% | `jacoco 0.8.15` | no |
+| dart | 83% | 82% | `dart 3.14.0` | yes |
+| java | 90% | 81% | `jacoco 0.8.15` | yes |
 | node | 98% | 83% | `node 22.23.4` | yes |
-| python | 92% | 77% | `coverage.py 7.16.2` | no |
+| python | 92% | 84% | `coverage.py 7.16.2` | yes |
