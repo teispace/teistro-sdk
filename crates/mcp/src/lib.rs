@@ -1029,7 +1029,7 @@ impl Server {
     /// // An adapter the operator installed, the built-in behind it; each
     /// // operation of the engine's own is a tool, `engine.<name>`.
     /// // SAFETY: the adapter is a file this program installed and trusts.
-    /// let adapter = unsafe { Adapter::load("/opt/adapters/libteimeris_teistro.so", None) }?;
+    /// let adapter = unsafe { Adapter::load("/opt/adapters/libyour_engine.so", None) }?;
     /// let server = Server::with_plugin(Engine::Builtin, adapter)?;
     /// # let _ = server;
     /// # Ok::<(), Box<dyn std::error::Error>>(())

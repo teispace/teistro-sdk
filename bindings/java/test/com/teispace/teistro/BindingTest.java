@@ -38,6 +38,16 @@ public final class BindingTest {
         }
     }
 
+    /**
+     * The engine a plugged-in adapter should report: {@code TEISTRO_ADAPTER_ENGINE},
+     * which {@code cargo xtask check-adapter} sets from the adapter's own manifest.
+     */
+    private static String expectedEngine() {
+        String engine = System.getenv("TEISTRO_ADAPTER_ENGINE");
+        check(engine != null && !engine.isEmpty(), "set TEISTRO_ADAPTER_ENGINE to the engine the adapter reports");
+        return engine;
+    }
+
     private static TeistroException refusal(Runnable call) {
         try {
             call.run();
@@ -2688,14 +2698,14 @@ public final class BindingTest {
             String fellBack = stamp.apply(
                     ContextOptions.builder().nepalOfficial(Plugin.of("/nowhere/adapter.so")).build());
             check(fellBack.contains("sunrise from teistro-builtin"), "the built-in's sunrise: " + fellBack);
-            String adapter = System.getenv("TEISTRO_TEIMERIS_ADAPTER");
+            String adapter = System.getenv("TEISTRO_ADAPTER_LIBRARY");
             if (adapter == null || adapter.isEmpty()) {
-                System.out.println("      (no TEISTRO_TEIMERIS_ADAPTER: the plugin itself was not loaded)");
+                System.out.println("      (no TEISTRO_ADAPTER_LIBRARY: the plugin itself was not loaded)");
                 return;
             }
             String official = stamp.apply(
                     ContextOptions.builder().nepalOfficial(Plugin.of(adapter)).locale("en-Latn").build());
-            check(official.contains("sunrise from teimeris"), "the engine's sunrise: " + official);
+            check(official.contains("sunrise from " + expectedEngine()), "the engine's sunrise: " + official);
             same(ContextOptions.NEPAL_OFFICIAL_PROFILE,
                     ContextOptions.builder().nepalOfficial().build().profile(), "the committee's profile");
         });
@@ -3222,9 +3232,9 @@ public final class BindingTest {
         tests.put("an ephemeris is plugged in by naming its platform binary", () -> {
             // Runs only where the adapter is built, as every binding's plugin
             // test does: a checkout has neither the adapter nor its data.
-            String adapter = System.getenv("TEISTRO_TEIMERIS_ADAPTER");
+            String adapter = System.getenv("TEISTRO_ADAPTER_LIBRARY");
             if (adapter == null || adapter.isEmpty()) {
-                System.out.println("      (no TEISTRO_TEIMERIS_ADAPTER: the plugin itself was not loaded)");
+                System.out.println("      (no TEISTRO_ADAPTER_LIBRARY: the plugin itself was not loaded)");
                 return;
             }
             try (Context sky = teistro.context(ContextOptions.builder().profile("parashari-classical")
@@ -3232,10 +3242,12 @@ public final class BindingTest {
                 double sun = sky.positions(new double[] {2_451_545.0}, List.of(Body.SUN)).at(0, 0).longitude();
                 check(Math.abs(sun - 280.37) < 0.5, "a real engine answered: " + sun);
                 // And its own functions came with it, which no SDK operation
-                // offers.
-                same("teimeris", ((Map<?, ?>) sky.engine().manifest()).get("engine"), "the engine's manifest");
-                same("Sun", ((Map<?, ?>) sky.engine().call("tm_body_name", Map.of("body", 0))).get("buf"),
-                        "the engine's own function");
+                // offers: the engine names itself and describes each of them.
+                same(expectedEngine(), ((Map<?, ?>) sky.engine().manifest()).get("engine"), "the engine's manifest");
+                check(!sky.engine().names().isEmpty(), "the engine brought none of its own operations");
+                for (String name : sky.engine().names()) {
+                    check(sky.engine().signature(name).isPresent(), name + " came without its signature");
+                }
             }
         });
 

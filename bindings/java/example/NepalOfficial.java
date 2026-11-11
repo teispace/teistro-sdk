@@ -31,7 +31,8 @@ import com.teispace.teistro.blob.Day;
  *   <li>The official day is a <b>preset</b>, not a recipe:
  *       {@code ContextOptions.builder().nepalOfficial(engine)}.
  *   <li>The Surya Siddhanta takes the engine <b>after</b> it in the chain for
- *       its sunrise; an app passes its own, {@code nepalOfficial(teimeris)}.
+ *       its sunrise; an app passes its own engine's adapter,
+ *       {@code nepalOfficial(engine)}.
  *       This file passes none, so the sunrise is the built-in ephemeris's
  *       and it runs anywhere.
  *   <li>Where the two disagree, the reason is a tithi's end against the

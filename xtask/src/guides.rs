@@ -69,7 +69,10 @@ const REFERENCE: &str = "reference";
 /// each with the xtask module that holds it to a gate.
 ///
 /// Listed, not inferred, and held both ways: the module must name the
-/// file's package, and an entry no guide cites is stale. Most of these
+/// file's package, and an entry no guide cites is stale. An adapter's
+/// package is named by `crate::adapter`, which every binding gate asks
+/// for the adapter it checks; these entries leave with the adapter
+/// (`docs/06-cicd/adapter-gate.md`, step 3). Most of these
 /// are type-checked rather than run, because running an adapter's
 /// consumer needs the engine's data, which a checkout does not have, and
 /// running the Flutter app needs a device; the gate's report says which
@@ -83,26 +86,26 @@ const EXECUTED: [Source; 6] = [
     },
     Source {
         file: "adapters/ephemeris-teimeris/node/typecheck/consumer.ts",
-        module: "xtask/src/node_binding.rs",
-        names: "adapters/ephemeris-teimeris/node",
+        module: "xtask/src/adapter.rs",
+        names: "adapters/ephemeris-teimeris",
         held: "type-checked by `check-node`",
     },
     Source {
         file: "adapters/ephemeris-teimeris/dart/example/consumer.dart",
-        module: "xtask/src/dart_binding.rs",
-        names: "adapters/ephemeris-teimeris/dart",
+        module: "xtask/src/adapter.rs",
+        names: "adapters/ephemeris-teimeris",
         held: "analysed by `check-dart`",
     },
     Source {
         file: "adapters/ephemeris-teimeris/python/typecheck/consumer.py",
-        module: "xtask/src/python_binding.rs",
-        names: "adapters/ephemeris-teimeris/python",
+        module: "xtask/src/adapter.rs",
+        names: "adapters/ephemeris-teimeris",
         held: "type-checked by `check-python`",
     },
     Source {
         file: "adapters/ephemeris-teimeris/java/typecheck/Consumer.java",
-        module: "xtask/src/java_binding.rs",
-        names: "adapters/ephemeris-teimeris/java",
+        module: "xtask/src/adapter.rs",
+        names: "adapters/ephemeris-teimeris",
         held: "compiled by `check-java`",
     },
     Source {

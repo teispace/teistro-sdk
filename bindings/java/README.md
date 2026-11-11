@@ -112,20 +112,19 @@ A context with no ephemeris computes calendars, times and messages;
 positions need one. `ephemeris` names it, or names an **ordered chain**
 tried in order (ADR-0029):
 
-```java title="adapters/ephemeris-teimeris/java/typecheck/Consumer.java"
-import com.teispace.teistro.teimeris.Teimeris;
-// …
-        // A real engine, and the SDK's own only if it is not there.
-        ContextOptions options = ContextOptions.builder()
-                .profile("parashari-classical")
-                .ephemeris(Teimeris.builder().dataDir("./ephe").build(), EphemerisChoice.of(Ephemeris.BUILTIN))
-                .build();
+```java fragment
+// A real engine, and the SDK's own only if it is not there. Your engine's
+// adapter: the descriptor its package exports, or its platform binary.
+Plugin engine = Plugin.of("/path/to/your-engine-adapter.so");
+ContextOptions options = ContextOptions.builder()
+        .profile("parashari-classical")
+        .ephemeris(engine, EphemerisChoice.of(Ephemeris.BUILTIN))
+        .build();
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
-real engine, such as Teimeris or Swiss Ephemeris, installed as its own
-package under its own licence (the Teimeris adapter's is
-`com.teispace.teistro.teimeris`), and `Ephemeris.BUILTIN` is the fallback
+real engine, such as Swiss Ephemeris, installed as its own adapter
+package under its own licence, and `Ephemeris.BUILTIN` is the fallback
 that makes a chart compute with nothing else installed. `Ephemeris.TEST`
 selects the analytic test provider, whose positions are **not
 astronomy**.

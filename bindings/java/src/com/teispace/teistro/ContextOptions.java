@@ -157,8 +157,9 @@ public record ContextOptions(
          * the text. With none, the sunrise is the built-in ephemeris's.
          *
          * <pre>{@code
+         * Plugin engine = Plugin.of("/path/to/your-engine-adapter.so"); // your engine's adapter
          * ContextOptions official = ContextOptions.builder()
-         *         .nepalOfficial(Teimeris.builder().build())
+         *         .nepalOfficial(engine)
          *         .locale("ne-Deva-NP")
          *         .build();
          * }</pre>

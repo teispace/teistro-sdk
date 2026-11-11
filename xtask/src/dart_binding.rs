@@ -19,24 +19,11 @@ use crate::binding_coverage;
 use crate::examples::{Binding, Runtime};
 
 const PACKAGE: &str = "bindings/dart";
-/// The Teimeris adapter's own package, which the SDK does not depend on
-/// and which depends on the SDK.
-///
-/// Analysed here rather than in a gate of its own, because what it needs
-/// is this ecosystem's analyser and this ecosystem's strictness: an
-/// adapter package that did not resolve against the SDK's own types
-/// would be a broken package however green the SDK's gate was. Most of
-/// what it holds is the generated façade (ADR-0030).
-const ADAPTER: &str = "adapters/ephemeris-teimeris/dart";
 /// The Flutter build-hook package (`docs/03-design/flutter-build-hook.md`),
 /// plain Dart, so this gate's toolchain is all it needs: the hook's
 /// platform names, floors, cache and refusals, against the public
 /// `package:teistro/prebuilt.dart` it reads its table and its check from.
 const FLUTTER: &str = "bindings/flutter";
-/// The Teimeris adapter's Flutter package: its hook is the SDK's bundler
-/// with the adapter's release, and its `teimeris()` names the library the
-/// loader opens inside an app.
-const FLUTTER_ADAPTER: &str = "adapters/ephemeris-teimeris/flutter";
 /// The file whose whole purpose is to be wrong: every line marked
 /// `// expect:` must be reported, which is how the Dart half of Phase 1's
 /// "a swapped latitude and longitude does not compile" is proved.
@@ -132,16 +119,25 @@ fn companion(root: &Path, name: &str, analysed: &str, tests: Option<&str>) -> Re
     })
 }
 
-/// The adapter package: resolved, analysed and formatted.
+/// An adapter's own package, which the SDK does not depend on and which
+/// depends on the SDK: resolved, analysed and formatted.
 ///
-/// Its façade is generated from the engine's own description, so what
-/// this holds is that the generated extension composes with the SDK's
-/// `Engine` — which nothing else can say, because the SDK does not know
-/// the adapter exists.
+/// Analysed here rather than in a gate of its own, because what it needs
+/// is this ecosystem's analyser and this ecosystem's strictness: an
+/// adapter package that did not resolve against the SDK's own types
+/// would be a broken package however green the SDK's gate was. Most of
+/// what it holds is the generated façade (ADR-0030), so what this holds
+/// is that the generated extension composes with the SDK's `Engine` —
+/// which nothing else can say, because the SDK does not know the adapter
+/// exists. The adapter is the one `check-adapter` names
+/// (`crate::adapter`), or none.
 fn adapter(root: &Path) -> Result<(), ()> {
+    let Some(found) = crate::adapter::for_packages(root, "dart")? else {
+        return Ok(());
+    };
     companion(
         root,
-        ADAPTER,
+        &found.shown("dart"),
         "the typed engine façade composes with the SDK",
         None,
     )
@@ -157,12 +153,15 @@ fn flutter_hook(root: &Path) -> Result<(), ()> {
     )
 }
 
-/// The adapter's Flutter package: its release and what each platform's
-/// loader is handed.
+/// The adapter's Flutter package: its hook is the SDK's bundler with the
+/// adapter's release, and what each platform's loader is handed.
 fn flutter_adapter(root: &Path) -> Result<(), ()> {
+    let Some(found) = crate::adapter::for_packages(root, "flutter")? else {
+        return Ok(());
+    };
     companion(
         root,
-        FLUTTER_ADAPTER,
+        &found.shown("flutter"),
         "the adapter's hook composes with the SDK's bundler",
         Some("the adapter opens embedded, by the name each loader finds"),
     )

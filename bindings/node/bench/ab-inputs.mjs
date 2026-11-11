@@ -231,10 +231,10 @@ export function defaultSnapshot(manifest = join(root, 'fixtures/baseline/manifes
 /** The paths both sides are opened from, refused with a sentence naming the variables. */
 export function paths() {
   const adapter = process.env.TEISTRO_AB_BASELINE;
-  const plugin = process.env.TEISTRO_TEIMERIS_ADAPTER;
+  const plugin = process.env.TEISTRO_ADAPTER_LIBRARY;
   if (!adapter || !plugin) {
     throw new Error(
-      'set TEISTRO_AB_BASELINE to the baseline adapter and TEISTRO_TEIMERIS_ADAPTER to the Teimeris library',
+      "set TEISTRO_AB_BASELINE to the baseline adapter and TEISTRO_ADAPTER_LIBRARY to the SDK side's adapter library",
     );
   }
   return { adapter, plugin };

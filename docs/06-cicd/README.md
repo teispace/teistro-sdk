@@ -45,6 +45,7 @@ that skip a failure, apart from the three skips excused by design
 | [`03-release-process.md`](03-release-process.md) | one version, cutting a release, what the tag starts, provenance, what a consumer installs | built |
 | `04-local-verify.md` | a `cargo xtask verify` that runs the whole matrix locally, and the Linux container that reproduces it | planned |
 | [`05-docs-deploy.md`](05-docs-deploy.md) | what the site generates, the three gates that hold it, and how it is published | built |
+| [`adapter-gate.md`](adapter-gate.md) | the generic adapter gate, and moving the Teimeris adapter to its private repository | step 1 built, the rest planned |
 
 ## Principles
 

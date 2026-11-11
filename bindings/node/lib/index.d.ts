@@ -7715,7 +7715,8 @@ export type EphemerisChoice = Ephemeris | PluginEphemeris | EphemerisProvider;
  * Spread it into a context's options:
  *
  * ```ts
- * const official = new Context({ ...nepalOfficial(teimeris()), locale: 'ne-Deva-NP' });
+ * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+ * const official = new Context({ ...nepalOfficial(engine), locale: 'ne-Deva-NP' });
  * ```
  *
  * `modern` is an adapter's descriptor or an ephemeris written in
@@ -8040,7 +8041,8 @@ export declare class ChartArea {
    * under one setting.
    *
    * @example
-   * const kp = new Context({ profile: 'kp-default', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const kp = new Context({ profile: 'kp-default', ephemeris: engine });
    * const found = classical.chart.disagreements(kp, {
    *   first: { instant: 2447000.25, place: { latitude: 27.7172, longitude: 85.324 }, utcOffsetSeconds: 20700 },
    * });
@@ -8296,8 +8298,9 @@ export declare class AlmanacArea {
    * `null` when not asked.
    *
    * @example
-   * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
+   * const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+   * const official = new Context(nepalOfficial(engine));
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: engine });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date('calendar.GREGORIAN', 2025, 11, 1),
    *   to: date('calendar.GREGORIAN', 2025, 11, 30),

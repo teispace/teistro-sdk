@@ -25,7 +25,7 @@
 use std::fmt::Write as _;
 use std::fs;
 use std::io::Write as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use flate2::Compression;
@@ -33,6 +33,7 @@ use flate2::write::GzEncoder;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
+use crate::adapter::{Adapter, DIR_VARIABLE};
 use crate::binding::{LIBRARY_STEM, step};
 use crate::generated::{Output, check as check_page, write};
 use crate::mobile::{LEAN_FEATURES, MOBILE, Mobile, Os, check, cross, ndk_linker};
@@ -41,12 +42,14 @@ const PAGE: &str = "docs/05-testing/mobile-sizes-measured.md";
 const RECORD: &str = "docs/05-testing/mobile-sizes.json";
 const SCHEMA: &str = "teistro-mobile-sizes/1";
 
-/// The adapter's own workspace, and the file stem its library has.
+/// The adapter the recorded rows were measured over, as the page names
+/// it. A measurement takes the adapter `check-adapter` names
+/// (`crate::adapter`) and its embedded build from the adapter's own
+/// manifest; this is only the page's prose, which a re-record rewrites.
 const ADAPTER: &str = "adapters/ephemeris-teimeris/rust";
-const ADAPTER_STEM: &str = "teistro_ephemeris_teimeris";
 
-/// The adapter's embedded tier: the modern one, the tier the adapter's
-/// default `data: "embedded"` loads.
+/// The adapter's embedded tier, as the page names it: the modern one, the
+/// tier the adapter's default `data: "embedded"` loads.
 const ADAPTER_TIER: &str = "MODERN";
 
 /// One library measured for a row, by the key the record carries it under.
@@ -78,18 +81,18 @@ impl Variant {
     }
 
     /// Where Cargo builds it from, and what it is told after the target.
-    fn build(self) -> (&'static str, &'static [&'static str]) {
+    fn build(self, root: &Path, adapter: &Adapter) -> (PathBuf, &'static [&'static str]) {
         match self {
-            Variant::Sdk => (".", &["-p", "teistro-ffi"]),
-            Variant::SdkNoBuiltin => (".", &LEAN_ARGS),
-            Variant::Adapter => (ADAPTER, &["--lib"]),
+            Variant::Sdk => (root.to_path_buf(), &["-p", "teistro-ffi"]),
+            Variant::SdkNoBuiltin => (root.to_path_buf(), &LEAN_ARGS),
+            Variant::Adapter => (adapter.part("rust"), &["--lib"]),
         }
     }
 
-    fn file(self, row: Mobile) -> String {
+    fn file(self, row: Mobile, adapter: &Adapter) -> String {
         let stem = match self {
-            Variant::Sdk | Variant::SdkNoBuiltin => LIBRARY_STEM,
-            Variant::Adapter => ADAPTER_STEM,
+            Variant::Sdk | Variant::SdkNoBuiltin => LIBRARY_STEM.to_owned(),
+            Variant::Adapter => adapter.stem(),
         };
         match row.os {
             Os::Android => format!("lib{stem}.so"),
@@ -214,11 +217,22 @@ pub(crate) fn measure(root: &Path, names: &[String]) -> i32 {
         },
         Err(_) => Vec::new(),
     };
-    let Ok(about) = About::read(root, rows.iter().any(|row| row.os == Os::Ios)) else {
+    let adapter = match Adapter::find(root, None) {
+        Ok(Some(adapter)) => adapter,
+        Ok(None) => {
+            println!("FAIL  no adapter to measure: name one with {DIR_VARIABLE}");
+            return 1;
+        }
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
+    };
+    let Ok(about) = About::read(root, &adapter, rows.iter().any(|row| row.os == Os::Ios)) else {
         return 1;
     };
     for row in rows {
-        let Ok(sizes) = measure_row(root, row) else {
+        let Ok(sizes) = measure_row(root, &adapter, row) else {
             return 1;
         };
         let mut entry = json!({
@@ -272,7 +286,7 @@ pub(crate) fn measure(root: &Path, names: &[String]) -> i32 {
     generate(root)
 }
 
-fn measure_row(root: &Path, row: Mobile) -> Result<[Size; 3], ()> {
+fn measure_row(root: &Path, adapter: &Adapter, row: Mobile) -> Result<[Size; 3], ()> {
     let mut sizes = [Size {
         raw: 0,
         gzip: 0,
@@ -280,15 +294,13 @@ fn measure_row(root: &Path, row: Mobile) -> Result<[Size; 3], ()> {
         stripped_gzip: 0,
     }; 3];
     for (variant, size) in VARIANTS.iter().zip(sizes.iter_mut()) {
-        let (dir, args) = variant.build();
-        let dir = root.join(dir);
+        let (dir, args) = variant.build(root, adapter);
         let mut command = cross(root, row, &dir, args)?;
         if *variant == Variant::Adapter {
-            // Teimeris built from its source with its data compiled in,
-            // never a host library a developer's shell points at.
-            command
-                .env("TM_EMBED_TIER", ADAPTER_TIER)
-                .env_remove("TEIMERIS_LIB_DIR");
+            // The engine built from its source with its data compiled in,
+            // as the adapter's manifest says, never a host library a
+            // developer's shell points at.
+            adapter.embedded(&mut command);
         }
         step(
             &mut command,
@@ -299,7 +311,7 @@ fn measure_row(root: &Path, row: Mobile) -> Result<[Size; 3], ()> {
             .join("target")
             .join(row.triple)
             .join("release")
-            .join(variant.file(row));
+            .join(variant.file(row, adapter));
         let bytes = fs::read(&file).map_err(|err| println!("FAIL  {}: {err}", file.display()))?;
         check(row, &bytes).map_err(|why| println!("FAIL  {}: {why}", file.display()))?;
         let stripped = strip(root, row, &file)?;
@@ -378,7 +390,7 @@ struct About {
 }
 
 impl About {
-    fn read(root: &Path, ios: bool) -> Result<About, ()> {
+    fn read(root: &Path, adapter: &Adapter, ios: bool) -> Result<About, ()> {
         let run = |program: &str, args: &[&str], dir: &Path| -> Result<String, ()> {
             Command::new(program)
                 .args(args)
@@ -389,7 +401,14 @@ impl About {
                 .map(|out| String::from_utf8_lossy(&out.stdout).trim().to_owned())
                 .ok_or_else(|| println!("FAIL  `{program} {}` did not answer", args.join(" ")))
         };
-        let teimeris = root.join(ADAPTER).join("../../../../teimeris");
+        // The engine's checkout, whose commit the record carries under
+        // the key its schema has always named it by.
+        let Some(teimeris) = adapter.engine_checkout() else {
+            println!(
+                "FAIL  the adapter's manifest names no `engine-checkout`, whose commit the record carries"
+            );
+            return Err(());
+        };
         let dirty = |dir: &Path| {
             run(
                 "git",
@@ -585,10 +604,11 @@ mod tests {
 
     #[test]
     fn the_sdk_variants_measure_the_slice_the_release_ships() {
+        let example = Adapter::example();
         for row in MOBILE {
-            assert_eq!(Variant::Sdk.file(row), row.library());
-            assert_eq!(Variant::SdkNoBuiltin.file(row), row.library());
-            let adapter = Variant::Adapter.file(row);
+            assert_eq!(Variant::Sdk.file(row, &example), row.library());
+            assert_eq!(Variant::SdkNoBuiltin.file(row, &example), row.library());
+            let adapter = Variant::Adapter.file(row, &example);
             let extension = row.library().rsplit_once('.').map(|(_, e)| e.to_owned());
             assert_eq!(
                 adapter.rsplit_once('.').map(|(_, e)| e.to_owned()),

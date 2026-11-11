@@ -13,7 +13,7 @@
       "section": "3.1",
       "entry": "the engine's own operations",
       "kind": "forward",
-      "sdk": "ctx.engine.call(name, args) on a Teimeris context"
+      "sdk": "ctx.engine.call(name, args) on a context over a real engine"
     },
     {
       "row": "ayanamsha",

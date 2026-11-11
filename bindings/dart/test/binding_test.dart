@@ -22,6 +22,16 @@ final String _fixtures =
 Uint8List _readFixture(String name) =>
     File('$_fixtures/$name').readAsBytesSync();
 
+/// The engine a plugged-in adapter should report: `TEISTRO_ADAPTER_ENGINE`,
+/// which `cargo xtask check-adapter` sets from the adapter's own manifest.
+String expectedEngine() {
+  final engine = Platform.environment['TEISTRO_ADAPTER_ENGINE'];
+  if (engine == null || engine.isEmpty) {
+    fail('set TEISTRO_ADAPTER_ENGINE to the engine the adapter reports');
+  }
+  return engine;
+}
+
 /// A context with the analytic test provider; every test builds its own.
 Context context({
   String? profile = 'nepali-drik',
@@ -1076,14 +1086,15 @@ void _engineTests() {
   ///
   /// It runs only where the adapter has been built and its data is
   /// present, because a checkout has neither and a test that failed for
-  /// that would fail for everyone. `TEISTRO_TEIMERIS_ADAPTER` names the
+  /// that would fail for everyone. `TEISTRO_ADAPTER_LIBRARY` names the
   /// library — the same variable `crates/ffi/tests/abi.rs` reads for the
-  /// same reason.
+  /// same reason — and `TEISTRO_ADAPTER_ENGINE` the engine it should
+  /// report, both set by `cargo xtask check-adapter`.
   test('an ephemeris is plugged in by naming its platform binary', () {
-    final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
+    final plugin = Platform.environment['TEISTRO_ADAPTER_LIBRARY'];
     if (plugin == null || plugin.isEmpty) {
       printOnFailure(
-        'the adapter is built separately; set TEISTRO_TEIMERIS_ADAPTER to its library',
+        'the adapter is built separately; set TEISTRO_ADAPTER_LIBRARY to its library',
       );
       markTestSkipped('the adapter is not built in this checkout');
       return;
@@ -1097,12 +1108,13 @@ void _engineTests() {
     // The Sun at J2000 is near 280.4°, which is astronomy rather than
     // this package: what is tested is that a real engine answered.
     expect(sky.at(0, 0).longitude, closeTo(280.37, 0.5));
-    // And its own functions came with it, which no SDK operation offers.
-    expect(ctx.engine.manifest['engine'], 'teimeris');
-    expect(
-      (ctx.engine('tm_body_name', {'body': 0}) as Map<String, Object?>)['buf'],
-      'Sun',
-    );
+    // And its own functions came with it, which no SDK operation offers:
+    // the engine names itself and describes each of them.
+    expect(ctx.engine.manifest['engine'], expectedEngine());
+    expect(ctx.engine.names, isNotEmpty);
+    for (final name in ctx.engine.names) {
+      expect(ctx.engine.signature(name), isNotNull, reason: name);
+    }
   });
 
   /// **Nepal's official days**: the Surya Siddhanta takes the adapters
@@ -1124,7 +1136,7 @@ void _engineTests() {
     );
     addTearDown(fellBack.dispose);
     expect(stamp(fellBack), contains('sunrise from teistro-builtin'));
-    final plugin = Platform.environment['TEISTRO_TEIMERIS_ADAPTER'];
+    final plugin = Platform.environment['TEISTRO_ADAPTER_LIBRARY'];
     if (plugin == null || plugin.isEmpty) {
       markTestSkipped('the adapter is not built in this checkout');
       return;
@@ -1134,7 +1146,7 @@ void _engineTests() {
       locale: 'en-Latn',
     );
     addTearDown(official.dispose);
-    expect(stamp(official), contains('sunrise from teimeris'));
+    expect(stamp(official), contains('sunrise from ${expectedEngine()}'));
   });
 
   /// Two reckonings of November 2025 at Kathmandu: the committee's over

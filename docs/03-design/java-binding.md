@@ -760,8 +760,9 @@ un-publish, `03-release-process.md`, "Withdrawing").
    and the ephemeris chain (`EphemerisChoice`, sealed over the SDK's own
    and a plugin), tried in order, with one refusal naming every entry when
    none opens, and a provider with a named ephemeris refused. The plugin
-   test loads a real Teimeris adapter where `TEISTRO_TEIMERIS_ADAPTER`
-   names one, and reads the engine's own functions through it. The
+   test loads a real adapter where `TEISTRO_ADAPTER_LIBRARY` names one
+   (`cargo xtask check-adapter` sets it), and reads the engine's own
+   functions through it. The
    overrides beyond `positions` wait, as they do in every binding's
    provider.
 6. **Messages and records**: the Java target of `gen intl`, the

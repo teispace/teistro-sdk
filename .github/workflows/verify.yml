@@ -706,7 +706,10 @@ jobs:
 
   # The Teimeris adapter, the one real plugin (roadmap Track A step 8):
   # its tests, the provider kit over it under the published bounds, and
-  # every binding loading it (`cargo xtask check-teimeris-adapter`).
+  # every binding loading it (`cargo xtask check-adapter`, the generic
+  # adapter gate, named the in-tree adapter). Removed in step 3 of
+  # `docs/06-cicd/adapter-gate.md`, when the adapter is checked in its
+  # engine's private repository instead.
   # Teimeris is a private repository, so the job clones it beside the SDK
   # with a read-only token in the `TEIMERIS_READ_TOKEN` secret. Without
   # the secret nothing is checked, and the job says so in a notice rather
@@ -761,7 +764,7 @@ jobs:
           java-version: "25"
       - name: The adapter, the kit over it, and every binding loading it
         if: steps.token.outputs.present == 'true'
-        run: cargo xtask check-teimeris-adapter
+        run: cargo xtask check-adapter --adapter adapters/ephemeris-teimeris
       - if: ${{ !cancelled() && steps.token.outputs.present == 'true' }}
         uses: actions/upload-artifact@v4
         with:

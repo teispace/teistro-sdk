@@ -3,7 +3,7 @@
 // as one JSON line a figure. `cargo xtask measure-ab` runs it.
 //
 //   TEISTRO_AB_BASELINE=/path/to/adapter.mjs \
-//   TEISTRO_TEIMERIS_ADAPTER=/path/to/libteistro_ephemeris_teimeris.dylib \
+//   TEISTRO_ADAPTER_LIBRARY=/path/to/your-engine-adapter.dylib \
 //   node bench/ab.mjs
 //
 // The adapter is a module kept outside the SDK, beside the baseline

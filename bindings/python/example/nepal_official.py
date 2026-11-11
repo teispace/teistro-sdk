@@ -12,7 +12,8 @@ What the shape teaches, and what a reader should copy:
 * The official day is a **preset**, not a recipe: unpack
   ``nepal_official(engine)`` into a context's arguments.
 * The Surya Siddhanta takes the engine **after** it in the chain for its
-  sunrise; an app passes its own, ``nepal_official(teimeris())``. This
+  sunrise; an app passes its own engine's adapter,
+  ``nepal_official(engine)``. This
   file passes none, so the sunrise is the built-in ephemeris's and it runs
   anywhere.
 * Where the two disagree, the reason is a tithi's end against the

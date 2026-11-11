@@ -9,7 +9,7 @@ package com.teispace.teistro;
  *
  * <pre>{@code
  * ContextOptions.builder()
- *     .ephemeris(Plugin.of("/opt/teimeris/libteistro_ephemeris_teimeris.so"),
+ *     .ephemeris(Plugin.of("/path/to/your-engine-adapter.so"), // your engine's adapter
  *                EphemerisChoice.of(Ephemeris.BUILTIN))
  *     .build();
  * }</pre>

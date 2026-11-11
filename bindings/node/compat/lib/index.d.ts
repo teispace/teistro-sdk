@@ -147,7 +147,7 @@ export interface Shim {
 
   /** Positions over a grid, on the snapshot's context. */
   positions(snapshot: StoredSnapshot, request: PositionsRequest): Positions;
-  /** One of the engine's own operations, on the snapshot's context: a Teimeris chain's. */
+  /** One of the engine's own operations, on the snapshot's context: its chain's engine's. */
   engine(snapshot: StoredSnapshot, name: string, args?: Record<string, unknown>): unknown;
   /** The ayanamsha at the birth, or at `instant`: the member and its offset in degrees. */
   ayanamsha(

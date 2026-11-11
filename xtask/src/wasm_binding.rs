@@ -86,11 +86,11 @@ use std::process::Command;
 
 use serde_json::{Value, json};
 
+use crate::adapter::{self, Adapter};
 use crate::binding::{FIXTURES, blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
 use crate::sbom;
 use crate::sizes::{self, Allowed, Artefact, Row};
-use crate::teimeris_adapter;
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
@@ -1047,7 +1047,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                     // A plugin is a shared library, which a wasm module
                     // cannot open (ADR-0029); the suite's plugin tests
                     // skip without an adapter, and here there is none.
-                    .env_remove("TEISTRO_TEIMERIS_ADAPTER")
+                    .env_remove(adapter::LIBRARY_VARIABLE)
                     .current_dir(&staged),
                 &format!("{NODE}/test/ passes against the staged wasm package, unchanged"),
                 &format!("{NODE}/test/ did not pass against the staged wasm package"),
@@ -1079,9 +1079,6 @@ pub(crate) fn check(root: &Path) -> i32 {
     i32::from(held.is_err() || recorded.is_err())
 }
 
-/// The Teimeris adapter's npm package, where the web provider lives.
-const TEIMERIS_NODE: &str = "adapters/ephemeris-teimeris/node";
-
 /// A Teimeris checkout's part, from its variable or the checkout beside
 /// this one, which is where the adapter's Rust crate takes the engine from.
 fn teimeris_part(root: &Path, variable: &str, part: &str) -> PathBuf {
@@ -1109,7 +1106,17 @@ fn teimeris_web(root: &Path, staged: &Path) -> Result<(), ()> {
         return Ok(());
     }
     let data = teimeris_part(root, "TEIMERIS_DATA_DIR", "data");
-    let adapter = root.join(TEIMERIS_NODE);
+    // The adapter whose npm package carries the web provider: Teimeris's,
+    // which moves to its own repository with this step
+    // (`docs/06-cicd/adapter-gate.md`).
+    let Some(found) = Adapter::find(root, None).map_err(|why| println!("FAIL  {why}"))? else {
+        crate::skip::excused(
+            "Teimeris on the web: no adapter named",
+            "the adapter is checked in its own repository",
+        );
+        return Ok(());
+    };
+    let adapter = found.part("node");
     step(
         Command::new("node")
             .args(["--test", "test/web.test.mjs"])
@@ -1119,9 +1126,10 @@ fn teimeris_web(root: &Path, staged: &Path) -> Result<(), ()> {
         "the Teimeris web provider refuses what it must and adds a range",
         "the Teimeris web provider's tests did not pass",
     )?;
-    let native = teimeris_adapter::cargo_in(root)
+    let native = found
+        .cargo()
         .args(["run", "--quiet", "--release", "--features", "app-speed"])
-        .args(["--bin", "teistro-ephemeris-teimeris-day-hash"])
+        .args(["--bin", &found.binary("day-hash")])
         .env("TM_EMBED_TIER", "MODERN")
         .output();
     let web = Command::new("node")
