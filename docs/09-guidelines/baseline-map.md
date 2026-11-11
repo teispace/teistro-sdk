@@ -38,7 +38,7 @@ Design §3.1.
 | baseline entry point | shim | SDK | kind |
 |---|---|---|---|
 | the astronomical backend, a position at an instant | `positions` | ctx.positions({ instants, bodies, frame }) | forward |
-| the engine's own operations | `engine` | ctx.engine.call(name, args) on a Teimeris context | forward |
+| the engine's own operations | `engine` | ctx.engine.call(name, args) on a context over a real engine | forward |
 | the ayanamsha at an instant | `ayanamsha` | ctx.chart.found(...): its ayanamsha and offset | compose |
 | the sunrise service | `sunrise` | ctx.almanac.day(...): its sunrise, sunset and next sunrise | compose |
 | the timezone resolver: a civil time in a zone, LMT, DST rules | `resolve` | ctx.time.resolve(civil, zone) | forward |

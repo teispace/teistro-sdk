@@ -44,7 +44,7 @@ A package of plain JavaScript is the same bytes on every host and has nothing to
 
 | package | shipped | gzipped | budget, gzipped | left |
 |---|--:|--:|--:|--:|
-| `@teistro/compat` | 116 123 | 30 802 | 32 000 | 3.7% |
+| `@teistro/compat` | 116 143 | 30 815 | 32 000 | 3.7% |
 
 ## Budgets moved
 
