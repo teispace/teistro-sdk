@@ -730,7 +730,7 @@ impl TsContext {
 /// `UNSUPPORTED` for a locale the engine does not hold, naming the ones
 /// it does.
 pub(crate) fn unknown_locale(intl: &Intl, tag: &str, detail: &str) -> Error {
-    let known: Vec<&str> = intl.locales().map(|l| l.tag.as_str()).collect();
+    let known: Vec<&str> = intl.locale_tags().collect();
     Error::unsupported(detail.to_string())
         .with_field("locale")
         .with_hint(format!(

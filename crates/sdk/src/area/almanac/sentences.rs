@@ -147,8 +147,8 @@ pub struct DaySentences {
 /// template. A fallback would answer another language under the asked
 /// tag's name, so a locale's own messages are what is checked.
 fn templates_in(intl: &Intl, tag: &str) -> Result<(), Error> {
-    if !intl.locales().any(|locale| locale.tag == tag) {
-        let known: Vec<&str> = intl.locales().map(|l| l.tag.as_str()).collect();
+    if !intl.locale_tags().any(|locale| locale == tag) {
+        let known: Vec<&str> = intl.locale_tags().collect();
         return Err(
             Error::unsupported(format!("the locale `{tag}` is not loaded"))
                 .with_field("locale")

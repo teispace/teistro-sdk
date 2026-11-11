@@ -2,7 +2,6 @@
 //! described in, and the ephemeris it is computed with.
 
 use core::cell::{Ref, RefCell, RefMut};
-use std::collections::BTreeMap;
 use std::sync::{Arc, OnceLock};
 
 use serde::Serialize;
@@ -18,8 +17,7 @@ use teistro_core::settings::{
 use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
-use teistro_intl::pack::locales_from_packs;
-use teistro_intl::source::LocaleSource;
+use teistro_intl::locales::Locales;
 #[cfg(feature = "chart")]
 use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
@@ -942,7 +940,7 @@ impl ContextBuilder {
         };
         let settings = profile.resolve(&patch)?;
 
-        let mut intl = Intl::shared(embedded_locales()?)
+        let mut intl = Intl::over(embedded_locales()?)
             .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
         // A message's `timeZone` reads an instant in a zone through the
         // same database the context's own zone resolutions use.
@@ -1005,24 +1003,22 @@ impl ContextBuilder {
     }
 }
 
-/// The embedded bundles, decoded once for every context in the process.
-/// Decoding them is about 22,000 allocations and 2 MB, which each context
-/// paid before; every context's engine now shares these, and copies only
-/// a locale its own runtime packs change.
-fn embedded_locales() -> Result<BTreeMap<String, Arc<LocaleSource>>, Error> {
-    type Decoded = Result<BTreeMap<String, Arc<LocaleSource>>, String>;
-    static DECODED: OnceLock<Decoded> = OnceLock::new();
-    DECODED
+/// The embedded bundles, verified once for every context in the process
+/// and each decoded the first time any context reads it.
+///
+/// Decoding all five (about 944 KB) copied every message and entity into
+/// owned text: about 59,000 allocations and 6 MB, paid by the first
+/// context of a process though an application reads one locale and its
+/// fallbacks. Every context's engine shares these [`Locales`], so a
+/// locale one of them renders from is decoded once, for all of them, and
+/// its plural rules are built once; a locale a context's runtime packs
+/// change is copied for that context alone. Choosing a locale reads tags
+/// and decodes nothing.
+fn embedded_locales() -> Result<Locales, Error> {
+    EMBEDDED
         .get_or_init(|| {
-            let bundles: Vec<&[u8]> = BUNDLES.iter().map(|(_, bytes)| *bytes).collect();
-            locales_from_packs(&bundles)
-                .map(|locales| {
-                    locales
-                        .into_iter()
-                        .map(|(tag, locale)| (tag, Arc::new(locale)))
-                        .collect()
-                })
-                .map_err(|e| e.to_string())
+            let bundles: Vec<&'static [u8]> = BUNDLES.iter().map(|(_, bytes)| *bytes).collect();
+            Locales::from_bundles(&bundles).map_err(|e| e.to_string())
         })
         .clone()
         .map_err(|e| {
@@ -1031,6 +1027,31 @@ fn embedded_locales() -> Result<BTreeMap<String, Arc<LocaleSource>>, Error> {
                 format!("the embedded bundles do not load: {e}"),
             )
         })
+}
+
+/// The embedded locales, verified the first time a context is built.
+static EMBEDDED: OnceLock<Result<Locales, String>> = OnceLock::new();
+
+/// The embedded locales decoded so far in this process, sorted: what the
+/// tests hold the lazy decoding to. Not part of the SDK's surface.
+///
+/// ```
+/// use teistro::Context;
+///
+/// let sdk = Context::builder().locale("ne").build()?;
+/// let said = sdk.intl().render("sdk.reason.appName", &teistro::Params::new());
+/// assert!(!said.text.is_empty());
+/// assert!(teistro::decoded_locales().contains(&String::from("ne-Deva-NP")));
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[doc(hidden)]
+#[must_use]
+pub fn decoded_locales() -> Vec<String> {
+    EMBEDDED
+        .get()
+        .and_then(|embedded| embedded.as_ref().ok())
+        .map(|locales| locales.decoded().map(str::to_owned).collect())
+        .unwrap_or_default()
 }
 
 /// Holds the settings' astronomy (`frame.siddhanta`) to the provider the

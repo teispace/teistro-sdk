@@ -1013,6 +1013,16 @@ impl<'a> Bundle<'a> {
         &self.packs
     }
 
+    /// Every namespace decoded, by name: what a locale rebuilt from the
+    /// bundle holds, whether it is rebuilt now ([`locales_from_packs`], a
+    /// pack loaded at runtime) or the first time an engine reads it
+    /// ([`crate::locales::Locales`]).
+    pub(crate) fn namespaces(&self) -> impl Iterator<Item = (String, Namespace)> + '_ {
+        self.packs
+            .iter()
+            .map(|pack| (pack.namespace().to_string(), pack.to_namespace()))
+    }
+
     /// One namespace's pack.
     ///
     /// ```
@@ -1100,11 +1110,7 @@ pub fn locales_from_packs(files: &[&[u8]]) -> Result<BTreeMap<String, LocaleSour
         if bytes.starts_with(&BUNDLE_MAGIC) {
             let bundle = Bundle::parse(bytes)?;
             let locale = locale_entry(&mut locales, bundle.locale(), || bundle.meta())?;
-            for pack in bundle.packs() {
-                locale
-                    .namespaces
-                    .insert(pack.namespace().to_string(), pack.to_namespace());
-            }
+            locale.namespaces.extend(bundle.namespaces());
         } else {
             let pack = Pack::parse(bytes)?;
             let locale = locale_entry(&mut locales, pack.locale(), || pack.meta())?;

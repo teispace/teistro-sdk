@@ -285,8 +285,8 @@ impl AlmanacArea<'_> {
         asked.check_under(SANKALPA)?;
         let intl = self.context.locale_engine();
         let tag = locale.map_or_else(|| intl.locale().to_owned(), str::to_owned);
-        if !intl.locales().any(|loaded| loaded.tag == tag) {
-            let known: Vec<&str> = intl.locales().map(|l| l.tag.as_str()).collect();
+        if !intl.locale_tags().any(|loaded| loaded == tag) {
+            let known: Vec<&str> = intl.locale_tags().collect();
             return Err(
                 Error::unsupported(format!("the locale `{tag}` is not loaded"))
                     .with_field("locale")

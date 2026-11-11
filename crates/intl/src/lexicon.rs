@@ -477,7 +477,7 @@ impl Intl {
             return Ok(self.locale().to_owned());
         };
         self.lookup_locale(tag).map(str::to_owned).map_err(|why| {
-            let known: Vec<&str> = self.locales.keys().map(String::as_str).collect();
+            let known: Vec<&str> = self.locale_tags().collect();
             Error::unsupported(why.to_string())
                 .with_field("locale")
                 .with_hint(format!("the locales are {}", known.join(", ")))
@@ -491,7 +491,7 @@ impl Intl {
         };
         let known: BTreeSet<&str> = self
             .locales
-            .get(BASE_LOCALE)
+            .source(BASE_LOCALE)
             .and_then(|base| base.namespaces.get(ENTITY_NAMESPACE))
             .map(|entities| entities.entries.keys().map(|key| kind_of(key)).collect())
             .unwrap_or_default();
@@ -540,7 +540,7 @@ impl Intl {
     fn catalogue_keys(&self) -> Vec<&str> {
         let mut keys: Vec<&str> = self
             .locales
-            .get(BASE_LOCALE)
+            .source(BASE_LOCALE)
             .and_then(|base| base.namespaces.get(ENTITY_NAMESPACE))
             .map(|entities| entities.order.iter().map(String::as_str).collect())
             .unwrap_or_default();

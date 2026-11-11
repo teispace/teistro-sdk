@@ -198,6 +198,8 @@ mod western_aspects;
 #[cfg(feature = "western")]
 mod western_houses;
 
+#[doc(hidden)]
+pub use context::decoded_locales;
 pub use context::{Context, ContextBuilder, NEPAL_OFFICIAL_PROFILE, SharedContext};
 pub use ephemeris::Ephemeris;
 #[cfg(feature = "chart")]

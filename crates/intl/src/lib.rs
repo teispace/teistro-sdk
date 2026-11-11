@@ -57,6 +57,7 @@ pub mod dates;
 pub mod derive;
 pub mod generate;
 pub mod lexicon;
+pub mod locales;
 mod lookup;
 pub mod mf2;
 pub mod migrate;

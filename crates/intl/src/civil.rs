@@ -371,8 +371,8 @@ fn in_digits(text: &str, to: [char; 10]) -> String {
 
 impl Intl {
     pub(crate) fn loaded_locale(&self, tag: &str) -> Result<&LocaleSource, Error> {
-        self.locales.get(tag).map(AsRef::as_ref).ok_or_else(|| {
-            let known: Vec<&str> = self.locales.keys().map(String::as_str).collect();
+        self.locales.source(tag).ok_or_else(|| {
+            let known: Vec<&str> = self.locale_tags().collect();
             Error::unsupported(format!("the locale `{tag}` is not loaded"))
                 .with_field("locale")
                 .with_hint(format!("the locales are {}", known.join(", ")))

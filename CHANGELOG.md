@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A context decodes only the locales it reads.** **Numbers:** none.
+The first context in a process decoded all five embedded locale bundles
+before it could render, about 59,000 allocations and 6.3 MB, though an
+application reads one locale and its fallbacks. The bundles are now
+verified when the first context is built and each is decoded the first
+time any context reads it, its plural rules too, and every context
+shares what is decoded. Choosing a locale decodes nothing; a Nepali
+render decodes Nepali and English. The first context now takes 434
+allocations and 52 KB, and on macOS the cost record's floor, a context
+alone, falls from 71 to 26 million instructions; the first call that
+renders pays for its own locales instead. `teistro-intl` gains
+`Locales`, `Intl::over` and `Intl::locale_tags`. No answer, API or
+binding changes otherwise.
+
 **A guna total's band and a sankalpa's words are IDL calls (SR-39, SR-29).**
 `matching.band` grades a total out of 36 by a shipped table
 (`MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or `ARYAVARTA`) or a
