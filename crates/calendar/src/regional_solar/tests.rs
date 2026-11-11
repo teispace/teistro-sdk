@@ -406,6 +406,85 @@ fn assamese_months_match_the_assam_gazette() {
     );
 }
 
+/// More of the Government of Assam's printed pairs, one a month: the
+/// lists for 2024 (e-file No. 221561/11 of November 2023, a copy of the
+/// e-signed notification) and 2026 (e-file No. 221561/440 of 17 November
+/// 2025). 24 months; 2026's Bhada and Ahin, which part, are
+/// [`ASSAM_PARTS`].
+const ASSAM_LISTS: [Pair; 24] = [
+    ((2024, 1, 1), (1430, 9, 15)),
+    ((2024, 1, 16), (1430, 10, 1)),
+    ((2024, 2, 14), (1430, 11, 1)),
+    ((2024, 3, 18), (1430, 12, 4)),
+    ((2024, 4, 14), (1431, 1, 1)),
+    ((2024, 5, 16), (1431, 2, 2)),
+    ((2024, 6, 17), (1431, 3, 2)),
+    ((2024, 7, 17), (1431, 4, 1)),
+    ((2024, 8, 23), (1431, 5, 6)),
+    ((2024, 10, 2), (1431, 6, 15)),
+    ((2024, 10, 31), (1431, 7, 14)),
+    ((2024, 11, 24), (1431, 8, 8)),
+    ((2024, 12, 24), (1431, 9, 8)),
+    ((2026, 1, 5), (1432, 9, 20)),
+    ((2026, 1, 15), (1432, 10, 1)),
+    ((2026, 2, 15), (1432, 11, 2)),
+    ((2026, 3, 17), (1432, 12, 2)),
+    ((2026, 4, 15), (1433, 1, 1)),
+    ((2026, 5, 16), (1433, 2, 1)),
+    ((2026, 6, 20), (1433, 3, 5)),
+    ((2026, 8, 13), (1433, 4, 27)),
+    ((2026, 10, 19), (1433, 7, 1)),
+    ((2026, 11, 19), (1433, 8, 2)),
+    ((2026, 12, 19), (1433, 9, 3)),
+];
+
+/// The 2026 list's pairs that part from the calendar: it begins Bhada
+/// and Ahin 1433 on 19 August and 19 September, a day after the
+/// calendar (C1302).
+const ASSAM_PARTS: [Pair; 2] = [((2026, 9, 1), (1433, 5, 14)), ((2026, 9, 21), (1433, 6, 3))];
+
+#[test]
+fn assamese_months_match_the_2024_and_2026_lists() {
+    assert_eq!(assert_pairs(Calendar::AssamSolar, &ASSAM_LISTS), 24);
+    // Saon 1431 began on 17 July 2024 as printed, though its sankranti on
+    // the text fell at 23:23 IST on the 16th, 37 minutes before midnight.
+    let text = teistro_siddhanta::SuryaSiddhanta::text();
+    let engine = ASSAM.engine(&text);
+    let saon = *engine.year(1431).unwrap().sankrantis.get(3).unwrap();
+    let (civil, minutes) = ist_minutes(saon);
+    assert_eq!(gregorian_from_fixed(civil), (2024, 7, 16));
+    assert!((1380.0..1410.0).contains(&minutes), "{minutes:.1}");
+}
+
+#[test]
+fn the_2026_list_begins_bhada_and_ahin_a_day_late() {
+    // The text's Simha and Kanya sankrantis fall at 23:12 and 23:40 IST on
+    // 17 August and 17 September 2026, so the calendar begins Bhada and
+    // Ahin on the 18th; the list prints the 19th, a day the Sun's entry
+    // after midnight would give (C1302).
+    let system = calendar(Calendar::AssamSolar);
+    let text = teistro_siddhanta::SuryaSiddhanta::text();
+    let engine = ASSAM.engine(&text);
+    for (((y, m, d), (year, month, day)), entered) in
+        ASSAM_PARTS.into_iter().zip([(2026, 8, 17), (2026, 9, 17)])
+    {
+        let date = system.date_of(fixed_from_gregorian(y, m, d)).unwrap();
+        assert_eq!((date.year, date.month, date.day), (year, month, day + 1));
+        let entry = *engine
+            .year(year)
+            .unwrap()
+            .sankrantis
+            .get(usize::from(month - 1))
+            .unwrap();
+        let (civil, minutes) = ist_minutes(entry);
+        assert_eq!(gregorian_from_fixed(civil), entered);
+        assert!(
+            (1380.0..1440.0).contains(&minutes),
+            "{year}-{month}: {minutes:.1}"
+        );
+    }
+}
+
 #[test]
 fn the_assam_gazette_reckons_the_surya_siddhantas_sun() {
     // The same rule over the modern Sun is the Bengal calendar's table

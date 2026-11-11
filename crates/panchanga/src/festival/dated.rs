@@ -10,6 +10,11 @@
 //! counted back from its end when negative, and the nth weekday of a
 //! month.
 //!
+//! A day kept by a star or a tithi of a solar month is a third form: Onam
+//! on Thiruvonam in Chingam, Srimanta Sankardeva's birthday on the bright
+//! 10th in Ahin. The almanac's lunar month cannot say it, for the star or
+//! the tithi of one solar month falls in either of two lunar months.
+//!
 //! The churches' moveable feasts are kept by a count from Easter Sunday,
 //! which the computus dates in its own calendar (`teistro_calendar::easter`):
 //! Good Friday two days before it, Pentecost forty-nine after.
@@ -20,10 +25,12 @@ use teistro_calendar::gregorian::gregorian_from_fixed;
 use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
-use teistro_core::catalogue::{Calendar, Nakshatra, Vara};
+use teistro_core::catalogue::{Calendar, Nakshatra, Tithi, Vara};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 
-use super::{FestivalDay, FestivalMeta, Observances, SunEntry};
+use super::{FestivalDay, FestivalMeta, Observances, SunEntry, Window};
+use crate::span::Span;
 
 /// The festivals Nepal's national panchanga prints on a day of a Bikram
 /// Sambat month, each read off both editions with its continuation
@@ -446,6 +453,30 @@ pub enum Dated {
         #[serde(default)]
         days: i8,
     },
+    /// The day `tithi` holds in a month of `calendar`, as Assam keeps
+    /// Sankardeva's birthday on the bright 10th in Ahin (C1361): the day
+    /// holding more of the window `at`, the earlier on a tie, or the day
+    /// the tithi runs in when no day holds any; `twice` and `days` as for
+    /// [`Dated::NakshatraInMonth`].
+    TithiInMonth {
+        /// The calendar the month is in.
+        calendar: Calendar,
+        /// The month, 1 for the first.
+        month: u8,
+        /// The tithi.
+        tithi: Tithi,
+        /// Which of two occurrences in one month keeps the day.
+        twice: super::Which,
+        /// The window judged: the sunrise when left out; never the
+        /// moonrise (C1362).
+        #[serde(default = "sunrise", skip_serializing_if = "Window::is_sunrise")]
+        at: Window,
+        /// How many civil days after the tithi's day, before it when
+        /// negative, 0 for that day; at most [`Dated::MOST_DAYS`] either
+        /// way.
+        #[serde(default)]
+        days: i8,
+    },
     /// The day `days` days after Easter Sunday by `computus`, before it
     /// when negative: Good Friday at -2, Pentecost at 49. A year the
     /// computus does not reckon (the Gregorian before 1583) keeps none.
@@ -491,19 +522,27 @@ impl DayReckoning {
     }
 }
 
+/// The window a tithi's day in a month is judged at when a rule names
+/// none: the sunrise.
+const fn sunrise() -> Window {
+    Window::Sunrise
+}
+
 impl Dated {
     /// The key each kind of date is written under, in the order of the
     /// variants: a [`DatedRule`] gives exactly one.
-    pub const KEYS: [&'static str; 5] = [
+    pub const KEYS: [&'static str; 6] = [
         "civilDate",
         "civilWeekday",
         "sunEnters",
         "nakshatraInMonth",
+        "tithiInMonth",
         "easter",
     ];
 
-    /// The most days a solar month runs, which a rule kept on a star in
-    /// one reads around its day to find the month's other occurrence.
+    /// The most days a solar month runs, which a rule kept on a star or a
+    /// tithi in one reads around its day to find the month's other
+    /// occurrence.
     pub const MONTH_DAYS: u8 = 32;
 
     /// The most days a rule counts from the Sun's entry, or either way
@@ -528,7 +567,10 @@ impl Dated {
             | Dated::CivilWeekday {
                 calendar, month, ..
             } => Some((calendar, month)),
-            Dated::SunEnters { .. } | Dated::NakshatraInMonth { .. } | Dated::Easter { .. } => None,
+            Dated::SunEnters { .. }
+            | Dated::NakshatraInMonth { .. }
+            | Dated::TithiInMonth { .. }
+            | Dated::Easter { .. } => None,
         }
     }
 
@@ -560,9 +602,10 @@ impl Dated {
                 };
                 vara == weekday && nth == i16::from(wanted)
             }
-            Dated::SunEnters { .. } | Dated::NakshatraInMonth { .. } | Dated::Easter { .. } => {
-                false
-            }
+            Dated::SunEnters { .. }
+            | Dated::NakshatraInMonth { .. }
+            | Dated::TithiInMonth { .. }
+            | Dated::Easter { .. } => false,
         }
     }
 }
@@ -605,7 +648,7 @@ impl DatedRule {
         match self.on {
             Dated::SunEnters { days, .. } => days,
             // The month's other occurrence may lie a month either side.
-            Dated::NakshatraInMonth { days, .. } => {
+            Dated::NakshatraInMonth { days, .. } | Dated::TithiInMonth { days, .. } => {
                 Dated::MONTH_DAYS.saturating_add(days.unsigned_abs())
             }
             // Easter is reckoned from the year alone, so its count needs
@@ -643,10 +686,19 @@ impl DatedRule {
                 ))
                 .with_field("nakshatraInMonth.days"))
             }
+            Dated::TithiInMonth { days, .. } if days.unsigned_abs() > Dated::MOST_DAYS => {
+                Err(Error::invalid_arg(format!(
+                    "{}: a rule counts at most {} days either way from a tithi's day, not {days}",
+                    self.key,
+                    Dated::MOST_DAYS
+                ))
+                .with_field("tithiInMonth.days"))
+            }
             Dated::CivilDate { .. }
             | Dated::CivilWeekday { .. }
             | Dated::SunEnters { .. }
             | Dated::NakshatraInMonth { .. }
+            | Dated::TithiInMonth { .. }
             | Dated::Easter { .. } => Ok(()),
         }
     }
@@ -654,8 +706,9 @@ impl DatedRule {
     /// Refuses a rule that could not be kept: an empty key, a calendar
     /// the SDK does not ship, month 0, a day of 0 or past 32 either way,
     /// an nth of 0 or past 5 either way, a count from the Sun's entry
-    /// past [`Dated::MOST_DAYS`], one from a star's day in a month past
-    /// it either way, or one from Easter past
+    /// past [`Dated::MOST_DAYS`], one from a star's or a tithi's day in a
+    /// month past it either way, a tithi's day judged at the moonrise or
+    /// at a muhurta past fifteen, or a count from Easter past
     /// [`Dated::EASTER_DAYS`] either way.
     ///
     /// # Errors
@@ -666,6 +719,16 @@ impl DatedRule {
             return Err(Error::invalid_arg("a festival rule needs a key").with_field("key"));
         }
         self.check_count()?;
+        if let Dated::TithiInMonth { at, .. } = self.on {
+            if at == Window::Moonrise {
+                return Err(Error::invalid_arg(format!(
+                    "{}: a tithi's day in a month is not judged at the moonrise, which no search finds for it",
+                    self.key
+                ))
+                .with_field("tithiInMonth.at"));
+            }
+            super::check_window(&self.key, at, "tithiInMonth.at")?;
+        }
         let (form, calendar, month) = match self.on {
             Dated::CivilDate {
                 calendar, month, ..
@@ -676,6 +739,9 @@ impl DatedRule {
             Dated::NakshatraInMonth {
                 calendar, month, ..
             } => ("nakshatraInMonth", calendar, month),
+            Dated::TithiInMonth {
+                calendar, month, ..
+            } => ("tithiInMonth", calendar, month),
             Dated::SunEnters { .. } | Dated::Easter { .. } => return Ok(()),
         };
         if shipped(calendar).is_none() {
@@ -972,9 +1038,30 @@ pub fn dated(
                     twice,
                     days: count,
                 } => match at.checked_add_signed(-isize::from(count)) {
-                    Some(from) => {
-                        starred(days, from, (system(calendar)?, month), nakshatra, twice)?
-                    }
+                    Some(from) => in_month(
+                        days,
+                        from,
+                        (system(calendar)?, month),
+                        (|day| day.nakshatra.as_slice(), nakshatra, Window::Sunrise),
+                        twice,
+                    )?,
+                    None => None,
+                },
+                Dated::TithiInMonth {
+                    calendar,
+                    month,
+                    tithi,
+                    twice,
+                    at: window,
+                    days: count,
+                } => match at.checked_add_signed(-isize::from(count)) {
+                    Some(from) => in_month(
+                        days,
+                        from,
+                        (system(calendar)?, month),
+                        (|day| day.tithi.as_slice(), tithi, window),
+                        twice,
+                    )?,
                     None => None,
                 },
                 Dated::CivilDate {
@@ -1011,43 +1098,112 @@ pub fn dated(
     Ok(answer)
 }
 
-/// Whether `nakshatra` holds `day`'s sunrise.
-fn at_sunrise(day: &FestivalDay, nakshatra: Nakshatra) -> bool {
-    crate::span::at(&day.nakshatra, day.sunrise).is_some_and(|span| span.member == nakshatra)
+/// The spans of one limb of a day, the nakshatras or the tithis.
+type Limb<T> = fn(&FestivalDay) -> &[Span<T>];
+
+/// Whether `member` of `limb` holds `day`'s sunrise.
+fn at_sunrise<T: PartialEq>(day: &FestivalDay, limb: Limb<T>, member: &T) -> bool {
+    crate::span::at(limb(day), day.sunrise).is_some_and(|span| span.member == *member)
 }
 
-/// Whether `days[at]` keeps an occurrence of `nakshatra`: the first day
-/// whose sunrise it holds, or, when it holds no sunrise, the day it runs
-/// in. A day whose neighbour the decision needs and the days do not hold
-/// keeps none: the caller founds days beside the range.
-fn keeps_star(days: &[FestivalDay], at: usize, nakshatra: Nakshatra) -> bool {
+/// Whether `days[at]` keeps an occurrence of `member` of `limb`: the
+/// first day whose sunrise it holds, or, when it holds no sunrise, the
+/// day it runs in. A day whose neighbour the decision needs and the days
+/// do not hold keeps none: the caller founds days beside the range.
+fn keeps_at_sunrise<T: PartialEq>(
+    days: &[FestivalDay],
+    at: usize,
+    limb: Limb<T>,
+    member: &T,
+) -> bool {
     let Some(day) = days.get(at) else {
         return false;
     };
-    if at_sunrise(day, nakshatra) {
+    if at_sunrise(day, limb, member) {
         return at
             .checked_sub(1)
             .and_then(|before| days.get(before))
-            .is_some_and(|before| !at_sunrise(before, nakshatra));
+            .is_some_and(|before| !at_sunrise(before, limb, member));
     }
-    day.nakshatra.iter().any(|span| span.member == nakshatra)
+    limb(day).iter().any(|span| span.member == *member)
         && days
             .get(at + 1)
-            .is_some_and(|after| !at_sunrise(after, nakshatra))
+            .is_some_and(|after| !at_sunrise(after, limb, member))
+}
+
+/// How much of `day`'s `window` the occurrence `whole` holds, in days; a
+/// window that is an instant counts 1 when the occurrence holds it.
+///
+/// # Errors
+///
+/// None for the windows a rule's check lets through.
+fn held(day: &FestivalDay, window: Window, whole: Interval) -> Result<f64, Error> {
+    let window = day.window(window)?;
+    if window.is_empty() {
+        return Ok(if whole.contains(window.from) {
+            1.0
+        } else {
+            0.0
+        });
+    }
+    Ok(whole.clipped_to(window).map_or(0.0, Interval::days))
+}
+
+/// Whether `days[at]` keeps an occurrence of `member` of `limb` by
+/// `window`: the day holding more of it than the day before and at least
+/// as much as the day after, or, when none of the three holds any of it,
+/// the first day it runs in. At the sunrise this is
+/// [`keeps_at_sunrise`]. A day whose neighbour the decision needs and the
+/// days do not hold keeps none.
+///
+/// # Errors
+///
+/// None for the windows a rule's check lets through.
+fn keeps<T: PartialEq>(
+    days: &[FestivalDay],
+    at: usize,
+    limb: Limb<T>,
+    member: &T,
+    window: Window,
+) -> Result<bool, Error> {
+    if window == Window::Sunrise {
+        return Ok(keeps_at_sunrise(days, at, limb, member));
+    }
+    let neighbours = at
+        .checked_sub(1)
+        .and_then(|before| days.get(before))
+        .zip(days.get(at + 1));
+    let (Some(day), Some((before, after))) = (days.get(at), neighbours) else {
+        return Ok(false);
+    };
+    for span in limb(day).iter().filter(|span| span.member == *member) {
+        let here = held(day, window, span.whole)?;
+        let earlier = held(before, window, span.whole)?;
+        let later = held(after, window, span.whole)?;
+        let kept = if here > 0.0 {
+            here > earlier && here >= later
+        } else {
+            earlier <= 0.0 && later <= 0.0 && !before.sunrise_day().overlaps(span.whole)
+        };
+        if kept {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// The day of `calendar`'s `month` that `days[at]` is, when it keeps
-/// `nakshatra` there and is the occurrence `twice` names among the
-/// month's.
+/// `member` of `limb` there by `window` and is the occurrence `twice`
+/// names among the month's: a star's day or a tithi's in a solar month.
 ///
 /// # Errors
 ///
 /// A day the calendar cannot convert.
-fn starred(
+fn in_month<T: PartialEq>(
     days: &[FestivalDay],
     at: usize,
     (calendar, month): (&dyn CalendarSystem, u8),
-    nakshatra: Nakshatra,
+    (limb, member, window): (Limb<T>, T, Window),
     twice: super::Which,
 ) -> Result<Option<CalendarDate>, Error> {
     let date_at = |index: usize| -> Result<Option<CalendarDate>, Error> {
@@ -1057,7 +1213,7 @@ fn starred(
         let fixed = system(day.date.calendar)?.fixed_of(&day.date)?;
         calendar.date_of(fixed).map(Some)
     };
-    if !keeps_star(days, at, nakshatra) {
+    if !keeps(days, at, limb, &member, window)? {
         return Ok(None);
     }
     let Some(on) = date_at(at)? else {
@@ -1078,7 +1234,7 @@ fn starred(
         };
         match date_at(index)? {
             Some(other) if other.year == on.year && other.month == on.month => {
-                if keeps_star(days, index, nakshatra) {
+                if keeps(days, index, limb, &member, window)? {
                     return Ok(None);
                 }
             }
@@ -1196,6 +1352,7 @@ mod tests {
             r#"{"calendar": "GREGORIAN", "month": 11, "weekday": "GURUVARA", "nth": 4}"#,
             r#"{"nakshatra": "ARDRA"}"#,
             r#"{"calendar": "MALAYALAM_SOLAR", "month": 1, "nakshatra": "SHRAVANA", "twice": "LATER"}"#,
+            r#"{"calendar": "ASSAM_SOLAR", "month": 6, "tithi": "SHUKLA_DASHAMI", "twice": "EARLIER"}"#,
             r#"{"computus": "JULIAN"}"#,
         ];
         for (key, date) in Dated::KEYS.iter().zip(dates) {
@@ -1228,7 +1385,7 @@ mod tests {
             .unwrap();
         assert!(
             easter.ends_with(
-                "Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."
+                "Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth`, `tithiInMonth` or `easter` is given."
             ),
             "{easter}"
         );

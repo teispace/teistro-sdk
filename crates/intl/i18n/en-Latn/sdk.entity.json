@@ -5123,6 +5123,78 @@
     "AYUDHA_PUJA": {
       "name": "Ayutha Pooja",
       "prose": "Ayutha Pooja"
+    },
+    "MAGH_BIHU": {
+      "name": "Magh Bihu",
+      "prose": "Magh Bihu"
+    },
+    "MAGH_BIHU_SECOND": {
+      "name": "Magh Bihu (second day)",
+      "prose": "Magh Bihu (second day)"
+    },
+    "BOHAG_BIHU": {
+      "name": "Bohag Bihu",
+      "prose": "Bohag Bihu"
+    },
+    "BOHAG_BIHU_SECOND": {
+      "name": "Bohag Bihu (second day)",
+      "prose": "Bohag Bihu (second day)"
+    },
+    "BOHAG_BIHU_THIRD": {
+      "name": "Bohag Bihu (third day)",
+      "prose": "Bohag Bihu (third day)"
+    },
+    "KATI_BIHU": {
+      "name": "Kati Bihu",
+      "prose": "Kati Bihu"
+    },
+    "GWTHAR_BATHOU_SAN": {
+      "name": "Gwthar Bathou San",
+      "prose": "Gwthar Bathou San"
+    },
+    "ME_DAM_ME_PHI": {
+      "name": "Me-Dam-Me-Phi",
+      "prose": "Me-Dam-Me-Phi"
+    },
+    "BIR_CHILARAI_DIVAS": {
+      "name": "Bir Chilarai Divas",
+      "prose": "Bir Chilarai Divas"
+    },
+    "SATI_SADHANI_DIVAS": {
+      "name": "Sati Sadhani Divas",
+      "prose": "Sati Sadhani Divas"
+    },
+    "DAMODARDEVA_TITHI": {
+      "name": "Damodardeva Tithi",
+      "prose": "Damodardeva Tithi"
+    },
+    "MADHABDEVA_JANMOTSAV": {
+      "name": "Madhabdeva Janmotsav",
+      "prose": "Madhabdeva Janmotsav"
+    },
+    "MADHABDEVA_TIROBHAV": {
+      "name": "Madhabdeva Tirobhav Tithi",
+      "prose": "Madhabdeva Tirobhav Tithi"
+    },
+    "SANKARDEVA_JANMOTSAV": {
+      "name": "Srimanta Sankardeva Janmotsav",
+      "prose": "Srimanta Sankardeva Janmotsav"
+    },
+    "SANKARDEVA_TIROBHAV": {
+      "name": "Srimanta Sankardeva Tirobhav Tithi",
+      "prose": "Srimanta Sankardeva Tirobhav Tithi"
+    },
+    "KARAM_PUJA": {
+      "name": "Karam Puja",
+      "prose": "Karam Puja"
+    },
+    "LACHIT_DIVAS": {
+      "name": "Lachit Divas",
+      "prose": "Lachit Divas"
+    },
+    "ASOM_DIVAS": {
+      "name": "Asom Divas (Sukapha Divas)",
+      "prose": "Asom Divas (Sukapha Divas)"
     }
   },
   "agni_vasa": {

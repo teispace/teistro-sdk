@@ -5133,6 +5133,78 @@
     "AYUDHA_PUJA": {
       "name": "आयुध पूजा",
       "prose": "आयुध पूजा"
+    },
+    "MAGH_BIHU": {
+      "name": "माघ बिहु",
+      "prose": "माघ बिहु"
+    },
+    "MAGH_BIHU_SECOND": {
+      "name": "माघ बिहु (दोस्रो दिन)",
+      "prose": "माघ बिहु (दोस्रो दिन)"
+    },
+    "BOHAG_BIHU": {
+      "name": "बोहाग बिहु",
+      "prose": "बोहाग बिहु"
+    },
+    "BOHAG_BIHU_SECOND": {
+      "name": "बोहाग बिहु (दोस्रो दिन)",
+      "prose": "बोहाग बिहु (दोस्रो दिन)"
+    },
+    "BOHAG_BIHU_THIRD": {
+      "name": "बोहाग बिहु (तेस्रो दिन)",
+      "prose": "बोहाग बिहु (तेस्रो दिन)"
+    },
+    "KATI_BIHU": {
+      "name": "काती बिहु",
+      "prose": "काती बिहु"
+    },
+    "GWTHAR_BATHOU_SAN": {
+      "name": "ग्वथार बाथौ सान",
+      "prose": "ग्वथार बाथौ सान"
+    },
+    "ME_DAM_ME_PHI": {
+      "name": "मे-दाम-मे-फी",
+      "prose": "मे-दाम-मे-फी"
+    },
+    "BIR_CHILARAI_DIVAS": {
+      "name": "बीर चिलाराय दिवस",
+      "prose": "बीर चिलाराय दिवस"
+    },
+    "SATI_SADHANI_DIVAS": {
+      "name": "सती साधनी दिवस",
+      "prose": "सती साधनी दिवस"
+    },
+    "DAMODARDEVA_TITHI": {
+      "name": "दामोदरदेव तिथि",
+      "prose": "दामोदरदेव तिथि"
+    },
+    "MADHABDEVA_JANMOTSAV": {
+      "name": "माधवदेव जन्मोत्सव",
+      "prose": "माधवदेव जन्मोत्सव"
+    },
+    "MADHABDEVA_TIROBHAV": {
+      "name": "माधवदेव तिरोभाव तिथि",
+      "prose": "माधवदेव तिरोभाव तिथि"
+    },
+    "SANKARDEVA_JANMOTSAV": {
+      "name": "श्रीमन्त शङ्करदेव जन्मोत्सव",
+      "prose": "श्रीमन्त शङ्करदेव जन्मोत्सव"
+    },
+    "SANKARDEVA_TIROBHAV": {
+      "name": "श्रीमन्त शङ्करदेव तिरोभाव तिथि",
+      "prose": "श्रीमन्त शङ्करदेव तिरोभाव तिथि"
+    },
+    "KARAM_PUJA": {
+      "name": "करम पूजा",
+      "prose": "करम पूजा"
+    },
+    "LACHIT_DIVAS": {
+      "name": "लाचित दिवस",
+      "prose": "लाचित दिवस"
+    },
+    "ASOM_DIVAS": {
+      "name": "असम दिवस (सुकाफा दिवस)",
+      "prose": "असम दिवस (सुकाफा दिवस)"
     }
   },
   "agni_vasa": {

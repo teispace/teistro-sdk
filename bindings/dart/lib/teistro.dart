@@ -18039,7 +18039,17 @@ enum FestivalPack {
   /// Ayutha Pooja the day before Vijaya Dasami, and the days set by the
   /// moon as printed, marked so; its lunar days meet the print under the
   /// `tamil-vakya` profile (`03-design/tamil-nadu-holidays.md`).
-  indiaTamilNadu('INDIA_TAMIL_NADU');
+  indiaTamilNadu('INDIA_TAMIL_NADU'),
+
+  /// Assam's public holidays: the General Administration Department's
+  /// yearly notification by rule, each day the central list also holds by
+  /// [indiaCentral]'s rule and each West Bengal keeps alike by
+  /// [indiaWestBengal]'s, Assam's own days by the Assamese month (the three
+  /// Bihus on the months' ends, Sati Sadhani Divas on Bohag 7, Gwthar
+  /// Bathou San on Magh's second Tuesday), the Vaishnava saints' days and
+  /// Janmastomi on a tithi of an Assamese month, and the days set by the
+  /// moon as printed, marked so (`03-design/assam-holidays.md`).
+  indiaAssam('INDIA_ASSAM');
 
   const FestivalPack(this.key);
 

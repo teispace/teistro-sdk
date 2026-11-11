@@ -35,6 +35,7 @@ mod dated;
 mod ekadashi;
 mod following;
 mod gaudiya;
+mod india_assam;
 mod india_central;
 mod india_kerala;
 mod india_maharashtra;
@@ -330,6 +331,20 @@ impl Window {
             | Window::DayMuhurta { .. }
             | Window::Moonrise => None,
         }
+    }
+
+    /// Whether this is the sunrise, which a tithi's day in a month is
+    /// judged at when a rule names no window ([`Dated::TithiInMonth`]).
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::Window;
+    ///
+    /// assert!(Window::Sunrise.is_sunrise());
+    /// assert!(!Window::Sunset.is_sunrise());
+    /// ```
+    #[must_use]
+    pub const fn is_sunrise(&self) -> bool {
+        matches!(self, Window::Sunrise)
     }
 
     /// Whether the window lies in the daylight, sunrise to sunset; the

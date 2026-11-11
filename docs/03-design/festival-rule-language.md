@@ -445,6 +445,30 @@ month's other occurrence the form reads the days a month either side of
 the range, which the request founds only when such a rule asks
 (`Dated::MONTH_DAYS`, 32).
 
+**A tithi in a solar month.** A sixth form keeps the day a tithi holds
+in a month of a calendar, as Assam keeps the days of its Vaishnava saints
+by the tithi of an Assamese month (`03-design/assam-holidays.md`,
+C1361): Srimanta Sankardeva's birthday on the bright 10th in Ahin,
+Madhabdeva's on the dark 1st in Jeth, Janmashtami on the dark 8th in
+Bhada. The lunar month cannot say these: the dark 1st in Jeth was
+Vaishakha's (amanta) in 2019 and Jyeshtha's in 2020, and the dark 8th in
+Bhada Shravana's or Bhadrapada's, while the Assamese month held every
+year of eight notifications.
+
+```json
+{"key": "SANKARDEVA_JANMOTSAV", "source": "...", "tithiInMonth": {"calendar": "ASSAM_SOLAR", "month": 6, "tithi": "SHUKLA_DASHAMI", "twice": "EARLIER"}}
+{"key": "MADHABDEVA_TIROBHAV", "source": "...", "tithiInMonth": {"calendar": "ASSAM_SOLAR", "month": 5, "tithi": "KRISHNA_PANCHAMI", "twice": "EARLIER", "at": {"window": "DAY_MUHURTA", "from": 1, "to": 15}}}
+```
+
+An occurrence of the tithi is kept on the day holding more of the window
+`at`, the earlier of two holding as much, or, when no day holds any of
+it, on the day it runs in. Left out, `at` is the sunrise, and the
+occurrence is kept as a star's is, on the first day whose sunrise it
+holds. The days of the saints' passing (tirobhav) follow the daylight,
+all fifteen of its muhurtas, the day holding more of it (C1362). `twice`,
+`days`, `on` and the month either side of the range are as for a star.
+The moonrise is refused, its search being one no dated rule founds.
+
 **A count from Easter.** A fourth form keeps the day `days` days after
 Easter Sunday, before it when negative, by the Western (`GREGORIAN`) or
 the Eastern (`JULIAN`) computus:
