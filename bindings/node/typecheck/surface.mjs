@@ -85,6 +85,7 @@ function instances() {
     TimeArea: ctx.time,
     IntlArea: ctx.intl,
     KeysArea: ctx.keys,
+    GeoArea: ctx.geo,
     FrameArea: ctx.frame,
     ChartArea: ctx.chart,
     AlmanacArea: ctx.almanac,

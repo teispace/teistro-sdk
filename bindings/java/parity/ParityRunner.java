@@ -1727,6 +1727,8 @@ public final class ParityRunner {
             surface("frame.canonical", () -> ctx.frame().canonical());
             surface("frame.pack", () -> ctx.frame().pack(frame));
             surface("frame.unpack", () -> ctx.frame().unpack(0));
+            surface("geo.load", () -> ctx.geo().load(""));
+            surface("geo.resolve", () -> ctx.geo().resolve(null));
             surface("chart.layout", () -> ctx.chart().layout(""));
             surface("chart.found", () -> ctx.chart().found(0, place, 0, ChartOptions.none()));
             surface("chart.found_many", () -> ctx.chart().foundMany(new double[] {0}, place, 0, ChartOptions.none()));

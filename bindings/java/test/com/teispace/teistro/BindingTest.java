@@ -371,6 +371,31 @@ public final class BindingTest {
                         new com.teispace.teistro.request.IssueRequest("almanac.nothing", Map.of())));
                 same("issue.record", none.field(), "a record this build lacks");
             }
+            try (Context bare = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build());
+                    Context placed = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build())) {
+                // The SDK's test table, the same the Rust suite loads.
+                String table = java.nio.file.Files.readString(java.nio.file.Path.of("crates/sdk/tests/geo-table.json"));
+                com.teispace.teistro.request.PlaceRequest kathmandu =
+                        com.teispace.teistro.request.PlaceRequest.of(Json.read("{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324}"));
+                TeistroException unprovided = refusal(() -> bare.geo().resolve(kathmandu));
+                same(Status.CAPABILITY, unprovided.status(), "no provider unless one is given");
+                same("geo", unprovided.field(), "named on geo");
+                same("2026.11.0", placed.geo().load(table).dataVersion(), "the table's data version");
+                com.teispace.teistro.request.ResolvedPlace place = placed.geo().resolve(kathmandu);
+                same("Asia/Kathmandu", place.zone(), "the zone");
+                same(1337.0, place.height().metres(), "the height");
+                same("EGM2008", place.height().datum(), "its datum");
+                same(30.0, place.height().resolutionM(), "its resolution");
+                same("NP-P3", place.admin().get(1).code(), "the province's ISO 3166-2 code");
+                same("2026.11.0", place.source().dataVersion(), "who answered, from which data");
+                Issued issued = placed.verify().issue(new com.teispace.teistro.request.IssueRequest("chart.found",
+                        Json.read("{\"instant\": 2461192.760417, \"state\": true, \"place\": " + Json.write(place) + "}")));
+                check(issued.receipt().contains("\"zone\":\"Asia/Kathmandu\""), "the receipt keeps the zone");
+                check(issued.receipt().contains("\"dataVersion\":\"2026.11.0\""), "and the data version");
+                check(issued.receipt().contains("\"metres\":1337"), "and the height");
+                ReceiptCheck replayed = bare.verify().receipt(issued.receipt());
+                same("HELD", replayed.verdict(), "replayed without the provider: " + replayed.reason());
+            }
             try (Context modern = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build());
                     Context official = teistro.context(ContextOptions.builder().profile("nepali-committee")
                             .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
