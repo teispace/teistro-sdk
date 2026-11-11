@@ -107,6 +107,26 @@ fn a_fallback_says_which_locale_gave_the_form() {
 }
 
 #[test]
+fn a_locale_not_loaded_resolves_nothing() {
+    let intl = intl();
+    // Not English by default: a tag the engine does not hold has no
+    // chain, so neither a message nor a name is answered from it.
+    assert_eq!(intl.chain_from("xx-Latn").len(), 0);
+    assert!(
+        intl.resolution_from("xx-Latn", "sdk.reason.grahaInBhava")
+            .is_none()
+    );
+    assert!(intl.entity_from("xx-Latn", "graha.SUN").is_none());
+    let chain: Vec<&str> = intl
+        .chain_from("hi-Deva-IN")
+        .iter()
+        .map(|locale| locale.tag.as_str())
+        .collect();
+    assert_eq!(chain.first(), Some(&"hi-Deva-IN"));
+    assert_eq!(chain.last(), Some(&"en-Latn"));
+}
+
+#[test]
 fn a_name_is_found_in_any_script_and_any_spelling() {
     let intl = intl();
     for text in [

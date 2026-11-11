@@ -340,6 +340,9 @@ fn rounding_is_half_up_unless_asked() {
     assert_eq!(minor("0.015", "HALF_EVEN"), (2, true));
     assert_eq!(minor("0.0051", "HALF_EVEN"), (1, true));
     assert_eq!(minor("0.025", "HALF_EVEN"), (2, true));
+    // Away from a tie the two agree: only a half is taken to the even.
+    assert_eq!(minor("0.006", "HALF_EVEN"), (1, true));
+    assert_eq!(minor("0.014", "HALF_EVEN"), (1, true));
     assert_eq!(minor("1.10", "EXACT"), (110, false));
     assert_eq!(minor("1.1000", "EXACT"), (110, false));
     assert_eq!(minor(".5", "HALF_UP"), (50, false));
