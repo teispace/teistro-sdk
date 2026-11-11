@@ -770,6 +770,7 @@ from ._requests import (
     DatedRuleTithiInMonth as DatedRuleTithiInMonth,
     Guard as Guard,
     InAdhika as InAdhika,
+    InMonth as InMonth,
     FestivalChoice as FestivalChoice,
     VrataParana as VrataParana,
     VrataParanaTithiEnd as VrataParanaTithiEnd,
