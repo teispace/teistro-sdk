@@ -37,7 +37,6 @@ teistro-test-adapter = { path = "../test-adapter" }
 
 [build-dependencies]
 serde_json = "1"
-getrandom = "0.3"
 
 # The binary loads the adapter `--plugin` names, which is one `unsafe`
 # call with its SAFETY comment (`src/main.rs`); unsafe is `deny` rather
