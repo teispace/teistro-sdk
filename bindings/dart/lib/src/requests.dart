@@ -333,6 +333,7 @@ final class AlmanacDaysRequest extends _Request {
     required this.first,
     this.gowri = false,
     this.homaAhuti = false,
+    this.horizonProfile,
     this.lagnas = false,
     this.last,
     this.latitudeDeg,
@@ -362,6 +363,9 @@ final class AlmanacDaysRequest extends _Request {
   final bool gowri;
 
   final bool homaAhuti;
+
+  /// The terrain's apparent elevation by azimuth, for each day's visible rises and sets behind it (`03-design/terrain-horizon.md`).
+  final List<HorizonSample>? horizonProfile;
 
   final bool lagnas;
 
@@ -401,6 +405,7 @@ final class AlmanacDaysRequest extends _Request {
     'first': first._wire,
     'gowri': gowri,
     'homaAhuti': homaAhuti,
+    if (horizonProfile case final horizonProfileValue?) 'horizonProfile': [for (final e0 in horizonProfileValue) e0._wire],
     'lagnas': lagnas,
     if (last case final lastValue?) 'last': lastValue._wire,
     if (latitudeDeg case final latitudeDegValue?) 'latitudeDeg': latitudeDegValue,
@@ -417,7 +422,7 @@ final class AlmanacDaysRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
 }
 
 /// The query as a binding writes it.
@@ -3052,6 +3057,29 @@ enum ChangeKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// One sample of a horizon profile: the terrain's apparent elevation at an azimuth, as an observer at the place sees it.
+final class HorizonSample extends _Request {
+  const HorizonSample({
+    required this.azimuthDeg,
+    required this.elevationDeg,
+  });
+
+  /// The azimuth, degrees in `[0, 360)`, from north through east.
+  final double azimuthDeg;
+
+  /// The terrain's apparent elevation there, degrees, above −5 and below 45: the angle the skyline stands at above the level horizon, as seen, terrestrial refraction and the Earth's curve included.
+  final double elevationDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'azimuthDeg': azimuthDeg,
+    'elevationDeg': elevationDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [azimuthDeg, elevationDeg];
 }
 
 /// A place as a provider resolved it: the point asked, the zone, the ground height and the admin units there, and who answered.
@@ -5888,6 +5916,17 @@ final class FestivalRulesIndiaKarnataka extends FestivalRules {
   List<Object?> get _fields => const [];
 }
 
+/// `INDIA_TELANGANA`.
+final class FestivalRulesIndiaTelangana extends FestivalRules {
+  const FestivalRulesIndiaTelangana();
+
+  @override
+  Object? get _wire => 'INDIA_TELANGANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class FestivalRulesValue extends FestivalRules {
   const FestivalRulesValue(this.value);
@@ -8393,6 +8432,17 @@ final class FestivalRuleItemIndiaKarnataka extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'INDIA_KARNATAKA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_TELANGANA`.
+final class FestivalRuleItemIndiaTelangana extends FestivalRuleItem {
+  const FestivalRuleItemIndiaTelangana();
+
+  @override
+  Object? get _wire => 'INDIA_TELANGANA';
 
   @override
   List<Object?> get _fields => const [];

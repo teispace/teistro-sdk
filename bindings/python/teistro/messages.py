@@ -955,6 +955,13 @@ class FestivalKey(enum.StrEnum):
     SOURAMANA_UGADI = "festival.SOURAMANA_UGADI"
     UTTARAYANA_PUNYAKALA = "festival.UTTARAYANA_PUNYAKALA"
     RAMANUJACHARYA_JAYANTI = "festival.RAMANUJACHARYA_JAYANTI"
+    BHOGI = "festival.BHOGI"
+    KANUMU = "festival.KANUMU"
+    JAGJIVAN_RAM_JAYANTI = "festival.JAGJIVAN_RAM_JAYANTI"
+    BATHUKAMMA = "festival.BATHUKAMMA"
+    SADDULA_BATHUKAMMA = "festival.SADDULA_BATHUKAMMA"
+    VIJAYA_DASHAMI_NEXT_DAY = "festival.VIJAYA_DASHAMI_NEXT_DAY"
+    BOXING_DAY = "festival.BOXING_DAY"
 
 
 class FestivalKindKey(enum.StrEnum):
@@ -7323,6 +7330,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.BASAVA_JAYANTI")
 
     @property
+    def bathukamma(self) -> EntityForms:
+        """The forms of `festival.BATHUKAMMA` in the current locale."""
+        return self._r.entity("festival.BATHUKAMMA")
+
+    @property
     def bhaktapur_brahmayani_jatra(self) -> EntityForms:
         """The forms of `festival.BHAKTAPUR_BRAHMAYANI_JATRA` in the current locale."""
         return self._r.entity("festival.BHAKTAPUR_BRAHMAYANI_JATRA")
@@ -7388,6 +7400,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.BHISHMA_PANCHAKA_ARAMBHA")
 
     @property
+    def bhogi(self) -> EntityForms:
+        """The forms of `festival.BHOGI` in the current locale."""
+        return self._r.entity("festival.BHOGI")
+
+    @property
     def bhumiraj(self) -> EntityForms:
         """The forms of `festival.BHUMIRAJ` in the current locale."""
         return self._r.entity("festival.BHUMIRAJ")
@@ -7441,6 +7458,11 @@ class MessagesSdkEntityFestival:
     def bohag_bihu_third(self) -> EntityForms:
         """The forms of `festival.BOHAG_BIHU_THIRD` in the current locale."""
         return self._r.entity("festival.BOHAG_BIHU_THIRD")
+
+    @property
+    def boxing_day(self) -> EntityForms:
+        """The forms of `festival.BOXING_DAY` in the current locale."""
+        return self._r.entity("festival.BOXING_DAY")
 
     @property
     def buddhavatar(self) -> EntityForms:
@@ -8123,6 +8145,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.JAGANNATH_RATH_JATRA")
 
     @property
+    def jagjivan_ram_jayanti(self) -> EntityForms:
+        """The forms of `festival.JAGJIVAN_RAM_JAYANTI` in the current locale."""
+        return self._r.entity("festival.JAGJIVAN_RAM_JAYANTI")
+
+    @property
     def jain_parva_amavasya(self) -> EntityForms:
         """The forms of `festival.JAIN_PARVA_AMAVASYA` in the current locale."""
         return self._r.entity("festival.JAIN_PARVA_AMAVASYA")
@@ -8231,6 +8258,11 @@ class MessagesSdkEntityFestival:
     def kannada_rajyotsava(self) -> EntityForms:
         """The forms of `festival.KANNADA_RAJYOTSAVA` in the current locale."""
         return self._r.entity("festival.KANNADA_RAJYOTSAVA")
+
+    @property
+    def kanumu(self) -> EntityForms:
+        """The forms of `festival.KANUMU` in the current locale."""
+        return self._r.entity("festival.KANUMU")
 
     @property
     def kanya_mariyamma_jayanti(self) -> EntityForms:
@@ -8893,6 +8925,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.ROPAI_JATRA")
 
     @property
+    def saddula_bathukamma(self) -> EntityForms:
+        """The forms of `festival.SADDULA_BATHUKAMMA` in the current locale."""
+        return self._r.entity("festival.SADDULA_BATHUKAMMA")
+
+    @property
     def safala_ekadashi(self) -> EntityForms:
         """The forms of `festival.SAFALA_EKADASHI` in the current locale."""
         return self._r.entity("festival.SAFALA_EKADASHI")
@@ -9331,6 +9368,11 @@ class MessagesSdkEntityFestival:
     def vijaya_dashami(self) -> EntityForms:
         """The forms of `festival.VIJAYA_DASHAMI` in the current locale."""
         return self._r.entity("festival.VIJAYA_DASHAMI")
+
+    @property
+    def vijaya_dashami_next_day(self) -> EntityForms:
+        """The forms of `festival.VIJAYA_DASHAMI_NEXT_DAY` in the current locale."""
+        return self._r.entity("festival.VIJAYA_DASHAMI_NEXT_DAY")
 
     @property
     def vijaya_ekadashi(self) -> EntityForms:

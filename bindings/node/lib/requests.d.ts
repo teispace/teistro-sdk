@@ -214,6 +214,10 @@ export interface AlmanacDaysRequest {
   readonly first: DayAsked;
   readonly gowri?: boolean;
   readonly homaAhuti?: boolean;
+  /**
+   * The terrain's apparent elevation by azimuth, for each day's visible rises and sets behind it (`03-design/terrain-horizon.md`).
+   */
+  readonly horizonProfile?: readonly HorizonSample[] | null;
   readonly lagnas?: boolean;
   readonly last?: DayAsked | null;
   readonly latitudeDeg?: number | null;
@@ -1853,6 +1857,20 @@ export interface DayAsked {
  * `VARA`: The vara, at sunrise.
  */
 export type ChangeKind = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'MOON_SIGN' | 'SUN_SIGN' | 'VARA';
+
+/**
+ * One sample of a horizon profile: the terrain's apparent elevation at an azimuth, as an observer at the place sees it.
+ */
+export interface HorizonSample {
+  /**
+   * The azimuth, degrees in `[0, 360)`, from north through east.
+   */
+  readonly azimuthDeg: number;
+  /**
+   * The terrain's apparent elevation there, degrees, above −5 and below 45: the angle the skyline stands at above the level horizon, as seen, terrestrial refraction and the Earth's curve included.
+   */
+  readonly elevationDeg: number;
+}
 
 /**
  * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
@@ -4026,7 +4044,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5717,7 +5735,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.

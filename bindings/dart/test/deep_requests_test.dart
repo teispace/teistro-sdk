@@ -532,6 +532,7 @@ void main() {
         first: DayAsked(day: 1, month: 1, year: 1),
         gowri: true,
         homaAhuti: true,
+        horizonProfile: [HorizonSample(azimuthDeg: 1.5, elevationDeg: 1.5)],
         lagnas: true,
         last: DayAsked(day: 1, month: 1, year: 1),
         latitudeDeg: 1.5,

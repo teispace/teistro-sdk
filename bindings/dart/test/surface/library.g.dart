@@ -286,6 +286,7 @@ final List<Surface> requests = [
     Param('first', Named('DayAsked')),
     Param('gowri', Scalar('bool')),
     Param('homaAhuti', Scalar('bool')),
+    Param('horizonProfile', ListOf(Named('HorizonSample'), (items) => List<HorizonSample>.from(items))),
     Param('lagnas', Scalar('bool')),
     Param('last', Named('DayAsked')),
     Param('latitudeDeg', Scalar('double')),
@@ -299,7 +300,7 @@ final List<Surface> requests = [
     Param('utcOffsetSeconds', Scalar('int')),
     Param('years', Scalar('bool')),
     Param('zone', Scalar('Object')),
-  ], fields: (v) => [v.altitudeM, v.calendar, v.eclipses, v.festivals, v.first, v.gowri, v.homaAhuti, v.lagnas, v.last, v.latitudeDeg, v.longitudeDeg, v.markers, v.muhurta, v.nepalSambat, v.place, v.sky, v.skyStepMinutes, v.utcOffsetSeconds, v.years, v.zone]),
+  ], fields: (v) => [v.altitudeM, v.calendar, v.eclipses, v.festivals, v.first, v.gowri, v.homaAhuti, v.horizonProfile, v.lagnas, v.last, v.latitudeDeg, v.longitudeDeg, v.markers, v.muhurta, v.nepalSambat, v.place, v.sky, v.skyStepMinutes, v.utcOffsetSeconds, v.years, v.zone]),
   Built<DeathTimeQuery>('DeathTimeQuery', DeathTimeQuery.new, [
     Param('altitudeM', Scalar('double')),
     Param('at', Scalar('double')),
@@ -808,6 +809,10 @@ final List<Surface> requests = [
     Param('year', Scalar('int')),
   ], fields: (v) => [v.day, v.month, v.year]),
   KeySet<ChangeKind>('ChangeKind', ChangeKind.values, (m) => m.key),
+  Built<HorizonSample>('HorizonSample', HorizonSample.new, [
+    Param('azimuthDeg', Scalar('double')),
+    Param('elevationDeg', Scalar('double')),
+  ], fields: (v) => [v.azimuthDeg, v.elevationDeg]),
   Built<ResolvedPlace>('ResolvedPlace', ResolvedPlace.new, [
     Param('admin', ListOf(Named('AdminUnit'), (items) => List<AdminUnit>.from(items))),
     Param('height', Named('GroundHeight')),
@@ -1256,6 +1261,7 @@ final List<Surface> requests = [
   Built<FestivalRulesIndiaTamilNadu>('FestivalRulesIndiaTamilNadu', FestivalRulesIndiaTamilNadu.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaAssam>('FestivalRulesIndiaAssam', FestivalRulesIndiaAssam.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaKarnataka>('FestivalRulesIndiaKarnataka', FestivalRulesIndiaKarnataka.new, const [], parent: 'FestivalRules', fields: (_) => const []),
+  Built<FestivalRulesIndiaTelangana>('FestivalRulesIndiaTelangana', FestivalRulesIndiaTelangana.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesValue>('FestivalRulesValue', FestivalRulesValue.new, [
     Param('value', ListOf(Named('FestivalRuleItem'), (items) => List<FestivalRuleItem>.from(items)), named: false),
   ], parent: 'FestivalRules', fields: (v) => [v.value]),
@@ -1602,6 +1608,7 @@ final List<Surface> requests = [
   Built<FestivalRuleItemIndiaTamilNadu>('FestivalRuleItemIndiaTamilNadu', FestivalRuleItemIndiaTamilNadu.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaAssam>('FestivalRuleItemIndiaAssam', FestivalRuleItemIndiaAssam.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaKarnataka>('FestivalRuleItemIndiaKarnataka', FestivalRuleItemIndiaKarnataka.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
+  Built<FestivalRuleItemIndiaTelangana>('FestivalRuleItemIndiaTelangana', FestivalRuleItemIndiaTelangana.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemSaitRule>('FestivalRuleItemSaitRule', FestivalRuleItemSaitRule.new, [
     Param('value', Named('SaitRule'), named: false),
   ], parent: 'FestivalRuleItem', fields: (v) => [v.value]),
