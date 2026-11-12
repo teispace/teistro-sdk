@@ -15,11 +15,13 @@
 //! with no notice holds none of them.
 
 use teistro_calendar::CalendarDay;
-use teistro_core::catalogue::{Calendar, FestivalKind, Tradition};
+use teistro_core::catalogue::{Calendar, FestivalKind, Masa, Nakshatra, Tithi, Tradition};
 
+use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{
-    Dated, DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedEntry, PublishedSet,
+    Dated, DatedRule, FestivalMeta, FestivalRule, FollowingRule, InAdhika, PublishedEntry,
+    PublishedSet, Which,
 };
 
 /// The notice the list comes from.
@@ -49,6 +51,20 @@ pub(super) type Named<'a> = (&'a str, &'a str, &'a str);
 
 /// A day one year's notice prints: its year, key and (month, day).
 pub(super) type OnDay<'a> = (i32, &'a str, (u8, u8));
+
+/// A state's own lunar day: key, amanta month, tithi, how the rule fits
+/// its two days, whether the list holds it optional, and what the day is.
+pub(super) type Own = (&'static str, Masa, Tithi, Fit, bool, &'static str);
+
+/// A state's day on a Gregorian date: key, (month, day), tradition,
+/// communities, and whether the list holds it optional.
+pub(super) type Civil = (
+    &'static str,
+    (u8, i8),
+    Option<Tradition>,
+    &'static [&'static str],
+    bool,
+);
 
 /// A day moved after its notice: key, year, the day, and the order.
 pub(super) type Declared = (&'static str, i32, (u8, u8), &'static str);
@@ -314,15 +330,120 @@ impl StateList {
 
     /// Nepal's printed panchanga's rule of each key, on the list.
     pub(super) fn by_print(&self, keys: &[&str]) -> Vec<FestivalRule> {
+        let kept: Vec<(&str, &str, bool)> = keys.iter().map(|&key| (key, key, false)).collect();
+        self.print_kept(&kept)
+    }
+
+    /// Nepal's printed panchanga's rule of each `(key, from, optional)`,
+    /// the print's `from` kept on the list under `key`.
+    pub(super) fn print_kept(&self, keys: &[(&str, &str, bool)]) -> Vec<FestivalRule> {
         let print = FestivalRule::nepal_panchanga();
         keys.iter()
-            .filter_map(|&key| {
-                find(&print, key).map(|rule| FestivalRule {
-                    meta: self.listed(Some(Tradition::Hindu), false),
+            .filter_map(|&(key, from, optional)| {
+                find(&print, from).map(|rule| FestivalRule {
+                    key: key.to_owned(),
+                    meta: self.listed(Some(Tradition::Hindu), optional),
                     ..rule
                 })
             })
             .collect()
+    }
+
+    /// The central list's lunar rule of each `(key, optional)`, kept in
+    /// the state: the same rule and values, the state's regions, and
+    /// optional as the state's list holds it.
+    pub(super) fn central_kept(&self, keys: &[(&str, bool)]) -> Vec<FestivalRule> {
+        let central = FestivalRule::india_central();
+        keys.iter()
+            .filter_map(|&(key, optional)| {
+                find(&central, key).map(|rule| FestivalRule {
+                    meta: FestivalMeta {
+                        optional,
+                        ..self.kept(rule.meta)
+                    },
+                    ..rule
+                })
+            })
+            .collect()
+    }
+
+    /// The state's own lunar rules, each citing `cite(key, what)`.
+    pub(super) fn own(
+        &self,
+        days: &[Own],
+        cite: impl Fn(&str, &str) -> String,
+    ) -> Vec<FestivalRule> {
+        days.iter()
+            .map(|&(key, month, tithi, fit, optional, what)| FestivalRule {
+                meta: self.listed(Some(Tradition::Hindu), optional),
+                ..fit.rule(
+                    key,
+                    Some(month),
+                    tithi.into(),
+                    InAdhika::Nija,
+                    &cite(key, what),
+                )
+            })
+            .collect()
+    }
+
+    /// The state's days on a Gregorian date, citing its `notice`.
+    pub(super) fn civil(&self, days: &[Civil], notice: &str) -> Vec<DatedRule> {
+        days.iter()
+            .map(|&(key, day, tradition, communities, optional)| {
+                let meta = FestivalMeta {
+                    communities: communities.iter().map(|&one| one.to_owned()).collect(),
+                    ..self.listed(tradition, optional)
+                };
+                on_civil_date(key, day, notice, meta)
+            })
+            .collect()
+    }
+
+    /// A Hindu day of the list on `day` of a solar calendar's `month`, a
+    /// negative day counting from the month's end.
+    pub(super) fn on_solar_day(
+        &self,
+        key: &str,
+        source: String,
+        (calendar, month, day): (Calendar, u8, i8),
+        optional: bool,
+    ) -> DatedRule {
+        DatedRule {
+            key: key.to_owned(),
+            source,
+            on: Dated::CivilDate {
+                calendar,
+                month,
+                day,
+                skipped: None,
+            },
+            meta: self.listed(Some(Tradition::Hindu), optional),
+        }
+    }
+
+    /// A Hindu day of the list on the day a solar calendar's `month` holds
+    /// `nakshatra`, `twice` choosing when the month holds it twice.
+    pub(super) fn on_star(
+        &self,
+        key: &str,
+        source: String,
+        (calendar, month): (Calendar, u8),
+        (nakshatra, twice): (Nakshatra, Which),
+        optional: bool,
+    ) -> DatedRule {
+        DatedRule {
+            key: key.to_owned(),
+            source,
+            on: Dated::NakshatraInMonth {
+                calendar,
+                month,
+                nakshatra,
+                twice,
+                days: 0,
+            },
+            meta: self.listed(Some(Tradition::Hindu), optional),
+        }
     }
 }
 

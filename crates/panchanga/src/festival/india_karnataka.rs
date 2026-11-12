@@ -27,12 +27,11 @@
 use teistro_calendar::easter::Computus;
 use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Tithi, Tradition};
 
-use super::india_central::{Named, OnDay, PrintedDays, StateList, find, on_civil_date, sighted};
+use super::india_central::{Civil, Named, OnDay, Own, PrintedDays, StateList, find, sighted};
 use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{
-    Dated, DatedRule, DayReckoning, FestivalMeta, FestivalRule, FollowingRule, InAdhika,
-    PublishedSet, Which,
+    Dated, DatedRule, DayReckoning, FestivalMeta, FestivalRule, FollowingRule, PublishedSet, Which,
 };
 
 /// Where the list is kept: India, then the state the notice names.
@@ -131,7 +130,7 @@ const AT_SUNRISE_KEYS: [&str; 3] = ["RAMA_NAVAMI", "SHANKARACHARYA_JAYANTI", "BA
 
 /// Karnataka's rules by the tithi of an amanta month: key, month, tithi,
 /// fit, whether restricted, and what the day is.
-const KARNATAKA: [(&str, Masa, Tithi, Fit, bool, &str); 9] = [
+const KARNATAKA: [Own; 9] = [
     (
         "DEVARA_DASIMAYYA_JAYANTI",
         Masa::Chaitra,
@@ -205,16 +204,6 @@ const KARNATAKA: [(&str, Masa, Tithi, Fit, bool, &str); 9] = [
         "Kanakadasa Jayanti, Kartika's dark 3rd (amanta), the third day after Kartika's full moon",
     ),
 ];
-
-/// The state's days on a Gregorian date: key, (month, day), tradition,
-/// communities, and whether it is a restricted holiday.
-type Civil = (
-    &'static str,
-    (u8, i8),
-    Option<Tradition>,
-    &'static [&'static str],
-    bool,
-);
 
 /// The state's days on a Gregorian date. Kanya Mariyamma Jayanti, the
 /// Nativity of Mary, and Vishwakarma Jayanti are printed on 8 and 17
@@ -410,27 +399,8 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn india_karnataka() -> Vec<FestivalRule> {
-        let central = FestivalRule::india_central();
-        let mut rules: Vec<FestivalRule> = CENTRAL_KEPT
-            .iter()
-            .filter_map(|&(key, restricted)| {
-                find(&central, key).map(|rule| FestivalRule {
-                    meta: FestivalMeta {
-                        optional: restricted,
-                        ..STATE.kept(rule.meta)
-                    },
-                    ..rule
-                })
-            })
-            .collect();
-        let print = FestivalRule::nepal_panchanga();
-        rules.extend(PRINT_KEPT.iter().filter_map(|&(key, from, restricted)| {
-            find(&print, from).map(|rule| FestivalRule {
-                key: key.to_owned(),
-                meta: listed(Some(Tradition::Hindu), restricted),
-                ..rule
-            })
-        }));
+        let mut rules = STATE.central_kept(&CENTRAL_KEPT);
+        rules.extend(STATE.print_kept(&PRINT_KEPT));
         let text = FestivalRule::dharmasindhu();
         rules.extend(TEXT_KEPT.iter().filter_map(|&(key, from, restricted)| {
             find(&text, from).map(|rule| FestivalRule {
@@ -439,27 +409,14 @@ impl FestivalRule {
                 ..rule
             })
         }));
-        rules.extend(
-            KARNATAKA
-                .iter()
-                .map(|&(key, month, tithi, fit, restricted, what)| {
-                    let why = if AT_SUNRISE_KEYS.contains(&key) {
-                        AT_SUNRISE
-                    } else {
-                        ALMANAC
-                    };
-                    FestivalRule {
-                        meta: listed(Some(Tradition::Hindu), restricted),
-                        ..fit.rule(
-                            key,
-                            Some(month),
-                            tithi.into(),
-                            InAdhika::Nija,
-                            &format!("{NOTICE}: {what}; {why}"),
-                        )
-                    }
-                }),
-        );
+        rules.extend(STATE.own(&KARNATAKA, |key, what| {
+            let why = if AT_SUNRISE_KEYS.contains(&key) {
+                AT_SUNRISE
+            } else {
+                ALMANAC
+            };
+            format!("{NOTICE}: {what}; {why}")
+        }));
         rules
     }
 }
@@ -504,17 +461,7 @@ impl DatedRule {
             },
             meta: listed(Some(Tradition::Christian), true),
         });
-        rules.extend(
-            CIVIL
-                .iter()
-                .map(|&(key, day, tradition, communities, restricted)| {
-                    let meta = FestivalMeta {
-                        communities: communities.iter().map(|&one| one.to_owned()).collect(),
-                        ..listed(tradition, restricted)
-                    };
-                    on_civil_date(key, day, NOTICE, meta)
-                }),
-        );
+        rules.extend(STATE.civil(&CIVIL, NOTICE));
         rules.push(DatedRule {
             key: "SOURAMANA_UGADI".to_owned(),
             source: format!(
@@ -527,68 +474,51 @@ impl DatedRule {
             },
             meta: listed(Some(Tradition::Hindu), true),
         });
-        rules.push(DatedRule {
-            key: "UTTARAYANA_PUNYAKALA".to_owned(),
-            source: format!(
+        rules.push(STATE.on_solar_day(
+            "UTTARAYANA_PUNYAKALA",
+            format!(
                 "{NOTICE}: Uttarayana Punyakala, Makara Sankranti; the first day of Makaram, the sankranti's day when it falls before three fifths of the daylight and the next day after (C1373)"
             ),
-            on: Dated::CivilDate {
-                calendar: Calendar::MalayalamSolar,
-                month: 6,
-                day: 1,
-                skipped: None,
-            },
-            meta: listed(Some(Tradition::Hindu), false),
-        });
-        rules.push(DatedRule {
-            key: "TULA_SANKRANTI".to_owned(),
-            source: format!(
+            (Calendar::MalayalamSolar, 6, 1),
+            false,
+        ));
+        rules.push(STATE.on_solar_day(
+            "TULA_SANKRANTI",
+            format!(
                 "{NOTICE}: the Annexure's Tula Sankramana; the first day of Thulam, the sankranti's day when it falls before three fifths of the daylight and the next day after (C1373)"
             ),
-            on: Dated::CivilDate {
-                calendar: Calendar::MalayalamSolar,
-                month: 3,
-                day: 1,
-                skipped: None,
-            },
-            meta: listed(Some(Tradition::Hindu), true),
-        });
-        let starred = |key: &str, calendar, month, nakshatra, twice, what: &str| DatedRule {
-            key: key.to_owned(),
-            source: format!("{NOTICE}: {what}"),
-            on: Dated::NakshatraInMonth {
-                calendar,
+            (Calendar::MalayalamSolar, 3, 1),
+            true,
+        ));
+        let starred = [
+            (
+                "THIRUVONAM",
+                (Calendar::MalayalamSolar, 1),
+                Nakshatra::Shravana,
+                "the Annexure's Onam, Thiruvonam (Shravana) in Chingam, as Kerala's list keeps it (C1323)",
+            ),
+            (
+                "SREE_NARAYANA_GURU_JAYANTHI",
+                (Calendar::MalayalamSolar, 1),
+                Nakshatra::Shatabhisha,
+                "the Annexure's Brahmashri Narayanaguru Jayanti, Chatayam (Shatabhisha) in Chingam, as Kerala's list keeps it (C1323)",
+            ),
+            (
+                "RAMANUJACHARYA_JAYANTI",
+                (Calendar::TamilSolar, 1),
+                Nakshatra::Ardra,
+                "the Annexure's Sri Ramanujacharya Jayanti, Thiruvathirai (Ardra) in Chittirai, the later of two as Kerala's and Tamil Nadu's lists keep a star (C1323, C1374)",
+            ),
+        ];
+        rules.extend(starred.into_iter().map(|(key, month, nakshatra, what)| {
+            STATE.on_star(
+                key,
+                format!("{NOTICE}: {what}"),
                 month,
-                nakshatra,
-                twice,
-                days: 0,
-            },
-            meta: listed(Some(Tradition::Hindu), true),
-        };
-        rules.push(starred(
-            "THIRUVONAM",
-            Calendar::MalayalamSolar,
-            1,
-            Nakshatra::Shravana,
-            Which::Later,
-            "the Annexure's Onam, Thiruvonam (Shravana) in Chingam, as Kerala's list keeps it (C1323)",
-        ));
-        rules.push(starred(
-            "SREE_NARAYANA_GURU_JAYANTHI",
-            Calendar::MalayalamSolar,
-            1,
-            Nakshatra::Shatabhisha,
-            Which::Later,
-            "the Annexure's Brahmashri Narayanaguru Jayanti, Chatayam (Shatabhisha) in Chingam, as Kerala's list keeps it (C1323)",
-        ));
-        rules.push(starred(
-            "RAMANUJACHARYA_JAYANTI",
-            Calendar::TamilSolar,
-            1,
-            Nakshatra::Ardra,
-            Which::Later,
-            "the Annexure's Sri Ramanujacharya Jayanti, Thiruvathirai (Ardra) in Chittirai, the later of two as Kerala's and Tamil Nadu's lists keep a star (C1323, C1374)",
-        ));
+                (nakshatra, Which::Later),
+                true,
+            )
+        }));
         rules
     }
 }

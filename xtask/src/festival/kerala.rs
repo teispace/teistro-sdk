@@ -10,13 +10,11 @@
 //! only to stand in their year, the moon's marked, and a year with no
 //! notification holds none.
 
-use std::fmt::Write as _;
-
 use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, Sky, printed_table};
+use super::india::{Measured, Notices, Section, Sky};
 
 /// Each year's notification of the General Administration
 /// (Co-ordination) Department, and the copy read (rank 1).
@@ -212,35 +210,19 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
     kerala().compare(problems)
 }
 
-/// §12 of the page.
-pub(super) fn render(out: &mut String, (rows, printed): &Measured) {
-    let notices = kerala();
-    let parted = rows.iter().filter(|row| !row.agrees()).count();
-    let _ = writeln!(
-        out,
-        "## 12. Kerala's public holidays against the notifications\n\n\
-         `INDIA_KERALA` at Thiruvananthapuram on India's clock, against each year's public \
+/// The page's section on the list.
+const SECTION: Section = Section {
+    heading: "12. Kerala's public holidays against the notifications",
+    against: "`INDIA_KERALA` at Thiruvananthapuram on India's clock, against each year's public \
          holidays to the public offices of the General Administration (Co-ordination) \
          Department's notifications, the occasions they name as falling on a Sunday or a \
-         second Saturday, and their restricted holidays. {} of {} rows agree.\n",
-        rows.len() - parted,
-        rows.len()
-    );
-    for (year, notice) in NOTICES {
-        let _ = writeln!(out, "- {year}: {notice}");
-    }
-    let _ = writeln!(out, "\n{}", notices.rows_table(rows));
-    let _ = writeln!(
-        out,
-        "The {} civil days stand on their date in all {} years.\n",
-        CIVIL.len(),
-        NOTICES.len()
-    );
-    out.push_str(&notices.parts_list());
-    let _ = writeln!(
-        out,
-        "\nThe days the notifications print are not reckoned: the four set by the moon, each \
-         marked, and Ayya Vaikunda Swami's birthday. 2031, with no notification, holds none.\n\n{}",
-        printed_table(printed, "printed")
-    );
+         second Saturday, and their restricted holidays.",
+    civil: "civil",
+    printed: "The days the notifications print are not reckoned: the four set by the moon, each \
+         marked, and Ayya Vaikunda Swami's birthday. 2031, with no notification, holds none.",
+};
+
+/// §12 of the page.
+pub(super) fn render(out: &mut String, measured: &Measured) {
+    kerala().render(out, &SECTION, measured);
 }

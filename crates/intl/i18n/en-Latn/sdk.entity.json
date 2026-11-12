@@ -5243,6 +5243,34 @@
     "RAMANUJACHARYA_JAYANTI": {
       "name": "Sri Ramanujacharya Jayanti",
       "prose": "Sri Ramanujacharya Jayanti"
+    },
+    "BHOGI": {
+      "name": "Bhogi",
+      "prose": "Bhogi"
+    },
+    "KANUMU": {
+      "name": "Kanumu",
+      "prose": "Kanumu"
+    },
+    "JAGJIVAN_RAM_JAYANTI": {
+      "name": "Babu Jagjivan Ram Jayanti",
+      "prose": "Babu Jagjivan Ram Jayanti"
+    },
+    "BATHUKAMMA": {
+      "name": "Bathukamma starting day (Engili Pula Bathukamma)",
+      "prose": "Bathukamma starting day (Engili Pula Bathukamma)"
+    },
+    "SADDULA_BATHUKAMMA": {
+      "name": "Saddula Bathukamma",
+      "prose": "Saddula Bathukamma"
+    },
+    "VIJAYA_DASHAMI_NEXT_DAY": {
+      "name": "Following day of Vijaya Dashami",
+      "prose": "Following day of Vijaya Dashami"
+    },
+    "BOXING_DAY": {
+      "name": "Boxing Day",
+      "prose": "Boxing Day"
     }
   },
   "agni_vasa": {

@@ -9,13 +9,11 @@
 //! to stand in their year, marked, and a year with no notification holds
 //! none.
 
-use std::fmt::Write as _;
-
 use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, Sky, printed_table};
+use super::india::{Measured, Notices, Section, Sky};
 
 /// Each year's notification of the General Administration Department,
 /// and the copy read (rank 1).
@@ -367,36 +365,20 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
     assam().compare(problems)
 }
 
-/// §14 of the page.
-pub(super) fn render(out: &mut String, (rows, printed): &Measured) {
-    let notices = assam();
-    let parted = rows.iter().filter(|row| !row.agrees()).count();
-    let _ = writeln!(
-        out,
-        "## 14. Assam's public holidays against the notifications\n\n\
-         `INDIA_ASSAM` at Guwahati on India's clock, against each year's closed days and the \
+/// The page's section on the list.
+const SECTION: Section = Section {
+    heading: "14. Assam's public holidays against the notifications",
+    against: "`INDIA_ASSAM` at Guwahati on India's clock, against each year's closed days and the \
          half holiday of Lakshmi Puja of the General Administration Department's \
          notifications. The lunar days are reckoned under the modern sky (the built-in \
          ephemeris, the default profile) and the Assamese months under the Surya \
-         Siddhanta's Sun (`ASSAM_SOLAR`, C1300). {} of {} rows agree.\n",
-        rows.len() - parted,
-        rows.len()
-    );
-    for (year, notice) in NOTICES {
-        let _ = writeln!(out, "- {year}: {notice}");
-    }
-    let _ = writeln!(out, "\n{}", notices.rows_table(rows));
-    let _ = writeln!(
-        out,
-        "The {} civil days stand on their date in all {} years.\n",
-        CIVIL.len(),
-        NOTICES.len()
-    );
-    out.push_str(&notices.parts_list());
-    let _ = writeln!(
-        out,
-        "\nThe days the notifications print are not reckoned: Id-ul-Fitr, Id-ul-Zuha and \
-         Muharram's half holiday, each marked. 2031, with no notification, holds none.\n\n{}",
-        printed_table(printed, "printed")
-    );
+         Siddhanta's Sun (`ASSAM_SOLAR`, C1300).",
+    civil: "civil",
+    printed: "The days the notifications print are not reckoned: Id-ul-Fitr, Id-ul-Zuha and \
+         Muharram's half holiday, each marked. 2031, with no notification, holds none.",
+};
+
+/// §14 of the page.
+pub(super) fn render(out: &mut String, measured: &Measured) {
+    assam().render(out, &SECTION, measured);
 }
