@@ -10,23 +10,50 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## 1.0.0-rc.3
+## Unreleased
 
-The third release candidate of 1.0.0: the tag a consumer moves to from
-1.0.0-rc.1 (1.0.0-rc.2 is tagged but has no GitHub release: its release run
-stopped on a coverage floor, which this candidate's tests hold). Released on
-GitHub only; no package leaves for a registry.
-**Numbers:** measured against 1.0.0-rc.2, no day, instant or hash of anything
-1.0.0-rc.2 answered moves. What changes:
-- **Regions:** a request naming `IN-KA` or `IN-TG` now reckons the state's own
-  pack (`INDIA_KARNATAKA`, `INDIA_TELANGANA`), where it kept `INDIA_CENTRAL`.
-- **Refusals:** a strict record read with no root names a top-level key
-  `years`, not `.years`.
-- **Removed:** the Teimeris adapters, which now live in the engine's private
-  repository; an app that loaded `web.js` from here reads the note below.
-New in this candidate: the sunrise behind the terrain (`horizonProfile`,
-`visibleRise`, `visibleSet`, SR-91), the teigeodata geo adapter (SR-88),
-and Karnataka's and Telangana's public holidays (SR-03).
+**Gujarat's public holidays (SR-03, the eighth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-GJ` now reckons `INDIA_GUJARAT`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_GUJARAT` (`FestivalPack::IndiaGujarat`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_gujarat`) holds the General Administration Department's notifications of 2019 to 2026:
+  Part I's public holidays with its Note (1)'s days on a Sunday or a second or fourth Saturday:
+  - the Vikram Samvat New Year (Bestu Varas) on Kartika's bright 1st at sunrise, the one new rule (C1442);
+  - Chetichand and Parshuram Jayanti by Nepal's printed panchanga's rules (C1446), Raksha Bandhan and Bhai Bij by
+    *Dharmasindhu*'s, Samvatsari by the Jain pack's, and the central list's for the days it shares, Dhuleti and
+    Janmashtami (Shravan Vad-8) among them;
+  - Makar Sankranti on 14 January (C1440), Dr Ambedkar's and Sardar Vallabhbhai Patel's birthdays on their dates.
+
+  The four days set by the moon ship as printed, marked `MOON_SIGHTING`, and the Parsi New Year as printed. Part
+  II's optional holidays and Part III's banks' list are left out (C1448) (`03-design/gujarat-holidays.md`).
+- `StateList::taken` keeps a rule of any shipped pack under a state's key, tradition and citation (`as_cited`
+  keeps the pack's own); `print_kept` reads through it.
+- `festival-measured.md` §17 holds it at Gandhinagar, 169 of the 176 rows meeting the print and the seven that
+  part named (C1443 to C1447). `crates/sdk/tests/gujarat.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the three new keys
+  (`CHETI_CHAND`, `VIKRAM_SAMVAT_NEW_YEAR`, `SARDAR_PATEL_JAYANTI`).
+
+**Andhra Pradesh's public holidays (SR-03, the ninth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-AP` now reckons `INDIA_ANDHRA_PRADESH`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_ANDHRA_PRADESH` (`FestivalPack::IndiaAndhraPradesh`, `FestivalRule`, `FollowingRule`, `DatedRule`
+  and `PublishedSet::india_andhra_pradesh`) holds the General Administration (Poll.B) Department's G.O.s of 2020
+  to 2026: Annexure-I's general holidays with I(A)'s days on a Sunday or a second Saturday, and Annexure-II's
+  optional holidays (`optional`). 2026's G.O. is read at rank 3 and 2019's was not found (C1402):
+  - the Telugu days on Telangana's rules, cited to both lists: Sri Rama Navami, Vinayaka Chavithi, Mahalaya
+    Amavasya (the new key `MAHALAYA_AMAVASYA`, Bhadrapada's new moon), Durgastami and Vijayadasami at midday
+    (C1401), Naraka Chaturdasi (C1404), Deepavali, and Bhogi, Makara Sankranti and Kanuma, a general holiday here;
+  - Sri Krishna Astami as *Dharmasindhu*'s Janmashtami (C1406), Nepal's printed panchanga's rules for Ugadi,
+    Basava Jayanthi and Ratha Yatra, and the central list's for the days it shares, Holi among them;
+  - Babu Jagjivan Ram's and Ambedkar's birthdays, New Year's Day, Christmas Eve and Boxing Day on their dates.
+
+  Ramzan, Bakrid, Moharrum and Eid Miladun Nabi, and 2021's Shab-e-Barath, ship as printed, marked `MOON_SIGHTING`
+  as para 5 leaves them; Annexure-II's other Islamic days, which para 5 does not name, Varalakshmi Vratham
+  (general from 2025), the Parsi New Year and 2023's second Vijayadasami ship as printed (C1403). Andhra Pradesh
+  Formation Day, which no G.O. lists, is left out (C1408) (`03-design/andhra-pradesh-holidays.md`).
+- `festival-measured.md` §18 holds it at Amaravati, 190 of the 198 rows meeting the print and the eight that
+  part named (C1401, C1404 to C1407). `crates/sdk/tests/andhra_pradesh.rs` holds each year's G.O.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the new key.
 
 **Durva ashtami barred once Agastya rises, and nine Nepal festivals as rules
 (SR-01).** **Numbers:** `NEPAL_PANCHANGA`'s Durva ashtami, Gaura saptami and
@@ -68,6 +95,24 @@ and each of the 5 partings has a named cause (`festival-measured.md` §6).
   Each has names in four locales.
 - Not shipped: the bright-half ashtami fast. *Dharmasindhu* p. 10's later day
   parts from both printed vriddhi rows (C695).
+
+## 1.0.0-rc.3
+
+The third release candidate of 1.0.0: the tag a consumer moves to from
+1.0.0-rc.1 (1.0.0-rc.2 is tagged but has no GitHub release: its release run
+stopped on a coverage floor, which this candidate's tests hold). Released on
+GitHub only; no package leaves for a registry.
+**Numbers:** measured against 1.0.0-rc.2, no day, instant or hash of anything
+1.0.0-rc.2 answered moves. What changes:
+- **Regions:** a request naming `IN-KA` or `IN-TG` now reckons the state's own
+  pack (`INDIA_KARNATAKA`, `INDIA_TELANGANA`), where it kept `INDIA_CENTRAL`.
+- **Refusals:** a strict record read with no root names a top-level key
+  `years`, not `.years`.
+- **Removed:** the Teimeris adapters, which now live in the engine's private
+  repository; an app that loaded `web.js` from here reads the note below.
+New in this candidate: the sunrise behind the terrain (`horizonProfile`,
+`visibleRise`, `visibleSet`, SR-91), the teigeodata geo adapter (SR-88),
+and Karnataka's and Telangana's public holidays (SR-03).
 
 **The sunrise behind the terrain (SR-91).** **Numbers:** none: a section
 answered only when a profile is asked, and the days with one are the days
@@ -154,49 +199,6 @@ no SDK crate changes.
 Uranus, Neptune and Pluto now have places past `Body::ALL`'s end, and
 `placement` documents that it panics for them. `Body::graha` is the
 checked constructor, `None` for a graha no rule names.
-
-**Gujarat's public holidays (SR-03, the eighth state set).**
-**Numbers:** none for any existing pack's days: a new pack. A request naming the
-region `IN-GJ` now reckons `INDIA_GUJARAT`, where it kept `INDIA_CENTRAL`.
-- The pack `INDIA_GUJARAT` (`FestivalPack::IndiaGujarat`, `FestivalRule`, `FollowingRule`, `DatedRule` and
-  `PublishedSet::india_gujarat`) holds the General Administration Department's notifications of 2019 to 2026:
-  Part I's public holidays with its Note (1)'s days on a Sunday or a second or fourth Saturday:
-  - the Vikram Samvat New Year (Bestu Varas) on Kartika's bright 1st at sunrise, the one new rule (C1442);
-  - Chetichand and Parshuram Jayanti by Nepal's printed panchanga's rules (C1446), Raksha Bandhan and Bhai Bij by
-    *Dharmasindhu*'s, Samvatsari by the Jain pack's, and the central list's for the days it shares, Dhuleti and
-    Janmashtami (Shravan Vad-8) among them;
-  - Makar Sankranti on 14 January (C1440), Dr Ambedkar's and Sardar Vallabhbhai Patel's birthdays on their dates.
-
-  The four days set by the moon ship as printed, marked `MOON_SIGHTING`, and the Parsi New Year as printed. Part
-  II's optional holidays and Part III's banks' list are left out (C1448) (`03-design/gujarat-holidays.md`).
-- `StateList::taken` keeps a rule of any shipped pack under a state's key, tradition and citation (`as_cited`
-  keeps the pack's own); `print_kept` reads through it.
-- `festival-measured.md` §17 holds it at Gandhinagar, 169 of the 176 rows meeting the print and the seven that
-  part named (C1443 to C1447). `crates/sdk/tests/gujarat.rs` holds each year's notification.
-- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the three new keys
-  (`CHETI_CHAND`, `VIKRAM_SAMVAT_NEW_YEAR`, `SARDAR_PATEL_JAYANTI`).
-
-**Andhra Pradesh's public holidays (SR-03, the ninth state set).**
-**Numbers:** none for any existing pack's days: a new pack. A request naming the
-region `IN-AP` now reckons `INDIA_ANDHRA_PRADESH`, where it kept `INDIA_CENTRAL`.
-- The pack `INDIA_ANDHRA_PRADESH` (`FestivalPack::IndiaAndhraPradesh`, `FestivalRule`, `FollowingRule`, `DatedRule`
-  and `PublishedSet::india_andhra_pradesh`) holds the General Administration (Poll.B) Department's G.O.s of 2020
-  to 2026: Annexure-I's general holidays with I(A)'s days on a Sunday or a second Saturday, and Annexure-II's
-  optional holidays (`optional`). 2026's G.O. is read at rank 3 and 2019's was not found (C1402):
-  - the Telugu days on Telangana's rules, cited to both lists: Sri Rama Navami, Vinayaka Chavithi, Mahalaya
-    Amavasya (the new key `MAHALAYA_AMAVASYA`, Bhadrapada's new moon), Durgastami and Vijayadasami at midday
-    (C1401), Naraka Chaturdasi (C1404), Deepavali, and Bhogi, Makara Sankranti and Kanuma, a general holiday here;
-  - Sri Krishna Astami as *Dharmasindhu*'s Janmashtami (C1406), Nepal's printed panchanga's rules for Ugadi,
-    Basava Jayanthi and Ratha Yatra, and the central list's for the days it shares, Holi among them;
-  - Babu Jagjivan Ram's and Ambedkar's birthdays, New Year's Day, Christmas Eve and Boxing Day on their dates.
-
-  Ramzan, Bakrid, Moharrum and Eid Miladun Nabi, and 2021's Shab-e-Barath, ship as printed, marked `MOON_SIGHTING`
-  as para 5 leaves them; Annexure-II's other Islamic days, which para 5 does not name, Varalakshmi Vratham
-  (general from 2025), the Parsi New Year and 2023's second Vijayadasami ship as printed (C1403). Andhra Pradesh
-  Formation Day, which no G.O. lists, is left out (C1408) (`03-design/andhra-pradesh-holidays.md`).
-- `festival-measured.md` §18 holds it at Amaravati, 190 of the 198 rows meeting the print and the eight that
-  part named (C1401, C1404 to C1407). `crates/sdk/tests/andhra_pradesh.rs` holds each year's G.O.
-- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the new key.
 
 **Telangana's public holidays (SR-03, the seventh state set).**
 **Numbers:** none for any existing pack's days: a new pack. A request naming the
