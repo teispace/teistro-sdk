@@ -31,6 +31,27 @@ ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
 Assam's and Kerala's public holidays, and a rule held to a calendar's month
 (`inMonth`).
 
+**The teigeodata adapter answers a place's zone, height and admin codes
+(SR-88).** **Numbers:** none: a new crate outside the SDK workspace, and
+no SDK crate changes.
+- `adapters/geo-teigeodata/rust` (`teistro-geo-teigeodata`), depending on
+  teigeodata `v0.1.0` by git: `TeigeodataGeo::open(paths)`, `from_bytes`
+  and `from_engine` make a `GeoProvider` of teigeodata packs. The zone is
+  the timezone area's tzdb name, the height `elevation_at`'s metres above
+  EGM2008 with its DEM product and spacing, and the admin units
+  `admin_at`'s, coarse to fine, with their ISO 3166 codes from
+  `iso_code`. The source is `teigeodata` `0.1.0`, with each pack
+  (`np.places.2026.11.0`) as `dataVersion` and the packs' tzdb release.
+- A point no pack covers answers nothing. A failed query is `PROVIDER` on
+  `zone`, `height` or `admin`. A pack that does not open is `PACK` on
+  `packs[i]`.
+- Its tests resolve Kathmandu from Nepal's country pack, named by
+  `TEISTRO_TEIGEODATA_PACKS`. They also run the SDK's geo suite over it:
+  the receipt replays `HELD` without the provider, and the sunrise names
+  the height's source (`03-design/geo-port.md` §10).
+- Not yet: zone rules through `time_zones()`, because v0.1.0 lists no
+  zones.
+
 **A graha past the nine no longer reads the lagna in a rule chart.**
 **Numbers:** none for any rule: every body a rule names keeps its place.
 `teistro_rules::Body::index` gave Uranus the lagna's place, so
