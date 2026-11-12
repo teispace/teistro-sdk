@@ -9,6 +9,7 @@ import com.teispace.teistro.request.AshauchLength;
 import com.teispace.teistro.request.AshauchRelation;
 import com.teispace.teistro.request.AshauchRite;
 import com.teispace.teistro.request.AshauchSex;
+import com.teispace.teistro.request.DevicePose;
 import com.teispace.teistro.request.KinKeeps;
 import com.teispace.teistro.request.NightRule;
 import com.teispace.teistro.request.RiteBeginning;
@@ -623,9 +624,38 @@ final class AlmanacReads {
     /** {@code ts_almanac_sky_view}'s answer, its members resolved, with the provenance beside it. */
     static SkyViewAnswer skyViewAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new SkyViewAnswer(skyView(Reads.object(envelope, "value")), provenance(envelope));
+    }
+
+    /**
+     * {@code ts_almanac_sky_pose}'s answer: the sky as {@link #skyViewAnswer} reads it, the pose, and one placement
+     * for each of the sky's points, with the provenance beside it.
+     */
+    static SkyPoseAnswer skyPoseAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
         Map<?, ?> v = Reads.object(envelope, "value");
+        Map<?, ?> pose = Reads.object(v, "pose");
+        Map<?, ?> screen = Reads.object(v, "screen");
+        java.util.function.Function<String, List<ScreenPlacement>> placements = list -> Reads.each(screen, list,
+                raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new ScreenPlacement(Reads.flag(r, "inView"), Reads.optionalNumber(r, "x"),
+                            Reads.optionalNumber(r, "y"), Reads.number(r, "offAxisDeg"));
+                });
+        return new SkyPoseAnswer(new SkyPose(
+                skyView(Reads.object(v, "sky")),
+                new DevicePose(Reads.number(pose, "altitudeDeg"), Reads.number(pose, "aspectRatio"),
+                        Reads.number(pose, "azimuthDeg"), Reads.number(pose, "horizontalFovDeg"),
+                        Reads.number(pose, "rollDeg")),
+                Reads.number(v, "verticalFovDeg"),
+                new SkyScreen(placements.apply("grahas"), placements.apply("stars"), placements.apply("ecliptic"),
+                        placements.apply("horizon"))), provenance(envelope));
+    }
+
+    /** A sky view's value, its members resolved. */
+    private static SkyView skyView(Map<?, ?> v) {
         Map<?, ?> air = Reads.object(v, "atmosphere");
-        return new SkyViewAnswer(new SkyView(
+        return new SkyView(
                 Reads.number(v, "at"),
                 Reads.number(v, "siderealTimeDeg"),
                 Reads.number(v, "obliquityDeg"),
@@ -658,7 +688,7 @@ final class AlmanacReads {
                     return new HorizonPoint(Reads.number(r, "azimuthDeg"), Reads.number(r, "raDeg"),
                             Reads.number(r, "decDeg"), Reads.number(r, "longitudeDeg"),
                             Reads.number(r, "latitudeDeg"));
-                })), provenance(envelope));
+                }));
     }
 
     /** One reading of the death-time check. */

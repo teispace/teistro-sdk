@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
     CellsRequest,
+    DevicePose,
     Detail,
     SankalpaRequest,
     BandRequest,
@@ -1489,6 +1490,39 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as coarse:
                 ctx.almanac.sky_view(place=kathmandu, at=2461345.25, ecliptic_step_deg=0)
             self.assertEqual(coarse.exception.field, "skyView.eclipticStepDeg")
+
+    def test_an_almanac_places_the_sky_in_a_camera_picture(self) -> None:
+        """The same sky through a camera pointed at the Moon
+        (`03-design/sky-pose.md`): the sky is the sky view's, the Moon is
+        the picture's centre whatever the roll, and a field of view of 180
+        degrees is refused by name."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            view = ctx.almanac.sky_view(place=kathmandu, at=2461345.25).value
+            moon = view.graha(Graha.MOON)
+            assert moon is not None
+            pose = DevicePose(
+                azimuthDeg=moon.azimuth_deg,
+                altitudeDeg=moon.refracted_altitude_deg,
+                rollDeg=30,
+                horizontalFovDeg=40,
+                aspectRatio=1.5,
+            )
+            seen = ctx.almanac.sky_pose(place=kathmandu, at=2461345.25, pose=pose).value
+            self.assertEqual(seen.sky, view)
+            self.assertEqual(len(seen.screen.grahas), len(view.grahas))
+            self.assertEqual(len(seen.screen.horizon), len(view.horizon))
+            centre = seen.screen.grahas[[one.graha for one in view.grahas].index(Graha.MOON)]
+            self.assertTrue(centre.in_view)
+            assert centre.x is not None and centre.y is not None
+            self.assertAlmostEqual(centre.x, 0.5, places=9)
+            self.assertAlmostEqual(centre.y, 0.5, places=9)
+            self.assertAlmostEqual(centre.off_axis_deg, 0.0, places=6)
+            self.assertIsNotNone(seen.ascendant())
+            wide = DevicePose(azimuthDeg=0, altitudeDeg=0, rollDeg=0, horizontalFovDeg=180, aspectRatio=1)
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.sky_pose(place=kathmandu, at=2461345.25, pose=wide)
+            self.assertEqual(refused.exception.field, "skyPose.pose.horizontalFovDeg")
 
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the

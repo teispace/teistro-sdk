@@ -41,7 +41,7 @@ use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
     ts_almanac_festival_calendar, ts_almanac_first_year, ts_almanac_published_reasons,
-    ts_almanac_sankalpa, ts_almanac_sky_view, ts_panchanga_days,
+    ts_almanac_sankalpa, ts_almanac_sky_pose, ts_almanac_sky_view, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
@@ -238,6 +238,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_almanac_elect",
     "ts_almanac_observance",
     "ts_almanac_people",
+    "ts_almanac_sky_pose",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -569,6 +570,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"kind":"IANA","zone":"Asia/Kathmandu"}"#,
     ),
+    (
+        "ts_almanac_sky_pose",
+        Seed::Answered,
+        r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"at":2461345.25,"grahas":["MOON"],"stars":["SPICA"],"eclipticStepDeg":30,"horizonStepDeg":45,"pose":{"azimuthDeg":120,"altitudeDeg":90,"rollDeg":-30,"horizontalFovDeg":65,"aspectRatio":0.5}}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -743,6 +749,7 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_elect" => string_call(ts_almanac_elect, text),
         "ts_almanac_observance" => paired_call(ts_almanac_observance, text),
         "ts_almanac_people" => string_call(ts_almanac_people, text),
+        "ts_almanac_sky_pose" => string_call(ts_almanac_sky_pose, text),
         _ => Status::Ok,
     }
 }

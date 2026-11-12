@@ -6,7 +6,8 @@ SR-58's sky view (`consumers/addendum-3.md`, P2 by addendum 5). What a
 "look up" screen draws: at a place and an instant, where every graha and
 every nakshatra's junction star (yogatara) stands in the local sky, and
 the ecliptic and the horizon to lay them against. The device pose (P3) is
-not built; §7 says how it goes on top of this record without breaking it.
+`almanac.skyPose` (`sky-pose.md`), laid on this record without changing
+it (§7).
 
 Built in `crates/astro/src/sky_view.rs`, reached as
 `AlmanacArea::sky_view`, the record `almanac.skyView`, `ts_almanac_sky_view`
@@ -205,17 +206,17 @@ The stars have no Horizons table; their places are the star table's,
 measured on its own page, and the sky view adds the hour angle and the
 horizontal turn the grahas' rows hold.
 
-## 7. The pose to come (P3)
+## 7. The pose (P3)
 
-The device pose is a second record on this one, not a change to it:
-`almanac.skyPose` will read this record's request with a `pose` beside it
-(the device's attitude and field of view), answer this record's `value`
-unchanged, and add which of its points fall in the view and where on the
-screen. Every field here keeps its name and meaning, so a reader of this
-record reads that one's `value` as is. The rising lagna point the pose
-asks for is this record's `ASCENDANT`. The request is strict, so a `pose`
-sent to this record today is refused by name (`skyView.pose`) rather than
-ignored.
+The device pose is a second record on this one, not a change to it, and
+is built (`sky-pose.md`): `almanac.skyPose` reads this record's request
+with a `pose` beside it (the camera's line of sight, roll and field of
+view), answers this record's `value` unchanged as its `sky`, and adds
+where each of its points falls in the camera's picture. Every field here
+keeps its name and meaning, so a reader of this record reads that one's
+`sky` as is. The rising lagna point the pose asks for is this record's
+`ASCENDANT`. The request is strict, so a `pose` sent to this record is
+refused by name (`skyView.pose`) rather than ignored.
 
 ## 8. Cost
 

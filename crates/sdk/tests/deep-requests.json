@@ -3927,6 +3927,32 @@
     }
   },
   {
+    "record": "almanac.skyPose",
+    "request": {
+      "altitudeM": 1.5,
+      "at": 1.5,
+      "eclipticStepDeg": 1.5,
+      "grahas": [
+        "graha.MOON"
+      ],
+      "horizonStepDeg": 1.5,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "pose": {
+        "altitudeDeg": 1.5,
+        "aspectRatio": 1.5,
+        "azimuthDeg": 1.5,
+        "horizontalFovDeg": 1.5,
+        "rollDeg": 1.5
+      },
+      "pressureHpa": 1.5,
+      "stars": [
+        "star.BHARANI"
+      ],
+      "temperatureC": 1.5
+    }
+  },
+  {
     "record": "almanac.skyView",
     "request": {
       "altitudeM": 1.5,

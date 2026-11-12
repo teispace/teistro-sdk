@@ -311,8 +311,10 @@ pub use teistro_astro::day_sky;
 // answers (`03-design/terrain-horizon.md`).
 pub use teistro_astro::terrain;
 // The sky at a place and an instant (`03-design/sky-view.md`).
-pub use crate::sky_view_request::SkyViewRequest;
+pub use crate::sky_view_request::{SkyPoseRequest, SkyViewRequest};
 pub use teistro_astro::sky_view;
+// A device's camera pointed at that sky (`03-design/sky-pose.md`).
+pub use teistro_astro::sky_pose;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

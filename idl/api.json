@@ -18984,6 +18984,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_sky_pose",
+      "doc": "A device's camera pointed at the sky (`03-design/sky-pose.md`),\nanswered with `{value, provenance}` as canonical JSON.\n\n`value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is\n`ts_almanac_sky_view`'s value for the same request, unchanged; `pose`\nthe pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,\nstars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`\nfor each point of `sky`'s list of the same name, in its order. `x` and\n`y` are the point in the rectilinear (gnomonic) picture, normalised to\n`[0, 1]` with the origin at the top left, outside it beyond the frame\nand null behind the camera; a graha, a star and an ecliptic point are\nplaced at their refracted altitude, a horizon point at nought. The\nrising lagna point is `sky.ecliptic`'s `ASCENDANT`.\n\n`request_json` is `ts_almanac_sky_view`'s request with `\"pose\"`\nbeside it: `{\"azimuthDeg\", \"altitudeDeg\", \"rollDeg\",\n\"horizontalFovDeg\", \"aspectRatio\"}`, the line of sight's azimuth from\ntrue north through east (−360 to 360) and altitude (−90 to 90), the\nroll about it (−180 to 180, positive as the phone turns clockwise seen\nfrom its screen), the field across the picture (above 0 and below\n180) and the picture's width over its height (0.1 to 10). A missing or\nout-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,\nthe sky view's own under `skyPose`; the context's refusals are\n`ts_almanac_sky_view`'s.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_naam_milan",
       "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or in the Latin scheme `rules.name.latin` declares, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, a `CASUAL` name read more than one\nway, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,\nnamed under `naam.bride` or `naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",

@@ -4555,6 +4555,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_sky_view.restype = ctypes.c_int32
+        self.ts_almanac_sky_pose: Any = library.ts_almanac_sky_pose
+        self.ts_almanac_sky_pose.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sky_pose.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -6587,6 +6594,48 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_sky_view(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_sky_pose(self, request_json: str) -> str:
+        """A device's camera pointed at the sky (`03-design/sky-pose.md`),
+        answered with `{value, provenance}` as canonical JSON.
+
+        `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+        `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+        the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+        stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+        for each point of `sky`'s list of the same name, in its order. `x` and
+        `y` are the point in the rectilinear (gnomonic) picture, normalised to
+        `[0, 1]` with the origin at the top left, outside it beyond the frame
+        and null behind the camera; a graha, a star and an ecliptic point are
+        placed at their refracted altitude, a horizon point at nought. The
+        rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+
+        `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+        beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+        "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+        true north through east (−360 to 360) and altitude (−90 to 90), the
+        roll about it (−180 to 180, positive as the phone turns clockwise seen
+        from its screen), the field across the picture (above 0 and below
+        180) and the picture's width over its height (0.1 to 10). A missing or
+        out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+        the sky view's own under `skyPose`; the context's refusals are
+        `ts_almanac_sky_view`'s.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sky_pose(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

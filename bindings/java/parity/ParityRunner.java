@@ -1646,6 +1646,35 @@ public final class ParityRunner {
             put("sky-view-ascendant", String.join(" ", number(skyAscendant.longitudeDeg()),
                     number(skyAscendant.azimuthDeg())));
 
+            // ── The sky pose ──────────────────────────────────────────────
+            // The same sky through a phone's camera facing east-south-east,
+            // tipped up and turned (03-design/sky-pose.md): the hash, the
+            // vertical field, how many of each list are in view, the Moon's
+            // placement and the ascendant's.
+            SkyPoseAnswer skyPose;
+            try (Context builtin = teistro.context(ContextOptions.builder()
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
+                skyPose = builtin.almanac().skyPose(2_461_345.25, place, new DevicePose(25.0, 0.5625, 100.0, 66.0,
+                        -12.0), null, null, null, null, null, null);
+            }
+            put("sky-pose-hash", skyPose.provenance().contentHash());
+            put("sky-pose-vertical", number(skyPose.value().verticalFovDeg()));
+            SkyScreen skyScreen = skyPose.value().screen();
+            Function<List<ScreenPlacement>, String> inView = list -> Long.toString(
+                    list.stream().filter(ScreenPlacement::inView).count());
+            put("sky-pose-in-view", String.join(" ", inView.apply(skyScreen.grahas()),
+                    inView.apply(skyScreen.stars()), inView.apply(skyScreen.ecliptic()),
+                    inView.apply(skyScreen.horizon())));
+            Function<ScreenPlacement, String> onScreen = one -> String.join(" ", Boolean.toString(one.inView()),
+                    one.x() == null ? "null" : number(one.x()), one.y() == null ? "null" : number(one.y()),
+                    number(one.offAxisDeg()));
+            int skyMoonAt = 0;
+            while (skyPose.value().sky().grahas().get(skyMoonAt).graha() != Graha.MOON) {
+                skyMoonAt++;
+            }
+            put("sky-pose-moon", onScreen.apply(skyScreen.grahas().get(skyMoonAt)));
+            put("sky-pose-ascendant", onScreen.apply(skyPose.value().ascendant().orElseThrow().getValue()));
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.

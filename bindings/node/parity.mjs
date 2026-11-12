@@ -2514,6 +2514,26 @@ put(
   put('sky-view-ascendant', `${number(ascendant.longitudeDeg)} ${number(ascendant.azimuthDeg)}`);
 }
 
+// ── The sky pose ───────────────────────────────────────────────────────
+// The same sky through a phone's camera facing east-south-east, tipped up
+// and turned (`03-design/sky-pose.md`): the hash, the vertical field, how
+// many of each list are in view, the Moon's placement and the ascendant's.
+{
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const pose = { azimuthDeg: 100, altitudeDeg: 25, rollDeg: -12, horizontalFovDeg: 66, aspectRatio: 0.5625 };
+  const { value, provenance } = sky.almanac.skyPose({ place, at: 2461345.25, pose });
+  sky.dispose();
+  put('sky-pose-hash', provenance.contentHash);
+  put('sky-pose-vertical', number(value.verticalFovDeg));
+  const seen = (list) => list.filter((placed) => placed.inView).length;
+  const { grahas, stars, ecliptic, horizon } = value.screen;
+  put('sky-pose-in-view', `${seen(grahas)} ${seen(stars)} ${seen(ecliptic)} ${seen(horizon)}`);
+  const placed = (one) =>
+    `${one.inView} ${one.x === null ? 'null' : number(one.x)} ${one.y === null ? 'null' : number(one.y)} ${number(one.offAxisDeg)}`;
+  put('sky-pose-moon', placed(grahas[value.sky.grahas.findIndex((one) => one.graha === 'graha.MOON')]));
+  put('sky-pose-ascendant', placed(ecliptic[value.sky.ecliptic.findIndex((point) => point.kind === 'ASCENDANT')]));
+}
+
 // ── Aayadi ─────────────────────────────────────────────────────────────
 // The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana:
 // each quantity `QUANTITY:count`, the vyaya's kind, the tara, then each

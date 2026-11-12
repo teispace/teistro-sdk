@@ -3115,6 +3115,37 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac places the sky in a camera picture", () -> {
+            // The same sky through a camera (03-design/sky-pose.md): the sky
+            // is the sky view's, one placement for each of its points, the
+            // Moon in the middle of a camera pointed at it, and a field of a
+            // half-sky refused by name.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                SkyView view = sky.almanac().skyView(2_461_345.25, kathmandu, null, null, null, null, null, null)
+                        .value();
+                GrahaSky moon = view.graha(Graha.MOON).orElseThrow();
+                com.teispace.teistro.request.DevicePose pose = new com.teispace.teistro.request.DevicePose(
+                        moon.refractedAltitudeDeg(), 0.75, moon.azimuthDeg(), 50.0, 30.0);
+                SkyPoseAnswer found = sky.almanac().skyPose(2_461_345.25, kathmandu, pose, null, null, null, null,
+                        null, null);
+                SkyPose seen = found.value();
+                check(!found.provenance().contentHash().isEmpty(), "the pose is sealed");
+                same(view, seen.sky(), "the sky is the sky view's");
+                same(9, seen.screen().grahas().size(), "a placement for each graha");
+                same(27, seen.screen().stars().size(), "a placement for each yogatara");
+                ScreenPlacement centre = seen.screen().grahas().get(1);
+                check(centre.inView() && Math.abs(centre.x() - 0.5) < 1e-9 && Math.abs(centre.y() - 0.5) < 1e-9,
+                        "the Moon in the middle");
+                check(seen.ascendant().isPresent(), "a rising point");
+                TeistroException wide = refusal(() -> sky.almanac().skyPose(2_461_345.25, kathmandu,
+                        new com.teispace.teistro.request.DevicePose(0.0, 1.0, 0.0, 180.0, 0.0), null, null, null,
+                        null, null, null));
+                same("skyPose.pose.horizontalFovDeg", wide.field(), "a field of a half-sky");
+            }
+        });
+
         tests.put("an almanac says the rites of a death's first year", () -> {
             // A death in Kathmandu at Julian day 2461333.677083: the sixteen
             // each in its place, fifteen of them first done on the

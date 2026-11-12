@@ -11592,6 +11592,59 @@ fn a_sky_view_crosses_as_the_facade_answers_it() {
     assert_eq!(sky_view_json(&classical, asked), Err(Status::Unsupported));
 }
 
+/// A sky pose crossed: the façade's answer, its `sky` the sky view's
+/// value, and a field of a half-sky refused (`03-design/sky-pose.md`).
+#[test]
+fn a_sky_pose_crosses_as_the_facade_answers_it() {
+    let view = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "at": 2461345.25, "grahas": ["MOON", "RAHU"], "horizonStepDeg": 45"#;
+    let asked = format!(
+        r#"{{{view}, "pose": {{"azimuthDeg": 90, "altitudeDeg": 30, "rollDeg": 10, "horizontalFovDeg": 70, "aspectRatio": 0.75}}}}"#
+    );
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let request = CString::new(asked.as_str()).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_sky_pose(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    assert_eq!(status, Status::Ok);
+    let crossed: serde_json::Value = serde_json::from_str(&owned(json)).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .sky_pose_query(&teistro::SkyPoseRequest::from_json(&asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    let sky: serde_json::Value =
+        serde_json::from_str(&sky_view_json(&ctx, &format!("{{{view}}}")).unwrap()).unwrap();
+    assert_eq!(crossed["value"]["sky"], sky["value"]);
+    assert_eq!(crossed["value"]["sky"]["grahas"][1]["graha"], "graha.RAHU");
+    assert_eq!(
+        crossed["value"]["screen"]["horizon"]
+            .as_array()
+            .map(Vec::len),
+        Some(8)
+    );
+    let wide = CString::new(asked.replace("70,", "180,")).unwrap();
+    let mut refused = TsString::empty();
+    // SAFETY: as above.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_sky_pose(ctx.handle, wide.as_ptr(), &raw mut refused)
+    };
+    // SAFETY: the empty descriptor a refusal leaves.
+    unsafe { ts_string_free(&raw mut refused) };
+    assert_eq!(status, Status::InvalidArg);
+}
+
 /// A finder's answer crossed: `entry` called on a context (and, for the
 /// observance finder, an other), the JSON owned.
 fn finder_json(

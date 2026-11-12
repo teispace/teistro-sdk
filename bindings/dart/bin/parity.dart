@@ -3882,6 +3882,49 @@ void main() {
     '${number(skyAscendant.longitudeDeg)} ${number(skyAscendant.azimuthDeg)}',
   );
 
+  // ── The sky pose ─────────────────────────────────────────────────────
+  // The same sky through a phone's camera facing east-south-east, tipped up
+  // and turned (`03-design/sky-pose.md`): the hash, the vertical field, how
+  // many of each list are in view, the Moon's placement and the ascendant's.
+  final poseContext = teistro.context(
+    profile: 'nepali-drik',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  final skyPose = poseContext.almanac.skyPose(
+    at: 2461345.25,
+    place: place,
+    pose: const DevicePose(
+      azimuthDeg: 100,
+      altitudeDeg: 25,
+      rollDeg: -12,
+      horizontalFovDeg: 66,
+      aspectRatio: 0.5625,
+    ),
+  );
+  poseContext.dispose();
+  put('sky-pose-hash', skyPose.provenance.contentHash);
+  put('sky-pose-vertical', number(skyPose.value.verticalFovDeg));
+  final poseScreen = skyPose.value.screen;
+  int inView(List<ScreenPlacement> list) =>
+      list.where((one) => one.inView).length;
+  String placement(ScreenPlacement one) =>
+      '${one.inView} ${one.x == null ? 'null' : number(one.x!)} '
+      '${one.y == null ? 'null' : number(one.y!)} ${number(one.offAxisDeg)}';
+  put(
+    'sky-pose-in-view',
+    '${inView(poseScreen.grahas)} ${inView(poseScreen.stars)} '
+        '${inView(poseScreen.ecliptic)} ${inView(poseScreen.horizon)}',
+  );
+  put(
+    'sky-pose-moon',
+    placement(
+      poseScreen.grahas[skyPose.value.sky.grahas.indexWhere(
+        (one) => one.graha == Graha.moon,
+      )],
+    ),
+  );
+  put('sky-pose-ascendant', placement(skyPose.value.ascendant()!.$2));
+
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test
   // provider cannot complete: a total lunar eclipse seen whole and a

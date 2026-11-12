@@ -2086,6 +2086,8 @@ typedef TsAlmanacCellsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poin
 typedef TsAlmanacCellsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSkyViewNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSkyViewDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSkyPoseNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSkyPoseDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsMatchingBandNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2231,6 +2233,7 @@ final class TeistroLibrary {
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
         ts_almanac_cells = library.lookupFunction<TsAlmanacCellsNative, TsAlmanacCellsDart>('ts_almanac_cells'),
         ts_almanac_sky_view = library.lookupFunction<TsAlmanacSkyViewNative, TsAlmanacSkyViewDart>('ts_almanac_sky_view'),
+        ts_almanac_sky_pose = library.lookupFunction<TsAlmanacSkyPoseNative, TsAlmanacSkyPoseDart>('ts_almanac_sky_pose'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_matching_band = library.lookupFunction<TsMatchingBandNative, TsMatchingBandDart>('ts_matching_band'),
         ts_chart_relocated = library.lookupFunction<TsChartRelocatedNative, TsChartRelocatedDart>('ts_chart_relocated'),
@@ -3086,6 +3089,32 @@ final class TeistroLibrary {
   /// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
   /// (C1185).
   final TsAlmanacSkyViewDart ts_almanac_sky_view;
+
+  /// A device's camera pointed at the sky (`03-design/sky-pose.md`),
+  /// answered with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+  /// `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+  /// the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+  /// stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+  /// for each point of `sky`'s list of the same name, in its order. `x` and
+  /// `y` are the point in the rectilinear (gnomonic) picture, normalised to
+  /// `[0, 1]` with the origin at the top left, outside it beyond the frame
+  /// and null behind the camera; a graha, a star and an ecliptic point are
+  /// placed at their refracted altitude, a horizon point at nought. The
+  /// rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+  ///
+  /// `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+  /// beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+  /// "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+  /// true north through east (−360 to 360) and altitude (−90 to 90), the
+  /// roll about it (−180 to 180, positive as the phone turns clockwise seen
+  /// from its screen), the field across the picture (above 0 and below
+  /// 180) and the picture's width over its height (0.1 to 10). A missing or
+  /// out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+  /// the sky view's own under `skyPose`; the context's refusals are
+  /// `ts_almanac_sky_view`'s.
+  final TsAlmanacSkyPoseDart ts_almanac_sky_pose;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -7798,6 +7827,41 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_sky_view(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A device's camera pointed at the sky (`03-design/sky-pose.md`),
+  /// answered with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+  /// `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+  /// the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+  /// stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+  /// for each point of `sky`'s list of the same name, in its order. `x` and
+  /// `y` are the point in the rectilinear (gnomonic) picture, normalised to
+  /// `[0, 1]` with the origin at the top left, outside it beyond the frame
+  /// and null behind the camera; a graha, a star and an ecliptic point are
+  /// placed at their refracted altitude, a horizon point at nought. The
+  /// rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+  ///
+  /// `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+  /// beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+  /// "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+  /// true north through east (−360 to 360) and altitude (−90 to 90), the
+  /// roll about it (−180 to 180, positive as the phone turns clockwise seen
+  /// from its screen), the field across the picture (above 0 and below
+  /// 180) and the picture's width over its height (0.1 to 10). A missing or
+  /// out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+  /// the sky view's own under `skyPose`; the context's refusals are
+  /// `ts_almanac_sky_view`'s.
+  String almanacSkyPose(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_sky_pose(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

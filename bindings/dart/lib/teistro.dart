@@ -2374,20 +2374,74 @@ final class AlmanacArea extends _Area {
     double? pressureHpa,
     double? temperatureC,
   }) {
-    final asked = jsonEncode(<String, Object?>{
-      'latitudeDeg': place.latitudeDeg,
-      'longitudeDeg': place.longitudeDeg,
-      'altitudeM': place.altitudeM,
-      'at': at,
-      if (grahas != null) 'grahas': [for (final graha in grahas) graha.key],
-      if (stars != null) 'stars': [for (final star in stars) star.key],
-      if (eclipticStepDeg != null) 'eclipticStepDeg': eclipticStepDeg,
-      if (horizonStepDeg != null) 'horizonStepDeg': horizonStepDeg,
-      if (pressureHpa != null) 'pressureHpa': pressureHpa,
-      if (temperatureC != null) 'temperatureC': temperatureC,
-    });
+    final asked = jsonEncode(
+      _skyAsked(
+        at,
+        place,
+        grahas,
+        stars,
+        eclipticStepDeg,
+        horizonStepDeg,
+        pressureHpa,
+        temperatureC,
+      ),
+    );
     return _skyView(
       _context._guarded(() => _context._inner.almanacSkyView(asked)),
+    );
+  }
+
+  /// **A device's camera pointed at the sky** (`03-design/sky-pose.md`):
+  /// [skyView]'s request with a [pose] beside it, answered with the sky
+  /// view's value unchanged as `sky` and one placement for each of its
+  /// grahas, stars, ecliptic points and horizon points in the camera's
+  /// rectilinear picture, normalised with the origin at the top left. The
+  /// pose's azimuth is from true north (add the declination to a magnetic
+  /// heading); its roll is positive as the phone turns clockwise seen from
+  /// its screen; its field of view is across the picture, above 0 and
+  /// below 180 degrees. The rising lagna point is the ecliptic's
+  /// `ASCENDANT` ([SkyPose.ascendant]).
+  ///
+  /// ```dart
+  /// final seen = sdk.almanac.skyPose(
+  ///   at: 2461345.25,
+  ///   place: kathmandu,
+  ///   pose: const DevicePose(
+  ///     azimuthDeg: 90,
+  ///     altitudeDeg: 20,
+  ///     rollDeg: 0,
+  ///     horizontalFovDeg: 60,
+  ///     aspectRatio: 0.75,
+  ///   ),
+  /// );
+  /// final moonInView = seen.value.screen.grahas[1].inView;
+  /// ```
+  SkyPoseAnswer skyPose({
+    required double at,
+    required Observer place,
+    required DevicePose pose,
+    List<Graha>? grahas,
+    List<Star>? stars,
+    double? eclipticStepDeg,
+    double? horizonStepDeg,
+    double? pressureHpa,
+    double? temperatureC,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      ..._skyAsked(
+        at,
+        place,
+        grahas,
+        stars,
+        eclipticStepDeg,
+        horizonStepDeg,
+        pressureHpa,
+        temperatureC,
+      ),
+      'pose': pose.toJson(),
+    });
+    return _skyPose(
+      _context._guarded(() => _context._inner.almanacSkyPose(asked)),
     );
   }
 
@@ -21946,73 +22000,236 @@ final class SkyViewAnswer {
   final Provenance provenance;
 }
 
+/// The JSON request `almanac.skyView` and `almanac.skyPose` share.
+Map<String, Object?> _skyAsked(
+  double at,
+  Observer place,
+  List<Graha>? grahas,
+  List<Star>? stars,
+  double? eclipticStepDeg,
+  double? horizonStepDeg,
+  double? pressureHpa,
+  double? temperatureC,
+) => <String, Object?>{
+  'latitudeDeg': place.latitudeDeg,
+  'longitudeDeg': place.longitudeDeg,
+  'altitudeM': place.altitudeM,
+  'at': at,
+  if (grahas != null) 'grahas': [for (final graha in grahas) graha.key],
+  if (stars != null) 'stars': [for (final star in stars) star.key],
+  if (eclipticStepDeg != null) 'eclipticStepDeg': eclipticStepDeg,
+  if (horizonStepDeg != null) 'horizonStepDeg': horizonStepDeg,
+  if (pressureHpa != null) 'pressureHpa': pressureHpa,
+  if (temperatureC != null) 'temperatureC': temperatureC,
+};
+
 /// `ts_almanac_sky_view`'s answer, with the provenance beside it.
 SkyViewAnswer _skyView(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
-  final raw = envelope['value']! as Map<String, Object?>;
+  return SkyViewAnswer(
+    value: _skyViewValue(envelope['value']! as Map<String, Object?>),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// A sky view's value.
+SkyView _skyViewValue(Map<String, Object?> raw) {
   final air = raw['atmosphere']! as Map<String, Object?>;
   List<Map<String, Object?>> rows(String key) =>
       (raw[key]! as List<Object?>).cast<Map<String, Object?>>();
-  return SkyViewAnswer(
-    value: SkyView(
-      at: _real(raw['at']),
-      siderealTimeDeg: _real(raw['siderealTimeDeg']),
-      obliquityDeg: _real(raw['obliquityDeg']),
-      pressureHpa: _real(air['pressureHpa']),
-      temperatureC: _real(air['temperatureC']),
-      eclipticStepDeg: _real(raw['eclipticStepDeg']),
-      horizonStepDeg: _real(raw['horizonStepDeg']),
-      grahas: List.unmodifiable([
-        for (final one in rows('grahas'))
-          GrahaSky(
-            graha: _graha(one['graha']),
-            raDeg: _real(one['raDeg']),
-            decDeg: _real(one['decDeg']),
-            altitudeDeg: _real(one['altitudeDeg']),
-            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
-            azimuthDeg: _real(one['azimuthDeg']),
-          ),
-      ]),
-      stars: List.unmodifiable([
-        for (final one in rows('stars'))
-          StarSky(
-            star: _key(one['star'], Star.byKey, Star.unknown),
-            nakshatra:
-                one['nakshatra'] == null
-                    ? null
-                    : _key(
-                      one['nakshatra'],
-                      Nakshatra.byKey,
-                      Nakshatra.unknown,
-                    ),
-            magnitude: (one['magnitude'] as num?)?.toDouble(),
-            raDeg: _real(one['raDeg']),
-            decDeg: _real(one['decDeg']),
-            altitudeDeg: _real(one['altitudeDeg']),
-            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
-            azimuthDeg: _real(one['azimuthDeg']),
-          ),
-      ]),
-      ecliptic: List.unmodifiable([
-        for (final one in rows('ecliptic'))
-          EclipticPoint(
-            kind: one['kind']! as String,
-            longitudeDeg: _real(one['longitudeDeg']),
-            altitudeDeg: _real(one['altitudeDeg']),
-            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
-            azimuthDeg: _real(one['azimuthDeg']),
-          ),
-      ]),
-      horizon: List.unmodifiable([
-        for (final one in rows('horizon'))
-          HorizonPoint(
-            azimuthDeg: _real(one['azimuthDeg']),
-            raDeg: _real(one['raDeg']),
-            decDeg: _real(one['decDeg']),
-            longitudeDeg: _real(one['longitudeDeg']),
-            latitudeDeg: _real(one['latitudeDeg']),
-          ),
-      ]),
+  return SkyView(
+    at: _real(raw['at']),
+    siderealTimeDeg: _real(raw['siderealTimeDeg']),
+    obliquityDeg: _real(raw['obliquityDeg']),
+    pressureHpa: _real(air['pressureHpa']),
+    temperatureC: _real(air['temperatureC']),
+    eclipticStepDeg: _real(raw['eclipticStepDeg']),
+    horizonStepDeg: _real(raw['horizonStepDeg']),
+    grahas: List.unmodifiable([
+      for (final one in rows('grahas'))
+        GrahaSky(
+          graha: _graha(one['graha']),
+          raDeg: _real(one['raDeg']),
+          decDeg: _real(one['decDeg']),
+          altitudeDeg: _real(one['altitudeDeg']),
+          refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+          azimuthDeg: _real(one['azimuthDeg']),
+        ),
+    ]),
+    stars: List.unmodifiable([
+      for (final one in rows('stars'))
+        StarSky(
+          star: _key(one['star'], Star.byKey, Star.unknown),
+          nakshatra:
+              one['nakshatra'] == null
+                  ? null
+                  : _key(one['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+          magnitude: (one['magnitude'] as num?)?.toDouble(),
+          raDeg: _real(one['raDeg']),
+          decDeg: _real(one['decDeg']),
+          altitudeDeg: _real(one['altitudeDeg']),
+          refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+          azimuthDeg: _real(one['azimuthDeg']),
+        ),
+    ]),
+    ecliptic: List.unmodifiable([
+      for (final one in rows('ecliptic'))
+        EclipticPoint(
+          kind: one['kind']! as String,
+          longitudeDeg: _real(one['longitudeDeg']),
+          altitudeDeg: _real(one['altitudeDeg']),
+          refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+          azimuthDeg: _real(one['azimuthDeg']),
+        ),
+    ]),
+    horizon: List.unmodifiable([
+      for (final one in rows('horizon'))
+        HorizonPoint(
+          azimuthDeg: _real(one['azimuthDeg']),
+          raDeg: _real(one['raDeg']),
+          decDeg: _real(one['decDeg']),
+          longitudeDeg: _real(one['longitudeDeg']),
+          latitudeDeg: _real(one['latitudeDeg']),
+        ),
+    ]),
+  );
+}
+
+/// Where one point of the sky falls in a camera's picture
+/// (`03-design/sky-pose.md` §5).
+final class ScreenPlacement extends _Value {
+  const ScreenPlacement({
+    required this.inView,
+    required this.x,
+    required this.y,
+    required this.offAxisDeg,
+  });
+
+  /// In front of the camera and within the picture, edges included.
+  final bool inView;
+
+  /// Across the picture from its left edge, 0 to 1 within it; null behind
+  /// the camera.
+  final double? x;
+
+  /// Down the picture from its top edge, 0 to 1 within it; null behind the
+  /// camera.
+  final double? y;
+
+  /// The angle from the line of sight, degrees.
+  final double offAxisDeg;
+
+  @override
+  List<Object?> get _fields => [inView, x, y, offAxisDeg];
+}
+
+/// A placement for each point of the sky, list for list.
+final class SkyScreen extends _Value {
+  const SkyScreen({
+    required this.grahas,
+    required this.stars,
+    required this.ecliptic,
+    required this.horizon,
+  });
+
+  /// One for each of the sky's grahas, in its order.
+  final List<ScreenPlacement> grahas;
+
+  /// One for each of the sky's stars, in its order.
+  final List<ScreenPlacement> stars;
+
+  /// One for each of the sky's ecliptic points, in its order.
+  final List<ScreenPlacement> ecliptic;
+
+  /// One for each of the sky's horizon points, in its order.
+  final List<ScreenPlacement> horizon;
+
+  @override
+  List<Object?> get _fields => [grahas, stars, ecliptic, horizon];
+}
+
+/// The sky through a device's camera (`03-design/sky-pose.md`).
+final class SkyPose extends _Value {
+  const SkyPose({
+    required this.sky,
+    required this.pose,
+    required this.verticalFovDeg,
+    required this.screen,
+  });
+
+  /// The sky view's value, unchanged.
+  final SkyView sky;
+
+  /// The pose, as read.
+  final DevicePose pose;
+
+  /// The field of view down the picture, degrees.
+  final double verticalFovDeg;
+
+  /// Where each of the sky's points falls.
+  final SkyScreen screen;
+
+  /// The rising lagna point, the ecliptic's `ASCENDANT`, with its
+  /// placement; null at the one instant the ecliptic lies in the horizon.
+  (EclipticPoint, ScreenPlacement)? ascendant() {
+    for (var i = 0; i < sky.ecliptic.length; i++) {
+      if (sky.ecliptic[i].kind == 'ASCENDANT') {
+        return (sky.ecliptic[i], screen.ecliptic[i]);
+      }
+    }
+    return null;
+  }
+
+  @override
+  List<Object?> get _fields => [sky, pose, verticalFovDeg, screen];
+}
+
+/// What `almanac.skyPose` answers.
+final class SkyPoseAnswer {
+  const SkyPoseAnswer({required this.value, required this.provenance});
+
+  /// The sky and where each point falls.
+  final SkyPose value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_sky_pose`'s answer, with the provenance beside it.
+SkyPoseAnswer _skyPose(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final pose = raw['pose']! as Map<String, Object?>;
+  final screen = raw['screen']! as Map<String, Object?>;
+  List<ScreenPlacement> placed(String key) => List.unmodifiable([
+    for (final one
+        in (screen[key]! as List<Object?>).cast<Map<String, Object?>>())
+      ScreenPlacement(
+        inView: one['inView']! as bool,
+        x: (one['x'] as num?)?.toDouble(),
+        y: (one['y'] as num?)?.toDouble(),
+        offAxisDeg: _real(one['offAxisDeg']),
+      ),
+  ]);
+  return SkyPoseAnswer(
+    value: SkyPose(
+      sky: _skyViewValue(raw['sky']! as Map<String, Object?>),
+      pose: DevicePose(
+        azimuthDeg: _real(pose['azimuthDeg']),
+        altitudeDeg: _real(pose['altitudeDeg']),
+        rollDeg: _real(pose['rollDeg']),
+        horizontalFovDeg: _real(pose['horizontalFovDeg']),
+        aspectRatio: _real(pose['aspectRatio']),
+      ),
+      verticalFovDeg: _real(raw['verticalFovDeg']),
+      screen: SkyScreen(
+        grahas: placed('grahas'),
+        stars: placed('stars'),
+        ecliptic: placed('ecliptic'),
+        horizon: placed('horizon'),
+      ),
     ),
     provenance: Provenance.fromJson(
       envelope['provenance']! as Map<String, Object?>,

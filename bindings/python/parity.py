@@ -22,6 +22,8 @@ import json
 
 from teistro import (
     Detail,
+    DevicePose,
+    ScreenPlacement,
     SankalpaRequest,
     AayadiSystem,
     decode_digest,
@@ -3271,6 +3273,40 @@ def main() -> None:
     )
     sky_ascendant = next(point for point in sky_view.value.ecliptic if point.kind == "ASCENDANT")
     put("sky-view-ascendant", f"{number(sky_ascendant.longitude_deg)} {number(sky_ascendant.azimuth_deg)}")
+
+    # ── The sky pose ──────────────────────────────────────────────────
+    # The same sky through a phone's camera facing east-south-east, tipped
+    # up and turned (`03-design/sky-pose.md`): the hash, the vertical
+    # field, how many of each list are in view, the Moon's placement and
+    # the ascendant's.
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
+        sky_pose = builtin.almanac.sky_pose(
+            place=place,
+            at=2461345.25,
+            pose=DevicePose(azimuthDeg=100, altitudeDeg=25, rollDeg=-12, horizontalFovDeg=66, aspectRatio=0.5625),
+        )
+    put("sky-pose-hash", sky_pose.provenance.content_hash)
+    put("sky-pose-vertical", number(sky_pose.value.vertical_fov_deg))
+    pose_screen = sky_pose.value.screen
+
+    def in_view(placements: Sequence[ScreenPlacement]) -> int:
+        return sum(1 for one in placements if one.in_view)
+
+    def placement(one: ScreenPlacement) -> str:
+        x = "null" if one.x is None else number(one.x)
+        y = "null" if one.y is None else number(one.y)
+        return f"{str(one.in_view).lower()} {x} {y} {number(one.off_axis_deg)}"
+
+    put(
+        "sky-pose-in-view",
+        f"{in_view(pose_screen.grahas)} {in_view(pose_screen.stars)} "
+        f"{in_view(pose_screen.ecliptic)} {in_view(pose_screen.horizon)}",
+    )
+    moon_at = next(i for i, one in enumerate(sky_pose.value.sky.grahas) if one.graha == Graha.MOON)
+    put("sky-pose-moon", placement(pose_screen.grahas[moon_at]))
+    rising = sky_pose.value.ascendant()
+    assert rising is not None
+    put("sky-pose-ascendant", placement(rising[1]))
 
     # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span

@@ -1292,5 +1292,31 @@
         }
       ]
     }
+  },
+  {
+    "record": "almanac.skyPose",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "at": 2461345.25,
+      "grahas": [
+        "SUN",
+        "MOON"
+      ],
+      "stars": [
+        "SPICA",
+        "REGULUS"
+      ],
+      "eclipticStepDeg": 15,
+      "horizonStepDeg": 30,
+      "pose": {
+        "azimuthDeg": 95,
+        "altitudeDeg": 35,
+        "rollDeg": 5,
+        "horizontalFovDeg": 63,
+        "aspectRatio": 0.5625
+      }
+    }
   }
 ]

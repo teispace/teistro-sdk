@@ -6270,6 +6270,35 @@ test('an almanac draws the sky at a place and an instant', () => {
 });
 
 /**
+ * The same sky through a camera (`03-design/sky-pose.md`): the sky is the
+ * sky view's, one placement for each of its points, the Moon in the middle
+ * of a camera pointed at it, and a field of a half-sky refused by name.
+ */
+test('an almanac places the sky in a camera picture', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const view = ctx.almanac.skyView({ place, at: 2461345.25 }).value;
+  const moon = view.grahas[1];
+  const pose = { azimuthDeg: moon.azimuthDeg, altitudeDeg: moon.refractedAltitudeDeg, rollDeg: 30, horizontalFovDeg: 50, aspectRatio: 0.75 };
+  const { value, provenance } = ctx.almanac.skyPose({ place, at: 2461345.25, pose });
+  assert.equal(typeof provenance.contentHash, 'string');
+  assert.deepEqual(value.sky, view);
+  assert.equal(value.screen.grahas.length, 9);
+  assert.equal(value.screen.stars.length, 27);
+  assert.equal(value.screen.ecliptic.length, value.sky.ecliptic.length);
+  const centre = value.screen.grahas[1];
+  assert.ok(centre.inView);
+  assert.ok(Math.abs(centre.x - 0.5) < 1e-9 && Math.abs(centre.y - 0.5) < 1e-9);
+  assert.ok(value.verticalFovDeg > 50);
+  assert.ok(Object.isFrozen(value.screen.grahas[0]));
+  assert.throws(
+    () => ctx.almanac.skyPose({ place, at: 2461345.25, pose: { ...pose, horizontalFovDeg: 180 } }),
+    (error) => error.field === 'skyPose.pose.horizontalFovDeg',
+  );
+  ctx.dispose();
+});
+
+/**
  * A death at 10:00 on 20 October 2026 in Kathmandu: the *Dharmasindhu*'s
  * sixteen in place order, the first monthly first, fifteen of them drawn
  * to the sapindana on the twelfth day; and under Nepal's readings the

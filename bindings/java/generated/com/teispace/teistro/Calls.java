@@ -1560,6 +1560,44 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_sky_pose`: A device's camera pointed at the sky (`03-design/sky-pose.md`),
+     * answered with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+     * `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+     * the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+     * stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+     * for each point of `sky`'s list of the same name, in its order. `x` and
+     * `y` are the point in the rectilinear (gnomonic) picture, normalised to
+     * `[0, 1]` with the origin at the top left, outside it beyond the frame
+     * and null behind the camera; a graha, a star and an ecliptic point are
+     * placed at their refracted altitude, a horizon point at nought. The
+     * rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+     *
+     * `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+     * beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+     * "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+     * true north through east (−360 to 360) and altitude (−90 to 90), the
+     * roll about it (−180 to 180, positive as the phone turns clockwise seen
+     * from its screen), the field across the picture (above 0 and below
+     * 180) and the picture's width over its height (0.1 to 10). A missing or
+     * out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+     * the sky view's own under `skyPose`; the context's refusals are
+     * `ts_almanac_sky_view`'s.
+     */
+    static String almanacSkyPose(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_sky_pose.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_naam_milan`: Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two

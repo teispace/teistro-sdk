@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.teispace.teistro.blob.Panchanga;
 import com.teispace.teistro.ffi.Native;
+import com.teispace.teistro.request.DevicePose;
 
 /**
  * {@code sky.almanac()}: a day, or a run of days, with its limbs.
@@ -1008,6 +1009,52 @@ public final class AlmanacArea {
      */
     public SkyViewAnswer skyView(double at, Observer place, List<Graha> grahas, List<Star> stars,
             Double eclipticStepDeg, Double horizonStepDeg, Double pressureHpa, Double temperatureC) {
+        String json = Json.write(skyAsked(at, place, grahas, stars, eclipticStepDeg, horizonStepDeg, pressureHpa,
+                temperatureC));
+        return AlmanacReads.skyViewAnswer(context.locked((lib, raw) -> Calls.almanacSkyView(lib, raw, json)));
+    }
+
+    /**
+     * <b>A device's camera pointed at the sky</b> ({@code 03-design/sky-pose.md}): {@link #skyView}'s request with
+     * a pose beside it, answered with the sky view's value unchanged as {@code sky}, and one placement for each of
+     * its grahas, stars, ecliptic points and horizon points in the camera's rectilinear picture, normalised with
+     * the origin at the top left. The pose's azimuth is from true north (add the declination to a magnetic
+     * heading); its roll is positive as the phone turns clockwise seen from its screen; its field of view is
+     * across the picture, above 0 and below 180 degrees. The rising lagna point is {@code sky.ecliptic}'s
+     * {@code ASCENDANT} ({@link SkyPose#ascendant}).
+     *
+     * <pre>{@code
+     * DevicePose pose = new DevicePose(20.0, 0.75, 90.0, 60.0, 0.0);
+     * SkyPoseAnswer seen = sdk.almanac().skyPose(2_461_345.25, kathmandu, pose, null, null, null, null, null, null);
+     * boolean moonInView = seen.value().screen().grahas().get(1).inView();
+     * }</pre>
+     *
+     * @param at the instant, a UTC Julian day, read as UT1
+     * @param place where the sky is seen
+     * @param pose where the camera points and what it frames
+     * @param grahas the grahas placed, in this order; the nine when null
+     * @param stars the stars placed, in this order; the twenty-seven yogataras when null
+     * @param eclipticStepDeg the ecliptic's step in longitude; 5 when null
+     * @param horizonStepDeg the horizon's step in azimuth; 5 when null
+     * @param pressureHpa the air's pressure; 1010 when null
+     * @param temperatureC the air's temperature; 10 when null
+     * @return the sky and where each of its points falls, sealed
+     */
+    public SkyPoseAnswer skyPose(double at, Observer place, DevicePose pose, List<Graha> grahas, List<Star> stars,
+            Double eclipticStepDeg, Double horizonStepDeg, Double pressureHpa, Double temperatureC) {
+        if (pose == null) {
+            throw Reads.invalid("pose is a DevicePose", "pose");
+        }
+        Map<String, Object> asked = skyAsked(at, place, grahas, stars, eclipticStepDeg, horizonStepDeg, pressureHpa,
+                temperatureC);
+        asked.put("pose", pose.toJson());
+        String json = Json.write(asked);
+        return AlmanacReads.skyPoseAnswer(context.locked((lib, raw) -> Calls.almanacSkyPose(lib, raw, json)));
+    }
+
+    /** The sky view's request as {@link #skyView} and {@link #skyPose} write it. */
+    private static Map<String, Object> skyAsked(double at, Observer place, List<Graha> grahas, List<Star> stars,
+            Double eclipticStepDeg, Double horizonStepDeg, Double pressureHpa, Double temperatureC) {
         if (place == null) {
             throw Reads.invalid("place is an Observer", "place");
         }
@@ -1034,8 +1081,7 @@ public final class AlmanacArea {
         if (temperatureC != null) {
             asked.put("temperatureC", temperatureC);
         }
-        String json = Json.write(asked);
-        return AlmanacReads.skyViewAnswer(context.locked((lib, raw) -> Calls.almanacSkyView(lib, raw, json)));
+        return asked;
     }
 
     /**
