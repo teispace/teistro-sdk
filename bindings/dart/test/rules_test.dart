@@ -6,25 +6,117 @@
 // class writes a field under the wrong name, or forgets one, fails here.
 //
 // The layer has no JSON reader for requests (a consumer builds them in
-// code), so the test reads each rule into the classes by reflection: a
-// field by its constructor parameter, a variant by its `type`.
+// code), so the test reads each rule into the classes through a table of
+// them generated beside the library (`surface/library.g.dart`): a field
+// by its constructor parameter, a variant by its `type`.
 
 import 'dart:convert';
 import 'dart:io';
-// `dart:mirrors` is deprecated from Dart 3.14.0 but still supported on the
-// VM, the only place these tests run. Replacing the reflection with a
-// generated table of the surface is tracked in gates/HANDOFF.md.
-// ignore: deprecated_member_use
-import 'dart:mirrors';
 
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
-final LibraryMirror _layer =
-    reflectClass(RuleDefinition).owner! as LibraryMirror;
+import 'surface/library.g.dart' as surface;
+import 'surface/shapes.dart';
 
-final List<ClassMirror> _classes =
-    _layer.declarations.values.whereType<ClassMirror>().toList();
+/// The classes the layer keeps by hand (`DART_FACADES`) that a deep example
+/// reaches and this reader builds, each by its constructor as the table
+/// gives a generated one. The generator does not know their constructors,
+/// which are the layer's own, so they are listed rather than inferred: a
+/// record reaching a hand class not listed is not built, and asks to be
+/// listed here or in [_handShaped].
+final List<Surface> _facades = [
+  // No test can write a hand class back to see whether a variant agrees,
+  // so the variant is picked by the event it names.
+  Sealed(
+    'AshauchEvent',
+    pick:
+        (json) => switch (json) {
+          {'event': 'BIRTH'} => 'AshauchBirth',
+          {'event': 'LOSS'} => 'AshauchLoss',
+          {'event': 'DEATH'} => 'AshauchDeath',
+          _ => null,
+        },
+  ),
+  Built<AshauchBirth>('AshauchBirth', AshauchBirth.new, const [
+    Param('at', Scalar('double')),
+    Param('child', Named('AshauchSex')),
+  ], parent: 'AshauchEvent'),
+  Built<AshauchLoss>('AshauchLoss', AshauchLoss.new, const [
+    Param('at', Scalar('double')),
+    Param('month', Scalar('int')),
+  ], parent: 'AshauchEvent'),
+  Built<AshauchDeath>('AshauchDeath', AshauchDeath.new, const [
+    Param('at', Scalar('double')),
+    Param('crematedAt', Scalar('double')),
+    Param('ahitagni', Scalar('bool')),
+    Param('deceased', Named('Deceased')),
+  ], parent: 'AshauchEvent'),
+  // A value with named members and a constructor a member each (`full`,
+  // or `count(days)`), read as the layer's own reader reads it.
+  Read('AshauchLength', (json) {
+    final raw = json! as Map<String, Object?>;
+    final key = raw['length'];
+    if (key == 'DAYS') return AshauchLength.count(raw['days']! as int);
+    return const [
+      AshauchLength.bath,
+      AshauchLength.sajyotih,
+      AshauchLength.pakshini,
+      AshauchLength.full,
+    ].firstWhere(
+      (length) => length.key == key,
+      orElse: () => throw StateError('an ashauch length $key'),
+    );
+  }),
+  Built<FestivalRequest>('FestivalRequest', FestivalRequest.new, [
+    const Param('rules', Scalar('Object')),
+    Param(
+      'published',
+      ListOf(
+        MapOf(
+          const Scalar('Object'),
+          (entries) => Map<String, Object?>.from(entries),
+        ),
+        (items) => List<Map<String, Object?>>.from(items),
+      ),
+    ),
+    const Param('only', Named('MetaFilter')),
+    const Param('hijriOffset', Scalar('int')),
+  ]),
+  Built<FestivalWindow>('FestivalWindow', FestivalWindow.new, const [
+    Param('window', Scalar('String')),
+    Param('part', Scalar('String')),
+    Param('muhurta', Scalar('int')),
+    Param('fromMuhurta', Scalar('int')),
+    Param('toMuhurta', Scalar('int')),
+  ]),
+  Built<FirstYearRequest>('FirstYearRequest', FirstYearRequest.new, const [
+    Param('key', Scalar('String')),
+    Param('at', Scalar('double')),
+    Param('night', Named('NightRule')),
+    Param('firstAbdika', Named('FirstAbdika')),
+    Param('firstYearAdhika', Named('FirstYearAdhika')),
+    Param('sapindana', Named('SapindanaAt')),
+    Param('una', Named('UnaDay')),
+    Param('window', Named('FestivalWindow')),
+  ]),
+  Built<MuhurtaRequest>('MuhurtaRequest', MuhurtaRequest.new, const [
+    Param('rules', Scalar('Object')),
+    Param('native', Named('MuhurtaNative')),
+    Param('ranking', Named('MuhurtaRanking')),
+    Param('daysWithWindows', Scalar('int')),
+    Param('most', Scalar('int')),
+    Param('asta', Scalar('Object')),
+    Param('direction', Named('Direction')),
+  ]),
+];
+
+/// Every type the reader knows, by name: the catalogue's enums, the
+/// generated request types and the hand classes it builds.
+final Map<String, Surface> _types = {
+  for (final type in [...surface.catalogue, ...surface.requests, ..._facades])
+    type.name: type,
+};
 
 /// `planet-in-house` as a class name's tail, `PlanetInHouse`.
 String _pascal(String kebab) =>
@@ -33,90 +125,102 @@ String _pascal(String kebab) =>
         if (word.isNotEmpty) word[0].toUpperCase() + word.substring(1),
     ].join();
 
-/// The variants of a sealed request class.
-List<ClassMirror> _variants(ClassMirror sealed) => [
-  for (final one in _classes)
-    if (one.superclass?.simpleName == sealed.simpleName) one,
+/// The variants of a union, in the order the table lists them.
+List<Surface> _variants(Sealed sealed) => [
+  for (final one in _types.values)
+    if (one is Built && one.parent == sealed.name) one,
 ];
 
 /// The variants met, by class name.
 final Set<String> _met = {};
 
-/// [json] read as a value of [type].
-Object? _read(TypeMirror type, Object? json, String at) {
+/// [json] read as a value of [shape].
+Object? _read(Shape shape, Object? json, String at) {
   if (json == null) return null;
-  final name = MirrorSystem.getName(type.simpleName);
-  switch (name) {
-    case 'int':
+  switch (shape) {
+    case Scalar(name: 'int'):
       return json as int;
-    case 'double':
+    case Scalar(name: 'double'):
       return (json as num).toDouble();
-    case 'num' || 'String' || 'bool' || 'Object' || 'dynamic':
+    case Scalar():
       return json;
-    case 'List':
-      final element = type.typeArguments.first;
-      final items = [
-        for (final (i, item) in (json as List<Object?>).indexed)
-          _read(element, item, '$at[$i]'),
-      ];
-      return (type as ClassMirror).newInstance(#from, [items]).reflectee;
-    case 'Map':
-      final element = type.typeArguments.last;
+    case ListOf(:final item, :final typed):
+      return typed([
+        for (final (i, one) in (json as List<Object?>).indexed)
+          _read(item, one, '$at[$i]'),
+      ]);
+    case MapOf(:final value, :final typed):
       final entries = (json as Map<String, Object?>).entries;
-      return (type as ClassMirror).newInstance(#from, [
-        {
-          for (final MapEntry(:key, :value) in entries)
-            key: _read(element, value, '$at.$key'),
-        },
-      ]).reflectee;
+      return typed({
+        for (final MapEntry(:key, value: one) in entries)
+          key: _read(value, one, '$at.$key'),
+      });
+    case Members():
+      throw StateError('$at: a message parameter is not read from JSON');
+    case Unread(:final dart):
+      throw StateError('$at: no reader of a $dart');
+    case Named(:final name):
+      return _named(name, json, at);
   }
-  final mirror = type as ClassMirror;
-  if (mirror.isEnum) {
-    final key = (json as String).split('.').last;
-    return (mirror.getField(#values).reflectee as List<Object?>).firstWhere(
-      (member) => reflect(member).getField(#key).reflectee == key,
-      orElse: () => throw StateError('$at: no $name is `$key`'),
-    );
-  }
-  if (mirror.isAbstract) {
-    final variants = _variants(mirror);
-    if (json case {'type': final String tag}) {
-      final variant = variants.firstWhere(
-        (one) => MirrorSystem.getName(one.simpleName) == '$name${_pascal(tag)}',
-        orElse: () => throw StateError('$at: no $name variant `$tag`'),
+}
+
+/// [json] read as a value of the type the tables call [name].
+Object _named(String name, Object json, String at) {
+  final type = _types[name];
+  switch (type) {
+    case KeySet():
+      final key = (json as String).split('.').last;
+      return type.values.firstWhere(
+        (member) => type.keyOf(member) == key,
+        orElse: () => throw StateError('$at: no $name is `$key`'),
       );
-      return _build(variant, json, at);
-    }
-    // An externally tagged variant carrying one value (`{"minor": 1}`):
-    // the variant its key names, built from the value.
-    if (json case Map<String, Object?>(length: 1)) {
-      final MapEntry(:key, :value) = json.entries.single;
-      final variant =
-          variants
-              .where(
-                (one) =>
-                    MirrorSystem.getName(one.simpleName) ==
-                    '$name${_pascal(key.toLowerCase().replaceAll('_', '-'))}',
-              )
-              .firstOrNull;
-      if (variant != null) {
-        final built = _build(variant, value, '$at.$key');
-        if (_agrees(_written(built), json)) return built;
+    case Sealed(:final pick?):
+      final variant = pick(json);
+      final built = _variants(type).where((one) => one.name == variant);
+      if (built.isEmpty) throw StateError('$at: no $name variant reads $json');
+      return _build(built.single, json, at);
+    case Sealed():
+      final variants = _variants(type);
+      if (json case {'type': final String tag}) {
+        final variant = variants.firstWhere(
+          (one) => one.name == '$name${_pascal(tag)}',
+          orElse: () => throw StateError('$at: no $name variant `$tag`'),
+        );
+        return _build(variant, json, at);
       }
-    }
-    // An untagged union: the variant that reads the value and writes it
-    // back as it was.
-    for (final variant in variants) {
-      try {
-        final value = _build(variant, json, at);
-        if (_agrees(_written(value), json)) return value;
-      } on Object {
-        continue;
+      // An externally tagged variant carrying one value (`{"minor": 1}`):
+      // the variant its key names, built from the value.
+      if (json case Map<String, Object?>(length: 1)) {
+        final MapEntry(:key, :value) = json.entries.single;
+        final variant =
+            variants
+                .where(
+                  (one) =>
+                      one.name ==
+                      '$name${_pascal(key.toLowerCase().replaceAll('_', '-'))}',
+                )
+                .firstOrNull;
+        if (variant != null) {
+          final built = _build(variant, value, '$at.$key');
+          if (_agrees(_written(built), json)) return built;
+        }
       }
-    }
-    throw StateError('$at: no $name variant reads $json');
+      // An untagged union: the variant that reads the value and writes it
+      // back as it was.
+      for (final variant in variants) {
+        try {
+          final value = _build(variant, json, at);
+          if (_agrees(_written(value), json)) return value;
+        } on Object {
+          continue;
+        }
+      }
+      throw StateError('$at: no $name variant reads $json');
+    case Built() || Read():
+      return _build(type!, json, at);
+    case _:
+      throw StateError('$at: no table describes $name');
   }
-  return _build(mirror, json, at);
 }
 
 /// The hand-kept classes whose parameters the wire names otherwise, each
@@ -133,37 +237,21 @@ const Map<String, String> _laid = {'Cancellation': 'condition'};
 /// A request record of [type] from its JSON object: each named parameter
 /// from its field (a Dart keyword's `Value` dropped), or one positional
 /// parameter from the whole value.
-Object _build(ClassMirror type, Object? json, String at) {
-  final name = MirrorSystem.getName(type.simpleName);
+Object _build(Surface type, Object? json, String at) {
+  final name = type.name;
   _met.add(name);
-  final methods = type.declarations.values.whereType<MethodMirror>();
-  final constructor =
-      methods
-          .where(
-            (one) =>
-                one.isConstructor && one.constructorName == const Symbol(''),
-          )
-          .firstOrNull;
-  if (constructor == null) {
-    // A value with named members and a constructor a member each (an
-    // ashauch length: `full`, or `count(days)`) is read by the layer's own
-    // reader, the one an answer carrying it is read with.
-    final reader = methods.firstWhere(
-      (one) => one.isStatic && MirrorSystem.getName(one.simpleName) == '_read',
-      orElse: () => throw StateError('$at: $name has no constructor or reader'),
-    );
-    return type.invoke(reader.simpleName, [json]).reflectee as Object;
-  }
+  if (type is Read) return type.read(json);
+  if (type is! Built) throw StateError('$at: $name has no constructor');
   final positional = <Object?>[];
-  final named = <Symbol, Object?>{};
-  for (final parameter in constructor.parameters) {
-    if (!parameter.isNamed) {
-      positional.add(_read(parameter.type, json, at));
+  final named = <String, Object?>{};
+  for (final parameter in type.params) {
+    if (!parameter.named) {
+      positional.add(_read(parameter.shape, json, at));
       continue;
     }
-    final field = MirrorSystem.getName(parameter.simpleName);
+    final field = parameter.name;
     if (_laid[name] == field) {
-      named[parameter.simpleName] = _read(parameter.type, json, at);
+      named[field] = _read(parameter.shape, json, at);
       continue;
     }
     final wire =
@@ -174,25 +262,13 @@ Object _build(ClassMirror type, Object? json, String at) {
     final fields = json! as Map<String, Object?>;
     final key = fields.containsKey(field) ? field : wire;
     if (!fields.containsKey(key)) continue;
-    named[parameter.simpleName] = _read(
-      parameter.type,
-      fields[key],
-      '$at.$key',
-    );
+    named[field] = _read(parameter.shape, fields[key], '$at.$key');
   }
-  return type.newInstance(const Symbol(''), positional, named).reflectee
-      as Object;
+  return type.build(positional, named);
 }
 
-/// A request as the JSON it writes: its wire form, which `toJson` gives
-/// for a request and a hand-written value (an ashauch event) holds alone.
-Object? _written(Object request) => jsonDecode(
-  jsonEncode(
-    reflect(
-      request,
-    ).getField(MirrorSystem.getSymbol('_wire', _layer)).reflectee,
-  ),
-);
+/// A request as the JSON it writes, through its public `toJson`.
+Object? _written(Object request) => jsonDecode(jsonEncode(request));
 
 /// Where [written] stops saying what [source] says, or null where it
 /// says it all: every field the source gives, with the same value, a
@@ -226,9 +302,9 @@ String? _disagreement(Object? written, Object? source, [String at = r'$']) {
 }
 
 /// Where two builds of one value first differ, or null where they are
-/// equal: a list member by member, a value field by field (its `_fields`,
-/// which `==` compares), so a failure names the field rather than the
-/// whole request.
+/// equal: a list member by member, a value field by field (the fields
+/// `==` compares, as the table lists them), so a failure names the field
+/// rather than the whole request.
 String? _difference(Object? a, Object? b, String at) {
   if (a == b) return null;
   if ((a, b) case (final List<Object?> x, final List<Object?> y)) {
@@ -240,12 +316,10 @@ String? _difference(Object? a, Object? b, String at) {
     return '$at: lists alike member by member are unequal';
   }
   if (a != null && b != null && a.runtimeType == b.runtimeType) {
-    final fields = MirrorSystem.getSymbol('_fields', _layer);
-    final mirror = reflect(a);
-    if (mirror.type.instanceMembers.containsKey(fields)) {
+    if (_types['${a.runtimeType}'] case final Built type) {
       final found = _difference(
-        mirror.getField(fields).reflectee,
-        reflect(b).getField(fields).reflectee,
+        type.fieldsOf(a),
+        type.fieldsOf(b),
         '$at.${a.runtimeType}',
       );
       if (found != null) return found;
@@ -279,7 +353,8 @@ final Directory _rules = Directory(_repo('crates/rules/rules'));
 /// layer keeps by hand in a shape of its own rather than the wire's: a
 /// place as an `Observer` (`ReckonedPlace`, `ResearchBirth`), a birth date
 /// by position (`BirthDate`), an orb model through its own constructors
-/// (`OrbModel`). Listed, so a record that becomes buildable asks to leave.
+/// (`OrbModel`); none of them is in [_facades]. Listed, so a record that
+/// becomes buildable asks to leave.
 const Set<String> _handShaped = {
   'almanac.publishedReasons',
   'chart.found',
@@ -365,14 +440,14 @@ void main() {
       if (pack case {'rules': final List<Object?> shipped}) {
         for (final source in shipped) {
           final key = (source! as Map<String, Object?>)['key'];
-          final rule = _read(reflectType(RuleDefinition), source, '$key')!;
+          final rule = _read(const Named('RuleDefinition'), source, '$key')!;
           expect((rule as RuleDefinition).key, key);
           expect(
             _disagreement(_written(rule), source),
             isNull,
             reason: '$key is written as ${file.uri.pathSegments.last} has it',
           );
-          final again = _read(reflectType(RuleDefinition), source, '$key');
+          final again = _read(const Named('RuleDefinition'), source, '$key');
           expect(rule, again, reason: '$key built twice is one value');
           expect(rule.hashCode, again.hashCode);
           rules += 1;
@@ -401,13 +476,13 @@ void main() {
       final type = _records[record];
       expect(type, isNotNull, reason: '$record has a class');
       try {
-        final request = _read(reflectType(type!), source, record)!;
+        final request = _read(Named('$type'), source, record)!;
         expect(
           _disagreement(_written(request), source),
           isNull,
           reason: '$record is written as it was given',
         );
-        final again = _read(reflectType(type), source, record);
+        final again = _read(Named('$type'), source, record);
         expect(
           _difference(request, again, record),
           isNull,

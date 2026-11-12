@@ -3,18 +3,17 @@
 // catalogue member against the library's key table. A generator that
 // writes one accessor or one member wrong fails here, whichever it is.
 //
-// The surfaces are walked by reflection, so a member added tomorrow is
-// held the day it is generated.
-
-// `dart:mirrors` is deprecated from Dart 3.14.0 but still supported on the
-// VM, the only place these tests run. Replacing the reflection with a
-// generated table of the surface is tracked in gates/HANDOFF.md.
-// ignore: deprecated_member_use
-import 'dart:mirrors';
+// The surfaces are walked from tables generated beside them
+// (`surface/messages.g.dart`, `surface/library.g.dart`), so a member added
+// tomorrow is held the day it is generated.
 
 import 'package:teistro/messages.dart' as intl;
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
+
+import 'surface/library.g.dart' as surface;
+import 'surface/messages.g.dart' as accessors;
+import 'surface/shapes.dart';
 
 final Teistro teistro = Teistro.open();
 
@@ -55,21 +54,16 @@ final class _Checked implements intl.Renderer {
 
 /// A value of an accessor's parameter: a member of an enum, the zone a
 /// zone names, an instant for a number, and text otherwise.
-Object _argument(ParameterMirror parameter) {
-  final name = MirrorSystem.getName(parameter.simpleName);
-  final type = parameter.type;
-  if (type is ClassMirror && type.isEnum) {
-    return (type.getField(#values).reflectee as List<Object?>).first!;
-  }
-  return switch (MirrorSystem.getName(type.simpleName)) {
-    'int' => 1,
-    'num' || 'double' => 2460000.25,
-    'String' => name == 'zone' ? 'Asia/Kathmandu' : 'x',
-    'List' => const <Object>['x'],
-    'TimeValue' => const intl.TimeValue(hour: 6, minute: 5),
-    final other => throw StateError('no argument for $name, a $other'),
-  };
-}
+Object _argument(Param parameter) => switch (parameter.shape) {
+  Members(:final values) => values.first,
+  Scalar(name: 'int') => 1,
+  Scalar(name: 'num' || 'double') => 2460000.25,
+  Scalar(name: 'String') => parameter.name == 'zone' ? 'Asia/Kathmandu' : 'x',
+  Scalar(name: 'List') => const <Object>['x'],
+  Scalar(name: 'TimeValue') => const intl.TimeValue(hour: 6, minute: 5),
+  final other =>
+    throw StateError('no argument for ${parameter.name}, a $other'),
+};
 
 /// Whether the engine warning [warning], rendering [key] in any locale
 /// with no pack loaded, is one the walk expects. Text parameters get the
@@ -95,60 +89,39 @@ final class _Swept {
   final unexpected = <String, List<String>>{};
 }
 
-/// Walks the accessor tree under [node], holding each message accessor
-/// to a key the locale renders whole, with every parameter it sends, and
-/// each entity accessor to forms with a name.
-void _walk(Object node, _Checked checked, _Swept swept) {
-  final mirror = reflect(node);
-  for (final declaration
-      in mirror.type.declarations.values.whereType<MethodMirror>()) {
-    if (declaration.isStatic ||
-        declaration.isConstructor ||
-        declaration.isPrivate ||
-        declaration.isSetter) {
-      continue;
-    }
-    final name =
-        '${MirrorSystem.getName(mirror.type.simpleName)}.'
-        '${MirrorSystem.getName(declaration.simpleName)}';
-    final returns = MirrorSystem.getName(declaration.returnType.simpleName);
-    if (declaration.isRegularMethod && returns == 'String') {
-      final named = {
-        for (final parameter in declaration.parameters)
-          parameter.simpleName: _argument(parameter),
-      };
-      final text =
-          mirror.invoke(declaration.simpleName, const [], named).reflectee
-              as String;
-      final key = checked.key!;
-      expect(swept.messages.add(key), isTrue, reason: '$key reached twice');
-      expect(checked.ctx.intl.has(key), isTrue, reason: '$name names $key');
-      expect(checked.params!.keys.toSet(), {
-        // A Dart keyword (`class`) is a parameter with a `$` after it.
-        for (final p in declaration.parameters)
-          MirrorSystem.getName(p.simpleName).replaceAll(r'$', ''),
-      }, reason: '$name sends every parameter by its name');
-      final unexpected = [
-        for (final warning in checked.warnings)
-          if (!_expected(key, warning)) warning,
-        if (checked.fallback) 'rendered from a fallback locale',
-      ];
-      if (unexpected.isNotEmpty) swept.unexpected[key] = unexpected;
-      expect(text, isNot(anyOf(isEmpty, key)), reason: '$name says something');
-    } else if (declaration.isGetter && returns == 'EntityForms') {
-      final forms =
-          mirror.getField(declaration.simpleName).reflectee as intl.EntityForms;
-      final key = checked.key!;
-      expect(swept.entities.add(key), isTrue, reason: '$key reached twice');
-      expect(forms.name, isNotEmpty, reason: '$key has a name');
-      expect(forms.forms['name'], forms.name, reason: 'every form is kept');
-    } else if (declaration.isGetter && returns.startsWith('Messages')) {
-      _walk(
-        mirror.getField(declaration.simpleName).reflectee as Object,
-        checked,
-        swept,
-      );
-    }
+/// Walks every accessor from [root], holding each message accessor to a
+/// key the locale renders whole, with every parameter it sends, and each
+/// entity accessor to forms with a name.
+void _walk(intl.Messages root, _Checked checked, _Swept swept) {
+  for (final message in accessors.messages) {
+    final name = message.name;
+    final text =
+        Function.apply(message.accessor(root), const [], {
+              for (final parameter in message.params)
+                Symbol(parameter.name): _argument(parameter),
+            })
+            as String;
+    final key = checked.key!;
+    expect(swept.messages.add(key), isTrue, reason: '$key reached twice');
+    expect(checked.ctx.intl.has(key), isTrue, reason: '$name names $key');
+    expect(checked.params!.keys.toSet(), {
+      // A Dart keyword (`class`) is a parameter with a `$` after it.
+      for (final p in message.params) p.name.replaceAll(r'$', ''),
+    }, reason: '$name sends every parameter by its name');
+    final unexpected = [
+      for (final warning in checked.warnings)
+        if (!_expected(key, warning)) warning,
+      if (checked.fallback) 'rendered from a fallback locale',
+    ];
+    if (unexpected.isNotEmpty) swept.unexpected[key] = unexpected;
+    expect(text, isNot(anyOf(isEmpty, key)), reason: '$name says something');
+  }
+  for (final entity in accessors.entities) {
+    final forms = entity.accessor(root);
+    final key = checked.key!;
+    expect(swept.entities.add(key), isTrue, reason: '$key reached twice');
+    expect(forms.name, isNotEmpty, reason: '$key has a name');
+    expect(forms.forms['name'], forms.name, reason: 'every form is kept');
   }
 }
 
@@ -223,61 +196,59 @@ void main() {
       "library's packed key", () {
     final ctx = context();
     addTearDown(ctx.dispose);
-    final library = reflectClass(Kind).owner! as LibraryMirror;
     var enums = 0;
     var members = 0;
-    for (final type in library.declarations.values
-        .whereType<ClassMirror>()
-        .where(
-          (type) => type.isEnum && type.staticMembers.containsKey(#byId),
-        )) {
+    final kinds = <Kind>{};
+    for (final type in surface.catalogue) {
       enums += 1;
-      final name = MirrorSystem.getName(type.simpleName);
-      final open = type.staticMembers.containsKey(#registered);
-      Object? byId(int id) => type.invoke(#byId, [id]).reflectee;
-      Object? byKey(String key) => type.invoke(#byKey, [key]).reflectee;
+      final name = type.name;
+      final open = type.open;
       final ids = <int>{};
       String? kind;
-      for (final member in type.getField(#values).reflectee as List<Object?>) {
-        final fields = reflect(member);
-        final id = fields.getField(#id).reflectee as int;
-        final key = fields.getField(#key).reflectee as String;
+      for (final member in type.values) {
+        final id = type.idOf(member);
+        final key = type.keyOf(member);
         if (open && key == 'UNKNOWN') {
           expect(id, -1, reason: '$name.unknown');
           continue;
         }
         members += 1;
         expect(ids.add(id), isTrue, reason: '$name.$key has its own id');
-        expect(byId(id), same(member), reason: '$name.$key by its id');
-        expect(byKey(key), same(member), reason: '$name.$key by its key');
-        if (member is KeyOf<Object?>) {
-          final full = member.fullKey;
-          kind = full.substring(0, full.indexOf('.'));
-          expect(full, '$kind.$key', reason: "$name.$key's full key");
-          expect(byKey(full), same(member), reason: '$full by its full key');
-          final family = Kind.byKey(kind);
-          expect(family, isNotNull, reason: '$kind is a kind');
-          final packed = (family!.id << 16) | id;
+        expect(type.byId(id), same(member), reason: '$name.$key by its id');
+        expect(type.byKey(key), same(member), reason: '$name.$key by its key');
+        if (member case final KeyOf<Object?> keyed) {
+          final full = keyed.fullKey;
+          final family = full.substring(0, full.indexOf('.'));
+          kind = family;
+          expect(full, '$family.$key', reason: "$name.$key's full key");
+          expect(
+            type.byKey(full),
+            same(member),
+            reason: '$full by its full key',
+          );
+          final known = Kind.byKey(family);
+          expect(known, isNotNull, reason: '$family is a kind');
+          kinds.add(known!);
+          final packed = (known.id << 16) | id;
           expect(ctx.keys.id(full), packed, reason: "$full is the library's");
           expect(ctx.keys.name(packed), full);
         }
       }
-      expect(byKey('NOT_A_MEMBER_OF_ANY_KIND'), isNull, reason: name);
+      expect(type.byKey('NOT_A_MEMBER_OF_ANY_KIND'), isNull, reason: name);
       const stranger = 0x7FFE;
       if (open) {
-        final unknown = byId(stranger)!;
-        expect(reflect(unknown).getField(#key).reflectee, 'UNKNOWN');
-        final made =
-            type.invoke(#registered, ['ACME']).reflectee as KeyOf<Object?>;
+        final unknown = type.byId(stranger);
+        expect(type.keyOf(unknown), 'UNKNOWN');
+        final made = type.registered('ACME') as KeyOf<Object?>;
         expect(made.fullKey, '$kind.ACME', reason: '$name registers its kind');
         expect(made.toString(), made.fullKey);
-        final again = type.invoke(#registered, ['ACME']).reflectee;
+        final again = type.registered('ACME');
         expect(made, again, reason: 'a registered member is its key');
         expect(made.hashCode, again.hashCode);
-        expect(made, isNot(type.invoke(#registered, ['OTHER']).reflectee));
+        expect(made, isNot(type.registered('OTHER')));
       } else {
         expect(
-          () => byId(stranger),
+          () => type.byId(stranger),
           throwsA(
             isA<ArgumentError>().having(
               (e) => e.message,
@@ -290,5 +261,8 @@ void main() {
     }
     expect(enums, greaterThan(140));
     expect(members, greaterThan(1000));
+    // Every kind's enum is walked: one the table left out leaves its kind
+    // unmet here, where a count would not notice.
+    expect(kinds, Kind.values.toSet(), reason: 'every kind has its enum');
   });
 }
