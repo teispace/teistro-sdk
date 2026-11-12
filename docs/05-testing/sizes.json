@@ -2,8 +2,8 @@
   "schema": "teistro-sizes/1",
   "why": "A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fails, and so does more than 5% under it. Each budget is 2% over the module measured on CI's Linux runner, to the next ten kilobytes, and moves only through `cargo xtask sizes --from DIR --why SENTENCE`, which adds a row here saying what moved it; the figures before this record began are in the history of `bindings/wasm/size.json`.",
   "recorded": {
-    "run": "43098669884",
-    "commit": "098e5231dd3f503eac619fe6346eec7a318606a8",
+    "run": "43247637582",
+    "commit": "1457dfb56182ac783a2792e491e609132383b39f",
     "date": "2026-11-12",
     "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
     "flate2": "1.1.10"
@@ -12,224 +12,224 @@
     {
       "subject": "linux-x64",
       "artefact": "library",
-      "raw": 28964560,
-      "gzip": 8967083
+      "raw": 29188840,
+      "gzip": 9040687
     },
     {
       "subject": "linux-x64",
       "artefact": "c-bundle",
-      "gzip": 36116851
+      "gzip": 36349681
     },
     {
       "subject": "linux-x64",
       "artefact": "addon",
-      "raw": 29583096,
-      "gzip": 9174731
+      "raw": 29807360,
+      "gzip": 9235766
     },
     {
       "subject": "linux-x64",
       "artefact": "wheel",
-      "raw": 9556190
+      "raw": 9631759
     },
     {
       "subject": "linux-x64",
       "artefact": "jar",
-      "raw": 12421394
+      "raw": 12502606
     },
     {
       "subject": "linux-arm64",
       "artefact": "library",
-      "raw": 26120184,
-      "gzip": 8345537
+      "raw": 26450560,
+      "gzip": 8423004
     },
     {
       "subject": "linux-arm64",
       "artefact": "c-bundle",
-      "gzip": 35337298
+      "gzip": 35555621
     },
     {
       "subject": "linux-arm64",
       "artefact": "addon",
-      "raw": 26627424,
-      "gzip": 8529412
+      "raw": 26957864,
+      "gzip": 8605791
     },
     {
       "subject": "linux-arm64",
       "artefact": "wheel",
-      "raw": 8934646
+      "raw": 9014076
     },
     {
       "subject": "linux-arm64",
       "artefact": "jar",
-      "raw": 11799380
+      "raw": 11884458
     },
     {
       "subject": "darwin-arm64",
       "artefact": "library",
-      "raw": 35176048,
-      "gzip": 9435227
+      "raw": 35399648,
+      "gzip": 9496566
     },
     {
       "subject": "darwin-arm64",
       "artefact": "c-bundle",
-      "gzip": 34424025
+      "gzip": 34602091
     },
     {
       "subject": "darwin-arm64",
       "artefact": "addon",
-      "raw": 35823632,
-      "gzip": 9649945
+      "raw": 36047264,
+      "gzip": 9710709
     },
     {
       "subject": "darwin-arm64",
       "artefact": "wheel",
-      "raw": 10024340
+      "raw": 10087638
     },
     {
       "subject": "darwin-arm64",
       "artefact": "jar",
-      "raw": 12889080
+      "raw": 12958030
     },
     {
       "subject": "darwin-x64",
       "artefact": "library",
-      "raw": 36032496,
-      "gzip": 9695588
+      "raw": 36276280,
+      "gzip": 9773270
     },
     {
       "subject": "darwin-x64",
       "artefact": "c-bundle",
-      "gzip": 34094884
+      "gzip": 34288327
     },
     {
       "subject": "darwin-x64",
       "artefact": "addon",
-      "raw": 36805640,
-      "gzip": 9926767
+      "raw": 37049408,
+      "gzip": 10006884
     },
     {
       "subject": "darwin-x64",
       "artefact": "wheel",
-      "raw": 10284702
+      "raw": 10364346
     },
     {
       "subject": "darwin-x64",
       "artefact": "jar",
-      "raw": 13149432
+      "raw": 13234727
     },
     {
       "subject": "win32-x64",
       "artefact": "library",
-      "raw": 31922176,
-      "gzip": 9224300
+      "raw": 32132608,
+      "gzip": 9290210
     },
     {
       "subject": "win32-x64",
       "artefact": "c-bundle",
-      "gzip": 40846159
+      "gzip": 41106187
     },
     {
       "subject": "win32-x64",
       "artefact": "addon",
-      "raw": 32753664,
-      "gzip": 9457191
+      "raw": 32964096,
+      "gzip": 9521223
     },
     {
       "subject": "win32-x64",
       "artefact": "wheel",
-      "raw": 9813397
+      "raw": 9881268
     },
     {
       "subject": "win32-x64",
       "artefact": "jar",
-      "raw": 12678222
+      "raw": 12751744
     },
     {
       "subject": "win32-arm64",
       "artefact": "library",
-      "raw": 27757568,
-      "gzip": 8549774
+      "raw": 27970048,
+      "gzip": 8611916
     },
     {
       "subject": "win32-arm64",
       "artefact": "c-bundle",
-      "gzip": 39040827
+      "gzip": 39246858
     },
     {
       "subject": "win32-arm64",
       "artefact": "addon",
-      "raw": 28448256,
-      "gzip": 8766769
+      "raw": 28659712,
+      "gzip": 8832329
     },
     {
       "subject": "win32-arm64",
       "artefact": "wheel",
-      "raw": 9138868
+      "raw": 9202968
     },
     {
       "subject": "win32-arm64",
       "artefact": "jar",
-      "raw": 12003621
+      "raw": 12073374
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "library",
-      "raw": 39181368,
-      "gzip": 10844232
+      "raw": 39474200,
+      "gzip": 10932180
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "c-bundle",
-      "gzip": 38001678
+      "gzip": 38215080
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "addon",
-      "raw": 39944752,
-      "gzip": 11087005
+      "raw": 40237504,
+      "gzip": 11168479
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "wheel",
-      "raw": 11433340
+      "raw": 11523253
     },
     {
       "subject": "linux-x64-musl",
       "artefact": "jar",
-      "raw": 14297995
+      "raw": 14393556
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "library",
-      "raw": 38530680,
-      "gzip": 10474344
+      "raw": 38922544,
+      "gzip": 10577543
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "c-bundle",
-      "gzip": 37440236
+      "gzip": 37684131
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "addon",
-      "raw": 39251192,
-      "gzip": 10699210
+      "raw": 39643896,
+      "gzip": 10806533
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "wheel",
-      "raw": 11063453
+      "raw": 11168617
     },
     {
       "subject": "linux-arm64-musl",
       "artefact": "jar",
-      "raw": 13928114
+      "raw": 14038925
     },
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 16428878,
-      "gzip": 3861478
+      "raw": 16536861,
+      "gzip": 3893368
     },
     {
       "subject": "full",
@@ -240,8 +240,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 7768773,
-      "gzip": 2172418
+      "raw": 7885434,
+      "gzip": 2205047
     },
     {
       "subject": "panchanga",
@@ -257,12 +257,12 @@
     {
       "subject": "esbuild everything",
       "artefact": "bundle",
-      "raw": 328049
+      "raw": 329890
     },
     {
       "subject": "esbuild panchanga",
       "artefact": "bundle",
-      "raw": 328059
+      "raw": 329900
     },
     {
       "subject": "vite catalogue",
@@ -272,12 +272,12 @@
     {
       "subject": "vite everything",
       "artefact": "bundle",
-      "raw": 326422
+      "raw": 328263
     },
     {
       "subject": "vite panchanga",
       "artefact": "bundle",
-      "raw": 326422
+      "raw": 328263
     },
     {
       "subject": "webpack catalogue",
@@ -287,20 +287,20 @@
     {
       "subject": "webpack everything",
       "artefact": "bundle",
-      "raw": 332807
+      "raw": 334648
     },
     {
       "subject": "webpack panchanga",
       "artefact": "bundle",
-      "raw": 332803
+      "raw": 334644
     }
   ],
   "budgets": [
     {
       "subject": "full",
       "artefact": "module",
-      "raw": 16560000,
-      "gzip": 3890000
+      "raw": 16870000,
+      "gzip": 3980000
     },
     {
       "subject": "panchanga",
@@ -693,6 +693,15 @@
       "raw": 7768773,
       "gzip": 2172418,
       "why": "The geo port (geo.load and geo.resolve, SR-87) grows the panchanga module and every glue file; measured on verify 43098669884"
+    },
+    {
+      "run": "43247637582",
+      "date": "2026-11-12",
+      "subject": "full",
+      "artefact": "module",
+      "raw": 16536861,
+      "gzip": 3893368,
+      "why": "SR-01's 276 Nepal festival rules and the Gujarat and Andhra Pradesh holiday packs grow the module's data"
     }
   ]
 }
