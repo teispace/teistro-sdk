@@ -91,6 +91,7 @@ every key a shipped set names:
 | `IN-MH` | `MAHARASHTRA` | `INDIA_MAHARASHTRA` |
 | `IN-TG` | | `INDIA_TELANGANA` |
 | `IN-TN` | `TAMIL_NADU` | `INDIA_TAMIL_NADU` |
+| `IN-UP` | | `INDIA_UTTAR_PRADESH` |
 | `IN-WB` | `WEST_BENGAL` | `INDIA_WEST_BENGAL` |
 | `NP` | | `NEPAL_PANCHANGA` and `NEPAL` |
 | `KATHMANDU_VALLEY`, `HILLS`, `TERAI` | | rules of Nepal's packs a notice limits |
@@ -106,7 +107,7 @@ and the 21 of the Terai parts of several.
 **A region names its pack.** Wherever a request names a pack, in `rules`
 or in `almanac.festivalPack`, it may name a region instead
 (`FestivalPack::for_region`): the pack whose `region()` it is, else its
-country's, so `IN-UP`, a state with no pack of its own, keeps
+country's, so `IN-HR`, a state with no pack of its own, keeps
 `INDIA_CENTRAL`, and `NP-P3` keeps `NEPAL_PANCHANGA`, the national print's
 set. A code is read as written, upper case; a country no pack keeps, or a
 key no ISO code is, is refused under the request's field with the regions

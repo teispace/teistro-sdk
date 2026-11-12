@@ -28,6 +28,26 @@ view's hash included (its input gains no field when no pose is asked).
   platform's attitude into a pose, and `Pose::direction_at`, a screen
   point back to the sky.
 
+**Uttar Pradesh's public holidays (SR-03, the tenth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-UP` now reckons `INDIA_UTTAR_PRADESH`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_UTTAR_PRADESH` (`FestivalPack::IndiaUttarPradesh`, `FestivalRule`, `FollowingRule`,
+  `DatedRule` and `PublishedSet::india_uttar_pradesh`) holds the General Administration Section's notifications
+  of 2019 to 2026, both the public holidays (para 2) and the restricted ones (para 3), the latter `optional`:
+  - each lunar day by the shipped rule that meets the most notifications, measured at Lucknow (C1528): Nepal's
+    Raksha Bandhan and Bhaiyadooj, Telangana's Dussehra and Deepawali, the print's Mahanavami and the central
+    list's Janmashtami among them;
+  - Narak Chaturdashi the day before Deepawali, and Sant Ravidas Jayanti on Magha's full moon at sunrise (C1521);
+  - Govardhan Puja and Maharaja Agrasen Jayanti by *Dharmasindhu*'s Bali pratipada and Navaratra arambha (C1523),
+    Makar Sankranti on the first of Makara (C1522), Easter Saturday and Easter Monday by the Western computus, and
+    the eleven state days on their dates.
+
+  The twelve days set by the moon ship as printed, marked `MOON_SIGHTING`. Paras 4 to 6 and later orders are left
+  out (C1526, C1527) (`03-design/uttar-pradesh-holidays.md`).
+- `festival-measured.md` §20 holds it at Lucknow, 315 of the 328 rows meeting the print and the thirteen that part
+  named (C1525, C1528, C1529). `crates/sdk/tests/uttar_pradesh.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the ten new keys.
+
 ## 1.0.0-rc.4
 
 The fourth release candidate of 1.0.0: Nepal's festivals as rules (SR-01)

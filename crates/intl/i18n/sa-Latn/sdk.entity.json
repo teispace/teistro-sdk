@@ -4797,6 +4797,46 @@
     "JYAPU_DIWAS": {
       "name": "Jyāpu Divasa",
       "prose": "Jyāpu Divasa"
+    },
+    "RAVIDAS_JAYANTI": {
+      "name": "Santaravidāsajayantī",
+      "prose": "Santaravidāsajayantī"
+    },
+    "AGRASEN_JAYANTI": {
+      "name": "Mahārājāgrasenajayantī",
+      "prose": "Mahārājāgrasenajayantī"
+    },
+    "HOLI_SECOND_DAY": {
+      "name": "Dhūlivandanasya Dvitīyadivasaḥ",
+      "prose": "Dhūlivandanasya Dvitīyadivasaḥ"
+    },
+    "KARPOORI_THAKUR_JAYANTI": {
+      "name": "Jananāyakakarpūrīṭhākurajayantī",
+      "prose": "Jananāyakakarpūrīṭhākurajayantī"
+    },
+    "KASHYAP_NISHADRAJ_JAYANTI": {
+      "name": "Maharṣikaśyapaniṣādarājaguhyajayantī",
+      "prose": "Maharṣikaśyapaniṣādarājaguhyajayantī"
+    },
+    "CHANDRASHEKHAR_JAYANTI": {
+      "name": "Candraśekharajayantī",
+      "prose": "Candraśekharajayantī"
+    },
+    "MAHARANA_PRATAP_JAYANTI": {
+      "name": "Lokanāyakamahārāṇāpratāpajayantī",
+      "prose": "Lokanāyakamahārāṇāpratāpajayantī"
+    },
+    "UDA_DEVI_SHAHEED_DIWAS": {
+      "name": "Vīrāṅganodādevībalidānadivasaḥ",
+      "prose": "Vīrāṅganodādevībalidānadivasaḥ"
+    },
+    "CHARAN_SINGH_JAYANTI": {
+      "name": "Caudharīcaraṇasiṃhajayantī",
+      "prose": "Caudharīcaraṇasiṃhajayantī"
+    },
+    "EASTER_MONDAY": {
+      "name": "Īsṭara Somavāra",
+      "prose": "Īsṭara Somavāra"
     }
   },
   "year_office": {

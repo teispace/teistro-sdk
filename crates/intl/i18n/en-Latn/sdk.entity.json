@@ -5328,6 +5328,46 @@
     "JYAPU_DIWAS": {
       "name": "Jyapu Diwas",
       "prose": "Jyapu Diwas"
+    },
+    "RAVIDAS_JAYANTI": {
+      "name": "Sant Ravidas Jayanti",
+      "prose": "Sant Ravidas Jayanti"
+    },
+    "AGRASEN_JAYANTI": {
+      "name": "Maharaja Agrasen Jayanti",
+      "prose": "Maharaja Agrasen Jayanti"
+    },
+    "HOLI_SECOND_DAY": {
+      "name": "Holi (second day)",
+      "prose": "Holi (second day)"
+    },
+    "KARPOORI_THAKUR_JAYANTI": {
+      "name": "Jannayak Karpoori Thakur Jayanti",
+      "prose": "Jannayak Karpoori Thakur Jayanti"
+    },
+    "KASHYAP_NISHADRAJ_JAYANTI": {
+      "name": "Maharshi Kashyap and Maharaja Nishadraj Guhya Jayanti",
+      "prose": "Maharshi Kashyap and Maharaja Nishadraj Guhya Jayanti"
+    },
+    "CHANDRASHEKHAR_JAYANTI": {
+      "name": "Chandra Shekhar Jayanti",
+      "prose": "Chandra Shekhar Jayanti"
+    },
+    "MAHARANA_PRATAP_JAYANTI": {
+      "name": "Lok Nayak Maharana Pratap Jayanti",
+      "prose": "Lok Nayak Maharana Pratap Jayanti"
+    },
+    "UDA_DEVI_SHAHEED_DIWAS": {
+      "name": "Veerangana Uda Devi Martyrdom Day",
+      "prose": "Veerangana Uda Devi Martyrdom Day"
+    },
+    "CHARAN_SINGH_JAYANTI": {
+      "name": "Chaudhary Charan Singh Jayanti",
+      "prose": "Chaudhary Charan Singh Jayanti"
+    },
+    "EASTER_MONDAY": {
+      "name": "Easter Monday",
+      "prose": "Easter Monday"
     }
   },
   "agni_vasa": {

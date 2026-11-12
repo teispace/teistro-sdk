@@ -46,6 +46,7 @@ mod india_kerala;
 mod india_maharashtra;
 mod india_tamil_nadu;
 mod india_telangana;
+mod india_uttar_pradesh;
 mod india_west_bengal;
 mod jain;
 mod mahalaya;

@@ -27,9 +27,11 @@
 //!   Karnataka's at Bengaluru ([`karnataka`]), the `INDIA_TELANGANA`
 //!   pack against the Government of Telangana's at Hyderabad
 //!   ([`telangana`]), the `INDIA_GUJARAT` pack against the Government
-//!   of Gujarat's at Gandhinagar ([`gujarat`]), and the
+//!   of Gujarat's at Gandhinagar ([`gujarat`]), the
 //!   `INDIA_ANDHRA_PRADESH` pack against the Government of Andhra
-//!   Pradesh's at Amaravati ([`andhra_pradesh`]).
+//!   Pradesh's at Amaravati ([`andhra_pradesh`]), and the
+//!   `INDIA_UTTAR_PRADESH` pack against the Government of Uttar
+//!   Pradesh's at Lucknow ([`uttar_pradesh`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -64,6 +66,7 @@ mod purnima;
 mod sait;
 mod tamil_nadu;
 mod telangana;
+mod uttar_pradesh;
 mod west_bengal;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
@@ -487,6 +490,7 @@ fn page() -> Result<String, String> {
     let telangana = telangana::compare(&mut problems)?;
     let gujarat = gujarat::compare(&mut problems)?;
     let andhra = andhra_pradesh::compare(&mut problems)?;
+    let uttar = uttar_pradesh::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -507,6 +511,7 @@ fn page() -> Result<String, String> {
     telangana::render(&mut out, &telangana);
     gujarat::render(&mut out, &gujarat);
     andhra_pradesh::render(&mut out, &andhra);
+    uttar_pradesh::render(&mut out, &uttar);
     Ok(out)
 }
 
