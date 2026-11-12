@@ -136,6 +136,14 @@ pub enum FestivalPack {
     /// Sankranti days by the Sun, and the days set by the moon as printed,
     /// marked subject to the sighting.
     IndiaTelangana,
+    /// Gujarat's public holidays (`03-design/gujarat-holidays.md`,
+    /// [`FestivalRule::india_gujarat`]): the General Administration
+    /// Department's yearly notification by rule, Part I's public holidays
+    /// with its Note 1's days on a Sunday or a second or fourth Saturday,
+    /// the state's own days by the amanta month (Chetichand, the Vikram
+    /// Samvat New Year, Bhai Bij), Makar Sankranti on 14 January, and the
+    /// days set by the moon as printed, marked subject to the sighting.
+    IndiaGujarat,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -157,7 +165,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 15] = [
+    pub const ALL: [FestivalPack; 16] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -173,6 +181,7 @@ impl FestivalPack {
         FestivalPack::IndiaAssam,
         FestivalPack::IndiaKarnataka,
         FestivalPack::IndiaTelangana,
+        FestivalPack::IndiaGujarat,
     ];
 
     /// Its key, as a request names it.
@@ -194,6 +203,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => "INDIA_ASSAM",
             FestivalPack::IndiaKarnataka => "INDIA_KARNATAKA",
             FestivalPack::IndiaTelangana => "INDIA_TELANGANA",
+            FestivalPack::IndiaGujarat => "INDIA_GUJARAT",
         }
     }
 
@@ -220,6 +230,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => Some("IN-AS"),
             FestivalPack::IndiaKarnataka => Some("IN-KA"),
             FestivalPack::IndiaTelangana => Some("IN-TG"),
+            FestivalPack::IndiaGujarat => Some("IN-GJ"),
             FestivalPack::Dharmasindhu
             | FestivalPack::Nepal
             | FestivalPack::PitriPaksha
@@ -240,6 +251,7 @@ impl FestivalPack {
     /// assert_eq!(FestivalPack::for_region("TAMIL_NADU"), Some(FestivalPack::IndiaTamilNadu));
     /// assert_eq!(FestivalPack::for_region("IN-KA"), Some(FestivalPack::IndiaKarnataka));
     /// assert_eq!(FestivalPack::for_region("IN-TG"), Some(FestivalPack::IndiaTelangana));
+    /// assert_eq!(FestivalPack::for_region("IN-GJ"), Some(FestivalPack::IndiaGujarat));
     /// assert_eq!(FestivalPack::for_region("IN-UP"), Some(FestivalPack::IndiaCentral));
     /// assert_eq!(FestivalPack::for_region("NP-P3"), Some(FestivalPack::NepalPanchanga));
     /// assert_eq!(FestivalPack::for_region("US-CA"), None);
@@ -279,6 +291,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => FestivalRule::india_assam(),
             FestivalPack::IndiaKarnataka => FestivalRule::india_karnataka(),
             FestivalPack::IndiaTelangana => FestivalRule::india_telangana(),
+            FestivalPack::IndiaGujarat => FestivalRule::india_gujarat(),
         }
     }
 
@@ -300,7 +313,8 @@ impl FestivalPack {
             | FestivalPack::IndiaTamilNadu
             | FestivalPack::IndiaAssam
             | FestivalPack::IndiaKarnataka
-            | FestivalPack::IndiaTelangana => Vec::new(),
+            | FestivalPack::IndiaTelangana
+            | FestivalPack::IndiaGujarat => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -326,6 +340,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => DatedRule::india_assam(),
             FestivalPack::IndiaKarnataka => DatedRule::india_karnataka(),
             FestivalPack::IndiaTelangana => DatedRule::india_telangana(),
+            FestivalPack::IndiaGujarat => DatedRule::india_gujarat(),
         }
     }
 
@@ -346,7 +361,8 @@ impl FestivalPack {
             | FestivalPack::IndiaTamilNadu
             | FestivalPack::IndiaAssam
             | FestivalPack::IndiaKarnataka
-            | FestivalPack::IndiaTelangana => Vec::new(),
+            | FestivalPack::IndiaTelangana
+            | FestivalPack::IndiaGujarat => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -379,6 +395,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => FollowingRule::india_assam(),
             FestivalPack::IndiaKarnataka => FollowingRule::india_karnataka(),
             FestivalPack::IndiaTelangana => FollowingRule::india_telangana(),
+            FestivalPack::IndiaGujarat => FollowingRule::india_gujarat(),
         }
     }
 
@@ -394,6 +411,7 @@ impl FestivalPack {
             FestivalPack::IndiaAssam => vec![PublishedSet::india_assam()],
             FestivalPack::IndiaKarnataka => vec![PublishedSet::india_karnataka()],
             FestivalPack::IndiaTelangana => vec![PublishedSet::india_telangana()],
+            FestivalPack::IndiaGujarat => vec![PublishedSet::india_gujarat()],
             _ => Vec::new(),
         }
     }

@@ -337,12 +337,22 @@ impl StateList {
     /// Nepal's printed panchanga's rule of each `(key, from, optional)`,
     /// the print's `from` kept on the list under `key`.
     pub(super) fn print_kept(&self, keys: &[(&str, &str, bool)]) -> Vec<FestivalRule> {
-        let print = FestivalRule::nepal_panchanga();
+        self.taken(&FestivalRule::nepal_panchanga(), Tradition::Hindu, keys)
+    }
+
+    /// The rule of each `(key, from, optional)` of a shipped pack's
+    /// `rules`, its `from` kept on the list under `key`, of `tradition`.
+    pub(super) fn taken(
+        &self,
+        rules: &[FestivalRule],
+        tradition: Tradition,
+        keys: &[(&str, &str, bool)],
+    ) -> Vec<FestivalRule> {
         keys.iter()
             .filter_map(|&(key, from, optional)| {
-                find(&print, from).map(|rule| FestivalRule {
+                find(rules, from).map(|rule| FestivalRule {
                     key: key.to_owned(),
-                    meta: self.listed(Some(Tradition::Hindu), optional),
+                    meta: self.listed(Some(tradition), optional),
                     ..rule
                 })
             })

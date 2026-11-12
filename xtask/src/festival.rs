@@ -24,9 +24,10 @@
 //!   Chennai, under the vakya sky and the modern ([`tamil_nadu`]),
 //!   the `INDIA_ASSAM` pack against the Government of Assam's at Guwahati
 //!   ([`assam`]), the `INDIA_KARNATAKA` pack against the Government of
-//!   Karnataka's at Bengaluru ([`karnataka`]), and the `INDIA_TELANGANA`
+//!   Karnataka's at Bengaluru ([`karnataka`]), the `INDIA_TELANGANA`
 //!   pack against the Government of Telangana's at Hyderabad
-//!   ([`telangana`]).
+//!   ([`telangana`]), and the `INDIA_GUJARAT` pack against the Government
+//!   of Gujarat's at Gandhinagar ([`gujarat`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -49,6 +50,7 @@ use crate::measure::{Claim, table};
 
 mod assam;
 mod ekadashi;
+mod gujarat;
 mod india;
 mod karnataka;
 mod kerala;
@@ -480,6 +482,7 @@ fn page() -> Result<String, String> {
     let assam = assam::compare(&mut problems)?;
     let karnataka = karnataka::compare(&mut problems)?;
     let telangana = telangana::compare(&mut problems)?;
+    let gujarat = gujarat::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -498,6 +501,7 @@ fn page() -> Result<String, String> {
     assam::render(&mut out, &assam);
     karnataka::render(&mut out, &karnataka);
     telangana::render(&mut out, &telangana);
+    gujarat::render(&mut out, &gujarat);
     Ok(out)
 }
 
