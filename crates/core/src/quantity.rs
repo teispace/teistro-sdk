@@ -225,49 +225,104 @@ macro_rules! bounded_int {
 
 bounded_float!(
     /// A geographic latitude in degrees, north positive.
-    Latitude, "latitude", -90.0, 90.0, "-90 to 90 degrees", "°"
+    Latitude,
+    "latitude",
+    -90.0,
+    90.0,
+    "-90 to 90 degrees",
+    "°"
 );
 bounded_float!(
     /// A geographic longitude in degrees, east positive.
-    Longitude, "longitude", -180.0, 180.0, "-180 to 180 degrees", "°"
+    Longitude,
+    "longitude",
+    -180.0,
+    180.0,
+    "-180 to 180 degrees",
+    "°"
 );
 bounded_float!(
     /// An altitude above sea level in metres.
-    Altitude, "altitude", -500.0, 12_000.0, "-500 to 12000 metres", " m"
+    Altitude,
+    "altitude",
+    -500.0,
+    12_000.0,
+    "-500 to 12000 metres",
+    " m"
 );
 bounded_float!(
     /// A finite angle in degrees, of any range; normalisation is the
     /// canonical angle's job.
-    Degrees, "angle", f64::NEG_INFINITY, f64::INFINITY, "a finite number of degrees", "°"
+    Degrees,
+    "angle",
+    f64::NEG_INFINITY,
+    f64::INFINITY,
+    "a finite number of degrees",
+    "°"
 );
 
 bounded_int!(
     /// A sign index, 0 for Aries to 11 for Pisces.
-    SignIndex, u8, "sign index", 0, 11, "0 to 11"
+    SignIndex,
+    u8,
+    "sign index",
+    0,
+    11,
+    "0 to 11"
 );
 bounded_int!(
     /// A house number, 1 to 12.
-    HouseNumber, u8, "house number", 1, 12, "1 to 12"
+    HouseNumber,
+    u8,
+    "house number",
+    1,
+    12,
+    "1 to 12"
 );
 bounded_int!(
     /// A nakshatra index, 0 for Ashwini to 26 for Revati.
-    NakshatraIndex, u8, "nakshatra index", 0, 26, "0 to 26"
+    NakshatraIndex,
+    u8,
+    "nakshatra index",
+    0,
+    26,
+    "0 to 26"
 );
 bounded_int!(
     /// A pada index inside a nakshatra, 0 to 3.
-    PadaIndex, u8, "pada index", 0, 3, "0 to 3"
+    PadaIndex,
+    u8,
+    "pada index",
+    0,
+    3,
+    "0 to 3"
 );
 bounded_int!(
     /// A tithi index, 0 for Shukla Pratipada to 29 for Amavasya.
-    TithiIndex, u8, "tithi index", 0, 29, "0 to 29"
+    TithiIndex,
+    u8,
+    "tithi index",
+    0,
+    29,
+    "0 to 29"
 );
 bounded_int!(
     /// The divisions of a varga, 1 to 300.
-    VargaDivisions, u16, "varga divisions", 1, 300, "1 to 300"
+    VargaDivisions,
+    u16,
+    "varga divisions",
+    1,
+    300,
+    "1 to 300"
 );
 bounded_int!(
     /// A dasha depth, 1 to 6 levels.
-    Depth, u8, "depth", 1, 6, "1 to 6"
+    Depth,
+    u8,
+    "depth",
+    1,
+    6,
+    "1 to 6"
 );
 
 impl HouseNumber {
