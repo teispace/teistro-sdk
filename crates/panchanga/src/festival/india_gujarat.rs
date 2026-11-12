@@ -227,12 +227,7 @@ impl FestivalRule {
         let mut rules = STATE.central(&CENTRAL_LEFT);
         rules.extend(STATE.by_text(&[("RAKSHABANDHAN", false), ("YAMA_DWITIYA", false)]));
         rules.extend(STATE.print_kept(&PRINT_KEPT));
-        rules.extend(STATE.taken(
-            &FestivalRule::jain(),
-            Tradition::Jain,
-            &JAIN_KEPT,
-            as_cited,
-        ));
+        rules.extend(STATE.taken(&FestivalRule::jain(), Tradition::Jain, &JAIN_KEPT, as_cited));
         rules.extend(STATE.own(&GUJARAT, |_, what| format!("{NOTICE}: {what}; {ALMANAC}")));
         rules
     }

@@ -4740,6 +4740,63 @@
     "BOXING_DAY": {
       "name": "Baksiṅ-divasaḥ",
       "prose": "Baksiṅ-divasaḥ"
+    },
+    "CHETI_CHAND": {
+      "name": "Ceṭīcaṇḍaḥ",
+      "prose": "Ceṭīcaṇḍaḥ"
+    },
+    "VIKRAM_SAMVAT_NEW_YEAR": {
+      "name": "Vikramasaṃvatprārambhaḥ (besatuvarasa)",
+      "prose": "Vikramasaṃvatprārambhaḥ (besatuvarasa)"
+    },
+    "SARDAR_PATEL_JAYANTI": {
+      "name": "Saradāravallabhabhāīpaṭelajayantī",
+      "prose": "Saradāravallabhabhāīpaṭelajayantī"
+    },
+    "MAHALAYA_AMAVASYA": {
+      "name": "Mahālayāmāvāsyā",
+      "prose": "Mahālayāmāvāsyā"
+    },
+    "GAURA_PARVA": {
+      "name": "Gaurāparva",
+      "prose": "Gaurāparva",
+      "iast": "Gaurā Parva"
+    },
+    "BIRUDA_PANCHAMI": {
+      "name": "Biruḍāpañcamī",
+      "prose": "Biruḍāpañcamī",
+      "iast": "Biruḍā Pañcamī"
+    },
+    "MAHALAXMI_VRAT_BEGINS": {
+      "name": "Mahālakṣmīvratārambha",
+      "prose": "Mahālakṣmīvratārambha",
+      "iast": "Mahālakṣmīvratārambha"
+    },
+    "MAHALAXMI_VRAT_ENDS": {
+      "name": "Mahālakṣmīvratasamāpti",
+      "prose": "Mahālakṣmīvratasamāpti",
+      "iast": "Mahālakṣmīvrata Samāpti"
+    },
+    "VAT_SAVITRI_VRAT": {
+      "name": "Vaṭasāvitrīvrata",
+      "prose": "Vaṭasāvitrīvrata",
+      "iast": "Vaṭasāvitrī Vrata"
+    },
+    "INDRADHWAJA_PATAN": {
+      "name": "Indradhvajapātana",
+      "prose": "Indradhvajapātana"
+    },
+    "NANICHAYA": {
+      "name": "Nānicāyā",
+      "prose": "Nānicāyā"
+    },
+    "NEPALI_ARMY_DAY": {
+      "name": "Nepālī Senā Divasa",
+      "prose": "Nepālī Senā Divasa"
+    },
+    "JYAPU_DIWAS": {
+      "name": "Jyāpu Divasa",
+      "prose": "Jyāpu Divasa"
     }
   },
   "year_office": {

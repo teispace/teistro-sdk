@@ -377,8 +377,11 @@ impl FestivalRule {
             .iter()
             .map(|&(key, from, optional, _)| (key, from, optional))
             .collect();
-        rules.extend(
-            STATE.taken(&FestivalRule::india_telangana(), Tradition::Hindu, &kept, |key, rule| {
+        rules.extend(STATE.taken(
+            &FestivalRule::india_telangana(),
+            Tradition::Hindu,
+            &kept,
+            |key, rule| {
                 let what = TELUGU_KEPT
                     .iter()
                     .find(|row| row.0 == key)
@@ -387,8 +390,8 @@ impl FestivalRule {
                     "{NOTICE}: {what}; as Telangana's list reckons it: {}",
                     rule.source
                 )
-            }),
-        );
+            },
+        ));
         rules
     }
 }

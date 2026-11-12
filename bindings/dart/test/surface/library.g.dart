@@ -1262,6 +1262,8 @@ final List<Surface> requests = [
   Built<FestivalRulesIndiaAssam>('FestivalRulesIndiaAssam', FestivalRulesIndiaAssam.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaKarnataka>('FestivalRulesIndiaKarnataka', FestivalRulesIndiaKarnataka.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaTelangana>('FestivalRulesIndiaTelangana', FestivalRulesIndiaTelangana.new, const [], parent: 'FestivalRules', fields: (_) => const []),
+  Built<FestivalRulesIndiaGujarat>('FestivalRulesIndiaGujarat', FestivalRulesIndiaGujarat.new, const [], parent: 'FestivalRules', fields: (_) => const []),
+  Built<FestivalRulesIndiaAndhraPradesh>('FestivalRulesIndiaAndhraPradesh', FestivalRulesIndiaAndhraPradesh.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesValue>('FestivalRulesValue', FestivalRulesValue.new, [
     Param('value', ListOf(Named('FestivalRuleItem'), (items) => List<FestivalRuleItem>.from(items)), named: false),
   ], parent: 'FestivalRules', fields: (v) => [v.value]),
@@ -1609,6 +1611,8 @@ final List<Surface> requests = [
   Built<FestivalRuleItemIndiaAssam>('FestivalRuleItemIndiaAssam', FestivalRuleItemIndiaAssam.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaKarnataka>('FestivalRuleItemIndiaKarnataka', FestivalRuleItemIndiaKarnataka.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaTelangana>('FestivalRuleItemIndiaTelangana', FestivalRuleItemIndiaTelangana.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
+  Built<FestivalRuleItemIndiaGujarat>('FestivalRuleItemIndiaGujarat', FestivalRuleItemIndiaGujarat.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
+  Built<FestivalRuleItemIndiaAndhraPradesh>('FestivalRuleItemIndiaAndhraPradesh', FestivalRuleItemIndiaAndhraPradesh.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemSaitRule>('FestivalRuleItemSaitRule', FestivalRuleItemSaitRule.new, [
     Param('value', Named('SaitRule'), named: false),
   ], parent: 'FestivalRuleItem', fields: (v) => [v.value]),
@@ -2146,6 +2150,7 @@ final List<Surface> requests = [
   ], fields: (v) => [v.civilDate, v.civilWeekday, v.easter, v.key, v.meta, v.nakshatraInMonth, v.source, v.sunEnters, v.tithiInMonth]),
   Built<FestivalRule>('FestivalRule', FestivalRule.new, [
     Param('at', Named('Window')),
+    Param('barred', Named('Barred')),
     Param('convention', Named('LunarMonth')),
     Param('dayOfPaksha', Scalar('int')),
     Param('decide', ListOf(Named('Guard'), (items) => List<Guard>.from(items))),
@@ -2160,7 +2165,7 @@ final List<Surface> requests = [
     Param('parana', ListOf(Named('VrataParana'), (items) => List<VrataParana>.from(items))),
     Param('source', Scalar('String')),
     Param('tithi', Named('Tithi')),
-  ], fields: (v) => [v.at, v.convention, v.dayOfPaksha, v.decide, v.inAdhika, v.inMonth, v.key, v.meta, v.month, v.nakshatra, v.otherwise, v.paksha, v.parana, v.source, v.tithi]),
+  ], fields: (v) => [v.at, v.barred, v.convention, v.dayOfPaksha, v.decide, v.inAdhika, v.inMonth, v.key, v.meta, v.month, v.nakshatra, v.otherwise, v.paksha, v.parana, v.source, v.tithi]),
   Sealed('Thresholds'),
   Built<ThresholdsSuryaSiddhanta>('ThresholdsSuryaSiddhanta', ThresholdsSuryaSiddhanta.new, const [], parent: 'Thresholds', fields: (_) => const []),
   Built<ThresholdsPtolemy>('ThresholdsPtolemy', ThresholdsPtolemy.new, const [], parent: 'Thresholds', fields: (_) => const []),
@@ -2401,6 +2406,17 @@ final List<Surface> requests = [
     Param('tithi', Named('Tithi')),
     Param('twice', Named('FestivalWhich')),
   ], fields: (v) => [v.at, v.calendar, v.days, v.month, v.tithi, v.twice]),
+  Sealed('Barred'),
+  Built<BarredFrom>('BarredFrom', BarredFrom.new, [
+    Param('calendar', Named('Calendar')),
+    Param('day', Scalar('int')),
+    Param('instead', Named('Tithi')),
+    Param('month', Scalar('int')),
+  ], parent: 'Barred', fields: (v) => [v.calendar, v.day, v.instead, v.month]),
+  Built<BarredWith>('BarredWith', BarredWith.new, [
+    Param('instead', Named('Tithi')),
+    Param('rule', Scalar('String')),
+  ], parent: 'Barred', fields: (v) => [v.instead, v.rule]),
   Built<Guard>('Guard', Guard.new, [
     Param('choose', Named('FestivalChoice')),
     Param('when', ListOf(Named('Predicate'), (items) => List<Predicate>.from(items))),

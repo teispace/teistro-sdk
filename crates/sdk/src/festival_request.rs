@@ -328,7 +328,7 @@ impl FestivalPack {
             | FestivalPack::IndiaAssam
             | FestivalPack::IndiaKarnataka
             | FestivalPack::IndiaTelangana
-            | FestivalPack::IndiaGujarat => Vec::new(),
+            | FestivalPack::IndiaGujarat
             | FestivalPack::IndiaAndhraPradesh => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
@@ -378,7 +378,7 @@ impl FestivalPack {
             | FestivalPack::IndiaAssam
             | FestivalPack::IndiaKarnataka
             | FestivalPack::IndiaTelangana
-            | FestivalPack::IndiaGujarat => Vec::new(),
+            | FestivalPack::IndiaGujarat
             | FestivalPack::IndiaAndhraPradesh => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {

@@ -682,6 +682,9 @@ __all__ = [
     "DatedRuleNakshatraInMonth",
     "DatedRuleSunEnters",
     "DatedRuleTithiInMonth",
+    "Barred",
+    "BarredFrom",
+    "BarredWith",
     "Guard",
     "InAdhika",
     "InMonth",
@@ -4132,7 +4135,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU', 'INDIA_ASSAM', 'INDIA_KARNATAKA', 'INDIA_TELANGANA'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU', 'INDIA_ASSAM', 'INDIA_KARNATAKA', 'INDIA_TELANGANA', 'INDIA_GUJARAT', 'INDIA_ANDHRA_PRADESH'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -5545,7 +5548,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU', 'INDIA_ASSAM', 'INDIA_KARNATAKA', 'INDIA_TELANGANA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU', 'INDIA_ASSAM', 'INDIA_KARNATAKA', 'INDIA_TELANGANA', 'INDIA_GUJARAT', 'INDIA_ANDHRA_PRADESH'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 
@@ -8673,6 +8676,9 @@ class FestivalRule(TypedDict, total=False):
     at: Required[Window]
     """The time of the rite."""
 
+    barred: Optional[Barred]
+    """When the day is barred, and the earlier tithi kept in its place, as the Durva fast is once Agastya has risen (C608); never when absent."""
+
     convention: Union[_catalogue.LunarMonth, Literal['AMANTA', 'PURNIMANTA']]
     """The convention the month is named in; amanta by default."""
 
@@ -9622,6 +9628,40 @@ class DatedRuleTithiInMonth(TypedDict, total=False):
 
     twice: Required[FestivalWhich]
     """Which of two occurrences in one month keeps the day."""
+
+
+Barred: TypeAlias = "Union[BarredFrom, BarredWith]"
+"""When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead` before the barred one, judged by the rule's own window and guards."""
+
+
+class BarredFrom(TypedDict, total=False):
+    """From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 22 of the Bikram Sambat (C608)."""
+
+    kind: Required[Literal['FROM']]
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar the day is counted in."""
+
+    day: Required[int]
+    """Its day of the month, 1 for the first."""
+
+    instead: Required[Union[_catalogue.Tithi, str]]
+    """The tithi kept in the barred day's place."""
+
+    month: Required[int]
+    """Its month, 1 for the first."""
+
+
+class BarredWith(TypedDict, total=False):
+    """When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686). The named rule is asked for too; one barred only `WITH` another never moves this one."""
+
+    kind: Required[Literal['WITH']]
+
+    instead: Required[Union[_catalogue.Tithi, str]]
+    """The tithi kept in the barred day's place."""
+
+    rule: Required[str]
+    """The rule's key."""
 
 
 class Guard(TypedDict, total=False):
@@ -10614,11 +10654,12 @@ FestivalCase: TypeAlias = Literal['EARLIER_ONLY', 'LATER_ONLY', 'BOTH', 'NEITHER
 """
 
 
-DayEdge: TypeAlias = Literal['SUNRISE', 'SUNSET']
+DayEdge: TypeAlias = Literal['SUNRISE', 'SUNSET', 'MOONRISE']
 """The edge of a day a `Predicate::Lasts` counts from.
 
 `SUNRISE`: Sunrise, counting in thirtieths of the daylight.
 `SUNSET`: Sunset, counting in thirtieths of the night.
+`MOONRISE`: The day's moonrise, counting in thirtieths of the daylight or the night it falls in: the *Nirnayasindhu*'s three muhurtas past the moonrise for the Mahalakshmi vrata's close (pp. 300–301).
 """
 
 
