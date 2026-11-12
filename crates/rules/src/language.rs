@@ -1897,6 +1897,22 @@ mod tests {
     }
 
     #[test]
+    fn a_graha_past_the_nine_is_refused_and_kept_off_the_lagnas_place() {
+        for (at, &body) in Body::ALL.iter().enumerate() {
+            assert_eq!(body.index(), at, "{body:?}");
+            if let Body::Graha(graha) = body {
+                assert_eq!(Body::graha(graha), Some(body));
+            }
+        }
+        for graha in [Graha::Uranus, Graha::Neptune, Graha::Pluto] {
+            assert_eq!(Body::graha(graha), None, "{graha:?}");
+            let index = Body::Graha(graha).index();
+            assert!(index > Body::Lagna.index(), "{graha:?} at {index}");
+            assert!(index >= Body::ALL.len(), "{graha:?} at {index}");
+        }
+    }
+
+    #[test]
     fn a_condition_is_read_strictly_and_names_what_it_refuses() {
         assert!(condition(r#"{"type": "planet-in-kendra", "planet": "JUPITER"}"#).is_ok());
         let refusals = [
