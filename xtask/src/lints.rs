@@ -2455,32 +2455,47 @@ fn gates_on(dir: &Path, feature: &str) -> bool {
 /// default — the ephemeris tier matrix builds
 /// `teistro-ephemeris-builtin` and `teistro-ffi`, not this.
 ///
+/// The C boundary's `TsEphemeris::Builtin` always compiles but is refused
+/// as `UNSUPPORTED` without the feature, so a test there fails at run time
+/// instead (`tests/terrain.rs` did, on the families job). Both crates are
+/// read, and a target may instead gate itself whole with
+/// `#![cfg(feature = "builtin-ephemeris")]`.
+///
 /// The rule reads the source rather than a list, so an example that
 /// stops naming the built-in stops needing the line, and a ninth that
 /// names it cannot be added without one.
 fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
+    for krate in ["crates/sdk", "crates/ffi"] {
+        crate_targets_declare_their_features(root, krate, outcome);
+    }
+}
+
+/// [`targets_declare_their_features`] for one crate's examples and tests.
+fn crate_targets_declare_their_features(root: &Path, krate: &str, outcome: &mut Outcome) {
     const RULE: &str = "target-declares-the-feature-it-needs";
-    /// The feature the variant lives behind, and the variant.
+    /// The feature the variant lives behind, and the variant (which
+    /// `TsEphemeris::Builtin` contains).
     const GATED: (&str, &str) = ("builtin-ephemeris", "Ephemeris::Builtin");
-    let manifest = root.join("crates/sdk/Cargo.toml");
+    let self_gated = format!("#![cfg(feature = \"{}\")]", GATED.0);
+    let manifest = root.join(krate).join("Cargo.toml");
     let Ok(manifest_text) = std::fs::read_to_string(&manifest) else {
         outcome.failures.push(Finding {
-            file: String::from("crates/sdk/Cargo.toml"),
+            file: format!("{krate}/Cargo.toml"),
             line: 0,
-            text: String::from("the façade's manifest could not be read"),
+            text: String::from("the crate's manifest could not be read"),
             rule: RULE,
         });
         return;
     };
     for (kind, directory) in [
-        ("example", "crates/sdk/examples"),
-        ("test", "crates/sdk/tests"),
+        ("example", format!("{krate}/examples")),
+        ("test", format!("{krate}/tests")),
     ] {
-        for path in sources(&root.join(directory)) {
+        for path in sources(&root.join(&directory)) {
             let Ok(text) = std::fs::read_to_string(&path) else {
                 continue;
             };
-            if !text.contains(GATED.1) {
+            if !text.contains(GATED.1) || text.contains(&self_gated) {
                 continue;
             }
             // A shared module (`tests/common/mod.rs`) is no target of its
@@ -2494,9 +2509,9 @@ fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
                 else {
                     continue;
                 };
-                sources(&root.join(directory))
+                sources(&root.join(&directory))
                     .into_iter()
-                    .filter(|target| target.parent() == Some(&root.join(directory)))
+                    .filter(|target| target.parent() == Some(&root.join(&directory)))
                     .filter(|target| {
                         std::fs::read_to_string(target)
                             .is_ok_and(|body| body.contains(&format!("mod {module};")))
