@@ -83,6 +83,7 @@ every key a shipped set names:
 | key | first shipped as | kept by |
 |---|---|---|
 | `IN` | | `INDIA_CENTRAL`, and every state's days besides its own code |
+| `IN-AP` | | `INDIA_ANDHRA_PRADESH` |
 | `IN-AS` | `ASSAM` | `INDIA_ASSAM` |
 | `IN-GJ` | | `INDIA_GUJARAT` |
 | `IN-KA` | | `INDIA_KARNATAKA` |

@@ -26,8 +26,10 @@
 //!   ([`assam`]), the `INDIA_KARNATAKA` pack against the Government of
 //!   Karnataka's at Bengaluru ([`karnataka`]), the `INDIA_TELANGANA`
 //!   pack against the Government of Telangana's at Hyderabad
-//!   ([`telangana`]), and the `INDIA_GUJARAT` pack against the Government
-//!   of Gujarat's at Gandhinagar ([`gujarat`]).
+//!   ([`telangana`]), the `INDIA_GUJARAT` pack against the Government
+//!   of Gujarat's at Gandhinagar ([`gujarat`]), and the
+//!   `INDIA_ANDHRA_PRADESH` pack against the Government of Andhra
+//!   Pradesh's at Amaravati ([`andhra_pradesh`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -48,6 +50,7 @@ use teistro_core::catalogue::Calendar;
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, table};
 
+mod andhra_pradesh;
 mod assam;
 mod ekadashi;
 mod gujarat;
@@ -483,6 +486,7 @@ fn page() -> Result<String, String> {
     let karnataka = karnataka::compare(&mut problems)?;
     let telangana = telangana::compare(&mut problems)?;
     let gujarat = gujarat::compare(&mut problems)?;
+    let andhra = andhra_pradesh::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -502,6 +506,7 @@ fn page() -> Result<String, String> {
     karnataka::render(&mut out, &karnataka);
     telangana::render(&mut out, &telangana);
     gujarat::render(&mut out, &gujarat);
+    andhra_pradesh::render(&mut out, &andhra);
     Ok(out)
 }
 

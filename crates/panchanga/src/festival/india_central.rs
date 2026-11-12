@@ -256,6 +256,12 @@ impl PrintedDays<'_> {
 }
 
 /// The first of `rules` with `key`.
+/// The citation a taken rule keeps when the list that keeps it adds
+/// nothing of its own: the rule's own source.
+pub(super) fn as_cited(_key: &str, rule: &FestivalRule) -> String {
+    rule.source.clone()
+}
+
 pub(super) fn find(rules: &[FestivalRule], key: &str) -> Option<FestivalRule> {
     rules.iter().find(|rule| rule.key == key).cloned()
 }
@@ -337,21 +343,30 @@ impl StateList {
     /// Nepal's printed panchanga's rule of each `(key, from, optional)`,
     /// the print's `from` kept on the list under `key`.
     pub(super) fn print_kept(&self, keys: &[(&str, &str, bool)]) -> Vec<FestivalRule> {
-        self.taken(&FestivalRule::nepal_panchanga(), Tradition::Hindu, keys)
+        self.taken(
+            &FestivalRule::nepal_panchanga(),
+            Tradition::Hindu,
+            keys,
+            as_cited,
+        )
     }
 
-    /// The rule of each `(key, from, optional)` of a shipped pack's
-    /// `rules`, its `from` kept on the list under `key`, of `tradition`.
+    /// The rule of `rules` keyed `from` of each `(key, from, optional)`,
+    /// kept on the list under `key`, of `tradition`, and citing
+    /// `cite(key, rule)`: a day another list reckons, which this one keeps
+    /// as that list does ([`as_cited`] keeps that list's citation).
     pub(super) fn taken(
         &self,
         rules: &[FestivalRule],
         tradition: Tradition,
         keys: &[(&str, &str, bool)],
+        cite: impl Fn(&str, &FestivalRule) -> String,
     ) -> Vec<FestivalRule> {
         keys.iter()
             .filter_map(|&(key, from, optional)| {
                 find(rules, from).map(|rule| FestivalRule {
                     key: key.to_owned(),
+                    source: cite(key, &rule),
                     meta: self.listed(Some(tradition), optional),
                     ..rule
                 })

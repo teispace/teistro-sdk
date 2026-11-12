@@ -311,8 +311,9 @@ const RAMZAN_NEXT_DAY: Printed<'static> = (
     ],
 );
 
-/// Annexure-II's optional days set by the moon.
-const SIGHTED_OPTIONAL: [Named<'static>; 11] = [
+/// Annexure-II's optional days set by the moon, which Andhra Pradesh's
+/// list prints under the same names.
+pub(super) const SIGHTED_OPTIONAL: [Named<'static>; 11] = [
     (
         "HAZRAT_ALI_BIRTHDAY",
         "Birthday of Hazrath Ali (R.A.)",
@@ -452,7 +453,7 @@ const BONALU: Printed<'static> = (
 
 /// Varalakshmi Vratham, an optional holiday printed with no rule the
 /// language holds: a Friday before Shravana's full moon (C1391).
-const VARALAKSHMI: Printed<'static> = (
+pub(super) const VARALAKSHMI: Printed<'static> = (
     "VARAMAHALAKSHMI_VRATA",
     "Varalakshmi Vratham",
     "वरलक्ष्मी व्रतम्",
@@ -470,7 +471,7 @@ const VARALAKSHMI: Printed<'static> = (
 
 /// The Parsi New Year, an optional holiday as printed: the catalogue has
 /// no Shahenshahi calendar (C1243).
-const PARSI_NEW_YEAR: Printed<'static> = (
+pub(super) const PARSI_NEW_YEAR: Printed<'static> = (
     "PARSI_NEW_YEAR",
     "Parsi New Year's Day",
     "पारसी नयाँ वर्ष",
