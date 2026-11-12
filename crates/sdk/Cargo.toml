@@ -53,7 +53,6 @@ teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.4" }
 teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.4" }
 teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.4", optional = true }
 teistro-state = { path = "../state", version = "=1.0.0-rc.4" }
-teistro-test-allocator = { path = "../test-allocator", version = "=1.0.0-rc.4" }
 teistro-time = { path = "../time", version = "=1.0.0-rc.4" }
 teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.4" }
 teistro-western = { path = "../western", version = "=1.0.0-rc.4", optional = true }
