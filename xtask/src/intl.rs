@@ -12,7 +12,7 @@ use teistro_core::key::KeyId;
 
 use teistro_intl::derive::{Casing, derive, overrides_of};
 use teistro_intl::generate::{
-    Model, RustPaths, dart, every_message_test, java, javascript, python, rust,
+    Model, RustPaths, dart, dart_surface, every_message_test, java, javascript, python, rust,
     typescript_declarations,
 };
 use teistro_intl::source::{Completeness, Tree};
@@ -39,6 +39,9 @@ const EVERY_MESSAGE: &str = "crates/intl/tests/every_message.rs";
 const NODE_MESSAGES: &str = "bindings/node/lib/messages.js";
 const NODE_MESSAGE_TYPES: &str = "bindings/node/lib/messages.d.ts";
 const DART_MESSAGES: &str = "bindings/dart/lib/src/messages.dart";
+/// Dart's accessors as data, which the test that walks every accessor
+/// reads, since Dart has no reflection a test may lean on.
+const DART_MESSAGE_SURFACE: &str = "bindings/dart/test/surface/messages.g.dart";
 const PYTHON_MESSAGES: &str = "bindings/python/teistro/messages.py";
 /// Java's, in a source root of its own so neither `gen ffi`'s pruning nor
 /// a hand-written file can meet it.
@@ -214,6 +217,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(NODE_MESSAGES, javascript(&model)),
         Output::new(NODE_MESSAGE_TYPES, typescript_declarations(&model)),
         Output::new(DART_MESSAGES, dart(&model)),
+        Output::new(DART_MESSAGE_SURFACE, dart_surface(&model)),
         Output::new(PYTHON_MESSAGES, python(&model)),
         Output::new(JAVA_MESSAGES, java(&model, JAVA_MESSAGES_PACKAGE)),
     ]);
