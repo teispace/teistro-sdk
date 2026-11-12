@@ -7,6 +7,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use teistro_astro::day_sky::SkyStep;
+use teistro_astro::terrain::{HorizonProfile, HorizonSample};
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::Convention;
@@ -54,7 +55,7 @@ pub struct DaysRequest {
 impl DaysRequest {
     /// What a JSON days request is, for a caller choosing it by name (the
     /// agent server's `almanac.days`).
-    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`, or in place of the coordinates and the zone a `place` as `geo.resolve` answers it (its zone or `utcOffsetSeconds` where it has none, and its ground height as the observer's for the sunrise unless `altitudeM` states one, the provenance naming where the height came from); and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out). The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
+    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`, or in place of the coordinates and the zone a `place` as `geo.resolve` answers it (its zone or `utcOffsetSeconds` where it has none, and its ground height as the observer's for the sunrise unless `altitudeM` states one, the provenance naming where the height came from); and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out), and `horizonProfile`, the terrain's apparent elevation by azimuth as `[{azimuthDeg, elevationDeg}]` (azimuths from north through east in [0, 360), strictly increasing, read linearly between samples and round through north; elevations above -5 and below 45 degrees; 1 to 36000 samples), which answers in `visible` each day's Sun and Moon `rise` and `set` on the level horizon beside their `visibleRise` and `visibleSet` behind the terrain and a `visibleState` that says why a day has neither, the days themselves still opening at the astronomical sunrise. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
 
     /// The request a binding writes for a range of days, read and checked;
     /// a refusal names the field as written, a record's from the record's
@@ -106,6 +107,11 @@ impl DaysRequest {
             }
             (false, None) => {}
         }
+        if let Some(samples) = asked.horizon_profile {
+            beside = beside.with_visible(
+                HorizonProfile::try_new(samples).map_err(|error| error.under(HORIZON_PROFILE))?,
+            );
+        }
         let placed = Where {
             latitude_deg: asked.latitude_deg,
             longitude_deg: asked.longitude_deg,
@@ -134,6 +140,10 @@ const MUHURTA: &str = "muhurta";
 
 /// The record a festival reckoning is written as.
 const FESTIVALS: &str = "festivals";
+
+/// The field a terrain's horizon profile is written as, which a refusal
+/// of one of its samples is named under (`horizonProfile[2].azimuthDeg`).
+const HORIZON_PROFILE: &str = "horizonProfile";
 
 /// `beside` with the muhurta search `json` asks for.
 #[cfg(feature = "muhurta")]
@@ -226,4 +236,8 @@ pub(crate) struct Asked {
     /// The sky's step, minutes; ten when left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     sky_step_minutes: Option<u16>,
+    /// The terrain's apparent elevation by azimuth, for each day's visible
+    /// rises and sets behind it (`03-design/terrain-horizon.md`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    horizon_profile: Option<Vec<HorizonSample>>,
 }

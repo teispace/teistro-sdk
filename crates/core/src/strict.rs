@@ -248,14 +248,25 @@ pub fn read_value<T: Serialize + DeserializeOwned>(given: &Value, root: &str) ->
     }
 }
 
+/// The path of a record's member: `path.key`, or the key alone at a
+/// record read with no root, as a request's own fields are named
+/// (`horizonProfile`, not `.horizonProfile`).
+fn member(path: &str, key: &str) -> String {
+    if path.is_empty() {
+        key.to_owned()
+    } else {
+        format!("{path}.{key}")
+    }
+}
+
 /// The path of the first record in `given` written as a list, where `read`
 /// writes it as an object, walking objects and arrays together.
 fn listed_record(given: &Value, read: &Value, path: &str) -> Option<String> {
     match (given, read) {
         (Value::Array(_), Value::Object(_)) => Some(path.to_owned()),
-        (Value::Object(given), Value::Object(read)) => given.iter().find_map(|(key, inner)| {
-            listed_record(inner, read.get(key)?, &format!("{path}.{key}"))
-        }),
+        (Value::Object(given), Value::Object(read)) => given
+            .iter()
+            .find_map(|(key, inner)| listed_record(inner, read.get(key)?, &member(path, key))),
         (Value::Array(given), Value::Array(read)) => {
             given
                 .iter()
@@ -274,7 +285,7 @@ fn listed_record(given: &Value, read: &Value, path: &str) -> Option<String> {
 fn unread(given: &Value, read: &Value, path: &str) -> Option<(String, bool)> {
     match (given, read) {
         (Value::Object(given), Value::Object(read)) => given.iter().find_map(|(key, inner)| {
-            let at = format!("{path}.{key}");
+            let at = member(path, key);
             match read.get(key) {
                 None => Some((at, inner.is_null())),
                 Some(back) => unread(inner, back, &at),
@@ -407,6 +418,25 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(err.field(), Some("layouts[0].shape.rings[1].outr"));
+    }
+
+    #[test]
+    fn a_field_of_a_record_with_no_root_is_named_without_a_dot() {
+        let unknown = read::<Ring>(r#"{"inner": 0, "outr": 2}"#, "").unwrap_err();
+        assert_eq!(unknown.field(), Some("outr"));
+        // A `null` the read-back does not hold is named by the walk too. (A
+        // `null` given for `outer`, an `f64`, fails serde itself inside the
+        // tagged enum, which buffers it and so names no path: `deserialize`'s
+        // refusal, not this walk's.)
+        let null = read::<Shape>(
+            r#"{"kind": "square", "rings": [{"inner": 0, "outr": null}]}"#,
+            "",
+        )
+        .unwrap_err();
+        assert_eq!(null.field(), Some("rings[0].outr"));
+        assert!(null.to_string().contains("is null"), "{null}");
+        let listed = read::<Shape>(r#"{"kind": "square", "rings": [[1]]}"#, "").unwrap_err();
+        assert_eq!(listed.field(), Some("rings[0]"));
     }
 
     #[test]

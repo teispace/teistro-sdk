@@ -31,12 +31,14 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refraction};
 
+use crate::day_sky::horizontal;
 use crate::delta_t::DeltaTModel;
 use crate::iau::{DEG2RAD, RAD2DEG};
 use crate::lockstep::{Lockstep, finished};
 use crate::scale::tt_of;
 use crate::sky::{Apparent, ApparentPositions, sidereal_time_deg};
 use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded_async};
+use crate::terrain::{HorizonProfile, refraction_scale};
 
 /// The standard refraction at the horizon, arcminutes: the value the
 /// almanacs reckon rising and setting by (*Astronomical Almanac*,
@@ -356,12 +358,30 @@ pub fn horizon_refraction_arcmin(refraction: Refraction, height: Altitude) -> f6
         Refraction::Standard => STANDARD_HORIZON_REFRACTION_ARCMIN,
         Refraction::Atmosphere(air) => {
             let air = air.at(height);
-            let bennett = 1.0 / math::tan(7.31 / 4.4 * DEG2RAD);
-            bennett
+            bennett_refraction_arcmin(0.0)
                 * (air.pressure_hpa / REFERENCE_HPA)
                 * (REFERENCE_K / (CELSIUS_TO_K + air.temperature_c))
         }
     }
+}
+
+/// Bennett's refraction at an apparent altitude, arcminutes, at the air
+/// it was fitted to (1010 hPa, 10 °C): `cot(h + 7.31° / (h + 4.4))`
+/// (Meeus, eq. 16.4), fitted to apparent altitudes from 0° to 90° and
+/// good to 0.07′ there. [`horizon_refraction_arcmin`] reads it at zero;
+/// a skyline above the horizon reads it at the skyline's elevation
+/// ([`crate::terrain::refraction_scale`]).
+///
+/// ```
+/// use teistro_astro::rise_set::bennett_refraction_arcmin;
+///
+/// assert!((bennett_refraction_arcmin(0.0) - 34.4775).abs() < 1e-4);
+/// // The higher the ray comes in, the less the air bends it.
+/// assert!(bennett_refraction_arcmin(2.0) < 19.0 && bennett_refraction_arcmin(45.0) < 1.0);
+/// ```
+#[must_use]
+pub fn bennett_refraction_arcmin(apparent_deg: f64) -> f64 {
+    1.0 / math::tan((apparent_deg + 7.31 / (apparent_deg + 4.4)) * DEG2RAD)
 }
 
 /// The geocentric altitude of the body's centre at the event under a
@@ -584,6 +604,9 @@ pub struct Solver<'a> {
     horizon: Horizon,
     /// The horizon's refraction at the place, degrees, reckoned once.
     refraction_deg: f64,
+    /// The terrain the event is reckoned against in place of the
+    /// convention's altitude ([`Solver::with_terrain`]).
+    terrain: Option<&'a HorizonProfile>,
     delta_t: DeltaTModel,
     chunk: usize,
     absence_check: bool,
@@ -641,6 +664,7 @@ impl<'a> Solver<'a> {
             place,
             horizon,
             refraction_deg: horizon_refraction_arcmin(horizon.refraction, place.altitude) / 60.0,
+            terrain: None,
             delta_t,
             chunk: SCAN_CHUNK,
             absence_check: true,
@@ -733,6 +757,54 @@ impl<'a> Solver<'a> {
         self
     }
 
+    /// The rise and set **behind a terrain** (`03-design/terrain-horizon.md`):
+    /// the profile's elevation at the body's azimuth takes the place of the
+    /// convention's altitude, and the convention's refraction is carried
+    /// to that apparent altitude by Bennett's formula
+    /// ([`crate::terrain::refraction_scale`]). The disc point and the air
+    /// stay the convention's.
+    ///
+    /// The azimuth moves while the body climbs, so the event's altitude
+    /// is a function of the instant; the search is the scan, which finds
+    /// the **first** crossing a ten-minute grid brackets, rather than the
+    /// iteration, which settles on whichever crossing is nearest its
+    /// estimate. The absence proofs bound a fixed target and are not
+    /// tried; the walk answers instead.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_astro::rise_set::Method;
+    /// use teistro_astro::terrain::{HorizonProfile, HorizonSample};
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// let hills = HorizonProfile::try_new(vec![HorizonSample { azimuth_deg: 0.0, elevation_deg: 3.0 }])?;
+    /// let behind = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel)
+    ///     .with_terrain(&hills);
+    /// let level = solver.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("a sunrise");
+    /// let seen = behind.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("over the hills");
+    /// assert!(seen.instant.get() > level.instant.get());
+    /// assert_eq!(seen.method, Method::Scanned);
+    /// assert!(behind.describe().contains("behind a terrain of 1 sample"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_terrain(mut self, profile: &'a HorizonProfile) -> Solver<'a> {
+        self.terrain = Some(profile);
+        self
+    }
+
     /// How many of the scan's instants to ask the source for at once.
     ///
     /// The default is [`crate::solve::SCAN_CHUNK`]. One is the walk this
@@ -813,8 +885,11 @@ impl<'a> Solver<'a> {
     /// ```
     #[must_use]
     pub fn describe(&self) -> String {
+        let terrain = self.terrain.map_or_else(String::new, |profile| {
+            format!(" behind a terrain of {profile}")
+        });
         format!(
-            "{} {} at {} from {}",
+            "{} {}{terrain} at {} from {}",
             self.body.key(),
             self.horizon,
             self.place,
@@ -853,6 +928,47 @@ impl<'a> Solver<'a> {
     pub fn altitude_deg(&self, ut1: JulianDay<Ut1>) -> Result<f64, Error> {
         let mut evaluations = 0;
         Ok(self.sample(ut1.get(), &mut evaluations)?.altitude_deg)
+    }
+
+    /// The geocentric azimuth of the body's centre at an instant, degrees
+    /// in `[0, 360)` from north through east, as the solver reads it: the
+    /// azimuth a terrain's elevation is read at ([`Solver::with_terrain`]).
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// use teistro_port_ephemeris::HorizonEventKind;
+    ///
+    /// // The midsummer Sun rises north of east.
+    /// let rise = solver.event(HorizonEventKind::Rise, midnight, 1.0)?.expect("a sunrise");
+    /// let azimuth = solver.azimuth_deg(rise.instant)?;
+    /// assert!(azimuth > 55.0 && azimuth < 70.0, "{azimuth}");
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Solver::altitude_deg`].
+    pub fn azimuth_deg(&self, ut1: JulianDay<Ut1>) -> Result<f64, Error> {
+        let mut evaluations = 0;
+        let sample = self.sample(ut1.get(), &mut evaluations)?;
+        Ok(horizontal(
+            sample.hour_angle_deg,
+            sample.dec_deg,
+            self.place.latitude.get(),
+        )
+        .1)
     }
 
     /// Whether the body stands above the altitude its rise and set are
@@ -993,13 +1109,26 @@ impl<'a> Solver<'a> {
         let (sin_phi, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
         let (sin_dec, cos_dec) = math::sin_cos(apparent.dec_deg * DEG2RAD);
         let sin_alt = sin_phi * sin_dec + cos_phi * cos_dec * math::cos(hour_angle_deg * DEG2RAD);
+        let disc = Disc::of(self.body, apparent.distance_au);
+        let target_deg = match self.terrain {
+            None => event_altitude_deg(&self.horizon, &disc, self.refraction_deg),
+            Some(profile) => {
+                let (_, azimuth) =
+                    horizontal(hour_angle_deg, apparent.dec_deg, self.place.latitude.get());
+                let skyline = profile.elevation_at(azimuth);
+                event_altitude_deg(
+                    &Horizon {
+                        altitude_deg: skyline,
+                        ..self.horizon
+                    },
+                    &disc,
+                    self.refraction_deg * refraction_scale(skyline),
+                )
+            }
+        };
         Ok(Sample {
             altitude_deg: math::asin(sin_alt.clamp(-1.0, 1.0)) * RAD2DEG,
-            target_deg: event_altitude_deg(
-                &self.horizon,
-                &Disc::of(self.body, apparent.distance_au),
-                self.refraction_deg,
-            ),
+            target_deg,
             hour_angle_deg,
             dec_deg: apparent.dec_deg,
         })
@@ -1188,10 +1317,15 @@ impl<'a> Solver<'a> {
         // The window's first reading, which the iteration starts from and
         // the scan's proofs start from too: read once for both.
         let first = self.sample_in(round, start, &mut evaluations).await?;
-        match self
-            .iterate(round, kind, (start, first), end, &mut evaluations)
-            .await?
-        {
+        // Behind a terrain the first crossing is wanted, which the scan
+        // finds and the iteration does not promise ([`Solver::with_terrain`]).
+        let iterated = if self.terrain.is_some() {
+            None
+        } else {
+            self.iterate(round, kind, (start, first), end, &mut evaluations)
+                .await?
+        };
+        match iterated {
             Some(instant) => Ok(Some(HorizonEvent {
                 instant: JulianDay::try_new(instant)?,
                 method: Method::Iterated,
@@ -1279,6 +1413,11 @@ impl<'a> Solver<'a> {
             HorizonEventKind::Set => false,
             _ => return Ok(false),
         };
+        // The rate ceilings bound the altitude's motion, not a skyline's
+        // under a moving azimuth: no proof behind a terrain.
+        if self.terrain.is_some() {
+            return Ok(false);
+        }
         let (_, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
         let mut t = start;
         for step in 0..ONE_SIDE_READINGS {
@@ -1334,7 +1473,10 @@ impl<'a> Solver<'a> {
         end: f64,
         evaluations: &mut u32,
     ) -> Result<bool, Error> {
-        if !matches!(kind, HorizonEventKind::Rise | HorizonEventKind::Set) {
+        // The transits bound a fixed target, not a skyline's under a
+        // moving azimuth: no bound behind a terrain.
+        if !matches!(kind, HorizonEventKind::Rise | HorizonEventKind::Set) || self.terrain.is_some()
+        {
             return Ok(false);
         }
         // A whole rotation, or nothing. The transits bound the altitude

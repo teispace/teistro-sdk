@@ -6,6 +6,7 @@ use teistro_astro::Completion;
 use teistro_astro::day_sky::{DaySky, SkyStep, day_sky};
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
+use teistro_astro::terrain::{HorizonProfile, VisibleDay, visible_day};
 use teistro_calendar::CalendarDate;
 #[cfg(feature = "muhurta")]
 use teistro_calendar::CalendarSystem;
@@ -764,6 +765,7 @@ impl<'a> AlmanacArea<'a> {
             && !searched
             && !request.nepal_sambat
             && request.sky.is_none()
+            && request.visible.is_none()
         {
             return self.beside_no_days(from, to, place, offset, request);
         }
@@ -830,6 +832,11 @@ impl<'a> AlmanacArea<'a> {
             .sky
             .map(|step| self.sky_of(&days, place, offset, step))
             .transpose()?;
+        let visible = request
+            .visible
+            .as_ref()
+            .map(|profile| self.visible_of(&days, place, offset, profile))
+            .transpose()?;
         let (days, day_hashes) = if request.days == Days::Omitted {
             (Envelope::sealing(Vec::new(), days.provenance), Vec::new())
         } else {
@@ -845,7 +852,52 @@ impl<'a> AlmanacArea<'a> {
             eclipses,
             nepal_sambat,
             sky,
+            visible,
         })
+    }
+
+    /// Each day's visible sunrise, sunset, moonrise and moonset behind the
+    /// terrain of `profile` (`03-design/terrain-horizon.md`, SR-91), beside
+    /// the level horizon's, each searched from the day's local midnight
+    /// under the day's own sunrise convention. The days themselves are
+    /// unchanged: a panchanga day still opens at its astronomical sunrise.
+    fn visible_of(
+        self,
+        days: &Envelope<Vec<Panchanga>>,
+        place: &Place,
+        offset: UtcOffset,
+        profile: &HorizonProfile,
+    ) -> Result<Envelope<Vec<VisibleDay>>, Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let source = Completion::new(provider, settings.provider.overrides, delta_t);
+        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let visible = days
+            .value
+            .iter()
+            .map(|day| {
+                let calendar = system_of(day.day.date.calendar)?;
+                let midnight = local_midnight(&offset, calendar.fixed_of(&day.day.date)?)?;
+                visible_day(
+                    &source,
+                    *place,
+                    horizon,
+                    delta_t,
+                    midnight.relabel(),
+                    profile,
+                )
+            })
+            .collect::<Result<Vec<VisibleDay>, Error>>()?;
+        let mut provenance = days.provenance.clone();
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("visible.horizon"),
+            value: format!("{profile}, linear in azimuth"),
+            reason: String::from(
+                "the terrain's elevation at the body's azimuth is the horizon of the visible rise and set, the refraction carried to it by Bennett's formula; the day's convention keeps its disc point and air, and the days themselves open at the astronomical sunrise; UT1 read as UTC",
+            ),
+        });
+        Ok(Envelope::sealing(visible, provenance))
     }
 
     /// Each day's sky (`03-design/day-sky.md`), over its window, sealed
@@ -973,6 +1025,7 @@ impl<'a> AlmanacArea<'a> {
             eclipses,
             nepal_sambat: None,
             sky: None,
+            visible: None,
         })
     }
 
@@ -1456,6 +1509,7 @@ pub struct AlmanacRequest {
     markers: bool,
     gowri: bool,
     sky: Option<SkyStep>,
+    visible: Option<HorizonProfile>,
     days: Days,
 }
 
@@ -1606,6 +1660,30 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's sunrise, sunset, moonrise and moonset **behind the
+    /// terrain** of `profile` ([`AlmanacAnswer::visible`],
+    /// `03-design/terrain-horizon.md`): the first instant the limb clears
+    /// the skyline at the body's azimuth and the first after it that it
+    /// sinks behind it, beside the level horizon's rise and set. The days
+    /// themselves are unchanged by it: a panchanga day still opens at the
+    /// astronomical sunrise.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    /// use teistro::terrain::{HorizonProfile, HorizonSample};
+    ///
+    /// assert!(AlmanacRequest::new().visible().is_none());
+    /// let hills = HorizonProfile::try_new(vec![HorizonSample { azimuth_deg: 90.0, elevation_deg: 2.0 }])?;
+    /// let asked = AlmanacRequest::new().with_visible(hills.clone());
+    /// assert_eq!(asked.visible(), Some(&hills));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_visible(mut self, profile: HorizonProfile) -> AlmanacRequest {
+        self.visible = Some(profile);
+        self
+    }
+
     /// **Without the days**: what is asked beside them, and the days
     /// themselves left out of the answer, which holds none. Festivals
     /// alone are then founded as only what their rules read
@@ -1649,6 +1727,7 @@ impl AlmanacRequest {
             && !self.eclipses
             && !self.lagnas
             && self.sky.is_none()
+            && self.visible.is_none()
             && self.days == Days::Handed
     }
 
@@ -1699,6 +1778,13 @@ impl AlmanacRequest {
     pub fn sky(&self) -> Option<SkyStep> {
         self.sky
     }
+
+    /// The terrain the days' visible rises and sets are asked behind, when
+    /// they were asked.
+    #[must_use]
+    pub fn visible(&self) -> Option<&HorizonProfile> {
+        self.visible.as_ref()
+    }
 }
 
 /// The days of a range and what was asked beside them: what
@@ -1726,6 +1812,10 @@ pub struct AlmanacAnswer {
     /// Each day's sky, in the days' order, when it was asked: under the
     /// days' provenance, with the window's reading named.
     pub sky: Option<Envelope<Vec<DaySky>>>,
+    /// Each day's rises and sets behind the terrain, in the days' order,
+    /// when a profile was asked: under the days' provenance, with the
+    /// profile's reading named.
+    pub visible: Option<Envelope<Vec<VisibleDay>>>,
 }
 
 /// What was asked beside a range's days, each section written as a
@@ -1755,6 +1845,9 @@ pub struct AlmanacSections {
     /// Each day's sky.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sky: Option<Envelope<serde_json::Value>>,
+    /// Each day's rises and sets behind the terrain.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub visible: Option<Envelope<serde_json::Value>>,
 }
 
 impl AlmanacAnswer {
@@ -1781,6 +1874,11 @@ impl AlmanacAnswer {
             sky: sealed(self.sky.as_ref(), |skies| {
                 serde_json::to_value(skies).map_err(|error| {
                     Error::internal(format!("a day's sky did not serialise: {error}"))
+                })
+            })?,
+            visible: sealed(self.visible.as_ref(), |days| {
+                serde_json::to_value(days).map_err(|error| {
+                    Error::internal(format!("a day's visible rises did not serialise: {error}"))
                 })
             })?,
         })

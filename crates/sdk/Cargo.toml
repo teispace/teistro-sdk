@@ -201,6 +201,10 @@ name = "sealing"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "terrain_horizon"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "next"
 required-features = ["builtin-ephemeris"]
 
