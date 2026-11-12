@@ -5293,6 +5293,10 @@
     "SARDAR_PATEL_JAYANTI": {
       "name": "सरदार वल्लभभाई पटेल जयन्ती",
       "prose": "सरदार वल्लभभाई पटेल जयन्ती"
+    },
+    "MAHALAYA_AMAVASYA": {
+      "name": "महालय औंसी",
+      "prose": "महालय औंसी"
     }
   },
   "agni_vasa": {

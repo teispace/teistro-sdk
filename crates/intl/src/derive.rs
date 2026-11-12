@@ -572,14 +572,15 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1274,
+            derived.entities, 1275,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
              charts and the navamsha's short form (SR-36), 795 until the 429 \
              festivals were named in Sanskrit, 1224 until the four chart frames, \
              1228 until Tamil Nadu's six, 1234 until Assam's eighteen, 1252 until \
-             Karnataka's twelve, 1264 until Telangana's seven, 1271 until Gujarat's three"
+             Karnataka's twelve, 1264 until Telangana's seven, 1271 until Gujarat's three, \
+             1274 until Andhra Pradesh's one"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 

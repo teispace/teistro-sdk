@@ -717,3 +717,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "gujarat"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "andhra_pradesh"
+required-features = ["builtin-ephemeris"]

@@ -23,7 +23,7 @@
 
 use teistro_core::catalogue::{Masa, Tithi, Tradition};
 
-use super::india_central::{Civil, Own, Printed, PrintedDays, StateList, sighted};
+use super::india_central::{Civil, Own, Printed, PrintedDays, StateList, as_cited, sighted};
 use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
@@ -227,7 +227,12 @@ impl FestivalRule {
         let mut rules = STATE.central(&CENTRAL_LEFT);
         rules.extend(STATE.by_text(&[("RAKSHABANDHAN", false), ("YAMA_DWITIYA", false)]));
         rules.extend(STATE.print_kept(&PRINT_KEPT));
-        rules.extend(STATE.taken(&FestivalRule::jain(), Tradition::Jain, &JAIN_KEPT));
+        rules.extend(STATE.taken(
+            &FestivalRule::jain(),
+            Tradition::Jain,
+            &JAIN_KEPT,
+            as_cited,
+        ));
         rules.extend(STATE.own(&GUJARAT, |_, what| format!("{NOTICE}: {what}; {ALMANAC}")));
         rules
     }

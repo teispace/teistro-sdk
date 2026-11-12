@@ -480,6 +480,50 @@ fn gujarat_keeps_every_day_of_its_list_general() -> Result<(), teistro::Error> {
 }
 
 #[test]
+fn andhra_pradesh_keeps_its_optional_days_optional() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_ANDHRA_PRADESH"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for (key, form) in [
+        ("MAHALAYA_AMAVASYA", PackForm::Lunar),
+        ("MAHA_ASHTAMI", PackForm::Lunar),
+        ("JANMASHTAMI", PackForm::Lunar),
+        ("BHOGI", PackForm::Dated),
+        ("KANUMU", PackForm::Dated),
+        ("HOLI", PackForm::Following),
+        ("VARAMAHALAKSHMI_VRATA", PackForm::Published),
+        ("VIJAYA_DASHAMI_NEXT_DAY", PackForm::Published),
+    ] {
+        assert_eq!(row(&listed.rules, key).unwrap().form, form, "{key}");
+    }
+    for (key, optional) in [
+        ("MAHA_ASHTAMI", false),
+        ("KANUMU", false),
+        ("BOXING_DAY", true),
+        ("NEW_YEAR_S_DAY_AD", true),
+        ("MAHALAYA_AMAVASYA", true),
+        ("GURU_NANAK_JAYANTI", true),
+        ("SHAB_E_QADR", true),
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().meta.optional,
+            optional,
+            "{key}"
+        );
+    }
+    let state = MetaFilter {
+        regions: vec!["IN-AP".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");
@@ -681,6 +725,13 @@ fn a_region_is_kept_by_its_iso_code_and_names_its_pack() -> Result<(), teistro::
     for row in &telangana.listing().rules {
         assert_eq!(row.meta.regions, ["IN", "IN-TG"], "{}", row.key);
         assert!(!keeping("IN-KA").admits(&row.meta), "{}", row.key);
+    }
+    let andhra = FestivalPack::IndiaAndhraPradesh;
+    assert_eq!(andhra.region(), Some("IN-AP"));
+    assert_eq!(PackRequest::from_json(r#"{"pack": "IN-AP"}"#)?.pack, andhra);
+    for row in &andhra.listing().rules {
+        assert_eq!(row.meta.regions, ["IN", "IN-AP"], "{}", row.key);
+        assert!(!keeping("IN-TG").admits(&row.meta), "{}", row.key);
     }
     assert_eq!(
         PackRequest::from_json(r#"{"pack": "NP"}"#)?.pack,

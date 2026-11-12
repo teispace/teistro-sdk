@@ -5283,6 +5283,10 @@
     "SARDAR_PATEL_JAYANTI": {
       "name": "Sardar Vallabhbhai Patel Jayanti",
       "prose": "Sardar Vallabhbhai Patel Jayanti"
+    },
+    "MAHALAYA_AMAVASYA": {
+      "name": "Mahalaya Amavasya",
+      "prose": "Mahalaya Amavasya"
     }
   },
   "agni_vasa": {
