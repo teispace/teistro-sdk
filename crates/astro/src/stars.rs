@@ -652,6 +652,32 @@ mod tests {
         assert!((0.3..=0.75).contains(&shift), "{shift}″");
     }
 
+    /// A star given at a later epoch has drifted to that place by then, so
+    /// the same coordinates read at J2000.0 sit back along its motion; the
+    /// IAU 2006 precession agrees with Vondrák's to an arcsecond near
+    /// J2000.0; a catalogue star converts to its own astrometry, and the
+    /// default options are the apparent place.
+    #[test]
+    fn an_epoch_a_conversion_and_a_precession_model_are_each_honoured() {
+        let arcturus = Astrometry::of(Star::Arcturus);
+        assert_eq!(Astrometry::from(Star::Arcturus), arcturus);
+        let later = JulianDay::<Tt>::literal(J2000.get() + 100.0 * DJY);
+        let moved = place(&arcturus.at_epoch(later), J2000, &Options::GEOMETRIC).unwrap();
+        let at_j2000 = place(&arcturus, J2000, &Options::GEOMETRIC).unwrap();
+        // Arcturus runs 2.28″ a year mostly south: a century back is north.
+        let north = (moved.dec_deg - at_j2000.dec_deg) * 3600.0;
+        assert!((190.0..=205.0).contains(&north), "{north}″");
+
+        assert_eq!(Options::default(), Options::APPARENT);
+        let iau = Options::APPARENT.with_precession(PrecessionModel::Iau2006);
+        assert_eq!(iau.precession, PrecessionModel::Iau2006);
+        let at = JulianDay::<Tt>::literal(2_460_000.5);
+        let vondrak = place(&arcturus, at, &Options::APPARENT).unwrap();
+        let other = place(&arcturus, at, &iau).unwrap();
+        let apart = difference_deg(vondrak.lon_deg, other.lon_deg).abs() * 3600.0;
+        assert!(apart < 1.0, "{apart}″");
+    }
+
     #[test]
     fn every_nakshatra_has_a_yogatara_and_bad_astrometry_is_refused_by_name() {
         for nakshatra in Nakshatra::ALL {

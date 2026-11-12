@@ -2173,6 +2173,93 @@ mod tests {
     /// An absence costs a walk of the whole window, which is what the
     /// almanac's event loop does twice a day; the grid is what makes it
     /// affordable.
+    /// The public absence proof settles a star that never rises, declines
+    /// a transit (which always happens) and refuses an empty window by
+    /// name; at the pole a star's altitude never changes, so the hour
+    /// angle of a rise is undefined and no rise is found; a star a
+    /// twentieth of a degree from the celestial pole, seen from the
+    /// equator, crosses the horizon too slowly for the iteration and the
+    /// scan finds its rise instead; and the lockstep day is the day.
+    #[test]
+    fn the_edge_skies_are_each_answered_by_a_fixed_example() {
+        let from = JulianDay::<Ut1>::literal(2_451_545.0 - 0.5);
+        let southern = FixedStar { dec_deg: -80.0 };
+        let tromso = Solver::new(
+            &southern,
+            Body::MeanNode,
+            place(69.6, 18.9),
+            Horizon::CENTRE_NO_REFRACTION,
+            DeltaTModel::TableThenModel,
+        );
+        assert!(
+            tromso
+                .proves_no_event(HorizonEventKind::Rise, from, 1.0)
+                .unwrap()
+        );
+        assert!(
+            !tromso
+                .proves_no_event(HorizonEventKind::Transit, from, 1.0)
+                .unwrap()
+        );
+        let err = tromso
+            .proves_no_event(HorizonEventKind::Rise, from, 0.0)
+            .unwrap_err();
+        assert_eq!(err.field(), Some("window_days"));
+
+        let star = FixedStar { dec_deg: 30.0 };
+        let pole = Solver::new(
+            &star,
+            Body::MeanNode,
+            place(90.0, 0.0),
+            Horizon::CENTRE_NO_REFRACTION,
+            DeltaTModel::TableThenModel,
+        );
+        assert!(
+            pole.event(HorizonEventKind::Rise, from, 1.0)
+                .unwrap()
+                .is_none()
+        );
+
+        let near_pole = FixedStar { dec_deg: 89.95 };
+        let equator = Solver::new(
+            &near_pole,
+            Body::MeanNode,
+            place(0.0, 0.0),
+            Horizon::CENTRE_NO_REFRACTION,
+            DeltaTModel::TableThenModel,
+        );
+        let transit = equator
+            .event(HorizonEventKind::Transit, from, 1.0)
+            .unwrap()
+            .unwrap();
+        let rise = equator
+            .event(HorizonEventKind::Rise, from, 1.0)
+            .unwrap()
+            .unwrap();
+        let quarter = 90.0 / HOUR_ANGLE_RATE_DEG_PER_DAY;
+        let early = transit.instant.get() - rise.instant.get();
+        assert!(
+            (early - quarter).abs() < 1e-3,
+            "{early} days before transit"
+        );
+        assert_eq!(rise.method, Method::Scanned);
+
+        let equator_star = FixedStar { dec_deg: 0.0 };
+        let solver = Solver::new(
+            &equator_star,
+            Body::MeanNode,
+            place(0.0, 0.0),
+            Horizon::CENTRE_NO_REFRACTION,
+            DeltaTModel::TableThenModel,
+        );
+        let days = [0.0, 1.0, 2.0].map(|d| JulianDay::<Ut1>::literal(from.get() + d));
+        let round = Lockstep::new();
+        let found = round.run(days.map(|day| solver.day_in(&round, day)));
+        for (day, events) in days.iter().zip(found) {
+            assert_eq!(events.unwrap(), solver.day(*day).unwrap());
+        }
+    }
+
     #[test]
     fn proving_an_absence_walks_the_window_and_the_grid_carries_it() {
         // A star that never rises at this latitude: the scan finds

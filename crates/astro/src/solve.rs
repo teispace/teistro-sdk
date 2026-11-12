@@ -1433,6 +1433,143 @@ mod tests {
         );
     }
 
+    /// Every way a search can stop short is reached by a fixed example,
+    /// not left to the property tests' draws: each names itself in words,
+    /// and becomes an SDK error that keeps an evaluation's own refusal.
+    #[test]
+    fn every_way_a_search_stops_short_is_named() {
+        assert_eq!(Caps::default(), Caps::DEFAULT);
+        // Past the target and still past a circle on: never bracketed.
+        let stuck = |_: f64| -> Result<f64, ()> { Ok(10.0) };
+        let err = next_crossing(stuck, 0.0, 0.0, 1.0, 1e-6, Caps::DEFAULT).unwrap_err();
+        assert!(
+            matches!(err, SolveError::NotBracketed { steps: 0, .. }),
+            "{err:?}"
+        );
+        // A gridded scan that never crosses stops at its cap of steps.
+        let few = Caps {
+            bracket_steps: 3,
+            refinements: 64,
+        };
+        let scan = Scan::new(0.0, 100.0, 1.0, true, 1e-9).with_caps(few);
+        let below = |at: &[f64], out: &mut Vec<f64>| -> Result<(), ()> {
+            out.clear();
+            out.extend(at.iter().map(|_| -1.0));
+            Ok(())
+        };
+        let err = first_zero_gridded(below, |_| Ok(-1.0), &scan).unwrap_err();
+        assert!(
+            matches!(err, SolveError::NotBracketed { steps: 3, .. }),
+            "{err:?}"
+        );
+        // A grid source that answers fewer values than it was asked for
+        // is refused by name, not read short.
+        let short = |_: &[f64], out: &mut Vec<f64>| -> Result<(), ()> {
+            out.clear();
+            out.push(-1.0);
+            Ok(())
+        };
+        let err = first_zero_gridded(short, |_| Ok(-1.0), &Scan::new(0.0, 100.0, 1.0, true, 1e-9))
+            .unwrap_err();
+        assert!(
+            matches!(err, SolveError::Argument { name: "grid", value } if (value - 1.0).abs() < f64::EPSILON),
+            "{err:?}"
+        );
+        // A rate-led refinement capped at one reading cannot reach a
+        // nanosecond.
+        let line = |t: f64| -> Result<(f64, f64), ()> { Ok((t - 0.3, 1.0)) };
+        let one = Caps {
+            bracket_steps: 64,
+            refinements: 1,
+        };
+        let (lo, hi) = ((0.0, -0.3, 0.5), (1.0, 0.7, 2.0));
+        let err = refine_with_rates(line, lo, hi, 1e-9, one).unwrap_err();
+        assert!(
+            matches!(err, SolveError::NotConverged { steps: 1, .. }),
+            "{err:?}"
+        );
+
+        let words = [
+            (
+                SolveError::<&str>::Argument {
+                    name: "step",
+                    value: -1.0,
+                },
+                "step must be a positive finite number, not -1",
+            ),
+            (
+                SolveError::NotBracketed {
+                    steps: 64,
+                    last: 2.5,
+                },
+                "no crossing bracketed in 64 steps (last instant 2.5)",
+            ),
+            (
+                SolveError::NotConverged {
+                    steps: 64,
+                    width: 0.5,
+                },
+                "bracket still 0.5 wide after 64 steps",
+            ),
+        ];
+        for (error, said) in words {
+            assert_eq!(error.to_string(), said);
+        }
+        let stopped = SolveError::<Error>::NotBracketed {
+            steps: 64,
+            last: 2.5,
+        }
+        .into_error(|| "the sunrise".into());
+        assert_eq!(stopped.status, Status::NotConverged);
+        assert_eq!(
+            stopped.message,
+            "the sunrise was not found: no crossing bracketed in 64 steps (last instant 2.5)"
+        );
+        let refused = Error::invalid_arg("no data").with_field("at");
+        let kept = SolveError::Evaluation(refused.clone()).into_error(String::new);
+        assert_eq!(kept, refused);
+    }
+
+    /// A bracket one bit wide at a Julian day's magnitude cannot be split
+    /// however small the tolerance: both refinements stop on it rather
+    /// than step without narrowing.
+    #[test]
+    fn a_bracket_one_bit_wide_ends_the_search() {
+        let lo = 2_451_545.0f64;
+        let hi = lo.next_up();
+        let half = (hi - lo) * 0.5;
+        let f = move |t: f64| -> Result<f64, ()> { Ok(t - lo - half) };
+        let found = refine(f, lo, hi, 1e-12, Caps::DEFAULT).unwrap();
+        assert!(
+            [lo, hi]
+                .map(f64::to_bits)
+                .contains(&found.instant.to_bits()),
+            "{found:?}"
+        );
+        assert_eq!(found.evaluations, 2, "{found:?}");
+        let sloped = move |t: f64| -> Result<(f64, f64), ()> { Ok((t - lo - half, 1.0)) };
+        let ends = ((lo, -half, 1.0), (hi, half, 1.0));
+        let found = refine_with_rates(sloped, ends.0, ends.1, 1e-12, Caps::DEFAULT).unwrap();
+        assert!(found.instant >= lo && found.instant <= hi, "{found:?}");
+        assert_eq!(found.evaluations, 0, "{found:?}");
+    }
+
+    /// A rate of zero is of no use to the final Newton step, so the
+    /// answer is the narrowed bracket's middle, still within the
+    /// tolerance of the line; a curve whose secant sits far from the
+    /// middle is pulled back to where a bisection would have been.
+    #[test]
+    fn a_useless_rate_and_a_lopsided_curve_still_end_on_the_line() {
+        let flat = |t: f64| -> Result<(f64, f64), ()> { Ok((t - 0.3, 0.0)) };
+        let found = refine_with_rates(flat, (0.0, -0.3, 0.0), (1.0, 0.7, 0.0), 1e-9, Caps::DEFAULT)
+            .unwrap();
+        assert!((found.instant - 0.3).abs() <= 1e-9, "{found:?}");
+        let root = 2f64.ln() / 50.0;
+        let steep = |t: f64| -> Result<f64, ()> { Ok(math::exp(50.0 * t) - 2.0) };
+        let found = refine(steep, 0.0, 1.0, 1e-12, Caps::DEFAULT).unwrap();
+        assert!((found.instant - root).abs() <= 1e-12, "{found:?}");
+    }
+
     #[test]
     fn the_seed_is_exact_on_a_cubic() {
         // A cubic is its own Hermite interpolant: the seed lands on its
