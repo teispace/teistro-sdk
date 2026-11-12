@@ -1039,6 +1039,12 @@
       },
       "gowri": true,
       "homaAhuti": true,
+      "horizonProfile": [
+        {
+          "azimuthDeg": 1.5,
+          "elevationDeg": 1.5
+        }
+      ],
       "lagnas": true,
       "last": {
         "day": 1,

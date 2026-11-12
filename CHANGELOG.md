@@ -12,6 +12,38 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The sunrise behind the terrain (SR-91).** **Numbers:** none: a section
+answered only when a profile is asked, and the days with one are the days
+without, to the bit.
+- `almanac.days` takes `horizonProfile`, the terrain's apparent elevation by
+  azimuth as `[{azimuthDeg, elevationDeg}]`, read linearly in azimuth and
+  round through north, and answers `visible`: each day's Sun and Moon
+  `rise` and `set` on the level horizon beside their `visibleRise` and
+  `visibleSet` behind the terrain (the instant, the azimuth and the
+  skyline's elevation there), and a `visibleState` saying why a day has
+  neither (`ALWAYS_BELOW` for a body that never clears the terrain).
+- The event is the convention's disc point reaching the skyline at the
+  body's azimuth as it moves, its refraction carried to the skyline's
+  apparent altitude by Bennett's formula (Meeus, eq. 16.4); found by the
+  solver's scan, so the first crossing is the one answered
+  (`03-design/terrain-horizon.md`).
+- At Kathmandu in November a 2° ridge at the rise's azimuth delays the
+  sunrise by some eleven minutes, within 0.02 s of the delay derived from a
+  low-precision Sun (655.29 s against 655.27 s on 12 November); a level skyline of zero is the level horizon's rise.
+- A profile is refused strictly, by field: no sample or more than 36,000,
+  an azimuth outside `[0, 360)` or not after the one before
+  (`horizonProfile[1].azimuthDeg`), an elevation outside (−5°, 45°).
+- Rust: `teistro::terrain` (`HorizonProfile`, `HorizonSample`,
+  `visible_day`), `AlmanacRequest::with_visible`, `AlmanacAnswer::visible`,
+  `Solver::with_terrain` and `Solver::azimuth_deg`,
+  `rise_set::bennett_refraction_arcmin`. The request type is regenerated in
+  every binding.
+
+**A refusal of a request's own field no longer begins with a dot.**
+**Numbers:** none. A strict record read with no root (`almanac.days`,
+`chart.found`) named an unknown or `null` top-level key `.years`; it is now
+`years`, as every other refusal names a field.
+
 **The Teimeris adapters left this repository; the SDK is engine-agnostic.**
 **Numbers:** none: no SDK crate computes differently. Teimeris may ship only
 in Teispace's own products, so its adapters are now Teispace-proprietary and

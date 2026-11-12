@@ -28,6 +28,8 @@
 //!   search in the SDK goes through;
 //! - [`rise_set`]: the rise and set solver under a horizon convention,
 //!   with polar days and nights as reported states;
+//! - [`terrain`]: a horizon profile, the terrain's elevation by azimuth,
+//!   and the rise and set behind it beside the level horizon's;
 //! - [`stars`]: the star table's places of date from the catalogue's ICRS
 //!   astrometry: proper motion, parallax, deflection and aberration over
 //!   the SDK's own Earth ephemeris, then the frame bias, precession and
@@ -68,6 +70,7 @@ pub mod sky;
 pub mod sky_view;
 pub mod solve;
 pub mod stars;
+pub mod terrain;
 pub mod topocentric;
 pub mod visibility;
 

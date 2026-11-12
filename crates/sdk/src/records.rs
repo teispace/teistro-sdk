@@ -1386,6 +1386,7 @@ fn almanac_records() -> [Record; 4] {
                 "sky.value.to",
                 "sky.value.sun.state",
                 "sky.value.moon.state",
+                "visible.value",
             ]),
             schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
         },

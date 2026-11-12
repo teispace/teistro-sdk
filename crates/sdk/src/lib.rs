@@ -306,6 +306,10 @@ pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
 // A day's sky, which `AlmanacRequest::with_sky` asks and
 // `AlmanacAnswer::sky` answers (`03-design/day-sky.md`).
 pub use teistro_astro::day_sky;
+// A horizon profile and the rises and sets behind it, which
+// `AlmanacRequest::with_visible` asks and `AlmanacAnswer::visible`
+// answers (`03-design/terrain-horizon.md`).
+pub use teistro_astro::terrain;
 // The sky at a place and an instant (`03-design/sky-view.md`).
 pub use crate::sky_view_request::SkyViewRequest;
 pub use teistro_astro::sky_view;
