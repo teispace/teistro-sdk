@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 356 824 | 112 754 | 31.6% |
-| the value | 337 009 | 109 316 | 32.4% |
-| the provenance | 19 227 | 2570 | 13.4% |
+| the envelope | 356 846 | 112 765 | 31.6% |
+| the value | 337 015 | 109 314 | 32.4% |
+| the provenance | 19 243 | 2583 | 13.4% |
 
 18 of the 56 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -47,39 +47,39 @@ value.
 | record | full | brief | brief against full | the brief keeps |
 |---|---|---|---|---|
 | `almanac.aayadi` | 888 | 888 | 100.0% | the whole value |
-| `almanac.anniversaries` | 17 241 | 6370 | 36.9% | `anniversaries.key`, `anniversaries.kind`, `anniversaries.origin`, `anniversaries.observance.rule`, `anniversaries.observance.day`, `anniversaries.observance.tithi`, `anniversaries.observance.month`, `anniversaries.observance.adhika`, `anniversaries.observance.case`, `anniversaries.observance.choice`, `ekadashis`, `observances`, `unjudged` |
+| `almanac.anniversaries` | 17 242 | 6371 | 37.0% | `anniversaries.key`, `anniversaries.kind`, `anniversaries.origin`, `anniversaries.observance.rule`, `anniversaries.observance.day`, `anniversaries.observance.tithi`, `anniversaries.observance.month`, `anniversaries.observance.adhika`, `anniversaries.observance.case`, `anniversaries.observance.choice`, `ekadashis`, `observances`, `unjudged` |
 | `almanac.ashauch` | 952 | 193 | 20.3% | `key`, `kind`, `relation`, `start`, `end`, `length`, `days` |
 | `almanac.ashauchKin` | 144 | 144 | 100.0% | the whole value |
 | `almanac.ashauchRite` | 106 | 106 | 100.0% | the whole value |
-| `almanac.cells` | 10 566 | 10 061 | 95.2% | the whole value |
-| `almanac.changes` | 763 | 250 | 32.8% | the whole value |
-| `almanac.days` | 151 706 | 11 734 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state` |
-| `almanac.deathTime` | 808 | 310 | 38.4% | the whole value |
-| `almanac.digest` | 3453 | 180 | 5.2% | `format`, `days`, `size`, `seal` |
-| `almanac.elect` | 2572 | 877 | 34.1% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
+| `almanac.cells` | 10 562 | 10 057 | 95.2% | the whole value |
+| `almanac.changes` | 765 | 252 | 32.9% | the whole value |
+| `almanac.days` | 151 719 | 11 736 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state` |
+| `almanac.deathTime` | 810 | 312 | 38.5% | the whole value |
+| `almanac.digest` | 3442 | 172 | 5.0% | `format`, `days`, `size`, `seal` |
+| `almanac.elect` | 2579 | 884 | 34.3% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
 | `almanac.festivalPack` | 3311 | 1644 | 49.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
-| `almanac.festival_calendar` | 6495 | 5861 | 90.2% | the whole value |
-| `almanac.firstYear` | 12 373 | 4196 | 33.9% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
+| `almanac.festival_calendar` | 6489 | 5860 | 90.3% | the whole value |
+| `almanac.firstYear` | 12 370 | 4193 | 33.9% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
 | `almanac.household` | 1379 | 310 | 22.5% | `observers.key`, `observers.pureAt`, `observers.periods.key`, `observers.periods.kind`, `observers.periods.relation`, `observers.periods.start`, `observers.periods.end`, `observers.periods.length`, `observers.periods.days` |
 | `almanac.navatara` | 1221 | 1221 | 100.0% | the whole value |
-| `almanac.next` | 1534 | 498 | 32.5% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
-| `almanac.observance` | 35 908 | 18 129 | 50.5% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
-| `almanac.pakshi` | 13 958 | 2734 | 19.6% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
-| `almanac.people` | 3742 | 1744 | 46.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 747 | 118 | 15.8% | the whole value |
-| `almanac.sankalpa` | 1214 | 709 | 58.4% | the whole value |
-| `almanac.sankalpaWords` | 1782 | 1286 | 72.2% | the whole value |
-| `almanac.sentences` | 3630 | 1011 | 27.9% | `sentences.text`, `locale`, `withheld`, `draft` |
-| `almanac.skyView` | 3724 | 622 | 16.7% | `at`, `grahas`, `stars` |
+| `almanac.next` | 1531 | 495 | 32.3% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
+| `almanac.observance` | 35 908 | 18 124 | 50.5% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
+| `almanac.pakshi` | 13 952 | 2728 | 19.6% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
+| `almanac.people` | 3744 | 1746 | 46.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
+| `almanac.publishedReasons` | 759 | 130 | 17.1% | the whole value |
+| `almanac.sankalpa` | 1210 | 705 | 58.3% | the whole value |
+| `almanac.sankalpaWords` | 1788 | 1292 | 72.3% | the whole value |
+| `almanac.sentences` | 3626 | 1007 | 27.8% | `sentences.text`, `locale`, `withheld`, `draft` |
+| `almanac.skyView` | 3720 | 618 | 16.6% | `at`, `grahas`, `stars` |
 | `calendar.add` | 149 | 149 | 100.0% | the whole value |
 | `calendar.between` | 28 | 28 | 100.0% | the whole value |
 | `calendar.convert` | 149 | 149 | 100.0% | the whole value |
-| `chart.astrocartography` | 4264 | 3693 | 86.6% | the whole value |
-| `chart.disagreements` | 1495 | 886 | 59.3% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
-| `chart.found` | 33 195 | 17 360 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
-| `chart.mundane` | 752 | 182 | 24.2% | the whole value |
-| `chart.rashifal` | 17 500 | 4641 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
-| `chart.relocated` | 1053 | 494 | 46.9% | the whole value |
+| `chart.astrocartography` | 4265 | 3694 | 86.6% | the whole value |
+| `chart.disagreements` | 1503 | 894 | 59.5% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
+| `chart.found` | 33 201 | 17 363 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
+| `chart.mundane` | 750 | 180 | 24.0% | the whole value |
+| `chart.rashifal` | 17 502 | 4643 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
+| `chart.relocated` | 1055 | 496 | 47.0% | the whole value |
 | `geo.resolve` | 229 | 229 | 100.0% | the whole value |
 | `intl.date` | 238 | 238 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
@@ -95,11 +95,11 @@ value.
 | `naming.suggest` | 584 | 584 | 100.0% | the whole value |
 | `naming.syllables` | 1323 | 1323 | 100.0% | the whole value |
 | `numerology.profile` | 889 | 889 | 100.0% | the whole value |
-| `research.study` | 1410 | 851 | 60.4% | the whole value |
+| `research.study` | 1409 | 850 | 60.3% | the whole value |
 | `time.civil` | 263 | 263 | 100.0% | the whole value |
 | `time.convert` | 104 | 104 | 100.0% | the whole value |
 | `time.resolve` | 210 | 210 | 100.0% | the whole value |
-| `verify.claims` | 905 | 412 | 45.5% | the whole value |
+| `verify.claims` | 911 | 418 | 45.9% | the whole value |
 | `verify.issue` | 3314 | 320 | 9.7% | `answer`, `receipt.format`, `receipt.record`, `receipt.requestDigest`, `receipt.outputDigest`, `receipt.digest` |
 | `verify.receipt` | 312 | 312 | 100.0% | the whole value |
 
@@ -142,9 +142,9 @@ marked.
 - `almanac.ashauch`: `dayOne` 83, `lastDay` 83, `clause` 64, `dayOneBy` 15, `length` 15 (kept), `end` 11 (kept), `start` 11 (kept), `table` 10, `key` 9 (kept), `relation` 9 (kept), `kind` 8 (kept), `days` 5 (kept).
 - `almanac.cells`: `cells` 9944 (kept).
 - `almanac.changes`: `points` 101 (kept), `window` 32 (kept).
-- `almanac.days`: `sky` 96 695 (kept), `muhurta` 33 782 (kept), `days` 15 108 (kept), `years` 2437 (kept), `festivals` 1239 (kept), `nepalSambat` 880 (kept), `eclipses` 677 (kept), `dayHashes` 115.
+- `almanac.days`: `sky` 96 697 (kept), `muhurta` 33 781 (kept), `days` 15 108 (kept), `years` 2439 (kept), `festivals` 1247 (kept), `nepalSambat` 882 (kept), `eclipses` 676 (kept), `dayHashes` 115.
 - `almanac.deathTime`: `death` 88 (kept), `cremation` 86 (kept), `table` 10 (kept), `rites` 7 (kept).
-- `almanac.digest`: `base64` 2622, `seal` 38 (kept), `format` 6 (kept), `size` 6 (kept), `days` 5 (kept).
+- `almanac.digest`: `base64` 2619, `seal` 36 (kept), `format` 6 (kept), `size` 6 (kept), `days` 5 (kept).
 - `almanac.elect`: `windows` 1478 (kept), `unjudged` 122 (kept), `ranking` 9 (kept), `windowsBlackedOut` 9 (kept), `closed` 7 (kept), `daysJudged` 7 (kept), `daysCut` 6 (kept).
 - `almanac.festivalPack`: `rules` 3290 (kept), `pack` 11 (kept).
 - `almanac.festival_calendar`: .
@@ -162,7 +162,7 @@ marked.
 - `almanac.skyView`: `ecliptic` 1687, `horizon` 796, `grahas` 262 (kept), `stars` 227 (kept), `atmosphere` 26, `siderealTimeDeg` 14, `obliquityDeg` 13, `at` 9 (kept), `eclipticStepDeg` 8, `horizonStepDeg` 8.
 - `chart.astrocartography`: `lines` 3496 (kept), `greenwichRamcDeg` 14 (kept), `obliquityDeg` 13 (kept), `projection` 12 (kept), `instant` 10 (kept), `toleranceDeg` 10 (kept), `latitudeLimitDeg` 8 (kept), `stepDeg` 6 (kept).
 - `chart.disagreements`: `dashas` 388 (kept), `yogas` 157 (kept), `lagna` 96 (kept), `nakshatra` 83 (kept), `otherSettingsHash` 47, `otherProfile` 15 (kept), `at` 9 (kept), `grahas` 7 (kept), `compared` 6 (kept).
-- `chart.found`: `charts` 11 917 (kept), `kp` 10 476 (kept), `fortitudes` 6978 (kept), `lots` 1720 (kept), `western` 931 (kept), `varsha` 252 (kept), `hashes` 83, `tithi_pravesha` 10 (kept), `considerations` 9 (kept), `masa_pravesha` 9 (kept), `rectification` 9 (kept), `sarvatobhadra` 9 (kept), `dignities` 8 (kept), `matchings` 8 (kept), `perfections` 8 (kept), `sade_sati` 8 (kept), `dossier` 7 (kept), `gochar` 7 (kept), `lalkitab` 7 (kept), `plans` 7 (kept), `prashna` 7 (kept), `readings` 7 (kept), `remedies` 7 (kept), `hits` 6 (kept), `svgs` 6 (kept).
+- `chart.found`: `charts` 11 917 (kept), `kp` 10 476 (kept), `fortitudes` 6978 (kept), `lots` 1720 (kept), `western` 931 (kept), `varsha` 252 (kept), `hashes` 82, `tithi_pravesha` 10 (kept), `considerations` 9 (kept), `masa_pravesha` 9 (kept), `rectification` 9 (kept), `sarvatobhadra` 9 (kept), `dignities` 8 (kept), `matchings` 8 (kept), `perfections` 8 (kept), `sade_sati` 8 (kept), `dossier` 7 (kept), `gochar` 7 (kept), `lalkitab` 7 (kept), `plans` 7 (kept), `prashna` 7 (kept), `readings` 7 (kept), `remedies` 7 (kept), `hits` 6 (kept), `svgs` 6 (kept).
 - `chart.mundane`: `instant` 12 (kept), `kind` 12 (kept), `latitudeDeg` 10 (kept), `longitudeDeg` 9 (kept), `utcOffsetSeconds` 9 (kept), `altitudeM` 8 (kept).
 - `chart.rashifal`: `period` 13 293 (kept), `baseline` 3488 (kept).
 - `chart.relocated`: `places` 350 (kept), `obliquityDeg` 13 (kept), `instant` 10 (kept).
