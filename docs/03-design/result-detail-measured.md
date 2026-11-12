@@ -16,23 +16,23 @@ pays each figure twice.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 244 disagree |
-| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 244 disagree |
-| every brief that keeps fields answers its example's value in fewer tokens than the full answer | **holds** | 0 of 18 disagree |
-| every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
+| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 250 disagree |
+| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 250 disagree |
+| every brief that keeps fields answers its example's value in fewer tokens than the full answer | **holds** | 0 of 19 disagree |
+| every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 19 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 56 records
+## Over 57 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 356 850 | 112 784 | 31.6% |
-| the value | 337 016 | 109 324 | 32.4% |
-| the provenance | 19 246 | 2592 | 13.5% |
+| the envelope | 362 509 | 113 563 | 31.3% |
+| the value | 341 893 | 109 989 | 32.2% |
+| the provenance | 20 014 | 2682 | 13.4% |
 
-18 of the 56 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+19 of the 57 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
-13 of the 244 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
+13 of the 250 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
 Set aside:
 
@@ -70,6 +70,7 @@ value.
 | `almanac.sankalpa` | 1211 | 706 | 58.3% | the whole value |
 | `almanac.sankalpaWords` | 1785 | 1289 | 72.2% | the whole value |
 | `almanac.sentences` | 3628 | 1009 | 27.8% | `sentences.text`, `locale`, `withheld`, `draft` |
+| `almanac.skyPose` | 5659 | 779 | 13.8% | `pose`, `sky.at`, `sky.grahas`, `sky.stars`, `screen.grahas`, `screen.stars` |
 | `almanac.skyView` | 3716 | 614 | 16.5% | `at`, `grahas`, `stars` |
 | `calendar.add` | 149 | 149 | 100.0% | the whole value |
 | `calendar.between` | 28 | 28 | 100.0% | the whole value |
@@ -124,6 +125,7 @@ names it.
 - `almanac.pakshi`: `reading.yamas.subs`.
 - `almanac.people`: `people.dashaOpens`, `people.transits.fruitfulNow`, `people.transits.fruition`, `people.transits.goodHouse`, `people.transits.obstructedBy`, `people.transits.transit`, `people.transits.vedhaHouse`.
 - `almanac.sentences`: `sentences.key`, `sentences.params`.
+- `almanac.skyPose`: `screen.ecliptic`, `screen.horizon`, `sky.atmosphere`, `sky.ecliptic`, `sky.eclipticStepDeg`, `sky.horizon`, `sky.horizonStepDeg`, `sky.obliquityDeg`, `sky.siderealTimeDeg`, `verticalFovDeg`.
 - `almanac.skyView`: `atmosphere`, `ecliptic`, `eclipticStepDeg`, `horizon`, `horizonStepDeg`, `obliquityDeg`, `siderealTimeDeg`.
 - `chart.disagreements`: `otherSettingsHash`.
 - `chart.found`: `charts.foundation.chalit`, `charts.foundation.clock`, `charts.foundation.day`, `charts.foundation.day_lagna_deg`, `charts.foundation.grahas.distance_au`, `charts.foundation.grahas.latitude_deg`, `charts.foundation.grahas.tropical_deg`, `charts.foundation.lilith`, `charts.foundation.outer`, `charts.foundation.steps`, `charts.foundation.timing`, `charts.shadbala.grahas.ashubha_rashmi`, `charts.shadbala.grahas.cheshta`, `charts.shadbala.grahas.dig`, `charts.shadbala.grahas.drik`, `charts.shadbala.grahas.ishta`, `charts.shadbala.grahas.kaala`, `charts.shadbala.grahas.kashta`, `charts.shadbala.grahas.naisargika`, `charts.shadbala.grahas.sthana`, `charts.shadbala.grahas.subha_rashmi`, `charts.shadbala.grahas.virupas`, `charts.shadbala.rules`, `fortitudes.dignities`, `fortitudes.rules`, `fortitudes.sky`, `hashes`, `kp.chart.cusps`, `kp.chart.system`, `lots.fortuneReversed`, `lots.request`.
@@ -159,6 +161,7 @@ marked.
 - `almanac.sankalpa`: `year` 226 (kept), `date` 82 (kept), `month` 75 (kept), `tithi` 15 (kept), `nakshatra` 14 (kept), `ayana` 13 (kept), `nextSunrise` 13 (kept), `sunrise` 13 (kept), `jupiter` 12 (kept), `karana` 12 (kept), `paksha` 12 (kept), `sun` 12 (kept), `ayanaReckoning` 11 (kept), `moon` 11 (kept), `rituReckoning` 11 (kept), `at` 10 (kept), `ritu` 10 (kept), `vara` 10 (kept), `yoga` 10 (kept).
 - `almanac.sankalpaWords`: `text` 691 (kept), `params` 450 (kept), `tradition` 17 (kept), `locale` 10 (kept).
 - `almanac.sentences`: `sentences` 2833 (kept), `locale` 12 (kept), `draft` 7 (kept), `withheld` 7 (kept).
+- `almanac.skyPose`: `sky` 2977 (kept), `screen` 1833 (kept), `pose` 48 (kept), `verticalFovDeg` 14.
 - `almanac.skyView`: `ecliptic` 1687, `horizon` 796, `grahas` 262 (kept), `stars` 227 (kept), `atmosphere` 26, `siderealTimeDeg` 14, `obliquityDeg` 13, `at` 9 (kept), `eclipticStepDeg` 8, `horizonStepDeg` 8.
 - `chart.astrocartography`: `lines` 3496 (kept), `greenwichRamcDeg` 14 (kept), `obliquityDeg` 13 (kept), `projection` 12 (kept), `instant` 10 (kept), `toleranceDeg` 10 (kept), `latitudeLimitDeg` 8 (kept), `stepDeg` 6 (kept).
 - `chart.disagreements`: `dashas` 388 (kept), `yogas` 157 (kept), `lagna` 96 (kept), `nakshatra` 83 (kept), `otherSettingsHash` 47, `otherProfile` 15 (kept), `at` 9 (kept), `grahas` 7 (kept), `compared` 6 (kept).
