@@ -3637,7 +3637,88 @@ const ANSWERED: &str = "an answer's echo of the rules it was read under, as the 
 const WRITTEN: &str = "the readings as written, one JSON text a field";
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 30] = [
+/// What names the Teimeris adapter's code: its paths and package names in
+/// every ecosystem, its environment variable, its Java module and its Rust
+/// and JavaScript API. Spelt in pieces so this file does not match itself.
+/// The engine's name alone is not here: prose may name Teimeris as one
+/// engine an adapter plugs in, and the reference engine of a recorded table.
+const PRIVATE_ENGINE: [&str; 7] = [
+    concat!("ephemeris", "-teimeris"),
+    concat!("ephemeris", "_teimeris"),
+    concat!("TEISTRO_", "TEIMERIS_"),
+    concat!("com.teispace.teistro", ".teimeris"),
+    concat!("teimeris", "::"),
+    concat!("Teimeris", "Engine"),
+    concat!("teimeris", "Web"),
+];
+
+/// The tracked files that may name it: history, which says what was true
+/// then. Everything else is held. A prefix ending in `/` is a directory.
+const PRIVATE_ENGINE_HISTORY: [&str; 8] = [
+    "CHANGELOG.md",
+    "docs/STATUS.md",
+    // Decision records, dated research, the dated plan and the consumer's
+    // correspondence: each a record of its date.
+    "docs/08-decisions/",
+    "docs/01-research/",
+    "docs/07-roadmap/",
+    "docs/consumers/",
+    // The record of the move itself, and the spikes that preceded the SDK.
+    "docs/06-cicd/adapter-gate.md",
+    "spikes/",
+];
+
+/// The lines of `text` that name the private engine's code, with the
+/// needle each names.
+fn names_private_engine(text: &str) -> Vec<(usize, &'static str)> {
+    text.lines()
+        .enumerate()
+        .filter_map(|(at, line)| {
+            PRIVATE_ENGINE
+                .iter()
+                .find(|needle| line.contains(*needle))
+                .map(|needle| (at + 1, *needle))
+        })
+        .collect()
+}
+
+/// No Teimeris path or API in the public tree.
+///
+/// Teimeris may ship only in Teispace's own products, so its adapters
+/// live in the engine's private repository and the SDK is engine-agnostic
+/// (`docs/06-cicd/adapter-gate.md`). When they moved out, the in-tree
+/// adapter was named in 70 of its own files and in 27 xtask modules,
+/// pages, guides and examples besides; a ban held by memory alone lets a
+/// copied example or a recorder's path bring it back one line at a time.
+/// Every tracked text file is read, code and documentation alike, but
+/// the history listed in [`PRIVATE_ENGINE_HISTORY`].
+fn no_private_engine(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "no-private-engine";
+    for path in crate::tracked_text_files(root) {
+        let file = crate::rel(root, &path);
+        if PRIVATE_ENGINE_HISTORY.iter().any(|history| {
+            file == *history || (history.ends_with('/') && file.starts_with(history))
+        }) {
+            continue;
+        }
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        for (line, needle) in names_private_engine(&text) {
+            outcome.failures.push(Finding {
+                file: file.clone(),
+                line,
+                text: format!(
+                    "names the private Teimeris adapter (`{needle}`); the SDK is engine-agnostic \
+                     and its adapters live in the engine's repository"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
+const RULES: [&str; 31] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -3668,6 +3749,7 @@ const RULES: [&str; 30] = [
     "open-question-is-named",
     "generated-page-is-gated",
     "readme-example-runs",
+    "no-private-engine",
 ];
 
 pub(crate) fn check(root: &Path) -> i32 {
@@ -3743,6 +3825,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
     readme_examples_run(root, &mut outcome);
+    no_private_engine(root, &mut outcome);
 
     let mut report = String::new();
     for rule in RULES {
@@ -3775,8 +3858,26 @@ pub(crate) fn check(root: &Path) -> i32 {
 mod tests {
     use super::{
         NEXT, Outcome, REGISTER, RESUME, SHAPES, declaration_of, dispatches, gate_declared_by,
-        gate_run_by, names_question, open_questions_are_named, section_of, shapes,
+        gate_run_by, names_private_engine, names_question, open_questions_are_named, section_of,
+        shapes,
     };
+
+    #[test]
+    fn a_private_adapter_path_or_api_is_found_and_the_engine_name_is_not() {
+        let text = concat!(
+            "Teimeris is one engine an adapter plugs in.\n",
+            "cd adapters/ephemeris",
+            "-teimeris/rust\n",
+            "use teimeris",
+            "::sys;\n",
+            "the drik-teimeris setup, recorded\n",
+        );
+        let found: Vec<usize> = names_private_engine(text)
+            .iter()
+            .map(|(line, _)| *line)
+            .collect();
+        assert_eq!(found, [2, 3]);
+    }
 
     #[test]
     fn a_gate_is_dispatched_by_its_own_arm_or_last_in_a_shared_one() {
