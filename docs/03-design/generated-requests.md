@@ -129,6 +129,21 @@ part it was not given as `null` rather than leaving it out
 place, and whether each reader takes the `null` as the part left out is
 not yet held anywhere.
 
+A second Dart test (`bindings/dart/test/rules_test.dart`) reads every
+shipped rule and every deep example from its JSON into the classes, a
+field by its constructor parameter and a variant by its `type`, and holds
+what each writes back to the source. It once found the constructors by
+reflection; `dart:mirrors` is deprecated from Dart 3.14, so `gen ffi`
+now writes the table it reads instead
+(`bindings/dart/test/surface/library.g.dart`, `check-ffi` holding it to
+the generator): every catalogue enum with its readers torn off, every
+request class by its constructor and parameters, and every union by its
+variants. `gen intl` writes the message accessors' table beside it
+(`messages.g.dart`), which `sweep_test.dart` walks. The hand classes have
+no generated shape, so the few a deep example reaches are listed in the
+test by their constructors, and the four records that reach one it cannot
+build are listed as such.
+
 ## What generating Node found
 
 The hundred request records `index.d.ts` typed by hand were held against
