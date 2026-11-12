@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-astro"
-version = "0.0.0"
+version = "1.0.0-rc.2"
 dependencies = [
  "serde",
  "teistro-core",
@@ -195,7 +195,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-core"
-version = "0.0.0"
+version = "1.0.0-rc.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-ephemeris-kit"
-version = "0.0.0"
+version = "1.0.0-rc.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -225,7 +225,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-ephemeris"
-version = "0.0.0"
+version = "1.0.0-rc.2"
 dependencies = [
  "serde",
  "sha2",
