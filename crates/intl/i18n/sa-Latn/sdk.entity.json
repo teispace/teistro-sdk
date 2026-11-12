@@ -4712,6 +4712,34 @@
     "RAMANUJACHARYA_JAYANTI": {
       "name": "Śrīrāmānujācāryajayantī",
       "prose": "Śrīrāmānujācāryajayantī"
+    },
+    "BHOGI": {
+      "name": "Bhogī",
+      "prose": "Bhogī"
+    },
+    "KANUMU": {
+      "name": "Kanumu",
+      "prose": "Kanumu"
+    },
+    "JAGJIVAN_RAM_JAYANTI": {
+      "name": "Bābūjagajīvanarāmajayantī",
+      "prose": "Bābūjagajīvanarāmajayantī"
+    },
+    "BATHUKAMMA": {
+      "name": "Batukammārambhaḥ (eṅgilipūlābatukammā)",
+      "prose": "Batukammārambhaḥ (eṅgilipūlābatukammā)"
+    },
+    "SADDULA_BATHUKAMMA": {
+      "name": "Saddulābatukammā",
+      "prose": "Saddulābatukammā"
+    },
+    "VIJAYA_DASHAMI_NEXT_DAY": {
+      "name": "Vijayādaśamyāḥ Paradinam",
+      "prose": "Vijayādaśamyāḥ Paradinam"
+    },
+    "BOXING_DAY": {
+      "name": "Baksiṅ-divasaḥ",
+      "prose": "Baksiṅ-divasaḥ"
     }
   },
   "year_office": {

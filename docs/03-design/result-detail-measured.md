@@ -16,8 +16,8 @@ pays each figure twice.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 243 disagree |
-| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 243 disagree |
+| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 244 disagree |
+| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 244 disagree |
 | every brief that keeps fields answers its example's value in fewer tokens than the full answer | **holds** | 0 of 18 disagree |
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
@@ -32,7 +32,7 @@ pays each figure twice.
 
 18 of the 56 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
-13 of the 243 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
+13 of the 244 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
 Set aside:
 
@@ -53,7 +53,7 @@ value.
 | `almanac.ashauchRite` | 106 | 106 | 100.0% | the whole value |
 | `almanac.cells` | 10 562 | 10 057 | 95.2% | the whole value |
 | `almanac.changes` | 765 | 252 | 32.9% | the whole value |
-| `almanac.days` | 151 719 | 11 736 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state` |
+| `almanac.days` | 151 719 | 11 736 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state`, `visible.value` |
 | `almanac.deathTime` | 810 | 312 | 38.5% | the whole value |
 | `almanac.digest` | 3442 | 172 | 5.0% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2579 | 884 | 34.3% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
@@ -113,7 +113,7 @@ names it.
 
 - `almanac.anniversaries`: `added`, `anniversaries.count`, `anniversaries.dayRule`, `anniversaries.monthBy`, `anniversaries.observance.decidedBy`, `anniversaries.observance.extents`, `anniversaries.observance.marginSeconds`, `anniversaries.observance.moonrise`, `anniversaries.observance.parana`, `anniversaries.observance.published`, `anniversaries.observance.sait`, `applied`, `dated`, `unplaced`.
 - `almanac.ashauch`: `clause`, `dayOne`, `dayOneBy`, `lastDay`, `overlap`, `ritesFrom`, `sex`, `table`.
-- `almanac.days`: `dayHashes`, `days.choghadiya`, `days.clock`, `days.ghati_reckoning`, `days.gowri`, `days.homa_ahuti`, `days.horas`, `days.lagnas`, `days.markers`, `days.muhurtas`, `days.named_panchaka`, `days.punya_kala`, `days.shiva_vasa`, `days.window`, `eclipses.provenance`, `festivals.provenance`, `muhurta.provenance`, `nepalSambat.provenance`, `sky.provenance`, `years.provenance`.
+- `almanac.days`: `dayHashes`, `days.choghadiya`, `days.clock`, `days.ghati_reckoning`, `days.gowri`, `days.homa_ahuti`, `days.horas`, `days.lagnas`, `days.markers`, `days.muhurtas`, `days.named_panchaka`, `days.punya_kala`, `days.shiva_vasa`, `days.window`, `eclipses.provenance`, `festivals.provenance`, `muhurta.provenance`, `nepalSambat.provenance`, `sky.provenance`, `visible.provenance`, `years.provenance`.
 - `almanac.digest`: `base64`.
 - `almanac.elect`: `windows.fails.at`, `windows.fails.by`, `windows.fails.choghadiya`, `windows.fails.count`, `windows.fails.grade`, `windows.fails.grahas`, `windows.fails.holds`, `windows.fails.house`, `windows.fails.kaala`, `windows.fails.karana`, `windows.fails.lord`, `windows.fails.masa`, `windows.fails.nakshatra`, `windows.fails.navamsa`, `windows.fails.pada`, `windows.fails.panchaka`, `windows.fails.reading`, `windows.fails.row`, `windows.fails.second`, `windows.fails.sign`, `windows.fails.tithi`, `windows.fails.twelfth`, `windows.fails.vara`, `windows.fails.with`, `windows.fails.yoga`, `windows.holds.at`, `windows.holds.by`, `windows.holds.choghadiya`, `windows.holds.count`, `windows.holds.grahas`, `windows.holds.holds`, `windows.holds.house`, `windows.holds.kaala`, `windows.holds.karana`, `windows.holds.lord`, `windows.holds.masa`, `windows.holds.nakshatra`, `windows.holds.navamsa`, `windows.holds.pada`, `windows.holds.panchaka`, `windows.holds.reading`, `windows.holds.row`, `windows.holds.second`, `windows.holds.sign`, `windows.holds.tithi`, `windows.holds.twelfth`, `windows.holds.vara`, `windows.holds.with`, `windows.holds.yoga`, `windows.score`.
 - `almanac.festivalPack`: `rules.source`, `rules.unsourced`.

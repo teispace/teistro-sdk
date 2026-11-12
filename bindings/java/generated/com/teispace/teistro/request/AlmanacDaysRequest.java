@@ -18,6 +18,7 @@ import java.util.Objects;
  * @param first A civil day as a request names it.
  * @param gowri The {@code gowri} field. Null leaves the SDK's default.
  * @param homaAhuti The {@code homaAhuti} field. Null leaves the SDK's default.
+ * @param horizonProfile The terrain's apparent elevation by azimuth, for each day's visible rises and sets behind it (`03-design/terrain-horizon.md`). Null leaves the SDK's default.
  * @param lagnas The {@code lagnas} field. Null leaves the SDK's default.
  * @param last A civil day as a request names it. Null leaves the SDK's default.
  * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
@@ -32,7 +33,7 @@ import java.util.Objects;
  * @param years The {@code years} field. Null leaves the SDK's default.
  * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
  */
-public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, Boolean lagnas, DayAsked last, Double latitudeDeg, Double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, ResolvedPlace place, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
+public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, List<HorizonSample> horizonProfile, Boolean lagnas, DayAsked last, Double latitudeDeg, Double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, ResolvedPlace place, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,6 +43,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      */
     public AlmanacDaysRequest {
         Objects.requireNonNull(first, "`AlmanacDaysRequest.first` is required");
+        horizonProfile = horizonProfile == null ? null : List.copyOf(horizonProfile);
         if (skyStepMinutes != null) {
             Read.range(skyStepMinutes, "AlmanacDaysRequest.skyStepMinutes", 0L, 65535L);
         }
@@ -54,7 +56,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      * @param first A civil day as a request names it.
      */
     public AlmanacDaysRequest(DayAsked first) {
-        this(null, null, null, null, first, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        this(null, null, null, null, first, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -76,6 +78,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         private DayAsked first;
         private Boolean gowri;
         private Boolean homaAhuti;
+        private List<HorizonSample> horizonProfile;
         private Boolean lagnas;
         private DayAsked last;
         private Double latitudeDeg;
@@ -166,6 +169,17 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          */
         public Builder homaAhuti(boolean homaAhuti) {
             this.homaAhuti = homaAhuti;
+            return this;
+        }
+
+        /**
+         * Sets {@code horizonProfile}.
+         *
+         * @param horizonProfile The terrain's apparent elevation by azimuth, for each day's visible rises and sets behind it (`03-design/terrain-horizon.md`). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder horizonProfile(List<HorizonSample> horizonProfile) {
+            this.horizonProfile = horizonProfile;
             return this;
         }
 
@@ -319,7 +333,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          * @throws NullPointerException naming a required field left unset
          */
         public AlmanacDaysRequest build() {
-            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
+            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
         }
     }
 
@@ -340,6 +354,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
             DayAsked.of(Read.required(json.get("first"), "AlmanacDaysRequest.first")),
             Read.orNull(json.get("gowri"), present -> Read.bool(present, "AlmanacDaysRequest.gowri")),
             Read.orNull(json.get("homaAhuti"), present -> Read.bool(present, "AlmanacDaysRequest.homaAhuti")),
+            Read.orNull(json.get("horizonProfile"), present -> Read.list(present, "AlmanacDaysRequest.horizonProfile", item0 -> HorizonSample.of(item0))),
             Read.orNull(json.get("lagnas"), present -> Read.bool(present, "AlmanacDaysRequest.lagnas")),
             Read.orNull(json.get("last"), present -> DayAsked.of(present)),
             Read.orNull(json.get("latitudeDeg"), present -> Read.number(present, "AlmanacDaysRequest.latitudeDeg")),
@@ -376,6 +391,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
         if (homaAhuti != null) {
             json.put("homaAhuti", homaAhuti);
+        }
+        if (horizonProfile != null) {
+            json.put("horizonProfile", horizonProfile.stream().map(item0 -> item0.toJson()).toList());
         }
         if (lagnas != null) {
             json.put("lagnas", lagnas);
