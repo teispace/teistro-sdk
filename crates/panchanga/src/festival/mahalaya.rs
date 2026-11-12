@@ -76,6 +76,7 @@ impl FestivalRule {
             let (decide, otherwise) = by_share();
             FestivalRule {
                 in_month: None,
+                barred: None,
                 key: key.to_owned(),
                 source,
                 month: Some(Masa::Bhadrapada),

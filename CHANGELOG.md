@@ -28,6 +28,47 @@ New in this candidate: the sunrise behind the terrain (`horizonProfile`,
 `visibleRise`, `visibleSet`, SR-91), the teigeodata geo adapter (SR-88),
 and Karnataka's and Telangana's public holidays (SR-03).
 
+**Durva ashtami barred once Agastya rises, and nine Nepal festivals as rules
+(SR-01).** **Numbers:** `NEPAL_PANCHANGA`'s Durva ashtami, Gaura saptami and
+Amuktabharana saptami move in a year whose Bhadrapada bright 8th falls on or
+after Bhadra 22: in VS 2083 from 19 to 4 September 2026 and from 18 to 3
+September, the days the committee prints. Nine festivals that had no rule now
+answer. The pack's `input_hash` moves. A rule without a bar writes no `barred`
+field, so other packs' hashes and days do not move. 276 of the 502 festivals now ship as rules, up from 267. The
+pack falls on the printed day in 598 of 603 rows over the committee's sky,
+and each of the 5 partings has a named cause (`festival-measured.md` §6).
+- `FestivalRule.barred`, the new `Barred` type (`festival-rule-language.md`
+  §3.8). `FROM` bars a day falling on or after a day of a calendar's year.
+  `WITH` bars a day when another rule's day in the same lunar month is barred
+  `FROM` one. A barred day gives way to the last occurrence of `instead`
+  before it, judged by the rule's own window and guards. The answer is marked
+  `Observance.barred`, with the barred day's month. Refusals name their
+  fields: a rule kept on no single tithi, an unshipped calendar, a month or day
+  of 0, a rule barred with itself, and one barred with a rule the request does
+  not hold.
+- `LASTS` counts from `MOONRISE` (`Edge::Moonrise`), in thirtieths of the night
+  or the daylight the moonrise falls in. A day the Moon does not rise on leaves
+  the rule unjudged.
+- `DURVA_ASHTAMI` is barred from Bhadra 22 and kept on the dark 8th before.
+  The source is *Dharmasindhu* p. 56 and its note; p. 58 puts Agastya's rising
+  21 days after the Sun enters Simha (C608, C620). `GAURA_SAPTAMI` and the new
+  `BIRUDA_PANCHAMI` are barred with it (C686).
+- New in `NEPAL_PANCHANGA`:
+  - `GAURA_PARVA` on Durva's day, which is the gazette's day in both years.
+  - `MAHALAXMI_VRAT_BEGINS` at nishitha (*Nirnayasindhu* p. 301).
+  - `MAHALAXMI_VRAT_ENDS`: the later day when the 8th lasts six ghatis past
+    its moonrise (p. 300).
+  - `VAT_SAVITRI_VRAT`: the new moon holding the daylight's last three
+    muhurtas (pp. 191–193; *Dharmasindhu* p. 41).
+  - `INDRADHWAJA_PATAN` on Yanla's dark 4th at sunrise, and `NANICHAYA` on its
+    day. VS 2083 prints these a day earlier (C1470).
+  - `NEPALI_ARMY_DAY` and `JYAPU_DIWAS` on Shivaratri's and Yomari punhi's
+    days, rank 3 (C685).
+
+  Each has names in four locales.
+- Not shipped: the bright-half ashtami fast. *Dharmasindhu* p. 10's later day
+  parts from both printed vriddhi rows (C695).
+
 **The sunrise behind the terrain (SR-91).** **Numbers:** none: a section
 answered only when a profile is asked, and the days with one are the days
 without, to the bit.

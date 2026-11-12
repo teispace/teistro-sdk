@@ -31,6 +31,7 @@ use crate::month::{self, LunarMonth};
 use crate::span::Span;
 
 mod anniversary;
+mod barred;
 mod dated;
 mod ekadashi;
 mod following;
@@ -61,6 +62,7 @@ pub use anniversary::{
     Anniversary, AnniversaryDay, AnniversaryKind, DayClause, DayRule, FirstYearAdhika, Half,
     InSamsarpa, JanmaOptions, MonthClause, Origin, OriginFound, TithiShape, anniversaries,
 };
+pub use barred::Barred;
 pub use dated::{Dated, DatedObservance, DatedRule, DayReckoning, dated};
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, JoinedNakshatra,
@@ -154,7 +156,7 @@ pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -266,7 +268,7 @@ impl DayPart {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -453,7 +455,7 @@ pub enum Which {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -550,7 +552,7 @@ pub enum Case {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -718,7 +720,7 @@ pub enum Predicate {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -747,6 +749,10 @@ pub enum Edge {
     Sunrise,
     /// Sunset, counting in thirtieths of the night.
     Sunset,
+    /// The day's moonrise, counting in thirtieths of the daylight or the
+    /// night it falls in: the *Nirnayasindhu*'s three muhurtas past the
+    /// moonrise for the Mahalakshmi vrata's close (pp. 300–301).
+    Moonrise,
 }
 
 /// What a guard, or a rule's `otherwise`, decides.
@@ -816,7 +822,7 @@ pub enum Edge {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -925,6 +931,10 @@ pub struct FestivalRule {
     /// as Kerala keeps the dark 8th in Chingam (C1320).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub in_month: Option<InMonth>,
+    /// When the day is barred, and the earlier tithi kept in its place, as
+    /// the Durva fast is once Agastya has risen (C608); never when absent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub barred: Option<Barred>,
     /// The convention the month is named in; amanta by default.
     #[serde(default = "amanta")]
     pub convention: Convention,
@@ -1411,7 +1421,7 @@ impl FestivalRule {
     /// #     .collect();
     /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
     /// # let rule = |at: Window| FestivalRule {
-    /// #     in_month: None,
+    /// #     in_month: None, barred: None,
     /// #     key: String::from("ACME_ASHTAMI"),
     /// #     source: String::from("an example"),
     /// #     month: Some(Masa::Shravana),
@@ -1482,6 +1492,9 @@ impl FestivalRule {
                             ..
                         } | Predicate::Stands {
                             at: Window::Moonrise,
+                            ..
+                        } | Predicate::Lasts {
+                            from: Edge::Moonrise,
                             ..
                         }
                     )
@@ -1570,7 +1583,7 @@ impl FestivalRule {
     /// #     .collect();
     /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
     /// # let rule = |at: Window| FestivalRule {
-    /// #     in_month: None,
+    /// #     in_month: None, barred: None,
     /// #     key: String::from("ACME_ASHTAMI"),
     /// #     source: String::from("an example"),
     /// #     month: Some(Masa::Shravana),
@@ -1620,6 +1633,9 @@ impl FestivalRule {
         check_window(&self.key, self.at, "at")?;
         if let Some(held) = self.in_month {
             held.check(&self.key, self.month.is_some())?;
+        }
+        if let Some(bar) = &self.barred {
+            bar.check(self)?;
         }
         for (index, reading) in self.parana.iter().enumerate() {
             reading.check(&self.key, index)?;
@@ -1805,7 +1821,7 @@ fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1919,7 +1935,7 @@ pub struct FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2070,7 +2086,7 @@ pub enum SunEntry {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2234,7 +2250,7 @@ impl FestivalDay {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2288,6 +2304,27 @@ impl FestivalDay {
                 ))),
             },
         }
+    }
+
+    /// What a [`Predicate::Lasts`] asks the tithi to hold: from the edge
+    /// to `ghatis` thirtieths past it of the daylight or the night the
+    /// edge falls in.
+    fn lasting(&self, from: Edge, ghatis: u8) -> Result<Interval, Error> {
+        let (edge, span) = match from {
+            Edge::Sunrise => (self.sunrise.get(), self.daylight()),
+            Edge::Sunset => (self.sunset.get(), self.night()),
+            Edge::Moonrise => {
+                let edge = self.window(Window::Moonrise)?.from.get();
+                let span = if edge < self.sunset.get() {
+                    self.daylight()
+                } else {
+                    self.night()
+                };
+                (edge, span)
+            }
+        };
+        let ghatis = span.days() * f64::from(ghatis) / 30.0;
+        Ok(Interval::literal(edge, edge + ghatis))
     }
 }
 
@@ -2358,7 +2395,7 @@ impl FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2448,7 +2485,7 @@ pub struct Extent {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2549,7 +2586,7 @@ pub enum Decided {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2614,6 +2651,12 @@ pub struct Observance {
     /// sait for (`03-design/festival-sait.md`); absent otherwise.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sait: Option<Sait>,
+    /// Whether the rule's own day was barred and this is the day of the
+    /// tithi kept in its place ([`FestivalRule::barred`]): `tithi` is that
+    /// tithi's, and `month` the barred day's. A rule counted from another's
+    /// day carries the other's. Left out when false.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub barred: bool,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -2683,7 +2726,7 @@ pub struct Observance {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2779,7 +2822,7 @@ pub struct Unjudged {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3025,7 +3068,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3127,7 +3170,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3227,7 +3270,7 @@ impl Observances {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, meta: Default::default(),
+/// #     in_month: None, barred: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3305,6 +3348,9 @@ pub(crate) fn observances_over(
                 .with_field(format!("parana[{index}].rite")));
             }
         }
+        if let Some(bar) = &rule.barred {
+            bar.check_among(&rule.key, rules)?;
+        }
     }
     let mut kept: Vec<(&FestivalRule, Interval, Result<LunarMonth, String>)> = Vec::new();
     for rule in rules {
@@ -3333,10 +3379,12 @@ pub(crate) fn observances_over(
     }
     kept.sort_by(|a, b| a.1.from.get().total_cmp(&b.1.from.get()));
     // A rule whose parana follows another's rite is judged once every
-    // rite's day is known (`VrataParana::AfterRite`).
-    let (first, after): (Vec<_>, Vec<_>) = kept
-        .into_iter()
-        .partition(|(rule, ..)| !rule.parana.iter().any(VrataParana::follows_a_rite));
+    // rite's day is known (`VrataParana::AfterRite`), and one barred with
+    // another's day once that day is (`Barred::With`).
+    let (first, after): (Vec<_>, Vec<_>) = kept.into_iter().partition(|(rule, ..)| {
+        !(rule.parana.iter().any(VrataParana::follows_a_rite)
+            || rule.barred.as_ref().is_some_and(Barred::waits))
+    });
     let mut answer = Observances::default();
     for pass in [first, after] {
         let rites = Rites {
@@ -3346,7 +3394,10 @@ pub(crate) fn observances_over(
         };
         for (rule, whole, month) in pass {
             let judged = match month {
-                Ok(month) => judge(rule, whole, month, days, &rites)?,
+                Ok(month) => {
+                    let judged = judge(rule, whole, month, days, &rites)?;
+                    barred::keep(rule, judged, whole, month, tithis, days, &rites)?
+                }
                 Err(why) => Err(why),
             };
             match judged {
@@ -3673,6 +3724,7 @@ fn judge(
         moonrise: moonrise_kept(rule, kept),
         published: None,
         sait: None,
+        barred: false,
     })))
 }
 
@@ -3742,16 +3794,7 @@ fn margin(
                 window(day.window(at)?);
                 named.push((day, nakshatra));
             }
-            Predicate::Lasts { from, ghatis, .. } => {
-                let (edge, span) = match from {
-                    Edge::Sunrise => (day.sunrise, day.daylight()),
-                    Edge::Sunset => (day.sunset, day.night()),
-                };
-                window(Interval::literal(
-                    edge.get(),
-                    span.at_fraction(f64::from(ghatis) / 30.0)?.get(),
-                ));
-            }
+            Predicate::Lasts { from, ghatis, .. } => window(day.lasting(from, ghatis)?),
             _ => {}
         }
     }
@@ -3859,13 +3902,8 @@ impl Facts<'_> {
                     .any(|held| meet(&[held.whole], window))
             }
             Predicate::Lasts { day, from, ghatis } => {
-                let day = self.day(day);
-                let (edge, span) = match from {
-                    Edge::Sunrise => (day.sunrise, day.daylight()),
-                    Edge::Sunset => (day.sunset, day.night()),
-                };
-                let until = span.at_fraction(f64::from(ghatis) / 30.0)?;
-                self.tithi.contains(edge) && self.tithi.to.get() >= until.get()
+                let lasting = self.day(day).lasting(from, ghatis)?;
+                self.tithi.contains(lasting.from) && self.tithi.to.get() >= lasting.to.get()
             }
             Predicate::Wholly { day } => {
                 let held = match day {
@@ -3921,7 +3959,7 @@ fn lakshmi_puja() -> FestivalRule {
     use Choice::{Earlier, Later};
     use Which::Later as L;
     FestivalRule {
-        in_month: None,
+        in_month: None, barred: None,
         key: "LAKSHMI_PUJA".to_owned(),
         source: "Dharmasindhu p. 77: the new moon at pradosha; the later day when it lasts more than a ghati into that night, which puts the matter beyond doubt, else the earlier, and so when neither day holds it".to_owned(),
         month: Some(Masa::Ashwina),
@@ -3979,7 +4017,7 @@ impl FestivalRule {
         let morning_to_aparahna = Window::DayMuhurta { from: 1, to: 12 };
         vec![
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "MAHA_NAVAMI".to_owned(),
                 source: "Dharmasindhu p. 69: the 9th of the puja and the fast is taken joined with the 8th when it stands three muhurtas in that evening (सायं त्रिमुहूर्ता), the later day otherwise; the fast is broken on the visarjana's day after it, or inside the 9th left at the next sunrise when the visarjana falls a day later (pp. 70–71); Nirnayasindhu p. 139 breaks it on the 10th, at its first daylight".to_owned(),
                 month: Some(Masa::Ashwina),
@@ -3999,7 +4037,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "DEVI_VISARJAN".to_owned(),
                 source: "Dharmasindhu p. 70: the visarjana is on the 10th; of two, on the earlier when Shravana's last quarter joins it (श्रवणान्त्यपादयोगे), by the aparahna since a visarjana kept for the nakshatra may fall then, and on the later otherwise; on the earlier when the later holds no 10th".to_owned(),
                 month: Some(Masa::Ashwina),
@@ -4046,6 +4084,7 @@ impl FestivalRule {
     fn at_moonrise() -> Vec<FestivalRule> {
         let rule = |key: &str, source: &str, month, in_adhika| FestivalRule {
             in_month: None,
+            barred: None,
             key: key.to_owned(),
             source: source.to_owned(),
             month,
@@ -4075,7 +4114,7 @@ impl FestivalRule {
                 InAdhika::Nija,
             ),
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "ASHUNYA_SHAYANA".to_owned(),
                 source: "Dharmasindhu p. 44: Ashadha's dark 2nd, the tithi at moonrise since the puja is then (चन्द्रोदयव्यापिनी तिथिर्ग्राह्या चन्द्रोदये पूजायुक्तेः); the later day when both days hold it or neither does (दिनद्वये सत्त्वेऽसत्त्वे वा परैव); Nirnayasindhu p. 94, after the Nirnayamrita, the same; the vow returns on the next three months' dark 2nds, which are not rules here (C1082)".to_owned(),
                 month: Some(Masa::Ashadha),
@@ -4136,7 +4175,7 @@ impl FestivalRule {
     /// all 24 of its printed rows for VS 2082 and 2083.
     fn purnima_vrata() -> FestivalRule {
         FestivalRule {
-            in_month: None,
+            in_month: None, barred: None,
             key: "PURNIMA_VRATA".to_owned(),
             source: "the Nepal Panchanga Nirnayak Samiti's national panchanga, VS 2082 and 2083 (24 printed rows): the day whose sunset the full moon holds, the later when both or neither do; Dharmasindhu p. 20 gives the later day (C200)".to_owned(),
             month: None,
@@ -4212,7 +4251,7 @@ impl FestivalRule {
     /// #     .collect();
     /// # // The ashtami of Shravana's dark half, kept on the day whose sunrise holds it.
     /// # let rule = |at: Window| FestivalRule {
-    /// #     in_month: None,
+    /// #     in_month: None, barred: None,
     /// #     key: String::from("ACME_ASHTAMI"),
     /// #     source: String::from("an example"),
     /// #     month: Some(Masa::Shravana),
@@ -4259,7 +4298,7 @@ impl FestivalRule {
         let shravana = |day| joined(day, Nakshatra::Shravana, None);
         vec![
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "RAMA_NAVAMI".to_owned(),
                 source: "Dharmasindhu p. 33: madhyahna; the earlier day only if it alone holds it, since the 9th pierced by the 8th is forbidden; parana at the 9th's end (p. 34), which cannot run past p. 7's three yamas of the next day".to_owned(),
                 month: Some(Masa::Chaitra),
@@ -4276,7 +4315,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "JANMASHTAMI".to_owned(),
                 source: "Dharmasindhu pp. 49-50: nishitha; Rohini joined there outranks the tithi alone; both or neither, the later; parana at the end of the 8th and of Rohini joined to it, by day when one ends by day, else at the first end, or for one who cannot wait at sunrise (p. 52)".to_owned(),
                 month: Some(Masa::Shravana),
@@ -4300,7 +4339,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "VIJAYA_DASHAMI".to_owned(),
                 source: "Dharmasindhu p. 71: aparahna; both days or neither, the earlier, unless Shravana joins one day only; the earlier day alone holding it yields to a later day the dashami holds three muhurtas and Shravana joins alone, standing in its aparahna (the Nirnaya-sindhu's condition, endorsed); the later alone yields to Shravana joined only on the earlier (the author's own view)".to_owned(),
                 month: Some(Masa::Ashwina),
@@ -4347,7 +4386,7 @@ impl FestivalRule {
         use Which::{Earlier as E, Later as L};
         vec![
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "HARITALIKA".to_owned(),
                 source: "Dharmasindhu p. 55: the 3rd at sunrise; the later day whenever its sunrise holds it, though for less than a muhurta and the earlier day for all sixty ghatis, for the 4th joined to it; the earlier, joined to the 2nd, only when the 3rd is kshaya and no sunrise holds it".to_owned(),
                 month: Some(Masa::Bhadrapada),
@@ -4361,7 +4400,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "NAVARATRA_ARAMBHA".to_owned(),
                 source: "Dharmasindhu p. 65: the 1st at sunrise and after it, three muhurtas ideally, two failing that, one by some; never on the day the new moon joins it unless the later day holds it less than a muhurta or not at its sunrise; the earlier when it holds the whole earlier day and grows into the later (C196)".to_owned(),
                 month: Some(Masa::Ashwina),
@@ -4385,7 +4424,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "YAMA_DWITIYA".to_owned(),
                 source: "Dharmasindhu p. 79: aparahna; the earlier day only when it alone holds it, the later in every other case".to_owned(),
                 month: Some(Masa::Kartika),
@@ -4399,7 +4438,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "SHIVARATRI".to_owned(),
                 source: "Dharmasindhu p. 90: nishitha, the night's eighth muhurta; the earlier day when it alone holds it, or holds it whole where the later holds part; the later when the later alone holds it, when neither does, and when both do, with Madhava, the Nirnayasindhu and the Purusharthachintamani, where the Kaustubha takes the earlier (C195); parana inside the 14th within three yamas, the Nirnayasindhu's, or at its end where too little of it is left (pp. 90-91)".to_owned(),
                 month: Some(Masa::Magha),
@@ -4439,7 +4478,7 @@ impl FestivalRule {
         };
         vec![
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "RAKSHABANDHAN".to_owned(),
                 source: "Dharmasindhu p. 49: on the full moon holding the sunrise more than three muhurtas, at aparahna or a pradosha free of bhadra; less than three there, the earlier day at a pradosha free of bhadra".to_owned(),
                 month: Some(Masa::Shravana),
@@ -4453,7 +4492,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "BALI_PRATIPADA".to_owned(),
                 source: "Dharmasindhu p. 78: Bali puja, the cows' play, Govardhan puja and Margapali on the later day when its 1st holds nine muhurtas past sunrise, since the Moon is not seen then; less, on the 1st the new moon pierces (C198)".to_owned(),
                 month: Some(Masa::Kartika),
@@ -4467,7 +4506,7 @@ impl FestivalRule {
                 meta: FestivalMeta::default(),
             },
             FestivalRule {
-                in_month: None,
+                in_month: None, barred: None,
                 key: "HOLIKA".to_owned(),
                 source: "Dharmasindhu p. 94: pradosha, free of bhadra; the later day when both days hold it or the later holds part of it, the earlier's bhadra standing against it; the earlier when the later's pradosha has none of it; the later day's pratipada when the full moon lasts three and a half yamas there and the pratipada grows is not encoded (C199)".to_owned(),
                 month: Some(Masa::Phalguna),
@@ -4495,6 +4534,7 @@ impl FestivalRule {
         use Choice::{Earlier, Later};
         let rule = |key: &str, source: &str, ghatis| FestivalRule {
             in_month: None,
+            barred: None,
             key: key.to_owned(),
             source: source.to_owned(),
             month: Some(Masa::Shravana),
@@ -4539,7 +4579,7 @@ impl FestivalRule {
     /// touched, or neither, the later.
     fn upakarma_samavedi() -> FestivalRule {
         FestivalRule {
-            in_month: None,
+            in_month: None, barred: None,
             key: "UPAKARMA_SAMAVEDI".to_owned(),
             source: "Dharmasindhu p. 47: for the Samavedis, Hasta in Bhadrapada's bright half; split over two days, the earlier when it pervades the earlier aparahna wholly and the later's not at all, else the later, whether both are pervaded, the later is touched in part, the earlier only touched or neither; Shravana's Hasta where a sankranti or the like bars Bhadrapada's is not encoded (C207)".to_owned(),
             month: Some(Masa::Bhadrapada),

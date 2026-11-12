@@ -51,6 +51,7 @@ fn rule(
 ) -> FestivalRule {
     FestivalRule {
         in_month: None,
+        barred: None,
         key: key.to_owned(),
         source: source.to_owned(),
         month: Some(month),

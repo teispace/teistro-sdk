@@ -128,7 +128,7 @@ impl NextKind {
 /// it holds.
 fn every_month(key: &str, tithi: Tithi, name: &str) -> FestivalRule {
     FestivalRule {
-        in_month: None,
+        in_month: None, barred: None,
         key: key.to_owned(),
         source: format!(
             "the day of {name} in every month, the adhika month too, as a patro printed in Nepal names a day by the tithi at its sunrise"

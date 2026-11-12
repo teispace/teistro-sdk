@@ -39,7 +39,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 589] = [
+static PRINTED: [(i32, &str, Day, &str); 603] = [
     (
         2082,
         "VARUTHINI_EKADASHI",
@@ -1854,13 +1854,67 @@ static PRINTED: [(i32, &str, Day, &str); 589] = [
         "p. 22: काशीमा बडागणेश उत्सव",
     ),
     (2083, "SI_PUNHI", (2027, 2, 20), "p. 23: (सिपून्हि)"),
+    (
+        2082,
+        "VAT_SAVITRI_VRAT",
+        (2025, 5, 26),
+        "p. 4: वटसावित्रीव्रत",
+    ),
+    (
+        2083,
+        "VAT_SAVITRI_VRAT",
+        (2026, 5, 16),
+        "p. 4: वटसावित्रीव्रत",
+    ),
+    (2082, "BIRUDA_PANCHAMI", (2025, 8, 28), "p. 11: बिरुडापञ्चमी"),
+    (2083, "BIRUDA_PANCHAMI", (2026, 9, 1), "p. 12: बिरुडापञ्चमी"),
+    (
+        2082,
+        "MAHALAXMI_VRAT_BEGINS",
+        (2025, 8, 30),
+        "p. 11: महालक्ष्मीव्रतारम्भ",
+    ),
+    (
+        2083,
+        "MAHALAXMI_VRAT_BEGINS",
+        (2026, 9, 18),
+        "p. 13: महालक्ष्मीव्रतारम्भ",
+    ),
+    (2082, "GAURA_PARVA", (2025, 8, 31), "p. 11: गौरापर्व"),
+    (2083, "GAURA_PARVA", (2026, 9, 4), "p. 12: गौरापर्व"),
+    (
+        2082,
+        "INDRADHWAJA_PATAN",
+        (2025, 9, 11),
+        "p. 12: इन्द्रध्वजपातन (नानिचायाः)",
+    ),
+    (
+        2083,
+        "INDRADHWAJA_PATAN",
+        (2026, 9, 29),
+        "p. 14: इन्द्रध्वजपातन (नानिचायाः)",
+    ),
+    (2082, "NANICHAYA", (2025, 9, 11), "p. 12: (नानिचायाः)"),
+    (2083, "NANICHAYA", (2026, 9, 29), "p. 14: (नानिचायाः)"),
+    (
+        2082,
+        "MAHALAXMI_VRAT_ENDS",
+        (2025, 9, 14),
+        "p. 12: महालक्ष्मीव्रत समाप्ति",
+    ),
+    (
+        2083,
+        "MAHALAXMI_VRAT_ENDS",
+        (2026, 10, 3),
+        "p. 14: महालक्ष्मीव्रत समाप्ति",
+    ),
 ];
 
 /// Why the pack over the committee's sky parts from the print, per (year,
 /// rule): the day it gives within a fortnight of the printed one, or none,
 /// and the cause. The pass fails on a parting with no entry, on an entry
 /// whose row agrees, and on an entry whose day is not the one found.
-const PARTS: [(i32, &str, Option<Day>, &str); 6] = [
+const PARTS: [(i32, &str, Option<Day>, &str); 5] = [
     (
         2082,
         "HILE_JATRA",
@@ -1869,21 +1923,15 @@ const PARTS: [(i32, &str, Option<Day>, &str); 6] = [
     ),
     (
         2083,
-        "AMUKTABHARANA_SAPTAMI",
-        Some((2026, 9, 18)),
-        "counted from GAURA_SAPTAMI (C608)",
+        "INDRADHWAJA_PATAN",
+        Some((2026, 9, 30)),
+        "the dark 4th begins just after sunset in both years (18:17 on 10 September 2025, 18:36 on 29 September 2026); VS 2082 prints the lowering on the day after, whose sunrise holds the 4th, and VS 2083 on the evening it begins, so no window gives both (C1470)",
     ),
     (
         2083,
-        "DURVA_ASHTAMI",
-        Some((2026, 9, 19)),
-        "the committee prints Shravana's dark 8th, inside the solar Bhadra, where Bhadrapada's bright 8th falls in the solar Ashwin (C608)",
-    ),
-    (
-        2083,
-        "GAURA_SAPTAMI",
-        Some((2026, 9, 18)),
-        "the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)",
+        "NANICHAYA",
+        Some((2026, 9, 30)),
+        "counted from INDRADHWAJA_PATAN (C1470)",
     ),
     (
         2083,
