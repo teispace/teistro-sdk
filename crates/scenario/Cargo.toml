@@ -12,24 +12,24 @@ description = "The fixed scenario the SDK measures itself with: what the determi
 publish = false
 
 [dependencies]
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.1" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.1" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.1" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.1" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.2" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.2" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.2" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.2" }
 # The built-in ephemeris at its default tier, for the sections whose cost
 # is the built-in's own caching over a range (festivals, muhurta, a year).
-teistro-ephemeris-builtin = { path = "../ephemeris-builtin", version = "=1.0.0-rc.1" }
-teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.1" }
-teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.1" }
-teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.1" }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.1" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
-teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.1" }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", version = "=1.0.0-rc.2" }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.2" }
+teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.2" }
+teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.2" }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.2" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.2" }
+teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.2" }
 # The façade, for what only it composes (transit hits, Sade Sati) and what
 # a chart is read for (strengths, gochar, matching, Tajika), asked through
 # its own record as a consumer asks them.
-teistro = { path = "../sdk", version = "=1.0.0-rc.1" }
+teistro = { path = "../sdk", version = "=1.0.0-rc.2" }
 serde_json = "1"
 
 [lints]

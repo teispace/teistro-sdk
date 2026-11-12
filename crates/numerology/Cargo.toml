@@ -18,8 +18,8 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
-teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.2" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
