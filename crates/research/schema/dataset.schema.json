@@ -201,7 +201,7 @@
       "type": "object"
     }
   },
-  "$id": "urn:teistro:schema:dataset:1.0.0-rc.1",
+  "$id": "urn:teistro:schema:dataset:1.0.0-rc.2",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "description": "A research dataset.",

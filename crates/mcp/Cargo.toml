@@ -17,10 +17,10 @@ name = "teistro-mcp"
 path = "src/main.rs"
 
 [dependencies]
-teistro = { path = "../sdk", version = "=1.0.0-rc.1", features = ["schema"] }
-teistro-core = { path = "../core", version = "=1.0.0-rc.1", features = ["schema"] }
-teistro-idl = { path = "../idl", version = "=1.0.0-rc.1", default-features = false }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1", features = ["load"] }
+teistro = { path = "../sdk", version = "=1.0.0-rc.2", features = ["schema"] }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2", features = ["schema"] }
+teistro-idl = { path = "../idl", version = "=1.0.0-rc.2", default-features = false }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.2", features = ["load"] }
 serde = "1"
 serde_json = "1"
 schemars = "1.2"

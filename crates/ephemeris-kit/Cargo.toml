@@ -26,10 +26,10 @@ serde_json = "1"
 # features, so a kit run never brings a built-in tier with it: the tier a
 # test measures is the one that test compiled. With every module family,
 # since the checks found charts and a tier build compiles this crate alone.
-teistro = { path = "../sdk", version = "=1.0.0-rc.1", default-features = false, features = ["full"] }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.1" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
+teistro = { path = "../sdk", version = "=1.0.0-rc.2", default-features = false, features = ["full"] }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.2" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.2" }
 
 [lints]
 workspace = true

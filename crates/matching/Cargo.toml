@@ -18,10 +18,10 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
-teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
 # The one transliteration table a Latin name is read through
 # (`03-design/namakarana.md` §2.5); the engine without its command line.
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.1", default-features = false }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.2", default-features = false }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

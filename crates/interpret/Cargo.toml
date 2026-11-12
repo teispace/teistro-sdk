@@ -22,16 +22,16 @@ schema = ["dep:schemars", "dep:serde_json", "teistro-aspect/schema", "teistro-ch
 rashifal = ["dep:teistro-rashifal"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.1" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
-teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.1" }
-teistro-houses = { path = "../houses", version = "=1.0.0-rc.1" }
-teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.1", optional = true }
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.1", default-features = false }
-teistro-rules = { path = "../rules", version = "=1.0.0-rc.1" }
-teistro-state = { path = "../state", version = "=1.0.0-rc.1" }
-teistro-strength = { path = "../strength", version = "=1.0.0-rc.1" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.2" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.2" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
+teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.2" }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.2" }
+teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.2", optional = true }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.2", default-features = false }
+teistro-rules = { path = "../rules", version = "=1.0.0-rc.2" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.2" }
+teistro-strength = { path = "../strength", version = "=1.0.0-rc.2" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 # A message's slots are described as JSON values (`Item::params`).
