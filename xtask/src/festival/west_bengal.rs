@@ -9,13 +9,11 @@
 //! stand in their year, the moon's marked, and a year with no notification
 //! holds none.
 
-use std::fmt::Write as _;
-
 use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, Sky, printed_table};
+use super::india::{Measured, Notices, Section, Sky};
 
 /// Each year's notification of the Finance (Audit) Department, and the
 /// copy read: a staff site's copy giving each notification's number, its
@@ -380,38 +378,22 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
     west_bengal().compare(problems)
 }
 
-/// §11 of the page.
-pub(super) fn render(out: &mut String, (rows, printed): &Measured) {
-    let notices = west_bengal();
-    let parted = rows.iter().filter(|row| !row.agrees()).count();
-    let _ = writeln!(
-        out,
-        "## 11. West Bengal's public holidays against the notifications\n\n\
-         `INDIA_WEST_BENGAL` at Kolkata on India's clock, against each year's Lists I to III of \
+/// The page's section on the list.
+const SECTION: Section = Section {
+    heading: "11. West Bengal's public holidays against the notifications",
+    against: "`INDIA_WEST_BENGAL` at Kolkata on India's clock, against each year's Lists I to III of \
          the Finance (Audit) Department's notifications and the note naming the occasions that \
-         fall on a Sunday. {} of {} rows agree.\n",
-        rows.len() - parted,
-        rows.len()
-    );
-    for (year, notice) in NOTICES {
-        let _ = writeln!(out, "- {year}: {notice}");
-    }
-    let _ = writeln!(out, "\n{}", notices.rows_table(rows));
-    let _ = writeln!(
-        out,
-        "The {} civil days stand on their date in all {} years.\n",
-        CIVIL.len(),
-        NOTICES.len()
-    );
-    out.push_str(&notices.parts_list());
-    let _ = writeln!(
-        out,
-        "\nThe Durga Puja's Chaturthi, Panchami and Shashthi are counted back from the Saptami, \
+         fall on a Sunday.",
+    civil: "civil",
+    printed: "The Durga Puja's Chaturthi, Panchami and Shashthi are counted back from the Saptami, \
          and stand in every year listed, where the tithis would part in 2026 (the 6th holds both \
          sunrises). Dol, Kali Puja and Holi as the day after Dol stand in all eight years.\n\n\
          The days the notifications print are not reckoned: the five set by the moon, each \
          marked but Muharram 2021, which an order moved; the days added around a festival; and \
-         the sectional days of a year or a few. 2031, with no notification, holds none.\n\n{}",
-        printed_table(printed, "printed")
-    );
+         the sectional days of a year or a few. 2031, with no notification, holds none.",
+};
+
+/// §11 of the page.
+pub(super) fn render(out: &mut String, measured: &Measured) {
+    west_bengal().render(out, &SECTION, measured);
 }

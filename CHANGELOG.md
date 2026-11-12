@@ -98,6 +98,33 @@ Uranus, Neptune and Pluto now have places past `Body::ALL`'s end, and
 `placement` documents that it panics for them. `Body::graha` is the
 checked constructor, `None` for a graha no rule names.
 
+**Telangana's public holidays (SR-03, the seventh state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-TG` now reckons `INDIA_TELANGANA`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_TELANGANA` (`FestivalPack::IndiaTelangana`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_telangana`) holds the General Administration (Spl.E) Department's G.O.s of 2019 to 2026:
+  Annexure-I's general holidays with its Part II's days on a Sunday or a second Saturday, and Annexure-II's
+  optional holidays (`optional`):
+  - Bhogi, Sankranti and Kanumu on `MALAYALAM_SOLAR`'s last day of Dhanu and Makaram 1 and 2 (C1388), Tamil New
+    Year as Tamil Nadu keeps it, and Sri Krishna Astami (the Srivaishnava Agamam's) on Rohini in Avani (C1394);
+  - the state's lunar days: Bathukamma on Bhadrapada's new moon (C1395), the Dasara days and Saddula Bathukamma at
+    midday (C1393), Vinayaka Chavithi at midday, Deepavali at pradosha and Naraka Chaturdhi at the afternoon,
+    each the later day only when it alone holds the tithi, Sri Rama Navami and Rakhi Purnima at sunrise, and the
+    following day of Vijaya Dasami;
+  - Nepal's printed panchanga's rules for Ugadi, Basava Jayanthi, Sri Panchami and Ratha Yathra, and the central
+    list's for the days it shares, Holi among them;
+  - Babu Jagjivan Ram's birthday, Ambedkar Jayanti, New Year's Day, Christmas Eve and Boxing Day on their dates.
+
+  The five general days and Annexure-II's eleven set by the moon ship as printed, marked `MOON_SIGHTING`; Bonalu,
+  Varalakshmi Vratham and the Parsi New Year ship as printed (C1390, C1391). Telangana Formation Day, which no G.O.
+  lists, is left out (C1392) (`03-design/telangana-holidays.md`).
+- `StateList` gains the shared helpers a state pack reads its central, printed and own days through
+  (`central_kept`, `print_kept`, `own`, `civil`, `on_solar_day`, `on_star`), and the measured page's state
+  sections one renderer (`Notices::render`); Karnataka's pack and the five earlier sections use them, unchanged.
+- `festival-measured.md` §16 holds it at Hyderabad, 254 of the 265 rows meeting the print and the eleven that
+  part named (C1393 to C1398). `crates/sdk/tests/telangana.rs` holds each year's G.O.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the seven new keys.
+
 **Karnataka's public holidays (SR-03, the sixth state set).**
 **Numbers:** none for any existing pack's days: a new pack. A request naming the
 region `IN-KA` now reckons `INDIA_KARNATAKA`, where it kept `INDIA_CENTRAL`.

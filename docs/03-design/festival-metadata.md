@@ -87,6 +87,7 @@ every key a shipped set names:
 | `IN-KA` | | `INDIA_KARNATAKA` |
 | `IN-KL` | `KERALA` | `INDIA_KERALA` |
 | `IN-MH` | `MAHARASHTRA` | `INDIA_MAHARASHTRA` |
+| `IN-TG` | | `INDIA_TELANGANA` |
 | `IN-TN` | `TAMIL_NADU` | `INDIA_TAMIL_NADU` |
 | `IN-WB` | `WEST_BENGAL` | `INDIA_WEST_BENGAL` |
 | `NP` | | `NEPAL_PANCHANGA` and `NEPAL` |

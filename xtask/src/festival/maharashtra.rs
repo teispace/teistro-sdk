@@ -8,13 +8,11 @@
 //! to stand in their year, the moon's marked, and a year with no
 //! notification holds none.
 
-use std::fmt::Write as _;
-
 use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, Sky, printed_table};
+use super::india::{Measured, Notices, Section, Sky};
 
 /// Each year's notification of the General Administration Department,
 /// Desk-29, and the rank of the copy read: the gazette page, or a copy
@@ -215,38 +213,22 @@ pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
     maharashtra().compare(problems)
 }
 
-/// §10 of the page.
-pub(super) fn render(out: &mut String, (rows, printed): &Measured) {
-    let notices = maharashtra();
-    let parted = rows.iter().filter(|row| !row.agrees()).count();
-    let _ = writeln!(
-        out,
-        "## 10. Maharashtra's public holidays against the notifications\n\n\
-         `INDIA_MAHARASHTRA` at Mumbai on India's clock, against each year's list of the \
+/// The page's section on the list.
+const SECTION: Section = Section {
+    heading: "10. Maharashtra's public holidays against the notifications",
+    against: "`INDIA_MAHARASHTRA` at Mumbai on India's clock, against each year's list of the \
          General Administration Department's notification under s. 25 of the Negotiable \
-         Instruments Act, with Bhaubeej from its own notification. {} of {} rows agree.\n",
-        rows.len() - parted,
-        rows.len()
-    );
-    for (year, notice) in NOTICES {
-        let _ = writeln!(out, "- {year}: {notice}");
-    }
-    let _ = writeln!(out, "\n{}", notices.rows_table(rows));
-    let _ = writeln!(
-        out,
-        "The {} civil days stand on their date in all {} years.\n",
-        CIVIL.len(),
-        NOTICES.len()
-    );
-    out.push_str(&notices.parts_list());
-    let _ = writeln!(
-        out,
-        "\nThe state's list sides with the shipped rules against the central list twice: on \
+         Instruments Act, with Bhaubeej from its own notification.",
+    civil: "civil",
+    printed: "The state's list sides with the shipped rules against the central list twice: on \
          Holi in 2023 and 2026, where the Department prints a day later (C854), and on Diwali \
          in 2024, where the Department prints the earlier day (C856).\n\n\
          The days the notifications print are not reckoned: the four set by the moon, each \
          marked, and the Parsi New Year (Shahenshahi), whose calendar the catalogue lacks \
-         (C1243); 2031, with no notification, holds none.\n\n{}",
-        printed_table(printed, "printed")
-    );
+         (C1243); 2031, with no notification, holds none.",
+};
+
+/// §10 of the page.
+pub(super) fn render(out: &mut String, measured: &Measured) {
+    maharashtra().render(out, &SECTION, measured);
 }

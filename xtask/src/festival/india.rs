@@ -389,6 +389,56 @@ impl Notices {
     }
 }
 
+/// A state's section of the page: its heading, what the list is held
+/// against, how its fixed days are named, and what its printed days are.
+pub(super) struct Section {
+    /// The heading, its number first.
+    pub(super) heading: &'static str,
+    /// The pack, where, and against which lists, before the count of rows
+    /// that agree.
+    pub(super) against: &'static str,
+    /// The fixed days' name: "civil", or "general civil" where the list's
+    /// optional fixed days are reckoned among the rows.
+    pub(super) civil: &'static str,
+    /// What the list prints rather than reckons, before its table.
+    pub(super) printed: &'static str,
+}
+
+impl Notices {
+    /// The list's section of the page: the rows that agree, each year's
+    /// notice, the rows' table, the fixed days, each parting with its
+    /// cause, and the printed days.
+    pub(super) fn render(&self, out: &mut String, section: &Section, (rows, printed): &Measured) {
+        let parted = rows.iter().filter(|row| !row.agrees()).count();
+        let _ = writeln!(
+            out,
+            "## {}\n\n{} {} of {} rows agree.\n",
+            section.heading,
+            section.against,
+            rows.len() - parted,
+            rows.len()
+        );
+        for (year, notice) in self.years {
+            let _ = writeln!(out, "- {year}: {notice}");
+        }
+        let _ = writeln!(out, "\n{}", self.rows_table(rows));
+        let _ = writeln!(
+            out,
+            "The {} {} days stand on their date in all {} years.\n",
+            self.civil.len(),
+            section.civil,
+            self.years.len()
+        );
+        out.push_str(&self.parts_list());
+        let _ = writeln!(
+            out,
+            "\n{}\n\n{}",
+            section.printed,
+            printed_table(printed, "printed")
+        );
+    }
+}
+
 /// The printed days' table, an unmarked day standing `unmarked`.
 pub(super) fn printed_table(printed: &[(i32, String, MonthDay, bool)], unmarked: &str) -> String {
     let body: Vec<Vec<String>> = printed

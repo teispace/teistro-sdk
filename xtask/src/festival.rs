@@ -23,8 +23,10 @@
 //!   `INDIA_TAMIL_NADU` pack against the Government of Tamil Nadu's at
 //!   Chennai, under the vakya sky and the modern ([`tamil_nadu`]),
 //!   the `INDIA_ASSAM` pack against the Government of Assam's at Guwahati
-//!   ([`assam`]), and the `INDIA_KARNATAKA` pack against the Government of
-//!   Karnataka's at Bengaluru ([`karnataka`]).
+//!   ([`assam`]), the `INDIA_KARNATAKA` pack against the Government of
+//!   Karnataka's at Bengaluru ([`karnataka`]), and the `INDIA_TELANGANA`
+//!   pack against the Government of Telangana's at Hyderabad
+//!   ([`telangana`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -56,6 +58,7 @@ mod panchanga;
 mod purnima;
 mod sait;
 mod tamil_nadu;
+mod telangana;
 mod west_bengal;
 
 const PAGE: &str = "docs/03-design/festival-measured.md";
@@ -476,6 +479,7 @@ fn page() -> Result<String, String> {
     let tamil = tamil_nadu::compare(&mut problems)?;
     let assam = assam::compare(&mut problems)?;
     let karnataka = karnataka::compare(&mut problems)?;
+    let telangana = telangana::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -493,6 +497,7 @@ fn page() -> Result<String, String> {
     tamil_nadu::render(&mut out, &tamil);
     assam::render(&mut out, &assam);
     karnataka::render(&mut out, &karnataka);
+    telangana::render(&mut out, &telangana);
     Ok(out)
 }
 

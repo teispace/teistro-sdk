@@ -399,6 +399,52 @@ fn karnataka_keeps_its_restricted_days_optional() -> Result<(), teistro::Error> 
 }
 
 #[test]
+fn telangana_keeps_its_optional_days_optional() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_TELANGANA"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for (key, form) in [
+        ("BATHUKAMMA", PackForm::Lunar),
+        ("SADDULA_BATHUKAMMA", PackForm::Lunar),
+        ("LAKSHMI_PUJA", PackForm::Lunar),
+        ("BHOGI", PackForm::Dated),
+        ("KANUMU", PackForm::Dated),
+        ("JANMASHTAMI_VAISHNAVA", PackForm::Dated),
+        ("PUTHANDU", PackForm::Dated),
+        ("VIJAYA_DASHAMI_NEXT_DAY", PackForm::Following),
+        ("BONALU", PackForm::Published),
+        ("EID_AL_FITR_NEXT_DAY", PackForm::Published),
+    ] {
+        assert_eq!(row(&listed.rules, key).unwrap().form, form, "{key}");
+    }
+    for (key, optional) in [
+        ("VIJAYA_DASHAMI", false),
+        ("BOXING_DAY", false),
+        ("MAHA_ASHTAMI", true),
+        ("KANUMU", true),
+        ("NEW_YEAR_S_DAY_AD", true),
+        ("VARAMAHALAKSHMI_VRATA", true),
+        ("SHAB_E_MERAJ", true),
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().meta.optional,
+            optional,
+            "{key}"
+        );
+    }
+    let state = MetaFilter {
+        regions: vec!["IN-TG".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");
@@ -580,6 +626,16 @@ fn a_region_is_kept_by_its_iso_code_and_names_its_pack() -> Result<(), teistro::
     for row in &karnataka.listing().rules {
         assert_eq!(row.meta.regions, ["IN", "IN-KA"], "{}", row.key);
         assert!(!keeping("IN-TN").admits(&row.meta), "{}", row.key);
+    }
+    let telangana = FestivalPack::IndiaTelangana;
+    assert_eq!(telangana.region(), Some("IN-TG"));
+    assert_eq!(
+        PackRequest::from_json(r#"{"pack": "IN-TG"}"#)?.pack,
+        telangana
+    );
+    for row in &telangana.listing().rules {
+        assert_eq!(row.meta.regions, ["IN", "IN-TG"], "{}", row.key);
+        assert!(!keeping("IN-KA").admits(&row.meta), "{}", row.key);
     }
     assert_eq!(
         PackRequest::from_json(r#"{"pack": "NP"}"#)?.pack,
