@@ -603,7 +603,6 @@ fn share_of(part: u64, whole: u64) -> String {
         clippy::cast_precision_loss,
         reason = "a ratio of counts, for reporting"
     )]
-    #[allow(clippy::cast_precision_loss, reason = "a ratio of counts")]
     let share = 100.0 * part as f64 / whole as f64;
     format!("{share:.1}%")
 }
