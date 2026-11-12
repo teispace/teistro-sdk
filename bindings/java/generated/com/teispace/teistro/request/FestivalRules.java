@@ -61,6 +61,9 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
     /** {@code INDIA_ANDHRA_PRADESH}. */
     FestivalRules INDIA_ANDHRA_PRADESH = Key.INDIA_ANDHRA_PRADESH;
 
+    /** {@code INDIA_UTTAR_PRADESH}. */
+    FestivalRules INDIA_UTTAR_PRADESH = Key.INDIA_UTTAR_PRADESH;
+
     /**
      * The value, as a {@code FestivalRules}.
      *
@@ -162,7 +165,11 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
         /**
          * {@code INDIA_ANDHRA_PRADESH}.
          */
-        INDIA_ANDHRA_PRADESH("INDIA_ANDHRA_PRADESH");
+        INDIA_ANDHRA_PRADESH("INDIA_ANDHRA_PRADESH"),
+        /**
+         * {@code INDIA_UTTAR_PRADESH}.
+         */
+        INDIA_UTTAR_PRADESH("INDIA_UTTAR_PRADESH");
 
         private final String key;
 
