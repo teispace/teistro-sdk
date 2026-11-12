@@ -772,6 +772,32 @@ jobs:
           path: target/teimeris-kit/
           if-no-files-found: error
 
+  # The teigeodata geo adapter (SR-88) is outside the workspace, so no
+  # other job builds it. teigeodata is public, so this needs no secret; no
+  # data release is published yet (teigeodata's TG-05), so the tests that
+  # read a pack say SKIP here and run in the local gate that names one
+  # (`TEISTRO_TEIGEODATA_PACKS`, adapters/geo-teigeodata/README.md).
+  geo-adapter:
+    name: teigeodata geo adapter
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: adapters/geo-teigeodata/rust
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: adapters/geo-teigeodata/rust
+      - name: Formatted
+        run: cargo fmt --check
+      - name: Clippy, warnings denied
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Tests and doc examples
+        run: cargo test --locked
+
   # Every feature of every crate on its own, and each crate with none
   # (`05-testing/01-quality-bar.md`, "feature matrix"): a feature that
   # needs another it does not turn on builds in the workspace, where some
