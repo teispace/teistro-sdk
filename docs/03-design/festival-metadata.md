@@ -37,7 +37,7 @@ Nothing is inferred from a festival's name. In order:
 **`GAZETTED`.** A government's notice lists the day as a public holiday.
 
 - Nepal: the Ministry of Home Affairs' lists for 2082 and 2083 (Nepal Gazette,
-  relayed in Pradhan & Associates' alerts of those lists). 48 keys. The
+  relayed in Pradhan & Associates' alerts of those lists). 49 keys. The
   notice's limits become values: Gai jatra is `NEWAR` in `KATHMANDU_VALLEY`,
   Indra and Ghode jatra `KATHMANDU_VALLEY`, Fagu purnima's rule `HILLS` (the 56
   districts) and Terai Holi `TERAI` (the 21).
@@ -61,9 +61,9 @@ composite row split (`Maithil and Bhojpuri` is two), plus the notice's. `regions
 is `NP` for a rule of Nepal's packs, which the national panchanga prints, plus
 what the notice names, and `IN` for India's pack.
 
-**Unset.** Of the 359 keys of Nepal's packs, 48 are `GAZETTED`, 60
-`REGIONAL_ETHNIC`, 44 `RELIGIOUS_CULTURAL`, 32 `OBSERVANCE` and 175 have no kind.
-302 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
+**Unset.** Of the 368 keys of Nepal's packs, 49 are `GAZETTED`, 62
+`REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 32 `OBSERVANCE` and 177 have no kind.
+307 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
 source is the committee's print, which says when and not what. No value is
 guessed for them, and the classification's blank is not one either: its own
 words are "kept across communities, or the community is not known here". The
@@ -142,7 +142,7 @@ SR-11's feed filter by kind or tradition reads this field.
 
 Each pack rule holds a few short strings more, written into the request's
 content hash, so **every shipped pack's `input_hash` moved once** with this
-change. No day moved. The table is 21 groups and 359 sorted keys, searched by
+change. No day moved. The table is 21 groups and 368 sorted keys, searched by
 bisection, so stamping a pack does not scan.
 
 Names: `festival_kind` and `tradition` are named in `en-Latn` and `ne-Deva-NP`;

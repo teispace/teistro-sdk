@@ -150,6 +150,7 @@ fn the_yugma_verse_pairs_what_it_names_and_nothing_else() {
 fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
     FestivalRule {
         in_month: None,
+        barred: None,
         key: "TEST".to_owned(),
         source: "a test".to_owned(),
         month: Some(Masa::Shravana),
@@ -2558,4 +2559,281 @@ fn a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two() {
             "{key}"
         );
     }
+}
+
+/// A month of synthetic days, 1 to 31 January 2024: the bright 7th and
+/// 8th hold the sunrises of the 8th and the 9th, the dark 7th and 8th those
+/// of the 23rd and 24th.
+fn barred_days() -> Vec<FestivalDay> {
+    let tithis: Vec<(Tithi, f64)> = Tithi::ALL
+        .iter()
+        .enumerate()
+        .map(|(k, &tithi)| (tithi, ghati(k + 1, 20.0)))
+        .collect();
+    days_over(31, &tithis, &[], Masa::Shravana, MonthKind::Nija)
+}
+
+/// A sunrise rule under `key` on `tithi`, barred as given.
+fn barred_udaya(
+    key: &str,
+    tithi: Tithi,
+    barred: Option<teistro_panchanga::festival::Barred>,
+) -> FestivalRule {
+    FestivalRule {
+        key: key.to_owned(),
+        at: Window::Sunrise,
+        barred,
+        ..a_rule(
+            tithi,
+            vec![Guard::new(
+                [Predicate::Case {
+                    case: Case::LaterOnly,
+                }],
+                Choice::Later,
+            )],
+            Choice::Earlier,
+        )
+    }
+}
+
+/// The dark 8th barred from January `day`, the bright 8th kept instead.
+fn barred_durva(day: u8) -> FestivalRule {
+    barred_udaya(
+        "DURVA",
+        Tithi::KrishnaAshtami,
+        Some(teistro_panchanga::festival::Barred::From {
+            calendar: teistro_core::catalogue::Calendar::Gregorian,
+            month: 1,
+            day,
+            instead: Tithi::ShuklaAshtami,
+        }),
+    )
+}
+
+/// The dark 7th barred with `DURVA`, the bright 7th kept instead.
+fn barred_gaura() -> FestivalRule {
+    barred_udaya(
+        "GAURA",
+        Tithi::KrishnaSaptami,
+        Some(teistro_panchanga::festival::Barred::With {
+            rule: "DURVA".to_owned(),
+            instead: Tithi::ShuklaSaptami,
+        }),
+    )
+}
+
+/// A rule barred from a day of a calendar's year keeps, on and after that
+/// day, the last occurrence of its `instead` tithi before, judged by its
+/// own window and guards and marked barred; a rule barred with it moves
+/// when it moves (C608, C686).
+#[test]
+fn a_barred_day_keeps_the_tithi_before_and_moves_a_rule_barred_with_it() {
+    use teistro_core::catalogue::Calendar;
+    use teistro_panchanga::festival::Barred;
+
+    let days = barred_days();
+    let (durva, gaura) = (barred_durva, barred_gaura());
+    let kept = |rules: &[FestivalRule]| -> Vec<(String, u8, bool)> {
+        let answer = observances(rules, &days).unwrap();
+        assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+        answer
+            .observances
+            .iter()
+            .map(|one| (one.rule.clone(), one.day.day, one.barred))
+            .collect()
+    };
+    // Before the 25th the dark 8th stands, and so does the 7th with it.
+    assert_eq!(
+        kept(&[durva(25), gaura.clone()]),
+        [
+            ("GAURA".to_owned(), 23, false),
+            ("DURVA".to_owned(), 24, false)
+        ]
+    );
+    // From the 20th it is barred: the bright 8th, and the 7th moves too,
+    // each named in the barred day's month.
+    let moved = observances(&[durva(20), gaura.clone()], &days).unwrap();
+    let days_kept: Vec<_> = moved
+        .observances
+        .iter()
+        .map(|one| (one.rule.as_str(), one.day.day, one.barred, one.month))
+        .collect();
+    assert_eq!(
+        days_kept,
+        [
+            ("GAURA", 8, true, Masa::Shravana),
+            ("DURVA", 9, true, Masa::Shravana)
+        ]
+    );
+    let durva_kept = moved.observances.iter().find(|one| one.rule == "DURVA");
+    assert_eq!(
+        durva_kept.map(|one| one.tithi),
+        Some(Interval::literal(ghati(7, 20.0), ghati(8, 20.0)))
+    );
+
+    // A tithi the days do not reach before the barred one leaves it
+    // unjudged, saying why.
+    let early = barred_udaya(
+        "EARLY",
+        Tithi::ShuklaAshtami,
+        Some(Barred::From {
+            calendar: Calendar::Gregorian,
+            month: 1,
+            day: 1,
+            instead: Tithi::KrishnaAshtami,
+        }),
+    );
+    let answer = observances(&[early], &days).unwrap();
+    assert_eq!(answer.observances, []);
+    assert!(
+        answer
+            .unjudged
+            .first()
+            .is_some_and(|one| one.why.contains("barred")),
+        "{:?}",
+        answer.unjudged
+    );
+}
+
+/// [`a_barred_day_keeps_the_tithi_before_and_moves_a_rule_barred_with_it`]'s
+/// refusals, each by its field, and the bar's spelling.
+#[test]
+fn a_bar_is_refused_by_its_field_and_written_as_the_language_spells_it() {
+    use teistro_core::catalogue::Calendar;
+    use teistro_panchanga::festival::Barred;
+
+    let days = barred_days();
+    let (durva, gaura) = (barred_durva, barred_gaura());
+    // Refusals, each by its field.
+    let field = |rules: &[FestivalRule]| {
+        observances(rules, &days)
+            .unwrap_err()
+            .field()
+            .map(str::to_owned)
+    };
+    assert_eq!(
+        field(std::slice::from_ref(&gaura)).as_deref(),
+        Some("barred.rule")
+    );
+    // A caller's own rule in the named one's place, barring nothing,
+    // leaves the day standing.
+    let unbarred = barred_udaya("DURVA", Tithi::KrishnaAshtami, None);
+    let answer = observances(&[unbarred, gaura.clone()], &days).unwrap();
+    let standing: Vec<_> = answer
+        .observances
+        .iter()
+        .map(|one| (one.day.day, one.barred))
+        .collect();
+    assert_eq!(standing, [(23, false), (24, false)]);
+    let itself = barred_udaya(
+        "GAURA",
+        Tithi::KrishnaSaptami,
+        Some(Barred::With {
+            rule: "GAURA".to_owned(),
+            instead: Tithi::ShuklaSaptami,
+        }),
+    );
+    assert_eq!(itself.check().unwrap_err().field(), Some("barred.rule"));
+    let month_zero = barred_udaya(
+        "DURVA",
+        Tithi::KrishnaAshtami,
+        Some(Barred::From {
+            calendar: Calendar::Gregorian,
+            month: 0,
+            day: 20,
+            instead: Tithi::ShuklaAshtami,
+        }),
+    );
+    assert_eq!(
+        month_zero.check().unwrap_err().field(),
+        Some("barred.month")
+    );
+    assert_eq!(durva(0).check().unwrap_err().field(), Some("barred.day"));
+    let on_a_star = FestivalRule {
+        occurs: Occurs::Nakshatra {
+            nakshatra: Nakshatra::Hasta,
+            paksha: Paksha::Shukla,
+        },
+        ..durva(20)
+    };
+    assert_eq!(on_a_star.check().unwrap_err().field(), Some("barred"));
+
+    // Written and read as the language spells it; a rule with none writes none.
+    let text = serde_json::to_string(&durva(22)).unwrap();
+    assert!(
+        text.contains(r#""barred":{"kind":"FROM","calendar":"GREGORIAN","month":1,"day":22,"instead":"SHUKLA_ASHTAMI"}"#),
+        "{text}"
+    );
+    let read: FestivalRule = teistro_core::strict::read(&text, "rule").unwrap();
+    assert_eq!(read, durva(22));
+    let text = serde_json::to_string(&gaura).unwrap();
+    assert!(
+        text.contains(r#""barred":{"kind":"WITH","rule":"DURVA","instead":"SHUKLA_SAPTAMI"}"#),
+        "{text}"
+    );
+    let plain =
+        serde_json::to_string(&a_rule(Tithi::KrishnaEkadashi, Vec::new(), Choice::Later)).unwrap();
+    assert!(!plain.contains("barred"), "{plain}");
+}
+
+/// A guard counting ghatis past the moonrise (*Nirnayasindhu* pp. 300–301,
+/// the Mahalakshmi vrata's close): the later day when the tithi lasts six
+/// ghatis past its moonrise, of the night when the Moon rises after
+/// sunset, of the daylight before; the earlier otherwise.
+#[test]
+fn a_guard_counts_ghatis_past_the_moonrise_of_the_night_or_the_day() {
+    // The dark 8th from day 1's 30th ghati, its sunset, to day 2's 50th.
+    let tithis = [
+        (Tithi::KrishnaSaptami, ghati(1, 30.0)),
+        (Tithi::KrishnaAshtami, ghati(2, 50.0)),
+        (Tithi::KrishnaNavami, ghati(5, 0.0)),
+    ];
+    let mut days = days_of(&tithis, &[], Masa::Shravana, MonthKind::Nija);
+    let rule = FestivalRule {
+        at: Window::Moonrise,
+        ..a_rule(
+            Tithi::KrishnaAshtami,
+            vec![Guard::new(
+                [Predicate::Lasts {
+                    day: Which::Later,
+                    from: Edge::Moonrise,
+                    ghatis: 6,
+                }],
+                Choice::Later,
+            )],
+            Choice::Earlier,
+        )
+    };
+    rule.check().unwrap();
+    assert!(rule.reads_moonrise());
+    // Unsearched, the guard is refused, naming the remedy.
+    let why = observances(std::slice::from_ref(&rule), &days).unwrap_err();
+    assert!(why.to_string().contains("Almanac::moonrises"), "{why}");
+    let rise = |day: usize, at: f64| {
+        Moonrise::Rose(MoonriseAt {
+            at: JulianDay::literal(ghati(day, at)),
+            place: DELHI,
+        })
+    };
+    let kept = |days: &[FestivalDay]| {
+        let answer = observances(std::slice::from_ref(&rule), days).unwrap();
+        assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+        answer.observances.first().map(|kept| kept.day.day - 1)
+    };
+    days[1].moonrise = rise(1, 40.0);
+    // The later moonrise at its 42nd ghati, in the night: six of the
+    // night's thirtieths end at the 48th, inside the 8th.
+    days[2].moonrise = rise(2, 42.0);
+    assert_eq!(kept(&days), Some(2));
+    // At the 46th they end at the 52nd, past it: the earlier.
+    days[2].moonrise = rise(2, 46.0);
+    assert_eq!(kept(&days), Some(1));
+    // A moonrise by day counts the daylight's thirtieths, here as long.
+    days[2].moonrise = rise(2, 20.0);
+    assert_eq!(kept(&days), Some(2));
+    // A day the Moon does not rise on leaves the 8th unjudged.
+    days[2].moonrise = Moonrise::NoRise;
+    let answer = observances(std::slice::from_ref(&rule), &days).unwrap();
+    assert_eq!(answer.observances, []);
+    assert_eq!(answer.unjudged.len(), 1);
 }

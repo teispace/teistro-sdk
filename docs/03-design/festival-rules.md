@@ -1338,9 +1338,11 @@ Where a text does speak, it mostly agrees with the fit:
   where the fit uses pradosha.
 - p. 38 gives Dashahara to purvahna and, when Jyeshtha is doubled, to the
   adhika month (C606).
-- pp. 55–56 bar the Durva vrata while the Sun is in Kanya. In VS 2083
-  Bhadrapada's bright 8th falls with the Sun in Kanya, and the committee
-  prints the vrata a month early (C608).
+- pp. 55–56 bar the Durva vrata once Agastya has risen, and the note keeps
+  it then on the dark 8th before. In VS 2083 Bhadrapada's bright 8th falls
+  after Bhadra 22, the 21st day from the Sun's entry into Simha (p. 58),
+  and the committee prints the vrata on that dark 8th, as the pack keeps
+  it (`barred`, C608).
 - p. 57 gives Vamana dwadashi to madhyahna with Shravana, where the fit
   uses purvahna (C602).
 
@@ -1445,7 +1447,7 @@ agreements and 18 partings under the committee's sky:
 | a predicate that weighs two parts | 3 | C601 |
 | purvahna read as pratah | 3 | C602 |
 | Jyeshtha's rites kept in the adhika month in VS 2083 | 6, all given since `inAdhika: FIRST` and `ONLY` | C606, C607 |
-| the solar Bhadra in VS 2083 | 3 | C608 |
+| the solar Bhadra in VS 2083 | 3, all given since `barred` | C608 |
 | the print's Hile jatra being Ramechhap's | 2 | C609 |
 | Dupcheshwar's mela on the full moon | 1 | C611 |
 

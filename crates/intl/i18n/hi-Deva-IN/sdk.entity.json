@@ -3804,6 +3804,47 @@
     "MAHALAYA_AMAVASYA": {
       "name": "महालय अमावस्या",
       "prose": "महालय अमावस्या"
+    },
+    "GAURA_PARVA": {
+      "name": "गौरा पर्व",
+      "prose": "गौरा पर्व",
+      "iast": "Gaurā Parva"
+    },
+    "BIRUDA_PANCHAMI": {
+      "name": "बिरुडा पंचमी",
+      "prose": "बिरुडा पंचमी",
+      "iast": "Biruḍā Pañcamī"
+    },
+    "MAHALAXMI_VRAT_BEGINS": {
+      "name": "महालक्ष्मी व्रत आरंभ",
+      "prose": "महालक्ष्मी व्रत आरंभ",
+      "iast": "Mahālakṣmīvratārambha"
+    },
+    "MAHALAXMI_VRAT_ENDS": {
+      "name": "महालक्ष्मी व्रत समाप्ति",
+      "prose": "महालक्ष्मी व्रत समाप्ति",
+      "iast": "Mahālakṣmīvrata Samāpti"
+    },
+    "VAT_SAVITRI_VRAT": {
+      "name": "वट सावित्री व्रत",
+      "prose": "वट सावित्री व्रत",
+      "iast": "Vaṭasāvitrī Vrata"
+    },
+    "INDRADHWAJA_PATAN": {
+      "name": "इंद्रध्वज पातन",
+      "prose": "इंद्रध्वज पातन"
+    },
+    "NANICHAYA": {
+      "name": "नानिचाया",
+      "prose": "नानिचाया"
+    },
+    "NEPALI_ARMY_DAY": {
+      "name": "नेपाली सेना दिवस",
+      "prose": "नेपाली सेना दिवस"
+    },
+    "JYAPU_DIWAS": {
+      "name": "ज्यापू दिवस",
+      "prose": "ज्यापू दिवस"
     }
   },
   "era": {

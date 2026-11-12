@@ -572,7 +572,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1275,
+            derived.entities, 1284,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -580,7 +580,8 @@ mod tests {
              festivals were named in Sanskrit, 1224 until the four chart frames, \
              1228 until Tamil Nadu's six, 1234 until Assam's eighteen, 1252 until \
              Karnataka's twelve, 1264 until Telangana's seven, 1271 until Gujarat's three, \
-             1274 until Andhra Pradesh's one"
+             1274 until Andhra Pradesh's one, \
+             1275 until SR-01's nine"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -640,8 +641,9 @@ mod tests {
         // 518 with the festivals in Sanskrit: 43 of the 151 that carry an
         // IAST form are the text's closed compound it spells; the rest
         // differ by a space or by taking the texts' name over the print's.
+        // 519 with SR-01's महालक्ष्मीव्रतारम्भ, a closed compound too.
         assert_eq!(
-            derived.agreeing, 518,
+            derived.agreeing, 519,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

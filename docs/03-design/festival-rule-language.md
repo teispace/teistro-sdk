@@ -3,7 +3,8 @@
 Status: `design`, 2026-10-21. Built: `MOONRISE` (§3.1), `DAY_MUHURTA`
 (§3.2), `GREATER` with the maintainer's rule (§3.3), `dayOfPaksha`
 (§3.4), `ON_VARA` with `NONE` (§3.5), the civil dates and the Sun's
-entry into a nakshatra (§3.6) and the four-valued `inAdhika` (§3.7); the
+entry into a nakshatra (§3.6), the four-valued `inAdhika` (§3.7), a
+barred day and `LASTS` from the moonrise (§3.8, §3.1, 2026-11-12); the
 rest is not. Cruxes C601 to C604, C606, C608, C614, C616 to C619, C696
 (`01-research/feature-universe/19-verification-cruxes.md`).
 
@@ -22,7 +23,8 @@ rows (§4): which form would express each row, or why none does.
 | window | `SUNRISE`, `SUNSET`, a fifth of the daylight (`PART`: pratah, sangava, madhyahna, aparahna, sayahna), `PRADOSHA`, `NISHITHA`, a night muhurta (`NIGHT_MUHURTA`, 1–15); since this page, the moonrise (`MOONRISE`, §3.1) and a range of day muhurtas (`DAY_MUHURTA`, §3.2) |
 | what is kept | a tithi in a month, or every month; a nakshatra in a paksha |
 | cases | `EARLIER_ONLY`, `LATER_ONLY`, `BOTH` (both wholly), `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS` |
-| predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past an edge), `WHOLLY`; since this page, `GREATER` (§3.3) |
+| predicates | `CASE`, `JOINED` (the tithi with a nakshatra), `STANDS` (a nakshatra in a window), `LASTS` (ghatis past sunrise or sunset; since this page, past the moonrise, §3.1), `WHOLLY`; since this page, `GREATER` (§3.3) |
+| a barred day | since this page, `barred`: from a day of a calendar's year, or with another rule's barred day, kept on an earlier tithi instead (§3.8) |
 | choice | `EARLIER`, `LATER`, `BY_YUGMA` |
 | the adhika month | `inAdhika`: the nija month only, or both; since this page, the adhika alone, or the adhika when the month is doubled (§3.7) |
 | counted days | a following rule: 0 to 15 civil days after another rule's day |
@@ -117,6 +119,19 @@ crescent is seen, not a fast at moonrise. `NEPAL_PANCHANGA` keeps it as
 the earlier day when it holds the last muhurta before sunset wholly
 (`DAY_MUHURTA` 15 to 15, `WHOLLY`), the later otherwise, 25 of 25 over
 both skies.
+
+**Ghatis past the moonrise.** `LASTS` counts from `MOONRISE` too, in
+thirtieths of the night when the Moon rises after sunset and of the
+daylight before: *Nirnayasindhu* p. 300 keeps the Mahalakshmi vrata's
+close on the 8th at moonrise, "परदिने चन्द्रोदयादूर्ध्वं त्रिमुहूर्तव्यापित्वे
+परैव कार्या, अन्यथा पूर्वैव", the later day when the 8th lasts three
+muhurtas, six ghatis, past its moonrise, the earlier otherwise. Both
+editions print the close on that day (2025-09-14, 2026-10-03). A day the
+Moon does not rise on leaves the rule unjudged, as at the window.
+
+```json
+{"is": "LASTS", "day": "LATER", "from": "MOONRISE", "ghatis": 6}
+```
 
 ### 3.2 A range of day muhurtas: `DAY_MUHURTA`
 
@@ -563,28 +578,49 @@ keeps none.
 **Settles:** C606 (the five partings of VS 2083) and C607, both closed;
 Padmini and Parama ekadashi took `ONLY` with `month` empty at sunrise (§3.10, C694).
 
-### 3.8 The Sun's sign: `SUN_IN`
+### 3.8 A barred day: `barred`
 
 ```json
-{"is": "SUN_IN", "day": "LATER", "rashi": "VIRGO", "not": true}
+{"key": "DURVA_ASHTAMI", "month": "BHADRAPADA", "tithi": "SHUKLA_ASHTAMI",
+ "barred": {"kind": "FROM", "calendar": "BIKRAM_SAMBAT", "month": 5, "day": 22, "instead": "KRISHNA_ASHTAMI"}, ...}
+{"key": "GAURA_SAPTAMI", "month": "BHADRAPADA", "tithi": "SHUKLA_SAPTAMI",
+ "barred": {"kind": "WITH", "rule": "DURVA_ASHTAMI", "instead": "KRISHNA_SAPTAMI"}, ...}
 ```
 
-The predicate holds when the Sun stands in the sign at the day's sunrise.
-With `not`, it holds when the Sun does not.
+A rule's day is judged as always. `FROM` bars it when it falls on that day
+of a calendar's year or later; `WITH` bars it when the named rule's day in
+the same lunar month was barred `FROM` one. A barred day gives way to the
+last occurrence of `instead` before it, judged by the rule's own window and
+guards; the answer marks the observance `barred`, with that tithi and the
+barred day's month. A rule kept on no single tithi, an unshipped calendar,
+a month or day 0, a rule barred with itself, and one barred with a rule the
+request does not hold are refused by their fields. A caller who replaces
+the named rule with one no day bars leaves the day standing, so a bar is
+never a dead end.
 
 **Source.** *Dharmasindhu* p. 56 (page image), on Durva ashtami: "इदं
-दूर्वापूजनव्रतं कन्यार्केऽगस्त्योदये च वर्ज्यम्". The Durva vrata is avoided
-with the Sun in Kanya and at Agastya's rising.
+दूर्वापूजनव्रतं कन्यार्केऽगस्त्योदये च वर्ज्यम्", and its note gives what
+replaces the day: "भाद्रपदशुक्लाष्टम्यामगस्त्योदये भाविनि सति
+पूर्वकृष्णाष्टम्यामेव कुर्यात्", the dark 8th before. p. 58 puts Agastya's
+rising on the 21st day after the Sun enters Simha, which the Bikram
+Sambat, counting Bhadra from that ingress, names Bhadra 22. The Kanya half
+of the bar is not encoded: the gazette keeps Gaura parva on Bhadra 10 of
+2081 (26 August 2024), the dark 8th before a bright 8th (11 September,
+Bhadra 26) that the Sun in Simha would not bar, so the bar is the rising
+and not the sign (C608).
 
-In VS 2083 the adhika Jyeshtha pushes Bhadrapada's bright 8th into the
-solar Ashwin, with the Sun in Kanya. The committee prints Durva ashtami a
-month early, on Shravana's dark 8th. A rule that says this needs a third
-thing as well: what replaces a barred day. The print's answer is the same
-tithi of the paksha before. That is a choice the language has no word for,
-so it waits on more cases (C608).
+**Measured.** In VS 2082 the bright 8th falls on Bhadra 15 (31 August
+2025) and stands; in VS 2083 on Asoj 3 (19 September 2026), barred, and
+the dark 8th of 4 September is kept, as VS 2083 p. 12 prints it and the
+gazette lists Gaura parva (2083/05/19). The committee moves the Gaura
+parva's 5th and 7th with the 8th (C686): Biruda panchami to the dark 5th
+of 1 September, a kshaya tithi the udaya rule gives its earlier day, and
+Gaura saptami to the dark 7th of 3 September, both as printed. No text in
+hand says why the 5th and 7th move, so `WITH` encodes the print.
 
-**Settles, in part:** Durva ashtami in VS 2083. Why the committee moved
-Gaura saptami and Amuktabharana with it is not in hand.
+The print's own Agastya rising (VS 2083 p. 12, 6 September, 22:41; VS 2082
+on Surya shashthi's row, 29 August 2025) is not the bar: VS 2082 keeps the
+fast two days after it.
 
 ### 3.9 Counting back, and two days
 
@@ -608,10 +644,11 @@ Mahalakshmi's vrata lasts sixteen days, and Indra jatra's pole falls some
 days after it is raised; both were taken for counts. Measured, neither
 is: the consumer's days end the vrata 14 to 16 days after its start, on
 the dark 8th, and the print lowers the pole 7 days after raising it in
-VS 2082 and 6 in VS 2083. Both editions print the vrata's start the day
-before Bhadrapada's bright 8th fast and its end on the dark 8th fast, so
-it waits on the committee's ashtami fast (C695). No row in hand needs a
-count backwards or a count of more than 15 days.
+VS 2082 and 6 in VS 2083. The vrata's two days are tithis the
+*Nirnayasindhu* decides (pp. 300–301), the start at nishitha and the end
+three muhurtas past the moonrise, and both ship by the text, giving the
+printed days of both editions; the pole falls on Yanla's dark 4th (C1470).
+No row in hand needs a count backwards or a count of more than 15 days.
 
 ### 3.10 A named ekadashi
 
@@ -653,7 +690,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 3 | `RAMANUJACHARYA_JAYANTI` | 12 of 14 at sunrise | moonrise, 13 of 14 | §3.1 moonrise | a candidate only: one more year for a new window is an overfit until a source names the time |
 | 4 | `NARASIMHA_JAYANTI` | 11 of 14 | day muhurtas 14–15, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 37, sunset, the later day unless the earlier alone holds it; both printed days, and 12 of 14 verified |
 | 5 | `SITHI_CHARHE` | a charhe; 11 of 14 at aparahna | aparahna, sunset, 11 of 14 | none | C614 |
-| 6 | `VAT_SAVITRI_VRAT` | 12 of 14 at sunrise, Jyeshtha's new moon | sunrise, 12 of 14 | none | *Dharmasindhu* p. 39 keeps the vrata on the 13th to the full moon, which is another region's form; no window lifts the new moon's; evidence |
+| 6 | `VAT_SAVITRI_VRAT` | 12 of 14 at sunrise, Jyeshtha's new moon | sunrise, 12 of 14 | none new | **shipped** by the text: the purnimanta Jyeshtha's new moon (*Nirnayasindhu* p. 191), on the full moon's decision, which p. 193 extends to it: the earlier day when the new moon holds the daylight's last three muhurtas, the later otherwise (*Dharmasindhu* p. 41). Both printed days (2025-05-26, 2026-05-16); the *Dharmasindhu* p. 39 13th-to-full-moon form is another region's |
 | 7 | `MATSYA_DARSHAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence |
 | 8 | `GHANTAKARNA_CHATURDASHI` | no part of the day fits two years whose 14th began 46 and 85 minutes before sunset and were kept a day apart | pradosha, 12 of 14 | none | C614: the same days as Gathamuga charhe; the two years contradict any window |
 | 9 | `GATHAMUGA_CHARHE` | the same days as Ghantakarna | pradosha, 12 of 14 | none | C614 |
@@ -663,11 +700,11 @@ is missing is evidence. "None" means no form would decide the row.
 | 13 | `JANMASHTAMI` | the nirnaya rule gives 12 of 14; the source lists two days in 2071 and the sunrise day in 2072 | the shipped rule | none new | §5: the shipped `JANMASHTAMI` is the nirnaya rule exactly; the two misses are the source's, a double listing and a Vaishnava day (C175, C616) |
 | 14 | `JUGA_CHARHE` | a charhe; 11 of 13 | sayahna or pradosha, 11 of 13 | none | C614 |
 | 15 | `VARAHA_JAYANTI` | the source's rule names Shravana's bright 3rd; 12 verified days are Bhadrapada's | Bhadrapada's bright 3rd at sunrise, 12 of 14 | none new | **shipped** on Shravana's bright 3rd, the source's rule, which both editions print; the Bhadrapada days are the source's list (C693) |
-| 16 | `MAHALAXMI_VRAT_BEGINS` | 11 of 14 at nishitha | nishitha, 11 of 14 | none new | evidence; the end is counted from it (§3.9) |
-| 17 | `GAURA_PARVA` | 10 of 14 | day muhurtas 2–6, 11 of 14 | §3.2 day muhurtas | a candidate only |
-| 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | none | not a count: the print lowers the pole 7 days after raising it in VS 2082 (4 to 11 September 2025) and 6 in VS 2083 (23 to 29 September 2026); evidence |
-| 19 | `NANICHAYA` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
-| 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | none new | not a count: the consumer's days fall 14 to 16 days after the start, so the end is a tithi. Both editions print the start the day before Bhadrapada's bright 8th fast and the end on its dark 8th fast, which wait on the committee's ashtami fast (C695) |
+| 16 | `MAHALAXMI_VRAT_BEGINS` | 11 of 14 at nishitha | nishitha, 11 of 14 | none new | **shipped** by the text: *Nirnayasindhu* p. 301, the 8th that runs past midnight (nishitha, the later day only when it alone holds it); both printed days (2025-08-30, 2026-09-18), the day before the 8th's sunrise each year |
+| 17 | `GAURA_PARVA` | 10 of 14 | day muhurtas 2–6, 11 of 14 | §3.8 a bar | **shipped** on Durva ashtami's day, which the gazette sets in both years (2082/05/15, 2083/05/19) and both editions print, Durva's barred day moving it in VS 2083 (C608, C686) |
+| 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | none new | **shipped** on Yanla's dark 4th at sunrise (Toffin 1992, Lewis 1984): VS 2082's day; VS 2083 prints the evening the 4th begins, a day before, and no window gives both (C1470). Not a count |
+| 19 | `NANICHAYA` | 11 of 14 | sunrise, 11 of 14 | none new | **shipped** on the lowering's day, which both editions print it beside; it parts from VS 2083 with it (C1470) |
+| 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | §3.1 moonrise | **shipped** by the text: *Nirnayasindhu* p. 300, at moonrise, the later day when the 8th lasts three muhurtas past its moonrise, the earlier otherwise (`LASTS` from `MOONRISE`); both printed days (2025-09-14, 2026-10-03). Not a count: the consumer's days end 14 to 16 days after the start |
 | 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence |
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | C614 |
 | 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
@@ -708,12 +745,13 @@ is missing is evidence. "None" means no form would decide the row.
 
 | form | rows |
 |---|---:|
-| moonrise (§3.1) | 1 |
-| day muhurtas (§3.2) | 3 |
+| moonrise (§3.1) | 2 |
+| day muhurtas (§3.2) | 1 |
 | civil and solar dates (§3.6) | 3 |
+| a bar (§3.8) | 1 |
 | counts and two days (§3.9) | 0: both rows proposed for a count are refuted by the print (rows 18 and 20) |
-| none new: the language can say it; 16 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 7 | 23 |
-| none: a charhe, a sighting, a day set each year, one verified day, a count the print refutes, or a window no year's day tells from sunrise (row 25) | 27 |
+| none new: the language can say it; 21 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 5 | 26 |
+| none: a charhe, a sighting, a day set each year, one verified day, or a window no year's day tells from sunrise (row 25) | 24 |
 
 ## 5. Janmashtami
 

@@ -574,6 +574,7 @@ impl Anniversary {
         };
         FestivalRule {
             in_month: None,
+            barred: None,
             key: self.key.clone(),
             source: kind.source().to_owned(),
             month: Some(month),

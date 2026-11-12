@@ -5287,6 +5287,47 @@
     "MAHALAYA_AMAVASYA": {
       "name": "Mahalaya Amavasya",
       "prose": "Mahalaya Amavasya"
+    },
+    "GAURA_PARVA": {
+      "name": "Gaura Parva",
+      "prose": "Gaura Parva",
+      "iast": "Gaurā Parva"
+    },
+    "BIRUDA_PANCHAMI": {
+      "name": "Biruda Panchami",
+      "prose": "Biruda Panchami",
+      "iast": "Biruḍā Pañcamī"
+    },
+    "MAHALAXMI_VRAT_BEGINS": {
+      "name": "Mahalaxmi Vrat Begins",
+      "prose": "Mahalaxmi Vrat Begins",
+      "iast": "Mahālakṣmīvratārambha"
+    },
+    "MAHALAXMI_VRAT_ENDS": {
+      "name": "Mahalaxmi Vrat Ends",
+      "prose": "Mahalaxmi Vrat Ends",
+      "iast": "Mahālakṣmīvrata Samāpti"
+    },
+    "VAT_SAVITRI_VRAT": {
+      "name": "Vat Savitri Vrat",
+      "prose": "Vat Savitri Vrat",
+      "iast": "Vaṭasāvitrī Vrata"
+    },
+    "INDRADHWAJA_PATAN": {
+      "name": "Indradhwaja Patan",
+      "prose": "Indradhwaja Patan"
+    },
+    "NANICHAYA": {
+      "name": "Nanichaya",
+      "prose": "Nanichaya"
+    },
+    "NEPALI_ARMY_DAY": {
+      "name": "Nepali Army Day",
+      "prose": "Nepali Army Day"
+    },
+    "JYAPU_DIWAS": {
+      "name": "Jyapu Diwas",
+      "prose": "Jyapu Diwas"
     }
   },
   "agni_vasa": {
