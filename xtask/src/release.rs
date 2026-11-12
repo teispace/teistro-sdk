@@ -171,6 +171,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     failures.extend(check_registry_entry(root, &wanted));
     failures.extend(check_changelog(root, &wanted, released));
     failures.extend(crate::crate_packages::check_requirements(root, &wanted));
+    failures.extend(check_adapter_locks(root, &wanted));
 
     for failure in &failures {
         println!("FAIL  {failure}");
@@ -495,6 +496,7 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
     set_dart(root, wanted, released, &mut written);
     set_registry_entry(root, wanted, &mut written);
     set_python(root, wanted, released, &mut written);
+    set_adapter_locks(root, wanted, &mut written);
 
     for path in &written {
         println!("wrote {path}");
@@ -719,6 +721,102 @@ fn set_python(root: &Path, wanted: &str, released: bool, written: &mut Vec<Strin
     write(&prebuilt, &updated, written, root);
 }
 
+// ── adapter locks ────────────────────────────────────────────────────────
+
+/// Where the adapters outside the workspace keep their own lockfiles
+/// (ADR-0019): `adapters/<name>/rust/Cargo.lock`. Each locks the SDK
+/// crates it reaches by path at the version they declared when it was
+/// last built, and CI builds it `--locked`, so a version that moved
+/// without them fails there.
+fn adapter_locks(root: &Path) -> Vec<std::path::PathBuf> {
+    let Ok(adapters) = fs::read_dir(root.join("adapters")) else {
+        return Vec::new();
+    };
+    let mut locks: Vec<_> = adapters
+        .filter_map(Result::ok)
+        .map(|adapter| adapter.path().join("rust").join("Cargo.lock"))
+        .filter(|lock| lock.is_file())
+        .collect();
+    locks.sort();
+    locks
+}
+
+/// The packages of a lockfile that come from a path, not a registry or a
+/// git source, other than the lock's own root: the SDK crates an adapter
+/// reaches by path, with the version each is locked at.
+fn path_packages(lock: &str, root_name: &str) -> Vec<(String, String)> {
+    let Ok(table) = lock.parse::<toml::Table>() else {
+        return Vec::new();
+    };
+    let Some(packages) = table.get("package").and_then(toml::Value::as_array) else {
+        return Vec::new();
+    };
+    packages
+        .iter()
+        .filter_map(toml::Value::as_table)
+        .filter(|package| !package.contains_key("source"))
+        .filter_map(|package| {
+            let name = package.get("name")?.as_str()?;
+            let version = package.get("version")?.as_str()?;
+            (name != root_name).then(|| (name.to_owned(), version.to_owned()))
+        })
+        .collect()
+}
+
+/// The package an adapter's manifest names, the root of its lockfile.
+fn adapter_name(lock: &Path) -> String {
+    let manifest = lock.with_file_name("Cargo.toml");
+    read_or_empty(&manifest)
+        .parse::<toml::Table>()
+        .ok()
+        .and_then(|table| {
+            table
+                .get("package")?
+                .get("name")?
+                .as_str()
+                .map(str::to_owned)
+        })
+        .unwrap_or_default()
+}
+
+/// Every SDK crate an adapter locks by path is locked at `wanted`.
+fn check_adapter_locks(root: &Path, wanted: &str) -> Vec<String> {
+    adapter_locks(root)
+        .iter()
+        .flat_map(|lock| {
+            let text = read_or_empty(lock);
+            let path = rel(root, lock);
+            path_packages(&text, &adapter_name(lock))
+                .into_iter()
+                .filter(|(_, version)| version != wanted)
+                .map(move |(name, version)| {
+                    format!("{path} locks `{name}` at {version}, not {wanted}; run `cargo xtask version {wanted}`")
+                })
+        })
+        .collect()
+}
+
+/// Moves every SDK crate each adapter locks by path to `wanted`, as
+/// `cargo update --workspace` in the adapter would, without building it:
+/// only those packages' `version` lines change. A lock left behind by an
+/// earlier bump moves too, so `cargo xtask version` repairs what
+/// `check-versions` reports.
+fn set_adapter_locks(root: &Path, wanted: &str, written: &mut Vec<String>) {
+    for lock in adapter_locks(root) {
+        let text = read_or_empty(&lock);
+        let mut updated = text.clone();
+        for (name, version) in path_packages(&text, &adapter_name(&lock)) {
+            if version != wanted {
+                updated = updated.replace(
+                    &format!("name = \"{name}\"\nversion = \"{version}\"\n"),
+                    &format!("name = \"{name}\"\nversion = \"{wanted}\"\n"),
+                );
+            }
+        }
+        write(&lock, &updated, written, root);
+    }
+}
+
 fn write(path: &Path, text: &str, written: &mut Vec<String>, root: &Path) {
     if read_or_empty(path) == text {
         return;
@@ -735,7 +833,17 @@ fn read_or_empty(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_semver, python_version, workspace_version};
+    use super::{is_semver, path_packages, python_version, workspace_version};
+
+    #[test]
+    fn an_adapter_lock_names_the_sdk_crates_it_reaches_by_path() {
+        let lock = "version = 4\n\n[[package]]\nname = \"serde\"\nversion = \"1.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\n\n[[package]]\nname = \"teistro-core\"\nversion = \"1.0.0-rc.1\"\n\n[[package]]\nname = \"the-adapter\"\nversion = \"0.0.0\"\n";
+        assert_eq!(
+            path_packages(lock, "the-adapter"),
+            vec![("teistro-core".to_owned(), "1.0.0-rc.1".to_owned())]
+        );
+        assert_eq!(path_packages("not toml [", "x"), Vec::new());
+    }
 
     #[test]
     fn the_workspace_version_is_read_from_its_own_table() {

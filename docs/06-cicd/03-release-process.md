@@ -36,7 +36,7 @@ Two rules ride along, because they are the same fact in another form:
 ## Cutting a release
 
 ```sh
-cargo xtask version 0.1.0        # every manifest, and the platform packages
+cargo xtask version 0.1.0        # every manifest, the platform packages and each adapter's Cargo.lock
 cargo xtask gen ffi              # the API description and the catalogues
 cargo check --workspace          # Cargo.lock
 cargo xtask detail-tokens        # the token page: every answer's provenance names the version
