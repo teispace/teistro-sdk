@@ -23,9 +23,9 @@ schema = ["dep:schemars", "teistro-astro/schema", "teistro-core/schema", "teistr
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.3" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.3" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.4" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.4" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.4" }
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]

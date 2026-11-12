@@ -18,9 +18,9 @@ publish = false
 schema = ["dep:schemars", "teistro-aspect/schema", "teistro-core/schema", "teistro-dasha/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.3" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.3" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.4" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.4" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.4" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
