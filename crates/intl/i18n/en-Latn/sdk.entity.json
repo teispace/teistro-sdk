@@ -5271,6 +5271,18 @@
     "BOXING_DAY": {
       "name": "Boxing Day",
       "prose": "Boxing Day"
+    },
+    "CHETI_CHAND": {
+      "name": "Cheti Chand",
+      "prose": "Cheti Chand"
+    },
+    "VIKRAM_SAMVAT_NEW_YEAR": {
+      "name": "Vikram Samvat New Year (Bestu Varas)",
+      "prose": "Vikram Samvat New Year (Bestu Varas)"
+    },
+    "SARDAR_PATEL_JAYANTI": {
+      "name": "Sardar Vallabhbhai Patel Jayanti",
+      "prose": "Sardar Vallabhbhai Patel Jayanti"
     }
   },
   "agni_vasa": {

@@ -114,6 +114,26 @@ Uranus, Neptune and Pluto now have places past `Body::ALL`'s end, and
 `placement` documents that it panics for them. `Body::graha` is the
 checked constructor, `None` for a graha no rule names.
 
+**Gujarat's public holidays (SR-03, the eighth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-GJ` now reckons `INDIA_GUJARAT`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_GUJARAT` (`FestivalPack::IndiaGujarat`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_gujarat`) holds the General Administration Department's notifications of 2019 to 2026:
+  Part I's public holidays with its Note (1)'s days on a Sunday or a second or fourth Saturday:
+  - the Vikram Samvat New Year (Bestu Varas) on Kartika's bright 1st at sunrise, the one new rule (C1442);
+  - Chetichand and Parshuram Jayanti by Nepal's printed panchanga's rules (C1446), Raksha Bandhan and Bhai Bij by
+    *Dharmasindhu*'s, Samvatsari by the Jain pack's, and the central list's for the days it shares, Dhuleti and
+    Janmashtami (Shravan Vad-8) among them;
+  - Makar Sankranti on 14 January (C1440), Dr Ambedkar's and Sardar Vallabhbhai Patel's birthdays on their dates.
+
+  The four days set by the moon ship as printed, marked `MOON_SIGHTING`, and the Parsi New Year as printed. Part
+  II's optional holidays and Part III's banks' list are left out (C1448) (`03-design/gujarat-holidays.md`).
+- `StateList::taken` keeps a rule of any shipped pack under a state's key; `print_kept` reads through it.
+- `festival-measured.md` §17 holds it at Gandhinagar, 169 of the 176 rows meeting the print and the seven that
+  part named (C1443 to C1447). `crates/sdk/tests/gujarat.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the three new keys
+  (`CHETI_CHAND`, `VIKRAM_SAMVAT_NEW_YEAR`, `SARDAR_PATEL_JAYANTI`).
+
 **Telangana's public holidays (SR-03, the seventh state set).**
 **Numbers:** none for any existing pack's days: a new pack. A request naming the
 region `IN-TG` now reckons `INDIA_TELANGANA`, where it kept `INDIA_CENTRAL`.

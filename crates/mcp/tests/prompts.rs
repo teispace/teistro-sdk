@@ -253,7 +253,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "INDIA_TAMIL_NADU",
             "INDIA_ASSAM",
             "INDIA_KARNATAKA",
-            "INDIA_TELANGANA"
+            "INDIA_TELANGANA",
+            "INDIA_GUJARAT"
         ])
     );
     let date = complete("birth-chart", "date", "1990");
