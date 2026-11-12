@@ -1,0 +1,92 @@
+[package]
+name = "teistro-geo-teigeodata"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.99"
+# teigeodata is Apache-2.0 too, so the built library is: unlike the
+# ephemeris adapters, nothing downstream of this crate changes its licence.
+# The packs it reads carry their sources' own terms in their manifests
+# (`Layer::attribution`), which an application shows where it shows the data.
+license = "Apache-2.0"
+publish = false
+description = "The teigeodata adapter of the Teistro SDK's geo port: a place's IANA zone, ground height and ISO 3166 admin units from teigeodata packs, outside the SDK workspace (ADR-0019)"
+
+# What a gate needs to know of the engine that this directory's layout
+# cannot say (`docs/06-cicd/adapter-gate.md`). `check-adapter` holds an
+# ephemeris adapter to the provider kit and loads it as a plugin; a geo
+# adapter has neither, so this one is gated by its own tests
+# (`../README.md`).
+[package.metadata.teistro-adapter]
+engine = "teigeodata"
+# The teigeodata checkout beside the SDK, where the tests read its built
+# packs unless `TEISTRO_TEIGEODATA_PACKS` names others.
+engine-checkout = "../../../../../geodata"
+
+# Standalone on purpose: the adapter depends on the SDK, never the
+# reverse, and the SDK workspace builds without it.
+[workspace]
+
+[dependencies]
+# The engine at its first tag (D-198), with the components the port's
+# three questions read and no others: the timezone areas (`tz_at`), the
+# admin outlines and ISO codes (`admin_at`, `iso_code`), the names a zone
+# and a unit are read by, the terrain (`elevation_at`) and the zone rules,
+# whose manifest names the tzdb release (`tz_version`).
+teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v0.1.0", default-features = false, features = [
+  "mmap",
+  "admin",
+  "admin-index",
+  "names",
+  "timezone",
+  "timezone-index",
+  "dem",
+  "tz-rules",
+] }
+# The engine's grid point, from the same tag.
+teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v0.1.0" }
+teistro-core = { path = "../../../crates/core" }
+teistro-port-geo = { path = "../../../crates/port-geo" }
+
+[dev-dependencies]
+serde_json = "1"
+# The SDK's façade, for the acceptance test that runs the SDK's own geo
+# suite over this provider: a context built with it resolves a place, a
+# chart founded on that place keeps it in its receipt, and the receipt
+# replays without the provider.
+teistro = { path = "../../../crates/sdk", default-features = false, features = [
+  "builtin-compact",
+  "chart",
+] }
+
+# The same table as the SDK workspace; a standalone crate cannot inherit
+# it. This adapter holds no `unsafe` code: the engine maps its files in its
+# own crate.
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"
+
+# See the SDK workspace's own `[profile.dev]` for the reasoning. This root
+# is excluded from that workspace (ADR-0019) and has its own target
+# directory, so it needs the settings again, and it turns incremental off
+# besides, as the other adapters do.
+[profile.dev]
+debug = "line-tables-only"
+incremental = false
+
+[profile.dev.package."*"]
+debug = false
