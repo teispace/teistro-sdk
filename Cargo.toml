@@ -68,6 +68,7 @@ members = [
 exclude = [
     "adapters/ephemeris-teimeris/rust",
     "adapters/ephemeris-sweph/rust",
+    "adapters/geo-teigeodata/rust",
 ]
 
 # One version for the whole SDK: every crate takes it from here, and
