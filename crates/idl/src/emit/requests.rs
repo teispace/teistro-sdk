@@ -43,9 +43,11 @@ use crate::records::{
 
 mod dart;
 mod dart_deep;
+mod dart_surface;
 mod examples;
 pub use dart::{DART_FACADES, DART_SHADOWED, dart_declarations};
 pub use dart_deep::dart_deep_test;
+pub use dart_surface::dart_surface;
 pub use examples::deep_examples;
 
 /// What the TypeScript requests file says it is, after the header.

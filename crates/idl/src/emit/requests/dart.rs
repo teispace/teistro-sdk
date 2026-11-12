@@ -155,7 +155,7 @@ impl Types<'_> {
     }
 
     /// The Dart type a catalogue kind is.
-    fn dart_kind(&self, catalogue: &str) -> String {
+    pub(super) fn dart_kind(&self, catalogue: &str) -> String {
         self.catalogue.get(catalogue).cloned().unwrap_or_else(|| {
             unreachable!(
                 "`cargo xtask gen ffi` refuses a request naming no catalogue kind (`{catalogue}`)"
@@ -163,7 +163,7 @@ impl Types<'_> {
         })
     }
 
-    fn dart(&self, ty: &RecordType) -> String {
+    pub(super) fn dart(&self, ty: &RecordType) -> String {
         match ty {
             RecordType::Bool => "bool".into(),
             RecordType::Integer { .. } => "int".into(),

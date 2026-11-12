@@ -44,6 +44,10 @@ const DEEP_REQUESTS: &str = "crates/sdk/tests/deep-requests.json";
 /// held to the example, since Dart has no reader of a request to start
 /// from.
 const DART_DEEP_TEST: &str = "bindings/dart/test/deep_requests_test.dart";
+/// The catalogue's enums and the request types as data, which the Dart
+/// tests that walk a whole surface read, since Dart has no reflection a
+/// test may lean on.
+const DART_SURFACE: &str = "bindings/dart/test/surface/library.g.dart";
 const JS_RECORDS: &str = "bindings/node/lib/records.js";
 const PYTHON_RECORDS: &str = "bindings/python/teistro/_records.py";
 const DART_RECORDS: &str = "bindings/dart/lib/src/records.dart";
@@ -579,6 +583,7 @@ fn outputs(root: &Path) -> Vec<Output> {
             text
         }),
         Output::new(DART_DEEP_TEST, requests::dart_deep_test(&api, &deep)),
+        Output::new(DART_SURFACE, requests::dart_surface(&api)),
         Output::new(JS_RECORDS, records::javascript_decoders(&api)),
         Output::new(PYTHON_RECORDS, records::python_records(&api)),
         Output::new(DART_RECORDS, records::dart_records(&api)),
