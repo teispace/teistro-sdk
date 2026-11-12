@@ -51,7 +51,9 @@ pub(crate) fn check(root: &Path) -> i32 {
             return 1;
         }
     }
-    match Command::new(&out).status() {
+    match crate::binding::on_loader_path(&mut Command::new(&out), &Platform::host(), &library)
+        .status()
+    {
         Ok(status) if status.success() => {
             println!("ok    {SMOKE} compiles under C11 and passes");
         }

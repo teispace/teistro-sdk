@@ -44,6 +44,36 @@ pub(crate) fn shared_link(platform: &Platform, dir: &Path) -> Vec<OsString> {
     }
 }
 
+/// `command` with `dir` first on the path its platform's loader searches
+/// for a shared library, the rest of that path kept. A program linked with
+/// `-l` records only the library's name, so without this it runs only
+/// where a stale copy happens to lie on the loader's path (a restored
+/// build cache did, and hid the gap until a release ran without one).
+pub(crate) fn on_loader_path<'a>(
+    command: &'a mut Command,
+    platform: &Platform,
+    dir: &Path,
+) -> &'a mut Command {
+    let variable = loader_variable(platform);
+    let mut dirs = vec![dir.to_path_buf()];
+    if let Some(standing) = std::env::var_os(variable) {
+        dirs.extend(std::env::split_paths(&standing));
+    }
+    match std::env::join_paths(dirs) {
+        Ok(joined) => command.env(variable, joined),
+        Err(_) => command.env(variable, dir),
+    }
+}
+
+/// The environment variable each platform's loader reads.
+pub(crate) fn loader_variable(platform: &Platform) -> &'static str {
+    match platform.os {
+        "darwin" => "DYLD_LIBRARY_PATH",
+        "win32" => "PATH",
+        _ => "LD_LIBRARY_PATH",
+    }
+}
+
 /// The C compiler the gates drive: `CC` when the environment names one.
 /// Otherwise `clang` on Windows on Arm, whose runner image's MinGW gcc is
 /// an x64 build that cannot read an Arm64 import library ("unhandled

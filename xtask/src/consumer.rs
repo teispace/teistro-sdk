@@ -158,19 +158,10 @@ fn c_consumer(
         "the C bundle's shared library does not link",
     )?;
     step(
-        Command::new(&dynamically).env(loader_variable(platform), &lib),
+        crate::binding::on_loader_path(&mut Command::new(&dynamically), platform, &lib),
         "the C bundle links dynamically and answers",
         "the C bundle's shared build did not pass",
     )
-}
-
-/// The environment variable each platform's loader reads.
-fn loader_variable(platform: &Platform) -> &'static str {
-    match platform.os {
-        "darwin" => "DYLD_LIBRARY_PATH",
-        "win32" => "PATH",
-        _ => "LD_LIBRARY_PATH",
-    }
 }
 
 /// Unpacks a `.tar.gz` in process, so that the gate needs no `tar` on the
