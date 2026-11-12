@@ -14,7 +14,11 @@ public enum DayEdge implements RequestJson {
     /**
      * Sunset, counting in thirtieths of the night.
      */
-    SUNSET("SUNSET");
+    SUNSET("SUNSET"),
+    /**
+     * The day's moonrise, counting in thirtieths of the daylight or the night it falls in: the *Nirnayasindhu*'s three muhurtas past the moonrise for the Mahalakshmi vrata's close (pp. 300–301).
+     */
+    MOONRISE("MOONRISE");
 
     private final String key;
 

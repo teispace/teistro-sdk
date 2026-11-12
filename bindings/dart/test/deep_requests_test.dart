@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 554 of the examples' 569 members.
+/// The cases compare 568 of the examples' 583 members.
 library;
 
 import 'dart:convert';
@@ -294,7 +294,7 @@ void main() {
       'almanac.cells',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -453,6 +453,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -623,7 +629,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -782,6 +788,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -1055,7 +1067,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1214,6 +1226,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -1504,7 +1522,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1663,6 +1681,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -1947,7 +1971,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2106,6 +2130,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -2239,7 +2269,7 @@ void main() {
       'almanac.observance',
       path: ['traditions', 0, 'festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2398,6 +2428,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [
@@ -2572,7 +2608,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 35,
+      members: 37,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2731,6 +2767,12 @@ void main() {
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
           convention: LunarMonth.purnimanta,
           dayOfPaksha: 1,
           decide: [

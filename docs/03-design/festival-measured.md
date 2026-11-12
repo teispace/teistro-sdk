@@ -372,9 +372,9 @@ measures the fit and not a text (C600).
 | 2083 | KUMARA_JATRA | 21 Jun | p. 7: कुमारयात्रा | 21 Jun | 21 Jun |
 | 2083 | NIRJALA_EKADASHI | 25 Jun | p. 7: निर्जला एकादशीव्रत | 25 Jun | 25 Jun |
 | 2083 | DILA_CHARHE | 13 Jul | p. 8: (दिल्ला चःह्रे पूजा) | 13 Jul | 13 Jul |
-| 2083 | GAURA_SAPTAMI | 3 Sep | p. 12: गौरासप्तमी | 18 Sep ✗ | 18 Sep ✗ |
-| 2083 | AMUKTABHARANA_SAPTAMI | 3 Sep | p. 12: अमुक्ताभरणसप्तमी | 18 Sep ✗ | 18 Sep ✗ |
-| 2083 | DURVA_ASHTAMI | 4 Sep | p. 12: दूर्वाष्टमीव्रत | 19 Sep ✗ | 19 Sep ✗ |
+| 2083 | GAURA_SAPTAMI | 3 Sep | p. 12: गौरासप्तमी | 3 Sep | 3 Sep |
+| 2083 | AMUKTABHARANA_SAPTAMI | 3 Sep | p. 12: अमुक्ताभरणसप्तमी | 3 Sep | 3 Sep |
+| 2083 | DURVA_ASHTAMI | 4 Sep | p. 12: दूर्वाष्टमीव्रत | 4 Sep | 4 Sep |
 | 2083 | HILE_JATRA | 5 Sep | p. 12: रामेछाप चिसापानी हिलेजात्रा | 20 Sep ✗ | 20 Sep ✗ |
 | 2083 | AJA_EKADASHI | 7 Sep | p. 12: अजाएकादशीव्रत | 7 Sep | 7 Sep |
 | 2083 | CHATHA | 14 Sep | p. 13: चन्द्रदर्शनदोष (चथा) | 14 Sep | 14 Sep |
@@ -833,18 +833,31 @@ measures the fit and not a text (C600).
 | 2083 | ARJUNDHARA_MELA | 6 Dec | p. 18: झापा सताक्षीधाम तथा अर्जुनधारामेला | 6 Dec | 6 Dec |
 | 2083 | KASHI_BADA_GANESH_UTSAV | 25 Jan | p. 22: काशीमा बडागणेश उत्सव | 25 Jan | 25 Jan |
 | 2083 | SI_PUNHI | 20 Feb | p. 23: (सिपून्हि) | 20 Feb | 20 Feb |
+| 2082 | VAT_SAVITRI_VRAT | 26 May | p. 4: वटसावित्रीव्रत | 26 May | 26 May |
+| 2083 | VAT_SAVITRI_VRAT | 16 May | p. 4: वटसावित्रीव्रत | 16 May | 16 May |
+| 2082 | BIRUDA_PANCHAMI | 28 Aug | p. 11: बिरुडापञ्चमी | 28 Aug | 28 Aug |
+| 2083 | BIRUDA_PANCHAMI | 1 Sep | p. 12: बिरुडापञ्चमी | 1 Sep | 2 Sep ✗ |
+| 2082 | MAHALAXMI_VRAT_BEGINS | 30 Aug | p. 11: महालक्ष्मीव्रतारम्भ | 30 Aug | 30 Aug |
+| 2083 | MAHALAXMI_VRAT_BEGINS | 18 Sep | p. 13: महालक्ष्मीव्रतारम्भ | 18 Sep | 18 Sep |
+| 2082 | GAURA_PARVA | 31 Aug | p. 11: गौरापर्व | 31 Aug | 31 Aug |
+| 2083 | GAURA_PARVA | 4 Sep | p. 12: गौरापर्व | 4 Sep | 4 Sep |
+| 2082 | INDRADHWAJA_PATAN | 11 Sep | p. 12: इन्द्रध्वजपातन (नानिचायाः) | 11 Sep | 11 Sep |
+| 2083 | INDRADHWAJA_PATAN | 29 Sep | p. 14: इन्द्रध्वजपातन (नानिचायाः) | 30 Sep ✗ | 30 Sep ✗ |
+| 2082 | NANICHAYA | 11 Sep | p. 12: (नानिचायाः) | 11 Sep | 11 Sep |
+| 2083 | NANICHAYA | 29 Sep | p. 14: (नानिचायाः) | 30 Sep ✗ | 30 Sep ✗ |
+| 2082 | MAHALAXMI_VRAT_ENDS | 14 Sep | p. 12: महालक्ष्मीव्रत समाप्ति | 14 Sep | 14 Sep |
+| 2083 | MAHALAXMI_VRAT_ENDS | 3 Oct | p. 14: महालक्ष्मीव्रत समाप्ति | 3 Oct | 3 Oct |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 6 of 589 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 589 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 603 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 603 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
 - VS 2082 HILE_JATRA (1 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
-- VS 2083 AMUKTABHARANA_SAPTAMI (18 Sep): counted from GAURA_SAPTAMI (C608)
-- VS 2083 DURVA_ASHTAMI (19 Sep): the committee prints Shravana's dark 8th, inside the solar Bhadra, where Bhadrapada's bright 8th falls in the solar Ashwin (C608)
-- VS 2083 GAURA_SAPTAMI (18 Sep): the committee prints Shravana's dark 7th, inside the solar Bhadra, where Bhadrapada's bright 7th falls in the solar Ashwin (C608)
+- VS 2083 INDRADHWAJA_PATAN (30 Sep): the dark 4th begins just after sunset in both years (18:17 on 10 September 2025, 18:36 on 29 September 2026); VS 2082 prints the lowering on the day after, whose sunrise holds the 4th, and VS 2083 on the evening it begins, so no window gives both (C1470)
+- VS 2083 NANICHAYA (30 Sep): counted from INDRADHWAJA_PATAN (C1470)
 - VS 2083 HILE_JATRA (20 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
 - VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)
 
@@ -861,14 +874,16 @@ gives is the publisher's own.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 578 disagree |
-| every entry is placed on its rule's occurrence | falsified | 11 of 589 disagree |
-| the committee's sky gives every day the set moved | falsified | 1 of 49 disagree; the others' reasons are below |
+| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 595 disagree |
+| every entry is placed on its rule's occurrence | falsified | 8 of 603 disagree |
+| the committee's sky gives every day the set moved | falsified | 3 of 52 disagree; the others' reasons are below |
 
-Of the 49 days the set moved, the committee's sky gives 48, and no change tried 1.
+Of the 52 days the set moved, the committee's sky gives 49, and no change tried 3.
 
 The publisher's own days, which no change tried gives:
 
+- INDRADHWAJA_PATAN: printed 29 Sep, the modern sky 30 Sep
+- NANICHAYA: printed 29 Sep, the modern sky 30 Sep
 - NUWAKOT_DUPCHESHWAR_MELA: printed 24 Dec, the modern sky 23 Dec
 
 The entries no occurrence took, the rule giving no day within a week
@@ -878,9 +893,6 @@ a month the committee reckons otherwise, §6):
 - VS 2082 HILE_JATRA, printed 17 Aug
 - VS 2082 RAVI_SAPTAMI, printed 14 Sep
 - VS 2082 BUDHASHTAMI, printed 29 Oct
-- VS 2083 GAURA_SAPTAMI, printed 3 Sep
-- VS 2083 AMUKTABHARANA_SAPTAMI, printed 3 Sep
-- VS 2083 DURVA_ASHTAMI, printed 4 Sep
 - VS 2083 HILE_JATRA, printed 5 Sep
 - VS 2083 MANGALA_CHATURTHI, printed 21 Apr
 - VS 2083 MANGALA_CHATURTHI, printed 5 May
@@ -2918,6 +2930,483 @@ The days the G.O.s print are not reckoned: the five general days set by the moon
 | 2026 | MAHDI_MAUD_BIRTHDAY | 10/26 | subject to sighting |
 | 2026 | HAZRAT_ALI_BIRTHDAY | 12/26 | subject to sighting |
 | 2026 | BONALU | 8/10 | printed |
+| 2026 | VARAMAHALAKSHMI_VRATA | 8/21 | printed |
+| 2026 | PARSI_NEW_YEAR | 8/15 | printed |
+
+## 17. Gujarat's public holidays against the notifications
+
+`INDIA_GUJARAT` at Gandhinagar on India's clock, against each year's Part I public holidays of the General Administration Department's notification and its Note (1) of the days on a Sunday or a second or fourth Saturday. The days are reckoned under the modern sky (the built-in ephemeris, the default profile). 169 of 176 rows agree.
+
+- 2019: GS-32/2018-PHD/102018/1411/GH, 3 November 2018: rank 1, the Government Central Press print
+- 2020: GS/30/2019/PHD/102019/1111/GH, 19 October 2019: rank 1 as copied, a staff site's copy of its text
+- 2021: GS/33/2020/PHD/102020/500/GH, 28 October 2020: rank 1 as copied, the signed scan
+- 2022: GS/20/2021/PHD/102021/431/GH, 24 November 2021: rank 1 as copied, the signed scan
+- 2023: GS/16/2022/PHD/102022/603/GH, 5 November 2022: rank 1 as copied, the signed scan
+- 2024: GS/27/2023/JSR/102023/930/GH, 20 November 2023: rank 1 as copied, the signed scan
+- 2025: GS/26/2024/JSR/2024/605/GH, 14 November 2024: rank 1 as copied, the signed scan
+- 2026: GS/22/2025/JSR/2025/509/GH, 27 November 2025: rank 1, the Gujarat Government Gazette, Extraordinary No. 160
+
+| year | rule | listed | found |
+| --- | --- | --- | --- |
+| 2019 | SHIVARATRI | 3/4 | 3/4 |
+| 2019 | HOLI | 3/21 | 3/21 |
+| 2019 | CHETI_CHAND | 4/6 | 4/6 |
+| 2019 | RAMA_NAVAMI | 4/14 | 4/13 ✗ |
+| 2019 | MAHAVIR_JAYANTI | 4/17 | 4/17 |
+| 2019 | GOOD_FRIDAY | 4/19 | 4/19 |
+| 2019 | PARASHURAMA_JAYANTI | 5/7 | 5/7 |
+| 2019 | RAKSHABANDHAN | 8/15 | 8/15 |
+| 2019 | JANMASHTAMI | 8/24 | 8/24 |
+| 2019 | SAMVATSARI | 9/2 | 9/2 |
+| 2019 | VIJAYA_DASHAMI | 10/8 | 10/7 ✗ |
+| 2019 | LAKSHMI_PUJA | 10/27 | 10/27 |
+| 2019 | VIKRAM_SAMVAT_NEW_YEAR | 10/28 | 10/28 |
+| 2019 | YAMA_DWITIYA | 10/29 | 10/29 |
+| 2019 | GURU_NANAK_JAYANTI | 11/12 | 11/12 |
+| 2020 | SHIVARATRI | 2/21 | 2/21 |
+| 2020 | HOLI | 3/10 | 3/10 |
+| 2020 | CHETI_CHAND | 3/25 | 3/25 |
+| 2020 | RAMA_NAVAMI | 4/2 | 4/2 |
+| 2020 | MAHAVIR_JAYANTI | 4/6 | 4/6 |
+| 2020 | GOOD_FRIDAY | 4/10 | 4/10 |
+| 2020 | PARASHURAMA_JAYANTI | 4/25 | 4/25 |
+| 2020 | RAKSHABANDHAN | 8/3 | 8/3 |
+| 2020 | JANMASHTAMI | 8/12 | 8/12 |
+| 2020 | SAMVATSARI | 8/22 | 8/22 |
+| 2020 | VIJAYA_DASHAMI | 10/25 | 10/25 |
+| 2020 | LAKSHMI_PUJA | 11/14 | 11/14 |
+| 2020 | VIKRAM_SAMVAT_NEW_YEAR | 11/16 | 11/16 |
+| 2020 | YAMA_DWITIYA | 11/16 | 11/16 |
+| 2020 | GURU_NANAK_JAYANTI | 11/30 | 11/30 |
+| 2021 | SHIVARATRI | 3/11 | 3/11 |
+| 2021 | HOLI | 3/29 | 3/29 |
+| 2021 | CHETI_CHAND | 4/13 | 4/13 |
+| 2021 | RAMA_NAVAMI | 4/21 | 4/21 |
+| 2021 | MAHAVIR_JAYANTI | 4/25 | 4/25 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 |
+| 2021 | PARASHURAMA_JAYANTI | 5/14 | 5/14 |
+| 2021 | RAKSHABANDHAN | 8/22 | 8/22 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 |
+| 2021 | SAMVATSARI | 9/10 | 9/10 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 |
+| 2021 | LAKSHMI_PUJA | 11/4 | 11/4 |
+| 2021 | VIKRAM_SAMVAT_NEW_YEAR | 11/5 | 11/5 |
+| 2021 | YAMA_DWITIYA | 11/6 | 11/6 |
+| 2021 | GURU_NANAK_JAYANTI | 11/19 | 11/19 |
+| 2022 | SHIVARATRI | 3/1 | 3/1 |
+| 2022 | HOLI | 3/18 | 3/18 |
+| 2022 | CHETI_CHAND | 4/2 | 4/2 |
+| 2022 | RAMA_NAVAMI | 4/10 | 4/10 |
+| 2022 | MAHAVIR_JAYANTI | 4/14 | 4/14 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 |
+| 2022 | PARASHURAMA_JAYANTI | 5/3 | 5/3 |
+| 2022 | RAKSHABANDHAN | 8/11 | 8/11 |
+| 2022 | JANMASHTAMI | 8/19 | 8/19 |
+| 2022 | SAMVATSARI | 8/31 | 8/31 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/4 ✗ |
+| 2022 | LAKSHMI_PUJA | 10/24 | 10/24 |
+| 2022 | VIKRAM_SAMVAT_NEW_YEAR | 10/26 | 10/26 |
+| 2022 | YAMA_DWITIYA | 10/26 | 10/26 |
+| 2022 | GURU_NANAK_JAYANTI | 11/8 | 11/8 |
+| 2023 | SHIVARATRI | 2/18 | 2/18 |
+| 2023 | HOLI | 3/8 | 3/7 ✗ |
+| 2023 | CHETI_CHAND | 3/22 | 3/22 |
+| 2023 | RAMA_NAVAMI | 3/30 | 3/30 |
+| 2023 | MAHAVIR_JAYANTI | 4/4 | 4/3 ✗ |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 |
+| 2023 | PARASHURAMA_JAYANTI | 4/22 | 4/22 |
+| 2023 | RAKSHABANDHAN | 8/30 | 8/30 |
+| 2023 | JANMASHTAMI | 9/7 | 9/7 |
+| 2023 | SAMVATSARI | 9/19 | 9/19 |
+| 2023 | VIJAYA_DASHAMI | 10/24 | 10/24 |
+| 2023 | LAKSHMI_PUJA | 11/12 | 11/12 |
+| 2023 | VIKRAM_SAMVAT_NEW_YEAR | 11/14 | 11/14 |
+| 2023 | YAMA_DWITIYA | 11/15 | 11/15 |
+| 2023 | GURU_NANAK_JAYANTI | 11/27 | 11/27 |
+| 2024 | SHIVARATRI | 3/8 | 3/8 |
+| 2024 | HOLI | 3/25 | 3/25 |
+| 2024 | CHETI_CHAND | 4/10 | 4/9 ✗ |
+| 2024 | RAMA_NAVAMI | 4/17 | 4/17 |
+| 2024 | MAHAVIR_JAYANTI | 4/21 | 4/21 |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 |
+| 2024 | PARASHURAMA_JAYANTI | 5/10 | 5/10 |
+| 2024 | RAKSHABANDHAN | 8/19 | 8/19 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 |
+| 2024 | SAMVATSARI | 9/7 | 9/7 |
+| 2024 | VIJAYA_DASHAMI | 10/12 | 10/12 |
+| 2024 | LAKSHMI_PUJA | 10/31 | 10/31 |
+| 2024 | VIKRAM_SAMVAT_NEW_YEAR | 11/2 | 11/2 |
+| 2024 | YAMA_DWITIYA | 11/3 | 11/3 |
+| 2024 | GURU_NANAK_JAYANTI | 11/15 | 11/15 |
+| 2025 | SHIVARATRI | 2/26 | 2/26 |
+| 2025 | HOLI | 3/14 | 3/14 |
+| 2025 | CHETI_CHAND | 3/30 | 3/30 |
+| 2025 | RAMA_NAVAMI | 4/6 | 4/6 |
+| 2025 | MAHAVIR_JAYANTI | 4/10 | 4/10 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 |
+| 2025 | PARASHURAMA_JAYANTI | 4/29 | 4/29 |
+| 2025 | RAKSHABANDHAN | 8/9 | 8/9 |
+| 2025 | JANMASHTAMI | 8/16 | 8/16 |
+| 2025 | SAMVATSARI | 8/27 | 8/27 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
+| 2025 | LAKSHMI_PUJA | 10/20 | 10/20 |
+| 2025 | VIKRAM_SAMVAT_NEW_YEAR | 10/22 | 10/22 |
+| 2025 | YAMA_DWITIYA | 10/23 | 10/23 |
+| 2025 | GURU_NANAK_JAYANTI | 11/5 | 11/5 |
+| 2026 | SHIVARATRI | 2/15 | 2/15 |
+| 2026 | HOLI | 3/4 | 3/3 ✗ |
+| 2026 | CHETI_CHAND | 3/19 | 3/19 |
+| 2026 | RAMA_NAVAMI | 3/26 | 3/26 |
+| 2026 | MAHAVIR_JAYANTI | 3/31 | 3/31 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 |
+| 2026 | PARASHURAMA_JAYANTI | 4/19 | 4/19 |
+| 2026 | RAKSHABANDHAN | 8/28 | 8/28 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 |
+| 2026 | SAMVATSARI | 9/15 | 9/15 |
+| 2026 | VIJAYA_DASHAMI | 10/20 | 10/20 |
+| 2026 | LAKSHMI_PUJA | 11/8 | 11/8 |
+| 2026 | VIKRAM_SAMVAT_NEW_YEAR | 11/10 | 11/10 |
+| 2026 | YAMA_DWITIYA | 11/11 | 11/11 |
+| 2026 | GURU_NANAK_JAYANTI | 11/24 | 11/24 |
+
+The 7 civil days stand on their date in all 8 years.
+
+- 2019 RAMA_NAVAMI: the bright 9th runs from 11:41 on 13 April to 09:35 on the 14th, holding the 13th's midday, and the central list's rule takes the 13th; the notification lists the 14th, whose sunrise the navami holds, a Sunday named in Note (1) (C1443)
+- 2019 VIJAYA_DASHAMI: the bright 10th runs from 12:38 on 7 October to 14:50 on the 8th, holding both afternoons, and the central list's rule keeps the earlier, the 7th; the notification lists the 8th, whose sunrise the dashami holds (C1444)
+- 2022 VIJAYA_DASHAMI: the bright 10th runs from 14:21 on 4 October to 12:00 on the 5th, so only the 4th's afternoon holds it and the central list's rule takes the 4th; the notification lists the 5th, whose sunrise the dashami holds (C1444)
+- 2023 HOLI: the full moon runs from 16:17 on 6 March to 18:10 on the 7th, ending before the 7th's sunset (18:45), so the Holika fire is the 6th's evening and Holi the 7th; the notification lists Dhuleti on the 8th and Part II's Holi on the 7th, a day later, as the central list's notices do (C1445, C854)
+- 2023 MAHAVIR_JAYANTI: the bright 13th runs from 06:24 on 3 April to 08:05 on the 4th, holding both sunrises (06:30 and 06:29), and the print's rule keeps the earlier, the 3rd; the notification lists the 4th, as Maharashtra's does (C1447, C1242)
+- 2024 CHETI_CHAND: Chaitra's bright 1st runs from 23:50 on 8 April to 20:31 on the 9th, and the rule takes the 9th, whose sunrise it holds; the notification lists the 10th, whose sunrise the bright 2nd holds (C1446)
+- 2026 HOLI: the full moon runs from 17:56 on 2 March to 17:07 on the 3rd, ending before the 3rd's sunset, so the Holika fire is the 2nd's evening and Holi the 3rd; the notification lists Dhuleti on the 4th and Part II's Holi on the 3rd, a day later, as the central list's notices do (C1445, C854)
+
+The days the notifications print are not reckoned: the four set by the moon (Ramjan-Eid, Bakri-Eid, Muharram and Eid-e-Meeladunnabi), each marked, and the Parsi New Year (Shahenshahi), as printed. 2031, with no notification, holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2019 | EID_AL_FITR | 6/6 | subject to sighting |
+| 2019 | EID_AL_ADHA | 8/12 | subject to sighting |
+| 2019 | MUHARRAM | 9/11 | subject to sighting |
+| 2019 | MAWLID | 11/10 | subject to sighting |
+| 2019 | PARSI_NEW_YEAR | 8/17 | printed |
+| 2020 | EID_AL_FITR | 5/25 | subject to sighting |
+| 2020 | EID_AL_ADHA | 8/1 | subject to sighting |
+| 2020 | MUHARRAM | 8/30 | subject to sighting |
+| 2020 | MAWLID | 10/30 | subject to sighting |
+| 2020 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2021 | EID_AL_FITR | 5/14 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/21 | subject to sighting |
+| 2021 | MUHARRAM | 8/19 | subject to sighting |
+| 2021 | MAWLID | 10/19 | subject to sighting |
+| 2021 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2022 | EID_AL_FITR | 5/3 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/10 | subject to sighting |
+| 2022 | MUHARRAM | 8/9 | subject to sighting |
+| 2022 | MAWLID | 10/9 | subject to sighting |
+| 2022 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2023 | EID_AL_FITR | 4/22 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/29 | subject to sighting |
+| 2023 | MUHARRAM | 7/29 | subject to sighting |
+| 2023 | MAWLID | 9/28 | subject to sighting |
+| 2023 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2024 | EID_AL_FITR | 4/11 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/17 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2024 | PARSI_NEW_YEAR | 8/15 | printed |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/7 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2025 | PARSI_NEW_YEAR | 8/15 | printed |
+| 2026 | EID_AL_FITR | 3/21 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/27 | subject to sighting |
+| 2026 | MUHARRAM | 6/26 | subject to sighting |
+| 2026 | MAWLID | 8/26 | subject to sighting |
+| 2026 | PARSI_NEW_YEAR | 8/15 | printed |
+
+## 18. Andhra Pradesh's public holidays against the G.O.s
+
+`INDIA_ANDHRA_PRADESH` at Amaravati on India's clock, against each year's general holidays of the General Administration (Poll.B) Department's G.O. (Annexure-I and its I(A) of the days on a Sunday or a second Saturday) and Annexure-II's optional holidays with its II(A). The days are reckoned under the modern sky (the built-in ephemeris, the default profile). 190 of 198 rows agree.
+
+- 2020: G.O.Rt.No.2745, 5 December 2019: rank 1 as copied, its annexures in RGUKT's proceedings
+- 2021: G.O.Rt.No.1963, 15 December 2020: rank 1 as copied, the G.O.'s text
+- 2022: G.O.Rt.No.1997, 26 November 2021: rank 1 as copied, the signed scan
+- 2023: G.O.Rt.No.2692, 15 December 2022: rank 1 as copied, the signed scan in RGUKT's copy
+- 2024: G.O.Rt.No.2318, 30 November 2023: rank 1 as copied, the attested scan
+- 2025: G.O.Rt.No.2115, 6 December 2024: rank 1 as copied, the G.O.'s text
+- 2026: G.O.Rt.No.2276, 4 December 2025: rank 3, its annexures as a teachers' site transcribed them (C1402)
+
+| year | rule | listed | found |
+| --- | --- | --- | --- |
+| 2020 | BHOGI | 1/14 | 1/14 |
+| 2020 | UTTARAYANA_PUNYAKALA | 1/15 | 1/15 |
+| 2020 | KANUMU | 1/16 | 1/16 |
+| 2020 | SHIVARATRI | 2/21 | 2/21 |
+| 2020 | HOLI | 3/10 | 3/10 |
+| 2020 | SAMVATSARA_ARAMBHA | 3/25 | 3/25 |
+| 2020 | RAMA_NAVAMI | 4/2 | 4/2 |
+| 2020 | GOOD_FRIDAY | 4/10 | 4/10 |
+| 2020 | JANMASHTAMI | 8/11 | 8/11 |
+| 2020 | GANESHA_CHATURTHI | 8/22 | 8/22 |
+| 2020 | MAHALAYA_AMAVASYA | 9/17 | 9/17 |
+| 2020 | MAHA_ASHTAMI | 10/24 | 10/23 ✗ |
+| 2020 | VIJAYA_DASHAMI | 10/25 | 10/25 |
+| 2020 | LAKSHMI_PUJA | 11/14 | 11/14 |
+| 2020 | GURU_NANAK_JAYANTI | 11/30 | 11/30 |
+| 2020 | JAGANNATH_RATH_JATRA | 6/23 | 6/23 |
+| 2020 | MAHAVIR_JAYANTI | 4/6 | 4/6 |
+| 2020 | BASAVA_JAYANTI | 4/26 | 4/26 |
+| 2020 | BUDDHA_JAYANTI | 5/7 | 5/7 |
+| 2021 | BHOGI | 1/13 | 1/13 |
+| 2021 | UTTARAYANA_PUNYAKALA | 1/14 | 1/14 |
+| 2021 | KANUMU | 1/15 | 1/15 |
+| 2021 | SHIVARATRI | 3/11 | 3/11 |
+| 2021 | HOLI | 3/29 | 3/29 |
+| 2021 | SAMVATSARA_ARAMBHA | 4/13 | 4/13 |
+| 2021 | RAMA_NAVAMI | 4/21 | 4/21 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 |
+| 2021 | GANESHA_CHATURTHI | 9/10 | 9/10 |
+| 2021 | MAHALAYA_AMAVASYA | 10/6 | 10/6 |
+| 2021 | MAHA_ASHTAMI | 10/13 | 10/13 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 |
+| 2021 | NARAK_CHATURDASHI | 11/3 | 11/3 |
+| 2021 | LAKSHMI_PUJA | 11/4 | 11/4 |
+| 2021 | GURU_NANAK_JAYANTI | 11/19 | 11/19 |
+| 2021 | JAGANNATH_RATH_JATRA | 7/12 | 7/12 |
+| 2021 | MAHAVIR_JAYANTI | 4/25 | 4/25 |
+| 2021 | BASAVA_JAYANTI | 5/14 | 5/15 ✗ |
+| 2021 | BUDDHA_JAYANTI | 5/26 | 5/26 |
+| 2022 | BHOGI | 1/14 | 1/14 |
+| 2022 | UTTARAYANA_PUNYAKALA | 1/15 | 1/15 |
+| 2022 | KANUMU | 1/16 | 1/16 |
+| 2022 | SHIVARATRI | 3/1 | 3/1 |
+| 2022 | HOLI | 3/18 | 3/18 |
+| 2022 | SAMVATSARA_ARAMBHA | 4/2 | 4/2 |
+| 2022 | RAMA_NAVAMI | 4/10 | 4/10 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 |
+| 2022 | JANMASHTAMI | 8/19 | 8/18 ✗ |
+| 2022 | GANESHA_CHATURTHI | 8/31 | 8/31 |
+| 2022 | MAHALAYA_AMAVASYA | 9/25 | 9/25 |
+| 2022 | MAHA_ASHTAMI | 10/3 | 10/3 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/5 |
+| 2022 | NARAK_CHATURDASHI | 10/23 | 10/24 ✗ |
+| 2022 | LAKSHMI_PUJA | 10/24 | 10/24 |
+| 2022 | GURU_NANAK_JAYANTI | 11/8 | 11/8 |
+| 2022 | JAGANNATH_RATH_JATRA | 7/1 | 7/1 |
+| 2022 | MAHAVIR_JAYANTI | 4/14 | 4/14 |
+| 2022 | BASAVA_JAYANTI | 5/3 | 5/3 |
+| 2022 | BUDDHA_JAYANTI | 5/16 | 5/16 |
+| 2023 | BHOGI | 1/14 | 1/14 |
+| 2023 | UTTARAYANA_PUNYAKALA | 1/15 | 1/15 |
+| 2023 | KANUMU | 1/16 | 1/16 |
+| 2023 | SHIVARATRI | 2/18 | 2/18 |
+| 2023 | HOLI | 3/8 | 3/7 ✗ |
+| 2023 | SAMVATSARA_ARAMBHA | 3/22 | 3/22 |
+| 2023 | RAMA_NAVAMI | 3/30 | 3/30 |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 |
+| 2023 | JANMASHTAMI | 9/6 | 9/6 |
+| 2023 | GANESHA_CHATURTHI | 9/18 | 9/18 |
+| 2023 | MAHALAYA_AMAVASYA | 10/14 | 10/14 |
+| 2023 | MAHA_ASHTAMI | 10/22 | 10/22 |
+| 2023 | VIJAYA_DASHAMI | 10/23 | 10/24 ✗ |
+| 2023 | LAKSHMI_PUJA | 11/12 | 11/12 |
+| 2023 | GURU_NANAK_JAYANTI | 11/27 | 11/27 |
+| 2023 | JAGANNATH_RATH_JATRA | 6/20 | 6/20 |
+| 2023 | MAHAVIR_JAYANTI | 4/4 | 4/4 |
+| 2023 | BASAVA_JAYANTI | 4/23 | 4/23 |
+| 2023 | BUDDHA_JAYANTI | 5/5 | 5/5 |
+| 2024 | BHOGI | 1/14 | 1/14 |
+| 2024 | UTTARAYANA_PUNYAKALA | 1/15 | 1/15 |
+| 2024 | KANUMU | 1/16 | 1/16 |
+| 2024 | SHIVARATRI | 3/8 | 3/8 |
+| 2024 | HOLI | 3/25 | 3/25 |
+| 2024 | SAMVATSARA_ARAMBHA | 4/9 | 4/9 |
+| 2024 | RAMA_NAVAMI | 4/17 | 4/17 |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 |
+| 2024 | GANESHA_CHATURTHI | 9/7 | 9/7 |
+| 2024 | MAHALAYA_AMAVASYA | 10/2 | 10/2 |
+| 2024 | MAHA_ASHTAMI | 10/11 | 10/10 ✗ |
+| 2024 | VIJAYA_DASHAMI | 10/12 | 10/12 |
+| 2024 | LAKSHMI_PUJA | 10/31 | 10/31 |
+| 2024 | GURU_NANAK_JAYANTI | 11/15 | 11/15 |
+| 2024 | JAGANNATH_RATH_JATRA | 7/7 | 7/7 |
+| 2024 | MAHAVIR_JAYANTI | 4/21 | 4/21 |
+| 2024 | BASAVA_JAYANTI | 5/10 | 5/10 |
+| 2024 | BUDDHA_JAYANTI | 5/23 | 5/23 |
+| 2025 | BHOGI | 1/13 | 1/13 |
+| 2025 | UTTARAYANA_PUNYAKALA | 1/14 | 1/14 |
+| 2025 | KANUMU | 1/15 | 1/15 |
+| 2025 | SHIVARATRI | 2/26 | 2/26 |
+| 2025 | HOLI | 3/14 | 3/14 |
+| 2025 | SAMVATSARA_ARAMBHA | 3/30 | 3/30 |
+| 2025 | RAMA_NAVAMI | 4/6 | 4/6 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 |
+| 2025 | JANMASHTAMI | 8/16 | 8/15 ✗ |
+| 2025 | GANESHA_CHATURTHI | 8/27 | 8/27 |
+| 2025 | MAHALAYA_AMAVASYA | 9/21 | 9/21 |
+| 2025 | MAHA_ASHTAMI | 9/30 | 9/30 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
+| 2025 | LAKSHMI_PUJA | 10/20 | 10/20 |
+| 2025 | GURU_NANAK_JAYANTI | 11/5 | 11/5 |
+| 2025 | JAGANNATH_RATH_JATRA | 6/27 | 6/27 |
+| 2025 | MAHAVIR_JAYANTI | 4/10 | 4/10 |
+| 2025 | BASAVA_JAYANTI | 4/30 | 4/30 |
+| 2025 | BUDDHA_JAYANTI | 5/12 | 5/12 |
+| 2026 | BHOGI | 1/14 | 1/14 |
+| 2026 | UTTARAYANA_PUNYAKALA | 1/15 | 1/15 |
+| 2026 | KANUMU | 1/16 | 1/16 |
+| 2026 | SHIVARATRI | 2/15 | 2/15 |
+| 2026 | HOLI | 3/3 | 3/3 |
+| 2026 | SAMVATSARA_ARAMBHA | 3/19 | 3/19 |
+| 2026 | RAMA_NAVAMI | 3/27 | 3/27 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 |
+| 2026 | GANESHA_CHATURTHI | 9/14 | 9/14 |
+| 2026 | MAHALAYA_AMAVASYA | 10/10 | 10/10 |
+| 2026 | MAHA_ASHTAMI | 10/18 | 10/18 |
+| 2026 | VIJAYA_DASHAMI | 10/20 | 10/20 |
+| 2026 | LAKSHMI_PUJA | 11/8 | 11/8 |
+| 2026 | GURU_NANAK_JAYANTI | 11/24 | 11/24 |
+| 2026 | JAGANNATH_RATH_JATRA | 7/16 | 7/16 |
+| 2026 | MAHAVIR_JAYANTI | 3/31 | 3/31 |
+| 2026 | BASAVA_JAYANTI | 4/20 | 4/20 |
+| 2026 | BUDDHA_JAYANTI | 5/1 | 5/1 |
+
+The 9 civil days stand on their date in all 7 years.
+
+- 2020 MAHA_ASHTAMI: the bright 8th runs from 06:57 on 23 October to 06:59 on the 24th, and the midday reading takes the 23rd; the G.O. lists the 24th, whose sunrise the ashtami holds, as Telangana's does (C1401, C1393)
+- 2021 BASAVA_JAYANTI: the bright 3rd begins at 05:39 on 14 May, a minute and a half after Amaravati's sunrise (05:38) and before Hyderabad's (05:44), so the print's rule takes the 15th here and the 14th there; the G.O. lists the 14th (C1407)
+- 2022 JANMASHTAMI: the dark 8th runs from 21:21 on 18 August to 22:59 on the 19th, holding the 18th's midnight, and the rule takes the 18th; the G.O. lists the 19th, whose sunrise the ashtami holds (C1406)
+- 2022 NARAK_CHATURDASHI: the dark 14th runs from 18:03 on 23 October to 17:27 on the 24th, and the afternoon rule takes the 24th, Deepavali's day; the G.O. lists the 23rd, whose evening the 14th begins in (C1404)
+- 2023 HOLI: the full moon runs from 16:17 on 6 March to 18:10 on the 7th, so the central list's Holika fire is the 6th and Holi the 7th; the G.O. lists Holi on the 8th, the first day whose sunrise the dark 1st holds (C1405)
+- 2023 VIJAYA_DASHAMI: the bright 10th runs from 17:45 on 23 October to 15:14 on the 24th, holding the 24th's midday alone, and the rule takes the 24th; the G.O. lists the 23rd as the general holiday and the 24th as an optional "Vijayadasami (Tidhi Dwayam)" (C1401)
+- 2024 MAHA_ASHTAMI: the bright 8th runs from 12:32 on 10 October to 12:07 on the 11th, and the midday reading takes the 10th, as Telangana's G.O. lists it; this G.O. lists the 11th, whose sunrise the ashtami holds (C1401)
+- 2025 JANMASHTAMI: the dark 8th runs from 23:50 on 15 August to 21:35 on the 16th, holding the 15th's midnight, and the rule takes the 15th; the G.O. lists the 16th, whose sunrise the ashtami holds (C1406)
+
+The days the G.O.s print are not reckoned: the four general days set by the moon (Ramzan, Bakrid, Moharrum and Eid Miladun Nabi) and 2021's Shab-e-Barath, each marked, as para 5 leaves them to the moon; and, as printed, Annexure-II's Islamic days (2023's Shab-e-Meraj a general holiday), Varalakshmi Vratham, the Parsi New Year and 2023's second Vijayadasami. 2031, with no G.O., holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2020 | EID_AL_FITR | 5/25 | subject to sighting |
+| 2020 | EID_AL_ADHA | 8/1 | subject to sighting |
+| 2020 | MUHARRAM | 8/30 | subject to sighting |
+| 2020 | MAWLID | 10/30 | subject to sighting |
+| 2020 | MAHDI_MAUD_BIRTHDAY | 1/10 | printed |
+| 2020 | HAZRAT_ALI_BIRTHDAY | 3/9 | printed |
+| 2020 | SHAB_E_MERAJ | 3/23 | printed |
+| 2020 | SHAB_E_BARAT | 4/9 | printed |
+| 2020 | SHAHADAT_HAZRAT_ALI | 5/14 | printed |
+| 2020 | SHAB_E_QADR | 5/21 | printed |
+| 2020 | JUMAT_UL_VIDA | 5/22 | printed |
+| 2020 | EID_E_GHADEER | 8/7 | printed |
+| 2020 | MUHARRAM_NINTH | 8/29 | printed |
+| 2020 | ARBAEEN | 10/8 | printed |
+| 2020 | YAZ_DAHUM_SHAREEF | 11/27 | printed |
+| 2020 | VARAMAHALAKSHMI_VRATA | 7/31 | printed |
+| 2020 | PARSI_NEW_YEAR | 8/20 | printed |
+| 2021 | EID_AL_FITR | 5/14 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/21 | subject to sighting |
+| 2021 | MUHARRAM | 8/19 | subject to sighting |
+| 2021 | MAWLID | 10/20 | subject to sighting |
+| 2021 | SHAB_E_BARAT | 3/29 | subject to sighting |
+| 2021 | HAZRAT_ALI_BIRTHDAY | 2/25 | printed |
+| 2021 | SHAB_E_MERAJ | 3/11 | printed |
+| 2021 | SHAHADAT_HAZRAT_ALI | 5/4 | printed |
+| 2021 | JUMAT_UL_VIDA | 5/7 | printed |
+| 2021 | SHAB_E_QADR | 5/9 | printed |
+| 2021 | EID_E_GHADEER | 7/29 | printed |
+| 2021 | MUHARRAM_NINTH | 8/18 | printed |
+| 2021 | ARBAEEN | 9/29 | printed |
+| 2021 | YAZ_DAHUM_SHAREEF | 11/16 | printed |
+| 2021 | MAHDI_MAUD_BIRTHDAY | 12/19 | printed |
+| 2021 | VARAMAHALAKSHMI_VRATA | 8/20 | printed |
+| 2021 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2022 | EID_AL_FITR | 5/3 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/10 | subject to sighting |
+| 2022 | MUHARRAM | 8/9 | subject to sighting |
+| 2022 | MAWLID | 10/9 | subject to sighting |
+| 2022 | HAZRAT_ALI_BIRTHDAY | 2/15 | printed |
+| 2022 | SHAB_E_MERAJ | 3/1 | printed |
+| 2022 | SHAB_E_BARAT | 3/19 | printed |
+| 2022 | SHAHADAT_HAZRAT_ALI | 4/22 | printed |
+| 2022 | JUMAT_UL_VIDA | 4/29 | printed |
+| 2022 | SHAB_E_QADR | 4/29 | printed |
+| 2022 | EID_E_GHADEER | 7/18 | printed |
+| 2022 | MUHARRAM_NINTH | 8/8 | printed |
+| 2022 | ARBAEEN | 9/17 | printed |
+| 2022 | YAZ_DAHUM_SHAREEF | 11/6 | printed |
+| 2022 | MAHDI_MAUD_BIRTHDAY | 12/8 | printed |
+| 2022 | VARAMAHALAKSHMI_VRATA | 8/5 | printed |
+| 2022 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2023 | EID_AL_FITR | 4/22 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/29 | subject to sighting |
+| 2023 | MUHARRAM | 7/29 | subject to sighting |
+| 2023 | MAWLID | 9/28 | subject to sighting |
+| 2023 | HAZRAT_ALI_BIRTHDAY | 2/5 | printed |
+| 2023 | SHAB_E_BARAT | 3/7 | printed |
+| 2023 | SHAB_E_QADR | 4/18 | printed |
+| 2023 | JUMAT_UL_VIDA | 4/21 | printed |
+| 2023 | SHAHADAT_HAZRAT_ALI | 4/24 | printed |
+| 2023 | EID_E_GHADEER | 7/6 | printed |
+| 2023 | MUHARRAM_NINTH | 7/28 | printed |
+| 2023 | ARBAEEN | 9/5 | printed |
+| 2023 | MAHDI_MAUD_BIRTHDAY | 9/9 | printed |
+| 2023 | YAZ_DAHUM_SHAREEF | 10/26 | printed |
+| 2023 | SHAB_E_MERAJ | 2/18 | printed |
+| 2023 | VARAMAHALAKSHMI_VRATA | 8/25 | printed |
+| 2023 | PARSI_NEW_YEAR | 8/16 | printed |
+| 2023 | VIJAYA_DASHAMI_NEXT_DAY | 10/24 | printed |
+| 2024 | EID_AL_FITR | 4/11 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/17 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2024 | HAZRAT_ALI_BIRTHDAY | 1/25 | printed |
+| 2024 | SHAB_E_MERAJ | 2/7 | printed |
+| 2024 | SHAB_E_BARAT | 2/25 | printed |
+| 2024 | SHAHADAT_HAZRAT_ALI | 4/1 | printed |
+| 2024 | JUMAT_UL_VIDA | 4/5 | printed |
+| 2024 | SHAB_E_QADR | 4/7 | printed |
+| 2024 | EID_E_GHADEER | 6/25 | printed |
+| 2024 | MUHARRAM_NINTH | 7/16 | printed |
+| 2024 | ARBAEEN | 8/25 | printed |
+| 2024 | YAZ_DAHUM_SHAREEF | 10/15 | printed |
+| 2024 | MAHDI_MAUD_BIRTHDAY | 11/16 | printed |
+| 2024 | VARAMAHALAKSHMI_VRATA | 8/16 | printed |
+| 2024 | PARSI_NEW_YEAR | 8/15 | printed |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/7 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2025 | HAZRAT_ALI_BIRTHDAY | 1/13 | printed |
+| 2025 | SHAB_E_MERAJ | 1/27 | printed |
+| 2025 | SHAB_E_BARAT | 2/14 | printed |
+| 2025 | SHAHADAT_HAZRAT_ALI | 3/22 | printed |
+| 2025 | SHAB_E_QADR | 3/27 | printed |
+| 2025 | JUMAT_UL_VIDA | 3/28 | printed |
+| 2025 | EID_E_GHADEER | 6/15 | printed |
+| 2025 | MUHARRAM_NINTH | 7/5 | printed |
+| 2025 | ARBAEEN | 8/15 | printed |
+| 2025 | YAZ_DAHUM_SHAREEF | 10/9 | printed |
+| 2025 | MAHDI_MAUD_BIRTHDAY | 11/6 | printed |
+| 2025 | VARAMAHALAKSHMI_VRATA | 8/8 | printed |
+| 2025 | PARSI_NEW_YEAR | 8/15 | printed |
+| 2026 | EID_AL_FITR | 3/20 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/27 | subject to sighting |
+| 2026 | MUHARRAM | 6/25 | subject to sighting |
+| 2026 | MAWLID | 8/25 | subject to sighting |
+| 2026 | HAZRAT_ALI_BIRTHDAY | 1/3 | printed |
+| 2026 | SHAB_E_MERAJ | 1/16 | printed |
+| 2026 | SHAB_E_BARAT | 2/3 | printed |
+| 2026 | SHAHADAT_HAZRAT_ALI | 3/11 | printed |
+| 2026 | JUMAT_UL_VIDA | 3/13 | printed |
+| 2026 | SHAB_E_QADR | 3/15 | printed |
+| 2026 | EID_E_GHADEER | 6/3 | printed |
+| 2026 | MUHARRAM_NINTH | 6/16 | printed |
+| 2026 | ARBAEEN | 8/4 | printed |
+| 2026 | YAZ_DAHUM_SHAREEF | 9/22 | printed |
+| 2026 | MAHDI_MAUD_BIRTHDAY | 10/27 | printed |
 | 2026 | VARAMAHALAKSHMI_VRATA | 8/21 | printed |
 | 2026 | PARSI_NEW_YEAR | 8/15 | printed |
 

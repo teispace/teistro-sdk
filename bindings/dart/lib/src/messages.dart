@@ -1019,7 +1019,20 @@ enum FestivalKey {
   bathukamma('festival.BATHUKAMMA'),
   saddulaBathukamma('festival.SADDULA_BATHUKAMMA'),
   vijayaDashamiNextDay('festival.VIJAYA_DASHAMI_NEXT_DAY'),
-  boxingDay('festival.BOXING_DAY');
+  boxingDay('festival.BOXING_DAY'),
+  chetiChand('festival.CHETI_CHAND'),
+  vikramSamvatNewYear('festival.VIKRAM_SAMVAT_NEW_YEAR'),
+  sardarPatelJayanti('festival.SARDAR_PATEL_JAYANTI'),
+  mahalayaAmavasya('festival.MAHALAYA_AMAVASYA'),
+  gauraParva('festival.GAURA_PARVA'),
+  birudaPanchami('festival.BIRUDA_PANCHAMI'),
+  mahalaxmiVratBegins('festival.MAHALAXMI_VRAT_BEGINS'),
+  mahalaxmiVratEnds('festival.MAHALAXMI_VRAT_ENDS'),
+  vatSavitriVrat('festival.VAT_SAVITRI_VRAT'),
+  indradhwajaPatan('festival.INDRADHWAJA_PATAN'),
+  nanichaya('festival.NANICHAYA'),
+  nepaliArmyDay('festival.NEPALI_ARMY_DAY'),
+  jyapuDiwas('festival.JYAPU_DIWAS');
 
   const FestivalKey(this.key);
 
@@ -3271,6 +3284,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get bhumiPuja => _r.entity('festival.BHUMI_PUJA');
   EntityForms get bilvaNimantran => _r.entity('festival.BILVA_NIMANTRAN');
   EntityForms get birsaMundaJayanti => _r.entity('festival.BIRSA_MUNDA_JAYANTI');
+  EntityForms get birudaPanchami => _r.entity('festival.BIRUDA_PANCHAMI');
   EntityForms get birChilaraiDivas => _r.entity('festival.BIR_CHILARAI_DIVAS');
   EntityForms get bishalnagarVaishnaviDeviJatra => _r.entity('festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA');
   EntityForms get bisketJatraBegins => _r.entity('festival.BISKET_JATRA_BEGINS');
@@ -3301,6 +3315,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get chaturmasEnds => _r.entity('festival.CHATURMAS_ENDS');
   EntityForms get chaturthiShraddha => _r.entity('festival.CHATURTHI_SHRADDHA');
   EntityForms get chaurchan => _r.entity('festival.CHAURCHAN');
+  EntityForms get chetiChand => _r.entity('festival.CHETI_CHAND');
   EntityForms get chhandaDiwas => _r.entity('festival.CHHANDA_DIWAS');
   EntityForms get chhath => _r.entity('festival.CHHATH');
   EntityForms get chhatrapatiShivajiJayanti => _r.entity('festival.CHHATRAPATI_SHIVAJI_JAYANTI');
@@ -3361,6 +3376,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get gangaPuja => _r.entity('festival.GANGA_PUJA');
   EntityForms get gangaSaptami => _r.entity('festival.GANGA_SAPTAMI');
   EntityForms get gatila => _r.entity('festival.GATILA');
+  EntityForms get gauraParva => _r.entity('festival.GAURA_PARVA');
   EntityForms get gauraPurnima => _r.entity('festival.GAURA_PURNIMA');
   EntityForms get gauraSaptami => _r.entity('festival.GAURA_SAPTAMI');
   EntityForms get gauriVrat => _r.entity('festival.GAURI_VRAT');
@@ -3405,6 +3421,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get indiaRepublicDay => _r.entity('festival.INDIA_REPUBLIC_DAY');
   EntityForms get indiraEkadashi => _r.entity('festival.INDIRA_EKADASHI');
   EntityForms get indradahaSnan => _r.entity('festival.INDRADAHA_SNAN');
+  EntityForms get indradhwajaPatan => _r.entity('festival.INDRADHWAJA_PATAN');
   EntityForms get indradhwajaUtthan => _r.entity('festival.INDRADHWAJA_UTTHAN');
   EntityForms get indraJatra => _r.entity('festival.INDRA_JATRA');
   EntityForms get internationalDayOfPeace => _r.entity('festival.INTERNATIONAL_DAY_OF_PEACE');
@@ -3427,6 +3444,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get janmashtamiVaishnava => _r.entity('festival.JANMASHTAMI_VAISHNAVA');
   EntityForms get jitiya => _r.entity('festival.JITIYA');
   EntityForms get jurSital => _r.entity('festival.JUR_SITAL');
+  EntityForms get jyapuDiwas => _r.entity('festival.JYAPU_DIWAS');
   EntityForms get jyaPunhi => _r.entity('festival.JYA_PUNHI');
   EntityForms get kabirJayanti => _r.entity('festival.KABIR_JAYANTI');
   EntityForms get kagTihar => _r.entity('festival.KAG_TIHAR');
@@ -3488,6 +3506,9 @@ final class MessagesSdkEntityFestival {
   EntityForms get maghBihuSecond => _r.entity('festival.MAGH_BIHU_SECOND');
   EntityForms get maghSnanBegins => _r.entity('festival.MAGH_SNAN_BEGINS');
   EntityForms get maghSnanEnds => _r.entity('festival.MAGH_SNAN_ENDS');
+  EntityForms get mahalaxmiVratBegins => _r.entity('festival.MAHALAXMI_VRAT_BEGINS');
+  EntityForms get mahalaxmiVratEnds => _r.entity('festival.MAHALAXMI_VRAT_ENDS');
+  EntityForms get mahalayaAmavasya => _r.entity('festival.MAHALAYA_AMAVASYA');
   EntityForms get maharashtraDay => _r.entity('festival.MAHARASHTRA_DAY');
   EntityForms get mahavirJayanti => _r.entity('festival.MAHAVIR_JAYANTI');
   EntityForms get mahavirNirvana => _r.entity('festival.MAHAVIR_NIRVANA');
@@ -3517,6 +3538,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get nagPanchami => _r.entity('festival.NAG_PANCHAMI');
   EntityForms get nakwaDishi => _r.entity('festival.NAKWA_DISHI');
   EntityForms get nalaMachhindranathRathJatra => _r.entity('festival.NALA_MACHHINDRANATH_RATH_JATRA');
+  EntityForms get nanichaya => _r.entity('festival.NANICHAYA');
   EntityForms get narakChaturdashi => _r.entity('festival.NARAK_CHATURDASHI');
   EntityForms get narasimhaJayanti => _r.entity('festival.NARASIMHA_JAYANTI');
   EntityForms get nationalChildrenSDay => _r.entity('festival.NATIONAL_CHILDREN_S_DAY');
@@ -3524,6 +3546,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get nationalPaddyDay => _r.entity('festival.NATIONAL_PADDY_DAY');
   EntityForms get navamiShraddha => _r.entity('festival.NAVAMI_SHRADDHA');
   EntityForms get navaratraArambha => _r.entity('festival.NAVARATRA_ARAMBHA');
+  EntityForms get nepaliArmyDay => _r.entity('festival.NEPALI_ARMY_DAY');
   EntityForms get nepalSambatNewYear => _r.entity('festival.NEPAL_SAMBAT_NEW_YEAR');
   EntityForms get netajiJayanti => _r.entity('festival.NETAJI_JAYANTI');
   EntityForms get newYearSDayAd => _r.entity('festival.NEW_YEAR_S_DAY_AD');
@@ -3585,6 +3608,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get sanskritDay => _r.entity('festival.SANSKRIT_DAY');
   EntityForms get sanyasiMahalaya => _r.entity('festival.SANYASI_MAHALAYA');
   EntityForms get saptamiShraddha => _r.entity('festival.SAPTAMI_SHRADDHA');
+  EntityForms get sardarPatelJayanti => _r.entity('festival.SARDAR_PATEL_JAYANTI');
   EntityForms get satiSadhaniDivas => _r.entity('festival.SATI_SADHANI_DIVAS');
   EntityForms get satyayugadi => _r.entity('festival.SATYAYUGADI');
   EntityForms get setoMachhindranathJatra => _r.entity('festival.SETO_MACHHINDRANATH_JATRA');
@@ -3657,11 +3681,13 @@ final class MessagesSdkEntityFestival {
   EntityForms get varahaJayanti => _r.entity('festival.VARAHA_JAYANTI');
   EntityForms get varuthiniEkadashi => _r.entity('festival.VARUTHINI_EKADASHI');
   EntityForms get vastuDiwas => _r.entity('festival.VASTU_DIWAS');
+  EntityForms get vatSavitriVrat => _r.entity('festival.VAT_SAVITRI_VRAT');
   EntityForms get vayuAshtami => _r.entity('festival.VAYU_ASHTAMI');
   EntityForms get vidyapatiSmritiDivas => _r.entity('festival.VIDYAPATI_SMRITI_DIVAS');
   EntityForms get vijayaDashami => _r.entity('festival.VIJAYA_DASHAMI');
   EntityForms get vijayaDashamiNextDay => _r.entity('festival.VIJAYA_DASHAMI_NEXT_DAY');
   EntityForms get vijayaEkadashi => _r.entity('festival.VIJAYA_EKADASHI');
+  EntityForms get vikramSamvatNewYear => _r.entity('festival.VIKRAM_SAMVAT_NEW_YEAR');
   EntityForms get viraNirvanaNewYear => _r.entity('festival.VIRA_NIRVANA_NEW_YEAR');
   EntityForms get vishu => _r.entity('festival.VISHU');
   EntityForms get vishwakarmaPuja => _r.entity('festival.VISHWAKARMA_PUJA');

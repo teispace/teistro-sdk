@@ -5927,6 +5927,28 @@ final class FestivalRulesIndiaTelangana extends FestivalRules {
   List<Object?> get _fields => const [];
 }
 
+/// `INDIA_GUJARAT`.
+final class FestivalRulesIndiaGujarat extends FestivalRules {
+  const FestivalRulesIndiaGujarat();
+
+  @override
+  Object? get _wire => 'INDIA_GUJARAT';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_ANDHRA_PRADESH`.
+final class FestivalRulesIndiaAndhraPradesh extends FestivalRules {
+  const FestivalRulesIndiaAndhraPradesh();
+
+  @override
+  Object? get _wire => 'INDIA_ANDHRA_PRADESH';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class FestivalRulesValue extends FestivalRules {
   const FestivalRulesValue(this.value);
@@ -8443,6 +8465,28 @@ final class FestivalRuleItemIndiaTelangana extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'INDIA_TELANGANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_GUJARAT`.
+final class FestivalRuleItemIndiaGujarat extends FestivalRuleItem {
+  const FestivalRuleItemIndiaGujarat();
+
+  @override
+  Object? get _wire => 'INDIA_GUJARAT';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_ANDHRA_PRADESH`.
+final class FestivalRuleItemIndiaAndhraPradesh extends FestivalRuleItem {
+  const FestivalRuleItemIndiaAndhraPradesh();
+
+  @override
+  Object? get _wire => 'INDIA_ANDHRA_PRADESH';
 
   @override
   List<Object?> get _fields => const [];
@@ -12183,6 +12227,7 @@ final class DatedRule extends _Request {
 final class FestivalRule extends _Request {
   const FestivalRule({
     required this.at,
+    this.barred,
     this.convention = LunarMonth.amanta,
     this.dayOfPaksha,
     required this.decide,
@@ -12201,6 +12246,9 @@ final class FestivalRule extends _Request {
 
   /// The time of the rite.
   final Window at;
+
+  /// When the day is barred, and the earlier tithi kept in its place, as the Durva fast is once Agastya has risen (C608); never when absent.
+  final Barred? barred;
 
   /// The convention the month is named in; amanta by default.
   final LunarMonth convention;
@@ -12247,6 +12295,7 @@ final class FestivalRule extends _Request {
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'at': at._wire,
+    if (barred case final barredValue?) 'barred': barredValue._wire,
     'convention': convention.key,
     if (dayOfPaksha case final dayOfPakshaValue?) 'dayOfPaksha': dayOfPakshaValue,
     'decide': [for (final e0 in decide) e0._wire],
@@ -12264,7 +12313,7 @@ final class FestivalRule extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
+  List<Object?> get _fields => [at, barred, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
 }
 
 /// The threshold table a criterion compares its measure against.
@@ -14360,6 +14409,69 @@ final class DatedRuleTithiInMonth extends _Request {
   List<Object?> get _fields => [at, calendar, days, month, tithi, twice];
 }
 
+/// When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead` before the barred one, judged by the rule's own window and guards.
+sealed class Barred extends _Request {
+  const Barred();
+}
+
+/// From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 22 of the Bikram Sambat (C608).
+final class BarredFrom extends Barred {
+  const BarredFrom({
+    required this.calendar,
+    required this.day,
+    required this.instead,
+    required this.month,
+  });
+
+  /// The calendar the day is counted in.
+  final Calendar calendar;
+
+  /// Its day of the month, 1 for the first.
+  final int day;
+
+  /// The tithi kept in the barred day's place.
+  final Tithi instead;
+
+  /// Its month, 1 for the first.
+  final int month;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'FROM',
+    'calendar': calendar.key,
+    'day': day,
+    'instead': instead.key,
+    'month': month,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, day, instead, month];
+}
+
+/// When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686). The named rule is asked for too; one barred only `WITH` another never moves this one.
+final class BarredWith extends Barred {
+  const BarredWith({
+    required this.instead,
+    required this.rule,
+  });
+
+  /// The tithi kept in the barred day's place.
+  final Tithi instead;
+
+  /// The rule's key.
+  final String rule;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kind': 'WITH',
+    'instead': instead.key,
+    'rule': rule,
+  };
+
+  @override
+  List<Object?> get _fields => [instead, rule];
+}
+
 /// A choice when every predicate holds.
 final class Guard extends _Request {
   const Guard({
@@ -15599,7 +15711,9 @@ enum DayEdge implements _Keyed {
   /// Sunrise, counting in thirtieths of the daylight.
   sunrise('SUNRISE'),
   /// Sunset, counting in thirtieths of the night.
-  sunset('SUNSET');
+  sunset('SUNSET'),
+  /// The day's moonrise, counting in thirtieths of the daylight or the night it falls in: the *Nirnayasindhu*'s three muhurtas past the moonrise for the Mahalakshmi vrata's close (pp. 300–301).
+  moonrise('MOONRISE');
 
   const DayEdge(this.key);
 

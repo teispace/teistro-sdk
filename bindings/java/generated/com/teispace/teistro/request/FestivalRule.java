@@ -12,6 +12,7 @@ import java.util.Objects;
  * A rule: when an observance falls, and how its day is decided.
  *
  * @param at The time of the rite.
+ * @param barred When the day is barred, and the earlier tithi kept in its place, as the Durva fast is once Agastya has risen (C608); never when absent. Null leaves the SDK's default.
  * @param convention The convention the month is named in; amanta by default. Null leaves the SDK's default.
  * @param dayOfPaksha The day, 1 to 14. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  * @param decide The guards, in order; the first that holds decides.
@@ -27,7 +28,7 @@ import java.util.Objects;
  * @param source Where the rule is stated.
  * @param tithi The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  */
-public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, InAdhika inAdhika, InMonth inMonth, String key, FestivalMeta meta, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
+public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, InAdhika inAdhika, InMonth inMonth, String key, FestivalMeta meta, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -59,7 +60,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
      * @param source Where the rule is stated.
      */
     public FestivalRule(Window at, List<Guard> decide, String key, FestivalChoice otherwise, String source) {
-        this(at, null, null, decide, null, null, key, null, null, null, otherwise, null, null, source, null);
+        this(at, null, null, null, decide, null, null, key, null, null, null, otherwise, null, null, source, null);
     }
 
     /**
@@ -75,6 +76,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
     /** Builds a {@link FestivalRule} a field at a time. */
     public static final class Builder {
         private Window at;
+        private Barred barred;
         private com.teispace.teistro.LunarMonth convention;
         private Integer dayOfPaksha;
         private List<Guard> decide;
@@ -100,6 +102,17 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
          */
         public Builder at(Window at) {
             this.at = at;
+            return this;
+        }
+
+        /**
+         * Sets {@code barred}.
+         *
+         * @param barred When the day is barred, and the earlier tithi kept in its place, as the Durva fast is once Agastya has risen (C608); never when absent. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder barred(Barred barred) {
+            this.barred = barred;
             return this;
         }
 
@@ -264,7 +277,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRule build() {
-            return new FestivalRule(at, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi);
+            return new FestivalRule(at, barred, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi);
         }
     }
 
@@ -279,6 +292,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
         Map<String, Object> json = Read.object(raw, "FestivalRule");
         return new FestivalRule(
             Window.of(Read.required(json.get("at"), "FestivalRule.at")),
+            Read.orNull(json.get("barred"), present -> Barred.of(present)),
             Read.orNull(json.get("convention"), present -> Read.member(present, "FestivalRule.convention", com.teispace.teistro.LunarMonth::byKey)),
             Read.orNull(json.get("dayOfPaksha"), present -> Read.int32(present, "FestivalRule.dayOfPaksha")),
             Read.list(Read.required(json.get("decide"), "FestivalRule.decide"), "FestivalRule.decide", item0 -> Guard.of(item0)),
@@ -299,6 +313,9 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("at", at.toJson());
+        if (barred != null) {
+            json.put("barred", barred.toJson());
+        }
         if (convention != null) {
             json.put("convention", convention.key());
         }

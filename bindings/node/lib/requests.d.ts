@@ -4044,7 +4044,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5735,7 +5735,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.
@@ -8266,6 +8266,10 @@ export interface FestivalRule {
    */
   readonly at: Window;
   /**
+   * When the day is barred, and the earlier tithi kept in its place, as the Durva fast is once Agastya has risen (C608); never when absent.
+   */
+  readonly barred?: Barred | null;
+  /**
    * The convention the month is named in; amanta by default.
    */
   readonly convention?: catalogue.LunarMonth;
@@ -9383,6 +9387,49 @@ export interface DatedRuleTithiInMonth {
    * Which of two occurrences in one month keeps the day.
    */
   readonly twice: FestivalWhich;
+}
+
+/**
+ * When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead` before the barred one, judged by the rule's own window and guards.
+ */
+export type Barred = BarredFrom | BarredWith;
+
+/**
+ * From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 22 of the Bikram Sambat (C608).
+ */
+export interface BarredFrom {
+  readonly kind: 'FROM';
+  /**
+   * The calendar the day is counted in.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * Its day of the month, 1 for the first.
+   */
+  readonly day: number;
+  /**
+   * The tithi kept in the barred day's place.
+   */
+  readonly instead: Member<catalogue.Tithi>;
+  /**
+   * Its month, 1 for the first.
+   */
+  readonly month: number;
+}
+
+/**
+ * When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686). The named rule is asked for too; one barred only `WITH` another never moves this one.
+ */
+export interface BarredWith {
+  readonly kind: 'WITH';
+  /**
+   * The tithi kept in the barred day's place.
+   */
+  readonly instead: Member<catalogue.Tithi>;
+  /**
+   * The rule's key.
+   */
+  readonly rule: string;
 }
 
 /**
@@ -10579,8 +10626,9 @@ export type FestivalCase = 'EARLIER_ONLY' | 'LATER_ONLY' | 'BOTH' | 'NEITHER' | 
  *
  * `SUNRISE`: Sunrise, counting in thirtieths of the daylight.
  * `SUNSET`: Sunset, counting in thirtieths of the night.
+ * `MOONRISE`: The day's moonrise, counting in thirtieths of the daylight or the night it falls in: the *Nirnayasindhu*'s three muhurtas past the moonrise for the Mahalakshmi vrata's close (pp. 300–301).
  */
-export type DayEdge = 'SUNRISE' | 'SUNSET';
+export type DayEdge = 'SUNRISE' | 'SUNSET' | 'MOONRISE';
 
 /**
  * The nine taras, in the order a count from the birth star reaches them.
