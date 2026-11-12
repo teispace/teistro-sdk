@@ -39,6 +39,7 @@ Two rules ride along, because they are the same fact in another form:
 cargo xtask version 0.1.0        # every manifest, and the platform packages
 cargo xtask gen ffi              # the API description and the catalogues
 cargo check --workspace          # Cargo.lock
+cargo xtask detail-tokens        # the token page: every answer's provenance names the version
 $EDITOR CHANGELOG.md             # rename `## Unreleased` and answer Numbers
 cargo xtask check-versions       # says what is still wrong
 ```
