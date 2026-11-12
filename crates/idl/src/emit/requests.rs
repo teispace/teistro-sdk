@@ -1408,6 +1408,37 @@ mod tests {
     }
 
     #[test]
+    fn the_dart_surface_lists_every_request_type_by_its_shape() {
+        let api = fixture();
+        let out = dart_surface(&api);
+        let mut listed = 0;
+        for record in &api.requests.records {
+            let name = record.name.as_str();
+            if api.requests.enums.contains_key(name)
+                || dart::is_facade(name)
+                || dart::DART_SHADOWED.contains(&name)
+            {
+                continue;
+            }
+            let entry = match &record.shape {
+                RecordShape::Object { .. } | RecordShape::Beside { .. } => {
+                    format!("  Built<{name}>({}, {name}.new, ", dart::quoted(name))
+                }
+                RecordShape::Keys { .. } => format!("  KeySet<{name}>({}, ", dart::quoted(name)),
+                RecordShape::Tagged { .. }
+                | RecordShape::External { .. }
+                | RecordShape::OrNamed { .. } => format!("  Sealed({}),", dart::quoted(name)),
+            };
+            assert!(out.contains(&entry), "{entry} is not in:\n{out}");
+            listed += 1;
+        }
+        assert!(listed > 5, "the fixture lists {listed} request types");
+        // A union's variants name it as their parent.
+        assert!(out.contains(", parent: "), "{out}");
+        assert!(out.ends_with("];\n"), "{out}");
+    }
+
+    #[test]
     fn dart_writes_each_field_as_serde_reads_it() {
         let out = dart_declarations(&fixture());
         assert!(out.contains("part of '../teistro.dart';"));

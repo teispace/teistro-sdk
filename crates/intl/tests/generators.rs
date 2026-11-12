@@ -15,8 +15,8 @@ use std::path::{Path, PathBuf};
 
 use teistro_intl::analysis::{ParamType, signature};
 use teistro_intl::generate::{
-    Group, MessageModel, Model, Node, RustPaths, dart, java, javascript, python, rust, typescript,
-    typescript_declarations,
+    Group, MessageModel, Model, Node, RustPaths, dart, dart_surface, java, javascript, python,
+    rust, typescript, typescript_declarations,
 };
 use teistro_intl::mf2::parse;
 use teistro_intl::sdk_root;
@@ -261,6 +261,26 @@ fn dart_writes_each_shape_and_renames_a_keyword() {
             "  final Gender? gender;",
         ],
     );
+}
+
+#[test]
+fn the_dart_surface_lists_every_accessor_with_its_parameters_shapes() {
+    let text = dart_surface(&model(true));
+    for line in [
+        "  MessageSurface('MessagesSdkT.empty', (m) => m.sdk.t.empty, const []),",
+        "Param('a', Scalar('String'))",
+        "Param('b', Members(Gender.values))",
+        "Param('c', Scalar('int'))",
+        "Param('e', Members(GrahaKey.values))",
+        "Param('h', Scalar('List'))",
+        "Param('class\\$', Scalar('String'))",
+        "Param('in\\$', Scalar('int'))",
+    ] {
+        assert!(text.contains(line), "{line} is not in:\n{text}");
+    }
+    // Every entity is walked by its getter, and the two lists close.
+    assert!(text.contains("  EntitySurface("), "{text}");
+    assert!(text.ends_with("];\n"), "{text}");
 }
 
 #[test]
