@@ -267,8 +267,8 @@ fn compile(root: &Path, row: Mobile, features: &[&str]) -> Result<PathBuf, ()> {
 /// The `cargo auditable build --release` of a crate under `dir` for the
 /// row, with `args` after the target: the linker and link arguments its
 /// operating system needs, and on Android the NDK's clang and archiver as
-/// the C compiler too, for a crate that compiles C of its own (the
-/// Teimeris adapter, `crate::mobile_sizes`).
+/// the C compiler too, for a crate that compiles C of its own (an
+/// engine's adapter, `crate::mobile_sizes`).
 pub(crate) fn cross(root: &Path, row: Mobile, dir: &Path, args: &[&str]) -> Result<Command, ()> {
     let mut command = Command::new(cargo());
     command

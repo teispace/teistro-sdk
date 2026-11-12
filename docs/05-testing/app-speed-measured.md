@@ -1,14 +1,14 @@
 # What an app pays
 
-Status: `generated` by `cargo xtask app-speed` from `docs/05-testing/app-speed/*.json`, gated by `check-app-speed`. Do not edit. Each record is written by `teistro-ephemeris-teimeris-app-speed` (`adapters/ephemeris-teimeris/rust`), which times the calls an almanac or chart screen makes through the Rust façade, each on a fresh context so that the call memo starts empty.
+Status: `generated` by `cargo xtask app-speed` from `docs/05-testing/app-speed/*.json`, gated by `check-app-speed`. Do not edit. Each record is written by an adapter's `<package>-app-speed` binary, here the Teimeris adapter's, which is private to Teispace (`06-cicd/adapter-gate.md`); it times the calls an almanac or chart screen makes through the Rust façade, each on a fresh context so that the call memo starts empty.
 
 The **budget** is the performance page's (`02-architecture/09-performance-architecture.md`), written for a native provider: the gate fails a median past 2× its budget under either setup over Teimeris, because wall time is noisy and a tight ceiling would fail on a busy runner rather than on a regression. The **target** is the faster figure a consumer's app needs on a low-end phone, scaled to a laptop core, and is reported, not gated. The built-in ephemeris needs no engine and is held to accuracy, not to the native budget; its ratio to Teimeris is the column on the right, which says `within spread` where the two setups' fastest-to-slowest ranges overlap, since no ratio is measured there. A median taken from fewer than 3 runs, or outside its own range, fails the gate.
 
 ```text
-cd adapters/ephemeris-teimeris/rust
+# in the adapter's rust/, its SDK link pointing at this checkout
 cargo run --release --features app-speed \
-  --bin teistro-ephemeris-teimeris-app-speed \
-  > ../../../docs/05-testing/app-speed/desktop-$(uname -s)-$(uname -m).json
+  --bin <package>-app-speed \
+  > <this checkout>/docs/05-testing/app-speed/desktop-$(uname -s)-$(uname -m).json
 cargo xtask app-speed
 ```
 

@@ -9,8 +9,10 @@
 //! - **the SDK without the built-in**, the library an app that plugs a
 //!   real engine in bundles instead (`--no-default-features --features
 //!   full`: every module family, no ephemeris of its own);
-//! - **the Teimeris adapter** (`adapters/ephemeris-teimeris/rust`), its
-//!   modern tier's data embedded, so the app ships no data file.
+//! - **an adapter**, the one `--adapter` or `TEISTRO_ADAPTER_DIR` names
+//!   (`crate::adapter`), its engine's data embedded so the app ships no
+//!   data file. The record's rows are Teimeris's, whose adapter is private
+//!   (`docs/06-cicd/adapter-gate.md`).
 //!
 //! An app on Teimeris bundles the second and the third; one on the
 //! built-in bundles the first. The page prints both sums, and what leaving
@@ -46,7 +48,7 @@ const SCHEMA: &str = "teistro-mobile-sizes/1";
 /// it. A measurement takes the adapter `check-adapter` names
 /// (`crate::adapter`) and its embedded build from the adapter's own
 /// manifest; this is only the page's prose, which a re-record rewrites.
-const ADAPTER: &str = "adapters/ephemeris-teimeris/rust";
+const ADAPTER: &str = "the Teimeris adapter, private to Teispace (`06-cicd/adapter-gate.md`),";
 
 /// The adapter's embedded tier, as the page names it: the modern one, the
 /// tier the adapter's default `data: "embedded"` loads.
@@ -518,12 +520,12 @@ fn page(record: &Record) -> String {
          **The SDK library** is the slice the release ships, the built-in ephemeris inside it. \
          **Without the built-in** is the same library built with `--no-default-features --features full`: \
          every module family, no ephemeris of its own, the one an app that plugs a real engine in bundles. \
-         **The Teimeris adapter** is `{ADAPTER}` with Teimeris's `{ADAPTER_TIER}` data compiled in, \
+         **The Teimeris adapter** is {ADAPTER} with Teimeris's `{ADAPTER_TIER}` data compiled in, \
          so it needs no data file. **On Teimeris** is the sum an app on Teimeris bundles, the second and the third; \
          the last column sets it against the SDK library alone.\n"
     );
     out.push_str(
-        "Each library is cross-built the way the release builds its slice (`xtask/src/mobile.rs`) and held to the same floor before it is measured: the ELF machine, Bionic's libraries alone and 16 KB pages on Android, the platform and deployment target on iOS. It is measured twice. **As built** is the file Cargo writes, the slice the release ships. **Stripped** is what an app's build makes of it, held to the same floor again: on Android the Gradle plugin strips every native library (the NDK's `llvm-strip --strip-unneeded`), and on iOS the local symbols are removed (`strip -x`). Every symbol the loader resolves stays. Read back from a Flutter release build on 2026-10-20 (`adapters/ephemeris-teimeris/flutter/example`): an APK stores both libraries uncompressed at exactly their stripped size here, and an iOS release app's framework is already stripped as far, larger only by the code signature its build adds (about 140 KB on the SDK library).\n\n",
+        "Each library is cross-built the way the release builds its slice (`xtask/src/mobile.rs`) and held to the same floor before it is measured: the ELF machine, Bionic's libraries alone and 16 KB pages on Android, the platform and deployment target on iOS. It is measured twice. **As built** is the file Cargo writes, the slice the release ships. **Stripped** is what an app's build makes of it, held to the same floor again: on Android the Gradle plugin strips every native library (the NDK's `llvm-strip --strip-unneeded`), and on iOS the local symbols are removed (`strip -x`). Every symbol the loader resolves stays. Read back from a Flutter release build on 2026-10-20 (the Teimeris adapter's Flutter example): an APK stores both libraries uncompressed at exactly their stripped size here, and an iOS release app's framework is already stripped as far, larger only by the code signature its build adds (about 140 KB on the SDK library).\n\n",
     );
     out.push_str("## Stripped, gzipped\n\nWhat a download carries, near enough: an app store compresses the package it serves, and gzip at the best level stands in for its compressor.\n\n");
     table(&mut out, &rows, |s| s.stripped_gzip);

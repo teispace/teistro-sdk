@@ -19,9 +19,8 @@
 //! `[package.metadata.teistro-adapter]`, and read from there rather than
 //! guessed ([`Described`]).
 //!
-//! The adapter is named by `--adapter DIR`, else by `TEISTRO_ADAPTER_DIR`,
-//! else it is the one still checked out in this tree, until it moves to
-//! its engine's repository ([`IN_TREE`]). Every other gate that reads an
+//! The adapter is named by `--adapter DIR`, else by `TEISTRO_ADAPTER_DIR`;
+//! the SDK holds none of its own. Every other gate that reads an
 //! adapter's packages (`check-node`, `check-python`, `check-dart`,
 //! `check-java`, `check-package`) finds it the same way, by [`Adapter::find`].
 //!
@@ -50,7 +49,6 @@ use serde::Deserialize;
 
 use crate::binding::{cargo, step};
 use crate::platform::Platform;
-use crate::skip::skip;
 
 /// Names the adapter's directory to every gate that reads one.
 pub(crate) const DIR_VARIABLE: &str = "TEISTRO_ADAPTER_DIR";
@@ -58,12 +56,6 @@ pub(crate) const DIR_VARIABLE: &str = "TEISTRO_ADAPTER_DIR";
 pub(crate) const LIBRARY_VARIABLE: &str = "TEISTRO_ADAPTER_LIBRARY";
 /// Names the engine the plugin tests expect the library to report.
 pub(crate) const ENGINE_VARIABLE: &str = "TEISTRO_ADAPTER_ENGINE";
-
-/// The adapter still checked out in this tree, which a gate reads when
-/// nothing names another. It moves to its engine's private repository in
-/// step 2 of `docs/06-cicd/adapter-gate.md`, and this fallback goes with
-/// it in step 3.
-const IN_TREE: &str = "adapters/ephemeris-teimeris";
 
 /// The binding gates whose suites load the plugin when it is named.
 const BINDINGS: [&str; 4] = ["check-node", "check-python", "check-dart", "check-java"];
@@ -126,20 +118,14 @@ pub(crate) struct Adapter {
 }
 
 impl Adapter {
-    /// The adapter a gate reads: `explicit`, else [`DIR_VARIABLE`], else
-    /// the one in this tree if it is there. `Ok(None)` when none is named
-    /// and none is here; an adapter named and not readable is an error.
+    /// The adapter a gate reads: `explicit`, else [`DIR_VARIABLE`].
+    /// `Ok(None)` when none is named; an adapter named and not readable is
+    /// an error.
     pub(crate) fn find(root: &Path, explicit: Option<&Path>) -> Result<Option<Adapter>, String> {
         let named = explicit
             .map(Path::to_path_buf)
             .or_else(|| std::env::var_os(DIR_VARIABLE).map(PathBuf::from));
-        match named {
-            Some(dir) => Adapter::read(root, &dir).map(Some),
-            None if root.join(IN_TREE).join("rust/Cargo.toml").is_file() => {
-                Adapter::read(root, Path::new(IN_TREE)).map(Some)
-            }
-            None => Ok(None),
-        }
+        named.map(|dir| Adapter::read(root, &dir)).transpose()
     }
 
     /// The adapter at `dir`, relative to the repository or absolute.
@@ -298,16 +284,14 @@ impl Adapter {
 }
 
 /// The adapter whose packages a binding gate checks against the SDK, if
-/// one is named or in this tree: `Ok(None)`, said once, when there is
+/// one is named: `Ok(None)`, said once, when there is
 /// none, since a checkout of the SDK alone has no adapter to check, and a
 /// failure when one is named and cannot be read.
 pub(crate) fn for_packages(root: &Path, language: &str) -> Result<Option<Adapter>, ()> {
     match Adapter::find(root, None) {
         Ok(Some(adapter)) if adapter.part(language).is_dir() => Ok(Some(adapter)),
         Ok(_) => {
-            println!(
-                "      no adapter's {language} package here or named by {DIR_VARIABLE}: none checked"
-            );
+            println!("      no adapter's {language} package named by {DIR_VARIABLE}: none checked");
             Ok(None)
         }
         Err(why) => {
@@ -331,15 +315,12 @@ fn named(args: &[String]) -> Result<Option<PathBuf>, String> {
 }
 
 /// The adapter a command names, with its path dependencies present; `Err`
-/// with the exit code otherwise. A skip only when nothing named it and the
-/// in-tree one lacks its engine, which is the one case a checkout cannot
-/// help.
+/// with the exit code otherwise.
 fn ready(root: &Path, args: &[String]) -> Result<Adapter, i32> {
     let explicit = named(args).map_err(|why| {
         println!("FAIL  {why}");
         1
     })?;
-    let chosen = explicit.is_some() || std::env::var_os(DIR_VARIABLE).is_some();
     let adapter = match Adapter::find(root, explicit.as_deref()) {
         Ok(Some(adapter)) => adapter,
         Ok(None) => {
@@ -355,19 +336,13 @@ fn ready(root: &Path, args: &[String]) -> Result<Adapter, i32> {
     if missing.is_empty() {
         return Ok(adapter);
     }
-    let why = format!(
-        "the adapter at {}: its path dependencies {} are not there (the engine is checked out \
-         from its own repository)",
+    println!(
+        "FAIL  the adapter at {}: its path dependencies {} are not there (the engine is checked \
+         out from its own repository)",
         adapter.shown,
         missing.join(", ")
     );
-    if chosen {
-        println!("FAIL  {why}");
-        Err(1)
-    } else {
-        skip(why);
-        Err(0)
-    }
+    Err(1)
 }
 
 pub(crate) fn check(root: &Path, args: &[String]) -> i32 {

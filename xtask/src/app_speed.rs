@@ -1,7 +1,9 @@
 //! `docs/05-testing/app-speed-measured.md`: what an app pays, request by
-//! request, rendered from the records `teistro-ephemeris-teimeris-app-speed`
-//! writes (one file per machine in `docs/05-testing/app-speed/`), and the
-//! gate on them.
+//! request, rendered from the records an adapter's `<package>-app-speed`
+//! binary writes (one file per machine in `docs/05-testing/app-speed/`),
+//! and the gate on them. The records are Teimeris's, whose adapter is
+//! private (`docs/06-cicd/adapter-gate.md`): this module reads them and
+//! builds nothing.
 //!
 //! The budgets are the performance page's (`02-architecture/09-performance-
 //! architecture.md`), written for a native provider, so they bind the two
@@ -253,7 +255,7 @@ impl Record {
 }
 
 fn recorded(root: &Path) -> Result<Vec<(String, Record)>, String> {
-    crate::measured::records(root, RECORDED, "teistro-ephemeris-teimeris-app-speed")
+    crate::measured::records(root, RECORDED, "<package>-app-speed in an adapter's rust/")
 }
 
 /// Every median a gated setup holds past its ceiling, as sentences.
@@ -470,9 +472,9 @@ fn page(records: &[(String, Record)]) -> String {
     let _ = writeln!(
         out,
         "Status: `generated` by `cargo xtask app-speed` from `{RECORDED}/*.json`, gated by \
-         `check-app-speed`. Do not edit. Each record is written by \
-         `teistro-ephemeris-teimeris-app-speed` (`adapters/ephemeris-teimeris/rust`), which times \
-         the calls an almanac or chart screen makes through the Rust façade, each on a fresh \
+         `check-app-speed`. Do not edit. Each record is written by an \
+         adapter's `<package>-app-speed` binary, here the Teimeris adapter's, which is private to \
+         Teispace (`06-cicd/adapter-gate.md`); it times the calls an almanac or chart screen makes through the Rust façade, each on a fresh \
          context so that the call memo starts empty.\n"
     );
     let _ = writeln!(
@@ -489,7 +491,7 @@ fn page(records: &[(String, Record)]) -> String {
     );
     let _ = writeln!(
         out,
-        "```text\ncd adapters/ephemeris-teimeris/rust\ncargo run --release --features app-speed \\\n  --bin teistro-ephemeris-teimeris-app-speed \\\n  > ../../../{RECORDED}/desktop-$(uname -s)-$(uname -m).json\ncargo xtask app-speed\n```\n"
+        "```text\n# in the adapter's rust/, its SDK link pointing at this checkout\ncargo run --release --features app-speed \\\n  --bin <package>-app-speed \\\n  > <this checkout>/{RECORDED}/desktop-$(uname -s)-$(uname -m).json\ncargo xtask app-speed\n```\n"
     );
     let over = breaches(records);
     if over.is_empty() {

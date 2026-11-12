@@ -11,7 +11,7 @@
 //! published series**, and `ephemgen` needs 8 MB of VSOP87 and ELP text
 //! to emit one. Pluto has no published series to truncate (ADR-0008): its
 //! source is `crates/ephemeris-builtin/data/pluto-fit.json`, recorded by
-//! `teistro-ephemeris-teimeris-pluto-fit` against the reference engine.
+//! the reference adapter's `pluto-fit` binary against the reference engine.
 //! Folding it into `ephemgen` would mean nobody could regenerate Pluto
 //! without fetching two archives that have nothing to do with it.
 //!
@@ -96,7 +96,7 @@ fn recorded(root: &Path) -> Result<Option<Fit>, String> {
         .map_err(|error| {
             format!(
                 "{} is recorded but does not parse: {error}. Re-record it with \
-             `teistro-ephemeris-teimeris-pluto-fit`, or fix the reader.",
+             the reference adapter's `pluto-fit` binary, or fix the reader.",
                 path.display()
             )
         })
@@ -295,7 +295,7 @@ fn page(fit: Option<&Fit>) -> String {
     let _ = writeln!(out, "# Pluto, measured\n");
     let _ = writeln!(
         out,
-        "Status: `generated` by `cargo xtask pluto`, gated by `check-pluto`. Do not edit. The numbers are read from `{SOURCE}`, recorded by `teistro-ephemeris-teimeris-pluto-fit` against the reference engine — the number, not the code that produced it.\n"
+        "Status: `generated` by `cargo xtask pluto`, gated by `check-pluto`. Do not edit. The numbers are read from `{SOURCE}`, recorded by the reference adapter's `pluto-fit` binary against the reference engine — the number, not the code that produced it.\n"
     );
     let Some(fit) = fit else {
         let _ = writeln!(

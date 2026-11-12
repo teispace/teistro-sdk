@@ -1,11 +1,14 @@
 # The engine passthrough: how a shape crosses
 
-Status: `built`, written 2026-09-13 from the measurement in
-[`engine-passthrough-measured.md`](engine-passthrough-measured.md).
-Derives from [`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md)
+Status: `built`, written 2026-09-13 from the measurement in the
+engine passthrough's measured page. Derives from
+[`ephemeris-port-and-adapters.md`](ephemeris-port-and-adapters.md)
 (the port, and `native_manifest`/`native_call`) and ADR-0030 (the
-namespace and where the typed façade lives). Built by
-`cargo xtask engine`, gated by `check-engine`.
+namespace and where the typed façade lives). The generator, the measured
+page and the dispatch it writes are the Teimeris adapter's, and moved with
+it into the engine's private repository on 2026-11-12
+([`06-cicd/adapter-gate.md`](../06-cicd/adapter-gate.md)); this page keeps
+the design, which any engine that describes itself can follow.
 
 The measured page says **what** is callable and what is not. This page
 says **how** a shape crosses, which is the thing the measured page
@@ -384,8 +387,8 @@ easiest.
 
 ## 7. How it is held
 
-- `check-engine` regenerates the page, the dispatch and every façade
-  and fails on any byte of difference.
+- The adapter's generator, in its own repository, regenerates the page,
+  the dispatch and every façade and fails on any byte of difference.
 - The adapter's own `tests/passthrough.rs`, against the real engine: a
   struct crosses both ways and its extent in neither, a field is refused
   by its whole path, a struct left out is null and the engine's refusal
