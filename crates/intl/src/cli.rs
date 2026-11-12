@@ -530,7 +530,6 @@ fn run_translit(from: &str, to: &str, text: &[String]) -> Result<bool, Box<dyn s
 /// let entry: fn() -> std::process::ExitCode = cli::main;
 /// # let _ = entry;
 /// ```
-#[must_use]
 pub fn main() -> ExitCode {
     match run(Cli::parse()) {
         Ok(true) => ExitCode::SUCCESS,
