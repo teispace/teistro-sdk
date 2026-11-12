@@ -10,7 +10,23 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.3
+
+The third release candidate of 1.0.0: the tag a consumer moves to from
+1.0.0-rc.1 (1.0.0-rc.2 is tagged but has no GitHub release: its release run
+stopped on a coverage floor, which this candidate's tests hold). Released on
+GitHub only; no package leaves for a registry.
+**Numbers:** measured against 1.0.0-rc.2, no day, instant or hash of anything
+1.0.0-rc.2 answered moves. What changes:
+- **Regions:** a request naming `IN-KA` or `IN-TG` now reckons the state's own
+  pack (`INDIA_KARNATAKA`, `INDIA_TELANGANA`), where it kept `INDIA_CENTRAL`.
+- **Refusals:** a strict record read with no root names a top-level key
+  `years`, not `.years`.
+- **Removed:** the Teimeris adapters, which now live in the engine's private
+  repository; an app that loaded `web.js` from here reads the note below.
+New in this candidate: the sunrise behind the terrain (`horizonProfile`,
+`visibleRise`, `visibleSet`, SR-91), the teigeodata geo adapter (SR-88),
+and Karnataka's and Telangana's public holidays (SR-03).
 
 **The sunrise behind the terrain (SR-91).** **Numbers:** none: a section
 answered only when a profile is asked, and the days with one are the days

@@ -10,7 +10,7 @@ library;
 
 /// The release these digests were taken from, which is the version of this
 /// package: an installer never mixes a library with another build's types.
-const String prebuiltVersion = '1.0.0-rc.2';
+const String prebuiltVersion = '1.0.0-rc.3';
 
 /// The release the archives are attached to.
 const String prebuiltBase =

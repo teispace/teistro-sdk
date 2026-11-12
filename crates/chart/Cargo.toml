@@ -20,11 +20,11 @@ publish = false
 schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-core/schema", "teistro-port-ephemeris/schema", "teistro-time/schema"]
 
 [dependencies]
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.2" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.2" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.2" }
-teistro-time = { path = "../time", version = "=1.0.0-rc.2" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.3" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.3" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.3" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.3" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

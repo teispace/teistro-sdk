@@ -18,9 +18,9 @@ publish = false
 schema = ["dep:schemars", "teistro-chart/schema", "teistro-core/schema", "teistro-vargas/schema"]
 
 [dependencies]
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.2" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.2" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.3" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.3" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
