@@ -292,14 +292,12 @@ fn failed(answer: &Answer) -> ProviderError {
     }
 }
 
-/// The data directory: [`DATA_DIR_ENV`], else the Teimeris checkout's data
-/// directory beside the SDK checkout, which holds the same file family.
+/// The data directory: [`DATA_DIR_ENV`], else `ephe` in the working
+/// directory, the name the Swiss Ephemeris's distribution gives the
+/// directory of its `.se1` files.
 #[must_use]
 pub fn data_dir_from_env() -> PathBuf {
-    std::env::var_os(DATA_DIR_ENV).map_or_else(
-        || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../../teimeris/data"),
-        PathBuf::from,
-    )
+    std::env::var_os(DATA_DIR_ENV).map_or_else(|| PathBuf::from("ephe"), PathBuf::from)
 }
 
 /// The port over the process-wide library.
