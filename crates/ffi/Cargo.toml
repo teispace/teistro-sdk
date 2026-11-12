@@ -26,28 +26,28 @@ serde_json = "1"
 # boundary keeps what only a C caller needs -- the handles, the
 # `struct_size` handshake, the blob writer, the panic guard, the
 # `last_error` slot -- and the composition has one home.
-teistro = { path = "../sdk", version = "=1.0.0-rc.3", default-features = false }
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.3" }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.3" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.3" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.3" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
-teistro-houses = { path = "../houses", version = "=1.0.0-rc.3" }
-teistro-idl = { path = "../idl", version = "=1.0.0-rc.3", default-features = false }
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.3", default-features = false }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.3" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.3" }
-teistro-serial = { path = "../serial", version = "=1.0.0-rc.3", optional = true }
-teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.3" }
-teistro-state = { path = "../state", version = "=1.0.0-rc.3" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.3" }
-teistro-time = { path = "../time", version = "=1.0.0-rc.3" }
+teistro = { path = "../sdk", version = "=1.0.0-rc.4", default-features = false }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.4" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.4" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.4" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.4" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.4" }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.4" }
+teistro-idl = { path = "../idl", version = "=1.0.0-rc.4", default-features = false }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.4", default-features = false }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.4" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.4" }
+teistro-serial = { path = "../serial", version = "=1.0.0-rc.4", optional = true }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.4" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.4" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.4" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.4" }
 
 # The plugin loader (ADR-0029), the port's own, which a wasm build has no
 # use for: a wasm module cannot open a shared library, so there it has the
 # built-in and a host provider, and `src/provider.rs` is compiled out.
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.3", features = ["load"] }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.4", features = ["load"] }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028). It is a feature because a shared

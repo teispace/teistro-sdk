@@ -20,8 +20,8 @@ schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
-teistro-port-timezone = { path = "../port-timezone", version = "=1.0.0-rc.3" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.4" }
+teistro-port-timezone = { path = "../port-timezone", version = "=1.0.0-rc.4" }
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "teistro"
-version = "1.0.0rc3"
+version = "1.0.0rc4"
 description = "The Teistro SDK for Python: an ephemeris-agnostic astrology engine over the C ABI, with the catalogue, the calendars, the time layer, the locale engine and the astronomy."
 readme = "README.md"
 requires-python = ">=3.11"

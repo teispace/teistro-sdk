@@ -10,7 +10,23 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.4
+
+The fourth release candidate of 1.0.0: Nepal's festivals as rules (SR-01)
+and two more Indian state sets. Released on GitHub only; no package leaves
+for a registry.
+**Numbers:** measured against 1.0.0-rc.3. What moves:
+- **Nepal:** `NEPAL_PANCHANGA`'s Durva ashtami, Gaura saptami and
+  Amuktabharana saptami in a year whose Bhadrapada bright 8th falls on or
+  after Bhadra 22 (in VS 2083, from 19 to 4 September 2026 and from 18 to 3
+  September), and the pack's `input_hash`. Nine festivals that had no rule
+  now answer.
+- **Regions:** a request naming `IN-GJ` or `IN-AP` now reckons the state's
+  own pack (`INDIA_GUJARAT`, `INDIA_ANDHRA_PRADESH`), where it kept
+  `INDIA_CENTRAL`.
+
+No other pack's day or hash moves: a rule without a bar writes no `barred`
+field.
 
 **Gujarat's public holidays (SR-03, the eighth state set).**
 **Numbers:** none for any existing pack's days: a new pack. A request naming the
