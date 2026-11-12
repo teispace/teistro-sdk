@@ -741,7 +741,9 @@ macro_rules! group {
 
 group!(
     /// The frame positions are expressed in.
-    Frame, FramePatch, frame {
+    Frame,
+    FramePatch,
+    frame {
         /// Tropical or sidereal.
         zodiac: Zodiac,
         /// Which ayanamsha, when sidereal.
@@ -783,7 +785,9 @@ group!(
 
 group!(
     /// The local day.
-    Day, DayPatch, day {
+    Day,
+    DayPatch,
+    day {
         /// The sunrise convention.
         sunrise: SunriseConvention,
         /// When the day begins.
@@ -805,7 +809,9 @@ group!(
     /// daily panchanga (`03-design/ritu-measured.md`). The window the day's
     /// limbs run over is `day.day_boundary`, and the arcs its periods
     /// divide are the `day.sunrise` ones, so neither is repeated here.
-    Panchanga, PanchangaPatch, panchanga {
+    Panchanga,
+    PanchangaPatch,
+    panchanga {
         /// Which centre the day's limbs are computed from. An almanac is
         /// geocentric wherever the chart is: the lunar parallax reaches a
         /// degree, which is two hours of tithi boundary.
@@ -859,7 +865,9 @@ group!(
 
 group!(
     /// Time resolution.
-    Time, TimePatch, time {
+    Time,
+    TimePatch,
+    time {
         /// A civil time in a DST gap.
         dst_gap: DstGap,
         /// A civil time in a DST overlap.
@@ -936,7 +944,9 @@ group!(
 
 group!(
     /// Jaimini conventions.
-    Jaimini, JaiminiPatch, jaimini {
+    Jaimini,
+    JaiminiPatch,
+    jaimini {
         /// Seven or eight chara karakas: which ranks the Atmakaraka the
         /// karakamsha is read from.
         chara_karakas: CharaKarakas,
@@ -956,7 +966,9 @@ group!(
 group!(
     /// Transits read from the natal Moon (Phaladeepika ch. 26;
     /// `03-design/gochar.md`).
-    Gochar, GocharPatch, gochar {
+    Gochar,
+    GocharPatch,
+    gochar {
         /// The nodes' vedha (crux C136).
         node_vedha: NodeVedha,
         /// Whether the nodes obstruct another graha's transit (crux C137).
@@ -971,7 +983,9 @@ group!(
 
 group!(
     /// Krishnamurti Paddhati (`03-design/kp.md`).
-    Kp, KpPatch, kp {
+    Kp,
+    KpPatch,
+    kp {
         /// How many ruling planets are counted (crux C150).
         ruling_count: RulingCount,
         /// The day the ruling day lord belongs to (crux C151).
@@ -985,7 +999,9 @@ group!(
 
 group!(
     /// Aspects.
-    Aspect, AspectPatch, aspect {
+    Aspect,
+    AspectPatch,
+    aspect {
         /// The nodes' aspects.
         node_aspects: NodeAspects,
         /// The sphuta drishti table's key.
@@ -995,7 +1011,9 @@ group!(
 
 group!(
     /// Planetary state.
-    State, StatePatch, state {
+    State,
+    StatePatch,
+    state {
         /// The combustion orb table's key.
         combustion_orbs: String,
         /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
@@ -1013,7 +1031,9 @@ group!(
 
 group!(
     /// Strength.
-    Strength, StrengthPatch, strength {
+    Strength,
+    StrengthPatch,
+    strength {
         /// Which components the Shadbala counts: the six of BPHS ch. 27.
         bala_scheme: BalaScheme,
         /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
@@ -1073,7 +1093,9 @@ group!(
 
 group!(
     /// Divisional charts.
-    Vargas, VargasPatch, vargas {
+    Vargas,
+    VargasPatch,
+    vargas {
         /// The convention for an unattested D-N.
         unattested_dn: UnattestedDn,
     }
@@ -1101,7 +1123,9 @@ group!(
 
 group!(
     /// The provider.
-    Provider, ProviderPatch, provider {
+    Provider,
+    ProviderPatch,
+    provider {
         /// The override policy (ADR-0013).
         overrides: OverridePolicy,
         /// The built-in ephemeris tier.
@@ -1129,7 +1153,9 @@ group!(
 
 group!(
     /// Output.
-    Output, OutputPatch, output {
+    Output,
+    OutputPatch,
+    output {
         /// The rounding contract.
         precision: Precision,
     }
