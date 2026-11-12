@@ -47,7 +47,7 @@ const GUIDES: &str = "site/content/docs";
 
 /// The READMEs each binding and adapter publishes with its package, held
 /// as the guides are.
-const READMES: [&str; 14] = [
+const READMES: [&str; 9] = [
     "README.md",
     "bindings/c/README.md",
     "bindings/dart/README.md",
@@ -57,11 +57,6 @@ const READMES: [&str; 14] = [
     "bindings/node/compat/README.md",
     "bindings/python/README.md",
     "bindings/wasm/README.md",
-    "adapters/ephemeris-teimeris/dart/README.md",
-    "adapters/ephemeris-teimeris/flutter/README.md",
-    "adapters/ephemeris-teimeris/java/README.md",
-    "adapters/ephemeris-teimeris/node/README.md",
-    "adapters/ephemeris-teimeris/python/README.md",
 ];
 const REFERENCE: &str = "reference";
 
@@ -69,44 +64,17 @@ const REFERENCE: &str = "reference";
 /// each with the xtask module that holds it to a gate.
 ///
 /// Listed, not inferred, and held both ways: the module must name the
-/// file's package, and an entry no guide cites is stale. An adapter's
-/// package is named by `crate::adapter`, which every binding gate asks
-/// for the adapter it checks; these entries leave with the adapter
-/// (`docs/06-cicd/adapter-gate.md`, step 3). Most of these
-/// are type-checked rather than run, because running an adapter's
-/// consumer needs the engine's data, which a checkout does not have, and
-/// running the Flutter app needs a device; the gate's report says which
-/// is which.
-const EXECUTED: [Source; 6] = [
+/// file's package, and an entry no guide cites is stale. An engine's
+/// adapter keeps its own guides in its own repository
+/// (`docs/06-cicd/adapter-gate.md`). One of these is type-checked rather
+/// than run, and running the Flutter app needs a device; the gate's
+/// report says which is which.
+const EXECUTED: [Source; 2] = [
     Source {
         file: "bindings/node/compat/typecheck/consumer.ts",
         module: "xtask/src/node_binding.rs",
         names: "bindings/node/compat",
         held: "type-checked by `check-node`",
-    },
-    Source {
-        file: "adapters/ephemeris-teimeris/node/typecheck/consumer.ts",
-        module: "xtask/src/adapter.rs",
-        names: "adapters/ephemeris-teimeris",
-        held: "type-checked by `check-node`",
-    },
-    Source {
-        file: "adapters/ephemeris-teimeris/dart/example/consumer.dart",
-        module: "xtask/src/adapter.rs",
-        names: "adapters/ephemeris-teimeris",
-        held: "analysed by `check-dart`",
-    },
-    Source {
-        file: "adapters/ephemeris-teimeris/python/typecheck/consumer.py",
-        module: "xtask/src/adapter.rs",
-        names: "adapters/ephemeris-teimeris",
-        held: "type-checked by `check-python`",
-    },
-    Source {
-        file: "adapters/ephemeris-teimeris/java/typecheck/Consumer.java",
-        module: "xtask/src/adapter.rs",
-        names: "adapters/ephemeris-teimeris",
-        held: "compiled by `check-java`",
     },
     Source {
         file: "bindings/flutter/example/lib/main.dart",
@@ -318,22 +286,12 @@ fn is_elision(line: &str) -> bool {
 /// specifier they write, and the one a guide shows.
 ///
 /// Listed, so that the one rewrite the gate allows is in plain sight.
-const IMPORTS: [(&str, &str, &str); 4] = [
+const IMPORTS: [(&str, &str, &str); 2] = [
     ("bindings/node/", "'../lib/index.js'", "'@teistro/sdk'"),
     (
         "bindings/node/",
         "'../lib/messages.js'",
         "'@teistro/sdk/messages'",
-    ),
-    (
-        "adapters/ephemeris-teimeris/node/",
-        "'../index.js'",
-        "'@teistro/ephemeris-teimeris'",
-    ),
-    (
-        "adapters/ephemeris-teimeris/node/",
-        "'../web.js'",
-        "'@teistro/ephemeris-teimeris/web'",
     ),
 ];
 

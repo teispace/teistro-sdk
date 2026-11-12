@@ -163,8 +163,6 @@ jobs:
         run: cargo xtask check-surface
       - name: Pluto page (the fitted tables' span, size and worst error at each tier)
         run: cargo xtask check-pluto
-      - name: Engine passthrough page (which of the engine's own functions the adapter offers, withholds and has not marshalled)
-        run: cargo xtask check-engine
       - name: Surface areas page (which boundary modules a consumer reaches, and what a namespaced surface would group by)
         run: cargo xtask check-areas
       - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
@@ -255,7 +253,7 @@ jobs:
         run: cargo xtask check-samvatsara
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
         run: cargo xtask check-agreement
-      - name: App speed page (what an app pays per request under each setup, every median over Teimeris inside twice its budget)
+      - name: App speed page (what an app pays per request under each setup, every median over the recorded native engine inside twice its budget)
         run: cargo xtask check-app-speed
       - name: FFI cost page (what each binding pays to cross, every figure held to the results schema)
         run: cargo xtask check-ffi-cost
@@ -283,10 +281,8 @@ jobs:
         run: cargo xtask check-rectification
       - name: Sizes page (what every shipped artefact weighs, the record complete and the page rendered from it)
         run: cargo xtask check-sizes
-      - name: Mobile sizes page (each mobile slice as built and as an app strips it, without the built-in and with the Teimeris adapter, every row recorded)
+      - name: Mobile sizes page (each mobile slice as built and as an app strips it, without the built-in and with the recorded adapter, every row recorded)
         run: cargo xtask check-mobile-sizes
-      - name: Teimeris ranges page (each data block's files, sizes and digests, from the manifest the adapter checks a downloaded range against)
-        run: cargo xtask check-teimeris-ranges
       - name: Costs page (each entry point's cost relative to a plain chart, rendered from the record, which prices every entry point on its example)
         run: cargo xtask check-costs
       - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)

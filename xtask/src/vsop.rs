@@ -81,7 +81,7 @@ use crate::measure::{Claim, count, fill, spelled, table, verdict_of};
 const PAGE: &str = "docs/03-design/builtin-ephemeris-measured.md";
 
 /// The engine-derived record of what the theory itself costs, emitted by
-/// `teistro-ephemeris-teimeris-vsop-floor`. The number, not the code that
+/// the reference adapter's `vsop-floor` binary. The number, not the code that
 /// produced it: the page reads this and needs no engine to regenerate.
 ///
 /// It sits beside the crate it informs rather than in `fixtures/`, which
@@ -415,7 +415,7 @@ fn floor_section(floor: &Floor) -> String {
         let _ = writeln!(out, "\n## The theory's own floor\n");
         let _ = writeln!(
             out,
-            "Every figure above is truncation against the whole theory, so the last row is zero by construction. This is what the whole theory itself costs, measured against Teimeris in the frame VSOP87 is stated in — `{}` — at {} instants {:.0} days apart, on the engine's `{}` profile. Recorded by `teistro-ephemeris-teimeris-vsop-floor` into `{FLOOR}`; the number, not the code that produced it.\n",
+            "Every figure above is truncation against the whole theory, so the last row is zero by construction. This is what the whole theory itself costs, measured against Teimeris in the frame VSOP87 is stated in — `{}` — at {} instants {:.0} days apart, on the engine's `{}` profile. Recorded by the reference adapter's `vsop-floor` binary into `{FLOOR}`; the number, not the code that produced it.\n",
             floor.frame,
             count(floor.samples),
             floor.step_days,

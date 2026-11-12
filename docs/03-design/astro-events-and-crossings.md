@@ -157,7 +157,7 @@ what no engine can know there: the two Delta T models the SDK cites,
 after UT1 at 2350, and 13 s of Delta T is 7″ of the Moon. A consumer who
 wants the engine's meridian asks the engine for it through the
 passthrough, `tm_sidereal_time` or `tm_houses_calc`
-(`engine-passthrough-measured.md`). Local apparent
+(`engine-passthrough.md`). Local apparent
 sidereal time adds the longitude. The obliquity record is the IAU 2006
 mean obliquity and the IAU 2000B nutation. Every ported routine is in `astro::iau` with the
 provenance table ADR-0021 requires and is tested against the reference

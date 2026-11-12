@@ -60,7 +60,7 @@ const PAGE: &str = "docs/03-design/lunar-accuracy-measured.md";
 const FLOOR: &str = "crates/ephemeris-builtin/data/vsop87-floor.json";
 
 /// Where the Moon's measured error is recorded, by
-/// `teistro-ephemeris-teimeris-moon-floor`.
+/// the reference adapter's `moon-floor` binary.
 const MOON_FLOOR: &str = "crates/ephemeris-builtin/data/elp82b-floor.json";
 
 /// Seconds of clock time in a day.

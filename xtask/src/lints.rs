@@ -48,7 +48,7 @@ const COMPUTATION: [&str; 10] = [
 /// published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 9] = [
+const UNSAFE_CRATES: [&str; 8] = [
     "crates/port-ephemeris",
     "crates/ffi",
     "crates/mcp",
@@ -56,12 +56,11 @@ const UNSAFE_CRATES: [&str; 9] = [
     "crates/test-adapter",
     "bindings/node/native",
     "bindings/wasm/native",
-    // The adapters call a C engine directly. They are outside the
-    // workspace, which is why they were outside this inventory until
+    // The adapter calls a C engine directly. It is outside the
+    // workspace, which is why it was outside this inventory until
     // 2026-09-12 — and being outside the workspace is no reason to be
-    // outside the inventory, because an adapter is now a shared library
-    // a consumer loads into their own process (ADR-0029).
-    "adapters/ephemeris-teimeris/rust",
+    // outside the inventory, because an adapter is a shared library a
+    // consumer loads into their own process (ADR-0029).
     "adapters/ephemeris-sweph/rust",
 ];
 

@@ -65,14 +65,6 @@
 //!    that loose would let the saving go unnoticed. What it measured,
 //!    the modules, their glue and every bundle, is written as this run's
 //!    sizes fragment for `SIZES.md` (`xtask/src/sizes.rs`).
-//! 8. **Teimeris on the web**, when a Teimeris checkout is beside this
-//!    one: the adapter's web provider (`adapters/ephemeris-teimeris/node/
-//!    web.js`) over the engine's own wasm module, its tests, and then the
-//!    month the native `teistro-ephemeris-teimeris-day-hash` prints, read
-//!    through the staged package under both setups (Nepal's official days
-//!    among them): the lines must be the native ones byte for byte. Run
-//!    after the profiles, and excused without the checkout, which is
-//!    built in its own repository.
 //!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
@@ -86,7 +78,7 @@ use std::process::Command;
 
 use serde_json::{Value, json};
 
-use crate::adapter::{self, Adapter};
+use crate::adapter;
 use crate::binding::{FIXTURES, blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
 use crate::sbom;
@@ -1056,7 +1048,6 @@ pub(crate) fn check(root: &Path) -> i32 {
         .and_then(|()| profiles(root, &staged))
         .and_then(|()| lazy_types(root, &staged))
         .and_then(|()| start(root, &staged))
-        .and_then(|()| teimeris_web(root, &staged))
         .and_then(|()| node_answer(root, &staged))
         .and_then(|node| {
             browser(root, &staged, &node)
@@ -1077,98 +1068,6 @@ pub(crate) fn check(root: &Path) -> i32 {
     rows.append(&mut bundles);
     let recorded = sizes::write_fragment(root, "wasm", rows);
     i32::from(held.is_err() || recorded.is_err())
-}
-
-/// A Teimeris checkout's part, from its variable or the checkout beside
-/// this one, which is where the adapter's Rust crate takes the engine from.
-fn teimeris_part(root: &Path, variable: &str, part: &str) -> PathBuf {
-    std::env::var_os(variable).map_or_else(
-        || root.join("..").join("teimeris").join(part),
-        PathBuf::from,
-    )
-}
-
-/// **Teimeris on the web**: the web provider's tests, then one month under
-/// each setup through the staged package, held to the native adapter's
-/// lines byte for byte. A modern provider's ayanamsha and sunrise are the
-/// SDK's own computed from positions, so positions alone must give the
-/// native answer; this is where that is proved rather than argued.
-fn teimeris_web(root: &Path, staged: &Path) -> Result<(), ()> {
-    let engine = teimeris_part(root, "TEIMERIS_WASM_PACKAGE", "bindings/wasm");
-    if !engine.join("teimeris.wasm").is_file() {
-        crate::skip::excused(
-            format_args!(
-                "Teimeris on the web: no engine module at {}; set TEIMERIS_WASM_PACKAGE to its wasm package",
-                engine.display()
-            ),
-            "the engine is built in its own repository",
-        );
-        return Ok(());
-    }
-    let data = teimeris_part(root, "TEIMERIS_DATA_DIR", "data");
-    // The adapter whose npm package carries the web provider: Teimeris's,
-    // which moves to its own repository with this step
-    // (`docs/06-cicd/adapter-gate.md`).
-    let Some(found) = Adapter::find(root, None).map_err(|why| println!("FAIL  {why}"))? else {
-        crate::skip::excused(
-            "Teimeris on the web: no adapter named",
-            "the adapter is checked in its own repository",
-        );
-        return Ok(());
-    };
-    let adapter = found.part("node");
-    step(
-        Command::new("node")
-            .args(["--test", "test/web.test.mjs"])
-            .env("TEIMERIS_WASM_PACKAGE", &engine)
-            .env("TEIMERIS_DATA_DIR", &data)
-            .current_dir(&adapter),
-        "the Teimeris web provider refuses what it must and adds a range",
-        "the Teimeris web provider's tests did not pass",
-    )?;
-    let native = found
-        .cargo()
-        .args(["run", "--quiet", "--release", "--features", "app-speed"])
-        .args(["--bin", &found.binary("day-hash")])
-        .env("TM_EMBED_TIER", "MODERN")
-        .output();
-    let web = Command::new("node")
-        .arg("test/web-day-hash.mjs")
-        .arg(staged)
-        .env("TEIMERIS_WASM_PACKAGE", &engine)
-        .current_dir(&adapter)
-        .output();
-    let (native, web) = match (native, web) {
-        (Ok(native), Ok(web)) if native.status.success() && web.status.success() => (native, web),
-        (native, web) => {
-            for (what, output) in [("the native day hash", native), ("the web day hash", web)] {
-                match output {
-                    Ok(output) if output.status.success() => {}
-                    Ok(output) => println!(
-                        "FAIL  {what} did not run:\n{}",
-                        String::from_utf8_lossy(&output.stderr)
-                    ),
-                    Err(error) => println!("FAIL  {what} did not start: {error}"),
-                }
-            }
-            return Err(());
-        }
-    };
-    let (native, web) = (
-        String::from_utf8_lossy(&native.stdout),
-        String::from_utf8_lossy(&web.stdout),
-    );
-    if native.trim().is_empty() || native != web {
-        println!(
-            "FAIL  Teimeris on the web answers otherwise than natively:\n  native\n{native}  web\n{web}"
-        );
-        return Err(());
-    }
-    println!(
-        "ok    Teimeris on the web gives the native month under {} setups, byte for byte",
-        native.lines().count()
-    );
-    Ok(())
 }
 
 /// A size as a reader reads it: megabytes to two places.

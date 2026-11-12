@@ -7,7 +7,7 @@
 //!
 //! It renders rather than measures. The measurement needs the reference
 //! engine and a tier chosen at compile time, so it is taken by
-//! `teistro-ephemeris-teimeris-stack-agreement` — once per tier — and
+//! the reference adapter's `stack-agreement` binary — once per tier — and
 //! recorded into `crates/ephemeris-builtin/data/stack-agreement-<tier>
 //! .json`. This pass reads whichever of those files exist and writes the
 //! page from them, so `check-agreement` gates the page against the
@@ -185,7 +185,7 @@ fn recorded(root: &Path) -> Result<Vec<Recorded>, String> {
             Err(error) => {
                 return Err(format!(
                     "{} is recorded but does not parse: {error}. Re-record it with \
-                     `teistro-ephemeris-teimeris-stack-agreement`, or fix the reader.",
+                     the reference adapter's `stack-agreement` binary, or fix the reader.",
                     path.display()
                 ));
             }
@@ -269,7 +269,7 @@ fn header(tiers: &[Recorded]) -> String {
     let _ = writeln!(out, "# The completion, measured\n");
     let _ = writeln!(
         out,
-        "Status: `generated` by `cargo xtask agreement`, gated by `check-agreement`. Do not edit. The numbers are read from `{RECORDED}/stack-agreement-<tier>.json`, recorded by `teistro-ephemeris-teimeris-stack-agreement` against the reference engine — the number, not the code that produced it.\n"
+        "Status: `generated` by `cargo xtask agreement`, gated by `check-agreement`. Do not edit. The numbers are read from `{RECORDED}/stack-agreement-<tier>.json`, recorded by the reference adapter's `stack-agreement` binary against the reference engine — the number, not the code that produced it.\n"
     );
     let _ = writeln!(
         out,
@@ -848,7 +848,7 @@ fn missing_section(tiers: &[Recorded]) -> String {
     for tier in &missing {
         let _ = writeln!(
             out,
-            "```text\ncargo run --release --no-default-features --features {tier} \\\n  --bin teistro-ephemeris-teimeris-stack-agreement \\\n  > {RECORDED}/stack-agreement-{tier}.json\n```"
+            "```text\ncargo run --release --no-default-features --features {tier} \\\n  --bin <package>-stack-agreement \\\n  > {RECORDED}/stack-agreement-{tier}.json\n```"
         );
     }
     let _ = writeln!(

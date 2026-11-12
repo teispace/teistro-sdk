@@ -1,6 +1,6 @@
 # Pluto, measured
 
-Status: `generated` by `cargo xtask pluto`, gated by `check-pluto`. Do not edit. The numbers are read from `crates/ephemeris-builtin/data/pluto-fit.json`, recorded by `teistro-ephemeris-teimeris-pluto-fit` against the reference engine — the number, not the code that produced it.
+Status: `generated` by `cargo xtask pluto`, gated by `check-pluto`. Do not edit. The numbers are read from `crates/ephemeris-builtin/data/pluto-fit.json`, recorded by the reference adapter's `pluto-fit` binary against the reference engine — the number, not the code that produced it.
 
 PLUTO is the one body in the built-in ephemeris with **no published series to truncate** (ADR-0008). Every other body's tier is a threshold on an existing theory; Pluto's is a choice of how finely to fit it. This page measures that choice.
 

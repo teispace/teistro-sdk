@@ -1,6 +1,6 @@
 # The completion, measured
 
-Status: `generated` by `cargo xtask agreement`, gated by `check-agreement`. Do not edit. The numbers are read from `crates/ephemeris-builtin/data/stack-agreement-<tier>.json`, recorded by `teistro-ephemeris-teimeris-stack-agreement` against the reference engine — the number, not the code that produced it.
+Status: `generated` by `cargo xtask agreement`, gated by `check-agreement`. Do not edit. The numbers are read from `crates/ephemeris-builtin/data/stack-agreement-<tier>.json`, recorded by the reference adapter's `stack-agreement` binary against the reference engine — the number, not the code that produced it.
 
 Every other measurement in this directory isolates one thing: a truncation against the whole theory, a theory against the engine in its own frame, the Moon against a tithi. **This one measures what a consumer receives.** A position in the frame a chart is actually cast in — in the equinox of date, sidereal by Lahiri, apparent — with the SDK's own completion doing precession, light time, deflection, aberration, nutation and the ayanamsha over the built-in ephemeris, against the same frame from the reference engine.
 

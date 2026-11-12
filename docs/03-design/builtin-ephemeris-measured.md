@@ -42,8 +42,8 @@ Every figure above is truncation against the whole theory, so the last
 row is zero by construction. This is what the whole theory itself costs,
 measured against Teimeris in the frame VSOP87 is stated in —
 `HELIOCENTRIC/J2000/ECLIPTIC/TROPICAL/GEOMETRIC` — at 5479 instants 40
-days apart, on the engine's `compatible` profile. Recorded by
-`teistro-ephemeris-teimeris-vsop-floor` into
+days apart, on the engine's `compatible` profile. Recorded by the
+reference adapter's `vsop-floor` binary into
 `crates/ephemeris-builtin/data/vsop87-floor.json`; the number, not the
 code that produced it.
 

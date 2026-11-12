@@ -62,11 +62,10 @@ members = [
     "spikes/02-binding-toolchain/b-bridge",
     "spikes/04-teistro-intl/intl",
 ]
-# The licensed-engine adapters are outside the workspace on purpose
-# (ADR-0019): they depend on the port, never the reverse, and the workspace
-# builds with the test provider alone.
+# The adapters are outside the workspace on purpose (ADR-0019): they
+# depend on the port, never the reverse, and the workspace builds with the
+# test provider alone.
 exclude = [
-    "adapters/ephemeris-teimeris/rust",
     "adapters/ephemeris-sweph/rust",
     "adapters/geo-teigeodata/rust",
 ]
