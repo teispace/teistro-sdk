@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 568 of the examples' 583 members.
+/// The cases compare 570 of the examples' 585 members.
 library;
 
 import 'dart:convert';
@@ -2900,6 +2900,34 @@ void main() {
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
+      ).toJson(),
+    );
+  });
+
+  test('almanac.skyPose: AlmanacSkyPoseRequest', () {
+    _holds(
+      'almanac.skyPose',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: AlmanacSkyPoseRequest(
+        altitudeM: 1.5,
+        at: 1.5,
+        eclipticStepDeg: 1.5,
+        grahas: [Graha.moon],
+        horizonStepDeg: 1.5,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        pose: DevicePose(
+          altitudeDeg: 1.5,
+          aspectRatio: 1.5,
+          azimuthDeg: 1.5,
+          horizontalFovDeg: 1.5,
+          rollDeg: 1.5,
+        ),
+        pressureHpa: 1.5,
+        stars: [Star.bharani],
+        temperatureC: 1.5,
       ).toJson(),
     );
   });
