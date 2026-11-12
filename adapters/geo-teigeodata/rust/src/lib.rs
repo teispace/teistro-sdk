@@ -153,14 +153,7 @@ impl TeigeodataGeo {
     pub fn from_engine(engine: Engine) -> Result<TeigeodataGeo, Error> {
         let data_version = engine
             .layers()
-            .map(|layer| {
-                format!(
-                    "{}.{}.{}",
-                    layer.address(),
-                    layer.component(),
-                    layer.release()
-                )
-            })
+            .map(pack_name)
             .collect::<Vec<_>>()
             .join(" + ");
         if data_version.is_empty() {
@@ -205,6 +198,17 @@ impl TeigeodataGeo {
     fn scratch(&self) -> std::sync::MutexGuard<'_, Scratch> {
         self.scratch.lock().unwrap_or_else(PoisonError::into_inner)
     }
+}
+
+/// A pack as the source names it: its address, component and release,
+/// such as `np.places.2026.11.0`.
+fn pack_name(layer: &Layer) -> String {
+    format!(
+        "{}.{}.{}",
+        layer.address(),
+        layer.component(),
+        layer.release()
+    )
 }
 
 /// The engine's point for `at`, on its 1e-7° grid.
@@ -271,12 +275,7 @@ impl GeoProvider for TeigeodataGeo {
             source: match height.source {
                 Some(product) => String::from(product.name()),
                 None => match self.engine.layer(height.layer) {
-                    Some(layer) => format!(
-                        "the DEM of {}.{}.{}",
-                        layer.address(),
-                        layer.component(),
-                        layer.release()
-                    ),
+                    Some(layer) => format!("the DEM of {}", pack_name(layer)),
                     None => String::from("a teigeodata DEM"),
                 },
             },
