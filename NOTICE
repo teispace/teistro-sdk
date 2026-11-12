@@ -39,6 +39,7 @@ each generated table names its source in its header:
   and nakshatra yogataras.
 
 "Swiss Ephemeris" is a trademark of Astrodienst AG and is used here only
-descriptively. Teistro SDK contains no Swiss Ephemeris code or data; the
-Swiss Ephemeris and Teimeris adapters are separate packages under their
-own licences.
+descriptively. Teistro SDK contains no Swiss Ephemeris code or data; a
+build of the Swiss Ephemeris adapter links the library you supply, under
+its own licence. Teimeris and its adapters are Teispace-proprietary and
+are not part of the Teistro SDK.

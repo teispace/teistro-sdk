@@ -804,11 +804,11 @@ un-publish, `03-release-process.md`, "Withdrawing").
    token on standard input, and polls the deployment; `release.yml`'s
    `publish` job runs it. The namespace, the key, the dispatch rehearsal
    and Sigstore are still to do.
-9. **The Teimeris adapter's Java package** (`adapters/ephemeris-teimeris/`
-   gains `java`), type-checked by `check-java` as the others are by their
-   binding's gate. **Built 2026-10-09:** the module
-   `com.teispace.teistro.teimeris`, with `Teimeris.builder()` for the
-   chain and `TeimerisEngine`, a target of `cargo xtask engine` beside Node, Dart and Python:
+9. **An adapter's Java package**, type-checked by `check-java` as the
+   others are by their binding's gate, when `check-adapter` names one.
+   **Built 2026-10-09** for Teimeris, whose adapter is private to Teispace
+   since 2026-11-12 (`06-cicd/adapter-gate.md`): a module with a builder
+   for the chain and a generated engine façade beside Node, Dart and Python:
    one generated file, a record per struct and per answer of more than one
    value nested in the class, a whole number a `long` since the engine's
    integers include `uint32_t` and `int64_t`. `check-java` compiles the

@@ -110,9 +110,9 @@ same version (§6.2). It has no native code. Its entry is one function:
 
 ```ts fragment
 import { compat } from '@teistro/compat';
-import teimeris from '@teistro/ephemeris-teimeris';
 
-const shim = compat({ ephemeris: [teimeris({ dataDir: './ephe' })], locale: 'ne-Deva-NP' });
+const engine = { plugin: '/path/to/your-engine-adapter.so' }; // your engine's adapter
+const shim = compat({ ephemeris: [engine], locale: 'ne-Deva-NP' });
 const chart = shim.chart(birthRecord, snapshot);   // the SDK's Chart
 ```
 

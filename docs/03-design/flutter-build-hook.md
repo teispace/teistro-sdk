@@ -139,7 +139,7 @@ version**. Reasons:
 3. A Flutter app adds a single dependency (`teistro_flutter`, which
    re-exports `package:teistro/teistro.dart`) and never runs
    `dart run teistro:install`.
-4. The Teimeris adapter's Dart package (`teistro_ephemeris_teimeris`,
+4. An engine adapter's Dart package (Teimeris's, private to Teispace,
    `PluginEphemeris`) will need the same thing for mobile. The hook's body
    is written as one function over (stem, version, digest table, base URL)
    that the adapter's own hook can call (see open point O5).

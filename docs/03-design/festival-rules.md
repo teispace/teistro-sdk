@@ -376,7 +376,7 @@ day's panchanga value to the bit. `festivals_with_days`, which hands the
 days out too, still founds them in full and views them.
 
 The claim is gated rather than argued:
-`teistro-ephemeris-teimeris-festival-agreement` asks both paths for
+the Teimeris adapter's `festival-agreement` binary asks both paths for
 every year from 2000 to 2100 at Kathmandu, Delhi and Sydney, under both
 setups over Teimeris, with every shipped pack's rules at once, and
 fails on the first year whose answers differ, value or stamp

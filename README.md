@@ -10,8 +10,9 @@ owns the whole astronomy layer above raw planetary positions (time scales,
 precession and nutation, sidereal time, the full ayanamsha catalogue, every
 house system, sunrise and set, crossings), ships its own built-in
 ephemeris so it works with nothing else installed, and accepts any other
-ephemeris through a small port (Teimeris and Swiss Ephemeris adapters are
-published separately, each under its own licence). It is modular and
+ephemeris through a small port (an engine plugs in as an adapter under the
+engine's own licence; `adapters/` holds a Swiss Ephemeris one you build
+from your own copy). It is modular and
 tree-shakable, localised through one opinionated standard (Teistro Intl)
 that anyone can add a language to without touching the core, and held to
 measured claims: every accuracy and performance number in the
@@ -44,6 +45,10 @@ and the documentation in `docs/` is organised as a map. Start at
 
 ## Licence
 
-Apache License 2.0; see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE).
+Apache License 2.0; see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). This
+covers the SDK and every adapter in this repository; an engine an adapter
+links keeps its own licence ([`adapters/README.md`](adapters/README.md)).
+Teimeris and its adapters are Teispace-proprietary and are not part of this
+repository.
 Contributions are accepted under the Developer Certificate of Origin; see
 [`CONTRIBUTING.md`](CONTRIBUTING.md).

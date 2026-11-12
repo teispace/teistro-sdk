@@ -1,24 +1,27 @@
 # Adapters
 
-The ephemeris adapters for licensed engines, and a geo adapter (below), outside the SDK workspace
-by design (ADR-0019, `CLEAN_ROOM.md`): each is a standalone crate that
-depends on the SDK's port (and kit), never the reverse, and the workspace
-builds and passes its tests with the analytic test provider alone. A
-binary that links an engine is distributed under the engine's terms; the
-adapters' own source is Apache-2.0.
+The adapters in this repository, outside the SDK workspace by design
+(ADR-0019, `CLEAN_ROOM.md`): each is a standalone crate that depends on the
+SDK's port (and kit), never the reverse, and the workspace builds and passes
+its tests with the analytic test provider alone. None is published.
 
-| adapter | engine | needs | run |
-|---|---|---|---|
-| [`ephemeris-teimeris/rust`](ephemeris-teimeris/rust) | Teimeris, through its Rust binding; declares the obliquity, Delta T, ayanamsha, topocentric, rise-and-set, crossings and stations overrides | `TEIMERIS_LIB_DIR` (the engine's release build), `TEIMERIS_DATA_DIR` (the `.se1` files; the Teimeris checkout's `data/` by default) | `cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml --bin teistro-ephemeris-teimeris-kit`; `--bin teistro-ephemeris-teimeris-bs-fit` for the Bikram Sambat measurement |
-| [`ephemeris-sweph/rust`](ephemeris-sweph/rust) | the Swiss Ephemeris C library, compiled from sources named at build time; declares the obliquity, Delta T, ayanamsha and topocentric overrides | `SWEPH_SRC_DIR` (the library's sources), `SWEPH_DATA_DIR` | `cargo run --release --manifest-path adapters/ephemeris-sweph/rust/Cargo.toml` |
+| adapter | engine | needs | run | licence |
+|---|---|---|---|---|
+| [`ephemeris-sweph/rust`](ephemeris-sweph/rust) | the Swiss Ephemeris C library, compiled from sources you bring, named at build time; declares the obliquity, Delta T, ayanamsha and topocentric overrides | `SWEPH_SRC_DIR` (the library's sources), `SWEPH_DATA_DIR` (its `.se1` files; `ephe/` in the working directory by default) | `cargo run --release --manifest-path adapters/ephemeris-sweph/rust/Cargo.toml` | this crate's source Apache-2.0; a build links the Swiss Ephemeris and is under its terms (AGPL-3.0 or Astrodienst's Professional Licence), which you hold |
+| [`geo-teigeodata/rust`](geo-teigeodata/rust) | a teigeodata engine, for the geo port (below) | the packs, `TEISTRO_TEIGEODATA_PACKS` | `cargo test --manifest-path adapters/geo-teigeodata/rust/Cargo.toml` | Apache-2.0, as teigeodata is |
 
-The two read the same `.se1` file family and declare the same coverage and
-content hashes for the same directory (`teistro_port_ephemeris::sefile`).
-Their kit reports and timings are quoted in
-`docs/03-design/ephemeris-port-and-adapters.md`; the Teimeris adapter's
-tests also compare the SDK's rise and set solver with the engine's own
-search and with the baseline's 55 fixture charts
-(`docs/03-design/astro-events-and-crossings.md`).
+**Any engine plugs in the same way.** An adapter is a crate with a `cdylib`
+and a kit binary, and a package per binding; `cargo xtask check-adapter
+--adapter DIR` holds one to what every provider is held to, wherever it
+lives (`docs/06-cicd/adapter-gate.md`). Teimeris, Teispace's own engine, is
+one: its adapters are Teispace-proprietary, kept in the engine's private
+repository and checked against every SDK batch before it merges, and are not
+part of this repository.
+
+The Swiss Ephemeris adapter reads the `.se1` file family and declares its
+coverage and content hashes for the directory it opens
+(`teistro_port_ephemeris::sefile`). Its kit report and timings are quoted in
+`docs/03-design/ephemeris-port-and-adapters.md`.
 
 ## Geo
 

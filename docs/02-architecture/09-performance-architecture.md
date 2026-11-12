@@ -54,7 +54,8 @@ ratio for every request.
 
 What an app asks for (a context, a day, a month grid, a year, a year of
 festivals, a muhurta search, a chart, a match) is timed through the façade
-by `teistro-ephemeris-teimeris-app-speed`, recorded per machine, rendered
+by an adapter's `app-speed` binary (Teimeris's, which is private to
+Teispace), recorded per machine, rendered
 into `05-testing/app-speed-measured.md` and gated by `check-app-speed`: a
 median past **twice** its budget fails, since wall time is noisy and a
 tighter ceiling would fail on a busy runner rather than on a regression.

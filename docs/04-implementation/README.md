@@ -52,9 +52,8 @@ teistro-sdk/
     java/                      the Panama FFM binding: generated/ and src/, tests, examples and
                                parity/ParityRunner.java (`check-java`)
   adapters/                    outside the workspace (ADR-0019), with their README
-    ephemeris-teimeris/        the port over Teimeris, from Rust and as a package per binding; published
-                               separately (Teimeris terms)
     ephemeris-sweph/rust/      the port over the Swiss Ephemeris C sources; published separately (Swiss terms)
+    geo-teigeodata/rust/       the geo port over a teigeodata engine (SR-88)
   xtask/                       the repository's tasks in Rust, `cargo xtask <task>` (ADR-0014; see Build)
   fixtures/                    the conformance corpus, a submodule of teispace/teistro-conformance pinned to a
                                tag (ADR-0022); `check-fixtures` refuses a checkout without it

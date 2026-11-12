@@ -87,7 +87,7 @@ holding the target answers, and its earliest day is the one returned.
 ## 5. Cost
 
 Measured on this Mac (Apple silicon, release build, 2026-10-30) by the
-`app-speed` binary's harness (`adapters/ephemeris-teimeris/rust`), each
+`app-speed` binary's harness (the Teimeris adapter's), each
 run on a fresh context, 21 runs, median in milliseconds. Each search starts
 at noon UTC on 1 January 2026, at Kathmandu:
 
