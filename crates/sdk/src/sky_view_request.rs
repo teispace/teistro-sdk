@@ -1,10 +1,13 @@
 //! The sky view as a binding asks it (`03-design/sky-view.md`): a place,
-//! an instant, and what to draw.
+//! an instant, and what to draw; and the sky pose (`03-design/sky-pose.md`),
+//! the same with a device's pose beside it.
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use teistro_astro::sky_pose::{Pose, SkyPose, sky_pose};
 use teistro_astro::sky_view::{Atmosphere, SkyView, SkyViewOptions, sky_view};
 use teistro_core::catalogue::{Graha, Star};
-use teistro_core::envelope::{Convention, Envelope, content_hash};
+use teistro_core::envelope::{Convention, Envelope, Provenance, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_port_ephemeris::Astronomy;
@@ -16,6 +19,12 @@ use crate::ephemeris::no_ephemeris;
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
 const SKY_VIEW: &str = "skyView";
+
+/// The sky pose's name where a binding sends it.
+const SKY_POSE: &str = "skyPose";
+
+/// The pose's key beside the sky view's fields.
+const POSE: &str = "pose";
 
 /// A place, an instant and what to draw there: the sky view a binding
 /// asks for.
@@ -92,7 +101,13 @@ impl SkyViewRequest {
     /// read, a place out of range, a step outside 0.1 to 90 degrees, or an
     /// atmosphere no planet has, named under `skyView`.
     pub fn from_json(text: &str) -> Result<SkyViewRequest, Error> {
-        let asked: SkyViewAsked = teistro_core::strict::read(text, SKY_VIEW)?;
+        SkyViewRequest::read(&teistro_core::strict::parse(text, SKY_VIEW)?, SKY_VIEW)
+    }
+
+    /// The request read from JSON already parsed, each refusal named
+    /// under `root`: the sky view's own, or the sky pose's.
+    fn read(given: &Value, root: &str) -> Result<SkyViewRequest, Error> {
+        let asked: SkyViewAsked = teistro_core::strict::read_value(given, root)?;
         let defaults = SkyViewOptions::default();
         let options = SkyViewOptions {
             ecliptic_step_deg: asked
@@ -112,13 +127,85 @@ impl SkyViewRequest {
         };
         let place = place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)
             .and_then(|place| options.check().map(|()| place))
-            .map_err(|why| why.under(SKY_VIEW))?;
+            .map_err(|why| why.under(root))?;
         Ok(SkyViewRequest {
             place,
             at: asked.at,
             options,
         })
     }
+}
+
+/// A sky view and a device's pose: what `almanac.skyPose` reads
+/// (`03-design/sky-pose.md`).
+#[derive(Clone, Debug, PartialEq)]
+pub struct SkyPoseRequest {
+    /// The sky view, as `almanac.skyView` reads it.
+    pub view: SkyViewRequest,
+    /// Where the camera points and what it frames, checked.
+    pub pose: Pose,
+}
+
+impl SkyPoseRequest {
+    /// The record a binding sends, as JSON: the sky view's fields, and
+    /// `pose` beside them.
+    ///
+    /// ```
+    /// use teistro::SkyPoseRequest;
+    ///
+    /// let asked = SkyPoseRequest::from_json(
+    ///     r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "at": 2461345.25,
+    ///         "pose": {"azimuthDeg": -90, "altitudeDeg": 30, "rollDeg": 0, "horizontalFovDeg": 60, "aspectRatio": 0.75}}"#,
+    /// )?;
+    /// assert_eq!(asked.pose.azimuth_deg, 270.0);
+    /// assert_eq!(asked.view.options.stars.len(), 27);
+    /// let wide = SkyPoseRequest::from_json(
+    ///     r#"{"latitudeDeg": 0, "longitudeDeg": 0, "at": 2461345.25,
+    ///         "pose": {"azimuthDeg": 0, "altitudeDeg": 0, "rollDeg": 0, "horizontalFovDeg": 180, "aspectRatio": 1}}"#,
+    /// );
+    /// assert_eq!(wide.unwrap_err().field(), Some("skyPose.pose.horizontalFovDeg"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a missing `pose`, a
+    /// key either part does not read, and either part's own refusals,
+    /// named under `skyPose` and `skyPose.pose`.
+    pub fn from_json(text: &str) -> Result<SkyPoseRequest, Error> {
+        let mut given = teistro_core::strict::parse(text, SKY_POSE)?;
+        let pose = match given.as_object_mut().map(|fields| fields.remove(POSE)) {
+            Some(Some(pose)) => pose,
+            Some(None) => {
+                return Err(Error::invalid_arg("`pose` is missing")
+                    .with_field(format!("{SKY_POSE}.{POSE}"))
+                    .with_hint("the record needs the device's pose"));
+            }
+            // Not an object: the sky view's reader names it.
+            None => Value::Null,
+        };
+        let view = SkyViewRequest::read(&given, SKY_POSE)?;
+        let under = format!("{SKY_POSE}.{POSE}");
+        let pose = teistro_core::strict::read_value::<Pose>(&pose, &under)?
+            .checked()
+            .map_err(|why| why.under(&under))?;
+        Ok(SkyPoseRequest { view, pose })
+    }
+}
+
+/// The sky pose's request schema: the sky view's, with the pose beside
+/// it and required.
+#[cfg(feature = "schema")]
+pub(crate) fn pose_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    let pose = generator.subschema_for::<Pose>();
+    let mut schema = crate::records::beside::<SkyViewAsked>(generator, vec![(POSE, pose)]);
+    if let Some(required) = schema
+        .get_mut("required")
+        .and_then(serde_json::Value::as_array_mut)
+    {
+        required.push(Value::from(POSE));
+    }
+    schema
 }
 
 /// What a sky view is a function of, beside the settings.
@@ -133,6 +220,10 @@ struct SkyViewInput<'a> {
     ecliptic_step_deg: f64,
     horizon_step_deg: f64,
     atmosphere: Atmosphere,
+    /// The device's pose, for a sky pose; left out of a sky view's input,
+    /// whose hash stays what it was.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pose: Option<Pose>,
 }
 
 impl AlmanacArea<'_> {
@@ -163,6 +254,17 @@ impl AlmanacArea<'_> {
     /// classical one, whose places are a text's and not where to look
     /// (C1185); the ephemeris's refusal for the instant.
     pub fn sky_view(self, asked: &SkyViewRequest) -> Result<Envelope<SkyView>, Error> {
+        let (view, provenance) = self.sky_stamped(asked, None)?;
+        Ok(Envelope::sealing(view, provenance))
+    }
+
+    /// The sky a request asks for, and its provenance: stamped with the
+    /// pose too when one is asked, and naming the projection then.
+    fn sky_stamped(
+        self,
+        asked: &SkyViewRequest,
+        pose: Option<Pose>,
+    ) -> Result<(SkyView, Provenance), Error> {
         let context = self.context();
         let provider = context.ephemeris().ok_or_else(no_ephemeris)?;
         if provider.capabilities().astronomy == Astronomy::Classical {
@@ -194,6 +296,7 @@ impl AlmanacArea<'_> {
                 ecliptic_step_deg: options.ecliptic_step_deg,
                 horizon_step_deg: options.horizon_step_deg,
                 atmosphere: options.atmosphere,
+                pose,
             }),
             source.apparent_frame(),
             Vec::new(),
@@ -208,7 +311,64 @@ impl AlmanacArea<'_> {
                 "a refracted altitude is the airless one lifted by Saemundsson's standard refraction scaled to the air, and left airless below the horizon (C973); UT1 read as UTC",
             ),
         });
-        Ok(Envelope::sealing(view, provenance))
+        if pose.is_some() {
+            provenance.applied_conventions.push(Convention {
+                knob: String::from("sky.pose"),
+                value: String::from("rectilinear (gnomonic), true north, refracted altitudes"),
+                reason: String::from(
+                    "a camera's picture is the gnomonic projection about its line of sight; the azimuth asked is from true north, the declination the consumer's; a point is drawn at its refracted altitude and a horizon point at nought (03-design/sky-pose.md)",
+                ),
+            });
+        }
+        Ok((view, provenance))
+    }
+
+    /// A device's camera pointed at the sky (`03-design/sky-pose.md`):
+    /// the sky view the request asks for, unchanged, and where each of its
+    /// grahas, stars, ecliptic points and horizon points falls in the
+    /// camera's picture, normalised with the origin at the top left. The
+    /// rising lagna point is the ecliptic's `ASCENDANT`
+    /// ([`SkyPose::ascendant`]).
+    ///
+    /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::{Context, Ephemeris, SkyPoseRequest};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let asked = SkyPoseRequest::from_json(
+    ///     r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "at": 2461345.25,
+    ///         "pose": {"azimuthDeg": 90, "altitudeDeg": 20, "rollDeg": 0, "horizontalFovDeg": 60, "aspectRatio": 0.75}}"#,
+    /// )?;
+    /// let seen = sdk.almanac().sky_pose(&asked)?.value;
+    /// for (star, placed) in seen.sky.stars.iter().zip(&seen.screen.stars) {
+    ///     if placed.in_view {
+    ///         println!("{:?} at {:?}, {:?}", star.star, placed.x, placed.y);
+    ///     }
+    /// }
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::sky_view`].
+    pub fn sky_pose(self, asked: &SkyPoseRequest) -> Result<Envelope<SkyPose>, Error> {
+        let (view, provenance) = self.sky_stamped(&asked.view, Some(asked.pose))?;
+        Ok(Envelope::sealing(sky_pose(view, asked.pose), provenance))
+    }
+
+    /// As [`AlmanacArea::sky_pose`] for a query a binding sent, every
+    /// catalogue member of its sky written as its full key.
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::sky_view`].
+    pub fn sky_pose_query(
+        self,
+        asked: &SkyPoseRequest,
+    ) -> Result<Envelope<serde_json::Value>, Error> {
+        let Envelope { value, provenance } = self.sky_pose(asked)?;
+        Ok(Envelope::sealing(value.in_full()?, provenance))
     }
 
     /// As [`AlmanacArea::sky_view`] for a query a binding sent, every
@@ -244,6 +404,73 @@ mod tests {
     #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
 
     use super::*;
+
+    /// A pose beside the sky view's fields reads, and each refusal is
+    /// named under the part it stands in.
+    #[test]
+    fn a_pose_reads_beside_the_sky_and_each_refusal_is_named() {
+        let pose = r#""pose": {"azimuthDeg": 10, "altitudeDeg": 90, "rollDeg": -180, "horizontalFovDeg": 179.9, "aspectRatio": 10}"#;
+        let asked = SkyPoseRequest::from_json(&format!(
+            r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 2461345.25, "stars": [], {pose}}}"#
+        ))
+        .unwrap();
+        assert_eq!(asked.pose.altitude_deg, 90.0);
+        assert_eq!(asked.view.options.stars, Vec::new());
+        let good = r#""azimuthDeg": 0, "altitudeDeg": 0, "rollDeg": 0, "aspectRatio": 1"#;
+        for (text, field) in [
+            (
+                String::from(r#"{"latitudeDeg": 0, "longitudeDeg": 0, "at": 2461345.25}"#),
+                "skyPose.pose",
+            ),
+            (
+                format!(
+                    r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}, "horizontalFovDeg": 180}}}}"#
+                ),
+                "skyPose.pose.horizontalFovDeg",
+            ),
+            (
+                format!(r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}}}}}"#),
+                "skyPose.pose",
+            ),
+            (
+                format!(
+                    r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}, "horizontalFovDeg": 60, "yawDeg": 1}}}}"#
+                ),
+                "skyPose.pose.yawDeg",
+            ),
+            (
+                format!(
+                    r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}, "horizontalFovDeg": 60}}, "eclipticStepDeg": 0}}"#
+                ),
+                "skyPose.eclipticStepDeg",
+            ),
+            (
+                format!(
+                    r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}, "horizontalFovDeg": 60}}, "grahas": ["ABHIJIT"]}}"#
+                ),
+                "skyPose.grahas",
+            ),
+            (
+                format!(
+                    r#"{{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": {{{good}, "horizontalFovDeg": 60}}, "posture": 1}}"#
+                ),
+                "skyPose.posture",
+            ),
+            (
+                r#"{"latitudeDeg": 0, "longitudeDeg": 0, "at": 1, "pose": [1, 2]}"#.to_string(),
+                "skyPose.pose",
+            ),
+        ] {
+            let refused = SkyPoseRequest::from_json(&text).unwrap_err();
+            assert!(
+                refused
+                    .field()
+                    .is_some_and(|named| named.starts_with(field)),
+                "{text}: {refused:?}"
+            );
+        }
+        assert!(SkyPoseRequest::from_json("[]").is_err());
+    }
 
     #[test]
     fn every_option_reads_and_each_refusal_is_named() {

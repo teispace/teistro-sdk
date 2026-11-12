@@ -42,6 +42,7 @@ __all__ = [
     "SankalpaRequest",
     "SankalpaWordsRequest",
     "SentencesRequest",
+    "AlmanacSkyPoseRequest",
     "SkyViewRequest",
     "AddAsked",
     "BetweenAsked",
@@ -109,6 +110,7 @@ __all__ = [
     "ReckonedPlace",
     "AyanaReckoning",
     "SankalpaFor",
+    "DevicePose",
     "Projection",
     "AntisciaRequest",
     "ConsiderationRules",
@@ -1428,6 +1430,42 @@ class SentencesRequest(TypedDict, total=False):
     """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
+class AlmanacSkyPoseRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The instant, a UTC Julian day."""
+
+    eclipticStepDeg: Optional[float]
+    """The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out."""
+
+    grahas: Optional[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas placed, in this order; the nine, Sun to Ketu, when left out."""
+
+    horizonStepDeg: Optional[float]
+    """The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    pose: Required[DevicePose]
+
+    pressureHpa: Optional[float]
+    """The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction."""
+
+    stars: Optional[Sequence[Union[_catalogue.Star, str]]]
+    """The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out."""
+
+    temperatureC: Optional[float]
+    """The temperature, degrees Celsius, −90 to 60; 10 when left out."""
+
+
 class SkyViewRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -2657,6 +2695,25 @@ class SankalpaFor(TypedDict, total=False):
 
     river: Optional[str]
     """The river the place is near, as a stem (`वाग्मती`); left out, the template says none."""
+
+
+class DevicePose(TypedDict, total=False):
+    """Where a camera points and what it frames: its line of sight, its roll and its field (`03-design/sky-pose.md` §1)."""
+
+    altitudeDeg: Required[float]
+    """The line of sight's height above the airless horizon, degrees, −90 to 90."""
+
+    aspectRatio: Required[float]
+    """The picture's width over its height, 0.1 to 10."""
+
+    azimuthDeg: Required[float]
+    """Where the line of sight points, degrees in `[0, 360)` from true north through east."""
+
+    horizontalFovDeg: Required[float]
+    """The field of view across the picture, edge to edge, degrees, above 0 and below 180."""
+
+    rollDeg: Required[float]
+    """The picture's turn about the line of sight, degrees, −180 to 180: positive as the phone is turned clockwise seen from its screen, 0 when the picture's up leans to the zenith."""
 
 
 Projection: TypeAlias = Literal['IN_MUNDO', 'ZODIACAL']
@@ -10678,7 +10735,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10756,6 +10813,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['almanac.sentences'], request: SentencesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.skyPose'], request: AlmanacSkyPoseRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['almanac.skyView'], request: SkyViewRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

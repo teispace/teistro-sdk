@@ -342,6 +342,7 @@ import type {
   BandRequest,
   GunaBand,
   SankalpaWordsRequest,
+  DevicePose,
 } from './requests.js';
 
 export * from './catalogue.js';
@@ -8249,6 +8250,24 @@ export declare class AlmanacArea {
    * value.grahas[1].azimuthDeg; // the Moon's
    */
   skyView(query: SkyViewAsked): SkyViewAnswer;
+
+  /**
+   * **A device's camera pointed at the sky** (`03-design/sky-pose.md`):
+   * `skyView`'s query with a `pose` beside it, answered with the sky
+   * view's value unchanged as `sky`, and `screen`, where each of its
+   * points falls in the camera's rectilinear picture, one placement for
+   * each point of `sky`'s list of the same name. The rising lagna point
+   * is `sky.ecliptic`'s `ASCENDANT`.
+   *
+   * @example
+   * const { value } = sdk.almanac.skyPose({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   at: 2461345.25,
+   *   pose: { azimuthDeg: 90, altitudeDeg: 20, rollDeg: 0, horizontalFovDeg: 60, aspectRatio: 0.75 },
+   * });
+   * value.sky.stars.filter((star, n) => value.screen.stars[n].inView);
+   */
+  skyPose(query: SkyPoseAsked): SkyPoseAnswer;
   /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first
@@ -9200,23 +9219,64 @@ export interface HorizonPoint {
 
 /** What `almanac.skyView` answers. */
 export interface SkyViewAnswer {
+  readonly value: SkyView;
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The query `almanac.skyPose` reads: `skyView`'s, and the pose. */
+export interface SkyPoseAsked extends SkyViewAsked {
+  readonly pose: DevicePose;
+}
+
+/** A point of the sky placed in the camera's picture. */
+export interface ScreenPlacement {
+  /** In front of the camera and inside the frame, edges included. */
+  readonly inView: boolean;
+  /** Across the picture, 0 at its left edge and 1 at its right; outside [0, 1] beyond them, `null` behind the camera. */
+  readonly x: number | null;
+  /** Down the picture, 0 at its top edge and 1 at its bottom; outside [0, 1] beyond them, `null` behind the camera. */
+  readonly y: number | null;
+  /** The angle from the line of sight, 0 to 180 degrees. */
+  readonly offAxisDeg: number;
+}
+
+/** What `almanac.skyPose` answers. */
+export interface SkyPoseAnswer {
   readonly value: {
-    /** UT1 read as UTC, a Julian day. */
-    readonly at: number;
-    readonly siderealTimeDeg: number;
-    readonly obliquityDeg: number;
-    readonly atmosphere: { readonly pressureHpa: number; readonly temperatureC: number };
-    readonly eclipticStepDeg: number;
-    readonly horizonStepDeg: number;
-    readonly grahas: readonly GrahaSky[];
-    readonly stars: readonly StarSky[];
-    /** Every step of longitude and the two crossings, in longitude order. */
-    readonly ecliptic: readonly EclipticPoint[];
-    /** Every step of azimuth from north. */
-    readonly horizon: readonly HorizonPoint[];
+    /** `almanac.skyView`'s value for the same query, unchanged. */
+    readonly sky: SkyView;
+    /** The pose asked, its azimuth in [0, 360). */
+    readonly pose: DevicePose;
+    /** The field of view top to bottom, degrees. */
+    readonly verticalFovDeg: number;
+    /** One placement for each point of `sky`'s list of the same name, in its order. */
+    readonly screen: {
+      readonly grahas: readonly ScreenPlacement[];
+      readonly stars: readonly ScreenPlacement[];
+      readonly ecliptic: readonly ScreenPlacement[];
+      readonly horizon: readonly ScreenPlacement[];
+    };
   };
   /** What computed it, and the hash of `value`. */
   readonly provenance: Provenance;
+}
+
+/** The sky at a place and an instant (`03-design/sky-view.md`). */
+export interface SkyView {
+  /** UT1 read as UTC, a Julian day. */
+  readonly at: number;
+  readonly siderealTimeDeg: number;
+  readonly obliquityDeg: number;
+  readonly atmosphere: { readonly pressureHpa: number; readonly temperatureC: number };
+  readonly eclipticStepDeg: number;
+  readonly horizonStepDeg: number;
+  readonly grahas: readonly GrahaSky[];
+  readonly stars: readonly StarSky[];
+  /** Every step of longitude and the two crossings, in longitude order. */
+  readonly ecliptic: readonly EclipticPoint[];
+  /** Every step of azimuth from north. */
+  readonly horizon: readonly HorizonPoint[];
 }
 
 /** What `almanac.deathTime` answers, frozen to its leaves. */

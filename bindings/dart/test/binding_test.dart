@@ -1976,6 +1976,68 @@ void _engineTests() {
     );
   });
 
+  // The same sky through a camera pointed at the Moon
+  // (`03-design/sky-pose.md`): the sky is the sky view's, the Moon is the
+  // picture's centre whatever the roll, and a field of 180 degrees is
+  // refused by name.
+  test('an almanac places the sky in a camera picture', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final view = sky.almanac.skyView(at: 2461345.25, place: kathmandu).value;
+    final moon = view.graha(Graha.moon)!;
+    final seen =
+        sky.almanac
+            .skyPose(
+              at: 2461345.25,
+              place: kathmandu,
+              pose: DevicePose(
+                azimuthDeg: moon.azimuthDeg,
+                altitudeDeg: moon.refractedAltitudeDeg,
+                rollDeg: 30,
+                horizontalFovDeg: 40,
+                aspectRatio: 1.5,
+              ),
+            )
+            .value;
+    expect(seen.sky, view);
+    expect(seen.screen.grahas, hasLength(view.grahas.length));
+    expect(seen.screen.horizon, hasLength(view.horizon.length));
+    final centre = seen.screen.grahas[view.grahas.indexOf(moon)];
+    expect(centre.inView, isTrue);
+    expect(centre.x, closeTo(0.5, 1e-9));
+    expect(centre.y, closeTo(0.5, 1e-9));
+    expect(centre.offAxisDeg, closeTo(0, 1e-6));
+    expect(seen.ascendant(), isNotNull);
+    expect(
+      () => sky.almanac.skyPose(
+        at: 2461345.25,
+        place: kathmandu,
+        pose: const DevicePose(
+          azimuthDeg: 0,
+          altitudeDeg: 0,
+          rollDeg: 0,
+          horizontalFovDeg: 180,
+          aspectRatio: 1,
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (error) => error.field,
+          'field',
+          'skyPose.pose.horizontalFovDeg',
+        ),
+      ),
+    );
+  });
+
   // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen
   // of them done again after a twelfth-day sapindana (DS p. 331); with
   // Dhakal's readings for Nepal the first abdika is the eleventh day's and

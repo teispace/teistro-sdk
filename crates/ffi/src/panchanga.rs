@@ -2644,6 +2644,81 @@ pub unsafe extern "C" fn ts_almanac_sky_view(
     })
 }
 
+/// A device's camera pointed at the sky (`03-design/sky-pose.md`),
+/// answered with `{value, provenance}` as canonical JSON.
+///
+/// `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+/// `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+/// the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+/// stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+/// for each point of `sky`'s list of the same name, in its order. `x` and
+/// `y` are the point in the rectilinear (gnomonic) picture, normalised to
+/// `[0, 1]` with the origin at the top left, outside it beyond the frame
+/// and null behind the camera; a graha, a star and an ecliptic point are
+/// placed at their refracted altitude, a horizon point at nought. The
+/// rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+///
+/// `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+/// beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+/// "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+/// true north through east (−360 to 360) and altitude (−90 to 90), the
+/// roll about it (−180 to 180, positive as the phone turns clockwise seen
+/// from its screen), the field across the picture (above 0 and below
+/// 180) and the picture's width over its height (0.1 to 10). A missing or
+/// out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+/// the sky view's own under `skyPose`; the context's refusals are
+/// `ts_almanac_sky_view`'s.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_sky_pose;
+/// use teistro_ffi::string::TsString;
+///
+/// let request = c"{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"at\": 2461345.25, \"pose\": {\"azimuthDeg\": 90, \"altitudeDeg\": 20, \"rollDeg\": 0, \"horizontalFovDeg\": 60, \"aspectRatio\": 0.75}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_sky_pose(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // One placement for each of the sky's twenty-seven yogataras.
+/// assert_eq!(answer["value"]["screen"]["stars"].as_array().map(Vec::len), Some(27));
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_sky_pose(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::SkyPoseRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().sky_pose_query(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {

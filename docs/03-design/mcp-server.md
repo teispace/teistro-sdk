@@ -119,6 +119,7 @@ the protocol's own failures.
 | `almanac.sankalpa` | the time a sankalpa recites at an instant and a place | built since (`sankalpa.md`) |
 | `almanac.navatara` | `NavataraRequest`: a birth star, whose navatara chakra is answered | built since (`navatara-chakra.md`) |
 | `almanac.skyView` | `SkyViewRequest`: a place and an instant, the grahas and stars to place, the steps and the air | built since (`sky-view.md`) |
+| `almanac.skyPose` | `skyView`'s request and a `pose`: the camera's line of sight, roll, field and aspect | built since (`sky-pose.md`) |
 | `almanac.aayadi` | `AayadiRequest`: a system and a building's two sides, read by remainders | built since (`aayadi.md`) |
 | `almanac.cells` | `CellsRequest`: a range of dates in any shipped calendar, a place, a clock and optionally festivals; what a month grid prints of each date | built since (`month-cells.md`) |
 | `naming.syllables`, `naming.read`, `naming.check`, `naming.of`, `naming.suggest` | the naming requests: a pada's syllables, names read and checked, a birth's names, a book's suggestions (a book carried whole: an MCP context keeps no loaded book, so `naming.load` is no tool) | built since (`namakarana.md` §10) |

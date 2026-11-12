@@ -321,6 +321,10 @@ name = "sky_view"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sky_pose"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "homa_ahuti"
 required-features = ["builtin-ephemeris"]
 

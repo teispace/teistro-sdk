@@ -781,6 +781,53 @@ export interface SentencesRequest {
 /**
  * The request as a binding writes it.
  */
+export interface AlmanacSkyPoseRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instant, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly eclipticStepDeg?: number | null;
+  /**
+   * The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+   */
+  readonly grahas?: readonly Member<catalogue.Graha>[] | null;
+  /**
+   * The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly horizonStepDeg?: number | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  readonly pose: DevicePose;
+  /**
+   * The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+   */
+  readonly pressureHpa?: number | null;
+  /**
+   * The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+   */
+  readonly stars?: readonly Member<catalogue.Star>[] | null;
+  /**
+   * The temperature, degrees Celsius, −90 to 60; 10 when left out.
+   */
+  readonly temperatureC?: number | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface SkyViewRequest {
   /**
    * The place's height above sea level in metres, 0 when left out.
@@ -2243,6 +2290,32 @@ export interface SankalpaFor {
    * The river the place is near, as a stem (`वाग्मती`); left out, the template says none.
    */
   readonly river?: string | null;
+}
+
+/**
+ * Where a camera points and what it frames: its line of sight, its roll and its field (`03-design/sky-pose.md` §1).
+ */
+export interface DevicePose {
+  /**
+   * The line of sight's height above the airless horizon, degrees, −90 to 90.
+   */
+  readonly altitudeDeg: number;
+  /**
+   * The picture's width over its height, 0.1 to 10.
+   */
+  readonly aspectRatio: number;
+  /**
+   * Where the line of sight points, degrees in `[0, 360)` from true north through east.
+   */
+  readonly azimuthDeg: number;
+  /**
+   * The field of view across the picture, edge to edge, degrees, above 0 and below 180.
+   */
+  readonly horizontalFovDeg: number;
+  /**
+   * The picture's turn about the line of sight, degrees, −180 to 180: positive as the phone is turned clockwise seen from its screen, 0 when the picture's up leans to the zenith.
+   */
+  readonly rollDeg: number;
 }
 
 /**
@@ -10673,6 +10746,7 @@ export interface RecordRequests {
   readonly 'almanac.sankalpa': SankalpaRequest;
   readonly 'almanac.sankalpaWords': SankalpaWordsRequest;
   readonly 'almanac.sentences': SentencesRequest;
+  readonly 'almanac.skyPose': AlmanacSkyPoseRequest;
   readonly 'almanac.skyView': SkyViewRequest;
   readonly 'calendar.add': AddAsked;
   readonly 'calendar.between': BetweenAsked;

@@ -34,6 +34,7 @@ public final class Requests {
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
             Map.entry("almanac.sankalpaWords", SankalpaWordsRequest::of),
             Map.entry("almanac.sentences", SentencesRequest::of),
+            Map.entry("almanac.skyPose", AlmanacSkyPoseRequest::of),
             Map.entry("almanac.skyView", SkyViewRequest::of),
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
@@ -138,6 +139,9 @@ public final class Requests {
 
     /** {@code almanac.sentences}, whose request is {@link SentencesRequest}. */
     public static final RecordOf<SentencesRequest> ALMANAC_SENTENCES = new RecordOf<>("almanac.sentences");
+
+    /** {@code almanac.skyPose}, whose request is {@link AlmanacSkyPoseRequest}. */
+    public static final RecordOf<AlmanacSkyPoseRequest> ALMANAC_SKY_POSE = new RecordOf<>("almanac.skyPose");
 
     /** {@code almanac.skyView}, whose request is {@link SkyViewRequest}. */
     public static final RecordOf<SkyViewRequest> ALMANAC_SKY_VIEW = new RecordOf<>("almanac.skyView");

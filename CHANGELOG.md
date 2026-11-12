@@ -10,6 +10,24 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+**Numbers:** none move: nothing an earlier release answered changes, the sky
+view's hash included (its input gains no field when no pose is asked).
+- **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
+  `sky_pose` in every binding and MCP; SR-58's device pose,
+  `03-design/sky-pose.md`). It reads `almanac.skyView`'s request with a
+  `pose` beside it (the camera's azimuth from true north, altitude, roll,
+  horizontal field of view and aspect ratio), answers the sky view's value
+  unchanged as `sky`, and places each of its grahas, junction stars,
+  ecliptic points (the rising lagna point is the `ASCENDANT`) and horizon
+  points in the camera's rectilinear picture, normalised with the origin at
+  the top left, `inView` when in front and inside the frame. A field of
+  view at or above 180 degrees is refused by name; `almanac.skyView` still
+  refuses a `pose`. Rust adds `Pose::from_axes`, the recipe that turns a
+  platform's attitude into a pose, and `Pose::direction_at`, a screen
+  point back to the sky.
+
 ## 1.0.0-rc.4
 
 The fourth release candidate of 1.0.0: Nepal's festivals as rules (SR-01)

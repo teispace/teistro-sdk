@@ -470,6 +470,19 @@ final List<Surface> requests = [
     Param('utcOffsetSeconds', Scalar('int')),
     Param('zone', Scalar('Object')),
   ], fields: (v) => [v.altitudeM, v.calendar, v.date, v.latitudeDeg, v.locale, v.longitudeDeg, v.utcOffsetSeconds, v.zone]),
+  Built<AlmanacSkyPoseRequest>('AlmanacSkyPoseRequest', AlmanacSkyPoseRequest.new, [
+    Param('altitudeM', Scalar('double')),
+    Param('at', Scalar('double')),
+    Param('eclipticStepDeg', Scalar('double')),
+    Param('grahas', ListOf(Named('Graha'), (items) => List<Graha>.from(items))),
+    Param('horizonStepDeg', Scalar('double')),
+    Param('latitudeDeg', Scalar('double')),
+    Param('longitudeDeg', Scalar('double')),
+    Param('pose', Named('DevicePose')),
+    Param('pressureHpa', Scalar('double')),
+    Param('stars', ListOf(Named('Star'), (items) => List<Star>.from(items))),
+    Param('temperatureC', Scalar('double')),
+  ], fields: (v) => [v.altitudeM, v.at, v.eclipticStepDeg, v.grahas, v.horizonStepDeg, v.latitudeDeg, v.longitudeDeg, v.pose, v.pressureHpa, v.stars, v.temperatureC]),
   Built<SkyViewRequest>('SkyViewRequest', SkyViewRequest.new, [
     Param('altitudeM', Scalar('double')),
     Param('at', Scalar('double')),
@@ -900,6 +913,13 @@ final List<Surface> requests = [
     Param('purpose', Scalar('String')),
     Param('river', Scalar('String')),
   ], fields: (v) => [v.gotra, v.kshetra, v.performer, v.pitris, v.purpose, v.river]),
+  Built<DevicePose>('DevicePose', DevicePose.new, [
+    Param('altitudeDeg', Scalar('double')),
+    Param('aspectRatio', Scalar('double')),
+    Param('azimuthDeg', Scalar('double')),
+    Param('horizontalFovDeg', Scalar('double')),
+    Param('rollDeg', Scalar('double')),
+  ], fields: (v) => [v.altitudeDeg, v.aspectRatio, v.azimuthDeg, v.horizontalFovDeg, v.rollDeg]),
   KeySet<Projection>('Projection', Projection.values, (m) => m.key),
   Built<DrawingAsked>('DrawingAsked', DrawingAsked.new, [
     Param('countsFrom', Named('ChartFrame')),

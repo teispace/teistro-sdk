@@ -457,6 +457,29 @@ function lilithOf(value) {
   throw new TypeError(`lilith: expected 'MEAN' or 'OSCULATING', got ${String(value)}`);
 }
 
+/**
+ * A sky query as `almanac.skyView` and `almanac.skyPose` read it: the
+ * place's three numbers written out, everything else handed through.
+ *
+ * @param {string} name the method, which a refusal names
+ * @param {object} query the caller's query
+ * @param {string} shape the query's shape, for the refusal
+ * @returns {object}
+ */
+function skyAsked(name, query, shape) {
+  if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+    throw new TypeError(`${name}: expected a query, e.g. ${shape}`);
+  }
+  const { place: where, ...rest } = query;
+  const place = where ?? {};
+  return {
+    ...rest,
+    latitudeDeg: finite(place.latitude, 'place.latitude'),
+    longitudeDeg: finite(place.longitude, 'place.longitude'),
+    altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+  };
+}
+
 /** A finite number, or a `TypeError` naming the argument. */
 function finite(value, what) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -8554,19 +8577,43 @@ export class AlmanacArea extends Area {
    * @returns {{ value: object, provenance: object }}
    */
   skyView(query) {
-    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
-      throw new TypeError('skyView: expected a query, e.g. { place, at }');
-    }
-    const { place: where, ...rest } = query;
-    const place = where ?? {};
-    const asked = {
-      ...rest,
-      latitudeDeg: finite(place.latitude, 'place.latitude'),
-      longitudeDeg: finite(place.longitude, 'place.longitude'),
-      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-    };
+    const asked = skyAsked('skyView', query, '{ place, at }');
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacSkyView(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **A device's camera pointed at the sky** (`03-design/sky-pose.md`):
+   * `skyView`'s query with a `pose` beside it, answered with the sky
+   * view's value unchanged as `sky`, and `screen`, where each of its
+   * grahas, stars, ecliptic points and horizon points falls in the
+   * camera's rectilinear picture: `{ inView, x, y, offAxisDeg }`, `x` and
+   * `y` normalised with the origin at the top left, `null` behind the
+   * camera, one for each point of `sky`'s list of the same name. The
+   * pose's azimuth is from **true** north (add the declination to a
+   * magnetic heading); its roll is positive as the phone turns clockwise
+   * seen from its screen; its field of view is across the picture, above
+   * 0 and below 180 degrees. The rising lagna point is `sky.ecliptic`'s
+   * `ASCENDANT`.
+   *
+   * @example
+   * const { value } = sdk.almanac.skyPose({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   at: 2461345.25,
+   *   pose: { azimuthDeg: 90, altitudeDeg: 20, rollDeg: 0, horizontalFovDeg: 60, aspectRatio: 0.75 },
+   * });
+   * value.sky.stars.filter((star, n) => value.screen.stars[n].inView);
+   *
+   * @param {object} query `skyView`'s query, and `pose`
+   * @param {object} query.pose `{ azimuthDeg, altitudeDeg, rollDeg, horizontalFovDeg, aspectRatio }`
+   * @returns {{ value: object, provenance: object }}
+   */
+  skyPose(query) {
+    const asked = skyAsked('skyPose', query, '{ place, at, pose }');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacSkyPose(JSON.stringify(asked))),
     );
     return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }

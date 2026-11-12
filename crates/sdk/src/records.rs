@@ -927,6 +927,7 @@ pub fn records() -> Vec<Record> {
     all.extend(almanac_records());
     all.push(cells_record());
     all.push(sky_view_record());
+    all.push(sky_pose_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
     all.extend(sankalpa_records());
@@ -1661,6 +1662,30 @@ fn sky_view_record() -> Record {
         compares: None,
         brief: Brief::Keeps(&["at", "grahas", "stars"]),
         schemas: schemas!(crate::sky_view_request::SkyViewAsked => crate::sky_view::SkyView),
+    }
+}
+
+/// A device's camera pointed at the sky view (`03-design/sky-pose.md`).
+fn sky_pose_record() -> Record {
+    Record {
+        name: "almanac.skyPose",
+        boundary: "ts_almanac_sky_pose",
+        title: "Where every graha, junction star, ecliptic point and horizon point falls in a device camera's picture",
+        reads: None,
+        run: |context, json| {
+            let asked = crate::SkyPoseRequest::from_json(json)?;
+            Answered::sealed(context.almanac().sky_pose_query(&asked)?)
+        },
+        compares: None,
+        brief: Brief::Keeps(&[
+            "pose",
+            "sky.at",
+            "sky.grahas",
+            "sky.stars",
+            "screen.grahas",
+            "screen.stars",
+        ]),
+        schemas: schemas!(fn crate::sky_view_request::pose_schema => crate::sky_pose::SkyPose, parts: []),
     }
 }
 

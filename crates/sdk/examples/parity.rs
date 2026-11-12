@@ -7811,6 +7811,71 @@ fn sky_view(report: &mut Report) {
     );
 }
 
+/// The sky at Kathmandu at 18:00 UTC on 31 October 2026 seen through a
+/// phone's camera facing east-south-east, tipped up and turned
+/// (`03-design/sky-pose.md`): the hash, the vertical field, how many of
+/// each list are in view, the Moon's placement and the ascendant's.
+fn sky_pose(report: &mut Report) {
+    let sky = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let asked = teistro::SkyPoseRequest::from_json(
+        r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "at": 2461345.25,
+            "pose": {"azimuthDeg": 100, "altitudeDeg": 25, "rollDeg": -12, "horizontalFovDeg": 66, "aspectRatio": 0.5625}}"#,
+    )
+    .expect("a sky pose request");
+    let found = sky
+        .almanac()
+        .sky_pose(&asked)
+        .expect("the built-in sky draws the sky");
+    let written = sky
+        .almanac()
+        .sky_pose_query(&asked)
+        .expect("the built-in sky draws the sky");
+    put(
+        report,
+        "sky-pose-hash",
+        written.provenance.content_hash.to_string(),
+    );
+    let value = &found.value;
+    put(report, "sky-pose-vertical", number(value.vertical_fov_deg));
+    let seen = |placements: &[teistro::sky_pose::Placement]| {
+        placements.iter().filter(|placed| placed.in_view).count()
+    };
+    put(
+        report,
+        "sky-pose-in-view",
+        format!(
+            "{} {} {} {}",
+            seen(&value.screen.grahas),
+            seen(&value.screen.stars),
+            seen(&value.screen.ecliptic),
+            seen(&value.screen.horizon)
+        ),
+    );
+    let placed = |placement: &teistro::sky_pose::Placement| {
+        format!(
+            "{} {} {} {}",
+            placement.in_view,
+            placement.x.map_or_else(|| String::from("null"), number),
+            placement.y.map_or_else(|| String::from("null"), number),
+            number(placement.off_axis_deg)
+        )
+    };
+    let moon = value
+        .sky
+        .grahas
+        .iter()
+        .position(|one| one.graha == Graha::Moon)
+        .and_then(|at| value.screen.grahas.get(at))
+        .expect("the Moon was asked");
+    put(report, "sky-pose-moon", placed(moon));
+    let (_, rising) = value.ascendant().expect("an ascendant");
+    put(report, "sky-pose-ascendant", placed(rising));
+}
+
 /// The gloss's 29 by 7 hastas under *Muhurta Chintamani* for Anuradha's
 /// owner and under *Samarangana* for Bharani's: each quantity
 /// `QUANTITY:count`, then `vyaya:` its kind and `tara:` the owner's tara
@@ -8600,6 +8665,7 @@ fn main() {
     markers(&mut report, &place, offset);
     navatara(&mut report, &geo);
     sky_view(&mut report);
+    sky_pose(&mut report);
     aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);

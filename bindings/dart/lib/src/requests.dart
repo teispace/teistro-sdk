@@ -1283,6 +1283,73 @@ final class SentencesRequest extends _Request {
 }
 
 /// The request as a binding writes it.
+final class AlmanacSkyPoseRequest extends _Request {
+  const AlmanacSkyPoseRequest({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.eclipticStepDeg,
+    this.grahas,
+    this.horizonStepDeg,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.pose,
+    this.pressureHpa,
+    this.stars,
+    this.temperatureC,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instant, a UTC Julian day.
+  final double at;
+
+  /// The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+  final double? eclipticStepDeg;
+
+  /// The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+  final List<Graha>? grahas;
+
+  /// The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+  final double? horizonStepDeg;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  final DevicePose pose;
+
+  /// The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+  final double? pressureHpa;
+
+  /// The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+  final List<Star>? stars;
+
+  /// The temperature, degrees Celsius, −90 to 60; 10 when left out.
+  final double? temperatureC;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    if (eclipticStepDeg case final eclipticStepDegValue?) 'eclipticStepDeg': eclipticStepDegValue,
+    if (grahas case final grahasValue?) 'grahas': [for (final e0 in grahasValue) e0.key],
+    if (horizonStepDeg case final horizonStepDegValue?) 'horizonStepDeg': horizonStepDegValue,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'pose': pose._wire,
+    if (pressureHpa case final pressureHpaValue?) 'pressureHpa': pressureHpaValue,
+    if (stars case final starsValue?) 'stars': [for (final e0 in starsValue) e0.key],
+    if (temperatureC case final temperatureCValue?) 'temperatureC': temperatureCValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, eclipticStepDeg, grahas, horizonStepDeg, latitudeDeg, longitudeDeg, pose, pressureHpa, stars, temperatureC];
+}
+
+/// The request as a binding writes it.
 final class SkyViewRequest extends _Request {
   const SkyViewRequest({
     this.altitudeM = 0.0,
@@ -3561,6 +3628,44 @@ final class SankalpaFor extends _Request {
 
   @override
   List<Object?> get _fields => [gotra, kshetra, performer, pitris, purpose, river];
+}
+
+/// Where a camera points and what it frames: its line of sight, its roll and its field (`03-design/sky-pose.md` §1).
+final class DevicePose extends _Request {
+  const DevicePose({
+    required this.altitudeDeg,
+    required this.aspectRatio,
+    required this.azimuthDeg,
+    required this.horizontalFovDeg,
+    required this.rollDeg,
+  });
+
+  /// The line of sight's height above the airless horizon, degrees, −90 to 90.
+  final double altitudeDeg;
+
+  /// The picture's width over its height, 0.1 to 10.
+  final double aspectRatio;
+
+  /// Where the line of sight points, degrees in `[0, 360)` from true north through east.
+  final double azimuthDeg;
+
+  /// The field of view across the picture, edge to edge, degrees, above 0 and below 180.
+  final double horizontalFovDeg;
+
+  /// The picture's turn about the line of sight, degrees, −180 to 180: positive as the phone is turned clockwise seen from its screen, 0 when the picture's up leans to the zenith.
+  final double rollDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeDeg': altitudeDeg,
+    'aspectRatio': aspectRatio,
+    'azimuthDeg': azimuthDeg,
+    'horizontalFovDeg': horizontalFovDeg,
+    'rollDeg': rollDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeDeg, aspectRatio, azimuthDeg, horizontalFovDeg, rollDeg];
 }
 
 /// How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
@@ -15849,6 +15954,9 @@ abstract final class Records {
   /// `almanac.sentences`, whose request is [SentencesRequest].
   static const almanacSentences = RecordOf<SentencesRequest>._('almanac.sentences');
 
+  /// `almanac.skyPose`, whose request is [AlmanacSkyPoseRequest].
+  static const almanacSkyPose = RecordOf<AlmanacSkyPoseRequest>._('almanac.skyPose');
+
   /// `almanac.skyView`, whose request is [SkyViewRequest].
   static const almanacSkyView = RecordOf<SkyViewRequest>._('almanac.skyView');
 
@@ -15971,6 +16079,7 @@ abstract final class Records {
     almanacSankalpa,
     almanacSankalpaWords,
     almanacSentences,
+    almanacSkyPose,
     almanacSkyView,
     calendarAdd,
     calendarBetween,

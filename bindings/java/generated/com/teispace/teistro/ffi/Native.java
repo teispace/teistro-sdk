@@ -4140,6 +4140,7 @@ public final class Native {
         "ts_almanac_changes",
         "ts_almanac_cells",
         "ts_almanac_sky_view",
+        "ts_almanac_sky_pose",
         "ts_naam_milan",
         "ts_matching_band",
         "ts_chart_relocated",
@@ -5149,6 +5150,34 @@ public final class Native {
     public final MethodHandle ts_almanac_sky_view;
 
     /**
+     * A device's camera pointed at the sky (`03-design/sky-pose.md`),
+     * answered with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is `{sky, pose, verticalFovDeg, screen}`: `sky` is
+     * `ts_almanac_sky_view`'s value for the same request, unchanged; `pose`
+     * the pose asked, its azimuth in `[0, 360)`; and `screen` is `{grahas,
+     * stars, ecliptic, horizon}`, one placement `{inView, x, y, offAxisDeg}`
+     * for each point of `sky`'s list of the same name, in its order. `x` and
+     * `y` are the point in the rectilinear (gnomonic) picture, normalised to
+     * `[0, 1]` with the origin at the top left, outside it beyond the frame
+     * and null behind the camera; a graha, a star and an ecliptic point are
+     * placed at their refracted altitude, a horizon point at nought. The
+     * rising lagna point is `sky.ecliptic`'s `ASCENDANT`.
+     *
+     * `request_json` is `ts_almanac_sky_view`'s request with `"pose"`
+     * beside it: `{"azimuthDeg", "altitudeDeg", "rollDeg",
+     * "horizontalFovDeg", "aspectRatio"}`, the line of sight's azimuth from
+     * true north through east (−360 to 360) and altitude (−90 to 90), the
+     * roll about it (−180 to 180, positive as the phone turns clockwise seen
+     * from its screen), the field across the picture (above 0 and below
+     * 180) and the picture's width over its height (0.1 to 10). A missing or
+     * out-of-range pose field is `INVALID_ARG` named under `skyPose.pose`,
+     * the sky view's own under `skyPose`; the context's refusals are
+     * `ts_almanac_sky_view`'s.
+     */
+    public final MethodHandle ts_almanac_sky_pose;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -5844,6 +5873,7 @@ public final class Native {
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_cells = linker.downcallHandle(symbols.find("ts_almanac_cells").orElseThrow(() -> missing("ts_almanac_cells")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sky_view = linker.downcallHandle(symbols.find("ts_almanac_sky_view").orElseThrow(() -> missing("ts_almanac_sky_view")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_sky_pose = linker.downcallHandle(symbols.find("ts_almanac_sky_pose").orElseThrow(() -> missing("ts_almanac_sky_pose")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_matching_band = linker.downcallHandle(symbols.find("ts_matching_band").orElseThrow(() -> missing("ts_matching_band")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_relocated = linker.downcallHandle(symbols.find("ts_chart_relocated").orElseThrow(() -> missing("ts_chart_relocated")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
