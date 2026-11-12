@@ -10,26 +10,7 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## 1.0.0-rc.2
-
-The second release candidate of 1.0.0: a tag a consumer pins (SR-69),
-released on GitHub only; no package leaves for a registry.
-**Numbers:** measured against 1.0.0-rc.1, every entry below says what it
-moves, and most move nothing. What moves:
-- **Festival days:** `INDIA_CENTRAL`'s and `INDIA_KERALA`'s `JANMASHTAMI`
-  in the years their entries name; Dwipushkar no longer fires in Anuradha;
-  ashauch ends in four overlaps; polar days under `NEAREST_EVENT`.
-- **Civil readings:** `civil_of` moves a reading by at most four of the
-  Julian day's last bits.
-- **Hashes and digests:** every settings hash (`panchanga` gains knobs),
-  every shipped pack's `input_hash` once, an anniversary's sealed digest
-  and the dossier's first line (`# teistro dossier 3`).
-- **Names:** 348 catalogue members named in four locales, and no draft
-  namespace left in a shipped locale.
-New in this candidate: the geo port (`geo.load`, `geo.resolve`, SR-87),
-ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
-Assam's and Kerala's public holidays, and a rule held to a calendar's month
-(`inMonth`).
+## Unreleased
 
 **The Teimeris adapters left this repository; the SDK is engine-agnostic.**
 **Numbers:** none: no SDK crate computes differently. Teimeris may ship only
@@ -108,6 +89,27 @@ region `IN-KA` now reckons `INDIA_KARNATAKA`, where it kept `INDIA_CENTRAL`.
 - `festival-measured.md` §15 holds it at Bengaluru, 246 of the 263 rows meeting the print and the seventeen that
   part named (C1373, C1374, C1380 to C1387). `crates/sdk/tests/karnataka.rs` holds each year's notification.
 - Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the twelve new keys.
+
+## 1.0.0-rc.2
+
+The second release candidate of 1.0.0: a tag a consumer pins (SR-69),
+released on GitHub only; no package leaves for a registry.
+**Numbers:** measured against 1.0.0-rc.1, every entry below says what it
+moves, and most move nothing. What moves:
+- **Festival days:** `INDIA_CENTRAL`'s and `INDIA_KERALA`'s `JANMASHTAMI`
+  in the years their entries name; Dwipushkar no longer fires in Anuradha;
+  ashauch ends in four overlaps; polar days under `NEAREST_EVENT`.
+- **Civil readings:** `civil_of` moves a reading by at most four of the
+  Julian day's last bits.
+- **Hashes and digests:** every settings hash (`panchanga` gains knobs),
+  every shipped pack's `input_hash` once, an anniversary's sealed digest
+  and the dossier's first line (`# teistro dossier 3`).
+- **Names:** 348 catalogue members named in four locales, and no draft
+  namespace left in a shipped locale.
+New in this candidate: the geo port (`geo.load`, `geo.resolve`, SR-87),
+ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
+Assam's and Kerala's public holidays, and a rule held to a calendar's month
+(`inMonth`).
 
 **The MCP server's lean tool list states the festival rules apart.**
 **Numbers:** none. The festival rule language a request carries
