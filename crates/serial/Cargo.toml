@@ -20,19 +20,19 @@ publish = false
 schema = ["dep:schemars", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-dasha/schema", "teistro-geometry/schema", "teistro-houses/schema", "teistro-matching/schema", "teistro-strength/schema", "teistro-panchanga/schema", "teistro-points/schema", "teistro-state/schema", "teistro-vargas/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.2" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.2" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.2" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.2" }
-teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.2" }
-teistro-houses = { path = "../houses", version = "=1.0.0-rc.2" }
-teistro-matching = { path = "../matching", version = "=1.0.0-rc.2" }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.2" }
-teistro-points = { path = "../points", version = "=1.0.0-rc.2" }
-teistro-strength = { path = "../strength", version = "=1.0.0-rc.2" }
-teistro-state = { path = "../state", version = "=1.0.0-rc.2" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.2" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.3" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.3" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.3" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.3" }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.3" }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.3" }
+teistro-matching = { path = "../matching", version = "=1.0.0-rc.3" }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.3" }
+teistro-points = { path = "../points", version = "=1.0.0-rc.3" }
+teistro-strength = { path = "../strength", version = "=1.0.0-rc.3" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.3" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.3" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }

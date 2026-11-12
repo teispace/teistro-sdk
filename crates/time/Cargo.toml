@@ -33,11 +33,11 @@ base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 jiff-tzdb = "0.1"
 serde = { version = "1", features = ["derive"] }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.2" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.2" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.2" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.2" }
-teistro-port-timezone = { path = "../port-timezone", version = "=1.0.0-rc.2" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.3" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.3" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.3" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.3" }
+teistro-port-timezone = { path = "../port-timezone", version = "=1.0.0-rc.3" }
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
