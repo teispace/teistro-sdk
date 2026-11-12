@@ -132,7 +132,7 @@ occurrences.
 
 ## 5. Measured
 
-Medians in ms from one fresh context each, `adapters/ephemeris-teimeris`'s
+Medians in ms from one fresh context each, the Teimeris adapter's
 `app_speed` in release on this Mac, 50 people (half births, half deaths, by
 their moments) over 10 years at one place:
 

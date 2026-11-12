@@ -192,7 +192,7 @@ engine's own answer is the Swiss-exact one — refused it:
 - **The day.** Against the Swiss-based recording, under its own
   convention (sea level, the upper limb refracted), over the 55 charts'
   106 events: the SDK's solver 9.77 s at worst, Teimeris's own search
-  **32.39 s** (`adapters/ephemeris-teimeris/rust/tests/fixtures.rs`,
+  **32.39 s** (the Teimeris adapter's `tests/fixtures.rs`,
   which now asserts the order and says to reopen this question if it
   flips). The Swiss family disagrees with itself as much as with the SDK
   (C34), and the port's `STANDARD_REFRACTION` already means each side's

@@ -269,8 +269,8 @@ from a model, a clock, a place and a rule, and stamped `Computed`.
 The same engine, clock, place and rules over modern positions (the drik
 Sun: Teimeris's apparent Sun through the ephemeris port with its Lahiri
 ayanamsha, the SDK's rise and set solver for the days' arcs under the
-classical sunrise convention; `adapters/ephemeris-teimeris/rust`,
-`teistro-ephemeris-teimeris-bs-fit`), measured on 2026-09-05:
+classical sunrise convention; the Teimeris adapter's `bs-fit` binary),
+measured on 2026-09-05:
 
 | frame | months | years exact | year totals | drift end (max) | 1 Baisakh offset max |
 |---|---:|---:|---:|---:|---:|

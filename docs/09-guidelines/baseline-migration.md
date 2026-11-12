@@ -63,16 +63,17 @@ The examples here are Node's, because the baseline engine is Node.
 The baseline reads Swiss Ephemeris files through a native module with
 global state. The SDK takes an ephemeris as a context option (ADR-0029,
 [`08-decisions/adr-0029-the-provider-plugin-model.md`](../08-decisions/adr-0029-the-provider-plugin-model.md)).
-Teimeris reads the same `.se1` file family for 1800 to 2399
-([`adapters/README.md`](../../adapters/README.md)):
+An engine that reads the same `.se1` file family plugs in as an adapter's
+library ([`adapters/README.md`](../../adapters/README.md)), which an
+adapter's own package usually finds for you:
 
-```ts title="adapters/ephemeris-teimeris/node/typecheck/consumer.ts"
+```ts fragment
 import { Context } from '@teistro/sdk';
-import teimeris from '@teistro/ephemeris-teimeris';
 
+const engine = { plugin: '/path/to/your-engine-adapter.so', config: { dataDir: './ephe' } };
 const sdk = new Context({
   profile: 'parashari-classical',
-  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
+  ephemeris: [engine, 'BUILTIN'],
 });
 ```
 

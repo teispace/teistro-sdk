@@ -31,6 +31,31 @@ ground height into sunrise (SR-90), ISO 3166-2 region keys (SR-89),
 Assam's and Kerala's public holidays, and a rule held to a calendar's month
 (`inMonth`).
 
+**The Teimeris adapters left this repository; the SDK is engine-agnostic.**
+**Numbers:** none: no SDK crate computes differently. Teimeris may ship only
+in Teispace's own products, so its adapters are now Teispace-proprietary and
+live in the engine's private repository (`docs/06-cicd/adapter-gate.md`).
+- Removed: `adapters/ephemeris-teimeris` (the Rust, Node, Python, Dart, Java
+  and Flutter packages), verify's `teimeris` job, the `engine` and
+  `teimeris-ranges` generators with their pages
+  (`engine-passthrough-measured.md`, `teimeris-ranges-measured.md`) and
+  fast-check steps, and `check-wasm`'s Teimeris-on-the-web step. Each moved
+  with the adapter, which its own gate runs against every SDK batch before
+  it merges.
+- `check-adapter`, `relock-adapter` and the binding gates take an adapter
+  only by `--adapter DIR` or `TEISTRO_ADAPTER_DIR`; there is no in-tree
+  fallback.
+- **For an app that loaded `adapters/ephemeris-teimeris/node/web.js` from
+  this repository (SR-67):** the file is `teistro/node/web.js` in the
+  Teimeris repository, with the same API (`teimerisWeb(engine, options)`
+  over the engine's `bindings/wasm` module). Take both from one checkout of
+  that repository pinned by commit; `docs/06-cicd/adapter-gate.md`, "For a
+  consumer", says how.
+- `check-lints` gains `no-private-engine`: a Teimeris path or API anywhere
+  in the tracked tree but its history fails.
+- The Swiss Ephemeris adapter's data directory defaults to `ephe/` in the
+  working directory, where it was a Teimeris checkout's.
+
 **The teigeodata adapter answers a place's zone, height and admin codes
 (SR-88).** **Numbers:** none: a new crate outside the SDK workspace, and
 no SDK crate changes.

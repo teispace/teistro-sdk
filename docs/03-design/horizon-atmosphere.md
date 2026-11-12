@@ -125,7 +125,7 @@ named convention the air was given to.
 The adapter's fixture test runs the 55 conformance charts at their own
 recorded heights, 1 m to 3,640 m, and times the day's sunrise and sunset
 from the SDK's solver and from Teimeris's own search under each
-convention (`adapters/ephemeris-teimeris/rust/tests/fixtures.rs`,
+convention (the Teimeris adapter's `tests/fixtures.rs`,
 `naming_the_air_brings_the_solver_to_the_engine_at_every_height`). 106
 events, SDK against engine, seconds:
 

@@ -57,8 +57,7 @@ the gate that found it.
 | D3 | The context's error record was not written by every failure: a null argument refused by a bare `return` left the previous failure's record in place, though the header promises it "stays valid until the next call" | reproduced in C: `tm_star_find(ctx, "no such star")` records −7 and *no star named 'no such star'*; `tm_local_to_utc(ctx, NULL, …)` then returned −1 while the record still said −7 and the star's message. Every engine generator surfaces a struct input as nullable, so every binding could report the wrong mistake — and three checks in the engine's own `test_profile.c` were passing only because of it | **fixed** in `7de669e` (2026-09-13): every failure in the public layer that has a context records itself, naming the function and the arguments, through one branch and a cold `tm_refuse` — the first version's per-argument branches cost the batch forms up to 29% of their scalar loops, which `bench_shapes` refused; `test_a_failure_writes_its_own_record` proven red first; `verify.sh all` green | the passthrough still snapshots the record and attaches a message only when it changed, because a null context and the context-less functions still return bare; against the fixed engine a refusal reads `tm_local_to_utc refused with status -1, invalid argument: a required argument: \`in\` or \`out\` is null` |
 
 D1's, D2's and D3's commits are in the engine's history and not yet on its remote; the
-vendored IDL at `adapters/ephemeris-teimeris/rust/data/teimeris.idl` is
-byte-identical to the engine's own at `df3945e`.
+IDL the adapter then vendored was byte-identical to the engine's own at `df3945e`.
 
 ### Open, found on the way
 

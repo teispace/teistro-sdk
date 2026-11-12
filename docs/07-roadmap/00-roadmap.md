@@ -250,7 +250,9 @@ providers**" and the engine half of that does not exist outside Rust:
   the `TEIMERIS_READ_TOKEN` secret, and runs
   `cargo xtask check-teimeris-adapter`. Creating that token is the
   maintainer's; until then the job reports in a notice that it checked
-  nothing.
+  nothing. *Superseded 2026-11-12:* the adapter is private to Teispace and
+  runs in the engine's repository against every SDK batch; the job is
+  gone (`06-cicd/adapter-gate.md`).
 - **The engine route is wired.** The Teimeris adapter answers the port's
   `native_manifest` and `native_call` from its own 161-function IDL,
   which it has always described and never exposed, so `sdk.engine.*`
@@ -258,10 +260,10 @@ providers**" and the engine half of that does not exist outside Rust:
 - **The typed engine façade is generated into the adapter**, not into the
   SDK, so the port stays agnostic while a consumer who installs the
   adapter gets typed operations for everything the marshaller carries.
-  How many that is, is a measurement and not a target:
-  [`03-design/engine-passthrough-measured.md`](../03-design/engine-passthrough-measured.md)
-  classifies all 161 into what is callable, what the adapter will never
-  hand over, and what is queued behind one more shape.
+  How many that is, is a measurement and not a target: the adapter's
+  measured page (private with the adapter since 2026-11-12) classified
+  all 161 into what is callable, what the adapter will never hand over,
+  and what is queued behind one more shape.
 - **The surface is namespaced** — `sdk.<area>.<operation>`, the areas
   derived from the boundary modules the reference site already groups by.
   Cheap now and breaking after v1, and every phase from here adds areas.
@@ -1034,6 +1036,9 @@ sweep of the design pages was done on 2026-10-27).
    private repository, so the job needs a read-only token in the
    `TEIMERIS_READ_TOKEN` secret, which is the maintainer's to create;
    until it exists the job says in a notice that it checked nothing.
+   *Superseded 2026-11-12:* the adapter moved into the engine's private
+   repository and its gate runs there before every SDK batch merges, so
+   public CI holds no engine adapter (`06-cicd/adapter-gate.md`).
 
 ### Track B: applications (Phase 8)
 

@@ -398,9 +398,8 @@ one tier per verify job). An adapter is run by the generic
 `cargo xtask check-adapter --adapter DIR` (the kit under the published
 bounds, then every binding's plugin test with the adapter loaded;
 `06-cicd/adapter-gate.md`). Teimeris, the corpus's own ephemeris, is run
-by it, today by verify's `teimeris` job once a read token for the private
-repository is a secret, and from its own repository once the adapter
-moves there; the corpus run is by hand
+by it from the engine's private repository, against every SDK batch
+before it merges; the corpus run is by hand
 (`--corpus fixtures --class same-ephemeris`), and `--native-frame-only`
 founds the charts over its native frame alone, which measures the SDK's
 completion rather than the engine's. The adapter is its own Cargo
@@ -481,5 +480,6 @@ catalogue's.
   (ADR-0021, Phase 3).
 - The refraction convention of the rise and set override against the
   SDK's (cruxes C34; `astro-events-and-crossings.md`).
-- The Teimeris adapter as the Teimeris package's own crate; until then
-  it lives under `adapters/ephemeris-teimeris/rust` here.
+- The Teimeris adapter as the Teimeris package's own crate. Done
+  2026-11-12: it is private to Teispace, in the engine's own repository
+  (`06-cicd/adapter-gate.md`).
