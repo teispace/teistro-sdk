@@ -28,6 +28,10 @@ pub enum ZoneDatabaseSource {
     Embedded,
     /// A pack loaded into this context.
     Pack,
+    /// A provider the application handed the context
+    /// ([`ContextBuilder::time_zones`](crate::ContextBuilder::time_zones)),
+    /// such as the rules a geo provider's data carries.
+    Provider,
 }
 
 /// The zone database a context reads (`03-design/zone-packs.md` §4).

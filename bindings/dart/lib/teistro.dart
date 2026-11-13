@@ -878,7 +878,8 @@ final class ZoneDatabase {
     );
   }
 
-  /// Where it comes from: `EMBEDDED` or `PACK`.
+  /// Where it comes from: `EMBEDDED`, `PACK` or `PROVIDER` (a zone database
+  /// the application handed a Rust context).
   final String source;
 
   /// Its release (`2026f`), as every answer's provenance names it.

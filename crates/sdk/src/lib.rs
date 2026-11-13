@@ -349,7 +349,12 @@ pub use teistro_panchanga::change::{ChangeKind, ChangePoint, ChangePoints};
 // What a month grid prints of a date: `sdk.almanac().cells` answers with
 // these (`03-design/month-cells.md`).
 pub use teistro_panchanga::cell::{CellKind, DayCell, TithiEnd};
-pub use teistro_time::{ZONE_PACK_FORMAT, ZonePack};
+// The zone port, so an application can hand a context its own zone
+// database (`ContextBuilder::time_zones`) without naming the crate under it.
+pub use teistro_time::{
+    FixedZone, LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider, ZONE_PACK_FORMAT,
+    ZonePack,
+};
 // The first-party renderer: a drawing as SVG, themed as data
 // (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with
 // no dependency the façade lacks, and a consumer who never calls it has

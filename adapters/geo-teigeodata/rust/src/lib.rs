@@ -19,15 +19,19 @@
 //!
 //! The adapter depends on the SDK's port and never the reverse: it is a
 //! standalone crate outside the SDK workspace (ADR-0019), built against
-//! teigeodata's `v0.1.0` tag.
+//! teigeodata's `v0.3.0` tag.
 
 use std::path::Path;
-use std::sync::{Mutex, PoisonError};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use teigeodata_core::{E7, Point};
 use teigeodata_engine::{Engine, Layer, LayerOptions, Place, Scratch};
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{AdminUnit, GeoPoint, GeoProvider, GeoSource, GroundHeight};
+use teistro_port_timezone::TimeZoneProvider;
+
+mod zones;
+pub use zones::TeigeodataZones;
 
 /// The name every resolution through this adapter carries as its
 /// source's `name`.
@@ -36,7 +40,7 @@ pub const NAME: &str = "teigeodata";
 /// The version of teigeodata's engine this adapter is built against, the
 /// tag its `Cargo.toml` names; a test holds it to the version the lock
 /// resolved.
-pub const ENGINE_VERSION: &str = "0.1.0";
+pub const ENGINE_VERSION: &str = "0.3.0";
 
 /// The longest name, in bytes, the adapter reads for a zone or an admin
 /// unit. A zone name is at most a few dozen bytes and a unit's canonical
@@ -70,8 +74,12 @@ const NAME_BYTES: usize = 1024;
 /// ```
 #[derive(Debug)]
 pub struct TeigeodataGeo {
-    engine: Engine,
+    /// Shared with the zone rules ([`TeigeodataZones`]), which a context
+    /// may hold after the provider is gone.
+    engine: Arc<Engine>,
     source: GeoSource,
+    /// The packs' zone rules, `None` where no pack has any.
+    zones: Option<Arc<TeigeodataZones>>,
     /// The engine's working memory, reused from one query to the next so
     /// that a warm query does not allocate; behind a lock because the port
     /// asks through a shared reference from any thread.
@@ -149,7 +157,8 @@ impl TeigeodataGeo {
     /// # Errors
     ///
     /// `INVALID_ARG` on `packs` for an engine with no pack, which has no
-    /// data to answer from or to name.
+    /// data to answer from or to name; `PROVIDER` on `zones` when the
+    /// packs' zone rules cannot be listed.
     pub fn from_engine(engine: Engine) -> Result<TeigeodataGeo, Error> {
         let data_version = engine
             .layers()
@@ -169,9 +178,12 @@ impl TeigeodataGeo {
             data_version,
             tzdb: engine.tz_version().map(str::to_owned),
         };
+        let engine = Arc::new(engine);
+        let zones = TeigeodataZones::new(Arc::clone(&engine))?.map(Arc::new);
         Ok(TeigeodataGeo {
             engine,
             source,
+            zones,
             scratch: Mutex::new(Scratch::default()),
         })
     }
@@ -282,6 +294,15 @@ impl GeoProvider for TeigeodataGeo {
             resolution_m: height.resolution_m,
             datum: String::from(height.datum.name()),
         }))
+    }
+
+    /// The packs' own zone rules, so a context reckons a place this
+    /// provider resolves by the tzdb release its packs carry:
+    /// `Context::builder().geo(geo.clone()).time_zones(zones)`.
+    fn time_zones(&self) -> Option<Arc<dyn TimeZoneProvider>> {
+        self.zones
+            .as_ref()
+            .map(|zones| Arc::clone(zones) as Arc<dyn TimeZoneProvider>)
     }
 
     fn admin_at(&self, at: GeoPoint) -> Result<Vec<AdminUnit>, Error> {

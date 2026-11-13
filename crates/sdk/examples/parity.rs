@@ -7482,6 +7482,7 @@ fn the_zones(report: &mut Report, place: &Place, offset: UtcOffset) {
         let source = match zones.source {
             teistro::ZoneDatabaseSource::Embedded => "EMBEDDED",
             teistro::ZoneDatabaseSource::Pack => "PACK",
+            teistro::ZoneDatabaseSource::Provider => "PROVIDER",
         };
         format!(
             "{source} {} {} {}",

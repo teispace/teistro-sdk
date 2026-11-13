@@ -67,7 +67,9 @@ pub use scale::{
 };
 pub use teistro_astro::delta_t::{self, DeltaT, DeltaTModel, DeltaTSource, delta_t};
 pub use teistro_core::time::{ClockReading, LocalClock, LocalMeanTime, UtcOffset};
-pub use teistro_port_timezone::{LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider};
+pub use teistro_port_timezone::{
+    FixedZone, LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider,
+};
 pub use zone::embedded::EmbeddedTzdb;
 pub use zone::pack::{ZONE_PACK_FORMAT, ZonePack};
 pub use zone::{
