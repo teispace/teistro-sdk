@@ -19,8 +19,30 @@ the previous release, not by nobody having looked.
   lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
   moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
 
-**Numbers:** none move: nothing an earlier release answered changes, the sky
-view's hash included (its input gains no field when no pose is asked).
+**Numbers:** `NEPAL_PANCHANGA` answers 28 civil days it did not, and its
+`input_hash` moves; no day an earlier release answered moves. Nothing else
+changes, the sky view's hash included (its input gains no field when no pose
+is asked).
+- **New (SR-01):** 28 civil days of the consumer's list the committee's
+  print does not carry ship in `NEPAL_PANCHANGA` as dated rules
+  (`DatedRule::nepal_panchanga`), each source opened before it went into the
+  rule and each day agreeing with every day a patro printed in Nepal
+  verified for it, VS 2070 to 2083:
+  - `GEN_Z_MARTYRS_DAY` on Bhadra 23, from the Ministry of Home Affairs'
+    notice for VS 2083, §8 ग (C1600);
+  - seven national days on a Bikram Sambat date, on their keepers' practice
+    as the press reports it (rank 3, C1601): `BP_SMRITI_DIWAS`,
+    `KAMAIYA_MUKTI_DIWAS`, `MADAN_ASHRIT_SMRITI_DIWAS`,
+    `NATIONAL_RECONCILIATION_DAY`, `NATIONAL_SCIENCE_DAY`, `NATIONAL_TEA_DAY`
+    and `NEPAL_NURSING_DAY`;
+  - twenty of the UN's international days on the dates of the UN's list,
+    from `INTERNATIONAL_MOTHER_LANGUAGE_DAY` to `INTERNATIONAL_MIGRANTS_DAY`
+    (C1602).
+
+  Each is `OBSERVANCE` in Nepal and named in `en-Latn`, `ne-Deva-NP`,
+  `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. 366 of the 502 festivals now ship,
+  counting the solar and civil days. Madhav Narayan mahotsav and Matina paru
+  are not shipped (C685); the other unprinted days wait for a source (C1603).
 - **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
   `sky_pose` in every binding and MCP; SR-58's device pose,
   `03-design/sky-pose.md`). It reads `almanac.skyView`'s request with a

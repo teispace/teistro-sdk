@@ -578,11 +578,17 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
 }
 
 /// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
-/// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions.
+/// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions and those
+/// [`KEPT_CIVIL_DAYS`] holds to a patro's verified days.
 fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
     kept_dated(from, to)
         .into_iter()
-        .filter(|(rule, _)| PRINTED_CIVIL_DAYS.iter().all(|&(civil, ..)| civil != rule))
+        .filter(|(rule, _)| {
+            PRINTED_CIVIL_DAYS
+                .iter()
+                .chain(&KEPT_CIVIL_DAYS)
+                .all(|&(civil, ..)| civil != rule)
+        })
         .collect()
 }
 
@@ -718,6 +724,98 @@ fn the_civil_days_fall_on_the_days_both_editions_print() {
     ]
     .concat();
     for (rule, first, second) in PRINTED_CIVIL_DAYS {
+        let days: Vec<Day> = kept
+            .iter()
+            .filter(|(kept, _)| kept == rule)
+            .map(|&(_, day)| day)
+            .collect();
+        assert_eq!(days, [first, second], "{rule}");
+    }
+}
+
+/// The civil days the committee prints in neither edition, each with the
+/// Gregorian day of VS 2082 and of VS 2083 its date gives: the days a patro
+/// printed in Nepal verified for it over those years, through its own
+/// Bikram Sambat table, and for `GEN_Z_MARTYRS_DAY`, verified in VS 2083
+/// only, the Home Ministry's notice (Bhadra 23, a Tuesday) and the day of
+/// 2025 the day remembers.
+const KEPT_CIVIL_DAYS: [(&str, Day, Day); 28] = [
+    ("EARTH_DAY", (2025, 4, 22), (2026, 4, 22)),
+    ("NATIONAL_TEA_DAY", (2025, 4, 28), (2026, 4, 28)),
+    (
+        "INTERNATIONAL_DAY_OF_FAMILIES",
+        (2025, 5, 15),
+        (2026, 5, 15),
+    ),
+    ("MADAN_ASHRIT_SMRITI_DIWAS", (2025, 5, 17), (2026, 5, 17)),
+    (
+        "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS",
+        (2025, 5, 29),
+        (2026, 5, 29),
+    ),
+    ("INTERNATIONAL_DAY_OF_YOGA", (2025, 6, 21), (2026, 6, 21)),
+    ("KAMAIYA_MUKTI_DIWAS", (2025, 7, 18), (2026, 7, 18)),
+    ("BP_SMRITI_DIWAS", (2025, 7, 22), (2026, 7, 22)),
+    ("INTERNATIONAL_YOUTH_DAY", (2025, 8, 12), (2026, 8, 12)),
+    ("GEN_Z_MARTYRS_DAY", (2025, 9, 8), (2026, 9, 8)),
+    ("NATIONAL_SCIENCE_DAY", (2025, 9, 17), (2026, 9, 17)),
+    (
+        "INTERNATIONAL_DAY_OF_OLDER_PERSONS",
+        (2025, 10, 1),
+        (2026, 10, 1),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_NON_VIOLENCE",
+        (2025, 10, 2),
+        (2026, 10, 2),
+    ),
+    ("WORLD_TEACHERS_DAY", (2025, 10, 5), (2026, 10, 5)),
+    ("WORLD_MENTAL_HEALTH_DAY", (2025, 10, 10), (2026, 10, 10)),
+    ("WORLD_FOOD_DAY", (2025, 10, 16), (2026, 10, 16)),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY",
+        (2025, 10, 17),
+        (2026, 10, 17),
+    ),
+    ("WORLD_CHILDREN_S_DAY", (2025, 11, 20), (2026, 11, 20)),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN",
+        (2025, 11, 25),
+        (2026, 11, 25),
+    ),
+    ("WORLD_AIDS_DAY", (2025, 12, 1), (2026, 12, 1)),
+    ("INTERNATIONAL_VOLUNTEER_DAY", (2025, 12, 5), (2026, 12, 5)),
+    (
+        "INTERNATIONAL_ANTI_CORRUPTION_DAY",
+        (2025, 12, 9),
+        (2026, 12, 9),
+    ),
+    ("INTERNATIONAL_MOUNTAIN_DAY", (2025, 12, 11), (2026, 12, 11)),
+    ("INTERNATIONAL_MIGRANTS_DAY", (2025, 12, 18), (2026, 12, 18)),
+    (
+        "NATIONAL_RECONCILIATION_DAY",
+        (2025, 12, 31),
+        (2026, 12, 31),
+    ),
+    ("NEPAL_NURSING_DAY", (2026, 1, 29), (2027, 1, 29)),
+    (
+        "INTERNATIONAL_MOTHER_LANGUAGE_DAY",
+        (2026, 2, 21),
+        (2027, 2, 21),
+    ),
+    ("WORLD_HEALTH_DAY", (2026, 4, 7), (2027, 4, 7)),
+];
+
+/// Each civil day the committee does not print falls on the day its keeper
+/// names, the Bikram Sambat ones through the calendar's own conversion.
+#[test]
+fn the_unprinted_civil_days_fall_on_their_keepers_dates() {
+    let kept: Vec<(String, Day)> = [
+        kept_dated((2025, 4, 14), (2026, 4, 13)),
+        kept_dated((2026, 4, 14), (2027, 4, 13)),
+    ]
+    .concat();
+    for (rule, first, second) in KEPT_CIVIL_DAYS {
         let days: Vec<Day> = kept
             .iter()
             .filter(|(kept, _)| kept == rule)

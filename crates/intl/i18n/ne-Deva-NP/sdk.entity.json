@@ -5430,6 +5430,118 @@
     "BRAHMO_SAMAJ_FOUNDATION_DAY": {
       "name": "ब्रह्म समाज स्थापना दिवस",
       "prose": "ब्रह्म समाज स्थापना दिवस"
+    },
+    "GEN_Z_MARTYRS_DAY": {
+      "name": "जेनजी सहिद दिवस",
+      "prose": "जेनजी सहिद दिवस"
+    },
+    "BP_SMRITI_DIWAS": {
+      "name": "बीपी स्मृति दिवस",
+      "prose": "बीपी स्मृति दिवस"
+    },
+    "KAMAIYA_MUKTI_DIWAS": {
+      "name": "कमैया मुक्ति दिवस",
+      "prose": "कमैया मुक्ति दिवस"
+    },
+    "MADAN_ASHRIT_SMRITI_DIWAS": {
+      "name": "मदन-आश्रित स्मृति दिवस",
+      "prose": "मदन-आश्रित स्मृति दिवस"
+    },
+    "NATIONAL_RECONCILIATION_DAY": {
+      "name": "राष्ट्रिय एकता तथा मेलमिलाप दिवस",
+      "prose": "राष्ट्रिय एकता तथा मेलमिलाप दिवस"
+    },
+    "NATIONAL_SCIENCE_DAY": {
+      "name": "राष्ट्रिय विज्ञान तथा प्रविधि दिवस",
+      "prose": "राष्ट्रिय विज्ञान तथा प्रविधि दिवस"
+    },
+    "NATIONAL_TEA_DAY": {
+      "name": "राष्ट्रिय चिया दिवस",
+      "prose": "राष्ट्रिय चिया दिवस"
+    },
+    "NEPAL_NURSING_DAY": {
+      "name": "नेपाल नर्सिङ दिवस",
+      "prose": "नेपाल नर्सिङ दिवस"
+    },
+    "INTERNATIONAL_MOTHER_LANGUAGE_DAY": {
+      "name": "अन्तर्राष्ट्रिय मातृभाषा दिवस",
+      "prose": "अन्तर्राष्ट्रिय मातृभाषा दिवस"
+    },
+    "WORLD_HEALTH_DAY": {
+      "name": "विश्व स्वास्थ्य दिवस",
+      "prose": "विश्व स्वास्थ्य दिवस"
+    },
+    "EARTH_DAY": {
+      "name": "पृथ्वी दिवस",
+      "prose": "पृथ्वी दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILIES": {
+      "name": "अन्तर्राष्ट्रिय परिवार दिवस",
+      "prose": "अन्तर्राष्ट्रिय परिवार दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS": {
+      "name": "अन्तर्राष्ट्रिय शान्ति सैनिक दिवस",
+      "prose": "अन्तर्राष्ट्रिय शान्ति सैनिक दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_YOGA": {
+      "name": "अन्तर्राष्ट्रिय योग दिवस",
+      "prose": "अन्तर्राष्ट्रिय योग दिवस"
+    },
+    "INTERNATIONAL_YOUTH_DAY": {
+      "name": "अन्तर्राष्ट्रिय युवा दिवस",
+      "prose": "अन्तर्राष्ट्रिय युवा दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_OLDER_PERSONS": {
+      "name": "अन्तर्राष्ट्रिय ज्येष्ठ नागरिक दिवस",
+      "prose": "अन्तर्राष्ट्रिय ज्येष्ठ नागरिक दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_NON_VIOLENCE": {
+      "name": "अन्तर्राष्ट्रिय अहिंसा दिवस",
+      "prose": "अन्तर्राष्ट्रिय अहिंसा दिवस"
+    },
+    "WORLD_TEACHERS_DAY": {
+      "name": "विश्व शिक्षक दिवस",
+      "prose": "विश्व शिक्षक दिवस"
+    },
+    "WORLD_MENTAL_HEALTH_DAY": {
+      "name": "विश्व मानसिक स्वास्थ्य दिवस",
+      "prose": "विश्व मानसिक स्वास्थ्य दिवस"
+    },
+    "WORLD_FOOD_DAY": {
+      "name": "विश्व खाद्य दिवस",
+      "prose": "विश्व खाद्य दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY": {
+      "name": "अन्तर्राष्ट्रिय गरिबी उन्मूलन दिवस",
+      "prose": "अन्तर्राष्ट्रिय गरिबी उन्मूलन दिवस"
+    },
+    "WORLD_CHILDREN_S_DAY": {
+      "name": "विश्व बाल दिवस",
+      "prose": "विश्व बाल दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN": {
+      "name": "महिला हिंसा उन्मूलन अन्तर्राष्ट्रिय दिवस",
+      "prose": "महिला हिंसा उन्मूलन अन्तर्राष्ट्रिय दिवस"
+    },
+    "WORLD_AIDS_DAY": {
+      "name": "विश्व एड्स दिवस",
+      "prose": "विश्व एड्स दिवस"
+    },
+    "INTERNATIONAL_VOLUNTEER_DAY": {
+      "name": "अन्तर्राष्ट्रिय स्वयंसेवक दिवस",
+      "prose": "अन्तर्राष्ट्रिय स्वयंसेवक दिवस"
+    },
+    "INTERNATIONAL_ANTI_CORRUPTION_DAY": {
+      "name": "अन्तर्राष्ट्रिय भ्रष्टाचार विरोधी दिवस",
+      "prose": "अन्तर्राष्ट्रिय भ्रष्टाचार विरोधी दिवस"
+    },
+    "INTERNATIONAL_MOUNTAIN_DAY": {
+      "name": "अन्तर्राष्ट्रिय पर्वत दिवस",
+      "prose": "अन्तर्राष्ट्रिय पर्वत दिवस"
+    },
+    "INTERNATIONAL_MIGRANTS_DAY": {
+      "name": "अन्तर्राष्ट्रिय आप्रवासी दिवस",
+      "prose": "अन्तर्राष्ट्रिय आप्रवासी दिवस"
     }
   },
   "agni_vasa": {

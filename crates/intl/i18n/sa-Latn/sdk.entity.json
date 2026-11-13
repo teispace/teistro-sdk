@@ -4889,6 +4889,118 @@
     "BRAHMO_SAMAJ_FOUNDATION_DAY": {
       "name": "Brāhmasamājasthāpanādivasaḥ",
       "prose": "Brāhmasamājasthāpanādivasaḥ"
+    },
+    "GEN_Z_MARTYRS_DAY": {
+      "name": "Jenajī Sahida Divasa",
+      "prose": "Jenajī Sahida Divasa"
+    },
+    "BP_SMRITI_DIWAS": {
+      "name": "Bīpī Smṛti Divasa",
+      "prose": "Bīpī Smṛti Divasa"
+    },
+    "KAMAIYA_MUKTI_DIWAS": {
+      "name": "Kamaiyā Mukti Divasa",
+      "prose": "Kamaiyā Mukti Divasa"
+    },
+    "MADAN_ASHRIT_SMRITI_DIWAS": {
+      "name": "Madana-āśrita Smṛti Divasa",
+      "prose": "Madana-āśrita Smṛti Divasa"
+    },
+    "NATIONAL_RECONCILIATION_DAY": {
+      "name": "Rāṣṭriya Ekatā Tathā Melamilāpa Divasa",
+      "prose": "Rāṣṭriya Ekatā Tathā Melamilāpa Divasa"
+    },
+    "NATIONAL_SCIENCE_DAY": {
+      "name": "Rāṣṭriya Vijñāna Tathā Pravidhi Divasa",
+      "prose": "Rāṣṭriya Vijñāna Tathā Pravidhi Divasa"
+    },
+    "NATIONAL_TEA_DAY": {
+      "name": "Rāṣṭriya Ciyā Divasa",
+      "prose": "Rāṣṭriya Ciyā Divasa"
+    },
+    "NEPAL_NURSING_DAY": {
+      "name": "Nepāla Narsiṅa Divasa",
+      "prose": "Nepāla Narsiṅa Divasa"
+    },
+    "INTERNATIONAL_MOTHER_LANGUAGE_DAY": {
+      "name": "Antarrāṣṭriya Mātṛbhāṣā Divasa",
+      "prose": "Antarrāṣṭriya Mātṛbhāṣā Divasa"
+    },
+    "WORLD_HEALTH_DAY": {
+      "name": "Viśva Svāsthya Divasa",
+      "prose": "Viśva Svāsthya Divasa"
+    },
+    "EARTH_DAY": {
+      "name": "Pṛthvī Divasa",
+      "prose": "Pṛthvī Divasa"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILIES": {
+      "name": "Antarrāṣṭriya Parivāra Divasa",
+      "prose": "Antarrāṣṭriya Parivāra Divasa"
+    },
+    "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS": {
+      "name": "Antarrāṣṭriya Śānti Sainika Divasa",
+      "prose": "Antarrāṣṭriya Śānti Sainika Divasa"
+    },
+    "INTERNATIONAL_DAY_OF_YOGA": {
+      "name": "Antarrāṣṭriya Yoga Divasa",
+      "prose": "Antarrāṣṭriya Yoga Divasa"
+    },
+    "INTERNATIONAL_YOUTH_DAY": {
+      "name": "Antarrāṣṭriya Yuvā Divasa",
+      "prose": "Antarrāṣṭriya Yuvā Divasa"
+    },
+    "INTERNATIONAL_DAY_OF_OLDER_PERSONS": {
+      "name": "Antarrāṣṭriya Jyeṣṭha Nāgarika Divasa",
+      "prose": "Antarrāṣṭriya Jyeṣṭha Nāgarika Divasa"
+    },
+    "INTERNATIONAL_DAY_OF_NON_VIOLENCE": {
+      "name": "Antarrāṣṭriya Ahiṃsā Divasa",
+      "prose": "Antarrāṣṭriya Ahiṃsā Divasa"
+    },
+    "WORLD_TEACHERS_DAY": {
+      "name": "Viśva Śikṣaka Divasa",
+      "prose": "Viśva Śikṣaka Divasa"
+    },
+    "WORLD_MENTAL_HEALTH_DAY": {
+      "name": "Viśva Mānasika Svāsthya Divasa",
+      "prose": "Viśva Mānasika Svāsthya Divasa"
+    },
+    "WORLD_FOOD_DAY": {
+      "name": "Viśva Khādya Divasa",
+      "prose": "Viśva Khādya Divasa"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY": {
+      "name": "Antarrāṣṭriya Garibī Unmūlana Divasa",
+      "prose": "Antarrāṣṭriya Garibī Unmūlana Divasa"
+    },
+    "WORLD_CHILDREN_S_DAY": {
+      "name": "Viśva Bāla Divasa",
+      "prose": "Viśva Bāla Divasa"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN": {
+      "name": "Mahilā Hiṃsā Unmūlana Antarrāṣṭriya Divasa",
+      "prose": "Mahilā Hiṃsā Unmūlana Antarrāṣṭriya Divasa"
+    },
+    "WORLD_AIDS_DAY": {
+      "name": "Viśva Eḍsa Divasa",
+      "prose": "Viśva Eḍsa Divasa"
+    },
+    "INTERNATIONAL_VOLUNTEER_DAY": {
+      "name": "Antarrāṣṭriya Svayaṃsevaka Divasa",
+      "prose": "Antarrāṣṭriya Svayaṃsevaka Divasa"
+    },
+    "INTERNATIONAL_ANTI_CORRUPTION_DAY": {
+      "name": "Antarrāṣṭriya Bhraṣṭācāra Virodhī Divasa",
+      "prose": "Antarrāṣṭriya Bhraṣṭācāra Virodhī Divasa"
+    },
+    "INTERNATIONAL_MOUNTAIN_DAY": {
+      "name": "Antarrāṣṭriya Parvata Divasa",
+      "prose": "Antarrāṣṭriya Parvata Divasa"
+    },
+    "INTERNATIONAL_MIGRANTS_DAY": {
+      "name": "Antarrāṣṭriya Āpravāsī Divasa",
+      "prose": "Antarrāṣṭriya Āpravāsī Divasa"
     }
   },
   "year_office": {

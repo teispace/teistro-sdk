@@ -5420,6 +5420,118 @@
     "BRAHMO_SAMAJ_FOUNDATION_DAY": {
       "name": "Brahmo Samaj Foundation Day",
       "prose": "Brahmo Samaj Foundation Day"
+    },
+    "GEN_Z_MARTYRS_DAY": {
+      "name": "Gen Z Martyrs' Day",
+      "prose": "Gen Z Martyrs' Day, Bhadra 23"
+    },
+    "BP_SMRITI_DIWAS": {
+      "name": "BP Smriti Diwas",
+      "prose": "BP Smriti Diwas, Shrawan 6"
+    },
+    "KAMAIYA_MUKTI_DIWAS": {
+      "name": "Kamaiya Mukti Diwas",
+      "prose": "Kamaiya Mukti Diwas, Shrawan 2"
+    },
+    "MADAN_ASHRIT_SMRITI_DIWAS": {
+      "name": "Madan-Ashrit Smriti Diwas",
+      "prose": "Madan-Ashrit Smriti Diwas, Jestha 3"
+    },
+    "NATIONAL_RECONCILIATION_DAY": {
+      "name": "National Unity and Reconciliation Day",
+      "prose": "National Unity and Reconciliation Day, Poush 16"
+    },
+    "NATIONAL_SCIENCE_DAY": {
+      "name": "National Science and Technology Day",
+      "prose": "National Science and Technology Day, Asoj 1"
+    },
+    "NATIONAL_TEA_DAY": {
+      "name": "National Tea Day",
+      "prose": "National Tea Day, Baisakh 15"
+    },
+    "NEPAL_NURSING_DAY": {
+      "name": "Nepal Nursing Day",
+      "prose": "Nepal Nursing Day, Magh 15"
+    },
+    "INTERNATIONAL_MOTHER_LANGUAGE_DAY": {
+      "name": "International Mother Language Day",
+      "prose": "International Mother Language Day, 21 February"
+    },
+    "WORLD_HEALTH_DAY": {
+      "name": "World Health Day",
+      "prose": "World Health Day, 7 April"
+    },
+    "EARTH_DAY": {
+      "name": "International Mother Earth Day",
+      "prose": "International Mother Earth Day, 22 April"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILIES": {
+      "name": "International Day of Families",
+      "prose": "International Day of Families, 15 May"
+    },
+    "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS": {
+      "name": "International Day of United Nations Peacekeepers",
+      "prose": "International Day of United Nations Peacekeepers, 29 May"
+    },
+    "INTERNATIONAL_DAY_OF_YOGA": {
+      "name": "International Day of Yoga",
+      "prose": "International Day of Yoga, 21 June"
+    },
+    "INTERNATIONAL_YOUTH_DAY": {
+      "name": "International Youth Day",
+      "prose": "International Youth Day, 12 August"
+    },
+    "INTERNATIONAL_DAY_OF_OLDER_PERSONS": {
+      "name": "International Day of Older Persons",
+      "prose": "International Day of Older Persons, 1 October"
+    },
+    "INTERNATIONAL_DAY_OF_NON_VIOLENCE": {
+      "name": "International Day of Non-Violence",
+      "prose": "International Day of Non-Violence, 2 October"
+    },
+    "WORLD_TEACHERS_DAY": {
+      "name": "World Teachers' Day",
+      "prose": "World Teachers' Day, 5 October"
+    },
+    "WORLD_MENTAL_HEALTH_DAY": {
+      "name": "World Mental Health Day",
+      "prose": "World Mental Health Day, 10 October"
+    },
+    "WORLD_FOOD_DAY": {
+      "name": "World Food Day",
+      "prose": "World Food Day, 16 October"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY": {
+      "name": "International Day for the Eradication of Poverty",
+      "prose": "International Day for the Eradication of Poverty, 17 October"
+    },
+    "WORLD_CHILDREN_S_DAY": {
+      "name": "World Children's Day",
+      "prose": "World Children's Day, 20 November"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN": {
+      "name": "International Day for the Elimination of Violence against Women",
+      "prose": "International Day for the Elimination of Violence against Women, 25 November"
+    },
+    "WORLD_AIDS_DAY": {
+      "name": "World AIDS Day",
+      "prose": "World AIDS Day, 1 December"
+    },
+    "INTERNATIONAL_VOLUNTEER_DAY": {
+      "name": "International Volunteer Day",
+      "prose": "International Volunteer Day, 5 December"
+    },
+    "INTERNATIONAL_ANTI_CORRUPTION_DAY": {
+      "name": "International Anti-Corruption Day",
+      "prose": "International Anti-Corruption Day, 9 December"
+    },
+    "INTERNATIONAL_MOUNTAIN_DAY": {
+      "name": "International Mountain Day",
+      "prose": "International Mountain Day, 11 December"
+    },
+    "INTERNATIONAL_MIGRANTS_DAY": {
+      "name": "International Migrants Day",
+      "prose": "International Migrants Day, 18 December"
     }
   },
   "agni_vasa": {

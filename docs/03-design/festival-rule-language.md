@@ -378,6 +378,11 @@ Asoj 1, and Maghi and the Makar snans on Magh 1 (`SOLAR_DAYS`). 35 civil days
 follow on the dates both editions print them, 15 Bikram Sambat and 20
 Gregorian (`GREGORIAN_DAYS`): Republic day on Jestha 15 and Christmas on
 25 December among them (`festival-classification.md`, Fixed civil).
+28 more the print does not carry follow on their keepers' dates (`KEPT_DAYS`,
+`UN_DAYS`): Gen Z Martyrs' Day on Bhadra 23 from the Home Ministry's notice
+for VS 2083 (C1600), seven national days on a Bikram Sambat date as the press
+reports them kept (C1601), and twenty of the UN's international days on the
+UN's list's dates (C1602).
 
 A `civilDate` on the Tibetan calendar keeps the day its observance falls
 on, the first of a doubled month and of a repeated day, and the day
