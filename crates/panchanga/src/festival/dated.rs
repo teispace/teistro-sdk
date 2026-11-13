@@ -353,6 +353,189 @@ const GREGORIAN_DAYS: [(&str, u8, i8, &str); 20] = [
     ),
 ];
 
+/// The days kept in Nepal on a Bikram Sambat date that the national
+/// panchanga prints in neither edition, each on the date its keeper names:
+/// key, month, day, and the source read for it (C1600, C1601). Each also
+/// gives every day a patro printed in Nepal verified for it from VS 2070
+/// to 2083, by a back-test kept outside the repository.
+const KEPT_DAYS: [(&str, u8, i8, &str); 8] = [
+    (
+        "GEN_Z_MARTYRS_DAY",
+        5,
+        23,
+        "Government of Nepal, Ministry of Home Affairs, public holidays of 2083 (Nepal Gazette vol. 75 no. 67 part 5, Falgun 18 2082) p. 6, §8 ग, among the days kept nationally with offices open: \"जेनजी सहिद दिवस - भदौ २३ गते\"; one notice, so one year read (C1600)",
+    ),
+    (
+        "BP_SMRITI_DIWAS",
+        4,
+        6,
+        "B.P. Koirala died on Shrawan 6, VS 2039, and the day is kept each Shrawan 6, as Onlinekhabar reports on VS 2081 Shrawan 6 (the 42nd), VS 2082 Shrawan 6 (the 43rd) and VS 2083 Shrawan 6 (\"हरेक वर्ष साउन ६ गते\"), and Hamro Patro on 20 July 2026, the Nepali Congress's 44th (rank 3, C1601)",
+    ),
+    (
+        "KAMAIYA_MUKTI_DIWAS",
+        4,
+        2,
+        "the Government of Nepal declared the kamaiyas free on Shrawan 2, VS 2057, as Onlinekhabar (VS 2081 Shrawan 3, under कमैया मुक्ति दिवस; VS 2083 Shrawan 2, the 26th year) and Kantipur (19 July 2026) report; the day is that date (rank 3, C1601)",
+    ),
+    (
+        "MADAN_ASHRIT_SMRITI_DIWAS",
+        2,
+        3,
+        "CPN-UML keeps Madan Bhandari's and Jivraj Ashrit's memorial day on Jestha 3, as Kantipur (VS 2082 Jestha 3, the 32nd) and Onlinekhabar (VS 2083 Jestha 3, the 33rd) report it kept that day (rank 3, C1601)",
+    ),
+    (
+        "NATIONAL_RECONCILIATION_DAY",
+        9,
+        16,
+        "राष्ट्रिय एकता तथा मेलमिलाप दिवस, kept on Poush 16, the day B.P. Koirala returned from exile in VS 2033, as Kantipur (VS 2081 Poush 16) and Onlinekhabar (VS 2082 Poush 16: \"प्रत्येक वर्ष मनाइने पुस १६ गतेको मेलमिलाप दिवस\") report (rank 3, C1601)",
+    ),
+    (
+        "NATIONAL_SCIENCE_DAY",
+        6,
+        1,
+        "Onlinekhabar, VS 2081 Asoj 1 (Sanat Kumar Sharma's blog): Asoj 1, Amrit Science Campus's founding day, is decided as राष्ट्रिय विज्ञान तथा प्रविधि दिवस, first kept on Asoj 1, VS 2070 (rank 3, C1601)",
+    ),
+    (
+        "NATIONAL_TEA_DAY",
+        1,
+        15,
+        "Onlinekhabar, VS 2079 Baisakh 15: the National Tea and Coffee Development Board keeps the 26th राष्ट्रिय चिया दिवस that day (rank 3, C1601)",
+    ),
+    (
+        "NEPAL_NURSING_DAY",
+        10,
+        15,
+        "Onlinekhabar, VS 2082 Magh 15: \"आज माघ १५, नेपाली नर्स दिवस\" (rank 3, C1601)",
+    ),
+];
+
+/// The United Nations' international days a patro printed in Nepal keeps
+/// and the national panchanga prints in neither edition, each on the date
+/// the UN's list gives: key, month, day, and the list's entry as printed
+/// (C1602). Each gives every day the patro verified for it.
+const UN_DAYS: [(&str, u8, i8, &str); 20] = [
+    (
+        "INTERNATIONAL_MOTHER_LANGUAGE_DAY",
+        2,
+        21,
+        "\"International Mother Language Day\", 21 February, A/RES/56/262",
+    ),
+    (
+        "WORLD_HEALTH_DAY",
+        4,
+        7,
+        "\"World Health Day [WHO]\", 7 April, WHA/A.2/Res.35",
+    ),
+    (
+        "EARTH_DAY",
+        4,
+        22,
+        "\"International Mother Earth Day\", 22 April, A/RES/63/278",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_FAMILIES",
+        5,
+        15,
+        "\"International Day of Families\", 15 May, A/RES/47/237",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS",
+        5,
+        29,
+        "\"International Day of UN Peacekeepers\", 29 May, A/RES/57/129",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_YOGA",
+        6,
+        21,
+        "\"International Day of Yoga\", 21 June, A/RES/69/131",
+    ),
+    (
+        "INTERNATIONAL_YOUTH_DAY",
+        8,
+        12,
+        "\"International Youth Day\", 12 August, A/RES/54/120",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_OLDER_PERSONS",
+        10,
+        1,
+        "\"International Day of Older Persons\", 1 October, A/RES/45/106",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_NON_VIOLENCE",
+        10,
+        2,
+        "\"International Day of Non-Violence\", 2 October, A/RES/61/271",
+    ),
+    (
+        "WORLD_TEACHERS_DAY",
+        10,
+        5,
+        "\"World Teachers' Day [UNESCO]\", 5 October, 27 C/INF.7",
+    ),
+    (
+        "WORLD_MENTAL_HEALTH_DAY",
+        10,
+        10,
+        "\"World Mental Health Day [WHO]\", 10 October, no resolution printed",
+    ),
+    (
+        "WORLD_FOOD_DAY",
+        10,
+        16,
+        "\"World Food Day [FAO]\", 16 October, A/RES/35/70",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY",
+        10,
+        17,
+        "\"International Day for the Eradication of Poverty\", 17 October, A/RES/47/196",
+    ),
+    (
+        "WORLD_CHILDREN_S_DAY",
+        11,
+        20,
+        "\"World Children's Day\", 20 November, A/RES/836(IX)",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN",
+        11,
+        25,
+        "\"International Day for the Elimination of Violence against Women\", 25 November, A/RES/54/134",
+    ),
+    (
+        "WORLD_AIDS_DAY",
+        12,
+        1,
+        "\"World AIDS Day\", 1 December, no resolution printed",
+    ),
+    (
+        "INTERNATIONAL_VOLUNTEER_DAY",
+        12,
+        5,
+        "\"International Volunteer Day for Economic and Social Development\", 5 December, A/RES/40/212",
+    ),
+    (
+        "INTERNATIONAL_ANTI_CORRUPTION_DAY",
+        12,
+        9,
+        "\"International Anti-Corruption Day\", 9 December, A/RES/58/4",
+    ),
+    (
+        "INTERNATIONAL_MOUNTAIN_DAY",
+        12,
+        11,
+        "\"International Mountain Day\", 11 December, A/RES/57/245",
+    ),
+    (
+        "INTERNATIONAL_MIGRANTS_DAY",
+        12,
+        18,
+        "\"International Migrants Day\", 18 December, A/RES/55/93",
+    ),
+];
+
 /// An observance on a date of a calendar.
 ///
 /// ```
@@ -859,8 +1042,9 @@ impl DatedRule {
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
     /// the twelve sankrantis on the first of each month, the national days
     /// it names, and the festivals it keeps on a date;
-    /// and the two it keeps on the Sun's entry into Ardra, भूमिरज and the
-    /// भूमि पूजा three days on.
+    /// the two it keeps on the Sun's entry into Ardra, भूमिरज and the
+    /// भूमि पूजा three days on; and the civil days it does not print, on
+    /// the dates their keepers name.
     #[must_use]
     pub fn nepal_panchanga() -> Vec<DatedRule> {
         let bs = |key: &str, month: u8, day: i8, source: &str| DatedRule {
@@ -927,7 +1111,38 @@ impl DatedRule {
         ]);
         rules.extend(Self::on_printed_dates());
         rules.extend(Self::on_the_suns_entry());
+        rules.extend(Self::on_kept_dates());
         rules
+    }
+
+    /// The days the national panchanga prints in neither edition, each
+    /// on the date its keeper names: Nepal's own on a Bikram Sambat date
+    /// ([`KEPT_DAYS`]) and the UN's international days on a Gregorian one
+    /// ([`UN_DAYS`]).
+    fn on_kept_dates() -> impl Iterator<Item = DatedRule> {
+        let kept = |calendar, cited: fn(&str) -> String| {
+            move |&(key, month, day, source): &(&str, u8, i8, &str)| DatedRule {
+                key: key.to_owned(),
+                source: cited(source),
+                on: Dated::CivilDate {
+                    calendar,
+                    month,
+                    day,
+                    skipped: None,
+                },
+                meta: super::FestivalMeta::default(),
+            }
+        };
+        KEPT_DAYS
+            .iter()
+            .map(kept(Calendar::BikramSambat, |source| {
+                format!("{source}; the national panchanga prints it in neither VS 2082 nor 2083")
+            }))
+            .chain(UN_DAYS.iter().map(kept(Calendar::Gregorian, |entry| {
+                format!(
+                    "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-13): {entry}"
+                )
+            })))
     }
 
     /// The festivals and civil days both editions print on one date of a
