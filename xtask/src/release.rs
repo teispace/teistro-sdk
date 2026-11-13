@@ -172,6 +172,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     failures.extend(check_changelog(root, &wanted, released));
     failures.extend(crate::crate_packages::check_requirements(root, &wanted));
     failures.extend(check_adapter_locks(root, &wanted));
+    failures.extend(check_adapter_resolution(root));
 
     for failure in &failures {
         println!("FAIL  {failure}");
@@ -792,6 +793,42 @@ fn check_adapter_locks(root: &Path, wanted: &str) -> Vec<String> {
                 .map(move |(name, version)| {
                     format!("{path} locks `{name}` at {version}, not {wanted}; run `cargo xtask version {wanted}`")
                 })
+        })
+        .collect()
+}
+
+/// Every adapter lock resolves as it stands: `cargo metadata --locked`
+/// in the adapter. A version check alone misses a lock whose SDK crates
+/// gained or lost a dependency (rc.4's release failed on one that still
+/// named a dependency moved to dev-only), and CI builds each adapter
+/// `--locked` only in verify.
+fn check_adapter_resolution(root: &Path) -> Vec<String> {
+    adapter_locks(root)
+        .iter()
+        .filter_map(|lock| {
+            let manifest = lock.with_file_name("Cargo.toml");
+            let path = rel(root, lock);
+            let output = std::process::Command::new(std::env::var("CARGO").unwrap_or_else(|_| "cargo".into()))
+                .args(["metadata", "--locked", "--quiet", "--format-version", "1", "--manifest-path"])
+                .arg(&manifest)
+                .env_remove("CARGO_TARGET_DIR")
+                .output();
+            match output {
+                Ok(output) if output.status.success() => None,
+                Ok(output) => {
+                    let said = String::from_utf8_lossy(&output.stderr);
+                    Some(if said.contains("cannot update the lock file") {
+                        format!(
+                            "{path} is stale: it no longer resolves against the SDK's crates; \
+                             run `cargo xtask relock-adapter --adapter DIR` (or `cargo metadata` in its \
+                             rust/ directory) and commit it"
+                        )
+                    } else {
+                        format!("{path} does not resolve: {}", said.trim())
+                    })
+                }
+                Err(err) => Some(format!("{path}: cannot run cargo: {err}")),
+            }
         })
         .collect()
 }
