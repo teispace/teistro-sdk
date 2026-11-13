@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A context reckons by a geo provider's own zone rules (SR-88); the teigeodata adapter moves to
+teigeodata v0.3.0.**
+**Numbers:** none move in a context built as before; the adapter's source now states version `0.3.0`.
+- **New:** `ContextBuilder::time_zones(provider)` installs any `TimeZoneProvider` as the context's
+  zone database, such as the rules `GeoProvider::time_zones()` hands over, so a place a provider
+  resolves is reckoned by the tzdb release its data carries. `sdk.time.zoneDatabase` reports it as
+  source `PROVIDER` (a third value beside `EMBEDDED` and `PACK`) with the provider's version.
+  `zones(pack)` and `time_zones(provider)` each replace what the other set. `TimeZoneProvider`,
+  `FixedZone`, `OffsetInfo`, `LocalCandidates` and `LocalSeconds` are re-exported from `teistro`.
+- `adapters/geo-teigeodata` builds against teigeodata's tag `v0.3.0`, whose packs split names and
+  outlines into parts (a v0.1.0 reader refuses them) and which lists its zones; it turns on
+  `dem-coarse`, so a pack that carries only the coarse terrain grid answers a height.
+- **New:** `TeigeodataZones`, the packs' zone rules as the time-zone port: offsets with their
+  abbreviation, daylight flag and whether the instant precedes the zone's rules, a wall-clock
+  time's gap or overlap, names matched without case as the SDK's own packs match them, and an
+  unknown name refused with the nearest names. `TeigeodataGeo::time_zones()` hands it over.
+- Verify's `geo-adapter` job now reads real packs: it downloads Nepal's lite pack and the world's
+  baseline (whose rules hold every zone) from the pinned data release (`data-2026.11.13.3`), checks
+  their SHA-256, and fails a test that finds no pack
+  (`TEISTRO_TEIGEODATA_REQUIRED`), where before every pack-reading test skipped on CI.
+
 **An adapter's other locked crates move with it.**
 **Numbers:** none move.
 - `[package.metadata.teistro-adapter]` gains `locked-crates`, the adapter's other standalone crates

@@ -7915,7 +7915,7 @@ export declare class TimeArea {
 /** The zone database a context reads. */
 export interface ZoneDatabase {
   /** Where it comes from. */
-  readonly source: 'EMBEDDED' | 'PACK';
+  readonly source: 'EMBEDDED' | 'PACK' | 'PROVIDER';
   /** Its release (`2026f`), as every answer's provenance names it. */
   readonly version: string;
   /** How many names it holds, links included. */

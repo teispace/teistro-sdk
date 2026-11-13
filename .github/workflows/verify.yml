@@ -705,13 +705,16 @@ jobs:
         run: cargo build -p teistro-ffi --no-default-features
 
   # The teigeodata geo adapter (SR-88) is outside the workspace, so no
-  # other job builds it. teigeodata is public, so this needs no secret; no
-  # data release is published yet (teigeodata's TG-05), so the tests that
-  # read a pack say SKIP here and run in the local gate that names one
+  # other job builds it. teigeodata is public, so this needs no secret: its
+  # tests read packs from teigeodata's pinned data release
   # (`TEISTRO_TEIGEODATA_PACKS`, adapters/geo-teigeodata/README.md).
   geo-adapter:
     name: teigeodata geo adapter
     runs-on: ubuntu-latest
+    env:
+      # teigeodata's data release the tests read, built by the engine tag
+      # the adapter pins (adapters/geo-teigeodata/rust/Cargo.toml).
+      TEIGEODATA_DATA: data-2026.11.13.3
     defaults:
       run:
         working-directory: adapters/geo-teigeodata/rust
@@ -727,7 +730,35 @@ jobs:
         run: cargo fmt --check
       - name: Clippy, warnings denied
         run: cargo clippy --locked --all-targets -- -D warnings
-      - name: Tests and doc examples
+      # Nepal's lite pack and the world's baseline (which carries every
+      # zone's rules) from teigeodata's data release, so the tests that
+      # read a real pack run here rather than print SKIP. The release is
+      # pinned with the engine tag in Cargo.toml: a pack built by a newer
+      # format is refused by the older reader, so both move together.
+      - name: The packs, cached by their release
+        id: pack
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/teigeodata
+          key: teigeodata-${{ env.TEIGEODATA_DATA }}-np-places-lite-baseline-lite
+      - name: Download and check the packs
+        if: steps.pack.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir -p teigeodata && cd teigeodata
+          gh release download "$TEIGEODATA_DATA" -R teispace/teigeodata \
+            -p np-places-lite.tgd -p baseline-lite.tgd -p SHA256SUMS
+          grep -E ' (np-places|baseline)-lite\.tgd$' SHA256SUMS > wanted
+          test "$(wc -l < wanted)" -eq 2
+          sha256sum --check --strict wanted
+      - name: Tests and doc examples, over the packs
+        env:
+          # Nepal's pack first, so it answers Nepal before the baseline.
+          TEISTRO_TEIGEODATA_PACKS: ${{ runner.temp }}/teigeodata/np-places-lite.tgd:${{ runner.temp }}/teigeodata/baseline-lite.tgd
+          # A test that finds no pack fails here instead of skipping.
+          TEISTRO_TEIGEODATA_REQUIRED: '1'
         run: cargo test --locked
 
   # Every feature of every crate on its own, and each crate with none

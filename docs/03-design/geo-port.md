@@ -246,11 +246,15 @@ that knows its few hundred places needs no dataset.
 `time_zones()` lets a provider hand over the tzdb release its zone names come
 from. The SDK does not install it on its own (the opening's first rule): a Rust
 consumer who wants a chart read under the provider's own rules gives the same
-data to the context as its zone database. The resolve answers
+rules to the context as its zone database,
+`Context::builder().geo(geo.clone()).time_zones(zones)`, and `sdk.time`
+reports the database as source `PROVIDER` with the provider's version. The
+builder takes any `TimeZoneProvider`, not only a geo provider's, and it and
+`zones(pack)` each replace what the other set. The resolve answers
 `source.tzdb` beside the zone, and the chart's provenance names the zone
-database that read it, so a mismatch is visible in the stored answer. Wiring a
-provider's rules into a context as its zone database is SR-88's, when there is
-a provider that carries some.
+database that read it, so a mismatch is visible in the stored answer. The
+bindings' contexts keep their embedded or loaded pack: a provider is a Rust
+object, and a binding hands its zone data over as a pack.
 
 ## 9. The boundary, the bindings and MCP
 
@@ -269,7 +273,7 @@ replays it on a context with no provider: `HELD`.
 ## 10. The teigeodata adapter (SR-88)
 
 `adapters/geo-teigeodata/rust` (`teistro-geo-teigeodata`) is the first
-provider over a real engine: teigeodata at its tag `v0.1.0`, by git, in a
+provider over a real engine: teigeodata at its tag `v0.3.0`, by git, in a
 standalone crate with its own lock, outside the workspace like the
 ephemeris adapters (ADR-0019). It is public, since teigeodata is
 Apache-2.0. `TeigeodataGeo` opens pack files (`open`), packs in memory
@@ -279,10 +283,10 @@ that answers:
 
 | port | engine |
 |---|---|
-| `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as v0.1.0's `tgd` reads it) |
+| `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as `tgd` reads it) |
 | `height_at` | `elevation_at`: metres above EGM2008, the DEM product's name as `source` (`NASADEM`), its north-south spacing as `resolutionM` |
 | `admin_at` | `admin_at`, coarse to fine, each unit's `admin_level`, `iso_code` (`NP`, `NP-P3`) and canonical name |
-| `source` | `teigeodata`, `0.1.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0`), and `tz_version()` as `tzdb` |
+| `source` | `teigeodata`, `0.3.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0`), and `tz_version()` as `tzdb` |
 
 A point no pack covers answers `None` or an empty list. An engine error
 crosses as `PROVIDER` on the question's field (`zone`, `height`, `admin`),
@@ -299,18 +303,33 @@ requests (§6). The adapter fetches nothing. A binding reaches a provider
 only as a table (`geo.load`), so a binding consumer resolves in its Rust
 core or writes the place into the request itself.
 
-**What v0.1.0 leaves open.** `time_zones()` stays `None`. The engine
-answers offsets for a named zone but lists no zones and does not say
-whether an instant precedes a zone's first rule, which a
-`TimeZoneProvider` needs. Its terrain is the full `DEM` section only. The
-baseline's coarse terrain came after the tag, so an embedded baseline
-alone answers no height.
+**Zone rules.** `time_zones()` answers `TeigeodataZones`, the packs' own
+rules as a `TimeZoneProvider` (teigeodata v0.3.0's `tz_zones` and
+`tz_rules_start`, asked for on 2026-11-13 and added the same day, with
+`tz_offset_at` and `tz_local_candidates`), so a place teigeodata resolves
+is reckoned by the tzdb release its packs carry; `None` without rules.
+`before_rules` is an instant before the zone's first transition, as the
+SDK's own databases say it, and `current_offsets` samples the release's
+year as they do. The packs hold `zone.tab`'s zones and no links (`UTC`,
+`Etc/*`): a link is an unknown zone. Heights come from the full `DEM` section or, where a pack carries only
+that, the coarse grid (`dem-coarse`). The lite baseline of
+release verify reads carries neither, so a baseline alone answers no height.
+
+**Moving with teigeodata.** A pack a newer format writes is refused by an
+older reader (from v0.2.0 the packs split names and outlines into parts), so the
+engine tag in the adapter's `Cargo.toml` and the data release verify reads
+(`TEIGEODATA_DATA`) move together, with each teigeodata release.
+`ENGINE_VERSION` is held to the locked engine by a test.
 
 **Tests.** No pack is checked in: Nepal's country pack is about 80 MB, and
 its data has its sources' terms. The adapter's tests read the packs
 `TEISTRO_TEIGEODATA_PACKS` names and print `SKIP` when the variable is
-unset. Its gate job sets the variable to `np-places-lite.tgd`, built by
-teigeodata's forge. With the pack, Kathmandu resolves to
+unset. Verify's `geo-adapter` job downloads `np-places-lite.tgd` and
+`baseline-lite.tgd` (a country pack carries only its own zones' rules;
+the baseline carries every zone's) from the pinned data release, checks
+them against `SHA256SUMS`, and sets
+`TEISTRO_TEIGEODATA_REQUIRED`, under which a missing pack fails instead of
+skipping. With the pack, Kathmandu resolves to
 `Asia/Kathmandu`, `NP` and `NP-P3`, and a valley-floor height above
 EGM2008. The Atlantic answers nothing. The SDK's own geo suite holds over
 the adapter: a receipt keeps the place and replays `HELD` without the
@@ -319,9 +338,8 @@ the sunrise names the height's source (`adapters/geo-teigeodata/README.md`).
 
 ## 11. Left for later
 
-- **SR-88** is built (§10), except the zone rules through `time_zones()`
-  and the context side of §8, which wait on a teigeodata release that lists
-  its zones.
+- **SR-88** is built (§10), the zone rules and the context side of §8
+  included.
 - **SR-90** is built (§6a).
 - A conformance kit for geo providers like `ephemeris-kit`, when there is a
   second provider to hold to the first.

@@ -200,16 +200,19 @@ struct Zones {
 }
 
 impl Zones {
-    fn of(pack: Option<Arc<ZonePack>>) -> Zones {
-        match pack {
-            Some(pack) => Zones {
-                provider: pack,
-                source: ZoneDatabaseSource::Pack,
-            },
-            None => Zones {
-                provider: Arc::new(EmbeddedTzdb::shared()),
-                source: ZoneDatabaseSource::Embedded,
-            },
+    /// The database compiled into the SDK.
+    fn embedded() -> Zones {
+        Zones {
+            provider: Arc::new(EmbeddedTzdb::shared()),
+            source: ZoneDatabaseSource::Embedded,
+        }
+    }
+
+    /// A zone pack in place of the embedded database.
+    fn pack(pack: Arc<ZonePack>) -> Zones {
+        Zones {
+            provider: pack,
+            source: ZoneDatabaseSource::Pack,
         }
     }
 }
@@ -429,7 +432,7 @@ impl Context {
     /// message's `timeZone` reads the one a resolution reads.
     #[cfg(feature = "signed-packs")]
     pub(crate) fn install_zones(&self, pack: ZonePack) {
-        let zones = Zones::of(Some(Arc::new(pack)));
+        let zones = Zones::pack(Arc::new(pack));
         self.intl
             .borrow_mut()
             .set_time_zones(Arc::clone(&zones.provider));
@@ -780,7 +783,7 @@ pub struct ContextBuilder {
     chain: Option<Vec<Ephemeris>>,
     wrap: Option<Wrap>,
     layouts: Vec<Layout>,
-    zones: Option<Arc<ZonePack>>,
+    zones: Option<Zones>,
     geo: Option<Arc<dyn GeoProvider>>,
     #[cfg(feature = "chart")]
     dashas: Vec<DashaDefinition>,
@@ -848,7 +851,34 @@ impl ContextBuilder {
     /// ```
     #[must_use]
     pub fn zones(mut self, pack: Arc<ZonePack>) -> ContextBuilder {
-        self.zones = Some(pack);
+        self.zones = Some(Zones::pack(pack));
+        self
+    }
+
+    /// Any zone database in place of the embedded one: a provider the
+    /// application holds, such as the rules a geo provider's data carries
+    /// ([`GeoProvider::time_zones`]), so a place it resolves is reckoned by
+    /// the tzdb release that data names. `sdk.time` reports it as
+    /// [`ZoneDatabaseSource::Provider`] with the provider's version. It and
+    /// [`ContextBuilder::zones`] each replace what the other set.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, FixedZone, UtcOffset, ZoneDatabaseSource};
+    ///
+    /// let nepal = FixedZone::new("Asia/Kathmandu", UtcOffset::literal(5, 45, 0));
+    /// let sdk = Context::builder().time_zones(Arc::new(nepal)).build()?;
+    /// let database = sdk.time().zone_database();
+    /// assert_eq!(database.source, ZoneDatabaseSource::Provider);
+    /// assert_eq!((database.version.as_str(), database.zones), ("fixed", 1));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn time_zones(mut self, provider: Arc<dyn TimeZoneProvider>) -> ContextBuilder {
+        self.zones = Some(Zones {
+            provider,
+            source: ZoneDatabaseSource::Provider,
+        });
         self
     }
 
@@ -997,7 +1027,7 @@ impl ContextBuilder {
             .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
         // A message's `timeZone` reads an instant in a zone through the
         // same database the context's own zone resolutions use.
-        let zones = Zones::of(self.zones);
+        let zones = self.zones.unwrap_or_else(Zones::embedded);
         intl.set_time_zones(Arc::clone(&zones.provider));
         if let Some(tag) = &self.locale {
             intl.set_locale(tag)

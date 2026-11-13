@@ -15,12 +15,22 @@ use teistro_geo_teigeodata::TeigeodataGeo;
 /// so; the adapter's gate job sets it (`../README.md`).
 pub(crate) const PACKS_VARIABLE: &str = "TEISTRO_TEIGEODATA_PACKS";
 
+/// Set (to anything) where the packs must be read: a test that finds
+/// [`PACKS_VARIABLE`] unset fails instead of skipping. The adapter's CI job
+/// sets both, so a renamed variable or a lost download cannot pass as a
+/// run of skipped tests.
+pub(crate) const REQUIRED_VARIABLE: &str = "TEISTRO_TEIGEODATA_REQUIRED";
+
 /// The pack files [`PACKS_VARIABLE`] names, or `None`, said on stderr,
-/// when it is unset.
+/// when it is unset (a failure under [`REQUIRED_VARIABLE`]).
 pub(crate) fn packs(test: &str) -> Option<Vec<PathBuf>> {
     if let Some(list) = std::env::var_os(PACKS_VARIABLE) {
         return Some(std::env::split_paths(&list).collect());
     }
+    assert!(
+        std::env::var_os(REQUIRED_VARIABLE).is_none(),
+        "{test}: {REQUIRED_VARIABLE} is set and {PACKS_VARIABLE} names no pack"
+    );
     eprintln!(
         "SKIP  {test}: {PACKS_VARIABLE} names no teigeodata pack (Nepal's country pack, \
          `np-places-lite.tgd` from `forge make np --release 2026.11.0 --lite`)"

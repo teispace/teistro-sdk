@@ -3100,7 +3100,8 @@ class ZoneDatabase:
     """The zone database a context reads (`03-design/zone-packs.md` §4)."""
 
     source: str
-    """`EMBEDDED` or `PACK`."""
+    """`EMBEDDED`, `PACK` or `PROVIDER` (a zone database the application
+    handed a Rust context)."""
 
     version: str
     """Its release (`2026f`), as every answer's provenance names it."""

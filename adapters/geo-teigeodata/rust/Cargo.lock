@@ -488,13 +488,13 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-core"
-version = "0.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.1.0#7b51b129472297e22b3055498c7604b114b28d36"
+version = "0.3.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
 
 [[package]]
 name = "teigeodata-engine"
-version = "0.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.1.0#7b51b129472297e22b3055498c7604b114b28d36"
+version = "0.3.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
 dependencies = [
  "memmap2",
  "teigeodata-core",
@@ -503,8 +503,8 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-format"
-version = "0.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.1.0#7b51b129472297e22b3055498c7604b114b28d36"
+version = "0.3.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
 dependencies = [
  "blake3",
  "libm",
@@ -626,6 +626,7 @@ dependencies = [
  "teistro",
  "teistro-core",
  "teistro-port-geo",
+ "teistro-port-timezone",
 ]
 
 [[package]]

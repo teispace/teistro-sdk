@@ -27,12 +27,14 @@ engine-checkout = "../../../../../geodata"
 [workspace]
 
 [dependencies]
-# The engine at its first tag (D-198), with the components the port's
-# three questions read and no others: the timezone areas (`tz_at`), the
-# admin outlines and ISO codes (`admin_at`, `iso_code`), the names a zone
-# and a unit are read by, the terrain (`elevation_at`) and the zone rules,
-# whose manifest names the tzdb release (`tz_version`).
-teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v0.1.0", default-features = false, features = [
+# The engine at v0.3.0, with the components the port's three questions read
+# and no others: the timezone areas (`tz_at`), the admin outlines and ISO
+# codes (`admin_at`, `iso_code`), the names a zone and a unit are read by,
+# the terrain (`elevation_at`) from the fine DEM or, where only it is
+# installed, the coarse grid, and the zone rules, whose manifest names the
+# tzdb release (`tz_version`), lists (`tz_zones`) and dates (`tz_rules_start`).
+# A v0.1.0 reader refuses the packs v0.2.0 and later build.
+teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v0.3.0", default-features = false, features = [
   "mmap",
   "admin",
   "admin-index",
@@ -40,12 +42,14 @@ teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v0.
   "timezone",
   "timezone-index",
   "dem",
+  "dem-coarse",
   "tz-rules",
 ] }
 # The engine's grid point, from the same tag.
-teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v0.1.0" }
+teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v0.3.0" }
 teistro-core = { path = "../../../crates/core" }
 teistro-port-geo = { path = "../../../crates/port-geo" }
+teistro-port-timezone = { path = "../../../crates/port-timezone" }
 
 [dev-dependencies]
 serde_json = "1"
