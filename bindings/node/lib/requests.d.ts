@@ -4117,7 +4117,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | 'INDIA_UTTAR_PRADESH' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | 'INDIA_UTTAR_PRADESH' | 'INDIA_ODISHA' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5808,7 +5808,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | 'INDIA_UTTAR_PRADESH' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU' | 'INDIA_ASSAM' | 'INDIA_KARNATAKA' | 'INDIA_TELANGANA' | 'INDIA_GUJARAT' | 'INDIA_ANDHRA_PRADESH' | 'INDIA_UTTAR_PRADESH' | 'INDIA_ODISHA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.

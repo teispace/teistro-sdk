@@ -5378,6 +5378,58 @@
     "EASTER_MONDAY": {
       "name": "इस्टर सोमबार",
       "prose": "इस्टर सोमबार"
+    },
+    "UTKAL_DIVAS": {
+      "name": "उत्कल दिवस",
+      "prose": "उत्कल दिवस"
+    },
+    "PAHILI_RAJA": {
+      "name": "पहिली रज",
+      "prose": "पहिली रज"
+    },
+    "NUAKHAI": {
+      "name": "नुआखाई",
+      "prose": "नुआखाई"
+    },
+    "SAVITRI_AMAVASYA": {
+      "name": "सावित्री औंसी",
+      "prose": "सावित्री औंसी"
+    },
+    "JHULANA_PURNIMA": {
+      "name": "झूलन पूर्णिमा",
+      "prose": "झूलन पूर्णिमा"
+    },
+    "BAHUDA_JATRA": {
+      "name": "बाहुडा यात्रा",
+      "prose": "बाहुडा यात्रा"
+    },
+    "KUMAR_PURNIMA": {
+      "name": "कुमार पूर्णिमा",
+      "prose": "कुमार पूर्णिमा"
+    },
+    "RAHAS_PURNIMA": {
+      "name": "रास पूर्णिमा",
+      "prose": "रास पूर्णिमा"
+    },
+    "ANLA_NAVAMI": {
+      "name": "अमला नवमी",
+      "prose": "अमला नवमी"
+    },
+    "PRATHAMASHTAMI": {
+      "name": "प्रथमाष्टमी",
+      "prose": "प्रथमाष्टमी"
+    },
+    "GURU_GOBIND_SINGH_JAYANTI": {
+      "name": "गुरु गोविन्द सिंह जयन्ती",
+      "prose": "गुरु गोविन्द सिंह जयन्ती"
+    },
+    "RAM_MOHAN_ROY_JAYANTI": {
+      "name": "राजा राममोहन राय जयन्ती",
+      "prose": "राजा राममोहन राय जयन्ती"
+    },
+    "BRAHMO_SAMAJ_FOUNDATION_DAY": {
+      "name": "ब्रह्म समाज स्थापना दिवस",
+      "prose": "ब्रह्म समाज स्थापना दिवस"
     }
   },
   "agni_vasa": {

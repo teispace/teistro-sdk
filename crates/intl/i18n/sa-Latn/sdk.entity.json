@@ -4837,6 +4837,58 @@
     "EASTER_MONDAY": {
       "name": "Īsṭara Somavāra",
       "prose": "Īsṭara Somavāra"
+    },
+    "UTKAL_DIVAS": {
+      "name": "Utkaladivasaḥ",
+      "prose": "Utkaladivasaḥ"
+    },
+    "PAHILI_RAJA": {
+      "name": "Pahilīrajaḥ",
+      "prose": "Pahilīrajaḥ"
+    },
+    "NUAKHAI": {
+      "name": "Nuākhāī",
+      "prose": "Nuākhāī"
+    },
+    "SAVITRI_AMAVASYA": {
+      "name": "Sāvitryamāvāsyā",
+      "prose": "Sāvitryamāvāsyā"
+    },
+    "JHULANA_PURNIMA": {
+      "name": "Jhūlanapūrṇimā",
+      "prose": "Jhūlanapūrṇimā"
+    },
+    "BAHUDA_JATRA": {
+      "name": "Bāhuḍāyātrā",
+      "prose": "Bāhuḍāyātrā"
+    },
+    "KUMAR_PURNIMA": {
+      "name": "Kumārapūrṇimā",
+      "prose": "Kumārapūrṇimā"
+    },
+    "RAHAS_PURNIMA": {
+      "name": "Rāsapūrṇimā",
+      "prose": "Rāsapūrṇimā"
+    },
+    "ANLA_NAVAMI": {
+      "name": "Dhātrīnavamī",
+      "prose": "Dhātrīnavamī"
+    },
+    "PRATHAMASHTAMI": {
+      "name": "Prathamāṣṭamī",
+      "prose": "Prathamāṣṭamī"
+    },
+    "GURU_GOBIND_SINGH_JAYANTI": {
+      "name": "Guru Govinda Siṃha Jayantī",
+      "prose": "Guru Govinda Siṃha Jayantī"
+    },
+    "RAM_MOHAN_ROY_JAYANTI": {
+      "name": "Rājā Rāmamohana Rāya Jayantī",
+      "prose": "Rājā Rāmamohana Rāya Jayantī"
+    },
+    "BRAHMO_SAMAJ_FOUNDATION_DAY": {
+      "name": "Brāhmasamājasthāpanādivasaḥ",
+      "prose": "Brāhmasamājasthāpanādivasaḥ"
     }
   },
   "year_office": {

@@ -29,9 +29,11 @@
 //!   ([`telangana`]), the `INDIA_GUJARAT` pack against the Government
 //!   of Gujarat's at Gandhinagar ([`gujarat`]), the
 //!   `INDIA_ANDHRA_PRADESH` pack against the Government of Andhra
-//!   Pradesh's at Amaravati ([`andhra_pradesh`]), and the
+//!   Pradesh's at Amaravati ([`andhra_pradesh`]), the
 //!   `INDIA_UTTAR_PRADESH` pack against the Government of Uttar
-//!   Pradesh's at Lucknow ([`uttar_pradesh`]).
+//!   Pradesh's at Lucknow ([`uttar_pradesh`]), and the
+//!   `INDIA_ODISHA` pack against the Government of Odisha's at
+//!   Bhubaneswar ([`odisha`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -61,6 +63,7 @@ mod karnataka;
 mod kerala;
 mod maharashtra;
 mod nepal;
+mod odisha;
 mod panchanga;
 mod purnima;
 mod sait;
@@ -491,6 +494,7 @@ fn page() -> Result<String, String> {
     let gujarat = gujarat::compare(&mut problems)?;
     let andhra = andhra_pradesh::compare(&mut problems)?;
     let uttar = uttar_pradesh::compare(&mut problems)?;
+    let odisha = odisha::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -512,6 +516,7 @@ fn page() -> Result<String, String> {
     gujarat::render(&mut out, &gujarat);
     andhra_pradesh::render(&mut out, &andhra);
     uttar_pradesh::render(&mut out, &uttar);
+    odisha::render(&mut out, &odisha);
     Ok(out)
 }
 

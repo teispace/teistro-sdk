@@ -48,6 +48,33 @@ region `IN-UP` now reckons `INDIA_UTTAR_PRADESH`, where it kept `INDIA_CENTRAL`.
   named (C1525, C1528, C1529). `crates/sdk/tests/uttar_pradesh.rs` holds each year's notification.
 - Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the ten new keys.
 
+**Odisha's public holidays (SR-03, the eleventh state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-OD` now reckons `INDIA_ODISHA`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_ODISHA` (`FestivalPack::IndiaOdisha`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_odisha`) holds the Revenue and Disaster Management Department's notifications of 2019 to
+  2026: Annexure-I's general holidays, Annexure-III's days on a Sunday or a second or fourth Saturday, and
+  Annexure-II's optional holidays (`optional`). 2025's and 2026's are read as copied (C1480):
+  - Maha Vishuva Sankranti on the civil day of the Sun's entry into Ashwini, and Makar Sankranti, Raja Sankranti
+    and Pahili Raja on `BENGAL_SOLAR`'s month ends (C1481);
+  - Dola Purnima and Kali Puja on West Bengal's rules (C1488), Holi the day after; Basanta Panchami, Ratha Yatra,
+    Ganesh Puja, Nuakhai (Rishi Panchami's rule, C1499), Mahalaya, the Durga days (C1484), Rahas Purnima and Anla
+    Navami on Nepal's printed panchanga's rules; Janmashtami and Jhulana Purnima on *Dharmasindhu*'s (C1489);
+  - the state's own days: Sabitri Amabasya, Kumar Purnima at moonrise (C1487), Prathamastami, Guru Gobind Singh's
+    birthday (C1491), Bahuda Yatra eight days after the Ratha Yatra (C1497) and Vijaya Dashami the day after
+    Maha Navami;
+  - Netaji's birthday, Utkal Divas, Ambedkar's and Raja Rammohan Roy's birthdays, the Brahmo Samaj's foundation
+    day (C1492), Christmas Eve and Easter Saturday on their dates.
+
+  Id-ul-Fitre, Id-ul-Zuha, Muharram, the Prophet's birthday and Shab-e-Qader ship as printed and unmarked, as no
+  notification leaves them to the moon (C1494); Panchayati Raj Divas, Mahaveer Jayanti to 2021 and 2026's day
+  following Nuakhai ship as printed (C1493) (`03-design/odisha-holidays.md`).
+- `festival-measured.md` §21 holds it at Bhubaneswar, 296 of the 318 rows meeting the print and the twenty-two
+  that part named (C1482 to C1492). `crates/sdk/tests/odisha.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the thirteen new keys.
+- `region::REGIONS` and `FestivalPack::ALL` declared one fewer entry than they held after the Andhra Pradesh and
+  Gujarat sets merged; both now count their rows.
+
 ## 1.0.0-rc.4
 
 The fourth release candidate of 1.0.0: Nepal's festivals as rules (SR-01)
