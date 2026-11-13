@@ -5368,6 +5368,58 @@
     "EASTER_MONDAY": {
       "name": "Easter Monday",
       "prose": "Easter Monday"
+    },
+    "UTKAL_DIVAS": {
+      "name": "Utkal Divas",
+      "prose": "Utkal Divas"
+    },
+    "PAHILI_RAJA": {
+      "name": "Pahili Raja",
+      "prose": "Pahili Raja"
+    },
+    "NUAKHAI": {
+      "name": "Nuakhai",
+      "prose": "Nuakhai"
+    },
+    "SAVITRI_AMAVASYA": {
+      "name": "Sabitri Amabasya",
+      "prose": "Sabitri Amabasya"
+    },
+    "JHULANA_PURNIMA": {
+      "name": "Jhulana Purnima",
+      "prose": "Jhulana Purnima"
+    },
+    "BAHUDA_JATRA": {
+      "name": "Bahuda Yatra",
+      "prose": "Bahuda Yatra"
+    },
+    "KUMAR_PURNIMA": {
+      "name": "Kumar Purnima",
+      "prose": "Kumar Purnima"
+    },
+    "RAHAS_PURNIMA": {
+      "name": "Rahas Purnima",
+      "prose": "Rahas Purnima"
+    },
+    "ANLA_NAVAMI": {
+      "name": "Anla Navami",
+      "prose": "Anla Navami"
+    },
+    "PRATHAMASHTAMI": {
+      "name": "Prathamastami",
+      "prose": "Prathamastami"
+    },
+    "GURU_GOBIND_SINGH_JAYANTI": {
+      "name": "Guru Gobind Singh Jayanti",
+      "prose": "Guru Gobind Singh Jayanti"
+    },
+    "RAM_MOHAN_ROY_JAYANTI": {
+      "name": "Raja Ram Mohan Roy Jayanti",
+      "prose": "Raja Ram Mohan Roy Jayanti"
+    },
+    "BRAHMO_SAMAJ_FOUNDATION_DAY": {
+      "name": "Brahmo Samaj Foundation Day",
+      "prose": "Brahmo Samaj Foundation Day"
     }
   },
   "agni_vasa": {
