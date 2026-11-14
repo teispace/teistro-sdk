@@ -1286,6 +1286,7 @@ final List<Surface> requests = [
   Built<FestivalRulesIndiaAndhraPradesh>('FestivalRulesIndiaAndhraPradesh', FestivalRulesIndiaAndhraPradesh.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaUttarPradesh>('FestivalRulesIndiaUttarPradesh', FestivalRulesIndiaUttarPradesh.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesIndiaOdisha>('FestivalRulesIndiaOdisha', FestivalRulesIndiaOdisha.new, const [], parent: 'FestivalRules', fields: (_) => const []),
+  Built<FestivalRulesIndiaBihar>('FestivalRulesIndiaBihar', FestivalRulesIndiaBihar.new, const [], parent: 'FestivalRules', fields: (_) => const []),
   Built<FestivalRulesValue>('FestivalRulesValue', FestivalRulesValue.new, [
     Param('value', ListOf(Named('FestivalRuleItem'), (items) => List<FestivalRuleItem>.from(items)), named: false),
   ], parent: 'FestivalRules', fields: (v) => [v.value]),
@@ -1637,6 +1638,7 @@ final List<Surface> requests = [
   Built<FestivalRuleItemIndiaAndhraPradesh>('FestivalRuleItemIndiaAndhraPradesh', FestivalRuleItemIndiaAndhraPradesh.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaUttarPradesh>('FestivalRuleItemIndiaUttarPradesh', FestivalRuleItemIndiaUttarPradesh.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemIndiaOdisha>('FestivalRuleItemIndiaOdisha', FestivalRuleItemIndiaOdisha.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
+  Built<FestivalRuleItemIndiaBihar>('FestivalRuleItemIndiaBihar', FestivalRuleItemIndiaBihar.new, const [], parent: 'FestivalRuleItem', fields: (_) => const []),
   Built<FestivalRuleItemSaitRule>('FestivalRuleItemSaitRule', FestivalRuleItemSaitRule.new, [
     Param('value', Named('SaitRule'), named: false),
   ], parent: 'FestivalRuleItem', fields: (v) => [v.value]),

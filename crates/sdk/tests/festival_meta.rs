@@ -617,6 +617,54 @@ fn odisha_keeps_its_optional_days_optional() -> Result<(), teistro::Error> {
 }
 
 #[test]
+fn bihar_keeps_its_restricted_days_optional() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_BIHAR"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for (key, form) in [
+        ("CHHATH", PackForm::Lunar),
+        ("SITA_NAVAMI", PackForm::Lunar),
+        ("SAMRAT_ASHOK_ASHTAMI", PackForm::Lunar),
+        ("BIHAR_DIWAS", PackForm::Dated),
+        ("UTTARAYANA_PUNYAKALA", PackForm::Dated),
+        ("CHHATH_KHARNA", PackForm::Following),
+        ("CHHATH_SECOND_DAY", PackForm::Following),
+        ("LAST_SHRAVANI_SOMVAR", PackForm::Published),
+        ("SHAB_E_BARAT", PackForm::Published),
+    ] {
+        assert_eq!(row(&listed.rules, key).unwrap().form, form, "{key}");
+    }
+    for (key, optional) in [
+        ("CHHATH", false),
+        ("CHHATH_SECOND_DAY", false),
+        ("BIHAR_DIWAS", false),
+        ("SHAB_E_BARAT", false),
+        ("HOLIKA", true),
+        ("CHHATH_KHARNA", true),
+        ("JITIYA", true),
+        ("RAJENDRA_PRASAD_JAYANTI", true),
+        ("LAST_SHRAVANI_SOMVAR", true),
+        ("JUMAT_UL_VIDA", true),
+    ] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().meta.optional,
+            optional,
+            "{key}"
+        );
+    }
+    let state = MetaFilter {
+        regions: vec!["IN-BR".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");
@@ -797,6 +845,7 @@ fn a_region_is_kept_by_its_iso_code_and_names_its_pack() -> Result<(), teistro::
         (FestivalPack::IndiaAndhraPradesh, "IN-AP", "IN-TG"),
         (FestivalPack::IndiaUttarPradesh, "IN-UP", "IN-BR"),
         (FestivalPack::IndiaOdisha, "IN-OD", "IN-WB"),
+        (FestivalPack::IndiaBihar, "IN-BR", "IN-UP"),
     ];
     for (pack, code, neighbour) in coded {
         assert_eq!(pack.region(), Some(code));

@@ -5911,6 +5911,42 @@
       "name": "Dishi Charhe",
       "prose": "Dishi Charhe",
       "iast": "Diśī Carhe"
+    },
+    "SAMRAT_ASHOK_ASHTAMI": {
+      "name": "Samrat Ashok Ashtami",
+      "prose": "Samrat Ashok Ashtami"
+    },
+    "CHHATH_KHARNA": {
+      "name": "Kharna",
+      "prose": "Kharna"
+    },
+    "CHHATH_SECOND_DAY": {
+      "name": "Chhath, the morning arghya",
+      "prose": "Chhath, the morning arghya"
+    },
+    "BIHAR_DIWAS": {
+      "name": "Bihar Diwas",
+      "prose": "Bihar Diwas"
+    },
+    "VEER_KUNWAR_SINGH_JAYANTI": {
+      "name": "Veer Kunwar Singh Jayanti",
+      "prose": "Veer Kunwar Singh Jayanti"
+    },
+    "ANUGRAH_NARAYAN_SINHA_JAYANTI": {
+      "name": "Anugrah Narayan Sinha Jayanti",
+      "prose": "Anugrah Narayan Sinha Jayanti"
+    },
+    "JAYAPRAKASH_NARAYAN_JAYANTI": {
+      "name": "Jayaprakash Narayan Jayanti",
+      "prose": "Jayaprakash Narayan Jayanti"
+    },
+    "SHRI_KRISHNA_SINHA_JAYANTI": {
+      "name": "Shri Krishna Sinha Jayanti",
+      "prose": "Shri Krishna Sinha Jayanti"
+    },
+    "RAJENDRA_PRASAD_JAYANTI": {
+      "name": "Dr Rajendra Prasad Jayanti",
+      "prose": "Dr Rajendra Prasad Jayanti"
     }
   },
   "agni_vasa": {

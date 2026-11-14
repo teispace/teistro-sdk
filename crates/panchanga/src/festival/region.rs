@@ -34,11 +34,12 @@ pub struct Region {
 ///
 /// assert!(REGIONS.iter().any(|region| region.key == "KATHMANDU_VALLEY" && region.alias.is_none()));
 /// ```
-pub const REGIONS: [Region; 17] = [
+pub const REGIONS: [Region; 18] = [
     region("HILLS", None),
     region("IN", None),
     region("IN-AP", None),
     region("IN-AS", Some("ASSAM")),
+    region("IN-BR", None),
     region("IN-GJ", None),
     region("IN-KA", None),
     region("IN-KL", Some("KERALA")),

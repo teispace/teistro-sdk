@@ -5380,6 +5380,42 @@
       "name": "दिशी चह्रे",
       "prose": "दिशी चह्रे",
       "iast": "Diśī Carhe"
+    },
+    "SAMRAT_ASHOK_ASHTAMI": {
+      "name": "सम्राडशोकाष्टमी",
+      "prose": "सम्राडशोकाष्टमी"
+    },
+    "CHHATH_KHARNA": {
+      "name": "खरना",
+      "prose": "खरना"
+    },
+    "CHHATH_SECOND_DAY": {
+      "name": "प्रतिहारषष्ठ्याः प्रातरर्घ्यम्",
+      "prose": "प्रतिहारषष्ठ्याः प्रातरर्घ्यम्"
+    },
+    "BIHAR_DIWAS": {
+      "name": "बिहारदिवसः",
+      "prose": "बिहारदिवसः"
+    },
+    "VEER_KUNWAR_SINGH_JAYANTI": {
+      "name": "वीरकुंवरसिंहजयन्ती",
+      "prose": "वीरकुंवरसिंहजयन्ती"
+    },
+    "ANUGRAH_NARAYAN_SINHA_JAYANTI": {
+      "name": "अनुग्रहनारायणसिंहजयन्ती",
+      "prose": "अनुग्रहनारायणसिंहजयन्ती"
+    },
+    "JAYAPRAKASH_NARAYAN_JAYANTI": {
+      "name": "जयप्रकाशनारायणजयन्ती",
+      "prose": "जयप्रकाशनारायणजयन्ती"
+    },
+    "SHRI_KRISHNA_SINHA_JAYANTI": {
+      "name": "श्रीकृष्णसिंहजयन्ती",
+      "prose": "श्रीकृष्णसिंहजयन्ती"
+    },
+    "RAJENDRA_PRASAD_JAYANTI": {
+      "name": "राजेन्द्रप्रसादजयन्ती",
+      "prose": "राजेन्द्रप्रसादजयन्ती"
     }
   },
   "year_office": {
