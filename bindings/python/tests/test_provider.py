@@ -96,6 +96,19 @@ class AProviderWrittenInPython(WithLibrary):
         self.assertAlmostEqual(sky.at(0, 1).longitude, 10.0)
         self.assertAlmostEqual(sky.at(1, 0).longitude, 20.0)
 
+    def test_a_context_derived_over_it_outlives_its_parent(self) -> None:
+        provider = StraightLine()
+        parent = self.teistro.context(profile=PROFILE, provider=provider)
+        derived = parent.with_settings({"frame": {"node": "MEAN"}})
+        parent.close()
+        try:
+            sky = derived.positions(instants=[2451545.0], bodies=[Body.SUN])
+            self.assertEqual(provider.asked, 1, "the parent's provider answers it")
+            self.assertAlmostEqual(sky.at(0, 0).longitude, 0.0)
+            self.assertIs(derived.provider, provider)
+        finally:
+            derived.close()
+
     def test_its_name_is_stamped_on_the_result(self) -> None:
         provider = StraightLine()
         with self.teistro.context(profile=PROFILE, provider=provider) as ctx:

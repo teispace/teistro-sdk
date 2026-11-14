@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A context derived under a per-call settings patch, on every surface.**
+**Numbers:** none move: a derived context answers as a context built with the
+same profile and merged patch, its settings hash included.
+- **New:** `ts_context_derive` and, in Rust, `Context::with_patch` and
+  `with_patch_json`; `withSettings(patch, locale)` in Node, wasm, Dart and
+  Java, `with_settings(patch, locale)` in Python. The derived context shares
+  its parent's provider (a host provider included), cache, layouts and dasha
+  systems; the parent is unchanged and either may be closed first. A refused
+  patch names its field under `settings` (`settings.frame.nod`)
+  (`03-design/settings-and-profiles.md` §5, "Per call").
+- **Changed:** the MCP server derives each call's scope from one base
+  context per provider instead of opening the engine again, and keeps the
+  sixteen scopes used last rather than clearing them all when full.
+
 **A context reckons by a geo provider's own zone rules (SR-88); the teigeodata adapter moves to
 teigeodata v0.3.1.**
 **Numbers:** none move in a context built as before; the adapter's source now states version `0.3.1`.

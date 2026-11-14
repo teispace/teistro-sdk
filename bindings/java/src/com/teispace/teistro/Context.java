@@ -86,8 +86,13 @@ public final class Context implements AutoCloseable {
     }
 
     private final Supplier<Map<Integer, String>> dashaNames;
+    /** The library and the dasha systems registered, which a derived context shares. */
+    private final Teistro teistro;
+    private final String dashasJson;
 
     private Context(Teistro teistro, MemorySegment handle, String dashasJson, HostProvider host) {
+        this.teistro = teistro;
+        this.dashasJson = dashasJson;
         this.lib = teistro.lib();
         this.dashaNames = Lazy.of(() -> registered(dashasJson, "dasha_system."));
         this.frame = new FrameArea(teistro);
@@ -379,6 +384,60 @@ public final class Context implements AutoCloseable {
      */
     public String settingsHash() {
         return HexFormat.of().formatHex(locked(Calls::settingsHash).bytes());
+    }
+
+    /**
+     * <b>This context with a settings patch over its settings</b>: the
+     * per-call override, without opening a context again.
+     *
+     * <p>The patch names only the knobs it changes, as
+     * {@link ContextOptions#settingsJson()} does, and is laid over this
+     * context's resolved settings (not over its profile). The new context
+     * keeps this one's profile id and locale and shares its ephemeris and
+     * that ephemeris's cache, its registrations, its packs and its own
+     * provider, so nothing is opened or read again. This context is
+     * unchanged, and either may be closed first.
+     *
+     * <pre>{@code
+     * try (Context mean = ctx.withSettings(Map.of("frame", Map.of("node", "MEAN")))) { ... }
+     * }</pre>
+     *
+     * @param patch the settings patch, as {@link Json#write} writes it
+     * @return the derived context, which the caller closes
+     * @throws TeistroException naming the knob under {@code settings}
+     *     ({@code settings.frame.nod}) for a knob that does not exist or a
+     *     merge that breaks a coherence rule
+     */
+    public Context withSettings(Map<String, ?> patch) {
+        return withSettings(patch, null);
+    }
+
+    /**
+     * {@link #withSettings(Map)}, the new context rendering in {@code locale}.
+     *
+     * @param patch the settings patch
+     * @param locale the locale the new context renders in, or null for this one's
+     * @return the derived context, which the caller closes
+     * @throws TeistroException as {@link #withSettings(Map)} does, and
+     *     {@code UNSUPPORTED} at {@code locale} for a locale not loaded
+     */
+    public Context withSettings(Map<String, ?> patch, String locale) {
+        String json = Json.write(java.util.Objects.requireNonNull(patch, "patch"));
+        return locked((lib, raw) -> {
+            try (Arena arena = Arena.ofConfined()) {
+                MemorySegment patchJson = Boundary.cString(arena, json);
+                MemorySegment tag = Boundary.cString(arena, locale);
+                MemorySegment out = arena.allocate(ValueLayout.ADDRESS);
+                MemorySegment error = Boundary.errorRecord(arena);
+                int status = Boundary.call(() -> (int) lib.ts_context_derive.invokeExact(
+                        raw, patchJson, tag, out, error));
+                if (status != Status.OK.id()) {
+                    throw refused(lib, status, error);
+                }
+                HostProvider host = state.host == null ? null : state.host.retain();
+                return new Context(teistro, out.get(ValueLayout.ADDRESS, 0), dashasJson, host);
+            }
+        });
     }
 
     /**

@@ -1973,6 +1973,11 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
         for factory in teistro_idl::rules::factories(&api, opaque) {
             placed.insert(&factory.name);
         }
+        // A handle derived from one of its own: an instance method
+        // answering a new instance (`ts_context_derive`).
+        for deriver in teistro_idl::rules::derivers(&api, opaque) {
+            placed.insert(&deriver.name);
+        }
     }
     for function in &api.functions {
         if placed.contains(function.name.as_str()) {
@@ -1988,7 +1993,7 @@ fn entry_points_reachable(root: &Path, outcome: &mut Outcome) {
                 Some((name, awaiting)) => format!("`{name}` is unplaced: {awaiting}"),
                 None => format!(
                     "`{}` matches no emitter rule — not a free function, and no opaque's \
-                     constructor, factory, method, destructor or last-error reader — so it \
+                     constructor, factory, deriver, method, destructor or last-error reader — so it \
                      is described and reachable from no binding",
                     function.name
                 ),
@@ -3592,7 +3597,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 24] = [
+const JAVA_UNTYPED: [(&str, &str); 25] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -3602,6 +3607,11 @@ const JAVA_UNTYPED: [(&str, &str); 24] = [
     (
         "Context.recordedSettings(snapshot)",
         "the baseline engine's own stored fields, which no SDK request type describes (`compat-shim.md` §4.1)",
+    ),
+    (
+        "Context.withSettings(patch)",
+        "a settings patch, an open set of knobs as `ContextOptions.settingsJson` reads it, refused down to the knob \
+         by the SDK (`settings-and-profiles.md` §5, \"Per call\")",
     ),
     ("Dasha.Dasha(system)", MEMBER_OR_KEY),
     (

@@ -4072,6 +4072,15 @@ class TeistroLibrary:
             ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_context_new.restype = ctypes.c_int32
+        self.ts_context_derive: Any = library.ts_context_derive
+        self.ts_context_derive.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.POINTER(ctypes.POINTER(_Context)),
+            ctypes.POINTER(_ErrorStruct),
+        ]
+        self.ts_context_derive.restype = ctypes.c_int32
         self.ts_context_free: Any = library.ts_context_free
         self.ts_context_free.argtypes = [
             ctypes.POINTER(_Context),
@@ -4868,6 +4877,54 @@ class TeistroContext:
         if status != Status.OK:
             _refuse(lib, status, _out_error)
         return cls(lib, handle)
+
+    def derive(self, patch_json: Optional[str], locale: Optional[str]) -> TeistroContext:
+        """Derives a context from `context` with a **settings patch** laid over its
+        settings: the per-call override, without building a context again.
+
+        `patch_json` is a JSON settings patch, as `options.settings_json` is,
+        merged knob by knob over the parent's resolved settings (not over its
+        profile), so a patch names only the knobs it changes; null patches
+        nothing. `locale` renders the derived context in that locale; null keeps
+        the parent's. The derived context keeps the parent's profile id and
+        shares, behind reference counts, its ephemeris with its cache, its
+        layouts, its dasha systems, its zone database, its geo provider and its
+        packs: nothing is opened, read or hashed again, so a derivation costs a
+        copy of the locale state. The parent is unchanged and either may be
+        freed first; a provider vtable's `provider_user_data` must stay valid
+        until the last context sharing it is freed. A derived context is a
+        context like any other: used by one thread at a time, freed by
+        `ts_context_free`, and derived from in turn.
+
+        On success `*out_context` owns the new context. On failure, when
+        `out_error` is not null, it receives the whole refusal as a record that
+        owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+        knob under `settings` (`settings.frame.nod` for a knob that does not
+        exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+        `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+        when the ephemeris is a classical one opened for other values of them,
+        which only `ts_context_new` can open again, and `UNSUPPORTED` at
+        `locale` for a locale not loaded.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            handle = ctypes.POINTER(_Context)()
+            _patch_json = None if patch_json is None else patch_json.encode("utf-8")
+            owned.append(_patch_json)
+            _locale = None if locale is None else locale.encode("utf-8")
+            owned.append(_locale)
+            _out_error = _ErrorStruct()
+            _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
+            status = Status(self._lib.ts_context_derive(
+                self._raw,
+                _patch_json,
+                _locale,
+                ctypes.byref(handle),
+                ctypes.byref(_out_error),
+            ))
+            if status != Status.OK:
+                _refuse(self._lib, status, _out_error)
+            return TeistroContext(self._lib, handle)
 
     @property
     def _raw(self) -> "ctypes._Pointer[_Context]":

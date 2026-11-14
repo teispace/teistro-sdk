@@ -10193,6 +10193,17 @@ export declare class Context {
   /** The SHA-256 of the canonical settings, in hex. */
   readonly settingsHash: string;
   /**
+   * **This context with a settings patch over its settings**: the
+   * per-call override, without opening a context again. `patch` names only
+   * the knobs it changes and is laid over this context's resolved
+   * settings; `locale` is the one the new context renders in. The new
+   * context keeps this one's profile id and shares its ephemeris, its
+   * cache, its registrations and its packs; this context is unchanged. A
+   * knob that does not exist, or a merge that breaks a coherence rule,
+   * throws a `TeistroError` naming the knob under `settings`.
+   */
+  withSettings(patch: Readonly<Record<string, unknown>>, locale?: string): Context;
+  /**
    * Any record entry point answered by its name, its request typed by the
    * name (`RecordRequests`, generated), as the agent server answers it:
    * the envelope `{ value, provenance }`, or the value alone where the

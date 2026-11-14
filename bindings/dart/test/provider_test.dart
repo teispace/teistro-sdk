@@ -97,6 +97,27 @@ void main() {
     expect(ctx.provider, same(provider));
   });
 
+  test('a context derived over it outlives its parent', () {
+    final provider = StraightLine();
+    final ctx = teistro.context(profile: 'nepali-drik', provider: provider);
+    final derived = ctx.withSettings({
+      'frame': {'node': 'MEAN'},
+    });
+    addTearDown(derived.dispose);
+    ctx.dispose();
+    final positions = derived.positions(
+      instants: [2451545.0],
+      bodies: [Body.sun],
+    );
+    expect(
+      provider.calls,
+      hasLength(1),
+      reason: "the parent's provider answers the derived context",
+    );
+    expect(positions.provenance.provider.name, 'a-provider-in-dart');
+    expect(derived.provider, same(provider));
+  });
+
   test('a provider that refuses a frame is completed by the SDK', () {
     final equatorial = Frame(
       centre: teistro.canonicalFrame.centre,

@@ -273,6 +273,40 @@ names. Bindings expose the resolved value as a readonly typed object and
 the patch builder; a request takes an optional patch, never a profile
 id, so the context's profile is the one source of defaults.
 
+### Per call
+
+A caller that wants one answer under other settings derives a context
+from the one it holds rather than building another. The derived context
+shares its parent's ephemeris provider, its cache, its registered layouts
+and dasha systems, and copies its locale state; only the settings differ.
+The patch is laid over the parent's settings, under the parent's profile,
+by the one merge every surface uses (`Settings::derived`: `patched`, then
+`validated`), so a derived context's settings and hash are those of a
+context built with the same profile and the merged patch. A knob that
+does not exist, or a merge that breaks a coherence rule, is refused with
+its field under `settings` (`settings.frame.nod`). Either context may be
+closed first, and the parent never changes.
+
+A context opened over a classical provider (Surya Siddhanta) was opened
+for its `frame.siddhanta` and `time.delta_t`; a patch moving either is
+refused at that field, because the provider would have to be opened again.
+
+| Surface | Per-call patch |
+|---|---|
+| Rust | `ctx.with_patch(&patch, locale)`, `ctx.with_patch_json(json, locale)`; `ctx.with_settings(snapshot, locale)` for a whole snapshot |
+| C | `ts_context_derive(ctx, patch_json, locale, &out_ctx, &error)`; a null patch or locale keeps the parent's |
+| Node, wasm | `ctx.withSettings(patch, locale?)` |
+| Python | `ctx.with_settings(patch, locale=None)` |
+| Dart | `ctx.withSettings(patch, locale: ...)` |
+| Java | `ctx.withSettings(patch)`, `ctx.withSettings(patch, locale)` |
+| MCP | a tool call's `settings` (and `profile`, `locale`) |
+
+The MCP server keeps one base context per provider and derives each
+call's scope from it, so a new patch opens no engine; the scopes derived
+are kept in a cache of sixteen keyed by the profile, the canonical patch's
+hash and the locale, and a full cache lets go of the scope used longest
+ago (`mcp-server.md`).
+
 ## 6. Errors and degenerate states
 
 Unknown profile: `UNSUPPORTED` with the shipped ids. A knob value that

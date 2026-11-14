@@ -3911,8 +3911,9 @@ pub struct TimeCivilResult {
 #[napi]
 pub struct Context {
     handle: *mut ffi::context::TsContext,
-    /// The host-implemented provider, alive while the handle is.
-    host: Option<crate::provider::Host>,
+    /// The host-implemented provider, alive while the handle is and while
+    /// any context derived from it is: they share it.
+    host: Option<std::rc::Rc<crate::provider::Host>>,
 }
 
 // SAFETY: a context is used by one thread at a time, which is the contract
@@ -3971,7 +3972,10 @@ impl Context {
         if status != core_::Status::Ok {
             return Err(refused(&env, &mut out_error));
         }
-        Ok(Context { handle, host })
+        Ok(Context {
+            handle,
+            host: host.map(std::rc::Rc::new),
+        })
     }
 
     /// Creates a context that computes with a **loaded** provider.
@@ -4014,6 +4018,73 @@ impl Context {
             return Err(refused(&env, &mut out_error));
         }
         Ok(Context { handle, host: None })
+    }
+
+    /// Derives a context from `context` with a **settings patch** laid over its
+    /// settings: the per-call override, without building a context again.
+    ///
+    /// `patch_json` is a JSON settings patch, as `options.settings_json` is,
+    /// merged knob by knob over the parent's resolved settings (not over its
+    /// profile), so a patch names only the knobs it changes; null patches
+    /// nothing. `locale` renders the derived context in that locale; null keeps
+    /// the parent's. The derived context keeps the parent's profile id and
+    /// shares, behind reference counts, its ephemeris with its cache, its
+    /// layouts, its dasha systems, its zone database, its geo provider and its
+    /// packs: nothing is opened, read or hashed again, so a derivation costs a
+    /// copy of the locale state. The parent is unchanged and either may be
+    /// freed first; a provider vtable's `provider_user_data` must stay valid
+    /// until the last context sharing it is freed. A derived context is a
+    /// context like any other: used by one thread at a time, freed by
+    /// `ts_context_free`, and derived from in turn.
+    ///
+    /// On success `*out_context` owns the new context. On failure, when
+    /// `out_error` is not null, it receives the whole refusal as a record that
+    /// owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+    /// knob under `settings` (`settings.frame.nod` for a knob that does not
+    /// exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+    /// `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+    /// when the ephemeris is a classical one opened for other values of them,
+    /// which only `ts_context_new` can open again, and `UNSUPPORTED` at
+    /// `locale` for a locale not loaded.
+    #[napi]
+    pub fn derive(
+        &self,
+        env: Env,
+        patch_json: Option<String>,
+        locale: Option<String>,
+    ) -> Result<Context> {
+        let patch_json = patch_json
+            .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+            .transpose()?;
+        let patch_json = patch_json.as_ref().map_or(ptr::null(), |s| s.as_ptr());
+        let locale = locale
+            .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+            .transpose()?;
+        let locale = locale.as_ref().map_or(ptr::null(), |s| s.as_ptr());
+        let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
+        // SAFETY: a live handle and every pointer valid for the call; the new
+        // handle is owned from here and freed once, in `Drop`.
+        let status = unsafe {
+            ffi::context::ts_context_derive(
+                self.handle,
+                patch_json,
+                locale,
+                &raw mut handle,
+                &raw mut out_error,
+            )
+        };
+        if status != core_::Status::Ok {
+            return Err(refused(&env, &mut out_error));
+        }
+        Ok(Context {
+            handle,
+            host: self.host.clone(),
+        })
     }
 
     /// The outcome of the last call on this context, which the layer

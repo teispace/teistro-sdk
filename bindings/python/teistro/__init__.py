@@ -5943,6 +5943,10 @@ class Context(RecordCalls):
         self.inner = inner
         """The generated context, for a call this layer does not wrap."""
         self._host = host
+        self._host_held = host is not None
+        # Kept so a context derived from this one registers the same rows.
+        self._layouts = tuple(layouts)
+        self._dasha_systems = tuple(dasha_systems)
         # The member id of each layout this context registered, by its full
         # key: asked once, here, so a request resolves a consumer's own
         # layout without crossing the boundary again
@@ -6132,10 +6136,44 @@ class Context(RecordCalls):
         """The ephemeris written in Python this context was given."""
         return None if self._host is None else self._host.provider
 
+    def with_settings(
+        self, patch: Mapping[str, Any], locale: Optional[str] = None
+    ) -> Context:
+        """**This context with a settings patch over its settings**: the
+        per-call override, without opening a context again.
+
+        ``patch`` names only the knobs it changes, as a context's
+        ``settings`` does, and is laid over this context's resolved settings
+        (not over its profile); ``locale``, when given, is the one the new
+        context renders in. The new context keeps this one's profile id and
+        shares its ephemeris and that ephemeris's cache, its registrations,
+        its packs and its own provider, so nothing is opened or read again.
+        This context is unchanged, and either may be closed first::
+
+            mean = ctx.with_settings({"frame": {"node": "MEAN"}})
+
+        A knob that does not exist, or a merge that breaks a coherence rule,
+        raises `TeistroError` naming the knob under ``settings``
+        (``settings.frame.nod``).
+        """
+        if not isinstance(patch, Mapping):
+            raise TypeError(
+                "patch: expected a settings patch, e.g. {'frame': {'node': 'MEAN'}}"
+            )
+        if locale is not None and not isinstance(locale, str):
+            raise TypeError("locale: expected a locale tag, e.g. 'ne-Deva-NP'")
+        inner = self.inner.derive(json.dumps(dict(patch), separators=(",", ":")), locale)
+        host = None if self._host is None else self._host.retain()
+        return Context(
+            self.teistro, inner, host, self._layouts, self._dasha_systems
+        )
+
     def close(self) -> None:
-        """Frees the context, and then whatever its provider held."""
+        """Frees the context, and then whatever its provider held once no
+        context derived from it still uses it."""
         self.inner.close()
-        if self._host is not None:
+        if self._host is not None and self._host_held:
+            self._host_held = False
             self._host.close()
 
     def __enter__(self) -> Context:

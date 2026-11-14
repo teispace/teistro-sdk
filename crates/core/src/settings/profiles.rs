@@ -1046,6 +1046,25 @@ impl Profile {
         }
     }
 
+    /// A shipped profile by id or alias, or the refusal naming `profile`
+    /// and listing the shipped ones: what a context's builder and the
+    /// agent server's per-call scope each answer an unknown id with.
+    ///
+    /// ```
+    /// use teistro_core::settings::Profile;
+    ///
+    /// assert_eq!(Profile::named("nepali-default")?.id.as_str(), "nepali-drik");
+    /// assert_eq!(Profile::named("kp").unwrap_err().field(), Some("profile"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` at `profile` for an id the SDK does not ship.
+    pub fn named(id: &str) -> Result<Profile, crate::error::Error> {
+        Profile::shipped(id).ok_or_else(|| unshipped(id))
+    }
+
     /// Resolves the profile with a request's patch: root, then the base,
     /// then this profile, then the patch; validated once.
     ///
@@ -1091,4 +1110,17 @@ impl Profile {
         }
         settings.patched(&self.patch)
     }
+}
+
+/// The refusal of a profile the SDK does not ship, out of line so
+/// [`Profile::named`] stays one branch.
+#[cold]
+#[inline(never)]
+fn unshipped(id: &str) -> crate::error::Error {
+    crate::error::Error::unsupported(format!("no shipped profile `{id}`"))
+        .with_field("profile")
+        .with_hint(format!(
+            "the shipped profiles are {}",
+            SHIPPED_PROFILES.join(", ")
+        ))
 }

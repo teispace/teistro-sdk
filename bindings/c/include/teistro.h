@@ -10149,6 +10149,40 @@ void ts_error_free(ts_error * error);
 ts_status ts_context_new(const ts_context_options * options, /* nullable */ const ts_provider_vtable * provider, /* nullable */ void * provider_user_data, ts_context * * out_context, ts_error * out_error);
 
 /**
+ * Derives a context from `context` with a **settings patch** laid over its
+ * settings: the per-call override, without building a context again.
+ *
+ * `patch_json` is a JSON settings patch, as `options.settings_json` is,
+ * merged knob by knob over the parent's resolved settings (not over its
+ * profile), so a patch names only the knobs it changes; null patches
+ * nothing. `locale` renders the derived context in that locale; null keeps
+ * the parent's. The derived context keeps the parent's profile id and
+ * shares, behind reference counts, its ephemeris with its cache, its
+ * layouts, its dasha systems, its zone database, its geo provider and its
+ * packs: nothing is opened, read or hashed again, so a derivation costs a
+ * copy of the locale state. The parent is unchanged and either may be
+ * freed first; a provider vtable's `provider_user_data` must stay valid
+ * until the last context sharing it is freed. A derived context is a
+ * context like any other: used by one thread at a time, freed by
+ * `ts_context_free`, and derived from in turn.
+ *
+ * On success `*out_context` owns the new context. On failure, when
+ * `out_error` is not null, it receives the whole refusal as a record that
+ * owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+ * knob under `settings` (`settings.frame.nod` for a knob that does not
+ * exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+ * `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+ * when the ephemeris is a classical one opened for other values of them,
+ * which only `ts_context_new` can open again, and `UNSUPPORTED` at
+ * `locale` for a locale not loaded.
+ * Safety: `context` must be null or a live handle; `patch_json` and `locale` null
+ * or NUL-terminated strings; `out_context` null or valid for a write;
+ * `out_error` null or a `ts_error` with its `struct_size` set, valid for
+ * reads and writes.
+ */
+ts_status ts_context_derive(const ts_context * context, const char * patch_json, const char * locale, ts_context * * out_context, ts_error * out_error);
+
+/**
  * Frees a context; null is ignored.
  * Safety: `context` must be null or a handle from `ts_context_new` that is not
  * used again.

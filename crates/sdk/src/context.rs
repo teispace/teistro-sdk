@@ -10,8 +10,7 @@ use teistro_astro::completion::{Completed, Completion};
 use teistro_core::envelope::{Envelope, Hash, PackStamp, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
-    DEFAULT_PROFILE, Diagnostic, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
-    Severity, Siddhanta,
+    DEFAULT_PROFILE, Diagnostic, Profile, Resolved, Settings, SettingsPatch, Severity, Siddhanta,
 };
 #[cfg(feature = "chart")]
 use teistro_dasha::{DashaDefinition, DashaSystems};
@@ -336,26 +335,109 @@ impl Context {
         snapshot: &teistro_core::settings::SettingsSnapshot,
         locale: Option<&str>,
     ) -> Result<Context, Error> {
-        let mut settings = snapshot.resolved()?;
+        self.with_resolved(snapshot.resolved()?, locale)
+    }
+
+    /// **This context with a settings patch laid over its own settings**:
+    /// the per-call override every binding's `withSettings` and the C
+    /// ABI's `ts_context_derive` make. The patch is merged knob by knob
+    /// as a profile's is ([`Settings::derived`]), the profile's id is
+    /// kept, and the result is checked once; everything else is shared
+    /// with this context as [`Context::with_settings`] shares it — the
+    /// ephemeris behind the same cache, so nothing is opened, read or
+    /// hashed again. This context is unchanged.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::settings::{Node, SettingsPatch};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let mut patch = SettingsPatch::default();
+    /// patch.frame.node = Some(Node::True);
+    /// let derived = sdk.with_patch(&patch, None)?;
+    /// assert_eq!(derived.settings().frame.node, Node::True);
+    /// assert_eq!(derived.profile(), sdk.profile());
+    /// assert_ne!(derived.settings_hash(), sdk.settings_hash());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming the knob under `settings` when the merged
+    /// settings break a coherence rule; what [`Context::with_settings`]
+    /// refuses of the ephemeris and the locale.
+    pub fn with_patch(
+        &self,
+        patch: &SettingsPatch,
+        locale: Option<&str>,
+    ) -> Result<Context, Error> {
+        let resolved = self
+            .settings()
+            .clone()
+            .derived(patch, self.core.settings.profile.clone())?;
+        self.with_resolved(resolved, locale)
+    }
+
+    /// [`Context::with_patch`] with the patch as its JSON, as a binding
+    /// passes it: refused down to the knob, `settings.frame.nod`.
+    ///
+    /// ```
+    /// use teistro::Context;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let mean = sdk.with_patch_json(r#"{"frame": {"node": "MEAN"}}"#, Some("en-Latn"))?;
+    /// assert_eq!(mean.settings_json().contains(r#""node":"MEAN""#), true);
+    /// let refused = sdk.with_patch_json(r#"{"frame": {"nod": "MEAN"}}"#, None).unwrap_err();
+    /// assert_eq!(refused.field(), Some("settings.frame.nod"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`SettingsPatch::from_json`] refuses, and what
+    /// [`Context::with_patch`] refuses.
+    pub fn with_patch_json(&self, json: &str, locale: Option<&str>) -> Result<Context, Error> {
+        self.with_patch(&SettingsPatch::from_json(json)?, locale)
+    }
+
+    /// **This context under settings already resolved**: what
+    /// [`Context::with_settings`] and [`Context::with_patch`] come to, and
+    /// what a server that resolved a call's profile and patch itself
+    /// derives with. Give it settings from [`Settings::derived`],
+    /// [`Profile::resolve`] or a snapshot, which have passed the
+    /// coherence rules.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::settings::{Profile, SettingsPatch};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let kp = Profile::named("kp-default")?;
+    /// let resolved = kp.settings().derived(&SettingsPatch::default(), kp.id.clone())?;
+    /// assert!(sdk.derives(&resolved.settings));
+    /// assert_eq!(sdk.with_resolved(resolved, None)?.profile(), "kp-default");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` at `settings.frame.siddhanta` or
+    /// `settings.time.delta_t` when this context's ephemeris is a
+    /// classical one opened for other values of them, which only a build
+    /// can open again ([`Context::derives`] asks first), and wherever a
+    /// build refuses settings its ephemeris contradicts; a locale not
+    /// loaded, at `locale`.
+    pub fn with_resolved(
+        &self,
+        resolved: Resolved,
+        locale: Option<&str>,
+    ) -> Result<Context, Error> {
+        let mut settings = resolved;
         let delta_t = DeltaTModel::from_knob(settings.settings.time.delta_t).unwrap_or_default();
-        let provider = self.core.provider.as_deref();
-        if provider.is_some_and(|p| p.capabilities().astronomy == Astronomy::Classical) {
-            let opened = if settings.settings.frame.siddhanta != self.settings().frame.siddhanta {
-                Some("settings.frame.siddhanta")
-            } else if delta_t != self.core.delta_t {
-                Some("settings.time.delta_t")
-            } else {
-                None
-            };
-            if let Some(field) = opened {
-                return Err(Error::unsupported(
-                    "this context's ephemeris is a classical one, opened for its own \
-                     frame.siddhanta and time.delta_t, and these settings name others",
-                )
-                .with_field(field)
-                .with_hint("build a context under these settings to open it for them"));
-            }
+        if let Some(field) = self.reopened(&settings.settings, delta_t) {
+            return Err(reopening(field));
         }
+        let provider = self.core.provider.as_deref();
         astronomy_coherence(&mut settings, provider)?;
         let core = Core {
             settings,
@@ -374,6 +456,47 @@ impl Context {
                 .map_err(|e| crate::area::intl::refused_locale(&state.intl, tag, &e.to_string()))?;
         }
         Ok(Context::of(Arc::new(core), state))
+    }
+
+    /// Whether a context under `settings` can be **derived** from this one
+    /// rather than built: always, unless this context's ephemeris is a
+    /// classical one, which is opened for its `frame.siddhanta` and
+    /// `time.delta_t`, and `settings` name others. A server deriving one
+    /// context per call asks this to know when it must build instead.
+    ///
+    /// ```
+    /// use teistro::{Context, Ephemeris};
+    /// use teistro::settings::Profile;
+    ///
+    /// let text = Context::builder().ephemeris([Ephemeris::SuryaSiddhanta]).build()?;
+    /// let committee = Profile::named("nepali-committee")?.settings();
+    /// assert!(!text.derives(&committee));
+    /// assert!(text.derives(text.settings()));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn derives(&self, settings: &Settings) -> bool {
+        let delta_t = DeltaTModel::from_knob(settings.time.delta_t).unwrap_or_default();
+        self.reopened(settings, delta_t).is_none()
+    }
+
+    /// The knob `settings` would need this context's ephemeris opened
+    /// again for, if any.
+    fn reopened(&self, settings: &Settings, delta_t: DeltaTModel) -> Option<&'static str> {
+        let classical = self
+            .core
+            .provider
+            .as_deref()
+            .is_some_and(|p| p.capabilities().astronomy == Astronomy::Classical);
+        if !classical {
+            None
+        } else if settings.frame.siddhanta != self.settings().frame.siddhanta {
+            Some("settings.frame.siddhanta")
+        } else if delta_t != self.core.delta_t {
+            Some("settings.time.delta_t")
+        } else {
+            None
+        }
     }
 
     /// The resolved settings, every knob as this context will use it.
@@ -1006,19 +1129,12 @@ impl ContextBuilder {
     /// nothing opened.
     pub fn build(self) -> Result<Context, Error> {
         let id = self.profile.as_deref().unwrap_or(DEFAULT_PROFILE);
-        let profile = Profile::shipped(id).ok_or_else(|| {
-            Error::unsupported(format!("no shipped profile `{id}`"))
-                .with_field("profile")
-                .with_hint(format!(
-                    "the shipped profiles are {}",
-                    SHIPPED_PROFILES.join(", ")
-                ))
-        })?;
-        let patch: SettingsPatch = match self.settings_json.as_deref() {
+        let profile = Profile::named(id)?;
+        let patch = match self.settings_json.as_deref() {
             // Named down to the knob, `settings.houses.chalit_system`, and
             // not only the patch — `settings` being what every binding
             // calls it; the patch refuses an unknown key itself.
-            Some(json) => teistro_core::strict::deserialize_str(json, "settings")?,
+            Some(json) => SettingsPatch::from_json(json)?,
             None => SettingsPatch::default(),
         };
         let settings = profile.resolve(&patch)?;
@@ -1195,6 +1311,19 @@ fn classical_name(siddhanta: Siddhanta) -> &'static str {
         Siddhanta::Vakya => "the Vakyakarana's",
         _ => "the Surya Siddhanta's",
     }
+}
+
+/// The refusal of settings a classical ephemeris was not opened for, out
+/// of line so a derivation stays one branch.
+#[cold]
+#[inline(never)]
+fn reopening(field: &'static str) -> Error {
+    Error::unsupported(
+        "this context's ephemeris is a classical one, opened for its own \
+         frame.siddhanta and time.delta_t, and these settings name others",
+    )
+    .with_field(field)
+    .with_hint("build a context under these settings to open it for them")
 }
 
 /// The provider behind its cache, when the settings ask for one.

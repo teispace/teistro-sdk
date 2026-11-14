@@ -36,7 +36,7 @@ use std::time::{Duration, Instant};
 use serde_json::{Map, Value, json};
 use teistro::records::Record;
 use teistro::{Context, Ephemeris, Error, Loaded};
-use teistro_core::envelope::canonical_json;
+use teistro_core::envelope::{Hash, canonical_json};
 use teistro_core::settings::DEFAULT_PROFILE;
 use teistro_core::strict;
 use teistro_port_ephemeris::EphemerisProvider;
@@ -138,10 +138,11 @@ const SUBSCRIPTION_META: &str = "io.modelcontextprotocol/subscriptionId";
 /// binary, so a day.
 const TTL_MS: u64 = 86_400_000;
 
-/// The contexts kept before the cache starts again. A context is the
-/// profile resolved and the locale engine loaded, which is what a call
-/// would otherwise pay each time; an agent asks under a handful of
-/// settings, so a small bound keeps every one it uses.
+/// The derived contexts kept, the least recently used let go first. A
+/// derived context is a scope's settings resolved over the server's one
+/// opened base and its locale state copied, which is what a call would
+/// otherwise pay each time; an agent asks under a handful of settings, so
+/// a small bound keeps every one it uses.
 const CONTEXTS: usize = 16;
 
 const PARSE_ERROR: i64 = -32_700;
@@ -290,9 +291,10 @@ impl Fault {
     }
 }
 
-/// What a context is built from: the profile, the canonical settings
-/// patch and the locale tag, empty where the call named none.
-type ContextKey = (String, String, String);
+/// What a context is derived from: the profile, the SHA-256 of the
+/// canonical settings patch (none where the call named none) and the
+/// locale tag, empty where the call named none.
+type ContextKey = (String, Option<Hash>, String);
 
 /// The key the contexts a call's scope names are kept under.
 fn context_key(asked: &tools::Arguments) -> ContextKey {
@@ -301,9 +303,72 @@ fn context_key(asked: &tools::Arguments) -> ContextKey {
             .profile
             .clone()
             .unwrap_or_else(|| DEFAULT_PROFILE.to_owned()),
-        asked.settings.clone().unwrap_or_default(),
+        asked
+            .settings
+            .as_deref()
+            .map(|patch| Hash::of(patch.as_bytes())),
         asked.locale.clone().unwrap_or_default(),
     )
+}
+
+/// The derived contexts a server keeps, by the scope each was derived
+/// for: a **least recently used** cache, so a full one lets go of the
+/// scope asked longest ago rather than of every scope at once.
+#[derive(Default)]
+struct Contexts {
+    kept: HashMap<ContextKey, (Context, u64)>,
+    /// A count of every use, which orders the scopes by recency.
+    clock: u64,
+}
+
+impl Contexts {
+    /// The context kept for `key`, marked as used now.
+    fn touch(&mut self, key: &ContextKey) -> Option<&Context> {
+        self.clock += 1;
+        let now = self.clock;
+        self.kept.get_mut(key).map(|(context, used)| {
+            *used = now;
+            &*context
+        })
+    }
+
+    /// The context kept for `key`, unmarked.
+    fn get(&self, key: &ContextKey) -> Option<&Context> {
+        self.kept.get(key).map(|(context, _)| context)
+    }
+
+    /// Keeps `context` for `key`, letting go of the least recently used
+    /// scope when the cache is full.
+    fn keep(&mut self, key: ContextKey, context: Context) -> &Context {
+        if !self.kept.contains_key(&key) && self.kept.len() >= CONTEXTS {
+            let oldest = self
+                .kept
+                .iter()
+                .min_by_key(|(_, (_, used))| *used)
+                .map(|(key, _)| key.clone());
+            if let Some(oldest) = oldest {
+                self.kept.remove(&oldest);
+            }
+        }
+        self.clock += 1;
+        let now = self.clock;
+        match self.kept.entry(key) {
+            Entry::Occupied(kept) => {
+                let kept = kept.into_mut();
+                *kept = (context, now);
+                &kept.0
+            }
+            Entry::Vacant(slot) => &slot.insert((context, now)).0,
+        }
+    }
+
+    fn len(&self) -> usize {
+        self.kept.len()
+    }
+
+    fn clear(&mut self) {
+        self.kept.clear();
+    }
 }
 
 /// Opens the engine a context computes with first: one provider per
@@ -454,7 +519,10 @@ pub struct Server {
     own: Own,
     /// The tools of the embedding program's own.
     tools: Vec<Tool>,
-    contexts: HashMap<ContextKey, Context>,
+    /// The context every scope is derived from: the default profile over
+    /// the provider, opened once, on the first call that needs one.
+    base: Option<Context>,
+    contexts: Contexts,
 }
 
 impl core::fmt::Debug for Server {
@@ -474,6 +542,7 @@ impl core::fmt::Debug for Server {
             .field("dashas", &self.own.dashas.len())
             .field("packs", &self.own.packs.len())
             .field("tools", &self.tools)
+            .field("base", &self.base.is_some())
             .field("contexts", &self.contexts.len())
             .finish()
     }
@@ -517,7 +586,8 @@ impl Server {
             listed: None,
             own: Own::default(),
             tools: Vec::new(),
-            contexts: HashMap::new(),
+            base: None,
+            contexts: Contexts::default(),
         }
     }
 
@@ -628,7 +698,7 @@ impl Server {
         let loaded = probe.intl().load_pack(&bytes)?;
         self.own.packs.push(Pack { bytes, loaded });
         // A context built before the pack would answer without it.
-        self.contexts.clear();
+        self.forget();
         Ok(self)
     }
 
@@ -650,7 +720,7 @@ impl Server {
     pub fn with_zones(mut self, pack: Arc<teistro::ZonePack>) -> Server {
         self.own.zones = Some(pack);
         // A context built before the pack would answer without it.
-        self.contexts.clear();
+        self.forget();
         self
     }
 
@@ -671,7 +741,7 @@ impl Server {
     pub fn with_geo(mut self, provider: Arc<dyn teistro::GeoProvider>) -> Server {
         self.own.geo = Some(provider);
         // A context built before the provider would answer without it.
-        self.contexts.clear();
+        self.forget();
         self
     }
 
@@ -766,7 +836,7 @@ impl Server {
     /// cached context dropped since none was built with the latest.
     fn registered(mut self) -> Result<Server, Error> {
         self.own.building(Context::builder())?;
-        self.contexts.clear();
+        self.forget();
         Ok(self)
     }
 
@@ -1398,7 +1468,7 @@ impl Server {
         let answered =
             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| (tool.handler)(&call)));
         answered.unwrap_or_else(|_| {
-            self.contexts.clear();
+            self.forget();
             Err(Error::internal(format!(
                 "the tool `{}` failed inside",
                 tool.name
@@ -1420,12 +1490,11 @@ impl Server {
                 record.answer(context, &asked.request)?
             }
             Some(other) => {
-                // Both built before either is borrowed; a full cache cleared
-                // by the second leaves the first to be built again, and two
-                // fit.
+                // Both derived before either is borrowed; a full cache lets
+                // go of the scope used longest ago, so the two just used
+                // are both kept.
                 self.context(&asked)?;
                 self.context(&other).map_err(tools::of_other)?;
-                self.context(&asked)?;
                 let (Some(context), Some(compared)) = (
                     self.contexts.get(&context_key(&asked)),
                     self.contexts.get(&context_key(&other)),
@@ -1504,40 +1573,84 @@ impl Server {
             .envelope()
     }
 
+    /// The context a call's scope names: kept from an earlier call, or
+    /// **derived** from the server's base, which shares the base's
+    /// provider and its cache rather than opening the engine again (and,
+    /// for Teimeris, hashing its data again). The scope's settings are
+    /// resolved as a build resolves them — the profile, then the patch —
+    /// so a derived context and a built one are the same settings.
+    ///
+    /// A classical ephemeris is opened for its settings' astronomy, so a
+    /// scope naming another one is built afresh, as only a build can
+    /// open it for that (`Context::derives`).
     fn context(&mut self, asked: &tools::Arguments) -> Result<&Context, Error> {
         let key = context_key(asked);
-        if !self.contexts.contains_key(&key) && self.contexts.len() >= CONTEXTS {
-            self.contexts.clear();
+        if self.contexts.touch(&key).is_some() {
+            return self
+                .contexts
+                .get(&key)
+                .ok_or_else(|| Error::internal("a context the server kept is gone"));
         }
-        Ok(match self.contexts.entry(key) {
-            Entry::Occupied(entry) => entry.into_mut(),
-            Entry::Vacant(entry) => {
-                let (profile, settings, locale) = entry.key();
-                let mut chain = Vec::with_capacity(2);
-                if let Some(plugin) = &self.plugin {
-                    chain.push(Ephemeris::Provider((*plugin.open)()?));
-                }
-                if self.engine != Engine::None || chain.is_empty() {
-                    chain.push(self.engine.entry());
-                }
-                let watch = Arc::clone(&self.watch);
-                let mut builder = Context::builder()
-                    .profile(profile.as_str())
-                    .ephemeris(chain)
-                    .wrapping(move |opened| -> Box<dyn EphemerisProvider> {
-                        Box::new(watch::Watched::new(opened, watch))
-                    });
-                if !settings.is_empty() {
-                    builder = builder.settings_json(settings.as_str());
-                }
-                // The locale after the packs, since a pack may bring it.
-                let context = self.own.building(builder)?;
-                if !locale.is_empty() {
-                    let _chosen = context.intl().set_locale(locale.as_str())?;
-                }
-                entry.insert(context)
+        let profile = teistro::settings::Profile::named(&key.0)?;
+        let patch = match asked.settings.as_deref() {
+            Some(json) => teistro::settings::SettingsPatch::from_json(json)?,
+            None => teistro::settings::SettingsPatch::default(),
+        };
+        let resolved = profile.settings().derived(&patch, profile.id.clone())?;
+        let locale = asked.locale.as_deref();
+        let base = self.base()?;
+        let context = if base.derives(&resolved.settings) {
+            base.with_resolved(resolved, locale)?
+        } else {
+            let built = self.opened(&key.0, asked.settings.as_deref())?;
+            // The locale after the packs, since a pack may bring it.
+            if let Some(tag) = locale {
+                let _chosen = built.intl().set_locale(tag)?;
             }
-        })
+            built
+        };
+        Ok(self.contexts.keep(key, context))
+    }
+
+    /// The server's base context, opened on first use.
+    fn base(&mut self) -> Result<&Context, Error> {
+        if self.base.is_none() {
+            self.base = Some(self.opened(DEFAULT_PROFILE, None)?);
+        }
+        self.base
+            .as_ref()
+            .ok_or_else(|| Error::internal("the server's base context is gone"))
+    }
+
+    /// A context built over the provider, which opens it: the plugin's
+    /// engine first, then the server's own, each wrapped so a cancel is
+    /// seen between its parts, and everything the operator added.
+    fn opened(&self, profile: &str, settings: Option<&str>) -> Result<Context, Error> {
+        let mut chain = Vec::with_capacity(2);
+        if let Some(plugin) = &self.plugin {
+            chain.push(Ephemeris::Provider((*plugin.open)()?));
+        }
+        if self.engine != Engine::None || chain.is_empty() {
+            chain.push(self.engine.entry());
+        }
+        let watch = Arc::clone(&self.watch);
+        let mut builder = Context::builder()
+            .profile(profile)
+            .ephemeris(chain)
+            .wrapping(move |opened| -> Box<dyn EphemerisProvider> {
+                Box::new(watch::Watched::new(opened, watch))
+            });
+        if let Some(json) = settings {
+            builder = builder.settings_json(json);
+        }
+        self.own.building(builder)
+    }
+
+    /// Drops every kept context and the base, so the next call builds
+    /// with what the server now adds to every context.
+    fn forget(&mut self) {
+        self.contexts.clear();
+        self.base = None;
     }
 }
 
@@ -1913,7 +2026,8 @@ impl Fork {
             listed: None,
             own: self.own,
             tools: self.tools,
-            contexts: HashMap::new(),
+            base: None,
+            contexts: Contexts::default(),
         }
     }
 }
