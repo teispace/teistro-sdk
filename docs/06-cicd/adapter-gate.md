@@ -13,7 +13,7 @@ private adapter on the maintainer's machine.
 
 ```sh
 cargo xtask check-adapter --adapter DIR     # or TEISTRO_ADAPTER_DIR=DIR
-cargo xtask relock-adapter --adapter DIR    # the adapter's Cargo.lock again
+cargo xtask relock-adapter --adapter DIR    # the adapter's Cargo.locks again
 ```
 
 `DIR` is laid out by language: `rust/` (a standalone crate with a
@@ -30,9 +30,14 @@ java-module = "com.teispace.teistro.teimeris"
 engine-checkout = "../.."                  # whose commit a measurement records
 embedded-env = { TM_EMBED_TIER = "MODERN" }  # a build with its data inside
 embedded-unset = ["TEIMERIS_LIB_DIR"]
+locked-crates = ["gen"]                    # other crates whose lock the SDK moves
 ```
 
-It runs the lock check, the adapter's tests, its kit, and then
+`locked-crates` names the adapter's other standalone crates that reach
+the SDK's crates and commit a lock (Teimeris's generator, `gen/`):
+`relock-adapter` writes each lock again with `rust/`'s, and the lock check
+holds each to the SDK, so a pin that moves the SDK cannot leave one
+behind. It runs the lock check, the adapter's tests, its kit, and then
 `check-node`, `check-python`, `check-dart` and `check-java` with
 `TEISTRO_ADAPTER_DIR`, `TEISTRO_ADAPTER_LIBRARY` (the built library),
 `TEISTRO_ADAPTER_ENGINE` and the adapter's own `library-variable` set.

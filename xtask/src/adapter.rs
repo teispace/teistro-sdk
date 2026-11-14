@@ -103,6 +103,12 @@ struct Described {
     /// The variables such a build must not inherit from a developer's shell.
     #[serde(default)]
     embedded_unset: Vec<String>,
+    /// The adapter's other standalone crates that commit a `Cargo.lock`
+    /// against the SDK's crates (a generator, say), by directory beside
+    /// `rust/`: `relock-adapter` writes each lock again and the gate holds
+    /// each to the SDK as it holds the adapter's own.
+    #[serde(default)]
+    locked_crates: Vec<String>,
 }
 
 /// An ephemeris adapter, laid out by language under one directory.
@@ -166,6 +172,7 @@ impl Adapter {
                 engine_checkout: None,
                 embedded_env: BTreeMap::new(),
                 embedded_unset: Vec::new(),
+                locked_crates: Vec::new(),
             },
         }
     }
@@ -229,6 +236,27 @@ impl Adapter {
     /// Cargo in the adapter's crate, held to its committed lock and
     /// building into its own `target/`, where [`Adapter::library`] reads
     /// the plugin, whatever `CARGO_TARGET_DIR` a caller's shell names.
+    /// Every part whose `Cargo.lock` the SDK's crates resolve: `rust/`,
+    /// then the [`Described::locked_crates`] in the order listed.
+    fn locked_parts(&self) -> impl Iterator<Item = &str> {
+        std::iter::once("rust").chain(self.described.locked_crates.iter().map(String::as_str))
+    }
+
+    /// `cargo metadata` in `part`, resolving its lock: `--locked` holds it
+    /// to what it pins, else it is written again keeping every version it
+    /// already pins.
+    fn resolve(&self, part: &str, locked: bool) -> Command {
+        let mut command = Command::new(cargo());
+        if locked {
+            command.arg("--locked");
+        }
+        command
+            .args(["metadata", "--quiet", "--format-version", "1"])
+            .stdout(std::process::Stdio::null())
+            .current_dir(self.part(part));
+        command
+    }
+
     pub(crate) fn cargo(&self) -> Command {
         let dir = self.part("rust");
         let mut command = Command::new(cargo());
@@ -351,16 +379,21 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
         Err(code) => return code,
     };
     let engine = adapter.engine().to_owned();
-    if step(
-        adapter
-            .cargo()
-            .args(["metadata", "--quiet", "--format-version", "1"])
-            .stdout(std::process::Stdio::null()),
-        "the adapter's Cargo.lock is what the SDK's crates ask for",
-        "the adapter's Cargo.lock is stale: run `cargo xtask relock-adapter --adapter DIR` and commit it",
-    )
-    .is_err()
-    {
+    let stale = adapter
+        .locked_parts()
+        .filter(|part| {
+            step(
+                &mut adapter.resolve(part, true),
+                &format!("{}/Cargo.lock is what the SDK's crates ask for", adapter.shown(part)),
+                &format!(
+                    "{}/Cargo.lock is stale: run `cargo xtask relock-adapter --adapter DIR` and commit it",
+                    adapter.shown(part)
+                ),
+            )
+            .is_err()
+        })
+        .count();
+    if stale > 0 {
         return 1;
     }
     let mut failed = 0;
@@ -427,8 +460,9 @@ pub(crate) fn check(root: &Path, args: &[String]) -> i32 {
 }
 
 /// `cargo xtask relock-adapter [--adapter DIR]`: the adapter's
-/// `Cargo.lock` resolved again against the SDK's crates, keeping every
-/// version it already pins.
+/// `Cargo.lock`, and each of its [`Described::locked_crates`]' locks,
+/// resolved again against the SDK's crates, keeping every version they
+/// already pin.
 pub(crate) fn relock(root: &Path, args: &[String]) -> i32 {
     let adapter = match ready(root, args) {
         Ok(adapter) => adapter,
@@ -438,15 +472,18 @@ pub(crate) fn relock(root: &Path, args: &[String]) -> i32 {
         }
         Err(code) => return code,
     };
-    let outcome = step(
-        Command::new(cargo())
-            .args(["metadata", "--quiet", "--format-version", "1"])
-            .stdout(std::process::Stdio::null())
-            .current_dir(adapter.part("rust")),
-        &format!("{}/Cargo.lock resolved", adapter.shown("rust")),
-        "the adapter did not resolve",
-    );
-    i32::from(outcome.is_err())
+    let failed = adapter
+        .locked_parts()
+        .filter(|part| {
+            step(
+                &mut adapter.resolve(part, false),
+                &format!("{}/Cargo.lock resolved", adapter.shown(part)),
+                &format!("{} did not resolve", adapter.shown(part)),
+            )
+            .is_err()
+        })
+        .count();
+    i32::from(failed > 0)
 }
 
 #[cfg(test)]
@@ -482,7 +519,8 @@ mod tests {
             "[package]\nname = \"teistro-ephemeris-example\"\n\n\
              [package.metadata.teistro-adapter]\nengine = \"example\"\n\
              java-module = \"com.example.ephemeris\"\n\
-             embedded-env = { EXAMPLE_TIER = \"MODERN\" }\n",
+             embedded-env = { EXAMPLE_TIER = \"MODERN\" }\n\
+             locked-crates = [\"gen\"]\n",
         )
         .expect("a scratch manifest");
         let found = Adapter::find(Path::new("/"), Some(&dir));
@@ -494,6 +532,7 @@ mod tests {
         assert_eq!(adapter.binary("kit"), "teistro-ephemeris-example-kit");
         assert_eq!(adapter.stem(), "teistro_ephemeris_example");
         assert_eq!(adapter.java_module(), Some("com.example.ephemeris"));
+        assert_eq!(adapter.locked_parts().collect::<Vec<_>>(), ["rust", "gen"]);
         assert!(adapter.shown("node").ends_with("/node"));
         assert_eq!(adapter.missing(), Vec::<String>::new());
     }
