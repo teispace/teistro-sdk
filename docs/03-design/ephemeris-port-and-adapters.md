@@ -405,7 +405,8 @@ founds the charts over its native frame alone, which measures the SDK's
 completion rather than the engine's. The adapter is its own Cargo
 workspace with a committed `Cargo.lock`; every gate runs Cargo there with
 `--locked`, so a crate of the SDK gaining a dependency fails the gate
-until `cargo xtask relock-adapter --adapter DIR` writes the lock again.
+until `cargo xtask relock-adapter --adapter DIR` writes the lock again (and
+those of the crates its `locked-crates` lists).
 
 **The DE440 check: geometric positions against JPL's own ephemeris.**
 `kit::jpl` asks a provider for geocentric geometric positions on the

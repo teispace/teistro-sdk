@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**An adapter's other locked crates move with it.**
+**Numbers:** none move.
+- `[package.metadata.teistro-adapter]` gains `locked-crates`, the adapter's other standalone crates
+  that reach the SDK and commit a lock (Teimeris's generator, `gen/`): `relock-adapter` writes each
+  lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
+  moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
+
 **Numbers:** none move: nothing an earlier release answered changes, the sky
 view's hash included (its input gains no field when no pose is asked).
 - **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
