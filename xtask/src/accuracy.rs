@@ -37,7 +37,15 @@ const TESTS: &[(&[&str], &str)] = &[
         &["-p", "teistro", "--test", "baseline_panchanga_day"],
         "the SDK's daily panchanga against the baseline corpus",
     ),
+    (
+        &["-p", "teistro", "--test", "limb_oracle"],
+        "the SDK's limb ends, sankrantis and sunrises against the limb oracle",
+    ),
 ];
+
+/// The row whose measurements are a limb and a century each, laid out as
+/// their own table: a quantity is `<limb> <century>`.
+const LIMB_ROW: &str = "limb_times";
 
 #[derive(Deserialize)]
 struct Rows {
@@ -135,6 +143,22 @@ fn render(rows: &Rows, measurements: &[Measurement]) -> String {
     s.push_str("| area | target | measured in CI | by hand | evidence | page |\n");
     s.push_str("|---|---|---|---|---|---|\n");
     for row in &rows.rows {
+        if row.id == LIMB_ROW && by_row.contains_key(LIMB_ROW) {
+            let _ = writeln!(
+                s,
+                "| {} | {} | per limb and century, in the table below | {} | {} | `{}` |",
+                row.area,
+                row.target,
+                if row.by_hand.is_empty() {
+                    "—"
+                } else {
+                    &row.by_hand
+                },
+                row.evidence,
+                row.page
+            );
+            continue;
+        }
         let measured = by_row.get(row.id.as_str()).map_or_else(
             || "—".to_owned(),
             |list| {
@@ -170,7 +194,55 @@ fn render(rows: &Rows, measurements: &[Measurement]) -> String {
                 test without a recorded engine table, a by-hand measurement, or the area is\n\
                 not built yet.\n",
     );
+    if let Some(list) = by_row.get(LIMB_ROW) {
+        limb_table(&mut s, list);
+    }
     s
+}
+
+/// The limb oracle's worst differences, a limb to a row and a century to
+/// a column, each cell with its count and the row's bound.
+fn limb_table(s: &mut String, list: &[&Measurement]) {
+    let mut limbs: Vec<&str> = Vec::new();
+    let mut centuries: Vec<&str> = Vec::new();
+    let mut cells: BTreeMap<(&str, &str), &Measurement> = BTreeMap::new();
+    for m in list {
+        let (limb, century) = m
+            .quantity
+            .split_once(' ')
+            .expect("a limb measurement is named `<limb> <century>`");
+        if !limbs.contains(&limb) {
+            limbs.push(limb);
+        }
+        if !centuries.contains(&century) {
+            centuries.push(century);
+        }
+        cells.insert((limb, century), m);
+    }
+    centuries.sort_unstable();
+    s.push_str(
+        "\n## Limb times against the limb oracle\n\n\
+         The worst difference, SDK less reference, over every limb end, sankranti and\n\
+         sunrise of the sample years in each century under `nepali-drik`\n\
+         (`crates/sdk/tests/limb_oracle.rs`, which holds every drik profile to the same\n\
+         bounds; the reference and its distance from DE440 are in `limb-oracle.md`).\n\n",
+    );
+    let _ = writeln!(s, "| limb | {} | bound |", centuries.join(" | "));
+    let _ = writeln!(s, "|---|{}---|", "---|".repeat(centuries.len()));
+    for limb in limbs {
+        let mut row = format!("| {limb} |");
+        let mut bound = String::new();
+        for century in &centuries {
+            match cells.get(&(limb, *century)) {
+                Some(m) => {
+                    let _ = write!(row, " {} ({}) |", quantity(m.value, &m.unit), m.count);
+                    bound = quantity(m.bound, &m.unit);
+                }
+                None => row.push_str(" — |"),
+            }
+        }
+        let _ = writeln!(s, "{row} {bound} |");
+    }
 }
 
 fn outputs(root: &Path) -> Vec<Output> {

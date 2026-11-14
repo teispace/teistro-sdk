@@ -438,6 +438,7 @@ impl EphemerisProvider for SwephProvider {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
         if !self.capabilities.has_ayanamsha(ayanamsha) {
             return Err(ProviderError::unsupported(format!(
@@ -447,10 +448,15 @@ impl EphemerisProvider for SwephProvider {
         }
         let session = Session::take();
         session.set_sid_mode(ayanamsha);
-        // The mean ayanamsha, the value sidereal longitudes subtract; without
-        // `NONUT` the library adds the nutation in longitude.
+        // The basis asked: `NONUT` for the mean value; without it the
+        // library adds its own nutation in longitude, the true value.
+        let flags = match basis {
+            teistro_core::settings::AyanamshaBasis::Mean => ffi::flag::SWIEPH | ffi::flag::NONUT,
+            teistro_core::settings::AyanamshaBasis::True => ffi::flag::SWIEPH,
+            _ => return Err(ProviderError::unsupported("ayanamsha basis")),
+        };
         session
-            .ayanamsha(jd, scale, ffi::flag::SWIEPH | ffi::flag::NONUT)
+            .ayanamsha(jd, scale, flags)
             .map_err(|detail| ProviderError::Provider {
                 code: CALC_FAILED,
                 detail,

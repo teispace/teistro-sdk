@@ -1752,6 +1752,32 @@ fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// The coherence rule a sidereal zodiac of date on the mean ayanamsha
+/// breaks (SR-118): a warning, which a shipped profile may carry only with
+/// a citation on `frame.ayanamsha_basis`.
+const AYANAMSHA_MEAN_BASIS: &str = "ayanamsha-mean-basis";
+
+/// What the settings warn of in the ayanamsha's basis (SR-118).
+fn basis_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    // Under modern astronomy every position is referred to the true
+    // equinox of date, apparent or geometric alike: the nutation is
+    // applied either way. A mean ayanamsha taken from it leaves the
+    // nutation in longitude, up to 17.2 arcseconds, in every sidereal
+    // longitude, which the IAE's "true ayanamsa" definition does not
+    // (SR-100, SR-118, crux C1750). A classical sky has no nutation, so
+    // its basis is moot. A profile that wants it anyway cites why.
+    if s.frame.zodiac == Zodiac::Sidereal
+        && s.frame.siddhanta == Siddhanta::Drik
+        && s.frame.ayanamsha_basis == AyanamshaBasis::Mean
+    {
+        out.push(Diagnostic::warning(
+            AYANAMSHA_MEAN_BASIS,
+            "positions are referred to the true equinox of date, nutation applied; less the mean ayanamsha every sidereal longitude keeps the nutation in longitude, up to 17.2 arcseconds (set frame.ayanamsha_basis to TRUE, the IAE's nirayana longitude)",
+            &["frame.ayanamsha_basis", "frame.positions"],
+        ));
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -1811,6 +1837,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             &["frame.siddhanta", "frame.centre"],
         ));
     }
+    basis_coherence(s, &mut out);
     // The text's sunrise is the centre on the geometric horizon, in local
     // mean time; asked for another convention, the provider declines and
     // the SDK solves it over the text's Sun, which is neither the text's
@@ -2255,6 +2282,90 @@ mod tests {
                 "year-length-convention"
             ]
         );
+    }
+
+    /// Whether a profile, or the base it patches, cites a knob.
+    fn cites(profile: &Profile, knob: &str) -> bool {
+        profile.sources.iter().any(|cited| cited.knob == knob)
+            || profile
+                .base
+                .as_ref()
+                .is_some_and(|base| cites(&shipped(base.as_str()), knob))
+    }
+
+    /// A profile whose resolved settings take the mean ayanamsha under a
+    /// modern sidereal zodiac of date, and say nowhere why.
+    fn uncited_mean_basis(profile: &Profile) -> bool {
+        let resolved = profile
+            .resolve(&SettingsPatch::default())
+            .unwrap_or_else(|e| panic!("{e}"));
+        resolved
+            .warnings
+            .iter()
+            .any(|warning| warning.rule == AYANAMSHA_MEAN_BASIS)
+            && !cites(profile, "frame.ayanamsha_basis")
+    }
+
+    #[test]
+    fn a_mean_basis_under_a_sky_of_date_warns() {
+        let rules = |patch: &SettingsPatch| -> Vec<&'static str> {
+            shipped("nepali-drik")
+                .resolve(patch)
+                .unwrap_or_else(|e| panic!("{e}"))
+                .warnings
+                .iter()
+                .map(|d| d.rule)
+                .collect()
+        };
+        // Fires: apparent positions, and geometric ones, whose equinox is
+        // still of date.
+        let mut mean = SettingsPatch::default();
+        mean.frame.ayanamsha_basis = Some(AyanamshaBasis::Mean);
+        assert_eq!(rules(&mean), [AYANAMSHA_MEAN_BASIS]);
+        let resolved = shipped("nepali-drik")
+            .resolve(&mean)
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(
+            resolved.warnings[0].fields,
+            ["frame.ayanamsha_basis", "frame.positions"]
+        );
+        mean.frame.positions = Some(Positions::True);
+        assert_eq!(rules(&mean), [AYANAMSHA_MEAN_BASIS]);
+        // Does not fire: the true basis, a tropical zodiac, a classical sky.
+        assert_eq!(rules(&SettingsPatch::default()), Vec::<&str>::new());
+        let mut tropical = SettingsPatch::default();
+        tropical.frame.ayanamsha_basis = Some(AyanamshaBasis::Mean);
+        tropical.frame.zodiac = Some(Zodiac::Tropical);
+        tropical.frame.ayanamsha = Some(profiles::root().frame.ayanamsha);
+        assert_eq!(rules(&tropical), Vec::<&str>::new());
+        let mut classical = SettingsPatch::default();
+        classical.frame.ayanamsha_basis = Some(AyanamshaBasis::Mean);
+        classical.frame.centre = Some(Centre::Geocentric);
+        classical.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None));
+        classical.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
+        assert_eq!(rules(&classical), Vec::<&str>::new());
+    }
+
+    /// SR-118: a shipped profile pairing positions of date with the mean
+    /// ayanamsha fails unless it cites why; and the check itself fails
+    /// such a profile, so a citation dropped later is caught.
+    #[test]
+    fn no_shipped_profile_takes_a_mean_basis_uncited() {
+        for id in SHIPPED_PROFILES {
+            assert!(!uncited_mean_basis(&shipped(id)), "{id}");
+        }
+        let mut patch = SettingsPatch::default();
+        patch.frame.ayanamsha_basis = Some(AyanamshaBasis::Mean);
+        let mut mean = Profile {
+            patch,
+            ..shipped(DEFAULT_PROFILE)
+        };
+        assert!(uncited_mean_basis(&mean), "the check fails a mean basis");
+        mean.sources.push(Citation::new(
+            "frame.ayanamsha_basis",
+            crate::catalogue::Source::new("a test", "a cited mean basis"),
+        ));
+        assert!(!uncited_mean_basis(&mean), "and passes a cited one");
     }
 
     #[test]

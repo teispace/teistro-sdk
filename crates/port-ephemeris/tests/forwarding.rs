@@ -40,7 +40,13 @@ impl EphemerisProvider for Marked {
         Err(marked("delta_t"))
     }
 
-    fn ayanamsha_deg(&self, _: f64, _: TimeScale, _: Ayanamsha) -> Result<f64, ProviderError> {
+    fn ayanamsha_deg(
+        &self,
+        _: f64,
+        _: TimeScale,
+        _: Ayanamsha,
+        _: teistro_core::settings::AyanamshaBasis,
+    ) -> Result<f64, ProviderError> {
         Err(marked("ayanamsha"))
     }
 
@@ -104,7 +110,12 @@ fn answers(provider: &impl EphemerisProvider) -> Vec<String> {
         format!("{:?}", provider.delta_t_seconds(jd.get())),
         format!(
             "{:?}",
-            provider.ayanamsha_deg(jd.get(), TimeScale::Ut1, Ayanamsha::Lahiri)
+            provider.ayanamsha_deg(
+                jd.get(),
+                TimeScale::Ut1,
+                Ayanamsha::Lahiri,
+                teistro_core::settings::AyanamshaBasis::True
+            )
         ),
         format!("{:?}", provider.dut1_seconds(jd.get())),
         format!("{:?}", provider.horizon_event(&horizon)),

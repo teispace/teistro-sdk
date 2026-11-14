@@ -268,7 +268,19 @@ pub fn root() -> Settings {
         frame: Frame {
             zodiac: Zodiac::Sidereal,
             ayanamsha: Ayanamsha::Lahiri.into(),
-            ayanamsha_basis: AyanamshaBasis::Mean,
+            // The true value, nutation included, which the apparent
+            // positions below carry: a nirayana longitude is the apparent
+            // one less the true ayanamsha, as the Indian Astronomical
+            // Ephemeris and the Rashtriya Panchang tabulate it ("True
+            // Ayanamsa = Mean Ayanamsa + Nutation in Longitude"), and as
+            // the Swiss Ephemeris computes a sidereal position (the mean
+            // equinox less the mean value, the same angle). Less the mean
+            // value an apparent longitude keeps the nutation, up to 17.2
+            // arcseconds; the Rashtriya Panchang's 109 sankrantis of
+            // 2018 to 2027 meet the true basis within 32 seconds and miss
+            // the mean one by up to 7.7 minutes
+            // (`calendars/regional-solar.md`; SR-100, crux C1750).
+            ayanamsha_basis: AyanamshaBasis::True,
             node: Node::Mean,
             centre: Centre::Geocentric,
             positions: Positions::Apparent,
@@ -457,7 +469,8 @@ fn nepali_drik() -> Profile {
         // 2: the lunar month leads purnimanta, as Nepal names it.
         // 3: the season follows the civil calendar's solar months.
         // 4: an eclipse's vedha is the committee's fixed hours.
-        version: 5,
+        // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 6,
         base: None,
         patch,
         sources: vec![
@@ -546,7 +559,8 @@ fn nepali_committee() -> Profile {
     let committee = |what: &'static str| Source::new("Nepal Panchanga Nirnayak Vikas Samiti", what);
     Profile {
         id: ProfileId::new("nepali-committee"),
-        version: 5,
+        // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 6,
         base: Some(ProfileId::new("nepali-drik")),
         patch,
         sources: vec![
@@ -607,7 +621,8 @@ fn parashari_classical() -> Profile {
         // centre became geocentric, the civil calendar Gregorian, the
         // eras the three pan-Indic ones and a polar day undefined
         // (ADR-0024).
-        version: 3,
+        // 4: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 4,
         base: None,
         patch,
         sources: vec![
@@ -659,7 +674,8 @@ fn surya_siddhanta() -> Profile {
     let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
     Profile {
         id: ProfileId::new("surya-siddhanta"),
-        version: 2,
+        // 3: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 3,
         base: Some(ProfileId::new("parashari-classical")),
         patch,
         sources: vec![
@@ -707,7 +723,8 @@ fn mithila_makaranda() -> Profile {
     let makaranda = |what: &'static str| Source::new("Makarandasarini", what);
     Profile {
         id: ProfileId::new("mithila-makaranda"),
-        version: 1,
+        // 2: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 2,
         base: Some(ProfileId::new("surya-siddhanta")),
         patch,
         sources: vec![Citation::new(
@@ -740,7 +757,8 @@ fn tamil_vakya() -> Profile {
     let vakyakarana = |what: &'static str| Source::new("Vakyakarana", what);
     Profile {
         id: ProfileId::new("tamil-vakya"),
-        version: 1,
+        // 2: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 2,
         base: Some(ProfileId::new("surya-siddhanta")),
         patch,
         sources: vec![Citation::new(
@@ -785,7 +803,8 @@ fn kp_default() -> Profile {
     patch.dasha.year_length = Some(year_lengths());
     Profile {
         id: ProfileId::new("kp-default"),
-        version: 2,
+        // 3: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 3,
         base: None,
         patch,
         sources: vec![
@@ -821,7 +840,8 @@ fn western_tropical_default() -> Profile {
     patch.calendars.eras = Some(BTreeSet::new());
     Profile {
         id: ProfileId::new("western-tropical-default"),
-        version: 3,
+        // 4: the ayanamsha basis became `TRUE`, the root's (SR-100).
+        version: 4,
         base: None,
         patch,
         sources: vec![Citation::new(
@@ -837,7 +857,8 @@ fn western_tropical_default() -> Profile {
 pub(super) fn conformance_baseline() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Topocentric);
-    // The engine has no basis knob and applies the nutated value.
+    // The engine has no basis knob and applies the nutated value, the
+    // root's own since SR-100; kept, so that its measurement stays cited.
     // Measured: over the corpus's 55 charts the mean basis is up to
     // 18.46 arcseconds from the value the engine recorded and the true
     // basis is within 0.0086, two thousand times closer (entry 16).

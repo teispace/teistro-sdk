@@ -16,7 +16,7 @@
 //! each part the way the print does, as one sky, so every reader of a
 //! sunrise or a planet takes the same one.
 
-use teistro_astro::ayanamsha::{self, Basis};
+use teistro_astro::ayanamsha;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
 use teistro_astro::scale::tt_of;
@@ -24,7 +24,7 @@ use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::angle::normalise_deg;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
-use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+use teistro_core::settings::{AyanamshaBasis, AyanamshaChoice, OverridePolicy};
 use teistro_port_ephemeris::{
     Angles, AnglesRequest, Body, Capabilities, EphemerisProvider, Frame, HorizonRequest, Obliquity,
     Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale,
@@ -76,6 +76,7 @@ pub struct ModernParts {
     delta_t: DeltaTModel,
     sunrise: bool,
     planets: Option<AyanamshaChoice>,
+    basis: AyanamshaBasis,
 }
 
 impl core::fmt::Debug for ModernParts {
@@ -86,6 +87,7 @@ impl core::fmt::Debug for ModernParts {
             .field("delta_t", &self.delta_t)
             .field("sunrise", &self.sunrise)
             .field("planets", &self.planets)
+            .field("basis", &self.basis)
             .finish()
     }
 }
@@ -130,6 +132,7 @@ impl ModernParts {
             delta_t: DeltaTModel::default(),
             sunrise: false,
             planets: None,
+            basis: AyanamshaBasis::True,
         }
     }
 
@@ -170,6 +173,26 @@ impl ModernParts {
             planets: Some(ayanamsha),
             ..self
         }
+    }
+
+    /// The same, with the star planets' ayanamsha on `basis`: the true
+    /// one until this says otherwise, since their modern places are
+    /// apparent, of the true equinox of date, and a nirayana longitude is
+    /// the apparent one less the true ayanamsha (SR-100, crux C1750).
+    ///
+    /// ```
+    /// use teistro_core::settings::AyanamshaBasis;
+    /// use teistro_port_ephemeris::TestProvider;
+    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+    ///
+    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()));
+    /// assert!(format!("{sky:?}").contains("basis: True"));
+    /// let mean = sky.with_ayanamsha_basis(AyanamshaBasis::Mean);
+    /// assert!(format!("{mean:?}").contains("basis: Mean"));
+    /// ```
+    #[must_use]
+    pub fn with_ayanamsha_basis(self, basis: AyanamshaBasis) -> ModernParts {
+        ModernParts { basis, ..self }
     }
 
     /// The same, with the Delta T the modern parts are found under.
@@ -220,7 +243,7 @@ impl ModernParts {
 
     /// The modern places of the bodies `wanted` at the request's
     /// instants, as the text's frame holds them: apparent and geocentric,
-    /// less the ayanamsha's mean value and its rate.
+    /// less the ayanamsha on this sky's basis and its rate.
     fn modern_places(
         &self,
         request: &PositionRequest<'_>,
@@ -247,7 +270,7 @@ impl ModernParts {
             let offset = ayanamsha::value_deg(
                 ayanamsha,
                 at,
-                Basis::Mean,
+                self.basis,
                 PrecessionModel::default(),
                 self.delta_t,
             )
@@ -373,8 +396,9 @@ impl EphemerisProvider for ModernParts {
         jd: f64,
         scale: TimeScale,
         ayanamsha: teistro_core::catalogue::Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        self.text.ayanamsha_deg(jd, scale, ayanamsha)
+        self.text.ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {

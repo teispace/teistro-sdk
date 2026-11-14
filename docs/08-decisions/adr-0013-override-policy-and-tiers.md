@@ -40,6 +40,34 @@ both, since its sunrise and zodiac are the text's definitions with no SDK
 answer to agree with (`03-design/classical-chart.md`). A modern provider's
 native ayanamsha answers the mean basis alone.
 
+## Amendment (2026-11-14, SR-100)
+
+The port asks the ayanamsha **on a basis**: `ayanamsha_deg(jd, scale,
+ayanamsha, basis)`, and the C vtable's `ayanamsha` callback takes
+`basis` (`TS_AYANAMSHA_BASIS_MEAN` or `TS_AYANAMSHA_BASIS_TRUE`; vtable
+version 5, C ABI 2). An engine answers each basis from its own nutation,
+or says `UNSUPPORTED`; nothing is left to an engine's default and the SDK
+never adds its own nutation to a native value. Under `PREFER_NATIVE` a
+declined basis is the catalogue's, stamped `ayanamsha:SDK`; under
+`NATIVE_ONLY` it refuses the step. The previous amendment's last sentence
+no longer holds: a modern provider now answers the true basis, which
+every drik profile uses (`03-design/settings-and-profiles.md`). A chart's
+zodiac over a modern engine is still the SDK's catalogue, on the frame's
+basis.
+
+**The positions path.** A sidereal `Frame` names its ayanamsha and no
+basis, so a modern engine asked for one whole answered on its own: the
+Teimeris adapter sets its sidereal mode and flag and answers the mean
+basis whatever `frame.ayanamsha_basis` said, and the per-step choice was
+skipped (the boundary audit of 2026-11-14, A1, B2 and A6). The
+completion no longer asks a modern engine for a sidereal frame whole: it
+asks the frame's tropical twin, natively and whole where the engine can,
+and shifts it by the ayanamsha step, which asks the basis and keeps the
+policy. A classical sky, which has no nutation, still answers its own
+sidereal frame. Carrying the basis in the frame itself (A6's frame bits)
+would let an engine answer it whole again; until then the shift is the
+one route.
+
 ## Consequences
 
 - Two policies to test in the conformance harness for every override.

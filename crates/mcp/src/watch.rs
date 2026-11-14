@@ -335,9 +335,10 @@ impl EphemerisProvider for Watched {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
         self.shared.step(1)?;
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha)
+        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
