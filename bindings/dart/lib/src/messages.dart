@@ -860,6 +860,7 @@ enum FestivalKey {
   paramaEkadashi('festival.PARAMA_EKADASHI'),
   tokhaSapanTirthaSnan('festival.TOKHA_SAPAN_TIRTHA_SNAN'),
   yosinPatan('festival.YOSIN_PATAN'),
+  yosinUtthan('festival.YOSIN_UTTHAN'),
   bhaktapurMahakaliMahalaxmiJatra('festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA'),
   tokhaChandeshwariJatra('festival.TOKHA_CHANDESHWARI_JATRA'),
   thimiBalkumariJatra('festival.THIMI_BALKUMARI_JATRA'),
@@ -3814,6 +3815,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get yoginiEkadashi => _r.entity('festival.YOGINI_EKADASHI');
   EntityForms get yomariPunhi => _r.entity('festival.YOMARI_PUNHI');
   EntityForms get yosinPatan => _r.entity('festival.YOSIN_PATAN');
+  EntityForms get yosinUtthan => _r.entity('festival.YOSIN_UTTHAN');
 }
 
 final class MessagesSdkEntityFestivalKind {

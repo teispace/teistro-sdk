@@ -14132,6 +14132,15 @@ public final class Messages {
                 public EntityForms yosinPatan() {
                     return r.entity("festival.YOSIN_PATAN");
                 }
+
+                /**
+                 * The forms of `festival.YOSIN_UTTHAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yosinUtthan() {
+                    return r.entity("festival.YOSIN_UTTHAN");
+                }
             }
 
 

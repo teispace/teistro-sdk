@@ -744,7 +744,7 @@ const NEPAL_GROUPS: [Group; 21] = [
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 396] = [
+const NEPAL_KEYS: [(&str, u8); 397] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
@@ -1147,6 +1147,7 @@ const NEPAL_KEYS: [(&str, u8); 396] = [
     ("YOGINI_EKADASHI", 15),
     ("YOMARI_PUNHI", 8),
     ("YOSIN_PATAN", 17),
+    ("YOSIN_UTTHAN", 17),
 ];
 
 #[cfg(test)]

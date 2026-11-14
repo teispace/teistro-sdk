@@ -802,6 +802,7 @@ class FestivalKey(enum.StrEnum):
     PARAMA_EKADASHI = "festival.PARAMA_EKADASHI"
     TOKHA_SAPAN_TIRTHA_SNAN = "festival.TOKHA_SAPAN_TIRTHA_SNAN"
     YOSIN_PATAN = "festival.YOSIN_PATAN"
+    YOSIN_UTTHAN = "festival.YOSIN_UTTHAN"
     BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA = "festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA"
     TOKHA_CHANDESHWARI_JATRA = "festival.TOKHA_CHANDESHWARI_JATRA"
     THIMI_BALKUMARI_JATRA = "festival.THIMI_BALKUMARI_JATRA"
@@ -9882,6 +9883,11 @@ class MessagesSdkEntityFestival:
     def yosin_patan(self) -> EntityForms:
         """The forms of `festival.YOSIN_PATAN` in the current locale."""
         return self._r.entity("festival.YOSIN_PATAN")
+
+    @property
+    def yosin_utthan(self) -> EntityForms:
+        """The forms of `festival.YOSIN_UTTHAN` in the current locale."""
+        return self._r.entity("festival.YOSIN_UTTHAN")
 
 
 class MessagesSdkEntityFastKind:

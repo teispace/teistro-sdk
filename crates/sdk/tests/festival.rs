@@ -604,10 +604,17 @@ fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
 /// Tamu Lhosar, Walke parva, the sixteen festivals of a solar date
 /// (Bisket and the Baisakh jatras, Shrawan's, Bhadra's, Asoj's and Magh's
 /// firsts), and Bhumiraj and the Bhumi puja on and three days after the
-/// Sun's entry into Ardra (p. 6).
+/// Sun's entry into Ardra (p. 6). VS 2082 prints no day for
+/// `YOSIN_UTTHAN`, which keeps the year's last day as VS 2083 prints it
+/// (`the_pole_is_raised_on_the_years_last_day`).
 #[test]
 fn the_dated_days_are_the_committees_printed_rows() {
-    let kept = kept_solar;
+    let kept = |from, to| -> Vec<(String, Day)> {
+        kept_solar(from, to)
+            .into_iter()
+            .filter(|(rule, _)| rule != "YOSIN_UTTHAN")
+            .collect()
+    };
     assert_eq!(
         kept((2025, 4, 14), (2026, 4, 13)),
         printed(&[
@@ -886,10 +893,39 @@ fn the_dated_days_are_the_second_editions_printed_rows() {
             ("DEMOCRACY_DAY", (2027, 2, 19)),
         ])
     );
-    // VS 2083 p. 27: Bisket begins on Chaitra's fourth-last day.
+    // VS 2083 p. 27: Bisket begins on Chaitra's fourth-last day, and the
+    // pole is raised on its last, Chaitra 30 (भ.पु.विश्वध्वजोत्थान).
     assert_eq!(
-        kept((2027, 4, 10), (2027, 4, 10)),
-        printed(&[("BISKET_JATRA_BEGINS", (2027, 4, 10))])
+        kept((2027, 4, 10), (2027, 4, 13)),
+        printed(&[
+            ("BISKET_JATRA_BEGINS", (2027, 4, 10)),
+            ("YOSIN_UTTHAN", (2027, 4, 13)),
+        ])
+    );
+}
+
+/// Bhaktapur's pole is raised on the Bikram Sambat year's last day and
+/// felled on Baisakh 1: Chaitra 30 of VS 2082, the evening Kantipur of
+/// 14 April 2026 reports it raised, and Chaitra 30 of VS 2083, the day
+/// that edition prints, each the eve of `YOSIN_PATAN`'s day (C1650).
+#[test]
+fn the_pole_is_raised_on_the_years_last_day() {
+    let kept: Vec<(String, Day)> = [
+        kept_dated((2026, 4, 1), (2026, 4, 30)),
+        kept_dated((2027, 4, 1), (2027, 4, 30)),
+    ]
+    .concat()
+    .into_iter()
+    .filter(|(rule, _)| rule.starts_with("YOSIN_"))
+    .collect();
+    assert_eq!(
+        kept,
+        printed(&[
+            ("YOSIN_UTTHAN", (2026, 4, 13)),
+            ("YOSIN_PATAN", (2026, 4, 14)),
+            ("YOSIN_UTTHAN", (2027, 4, 13)),
+            ("YOSIN_PATAN", (2027, 4, 14)),
+        ])
     );
 }
 
