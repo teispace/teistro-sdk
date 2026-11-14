@@ -4053,6 +4053,230 @@
     "INTERNATIONAL_MIGRANTS_DAY": {
       "name": "अंतरराष्ट्रीय प्रवासी दिवस",
       "prose": "अंतरराष्ट्रीय प्रवासी दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_EDUCATION": {
+      "name": "अंतरराष्ट्रीय शिक्षा दिवस",
+      "prose": "अंतरराष्ट्रीय शिक्षा दिवस"
+    },
+    "WORLD_WETLANDS_DAY": {
+      "name": "विश्व आर्द्रभूमि दिवस",
+      "prose": "विश्व आर्द्रभूमि दिवस"
+    },
+    "WORLD_RADIO_DAY": {
+      "name": "विश्व रेडियो दिवस",
+      "prose": "विश्व रेडियो दिवस"
+    },
+    "WORLD_DAY_OF_SOCIAL_JUSTICE": {
+      "name": "विश्व सामाजिक न्याय दिवस",
+      "prose": "विश्व सामाजिक न्याय दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_HAPPINESS": {
+      "name": "अंतरराष्ट्रीय प्रसन्नता दिवस",
+      "prose": "अंतरराष्ट्रीय प्रसन्नता दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_RACIAL_DISCRIMINATION": {
+      "name": "अंतरराष्ट्रीय नस्लीय भेदभाव उन्मूलन दिवस",
+      "prose": "अंतरराष्ट्रीय नस्लीय भेदभाव उन्मूलन दिवस"
+    },
+    "WORLD_METEOROLOGICAL_DAY": {
+      "name": "विश्व मौसम विज्ञान दिवस",
+      "prose": "विश्व मौसम विज्ञान दिवस"
+    },
+    "WORLD_AUTISM_AWARENESS_DAY": {
+      "name": "विश्व ऑटिज़्म जागरूकता दिवस",
+      "prose": "विश्व ऑटिज़्म जागरूकता दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE": {
+      "name": "विकास और शांति के लिए अंतरराष्ट्रीय खेल दिवस",
+      "prose": "विकास और शांति के लिए अंतरराष्ट्रीय खेल दिवस"
+    },
+    "INTERNATIONAL_WELLNESS_DAY": {
+      "name": "अंतरराष्ट्रीय आरोग्य दिवस",
+      "prose": "अंतरराष्ट्रीय आरोग्य दिवस"
+    },
+    "WORLD_BOOK_AND_COPYRIGHT_DAY": {
+      "name": "विश्व पुस्तक और कॉपीराइट दिवस",
+      "prose": "विश्व पुस्तक और कॉपीराइट दिवस"
+    },
+    "WORLD_MALARIA_DAY": {
+      "name": "विश्व मलेरिया दिवस",
+      "prose": "विश्व मलेरिया दिवस"
+    },
+    "WORLD_INTELLECTUAL_PROPERTY_DAY": {
+      "name": "विश्व बौद्धिक संपदा दिवस",
+      "prose": "विश्व बौद्धिक संपदा दिवस"
+    },
+    "WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY": {
+      "name": "द्वितीय विश्व युद्ध में प्राण गँवाने वालों के लिए स्मरण और सुलह का समय",
+      "prose": "द्वितीय विश्व युद्ध में प्राण गँवाने वालों के लिए स्मरण और सुलह का समय"
+    },
+    "WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY": {
+      "name": "विश्व दूरसंचार और सूचना समाज दिवस",
+      "prose": "विश्व दूरसंचार और सूचना समाज दिवस"
+    },
+    "WORLD_BEE_DAY": {
+      "name": "विश्व मधुमक्खी दिवस",
+      "prose": "विश्व मधुमक्खी दिवस"
+    },
+    "WORLD_CULTURE_DAY": {
+      "name": "संवाद और विकास के लिए विश्व सांस्कृतिक विविधता दिवस",
+      "prose": "संवाद और विकास के लिए विश्व सांस्कृतिक विविधता दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_BIOLOGICAL_DIVERSITY": {
+      "name": "अंतरराष्ट्रीय जैव विविधता दिवस",
+      "prose": "अंतरराष्ट्रीय जैव विविधता दिवस"
+    },
+    "GLOBAL_DAY_OF_PARENTS": {
+      "name": "वैश्विक माता-पिता दिवस",
+      "prose": "वैश्विक माता-पिता दिवस"
+    },
+    "WORLD_BICYCLE_DAY": {
+      "name": "विश्व साइकिल दिवस",
+      "prose": "विश्व साइकिल दिवस"
+    },
+    "WORLD_OCEANS_DAY": {
+      "name": "विश्व महासागर दिवस",
+      "prose": "विश्व महासागर दिवस"
+    },
+    "WORLD_DAY_AGAINST_CHILD_LABOUR": {
+      "name": "विश्व बाल श्रम निषेध दिवस",
+      "prose": "विश्व बाल श्रम निषेध दिवस"
+    },
+    "WORLD_BLOOD_DONOR_DAY": {
+      "name": "विश्व रक्तदाता दिवस",
+      "prose": "विश्व रक्तदाता दिवस"
+    },
+    "WORLD_DAY_TO_COMBAT_DESERTIFICATION_AND_DROUGHT": {
+      "name": "विश्व मरुस्थलीकरण और सूखा रोकथाम दिवस",
+      "prose": "विश्व मरुस्थलीकरण और सूखा रोकथाम दिवस"
+    },
+    "WORLD_REFUGEE_DAY": {
+      "name": "विश्व शरणार्थी दिवस",
+      "prose": "विश्व शरणार्थी दिवस"
+    },
+    "INTERNATIONAL_DAY_AGAINST_DRUG_ABUSE_AND_ILLICIT_TRAFFICKING": {
+      "name": "नशीली दवाओं के दुरुपयोग और अवैध तस्करी के विरुद्ध अंतरराष्ट्रीय दिवस",
+      "prose": "नशीली दवाओं के दुरुपयोग और अवैध तस्करी के विरुद्ध अंतरराष्ट्रीय दिवस"
+    },
+    "MICRO_SMALL_AND_MEDIUM_SIZED_ENTERPRISES_DAY": {
+      "name": "सूक्ष्म, लघु और मध्यम उद्यम दिवस",
+      "prose": "सूक्ष्म, लघु और मध्यम उद्यम दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_SIGN_LANGUAGES": {
+      "name": "अंतरराष्ट्रीय सांकेतिक भाषा दिवस",
+      "prose": "अंतरराष्ट्रीय सांकेतिक भाषा दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_TOTAL_ELIMINATION_OF_NUCLEAR_WEAPONS": {
+      "name": "परमाणु हथियारों के पूर्ण उन्मूलन के लिए अंतरराष्ट्रीय दिवस",
+      "prose": "परमाणु हथियारों के पूर्ण उन्मूलन के लिए अंतरराष्ट्रीय दिवस"
+    },
+    "WORLD_POST_DAY": {
+      "name": "विश्व डाक दिवस",
+      "prose": "विश्व डाक दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_DISASTER_RISK_REDUCTION": {
+      "name": "अंतरराष्ट्रीय आपदा जोखिम न्यूनीकरण दिवस",
+      "prose": "अंतरराष्ट्रीय आपदा जोखिम न्यूनीकरण दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_RURAL_WOMEN": {
+      "name": "अंतरराष्ट्रीय ग्रामीण महिला दिवस",
+      "prose": "अंतरराष्ट्रीय ग्रामीण महिला दिवस"
+    },
+    "WORLD_DEVELOPMENT_INFORMATION_DAY": {
+      "name": "विश्व विकास सूचना दिवस",
+      "prose": "विश्व विकास सूचना दिवस"
+    },
+    "WORLD_CITIES_DAY": {
+      "name": "विश्व शहर दिवस",
+      "prose": "विश्व शहर दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_TOLERANCE": {
+      "name": "अंतरराष्ट्रीय सहिष्णुता दिवस",
+      "prose": "अंतरराष्ट्रीय सहिष्णुता दिवस"
+    },
+    "WORLD_TOILET_DAY": {
+      "name": "विश्व शौचालय दिवस",
+      "prose": "विश्व शौचालय दिवस"
+    },
+    "WORLD_TELEVISION_DAY": {
+      "name": "विश्व टेलीविज़न दिवस",
+      "prose": "विश्व टेलीविज़न दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ABOLITION_OF_SLAVERY": {
+      "name": "अंतरराष्ट्रीय दासता उन्मूलन दिवस",
+      "prose": "अंतरराष्ट्रीय दासता उन्मूलन दिवस"
+    },
+    "WORLD_SOIL_DAY": {
+      "name": "विश्व मृदा दिवस",
+      "prose": "विश्व मृदा दिवस"
+    },
+    "INTERNATIONAL_CIVIL_AVIATION_DAY": {
+      "name": "अंतरराष्ट्रीय नागर विमानन दिवस",
+      "prose": "अंतरराष्ट्रीय नागर विमानन दिवस"
+    },
+    "INTERNATIONAL_CUSTOMS_DAY": {
+      "name": "अंतरराष्ट्रीय सीमा शुल्क दिवस",
+      "prose": "अंतरराष्ट्रीय सीमा शुल्क दिवस"
+    },
+    "WORLD_CANCER_DAY": {
+      "name": "विश्व कैंसर दिवस",
+      "prose": "विश्व कैंसर दिवस"
+    },
+    "INTERNATIONAL_CHILDHOOD_CANCER_DAY": {
+      "name": "अंतरराष्ट्रीय बाल कैंसर दिवस",
+      "prose": "अंतरराष्ट्रीय बाल कैंसर दिवस"
+    },
+    "WORLD_CONSUMER_RIGHTS_DAY": {
+      "name": "विश्व उपभोक्ता अधिकार दिवस",
+      "prose": "विश्व उपभोक्ता अधिकार दिवस"
+    },
+    "WORLD_ORAL_HEALTH_DAY": {
+      "name": "विश्व मुख स्वास्थ्य दिवस",
+      "prose": "विश्व मुख स्वास्थ्य दिवस"
+    },
+    "WORLD_THEATRE_DAY": {
+      "name": "विश्व रंगमंच दिवस",
+      "prose": "विश्व रंगमंच दिवस"
+    },
+    "INTERNATIONAL_DANCE_DAY": {
+      "name": "अंतरराष्ट्रीय नृत्य दिवस",
+      "prose": "अंतरराष्ट्रीय नृत्य दिवस"
+    },
+    "INTERNATIONAL_NURSES_DAY": {
+      "name": "अंतरराष्ट्रीय नर्स दिवस",
+      "prose": "अंतरराष्ट्रीय नर्स दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH": {
+      "name": "महिला स्वास्थ्य के लिए अंतरराष्ट्रीय कार्रवाई दिवस",
+      "prose": "महिला स्वास्थ्य के लिए अंतरराष्ट्रीय कार्रवाई दिवस"
+    },
+    "WORLD_MUSIC_DAY": {
+      "name": "विश्व संगीत दिवस",
+      "prose": "विश्व संगीत दिवस"
+    },
+    "WORLD_PHYSIOTHERAPY_DAY": {
+      "name": "विश्व फिजियोथेरेपी दिवस",
+      "prose": "विश्व फिजियोथेरेपी दिवस"
+    },
+    "WORLD_ALZHEIMER_S_DAY": {
+      "name": "विश्व अल्ज़ाइमर दिवस",
+      "prose": "विश्व अल्ज़ाइमर दिवस"
+    },
+    "WORLD_RABIES_DAY": {
+      "name": "विश्व रेबीज़ दिवस",
+      "prose": "विश्व रेबीज़ दिवस"
+    },
+    "WORLD_HEART_DAY": {
+      "name": "विश्व हृदय दिवस",
+      "prose": "विश्व हृदय दिवस"
+    },
+    "WORLD_ANIMAL_DAY": {
+      "name": "विश्व पशु दिवस",
+      "prose": "विश्व पशु दिवस"
+    },
+    "GLOBAL_HANDWASHING_DAY": {
+      "name": "वैश्विक हाथ धुलाई दिवस",
+      "prose": "वैश्विक हाथ धुलाई दिवस"
     }
   },
   "era": {

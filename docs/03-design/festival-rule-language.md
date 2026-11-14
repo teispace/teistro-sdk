@@ -382,7 +382,10 @@ Gregorian (`GREGORIAN_DAYS`): Republic day on Jestha 15 and Christmas on
 `UN_DAYS`): Gen Z Martyrs' Day on Bhadra 23 from the Home Ministry's notice
 for VS 2083 (C1600), seven national days on a Bikram Sambat date as the press
 reports them kept (C1601), and twenty of the UN's international days on the
-UN's list's dates (C1602).
+UN's list's dates (C1602). 56 more follow on a Gregorian date
+(`MORE_UN_DAYS`, `ORGANISERS_DAYS`): the UN list's other forty (C1700, with
+World Remembrance and Reconciliation Day on the first of its two days,
+C1702) and sixteen other bodies' days on their own pages' dates (C1701).
 Bhaktapur's pole is raised on the Bikram Sambat year's last day, a day of a
 month counted from its end (`YOSIN_UTTHAN`, Chaitra −1), which VS 2083 prints
 and the press reports kept (C1650).

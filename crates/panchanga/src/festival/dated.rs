@@ -536,6 +536,359 @@ const UN_DAYS: [(&str, u8, i8, &str); 20] = [
     ),
 ];
 
+/// The rest of the United Nations' international days a patro printed in
+/// Nepal keeps and the national panchanga prints in neither edition, each
+/// on the date the UN's list gives: key, month, day, and the list's entry
+/// as printed (C1700). Each gives every day the patro verified for it but
+/// World Remembrance and Reconciliation Day, two of whose four are 9 May
+/// (C1702).
+const MORE_UN_DAYS: [(&str, u8, i8, &str); 40] = [
+    (
+        "INTERNATIONAL_DAY_OF_EDUCATION",
+        1,
+        24,
+        "\"International Day of Education\", 24 January, A/RES/73/25",
+    ),
+    (
+        "WORLD_WETLANDS_DAY",
+        2,
+        2,
+        "\"World Wetlands Day\", 2 February, A/RES/75/317",
+    ),
+    (
+        "WORLD_RADIO_DAY",
+        2,
+        13,
+        "\"World Radio Day\", 13 February, A/RES/67/124",
+    ),
+    (
+        "WORLD_DAY_OF_SOCIAL_JUSTICE",
+        2,
+        20,
+        "\"World Day of Social Justice\", 20 February, A/RES/62/10",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_HAPPINESS",
+        3,
+        20,
+        "\"International Day of Happiness\", 20 March, A/RES/66/281",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_RACIAL_DISCRIMINATION",
+        3,
+        21,
+        "\"International Day for the Elimination of Racial Discrimination\", 21 March, A/RES/2142 (XXI)",
+    ),
+    (
+        "WORLD_METEOROLOGICAL_DAY",
+        3,
+        23,
+        "\"World Meteorological Day [WMO]\", 23 March, WMO/EC-XII/Res.6",
+    ),
+    (
+        "WORLD_AUTISM_AWARENESS_DAY",
+        4,
+        2,
+        "\"World Autism Awareness Day\", 2 April, A/RES/62/139",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE",
+        4,
+        6,
+        "\"International Day of Sport for Development and Peace\", 6 April, A/RES/67/296",
+    ),
+    (
+        "INTERNATIONAL_WELLNESS_DAY",
+        4,
+        15,
+        "\"International Wellness Day\", 15 April, A/RES/80/249",
+    ),
+    (
+        "WORLD_BOOK_AND_COPYRIGHT_DAY",
+        4,
+        23,
+        "\"World Book and Copyright Day [UNESCO]\", 23 April, 28 C/Resolution 3.18",
+    ),
+    (
+        "WORLD_MALARIA_DAY",
+        4,
+        25,
+        "\"World Malaria Day [WHO]\", 25 April, no resolution printed",
+    ),
+    (
+        "WORLD_INTELLECTUAL_PROPERTY_DAY",
+        4,
+        26,
+        "\"World Intellectual Property Day [WIPO]\", 26 April, no resolution printed",
+    ),
+    (
+        "WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY",
+        5,
+        8,
+        "\"Time of Remembrance and Reconciliation for Those Who Lost Their Lives During the Second World War\", 8 May, A/RES/59/26; the resolution names 8 and 9 May, and the list and this rule keep the first (C1702)",
+    ),
+    (
+        "WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY",
+        5,
+        17,
+        "\"World Telecommunication and Information Society Day\", 17 May, A/RES/60/252",
+    ),
+    (
+        "WORLD_BEE_DAY",
+        5,
+        20,
+        "\"World Bee Day [FAO]\", 20 May, A/RES/72/211",
+    ),
+    (
+        "WORLD_CULTURE_DAY",
+        5,
+        21,
+        "\"World Day for Cultural Diversity for Dialogue and Development\", 21 May, A/RES/57/249",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_BIOLOGICAL_DIVERSITY",
+        5,
+        22,
+        "\"International Day for Biological Diversity\", 22 May, A/RES/55/201",
+    ),
+    (
+        "GLOBAL_DAY_OF_PARENTS",
+        6,
+        1,
+        "\"Global Day of Parents\", 1 June, A/RES/66/292",
+    ),
+    (
+        "WORLD_BICYCLE_DAY",
+        6,
+        3,
+        "\"World Bicycle Day\", 3 June, A/RES/72/272",
+    ),
+    (
+        "WORLD_OCEANS_DAY",
+        6,
+        8,
+        "\"World Oceans Day\", 8 June, A/RES/63/111",
+    ),
+    (
+        "WORLD_DAY_AGAINST_CHILD_LABOUR",
+        6,
+        12,
+        "\"World Day Against Child Labour\", 12 June, no resolution printed",
+    ),
+    (
+        "WORLD_BLOOD_DONOR_DAY",
+        6,
+        14,
+        "\"World Blood Donor Day [WHO]\", 14 June, WHA Resolution 58.13",
+    ),
+    (
+        "WORLD_DAY_TO_COMBAT_DESERTIFICATION_AND_DROUGHT",
+        6,
+        17,
+        "\"World Day to Combat Desertification and Drought\", 17 June, A/RES/49/115",
+    ),
+    (
+        "WORLD_REFUGEE_DAY",
+        6,
+        20,
+        "\"World Refugee Day\", 20 June, A/RES/55/76",
+    ),
+    (
+        "INTERNATIONAL_DAY_AGAINST_DRUG_ABUSE_AND_ILLICIT_TRAFFICKING",
+        6,
+        26,
+        "\"International Day against Drug Abuse and Illicit Trafficking\", 26 June, A/RES/42/112",
+    ),
+    (
+        "MICRO_SMALL_AND_MEDIUM_SIZED_ENTERPRISES_DAY",
+        6,
+        27,
+        "\"Micro-, Small and Medium-sized Enterprises Day\", 27 June, A/RES/71/279",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_SIGN_LANGUAGES",
+        9,
+        23,
+        "\"International Day of Sign Languages\", 23 September, A/RES/72/161",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_TOTAL_ELIMINATION_OF_NUCLEAR_WEAPONS",
+        9,
+        26,
+        "\"International Day for the Total Elimination of Nuclear Weapons\", 26 September, A/RES/68/32",
+    ),
+    (
+        "WORLD_POST_DAY",
+        10,
+        9,
+        "\"World Post Day\", 9 October, no resolution printed",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_DISASTER_RISK_REDUCTION",
+        10,
+        13,
+        "\"International Day for Disaster Risk Reduction\", 13 October, A/RES/64/200",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_RURAL_WOMEN",
+        10,
+        15,
+        "\"International Day of Rural Women\", 15 October, A/RES/62/136",
+    ),
+    (
+        "WORLD_DEVELOPMENT_INFORMATION_DAY",
+        10,
+        24,
+        "\"World Development Information Day\", 24 October, A/RES/3038 (XXVII)",
+    ),
+    (
+        "WORLD_CITIES_DAY",
+        10,
+        31,
+        "\"World Cities Day\", 31 October, A/RES/68/239",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_TOLERANCE",
+        11,
+        16,
+        "\"International Day for Tolerance [UNESCO]\", 16 November, 28 C/Resolution 5.61",
+    ),
+    (
+        "WORLD_TOILET_DAY",
+        11,
+        19,
+        "\"World Toilet Day\", 19 November, A/RES/67/291",
+    ),
+    (
+        "WORLD_TELEVISION_DAY",
+        11,
+        21,
+        "\"World Television Day\", 21 November, A/RES/51/205",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ABOLITION_OF_SLAVERY",
+        12,
+        2,
+        "\"International Day for the Abolition of Slavery\", 2 December, A/RES/317(IV)",
+    ),
+    (
+        "WORLD_SOIL_DAY",
+        12,
+        5,
+        "\"World Soil Day\", 5 December, A/RES/68/232",
+    ),
+    (
+        "INTERNATIONAL_CIVIL_AVIATION_DAY",
+        12,
+        7,
+        "\"International Civil Aviation Day\", 7 December, A/RES/51/33",
+    ),
+];
+
+/// The days kept on a Gregorian date by a body other than the UN that a
+/// patro printed in Nepal keeps and the national panchanga prints in
+/// neither edition, each on the date the keeping body's own page gives:
+/// key, month, day, and the body, its page and the line read (C1701).
+/// Each gives every day the patro verified for it.
+const ORGANISERS_DAYS: [(&str, u8, i8, &str); 16] = [
+    (
+        "INTERNATIONAL_CUSTOMS_DAY",
+        1,
+        26,
+        "the World Customs Organization, wcoomd.org newsroom, January 2023: \"On 26 January, the Secretariat of the World Customs Organization (WCO) celebrated\" the day, the anniversary of the Customs Co-operation Council's first session on 26 January 1953",
+    ),
+    (
+        "WORLD_CANCER_DAY",
+        2,
+        4,
+        "the Union for International Cancer Control, worldcancerday.org/about-us: \"an international day observed every 4 February\"",
+    ),
+    (
+        "INTERNATIONAL_CHILDHOOD_CANCER_DAY",
+        2,
+        15,
+        "Childhood Cancer International, internationalchildhoodcancerday.org: \"On February 15th International Childhood Cancer Day is a global\" day",
+    ),
+    (
+        "WORLD_CONSUMER_RIGHTS_DAY",
+        3,
+        15,
+        "Consumers International, consumersinternational.org/what-we-do/world-consumer-rights-day: \"The consumer movement marks 15th March with World Consumer Rights Day every year\"",
+    ),
+    (
+        "WORLD_ORAL_HEALTH_DAY",
+        3,
+        20,
+        "FDI World Dental Federation, worldoralhealthday.org: \"On the 20 March every year, we ask the world to unite\"",
+    ),
+    (
+        "WORLD_THEATRE_DAY",
+        3,
+        27,
+        "the International Theatre Institute, world-theatre-day.org: \"World Theatre Day celebrated annually on the 27th March\"",
+    ),
+    (
+        "INTERNATIONAL_DANCE_DAY",
+        4,
+        29,
+        "the International Theatre Institute, international-dance-day.org: \"Created 1982 by ITI and Int. Dance Committee\", \"International Dance Day 29th April\"",
+    ),
+    (
+        "INTERNATIONAL_NURSES_DAY",
+        5,
+        12,
+        "the International Council of Nurses, icn.ch/how-we-do-it/campaigns/international-nurses-day: \"IND is celebrated around the world every May 12\"",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH",
+        5,
+        28,
+        "the May 28 campaign, may28.org, whose page is titled \"May 28 – International Day of Action for Women's Health\"",
+    ),
+    (
+        "WORLD_MUSIC_DAY",
+        6,
+        21,
+        "the French Ministry of Culture, fetedelamusique.culture.gouv.fr: \"Fête de la musique 21 juin\"",
+    ),
+    (
+        "WORLD_PHYSIOTHERAPY_DAY",
+        9,
+        8,
+        "World Physiotherapy, world.physio/wptday: \"World PT Day takes place every year on 8 September\"",
+    ),
+    (
+        "WORLD_ALZHEIMER_S_DAY",
+        9,
+        21,
+        "Alzheimer's Disease International, alzint.org/get-involved/world-alzheimers-month: \"is on 21 September every year\"",
+    ),
+    (
+        "WORLD_RABIES_DAY",
+        9,
+        28,
+        "the Global Alliance for Rabies Control, rabiesalliance.org/world-rabies-day: \"Every year on 28 September\"",
+    ),
+    (
+        "WORLD_HEART_DAY",
+        9,
+        29,
+        "the World Heart Federation, world-heart-federation.org/world-heart-day: \"Each year on World Heart Day (29 September)\"",
+    ),
+    (
+        "WORLD_ANIMAL_DAY",
+        10,
+        4,
+        "World Animal Day, worldanimalday.org, whose page is titled \"World Animal Day | October 4th\"",
+    ),
+    (
+        "GLOBAL_HANDWASHING_DAY",
+        10,
+        15,
+        "the Global Handwashing Partnership, globalhandwashing.org/global-handwashing-day: \"October 15 is Global Handwashing Day\"",
+    ),
+];
+
 /// An observance on a date of a calendar.
 ///
 /// ```
@@ -1123,8 +1476,9 @@ impl DatedRule {
 
     /// The days the national panchanga prints in neither edition, each
     /// on the date its keeper names: Nepal's own on a Bikram Sambat date
-    /// ([`KEPT_DAYS`]) and the UN's international days on a Gregorian one
-    /// ([`UN_DAYS`]).
+    /// ([`KEPT_DAYS`]), the UN's international days on a Gregorian one
+    /// ([`UN_DAYS`], [`MORE_UN_DAYS`]) and other bodies' days on the date
+    /// their own pages give ([`ORGANISERS_DAYS`]).
     fn on_kept_dates() -> impl Iterator<Item = DatedRule> {
         let kept = |calendar, cited: fn(&str) -> String| {
             move |&(key, month, day, source): &(&str, u8, i8, &str)| DatedRule {
@@ -1147,6 +1501,16 @@ impl DatedRule {
             .chain(UN_DAYS.iter().map(kept(Calendar::Gregorian, |entry| {
                 format!(
                     "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-13): {entry}"
+                )
+            })))
+            .chain(MORE_UN_DAYS.iter().map(kept(Calendar::Gregorian, |entry| {
+                format!(
+                    "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-14): {entry}"
+                )
+            })))
+            .chain(ORGANISERS_DAYS.iter().map(kept(Calendar::Gregorian, |source| {
+                format!(
+                    "{source} (read 2026-11-14, rank 2); the national panchanga prints it in neither VS 2082 nor 2083"
                 )
             })))
     }

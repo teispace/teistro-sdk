@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603 and C1650 to C1665
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603, C1650 to C1665 and C1700 to C1702
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -450,7 +450,7 @@ An authority announces the day.
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
 
-69 of them ship as dated days in `NEPAL_PANCHANGA`, 29 on a Bikram Sambat date and 40 on a Gregorian one. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
+125 of them ship as dated days in `NEPAL_PANCHANGA`, 29 on a Bikram Sambat date and 96 on a Gregorian one. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
 
 Five are printed and still not shipped, because no one date holds:
 - `GURU_GOBIND_SINGH_JAYANTI`: Poush 21 in both editions, 5 January, but the verified days fall on 4 and 6 January in two years.
@@ -465,6 +465,10 @@ Five are printed and still not shipped, because no one date holds:
 - `GEN_Z_MARTYRS_DAY` on Bhadra 23, from the Ministry of Home Affairs' notice for VS 2083 (§8 ग, a day kept nationally with offices open; C1600).
 - Seven national days on a Bikram Sambat date, on their keepers' practice as the press reports it (rank 3, C1601): `BP_SMRITI_DIWAS` (Shrawan 6), `KAMAIYA_MUKTI_DIWAS` (Shrawan 2), `MADAN_ASHRIT_SMRITI_DIWAS` (Jestha 3), `NATIONAL_RECONCILIATION_DAY` (Poush 16), `NATIONAL_SCIENCE_DAY` (Asoj 1), `NATIONAL_TEA_DAY` (Baisakh 15) and `NEPAL_NURSING_DAY` (Magh 15).
 - Twenty of the UN's international days on the date the UN's list gives (C1602), `INTERNATIONAL_DAY_OF_YOGA` among them.
+
+56 more ship on a Gregorian date, each source opened again on 2026-11-14 (`MORE_UN_DAYS` and `ORGANISERS_DAYS` in `dated.rs`; `crates/sdk/tests/festival.rs` holds each to its VS 2082 and 2083 days):
+- The UN list's other forty international days on the list's dates (C1700). `WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY` is 8 May, the list's date, and gives 2 of the patro's 4 verified days: resolution 59/26 names 8 and 9 May, and the patro keeps both (C1702).
+- Sixteen days other bodies keep, on the date each keeper's own page gives (rank 2, C1701): `INTERNATIONAL_CUSTOMS_DAY`, `WORLD_CANCER_DAY`, `INTERNATIONAL_CHILDHOOD_CANCER_DAY`, `WORLD_CONSUMER_RIGHTS_DAY`, `WORLD_ORAL_HEALTH_DAY`, `WORLD_THEATRE_DAY`, `INTERNATIONAL_DANCE_DAY`, `INTERNATIONAL_NURSES_DAY`, `INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH`, `WORLD_MUSIC_DAY`, `WORLD_PHYSIOTHERAPY_DAY`, `WORLD_ALZHEIMER_S_DAY`, `WORLD_RABIES_DAY`, `WORLD_HEART_DAY`, `WORLD_ANIMAL_DAY` and `GLOBAL_HANDWASHING_DAY`.
 
 The other unprinted days wait for a source of their own (C1603).
 

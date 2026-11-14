@@ -40,8 +40,9 @@ teigeodata v0.3.1.**
   lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
   moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
 
-**Numbers:** `NEPAL_PANCHANGA` answers 28 civil days and Yosin utthan's day it did not, and its
-`input_hash` moves; no day an earlier release answered moves. Nothing else
+**Numbers:** `NEPAL_PANCHANGA` answers 84 civil days and Yosin utthan's day it did not, and its
+`input_hash` moves, as do the bytes of a digest that asks for it over one
+of those days; no day an earlier release answered moves. Nothing else
 changes, the sky view's hash included (its input gains no field when no pose
 is asked).
 - **New (SR-01):** 28 civil days of the consumer's list the committee's
@@ -61,9 +62,26 @@ is asked).
     (C1602).
 
   Each is `OBSERVANCE` in Nepal and named in `en-Latn`, `ne-Deva-NP`,
-  `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. 366 of the 502 festivals now ship,
-  counting the solar and civil days. Madhav Narayan mahotsav and Matina paru
-  are not shipped (C685); the other unprinted days wait for a source (C1603).
+  `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. Madhav Narayan mahotsav and Matina
+  paru are not shipped (C685); the other unprinted days wait for a source
+  (C1603).
+- **New (SR-01):** 56 more civil days of the consumer's list the
+  committee's print does not carry ship in `NEPAL_PANCHANGA` on a Gregorian
+  date, each source opened again on 2026-11-14 before it went into the rule:
+  - the other forty of the UN's international days on the dates of the UN's
+    list, from `INTERNATIONAL_DAY_OF_EDUCATION` to
+    `INTERNATIONAL_CIVIL_AVIATION_DAY` (`MORE_UN_DAYS`, C1700);
+  - sixteen days other bodies keep, each on the date its keeper's own page
+    gives, from `INTERNATIONAL_CUSTOMS_DAY` (the World Customs
+    Organization) to `GLOBAL_HANDWASHING_DAY` (the Global Handwashing
+    Partnership) (`ORGANISERS_DAYS`, rank 2, C1701).
+
+  Each agrees with every day a patro printed in Nepal verified for it, VS
+  2070 to 2083, but `WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY`: the rule
+  keeps 8 May, the UN list's date, and so 2 of the patro's 4 days, which
+  keep 9 May as well because resolution 59/26 names both (C1702). Each is
+  `OBSERVANCE` in Nepal and named in every locale. 423 of the 502 festivals
+  now ship, counting the solar and civil days.
 - **New (SR-01):** `YOSIN_UTTHAN` ships in `NEPAL_PANCHANGA` on the Bikram
   Sambat year's last day, Chaitra −1, the eve of `YOSIN_PATAN`: VS 2083
   p. 27 prints भ.पु.विश्वध्वजोत्थान there, and Onlinekhabar (VS 2074) and
@@ -71,7 +89,7 @@ is asked).
   (C1650). It gives the consumer's two verified days since VS 2081; its
   eight before are Baisakh 1, the felling's day, the parting the consumer's
   own correction names. Named in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN`,
-  `sa-Deva` and `sa-Latn`; 367 of the 502 festivals now ship. The other
+  `sa-Deva` and `sa-Latn`. The other
   fifteen rows whose form already exists stay unshipped, each with the
   source read and why it does not give every verified day (C1651 to
   C1665): Sankhu jatra, Thakali phalo parva, Guriya parva, Ramanujacharya
