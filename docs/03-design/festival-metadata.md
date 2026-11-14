@@ -62,9 +62,9 @@ is `NP` for a rule of Nepal's packs, which the national panchanga prints, plus
 what the notice names (a province's too: Bagmati's notice makes `LANGUAGE_DAY`
 `GAZETTED` in `NP-P3`, C1802), and `IN` for India's pack.
 
-**Unset.** Of the 482 keys of Nepal's packs, 50 are `GAZETTED`, 65
-`REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 142 `OBSERVANCE` and 177 have no kind.
-422 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
+**Unset.** Of the 489 keys of Nepal's packs, 50 are `GAZETTED`, 71
+`REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 142 `OBSERVANCE` and 178 have no kind.
+429 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
 source is the committee's print, which says when and not what. No value is
 guessed for them, and the classification's blank is not one either: its own
 words are "kept across communities, or the community is not known here". The
@@ -146,7 +146,7 @@ SR-11's feed filter by kind or tradition reads this field.
 
 Each pack rule holds a few short strings more, written into the request's
 content hash, so **every shipped pack's `input_hash` moved once** with this
-change. No day moved. The table is 22 groups and 482 sorted keys, searched by
+change. No day moved. The table is 22 groups and 489 sorted keys, searched by
 bisection, so stamping a pack does not scan.
 
 Names: `festival_kind` and `tradition` are named in `en-Latn` and `ne-Deva-NP`;

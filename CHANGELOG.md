@@ -54,8 +54,8 @@ teigeodata v0.3.1.**
   lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
   moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
 
-**Numbers:** `NEPAL_PANCHANGA` answers 111 civil days, Yosin utthan's day and
-Bode's and Sindoor jatra's it did not, and its
+**Numbers:** `NEPAL_PANCHANGA` answers 111 civil days, Yosin utthan's day,
+Bode's and Sindoor jatra's, and six charhe's and Ghantakarna's it did not, and its
 `input_hash` moves, as do the bytes of a digest that asks for it over one
 of those days; no day an earlier release answered moves. Nothing else
 changes, the sky view's hash included (its input gains no field when no pose
@@ -137,8 +137,25 @@ is asked).
   `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. 452 of
   the 502 festivals now ship. Safer Internet day (C1806), Earthquake
   memorial, Forest users', Siddhicharan's, UNESCO and World photography day
-  (C1807 to C1811) and the charhe (C614, C1812) stay held, each crux naming
-  what would settle it.
+  (C1807 to C1811) stay held, each crux naming what would settle it.
+- **New (SR-01):** six Newar charhe and Ghantakarna chaturdashi ship in
+  `NEPAL_PANCHANGA`, the fallback C614 named: both committee editions' page
+  images were read for every dark 14th (C1812). Each keeps the amanta
+  month's dark 14th under the maintainer's share, on the window that gives
+  both editions' printed days and the most of the consumer's verified days,
+  every window scored (C614): `MATATI_CHARHE`, `JUGA_CHARHE`,
+  `NALASWANE_CHARHE` and `DISHI_CHARHE` at sayahna, `SITHI_CHARHE` at
+  aparahna and `GATHAMUGA_CHARHE` at pradosha, each gated on both editions
+  as `LAI_CHARHE` is; `GHANTAKARNA_CHATURDASHI` keeps Gathamuga's day,
+  printed in its row. **These rules fit the committee's print, not every
+  year of the consumer's own list:** they give 9 to 12 of its 14 verified
+  days each. The days that differ, for the consumer to check: Matati
+  2015-04-18, 2016-05-06, 2020-04-23; Sithi 2013-06-06, 2015-05-17,
+  2016-06-04; Gathamuga and Ghantakarna 2015-08-13, 2023-07-15; Juga
+  2015-09-12, 2016-08-31; Nalaswane 2013-10-05, 2015-10-12, 2016-09-30,
+  2020-09-17, 2022-09-26 (C614 gives the rule's day beside each). Each is
+  `REGIONAL_ETHNIC` (Newar) but Ghantakarna, and each is named in every
+  locale; 459 of the 502 festivals now ship.
 - **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
   `sky_pose` in every binding and MCP; SR-58's device pose,
   `03-design/sky-pose.md`). It reads `almanac.skyView`'s request with a

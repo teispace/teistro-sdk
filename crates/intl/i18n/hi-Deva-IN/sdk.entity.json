@@ -4393,6 +4393,41 @@
     "WORLD_SIGHT_DAY": {
       "name": "विश्व दृष्टि दिवस",
       "prose": "विश्व दृष्टि दिवस"
+    },
+    "MATATI_CHARHE": {
+      "name": "माताति चह्रे",
+      "prose": "माताति चह्रे",
+      "iast": "Mātāti Carhe"
+    },
+    "SITHI_CHARHE": {
+      "name": "सिथि चह्रे",
+      "prose": "सिथि चह्रे",
+      "iast": "Sithi Carhe"
+    },
+    "GATHAMUGA_CHARHE": {
+      "name": "गथाँमुग चह्रे",
+      "prose": "गथाँमुग चह्रे",
+      "iast": "Gathām̐muga Carhe"
+    },
+    "GHANTAKARNA_CHATURDASHI": {
+      "name": "घण्टाकर्ण चतुर्दशी",
+      "prose": "घण्टाकर्ण चतुर्दशी",
+      "iast": "Ghaṇṭākarṇa Caturdaśī"
+    },
+    "JUGA_CHARHE": {
+      "name": "जुगः चह्रे",
+      "prose": "जुगः चह्रे",
+      "iast": "Jugaḥ Carhe"
+    },
+    "NALASWANE_CHARHE": {
+      "name": "नःलास्वने चह्रे",
+      "prose": "नःलास्वने चह्रे",
+      "iast": "Naḥlāsvane Carhe"
+    },
+    "DISHI_CHARHE": {
+      "name": "दिशी चह्रे",
+      "prose": "दिशी चह्रे",
+      "iast": "Diśī Carhe"
     }
   },
   "era": {

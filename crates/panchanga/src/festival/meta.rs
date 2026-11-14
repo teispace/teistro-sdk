@@ -750,7 +750,7 @@ const NEPAL_GROUPS: [Group; 22] = [
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 482] = [
+const NEPAL_KEYS: [(&str, u8); 489] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
@@ -847,6 +847,7 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("DHAPAKHEL_NAGDAHA", 15),
     ("DILA_CHARHE", 17),
     ("DILLA_PUNHI", 17),
+    ("DISHI_CHARHE", 17),
     ("DRONA_NAVAMI", 15),
     ("DURVA_ASHTAMI", 19),
     ("DVAPARA_YUGADI", 15),
@@ -869,12 +870,14 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("GANGA_DASHAHARA", 19),
     ("GANGA_PUJA", 15),
     ("GANGA_SAPTAMI", 15),
+    ("GATHAMUGA_CHARHE", 17),
     ("GATILA", 15),
     ("GAURA_PARVA", 2),
     ("GAURA_SAPTAMI", 15),
     ("GAURI_VRAT", 15),
     ("GAYA_MAUNI_AUNSI", 15),
     ("GEN_Z_MARTYRS_DAY", 16),
+    ("GHANTAKARNA_CHATURDASHI", 15),
     ("GHODE_JATRA", 9),
     ("GITA_JAYANTI", 15),
     ("GLOBAL_DAY_OF_PARENTS", 16),
@@ -969,6 +972,7 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("JAGANNATH_RATH_JATRA", 15),
     ("JANMASHTAMI", 1),
     ("JITIYA", 13),
+    ("JUGA_CHARHE", 17),
     ("JYAPU_DIWAS", 17),
     ("JYA_PUNHI", 17),
     ("KABIR_JAYANTI", 15),
@@ -1028,6 +1032,7 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("MANGALA_CHATURTHI", 19),
     ("MARTYRS_DAY", 2),
     ("MASTA_PURNIMA", 15),
+    ("MATATI_CHARHE", 17),
     ("MATA_TIRTHA_AUNSI", 15),
     ("MATSYANARAYANA_MELA", 15),
     ("MATSYA_JAYANTI", 15),
@@ -1043,6 +1048,7 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("MUSYADULI", 15),
     ("NAG_PANCHAMI", 15),
     ("NAKWA_DISHI", 17),
+    ("NALASWANE_CHARHE", 17),
     ("NALA_MACHHINDRANATH_RATH_JATRA", 17),
     ("NANICHAYA", 15),
     ("NARAK_CHATURDASHI", 15),
@@ -1133,6 +1139,7 @@ const NEPAL_KEYS: [(&str, u8); 482] = [
     ("SIMHA_SANKRANTI", 15),
     ("SINDOOR_JATRA", 17),
     ("SITA_NAVAMI", 15),
+    ("SITHI_CHARHE", 17),
     ("SITHI_NAKHA", 17),
     ("SI_PUNHI", 17),
     ("SKANDA_SHASHTHI", 15),

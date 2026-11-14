@@ -572,7 +572,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1421,
+            derived.entities, 1428,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -586,7 +586,8 @@ mod tests {
              1307 until SR-01's twenty-eight civil days, \
              1335 until Yosin utthan, \
              1336 until its fifty-six UN and organisers' days, \
-             1392 until SR-01's twenty-nine Nepal and organisers' days"
+             1392 until SR-01's twenty-nine Nepal and organisers' days, \
+             1421 until the six printed charhe and Ghantakarna"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -646,9 +647,12 @@ mod tests {
         // 518 with the festivals in Sanskrit: 43 of the 151 that carry an
         // IAST form are the text's closed compound it spells; the rest
         // differ by a space or by taking the texts' name over the print's.
-        // 519 with SR-01's महालक्ष्मीव्रतारम्भ, a closed compound too.
+        // 519 with SR-01's महालक्ष्मीव्रतारम्भ, a closed compound too; 520
+        // with the six charhe and Ghantakarna, one of whose IAST forms the
+        // transliterator writes letter for letter (the charhe's `Carhe` is
+        // the spoken name, as Dila's and Lai's are).
         assert_eq!(
-            derived.agreeing, 519,
+            derived.agreeing, 520,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

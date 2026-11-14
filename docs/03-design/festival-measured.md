@@ -847,11 +847,25 @@ measures the fit and not a text (C600).
 | 2083 | NANICHAYA | 29 Sep | p. 14: (नानिचायाः) | 30 Sep ✗ | 30 Sep ✗ |
 | 2082 | MAHALAXMI_VRAT_ENDS | 14 Sep | p. 12: महालक्ष्मीव्रत समाप्ति | 14 Sep | 14 Sep |
 | 2083 | MAHALAXMI_VRAT_ENDS | 3 Oct | p. 14: महालक्ष्मीव्रत समाप्ति | 3 Oct | 3 Oct |
+| 2082 | MATATI_CHARHE | 26 Apr | p. 2: माताति चःह्रे पूजा | 26 Apr | 26 Apr |
+| 2083 | MATATI_CHARHE | 16 Apr | p. 2: माताति चःह्रे पूजा | 16 Apr | 16 Apr |
+| 2082 | SITHI_CHARHE | 25 May | p. 4: (सिथिचह्रेपूजा) | 25 May | 25 May |
+| 2083 | SITHI_CHARHE | 15 May | p. 4: (सिथिचह्रेपूजा) | 15 May | 15 May |
+| 2082 | GATHAMUGA_CHARHE | 23 Jul | p. 8: (गथां मुगः चःह्रे पूजा) | 23 Jul | 23 Jul |
+| 2083 | GATHAMUGA_CHARHE | 11 Aug | p. 10: (गथां मुगः चःह्रे पूजा) | 11 Aug | 11 Aug |
+| 2082 | GHANTAKARNA_CHATURDASHI | 23 Jul | p. 8: घण्टाकर्ण चतुर्दशी | 23 Jul | 23 Jul |
+| 2083 | GHANTAKARNA_CHATURDASHI | 11 Aug | p. 10: घण्टाकर्ण चतुर्दशी | 11 Aug | 11 Aug |
+| 2082 | JUGA_CHARHE | 21 Aug | p. 10: (जुगः चःह्रे पूजा) | 21 Aug | 21 Aug |
+| 2083 | JUGA_CHARHE | 9 Sep | p. 12: (जुगः चःह्रे पूजा) | 9 Sep | 9 Sep |
+| 2082 | NALASWANE_CHARHE | 20 Sep | p. 12: Ⓑ नलास्वनेचह्रेपूजा, continuing the dark 14th's row | 20 Sep | 20 Sep |
+| 2083 | NALASWANE_CHARHE | 9 Oct | p. 14: Ⓑ नलास्वनेचह्रेपूजा, continuing the dark 14th's row | 9 Oct | 9 Oct |
+| 2082 | DISHI_CHARHE | 18 Dec | p. 18: (दिशीचह्रेपूजा) | 18 Dec | 18 Dec |
+| 2083 | DISHI_CHARHE | 6 Jan | p. 20: (दिशीचह्रेपूजा) | 6 Jan | 6 Jan |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 603 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 603 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 617 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 60 of 617 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
@@ -874,8 +888,8 @@ gives is the publisher's own.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 595 disagree |
-| every entry is placed on its rule's occurrence | falsified | 8 of 603 disagree |
+| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 609 disagree |
+| every entry is placed on its rule's occurrence | falsified | 8 of 617 disagree |
 | the committee's sky gives every day the set moved | falsified | 3 of 52 disagree; the others' reasons are below |
 
 Of the 52 days the set moved, the committee's sky gives 49, and no change tried 3.

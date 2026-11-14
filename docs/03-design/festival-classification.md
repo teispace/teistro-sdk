@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603, C1650 to C1665, C1700 to C1702 and C1800 to C1812
+Status: `research`, 2026-10-21. Cruxes C600, C613, C614, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603, C1650 to C1665, C1700 to C1702 and C1800 to C1812
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -41,11 +41,11 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 269; rule, not yet shipped 6; rule, needs a form 20 |
+| lunar | 295 | rule, shipped 275; rule, not yet shipped 6; rule, needs a form 14 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, shipped 1 (Walke parva, printed on Bhadra 1 in both editions) |
-| no rule | 24 | rule, shipped 2; fixed civil 8; solar 1; community 6; published only 5; rule, needs a form 2 |
+| no rule | 24 | rule, shipped 3; fixed civil 8; solar 1; community 5; published only 5; rule, needs a form 2 |
 
 Where the two counts differ, and why:
 
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 276; rule, not yet shipped 6; rule, needs a form 18; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 283; rule, not yet shipped 6; rule, needs a form 12; solar 26; fixed civil 165; community 5; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (276)
+### Rule, shipped (283)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -141,6 +141,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `DHAPAKHEL_NAGDAHA` | Dhapakhel Nagdaha | धापाखेल नागदह |  | NEPAL_PANCHANGA |
 | `DILA_CHARHE` | Dila Charhe | दिला चह्रे | Newar | NEPAL_PANCHANGA |
 | `DILLA_PUNHI` | Dilla Punhi | दिल्ला पुन्ही | Newar | NEPAL_PANCHANGA |
+| `DISHI_CHARHE` | Dishi Charhe | दिशी चह्रे | Newar | NEPAL_PANCHANGA |
 | `DRONA_NAVAMI` | Drona Navami | द्रोण नवमी |  | NEPAL_PANCHANGA |
 | `DURVA_ASHTAMI` | Durva Ashtami | दूर्वाष्टमी |  | NEPAL_PANCHANGA |
 | `DVAPARA_YUGADI` | Dwaparyugadi | द्वापरयुगादि |  | NEPAL_PANCHANGA |
@@ -155,11 +156,13 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `GANGA_DASHAHARA` | Ganga Dashahara | गङ्गा दशहरा |  | NEPAL_PANCHANGA |
 | `GANGA_PUJA` | Ganga Puja | गङ्गा पूजा |  | NEPAL_PANCHANGA |
 | `GANGA_SAPTAMI` | Ganga Saptami | गङ्गा सप्तमी |  | NEPAL_PANCHANGA |
+| `GATHAMUGA_CHARHE` | Gathamuga Charhe | गथाँमुग चह्रे | Newar | NEPAL_PANCHANGA |
 | `GATILA` | Gatila | गातिला |  | NEPAL_PANCHANGA |
 | `GAURA_PARVA` | Gaura Parva | गौरा पर्व |  | NEPAL_PANCHANGA |
 | `GAURA_SAPTAMI` | Gaura Saptami | गौरा सप्तमी |  | NEPAL_PANCHANGA |
 | `GAURI_VRAT` | Gauri Vrat | गौरी व्रत |  | NEPAL_PANCHANGA |
 | `GAYA_MAUNI_AUNSI` | Gaya Mauni Aunsi | गया मौनी औँसी |  | NEPAL_PANCHANGA |
+| `GHANTAKARNA_CHATURDASHI` | Ghantakarna Chaturdashi | घण्टाकर्ण चतुर्दशी |  | NEPAL_PANCHANGA |
 | `GHODE_JATRA` | Ghode Jatra | घोडेजात्रा | Newar | NEPAL_PANCHANGA |
 | `GITA_JAYANTI` | Gita Jayanti | गीता जयन्ती |  | NEPAL_PANCHANGA |
 | `GOPASHTAMI` | Gopashtami | गोपाष्टमी |  | NEPAL_PANCHANGA |
@@ -197,6 +200,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `JAGANNATH_RATH_JATRA` | Jagannath Rath Jatra | जगन्नाथ रथ जात्रा |  | NEPAL_PANCHANGA |
 | `JANMASHTAMI` | Krishna Janmashtami | कृष्ण जन्माष्टमी |  | NEPAL; excluded by the consumer at 12 of 14 (C616) |
 | `JITIYA` | Jitiya | जितिया पर्व | Tharu and Maithil | NEPAL_PANCHANGA |
+| `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar | NEPAL_PANCHANGA |
 | `JYAPU_DIWAS` | Jyapu Diwas | ज्यापु दिवस | Newar | NEPAL_PANCHANGA |
 | `JYA_PUNHI` | Jya Punhi | ज्या पुन्ही | Newar | NEPAL_PANCHANGA |
 | `KABIR_JAYANTI` | Kabir Jayanti | कबीर जयन्ती |  | NEPAL_PANCHANGA |
@@ -237,6 +241,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `MAHA_ASHTAMI` | Maha Ashtami | महाअष्टमी |  | NEPAL_PANCHANGA |
 | `MAHA_NAVAMI` | Maha Navami | महानवमी |  | NEPAL_PANCHANGA |
 | `MASTA_PURNIMA` | Masta Purnima | मष्ट पूर्णिमा |  | NEPAL_PANCHANGA |
+| `MATATI_CHARHE` | Matati Charhe | माताति चह्रे | Newar | NEPAL_PANCHANGA |
 | `MATA_TIRTHA_AUNSI` | Mata Tirtha Aunsi | मातातीर्थ औँसी |  | NEPAL_PANCHANGA |
 | `MATSYANARAYANA_MELA` | Machhenarayan Mela | मच्छेनारायण मेला |  | NEPAL_PANCHANGA |
 | `MATSYA_JAYANTI` | Matsya Jayanti | मत्स्य जयन्ती |  | NEPAL_PANCHANGA |
@@ -248,6 +253,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `MUSYADULI` | Musyaduli | मुस्याडुली |  | NEPAL_PANCHANGA |
 | `NAG_PANCHAMI` | Nag Panchami | नाग पञ्चमी |  | NEPAL_PANCHANGA |
 | `NAKWA_DISHI` | Nakwa Dishi | नक्वः दिसि | Newar | NEPAL_PANCHANGA |
+| `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar | NEPAL_PANCHANGA |
 | `NALA_MACHHINDRANATH_RATH_JATRA` | Nala Machhindranath Rath Jatra | नाला मच्छिन्द्रनाथ रथ जात्रा | Newar | NEPAL_PANCHANGA |
 | `NANICHAYA` | Nanichaya | नानिचाया |  | NEPAL_PANCHANGA |
 | `NARAK_CHATURDASHI` | Narak Chaturdashi | नरक चतुर्दशी |  | NEPAL_PANCHANGA |
@@ -309,6 +315,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `SHREE_BALLABH_JAYANTI` | Shree Ballabh Jayanti | श्री बल्लभ जयन्ती |  | NEPAL_PANCHANGA |
 | `SILANGA_MAHARUDRA_KOTIHOM_MELA` | Silanga Maharudra Kotihom Mela | सिलङ्गा महारुद्र कोटिहोम मेला |  | NEPAL_PANCHANGA |
 | `SITA_NAVAMI` | Sita Jayanti | सीता जयन्ती |  | NEPAL_PANCHANGA |
+| `SITHI_CHARHE` | Sithi Charhe | सिथि चह्रे | Newar | NEPAL_PANCHANGA |
 | `SITHI_NAKHA` | Sithi Nakha | सिथि नखः | Newar | NEPAL_PANCHANGA |
 | `SI_PUNHI` | Si Punhi | सिपुन्ही | Newar | NEPAL_PANCHANGA |
 | `SKANDA_SHASHTHI` | Skanda Shashthi | स्कन्द षष्ठी |  | NEPAL_PANCHANGA |
@@ -363,7 +370,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689); still held after the sources of 2026-11-14 (C1651) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687); still held after the sources of 2026-11-14 (C1652) |
 
-### Rule, needs a form (18)
+### Rule, needs a form (12)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
@@ -371,21 +378,15 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 |---|---|---|---|---|
 | `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  | held: no source gives every verified day (C1660) |
 | `GAI_TIHAR` | Gai Tihar | गाई तिहार |  | held: no source gives every verified day (C1661) |
-| `GATHAMUGA_CHARHE` | Gathamuga Charhe | गथाँमुग चह्रे | Newar |  |
-| `GHANTAKARNA_CHATURDASHI` | Ghantakarna Chaturdashi | घण्टाकर्ण चतुर्दशी |  |  |
-| `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar |  |
 | `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  | held: no source gives every verified day (C1662) |
 | `MAJHI_LADI_PUJA` | Majhi Ladi Puja | माझी लदी पूजा | Majhi | held: no source gives every verified day (C1665) |
-| `MATATI_CHARHE` | Matati Charhe | माताति चह्रे | Newar |  |
 | `MATSYA_DARSHAN` | Matsya Darshan | मत्स्य दर्शन |  | held: no source gives every verified day (C1655) |
-| `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar |  |
 | `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1658) |
 | `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  | held: no source gives every verified day (C1656) |
 | `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  | held: no source gives every verified day (C1659) |
 | `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  | held: no source gives every verified day (C1663) |
 | `RAMANUJACHARYA_JAYANTI` | Ramanujacharya Jayanti | रामानुजाचार्य जयन्ती |  | held: no source gives every verified day (C1654) |
 | `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1657) |
-| `SITHI_CHARHE` | Sithi Charhe | सिथि चह्रे | Newar |  |
 | `VISHNU_BAIKUNTHA_CHATURDASHI` | Vishnu Baikuntha Chaturdashi | विष्णु बैकुण्ठ चतुर्दशी |  | held: no source gives every verified day (C1664) |
 
 ### Solar (26)
@@ -421,7 +422,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `YOSIN_PATAN` | Yosin Patan | योसिं पतन | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 1 |
 | `YOSIN_UTTHAN` | Yosin Utthan | योसिं उत्थान | Newar | shipped: a dated day in NEPAL_PANCHANGA, Chaitra's last day, as VS 2083 prints it (VS 2082 prints no day) and Onlinekhabar (VS 2074) and Kantipur (VS 2083) report the pole raised; a patro printed in Nepal has Baisakh 1, the felling's day, until VS 2079 (C1650) |
 
-### Community (6)
+### Community (5)
 
 No rule is in hand; the community sets the day.
 
@@ -429,7 +430,6 @@ No rule is in hand; the community sets the day.
 |---|---|---|---|---|
 | `BABA_GANINATH_JAYANTI` | Baba Ganinath Jayanti | बाबा गणिनाथ जयन्ती | Kanu (Madhesh) |  |
 | `BHOTO_JATRA` | Bhoto Jatra | भोटो जात्रा | Newar |  |
-| `DISHI_CHARHE` | Dishi Charhe | दिशी चह्रे | Newar |  |
 | `DISHI_PUJA` | Dishi Puja | दिशी पूजा | Newar |  |
 | `DURA_MHAIPRU_NAKUMA` | Dura Mhaipru Nakuma | दुरा म्हैप्रु नकुमा |  |  |
 | `THAKALI_TORANLA_PARVA` | Thakali Toranla Parva | थकाली तोरन्ला पर्व | Thakali |  |

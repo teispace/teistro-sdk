@@ -264,7 +264,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 68] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -740,6 +740,48 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 68] = [
         Tithi::KrishnaPanchami,
         Fit::Udaya,
         "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: ल.पु. नृसिंहयात्रा (उपाकलं सायाः)",
+    ),
+    (
+        "MATATI_CHARHE",
+        Masa::Chaitra,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(SAYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 2 and VS 2083 p. 2: माताति चःह्रे पूजा; the printed charhe at sayahna, both editions' days (C614, C1812)",
+    ),
+    (
+        "SITHI_CHARHE",
+        Masa::Vaishakha,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 4 and VS 2083 p. 4: (सिथिचह्रेपूजा); the printed charhe at aparahna, Dila charhe's window, which gives both editions' days and more of a patro's verified days than sayahna (C614, C1812)",
+    ),
+    (
+        "GATHAMUGA_CHARHE",
+        Masa::Ashadha,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(Window::Pradosha),
+        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: घण्टाकर्ण चतुर्दशी, (गथां मुगः चःह्रे पूजा); the printed charhe at pradosha, Pahan charhe's window, which gives both editions' days and more of a patro's verified days than sayahna (C614, C1812)",
+    ),
+    (
+        "JUGA_CHARHE",
+        Masa::Shravana,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(SAYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: (जुगः चःह्रे पूजा); the printed charhe at sayahna, both editions' days (C614, C1812)",
+    ),
+    (
+        "NALASWANE_CHARHE",
+        Masa::Bhadrapada,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(SAYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: नलास्वनेचह्रेपूजा, the dark 14th's row continued after Ⓑ; the printed charhe at sayahna, both editions' days (C614, C1812)",
+    ),
+    (
+        "DISHI_CHARHE",
+        Masa::Margashirsha,
+        Tithi::KrishnaChaturdashi,
+        Fit::Share(SAYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 18 and VS 2083 p. 20: (दिशीचह्रेपूजा); the printed charhe at sayahna, both editions' days (C614, C1812)",
     ),
 ];
 
@@ -1868,7 +1910,7 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 19] = [
+const SAME_DAY: [(&str, &str, &str); 20] = [
     (
         "FAGU_PURNIMA",
         "HOLIKA",
@@ -1948,6 +1990,11 @@ const SAME_DAY: [(&str, &str, &str); 19] = [
         "NUWAKOT_DUPCHESHWAR_MELA",
         "DATTATREYA_JAYANTI",
         "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: नुवाकोट दुप्चेश्वरमेला: the day of DATTATREYA_JAYANTI; VS 2083 prints it on the full moon, the day after (C611)",
+    ),
+    (
+        "GHANTAKARNA_CHATURDASHI",
+        "GATHAMUGA_CHARHE",
+        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: घण्टाकर्ण चतुर्दशी, in one row with (गथां मुगः चःह्रे पूजा): the day of GATHAMUGA_CHARHE (C614, C1812)",
     ),
     (
         "SHILA_CHARHE",
