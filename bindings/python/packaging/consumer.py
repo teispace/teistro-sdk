@@ -12,7 +12,7 @@ from teistro import Body, Calendar, Teistro, date
 
 def main() -> None:
     teistro = Teistro.open()
-    assert teistro.abi == 1, f"ABI {teistro.abi}"
+    assert teistro.abi == 2, f"ABI {teistro.abi}"
     print(f"abi {teistro.abi}")
     print(f"sdk {teistro.version}")
 

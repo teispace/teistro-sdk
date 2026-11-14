@@ -239,7 +239,7 @@ impl ChartZodiac {
         let value = |days: f64| {
             completion
                 .provider()
-                .ayanamsha_deg(at.get() + days, TimeScale::Tt, id)
+                .ayanamsha_deg(at.get() + days, TimeScale::Tt, id, frame.ayanamsha_basis)
                 .map_err(Error::from)
         };
         let rate = (value(RATE_STEP_DAYS)? - value(-RATE_STEP_DAYS)?) / (2.0 * RATE_STEP_DAYS);
@@ -374,8 +374,9 @@ impl ChartZodiac {
     /// let settings = sample::resolved().settings;
     /// let at = JulianDay::<Tt>::literal(sample::INSTANT.get());
     /// let rate = ChartZodiac::rate_deg_per_day(&settings, at, PrecessionModel::default(), DeltaTModel::default())?;
-    /// // About 50 arcseconds a year, give or take the nutation's swing.
-    /// assert!((2.0e-5..6.0e-5).contains(&rate));
+    /// // The precession's 50 arcseconds a year, 3.8e-5 degrees a day, and on
+    /// // the root's true basis the nutation's own rate, 4.5e-5 more here.
+    /// assert!((8.2e-5..8.5e-5).contains(&rate));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
     ///
@@ -553,6 +554,9 @@ mod tests {
             value_deg: 24.0,
             rate_deg_per_year: 0.0,
         });
+        // The mean basis: the value as defined, without the nutation the
+        // root's true basis adds.
+        patch.frame.ayanamsha_basis = Some(teistro_core::settings::AyanamshaBasis::Mean);
         let settings = root().patched(&patch);
         let zodiac = of(&settings);
         assert!(zodiac.is_sidereal());

@@ -26,8 +26,8 @@ the modern sky would print instead (C187).
 | the text without a bija, at its own sunrise: every printed nakshatra end within 1.5 minutes | falsified | 303 of 326 disagree; median -0.2 min |
 | the text without a bija, at its own sunrise: every printed yoga end within 1.5 minutes | falsified | 303 of 331 disagree; median +0.1 min |
 | the modern sky under Lahiri (`nepali-drik`): every printed tithi end within 1.5 minutes | falsified | 333 of 333 disagree; median +41.4 min |
-| the modern sky under Lahiri (`nepali-drik`): every printed nakshatra end within 1.5 minutes | falsified | 323 of 326 disagree; median -12.5 min |
-| the modern sky under Lahiri (`nepali-drik`): every printed yoga end within 1.5 minutes | falsified | 326 of 331 disagree; median -53.9 min |
+| the modern sky under Lahiri (`nepali-drik`): every printed nakshatra end within 1.5 minutes | falsified | 322 of 326 disagree; median -12.2 min |
+| the modern sky under Lahiri (`nepali-drik`): every printed yoga end within 1.5 minutes | falsified | 326 of 331 disagree; median -53.8 min |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed sunrise within 3 minutes | **holds** | 0 of 333 disagree; median -0.4 min |
 | the same text at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
 | the text without a bija, at its own sunrise: every printed sunrise within 3 minutes | falsified | 231 of 333 disagree; median +0.3 min |
@@ -71,8 +71,8 @@ place within a day of the printed end is unpaired.
 | the text without a bija, at its own sunrise | nakshatra | 326 | -0.2 | -18.7 | +15.5 | 303 | 0 |
 | the text without a bija, at its own sunrise | yoga | 331 | +0.1 | -17.2 | +14.5 | 303 | 0 |
 | the modern sky under Lahiri (`nepali-drik`) | tithi | 333 | +41.4 | -360.3 | +339.2 | 333 | 0 |
-| the modern sky under Lahiri (`nepali-drik`) | nakshatra | 326 | -12.5 | -388.7 | +278.3 | 323 | 0 |
-| the modern sky under Lahiri (`nepali-drik`) | yoga | 331 | -53.9 | -412.0 | +249.2 | 326 | 0 |
+| the modern sky under Lahiri (`nepali-drik`) | nakshatra | 326 | -12.2 | -388.6 | +278.3 | 322 | 0 |
+| the modern sky under Lahiri (`nepali-drik`) | yoga | 331 | -53.8 | -411.9 | +249.2 | 326 | 0 |
 
 ## 4. The sunrise
 

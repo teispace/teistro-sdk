@@ -44,7 +44,7 @@ void main() {
   test('a build of another ABI or another version is refused', () {
     expect(
       refuseBuild(info(abi: 99), named: true),
-      allOf(contains('ABI 99'), contains('generated for ABI 1')),
+      allOf(contains('ABI 99'), contains('generated for ABI 2')),
     );
     expect(
       refuseBuild(info(sdk: '9.9.9'), named: true),

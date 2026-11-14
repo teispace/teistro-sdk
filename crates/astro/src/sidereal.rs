@@ -130,25 +130,28 @@ impl<'a, S: Longitudes + ?Sized> Sidereal<'a, S> {
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let value =
             crate::ayanamsha::value_deg(&choice, tt, self.basis, self.precession, self.delta_t)?;
-        // A day on either side gives the rate by a central difference;
-        // the ayanamsha is a smooth function of the instant and the rate
-        // only corrects a speed nothing classifies with.
+        // A day on either side gives the mean value's rate by a central
+        // difference, a smooth function of the instant; on the true basis
+        // the nutation's own rate is added, from the series the value
+        // just summed, rather than two more sums a day apart.
         let step = 1.0;
-        let ahead = crate::ayanamsha::value_deg(
-            &choice,
-            JulianDay::literal(tt.get() + step),
-            self.basis,
-            self.precession,
-            self.delta_t,
-        )?;
-        let behind = crate::ayanamsha::value_deg(
-            &choice,
-            JulianDay::literal(tt.get() - step),
-            self.basis,
-            self.precession,
-            self.delta_t,
-        )?;
-        Ok((value, (ahead - behind) / (2.0 * step)))
+        let mean_at = |days: f64| {
+            crate::ayanamsha::value_deg(
+                &choice,
+                JulianDay::literal(tt.get() + days),
+                Basis::Mean,
+                self.precession,
+                self.delta_t,
+            )
+        };
+        let mean_rate = (mean_at(step)? - mean_at(-step)?) / (2.0 * step);
+        let rate = if self.basis == Basis::True {
+            let (date1, date2) = tt.split();
+            mean_rate + crate::iau::nut00b_and_rate(date1, date2).1 * crate::iau::RAD2DEG
+        } else {
+            mean_rate
+        };
+        Ok((value, rate))
     }
 }
 

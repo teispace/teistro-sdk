@@ -16,7 +16,7 @@ default profile.
 Each day's reading at sunrise judged again by the baseline engine's
 vedha tables, `baseline_gochar`: Venus's 11th and 12th exchanged, the
 nodes' hybrid vedha, and the Sun and the Moon its only exemption, with
-every node obstructing. 2387 of 39 420 verdicts move, by graha:
+every node obstructing. 2385 of 39 420 verdicts move, by graha:
 
 | graha | verdicts moved, of 4380 |
 |---|---:|
@@ -27,17 +27,17 @@ every node obstructing. 2387 of 39 420 verdicts move, by graha:
 | Jupiter | 0 |
 | Venus | 451 |
 | Saturn | 36 |
-| Rahu | 626 |
+| Rahu | 624 |
 | Ketu | 882 |
 
-The daily score moves on 1873 of 4380 sign-days, by 16 at most.
+The daily score moves on 1871 of 4380 sign-days, by 16 at most.
 
 ## 2. 06:00 against sunrise (C358, B5)
 
 The same days read at 06:00 at +05:45, the baseline's clock, under
 the text's tables. The Moon is in another sign on 3 of 365 days,
-37 of 39 420 verdicts move, and the daily score moves on 48 of 4380
-sign-days, by 9 at most.
+58 of 39 420 verdicts move, and the daily score moves on 81 of 4380
+sign-days, by 21 at most.
 
 ## 3. The events (C360, B1 to B4)
 
@@ -68,8 +68,8 @@ and with its first day's, one day the baseline can take it from:
 | proposed rule | verdict | measured |
 |---|---|---|
 | every event a period reports falls between local midnight of its first day and local midnight after its last | **holds** | 0 of 128 disagree |
-| the baseline engine's vedha tables give the text's verdicts | falsified | 2387 of 39420 disagree |
-| reading at 06:00 rather than at sunrise moves no verdict | falsified | 37 of 39420 disagree |
+| the baseline engine's vedha tables give the text's verdicts | falsified | 2385 of 39420 disagree |
+| reading at 06:00 rather than at sunrise moves no verdict | falsified | 58 of 39420 disagree |
 | the baseline engine's scan reports every event a period holds | falsified | 64 of 128 disagree |
 | a month scores alike whichever of its days the panchanga is taken from | falsified | 120 of 144 disagree |
 

@@ -37,7 +37,9 @@ caller who does not want its events leaves it out.
 A hit's sign must be the sign a chart founded at that instant would give,
 so the search reads the **chart's** zodiac — the nutated ayanamsha under
 `frame.ayanamsha_basis` — and not a `Frame`'s sidereal reading, which
-applies the mean one and lands up to 18″ away
+applied the mean one and landed up to 18″ away until SR-100, when the
+completion's default became the true basis and a modern engine stopped
+being asked for a sidereal frame whole
 (`read-the-answer-back-elsewhere`, the annual chart's measurement). The
 annual charts' search already reads it so (`LimbZodiac`); the hit list
 reuses that source rather than keeping a second. The acceptance test is

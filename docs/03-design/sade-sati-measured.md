@@ -25,7 +25,7 @@ from its first entry into the 12th to its last exit from the 2nd.
 | Sign | 205 | 518 | 3 | 193 | 186 | 6.36 years | 8.89 years |
 | Degree | 202 | 524 | 3 | 192 | 183 | 7.02 years | 8.94 years |
 
-The two reckonings move a Sade Sati's start by up to 663 days either
+The two reckonings move a Sade Sati's start by up to 664 days either
 way: the degree reading's first line is the Moon less 45°, the sign
 reading's the start of the sign before the Moon's, and the two differ by
 as much as the Moon's distance from the middle of its sign.
@@ -34,7 +34,7 @@ as much as the Moon's distance from the middle of its sign.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every bound of every visit is where the gochar a second either side moves Saturn into or out of the visit's house | **holds** | 0 of 16428 disagree |
+| every bound of every visit is where the gochar a second either side moves Saturn into or out of the visit's house | **holds** | 0 of 16432 disagree |
 | every Sade Sati is the rising, peak and setting phases, in that order | **holds** | 0 of 407 disagree |
 | the degree reckoning begins earlier than the sign reckoning exactly when the natal Moon stands in the first half of its sign | **holds** | 0 of 202 disagree |
 | a Sade Sati asked about at one instant inside it is, to the bit, the one a century's search finds | **holds** | 0 of 24 disagree |

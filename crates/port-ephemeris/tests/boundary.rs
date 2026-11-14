@@ -19,10 +19,10 @@ use teistro_port_ephemeris::vtable::{
     PositionColumnsC,
 };
 use teistro_port_ephemeris::{
-    Astronomy, Body, CrossingRequest, DistanceUnit, EphemerisProvider, Exported, Frame, Horizon,
-    HorizonEventKind, HorizonRequest, Lattice, Overrides, PositionRequest, PositionRequestC,
-    ProviderCode, ProviderError, ProviderVtable, Quantity, SpeedModel, TestProvider, TimeScale,
-    VTABLE_ABI_VERSION, VtableProvider,
+    AYANAMSHA_BASIS_MEAN, Astronomy, Body, CrossingRequest, DistanceUnit, EphemerisProvider,
+    Exported, Frame, Horizon, HorizonEventKind, HorizonRequest, Lattice, Overrides,
+    PositionRequest, PositionRequestC, ProviderCode, ProviderError, ProviderVtable, Quantity,
+    SpeedModel, TestProvider, TimeScale, VTABLE_ABI_VERSION, VtableProvider,
 };
 
 const INVALID: i32 = ProviderCode::Invalid as i32;
@@ -167,7 +167,14 @@ unsafe extern "C" fn seconds(user_data: *mut c_void, _: f64, _: *mut f64) -> i32
     unsafe { script(user_data) }.code
 }
 
-unsafe extern "C" fn ayanamsha(user_data: *mut c_void, _: f64, _: u32, _: u16, _: *mut f64) -> i32 {
+unsafe extern "C" fn ayanamsha(
+    user_data: *mut c_void,
+    _: f64,
+    _: u32,
+    _: u16,
+    _: u32,
+    _: *mut f64,
+) -> i32 {
     // SAFETY: the table's contract.
     unsafe { script(user_data) }.code
 }
@@ -406,6 +413,7 @@ fn a_function_the_table_leaves_out_is_unsupported_by_name() {
                 2_451_545.0,
                 TimeScale::Tt,
                 teistro_core::catalogue::Ayanamsha::Lahiri,
+                teistro_core::settings::AyanamshaBasis::True,
             )
             .map(drop),
         "ayanamsha",
@@ -448,6 +456,7 @@ fn each_code_a_table_answers_is_the_error_it_names() {
                     2_451_545.0,
                     TimeScale::Tt,
                     teistro_core::catalogue::Ayanamsha::Raman,
+                    teistro_core::settings::AyanamshaBasis::Mean,
                 )
                 .map(drop)
                 .unwrap_err(),
@@ -731,8 +740,8 @@ fn each_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
             );
         }
         let ayanamsha = vtable.ayanamsha.unwrap();
-        assert_eq!(ayanamsha(null, 0.0, 0, 0, &raw mut seconds), INVALID);
-        assert_eq!(ayanamsha(user_data, 0.0, 0, 0, ptr::null_mut()), INVALID);
+        assert_eq!(ayanamsha(null, 0.0, 0, 0, 0, &raw mut seconds), INVALID);
+        assert_eq!(ayanamsha(user_data, 0.0, 0, 0, 0, ptr::null_mut()), INVALID);
         assert_eq!(obliquity_fn(user_data, 0.0, 0, ptr::null_mut()), INVALID);
         assert_eq!(
             ayanamsha(
@@ -740,11 +749,20 @@ fn each_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
                 0.0,
                 TimeScale::Tt.id(),
                 u16::MAX,
+                AYANAMSHA_BASIS_MEAN,
                 &raw mut seconds
             ),
             INVALID
         );
-        assert_eq!(ayanamsha(user_data, 0.0, 99, 0, &raw mut seconds), INVALID);
+        assert_eq!(
+            ayanamsha(user_data, 0.0, 99, 0, 0, &raw mut seconds),
+            INVALID
+        );
+        // A basis number that names none is refused, never read as a default.
+        assert_eq!(
+            ayanamsha(user_data, 0.0, TimeScale::Tt.id(), 0, 7, &raw mut seconds),
+            INVALID
+        );
     }
 }
 

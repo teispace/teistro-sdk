@@ -78,9 +78,9 @@ pub use native::{Native, NativeFunction, NativeManifest, NativeParam, Role};
 pub use provider::{EphemerisProvider, PositionRequest, ask_positions, validate};
 pub use test_provider::TestProvider;
 pub use vtable::{
-    AyanamshaFn, CapabilitiesFn, CrossingsFn, DecodedRequest, DeltaTFn, Dut1Fn, Exported,
-    HorizonEventFn, ObliquityFn, PositionRequestC, PositionsFn, ProviderCode, ProviderVtable,
-    VTABLE_ABI_VERSION, VtableProvider,
+    AYANAMSHA_BASIS_MEAN, AYANAMSHA_BASIS_TRUE, AyanamshaFn, CapabilitiesFn, CrossingsFn,
+    DecodedRequest, DeltaTFn, Dut1Fn, Exported, HorizonEventFn, ObliquityFn, PositionRequestC,
+    PositionsFn, ProviderCode, ProviderVtable, VTABLE_ABI_VERSION, VtableProvider,
 };
 
 /// The README's examples, run as doctests so that the first page a
