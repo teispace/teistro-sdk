@@ -381,6 +381,10 @@ name = "baseline_panchanga_day"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "limb_oracle"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "gochar"
 required-features = ["builtin-ephemeris"]
 

@@ -12,6 +12,52 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The true ayanamsha basis (SR-100, SR-105, SR-118).**
+**Numbers:** every sidereal longitude of a modern sky under a shipped profile but
+`conformance-baseline` moves by the nutation in longitude, at most 17.2 arcseconds:
+the root profile's `frame.ayanamsha_basis` is now `TRUE`, the Indian Astronomical
+Ephemeris's nirayana longitude (apparent longitude less the true ayanamsha), where it
+was `MEAN` with no citation (C1750). Against JPL's DE440 at Kathmandu over 1900 to 2100
+under `nepali-drik`, the worst nakshatra end falls from 36.8 s to 0.90 s, a yoga's from
+68.2 s to 1.00 s and a sankranti's from 7.3 minutes to 3.9 s; tithis, karanas and
+sunrises do not move (`05-testing/limb-oracle.md`). Over 2000 to 2100 under
+`nepali-drik` no `NEPAL_PANCHANGA` festival and no Bikram Sambat month start moves; six
+sankranti days, two punya-kala days, ten nakshatra days and nineteen yoga days move by
+one, each an instant within minutes of sunrise or of the middle of the night. A
+classical (siddhanta) sky and a tropical one do not move. The measured pages move
+with it: the KP lagna's median error 1.86 to 1.84 minutes; Muntha's Sun and Moon by
+12 and 18 arcseconds; `nepali-drik`'s nakshatra and yoga medians against the print by
+0.3 and 0.1 minutes; 2 of 39 420 rashifal verdicts; one more ritu change of 156 off
+`BEFORE_APARAHNA`; one Sade Sati bound by a day; and the sidereal western wheel's
+cusps by 0.01 px, two of them across a sign boundary.
+- **Profiles:** `nepali-drik` and `nepali-committee` 6, `parashari-classical` 4,
+  `surya-siddhanta` 3, `kp-default` 3, `mithila-makaranda` 2, `tamil-vakya` 2,
+  `western-tropical-default` 4, each by the root's basis. `MEAN` stays selectable.
+- **Port:** `EphemerisProvider::ayanamsha_deg` takes the basis
+  (`ayanamsha_deg(jd, scale, ayanamsha, basis)`); a provider that cannot answer a
+  basis returns `Unsupported`, and the SDK never patches a native value with its own
+  nutation. The vtable's `ayanamsha_deg` callback gains `basis: u32` (0 `MEAN`,
+  1 `TRUE`), its `abi_version` is 5, and the C ABI (`ts_abi_version`, `abiVersion`) is
+  2. The ephemeris kit adds the check `override_ayanamsha_basis` (18 checks).
+- **Positions:** a sidereal frame on a modern sky is asked of a provider as its
+  tropical twin and shifted by the ayanamsha on the basis asked, so a native engine's
+  own sidereal answer no longer decides the basis (C1751).
+- **Fixed:** the drik solar calendar behind the adhika test (`drik_sun`) now takes the
+  profile's basis; it took the mean one whatever the profile said (C1751).
+- **New:** the coherence warning `ayanamsha-mean-basis`, raised when a sky of date
+  (apparent or true positions) is read less the mean ayanamsha; a shipped profile
+  that takes the mean basis without a citation fails a test.
+- **Speed:** the nutation series (`iau::nut00b`) is summed once per instant on a
+  thread and kept (1024 slots, keyed by the instant's bits, so a repeat is the same
+  bits), and a sidereal reading's rate takes the nutation's own derivative from that
+  sum (`iau::nut00b_and_rate`) where it summed the series a day either side: the true
+  basis costs the panchanga bench 2.9%, and the muhurta, festival and year benches
+  less than before it.
+- **New:** the limb oracle (`crates/sdk/tests/limb_oracle.rs`), every tithi,
+  karana, nakshatra, yoga, sankranti and sunrise of five years from 1900 to 2100
+  against a DE440 recording, recorded per limb and century as `limb_times` in
+  `ACCURACY.md` (C1752).
+
 **A context derived under a per-call settings patch, on every surface.**
 **Numbers:** none move: a derived context answers as a context built with the
 same profile and merged patch, its settings hash included.
