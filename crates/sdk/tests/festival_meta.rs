@@ -76,7 +76,7 @@ fn every_rule_of_nepals_pack_holds_the_classifications_community() {
             assert_eq!(row.meta.tradition, tradition, "{}", row.key);
         }
     }
-    assert_eq!(held, 81, "rows the page names a community or a faith for");
+    assert_eq!(held, 83, "rows the page names a community or a faith for");
 }
 
 #[test]

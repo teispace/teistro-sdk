@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603, C1650 to C1665 and C1700 to C1702
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603, C1650 to C1665, C1700 to C1702 and C1800 to C1812
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -390,7 +390,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 
 ### Solar (26)
 
-A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship. `YOSIN_UTTHAN` ships too, on the Bikram Sambat year's last day, which VS 2083 alone prints and the press reports kept (C1650), so 22 ship; the note says why each other is not.
+A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship. `YOSIN_UTTHAN` ships too, on the Bikram Sambat year's last day, which VS 2083 alone prints and the press reports kept (C1650), and Bode's tongue-piercing and Thimi's Sindoor jatra on Baisakh 2, which neither edition prints and the press reports kept every year (C1800), so 24 ship; the note says why each other is not.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
@@ -401,7 +401,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `BHUMI_PUJA` | Bhumi Puja | भूमि पूजा |  | shipped: `sunEnters` Ardra with `days` 3 in NEPAL_PANCHANGA, both editions' printed day (C696) |
 | `BISKET_JATRA_BEGINS` | Bisket Jatra Begins | बिस्केट जात्रा आरम्भ | Newar | shipped: a dated day in NEPAL_PANCHANGA, Chaitra's fourth-last day |
 | `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 5 |
-| `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | not printed in either edition |
+| `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2, which neither edition prints; Kantipur (VS 2079 Chaitra 25, VS 2083 Baisakh 2) reports it kept "प्रत्येक वैशाख २" (C1800) |
 | `DEVGHAT_MAKAR_SNAN` | Devghat Makar Snan | देवघाट मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | printed on Shrawan 1 in both editions, but a patro printed in Nepal keeps a second day in most years and not Shrawan 1 in two (C621); still held after the sources of 2026-11-14 (C1653) |
 | `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डारक पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1 |
@@ -411,7 +411,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `MAGHI_THARU` | Maghi (Tharu) | माघी | Tharu | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `MAKAR_SNAN` | Makar Snan | मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `NEPALI_NEW_YEAR` | Nepali New Year | नव वर्ष |  | shipped as `MESHA_SANKRANTI` in NEPAL_PANCHANGA |
-| `SINDOOR_JATRA` | Sindoor Jatra | सिन्दूर जात्रा | Newar | not printed in either edition |
+| `SINDOOR_JATRA` | Sindoor Jatra | सिन्दूर जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2, which neither edition prints; Kantipur (VS 2083 Baisakh 2) reports it kept on Baisakh 2 in Thimi (C1800) |
 | `SIRUWA` | Siruwa | सिरुवा पर्व | Maithil, Tharu and Rajbanshi | not printed in either edition |
 | `TAMU_LHOSAR` | Tamu Lhosar | तमु ल्होसार | Gurung | shipped: a dated day in NEPAL_PANCHANGA, Poush 15 |
 | `THIMI_BALKUMARI_JATRA` | Thimi Balkumari Jatra | ठिमी बालकुमारी जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2 |
@@ -450,7 +450,7 @@ An authority announces the day.
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
 
-125 of them ship as dated days in `NEPAL_PANCHANGA`, 29 on a Bikram Sambat date and 96 on a Gregorian one. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
+152 of them ship as dated days in `NEPAL_PANCHANGA`, 38 on a Bikram Sambat date and 114 on a Gregorian one, three of those on a weekday of the month. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
 
 Five are printed and still not shipped, because no one date holds:
 - `GURU_GOBIND_SINGH_JAYANTI`: Poush 21 in both editions, 5 January, but the verified days fall on 4 and 6 January in two years.
@@ -470,7 +470,13 @@ Five are printed and still not shipped, because no one date holds:
 - The UN list's other forty international days on the list's dates (C1700). `WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY` is 8 May, the list's date, and gives 2 of the patro's 4 verified days: resolution 59/26 names 8 and 9 May, and the patro keeps both (C1702).
 - Sixteen days other bodies keep, on the date each keeper's own page gives (rank 2, C1701): `INTERNATIONAL_CUSTOMS_DAY`, `WORLD_CANCER_DAY`, `INTERNATIONAL_CHILDHOOD_CANCER_DAY`, `WORLD_CONSUMER_RIGHTS_DAY`, `WORLD_ORAL_HEALTH_DAY`, `WORLD_THEATRE_DAY`, `INTERNATIONAL_DANCE_DAY`, `INTERNATIONAL_NURSES_DAY`, `INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH`, `WORLD_MUSIC_DAY`, `WORLD_PHYSIOTHERAPY_DAY`, `WORLD_ALZHEIMER_S_DAY`, `WORLD_RABIES_DAY`, `WORLD_HEART_DAY`, `WORLD_ANIMAL_DAY` and `GLOBAL_HANDWASHING_DAY`.
 
-The other unprinted days wait for a source of their own (C1603).
+27 more ship the same way (`MORE_KEPT_DAYS`, `KEPT_GREGORIAN_DAYS` and `KEPT_WEEKDAYS` in `dated.rs`), each source opened on 2026-11-14:
+- Nine on a Bikram Sambat date, on their keepers' practice as the press reports it (rank 3, C1800): `NATIONAL_MAGAR_DAY` (Falgun 15), `PASANG_LHAMU_SMRITI_DIWAS` (Baisakh 10), `SOCIAL_SERVICE_DAY` (Asoj 6), `NATIONAL_BHAKKA_DAY` (Poush 29), `NATIONAL_FLAG_DAY` (Poush 1), `NATIONAL_YOGA_DAY` (Magh 1), `NATIONAL_JOURNALISM_DAY` (Baisakh 24, recognised VS 2073), `NATIONAL_FILM_DAY` (Asoj 15, decided VS 2082; the rule answers every year, C1801) and `LANGUAGE_DAY` (Baisakh 24, Bagmati Province's, `GAZETTED` in `NP-P3` by the province's notice, C1802).
+- Thirteen on the Gregorian date their keeping body names (C1803): `WORLD_HERITAGE_DAY`, `WORLD_HYPERTENSION_DAY`, `SAGARMATHA_DAY`, `INTERNATIONAL_OLYMPIC_DAY`, `WORLD_PHARMACISTS_DAY`, `NON_RESIDENT_NEPALI_DAY`, `WORLD_STANDARDS_DAY`, `WORLD_RADIOGRAPHY_DAY`, `WORLD_FREEDOM_DAY`, `INTERNATIONAL_STUDENTS_DAY`, `PI_DAY`, and `NATIONAL_DRESS_DAY` and `NATIONAL_TOPI_DAY`, one day of 1 January under two names.
+- Two customs no body keeps, on the press's report of them kept in Nepal (C1804): `VALENTINE_S_DAY` and `APRIL_FOOLS_DAY`.
+- Three on a weekday of a Gregorian month, as their organisers state it (C1805): `WORLD_FIRST_AID_DAY` (September's second Saturday), `WORLD_SMILE_DAY` (October's first Friday) and `WORLD_SIGHT_DAY` (October's second Thursday).
+
+The other unprinted days wait for a source of their own (C1603): Safer Internet day's kept Tuesdays fit no `civilWeekday` (C1806), and Earthquake memorial, Forest users', Siddhicharan's, UNESCO and World photography day lack a source that dates them (C1807 to C1811).
 
 | key | name |
 |---|---|

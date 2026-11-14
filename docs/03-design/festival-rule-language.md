@@ -353,7 +353,7 @@ negative day is the one `civilDate` takes. Two forms say every row:
 
 ```json
 {"key": "MAKARA_SANKRANTI", "source": "...", "civilDate": {"calendar": "BIKRAM_SAMBAT", "month": 10, "day": 1}}
-{"key": "SAFER_INTERNET_DAY", "source": "...", "civilWeekday": {"calendar": "GREGORIAN", "month": 2, "weekday": "MANGALAVARA", "nth": 2}}
+{"key": "WORLD_FIRST_AID_DAY", "source": "...", "civilWeekday": {"calendar": "GREGORIAN", "month": 9, "weekday": "SHANIVARA", "nth": 2}}
 ```
 
 A rule is a `DatedRule` in a request's `rules`, told apart by its
@@ -386,6 +386,13 @@ UN's list's dates (C1602). 56 more follow on a Gregorian date
 (`MORE_UN_DAYS`, `ORGANISERS_DAYS`): the UN list's other forty (C1700, with
 World Remembrance and Reconciliation Day on the first of its two days,
 C1702) and sixteen other bodies' days on their own pages' dates (C1701).
+29 more follow on their keepers' or the press's
+dates, each source opened before it went into its rule (`MORE_KEPT_DAYS`,
+`KEPT_GREGORIAN_DAYS`, `KEPT_WEEKDAYS`): eight national days and Bode's and
+Thimi's Sindoor jatra on a Bikram Sambat date (C1800), Language day in
+Bagmati Province alone (`NP-P3`, C1802), fifteen days of other bodies and
+custom on a Gregorian date (C1803, C1804), and World First Aid, Smile and
+Sight day on a weekday of the month (C1805).
 Bhaktapur's pole is raised on the Bikram Sambat year's last day, a day of a
 month counted from its end (`YOSIN_UTTHAN`, Chaitra −1), which VS 2083 prints
 and the press reports kept (C1650).
@@ -734,7 +741,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 36 | `EID_AL_ADHA` | the Hijri month begins on a sighting | none | none | published only |
 | 37 | `BHOTO_JATRA` | set each year to close the chariot festival | none | none | community: set each year |
 | 38 | `MUKTAK_DIWAS` | one verified day | none | none | evidence |
-| 39 | `SAFER_INTERNET_DAY` | the organisers' second day of the second week of February; one verified day | none | §3.6 a civil weekday | a Gregorian weekday rule |
+| 39 | `SAFER_INTERNET_DAY` | the organisers' second day of the second week of February; one verified day | none | §3.6 a civil weekday | the organiser states the second Tuesday but kept the first in 2023 and 2024, the Tuesday from 5 to 11 February, which no `civilWeekday` writes (C1806) |
 | 40 | `PANAUTI_SNAN_MELA` | 2 of 2 by Jyeshtha's full moon or the next day's afternoon | Jyeshtha's full moon at sunrise | none new | **shipped** at sunrise: both editions print it on Jyeshtha's full moon (2025-06-11, 2026-06-29), not on the day before, the full-moon fast's |
 | 41 | `PANAUTI_JATRA` | as the mela | Jyeshtha's full moon at sunrise | none new | **shipped**, as the mela; VS 2083 prints it after Ⓑ, the full moon's row |
 | 42 | `BARAHAKSHETRA_MELA` | one verified day | none | none | evidence |

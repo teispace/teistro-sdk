@@ -23,8 +23,10 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 /// The sections of the week `a_digest_is_the_same_bytes_on_every_platform`
 /// writes, hashed. Moved when `NEPAL_PANCHANGA` gained World Alzheimer's
 /// Day, the International Day of Sign Languages and the International Day for
-/// the Total Elimination of Nuclear Weapons, three of the week's days (SR-01).
-const PINNED: &str = "3768b8a82f206536150b0e90cc9196f5101d69c37d79d23b8f997c8c15b7ad71";
+/// the Total Elimination of Nuclear Weapons, three of the week's days (SR-01),
+/// and again when Social Service Day (22 September 2025) and World
+/// Pharmacists Day (25 September) joined them (C1800, C1803).
+const PINNED: &str = "243b5f7f0dd091bc39fa1ea38b0499f55c82edb57b1d69b171926bc10047461f";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;

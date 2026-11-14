@@ -5229,6 +5229,122 @@
     "GLOBAL_HANDWASHING_DAY": {
       "name": "Viśva Hāta Dhune Divasa",
       "prose": "Viśva Hāta Dhune Divasa"
+    },
+    "NATIONAL_MAGAR_DAY": {
+      "name": "Rāṣṭriya Magara Divasa",
+      "prose": "Rāṣṭriya Magara Divasa"
+    },
+    "PASANG_LHAMU_SMRITI_DIWAS": {
+      "name": "Pāsāṅa Lhāmu Smṛti Divasa",
+      "prose": "Pāsāṅa Lhāmu Smṛti Divasa"
+    },
+    "SOCIAL_SERVICE_DAY": {
+      "name": "Sāmājika Sevā Divasa",
+      "prose": "Sāmājika Sevā Divasa"
+    },
+    "NATIONAL_BHAKKA_DAY": {
+      "name": "Rāṣṭriya Bhakkā Divasa",
+      "prose": "Rāṣṭriya Bhakkā Divasa"
+    },
+    "NATIONAL_FLAG_DAY": {
+      "name": "Rāṣṭriya Jhaṇḍā Divasa",
+      "prose": "Rāṣṭriya Jhaṇḍā Divasa"
+    },
+    "NATIONAL_YOGA_DAY": {
+      "name": "Rāṣṭriya Yoga Divasa",
+      "prose": "Rāṣṭriya Yoga Divasa"
+    },
+    "NATIONAL_JOURNALISM_DAY": {
+      "name": "Rāṣṭriya Patrakāritā Divasa",
+      "prose": "Rāṣṭriya Patrakāritā Divasa"
+    },
+    "NATIONAL_FILM_DAY": {
+      "name": "Rāṣṭriya Calacitra Divasa",
+      "prose": "Rāṣṭriya Calacitra Divasa"
+    },
+    "LANGUAGE_DAY": {
+      "name": "Bhāṣā Divasa",
+      "prose": "Bhāṣā Divasa"
+    },
+    "BODE_JIBRO_CHHEDNE_JATRA": {
+      "name": "Boḍe Jibro Cheḍne Jātrā",
+      "prose": "Boḍe Jibro Cheḍne Jātrā"
+    },
+    "SINDOOR_JATRA": {
+      "name": "Sindūra Jātrā",
+      "prose": "Sindūra Jātrā"
+    },
+    "NATIONAL_DRESS_DAY": {
+      "name": "Rāṣṭriya Posāka Divasa",
+      "prose": "Rāṣṭriya Posāka Divasa"
+    },
+    "NATIONAL_TOPI_DAY": {
+      "name": "Rāṣṭriya Ṭopī Divasa",
+      "prose": "Rāṣṭriya Ṭopī Divasa"
+    },
+    "VALENTINE_S_DAY": {
+      "name": "Praṇaya Divasa",
+      "prose": "Praṇaya Divasa"
+    },
+    "PI_DAY": {
+      "name": "Pāī Divasa",
+      "prose": "Pāī Divasa"
+    },
+    "APRIL_FOOLS_DAY": {
+      "name": "Mūrkha Divasa",
+      "prose": "Mūrkha Divasa"
+    },
+    "WORLD_HERITAGE_DAY": {
+      "name": "Viśva Sampadā Divasa",
+      "prose": "Viśva Sampadā Divasa"
+    },
+    "WORLD_HYPERTENSION_DAY": {
+      "name": "Viśva Ucca Raktacāpa Divasa",
+      "prose": "Viśva Ucca Raktacāpa Divasa"
+    },
+    "SAGARMATHA_DAY": {
+      "name": "Sagaramāthā Divasa",
+      "prose": "Sagaramāthā Divasa"
+    },
+    "INTERNATIONAL_OLYMPIC_DAY": {
+      "name": "Antarrāṣṭriya Olampika Divasa",
+      "prose": "Antarrāṣṭriya Olampika Divasa"
+    },
+    "WORLD_PHARMACISTS_DAY": {
+      "name": "Viśva Phārmāsisṭa Divasa",
+      "prose": "Viśva Phārmāsisṭa Divasa"
+    },
+    "NON_RESIDENT_NEPALI_DAY": {
+      "name": "Gairaāvāsīya Nepālī Divasa",
+      "prose": "Gairaāvāsīya Nepālī Divasa"
+    },
+    "WORLD_STANDARDS_DAY": {
+      "name": "Viśva Guṇastara Divasa",
+      "prose": "Viśva Guṇastara Divasa"
+    },
+    "WORLD_RADIOGRAPHY_DAY": {
+      "name": "Viśva Reḍiyogrāphī Divasa",
+      "prose": "Viśva Reḍiyogrāphī Divasa"
+    },
+    "WORLD_FREEDOM_DAY": {
+      "name": "Viśva Svatantratā Divasa",
+      "prose": "Viśva Svatantratā Divasa"
+    },
+    "INTERNATIONAL_STUDENTS_DAY": {
+      "name": "Antarrāṣṭriya Vidyārthī Divasa",
+      "prose": "Antarrāṣṭriya Vidyārthī Divasa"
+    },
+    "WORLD_FIRST_AID_DAY": {
+      "name": "Viśva Prāthamika Upacāra Divasa",
+      "prose": "Viśva Prāthamika Upacāra Divasa"
+    },
+    "WORLD_SMILE_DAY": {
+      "name": "Viśva Muskāna Divasa",
+      "prose": "Viśva Muskāna Divasa"
+    },
+    "WORLD_SIGHT_DAY": {
+      "name": "Viśva Dṛṣṭi Divasa",
+      "prose": "Viśva Dṛṣṭi Divasa"
     }
   },
   "year_office": {

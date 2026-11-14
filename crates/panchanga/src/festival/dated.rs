@@ -889,6 +889,207 @@ const ORGANISERS_DAYS: [(&str, u8, i8, &str); 16] = [
     ),
 ];
 
+/// More days kept in Nepal on a Bikram Sambat date that the national
+/// panchanga prints in neither edition, each on the date its keeper or the
+/// press names, every source opened on 2026-11-14: key, month, day, and the
+/// source read (C1800, C1802). Each gives every day a patro printed in Nepal
+/// verified for it from VS 2070 to 2083.
+const MORE_KEPT_DAYS: [(&str, u8, i8, &str); 11] = [
+    (
+        "NATIONAL_MAGAR_DAY",
+        11,
+        15,
+        "Kantipur, VS 2081 Falgun 15 (Nawalparasi): the Nepal Magar Sangh's forerunner first met in Tanahun on Falgun 14 to 16, VS 2039, and \"फागुन १५ लाई संघको स्थापना दिवसका रूपमा मनाउने गरिन्छ\", \"प्रत्येक वर्ष फागुन १५ गते यो दिवस मनाइँदै आएको छ\" (rank 3, C1800)",
+    ),
+    (
+        "PASANG_LHAMU_SMRITI_DIWAS",
+        1,
+        10,
+        "The Himalayan Times, 22 April 2016, \"Pasang Lhamu Sherpa Memorial Day observed\": the Pasang Lhamu Sherpa Mountaineering Foundation, its chairman says, has been \"annually marking the 10th of the Nepali month Baishakh as the Pasang Lhamu Memorial Day\", the day she died on Everest in VS 2050 (rank 3, C1800)",
+    ),
+    (
+        "SOCIAL_SERVICE_DAY",
+        6,
+        6,
+        "Onlinekhabar, VS 2080 Asoj 4: the Social Welfare Council's staff mark the 44th सामाजिक सेवा दिवस, \"असोज ६ गते पर्ने सामाजिक सेवा दिवसको पूर्वसन्ध्यामा\" (rank 3, C1800)",
+    ),
+    (
+        "NATIONAL_BHAKKA_DAY",
+        9,
+        29,
+        "Hamro Patro, \"राष्ट्रिय भक्का दिवस\": the Koch Rajbanshi and the other indigenous communities of the eastern Terai \"पुस २९ गतेलाई राष्ट्रिय भक्का दिवसका रूपमा मनाउने गरेका छन्\" (rank 3, C1800)",
+    ),
+    (
+        "NATIONAL_FLAG_DAY",
+        9,
+        1,
+        "Republica, 16 December (the 7th National Flag Day): \"National Flag Day is celebrated on Poush 1 of the Nepali Calendar every year\" (rank 3, C1800)",
+    ),
+    (
+        "NATIONAL_YOGA_DAY",
+        10,
+        1,
+        "Onlinekhabar, VS 2079 Magh 1, reporting the cabinet's decision of Shrawan 28, VS 2072: \"माघ १ गते राष्ट्रिय योग दिवस मनाउने औपचारिक निर्णय\" (rank 3, C1800)",
+    ),
+    (
+        "NATIONAL_JOURNALISM_DAY",
+        1,
+        24,
+        "Kantipur, VS 2082 Baisakh 24 (the 10th): Gorkhapatra's first weekly issue came out on Baisakh 24, VS 1958, and \"सरकारले २०७३ सालमा पत्रकारिता दिवस राष्ट्रिय रुपमै मनाउन मान्यता दिएपछि यो दिवस वैशाख २४ गते मनाउन थालिएको हो\" (rank 3, C1800, C1801)",
+    ),
+    (
+        "NATIONAL_FILM_DAY",
+        6,
+        15,
+        "Kantipur, VS 2082 Asar 16, reporting the cabinet's decision of Asar 13, VS 2082, the day Aama was first shown: \"प्रत्येक वर्ष असोज १५ गतेलाई 'राष्ट्रिय चलचित्र दिवस' मनाइने भएको छ\"; kept from VS 2082, the rule answering every year (rank 3, C1800, C1801)",
+    ),
+    (
+        "LANGUAGE_DAY",
+        1,
+        24,
+        "Kantipur, VS 2083 Baisakh 23: Bagmati Province keeps its language day on Baisakh 24, the day it began to use its official-language act in VS 2080, \"उक्त दिनलाई भाषा दिवस मनाउँदै आएको छ\", and gives a public holiday across the province by its notice of Chaitra 23, VS 2082 (rank 3, a province's day, C1800, C1802)",
+    ),
+    (
+        "BODE_JIBRO_CHHEDNE_JATRA",
+        1,
+        2,
+        "Kantipur, VS 2079 Chaitra 25: \"जिल्लाको प्रसिद्ध बिस्केट जात्राअन्तर्गत प्रत्येक वैशाख २ मा मध्यपुर थिमि बोडेमा जिब्रो छेड्ने जात्रा मनाइन्छ\"; and VS 2083 Baisakh 2: \"प्रत्येक वर्ष २ बैशाखमा\" (rank 3, C1800)",
+    ),
+    (
+        "SINDOOR_JATRA",
+        1,
+        2,
+        "Kantipur, VS 2083 Baisakh 2: \"भक्तपुरको बिस्काः जात्राअन्तर्गत २ बैशाखमा थिमीमा सिन्दूर जात्रा गर्ने प्रचलन रहेको छ\" (rank 3, C1800)",
+    ),
+];
+
+/// The days other bodies, Nepal's press and custom keep on a Gregorian
+/// date that the national panchanga prints in neither edition (or, for
+/// Sagarmatha Day, in VS 2083 alone), each on the date its source names,
+/// every source opened on 2026-11-14: key, month, day, and the source read
+/// (C1803, C1804). Each gives every day a patro printed in Nepal verified
+/// for it from VS 2070 to 2083.
+const KEPT_GREGORIAN_DAYS: [(&str, u8, i8, &str); 15] = [
+    (
+        "NATIONAL_DRESS_DAY",
+        1,
+        1,
+        "Kantipur, VS 2082 Poush 17 (1 January 2026, the 13th): youth organisations keep राष्ट्रिय पोसाक एवं टोपी दिवस, begun in VS 2070, \"जनवरी १ तारिखका दिन\"; one day, which the patro lists under two names (rank 3, C1803)",
+    ),
+    (
+        "NATIONAL_TOPI_DAY",
+        1,
+        1,
+        "Kantipur, VS 2082 Poush 17 (1 January 2026, the 13th): youth organisations keep राष्ट्रिय पोसाक एवं टोपी दिवस, begun in VS 2070, \"जनवरी १ तारिखका दिन\"; one day, which the patro lists under two names (rank 3, C1803)",
+    ),
+    (
+        "VALENTINE_S_DAY",
+        2,
+        14,
+        "a custom no body keeps, as Kantipur reports it kept in Nepal, VS 2082 Falgun 2: \"संसारभर फेब्रुअरी १४ लाई भ्यालेन्टाइन्स डेका रूपमा मनाइँदै आइएको छ\" (rank 3, C1804)",
+    ),
+    (
+        "PI_DAY",
+        3,
+        14,
+        "the International Day of Mathematics, idm314.org: \"Each year on March 14\", and \"March 14 is already celebrated in many countries as Pi Day\"; Pi Day itself has no keeping body (rank 2 for the date, C1803)",
+    ),
+    (
+        "APRIL_FOOLS_DAY",
+        4,
+        1,
+        "a custom no body keeps, as Kantipur reports it kept in Nepal, VS 2082 Chaitra 18: \"अप्रिल १ अर्थात् 'अप्रिल फूल'को अवसर\" (rank 3, C1804)",
+    ),
+    (
+        "WORLD_HERITAGE_DAY",
+        4,
+        18,
+        "the International Council on Monuments and Sites, icomos.org agenda \"18 April - Celebrating International Day for Monuments and Sites\": \"Every year, since 1982, the 18th of April is celebrated as the International Day for Monuments and Sites\", which the UNESCO General Conference adopted at its 22nd session, 1983 (rank 2, C1803)",
+    ),
+    (
+        "WORLD_HYPERTENSION_DAY",
+        5,
+        17,
+        "the World Hypertension League, whleague.org/about-us/world-hypertension-day: the day on \"May 17, 2026\"; and The Week, 16 May 2024: \"Every year, May 17th is observed as World Hypertension Day\", \"since 2006\" (rank 2 for one year and rank 3, C1803)",
+    ),
+    (
+        "SAGARMATHA_DAY",
+        5,
+        29,
+        "Kantipur, VS 2082 Jestha 15: Everest was first climbed on 29 May 1953, and \"सोही दिनलाई स्मरण गर्दै हरेक वर्ष मे २९ का दिन अन्तरराष्टिय सगरमाथा दिवस मनाउन थालिएको हो\"; the national panchanga prints it in VS 2083 alone (rank 3, C1803)",
+    ),
+    (
+        "INTERNATIONAL_OLYMPIC_DAY",
+        6,
+        23,
+        "the Japanese Olympic Committee, joc.or.jp/english/olympicdayevents: \"The IOC recognizes this memorable day - 23 June - as Olympic Day\", the day the IOC was founded in 1894 (rank 2, C1803)",
+    ),
+    (
+        "WORLD_PHARMACISTS_DAY",
+        9,
+        25,
+        "the International Pharmaceutical Federation, \"Preparing for World Pharmacists Day\" (fip.org): its 2009 Council accepted \"to annually celebrate a World Pharmacists Day, to be organised on September 25 (the day that FIP was founded in 1912)\" (rank 2, C1803)",
+    ),
+    (
+        "NON_RESIDENT_NEPALI_DAY",
+        10,
+        11,
+        "the Non-Resident Nepali Association, nrna.org (AGM 2024): established \"on 11 October, 2003\"; its Australian council, nrn.org.au: \"11th October is also declared as NRN day by Nepal Government\" (rank 2, C1803)",
+    ),
+    (
+        "WORLD_STANDARDS_DAY",
+        10,
+        14,
+        "the International Organization for Standardization, committee.iso.org/world-standards-day: \"Each year on 14 October, the members of the IEC, ISO and ITU celebrate World Standards Day\" (rank 2, C1803)",
+    ),
+    (
+        "WORLD_RADIOGRAPHY_DAY",
+        11,
+        8,
+        "the International Society of Radiographers and Radiological Technologists, isrrt.org/world-radiography-day, the day \"created to mark the anniversary of the discovery of x-rays by Wilhelm Roentgen in 1895\", \"Nov 8th\"; and the Society of Radiographers, sor.org: \"World Radiography Day 8 November marks the anniversary of the discovery of x-radiation\" (rank 2, C1803)",
+    ),
+    (
+        "WORLD_FREEDOM_DAY",
+        11,
+        9,
+        "the President of the United States, Proclamation 10856 of 8 November 2024 (89 FR, 14 November 2024): \"do hereby proclaim November 9, 2024, as World Freedom Day\", the Berlin Wall's fall, as each year's proclamation since 2001 does (rank 1, one proclamation read, C1803)",
+    ),
+    (
+        "INTERNATIONAL_STUDENTS_DAY",
+        11,
+        17,
+        "the European Students' Union, esu-online.org, 16 November 2013: \"November 17th known as the International Day of Students\", the events of Prague in November 1939 \"first commemorated on the 17th of November 1941\" (rank 2, C1803)",
+    ),
+];
+
+/// The days other bodies keep on a weekday of a Gregorian month that the
+/// national panchanga prints in neither edition: key, month, weekday, which
+/// of the month's, and the source read on 2026-11-14 (C1805). Each gives the
+/// one day a patro printed in Nepal verified for it, in VS 2079.
+const KEPT_WEEKDAYS: [(&str, u8, Vara, i8, &str); 3] = [
+    (
+        "WORLD_FIRST_AID_DAY",
+        9,
+        Vara::Shanivara,
+        2,
+        "the Red Cross of Monaco, a society of the International Federation of Red Cross and Red Crescent Societies, croix-rouge.mc: World First Aid Day, \"organised annually by the International Federation of Red Cross and Red Crescent Societies (IFRC)\", \"on the second Saturday of September\" (rank 2, C1805)",
+    ),
+    (
+        "WORLD_SMILE_DAY",
+        10,
+        Vara::Shukravara,
+        1,
+        "the World Smile Foundation, worldsmile.org/about: \"Harvey Ball launched World Smile Day, on the first Friday in October, 1999\"; and The Vindicator, 1 October 2010, under \"World Smile Day | First Friday in October\" (rank 2, C1805)",
+    ),
+    (
+        "WORLD_SIGHT_DAY",
+        10,
+        Vara::Guruvara,
+        2,
+        "the International Agency for the Prevention of Blindness, iapb.world/world_sight_day: \"Every October, on the second Thursday, World Sight Day casts a spotlight on the importance of eye care\" (rank 2, C1805)",
+    ),
+];
+
 /// An observance on a date of a calendar.
 ///
 /// ```
@@ -1476,9 +1677,12 @@ impl DatedRule {
 
     /// The days the national panchanga prints in neither edition, each
     /// on the date its keeper names: Nepal's own on a Bikram Sambat date
-    /// ([`KEPT_DAYS`]), the UN's international days on a Gregorian one
-    /// ([`UN_DAYS`], [`MORE_UN_DAYS`]) and other bodies' days on the date
-    /// their own pages give ([`ORGANISERS_DAYS`]).
+    /// ([`KEPT_DAYS`], [`MORE_KEPT_DAYS`]), the UN's international days
+    /// on a Gregorian one ([`UN_DAYS`], [`MORE_UN_DAYS`]), other bodies'
+    /// days on the date their own pages give ([`ORGANISERS_DAYS`]), other
+    /// bodies' and custom's on a Gregorian date the press or a keeper names
+    /// ([`KEPT_GREGORIAN_DAYS`]) or on a weekday of a Gregorian month
+    /// ([`KEPT_WEEKDAYS`]).
     fn on_kept_dates() -> impl Iterator<Item = DatedRule> {
         let kept = |calendar, cited: fn(&str) -> String| {
             move |&(key, month, day, source): &(&str, u8, i8, &str)| DatedRule {
@@ -1513,6 +1717,37 @@ impl DatedRule {
                     "{source} (read 2026-11-14, rank 2); the national panchanga prints it in neither VS 2082 nor 2083"
                 )
             })))
+            .chain(
+                MORE_KEPT_DAYS
+                    .iter()
+                    .map(kept(Calendar::BikramSambat, |source| {
+                        format!(
+                            "{source}; the national panchanga prints it in neither VS 2082 nor 2083"
+                        )
+                    })),
+            )
+            .chain(
+                KEPT_GREGORIAN_DAYS
+                    .iter()
+                    .map(kept(Calendar::Gregorian, str::to_owned)),
+            )
+            .chain(
+                KEPT_WEEKDAYS
+                    .iter()
+                    .map(|&(key, month, weekday, nth, source)| DatedRule {
+                        key: key.to_owned(),
+                        source: format!(
+                            "{source}; the national panchanga prints it in neither VS 2082 nor 2083"
+                        ),
+                        on: Dated::CivilWeekday {
+                            calendar: Calendar::Gregorian,
+                            month,
+                            weekday,
+                            nth,
+                        },
+                        meta: super::FestivalMeta::default(),
+                    }),
+            )
     }
 
     /// The festivals and civil days both editions print on one date of a

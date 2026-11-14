@@ -59,11 +59,12 @@ date fixed by law, an institution or an organisation.
 rule cites one of those texts. `communities` is that column's peoples, a
 composite row split (`Maithil and Bhojpuri` is two), plus the notice's. `regions`
 is `NP` for a rule of Nepal's packs, which the national panchanga prints, plus
-what the notice names, and `IN` for India's pack.
+what the notice names (a province's too: Bagmati's notice makes `LANGUAGE_DAY`
+`GAZETTED` in `NP-P3`, C1802), and `IN` for India's pack.
 
-**Unset.** Of the 453 keys of Nepal's packs, 49 are `GAZETTED`, 63
-`REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 116 `OBSERVANCE` and 177 have no kind.
-392 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
+**Unset.** Of the 482 keys of Nepal's packs, 50 are `GAZETTED`, 65
+`REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 142 `OBSERVANCE` and 177 have no kind.
+422 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
 source is the committee's print, which says when and not what. No value is
 guessed for them, and the classification's blank is not one either: its own
 words are "kept across communities, or the community is not known here". The
@@ -95,6 +96,7 @@ every key a shipped set names:
 | `IN-UP` | | `INDIA_UTTAR_PRADESH` |
 | `IN-WB` | `WEST_BENGAL` | `INDIA_WEST_BENGAL` |
 | `NP` | | `NEPAL_PANCHANGA` and `NEPAL` |
+| `NP-P3` | | `NEPAL_PANCHANGA`'s `LANGUAGE_DAY`, Bagmati Province's holiday by its own notice (C1802) |
 | `KATHMANDU_VALLEY`, `HILLS`, `TERAI` | | rules of Nepal's packs a notice limits |
 
 **Aliases.** The name a state was first shipped under is read as its code
@@ -144,7 +146,7 @@ SR-11's feed filter by kind or tradition reads this field.
 
 Each pack rule holds a few short strings more, written into the request's
 content hash, so **every shipped pack's `input_hash` moved once** with this
-change. No day moved. The table is 21 groups and 453 sorted keys, searched by
+change. No day moved. The table is 22 groups and 482 sorted keys, searched by
 bisection, so stamping a pack does not scan.
 
 Names: `festival_kind` and `tradition` are named in `en-Latn` and `ne-Deva-NP`;
