@@ -418,10 +418,24 @@ final class HostProvider {
     }
   }
 
-  /// Closes the callbacks and frees the vtable. The context that used
-  /// them must be freed first, which [Context.dispose] sees to.
+  /// The contexts using the vtable: the one it was built for, and any
+  /// derived from it ([Context.withSettings]), which the library points at
+  /// the same vtable.
+  var _holders = 1;
+
+  /// Counts one more context using the vtable. Each holder disposes it
+  /// once, and the last disposal closes it.
+  HostProvider retain() {
+    _holders++;
+    return this;
+  }
+
+  /// Lets go of one holder, and closes the callbacks and frees the vtable
+  /// when it was the last. The context that used them must be freed
+  /// first, which [Context.dispose] sees to.
   void dispose() {
     if (_disposed) return;
+    if (--_holders > 0) return;
     _disposed = true;
     _capabilitiesFn.close();
     _positionsFn.close();

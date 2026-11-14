@@ -155,6 +155,54 @@ public final class BindingTest {
             }
         });
 
+        tests.put("withSettings derives a context under a patch and leaves its parent as it was", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            java.util.function.ToDoubleFunction<Context> moon = sdk -> sdk.chart()
+                    .found(2_451_545.0, kathmandu, 20_700, ChartOptions.none()).grahas().stream()
+                    .filter(g -> g.graha() == Graha.MOON).findFirst().orElseThrow().longitudeDeg();
+            java.util.function.Function<Context, Object> zodiac =
+                    sdk -> ((Map<?, ?>) Json.object(sdk.settingsJson()).get("frame")).get("zodiac");
+            Context sky = context(teistro);
+            String hash = sky.settingsHash();
+            double sidereal = moon.applyAsDouble(sky);
+            Context tropical = sky.withSettings(Map.of("frame", Map.of("zodiac", "TROPICAL")), "hi-Deva-IN");
+            same("TROPICAL", zodiac.apply(tropical), "the patch");
+            same("nepali-drik", tropical.profile(), "the parent's profile id is kept");
+            same("hi-Deva-IN", tropical.intl().locale(), "the locale named");
+            check(Math.abs(moon.applyAsDouble(tropical) - sidereal) > 20, "a tropical Moon");
+            try (Context built = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .settingsJson("{\"frame\":{\"zodiac\":\"TROPICAL\"}}").testProvider(true).build())) {
+                same(built.settingsHash(), tropical.settingsHash(), "a built context's settings");
+            }
+            try (Context mean = tropical.withSettings(Map.of("frame", Map.of("node", "MEAN")))) {
+                same("TROPICAL", zodiac.apply(mean), "laid over the derived settings");
+            }
+            same("SIDEREAL", zodiac.apply(sky), "the parent is unchanged");
+            same(hash, sky.settingsHash(), "its hash");
+            same("en-Latn", sky.intl().locale(), "its locale");
+            same(sidereal, moon.applyAsDouble(sky), "its answer");
+            TeistroException refused = refusal(() -> sky.withSettings(Map.of("frame", Map.of("nod", "MEAN"))).close());
+            same("settings.frame.nod", refused.field(), "the knob refused");
+            // Either may be closed first.
+            sky.close();
+            same("TROPICAL", zodiac.apply(tropical), "a derived context outlives its parent");
+            tropical.close();
+        });
+
+        tests.put("a context derived over a provider written in Java outlives its parent", () -> {
+            Line line = new Line(null);
+            Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").provider(line).build());
+            Context derived = sky.withSettings(Map.of("frame", Map.of("node", "MEAN")));
+            sky.close();
+            try {
+                derived.positions(new double[] {2_451_545.0}, List.of(Body.SUN));
+                same(1, line.calls, "the parent's provider answers it");
+                check(derived.provider().orElseThrow() == line, "and is named");
+            } finally {
+                derived.close();
+            }
+        });
+
         tests.put("a key and its id read back", () -> {
             try (Context sky = context(teistro)) {
                 long sun = sky.keys().id("graha.SUN");

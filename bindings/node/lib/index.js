@@ -9445,6 +9445,9 @@ export class Context {
   #thrown;
   /** Whether `dispose` has already freed the handle. */
   #disposed = false;
+  /** The layouts and dasha systems this context registered, which a derived one shares. */
+  #layouts;
+  #dashaSystems;
 
   /**
    * Runs a call on the addon, putting back whatever this context's
@@ -9492,33 +9495,15 @@ export class Context {
    *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, layouts, dashaSystems, ephemeris, testProvider = false, provider } = options;
-    if (layouts !== undefined && !Array.isArray(layouts)) {
-      throw new TypeError('layouts: expected an array of layout rows');
-    }
-    if (dashaSystems !== undefined && !Array.isArray(dashaSystems)) {
-      throw new TypeError('dashaSystems: expected an array of dasha system definitions');
-    }
-    // Two ways to answer one question, so both together is a refusal
-    // rather than one silently winning — the rule the settings patch
-    // has.
-    if (provider !== undefined && ephemeris !== undefined) {
-      throw new TypeError(
-        'provider and ephemeris each name the ephemeris to compute with; give one of them',
-      );
-    }
-    const chain = ephemerisChain(ephemeris, testProvider, provider);
-    const settled = clean({
-      flags: 0,
-      profile,
-      settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
-      locale,
-      layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
-      dashasJson: dashaSystems === undefined ? undefined : JSON.stringify(dashaSystems),
-    });
-    const [inner, thrown] = guarded(null, () => open(chain, settled));
+    // A context `withSettings` derived arrives opened, with what it
+    // shares of its parent; any other is opened from its options.
+    const derived = options[derivedFrom];
+    const { layouts, dashaSystems } = derived ?? options;
+    const [inner, thrown] = derived?.opened ?? opened(options);
     this.#inner = inner;
     this.#thrown = thrown;
+    this.#layouts = layouts;
+    this.#dashaSystems = dashaSystems;
 
     // The areas, built once and never rebuilt: each holds the one way in
     // and nothing else, so a consumer may destructure one and keep it
@@ -9604,6 +9589,47 @@ export class Context {
   get settingsHash() {
     const hash = this.#call(() => this.#inner.settingsHash());
     return hex(hash.bytes);
+  }
+
+  /**
+   * **This context with a settings patch over its settings**: the
+   * per-call override, without opening a context again.
+   *
+   * `patch` names only the knobs it changes, as `options.settings` does,
+   * and is laid over this context's resolved settings (not over its
+   * profile); `locale`, when given, is the one the new context renders in.
+   * The new context keeps this one's profile id and shares its ephemeris
+   * and that ephemeris's cache, its registrations, its packs and its own
+   * provider, so nothing is opened or read again. This context is
+   * unchanged, and either may be disposed first.
+   *
+   * ```js
+   * const mean = ctx.withSettings({ frame: { node: 'MEAN' } });
+   * ```
+   *
+   * A knob that does not exist, or a merge that breaks a coherence rule,
+   * throws a `TeistroError` naming the knob under `settings`
+   * (`settings.frame.nod`).
+   *
+   * @param {object} patch a settings patch
+   * @param {string} [locale] the locale the new context renders in
+   * @returns {Context}
+   */
+  withSettings(patch, locale) {
+    if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
+      throw new TypeError("patch: expected a settings patch, e.g. { frame: { node: 'MEAN' } }");
+    }
+    if (locale !== undefined && typeof locale !== 'string') {
+      throw new TypeError("locale: expected a locale tag, e.g. 'ne-Deva-NP'");
+    }
+    const inner = this.#call(() => this.#inner.derive(JSON.stringify(patch), locale));
+    return new Context({
+      [derivedFrom]: {
+        opened: [inner, this.#thrown],
+        layouts: this.#layouts,
+        dashaSystems: this.#dashaSystems,
+      },
+    });
   }
 
   /**
@@ -9823,6 +9849,46 @@ function entryName(entry) {
   if (typeof entry === 'string') return entry;
   return entry.plugin ?? entry.provider.name;
 }
+
+/**
+ * A context's native half opened from its options, with where its own
+ * provider leaves what it threw: the options checked at the door, then
+ * the chain tried in order.
+ */
+function opened(options) {
+  const { profile, settings, locale, layouts, dashaSystems, ephemeris, testProvider = false, provider } = options;
+  if (layouts !== undefined && !Array.isArray(layouts)) {
+    throw new TypeError('layouts: expected an array of layout rows');
+  }
+  if (dashaSystems !== undefined && !Array.isArray(dashaSystems)) {
+    throw new TypeError('dashaSystems: expected an array of dasha system definitions');
+  }
+  // Two ways to answer one question, so both together is a refusal
+  // rather than one silently winning — the rule the settings patch
+  // has.
+  if (provider !== undefined && ephemeris !== undefined) {
+    throw new TypeError(
+      'provider and ephemeris each name the ephemeris to compute with; give one of them',
+    );
+  }
+  const chain = ephemerisChain(ephemeris, testProvider, provider);
+  const settled = clean({
+    flags: 0,
+    profile,
+    settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
+    locale,
+    layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
+    dashasJson: dashaSystems === undefined ? undefined : JSON.stringify(dashaSystems),
+  });
+  return guarded(null, () => open(chain, settled));
+}
+
+/**
+ * The key a derived context's options carry its parent's opened half and
+ * shared registrations under: private to this module, so no caller's
+ * options can name it.
+ */
+const derivedFrom = Symbol('derivedFrom');
 
 /**
  * Opens the context on the first entry of the chain that answers.

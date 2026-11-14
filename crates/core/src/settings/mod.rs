@@ -1325,6 +1325,28 @@ impl SettingsPatch {
     pub fn is_empty(&self) -> bool {
         *self == SettingsPatch::default()
     }
+
+    /// A patch read from its JSON, refused down to the knob under
+    /// `settings` (`settings.houses.chalit_system`): what a context's
+    /// options, a derived context and the agent server's `settings`
+    /// argument are each read with, so the three refuse one patch alike.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, SettingsPatch};
+    ///
+    /// assert_eq!(SettingsPatch::from_json(r#"{"frame": {"node": "MEAN"}}"#)?.frame.node, Some(Node::Mean));
+    /// let refused = SettingsPatch::from_json(r#"{"frame": {"nod": "MEAN"}}"#).unwrap_err();
+    /// assert_eq!(refused.field(), Some("settings.frame.nod"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` at the field for text that is not a patch: an unknown
+    /// group or knob, or a value outside the knob's type.
+    pub fn from_json(json: &str) -> Result<SettingsPatch, Error> {
+        crate::strict::deserialize_str(json, "settings")
+    }
 }
 
 impl Settings {
@@ -1359,6 +1381,36 @@ impl Settings {
         self.provider.apply(&patch.provider);
         self.output.apply(&patch.output);
         self
+    }
+
+    /// **The one merge**: a patch laid over these settings, knob by knob,
+    /// and the result checked once by the coherence rules under
+    /// `profile`: the merge [`Profile::resolve`] makes over a profile, and
+    /// what a context derived with a patch and the agent server's
+    /// per-call scope resolve with (`03-design/settings-and-profiles.md`,
+    /// "Per call").
+    ///
+    /// ```
+    /// use teistro_core::settings::{Node, ProfileId, SettingsPatch, SunriseConvention, root};
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// patch.frame.node = Some(Node::Mean);
+    /// let derived = root().derived(&patch, ProfileId::new("mine"))?;
+    /// assert_eq!((derived.settings.frame.node, derived.profile.as_str()), (Node::Mean, "mine"));
+    /// // A refusal names the knob under `settings`.
+    /// patch.day.sunrise = Some(SunriseConvention::Custom { altitude_deg: 95.0 });
+    /// assert_eq!(root().derived(&patch, ProfileId::new("mine")).unwrap_err().field(), Some("settings.day.sunrise"));
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming the first knob a coherence error names, under
+    /// `settings`, with every error in the message.
+    pub fn derived(self, patch: &SettingsPatch, profile: ProfileId) -> Result<Resolved, Error> {
+        self.patched(patch)
+            .validated(profile)
+            .map_err(|diagnostics| Error::from(diagnostics).under("settings"))
     }
 
     /// The canonical document: keys in code-point order, no whitespace,

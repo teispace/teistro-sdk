@@ -15433,6 +15433,92 @@
       "source": "crates/ffi/src/context.rs"
     },
     {
+      "name": "ts_context_derive",
+      "doc": "Derives a context from `context` with a **settings patch** laid over its\nsettings: the per-call override, without building a context again.\n\n`patch_json` is a JSON settings patch, as `options.settings_json` is,\nmerged knob by knob over the parent's resolved settings (not over its\nprofile), so a patch names only the knobs it changes; null patches\nnothing. `locale` renders the derived context in that locale; null keeps\nthe parent's. The derived context keeps the parent's profile id and\nshares, behind reference counts, its ephemeris with its cache, its\nlayouts, its dasha systems, its zone database, its geo provider and its\npacks: nothing is opened, read or hashed again, so a derivation costs a\ncopy of the locale state. The parent is unchanged and either may be\nfreed first; a provider vtable's `provider_user_data` must stay valid\nuntil the last context sharing it is freed. A derived context is a\ncontext like any other: used by one thread at a time, freed by\n`ts_context_free`, and derived from in turn.\n\nOn success `*out_context` owns the new context. On failure, when\n`out_error` is not null, it receives the whole refusal as a record that\nowns its strings, released by `ts_error_free`: `INVALID_ARG` naming the\nknob under `settings` (`settings.frame.nod` for a knob that does not\nexist, `settings.day.sunrise` for a merge that breaks a coherence rule),\n`UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`\nwhen the ephemeris is a classical one opened for other values of them,\nwhich only `ts_context_new` can open again, and `UNSUPPORTED` at\n`locale` for a locale not loaded.",
+      "safety": "`context` must be null or a live handle; `patch_json` and `locale` null\nor NUL-terminated strings; `out_context` null or valid for a write;\n`out_error` null or a `ts_error` with its `struct_size` set, valid for\nreads and writes.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "patch_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {
+            "example": "{\"frame\":{\"node\":\"MEAN\"}}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "locale",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {
+            "example": "ne-Deva-NP",
+            "nullable": true
+          }
+        },
+        {
+          "name": "out_context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "pointer",
+              "to": {
+                "kind": "opaque",
+                "name": "TsContext"
+              },
+              "mutable": true
+            },
+            "mutable": true
+          },
+          "role": "handle_out",
+          "meta": {}
+        },
+        {
+          "name": "out_error",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsError"
+            },
+            "mutable": true
+          },
+          "role": "struct_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "ts_context_free",
       "doc": "Frees a context; null is ignored.",
       "safety": "`context` must be null or a handle from `ts_context_new` that is not\nused again.",

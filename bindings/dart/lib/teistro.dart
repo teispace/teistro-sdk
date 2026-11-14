@@ -4050,20 +4050,20 @@ final class Context {
     this._teistro,
     this._inner,
     this._host,
-    List<LayoutRow> layouts,
-    List<DashaDefinition> dashaSystems,
+    this._layouts,
+    this._dashaSystems,
   )
     // The member id of each layout and dasha system this context registered,
     // by its full key: asked once, here, so a request resolves a consumer's
     // own without crossing the boundary again (`03-design/chart-geometry.md`
     // §7f).
     : _registeredLayouts = {
-        for (final row in layouts)
+        for (final row in _layouts)
           'chart_layout.${row.key}':
               _inner.keyParse('chart_layout.${row.key}') & 0xFFFF,
       },
       _registeredDashas = {
-        for (final system in dashaSystems)
+        for (final system in _dashaSystems)
           'dasha_system.${system.key}':
               _inner.keyParse('dasha_system.${system.key}') & 0xFFFF,
       } {
@@ -4073,6 +4073,15 @@ final class Context {
 
   final Map<String, int> _registeredLayouts;
   final Map<String, int> _registeredDashas;
+
+  /// What this context registered, which a context derived from it
+  /// registers too.
+  final List<LayoutRow> _layouts;
+  final List<DashaDefinition> _dashaSystems;
+
+  /// Whether this context still holds its provider's vtable, which
+  /// [dispose] lets go of once.
+  var _holdsHost = true;
 
   final Teistro _teistro;
   final TeistroContext _inner;
@@ -4284,7 +4293,39 @@ final class Context {
   void dispose() {
     _hostFinaliser.detach(this);
     _inner.dispose();
-    _host?.dispose();
+    if (_holdsHost) {
+      _holdsHost = false;
+      _host?.dispose();
+    }
+  }
+
+  /// **This context with a settings patch over its settings**: the
+  /// per-call override, without opening a context again.
+  ///
+  /// [patch] names only the knobs it changes, as a context's `settings`
+  /// does, and is laid over this context's resolved settings (not over its
+  /// profile); [locale], when given, is the one the new context renders
+  /// in. The new context keeps this one's profile id and shares its
+  /// ephemeris and that ephemeris's cache, its registrations, its packs
+  /// and its own provider, so nothing is opened or read again. This
+  /// context is unchanged, and either may be disposed first.
+  ///
+  /// ```dart
+  /// final mean = ctx.withSettings({'frame': {'node': 'MEAN'}});
+  /// ```
+  ///
+  /// A knob that does not exist, or a merge that breaks a coherence rule,
+  /// throws a [TeistroException] naming the knob under `settings`
+  /// (`settings.frame.nod`).
+  Context withSettings(Map<String, Object?> patch, {String? locale}) {
+    final derived = _inner.derive(patchJson: jsonEncode(patch), locale: locale);
+    return Context._(
+      _teistro,
+      derived,
+      _host?.retain(),
+      _layouts,
+      _dashaSystems,
+    );
   }
 }
 

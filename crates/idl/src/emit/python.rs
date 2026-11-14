@@ -1398,6 +1398,9 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     for factory in crate::rules::factories(api, opaque) {
         render_factory(out, api, factory, opaque, &name, &handle);
     }
+    for deriver in crate::rules::derivers(api, opaque) {
+        render_deriver(out, api, deriver, opaque, &name, &handle);
+    }
     let _ = writeln!(
         out,
         "    @property\n    def _raw(self) -> \"ctypes._Pointer[{handle}]\":\n        \"\"\"The live handle, or a refusal saying it was closed.\"\"\"\n        if self._handle is None:\n            raise TeistroError(\n                Status.INVALID_ARG,\n                \"this context has been closed\",\n                hint=\"open another one\",\n            )\n        return self._handle\n\n    def close(self) -> None:\n        \"\"\"Frees the context's native memory. Closing twice is allowed.\"\"\"\n        with self._lock:\n            if self._handle is not None:\n                self._handle = None\n                self._finalise()\n\n    def __enter__(self) -> Teistro{name}:\n        return self\n\n    def __exit__(\n        self,\n        kind: Optional[type[BaseException]],\n        value: Optional[BaseException],\n        traceback: Optional[TracebackType],\n    ) -> None:\n        self.close()"
@@ -1482,6 +1485,42 @@ fn render_factory(
         out,
         "        status = Status({})\n        if status != Status.OK:\n            _refuse(lib, status, {})\n        return cls(lib, handle)\n",
         call_text("lib", f, &m.args, "        "),
+        refusal_argument(api, f),
+    );
+}
+
+/// A handle derived from this one (`rules::derivers`): an instance
+/// method answering a new instance of the class, its refusal the record
+/// the call wrote, as a way in's is. The new instance owns its own
+/// handle; what the parent's handle shares with it lives in the library.
+fn render_deriver(
+    out: &mut String,
+    api: &Api,
+    f: &FunctionDef,
+    opaque: &OpaqueDef,
+    name: &str,
+    handle: &str,
+) {
+    let method = identifier(&method_name(&api.prefix, &opaque.name, &f.name));
+    let m = marshal(api, f, "self._lib", Some(&opaque.name));
+    let _ = writeln!(
+        out,
+        "    def {method}(self{}) -> Teistro{name}:",
+        m.signature
+    );
+    out.push_str(&docstring(&f.doc, "        "));
+    out.push_str("        with self._lock:\n");
+    if m.owns {
+        out.push_str("            owned: list[Any] = []\n");
+    }
+    let _ = writeln!(out, "            handle = ctypes.POINTER({handle})()");
+    for line in &m.setup {
+        let _ = writeln!(out, "            {line}");
+    }
+    let _ = writeln!(
+        out,
+        "            status = Status({})\n            if status != Status.OK:\n                _refuse(self._lib, status, {})\n            return Teistro{name}(self._lib, handle)\n",
+        call_text("self._lib", f, &m.args, "            "),
         refusal_argument(api, f),
     );
 }

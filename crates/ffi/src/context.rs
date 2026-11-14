@@ -573,6 +573,42 @@ impl TsContext {
         })
     }
 
+    /// This context with a settings patch over its settings, in `locale`
+    /// when one is named: what `ts_context_derive` answers.
+    ///
+    /// ```
+    /// use teistro_ffi::context::{OptionTexts, TsContext};
+    ///
+    /// let parent = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+    /// let derived = parent.derive(Some(r#"{"frame": {"node": "TRUE"}}"#), Some("ne-Deva-NP"))?;
+    /// assert_eq!(derived.profile(), parent.profile());
+    /// assert_ne!(derived.settings(), parent.settings());
+    /// assert_eq!(derived.intl().locale(), "ne-Deva-NP");
+    /// // No patch is the parent's settings, shared.
+    /// assert_eq!(parent.derive(None, None)?.settings(), parent.settings());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`teistro::Context::with_patch_json`] refuses.
+    pub fn derive(
+        &self,
+        patch_json: Option<&str>,
+        locale: Option<&str>,
+    ) -> Result<TsContext, Error> {
+        let inner = match patch_json {
+            Some(json) => self.inner.with_patch_json(json, locale)?,
+            None => self
+                .inner
+                .with_patch(&teistro_core::settings::SettingsPatch::default(), locale)?,
+        };
+        Ok(TsContext {
+            inner,
+            scratch: RefCell::new(Scratch::default()),
+        })
+    }
+
     /// The SDK's own context, for what a binding reaches through this
     /// one.
     ///
@@ -968,6 +1004,94 @@ unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts
         layouts_json: field(|o| o.layouts_json, "options.layouts_json")?,
         dashas_json: field(|o| o.dashas_json, "options.dashas_json")?,
     })
+}
+
+/// Derives a context from `context` with a **settings patch** laid over its
+/// settings: the per-call override, without building a context again.
+///
+/// `patch_json` is a JSON settings patch, as `options.settings_json` is,
+/// merged knob by knob over the parent's resolved settings (not over its
+/// profile), so a patch names only the knobs it changes; null patches
+/// nothing. `locale` renders the derived context in that locale; null keeps
+/// the parent's. The derived context keeps the parent's profile id and
+/// shares, behind reference counts, its ephemeris with its cache, its
+/// layouts, its dasha systems, its zone database, its geo provider and its
+/// packs: nothing is opened, read or hashed again, so a derivation costs a
+/// copy of the locale state. The parent is unchanged and either may be
+/// freed first; a provider vtable's `provider_user_data` must stay valid
+/// until the last context sharing it is freed. A derived context is a
+/// context like any other: used by one thread at a time, freed by
+/// `ts_context_free`, and derived from in turn.
+///
+/// On success `*out_context` owns the new context. On failure, when
+/// `out_error` is not null, it receives the whole refusal as a record that
+/// owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+/// knob under `settings` (`settings.frame.nod` for a knob that does not
+/// exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+/// `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+/// when the ephemeris is a classical one opened for other values of them,
+/// which only `ts_context_new` can open again, and `UNSUPPORTED` at
+/// `locale` for a locale not loaded.
+///
+/// `api: patch_json: nullable example={"frame":{"node":"MEAN"}}`
+/// `api: locale: nullable example=ne-Deva-NP`
+///
+/// ```
+/// use teistro_core::Status;
+/// use teistro_ffi::context::{TsContext, TsError, ts_context_derive, ts_context_free, ts_context_new};
+///
+/// # let blank = || -> Result<TsError, core::num::TryFromIntError> {
+/// #     Ok(TsError {
+/// #         struct_size: u32::try_from(size_of::<TsError>())?,
+/// #         status: 0, provider_code: 0, flags: 0,
+/// #         detail: core::ptr::null(), message: core::ptr::null(), field: core::ptr::null(),
+/// #         hint: core::ptr::null(), key: core::ptr::null(),
+/// #     })
+/// # };
+/// let mut parent: *mut TsContext = core::ptr::null_mut();
+/// let mut error = blank()?;
+/// // SAFETY: null options and provider, and writable slots.
+/// assert_eq!(unsafe { ts_context_new(core::ptr::null(), core::ptr::null(), core::ptr::null_mut(), &raw mut parent, &raw mut error) }, Status::Ok);
+/// let mut true_node: *mut TsContext = core::ptr::null_mut();
+/// // SAFETY: a live parent, a NUL-terminated patch, writable slots.
+/// let status = unsafe { ts_context_derive(parent, c"{\"frame\": {\"node\": \"TRUE\"}}".as_ptr(), core::ptr::null(), &raw mut true_node, &raw mut error) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: both handles were made above and are live.
+/// let (parent_ref, true_ref) = unsafe { (&*parent, &*true_node) };
+/// assert_ne!(true_ref.settings(), parent_ref.settings());
+/// // SAFETY: the handles the calls made, each freed once, the parent first.
+/// unsafe {
+///     ts_context_free(parent);
+///     ts_context_free(true_node);
+/// }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be null or a live handle; `patch_json` and `locale` null
+/// or NUL-terminated strings; `out_context` null or valid for a write;
+/// `out_error` null or a `ts_error` with its `struct_size` set, valid for
+/// reads and writes.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_context_derive(
+    context: *const TsContext,
+    patch_json: *const c_char,
+    locale: *const c_char,
+    out_context: *mut *mut TsContext,
+    out_error: *mut TsError,
+) -> Status {
+    // SAFETY: the entry point's contract.
+    unsafe {
+        construct(out_context, "out_context", out_error, || {
+            let Some(parent) = crate::support::context(context) else {
+                return Err(crate::support::null("context"));
+            };
+            let patch = optional_text(patch_json, "patch_json")?;
+            let locale = optional_text(locale, "locale")?;
+            parent.derive(patch, locale)
+        })
+    }
 }
 
 /// Frees a context; null is ignored.

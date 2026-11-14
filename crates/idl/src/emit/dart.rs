@@ -772,6 +772,10 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
         let named = camel(&crate::rules::method_name(api, opaque, factory));
         render_dart_way_in(out, api, factory, &name, Some(&named), Some(&opaque.name));
     }
+    for deriver in crate::rules::derivers(api, opaque) {
+        let named = camel(&crate::rules::method_name(api, opaque, deriver));
+        render_dart_deriver(out, api, deriver, &name, &named, &opaque.name);
+    }
     render_dart_error_reader(out, api, opaque);
     for m in methods(api, opaque) {
         render_dart_method(out, api, opaque, m);
@@ -798,22 +802,17 @@ fn render_context(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     let _ = writeln!(out, "}}\n");
 }
 
-/// A way into a handle class: the unnamed constructor, or a **named**
-/// one for each factory beside it.
-///
-/// `named` is `None` for the constructor and `Some("newWithProvider")`
-/// for a factory, which is how Dart spells a second way in; `receiver`
-/// is the opaque whose handle would be `self` in a method, so that any
-/// other opaque's handle becomes a parameter of the class that holds it
-/// (`rules::factories`).
-fn render_dart_way_in(
-    out: &mut String,
+/// What a way in's parameters become: the Dart parameters, the
+/// statements that marshal them into the arena and the C call's
+/// arguments. `deriving` says the receiver's handle is this object's own
+/// (`rules::derivers`) rather than a parameter.
+fn dart_way_in_parts(
     api: &Api,
     ctor: &FunctionDef,
     name: &str,
-    named: Option<&str>,
     receiver: Option<&str>,
-) {
+    deriving: bool,
+) -> (Vec<String>, String, Vec<String>) {
     let mut params = Vec::new();
     let mut body = String::new();
     let mut args = Vec::new();
@@ -850,6 +849,10 @@ fn render_dart_way_in(
             // being built has no handle yet.
             Role::Handle => {
                 let held = pointee_opaque(api, p).map(|o| o.name.clone());
+                if deriving && held.as_deref() == receiver {
+                    args.push(String::from("_handle"));
+                    continue;
+                }
                 if held.as_deref() == receiver {
                     params.push(format!("required Teistro{name} {field}"));
                 } else {
@@ -915,6 +918,49 @@ fn render_dart_way_in(
             ),
         }
     }
+    (params, body, args)
+}
+
+/// A handle derived from this one (`rules::derivers`): an instance
+/// method answering a new instance, refused with the record the call
+/// wrote, as a way in is. The new instance owns its own handle.
+fn render_dart_deriver(
+    out: &mut String,
+    api: &Api,
+    f: &FunctionDef,
+    name: &str,
+    named: &str,
+    receiver: &str,
+) {
+    let (params, body, args) = dart_way_in_parts(api, f, name, Some(receiver), true);
+    let _ = writeln!(
+        out,
+        "{doc}  Teistro{name} {named}({{{params}}}) {{\n    _alive();\n    return pkg_ffi.using((arena) {{\n{body}      final status = _lib.{call}({args});\n      if (status != 0) {{\n        final refusal = refusalOf(status, error);\n        _lib.{free}(error);\n        throw refusal;\n      }}\n      return Teistro{name}._(_lib, out.value);\n    }});\n  }}\n",
+        doc = doc(&f.doc, "  "),
+        params = params.join(", "),
+        call = f.name,
+        args = args.join(", "),
+        free = free_name(api, Role::ErrorFree)
+    );
+}
+
+/// A way into a handle class: the unnamed constructor, or a **named**
+/// one for each factory beside it.
+///
+/// `named` is `None` for the constructor and `Some("newWithProvider")`
+/// for a factory, which is how Dart spells a second way in; `receiver`
+/// is the opaque whose handle would be `self` in a method, so that any
+/// other opaque's handle becomes a parameter of the class that holds it
+/// (`rules::factories`).
+fn render_dart_way_in(
+    out: &mut String,
+    api: &Api,
+    ctor: &FunctionDef,
+    name: &str,
+    named: Option<&str>,
+    receiver: Option<&str>,
+) {
+    let (params, body, args) = dart_way_in_parts(api, ctor, name, receiver, false);
     let _ = writeln!(
         out,
         "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final refusal = refusalOf(status, error);\n        lib.{free}(error);\n        throw refusal;\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",

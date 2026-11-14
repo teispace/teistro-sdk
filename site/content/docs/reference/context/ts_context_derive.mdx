@@ -1,0 +1,42 @@
+---
+title: ts_context_derive
+description: "Derives a context from `context` with a **settings patch** laid over its settings: the per-call override, without building a context again."
+---
+
+Derives a context from `context` with a **settings patch** laid over its settings: the per-call override, without building a context again.
+
+`patch_json` is a JSON settings patch, as `options.settings_json` is, merged knob by knob over the parent's resolved settings (not over its profile), so a patch names only the knobs it changes; null patches nothing. `locale` renders the derived context in that locale; null keeps the parent's. The derived context keeps the parent's profile id and shares, behind reference counts, its ephemeris with its cache, its layouts, its dasha systems, its zone database, its geo provider and its packs: nothing is opened, read or hashed again, so a derivation costs a copy of the locale state. The parent is unchanged and either may be freed first; a provider vtable's `provider_user_data` must stay valid until the last context sharing it is freed. A derived context is a context like any other: used by one thread at a time, freed by `ts_context_free`, and derived from in turn.
+
+On success `*out_context` owns the new context. On failure, when `out_error` is not null, it receives the whole refusal as a record that owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the knob under `settings` (`settings.frame.nod` for a knob that does not exist, `settings.day.sunrise` for a merge that breaks a coherence rule), `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t` when the ephemeris is a classical one opened for other values of them, which only `ts_context_new` can open again, and `UNSUPPORTED` at `locale` for a locale not loaded.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_derive(const ts_context * context, const char * patch_json, const char * locale, ts_context * * out_context, ts_error * out_error);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `(root).with_settings` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `patch_json` | `const char *` | a string read | For example `{"frame":{"node":"MEAN"}}`. May be null. |
+| `locale` | `const char *` | a string read | For example `ne-Deva-NP`. May be null. |
+| `out_context` | `ts_context * *` | receives a handle | — |
+| `out_error` | `ts_error *` | a struct written | — |
+
+## What it hands back
+
+`error`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be null or a live handle; `patch_json` and `locale` null or NUL-terminated strings; `out_context` null or valid for a write; `out_error` null or a `ts_error` with its `struct_size` set, valid for reads and writes.
+
+Declared in `crates/ffi/src/context.rs`.

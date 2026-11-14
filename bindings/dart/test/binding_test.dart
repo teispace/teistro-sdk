@@ -164,6 +164,78 @@ void main() {
     );
   });
 
+  test('withSettings derives a context under a patch and leaves its parent '
+      'as it was', () {
+    final ctx = context();
+    double moon(Context sdk) =>
+        sdk.chart
+            .found(
+              instant: 2451545,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+            )
+            .grahas
+            .firstWhere((g) => g.graha == Graha.moon)
+            .longitudeDeg;
+    String zodiac(Context sdk) =>
+        (sdk.settings['frame']! as Map<String, Object?>)['zodiac']! as String;
+    final hash = ctx.settingsHash;
+    final sidereal = moon(ctx);
+
+    final tropical = ctx.withSettings({
+      'frame': {'zodiac': 'TROPICAL'},
+    }, locale: 'en-Latn');
+    expect(zodiac(tropical), 'TROPICAL');
+    expect(tropical.profile, 'nepali-drik', reason: "the parent's id is kept");
+    expect(tropical.intl.locale, 'en-Latn');
+    // A tropical Moon is the sidereal one plus the ayanamsha.
+    expect((moon(tropical) - sidereal).abs(), greaterThan(20));
+    expect(
+      tropical.settingsHash,
+      context(
+        settings: {
+          'frame': {'zodiac': 'TROPICAL'},
+        },
+      ).settingsHash,
+    );
+    // A patch over a derived context is laid over its settings in turn.
+    final mean = tropical.withSettings({
+      'frame': {'node': 'MEAN'},
+    });
+    expect((mean.settings['frame']! as Map<String, Object?>)['node'], 'MEAN');
+    expect(zodiac(mean), 'TROPICAL');
+
+    // The parent is unchanged.
+    expect(zodiac(ctx), 'SIDEREAL');
+    expect(ctx.settingsHash, hash);
+    expect(ctx.intl.locale, 'ne-Deva-NP');
+    expect(moon(ctx), sidereal);
+
+    // A refusal names the knob under `settings`.
+    expect(
+      () => ctx.withSettings({
+        'frame': {'nod': 'MEAN'},
+      }),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'settings.frame.nod',
+        ),
+      ),
+    );
+
+    // Either may be disposed first.
+    ctx.dispose();
+    expect(zodiac(tropical), 'TROPICAL');
+    tropical.dispose();
+    mean.dispose();
+  });
+
   test('a pack loads at runtime and lays its record over the one standing', () {
     // The fixture pack is the base locale's, so this context reads that
     // one: a record is a locale's, and loading into `en-Latn` does not

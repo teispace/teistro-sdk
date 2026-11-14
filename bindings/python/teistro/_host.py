@@ -217,6 +217,10 @@ class HostProvider:
         #: Python has more to say than a code.
         self.raised: Optional[BaseException] = None
         self._closed = False
+        # The contexts using the vtable: the one it was built for, and any
+        # derived from it (`Context.with_settings`), which the library
+        # points at the same vtable.
+        self._holders = 1
         # Held so the interpreter cannot collect a function pointer the
         # library still has.
         self._capabilities_fn: Any = CapabilitiesFn(self._fill_capabilities)
@@ -361,15 +365,26 @@ class HostProvider:
             bodies=[Body(request.bodies[i]) for i in range(request.body_count)],
         )
 
+    def retain(self) -> HostProvider:
+        """Counts one more context using the vtable: a context derived
+        from the one it was built for, which shares it. Each holder closes
+        it once, and the last close releases it."""
+        self._holders += 1
+        return self
+
     def close(self) -> None:
-        """Releases the trampolines and the memory the vtable points at.
+        """Lets go of one holder, and releases the trampolines and the
+        memory the vtable points at when it was the last.
 
         The context that used them must be closed first, which
         `Context.close` sees to: dropping a trampoline the library still
         held would leave it with a dangling function pointer. Closing
-        twice is allowed.
+        once released is allowed.
         """
         if self._closed:
+            return
+        self._holders -= 1
+        if self._holders > 0:
             return
         self._closed = True
         # Nothing here is freed by hand — the interpreter owns all of it —

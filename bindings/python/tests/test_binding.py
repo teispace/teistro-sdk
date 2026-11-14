@@ -266,6 +266,50 @@ class AContext(WithLibrary):
             self.assertEqual(ctx.profile, "nepali-drik")
             self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
 
+    def test_with_settings_derives_a_context_and_leaves_its_parent_as_it_was(self) -> None:
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+
+        def moon(ctx: Any) -> float:
+            chart = ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700)
+            return float(next(g.longitude_deg for g in chart.grahas if g.graha == Graha.MOON))
+
+        hash_before = self.ctx.settings_hash
+        sidereal = moon(self.ctx)
+        with self.ctx.with_settings({"frame": {"zodiac": "TROPICAL"}}, "en-Latn") as tropical:
+            self.assertEqual(tropical.settings["frame"]["zodiac"], "TROPICAL")
+            self.assertEqual(tropical.profile, PROFILE, "the parent's profile id is kept")
+            self.assertEqual(tropical.intl.locale, "en-Latn")
+            # A tropical Moon is the sidereal one plus the ayanamsha.
+            self.assertGreater(abs(moon(tropical) - sidereal), 20.0)
+            with self.teistro.context(
+                profile=PROFILE, settings={"frame": {"zodiac": "TROPICAL"}}, test_provider=True
+            ) as built:
+                self.assertEqual(tropical.settings_hash, built.settings_hash)
+            # A patch over a derived context is laid over its settings.
+            with tropical.with_settings({"frame": {"node": "MEAN"}}) as mean:
+                self.assertEqual(
+                    (mean.settings["frame"]["zodiac"], mean.settings["frame"]["node"]),
+                    ("TROPICAL", "MEAN"),
+                )
+        # The parent is unchanged.
+        self.assertEqual(self.ctx.settings["frame"]["zodiac"], "SIDEREAL")
+        self.assertEqual(self.ctx.settings_hash, hash_before)
+        self.assertEqual(self.ctx.intl.locale, LOCALE)
+        self.assertEqual(moon(self.ctx), sidereal)
+        # A refusal names the knob under `settings`.
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.with_settings({"frame": {"nod": "MEAN"}})
+        self.assertEqual(refused.exception.field, "settings.frame.nod")
+        with self.assertRaises(TypeError):
+            self.ctx.with_settings("frame")  # type: ignore[arg-type]
+
+    def test_a_derived_context_outlives_its_parent(self) -> None:
+        parent = self.teistro.context(profile=PROFILE, test_provider=True)
+        derived = parent.with_settings({"frame": {"node": "MEAN"}})
+        parent.close()
+        self.assertEqual(derived.settings["frame"]["node"], "MEAN")
+        derived.close()
+
     def test_it_carries_the_settings_it_was_asked_for(self) -> None:
         self.assertEqual(self.ctx.profile, PROFILE)
         self.assertEqual(self.ctx.intl.locale, LOCALE)

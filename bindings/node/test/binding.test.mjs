@@ -114,6 +114,60 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('withSettings derives a context under a patch and leaves its parent as it was', () => {
+  const at = {
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const moon = (sdk) => sdk.chart.found(at).grahas.find((g) => g.graha === 'graha.MOON').longitudeDeg;
+  const ctx = context();
+  const hash = ctx.settingsHash;
+  const answer = moon(ctx);
+
+  const tropical = ctx.withSettings({ frame: { zodiac: 'TROPICAL' } }, 'en-Latn');
+  assert.equal(tropical.settings.frame.zodiac, 'TROPICAL');
+  assert.equal(tropical.profile, 'nepali-drik', 'the parent\'s profile id is kept');
+  assert.equal(tropical.intl.locale, 'en-Latn');
+  // A tropical Moon is the sidereal one plus the ayanamsha, some 23 degrees.
+  assert.ok(Math.abs(moon(tropical) - answer) > 20, `${moon(tropical)} and ${answer}`);
+  // The same settings a context built with the patch resolves.
+  assert.equal(tropical.settingsHash, context({ settings: { frame: { zodiac: 'TROPICAL' } } }).settingsHash);
+  // A patch over a derived context is laid over its settings in turn.
+  const mean = tropical.withSettings({ frame: { node: 'MEAN' } });
+  assert.deepEqual([mean.settings.frame.zodiac, mean.settings.frame.node], ['TROPICAL', 'MEAN']);
+
+  // The parent is unchanged.
+  assert.equal(ctx.settings.frame.zodiac, 'SIDEREAL');
+  assert.equal(ctx.settingsHash, hash);
+  assert.equal(ctx.intl.locale, 'ne-Deva-NP');
+  assert.equal(moon(ctx), answer);
+
+  // A refusal names the knob under `settings`.
+  assert.throws(
+    () => ctx.withSettings({ frame: { nod: 'MEAN' } }),
+    (error) => error instanceof TeistroError && error.field === 'settings.frame.nod',
+  );
+  assert.throws(() => ctx.withSettings('frame'), TypeError);
+
+  // Either may be disposed first.
+  ctx.dispose();
+  assert.equal(tropical.settings.frame.zodiac, 'TROPICAL');
+  tropical.dispose();
+  mean.dispose();
+});
+
+test('a context derived over an ephemeris written in JavaScript outlives its parent', () => {
+  const { calls, provider } = jsProvider();
+  const ctx = new Context({ provider, profile: 'nepali-drik' });
+  const derived = ctx.withSettings({ frame: { node: 'MEAN' } });
+  ctx.dispose();
+  const positions = derived.positions({ instants: [2451545.0], bodies: [Body.Sun] });
+  assert.equal(calls.length, 1, 'the parent\'s provider answers the derived context');
+  assert.equal(positions.provenance.provider.name, 'a-provider-in-javascript');
+  derived.dispose();
+});
+
 test('a short tag finds the locale it means, and says which', () => {
   const ctx = context({ locale: 'ne' });
   assert.equal(ctx.intl.locale, 'ne-Deva-NP');

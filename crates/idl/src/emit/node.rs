@@ -1450,7 +1450,7 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef, b: Backend) {
     // The class owns it, because the vtable points into it for as long as
     // the handle lives.
     let field = if host {
-        "\n    /// The host-implemented provider, alive while the handle is.\n    host: Option<crate::provider::Host>,"
+        "\n    /// The host-implemented provider, alive while the handle is and while\n    /// any context derived from it is: they share it.\n    host: Option<std::rc::Rc<crate::provider::Host>>,"
     } else {
         ""
     };
@@ -1465,6 +1465,9 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef, b: Backend) {
     }
     for factory in crate::rules::factories(api, opaque) {
         render_factory(out, api, factory, opaque, &name, host, b);
+    }
+    for deriver in crate::rules::derivers(api, opaque) {
+        render_deriver(out, api, deriver, opaque, &name, host, b);
     }
     render_last_error_method(out, api, opaque, b);
     render_check(out, api, opaque, b);
@@ -1518,7 +1521,11 @@ fn render_constructor(
     if b.env() {
         call.params.insert(0, String::from("env: Env"));
     }
-    let built = if host { ", host" } else { "" };
+    let built = if host {
+        ", host: host.map(std::rc::Rc::new)"
+    } else {
+        ""
+    };
     let _ = writeln!(
         out,
         "{}    {}\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused({}&mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
@@ -1566,6 +1573,43 @@ fn render_factory(
         "{}    {}\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused({}&mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&f.doc, "    "),
         b.factory(&method),
+        call.params.join(", "),
+        call.setup,
+        call_expression(f, &call.args.join(", ")),
+        refused_env(b)
+    );
+}
+
+/// A handle derived from this one (`rules::derivers`): an instance method
+/// answering a new instance, refused with the record the call wrote, as a
+/// way in is. The new instance owns its own handle and **shares the host
+/// provider** the parent holds, behind a reference count: the library's
+/// derived context calls the same vtable, so the host must outlive both.
+fn render_deriver(
+    out: &mut String,
+    api: &Api,
+    f: &FunctionDef,
+    opaque: &OpaqueDef,
+    name: &str,
+    host: bool,
+    b: Backend,
+) {
+    let mut call = build_call(api, f, Some(&opaque.name), b);
+    if b.env() {
+        call.params.insert(0, String::from("env: Env"));
+    }
+    call.params.insert(0, String::from("&self"));
+    let built = if host {
+        ", host: self.host.clone()"
+    } else {
+        ""
+    };
+    let method = crate::rules::method_name(api, opaque, f);
+    let _ = writeln!(
+        out,
+        "{}    {}\n    pub fn {method}({}) -> Result<{name}> {{\n{}        // SAFETY: a live handle and every pointer valid for the call; the new\n        // handle is owned from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused({}&mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        doc(&f.doc, "    "),
+        b.export(&method),
         call.params.join(", "),
         call.setup,
         call_expression(f, &call.args.join(", ")),

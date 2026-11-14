@@ -1952,6 +1952,8 @@ typedef TsErrorFreeNative = ffi.Void Function(ffi.Pointer<ErrorStruct>);
 typedef TsErrorFreeDart = void Function(ffi.Pointer<ErrorStruct>);
 typedef TsContextNewNative = ffi.Int32 Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
 typedef TsContextNewDart = int Function(ffi.Pointer<ContextOptionsStruct>, ffi.Pointer<ProviderVtableStruct>, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
+typedef TsContextDeriveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
+typedef TsContextDeriveDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Pointer<Context>>, ffi.Pointer<ErrorStruct>);
 typedef TsContextFreeNative = ffi.Void Function(ffi.Pointer<Context>);
 typedef TsContextFreeDart = void Function(ffi.Pointer<Context>);
 typedef TsContextLastErrorNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ErrorStruct>);
@@ -2166,6 +2168,7 @@ final class TeistroLibrary {
         ts_blob_free = library.lookupFunction<TsBlobFreeNative, TsBlobFreeDart>('ts_blob_free'),
         ts_error_free = library.lookupFunction<TsErrorFreeNative, TsErrorFreeDart>('ts_error_free'),
         ts_context_new = library.lookupFunction<TsContextNewNative, TsContextNewDart>('ts_context_new'),
+        ts_context_derive = library.lookupFunction<TsContextDeriveNative, TsContextDeriveDart>('ts_context_derive'),
         ts_context_free = library.lookupFunction<TsContextFreeNative, TsContextFreeDart>('ts_context_free'),
         ts_context_last_error = library.lookupFunction<TsContextLastErrorNative, TsContextLastErrorDart>('ts_context_last_error'),
         ts_context_profile = library.lookupFunction<TsContextProfileNative, TsContextProfileDart>('ts_context_profile'),
@@ -2322,6 +2325,34 @@ final class TeistroLibrary {
   /// refusal as a record that owns its strings, released by
   /// `ts_error_free`.
   final TsContextNewDart ts_context_new;
+
+  /// Derives a context from `context` with a **settings patch** laid over its
+  /// settings: the per-call override, without building a context again.
+  ///
+  /// `patch_json` is a JSON settings patch, as `options.settings_json` is,
+  /// merged knob by knob over the parent's resolved settings (not over its
+  /// profile), so a patch names only the knobs it changes; null patches
+  /// nothing. `locale` renders the derived context in that locale; null keeps
+  /// the parent's. The derived context keeps the parent's profile id and
+  /// shares, behind reference counts, its ephemeris with its cache, its
+  /// layouts, its dasha systems, its zone database, its geo provider and its
+  /// packs: nothing is opened, read or hashed again, so a derivation costs a
+  /// copy of the locale state. The parent is unchanged and either may be
+  /// freed first; a provider vtable's `provider_user_data` must stay valid
+  /// until the last context sharing it is freed. A derived context is a
+  /// context like any other: used by one thread at a time, freed by
+  /// `ts_context_free`, and derived from in turn.
+  ///
+  /// On success `*out_context` owns the new context. On failure, when
+  /// `out_error` is not null, it receives the whole refusal as a record that
+  /// owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+  /// knob under `settings` (`settings.frame.nod` for a knob that does not
+  /// exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+  /// `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+  /// when the ephemeris is a classical one opened for other values of them,
+  /// which only `ts_context_new` can open again, and `UNSUPPORTED` at
+  /// `locale` for a locale not loaded.
+  final TsContextDeriveDart ts_context_derive;
 
   /// Frees a context; null is ignored.
   final TsContextFreeDart ts_context_free;
@@ -6516,6 +6547,50 @@ final class TeistroContext implements ffi.Finalizable {
         throw refusal;
       }
       return TeistroContext._(lib, out.value);
+    });
+  }
+
+  /// Derives a context from `context` with a **settings patch** laid over its
+  /// settings: the per-call override, without building a context again.
+  ///
+  /// `patch_json` is a JSON settings patch, as `options.settings_json` is,
+  /// merged knob by knob over the parent's resolved settings (not over its
+  /// profile), so a patch names only the knobs it changes; null patches
+  /// nothing. `locale` renders the derived context in that locale; null keeps
+  /// the parent's. The derived context keeps the parent's profile id and
+  /// shares, behind reference counts, its ephemeris with its cache, its
+  /// layouts, its dasha systems, its zone database, its geo provider and its
+  /// packs: nothing is opened, read or hashed again, so a derivation costs a
+  /// copy of the locale state. The parent is unchanged and either may be
+  /// freed first; a provider vtable's `provider_user_data` must stay valid
+  /// until the last context sharing it is freed. A derived context is a
+  /// context like any other: used by one thread at a time, freed by
+  /// `ts_context_free`, and derived from in turn.
+  ///
+  /// On success `*out_context` owns the new context. On failure, when
+  /// `out_error` is not null, it receives the whole refusal as a record that
+  /// owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+  /// knob under `settings` (`settings.frame.nod` for a knob that does not
+  /// exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+  /// `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+  /// when the ephemeris is a classical one opened for other values of them,
+  /// which only `ts_context_new` can open again, and `UNSUPPORTED` at
+  /// `locale` for a locale not loaded.
+  TeistroContext derive({String? patchJson, String? locale}) {
+    _alive();
+    return pkg_ffi.using((arena) {
+      final rawpatchJson = patchJson == null ? ffi.nullptr : patchJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+      final rawlocale = locale == null ? ffi.nullptr : locale.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+      final out = arena<ffi.Pointer<Context>>();
+      final error = arena<ErrorStruct>();
+      error.ref.structSize = ffi.sizeOf<ErrorStruct>();
+      final status = _lib.ts_context_derive(_handle, rawpatchJson, rawlocale, out, error);
+      if (status != 0) {
+        final refusal = refusalOf(status, error);
+        _lib.ts_error_free(error);
+        throw refusal;
+      }
+      return TeistroContext._(_lib, out.value);
     });
   }
 

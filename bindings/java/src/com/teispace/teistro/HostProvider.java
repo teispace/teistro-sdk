@@ -122,9 +122,31 @@ final class HostProvider {
         return raised;
     }
 
-    /** Releases the stubs and the memory they point at; the context is freed first. */
-    void close() {
-        arena.close();
+    /**
+     * The contexts using the stubs: the one they were built for, and any
+     * derived from it ({@link Context#withSettings}), which the library points
+     * at the same vtable.
+     */
+    private int holders = 1;
+
+    /** Counts one more context using the stubs; each holder closes them once. */
+    synchronized HostProvider retain() {
+        holders++;
+        return this;
+    }
+
+    /**
+     * Lets go of one holder, and releases the stubs and the memory they point
+     * at when it was the last; the context is freed first.
+     */
+    synchronized void close() {
+        if (holders == 0) {
+            return;
+        }
+        holders--;
+        if (holders == 0) {
+            arena.close();
+        }
     }
 
     @SuppressWarnings("unused") // reached through the upcall stub

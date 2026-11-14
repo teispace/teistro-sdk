@@ -72,9 +72,11 @@ the readings are the SDK's to make (`interpret`).
 **D5. Each call names its settings.** A stateless protocol cannot rely
 on a context opened earlier, so every tool takes optional `profile`,
 `settings` (a patch over the profile, as `ContextBuilder::settings_json`
-reads it) and `locale` beside its record. The server keeps the contexts
-it has built keyed by those three, which is a cache and not state: no
-answer depends on what was asked before. `settings.describe` answers
+reads it) and `locale` beside its record. Each scope is derived from one
+base context per provider (`settings-and-profiles.md` §5, "Per call"), so
+a new patch opens no engine, and the server keeps the scopes it has
+derived keyed by those three, which is a cache and not state: no answer
+depends on what was asked before. `settings.describe` answers
 the shipped profiles and the settings patch's JSON Schema, derived by
 schemars from the patch type itself, so every knob comes with the
 documentation its field carries; an agent finds a setting rather than
@@ -643,9 +645,13 @@ the area resolves it through the context's keys, refusing at `dasha` a key
 nobody registered; each binding's `research.timed` takes it. A varsha's
 dashas are Tajika systems with kernels of their own.
 
-**P10. Quick by construction.** A context is built once per profile,
-settings and locale, the settings keyed by their canonical JSON so two
-spellings of one patch share it, and the cache is bounded. A tool list
+**P10. Quick by construction.** The engine is opened once for the base
+context, and a scope is derived from it once per profile, settings and
+locale, the settings keyed by their canonical JSON's hash so two
+spellings of one patch share it. The cache holds sixteen scopes and lets
+go of the one used longest ago; a provider that cannot be derived over
+(a classical one, under another `frame.siddhanta` or `time.delta_t`) is
+built for its scope as before. A tool list
 and every resource is computed once per process. A batch is one call
 (a grid is one request, `count-the-cost-the-resource-pays`), so an
 agent asking for a year of charts pays for founding them, not for

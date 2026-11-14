@@ -589,6 +589,7 @@ pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
         .iter()
         .filter(|f| {
             Some(f.name.as_str()) != primary
+                && !derives(api, opaque, f)
                 && f.params.iter().any(|p| {
                     p.role == Role::HandleOut
                         && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
@@ -732,8 +733,56 @@ pub fn methods<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
                 p.role == Role::Handle
                     && pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name)
             }) && !f.name.ends_with("_free")
+                && !derives(api, opaque, f)
         })
         .collect()
+}
+
+/// The ways an opaque type's handle is **derived from one of its own**: a
+/// function whose first parameter is the type's handle and which writes a
+/// new handle of the same type. Neither a method, which answers a value,
+/// nor a factory, which has no instance to start from: each binding
+/// renders it as an instance method answering a new instance of its own
+/// class, which shares what the parent's binding object keeps alive (a
+/// host-implemented provider) and owns its own handle.
+///
+/// `ts_context_derive` is the one: a context with a settings patch over
+/// its parent's settings, behind every binding's `withSettings`.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let context = api.opaque_named("TsContext").ok_or("declared")?;
+/// let derivers: Vec<&str> = rules::derivers(&api, context).iter().map(|f| f.name.as_str()).collect();
+/// assert_eq!(derivers, ["ts_context_derive"]);
+/// // Neither a method nor a factory.
+/// assert!(!rules::methods(&api, context).iter().any(|f| f.name == "ts_context_derive"));
+/// assert!(!rules::factories(&api, context).iter().any(|f| f.name == "ts_context_derive"));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[must_use]
+pub fn derivers<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
+    api.functions
+        .iter()
+        .filter(|f| derives(api, opaque, f))
+        .collect()
+}
+
+/// Whether `f` derives a handle of `opaque` from one: its first parameter
+/// is the type's handle, and it writes a handle of the type.
+fn derives(api: &Api, opaque: &OpaqueDef, f: &FunctionDef) -> bool {
+    let of_opaque = |p: &ParamDef| pointee_opaque(api, p).is_some_and(|o| o.name == opaque.name);
+    f.params
+        .first()
+        .is_some_and(|p| p.role == Role::Handle && of_opaque(p))
+        && f.params
+            .iter()
+            .any(|p| p.role == Role::HandleOut && of_opaque(p))
 }
 
 /// The binding-facing method name of a handle function.

@@ -4073,6 +4073,7 @@ public final class Native {
         "ts_blob_free",
         "ts_error_free",
         "ts_context_new",
+        "ts_context_derive",
         "ts_context_free",
         "ts_context_last_error",
         "ts_context_profile",
@@ -4247,6 +4248,36 @@ public final class Native {
      * `ts_error_free`.
      */
     public final MethodHandle ts_context_new;
+
+    /**
+     * Derives a context from `context` with a **settings patch** laid over its
+     * settings: the per-call override, without building a context again.
+     *
+     * `patch_json` is a JSON settings patch, as `options.settings_json` is,
+     * merged knob by knob over the parent's resolved settings (not over its
+     * profile), so a patch names only the knobs it changes; null patches
+     * nothing. `locale` renders the derived context in that locale; null keeps
+     * the parent's. The derived context keeps the parent's profile id and
+     * shares, behind reference counts, its ephemeris with its cache, its
+     * layouts, its dasha systems, its zone database, its geo provider and its
+     * packs: nothing is opened, read or hashed again, so a derivation costs a
+     * copy of the locale state. The parent is unchanged and either may be
+     * freed first; a provider vtable's `provider_user_data` must stay valid
+     * until the last context sharing it is freed. A derived context is a
+     * context like any other: used by one thread at a time, freed by
+     * `ts_context_free`, and derived from in turn.
+     *
+     * On success `*out_context` owns the new context. On failure, when
+     * `out_error` is not null, it receives the whole refusal as a record that
+     * owns its strings, released by `ts_error_free`: `INVALID_ARG` naming the
+     * knob under `settings` (`settings.frame.nod` for a knob that does not
+     * exist, `settings.day.sunrise` for a merge that breaks a coherence rule),
+     * `UNSUPPORTED` at `settings.frame.siddhanta` or `settings.time.delta_t`
+     * when the ephemeris is a classical one opened for other values of them,
+     * which only `ts_context_new` can open again, and `UNSUPPORTED` at
+     * `locale` for a locale not loaded.
+     */
+    public final MethodHandle ts_context_derive;
 
     /**
      * Frees a context; null is ignored.
@@ -5806,6 +5837,7 @@ public final class Native {
         ts_blob_free = linker.downcallHandle(symbols.find("ts_blob_free").orElseThrow(() -> missing("ts_blob_free")), FunctionDescriptor.ofVoid(ADDRESS));
         ts_error_free = linker.downcallHandle(symbols.find("ts_error_free").orElseThrow(() -> missing("ts_error_free")), FunctionDescriptor.ofVoid(ADDRESS));
         ts_context_new = linker.downcallHandle(symbols.find("ts_context_new").orElseThrow(() -> missing("ts_context_new")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
+        ts_context_derive = linker.downcallHandle(symbols.find("ts_context_derive").orElseThrow(() -> missing("ts_context_derive")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_context_free = linker.downcallHandle(symbols.find("ts_context_free").orElseThrow(() -> missing("ts_context_free")), FunctionDescriptor.ofVoid(ADDRESS));
         ts_context_last_error = linker.downcallHandle(symbols.find("ts_context_last_error").orElseThrow(() -> missing("ts_context_last_error")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_profile = linker.downcallHandle(symbols.find("ts_context_profile").orElseThrow(() -> missing("ts_context_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
