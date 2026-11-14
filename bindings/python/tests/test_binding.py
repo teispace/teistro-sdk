@@ -158,7 +158,7 @@ def _expected_engine() -> str:
 
 class TheLibrary(WithLibrary):
     def test_it_says_what_it_is(self) -> None:
-        self.assertEqual(self.teistro.abi, 1)
+        self.assertEqual(self.teistro.abi, 2)
         self.assertTrue(self.teistro.version)
         self.assertGreaterEqual(self.teistro.catalogue, 1)
         self.assertEqual(self.teistro.default_profile_id, "parashari-classical")

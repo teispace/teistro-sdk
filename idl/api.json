@@ -1,6 +1,6 @@
 {
   "schema": "teistro-api/1",
-  "abi_version": 1,
+  "abi_version": 2,
   "sdk_version": "1.0.0-rc.4",
   "prefix": "ts_",
   "sources": [
@@ -45,16 +45,30 @@
   "constants": [
     {
       "name": "VTABLE_ABI_VERSION",
-      "doc": "The ABI version of the vtable layout.",
+      "doc": "The ABI version of the vtable layout.\n\n5: the ayanamsha override takes the basis asked (SR-100).",
       "ty": "u32",
-      "value": 4,
+      "value": 5,
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "AYANAMSHA_BASIS_MEAN",
+      "doc": "The ayanamsha override's `basis`: the mean value, without the nutation\nin longitude.",
+      "ty": "u32",
+      "value": 0,
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "AYANAMSHA_BASIS_TRUE",
+      "doc": "The ayanamsha override's `basis`: the true value, with the provider's\nown nutation in longitude added.",
+      "ty": "u32",
+      "value": 1,
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
       "name": "TS_ABI_VERSION",
-      "doc": "The ABI version `ts_abi_version` returns; a binding refuses to load a\nlibrary whose version it was not generated for.",
+      "doc": "The ABI version `ts_abi_version` returns; a binding refuses to load a\nlibrary whose version it was not generated for.\n\n2: the provider vtable's ayanamsha override takes the basis asked\n(vtable version 5, SR-100).",
       "ty": "u32",
-      "value": 1,
+      "value": 2,
       "source": "crates/ffi/src/lib.rs"
     },
     {
@@ -11364,7 +11378,7 @@
     },
     {
       "name": "AyanamshaFn",
-      "doc": "The ayanamsha override: the mean ayanamsha in degrees at an instant,\nby catalogue id.",
+      "doc": "The ayanamsha override: an ayanamsha in degrees at an instant, by\ncatalogue id, on the basis asked (`AYANAMSHA_BASIS_MEAN` or\n`AYANAMSHA_BASIS_TRUE`); a basis the provider cannot answer is\n`UNSUPPORTED`, never another basis's value.",
       "params": [
         {
           "name": "user_data",
@@ -11401,6 +11415,15 @@
           "ty": {
             "kind": "scalar",
             "scalar": "u16"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "basis",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
           },
           "role": "value",
           "meta": {}

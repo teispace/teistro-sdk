@@ -21,11 +21,11 @@ way the time errs.
 
 | sub lord of | median, minutes | shortest, minutes | under 1 min | under 2 min | under 5 min |
 |---|---:|---:|---:|---:|---:|
-| the lagna | 1.86 | 0.17 | 17 of 55 | 32 of 55 | 55 of 55 |
-| any cusp | 1.38 | 0.00 | 245 of 660 | 432 of 660 | 658 of 660 |
+| the lagna | 1.84 | 0.19 | 17 of 55 | 32 of 55 | 55 of 55 |
+| any cusp | 1.38 | 0.01 | 247 of 660 | 432 of 660 | 658 of 660 |
 
 One birth in 2 would read its lagna's sub lord differently if its time
-were two minutes out. The lagna's **sub-sub** lord holds a median of 10
+were two minutes out. The lagna's **sub-sub** lord holds a median of 11
 seconds, which no recorded time settles. The Moon's sub lord holds a
 median of 0.8 hours.
 
@@ -39,8 +39,8 @@ sky is one. The lords they part on, over every cusp and planet:
 | level | lords that differ |
 |---|---:|
 | star | 2 of 1155 |
-| sub | 11 of 1155 |
-| sub-sub | 149 of 1155 |
+| sub | 9 of 1155 |
+| sub-sub | 148 of 1155 |
 
 ## 3. Horary numbers a place cannot raise
 

@@ -148,6 +148,8 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
         constants,
         [
             "VTABLE_ABI_VERSION",
+            "AYANAMSHA_BASIS_MEAN",
+            "AYANAMSHA_BASIS_TRUE",
             "TS_ABI_VERSION",
             "TS_CONTEXT_TEST_PROVIDER",
             "TS_ERROR_OWNED",

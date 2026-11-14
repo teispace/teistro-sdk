@@ -5,7 +5,7 @@ use teistro_astro::DeltaTModel;
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_core::settings::recorded::RequiredEphemeris;
-use teistro_core::settings::{Siddhanta, SuryaPlanets, SuryaSunrise};
+use teistro_core::settings::{AyanamshaBasis, Siddhanta, SuryaPlanets, SuryaSunrise};
 use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
 use teistro_siddhanta::vakya::VakyaSky;
 use teistro_siddhanta::{ModernParts, SiddhantaProvider};
@@ -207,7 +207,12 @@ impl Ephemeris {
         self,
         siddhanta: Siddhanta,
     ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
-        self.open_before(siddhanta, DeltaTModel::default(), Vec::new())
+        self.open_before(
+            siddhanta,
+            DeltaTModel::default(),
+            AyanamshaBasis::True,
+            Vec::new(),
+        )
     }
 
     /// As [`Ephemeris::open_under`], with the entries that follow this one
@@ -216,6 +221,7 @@ impl Ephemeris {
         self,
         siddhanta: Siddhanta,
         delta_t: DeltaTModel,
+        basis: AyanamshaBasis,
         rest: Vec<Ephemeris>,
     ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
         match self {
@@ -229,6 +235,7 @@ impl Ephemeris {
                     let modern = modern_entry(rest, "settings.frame.siddhanta")?;
                     let parts = ModernParts::new(SiddhantaProvider::text(), modern)
                         .with_delta_t(delta_t)
+                        .with_ayanamsha_basis(basis)
                         .with_sunrise();
                     return Ok(Some(Box::new(VakyaSky::with_parts(parts))));
                 }
@@ -264,8 +271,9 @@ impl Ephemeris {
                 } else {
                     "settings.frame.siddhanta.planets"
                 };
-                let mut sky =
-                    ModernParts::new(text, modern_entry(rest, field)?).with_delta_t(delta_t);
+                let mut sky = ModernParts::new(text, modern_entry(rest, field)?)
+                    .with_delta_t(delta_t)
+                    .with_ayanamsha_basis(basis);
                 if modern_sunrise {
                     sky = sky.with_sunrise();
                 }
@@ -343,6 +351,7 @@ pub(crate) fn open(
     chain: Vec<Ephemeris>,
     siddhanta: Siddhanta,
     delta_t: DeltaTModel,
+    basis: AyanamshaBasis,
 ) -> Result<Option<Box<dyn EphemerisProvider>>, Error> {
     let mut refusals: Vec<String> = Vec::with_capacity(chain.len());
     let mut entries = chain.into_iter().peekable();
@@ -354,7 +363,7 @@ pub(crate) fn open(
             Vec::new()
         };
         let alone = refusals.is_empty() && entries.peek().is_none();
-        match entry.open_before(siddhanta, delta_t, rest) {
+        match entry.open_before(siddhanta, delta_t, basis, rest) {
             Ok(opened) => return Ok(opened),
             Err(refusal) if alone => return Err(refusal),
             Err(refusal) => refusals.push(format!("{name}: {refusal}")),

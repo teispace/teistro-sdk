@@ -62,8 +62,9 @@ charts. They belong to `dasha`, and the page is corrected.
 18.46 arcseconds from what the engine recorded; its true Lahiri is within
 0.0086 — two thousand times closer, and the gap is the nutation in
 longitude. `conformance-baseline`, the profile whose job is to reproduce
-these charts, now sets `frame.ayanamsha_basis = TRUE`; the SDK's own
-default keeps the mean value, which is what the Lahiri definition states.
+these charts, now sets `frame.ayanamsha_basis = TRUE`; since SR-100 the
+root does too, since the Lahiri definition is a true value (the IAE's
+"True Ayanamsa = Mean Ayanamsa + Nutation in Longitude", crux C1750).
 Entry 16.
 
 **The engine's night is `24h − daylight`**, not sunset to the next

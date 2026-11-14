@@ -4,6 +4,7 @@
 use serde::Serialize;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
+use teistro_core::settings::AyanamshaBasis;
 
 use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
@@ -238,32 +239,46 @@ pub trait EphemerisProvider: Send + Sync {
         Err(ProviderError::unsupported("delta_t"))
     }
 
-    /// The mean ayanamsha in degrees at an instant, the value sidereal
-    /// longitudes subtract (without the nutation in longitude); an
+    /// An ayanamsha in degrees at an instant **on the basis asked**; an
     /// override.
+    ///
+    /// The basis is part of the question, never an engine's default:
+    /// [`AyanamshaBasis::Mean`] is the value without the nutation in
+    /// longitude, which a longitude of the mean equinox subtracts, and
+    /// [`AyanamshaBasis::True`] the value with it, which an apparent
+    /// longitude of the true equinox subtracts — every drik profile's
+    /// (SR-100, crux C1750). A provider answers each from its own
+    /// nutation, as the SDK's catalogue answers it from its own, and
+    /// returns [`ProviderError::Unsupported`] for a basis it cannot
+    /// answer; under `prefer-native` the SDK's catalogue answers instead,
+    /// under `native-only` the step is refused. A classical astronomy's
+    /// value is the text's definition, which has no nutation, so it gives
+    /// the same value on either basis.
     ///
     /// ```
     /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::AyanamshaBasis;
     /// use teistro_port_ephemeris::TimeScale;
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
     /// let provider = TestProvider::new();
     /// assert!(!provider.capabilities().has(Overrides::AYANAMSHA));
-    /// assert!(matches!(provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri), Err(ProviderError::Unsupported { .. })));
+    /// assert!(matches!(provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri, AyanamshaBasis::True), Err(ProviderError::Unsupported { .. })));
     /// ```
     ///
     /// # Errors
     ///
     /// [`ProviderError::Unsupported`] unless declared, or for an ayanamsha
-    /// the provider does not know.
+    /// or a basis the provider does not know.
     fn ayanamsha_deg(
         &self,
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        let _ = (jd, scale, ayanamsha);
+        let _ = (jd, scale, ayanamsha, basis);
         Err(ProviderError::unsupported("ayanamsha"))
     }
 
@@ -490,8 +505,9 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        (**self).ayanamsha_deg(jd, scale, ayanamsha)
+        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -549,8 +565,9 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        (**self).ayanamsha_deg(jd, scale, ayanamsha)
+        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -853,7 +870,12 @@ mod tests {
         assert!(by_ref.dut1_seconds(2_451_545.0).is_err());
         assert!(
             by_ref
-                .ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri)
+                .ayanamsha_deg(
+                    2_451_545.0,
+                    TimeScale::Tt,
+                    Ayanamsha::Lahiri,
+                    AyanamshaBasis::Mean
+                )
                 .is_err()
         );
     }

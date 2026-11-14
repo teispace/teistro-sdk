@@ -328,8 +328,10 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// Binds a provider under a policy; the capabilities are read once.
     /// The SDK's ayanamshas are carried by the default precession model
     /// until [`Completion::with_precession`] says otherwise, and are the
-    /// mean value until [`Completion::with_ayanamsha_basis`] says
-    /// otherwise, both being what the root profile sets.
+    /// true value, nutation included, until
+    /// [`Completion::with_ayanamsha_basis`] says otherwise, both being what
+    /// the root profile sets (the true basis since SR-100: the positions
+    /// are of the true equinox of date).
     ///
     /// ```
     /// use teistro_astro::completion::Completion;
@@ -340,6 +342,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// let provider = TestProvider::new();
     /// let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
     /// assert_eq!(sky.policy(), OverridePolicy::PreferNative);
+    /// assert_eq!(sky.ayanamsha_basis(), teistro_core::settings::AyanamshaBasis::True);
     /// ```
     pub fn new(provider: &'p P, policy: OverridePolicy, delta_t: DeltaTModel) -> Completion<'p, P> {
         Completion {
@@ -348,7 +351,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             policy,
             delta_t,
             precession: PrecessionModel::default(),
-            ayanamsha_basis: Basis::Mean,
+            ayanamsha_basis: Basis::True,
             derived_speeds: false,
         }
     }
@@ -707,21 +710,20 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// not; the kit's `sdk-only` check found it over the Surya Siddhanta
     /// provider. `native-only` still refuses, naming the step.
     ///
-    /// A modern provider answers on the **mean** basis alone, which is what
-    /// the port's `ayanamsha_deg` promises; asked for the true basis, its
-    /// value would be the nutation short, about 18 arcseconds, so the
-    /// catalogue answers as for a member it does not list (found deciding
-    /// `QUESTIONS.md` Q40). A classical astronomy's value is the text's
-    /// definition, which has no nutation to add, and answers on either.
+    /// The basis is part of the question the port asks
+    /// (`ayanamsha_deg(.., basis)`), so a provider answers the frame's
+    /// basis itself, from its own nutation; one that cannot answers
+    /// `UNSUPPORTED`, and [`Completion::shift_zodiac`] takes the
+    /// catalogue's value under `prefer-native` and refuses under
+    /// `native-only`. Until SR-100 the port asked the mean value alone and
+    /// the true basis set every modern provider aside (Q40, C1750).
     fn choose_ayanamsha(
         &self,
         member: Option<Ayanamsha>,
     ) -> Result<Implementation, CompletionError> {
         let chosen = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
         let listed = member.is_none_or(|member| self.capabilities.ayanamshas.contains(&member));
-        let on_its_basis = self.capabilities.astronomy == Astronomy::Classical
-            || self.ayanamsha_basis == Basis::Mean;
-        match (chosen, listed && on_its_basis, self.policy) {
+        match (chosen, listed, self.policy) {
             (Implementation::Native, false, OverridePolicy::NativeOnly) => {
                 Err(CompletionError::PolicyRefused {
                     step: "ayanamsha",
@@ -842,7 +844,40 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // them (ADR-0013). Until the centre step there was nothing a
         // shipped adapter would have answered here, so this changes what
         // `sdk-only` means for the first time.
-        if self.policy != OverridePolicy::SdkOnly {
+        // A sidereal frame names its ayanamsha and not its basis
+        // (`Zodiac::Sidereal { ayanamsha }`), so a modern provider asked
+        // for one whole answers on whichever basis it keeps: the Teimeris
+        // adapter on the mean one, whatever `frame.ayanamsha_basis` said
+        // (SR-100; the boundary audit's A1, B2 and A6). The rest of the
+        // frame is asked of it, whole when it can, and the zodiac is
+        // shifted by the ayanamsha step, which asks the basis
+        // (`ayanamsha_deg(.., basis)`) and keeps the policy. A classical
+        // sky has no nutation, so its basis is moot and it keeps its own
+        // whole answer.
+        // Equatorial sidereal columns are completed from the native frame.
+        let shifted = wanted.zodiac != native.zodiac
+            && matches!(wanted.zodiac, Zodiac::Sidereal { .. })
+            && self.capabilities.astronomy != Astronomy::Classical;
+        if shifted
+            && wanted.coordinates == Coordinates::Ecliptic
+            && self.policy != OverridePolicy::SdkOnly
+        {
+            let tropical = request.in_frame(Frame {
+                zodiac: native.zodiac,
+                ..wanted
+            });
+            let mut done = self.positions(&tropical)?;
+            self.shift_zodiac(
+                &mut done.columns,
+                request,
+                (native.zodiac, wanted.zodiac),
+                Coordinates::Ecliptic,
+                &mut done.steps,
+            )?;
+            done.columns.frame = wanted;
+            return Ok(done);
+        }
+        if self.policy != OverridePolicy::SdkOnly && !shifted {
             match self.ask(request) {
                 Ok(columns) => {
                     return Ok(Completed {
@@ -1348,44 +1383,63 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             });
         }
         // The provider's override when the policy allows and it declares
-        // one; otherwise the SDK's catalogue, carried by the precession
-        // model in force, which every epoch-defined ayanamsha has, on the
-        // basis the frame asked for.
-        // Each side's member is chosen for itself: a provider native in its
-        // own sidereal zodiac, asked for another, gives its own value and
-        // takes the SDK's for the other.
-        let sides = [from, to].map(|zodiac| match zodiac {
+        // one, else the SDK's catalogue under the precession model in
+        // force, on the basis asked. Each side's member is chosen for
+        // itself: a provider native in its own sidereal zodiac, asked for
+        // another, gives its own value and takes the SDK's for the other.
+        let [from_side, to_side] = [from, to].map(|zodiac| match zodiac {
             Zodiac::Sidereal { ayanamsha } => self
                 .choose_ayanamsha(Some(ayanamsha))
                 .map(|implementation| Some((ayanamsha, implementation))),
             Zodiac::Tropical => Ok(None),
         });
-        let [from_side, to_side] = sides;
         let (from_side, to_side) = (from_side?, to_side?);
         let mut ayanamsha_steps = Vec::new();
-        let mut value =
-            |side: Option<(Ayanamsha, Implementation)>, jd: f64| -> Result<f64, CompletionError> {
-                match side {
-                    None => Ok(0.0),
-                    Some((ayanamsha, implementation)) => match implementation {
-                        Implementation::Native => {
-                            Ok(self.provider.ayanamsha_deg(jd, request.scale, ayanamsha)?)
-                        }
-                        Implementation::Sdk | Implementation::PassThrough => {
-                            let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
-                            Ok(ayanamsha::value_deg(
-                                &ayanamsha.into(),
-                                tt,
-                                self.ayanamsha_basis,
-                                self.precession,
-                                self.delta_t,
-                            )?)
-                        }
-                    },
-                }
+        // A side whose provider declined the basis asked: the catalogue
+        // answered it instead, which the stamp then says.
+        let mut declined = [false; 2];
+        let mut value = |side: Option<(Ayanamsha, Implementation)>,
+                         which: usize,
+                         jd: f64|
+         -> Result<f64, CompletionError> {
+            let Some((ayanamsha, implementation)) = side else {
+                return Ok(0.0);
             };
+            if implementation == Implementation::Native {
+                match self.provider.ayanamsha_deg(
+                    jd,
+                    request.scale,
+                    ayanamsha,
+                    self.ayanamsha_basis,
+                ) {
+                    Ok(value) => return Ok(value),
+                    Err(ProviderError::Unsupported { .. })
+                        if self.policy != OverridePolicy::NativeOnly =>
+                    {
+                        if let Some(flag) = declined.get_mut(which) {
+                            *flag = true;
+                        }
+                    }
+                    Err(ProviderError::Unsupported { .. }) => {
+                        return Err(CompletionError::PolicyRefused {
+                            step: "ayanamsha",
+                            policy: self.policy,
+                        });
+                    }
+                    Err(error) => return Err(error.into()),
+                }
+            }
+            let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
+            Ok(ayanamsha::value_deg(
+                &ayanamsha.into(),
+                tt,
+                self.ayanamsha_basis,
+                self.precession,
+                self.delta_t,
+            )?)
+        };
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            let shift = value(from_side, *jd)? - value(to_side, *jd)?;
+            let shift = value(from_side, 0, *jd)? - value(to_side, 1, *jd)?;
             for body_index in 0..columns.body_count {
                 let Some(cell) = columns.at(jd_index, body_index) else {
                     continue;
@@ -1405,7 +1459,15 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         for step in ayanamsha_steps {
             push_once(steps, step);
         }
-        for (_, implementation) in [from_side, to_side].into_iter().flatten() {
+        for (which, side) in [from_side, to_side].into_iter().enumerate() {
+            let Some((_, implementation)) = side else {
+                continue;
+            };
+            let implementation = if declined.get(which).copied().unwrap_or(false) {
+                Implementation::Sdk
+            } else {
+                implementation
+            };
             push_once(
                 steps,
                 Step {
@@ -1899,9 +1961,9 @@ mod tests {
     fn the_settings_read_back_and_each_error_names_its_step() {
         let completion = completion(OverridePolicy::SdkOnly)
             .with_precession(PrecessionModel::Iau2006)
-            .with_ayanamsha_basis(Basis::True);
+            .with_ayanamsha_basis(Basis::Mean);
         assert_eq!(completion.precession(), PrecessionModel::Iau2006);
-        assert_eq!(completion.ayanamsha_basis(), Basis::True);
+        assert_eq!(completion.ayanamsha_basis(), Basis::Mean);
         let longitudes = format!("{:?}", completion.longitudes(Frame::CANONICAL));
         assert!(
             longitudes.starts_with("FrameLongitudes { provider: \"test-provider"),
@@ -2319,12 +2381,19 @@ mod tests {
         assert!(apparent.is_err() && completion.positions(&out).is_ok());
     }
 
-    /// A modern provider declaring Lahiri, whose value is the port's mean
-    /// one: a round 24° so a test can tell it from the catalogue's.
+    /// A modern provider declaring Lahiri: a round 24° on the mean basis
+    /// and its own nutation, a round 10″, added on the true one, so a test
+    /// can tell both from the catalogue's; `mean_only` answers the mean
+    /// basis alone and says `UNSUPPORTED` for the true one.
     #[derive(Debug)]
-    struct MeanLahiri;
+    struct NativeLahiri {
+        mean_only: bool,
+    }
 
-    impl EphemerisProvider for MeanLahiri {
+    /// The provider's own nutation in longitude, in degrees.
+    const PROVIDER_NUTATION_DEG: f64 = 10.0 / 3600.0;
+
+    impl EphemerisProvider for NativeLahiri {
         fn capabilities(&self) -> Capabilities {
             Capabilities {
                 overrides: Overrides::AYANAMSHA,
@@ -2345,18 +2414,29 @@ mod tests {
             _jd: f64,
             _scale: TimeScale,
             _ayanamsha: Ayanamsha,
+            basis: Basis,
         ) -> Result<f64, ProviderError> {
-            Ok(24.0)
+            match (basis, self.mean_only) {
+                (Basis::Mean, _) => Ok(24.0),
+                (Basis::True, false) => Ok(24.0 + PROVIDER_NUTATION_DEG),
+                (Basis::True, true) => Err(ProviderError::unsupported("the true basis")),
+                (_, _) => Err(ProviderError::unsupported("ayanamsha basis")),
+            }
         }
     }
 
-    /// The port's `ayanamsha_deg` is the mean value, so a modern provider
-    /// answers the mean basis and the catalogue the true one, where its
-    /// value would be the nutation short (Q40); `native-only` refuses the
-    /// true basis rather than answering on the wrong one.
+    /// The basis holds on every path (SR-100, C1750): the port asks the
+    /// basis, so a provider answers it from its own nutation under
+    /// `prefer-native` and `native-only` alike; `sdk-only` takes the
+    /// catalogue's on either basis; a provider that declines the true
+    /// basis gives way to the catalogue under `prefer-native` and refuses
+    /// the step under `native-only`, never answering on another basis.
+    /// Until SR-100 the port asked the mean value alone and the true basis
+    /// set the provider aside.
     #[test]
-    fn a_modern_provider_answers_the_ayanamsha_on_its_own_basis_alone() {
-        static PROVIDER: MeanLahiri = MeanLahiri;
+    fn the_ayanamsha_basis_holds_on_every_path() {
+        static BOTH: NativeLahiri = NativeLahiri { mean_only: false };
+        static MEAN_ONLY: NativeLahiri = NativeLahiri { mean_only: true };
         let jds = [2_460_000.5];
         let bodies = [Body::Sun];
         let sidereal = PositionRequest::new(
@@ -2365,8 +2445,8 @@ mod tests {
             &bodies,
             Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
         );
-        let on = |policy, basis| {
-            Completion::new(&PROVIDER, policy, DeltaTModel::TableThenModel)
+        let on = |provider: &'static NativeLahiri, policy, basis| {
+            Completion::new(provider, policy, DeltaTModel::TableThenModel)
                 .with_ayanamsha_basis(basis)
                 .positions(&sidereal)
         };
@@ -2379,25 +2459,167 @@ mod tests {
                 done.columns.at(0, 0).unwrap().lon,
             )
         };
-        let mean = on(OverridePolicy::PreferNative, Basis::Mean).unwrap();
-        assert!(mean.step_keys().contains(&String::from("ayanamsha:NATIVE")));
-        assert!((shift(&mean) - 24.0).abs() < 1e-12);
-        let true_basis = on(OverridePolicy::PreferNative, Basis::True).unwrap();
+        let has = |done: &Completed, key: &str| done.step_keys().contains(&String::from(key));
+        // The catalogue's two values part by the SDK's nutation in longitude.
+        let sdk_mean = on(&BOTH, OverridePolicy::SdkOnly, Basis::Mean).unwrap();
+        let sdk_true = on(&BOTH, OverridePolicy::SdkOnly, Basis::True).unwrap();
+        assert!(has(&sdk_mean, "ayanamsha:SDK") && has(&sdk_true, "ayanamsha:SDK"));
+        let sdk_nutation = shift(&sdk_true) - shift(&sdk_mean);
         assert!(
-            true_basis
-                .step_keys()
-                .contains(&String::from("ayanamsha:SDK")),
-            "{:?}",
-            true_basis.step_keys()
+            (5.0..18.0).contains(&(sdk_nutation.abs() * 3600.0)),
+            "{sdk_nutation}"
         );
-        assert!((shift(&true_basis) - 24.0).abs() > 0.01);
+        for policy in [OverridePolicy::PreferNative, OverridePolicy::NativeOnly] {
+            let mean = on(&BOTH, policy, Basis::Mean).unwrap();
+            assert!(has(&mean, "ayanamsha:NATIVE"), "{policy:?}");
+            assert!((shift(&mean) - 24.0).abs() < 1e-12, "{policy:?}");
+            let nutated = on(&BOTH, policy, Basis::True).unwrap();
+            assert!(has(&nutated, "ayanamsha:NATIVE"), "{policy:?}");
+            assert!(
+                (shift(&nutated) - 24.0 - PROVIDER_NUTATION_DEG).abs() < 1e-12,
+                "{policy:?}"
+            );
+        }
+        // Declined: the catalogue's true value under `prefer-native`...
+        let declined = on(&MEAN_ONLY, OverridePolicy::PreferNative, Basis::True).unwrap();
+        assert!(
+            has(&declined, "ayanamsha:SDK"),
+            "{:?}",
+            declined.step_keys()
+        );
+        assert!((shift(&declined) - shift(&sdk_true)).abs() < 1e-12);
+        // ... and the step refused by name under `native-only`.
         assert!(matches!(
-            on(OverridePolicy::NativeOnly, Basis::True).unwrap_err(),
+            on(&MEAN_ONLY, OverridePolicy::NativeOnly, Basis::True).unwrap_err(),
             CompletionError::PolicyRefused {
                 step: "ayanamsha",
                 ..
             }
         ));
+    }
+
+    /// A modern engine that answers a sidereal frame whole on its own
+    /// basis, the mean one, as the Teimeris adapter does (it sets the
+    /// ayanamsha mode and the sidereal flag), and answers the ayanamsha
+    /// itself on the basis asked. Its values are the catalogue's, so only
+    /// the path can part them.
+    struct WholeSidereal;
+
+    impl WholeSidereal {
+        fn lahiri(jd_ut1: f64, basis: Basis) -> f64 {
+            let (tt, _) = crate::scale::tt_of(
+                JulianDay::<Ut1>::literal(jd_ut1),
+                DeltaTModel::TableThenModel,
+            )
+            .unwrap();
+            ayanamsha::value_deg(
+                &Ayanamsha::Lahiri.into(),
+                tt,
+                basis,
+                PrecessionModel::default(),
+                DeltaTModel::TableThenModel,
+            )
+            .unwrap()
+        }
+    }
+
+    impl EphemerisProvider for WholeSidereal {
+        fn capabilities(&self) -> Capabilities {
+            Capabilities {
+                overrides: Overrides::AYANAMSHA,
+                ayanamshas: vec![Ayanamsha::Lahiri],
+                ..TestProvider.capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            let Zodiac::Sidereal { .. } = request.frame.zodiac else {
+                return TestProvider.positions(request);
+            };
+            let mut columns = TestProvider.positions(&request.in_frame(Frame {
+                zodiac: Zodiac::Tropical,
+                ..request.frame
+            }))?;
+            for (jd_index, jd) in request.jds.iter().enumerate() {
+                let mean = WholeSidereal::lahiri(*jd, Basis::Mean);
+                for body_index in 0..columns.body_count {
+                    if let Some(cell) = columns.at(jd_index, body_index) {
+                        let lon = normalise_deg(cell.lon - mean);
+                        columns.set_at(jd_index, body_index, Cell { lon, ..cell });
+                    }
+                }
+            }
+            columns.frame = request.frame;
+            Ok(columns)
+        }
+
+        fn ayanamsha_deg(
+            &self,
+            jd: f64,
+            _scale: TimeScale,
+            _ayanamsha: Ayanamsha,
+            basis: Basis,
+        ) -> Result<f64, ProviderError> {
+            Ok(WholeSidereal::lahiri(jd, basis))
+        }
+    }
+
+    /// The boundary audit's rank 1 (A1, B2, A6): a sidereal frame names
+    /// no basis, so an engine asked for it whole answered on its own
+    /// mean one under `prefer-native`, and a true-basis profile's every
+    /// sidereal longitude kept the nutation. The longitude is now the
+    /// tropical one less the true ayanamsha, to 1e-6 degrees, on either
+    /// basis asked; on main the true basis missed by the nutation.
+    #[test]
+    fn a_sidereal_frame_answered_whole_keeps_the_basis_asked() {
+        static ENGINE: WholeSidereal = WholeSidereal;
+        let jds = [2_415_020.5, 2_451_545.0, 2_460_000.5, 2_488_069.5];
+        let bodies = [Body::Sun, Body::Moon];
+        let sidereal = PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &bodies,
+            Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
+        );
+        let tropical = TestProvider
+            .positions(&sidereal.in_frame(Frame::CANONICAL))
+            .unwrap();
+        for basis in [Basis::True, Basis::Mean] {
+            let done = Completion::new(
+                &ENGINE,
+                OverridePolicy::PreferNative,
+                DeltaTModel::TableThenModel,
+            )
+            .with_ayanamsha_basis(basis)
+            .positions(&sidereal)
+            .unwrap();
+            assert!(done.step_keys().contains(&String::from("ayanamsha:NATIVE")));
+            assert_eq!(done.columns.frame, sidereal.frame);
+            for (jd_index, jd) in jds.iter().enumerate() {
+                for body_index in 0..bodies.len() {
+                    let expected = normalise_deg(
+                        tropical.at(jd_index, body_index).unwrap().lon
+                            - WholeSidereal::lahiri(*jd, Basis::True),
+                    );
+                    let expected = if basis == Basis::True {
+                        expected
+                    } else {
+                        normalise_deg(
+                            tropical.at(jd_index, body_index).unwrap().lon
+                                - WholeSidereal::lahiri(*jd, Basis::Mean),
+                        )
+                    };
+                    let got = done.columns.at(jd_index, body_index).unwrap().lon;
+                    assert!(
+                        difference_deg(got, expected).abs() < 1e-6,
+                        "{basis:?} at {jd}: {got} against {expected}"
+                    );
+                }
+            }
+        }
     }
 
     /// The rate's rotation and the position's must be the same rotation.

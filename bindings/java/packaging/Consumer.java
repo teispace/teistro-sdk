@@ -32,7 +32,7 @@ public final class Consumer {
      */
     public static void main(String[] args) {
         Teistro teistro = Teistro.open();
-        check(teistro.abiVersion() == 1, "ABI " + teistro.abiVersion());
+        check(teistro.abiVersion() == 2, "ABI " + teistro.abiVersion());
         System.out.println("abi " + teistro.abiVersion());
         System.out.println("sdk " + teistro.sdkVersion());
 

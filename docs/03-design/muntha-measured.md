@@ -110,14 +110,14 @@ modulo a week — so that is the reading held here.
 | against what the source prints | the default profile (geocentric, mean ayanamsha) | the conformance profile (topocentric, nutated) |
 |---|---|---|
 | the return, 13:17:29 IST | +1.5 s | +1.5 s |
-| the annual lagna, Scorpio 9°26′ | +0.9′ | +1.1′ |
-| the Sun, Leo 3°50′ | -0.8′ | -0.6′ |
-| the Moon, Taurus 9°40′ | -2.7′ | **-57.6′** |
+| the annual lagna, Scorpio 9°26′ | +1.1′ | +1.1′ |
+| the Sun, Leo 3°50′ | -0.6′ | -0.6′ |
+| the Moon, Taurus 9°40′ | -2.4′ | **-57.6′** |
 | the office-bearers, Jupiter, Sun, Mars, Mars, Sun | all five as printed | all five as printed |
-| the true return, after the mean one | +0.83 min | +4.75 min |
+| the true return, after the mean one | +0.88 min | +4.75 min |
 
 The source prints whole arcminutes and seconds. On the default profile
-the worst of its three positions is 2.7′ out and its return 1.5 s,
+the worst of its three positions is 2.4′ out and its return 1.5 s,
 which is an ephemeris a generation apart agreeing to arcminutes and not
 a rounding. **Its positions are geocentric**: under the topocentric
 profile its Moon is almost a degree out, which is the Moon's parallax at

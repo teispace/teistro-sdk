@@ -240,7 +240,6 @@ each has a knob that takes the baseline's value.
 | knob | the baseline | `parashari-classical` | why |
 |---|---|---|---|
 | `frame.centre` | topocentric | `GEOCENTRIC` | the texts and PyJHora cast from the Earth's centre; the Moon moves up to about a degree between the two, which moves dasha starts |
-| `frame.ayanamsha_basis` | nutated | `MEAN` | the Lahiri definition is the mean value (registry entry 16) |
 | `houses.chalit_system` | Vehlow | `SRIPATI` | BPHS; the baseline documents Sripati and computes Vehlow (registry entry 14, [`chart-bhava-chalit.md`](../03-design/chart-bhava-chalit.md)) |
 | `day.ghati_reckoning` | records both reckonings | `PROPORTIONAL` (`CIVIL` in `conformance-baseline`) | a context answers the one reckoning its settings name; open a second context for the other ([`settings-and-profiles.md`](../03-design/settings-and-profiles.md) §3.2) |
 | `day.polar_day_policy` | synthesised from the civil day | `UNDEFINED` | a day with no sunrise is refused rather than invented |

@@ -425,8 +425,83 @@ pub struct Nutation {
 /// assert!(near(nutation.dpsi, -0.963_255_229_114_836_3e-5));
 /// assert!(near(nutation.deps, 0.406_319_710_662_115_9e-4));
 /// ```
+///
+/// **Summed once per instant on a thread.** The series is 77 sines and
+/// cosines, and one instant asks for it several times over: the
+/// obliquity of an apparent place, the true ayanamsha that place is read
+/// less, the Earth's orientation. The last few instants' answers are kept
+/// on the thread, keyed by the two parts' exact bits, so a repeat is the
+/// same bits as the first sum, without the sum.
 #[must_use]
 pub fn nut00b(date1: f64, date2: f64) -> Nutation {
+    nut00b_and_rate(date1, date2).0
+}
+
+/// [`nut00b()`] and the rate of its nutation in longitude, radians a day,
+/// differentiated term by term from the same sines and cosines: the
+/// series' own derivative, which a difference of two sums over a day
+/// only approaches (by 3.5% of the fortnightly term's).
+///
+/// ```
+/// use teistro_astro::iau::{nut00b, nut00b_and_rate};
+///
+/// // The rate is the slope of the series itself, here against a
+/// // difference over a minute either side.
+/// let (date1, date2) = (2_451_545.0, 8_937.25);
+/// let (nutation, rate) = nut00b_and_rate(date1, date2);
+/// assert_eq!(nutation, nut00b(date1, date2));
+/// let h = 60.0 / 86_400.0;
+/// let slope = (nut00b(date1, date2 + h).dpsi - nut00b(date1, date2 - h).dpsi) / (2.0 * h);
+/// assert!((rate - slope).abs() < 1e-12, "{rate} against {slope}");
+/// ```
+#[must_use]
+pub fn nut00b_and_rate(date1: f64, date2: f64) -> (Nutation, f64) {
+    type Kept = [Option<(u64, u64, Nutation, f64)>; NUTATION_SLOTS];
+    thread_local! {
+        static KEPT: core::cell::RefCell<Kept> =
+            const { core::cell::RefCell::new([None; NUTATION_SLOTS]) };
+    }
+    let key = (date1.to_bits(), date2.to_bits());
+    let slot = nutation_slot(key);
+    let kept = KEPT.with_borrow(|kept| kept.get(slot).copied().flatten());
+    if let Some((one, two, nutation, rate)) = kept {
+        if (one, two) == key {
+            return (nutation, rate);
+        }
+    }
+    let (nutation, rate) = nut00b_summed(date1, date2);
+    KEPT.with_borrow_mut(|kept| {
+        if let Some(entry) = kept.get_mut(slot) {
+            *entry = Some((key.0, key.1, nutation, rate));
+        }
+    });
+    (nutation, rate)
+}
+
+/// How many instants' nutations a thread keeps, direct-mapped by the
+/// instant's bits. A year's almanac reads the sky at thousands of
+/// instants in interleaved sweeps (the Sun's and the Moon's limbs, the
+/// sunrises between); at 64 slots the sweeps evicted each other and the
+/// panchanga bench paid 10% for sums it had already done, where at 1024
+/// (48 KiB a thread) it pays 2%.
+const NUTATION_SLOTS: usize = 1024;
+
+/// The slot an instant's nutation is kept in.
+fn nutation_slot((one, two): (u64, u64)) -> usize {
+    let mixed = (one ^ two.rotate_left(29)).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+    // The top ten bits, a slot below `NUTATION_SLOTS`.
+    usize::try_from(mixed >> 54).unwrap_or(0)
+}
+
+/// [`nut00b()`]'s series, summed, and the rate of its nutation in
+/// longitude, radians a day.
+fn nut00b_summed(date1: f64, date2: f64) -> (Nutation, f64) {
+    // The fundamental arguments' rates, arcseconds a century.
+    const EL_RATE: f64 = 1_717_915_923.217_8;
+    const ELP_RATE: f64 = 129_596_581.048_1;
+    const F_RATE: f64 = 1_739_527_262.847_8;
+    const D_RATE: f64 = 1_602_961_601.209_0;
+    const OM_RATE: f64 = -6_962_890.543_1;
     // Units of 0.1 microarcsecond to radians.
     const U2R: f64 = DAS2R / 1e7;
     // Fixed offsets in lieu of planetary terms.
@@ -452,6 +527,8 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
     // Summation of luni-solar nutation series (smallest terms first).
     let mut dp = 0.0;
     let mut de = 0.0;
+    // The longitude's derivative, the same units a century.
+    let mut dp_rate = 0.0;
     for term in nut00b::TERMS.iter().rev() {
         // Argument and functions.
         let arg = math::rem(
@@ -466,15 +543,25 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
         // Term.
         dp += (term.ps + term.pst * t) * sarg + term.pc * carg;
         de += (term.ec + term.ect * t) * carg + term.es * sarg;
+        let arg_rate = (f64::from(term.nl) * EL_RATE
+            + f64::from(term.nlp) * ELP_RATE
+            + f64::from(term.nf) * F_RATE
+            + f64::from(term.nd) * D_RATE
+            + f64::from(term.nom) * OM_RATE)
+            * DAS2R;
+        dp_rate += term.pst * sarg + ((term.ps + term.pst * t) * carg - term.pc * sarg) * arg_rate;
     }
     // Convert from 0.1 microarcsec units to radians.
     let dpsils = dp * U2R;
     let depsls = de * U2R;
     // Fixed offset to correct for missing terms in truncated series.
-    Nutation {
-        dpsi: dpsils + DPPLAN,
-        deps: depsls + DEPLAN,
-    }
+    (
+        Nutation {
+            dpsi: dpsils + DPPLAN,
+            deps: depsls + DEPLAN,
+        },
+        dp_rate * U2R / DJC,
+    )
 }
 
 /// Mean anomaly of the Moon (IERS Conventions 2003), radians, at `t`

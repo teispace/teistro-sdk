@@ -56,6 +56,7 @@ impl EphemerisProvider for Overriding {
         _jd: f64,
         _scale: TimeScale,
         _ayanamsha: Ayanamsha,
+        _basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
         Ok(23.0)
     }
