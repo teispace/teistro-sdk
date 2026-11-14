@@ -94,6 +94,12 @@ rows:
     page: 03-design/astro-events-and-crossings.md
     evidence: "the kernel over the test provider and a synthetic looping planet; the solver's smooth-curve and step-function costs; `crates/sdk/tests/baseline_panchanga_day.rs`: every tithi, nakshatra, yoga and karana change the baseline corpus's daily panchanga records, found by the SDK's own search over the built-in ephemeris under `conformance-baseline` (geocentric) and compared in TT, the ΔT models' difference held apart (minutes at 2350); the two range-edge days are refused, their nine changes past the data"
     by_hand: "the Sun's twelve ingresses within 0.001 s, Mercury's fourteen within 0.004 s, a lunation's tithis within 0.004 s, Mercury's and Mars's stations within 0.3 s of Teimeris's own searches; the kit's two crossings checks (Mercury's signs over 120 days, the tithis over 30) hold the engine's native search to the kernel within 0.0039 s (2026-09-05)"
+  - id: limb_times
+    area: limb ends, sankrantis and sunrises
+    target: "a tithi, nakshatra, yoga or karana end within 2 s, a sankranti within 4 s (SR-105 asks 3 s, which the built-in Sun misses before 2000), a sunrise within 0.1 s of the limb oracle (SR-105)"
+    page: 05-testing/limb-oracle.md
+    evidence: "`crates/sdk/tests/limb_oracle.rs` over `crates/sdk/tests/oracle/limbs.json`: every limb end and sankranti of 1900, 1950, 2000, 2050 and 2100 and every sunrise at Kathmandu, under `nepali-drik`, `parashari-classical`, `kp-default` and `conformance-baseline` over the built-in ephemeris, the limbs compared in TT and the sunrises in UT1. The reference is apparent and geocentric, less the true ayanamsha (the IAE's nirayana longitude), recorded by `oracle/record_limbs.py` from JPL's DE440 (`de440.bsp`, sha256 a4ce9bf9…7c4b5, read by jplephem) with the Swiss Ephemeris's reductions and ayanamshas over it and IAU 2006's sidereal time"
+    by_hand: "the same table under `{\"frame\":{\"ayanamsha_basis\":\"MEAN\"}}`, the basis every profile but `conformance-baseline` took until SR-100 (`TEISTRO_LIMB_PATCH`; `limb-oracle.md`, 2026-11-14)"
   - id: phenomena
     area: planetary phenomena
     target: exact to rounding over the same geometry
