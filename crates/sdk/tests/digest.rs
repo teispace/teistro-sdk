@@ -21,8 +21,10 @@ use teistro_idl::blob::{Reader, ScalarValue};
 const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 
 /// The sections of the week `a_digest_is_the_same_bytes_on_every_platform`
-/// writes, hashed.
-const PINNED: &str = "3d64b337209fb8186faeed9ea4469d51048f52983c362fcab237afbe64d4947d";
+/// writes, hashed. Moved when `NEPAL_PANCHANGA` gained World Alzheimer's
+/// Day, the International Day of Sign Languages and the International Day for
+/// the Total Elimination of Nuclear Weapons, three of the week's days (SR-01).
+const PINNED: &str = "3768b8a82f206536150b0e90cc9196f5101d69c37d79d23b8f997c8c15b7ad71";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;

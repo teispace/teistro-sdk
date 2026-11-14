@@ -5536,6 +5536,230 @@
     "INTERNATIONAL_MIGRANTS_DAY": {
       "name": "International Migrants Day",
       "prose": "International Migrants Day, 18 December"
+    },
+    "INTERNATIONAL_DAY_OF_EDUCATION": {
+      "name": "International Day of Education",
+      "prose": "International Day of Education, 24 January"
+    },
+    "WORLD_WETLANDS_DAY": {
+      "name": "World Wetlands Day",
+      "prose": "World Wetlands Day, 2 February"
+    },
+    "WORLD_RADIO_DAY": {
+      "name": "World Radio Day",
+      "prose": "World Radio Day, 13 February"
+    },
+    "WORLD_DAY_OF_SOCIAL_JUSTICE": {
+      "name": "World Day of Social Justice",
+      "prose": "World Day of Social Justice, 20 February"
+    },
+    "INTERNATIONAL_DAY_OF_HAPPINESS": {
+      "name": "International Day of Happiness",
+      "prose": "International Day of Happiness, 20 March"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_RACIAL_DISCRIMINATION": {
+      "name": "International Day for the Elimination of Racial Discrimination",
+      "prose": "International Day for the Elimination of Racial Discrimination, 21 March"
+    },
+    "WORLD_METEOROLOGICAL_DAY": {
+      "name": "World Meteorological Day",
+      "prose": "World Meteorological Day, 23 March"
+    },
+    "WORLD_AUTISM_AWARENESS_DAY": {
+      "name": "World Autism Awareness Day",
+      "prose": "World Autism Awareness Day, 2 April"
+    },
+    "INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE": {
+      "name": "International Day of Sport for Development and Peace",
+      "prose": "International Day of Sport for Development and Peace, 6 April"
+    },
+    "INTERNATIONAL_WELLNESS_DAY": {
+      "name": "International Wellness Day",
+      "prose": "International Wellness Day, 15 April"
+    },
+    "WORLD_BOOK_AND_COPYRIGHT_DAY": {
+      "name": "World Book and Copyright Day",
+      "prose": "World Book and Copyright Day, 23 April"
+    },
+    "WORLD_MALARIA_DAY": {
+      "name": "World Malaria Day",
+      "prose": "World Malaria Day, 25 April"
+    },
+    "WORLD_INTELLECTUAL_PROPERTY_DAY": {
+      "name": "World Intellectual Property Day",
+      "prose": "World Intellectual Property Day, 26 April"
+    },
+    "WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY": {
+      "name": "Time of Remembrance and Reconciliation for Those Who Lost Their Lives During the Second World War",
+      "prose": "Time of Remembrance and Reconciliation for Those Who Lost Their Lives During the Second World War, 8 May"
+    },
+    "WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY": {
+      "name": "World Telecommunication and Information Society Day",
+      "prose": "World Telecommunication and Information Society Day, 17 May"
+    },
+    "WORLD_BEE_DAY": {
+      "name": "World Bee Day",
+      "prose": "World Bee Day, 20 May"
+    },
+    "WORLD_CULTURE_DAY": {
+      "name": "World Day for Cultural Diversity for Dialogue and Development",
+      "prose": "World Day for Cultural Diversity for Dialogue and Development, 21 May"
+    },
+    "INTERNATIONAL_DAY_FOR_BIOLOGICAL_DIVERSITY": {
+      "name": "International Day for Biological Diversity",
+      "prose": "International Day for Biological Diversity, 22 May"
+    },
+    "GLOBAL_DAY_OF_PARENTS": {
+      "name": "Global Day of Parents",
+      "prose": "Global Day of Parents, 1 June"
+    },
+    "WORLD_BICYCLE_DAY": {
+      "name": "World Bicycle Day",
+      "prose": "World Bicycle Day, 3 June"
+    },
+    "WORLD_OCEANS_DAY": {
+      "name": "World Oceans Day",
+      "prose": "World Oceans Day, 8 June"
+    },
+    "WORLD_DAY_AGAINST_CHILD_LABOUR": {
+      "name": "World Day Against Child Labour",
+      "prose": "World Day Against Child Labour, 12 June"
+    },
+    "WORLD_BLOOD_DONOR_DAY": {
+      "name": "World Blood Donor Day",
+      "prose": "World Blood Donor Day, 14 June"
+    },
+    "WORLD_DAY_TO_COMBAT_DESERTIFICATION_AND_DROUGHT": {
+      "name": "World Day to Combat Desertification and Drought",
+      "prose": "World Day to Combat Desertification and Drought, 17 June"
+    },
+    "WORLD_REFUGEE_DAY": {
+      "name": "World Refugee Day",
+      "prose": "World Refugee Day, 20 June"
+    },
+    "INTERNATIONAL_DAY_AGAINST_DRUG_ABUSE_AND_ILLICIT_TRAFFICKING": {
+      "name": "International Day against Drug Abuse and Illicit Trafficking",
+      "prose": "International Day against Drug Abuse and Illicit Trafficking, 26 June"
+    },
+    "MICRO_SMALL_AND_MEDIUM_SIZED_ENTERPRISES_DAY": {
+      "name": "Micro-, Small and Medium-sized Enterprises Day",
+      "prose": "Micro-, Small and Medium-sized Enterprises Day, 27 June"
+    },
+    "INTERNATIONAL_DAY_OF_SIGN_LANGUAGES": {
+      "name": "International Day of Sign Languages",
+      "prose": "International Day of Sign Languages, 23 September"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_TOTAL_ELIMINATION_OF_NUCLEAR_WEAPONS": {
+      "name": "International Day for the Total Elimination of Nuclear Weapons",
+      "prose": "International Day for the Total Elimination of Nuclear Weapons, 26 September"
+    },
+    "WORLD_POST_DAY": {
+      "name": "World Post Day",
+      "prose": "World Post Day, 9 October"
+    },
+    "INTERNATIONAL_DAY_FOR_DISASTER_RISK_REDUCTION": {
+      "name": "International Day for Disaster Risk Reduction",
+      "prose": "International Day for Disaster Risk Reduction, 13 October"
+    },
+    "INTERNATIONAL_DAY_OF_RURAL_WOMEN": {
+      "name": "International Day of Rural Women",
+      "prose": "International Day of Rural Women, 15 October"
+    },
+    "WORLD_DEVELOPMENT_INFORMATION_DAY": {
+      "name": "World Development Information Day",
+      "prose": "World Development Information Day, 24 October"
+    },
+    "WORLD_CITIES_DAY": {
+      "name": "World Cities Day",
+      "prose": "World Cities Day, 31 October"
+    },
+    "INTERNATIONAL_DAY_FOR_TOLERANCE": {
+      "name": "International Day for Tolerance",
+      "prose": "International Day for Tolerance, 16 November"
+    },
+    "WORLD_TOILET_DAY": {
+      "name": "World Toilet Day",
+      "prose": "World Toilet Day, 19 November"
+    },
+    "WORLD_TELEVISION_DAY": {
+      "name": "World Television Day",
+      "prose": "World Television Day, 21 November"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ABOLITION_OF_SLAVERY": {
+      "name": "International Day for the Abolition of Slavery",
+      "prose": "International Day for the Abolition of Slavery, 2 December"
+    },
+    "WORLD_SOIL_DAY": {
+      "name": "World Soil Day",
+      "prose": "World Soil Day, 5 December"
+    },
+    "INTERNATIONAL_CIVIL_AVIATION_DAY": {
+      "name": "International Civil Aviation Day",
+      "prose": "International Civil Aviation Day, 7 December"
+    },
+    "INTERNATIONAL_CUSTOMS_DAY": {
+      "name": "International Customs Day",
+      "prose": "International Customs Day, 26 January"
+    },
+    "WORLD_CANCER_DAY": {
+      "name": "World Cancer Day",
+      "prose": "World Cancer Day, 4 February"
+    },
+    "INTERNATIONAL_CHILDHOOD_CANCER_DAY": {
+      "name": "International Childhood Cancer Day",
+      "prose": "International Childhood Cancer Day, 15 February"
+    },
+    "WORLD_CONSUMER_RIGHTS_DAY": {
+      "name": "World Consumer Rights Day",
+      "prose": "World Consumer Rights Day, 15 March"
+    },
+    "WORLD_ORAL_HEALTH_DAY": {
+      "name": "World Oral Health Day",
+      "prose": "World Oral Health Day, 20 March"
+    },
+    "WORLD_THEATRE_DAY": {
+      "name": "World Theatre Day",
+      "prose": "World Theatre Day, 27 March"
+    },
+    "INTERNATIONAL_DANCE_DAY": {
+      "name": "International Dance Day",
+      "prose": "International Dance Day, 29 April"
+    },
+    "INTERNATIONAL_NURSES_DAY": {
+      "name": "International Nurses Day",
+      "prose": "International Nurses Day, 12 May"
+    },
+    "INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH": {
+      "name": "International Day of Action for Women's Health",
+      "prose": "International Day of Action for Women's Health, 28 May"
+    },
+    "WORLD_MUSIC_DAY": {
+      "name": "World Music Day",
+      "prose": "World Music Day, 21 June"
+    },
+    "WORLD_PHYSIOTHERAPY_DAY": {
+      "name": "World Physiotherapy Day",
+      "prose": "World Physiotherapy Day, 8 September"
+    },
+    "WORLD_ALZHEIMER_S_DAY": {
+      "name": "World Alzheimer's Day",
+      "prose": "World Alzheimer's Day, 21 September"
+    },
+    "WORLD_RABIES_DAY": {
+      "name": "World Rabies Day",
+      "prose": "World Rabies Day, 28 September"
+    },
+    "WORLD_HEART_DAY": {
+      "name": "World Heart Day",
+      "prose": "World Heart Day, 29 September"
+    },
+    "WORLD_ANIMAL_DAY": {
+      "name": "World Animal Day",
+      "prose": "World Animal Day, 4 October"
+    },
+    "GLOBAL_HANDWASHING_DAY": {
+      "name": "Global Handwashing Day",
+      "prose": "Global Handwashing Day, 15 October"
     }
   },
   "agni_vasa": {

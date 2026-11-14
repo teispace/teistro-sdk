@@ -572,7 +572,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1336,
+            derived.entities, 1392,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -584,7 +584,8 @@ mod tests {
              1275 until SR-01's nine, 1284 until Uttar Pradesh's ten, \
              1294 until Odisha's thirteen, \
              1307 until SR-01's twenty-eight civil days, \
-             1335 until Yosin utthan"
+             1335 until Yosin utthan, \
+             1336 until its fifty-six UN and organisers' days"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 

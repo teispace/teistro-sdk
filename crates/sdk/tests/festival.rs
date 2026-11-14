@@ -579,7 +579,8 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
 
 /// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
 /// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions and those
-/// [`KEPT_CIVIL_DAYS`] holds to a patro's verified days.
+/// [`KEPT_CIVIL_DAYS`] and [`KEPT_INTERNATIONAL_DAYS`] hold to a patro's
+/// verified days.
 fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
     kept_dated(from, to)
         .into_iter()
@@ -587,6 +588,7 @@ fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
             PRINTED_CIVIL_DAYS
                 .iter()
                 .chain(&KEPT_CIVIL_DAYS)
+                .chain(&KEPT_INTERNATIONAL_DAYS)
                 .all(|&(civil, ..)| civil != rule)
         })
         .collect()
@@ -813,6 +815,159 @@ const KEPT_CIVIL_DAYS: [(&str, Day, Day); 28] = [
     ("WORLD_HEALTH_DAY", (2026, 4, 7), (2027, 4, 7)),
 ];
 
+/// The UN's other international days and the days other bodies keep on a
+/// Gregorian date, which the committee prints in neither edition, each with
+/// the day of VS 2082 and of VS 2083 its date gives: every day a patro
+/// printed in Nepal verified for it over those years, but for
+/// `WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY`, whose patro keeps 9 May as
+/// well as the UN list's 8 May (C1702).
+const KEPT_INTERNATIONAL_DAYS: [(&str, Day, Day); 56] = [
+    ("INTERNATIONAL_WELLNESS_DAY", (2025, 4, 15), (2026, 4, 15)),
+    ("WORLD_BOOK_AND_COPYRIGHT_DAY", (2025, 4, 23), (2026, 4, 23)),
+    ("WORLD_MALARIA_DAY", (2025, 4, 25), (2026, 4, 25)),
+    (
+        "WORLD_INTELLECTUAL_PROPERTY_DAY",
+        (2025, 4, 26),
+        (2026, 4, 26),
+    ),
+    ("INTERNATIONAL_DANCE_DAY", (2025, 4, 29), (2026, 4, 29)),
+    (
+        "WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY",
+        (2025, 5, 8),
+        (2026, 5, 8),
+    ),
+    ("INTERNATIONAL_NURSES_DAY", (2025, 5, 12), (2026, 5, 12)),
+    (
+        "WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY",
+        (2025, 5, 17),
+        (2026, 5, 17),
+    ),
+    ("WORLD_BEE_DAY", (2025, 5, 20), (2026, 5, 20)),
+    ("WORLD_CULTURE_DAY", (2025, 5, 21), (2026, 5, 21)),
+    (
+        "INTERNATIONAL_DAY_FOR_BIOLOGICAL_DIVERSITY",
+        (2025, 5, 22),
+        (2026, 5, 22),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH",
+        (2025, 5, 28),
+        (2026, 5, 28),
+    ),
+    ("GLOBAL_DAY_OF_PARENTS", (2025, 6, 1), (2026, 6, 1)),
+    ("WORLD_BICYCLE_DAY", (2025, 6, 3), (2026, 6, 3)),
+    ("WORLD_OCEANS_DAY", (2025, 6, 8), (2026, 6, 8)),
+    (
+        "WORLD_DAY_AGAINST_CHILD_LABOUR",
+        (2025, 6, 12),
+        (2026, 6, 12),
+    ),
+    ("WORLD_BLOOD_DONOR_DAY", (2025, 6, 14), (2026, 6, 14)),
+    (
+        "WORLD_DAY_TO_COMBAT_DESERTIFICATION_AND_DROUGHT",
+        (2025, 6, 17),
+        (2026, 6, 17),
+    ),
+    ("WORLD_REFUGEE_DAY", (2025, 6, 20), (2026, 6, 20)),
+    ("WORLD_MUSIC_DAY", (2025, 6, 21), (2026, 6, 21)),
+    (
+        "INTERNATIONAL_DAY_AGAINST_DRUG_ABUSE_AND_ILLICIT_TRAFFICKING",
+        (2025, 6, 26),
+        (2026, 6, 26),
+    ),
+    (
+        "MICRO_SMALL_AND_MEDIUM_SIZED_ENTERPRISES_DAY",
+        (2025, 6, 27),
+        (2026, 6, 27),
+    ),
+    ("WORLD_PHYSIOTHERAPY_DAY", (2025, 9, 8), (2026, 9, 8)),
+    ("WORLD_ALZHEIMER_S_DAY", (2025, 9, 21), (2026, 9, 21)),
+    (
+        "INTERNATIONAL_DAY_OF_SIGN_LANGUAGES",
+        (2025, 9, 23),
+        (2026, 9, 23),
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_TOTAL_ELIMINATION_OF_NUCLEAR_WEAPONS",
+        (2025, 9, 26),
+        (2026, 9, 26),
+    ),
+    ("WORLD_RABIES_DAY", (2025, 9, 28), (2026, 9, 28)),
+    ("WORLD_HEART_DAY", (2025, 9, 29), (2026, 9, 29)),
+    ("WORLD_ANIMAL_DAY", (2025, 10, 4), (2026, 10, 4)),
+    ("WORLD_POST_DAY", (2025, 10, 9), (2026, 10, 9)),
+    (
+        "INTERNATIONAL_DAY_FOR_DISASTER_RISK_REDUCTION",
+        (2025, 10, 13),
+        (2026, 10, 13),
+    ),
+    ("GLOBAL_HANDWASHING_DAY", (2025, 10, 15), (2026, 10, 15)),
+    (
+        "INTERNATIONAL_DAY_OF_RURAL_WOMEN",
+        (2025, 10, 15),
+        (2026, 10, 15),
+    ),
+    (
+        "WORLD_DEVELOPMENT_INFORMATION_DAY",
+        (2025, 10, 24),
+        (2026, 10, 24),
+    ),
+    ("WORLD_CITIES_DAY", (2025, 10, 31), (2026, 10, 31)),
+    (
+        "INTERNATIONAL_DAY_FOR_TOLERANCE",
+        (2025, 11, 16),
+        (2026, 11, 16),
+    ),
+    ("WORLD_TOILET_DAY", (2025, 11, 19), (2026, 11, 19)),
+    ("WORLD_TELEVISION_DAY", (2025, 11, 21), (2026, 11, 21)),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ABOLITION_OF_SLAVERY",
+        (2025, 12, 2),
+        (2026, 12, 2),
+    ),
+    ("WORLD_SOIL_DAY", (2025, 12, 5), (2026, 12, 5)),
+    (
+        "INTERNATIONAL_CIVIL_AVIATION_DAY",
+        (2025, 12, 7),
+        (2026, 12, 7),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_EDUCATION",
+        (2026, 1, 24),
+        (2027, 1, 24),
+    ),
+    ("INTERNATIONAL_CUSTOMS_DAY", (2026, 1, 26), (2027, 1, 26)),
+    ("WORLD_WETLANDS_DAY", (2026, 2, 2), (2027, 2, 2)),
+    ("WORLD_CANCER_DAY", (2026, 2, 4), (2027, 2, 4)),
+    ("WORLD_RADIO_DAY", (2026, 2, 13), (2027, 2, 13)),
+    (
+        "INTERNATIONAL_CHILDHOOD_CANCER_DAY",
+        (2026, 2, 15),
+        (2027, 2, 15),
+    ),
+    ("WORLD_DAY_OF_SOCIAL_JUSTICE", (2026, 2, 20), (2027, 2, 20)),
+    ("WORLD_CONSUMER_RIGHTS_DAY", (2026, 3, 15), (2027, 3, 15)),
+    (
+        "INTERNATIONAL_DAY_OF_HAPPINESS",
+        (2026, 3, 20),
+        (2027, 3, 20),
+    ),
+    ("WORLD_ORAL_HEALTH_DAY", (2026, 3, 20), (2027, 3, 20)),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_RACIAL_DISCRIMINATION",
+        (2026, 3, 21),
+        (2027, 3, 21),
+    ),
+    ("WORLD_METEOROLOGICAL_DAY", (2026, 3, 23), (2027, 3, 23)),
+    ("WORLD_THEATRE_DAY", (2026, 3, 27), (2027, 3, 27)),
+    ("WORLD_AUTISM_AWARENESS_DAY", (2026, 4, 2), (2027, 4, 2)),
+    (
+        "INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE",
+        (2026, 4, 6),
+        (2027, 4, 6),
+    ),
+];
+
 /// Each civil day the committee does not print falls on the day its keeper
 /// names, the Bikram Sambat ones through the calendar's own conversion.
 #[test]
@@ -822,7 +977,7 @@ fn the_unprinted_civil_days_fall_on_their_keepers_dates() {
         kept_dated((2026, 4, 14), (2027, 4, 13)),
     ]
     .concat();
-    for (rule, first, second) in KEPT_CIVIL_DAYS {
+    for &(rule, first, second) in KEPT_CIVIL_DAYS.iter().chain(&KEPT_INTERNATIONAL_DAYS) {
         let days: Vec<Day> = kept
             .iter()
             .filter(|(kept, _)| kept == rule)
