@@ -1112,6 +1112,13 @@ class FestivalKey(enum.StrEnum):
     WORLD_FIRST_AID_DAY = "festival.WORLD_FIRST_AID_DAY"
     WORLD_SMILE_DAY = "festival.WORLD_SMILE_DAY"
     WORLD_SIGHT_DAY = "festival.WORLD_SIGHT_DAY"
+    MATATI_CHARHE = "festival.MATATI_CHARHE"
+    SITHI_CHARHE = "festival.SITHI_CHARHE"
+    GATHAMUGA_CHARHE = "festival.GATHAMUGA_CHARHE"
+    GHANTAKARNA_CHATURDASHI = "festival.GHANTAKARNA_CHATURDASHI"
+    JUGA_CHARHE = "festival.JUGA_CHARHE"
+    NALASWANE_CHARHE = "festival.NALASWANE_CHARHE"
+    DISHI_CHARHE = "festival.DISHI_CHARHE"
 
 
 class FestivalKindKey(enum.StrEnum):
@@ -7925,6 +7932,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.DILLA_PUNHI")
 
     @property
+    def dishi_charhe(self) -> EntityForms:
+        """The forms of `festival.DISHI_CHARHE` in the current locale."""
+        return self._r.entity("festival.DISHI_CHARHE")
+
+    @property
     def dola_yatra(self) -> EntityForms:
         """The forms of `festival.DOLA_YATRA` in the current locale."""
         return self._r.entity("festival.DOLA_YATRA")
@@ -8085,6 +8097,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.GANGA_SAPTAMI")
 
     @property
+    def gathamuga_charhe(self) -> EntityForms:
+        """The forms of `festival.GATHAMUGA_CHARHE` in the current locale."""
+        return self._r.entity("festival.GATHAMUGA_CHARHE")
+
+    @property
     def gatila(self) -> EntityForms:
         """The forms of `festival.GATILA` in the current locale."""
         return self._r.entity("festival.GATILA")
@@ -8118,6 +8135,11 @@ class MessagesSdkEntityFestival:
     def gen_z_martyrs_day(self) -> EntityForms:
         """The forms of `festival.GEN_Z_MARTYRS_DAY` in the current locale."""
         return self._r.entity("festival.GEN_Z_MARTYRS_DAY")
+
+    @property
+    def ghantakarna_chaturdashi(self) -> EntityForms:
+        """The forms of `festival.GHANTAKARNA_CHATURDASHI` in the current locale."""
+        return self._r.entity("festival.GHANTAKARNA_CHATURDASHI")
 
     @property
     def ghode_jatra(self) -> EntityForms:
@@ -8625,6 +8647,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.JITIYA")
 
     @property
+    def juga_charhe(self) -> EntityForms:
+        """The forms of `festival.JUGA_CHARHE` in the current locale."""
+        return self._r.entity("festival.JUGA_CHARHE")
+
+    @property
     def jur_sital(self) -> EntityForms:
         """The forms of `festival.JUR_SITAL` in the current locale."""
         return self._r.entity("festival.JUR_SITAL")
@@ -9045,6 +9072,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.MASTA_PURNIMA")
 
     @property
+    def matati_charhe(self) -> EntityForms:
+        """The forms of `festival.MATATI_CHARHE` in the current locale."""
+        return self._r.entity("festival.MATATI_CHARHE")
+
+    @property
     def mata_tirtha_aunsi(self) -> EntityForms:
         """The forms of `festival.MATA_TIRTHA_AUNSI` in the current locale."""
         return self._r.entity("festival.MATA_TIRTHA_AUNSI")
@@ -9133,6 +9165,11 @@ class MessagesSdkEntityFestival:
     def nakwa_dishi(self) -> EntityForms:
         """The forms of `festival.NAKWA_DISHI` in the current locale."""
         return self._r.entity("festival.NAKWA_DISHI")
+
+    @property
+    def nalaswane_charhe(self) -> EntityForms:
+        """The forms of `festival.NALASWANE_CHARHE` in the current locale."""
+        return self._r.entity("festival.NALASWANE_CHARHE")
 
     @property
     def nala_machhindranath_rath_jatra(self) -> EntityForms:
@@ -9718,6 +9755,11 @@ class MessagesSdkEntityFestival:
     def sita_navami(self) -> EntityForms:
         """The forms of `festival.SITA_NAVAMI` in the current locale."""
         return self._r.entity("festival.SITA_NAVAMI")
+
+    @property
+    def sithi_charhe(self) -> EntityForms:
+        """The forms of `festival.SITHI_CHARHE` in the current locale."""
+        return self._r.entity("festival.SITHI_CHARHE")
 
     @property
     def sithi_nakha(self) -> EntityForms:

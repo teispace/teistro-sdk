@@ -5345,6 +5345,41 @@
     "WORLD_SIGHT_DAY": {
       "name": "Viśva Dṛṣṭi Divasa",
       "prose": "Viśva Dṛṣṭi Divasa"
+    },
+    "MATATI_CHARHE": {
+      "name": "Mātāti Cahre",
+      "prose": "Mātāti Cahre",
+      "iast": "Mātāti Carhe"
+    },
+    "SITHI_CHARHE": {
+      "name": "Sithi Cahre",
+      "prose": "Sithi Cahre",
+      "iast": "Sithi Carhe"
+    },
+    "GATHAMUGA_CHARHE": {
+      "name": "Gathām̐muga Cahre",
+      "prose": "Gathām̐muga Cahre",
+      "iast": "Gathām̐muga Carhe"
+    },
+    "GHANTAKARNA_CHATURDASHI": {
+      "name": "Ghaṇṭākarṇa Caturdaśī",
+      "prose": "Ghaṇṭākarṇa Caturdaśī",
+      "iast": "Ghaṇṭākarṇa Caturdaśī"
+    },
+    "JUGA_CHARHE": {
+      "name": "Jugaḥ Cahre",
+      "prose": "Jugaḥ Cahre",
+      "iast": "Jugaḥ Carhe"
+    },
+    "NALASWANE_CHARHE": {
+      "name": "Naḥlāsvane Cahre",
+      "prose": "Naḥlāsvane Cahre",
+      "iast": "Naḥlāsvane Carhe"
+    },
+    "DISHI_CHARHE": {
+      "name": "Diśī Cahre",
+      "prose": "Diśī Cahre",
+      "iast": "Diśī Carhe"
     }
   },
   "year_office": {

@@ -5876,6 +5876,41 @@
     "WORLD_SIGHT_DAY": {
       "name": "World Sight Day",
       "prose": "World Sight Day, the second Thursday of October"
+    },
+    "MATATI_CHARHE": {
+      "name": "Matati Charhe",
+      "prose": "Matati Charhe",
+      "iast": "Mātāti Carhe"
+    },
+    "SITHI_CHARHE": {
+      "name": "Sithi Charhe",
+      "prose": "Sithi Charhe",
+      "iast": "Sithi Carhe"
+    },
+    "GATHAMUGA_CHARHE": {
+      "name": "Gathamuga Charhe",
+      "prose": "Gathamuga Charhe",
+      "iast": "Gathām̐muga Carhe"
+    },
+    "GHANTAKARNA_CHATURDASHI": {
+      "name": "Ghantakarna Chaturdashi",
+      "prose": "Ghantakarna Chaturdashi",
+      "iast": "Ghaṇṭākarṇa Caturdaśī"
+    },
+    "JUGA_CHARHE": {
+      "name": "Juga Charhe",
+      "prose": "Juga Charhe",
+      "iast": "Jugaḥ Carhe"
+    },
+    "NALASWANE_CHARHE": {
+      "name": "Nalaswane Charhe",
+      "prose": "Nalaswane Charhe",
+      "iast": "Naḥlāsvane Carhe"
+    },
+    "DISHI_CHARHE": {
+      "name": "Dishi Charhe",
+      "prose": "Dishi Charhe",
+      "iast": "Diśī Carhe"
     }
   },
   "agni_vasa": {

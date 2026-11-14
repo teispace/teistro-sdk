@@ -39,7 +39,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 603] = [
+static PRINTED: [(i32, &str, Day, &str); 617] = [
     (
         2082,
         "VARUTHINI_EKADASHI",
@@ -1908,6 +1908,60 @@ static PRINTED: [(i32, &str, Day, &str); 603] = [
         (2026, 10, 3),
         "p. 14: महालक्ष्मीव्रत समाप्ति",
     ),
+    (
+        2082,
+        "MATATI_CHARHE",
+        (2025, 4, 26),
+        "p. 2: माताति चःह्रे पूजा",
+    ),
+    (
+        2083,
+        "MATATI_CHARHE",
+        (2026, 4, 16),
+        "p. 2: माताति चःह्रे पूजा",
+    ),
+    (2082, "SITHI_CHARHE", (2025, 5, 25), "p. 4: (सिथिचह्रेपूजा)"),
+    (2083, "SITHI_CHARHE", (2026, 5, 15), "p. 4: (सिथिचह्रेपूजा)"),
+    (
+        2082,
+        "GATHAMUGA_CHARHE",
+        (2025, 7, 23),
+        "p. 8: (गथां मुगः चःह्रे पूजा)",
+    ),
+    (
+        2083,
+        "GATHAMUGA_CHARHE",
+        (2026, 8, 11),
+        "p. 10: (गथां मुगः चःह्रे पूजा)",
+    ),
+    (
+        2082,
+        "GHANTAKARNA_CHATURDASHI",
+        (2025, 7, 23),
+        "p. 8: घण्टाकर्ण चतुर्दशी",
+    ),
+    (
+        2083,
+        "GHANTAKARNA_CHATURDASHI",
+        (2026, 8, 11),
+        "p. 10: घण्टाकर्ण चतुर्दशी",
+    ),
+    (2082, "JUGA_CHARHE", (2025, 8, 21), "p. 10: (जुगः चःह्रे पूजा)"),
+    (2083, "JUGA_CHARHE", (2026, 9, 9), "p. 12: (जुगः चःह्रे पूजा)"),
+    (
+        2082,
+        "NALASWANE_CHARHE",
+        (2025, 9, 20),
+        "p. 12: Ⓑ नलास्वनेचह्रेपूजा, continuing the dark 14th's row",
+    ),
+    (
+        2083,
+        "NALASWANE_CHARHE",
+        (2026, 10, 9),
+        "p. 14: Ⓑ नलास्वनेचह्रेपूजा, continuing the dark 14th's row",
+    ),
+    (2082, "DISHI_CHARHE", (2025, 12, 18), "p. 18: (दिशीचह्रेपूजा)"),
+    (2083, "DISHI_CHARHE", (2027, 1, 6), "p. 20: (दिशीचह्रेपूजा)"),
 ];
 
 /// Why the pack over the committee's sky parts from the print, per (year,
