@@ -257,7 +257,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "INDIA_GUJARAT",
             "INDIA_ANDHRA_PRADESH",
             "INDIA_UTTAR_PRADESH",
-            "INDIA_ODISHA"
+            "INDIA_ODISHA",
+            "INDIA_BIHAR"
         ])
     );
     let date = complete("birth-chart", "date", "1990");

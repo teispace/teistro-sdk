@@ -217,6 +217,29 @@ region `IN-OD` now reckons `INDIA_ODISHA`, where it kept `INDIA_CENTRAL`.
 - `region::REGIONS` and `FestivalPack::ALL` declared one fewer entry than they held after the Andhra Pradesh and
   Gujarat sets merged; both now count their rows.
 
+**Bihar's public holidays (SR-03, the twelfth state set).**
+**Numbers:** none for any existing pack's days: a new pack. A request naming the
+region `IN-BR` now reckons `INDIA_BIHAR`, where it kept `INDIA_CENTRAL`.
+- The pack `INDIA_BIHAR` (`FestivalPack::IndiaBihar`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_bihar`) holds the General Administration Department's notifications of 2019 to 2026, read
+  as copied (C1560): Schedule-1's general holidays, Schedule-3's public holidays and Schedule-2's restricted
+  holidays, the latter `optional`:
+  - each lunar day by the shipped rule that meets the most notifications, measured at Patna (C1562):
+    *Dharmasindhu*'s Holika Dahan, Janmashtami, Raksha Bandhan, Bhai Dooj and Vijaya Dashami, the
+    print's Basant Panchami, Samrat Ashok Ashtami, the Durga Puja's Saptami and Ashtami and Chhath, Uttar
+    Pradesh's Ravidas Jayanti, Telangana's Mahanavami and Deepawali, the Jain pack's Anant Chaturdashi and Odisha's Guru Gobind
+    Singh Jayanti among them;
+  - Janaki Navami on Vaishakha's bright 9th at sunrise, the one new rule (C1561);
+  - Holi's second day, Kharna, Chhath's morning arghya and the Durga Puja's Ekadashi counted from their festival,
+    Makar Sankranti on the first of Makara (C1566), and the twelve state days on their dates.
+
+  The ten Islamic days ship as printed, marked `MOON_SIGHTING` (C1563); the last Monday of Shravana, which no form
+  reckons (C1564), and Guru Nanak Jayanti, listed in 2019 and 2020 only (C1573), ship as printed, unmarked.
+  Schedule-4 and later orders are left out (C1569, C1572) (`03-design/bihar-holidays.md`).
+- `festival-measured.md` §22 holds it at Patna, 341 of the 363 rows meeting the print and the twenty-two that part
+  named (C1561, C1565 to C1571). `crates/sdk/tests/bihar.rs` holds each year's notification.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the nine new keys.
+
 ## 1.0.0-rc.4
 
 The fourth release candidate of 1.0.0: Nepal's festivals as rules (SR-01)

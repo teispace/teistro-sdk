@@ -5380,6 +5380,42 @@
       "name": "Diśī Cahre",
       "prose": "Diśī Cahre",
       "iast": "Diśī Carhe"
+    },
+    "SAMRAT_ASHOK_ASHTAMI": {
+      "name": "Samrāḍaśokāṣṭamī",
+      "prose": "Samrāḍaśokāṣṭamī"
+    },
+    "CHHATH_KHARNA": {
+      "name": "Kharanā",
+      "prose": "Kharanā"
+    },
+    "CHHATH_SECOND_DAY": {
+      "name": "Pratihāraṣaṣṭhyāḥ Prātararghyam",
+      "prose": "Pratihāraṣaṣṭhyāḥ Prātararghyam"
+    },
+    "BIHAR_DIWAS": {
+      "name": "Bihāradivasaḥ",
+      "prose": "Bihāradivasaḥ"
+    },
+    "VEER_KUNWAR_SINGH_JAYANTI": {
+      "name": "Vīrakuṃvarasiṃhajayantī",
+      "prose": "Vīrakuṃvarasiṃhajayantī"
+    },
+    "ANUGRAH_NARAYAN_SINHA_JAYANTI": {
+      "name": "Anugrahanārāyaṇasiṃhajayantī",
+      "prose": "Anugrahanārāyaṇasiṃhajayantī"
+    },
+    "JAYAPRAKASH_NARAYAN_JAYANTI": {
+      "name": "Jayaprakāśanārāyaṇajayantī",
+      "prose": "Jayaprakāśanārāyaṇajayantī"
+    },
+    "SHRI_KRISHNA_SINHA_JAYANTI": {
+      "name": "Śrīkṛṣṇasiṃhajayantī",
+      "prose": "Śrīkṛṣṇasiṃhajayantī"
+    },
+    "RAJENDRA_PRASAD_JAYANTI": {
+      "name": "Rājendraprasādajayantī",
+      "prose": "Rājendraprasādajayantī"
     }
   },
   "year_office": {

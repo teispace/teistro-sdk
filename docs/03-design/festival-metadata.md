@@ -86,6 +86,7 @@ every key a shipped set names:
 | `IN` | | `INDIA_CENTRAL`, and every state's days besides its own code |
 | `IN-AP` | | `INDIA_ANDHRA_PRADESH` |
 | `IN-AS` | `ASSAM` | `INDIA_ASSAM` |
+| `IN-BR` | | `INDIA_BIHAR` |
 | `IN-GJ` | | `INDIA_GUJARAT` |
 | `IN-KA` | | `INDIA_KARNATAKA` |
 | `IN-KL` | `KERALA` | `INDIA_KERALA` |

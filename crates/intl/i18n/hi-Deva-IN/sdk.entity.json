@@ -4428,6 +4428,42 @@
       "name": "दिशी चह्रे",
       "prose": "दिशी चह्रे",
       "iast": "Diśī Carhe"
+    },
+    "SAMRAT_ASHOK_ASHTAMI": {
+      "name": "सम्राट अशोक अष्टमी",
+      "prose": "सम्राट अशोक अष्टमी"
+    },
+    "CHHATH_KHARNA": {
+      "name": "खरना",
+      "prose": "खरना"
+    },
+    "CHHATH_SECOND_DAY": {
+      "name": "छठ, प्रातःकालीन अर्घ्य",
+      "prose": "छठ, प्रातःकालीन अर्घ्य"
+    },
+    "BIHAR_DIWAS": {
+      "name": "बिहार दिवस",
+      "prose": "बिहार दिवस"
+    },
+    "VEER_KUNWAR_SINGH_JAYANTI": {
+      "name": "वीर कुंवर सिंह जयंती",
+      "prose": "वीर कुंवर सिंह जयंती"
+    },
+    "ANUGRAH_NARAYAN_SINHA_JAYANTI": {
+      "name": "अनुग्रह नारायण सिंह जयंती",
+      "prose": "अनुग्रह नारायण सिंह जयंती"
+    },
+    "JAYAPRAKASH_NARAYAN_JAYANTI": {
+      "name": "जयप्रकाश नारायण जयंती",
+      "prose": "जयप्रकाश नारायण जयंती"
+    },
+    "SHRI_KRISHNA_SINHA_JAYANTI": {
+      "name": "श्री कृष्ण सिंह जयंती",
+      "prose": "श्री कृष्ण सिंह जयंती"
+    },
+    "RAJENDRA_PRASAD_JAYANTI": {
+      "name": "डॉ. राजेन्द्र प्रसाद जयंती",
+      "prose": "डॉ. राजेन्द्र प्रसाद जयंती"
     }
   },
   "era": {

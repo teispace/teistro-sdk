@@ -31,9 +31,10 @@
 //!   `INDIA_ANDHRA_PRADESH` pack against the Government of Andhra
 //!   Pradesh's at Amaravati ([`andhra_pradesh`]), the
 //!   `INDIA_UTTAR_PRADESH` pack against the Government of Uttar
-//!   Pradesh's at Lucknow ([`uttar_pradesh`]), and the
-//!   `INDIA_ODISHA` pack against the Government of Odisha's at
-//!   Bhubaneswar ([`odisha`]).
+//!   Pradesh's at Lucknow ([`uttar_pradesh`]), the `INDIA_ODISHA` pack
+//!   against the Government of Odisha's at Bhubaneswar ([`odisha`]), and
+//!   the `INDIA_BIHAR` pack against the Government of Bihar's at Patna
+//!   ([`bihar`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -56,6 +57,7 @@ use crate::measure::{Claim, table};
 
 mod andhra_pradesh;
 mod assam;
+mod bihar;
 mod ekadashi;
 mod gujarat;
 mod india;
@@ -495,6 +497,7 @@ fn page() -> Result<String, String> {
     let andhra = andhra_pradesh::compare(&mut problems)?;
     let uttar = uttar_pradesh::compare(&mut problems)?;
     let odisha = odisha::compare(&mut problems)?;
+    let bihar = bihar::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -517,6 +520,7 @@ fn page() -> Result<String, String> {
     andhra_pradesh::render(&mut out, &andhra);
     uttar_pradesh::render(&mut out, &uttar);
     odisha::render(&mut out, &odisha);
+    bihar::render(&mut out, &bihar);
     Ok(out)
 }
 
