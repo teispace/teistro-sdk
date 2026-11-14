@@ -290,8 +290,9 @@ impl EphemerisProvider for VakyaSky {
         jd: f64,
         scale: TimeScale,
         ayanamsha: teistro_core::catalogue::Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        self.parts.ayanamsha_deg(jd, scale, ayanamsha)
+        self.parts.ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
@@ -438,11 +439,21 @@ mod tests {
         same(
             format!(
                 "{:?}",
-                sky.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+                sky.ayanamsha_deg(
+                    NOON,
+                    TimeScale::Ut1,
+                    Ayanamsha::Suryasiddhanta,
+                    teistro_core::settings::AyanamshaBasis::True,
+                )
             ),
             format!(
                 "{:?}",
-                parts.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+                parts.ayanamsha_deg(
+                    NOON,
+                    TimeScale::Ut1,
+                    Ayanamsha::Suryasiddhanta,
+                    teistro_core::settings::AyanamshaBasis::True,
+                )
             ),
         );
         let angles = AnglesRequest {

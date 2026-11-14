@@ -231,11 +231,16 @@ fn the_lagna_can_be_left_out_and_lillys_moieties_need_it_out() {
 fn each_charts_own_zodiac_parts_from_the_tropical_by_the_precession_between() {
     // Under a sidereal profile, every longitude carries its own instant's
     // ayanamsha, so a separation across the two charts moves by the
-    // difference of the two (C241): about 50″ a year over the two years.
+    // difference of the two (C241): about 50″ a year over the two years,
+    // and, on the root's true basis, the change of the nutation in
+    // longitude between the two instants (SR-100), taken out here. ΔT,
+    // seconds, moves the nutation by microarcseconds.
     let sdk = context(None);
     let (george, mary) = (born(&sdk, GEORGE), born(&sdk, MARY));
     assert!(george.foundation.zodiac.is_sidereal());
-    let drift = mary.foundation.zodiac.offset_deg - george.foundation.zodiac.offset_deg;
+    let nutation = |jd: f64| teistro_astro::iau::nut00b(jd, 0.0).dpsi.to_degrees();
+    let apart = mary.foundation.zodiac.offset_deg - george.foundation.zodiac.offset_deg;
+    let drift = apart - (nutation(MARY.0) - nutation(GEORGE.0));
     assert!(
         (drift * 3600.0 - 100.0).abs() < 5.0,
         "{drift}° over two years"
@@ -259,8 +264,8 @@ fn each_charts_own_zodiac_parts_from_the_tropical_by_the_precession_between() {
     };
     let moved = between(SynastryZodiac::Charts) - between(SynastryZodiac::Tropical);
     assert!(
-        (moved.abs() - drift.abs()).abs() < 1e-9,
-        "{moved} against {drift}"
+        (moved.abs() - apart.abs()).abs() < 1e-9,
+        "{moved} against {apart}"
     );
 
     // Two charts founded in different zodiacs compare only tropically.

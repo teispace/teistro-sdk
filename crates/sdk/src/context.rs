@@ -1155,7 +1155,12 @@ impl ContextBuilder {
         // No chain named is no ephemeris, and that is a decision rather
         // than a default: ADR-0029 refuses a context quietly given one.
         let chain = self.chain.unwrap_or_else(|| vec![Ephemeris::None]);
-        let opened = ephemeris::open(chain, settings.settings.frame.siddhanta, delta_t)?;
+        let opened = ephemeris::open(
+            chain,
+            settings.settings.frame.siddhanta,
+            delta_t,
+            settings.settings.frame.ayanamsha_basis,
+        )?;
         let mut settings = settings;
         astronomy_coherence(&mut settings, opened.as_deref())?;
         let opened = match (opened, self.wrap) {

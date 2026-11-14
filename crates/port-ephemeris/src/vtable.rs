@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::Atmosphere;
+use teistro_core::settings::{Atmosphere, AyanamshaBasis};
 
 use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
@@ -35,8 +35,41 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 
 /// The ABI version of the vtable layout.
 ///
+/// 5: the ayanamsha override takes the basis asked (SR-100).
+///
 /// `api: constant`
-pub const VTABLE_ABI_VERSION: u32 = 4;
+pub const VTABLE_ABI_VERSION: u32 = 5;
+
+/// The ayanamsha override's `basis`: the mean value, without the nutation
+/// in longitude.
+///
+/// `api: constant`
+pub const AYANAMSHA_BASIS_MEAN: u32 = 0;
+
+/// The ayanamsha override's `basis`: the true value, with the provider's
+/// own nutation in longitude added.
+///
+/// `api: constant`
+pub const AYANAMSHA_BASIS_TRUE: u32 = 1;
+
+/// A basis as the vtable carries it, `None` for one this vtable version
+/// has no number for (the knob is non-exhaustive).
+const fn basis_id(basis: AyanamshaBasis) -> Option<u32> {
+    match basis {
+        AyanamshaBasis::Mean => Some(AYANAMSHA_BASIS_MEAN),
+        AyanamshaBasis::True => Some(AYANAMSHA_BASIS_TRUE),
+        _ => None,
+    }
+}
+
+/// The basis a vtable call names, `None` for a number that names none.
+const fn basis_from_id(id: u32) -> Option<AyanamshaBasis> {
+    match id {
+        AYANAMSHA_BASIS_MEAN => Some(AyanamshaBasis::Mean),
+        AYANAMSHA_BASIS_TRUE => Some(AyanamshaBasis::True),
+        _ => None,
+    }
+}
 
 /// What a vtable function returns: `0` for success, and one of these for
 /// a failure the port names. A provider's own code stays outside them
@@ -858,13 +891,16 @@ pub type ObliquityFn =
 pub type DeltaTFn =
     unsafe extern "C" fn(user_data: *mut c_void, jd_ut1: f64, out_seconds: *mut f64) -> i32;
 
-/// The ayanamsha override: the mean ayanamsha in degrees at an instant,
-/// by catalogue id.
+/// The ayanamsha override: an ayanamsha in degrees at an instant, by
+/// catalogue id, on the basis asked (`AYANAMSHA_BASIS_MEAN` or
+/// `AYANAMSHA_BASIS_TRUE`); a basis the provider cannot answer is
+/// `UNSUPPORTED`, never another basis's value.
 pub type AyanamshaFn = unsafe extern "C" fn(
     user_data: *mut c_void,
     jd: f64,
     scale: u32,
     ayanamsha: u16,
+    basis: u32,
     out_deg: *mut f64,
 ) -> i32;
 
@@ -1383,14 +1419,27 @@ impl EphemerisProvider for VtableProvider {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
         let Some(f) = self.vtable.ayanamsha else {
             return Err(ProviderError::unsupported("ayanamsha"));
         };
+        let Some(basis) = basis_id(basis) else {
+            return Err(ProviderError::unsupported("ayanamsha basis"));
+        };
         let mut out = 0.0f64;
         // SAFETY: `out` is a valid, writable f64 for the call.
         check(
-            unsafe { f(self.user_data, jd, scale.id(), ayanamsha.id(), &raw mut out) },
+            unsafe {
+                f(
+                    self.user_data,
+                    jd,
+                    scale.id(),
+                    ayanamsha.id(),
+                    basis,
+                    &raw mut out,
+                )
+            },
             "ayanamsha",
         )?;
         Ok(out)
@@ -1865,13 +1914,17 @@ unsafe extern "C" fn ayanamsha_trampoline<P: EphemerisProvider>(
     jd: f64,
     scale: u32,
     ayanamsha: u16,
+    basis: u32,
     out: *mut f64,
 ) -> i32 {
     if user_data.is_null() || out.is_null() {
         return invalid_call();
     }
-    let (Some(scale), Some(ayanamsha)) = (TimeScale::from_id(scale), Ayanamsha::from_id(ayanamsha))
-    else {
+    let (Some(scale), Some(ayanamsha), Some(basis)) = (
+        TimeScale::from_id(scale),
+        Ayanamsha::from_id(ayanamsha),
+        basis_from_id(basis),
+    ) else {
         return invalid_call();
     };
     // SAFETY: `user_data` is the `Exported` box registered with this vtable.
@@ -1879,7 +1932,7 @@ unsafe extern "C" fn ayanamsha_trampoline<P: EphemerisProvider>(
     // SAFETY: the caller promises a writable f64.
     status(
         this.provider
-            .ayanamsha_deg(jd, scale, ayanamsha)
+            .ayanamsha_deg(jd, scale, ayanamsha, basis)
             .map(|v| unsafe { out.write(v) }),
     )
 }
@@ -2149,8 +2202,9 @@ impl EphemerisProvider for ExportedVtable<'_> {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        self.provider.ayanamsha_deg(jd, scale, ayanamsha)
+        self.provider.ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -2218,7 +2272,12 @@ mod tests {
         assert!(bound.dut1_seconds(2_460_000.5).is_err());
         assert!(
             bound
-                .ayanamsha_deg(2_460_000.5, TimeScale::Tt, Ayanamsha::Lahiri)
+                .ayanamsha_deg(
+                    2_460_000.5,
+                    TimeScale::Tt,
+                    Ayanamsha::Lahiri,
+                    AyanamshaBasis::True
+                )
                 .is_err()
         );
         let place = Place::new(

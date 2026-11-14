@@ -373,7 +373,11 @@ impl EphemerisProvider for SiddhantaProvider {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
+        // The text's precession (III.9 to 12) is its definition and the
+        // text has no nutation, so its value is the same on either basis.
+        let _ = basis;
         if ayanamsha != Ayanamsha::Suryasiddhanta {
             return Err(ProviderError::unsupported(format!(
                 "the {} ayanamsha; the text knows its own (SURYASIDDHANTA)",
@@ -480,6 +484,7 @@ mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use teistro_core::quantity::{Altitude, Longitude, Place};
+    use teistro_core::settings::AyanamshaBasis;
 
     use super::*;
 
@@ -546,17 +551,30 @@ mod tests {
             "{}",
             obliquity.true_deg
         );
-        assert!(
-            (provider
-                .ayanamsha_deg(2_460_413.5, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+        let text = |basis| {
+            provider
+                .ayanamsha_deg(
+                    2_460_413.5,
+                    TimeScale::Ut1,
+                    Ayanamsha::Suryasiddhanta,
+                    basis,
+                )
                 .unwrap()
-                - 22.87)
-                .abs()
-                < 0.05
+        };
+        assert!((text(AyanamshaBasis::Mean) - 22.87).abs() < 0.05);
+        // No nutation in the text: one value on either basis.
+        assert_eq!(
+            text(AyanamshaBasis::Mean).to_bits(),
+            text(AyanamshaBasis::True).to_bits()
         );
         assert!(
             provider
-                .ayanamsha_deg(2_460_413.5, TimeScale::Ut1, Ayanamsha::Lahiri)
+                .ayanamsha_deg(
+                    2_460_413.5,
+                    TimeScale::Ut1,
+                    Ayanamsha::Lahiri,
+                    AyanamshaBasis::Mean
+                )
                 .is_err()
         );
         let kathmandu = Place::new(

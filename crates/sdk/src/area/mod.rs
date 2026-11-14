@@ -62,8 +62,8 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
     })
 }
 
-/// The solar model a context reckons its days with: its ayanamsha, sunrise
-/// convention, override policy and Delta T model.
+/// The solar model a context reckons its days with: its ayanamsha and its
+/// basis, sunrise convention, override policy and Delta T model.
 ///
 /// One construction, because the chart founder, the almanac and the
 /// muhurta search each need it and must agree on it. A custom ayanamsha is
@@ -85,6 +85,11 @@ pub(crate) fn drik_sun<'p>(
         settings.provider.overrides,
         context.delta_t(),
     )
+    // The settings' basis, as every other sidereal place the context
+    // gives: without it the model's sankrantis, which the lunar month's
+    // adhika test counts, kept the mean basis under every profile,
+    // `conformance-baseline`'s true one included (SR-100, C1751).
+    .with_ayanamsha_basis(settings.frame.ayanamsha_basis)
 }
 
 #[cfg(feature = "schema")]

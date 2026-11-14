@@ -22,7 +22,7 @@ use teistro_astro::{Completion, DeltaTModel, delta_t, sky, tt_of};
 use teistro_core::angle::difference_deg;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
-use teistro_core::settings::OverridePolicy;
+use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
 use teistro_port_ephemeris::{
     Astronomy, Body, Capabilities, CellStatus, Coordinates, CrossingEvent, CrossingRequest,
     EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Identity, Lattice,
@@ -59,6 +59,10 @@ pub struct Bounds {
     pub delta_t_seconds: f64,
     /// A native ayanamsha at J2000.0 against the published value, degrees.
     pub ayanamsha_deg: f64,
+    /// A native ayanamsha's true value less its mean one against the SDK's
+    /// IAU 2000B nutation in longitude (none for a classical text),
+    /// arcseconds: the two bases the port asks for (SR-100).
+    pub ayanamsha_basis_arcsec: f64,
     /// A native DUT1 against the definition's bound, seconds.
     pub dut1_seconds: f64,
     /// A native rise or set of the Sun against the SDK's solver under the
@@ -97,6 +101,7 @@ impl Bounds {
         obliquity_arcsec: 0.01,
         delta_t_seconds: 1.0,
         ayanamsha_deg: 0.1,
+        ayanamsha_basis_arcsec: 0.01,
         dut1_seconds: 0.9,
         rise_set_geometric_seconds: 1.0,
         rise_set_refracted_seconds: 10.0,
@@ -477,6 +482,7 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
     checks.push(check_obliquity(provider, &capabilities, &jds, bounds));
     checks.push(check_delta_t(provider, &capabilities, bounds));
     checks.push(check_ayanamsha(provider, &capabilities, bounds));
+    checks.push(check_ayanamsha_basis(provider, &capabilities, bounds));
     checks.push(check_dut1(provider, &capabilities, &jds, bounds));
     checks.push(check_rise_set(
         provider,
@@ -1043,7 +1049,7 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
         let (true, Some(value)) = (capabilities.has_ayanamsha(ayanamsha), value) else {
             continue;
         };
-        match provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha) {
+        match provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha, AyanamshaBasis::Mean) {
             Ok(native) => {
                 worst = worst.max((native - value).abs());
                 details.push(format!("{} at {at}: {native:.4}", ayanamsha.key()));
@@ -1068,6 +1074,64 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
         bounds.ayanamsha_deg,
         "deg",
         details.join(", "),
+    )
+}
+
+/// The two bases the port asks a native ayanamsha for: the true value
+/// less the mean one is the nutation in longitude, the SDK's IAU 2000B
+/// series for a modern engine and nothing for a classical text, which has
+/// no nutation. An engine that answers the mean basis alone says
+/// `UNSUPPORTED` for the true one, and the SDK's catalogue answers it.
+fn check_ayanamsha_basis<P: EphemerisProvider + ?Sized>(
+    provider: &P,
+    capabilities: &Capabilities,
+    bounds: &Bounds,
+) -> Check {
+    const NAME: &str = "override_ayanamsha_basis";
+    if !capabilities.has(Overrides::AYANAMSHA) {
+        return Check::skipped(NAME, "not declared");
+    }
+    let Some(&ayanamsha) = capabilities.ayanamshas.first() else {
+        return Check::skipped(NAME, "no ayanamsha listed");
+    };
+    let mut worst = 0.0f64;
+    for jd in [2_415_020.0, teistro_astro::iau::DJ00, 2_469_807.5] {
+        let at = |basis| provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha, basis);
+        let mean = match at(AyanamshaBasis::Mean) {
+            Ok(mean) => mean,
+            Err(error) => return Check::fail(NAME, format!("the mean basis failed: {error}")),
+        };
+        let nutated = match at(AyanamshaBasis::True) {
+            Ok(nutated) => nutated,
+            Err(ProviderError::Unsupported { .. }) => {
+                return Check::skipped(
+                    NAME,
+                    "the mean basis alone; the SDK's catalogue answers the true one",
+                );
+            }
+            Err(error) => return Check::fail(NAME, format!("the true basis failed: {error}")),
+        };
+        let expected = if capabilities.astronomy == Astronomy::Classical {
+            0.0
+        } else {
+            teistro_astro::iau::nut00b(jd, 0.0).dpsi.to_degrees()
+        };
+        worst = worst.max(((nutated - mean - expected) * 3600.0).abs());
+    }
+    Check::measured(
+        NAME,
+        worst,
+        bounds.ayanamsha_basis_arcsec,
+        "arcsec",
+        format!(
+            "{}: the true value less the mean against {} at 1900, 2000 and 2050",
+            ayanamsha.key(),
+            if capabilities.astronomy == Astronomy::Classical {
+                "no nutation (the text has none)"
+            } else {
+                "the SDK's IAU 2000B nutation in longitude"
+            }
+        ),
     )
 }
 
@@ -1434,8 +1498,9 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
         jd: f64,
         scale: TimeScale,
         ayanamsha: Ayanamsha,
+        basis: teistro_core::settings::AyanamshaBasis,
     ) -> Result<f64, ProviderError> {
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha)
+        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
     }
 
     fn horizon_event(
@@ -1469,7 +1534,7 @@ mod tests {
         assert!(!report.check("override_crossings_longitude").unwrap().ran());
         assert!(!report.check("override_dut1").unwrap().ran());
         assert!(report.check("speed_consistency").unwrap().ran());
-        assert_eq!(report.checks.len(), 17);
+        assert_eq!(report.checks.len(), 18);
         assert!(report.markdown().contains("all passed"));
         let results = Results {
             provider: String::from("test-provider"),
@@ -1506,6 +1571,10 @@ mod tests {
         Moved,
         /// Every body standing where it stood at J2000.
         Still,
+        /// The mean ayanamsha alone: the true basis unsupported.
+        MeanOnly,
+        /// The mean value answered on the true basis too.
+        Unnutated,
     }
 
     /// A provider that declares every override and answers each one with
@@ -1586,15 +1655,23 @@ mod tests {
 
         fn ayanamsha_deg(
             &self,
-            _jd: f64,
+            jd: f64,
             _scale: TimeScale,
             _a: Ayanamsha,
+            basis: AyanamshaBasis,
         ) -> Result<f64, ProviderError> {
-            Ok(match self.0 {
-                Twist::Infinite => f64::INFINITY,
-                // Burgess's worked example, III.9 to 12.
-                Twist::Classical => 20.0 + 24.0 / 60.0 + 39.0 / 3600.0,
-                _ => 23.85,
+            Ok(match (self.0, basis) {
+                (Twist::Infinite, _) => f64::INFINITY,
+                // Burgess's worked example, III.9 to 12, with no nutation.
+                (Twist::Classical, _) => 20.0 + 24.0 / 60.0 + 39.0 / 3600.0,
+                (Twist::MeanOnly, AyanamshaBasis::True) => {
+                    return Err(ProviderError::unsupported("the true basis"));
+                }
+                (Twist::Unnutated, _) | (_, AyanamshaBasis::Mean) => 23.85,
+                (_, AyanamshaBasis::True) => {
+                    23.85 + teistro_astro::iau::nut00b(jd, 0.0).dpsi.to_degrees()
+                }
+                (_, _) => return Err(ProviderError::unsupported("ayanamsha basis")),
             })
         }
 
@@ -1669,6 +1746,11 @@ mod tests {
             assert!(check.ran(), "{name}");
             assert_eq!(check.measured, Some(0.0), "{name}: {}", check.detail);
         }
+        // Its true value less its mean one is the SDK's nutation in
+        // longitude, read back through a degree-to-arcsecond round trip.
+        let basis = report.check("override_ayanamsha_basis").unwrap();
+        assert!(basis.ran());
+        assert!(basis.measured.is_some_and(|m| m < 1e-9), "{}", basis.detail);
         // It answers the equatorial frame itself, so completion back to
         // its ecliptic one is measured both ways.
         for name in ["completion_native", "completion_sdk"] {
@@ -1707,6 +1789,30 @@ mod tests {
             "{}",
             ayanamsha.detail
         );
+    }
+
+    /// The port asks each basis; a true value that is the mean one
+    /// fails, and an engine that answers the mean alone is skipped, the
+    /// SDK's catalogue answering the true basis for it (SR-100).
+    #[test]
+    fn a_native_ayanamsha_answers_the_basis_asked() {
+        let check = |twist| {
+            run(&Honest(twist), &Bounds::DEFAULT)
+                .check("override_ayanamsha_basis")
+                .unwrap()
+                .clone()
+        };
+        let classical = check(Twist::Classical);
+        assert!(
+            classical.passed && classical.measured == Some(0.0),
+            "{}",
+            classical.detail
+        );
+        let mean_only = check(Twist::MeanOnly);
+        assert!(mean_only.passed && !mean_only.ran(), "{}", mean_only.detail);
+        let unnutated = check(Twist::Unnutated);
+        assert!(!unnutated.passed, "{}", unnutated.detail);
+        assert!(unnutated.measured.unwrap() > 5.0, "{}", unnutated.detail);
     }
 
     #[test]

@@ -72,9 +72,13 @@ Ayanamsha id or custom parameters, sidereal flag, observer, node type and
 correction flags travel with every request; providers with global state
 (Swiss) serialise inside the adapter under one lock that covers the
 state-setting calls and the computation, and are documented as
-non-reentrant. The ayanamsha override means the mean ayanamsha, the
-value sidereal longitudes subtract; both engines also offer the value
-with the nutation in longitude, which the house circle needs.
+non-reentrant. The ayanamsha override is asked on a basis,
+`ayanamsha_deg(jd, scale, ayanamsha, basis)`: the mean value, or the
+value with the engine's own nutation in longitude, which a longitude of
+the true equinox of date subtracts and the root profile asks for since
+SR-100; an engine that cannot answer a basis refuses it. A sidereal
+frame names no basis, so a modern engine is not asked for one whole
+(ADR-0013, amendment of 2026-11-14).
 
 ## Two adapter shapes, one API
 

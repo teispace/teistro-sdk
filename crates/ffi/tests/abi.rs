@@ -96,7 +96,7 @@ fn blank_date() -> TsCalendarDate {
 
 #[test]
 fn a_context_with_every_default_reports_its_settings() {
-    assert_eq!(ts_abi_version(), 1);
+    assert_eq!(ts_abi_version(), 2);
     let ctx = Ctx::defaults();
     let mut profile = TsStr {
         data: ptr::null(),

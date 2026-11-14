@@ -65,7 +65,7 @@ marked UT, where the SDK applies its Delta T of the epoch):
 | member | definition | fitted with | source |
 |---|---|---|---|
 | `FAGAN_BRADLEY` | 24.042044444° at B1950.0 (JD 2433282.42345905): the synetic vernal point | Newcomb | Fagan and Bradley, 1950 |
-| `LAHIRI` | 23.250182778° − 0.004658035° at JD 2435553.5 (1956-03-21): the Indian Astronomical Ephemeris's 23°15′00″.658 less the nutation of the epoch, so the definition is a mean value | IAU 1976 | Calendar Reform Committee, 1955; the Indian Astronomical Ephemeris |
+| `LAHIRI` | 23.250182778° − 0.004658035° at JD 2435553.5 (1956-03-21): the Indian Astronomical Ephemeris's 23°15′00″.658, a true value, less the nutation of the epoch, so the definition is carried as a mean value and subtracted on the settings' basis, `TRUE` at the root (SR-100) | IAU 1976 | Calendar Reform Committee, 1955; the Indian Astronomical Ephemeris |
 | `DELUCE` | 0° at JD 1721057.5 UT (the epoch of the Christian era) | | De Luce |
 | `RAMAN` | 360° − 338.98556° at J1900 (21°00′52″) | Newcomb | B. V. Raman |
 | `USHASHASHI` | 360° − 341.33904° at J1900 (18°39′39″) | | Usha and Shashi |
@@ -141,9 +141,43 @@ quantity, and subtracted. Under the fitted model itself it vanishes.
 **Mean and true** (`value_deg`). The mean value is what a sidereal
 longitude subtracts from a tropical longitude of the mean equinox; the
 true value adds the IAU 2000B nutation in longitude of the date, about
-±17″. The completion subtracts the mean value from apparent (true
-equinox) longitudes, as the engines do, and the true basis is for
-reporting.
+±17″, and is what a longitude of the true equinox of date, apparent or
+geometric, subtracts. The settings' `frame.ayanamsha_basis` says which,
+and the root takes `TRUE` (SR-100, crux C1750), for three reasons that
+agree:
+
+- **The definition.** The Indian Astronomical Ephemeris and the Rashtriya
+  Panchang tabulate a true ayanamsha, "True Ayanamsa = Mean Ayanamsa +
+  Nutation in Longitude", and the Calendar Reform Committee's 23°15′00″
+  of 21 March 1956 (and the IAE's revised 23°15′00″.658) is a true value,
+  "relative to the true equinox of date" (Swiss Ephemeris documentation,
+  §2.8.5 and appendix E, which reproduces the IAE's and the Rashtriya
+  Panchang's tables with `SE_SIDM_LAHIRI`). The mean epoch value in the
+  table above is that true value less the epoch's nutation: it is how the
+  definition is carried, not the basis it is subtracted on.
+- **The engines.** The Swiss Ephemeris turns the nutation off whenever
+  the sidereal bit is set (`sweph.c`, `plaus_iflag`), so its sidereal
+  longitude is the mean equinox's less the mean value, the same angle as
+  the true equinox's less the true value; it adds the nutation to the
+  ayanamsha it reports unless asked not to (`swe_get_ayanamsa_ex`).
+- **The print.** The Rashtriya Panchang's 109 sankrantis of 2018–19 to
+  2026–27 meet the true basis within 32 s and miss the mean one by 4.6
+  minutes early to 7.7 late (`calendars/regional-solar.md`).
+
+The mean basis stays selectable, and a modern sidereal zodiac on it
+warns (`ayanamsha-mean-basis`, SR-118): the positions keep the nutation.
+A classical sky has no nutation and gives one value on either basis.
+Until SR-100 the completion subtracted the mean value from apparent
+longitudes under every profile but `conformance-baseline`, so every
+nakshatra, yoga and sankranti carried the nutation: up to 31 s on a
+nakshatra end, 1 minute on a yoga end and 7 minutes on a sankranti.
+
+The basis is part of every question that reaches an engine: the port's
+`ayanamsha_deg(jd, scale, ayanamsha, basis)` asks it, an engine that
+cannot answer it refuses (`UNSUPPORTED`), and a sidereal frame, which
+names no basis, is never asked of a modern engine whole: the completion
+asks the tropical frame and shifts it by the ayanamsha step (the
+boundary audit's A1, B2 and A6).
 
 **A custom definition.** `AyanamshaChoice::Custom { epoch_jd_tt,
 value_deg, rate_deg_per_year }` is linear: the value plus the rate times

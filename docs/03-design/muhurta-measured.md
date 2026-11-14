@@ -14,8 +14,8 @@ measured.
 
 The baseline engine's marriage (`ActivityRules::baseline_marriage`)
 under its own ranking (`Ranking::Baseline`). 80 days are closed and
-11 judged; the judged days are cut into 2086 windows, 830 of them open
-and 356 of those in a choghadiya the engine offers. 9 windows fell
+11 judged; the judged days are cut into 2086 windows, 831 of them open
+and 357 of those in a choghadiya the engine offers. 9 windows fell
 inside a blackout that did not cover their day, and were left out.
 The best window opens on 2026-11-25, scored 100.
 
@@ -25,7 +25,7 @@ The best window opens on 2026-11-25, scored 100.
 | nothing is open before Devuthani Ekadashi, 2026-11-20 | **holds** | 0 of 80 disagree |
 | every day closed is closed by Chaturmas, and says so | **holds** | 0 of 80 disagree |
 | 2026-11-25 is kept | **holds** | 0 of 1 disagree |
-| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 830 disagree |
+| an open window is scored exactly when the engine would offer it (Amrita, Shubha or Labha) | **holds** | 0 of 831 disagree |
 
 ## 2. The asta against the published almanac
 
@@ -72,15 +72,15 @@ matter is the rules' to say.
 
 | search | windows | unsteady | clauses over part of a window | neighbours judged alike | shortest | under six minutes |
 |---|---:|---:|---:|---:|---:|---:|
-| the baseline's | 2086 | 0 | 0 | 706 | 0.49 s | 886 |
-| Raman's | 13 368 | 0 | 0 | 4454 | 0.00 s | 5577 |
+| the baseline's | 2086 | 0 | 0 | 706 | 0.30 s | 887 |
+| Raman's | 13 368 | 0 | 0 | 4453 | 0.07 s | 5566 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
 | every window of the baseline's search reads the same sky a moment inside either end | **holds** | 0 of 2086 disagree |
-| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10456 disagree |
+| every clause of the baseline's search's windows covers its window whole | **holds** | 0 of 10454 disagree |
 | every window of Raman's search reads the same sky a moment inside either end | **holds** | 0 of 13368 disagree |
-| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 123922 disagree |
+| every clause of Raman's search's windows covers its window whole | **holds** | 0 of 123919 disagree |
 
 ## 4. Where the engine's sampling parts from the SDK
 
@@ -89,7 +89,7 @@ sunrise**; the SDK bars the windows in a star the rite does not
 take and keeps the rest. A day the engine keeps the SDK keeps too,
 since the star at sunrise runs in the day; the parting is one way.
 Of the 11 days the baseline search judged, the engine drops 3 days that the
-SDK keeps for an allowed star rising after sunrise. And 155 open
+SDK keeps for an allowed star rising after sunrise. And 156 open
 windows the SDK scores are shorter than the six minutes under which
 the engine drops a fragment.
 
@@ -123,12 +123,12 @@ context's cache, over Raman's search:
 
 | asked | provider calls |
 |---|---:|
-| the search alone | 116 063 |
-| the almanac alone | 314 |
-| the two apart | 116 377 |
-| the two together | 110 764 |
+| the search alone | 116 058 |
+| the almanac alone | 312 |
+| the two apart | 116 370 |
+| the two together | 110 763 |
 
-Together they are spared 5613 calls, 4.8% of the two apart: the
+Together they are spared 5607 calls, 4.8% of the two apart: the
 almanac beside the search adds 0.0% to the search's own.
 
 | proposed rule | verdict | measured |

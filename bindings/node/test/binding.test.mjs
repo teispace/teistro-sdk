@@ -86,7 +86,7 @@ function gregorian(year, month, day) {
 }
 
 test('the addon and the types were generated for the same ABI', () => {
-  assert.equal(abiVersion(), 1);
+  assert.equal(abiVersion(), 2);
   assert.equal(catalogueVersion(), 1);
   assert.equal(defaultProfile(), 'parashari-classical');
   assert.match(sdkVersion(), /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+)?)?$/u);

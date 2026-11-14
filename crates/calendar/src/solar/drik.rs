@@ -97,9 +97,10 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
 
     /// The model with the ayanamsha on another basis: [`AyanamshaBasis::True`]
     /// carries the nutation in longitude, so the sidereal Sun is the
-    /// apparent one less the nutated ayanamsha, the reckoning an almanac
-    /// that prints sidereal positions without nutation uses. The basis is
-    /// the mean one until this says otherwise.
+    /// apparent one less the nutated ayanamsha, the Indian Astronomical
+    /// Ephemeris's nirayana Sun; [`AyanamshaBasis::Mean`] leaves the
+    /// nutation in it. The basis is the true one, the root profile's,
+    /// until this says otherwise (SR-100).
     ///
     /// ```
     /// use teistro_astro::DeltaTModel;
@@ -110,11 +111,12 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     ///
     /// let provider = TestProvider::new();
     /// let new = || DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
-    /// let nutated = new().with_ayanamsha_basis(AyanamshaBasis::True);
-    /// assert_eq!(nutated.completion().ayanamsha_basis(), AyanamshaBasis::True);
-    /// assert!(nutated.describe().contains("LAHIRI (true basis)"));
+    /// let mean = new().with_ayanamsha_basis(AyanamshaBasis::Mean);
+    /// assert_eq!(mean.completion().ayanamsha_basis(), AyanamshaBasis::Mean);
+    /// assert!(new().describe().contains("LAHIRI (true basis)"));
+    /// assert!(!mean.describe().contains("true basis"));
     /// // The two bases part by the nutation in longitude, under 20″.
-    /// let gap = nutated.sidereal_sun_deg(2_451_545.0).unwrap() - new().sidereal_sun_deg(2_451_545.0).unwrap();
+    /// let gap = new().sidereal_sun_deg(2_451_545.0).unwrap() - mean.sidereal_sun_deg(2_451_545.0).unwrap();
     /// assert!(gap.abs() > 1e-4 && gap.abs() < 20.0 / 3600.0, "{gap}");
     /// ```
     #[must_use]
@@ -371,6 +373,7 @@ mod tests {
             _jd: f64,
             _scale: TimeScale,
             _ayanamsha: Ayanamsha,
+            _basis: teistro_core::settings::AyanamshaBasis,
         ) -> Result<f64, ProviderError> {
             Ok(24.0)
         }

@@ -105,12 +105,15 @@ use teistro_core::Status;
 /// The ABI version `ts_abi_version` returns; a binding refuses to load a
 /// library whose version it was not generated for.
 ///
+/// 2: the provider vtable's ayanamsha override takes the basis asked
+/// (vtable version 5, SR-100).
+///
 /// `api: constant`
 ///
 /// ```
-/// assert_eq!(teistro_ffi::TS_ABI_VERSION, 1);
+/// assert_eq!(teistro_ffi::TS_ABI_VERSION, 2);
 /// ```
-pub const TS_ABI_VERSION: u32 = 1;
+pub const TS_ABI_VERSION: u32 = 2;
 
 /// The SDK version this crate was built as, the one `ts_sdk_version`
 /// returns and the description records.
@@ -306,7 +309,7 @@ mod tests {
             .to_str()
             .unwrap_or_else(|e| panic!("{e}"));
         let info: serde_json::Value = serde_json::from_str(text).unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(info["abi"], 1);
+        assert_eq!(info["abi"], TS_ABI_VERSION);
         assert_eq!(info["sdk"], SDK_VERSION);
         assert_eq!(info["catalogue"], 1);
         assert!(info["target"].as_str().is_some_and(|t| t.contains('-')));
@@ -320,7 +323,7 @@ mod tests {
 
     #[test]
     fn the_static_answers_read_back() {
-        assert_eq!(ts_abi_version(), 1);
+        assert_eq!(ts_abi_version(), 2);
         // SAFETY: static NUL-terminated strings.
         let (version, profile, message, unknown) = unsafe {
             (

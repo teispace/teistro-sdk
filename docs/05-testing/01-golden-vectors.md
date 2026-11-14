@@ -250,8 +250,10 @@ explained rather than a failure or a silent adoption.
     within 0.0086 — two thousand times closer, and the difference is the
     nutation in longitude, which reaches about 17 arcseconds. The
     `conformance-baseline` profile therefore sets
-    `frame.ayanamsha_basis = TRUE` (version 2); the SDK's own default
-    keeps the mean value, which is what the Lahiri definition states.
+    `frame.ayanamsha_basis = TRUE` (version 2). The SDK's own default
+    kept the mean value, read then as what the Lahiri definition states;
+    since SR-100 the root takes the true one too, the IAE's definition
+    being a true value (crux C1750).
     Found 2026-09-07 by `crates/chart/tests/baseline_zodiac.rs`, the
     first time the SDK's ayanamsha was compared with this engine's.
 
