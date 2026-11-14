@@ -12,7 +12,7 @@ SR-88). It answers three questions at a point from the teigeodata packs
 | the admin units | `Engine::admin_at`, then `iso_code` and `name` on each | `[{level: 0, code: "NP", name: "Nepal"}, {level: 1, code: "NP-P3", ...}]` |
 
 A point no pack covers answers `None` or an empty list. Every resolution
-carries the source `{name: "teigeodata", version: "0.3.0", dataVersion,
+carries the source `{name: "teigeodata", version: "0.3.1", dataVersion,
 tzdb}`. `dataVersion` names each pack the engine holds as
 `address.component.release`, highest precedence first, joined by ` + `
 (`np.places.2026.11.0`). `tzdb` is the release the packs' zone rules state
@@ -105,7 +105,7 @@ The tests need Nepal's country pack, `np-places-lite.tgd`, and the zone
 tests the world's baseline, `baseline-lite.tgd` (a country pack carries
 only its own zones' rules; the baseline carries every zone's): download
 them from teigeodata's data release, the one verify's `TEIGEODATA_DATA`
-names (`gh release download data-2026.11.13.3 -R teispace/teigeodata -p
+names (`gh release download data-2026.11.14 -R teispace/teigeodata -p
 np-places-lite.tgd -p baseline-lite.tgd`), or build them with
 teigeodata's forge (`make np --lite`). Name Nepal's first, so it answers
 Nepal before the baseline; without the baseline the world-zone tests say

@@ -273,7 +273,7 @@ replays it on a context with no provider: `HELD`.
 ## 10. The teigeodata adapter (SR-88)
 
 `adapters/geo-teigeodata/rust` (`teistro-geo-teigeodata`) is the first
-provider over a real engine: teigeodata at its tag `v0.3.0`, by git, in a
+provider over a real engine: teigeodata at its tag `v0.3.1`, by git, in a
 standalone crate with its own lock, outside the workspace like the
 ephemeris adapters (ADR-0019). It is public, since teigeodata is
 Apache-2.0. `TeigeodataGeo` opens pack files (`open`), packs in memory

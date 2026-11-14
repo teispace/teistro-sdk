@@ -714,7 +714,7 @@ jobs:
     env:
       # teigeodata's data release the tests read, built by the engine tag
       # the adapter pins (adapters/geo-teigeodata/rust/Cargo.toml).
-      TEIGEODATA_DATA: data-2026.11.13.3
+      TEIGEODATA_DATA: data-2026.11.14
     defaults:
       run:
         working-directory: adapters/geo-teigeodata/rust

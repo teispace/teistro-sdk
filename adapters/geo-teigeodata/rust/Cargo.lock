@@ -488,13 +488,13 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-core"
-version = "0.3.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
+version = "0.3.1"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.1#2af7b81320854f7fbbfb8796a46ef34a8ccfa2ca"
 
 [[package]]
 name = "teigeodata-engine"
-version = "0.3.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
+version = "0.3.1"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.1#2af7b81320854f7fbbfb8796a46ef34a8ccfa2ca"
 dependencies = [
  "memmap2",
  "teigeodata-core",
@@ -503,8 +503,8 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-format"
-version = "0.3.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v0.3.0#181472ea38a4b81f6ecad47fddfdb6b9b8d4258f"
+version = "0.3.1"
+source = "git+https://github.com/teispace/teigeodata?tag=v0.3.1#2af7b81320854f7fbbfb8796a46ef34a8ccfa2ca"
 dependencies = [
  "blake3",
  "libm",
