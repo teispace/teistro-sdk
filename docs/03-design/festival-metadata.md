@@ -61,9 +61,9 @@ composite row split (`Maithil and Bhojpuri` is two), plus the notice's. `regions
 is `NP` for a rule of Nepal's packs, which the national panchanga prints, plus
 what the notice names, and `IN` for India's pack.
 
-**Unset.** Of the 396 keys of Nepal's packs, 49 are `GAZETTED`, 62
+**Unset.** Of the 397 keys of Nepal's packs, 49 are `GAZETTED`, 63
 `REGIONAL_ETHNIC`, 48 `RELIGIOUS_CULTURAL`, 60 `OBSERVANCE` and 177 have no kind.
-335 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
+337 have no tradition. They are a fitted day of a mela, a fast or a jatra whose
 source is the committee's print, which says when and not what. No value is
 guessed for them, and the classification's blank is not one either: its own
 words are "kept across communities, or the community is not known here". The
@@ -144,7 +144,7 @@ SR-11's feed filter by kind or tradition reads this field.
 
 Each pack rule holds a few short strings more, written into the request's
 content hash, so **every shipped pack's `input_hash` moved once** with this
-change. No day moved. The table is 21 groups and 396 sorted keys, searched by
+change. No day moved. The table is 21 groups and 397 sorted keys, searched by
 bisection, so stamping a pack does not scan.
 
 Names: `festival_kind` and `tradition` are named in `en-Latn` and `ne-Deva-NP`;

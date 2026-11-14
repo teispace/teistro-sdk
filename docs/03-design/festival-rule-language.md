@@ -383,6 +383,9 @@ Gregorian (`GREGORIAN_DAYS`): Republic day on Jestha 15 and Christmas on
 for VS 2083 (C1600), seven national days on a Bikram Sambat date as the press
 reports them kept (C1601), and twenty of the UN's international days on the
 UN's list's dates (C1602).
+Bhaktapur's pole is raised on the Bikram Sambat year's last day, a day of a
+month counted from its end (`YOSIN_UTTHAN`, Chaitra −1), which VS 2083 prints
+and the press reports kept (C1650).
 
 A `civilDate` on the Tibetan calendar keeps the day its observance falls
 on, the first of a doubled month and of a repeated day, and the day
@@ -692,11 +695,11 @@ is missing is evidence. "None" means no form would decide the row.
 |---:|---|---|---|---|---|
 | 1 | `KAMADA_EKADASHI` | the source gives the 11th or the 12th; 11 of 14 at best | sunrise, 11 of 14 | none new | **shipped** at sunrise: VS 2082 prints the 11th (29 March 2026), the Smartas' day as Varuthini's and Yogini's (C688), and the rule gives every one of the source's 11 verified days |
 | 2 | `MATATI_CHARHE` | a charhe; 11 of 14 at aparahna | aparahna, sayahna or pradosha, 11 of 14 | none | C614: no one window fits the charhe |
-| 3 | `RAMANUJACHARYA_JAYANTI` | 12 of 14 at sunrise | moonrise, 13 of 14 | §3.1 moonrise | a candidate only: one more year for a new window is an overfit until a source names the time |
+| 3 | `RAMANUJACHARYA_JAYANTI` | 12 of 14 at sunrise | moonrise, 13 of 14 | §3.1 moonrise | a candidate only: one more year for a new window is an overfit until a source names the time; still held after the sources read 2026-11-14 (C1654) |
 | 4 | `NARASIMHA_JAYANTI` | 11 of 14 | day muhurtas 14–15, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 37, sunset, the later day unless the earlier alone holds it; both printed days, and 12 of 14 verified |
 | 5 | `SITHI_CHARHE` | a charhe; 11 of 14 at aparahna | aparahna, sunset, 11 of 14 | none | C614 |
 | 6 | `VAT_SAVITRI_VRAT` | 12 of 14 at sunrise, Jyeshtha's new moon | sunrise, 12 of 14 | none new | **shipped** by the text: the purnimanta Jyeshtha's new moon (*Nirnayasindhu* p. 191), on the full moon's decision, which p. 193 extends to it: the earlier day when the new moon holds the daylight's last three muhurtas, the later otherwise (*Dharmasindhu* p. 41). Both printed days (2025-05-26, 2026-05-16); the *Dharmasindhu* p. 39 13th-to-full-moon form is another region's |
-| 7 | `MATSYA_DARSHAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence |
+| 7 | `MATSYA_DARSHAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence; still held after the sources read 2026-11-14 (C1655) |
 | 8 | `GHANTAKARNA_CHATURDASHI` | no part of the day fits two years whose 14th began 46 and 85 minutes before sunset and were kept a day apart | pradosha, 12 of 14 | none | C614: the same days as Gathamuga charhe; the two years contradict any window |
 | 9 | `GATHAMUGA_CHARHE` | the same days as Ghantakarna | pradosha, 12 of 14 | none | C614 |
 | 10 | `KALKI_JAYANTI` | 12 of 14 at pradosha | pradosha, 12 of 14 | none new | **shipped** on Shravana's bright 6th at sunrise, both printed days; the source's 5th falls the day before both (C693) |
@@ -710,21 +713,21 @@ is missing is evidence. "None" means no form would decide the row.
 | 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | none new | **shipped** on Yanla's dark 4th at sunrise (Toffin 1992, Lewis 1984): VS 2082's day; VS 2083 prints the evening the 4th begins, a day before, and no window gives both (C1470). Not a count |
 | 19 | `NANICHAYA` | 11 of 14 | sunrise, 11 of 14 | none new | **shipped** on the lowering's day, which both editions print it beside; it parts from VS 2083 with it (C1470) |
 | 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | §3.1 moonrise | **shipped** by the text: *Nirnayasindhu* p. 300, at moonrise, the later day when the 8th lasts three muhurtas past its moonrise, the earlier otherwise (`LASTS` from `MOONRISE`); both printed days (2025-09-14, 2026-10-03). Not a count: the consumer's days end 14 to 16 days after the start |
-| 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence |
+| 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence; still held after the sources read 2026-11-14 (C1659) |
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | C614 |
 | 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
 | 24 | `GOVATSA_DWADASHI` | 8 of 14 | madhyahna, aparahna or sayahna with `GREATER`, 13 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 76 keeps it at pradosha, the later day when neither holds it and the earlier when both do, as most authorities say; both editions print it there (2025-10-17, 2026-11-05), on the day whose sunrise holds the 11th. The source's days fit a daylight share better, and the print parts from them |
-| 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | none | evidence. *Dharmasindhu* pp. 80–81 (the running headers' ८१ and, misread as ८२, ८०) fasts the day before and worships Vishnu on the 14th that holds the arunodaya ("पूर्वेद्युरुपवासं कृत्वा अरुणोदयव्यापिन्यां चतुर्दश्यां"): the earlier day only when its arunodaya alone holds it, the later when both or neither do; "केचित्" take nishitha, and nishitha with pradosha when both days hold it. Both editions print one row, बैकुण्ठ चतुर्दशीव्रत (VS 2082 p. 15, 4 November 2025; VS 2083 p. 17, 23 November 2026), which `SHIVA_BAIKUNTHA_CHATURDASHI` already gives at sunrise. Measured over the committee's sky at Kathmandu, 2013–2027 (2026-10-25): an arunodaya window gives the sunrise rule's day in all fifteen years, so it would add no day; the consumer keeps Vishnu's day a day before Shiva's in 2017, 2019, 2020, 2021 and 2023, which nishitha gives but which misses both printed days and five more, and pradosha with the earlier day holding it gives 11 of 14. No window gives the consumer's days and the print together, so the form is not built until a source settles which day a patro printed in Nepal keeps for Vishnu |
+| 25 | `VISHNU_BAIKUNTHA_CHATURDASHI` | 9 of 14 | sayahna or pradosha, 12 of 14 | none | evidence. *Dharmasindhu* pp. 80–81 (the running headers' ८१ and, misread as ८२, ८०) fasts the day before and worships Vishnu on the 14th that holds the arunodaya ("पूर्वेद्युरुपवासं कृत्वा अरुणोदयव्यापिन्यां चतुर्दश्यां"): the earlier day only when its arunodaya alone holds it, the later when both or neither do; "केचित्" take nishitha, and nishitha with pradosha when both days hold it. Both editions print one row, बैकुण्ठ चतुर्दशीव्रत (VS 2082 p. 15, 4 November 2025; VS 2083 p. 17, 23 November 2026), which `SHIVA_BAIKUNTHA_CHATURDASHI` already gives at sunrise. Measured over the committee's sky at Kathmandu, 2013–2027 (2026-10-25): an arunodaya window gives the sunrise rule's day in all fifteen years, so it would add no day; the consumer keeps Vishnu's day a day before Shiva's in 2017, 2019, 2020, 2021 and 2023, which nishitha gives but which misses both printed days and five more, and pradosha with the earlier day holding it gives 11 of 14. No window gives the consumer's days and the print together, so the form is not built until a source settles which day a patro printed in Nepal keeps for Vishnu; still held after the sources read 2026-11-14 (C1664) |
 | 26 | `ARJUNDHARA_MELA` | 12 of 14 in the morning | day muhurtas 1–6, 12 of 14 | none new | **shipped** on Halesi mela's day: both editions print it in the continuation of that row; the source's day after is not printed in VS 2083 (C693) |
 | 27 | `GURU_GOBIND_SINGH_JAYANTI` | Poush 21 or 20, or 5 January; 12 of 14 at best | a civil date | §3.6 a civil date | the community's own calendar sets it (C619) |
 | 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | none new | **shipped** by the text: Magha's dark 4th (purnimanta; the amanta Pausha's) is a Sankashta chaturthi, kept at moonrise and on the earlier day when both hold it (*Dharmasindhu* p. 9); both editions print it on the day whose sunrise holds the 3rd and whose moonrise the 4th (2026-01-06, 2027-01-25) |
 | 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | **shipped** on Magha's full moon, the source's rule: both editions print it on the full-moon fast's day, so it takes that rule (C200); the source's bright 5th days are not printed (C693) |
-| 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
+| 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence; still held after the sources read 2026-11-14 (C1656) |
 | 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | none new | **shipped** on the Holika day: the gazette notices of 2082 and 2083 set it there, the days both editions print the hill districts' Holi (C693) |
-| 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | a candidate only |
-| 33 | `RATO_MACHHINDRANATH_SNAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence |
+| 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | a candidate only; still held after the sources read 2026-11-14 (C1660) |
+| 33 | `RATO_MACHHINDRANATH_SNAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence; still held after the sources read 2026-11-14 (C1657) |
 | 34 | `EID_AL_FITR` | the Hijri month begins on a sighting | none | none | published only: a sighting and an announcement; a crescent-visibility estimate is a different feature |
-| 35 | `GAI_TIHAR` | 4 of 6 | sayahna, 6 of 6 | none new | the language has sayahna; six years are too few to ship |
+| 35 | `GAI_TIHAR` | 4 of 6 | sayahna, 6 of 6 | none new | the language has sayahna; six years are too few to ship; still held after the sources read 2026-11-14 (C1661) |
 | 36 | `EID_AL_ADHA` | the Hijri month begins on a sighting | none | none | published only |
 | 37 | `BHOTO_JATRA` | set each year to close the chariot festival | none | none | community: set each year |
 | 38 | `MUKTAK_DIWAS` | one verified day | none | none | evidence |
@@ -737,13 +740,13 @@ is missing is evidence. "None" means no form would decide the row.
 | 45 | `WORLD_SOIL_CONSERVATION_DAY` | 0 of 3 by 7 or 8 August | none | §3.6 a civil date | the date is not settled; evidence |
 | 46 | `LALITPUR_NARSINGH_JATRA` | 1 of 2 | sunrise, 1 of 2 | none new | **shipped** at sunrise: both printed days (C693) |
 | 47 | `WALKE_PARVA` | 2 of 3 by Bhadra 1 or Shravana's bright 13th in the morning | none | none new | **shipped** on Bhadra 1, a civil date: both editions print it on भाद्रसङ्क्रान्ति, and all three verified days are Bhadra 1 |
-| 48 | `KRISHNA_RATH_JATRA` | 0 of 3 by the source; 1 of 3 at best | madhyahna to moonrise, 2 of 3 | none new | evidence |
-| 49 | `RADHA_KRISHNA_RATH_JATRA` | 2 of 2 in the morning | madhyahna to moonrise, 2 of 2 | none new | two years; evidence |
-| 50 | `NALA_MACHHINDRANATH_SNAN` | 1 of 3 | sayahna to moonrise, 2 of 3 | none new | evidence |
+| 48 | `KRISHNA_RATH_JATRA` | 0 of 3 by the source; 1 of 3 at best | madhyahna to moonrise, 2 of 3 | none new | evidence; still held after the sources read 2026-11-14 (C1662) |
+| 49 | `RADHA_KRISHNA_RATH_JATRA` | 2 of 2 in the morning | madhyahna to moonrise, 2 of 2 | none new | two years; evidence; still held after the sources read 2026-11-14 (C1663) |
+| 50 | `NALA_MACHHINDRANATH_SNAN` | 1 of 3 | sayahna to moonrise, 2 of 3 | none new | evidence; still held after the sources read 2026-11-14 (C1658) |
 | 51 | `DISHI_PUJA` | one verified day | none | none | community; evidence |
 | 52 | `DISHI_CHARHE` | one verified day | none | none | C614; evidence |
 | 53 | `THAKALI_TORANLA_PARVA` | one verified day | none | none | community |
-| 54 | `MAJHI_LADI_PUJA` | 1 of 2 | any window, 1 of 2 | none | community; evidence |
+| 54 | `MAJHI_LADI_PUJA` | 1 of 2 | any window, 1 of 2 | none | community; evidence; still held after the sources read 2026-11-14 (C1665) |
 | 55 | `MAWLID` | the Hijri month begins on a sighting | none | none | published only |
 | 56 | `BABA_GANINATH_JAYANTI` | one verified day | none | none | community |
 | 57 | `DURA_MHAIPRU_NAKUMA` | one verified day | none | none | community |

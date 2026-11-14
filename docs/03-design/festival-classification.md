@@ -1,6 +1,6 @@
 # Festival classification
 
-Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696 and C1600 to C1603
+Status: `research`, 2026-10-21. Cruxes C600, C613, C617, C619, C622 to C623, C685 to C694, C696, C1600 to C1603 and C1650 to C1665
 (`01-research/feature-universe/19-verification-cruxes.md`). The rules this
 page counts as shipped are `festival-rules.md` §9 and §10. The forms it
 counts as needed are `festival-rule-language.md`.
@@ -360,8 +360,8 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `JAMARE_AUNSI` | Jamare Aunsi | जमरे औँसी |  | one verified day; VS 2083 does not print it on the sunrise rule's day, 10 October 2026 (C685) |
 | `MADHAV_NARAYAN_MAHOTSAV` | Madhav Narayan Mahotsav | माधवनारायण महोत्सव |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
 | `MATINA_PARU` | Matina Paru | मतिना पारु | Newar | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
-| `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
-| `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
+| `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689); still held after the sources of 2026-11-14 (C1651) |
+| `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687); still held after the sources of 2026-11-14 (C1652) |
 
 ### Rule, needs a form (18)
 
@@ -369,28 +369,28 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
-| `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  |  |
-| `GAI_TIHAR` | Gai Tihar | गाई तिहार |  |  |
+| `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  | held: no source gives every verified day (C1660) |
+| `GAI_TIHAR` | Gai Tihar | गाई तिहार |  | held: no source gives every verified day (C1661) |
 | `GATHAMUGA_CHARHE` | Gathamuga Charhe | गथाँमुग चह्रे | Newar |  |
 | `GHANTAKARNA_CHATURDASHI` | Ghantakarna Chaturdashi | घण्टाकर्ण चतुर्दशी |  |  |
 | `JUGA_CHARHE` | Juga Charhe | जुगः चह्रे | Newar |  |
-| `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  |  |
-| `MAJHI_LADI_PUJA` | Majhi Ladi Puja | माझी लदी पूजा | Majhi |  |
+| `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  | held: no source gives every verified day (C1662) |
+| `MAJHI_LADI_PUJA` | Majhi Ladi Puja | माझी लदी पूजा | Majhi | held: no source gives every verified day (C1665) |
 | `MATATI_CHARHE` | Matati Charhe | माताति चह्रे | Newar |  |
-| `MATSYA_DARSHAN` | Matsya Darshan | मत्स्य दर्शन |  |  |
+| `MATSYA_DARSHAN` | Matsya Darshan | मत्स्य दर्शन |  | held: no source gives every verified day (C1655) |
 | `NALASWANE_CHARHE` | Nalaswane Charhe | नःलास्वने चह्रे | Newar |  |
-| `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar |  |
-| `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  |  |
-| `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  |  |
-| `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  |  |
-| `RAMANUJACHARYA_JAYANTI` | Ramanujacharya Jayanti | रामानुजाचार्य जयन्ती |  |  |
-| `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar |  |
+| `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1658) |
+| `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  | held: no source gives every verified day (C1656) |
+| `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  | held: no source gives every verified day (C1659) |
+| `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  | held: no source gives every verified day (C1663) |
+| `RAMANUJACHARYA_JAYANTI` | Ramanujacharya Jayanti | रामानुजाचार्य जयन्ती |  | held: no source gives every verified day (C1654) |
+| `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1657) |
 | `SITHI_CHARHE` | Sithi Charhe | सिथि चह्रे | Newar |  |
-| `VISHNU_BAIKUNTHA_CHATURDASHI` | Vishnu Baikuntha Chaturdashi | विष्णु बैकुण्ठ चतुर्दशी |  |  |
+| `VISHNU_BAIKUNTHA_CHATURDASHI` | Vishnu Baikuntha Chaturdashi | विष्णु बैकुण्ठ चतुर्दशी |  | held: no source gives every verified day (C1664) |
 
 ### Solar (26)
 
-A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship; the note says why each other is not.
+A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship. `YOSIN_UTTHAN` ships too, on the Bikram Sambat year's last day, which VS 2083 alone prints and the press reports kept (C1650), so 22 ship; the note says why each other is not.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
@@ -403,7 +403,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 5 |
 | `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | not printed in either edition |
 | `DEVGHAT_MAKAR_SNAN` | Devghat Makar Snan | देवघाट मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
-| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | printed on Shrawan 1 in both editions, but a patro printed in Nepal keeps a second day in most years and not Shrawan 1 in two (C621) |
+| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | printed on Shrawan 1 in both editions, but a patro printed in Nepal keeps a second day in most years and not Shrawan 1 in two (C621); still held after the sources of 2026-11-14 (C1653) |
 | `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डारक पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1 |
 | `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 15 |
 | `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Bhadra 1 |
@@ -419,7 +419,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `TOKHA_SAPAN_TIRTHA_SNAN` | Tokha Sapan Tirtha Snan | टोखा सपनतीर्थ स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 1 |
 | `VISHWAKARMA_PUJA` | Vishwakarma Puja | विश्वकर्मा पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Asoj 1 |
 | `YOSIN_PATAN` | Yosin Patan | योसिं पतन | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 1 |
-| `YOSIN_UTTHAN` | Yosin Utthan | योसिं उत्थान | Newar | VS 2083 prints it on Chaitra's last day and VS 2082 not at all; a patro printed in Nepal has Baisakh 1 in its early years |
+| `YOSIN_UTTHAN` | Yosin Utthan | योसिं उत्थान | Newar | shipped: a dated day in NEPAL_PANCHANGA, Chaitra's last day, as VS 2083 prints it (VS 2082 prints no day) and Onlinekhabar (VS 2074) and Kantipur (VS 2083) report the pole raised; a patro printed in Nepal has Baisakh 1, the felling's day, until VS 2079 (C1650) |
 
 ### Community (6)
 

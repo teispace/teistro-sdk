@@ -1113,6 +1113,7 @@ export function messages(r) {
           yoginiEkadashi: () => r.entity('festival.YOGINI_EKADASHI'),
           yomariPunhi: () => r.entity('festival.YOMARI_PUNHI'),
           yosinPatan: () => r.entity('festival.YOSIN_PATAN'),
+          yosinUtthan: () => r.entity('festival.YOSIN_UTTHAN'),
         },
         festivalKind: {
           gazetted: () => r.entity('festival_kind.GAZETTED'),

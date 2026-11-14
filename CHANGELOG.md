@@ -40,7 +40,7 @@ teigeodata v0.3.0.**
   lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
   moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
 
-**Numbers:** `NEPAL_PANCHANGA` answers 28 civil days it did not, and its
+**Numbers:** `NEPAL_PANCHANGA` answers 28 civil days and Yosin utthan's day it did not, and its
 `input_hash` moves; no day an earlier release answered moves. Nothing else
 changes, the sky view's hash included (its input gains no field when no pose
 is asked).
@@ -64,6 +64,21 @@ is asked).
   `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. 366 of the 502 festivals now ship,
   counting the solar and civil days. Madhav Narayan mahotsav and Matina paru
   are not shipped (C685); the other unprinted days wait for a source (C1603).
+- **New (SR-01):** `YOSIN_UTTHAN` ships in `NEPAL_PANCHANGA` on the Bikram
+  Sambat year's last day, Chaitra −1, the eve of `YOSIN_PATAN`: VS 2083
+  p. 27 prints भ.पु.विश्वध्वजोत्थान there, and Onlinekhabar (VS 2074) and
+  Kantipur (VS 2083) report Bhaktapur's pole raised on the year's last day
+  (C1650). It gives the consumer's two verified days since VS 2081; its
+  eight before are Baisakh 1, the felling's day, the parting the consumer's
+  own correction names. Named in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN`,
+  `sa-Deva` and `sa-Latn`; 367 of the 502 festivals now ship. The other
+  fifteen rows whose form already exists stay unshipped, each with the
+  source read and why it does not give every verified day (C1651 to
+  C1665): Sankhu jatra, Thakali phalo parva, Guriya parva, Ramanujacharya
+  jayanti, Matsya darshan, Pashupatinath chhaya darshan, Rato and Nala
+  Machhindranath's baths, Pharping Harishankar jatra, Deopatan deshoddhar
+  puja, Gai tihar, Krishna and Radha Krishna rath jatra, Vishnu's
+  Vaikuntha chaturdashi and Majhi ladi puja.
 - **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
   `sky_pose` in every binding and MCP; SR-58's device pose,
   `03-design/sky-pose.md`). It reads `almanac.skyView`'s request with a

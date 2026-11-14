@@ -1108,6 +1108,12 @@ impl DatedRule {
                 1,
                 "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 11: \"वल्केपर्व\" on Bhadra 1, the day of भाद्रसङ्क्रान्ति",
             ),
+            bs(
+                "YOSIN_UTTHAN",
+                12,
+                -1,
+                "Nepal's national panchanga, VS 2083 p. 27: \"भ.पु.विश्वध्वजोत्थान\" on Chaitra 30, the year's last day, VS 2082 printing it on no day; Bhaktapur raises the pole the felling (YOSIN_PATAN) lowers on Baisakh 1 on the year's last day, as Onlinekhabar (VS 2074 Chaitra 27: \"पुरानो वर्ष बिदाइ र नयाँ वर्षको आगमनको पूर्वसन्ध्यामा लिङ्गो उभ्याउने गरिन्छ\") and Kantipur (VS 2083 Baisakh 1: \"चैत मसान्तमा इन्द्रध्वजा सहितको लिंगो उठाउने\") report (rank 3, C1650)",
+            ),
         ]);
         rules.extend(Self::on_printed_dates());
         rules.extend(Self::on_the_suns_entry());

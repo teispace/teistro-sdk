@@ -1100,6 +1100,7 @@ final List<EntitySurface> entities = [
   EntitySurface('MessagesSdkEntityFestival.yoginiEkadashi', (m) => m.sdk.entity.festival.yoginiEkadashi),
   EntitySurface('MessagesSdkEntityFestival.yomariPunhi', (m) => m.sdk.entity.festival.yomariPunhi),
   EntitySurface('MessagesSdkEntityFestival.yosinPatan', (m) => m.sdk.entity.festival.yosinPatan),
+  EntitySurface('MessagesSdkEntityFestival.yosinUtthan', (m) => m.sdk.entity.festival.yosinUtthan),
   EntitySurface('MessagesSdkEntityFestivalKind.gazetted', (m) => m.sdk.entity.festivalKind.gazetted),
   EntitySurface('MessagesSdkEntityFestivalKind.observance', (m) => m.sdk.entity.festivalKind.observance),
   EntitySurface('MessagesSdkEntityFestivalKind.regionalEthnic', (m) => m.sdk.entity.festivalKind.regionalEthnic),
