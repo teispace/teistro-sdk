@@ -1140,7 +1140,36 @@ enum FestivalKey {
   worldRabiesDay('festival.WORLD_RABIES_DAY'),
   worldHeartDay('festival.WORLD_HEART_DAY'),
   worldAnimalDay('festival.WORLD_ANIMAL_DAY'),
-  globalHandwashingDay('festival.GLOBAL_HANDWASHING_DAY');
+  globalHandwashingDay('festival.GLOBAL_HANDWASHING_DAY'),
+  nationalMagarDay('festival.NATIONAL_MAGAR_DAY'),
+  pasangLhamuSmritiDiwas('festival.PASANG_LHAMU_SMRITI_DIWAS'),
+  socialServiceDay('festival.SOCIAL_SERVICE_DAY'),
+  nationalBhakkaDay('festival.NATIONAL_BHAKKA_DAY'),
+  nationalFlagDay('festival.NATIONAL_FLAG_DAY'),
+  nationalYogaDay('festival.NATIONAL_YOGA_DAY'),
+  nationalJournalismDay('festival.NATIONAL_JOURNALISM_DAY'),
+  nationalFilmDay('festival.NATIONAL_FILM_DAY'),
+  languageDay('festival.LANGUAGE_DAY'),
+  bodeJibroChhedneJatra('festival.BODE_JIBRO_CHHEDNE_JATRA'),
+  sindoorJatra('festival.SINDOOR_JATRA'),
+  nationalDressDay('festival.NATIONAL_DRESS_DAY'),
+  nationalTopiDay('festival.NATIONAL_TOPI_DAY'),
+  valentineSDay('festival.VALENTINE_S_DAY'),
+  piDay('festival.PI_DAY'),
+  aprilFoolsDay('festival.APRIL_FOOLS_DAY'),
+  worldHeritageDay('festival.WORLD_HERITAGE_DAY'),
+  worldHypertensionDay('festival.WORLD_HYPERTENSION_DAY'),
+  sagarmathaDay('festival.SAGARMATHA_DAY'),
+  internationalOlympicDay('festival.INTERNATIONAL_OLYMPIC_DAY'),
+  worldPharmacistsDay('festival.WORLD_PHARMACISTS_DAY'),
+  nonResidentNepaliDay('festival.NON_RESIDENT_NEPALI_DAY'),
+  worldStandardsDay('festival.WORLD_STANDARDS_DAY'),
+  worldRadiographyDay('festival.WORLD_RADIOGRAPHY_DAY'),
+  worldFreedomDay('festival.WORLD_FREEDOM_DAY'),
+  internationalStudentsDay('festival.INTERNATIONAL_STUDENTS_DAY'),
+  worldFirstAidDay('festival.WORLD_FIRST_AID_DAY'),
+  worldSmileDay('festival.WORLD_SMILE_DAY'),
+  worldSightDay('festival.WORLD_SIGHT_DAY');
 
   const FestivalKey(this.key);
 
@@ -3350,6 +3379,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get anlaNavami => _r.entity('festival.ANLA_NAVAMI');
   EntityForms get annapurnaJatra => _r.entity('festival.ANNAPURNA_JATRA');
   EntityForms get aparaEkadashi => _r.entity('festival.APARA_EKADASHI');
+  EntityForms get aprilFoolsDay => _r.entity('festival.APRIL_FOOLS_DAY');
   EntityForms get aranikoMemorialDay => _r.entity('festival.ARANIKO_MEMORIAL_DAY');
   EntityForms get arghaSaraiParva => _r.entity('festival.ARGHA_SARAI_PARVA');
   EntityForms get arjundharaMela => _r.entity('festival.ARJUNDHARA_MELA');
@@ -3400,6 +3430,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get bishalnagarVaishnaviDeviJatra => _r.entity('festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA');
   EntityForms get bisketJatraBegins => _r.entity('festival.BISKET_JATRA_BEGINS');
   EntityForms get bisketJatraEnds => _r.entity('festival.BISKET_JATRA_ENDS');
+  EntityForms get bodeJibroChhedneJatra => _r.entity('festival.BODE_JIBRO_CHHEDNE_JATRA');
   EntityForms get bohagBihu => _r.entity('festival.BOHAG_BIHU');
   EntityForms get bohagBihuSecond => _r.entity('festival.BOHAG_BIHU_SECOND');
   EntityForms get bohagBihuThird => _r.entity('festival.BOHAG_BIHU_THIRD');
@@ -3580,7 +3611,9 @@ final class MessagesSdkEntityFestival {
   EntityForms get internationalMotherLanguageDay => _r.entity('festival.INTERNATIONAL_MOTHER_LANGUAGE_DAY');
   EntityForms get internationalMountainDay => _r.entity('festival.INTERNATIONAL_MOUNTAIN_DAY');
   EntityForms get internationalNursesDay => _r.entity('festival.INTERNATIONAL_NURSES_DAY');
+  EntityForms get internationalOlympicDay => _r.entity('festival.INTERNATIONAL_OLYMPIC_DAY');
   EntityForms get internationalSportsJournalistsDay => _r.entity('festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY');
+  EntityForms get internationalStudentsDay => _r.entity('festival.INTERNATIONAL_STUDENTS_DAY');
   EntityForms get internationalVolunteerDay => _r.entity('festival.INTERNATIONAL_VOLUNTEER_DAY');
   EntityForms get internationalWellnessDay => _r.entity('festival.INTERNATIONAL_WELLNESS_DAY');
   EntityForms get internationalWomenSDay => _r.entity('festival.INTERNATIONAL_WOMEN_S_DAY');
@@ -3650,6 +3683,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get laiCharhe => _r.entity('festival.LAI_CHARHE');
   EntityForms get lakshmiPuja => _r.entity('festival.LAKSHMI_PUJA');
   EntityForms get lalitpurNarsinghJatra => _r.entity('festival.LALITPUR_NARSINGH_JATRA');
+  EntityForms get languageDay => _r.entity('festival.LANGUAGE_DAY');
   EntityForms get lawDay => _r.entity('festival.LAW_DAY');
   EntityForms get laxmiPrasadDevkotaJayanti => _r.entity('festival.LAXMI_PRASAD_DEVKOTA_JAYANTI');
   EntityForms get lekhnathPaudyalJayanti => _r.entity('festival.LEKHNATH_PAUDYAL_JAYANTI');
@@ -3703,12 +3737,20 @@ final class MessagesSdkEntityFestival {
   EntityForms get nanichaya => _r.entity('festival.NANICHAYA');
   EntityForms get narakChaturdashi => _r.entity('festival.NARAK_CHATURDASHI');
   EntityForms get narasimhaJayanti => _r.entity('festival.NARASIMHA_JAYANTI');
+  EntityForms get nationalBhakkaDay => _r.entity('festival.NATIONAL_BHAKKA_DAY');
   EntityForms get nationalChildrenSDay => _r.entity('festival.NATIONAL_CHILDREN_S_DAY');
   EntityForms get nationalDayAgainstHumanTrafficking => _r.entity('festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING');
+  EntityForms get nationalDressDay => _r.entity('festival.NATIONAL_DRESS_DAY');
+  EntityForms get nationalFilmDay => _r.entity('festival.NATIONAL_FILM_DAY');
+  EntityForms get nationalFlagDay => _r.entity('festival.NATIONAL_FLAG_DAY');
+  EntityForms get nationalJournalismDay => _r.entity('festival.NATIONAL_JOURNALISM_DAY');
+  EntityForms get nationalMagarDay => _r.entity('festival.NATIONAL_MAGAR_DAY');
   EntityForms get nationalPaddyDay => _r.entity('festival.NATIONAL_PADDY_DAY');
   EntityForms get nationalReconciliationDay => _r.entity('festival.NATIONAL_RECONCILIATION_DAY');
   EntityForms get nationalScienceDay => _r.entity('festival.NATIONAL_SCIENCE_DAY');
   EntityForms get nationalTeaDay => _r.entity('festival.NATIONAL_TEA_DAY');
+  EntityForms get nationalTopiDay => _r.entity('festival.NATIONAL_TOPI_DAY');
+  EntityForms get nationalYogaDay => _r.entity('festival.NATIONAL_YOGA_DAY');
   EntityForms get navamiShraddha => _r.entity('festival.NAVAMI_SHRADDHA');
   EntityForms get navaratraArambha => _r.entity('festival.NAVARATRA_ARAMBHA');
   EntityForms get nepaliArmyDay => _r.entity('festival.NEPALI_ARMY_DAY');
@@ -3717,6 +3759,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get netajiJayanti => _r.entity('festival.NETAJI_JAYANTI');
   EntityForms get newYearSDayAd => _r.entity('festival.NEW_YEAR_S_DAY_AD');
   EntityForms get nirjalaEkadashi => _r.entity('festival.NIRJALA_EKADASHI');
+  EntityForms get nonResidentNepaliDay => _r.entity('festival.NON_RESIDENT_NEPALI_DAY');
   EntityForms get nrisimhaChaturdashi => _r.entity('festival.NRISIMHA_CHATURDASHI');
   EntityForms get nuakhai => _r.entity('festival.NUAKHAI');
   EntityForms get nuwakotDupcheshwarMela => _r.entity('festival.NUWAKOT_DUPCHESHWAR_MELA');
@@ -3735,11 +3778,13 @@ final class MessagesSdkEntityFestival {
   EntityForms get parashuramaJayanti => _r.entity('festival.PARASHURAMA_JAYANTI');
   EntityForms get paryushana => _r.entity('festival.PARYUSHANA');
   EntityForms get paryushanaTrayodashi => _r.entity('festival.PARYUSHANA_TRAYODASHI');
+  EntityForms get pasangLhamuSmritiDiwas => _r.entity('festival.PASANG_LHAMU_SMRITI_DIWAS');
   EntityForms get pashupatinathDamanPushparpan => _r.entity('festival.PASHUPATINATH_DAMAN_PUSHPARPAN');
   EntityForms get pashupatiHalesiMela => _r.entity('festival.PASHUPATI_HALESI_MELA');
   EntityForms get paushaPutradaEkadashi => _r.entity('festival.PAUSHA_PUTRADA_EKADASHI');
   EntityForms get phulpati => _r.entity('festival.PHULPATI');
   EntityForms get pishachamochanaShraddha => _r.entity('festival.PISHACHAMOCHANA_SHRADDHA');
+  EntityForms get piDay => _r.entity('festival.PI_DAY');
   EntityForms get pohelaBoishakh => _r.entity('festival.POHELA_BOISHAKH');
   EntityForms get pradoshaVrata => _r.entity('festival.PRADOSHA_VRATA');
   EntityForms get prathamashtami => _r.entity('festival.PRATHAMASHTAMI');
@@ -3768,6 +3813,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get ropaiJatra => _r.entity('festival.ROPAI_JATRA');
   EntityForms get saddulaBathukamma => _r.entity('festival.SADDULA_BATHUKAMMA');
   EntityForms get safalaEkadashi => _r.entity('festival.SAFALA_EKADASHI');
+  EntityForms get sagarmathaDay => _r.entity('festival.SAGARMATHA_DAY');
   EntityForms get sakwoChanguWone => _r.entity('festival.SAKWO_CHANGU_WONE');
   EntityForms get samaChakevaArambha => _r.entity('festival.SAMA_CHAKEVA_ARAMBHA');
   EntityForms get samaChakevaVisarjana => _r.entity('festival.SAMA_CHAKEVA_VISARJANA');
@@ -3802,10 +3848,12 @@ final class MessagesSdkEntityFestival {
   EntityForms get shreeBallabhJayanti => _r.entity('festival.SHREE_BALLABH_JAYANTI');
   EntityForms get silangaMaharudraKotihomMela => _r.entity('festival.SILANGA_MAHARUDRA_KOTIHOM_MELA');
   EntityForms get simhaSankranti => _r.entity('festival.SIMHA_SANKRANTI');
+  EntityForms get sindoorJatra => _r.entity('festival.SINDOOR_JATRA');
   EntityForms get sitaNavami => _r.entity('festival.SITA_NAVAMI');
   EntityForms get sithiNakha => _r.entity('festival.SITHI_NAKHA');
   EntityForms get siPunhi => _r.entity('festival.SI_PUNHI');
   EntityForms get skandaShashthi => _r.entity('festival.SKANDA_SHASHTHI');
+  EntityForms get socialServiceDay => _r.entity('festival.SOCIAL_SERVICE_DAY');
   EntityForms get somavatiAmavasya => _r.entity('festival.SOMAVATI_AMAVASYA');
   EntityForms get sonamLhosar => _r.entity('festival.SONAM_LHOSAR');
   EntityForms get sorhaShraddhaArambha => _r.entity('festival.SORHA_SHRADDHA_ARAMBHA');
@@ -3851,6 +3899,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get uttarayanaPunyakala => _r.entity('festival.UTTARAYANA_PUNYAKALA');
   EntityForms get uzhavarThirunal => _r.entity('festival.UZHAVAR_THIRUNAL');
   EntityForms get vaishakhaSnanaArambha => _r.entity('festival.VAISHAKHA_SNANA_ARAMBHA');
+  EntityForms get valentineSDay => _r.entity('festival.VALENTINE_S_DAY');
   EntityForms get valmikiJayanti => _r.entity('festival.VALMIKI_JAYANTI');
   EntityForms get vamanaDwadashi => _r.entity('festival.VAMANA_DWADASHI');
   EntityForms get varahaJayanti => _r.entity('festival.VARAHA_JAYANTI');
@@ -3891,9 +3940,13 @@ final class MessagesSdkEntityFestival {
   EntityForms get worldDevelopmentInformationDay => _r.entity('festival.WORLD_DEVELOPMENT_INFORMATION_DAY');
   EntityForms get worldDiabetesDay => _r.entity('festival.WORLD_DIABETES_DAY');
   EntityForms get worldEnvironmentDay => _r.entity('festival.WORLD_ENVIRONMENT_DAY');
+  EntityForms get worldFirstAidDay => _r.entity('festival.WORLD_FIRST_AID_DAY');
   EntityForms get worldFoodDay => _r.entity('festival.WORLD_FOOD_DAY');
+  EntityForms get worldFreedomDay => _r.entity('festival.WORLD_FREEDOM_DAY');
   EntityForms get worldHealthDay => _r.entity('festival.WORLD_HEALTH_DAY');
   EntityForms get worldHeartDay => _r.entity('festival.WORLD_HEART_DAY');
+  EntityForms get worldHeritageDay => _r.entity('festival.WORLD_HERITAGE_DAY');
+  EntityForms get worldHypertensionDay => _r.entity('festival.WORLD_HYPERTENSION_DAY');
   EntityForms get worldIntellectualPropertyDay => _r.entity('festival.WORLD_INTELLECTUAL_PROPERTY_DAY');
   EntityForms get worldMalariaDay => _r.entity('festival.WORLD_MALARIA_DAY');
   EntityForms get worldMentalHealthDay => _r.entity('festival.WORLD_MENTAL_HEALTH_DAY');
@@ -3902,16 +3955,21 @@ final class MessagesSdkEntityFestival {
   EntityForms get worldNoTobaccoDay => _r.entity('festival.WORLD_NO_TOBACCO_DAY');
   EntityForms get worldOceansDay => _r.entity('festival.WORLD_OCEANS_DAY');
   EntityForms get worldOralHealthDay => _r.entity('festival.WORLD_ORAL_HEALTH_DAY');
+  EntityForms get worldPharmacistsDay => _r.entity('festival.WORLD_PHARMACISTS_DAY');
   EntityForms get worldPhysiotherapyDay => _r.entity('festival.WORLD_PHYSIOTHERAPY_DAY');
   EntityForms get worldPopulationDay => _r.entity('festival.WORLD_POPULATION_DAY');
   EntityForms get worldPostDay => _r.entity('festival.WORLD_POST_DAY');
   EntityForms get worldPressFreedomDay => _r.entity('festival.WORLD_PRESS_FREEDOM_DAY');
   EntityForms get worldRabiesDay => _r.entity('festival.WORLD_RABIES_DAY');
+  EntityForms get worldRadiographyDay => _r.entity('festival.WORLD_RADIOGRAPHY_DAY');
   EntityForms get worldRadioDay => _r.entity('festival.WORLD_RADIO_DAY');
   EntityForms get worldRedCrossDay => _r.entity('festival.WORLD_RED_CROSS_DAY');
   EntityForms get worldRefugeeDay => _r.entity('festival.WORLD_REFUGEE_DAY');
   EntityForms get worldRemembranceAndReconciliationDay => _r.entity('festival.WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY');
+  EntityForms get worldSightDay => _r.entity('festival.WORLD_SIGHT_DAY');
+  EntityForms get worldSmileDay => _r.entity('festival.WORLD_SMILE_DAY');
   EntityForms get worldSoilDay => _r.entity('festival.WORLD_SOIL_DAY');
+  EntityForms get worldStandardsDay => _r.entity('festival.WORLD_STANDARDS_DAY');
   EntityForms get worldTeachersDay => _r.entity('festival.WORLD_TEACHERS_DAY');
   EntityForms get worldTelecommunicationAndInformationSocietyDay => _r.entity('festival.WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY');
   EntityForms get worldTelevisionDay => _r.entity('festival.WORLD_TELEVISION_DAY');

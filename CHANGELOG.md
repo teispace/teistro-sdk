@@ -54,7 +54,8 @@ teigeodata v0.3.1.**
   lock again with `rust/`'s, and `check-adapter`'s lock check holds each to the SDK, so a pin that
   moves the SDK cannot leave one stale (`06-cicd/adapter-gate.md`).
 
-**Numbers:** `NEPAL_PANCHANGA` answers 84 civil days and Yosin utthan's day it did not, and its
+**Numbers:** `NEPAL_PANCHANGA` answers 111 civil days, Yosin utthan's day and
+Bode's and Sindoor jatra's it did not, and its
 `input_hash` moves, as do the bytes of a digest that asks for it over one
 of those days; no day an earlier release answered moves. Nothing else
 changes, the sky view's hash included (its input gains no field when no pose
@@ -111,6 +112,33 @@ is asked).
   Machhindranath's baths, Pharping Harishankar jatra, Deopatan deshoddhar
   puja, Gai tihar, Krishna and Radha Krishna rath jatra, Vishnu's
   Vaikuntha chaturdashi and Majhi ladi puja.
+- **New (SR-01):** 29 more days of the consumer's list the committee's print
+  does not carry ship in `NEPAL_PANCHANGA`, each source opened on 2026-11-14
+  and cited in its rule, and each agreeing with every day a patro printed in
+  Nepal verified for it, VS 2070 to 2083:
+  - eight national days on a Bikram Sambat date, on their keepers' practice
+    as the press reports it (rank 3, C1800): `NATIONAL_MAGAR_DAY`,
+    `PASANG_LHAMU_SMRITI_DIWAS`, `SOCIAL_SERVICE_DAY`, `NATIONAL_BHAKKA_DAY`,
+    `NATIONAL_FLAG_DAY`, `NATIONAL_YOGA_DAY`, `NATIONAL_JOURNALISM_DAY` and
+    `NATIONAL_FILM_DAY` (the last two answer every year, though first kept
+    in VS 2073 and 2082, C1801), and `BODE_JIBRO_CHHEDNE_JATRA` and
+    `SINDOOR_JATRA` on Baisakh 2 (`REGIONAL_ETHNIC`, Newar);
+  - `LANGUAGE_DAY` on Baisakh 24, Bagmati Province's holiday by its own
+    notice: `GAZETTED`, its `regions` `NP` and `NP-P3`, a key
+    `region::REGIONS` gains (C1802);
+  - fifteen days on a Gregorian date: thirteen of other bodies on the dates
+    they name (C1803), from `WORLD_HERITAGE_DAY` to `WORLD_FREEDOM_DAY`,
+    and `VALENTINE_S_DAY` and `APRIL_FOOLS_DAY`, customs no body keeps, on
+    the press's report of them kept in Nepal (C1804);
+  - `WORLD_FIRST_AID_DAY`, `WORLD_SMILE_DAY` and `WORLD_SIGHT_DAY` on their
+    organisers' weekday of the month (`civilWeekday`, C1805).
+
+  Each but Language day and the jatras is `OBSERVANCE`; each is named in
+  `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN`, `sa-Deva` and `sa-Latn`. 452 of
+  the 502 festivals now ship. Safer Internet day (C1806), Earthquake
+  memorial, Forest users', Siddhicharan's, UNESCO and World photography day
+  (C1807 to C1811) and the charhe (C614, C1812) stay held, each crux naming
+  what would settle it.
 - **New:** `almanac.skyPose` (`ts_almanac_sky_pose`, `skyPose` and
   `sky_pose` in every binding and MCP; SR-58's device pose,
   `03-design/sky-pose.md`). It reads `almanac.skyView`'s request with a

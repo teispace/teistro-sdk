@@ -579,8 +579,8 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
 
 /// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
 /// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions and those
-/// [`KEPT_CIVIL_DAYS`] and [`KEPT_INTERNATIONAL_DAYS`] hold to a patro's
-/// verified days.
+/// [`KEPT_CIVIL_DAYS`], [`KEPT_INTERNATIONAL_DAYS`] and [`MORE_KEPT_DAYS`]
+/// hold to a patro's verified days.
 fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
     kept_dated(from, to)
         .into_iter()
@@ -589,6 +589,7 @@ fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
                 .iter()
                 .chain(&KEPT_CIVIL_DAYS)
                 .chain(&KEPT_INTERNATIONAL_DAYS)
+                .chain(&MORE_KEPT_DAYS)
                 .all(|&(civil, ..)| civil != rule)
         })
         .collect()
@@ -968,6 +969,44 @@ const KEPT_INTERNATIONAL_DAYS: [(&str, Day, Day); 56] = [
     ),
 ];
 
+/// Nepal's own days, other bodies' and custom's that the committee prints
+/// in neither edition (Sagarmatha Day in VS 2083 alone), and the two Bisket
+/// jatras of Thimi on Baisakh 2, each with the Gregorian day of VS 2082 and
+/// of VS 2083 its rule gives: the days a patro printed in Nepal verified for
+/// it over those years, through its own Bikram Sambat table, where it
+/// verified them (C1800 to C1805).
+const MORE_KEPT_DAYS: [(&str, Day, Day); 29] = [
+    ("BODE_JIBRO_CHHEDNE_JATRA", (2025, 4, 15), (2026, 4, 15)),
+    ("SINDOOR_JATRA", (2025, 4, 15), (2026, 4, 15)),
+    ("WORLD_HERITAGE_DAY", (2025, 4, 18), (2026, 4, 18)),
+    ("PASANG_LHAMU_SMRITI_DIWAS", (2025, 4, 23), (2026, 4, 23)),
+    ("LANGUAGE_DAY", (2025, 5, 7), (2026, 5, 7)),
+    ("NATIONAL_JOURNALISM_DAY", (2025, 5, 7), (2026, 5, 7)),
+    ("WORLD_HYPERTENSION_DAY", (2025, 5, 17), (2026, 5, 17)),
+    ("SAGARMATHA_DAY", (2025, 5, 29), (2026, 5, 29)),
+    ("INTERNATIONAL_OLYMPIC_DAY", (2025, 6, 23), (2026, 6, 23)),
+    ("WORLD_FIRST_AID_DAY", (2025, 9, 13), (2026, 9, 12)),
+    ("SOCIAL_SERVICE_DAY", (2025, 9, 22), (2026, 9, 22)),
+    ("WORLD_PHARMACISTS_DAY", (2025, 9, 25), (2026, 9, 25)),
+    ("NATIONAL_FILM_DAY", (2025, 10, 1), (2026, 10, 1)),
+    ("WORLD_SMILE_DAY", (2025, 10, 3), (2026, 10, 2)),
+    ("WORLD_SIGHT_DAY", (2025, 10, 9), (2026, 10, 8)),
+    ("NON_RESIDENT_NEPALI_DAY", (2025, 10, 11), (2026, 10, 11)),
+    ("WORLD_STANDARDS_DAY", (2025, 10, 14), (2026, 10, 14)),
+    ("WORLD_RADIOGRAPHY_DAY", (2025, 11, 8), (2026, 11, 8)),
+    ("WORLD_FREEDOM_DAY", (2025, 11, 9), (2026, 11, 9)),
+    ("INTERNATIONAL_STUDENTS_DAY", (2025, 11, 17), (2026, 11, 17)),
+    ("NATIONAL_FLAG_DAY", (2025, 12, 16), (2026, 12, 16)),
+    ("NATIONAL_DRESS_DAY", (2026, 1, 1), (2027, 1, 1)),
+    ("NATIONAL_TOPI_DAY", (2026, 1, 1), (2027, 1, 1)),
+    ("NATIONAL_BHAKKA_DAY", (2026, 1, 13), (2027, 1, 13)),
+    ("NATIONAL_YOGA_DAY", (2026, 1, 15), (2027, 1, 15)),
+    ("VALENTINE_S_DAY", (2026, 2, 14), (2027, 2, 14)),
+    ("NATIONAL_MAGAR_DAY", (2026, 2, 27), (2027, 2, 27)),
+    ("PI_DAY", (2026, 3, 14), (2027, 3, 14)),
+    ("APRIL_FOOLS_DAY", (2026, 4, 1), (2027, 4, 1)),
+];
+
 /// Each civil day the committee does not print falls on the day its keeper
 /// names, the Bikram Sambat ones through the calendar's own conversion.
 #[test]
@@ -977,7 +1016,11 @@ fn the_unprinted_civil_days_fall_on_their_keepers_dates() {
         kept_dated((2026, 4, 14), (2027, 4, 13)),
     ]
     .concat();
-    for &(rule, first, second) in KEPT_CIVIL_DAYS.iter().chain(&KEPT_INTERNATIONAL_DAYS) {
+    for &(rule, first, second) in KEPT_CIVIL_DAYS
+        .iter()
+        .chain(&KEPT_INTERNATIONAL_DAYS)
+        .chain(&MORE_KEPT_DAYS)
+    {
         let days: Vec<Day> = kept
             .iter()
             .filter(|(kept, _)| kept == rule)
@@ -985,6 +1028,28 @@ fn the_unprinted_civil_days_fall_on_their_keepers_dates() {
             .collect();
         assert_eq!(days, [first, second], "{rule}");
     }
+}
+
+/// The three days kept on a weekday of a Gregorian month give the one day
+/// each a patro printed in Nepal verified, all three in VS 2079: the second
+/// Saturday of September, the first Friday and the second Thursday of
+/// October 2022 (C1805).
+#[test]
+fn the_weekday_days_give_the_patros_verified_days() {
+    let kept: Vec<(String, Day)> = kept_dated((2022, 9, 1), (2022, 10, 31))
+        .into_iter()
+        .filter(|(rule, _)| {
+            ["WORLD_FIRST_AID_DAY", "WORLD_SMILE_DAY", "WORLD_SIGHT_DAY"].contains(&rule.as_str())
+        })
+        .collect();
+    assert_eq!(
+        kept,
+        printed(&[
+            ("WORLD_FIRST_AID_DAY", (2022, 9, 10)),
+            ("WORLD_SMILE_DAY", (2022, 10, 7)),
+            ("WORLD_SIGHT_DAY", (2022, 10, 13)),
+        ])
+    );
 }
 
 /// VS 2083's rows checked against the same pack (pp. 2-3, 9-13, 20-23, 27).

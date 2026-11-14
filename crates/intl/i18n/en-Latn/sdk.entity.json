@@ -5760,6 +5760,122 @@
     "GLOBAL_HANDWASHING_DAY": {
       "name": "Global Handwashing Day",
       "prose": "Global Handwashing Day, 15 October"
+    },
+    "NATIONAL_MAGAR_DAY": {
+      "name": "National Magar Day",
+      "prose": "National Magar Day, Falgun 15"
+    },
+    "PASANG_LHAMU_SMRITI_DIWAS": {
+      "name": "Pasang Lhamu Smriti Diwas",
+      "prose": "Pasang Lhamu Smriti Diwas, Baisakh 10"
+    },
+    "SOCIAL_SERVICE_DAY": {
+      "name": "Social Service Day",
+      "prose": "Social Service Day, Asoj 6"
+    },
+    "NATIONAL_BHAKKA_DAY": {
+      "name": "National Bhakka Day",
+      "prose": "National Bhakka Day, Poush 29"
+    },
+    "NATIONAL_FLAG_DAY": {
+      "name": "National Flag Day",
+      "prose": "National Flag Day, Poush 1"
+    },
+    "NATIONAL_YOGA_DAY": {
+      "name": "National Yoga Day",
+      "prose": "National Yoga Day, Magh 1"
+    },
+    "NATIONAL_JOURNALISM_DAY": {
+      "name": "National Journalism Day",
+      "prose": "National Journalism Day, Baisakh 24"
+    },
+    "NATIONAL_FILM_DAY": {
+      "name": "National Film Day",
+      "prose": "National Film Day, Asoj 15"
+    },
+    "LANGUAGE_DAY": {
+      "name": "Language Day",
+      "prose": "Bagmati Province's Language Day, Baisakh 24"
+    },
+    "BODE_JIBRO_CHHEDNE_JATRA": {
+      "name": "Bode Jibro Chhedne Jatra",
+      "prose": "Bode Jibro Chhedne Jatra, Bode's tongue-piercing jatra, Baisakh 2"
+    },
+    "SINDOOR_JATRA": {
+      "name": "Sindoor Jatra",
+      "prose": "Thimi's Sindoor Jatra, Baisakh 2"
+    },
+    "NATIONAL_DRESS_DAY": {
+      "name": "National Dress Day",
+      "prose": "National Dress Day, 1 January"
+    },
+    "NATIONAL_TOPI_DAY": {
+      "name": "National Topi Day",
+      "prose": "National Topi Day, 1 January"
+    },
+    "VALENTINE_S_DAY": {
+      "name": "Valentine's Day",
+      "prose": "Valentine's Day, 14 February"
+    },
+    "PI_DAY": {
+      "name": "Pi Day",
+      "prose": "Pi Day, 14 March"
+    },
+    "APRIL_FOOLS_DAY": {
+      "name": "April Fools' Day",
+      "prose": "April Fools' Day, 1 April"
+    },
+    "WORLD_HERITAGE_DAY": {
+      "name": "World Heritage Day",
+      "prose": "World Heritage Day, 18 April"
+    },
+    "WORLD_HYPERTENSION_DAY": {
+      "name": "World Hypertension Day",
+      "prose": "World Hypertension Day, 17 May"
+    },
+    "SAGARMATHA_DAY": {
+      "name": "Sagarmatha Day",
+      "prose": "International Sagarmatha (Everest) Day, 29 May"
+    },
+    "INTERNATIONAL_OLYMPIC_DAY": {
+      "name": "International Olympic Day",
+      "prose": "International Olympic Day, 23 June"
+    },
+    "WORLD_PHARMACISTS_DAY": {
+      "name": "World Pharmacists Day",
+      "prose": "World Pharmacists Day, 25 September"
+    },
+    "NON_RESIDENT_NEPALI_DAY": {
+      "name": "Non-Resident Nepali Day",
+      "prose": "Non-Resident Nepali Day, 11 October"
+    },
+    "WORLD_STANDARDS_DAY": {
+      "name": "World Standards Day",
+      "prose": "World Standards Day, 14 October"
+    },
+    "WORLD_RADIOGRAPHY_DAY": {
+      "name": "World Radiography Day",
+      "prose": "World Radiography Day, 8 November"
+    },
+    "WORLD_FREEDOM_DAY": {
+      "name": "World Freedom Day",
+      "prose": "World Freedom Day, 9 November"
+    },
+    "INTERNATIONAL_STUDENTS_DAY": {
+      "name": "International Students' Day",
+      "prose": "International Students' Day, 17 November"
+    },
+    "WORLD_FIRST_AID_DAY": {
+      "name": "World First Aid Day",
+      "prose": "World First Aid Day, the second Saturday of September"
+    },
+    "WORLD_SMILE_DAY": {
+      "name": "World Smile Day",
+      "prose": "World Smile Day, the first Friday of October"
+    },
+    "WORLD_SIGHT_DAY": {
+      "name": "World Sight Day",
+      "prose": "World Sight Day, the second Thursday of October"
     }
   },
   "agni_vasa": {

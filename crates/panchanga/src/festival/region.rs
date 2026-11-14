@@ -1,6 +1,7 @@
 //! The regions a festival set is kept in (SR-89,
 //! `03-design/festival-metadata.md` §2a): a country by its ISO 3166-1
-//! alpha-2 code (`IN`, `NP`), a state by its ISO 3166-2 code (`IN-TN`), so
+//! alpha-2 code (`IN`, `NP`), a state or province by its ISO 3166-2 code
+//! (`IN-TN`, and `NP-P3` for Bagmati Province's own holiday), so
 //! a place a geo provider resolves selects its sets with no table of the
 //! consumer's. The names the state lists were first shipped under
 //! (`TAMIL_NADU`) stay as aliases. A part of a country no ISO code names,
@@ -33,7 +34,7 @@ pub struct Region {
 ///
 /// assert!(REGIONS.iter().any(|region| region.key == "KATHMANDU_VALLEY" && region.alias.is_none()));
 /// ```
-pub const REGIONS: [Region; 16] = [
+pub const REGIONS: [Region; 17] = [
     region("HILLS", None),
     region("IN", None),
     region("IN-AP", None),
@@ -49,6 +50,7 @@ pub const REGIONS: [Region; 16] = [
     region("IN-WB", Some("WEST_BENGAL")),
     region("KATHMANDU_VALLEY", None),
     region("NP", None),
+    region("NP-P3", None),
     region("TERAI", None),
 ];
 

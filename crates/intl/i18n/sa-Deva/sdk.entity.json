@@ -5229,6 +5229,122 @@
     "GLOBAL_HANDWASHING_DAY": {
       "name": "विश्व हात धुने दिवस",
       "prose": "विश्व हात धुने दिवस"
+    },
+    "NATIONAL_MAGAR_DAY": {
+      "name": "राष्ट्रिय मगर दिवस",
+      "prose": "राष्ट्रिय मगर दिवस"
+    },
+    "PASANG_LHAMU_SMRITI_DIWAS": {
+      "name": "पासाङ ल्हामु स्मृति दिवस",
+      "prose": "पासाङ ल्हामु स्मृति दिवस"
+    },
+    "SOCIAL_SERVICE_DAY": {
+      "name": "सामाजिक सेवा दिवस",
+      "prose": "सामाजिक सेवा दिवस"
+    },
+    "NATIONAL_BHAKKA_DAY": {
+      "name": "राष्ट्रिय भक्का दिवस",
+      "prose": "राष्ट्रिय भक्का दिवस"
+    },
+    "NATIONAL_FLAG_DAY": {
+      "name": "राष्ट्रिय झण्डा दिवस",
+      "prose": "राष्ट्रिय झण्डा दिवस"
+    },
+    "NATIONAL_YOGA_DAY": {
+      "name": "राष्ट्रिय योग दिवस",
+      "prose": "राष्ट्रिय योग दिवस"
+    },
+    "NATIONAL_JOURNALISM_DAY": {
+      "name": "राष्ट्रिय पत्रकारिता दिवस",
+      "prose": "राष्ट्रिय पत्रकारिता दिवस"
+    },
+    "NATIONAL_FILM_DAY": {
+      "name": "राष्ट्रिय चलचित्र दिवस",
+      "prose": "राष्ट्रिय चलचित्र दिवस"
+    },
+    "LANGUAGE_DAY": {
+      "name": "भाषा दिवस",
+      "prose": "भाषा दिवस"
+    },
+    "BODE_JIBRO_CHHEDNE_JATRA": {
+      "name": "बोडे जिब्रो छेड्ने जात्रा",
+      "prose": "बोडे जिब्रो छेड्ने जात्रा"
+    },
+    "SINDOOR_JATRA": {
+      "name": "सिन्दूर जात्रा",
+      "prose": "सिन्दूर जात्रा"
+    },
+    "NATIONAL_DRESS_DAY": {
+      "name": "राष्ट्रिय पोसाक दिवस",
+      "prose": "राष्ट्रिय पोसाक दिवस"
+    },
+    "NATIONAL_TOPI_DAY": {
+      "name": "राष्ट्रिय टोपी दिवस",
+      "prose": "राष्ट्रिय टोपी दिवस"
+    },
+    "VALENTINE_S_DAY": {
+      "name": "प्रणय दिवस",
+      "prose": "प्रणय दिवस"
+    },
+    "PI_DAY": {
+      "name": "पाई दिवस",
+      "prose": "पाई दिवस"
+    },
+    "APRIL_FOOLS_DAY": {
+      "name": "मूर्ख दिवस",
+      "prose": "मूर्ख दिवस"
+    },
+    "WORLD_HERITAGE_DAY": {
+      "name": "विश्व सम्पदा दिवस",
+      "prose": "विश्व सम्पदा दिवस"
+    },
+    "WORLD_HYPERTENSION_DAY": {
+      "name": "विश्व उच्च रक्तचाप दिवस",
+      "prose": "विश्व उच्च रक्तचाप दिवस"
+    },
+    "SAGARMATHA_DAY": {
+      "name": "सगरमाथा दिवस",
+      "prose": "सगरमाथा दिवस"
+    },
+    "INTERNATIONAL_OLYMPIC_DAY": {
+      "name": "अन्तर्राष्ट्रिय ओलम्पिक दिवस",
+      "prose": "अन्तर्राष्ट्रिय ओलम्पिक दिवस"
+    },
+    "WORLD_PHARMACISTS_DAY": {
+      "name": "विश्व फार्मासिस्ट दिवस",
+      "prose": "विश्व फार्मासिस्ट दिवस"
+    },
+    "NON_RESIDENT_NEPALI_DAY": {
+      "name": "गैरआवासीय नेपाली दिवस",
+      "prose": "गैरआवासीय नेपाली दिवस"
+    },
+    "WORLD_STANDARDS_DAY": {
+      "name": "विश्व गुणस्तर दिवस",
+      "prose": "विश्व गुणस्तर दिवस"
+    },
+    "WORLD_RADIOGRAPHY_DAY": {
+      "name": "विश्व रेडियोग्राफी दिवस",
+      "prose": "विश्व रेडियोग्राफी दिवस"
+    },
+    "WORLD_FREEDOM_DAY": {
+      "name": "विश्व स्वतन्त्रता दिवस",
+      "prose": "विश्व स्वतन्त्रता दिवस"
+    },
+    "INTERNATIONAL_STUDENTS_DAY": {
+      "name": "अन्तर्राष्ट्रिय विद्यार्थी दिवस",
+      "prose": "अन्तर्राष्ट्रिय विद्यार्थी दिवस"
+    },
+    "WORLD_FIRST_AID_DAY": {
+      "name": "विश्व प्राथमिक उपचार दिवस",
+      "prose": "विश्व प्राथमिक उपचार दिवस"
+    },
+    "WORLD_SMILE_DAY": {
+      "name": "विश्व मुस्कान दिवस",
+      "prose": "विश्व मुस्कान दिवस"
+    },
+    "WORLD_SIGHT_DAY": {
+      "name": "विश्व दृष्टि दिवस",
+      "prose": "विश्व दृष्टि दिवस"
     }
   },
   "year_office": {
