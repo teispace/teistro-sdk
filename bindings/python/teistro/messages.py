@@ -2126,6 +2126,8 @@ class EntityForms:
 
     abbrev: Optional[str] = None
 
+    indic: Optional[str] = None
+
     locative: Optional[str] = None
 
     short: Optional[str] = None
@@ -2157,6 +2159,7 @@ class EntityForms:
             name=text("name") or "",
             prose=text("prose") or "",
             abbrev=text("abbrev"),
+            indic=text("indic"),
             locative=text("locative"),
             short=text("short"),
             forms={

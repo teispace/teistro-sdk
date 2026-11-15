@@ -3710,13 +3710,14 @@ public final class Messages {
      * @param name the `name` form; empty when the record lacks it
      * @param prose the `prose` form; empty when the record lacks it
      * @param abbrev the `abbrev` form, or null
+     * @param indic the `indic` form, or null
      * @param locative the `locative` form, or null
      * @param short_ the `short` form, or null
      * @param glyph its glyph, or null
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String abbrev, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String indic, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3733,6 +3734,7 @@ public final class Messages {
                     text(forms, "name", ""),
                     text(forms, "prose", ""),
                     text(forms, "abbrev", null),
+                    text(forms, "indic", null),
                     text(forms, "locative", null),
                     text(forms, "short", null),
                     text(forms, "glyph", null),

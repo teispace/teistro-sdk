@@ -672,6 +672,35 @@ packs' own full-stop convention gives, and the choice is recorded here
 for the maintainer's review. No kind falls back to `name`: no stem
 chosen here reads as another member.
 
+## 4f. A fortnight's short name and a rashi's Indian name (2026-11-15)
+
+A consumer's day cell names the tithi with its fortnight, "Shukla
+Shashthi", and an English calendar of Nepal says "Moon in Dhanu". Neither
+could be read from a record: `paksha`'s `name` is the whole "Shukla
+Paksha" in English (the consumer stripped " Paksha" itself), and an
+English rashi's `name` is the Western sign ("Sagittarius") with the
+Indian one only in IAST ("Dhanu", but "Vṛścika" with its diacritics).
+
+**The forms.** Two record forms, like `abbrev` (§4e): carried by packs
+and overlays, translated in XLIFF, and typed in every binding as an
+optional field.
+
+- **`short` on both fortnights**: the word a tithi's name begins with.
+  English `Shukla` and `Krishna`; Nepali, Hindi and `sa-Deva` `शुक्ल` and
+  `कृष्ण`, which their `name` already is; `sa-Latn` derives `Śukla` and
+  `Kṛṣṇa`.
+- **`indic` on all twelve rashis**: the Indian name where a locale's
+  `name` may be the Western one. English writes it plain, by the packs'
+  romanisation (ā → a, ī → i, ṛ → ri, ś and ṣ → sh, ṃ → m, as `Swati`
+  and `Revati` are written): Mesha, Vrishabha, Mithuna, Karka, Simha,
+  Kanya, Tula, Vrishchika, Dhanu, Makara, Kumbha, Mina. The Devanagari
+  locales' `indic` is their `name`, so a message that reads `indic` reads
+  the same word in every locale; `sa-Latn` derives the IAST (`Meṣa`).
+
+`crates/intl/tests/month_year.rs` holds both in every shipped locale: a
+fortnight's `short` begins its `name`, and the twelve `indic` names are
+distinct.
+
 ## 5. What this does not settle
 
 - **The maintainer's review.** The names ship final and are corrected

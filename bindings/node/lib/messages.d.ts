@@ -103,6 +103,7 @@ export interface EntityForms {
   readonly name: string;
   readonly prose: string;
   readonly abbrev?: string;
+  readonly indic?: string;
   readonly locative?: string;
   readonly short?: string;
   readonly glyph?: string;

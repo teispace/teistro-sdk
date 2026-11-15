@@ -2294,6 +2294,7 @@ final class EntityForms {
     required this.name,
     required this.prose,
     this.abbrev,
+    this.indic,
     this.locative,
     this.short,
     this.glyph,
@@ -2313,6 +2314,7 @@ final class EntityForms {
       name: text('name') ?? '',
       prose: text('prose') ?? '',
       abbrev: text('abbrev'),
+      indic: text('indic'),
       locative: text('locative'),
       short: text('short'),
       forms: <String, String>{
@@ -2330,6 +2332,7 @@ final class EntityForms {
   final String name;
   final String prose;
   final String? abbrev;
+  final String? indic;
   final String? locative;
   final String? short;
   final String? glyph;

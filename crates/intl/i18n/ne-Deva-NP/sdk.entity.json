@@ -103,6 +103,7 @@
       "name": "मेष",
       "prose": "मेष",
       "iast": "Meṣa",
+      "indic": "मेष",
       "glyph": "♈",
       "gender": "m"
     },
@@ -111,6 +112,7 @@
       "name": "वृषभ",
       "prose": "वृषभ",
       "iast": "Vṛṣabha",
+      "indic": "वृषभ",
       "glyph": "♉",
       "gender": "f"
     },
@@ -119,6 +121,7 @@
       "name": "मिथुन",
       "prose": "मिथुन",
       "iast": "Mithuna",
+      "indic": "मिथुन",
       "glyph": "♊",
       "gender": "m"
     },
@@ -127,6 +130,7 @@
       "name": "कर्कट",
       "prose": "कर्कट",
       "iast": "Karka",
+      "indic": "कर्कट",
       "glyph": "♋",
       "gender": "f"
     },
@@ -135,6 +139,7 @@
       "name": "सिंह",
       "prose": "सिंह",
       "iast": "Siṃha",
+      "indic": "सिंह",
       "glyph": "♌",
       "gender": "m"
     },
@@ -143,6 +148,7 @@
       "name": "कन्या",
       "prose": "कन्या",
       "iast": "Kanyā",
+      "indic": "कन्या",
       "glyph": "♍",
       "gender": "f"
     },
@@ -151,6 +157,7 @@
       "name": "तुला",
       "prose": "तुला",
       "iast": "Tulā",
+      "indic": "तुला",
       "glyph": "♎",
       "gender": "m"
     },
@@ -159,6 +166,7 @@
       "name": "वृश्चिक",
       "prose": "वृश्चिक",
       "iast": "Vṛścika",
+      "indic": "वृश्चिक",
       "glyph": "♏",
       "gender": "f"
     },
@@ -167,6 +175,7 @@
       "name": "धनु",
       "prose": "धनु",
       "iast": "Dhanu",
+      "indic": "धनु",
       "glyph": "♐",
       "gender": "m"
     },
@@ -175,6 +184,7 @@
       "name": "मकर",
       "prose": "मकर",
       "iast": "Makara",
+      "indic": "मकर",
       "glyph": "♑",
       "gender": "f"
     },
@@ -183,6 +193,7 @@
       "name": "कुम्भ",
       "prose": "कुम्भ",
       "iast": "Kumbha",
+      "indic": "कुम्भ",
       "glyph": "♒",
       "gender": "m"
     },
@@ -191,6 +202,7 @@
       "name": "मीन",
       "prose": "मीन",
       "iast": "Mīna",
+      "indic": "मीन",
       "glyph": "♓",
       "gender": "f"
     }
@@ -1161,11 +1173,13 @@
   },
   "paksha": {
     "SHUKLA": {
+      "short": "शुक्ल",
       "name": "शुक्ल",
       "prose": "शुक्ल",
       "iast": "Śukla Pakṣa"
     },
     "KRISHNA": {
+      "short": "कृष्ण",
       "name": "कृष्ण",
       "prose": "कृष्ण",
       "iast": "Kṛṣṇa Pakṣa"
