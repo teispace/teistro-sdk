@@ -16752,7 +16752,10 @@ enum MuhurtaActivity {
   chintamaniVipani('CHINTAMANI_VIPANI'),
 
   /// A marriage by Muhurta Chintamani.
-  chintamaniVivaha('CHINTAMANI_VIVAHA');
+  chintamaniVivaha('CHINTAMANI_VIVAHA'),
+
+  /// The thread ceremony, bratabandha, by Muhurta Chintamani.
+  chintamaniUpanayana('CHINTAMANI_UPANAYANA');
 
   const MuhurtaActivity(this.key);
 
@@ -17637,6 +17640,26 @@ final class VrishaVastuClause extends MuhurtaClauseKind {
   };
 }
 
+/// A day of pradosha (Muhurta Chintamani, Samskara-prakarana V v. 55):
+/// its 12th, 6th or 3rd gives way to the next tithi before half the
+/// night, a prahara and a half, or a prahara. Against the time, over the
+/// whole day.
+final class PradoshaClause extends MuhurtaClauseKind {
+  const PradoshaClause({required this.tithi});
+
+  /// The 12th, 6th or 3rd whose evening it is.
+  final Tithi tithi;
+
+  @override
+  String get clause => 'PRADOSHA';
+
+  @override
+  List<Object?> get _fields => [tithi];
+
+  @override
+  Map<String, Object?> get _json => {'clause': clause, 'tithi': tithi.fullKey};
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -17745,6 +17768,9 @@ MuhurtaClauseKind _clauseKind(
   'VRISHA_VASTU' => VrishaVastuClause(
     count: raw['count']! as int,
     grade: raw['grade']! as String,
+  ),
+  'PRADOSHA' => PradoshaClause(
+    tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
   ),
   final tag =>
     throw StateError(

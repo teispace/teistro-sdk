@@ -79,11 +79,14 @@ pub enum Activity {
     /// A marriage by *Muhurta Chintamani*
     /// ([`ActivityRules::chintamani_vivaha`]).
     ChintamaniVivaha,
+    /// The thread ceremony, Nepal's bratabandha, by *Muhurta Chintamani*
+    /// ([`ActivityRules::chintamani_upanayana`]).
+    ChintamaniUpanayana,
 }
 
 impl Activity {
     /// Every activity the SDK ships.
-    pub const ALL: [Activity; 19] = [
+    pub const ALL: [Activity; 20] = [
         Activity::RamanMarriage,
         Activity::BaselineMarriage,
         Activity::RamanNamakarana,
@@ -103,6 +106,7 @@ impl Activity {
         Activity::ChintamaniVastuShanti,
         Activity::ChintamaniVipani,
         Activity::ChintamaniVivaha,
+        Activity::ChintamaniUpanayana,
     ];
 
     /// Its key, as serde writes it and a request names it.
@@ -128,6 +132,7 @@ impl Activity {
             Activity::ChintamaniVastuShanti => "CHINTAMANI_VASTU_SHANTI",
             Activity::ChintamaniVipani => "CHINTAMANI_VIPANI",
             Activity::ChintamaniVivaha => "CHINTAMANI_VIVAHA",
+            Activity::ChintamaniUpanayana => "CHINTAMANI_UPANAYANA",
         }
     }
 
@@ -154,6 +159,7 @@ impl Activity {
             Activity::ChintamaniVastuShanti => ActivityRules::chintamani_vastu_shanti(),
             Activity::ChintamaniVipani => ActivityRules::chintamani_vipani(),
             Activity::ChintamaniVivaha => ActivityRules::chintamani_vivaha(),
+            Activity::ChintamaniUpanayana => ActivityRules::chintamani_upanayana(),
         }
     }
 }

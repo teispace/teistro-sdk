@@ -735,6 +735,7 @@ __all__ = [
     "MuhurtaClauseKindUnwantedPlacement",
     "MuhurtaClauseKindVarjyam",
     "MuhurtaClauseKindVrishaVastu",
+    "MuhurtaClauseKindPradosha",
     "ChandraBala",
     "GradedKarana",
     "GradedNakshatra",
@@ -4221,7 +4222,7 @@ MuhurtaRanking: TypeAlias = Literal['TEXTS', 'BASELINE']
 """
 
 
-MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE', 'CHINTAMANI_GRIHARAMBHA', 'CHINTAMANI_BHUMI_PUJA', 'CHINTAMANI_VASTU_SHANTI', 'CHINTAMANI_VIPANI', 'CHINTAMANI_VIVAHA'], ActivityRules]"
+MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE', 'CHINTAMANI_GRIHARAMBHA', 'CHINTAMANI_BHUMI_PUJA', 'CHINTAMANI_VASTU_SHANTI', 'CHINTAMANI_VIPANI', 'CHINTAMANI_VIVAHA', 'CHINTAMANI_UPANAYANA'], ActivityRules]"
 """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
@@ -5666,6 +5667,9 @@ class ActivityRules(TypedDict, total=False):
 
     padas: Required[Sequence[NakshatraPada]]
     """The quarters of a star rejected though the star is good."""
+
+    pradosha: bool
+    """Whether a day of pradosha counts against the time (*Muhurta Chintamani*, Samskara-prakarana V vv. 48 and 55): a day whose 12th, 6th or 3rd gives way to the next tithi before half the night, a prahara and a half, or a prahara, read as a `ClauseKind::Pradosha` over the whole day. False where the rules spelt out leave it out."""
 
     shool: Sequence[Shool]
     """For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction."""
@@ -8828,7 +8832,7 @@ class ThresholdsCustom(TypedDict, total=False):
     """Venus's."""
 
 
-Bar: TypeAlias = "Union[Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'VARA', 'MONTH', 'SOLAR_MONTH', 'LAGNA', 'PADA', 'KAALA', 'CHOGHADIYA', 'ABHIJIT', 'MUHURTA_YOGA', 'TARABALA', 'CHANDRABALA', 'KARTARI', 'MOON_IN_DUSTHANA', 'MOON_JOINED', 'VENUS_IN_SIXTH', 'MARS_IN_EIGHTH', 'ASHTAMA_LAGNA', 'KUNAVAMSA', 'PANCHAKA_REMAINDER', 'LAGNA_TYAJYA', 'SEVENTH_OCCUPIED', 'MALEFIC_IN_LAGNA', 'BENEFIC_IN_LAGNA', 'EXALTED_IN_LAGNA', 'LUMINARY_IN_ELEVENTH', 'KENDRA_BENEFICS', 'UNWANTED_PLACEMENT', 'VARJYAM', 'GHATA', 'ASHUBHA_YOGA', 'VRISHA_VASTU'], Union[MuhurtaClauseKind, _layer.MuhurtaClauseKind]]"
+Bar: TypeAlias = "Union[Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'VARA', 'MONTH', 'SOLAR_MONTH', 'LAGNA', 'PADA', 'KAALA', 'CHOGHADIYA', 'ABHIJIT', 'MUHURTA_YOGA', 'TARABALA', 'CHANDRABALA', 'KARTARI', 'MOON_IN_DUSTHANA', 'MOON_JOINED', 'VENUS_IN_SIXTH', 'MARS_IN_EIGHTH', 'ASHTAMA_LAGNA', 'KUNAVAMSA', 'PANCHAKA_REMAINDER', 'LAGNA_TYAJYA', 'SEVENTH_OCCUPIED', 'MALEFIC_IN_LAGNA', 'BENEFIC_IN_LAGNA', 'EXALTED_IN_LAGNA', 'LUMINARY_IN_ELEVENTH', 'KENDRA_BENEFICS', 'UNWANTED_PLACEMENT', 'VARJYAM', 'GHATA', 'ASHUBHA_YOGA', 'VRISHA_VASTU', 'PRADOSHA'], Union[MuhurtaClauseKind, _layer.MuhurtaClauseKind]]"
 """A clause that bars a rite outright: every clause of a kind, or one clause exactly."""
 
 
@@ -8879,12 +8883,13 @@ class DayRules(TypedDict, total=False):
     """The yogas."""
 
 
-Hours: TypeAlias = Literal['ANY', 'DAYLIGHT', 'FORENOON']
-"""The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+Hours: TypeAlias = Literal['ANY', 'DAYLIGHT', 'FORENOON', 'BEFORE_AFTERNOON']
+"""The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure, and *Muhurta Chintamani*'s "not in the afternoon" for the thread ceremony.
 
 `ANY`: Day and night alike.
 `DAYLIGHT`: Sunrise to sunset.
 `FORENOON`: Sunrise to noon.
+`BEFORE_AFTERNOON`: Sunrise to the end of the daylight's second third: the forenoon and the midday (purvahna, madhyahna), the afternoon (aparahna) left out (*Muhurta Chintamani*, Samskara-prakarana V vv. 40, 48).
 """
 
 
@@ -9826,7 +9831,7 @@ class MotionThresholds(TypedDict, total=False):
     """The threshold while it retrogrades."""
 
 
-MuhurtaClauseKind: TypeAlias = "Union[MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam, MuhurtaClauseKindVrishaVastu]"
+MuhurtaClauseKind: TypeAlias = "Union[MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam, MuhurtaClauseKindVrishaVastu, MuhurtaClauseKindPradosha]"
 """What a clause says."""
 
 
@@ -10173,6 +10178,15 @@ class MuhurtaClauseKindVrishaVastu(TypedDict, total=False):
 
     grade: Required[MuhurtaGrade]
     """Best on the eleven good counts, rejected on the seventeen bad."""
+
+
+class MuhurtaClauseKindPradosha(TypedDict, total=False):
+    """A day of pradosha (*Muhurta Chintamani*, Samskara-prakarana V v. 55): its 12th, 6th or 3rd gives way to the next tithi before half the night, a prahara and a half, or a prahara. Against the time, over the whole day, for the rites whose rules ask it (`ActivityRules::pradosha`); v. 48 names it among what a thread ceremony is not wanted on."""
+
+    clause: Required[Literal['PRADOSHA']]
+
+    tithi: Required[Union[_catalogue.Tithi, str]]
+    """The 12th, 6th or 3rd whose evening it is."""
 
 
 class ChandraBala(TypedDict, total=False):

@@ -6409,6 +6409,17 @@ final class MuhurtaRequestRulesChintamaniVivaha extends MuhurtaRequestRules {
   List<Object?> get _fields => const [];
 }
 
+/// `CHINTAMANI_UPANAYANA`.
+final class MuhurtaRequestRulesChintamaniUpanayana extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniUpanayana();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_UPANAYANA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class MuhurtaRequestRulesValue extends MuhurtaRequestRules {
   const MuhurtaRequestRulesValue(this.value);
@@ -8820,6 +8831,7 @@ final class ActivityRules extends _Request {
     required this.lagnas,
     required this.months,
     required this.padas,
+    this.pradosha = false,
     this.shool = const [],
     required this.unjudged,
     this.unwanted = const [],
@@ -8850,6 +8862,9 @@ final class ActivityRules extends _Request {
   /// The quarters of a star rejected though the star is good.
   final List<NakshatraPada> padas;
 
+  /// Whether a day of pradosha counts against the time (*Muhurta Chintamani*, Samskara-prakarana V vv. 48 and 55): a day whose 12th, 6th or 3rd gives way to the next tithi before half the night, a prahara and a half, or a prahara, read as a [`ClauseKind::Pradosha`] over the whole day. False where the rules spelt out leave it out.
+  final bool pradosha;
+
   /// For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction.
   final List<Shool> shool;
 
@@ -8872,6 +8887,7 @@ final class ActivityRules extends _Request {
     'lagnas': lagnas._wire,
     'months': months._wire,
     'padas': [for (final e0 in padas) e0._wire],
+    'pradosha': pradosha,
     'shool': [for (final e0 in shool) e0._wire],
     'unjudged': unjudged,
     'unwanted': [for (final e0 in unwanted) e0._wire],
@@ -8879,7 +8895,7 @@ final class ActivityRules extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted, vrishaVastu];
+  List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, pradosha, shool, unjudged, unwanted, vrishaVastu];
 }
 
 /// How one observer stands to one event.
@@ -12967,6 +12983,17 @@ final class BarVrishaVastu extends Bar {
   List<Object?> get _fields => const [];
 }
 
+/// `PRADOSHA`.
+final class BarPradosha extends Bar {
+  const BarPradosha();
+
+  @override
+  Object? get _wire => 'PRADOSHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class BarValue extends Bar {
   const BarValue(this.value);
@@ -13072,14 +13099,16 @@ final class DayRules extends _Request {
   List<Object?> get _fields => [chandrabala, karanas, nakshatras, tithis, varas, yogas];
 }
 
-/// The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+/// The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure, and *Muhurta Chintamani*'s "not in the afternoon" for the thread ceremony.
 enum Hours implements _Keyed {
   /// Day and night alike.
   any('ANY'),
   /// Sunrise to sunset.
   daylight('DAYLIGHT'),
   /// Sunrise to noon.
-  forenoon('FORENOON');
+  forenoon('FORENOON'),
+  /// Sunrise to the end of the daylight's second third: the forenoon and the midday (purvahna, madhyahna), the afternoon (aparahna) left out (*Muhurta Chintamani*, Samskara-prakarana V vv. 40, 48).
+  beforeAfternoon('BEFORE_AFTERNOON');
 
   const Hours(this.key);
 

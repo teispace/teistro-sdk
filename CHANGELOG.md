@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Muhurta Chintamani's thread ceremony (SR-99).**
+**Numbers:** none for an existing request: a new activity, `CHINTAMANI_UPANAYANA`
+(bratabandha, Samskara-prakarana V vv. 40–42, 48, 54–55), and two clauses that only it
+sets. `ActivityRules.hours` gains `BEFORE_AFTERNOON`, sunrise to the end of the
+daylight's second third (v. 40, "न चापराह्णे"); `ActivityRules.pradosha` (default
+`false`) gives a day holding a 12th, 6th or 3rd that ends before half the night, a
+prahara and a half or a prahara a `PRADOSHA { tithi }` clause (v. 55). Every binding
+names the activity and reads the clause (Dart `PradoshaClause`, Python
+`PradoshaClause`, Java `MuhurtaClauseKind.PradoshaClause`), and the parity runners
+search it. `saait-measured.md` holds it to the committee's VS 2083 bratabandha days
+beside Raman's thread ceremony and lists each printed day clause by clause (§5); the
+divergences are cruxes C1960 to C1967.
+
 **A full Nepal Sambat date (SR-97).**
 **Numbers:** none move; the `nepal_sambat` section gains a field. Each day's
 `NepalSambatDate` carries `day`, the number of the tithi at its sunrise within its

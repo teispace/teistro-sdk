@@ -873,6 +873,7 @@ from ._requests import (
     MuhurtaClauseKindUnwantedPlacement as MuhurtaClauseKindUnwantedPlacement,
     MuhurtaClauseKindVarjyam as MuhurtaClauseKindVarjyam,
     MuhurtaClauseKindVrishaVastu as MuhurtaClauseKindVrishaVastu,
+    MuhurtaClauseKindPradosha as MuhurtaClauseKindPradosha,
     ChandraBala as ChandraBala,
     GradedKarana as GradedKarana,
     GradedNakshatra as GradedNakshatra,
@@ -1799,6 +1800,7 @@ __all__ = [
     "GhataClause",
     "AshubhaYogaClause",
     "VrishaVastuClause",
+    "PradoshaClause",
     "Ghata",
     "MuhurtaActivity",
     "KpChart",
@@ -10240,6 +10242,7 @@ MuhurtaActivity = Literal[
     "CHINTAMANI_VASTU_SHANTI",
     "CHINTAMANI_VIPANI",
     "CHINTAMANI_VIVAHA",
+    "CHINTAMANI_UPANAYANA",
 ]
 """A set of rules the SDK ships, which a muhurta request names as `rules`."""
 
@@ -10574,6 +10577,17 @@ class VrishaVastuClause(MuhurtaClauseKind):
     CLAUSE: ClassVar[str] = "VRISHA_VASTU"
     count: int
     grade: str
+
+
+@dataclass(frozen=True)
+class PradoshaClause(MuhurtaClauseKind):
+    """A day of pradosha (Muhurta Chintamani, Samskara-prakarana V v. 55):
+    its 12th, 6th or 3rd gives way to the next tithi before half the
+    night, a prahara and a half, or a prahara. Against the time, over the
+    whole day."""
+
+    CLAUSE: ClassVar[str] = "PRADOSHA"
+    tithi: Tithi
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(

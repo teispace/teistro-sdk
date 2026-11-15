@@ -4,7 +4,7 @@
 package com.teispace.teistro.request;
 
 /**
- * The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+ * The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure, and *Muhurta Chintamani*'s "not in the afternoon" for the thread ceremony.
  */
 public enum Hours implements RequestJson {
     /**
@@ -18,7 +18,11 @@ public enum Hours implements RequestJson {
     /**
      * Sunrise to noon.
      */
-    FORENOON("FORENOON");
+    FORENOON("FORENOON"),
+    /**
+     * Sunrise to the end of the daylight's second third: the forenoon and the midday (purvahna, madhyahna), the afternoon (aparahna) left out (*Muhurta Chintamani*, Samskara-prakarana V vv. 40, 48).
+     */
+    BEFORE_AFTERNOON("BEFORE_AFTERNOON");
 
     private final String key;
 

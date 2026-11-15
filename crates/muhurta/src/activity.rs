@@ -174,11 +174,13 @@ impl From<ClauseKind> for Bar {
 }
 
 /// The part of the day a rite is held in: Raman's "never during night"
-/// for the ear boring, "always in the forenoon" for the tonsure.
+/// for the ear boring, "always in the forenoon" for the tonsure, and
+/// *Muhurta Chintamani*'s "not in the afternoon" for the thread ceremony.
 ///
-/// Noon is the middle of the daylight, halfway from sunrise to sunset. A
-/// polar day's daylight is its policy's, and a day with none holds no
-/// window under `DAYLIGHT` or `FORENOON`.
+/// Noon is the middle of the daylight, halfway from sunrise to sunset; the
+/// afternoon (aparahna) is the daylight's last third. A polar day's
+/// daylight is its policy's, and a day with none holds no window under
+/// `DAYLIGHT`, `FORENOON` or `BEFORE_AFTERNOON`.
 ///
 /// ```
 /// use teistro_core::interval::Interval;
@@ -191,6 +193,7 @@ impl From<ClauseKind> for Bar {
 /// assert_eq!(Hours::Daylight.within(day, sunrise, sunset), Some(Interval::literal(0.25, 0.75)));
 /// assert_eq!(Hours::Forenoon.within(day, sunrise, sunset), Some(Interval::literal(0.25, 0.5)));
 /// assert_eq!(serde_json::to_value(Hours::Forenoon)?, serde_json::json!("FORENOON"));
+/// assert_eq!(serde_json::to_value(Hours::BeforeAfternoon)?, serde_json::json!("BEFORE_AFTERNOON"));
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -204,6 +207,10 @@ pub enum Hours {
     Daylight,
     /// Sunrise to noon.
     Forenoon,
+    /// Sunrise to the end of the daylight's second third: the forenoon
+    /// and the midday (purvahna, madhyahna), the afternoon (aparahna)
+    /// left out (*Muhurta Chintamani*, Samskara-prakarana V vv. 40, 48).
+    BeforeAfternoon,
 }
 
 impl Hours {
@@ -221,6 +228,9 @@ impl Hours {
     /// assert_eq!(Hours::Any.within(day, rise, set), Some(day));
     /// assert_eq!(Hours::Daylight.within(day, rise, set), Some(Interval::literal(0.25, 0.75)));
     /// assert_eq!(Hours::Forenoon.within(day, rise, set), Some(Interval::literal(0.25, 0.5)));
+    /// // Two thirds of a half-day's daylight: a third of the day.
+    /// let kept = Hours::BeforeAfternoon.within(day, rise, set).map(|k| (k.from.get(), k.to.get()));
+    /// assert!(kept.is_some_and(|(from, to)| from == 0.25 && (to - 7.0 / 12.0).abs() < 1e-12));
     /// // A window wholly after noon keeps no forenoon.
     /// assert_eq!(Hours::Forenoon.within(Interval::literal(0.6, 0.7), rise, set), None);
     /// ```
@@ -235,6 +245,7 @@ impl Hours {
             Hours::Any => return Some(window),
             Hours::Daylight => sunset.get(),
             Hours::Forenoon => f64::midpoint(sunrise.get(), sunset.get()),
+            Hours::BeforeAfternoon => sunrise.get() + (sunset.get() - sunrise.get()) * 2.0 / 3.0,
         };
         (sunrise.get() < to)
             .then(|| Interval::literal(sunrise.get(), to))
@@ -438,6 +449,14 @@ pub struct ActivityRules {
     /// `vrishaVastu`.
     #[serde(default, rename = "vrishaVastu")]
     pub vrisha_vastu: bool,
+    /// Whether a day of pradosha counts against the time (*Muhurta
+    /// Chintamani*, Samskara-prakarana V vv. 48 and 55): a day whose 12th,
+    /// 6th or 3rd gives way to the next tithi before half the night, a
+    /// prahara and a half, or a prahara, read as a
+    /// [`ClauseKind::Pradosha`] over the whole day. False where the rules
+    /// spelt out leave it out.
+    #[serde(default)]
+    pub pradosha: bool,
     /// The clauses that bar the rite outright rather than weigh against
     /// it.
     pub bars: Vec<Bar>,
@@ -534,6 +553,7 @@ impl ActivityRules {
             ],
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: [
                 ClauseKey::SeventhOccupied,
                 ClauseKey::MarsInEighth,
@@ -617,6 +637,7 @@ impl ActivityRules {
             ],
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: vec![
                 Bar::Key(ClauseKey::SolarMonth),
                 Bar::Key(ClauseKey::Nakshatra),
@@ -730,6 +751,45 @@ impl ActivityRules {
                 })
                 .collect(),
         }
+    }
+
+    /// The day's pradosha, where the rules read it (*Muhurta Chintamani*,
+    /// Samskara-prakarana V v. 55, "अर्कर्तुत्रितिथिषु प्रदोषः स्यात्तदग्रिमैः
+    /// रात्र्यर्धसार्धप्रहरयाममध्यस्थितैः क्रमात्"): a 12th, 6th or 3rd of
+    /// either half that the day holds, whose next tithi begins before half
+    /// the night, a prahara and a half (three eighths of it) or a prahara
+    /// (a quarter of it), counted from sunset to the next sunrise. One
+    /// clause for each such tithi, over the whole day, since v. 48 avoids
+    /// the day ("यस्मिन् दिने ... प्रदोषो भवेत्तद्दिवसे", the Piyushadhara).
+    /// A 13th, 7th or 4th already begun by day is begun before the mark.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_muhurta::activity::pradosha_share;
+    ///
+    /// assert_eq!(pradosha_share(Tithi::ShuklaDwadashi), Some(0.5));
+    /// assert_eq!(pradosha_share(Tithi::KrishnaShashthi), Some(0.375));
+    /// assert_eq!(pradosha_share(Tithi::KrishnaTritiya), Some(0.25));
+    /// assert_eq!(pradosha_share(Tithi::ShuklaTrayodashi), None);
+    /// ```
+    #[must_use]
+    pub fn pradosha_clauses(&self, day: &Panchanga) -> Vec<Clause> {
+        if !self.pradosha {
+            return Vec::new();
+        }
+        let (sunset, next) = (day.day.sunset.get(), day.day.next_sunrise.get());
+        day.limbs
+            .tithi
+            .iter()
+            .filter(|span| {
+                pradosha_share(span.member)
+                    .is_some_and(|share| span.whole.to.get() < sunset + share * (next - sunset))
+            })
+            .map(|span| Clause {
+                kind: ClauseKind::Pradosha { tithi: span.member },
+                at: day.window,
+            })
+            .collect()
     }
 
     /// The instant's clauses the rite's own rules give: the lagna's
@@ -888,6 +948,31 @@ impl ActivityRules {
             }
             _ => false,
         }
+    }
+}
+
+/// The share of the night, counted from sunset, before which the next
+/// tithi's beginning makes a pradosha of a 12th (a half), a 6th (a prahara
+/// and a half, three eighths) or a 3rd (a prahara, a quarter), of either
+/// half (*Muhurta Chintamani*, Samskara-prakarana V v. 55); `None` for
+/// the other tithis.
+///
+/// ```
+/// use teistro_core::catalogue::Tithi;
+/// use teistro_muhurta::activity::pradosha_share;
+///
+/// assert_eq!(pradosha_share(Tithi::ShuklaDwadashi), Some(0.5));
+/// assert_eq!(pradosha_share(Tithi::KrishnaShashthi), Some(0.375));
+/// assert_eq!(pradosha_share(Tithi::KrishnaTritiya), Some(0.25));
+/// assert_eq!(pradosha_share(Tithi::ShuklaTrayodashi), None);
+/// ```
+#[must_use]
+pub const fn pradosha_share(tithi: Tithi) -> Option<f64> {
+    match tithi.id() % 15 {
+        11 => Some(0.5),
+        5 => Some(0.375),
+        2 => Some(0.25),
+        _ => None,
     }
 }
 

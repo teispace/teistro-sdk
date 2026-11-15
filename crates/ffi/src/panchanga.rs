@@ -318,7 +318,8 @@ pub struct TsPanchangaRequest {
     /// `RAMAN_YATRA`, `RAMAN_TRADE_PURCHASE`, `RAMAN_SELLING`,
     /// `RAMAN_NEW_CLOTHES`, `RAMAN_VEHICLE`, `CHINTAMANI_GRIHARAMBHA`,
     /// `CHINTAMANI_BHUMI_PUJA`, `CHINTAMANI_VASTU_SHANTI`,
-    /// `CHINTAMANI_VIPANI`, `CHINTAMANI_VIVAHA`); and,
+    /// `CHINTAMANI_VIPANI`, `CHINTAMANI_VIVAHA`,
+    /// `CHINTAMANI_UPANAYANA`); and,
     /// each optional,
     /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
     /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),

@@ -2984,6 +2984,7 @@ def main() -> None:
             ("baseline", {"rules": "BASELINE_MARRIAGE", "ranking": "BASELINE"}),
             ("upanayana", {"rules": "RAMAN_UPANAYANA", "ranking": "TEXTS"}),
             ("griharambha", {"rules": "CHINTAMANI_GRIHARAMBHA", "ranking": "TEXTS"}),
+            ("bratabandha", {"rules": "CHINTAMANI_UPANAYANA", "ranking": "TEXTS"}),
         )
         for name, search in searches:
             muhurta = geo.almanac.of(

@@ -6975,7 +6975,8 @@ export type MuhurtaActivity =
   | 'CHINTAMANI_BHUMI_PUJA'
   | 'CHINTAMANI_VASTU_SHANTI'
   | 'CHINTAMANI_VIPANI'
-  | 'CHINTAMANI_VIVAHA';
+  | 'CHINTAMANI_VIVAHA'
+  | 'CHINTAMANI_UPANAYANA';
 
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';

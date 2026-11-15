@@ -67,6 +67,9 @@ public sealed interface MuhurtaRequestRules extends RequestJson permits MuhurtaR
     /** {@code CHINTAMANI_VIVAHA}. */
     MuhurtaRequestRules CHINTAMANI_VIVAHA = Key.CHINTAMANI_VIVAHA;
 
+    /** {@code CHINTAMANI_UPANAYANA}. */
+    MuhurtaRequestRules CHINTAMANI_UPANAYANA = Key.CHINTAMANI_UPANAYANA;
+
     /**
      * The value, as a {@code MuhurtaRequestRules}.
      *
@@ -176,7 +179,11 @@ public sealed interface MuhurtaRequestRules extends RequestJson permits MuhurtaR
         /**
          * {@code CHINTAMANI_VIVAHA}.
          */
-        CHINTAMANI_VIVAHA("CHINTAMANI_VIVAHA");
+        CHINTAMANI_VIVAHA("CHINTAMANI_VIVAHA"),
+        /**
+         * {@code CHINTAMANI_UPANAYANA}.
+         */
+        CHINTAMANI_UPANAYANA("CHINTAMANI_UPANAYANA");
 
         private final String key;
 

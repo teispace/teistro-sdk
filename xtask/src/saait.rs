@@ -76,10 +76,12 @@ impl Rite {
 }
 
 /// A rite's printed days read under one set of the SDK's rules: each
-/// rite under the rules shipped for it, and the marriage under both
-/// Raman's and *Muhurta Chintamani*'s (crux C206).
-const TESTS: [(Rite, Activity); 7] = [
+/// rite under the rules shipped for it, and the thread ceremony and the
+/// marriage under both Raman's and *Muhurta Chintamani*'s (cruxes C206,
+/// C1960).
+const TESTS: [(Rite, Activity); 8] = [
     (Rite::Bratabandha, Activity::RamanUpanayana),
+    (Rite::Bratabandha, Activity::ChintamaniUpanayana),
     (Rite::Vivaha, Activity::RamanMarriage),
     (Rite::Vivaha, Activity::ChintamaniVivaha),
     (Rite::Pasni, Activity::RamanAnnaprasana),
@@ -517,6 +519,9 @@ fn rejected_grade(kind: &ClauseKind, level: Level) -> Option<String> {
             rejected(grade).then(|| sign.key())
         }
         (ClauseKind::Pada { pada }, Level::Instant) => Some(pada.nakshatra.key()),
+        // A day of pradosha is "not wanted" for the thread ceremony in the
+        // verse (v. 48) that rejects its galagraha tithis and Saturday.
+        (ClauseKind::Pradosha { tithi }, Level::Day) => Some(tithi.key()),
         _ => None,
     }?;
     Some(format!("{} {member}", key_name(kind.key())))
@@ -562,10 +567,20 @@ fn covers(mut spans: Vec<(f64, f64)>, from: f64, to: f64) -> bool {
 /// A search cuts a day's windows at every clause's edge, so a clause
 /// holds over every daylight window exactly when its spans cover the
 /// daylight: this is the verdict the windows give, without cutting them.
+/// The daylight is the part of it the rules' hours keep: a rite held
+/// before the afternoon is judged up to the end of the daylight's second
+/// third.
 fn day_verdict(day: &Panchanga, rules: &ActivityRules) -> Verdict {
-    let (rise, set) = (day.day.sunrise.get(), day.day.sunset.get());
+    let rise = day.day.sunrise.get();
+    let set = rules
+        .hours
+        .within(day.window, day.day.sunrise, day.day.sunset)
+        .map_or(day.day.sunset.get(), |kept| {
+            kept.to.get().min(day.day.sunset.get())
+        });
     let mut held = teistro::muhurta::clauses(day, None, &rules.day);
     held.extend(rules.month_clauses(day));
+    held.extend(rules.pradosha_clauses(day));
     let mut by_name: BTreeMap<String, Vec<(f64, f64)>> = BTreeMap::new();
     for clause in &held {
         let Some(name) = rejected_grade(&clause.kind, Level::Day) else {
@@ -847,6 +862,10 @@ struct Measured {
     /// The printed marriages' days the sages' Pausha leaves open over the
     /// committee's sky, and those Raman's own rules leave open.
     pausha: (usize, usize),
+    /// Each printed thread ceremony's day-level clauses under *Muhurta
+    /// Chintamani*'s rules over the committee's sky, as (row, date, the
+    /// clauses), misprinted rows read by their date.
+    threads: Vec<(String, String, String)>,
 }
 
 /// The rows read against each sky's day rules: the rows under each test,
@@ -992,10 +1011,12 @@ fn page() -> Result<String, String> {
         .collect();
     let committee = year_of(&years, Sky::Committee, YEAR)?;
     let pausha = pausha(&found, committee)?;
+    let threads = threads(&found, committee)?;
     Ok(render(&Measured {
         found,
         open,
         pausha,
+        threads,
     }))
 }
 
@@ -1013,6 +1034,94 @@ fn pausha(found: &[Found], committee: &Year) -> Result<(usize, usize), String> {
         pausha.1 += usize::from(day_verdict(day, &raman) == Verdict::Clean);
     }
     Ok(pausha)
+}
+
+/// A grade as the page spells it.
+fn grade_name(grade: Grade) -> String {
+    serde_json::to_value(grade)
+        .ok()
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .unwrap_or_default()
+}
+
+/// A day-level clause as §5 shows it: its key, its member and its grade.
+fn clause_shown(kind: &ClauseKind) -> Option<String> {
+    let (member, grade) = match kind {
+        ClauseKind::Tithi { tithi, grade } => (tithi.key(), Some(*grade)),
+        ClauseKind::Nakshatra { nakshatra, grade } => (nakshatra.key(), Some(*grade)),
+        ClauseKind::Vara { vara, grade } => (vara.key(), Some(*grade)),
+        ClauseKind::Month { masa, grade } => (masa.key(), Some(*grade)),
+        ClauseKind::Pradosha { tithi } => (tithi.key(), None),
+        _ => return None,
+    };
+    let key = key_name(kind.key());
+    Some(match grade {
+        Some(grade) => format!("{key} {member} {}", grade_name(grade)),
+        None => format!("{key} {member}"),
+    })
+}
+
+/// §5's rows: each printed thread ceremony under *Muhurta Chintamani*'s
+/// rules over the committee's sky, every day-level clause its kept
+/// daylight holds, in the order they begin.
+fn threads(found: &[Found], committee: &Year) -> Result<Vec<(String, String, String)>, String> {
+    let rules = ActivityRules::chintamani_upanayana();
+    let mut rows = Vec::new();
+    for f in found
+        .iter()
+        .filter(|f| test(f.test).1 == Activity::ChintamaniUpanayana && f.printed.year == YEAR)
+    {
+        let day = committee.day(&f.date).ok_or("a printed day")?;
+        let rise = day.day.sunrise.get();
+        let set = rules
+            .hours
+            .within(day.window, day.day.sunrise, day.day.sunset)
+            .map_or(day.day.sunset.get(), |kept| kept.to.get());
+        let mut held = teistro::muhurta::clauses(day, None, &rules.day);
+        held.extend(rules.month_clauses(day));
+        held.extend(rules.pradosha_clauses(day));
+        held.sort_by(|a, b| a.at.from.get().total_cmp(&b.at.from.get()));
+        let mut shown: Vec<String> = Vec::new();
+        for clause in held
+            .iter()
+            .filter(|c| c.at.from.get() < set && c.at.to.get() > rise)
+        {
+            if let Some(text) = clause_shown(&clause.kind)
+                && !shown.contains(&text)
+            {
+                shown.push(text);
+            }
+        }
+        let closed = committee
+            .closed
+            .get(f.test)
+            .and_then(|closed| closed.get(&iso(&f.date)));
+        let verdict = match closed {
+            Some(by) => Verdict::Closed(by.clone()),
+            None => day_verdict(day, &rules),
+        };
+        let verdict = match verdict {
+            Verdict::Clean => String::from("day-clean"),
+            other => other.shown(),
+        };
+        let read = if f.misprinted() {
+            format!("{verdict}, read by its date")
+        } else {
+            verdict
+        };
+        rows.push((
+            format!(
+                "{}-{}-{:02} {}",
+                f.printed.year,
+                f.printed.month,
+                f.printed.day,
+                f.printed.vara.map_or("—", |v| v.key())
+            ),
+            iso(&f.date),
+            format!("{}; {read}", shown.join(", ")),
+        ));
+    }
+    Ok(rows)
 }
 
 fn render(m: &Measured) -> String {
@@ -1089,6 +1198,7 @@ fn render(m: &Measured) -> String {
     each_rite(&mut out, m);
     what_parts_them(&mut out, m);
     every_row(&mut out, m);
+    clause_by_clause(&mut out, m);
     out
 }
 
@@ -1257,5 +1367,21 @@ fn every_row(out: &mut String, m: &Measured) {
             shown(Sky::Committee),
             shown(Sky::Modern),
         );
+    }
+}
+
+/// §5: each printed thread ceremony, clause by clause.
+fn clause_by_clause(out: &mut String, m: &Measured) {
+    out.push_str(
+        "\n## 5. The thread ceremony, clause by clause\n\n\
+         Each printed bratabandha day under `CHINTAMANI_UPANAYANA` over the\n\
+         committee's sky: every day-level clause held in the daylight before the\n\
+         afternoon, in the order they begin, and the day's verdict. A row whose\n\
+         printed weekday is not its date's is read here by its date, which the\n\
+         tables above refuse to do; what that reading means is crux C1965.\n\n\
+         | BS, printed | day | clauses; day verdict |\n|---|---|---|\n",
+    );
+    for (row, date, clauses) in &m.threads {
+        let _ = writeln!(out, "| {row} | {date} | {clauses} |");
     }
 }
