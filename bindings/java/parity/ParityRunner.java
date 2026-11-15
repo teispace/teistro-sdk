@@ -1353,6 +1353,13 @@ public final class ParityRunner {
             put("bs-add", added.year() + "-" + added.month() + "-" + added.day());
             DateSpan age = ctx.calendar().between(jestha, added, Overflow.CONSTRAIN);
             put("bs-between", age.years() + " " + age.months() + " " + age.days());
+            // The Kirat Yele Sambat (SR-96): Magh 1, 2082 BS opened 5086 and
+            // the day before closed 5085.
+            CalendarDate magh = ctx.calendar().inEra(
+                    ctx.calendar().convert(date(2026, 1, 15), Calendar.BIKRAM_SAMBAT), Era.KIRAT_YELE);
+            CalendarDate eve = ctx.calendar().inEra(
+                    ctx.calendar().convert(date(2026, 1, 14), Calendar.BIKRAM_SAMBAT), Era.KIRAT_YELE);
+            put("bs-kirat-yele", (magh.era() == null ? null : magh.era().fullKey()) + " " + magh.eraYear() + " " + eve.eraYear());
             java.util.List<?> packRows = (java.util.List<?>) ctx.almanac().festivalPack("INDIA_CENTRAL").get("rules");
             put("india-pack", packRows.size() + " " + ((java.util.Map<?, ?>) packRows.get(0)).get("key"));
             put("jd-of-fixed", teistro.julianDayOfFixed(fixed));
@@ -1726,6 +1733,7 @@ public final class ParityRunner {
             surface("calendar.date_of", () -> ctx.calendar().dateOf(Calendar.GREGORIAN, 1));
             surface("calendar.fixed_of", () -> ctx.calendar().fixedOf(day));
             surface("calendar.convert", () -> ctx.calendar().convert(day, Calendar.BIKRAM_SAMBAT));
+            surface("calendar.in_era", () -> ctx.calendar().inEra(day, Era.KIRAT_YELE));
             surface("calendar.weekday_of", () -> ctx.calendar().weekdayOf(day));
             surface("calendar.month_length", () -> ctx.calendar().monthLength(Calendar.GREGORIAN, 2024, 2));
             surface("calendar.is_leap", () -> ctx.calendar().isLeap(Calendar.GREGORIAN, 2024));

@@ -89,3 +89,14 @@ members:
       - text: "Government of Assam, General Administration Department, list of holidays for 2025 (1 Bohag 1432 = 15 April 2025)"
         ref: "docs/calendars/regional-solar.md"
     mark: V
+  - key: KIRAT_YELE
+    id: 12
+    doc: "Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar"
+    sources:
+      - text: "Kantipur, Koshi Pradesh, 15 January 2026: Kirati Sambat 5086 began on Magh 1, 2082"
+        ref: "docs/calendars/bikram-sambat.md"
+      - text: "G. Rai, Kirant identity and Yele Sambat, Indigenous Voice, 5 December 2021 (5076 and 3795 from January 2016)"
+        ref: "docs/calendars/bikram-sambat.md"
+      - text: "J. C. Regmi, Kirat Yele Samvat Abhilekh, Kirat Yele Samvat Adhyayan Samanvaya Samiti, 2010"
+        ref: "docs/calendars/bikram-sambat.md"
+    mark: V

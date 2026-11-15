@@ -2,8 +2,8 @@
 //! each (`03-design/mcp-server.md`, step 3): what
 //! [`TimeArea`](crate::TimeArea) and [`CalendarArea`](crate::CalendarArea)
 //! take, spelt as every other request record is, so the agent server's
-//! `time.*`, `calendar.convert`, `calendar.add` and `calendar.between`
-//! read them and nothing else composes the request.
+//! `time.*`, `calendar.convert`, `calendar.in_era`, `calendar.add` and
+//! `calendar.between` read them and nothing else composes the request.
 //!
 //! A zone is written as [`ZoneSpec`] serialises, which is how a stored
 //! chart keeps it: `{"kind": "IANA", "zone": "Asia/Kathmandu"}`,
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::arithmetic::{DateSpan, Overflow};
 use teistro_calendar::fixed::Weekday;
-use teistro_core::catalogue::Calendar;
+use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::strict;
@@ -163,6 +163,50 @@ impl CalendarRequest {
     }
 }
 
+/// A date to view in a named era: what
+/// [`CalendarArea::in_era`](crate::CalendarArea::in_era) takes.
+///
+/// ```
+/// use teistro::InEraRequest;
+/// use teistro::catalogue::{Calendar, Era};
+///
+/// let asked = InEraRequest::from_json(
+///     r#"{"calendar": "calendar.BIKRAM_SAMBAT", "date": {"year": 2082, "month": 10, "day": 1}, "era": "era.KIRAT_YELE"}"#,
+/// )?;
+/// assert_eq!((asked.date.calendar, asked.era), (Calendar::BikramSambat, Era::KiratYele));
+/// let wrong = InEraRequest::from_json(r#"{"date": {"year": 2026, "month": 1, "day": 15}, "era": "era.NOT_ONE"}"#).unwrap_err();
+/// assert_eq!(wrong.field(), Some("era"));
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+pub struct InEraRequest {
+    /// The date, in its own calendar.
+    pub date: CalendarDate,
+    /// The era to view it in.
+    pub era: Era,
+}
+
+impl InEraRequest {
+    /// What a JSON era request is, for a caller choosing it by name.
+    pub const DESCRIPTION: &'static str = "`request` is a date to view in a named era: `date` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out) and `era`, the era wanted (a catalogue key). An era the calendar attaches itself answers the calendar's own reading of the day when it is in that era; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele Sambat, its year counted from the epoch the settings' `calendars.kirat_yele` names (`KIRATI`, 5086 from Magh 1, 2082, or `YALAMBAR`), turning on Magh 1. The answer is the date with that era and its year, and its weekday; an era the calendar cannot give is refused on `era`.";
+
+    /// The request read and checked; a refusal names the field written.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, or a calendar or era it does not name.
+    pub fn from_json(text: &str) -> Result<InEraRequest, Error> {
+        let asked: InEraAsked = strict::read(text, "")?;
+        Ok(InEraRequest {
+            date: asked
+                .date
+                .in_calendar(asked.calendar.unwrap_or(Calendar::Gregorian)),
+            era: asked.era,
+        })
+    }
+}
+
 /// A date and a span to add to it: what
 /// [`CalendarArea::add`](crate::CalendarArea::add) takes.
 ///
@@ -262,7 +306,8 @@ pub struct CivilReading {
     pub zone: ZoneResolution,
 }
 
-/// A date written in another calendar: what `calendar.convert` answers.
+/// A date and its weekday: what `calendar.convert`, `calendar.in_era` and
+/// `calendar.add` answer.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalendarReading {
@@ -323,6 +368,17 @@ pub(crate) struct AddAsked {
     days: i32,
     #[serde(default)]
     overflow: Overflow,
+}
+
+/// An era request as a binding writes it.
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub(crate) struct InEraAsked {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    calendar: Option<Calendar>,
+    date: DayAsked,
+    era: Era,
 }
 
 /// A difference request as a binding writes it.

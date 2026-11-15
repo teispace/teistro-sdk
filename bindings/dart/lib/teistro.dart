@@ -694,6 +694,22 @@ final class CalendarArea extends _Area {
   CalendarDate convert(CalendarDate date, Calendar into) =>
       _context._inner.calendarConvert(date, into);
 
+  /// [date] viewed in [era]: its calendar's own reading, with the year that
+  /// era gives it. [Era.kiratYele] views a Bikram Sambat date in the Kirat
+  /// Yele Sambat, its year counted from the epoch the settings'
+  /// `calendars.kirat_yele` names and turning on Magh 1; an era the
+  /// calendar cannot give throws, naming `era`.
+  ///
+  /// ```dart
+  /// final magh = sdk.calendar.convert(
+  ///   Calendar.gregorian.date(2026, 1, 15),
+  ///   Calendar.bikramSambat,
+  /// );
+  /// final year = sdk.calendar.inEra(magh, Era.kiratYele).eraYear; // 5086
+  /// ```
+  CalendarDate inEra(CalendarDate date, Era era) =>
+      _context._inner.calendarInEra(date, era);
+
   /// The weekday of a date, Monday `1` to Sunday `7`.
   int weekdayOf(CalendarDate date) => _context._inner.calendarWeekday(date);
 

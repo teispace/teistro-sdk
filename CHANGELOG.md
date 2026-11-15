@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Kirat Yele Sambat (SR-96).**
+**Numbers:** no computed number moves. Every settings hash moves, `calendars` gaining
+the knob `kirat_yele`; a stored settings snapshot taken before it no longer reads
+back as a complete document.
+- **New:** the era `era.KIRAT_YELE` (id 12), the Kirat era: a Bikram Sambat date under a
+  year that turns on Magh 1 (`calendars/bikram-sambat.md` §Kirat Yele Sambat).
+  `teistro_calendar::kirat_yele` gives `year_of`, `vikrama_of` and `view`.
+- **New:** the settings knob `calendars.kirat_yele` (`KiratYeleEpoch`, re-exported as
+  `kirat_yele::Epoch`): `KIRATI`, the default, the count printed today, the Bikram
+  Sambat year plus 3004 from Magh 1 (5086 from 15 January 2026, *Kantipur*; 5076 from
+  16 January 2016, G. Rai, *Indigenous Voice*, 2021), or `YALAMBAR`, J. C. Regmi's
+  count from Yalambar's accession (*Kirat Yele Samvat Abhilekh*, 2010), plus 1723.
+- **New:** `CalendarArea::in_era` views a date in a named era: the calendar's own
+  reading for an era it attaches, refused when the reading is in another (a Gregorian
+  year 0 is `BEFORE_COMMON_ERA`, not `COMMON_ERA`), and the Kirat Yele year of a
+  Bikram Sambat date under the context's epoch; any other era is `UNSUPPORTED` on
+  `era`, with a hint naming the eras the calendar gives. It reaches C
+  (`ts_calendar_in_era`), Node, Python, Dart, Java and wasm (`inEra`, `in_era`), the
+  record `calendar.in_era` (`InEraRequest`) and so the MCP tool of that name, and
+  every parity runner (`bs-kirat-yele`). The Bikram Sambat's capabilities list
+  `KIRAT_YELE` after `VIKRAMA`.
+
 **Muhurta Chintamani's thread ceremony (SR-99).**
 **Numbers:** none for an existing request: a new activity, `CHINTAMANI_UPANAYANA`
 (bratabandha, Samskara-prakarana V vv. 40–42, 48, 54–55), and two clauses that only it

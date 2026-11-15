@@ -173,6 +173,8 @@ class TheCatalogue(unittest.TestCase):
             # `ChartFrame`'s four frames, its UNKNOWN and its member of `Kind`.
             + 4 + 1 + 1
             # `DeltaTSource`'s `PROVIDER`.
+            + 1
+            # `Era`'s `KIRAT_YELE`.
             + 1,
         )
 

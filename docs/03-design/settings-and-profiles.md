@@ -131,6 +131,7 @@ every shipped profile. The v1 inventory:
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |
 | calendar | `samvatsara` | enum | `BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA` |
+| calendar | `kirat_yele` | enum | `KIRATI` (default), `YALAMBAR`: where the Kirat Yele Sambat's year 1 stands, read by `calendar.in_era` (`calendars/bikram-sambat.md` §Kirat Yele Sambat, SR-96) |
 | calendar | `eras` | set of `EraKey` | which era numbers a date carries |
 | provider | `overrides` | enum | `PREFER_NATIVE`, `SDK_ONLY`, `NATIVE_ONLY` (ADR-0013) |
 | provider | `tier` | enum | `COMPACT`, `STANDARD`, `FULL`, `REFERENCE` for the built-in ephemeris |

@@ -404,6 +404,31 @@ test('a Bikram Sambat date adds and an age is counted', () => {
   ctx.dispose();
 });
 
+/**
+ * The Kirat Yele Sambat (SR-96): 15 January 2026 was Magh 1, 2082 BS, the
+ * first day of Kirati Sambat 5086 (Kantipur); the day before closed 5085;
+ * `calendars.kirat_yele` chooses Regmi's epoch from Yalambar; an era the
+ * Bikram Sambat cannot give is refused by its field.
+ */
+test('a Bikram Sambat date is viewed in the Kirat Yele Sambat', () => {
+  const ctx = context();
+  const bs = (y, m, d) => ctx.calendar.convert(gregorian(y, m, d), Calendar.BikramSambat);
+  const magh = bs(2026, 1, 15);
+  assert.deepEqual([magh.year, magh.month, magh.day], [2082, 10, 1]);
+  const yele = ctx.calendar.inEra(magh, Era.KiratYele);
+  assert.deepEqual([yele.era, yele.eraYear, yele.year, yele.month, yele.day], [Era.KiratYele, 5086, 2082, 10, 1]);
+  assert.equal(ctx.calendar.inEra(bs(2026, 1, 14), Era.KiratYele).eraYear, 5085);
+  assert.equal(ctx.calendar.inEra(magh, Era.Vikrama).eraYear, 2082);
+  const regmi = context({ settings: { calendars: { kirat_yele: 'YALAMBAR' } } });
+  assert.equal(regmi.calendar.inEra(magh, Era.KiratYele).eraYear, 3805);
+  assert.throws(
+    () => ctx.calendar.inEra(magh, Era.Hijri),
+    (e) => e instanceof TeistroError && e.field === 'era',
+  );
+  regmi.dispose();
+  ctx.dispose();
+});
+
 test('a Nepali birth time resolves with the metadata a stored chart keeps', () => {
   const ctx = context();
   const civil = {
@@ -919,7 +944,8 @@ test('every catalogue enum has a complete id table', () => {
   // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`;
   // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`;
   // 1558 since `TsDeltaTSource` gained `PROVIDER`.
-  assert.equal(entries, 1558, 'every member of every enum is in a table');
+  // 1559 since `TsEra` gained `KIRAT_YELE`.
+  assert.equal(entries, 1559, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

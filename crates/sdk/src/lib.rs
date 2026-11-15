@@ -424,7 +424,7 @@ pub use crate::navatara_request::NavataraRequest;
 pub use crate::aayadi_request::AayadiRequest;
 pub use crate::time_request::{
     AddRequest, BetweenRequest, CalendarReading, CalendarRequest, CivilReading, CivilRequest,
-    ResolveRequest, ScaleRequest,
+    InEraRequest, ResolveRequest, ScaleRequest,
 };
 pub use teistro_astro::visibility::Criterion;
 // Eclipses: found over the sky, each with how a place sees it

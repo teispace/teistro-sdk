@@ -314,7 +314,9 @@ impl fmt::Display for CalendarDate {
 /// let gregorian = Gregorian.capabilities();
 /// assert!(!gregorian.needs_place && !gregorian.needs_ephemeris);
 /// assert_eq!(gregorian.eras, [Era::CommonEra, Era::BeforeCommonEra]);
-/// assert_eq!(BikramSambat::shipped().capabilities().eras, [Era::Vikrama]);
+/// // The Vikrama era a reading attaches, and the Kirat Yele Sambat it can
+/// // be viewed in.
+/// assert_eq!(BikramSambat::shipped().capabilities().eras, [Era::Vikrama, Era::KiratYele]);
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CalendarCapabilities {
@@ -324,7 +326,9 @@ pub struct CalendarCapabilities {
     pub needs_place: bool,
     /// Whether the ephemeris port is needed (lunisolar calendars).
     pub needs_ephemeris: bool,
-    /// The eras a date may carry.
+    /// The eras a date may carry: those its reading attaches, then any
+    /// it can be viewed in besides (the Kirat Yele Sambat of a Bikram
+    /// Sambat date, `kirat_yele`).
     pub eras: &'static [Era],
 }
 

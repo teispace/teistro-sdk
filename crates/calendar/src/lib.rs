@@ -28,6 +28,7 @@ pub mod ical;
 pub mod indian_national;
 pub mod iso_week;
 pub mod julian;
+pub mod kirat_yele;
 pub mod lunisolar;
 pub mod mixed;
 pub mod regional_solar;

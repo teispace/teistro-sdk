@@ -7866,6 +7866,18 @@ export declare class CalendarArea {
   fixedOf(date: CalendarDate): number;
   /** The same date in another calendar. */
   convert(date: CalendarDate, into: Calendar): CalendarDate;
+  /**
+   * The date viewed in a named era: its calendar's own reading, with the
+   * year that era gives it. `Era.KiratYele` views a Bikram Sambat date in
+   * the Kirat Yele Sambat, counted from the epoch the settings'
+   * `calendars.kirat_yele` names; an era the calendar cannot give throws,
+   * naming `era`.
+   *
+   * @example
+   * const magh = sdk.calendar.convert(date(Calendar.Gregorian, 2026, 1, 15), Calendar.BikramSambat);
+   * const { eraYear } = sdk.calendar.inEra(magh, Era.KiratYele); // 5086
+   */
+  inEra(date: CalendarDate, era: Era): CalendarDate;
   /** The weekday of a date, Monday `1` to Sunday `7`. */
   weekdayOf(date: CalendarDate): number;
   /** The length of a month. */

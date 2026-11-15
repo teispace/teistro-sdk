@@ -13,6 +13,7 @@ import {
   Body,
   Calendar,
   Context,
+  Era,
   ianaZone,
   Scale,
   abiVersion,
@@ -142,6 +143,11 @@ put('is-leap', ctx.calendar.isLeap(Calendar.Gregorian, 2024));
   put('bs-add', `${added.year}-${added.month}-${added.day}`);
   const age = ctx.calendar.between(jestha, added);
   put('bs-between', `${age.years} ${age.months} ${age.days}`);
+  // The Kirat Yele Sambat (SR-96): Magh 1, 2082 BS opened 5086 and the day
+  // before closed 5085.
+  const yele = (y, m, d) => ctx.calendar.inEra(ctx.calendar.convert(gregorian(y, m, d), Calendar.BikramSambat), Era.KiratYele);
+  const magh = yele(2026, 1, 15);
+  put('bs-kirat-yele', `${magh.era} ${magh.eraYear} ${yele(2026, 1, 14).eraYear}`);
   const pack = ctx.almanac.festivalPack('INDIA_CENTRAL');
   put('india-pack', `${pack.rules.length} ${pack.rules[0].key}`);
 }
@@ -2621,6 +2627,7 @@ for (const [path, member] of [
   ['calendar.date_of', shape.calendar.dateOf],
   ['calendar.fixed_of', shape.calendar.fixedOf],
   ['calendar.convert', shape.calendar.convert],
+  ['calendar.in_era', shape.calendar.inEra],
   ['calendar.weekday_of', shape.calendar.weekdayOf],
   ['calendar.month_length', shape.calendar.monthLength],
   ['calendar.is_leap', shape.calendar.isLeap],

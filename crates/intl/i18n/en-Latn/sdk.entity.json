@@ -691,6 +691,12 @@
       "short": "AH",
       "name": "Hijri",
       "prose": "the Hijri era"
+    },
+    "KIRAT_YELE": {
+      "short": "YS",
+      "name": "Yele Sambat",
+      "prose": "the Kirat Yele Sambat",
+      "iast": "Yele Saṃvat"
     }
   },
   "avastha_baladi": {

@@ -691,6 +691,12 @@
       "short": "हि.सं.",
       "name": "हिजरी संवत्",
       "prose": "हिजरी संवत्"
+    },
+    "KIRAT_YELE": {
+      "short": "ये.सं.",
+      "name": "येले संवत्",
+      "prose": "किरात येले संवत्",
+      "iast": "Yele Saṃvat"
     }
   },
   "avastha_baladi": {

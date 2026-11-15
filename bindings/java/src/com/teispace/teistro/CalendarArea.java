@@ -48,6 +48,28 @@ public final class CalendarArea {
     }
 
     /**
+     * A date viewed in a named era: its calendar's own reading, with the
+     * year that era gives it. {@link Era#KIRAT_YELE} views a Bikram Sambat
+     * date in the Kirat Yele Sambat, its year counted from the epoch the
+     * settings' {@code calendars.kirat_yele} names ({@code KIRATI}, the
+     * default, or {@code YALAMBAR}) and turning on Magh 1.
+     *
+     * <pre>{@code
+     * CalendarDate magh = sdk.calendar().convert(Civil.date(Calendar.GREGORIAN, 2026, 1, 15), Calendar.BIKRAM_SAMBAT);
+     * int year = sdk.calendar().inEra(magh, Era.KIRAT_YELE).eraYear(); // 5086
+     * }</pre>
+     *
+     * @param date the date
+     * @param era the era to view it in
+     * @return the date, its era and the year in it
+     * @throws TeistroException {@code UNSUPPORTED} naming {@code era} for an
+     *     era the date's calendar cannot give
+     */
+    public CalendarDate inEra(CalendarDate date, Era era) {
+        return context.locked((lib, raw) -> Calls.calendarInEra(lib, raw, date, era));
+    }
+
+    /**
      * The weekday of a date as its ISO number: Monday {@code 1}, Sunday
      * {@code 7}. Not the catalogue's {@link Vara}, which counts from Sunday:
      * a vara is {@code weekdayOf(day) % 7}.

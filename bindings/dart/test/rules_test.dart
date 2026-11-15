@@ -391,6 +391,7 @@ const Map<String, Type> _records = {
   'calendar.add': AddAsked,
   'calendar.between': BetweenAsked,
   'calendar.convert': CalendarAsked,
+  'calendar.in_era': InEraAsked,
   'chart.disagreements': ChartDisagreementsRequest,
   'chart.astrocartography': AstrocartographyRequest,
   'chart.found': ChartFoundRequest,

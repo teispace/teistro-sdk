@@ -1221,6 +1221,20 @@ void main() {
   put('bs-add', '${added.year}-${added.month}-${added.day}');
   final age = ctx.calendar.between(jestha, added);
   put('bs-between', '${age.years} ${age.months} ${age.days}');
+  // The Kirat Yele Sambat (SR-96): Magh 1, 2082 BS opened 5086 and the day
+  // before closed 5085.
+  CalendarDate yele(int year, int month, int day) => ctx.calendar.inEra(
+    ctx.calendar.convert(
+      Calendar.gregorian.date(year, month, day),
+      Calendar.bikramSambat,
+    ),
+    Era.kiratYele,
+  );
+  final magh = yele(2026, 1, 15);
+  put(
+    'bs-kirat-yele',
+    '${magh.era?.fullKey} ${magh.eraYear} ${yele(2026, 1, 14).eraYear}',
+  );
   final pack = ctx.almanac.festivalPack('INDIA_CENTRAL');
   final packRows = pack['rules']! as List<Object?>;
   put(
@@ -4123,6 +4137,7 @@ void main() {
     ('calendar.date_of', ctx.calendar.dateOf),
     ('calendar.fixed_of', ctx.calendar.fixedOf),
     ('calendar.convert', ctx.calendar.convert),
+    ('calendar.in_era', ctx.calendar.inEra),
     ('calendar.weekday_of', ctx.calendar.weekdayOf),
     ('calendar.month_length', ctx.calendar.monthLength),
     ('calendar.is_leap', ctx.calendar.isLeap),

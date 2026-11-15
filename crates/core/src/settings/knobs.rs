@@ -1096,6 +1096,42 @@ knob!(
         Chandramana = "CHANDRAMANA" }
 );
 knob!(
+    /// Where the Kirat Yele Sambat's year 1 stands
+    /// (`calendars/bikram-sambat.md` §Kirat Yele Sambat, SR-96). The era
+    /// turns on Magh 1 of the Bikram Sambat either way; the sources count
+    /// it from two epochs, and neither is fixed by a notice.
+    #[derive(Default)]
+    KiratYeleEpoch { /// The count Kirat calendars and the press print today: Kirati
+        /// Sambat 5086 began on Magh 1, 2082 BS (*Kantipur*, 15 January
+        /// 2026), and 5076 on 16 January 2016 (G. Rai, *Indigenous
+        /// Voice*, 2021). The Yele year is the Bikram Sambat's plus 3004
+        /// from Magh 1.
+        #[default]
+        Kirati = "KIRATI", /// J. C. Regmi's count from Yalambar's accession, 1964 years
+        /// before the Shaka era's 107th (*Kirat Yele Samvat Abhilekh*,
+        /// 2010): 3795 from 15 January 2016. The Bikram Sambat's plus 1723
+        /// from Magh 1.
+        Yalambar = "YALAMBAR" }
+);
+impl KiratYeleEpoch {
+    /// The Yele year less the Bikram Sambat year it opens in, on Magh 1.
+    ///
+    /// ```
+    /// use teistro_core::settings::knobs::KiratYeleEpoch;
+    ///
+    /// assert_eq!(KiratYeleEpoch::default(), KiratYeleEpoch::Kirati);
+    /// assert_eq!(KiratYeleEpoch::Kirati.years_after_vikrama(), 3004);
+    /// assert_eq!(KiratYeleEpoch::Yalambar.years_after_vikrama(), 1723);
+    /// ```
+    #[must_use]
+    pub const fn years_after_vikrama(self) -> i32 {
+        match self {
+            KiratYeleEpoch::Kirati => 3004,
+            KiratYeleEpoch::Yalambar => 1723,
+        }
+    }
+}
+knob!(
     /// Whose sunrise a day under the Surya Siddhanta begins at.
     ///
     /// The text's own carries no equation of time (III.34 to 35, C37), so

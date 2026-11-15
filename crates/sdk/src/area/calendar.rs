@@ -2,9 +2,10 @@
 //! arithmetic over them.
 
 use teistro_calendar::arithmetic::{self, DateSpan, Overflow};
+use teistro_calendar::kirat_yele;
 use teistro_calendar::tibetan::{TibetanYear, year_name};
 use teistro_calendar::{CalendarDate, FixedDay, Weekday};
-use teistro_core::catalogue::{Calendar, write_in_full};
+use teistro_core::catalogue::{Calendar, Era, write_in_full};
 use teistro_core::error::Error;
 
 use crate::area::system_of;
@@ -55,6 +56,82 @@ impl<'a> CalendarArea<'a> {
     /// Either calendar's refusal.
     pub fn convert(self, date: &CalendarDate, into: Calendar) -> Result<CalendarDate, Error> {
         system_of(date.calendar)?.convert(date, system_of(into)?)
+    }
+
+    /// The date viewed in a named era: its own calendar's reading, with
+    /// the year that era gives it.
+    ///
+    /// An era the date's calendar attaches itself (`CalendarCapabilities::eras`)
+    /// is the calendar's own reading of the day, as [`CalendarArea::convert`]
+    /// into the same calendar gives it, when that reading is in the era
+    /// asked: a Gregorian date before year 1 reads in `BEFORE_COMMON_ERA`
+    /// and is refused `COMMON_ERA`. `KIRAT_YELE` views a Bikram Sambat date
+    /// in the Kirat Yele Sambat (`calendars/bikram-sambat.md` §Kirat Yele
+    /// Sambat): the same year, month and day, with the Yele year counted
+    /// from the epoch `calendars.kirat_yele` names, turning on Magh 1.
+    ///
+    /// ```
+    /// use teistro::{CalendarDate, Context};
+    /// use teistro::catalogue::{Calendar, Era};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// // 15 January 2026 was Magh 1, 2082 BS: Kirati Sambat 5086 began.
+    /// let magh = sdk.calendar().convert(&CalendarDate::defined(Calendar::Gregorian, 2026, 1, 15), Calendar::BikramSambat)?;
+    /// let yele = sdk.calendar().in_era(&magh, Era::KiratYele)?;
+    /// assert_eq!((yele.year, yele.month, yele.day), (2082, 10, 1));
+    /// assert_eq!(yele.era.map(|era| (era.era, era.year)), Some((Era::KiratYele, 5086)));
+    /// // Under Regmi's epoch from Yalambar's accession, the same day opened 3805.
+    /// let regmi = Context::builder().settings_json(r#"{"calendars": {"kirat_yele": "YALAMBAR"}}"#).build()?;
+    /// assert_eq!(regmi.calendar().in_era(&magh, Era::KiratYele)?.era.map(|era| era.year), Some(3805));
+    /// // An era the Bikram Sambat neither attaches nor is viewed in is refused by its field.
+    /// assert_eq!(sdk.calendar().in_era(&magh, Era::Hijri).unwrap_err().field(), Some("era"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A calendar the SDK does not ship, or a date it refuses, as
+    /// [`CalendarArea::fixed_of`]; `UNSUPPORTED` on `era` for an era the
+    /// date's calendar cannot give it, with a hint naming those it can.
+    pub fn in_era(self, date: &CalendarDate, era: Era) -> Result<CalendarDate, Error> {
+        let system = system_of(date.calendar)?;
+        let reading = system.date_of(system.fixed_of(date)?)?;
+        if era == Era::KiratYele && date.calendar == Calendar::BikramSambat {
+            return kirat_yele::view(&reading, self.context.settings().calendars.kirat_yele);
+        }
+        if reading.era.is_some_and(|number| number.era == era) {
+            return Ok(reading);
+        }
+        let eras = system.capabilities().eras;
+        let why = match reading.era {
+            Some(own) if eras.contains(&era) => format!(
+                "{reading} reads in {}, not {}",
+                own.era.full_key(),
+                era.full_key()
+            ),
+            _ => format!(
+                "the {} calendar gives no year in {}",
+                date.calendar.key(),
+                era.full_key()
+            ),
+        };
+        let hint = if eras.is_empty() {
+            format!(
+                "the {} calendar counts its years in no era",
+                date.calendar.key()
+            )
+        } else {
+            format!(
+                "the {} calendar gives a date in {}",
+                date.calendar.key(),
+                eras.iter()
+                    .copied()
+                    .map(Era::full_key)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        Err(Error::unsupported(why).with_field("era").with_hint(hint))
     }
 
     /// The weekday a date falls on.
