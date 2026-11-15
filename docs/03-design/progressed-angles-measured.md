@@ -21,7 +21,7 @@ progressed sky runs past the built-in ephemeris's years.
 | the solar arc and Leo's mean Sun in right ascension part by no more than the equation of time's range (7.65°) | **holds** | 0 of 432 disagree |
 | the quotidian meridian is Leo's at every birthday, within 0.05° | **holds** | 0 of 432 disagree |
 | the quotidian meridian stands half the circle from Leo's half a year after a birthday, within 1° | **holds** | 0 of 432 disagree; a day of sky turns it a full circle, so between birthdays it reads any sign |
-| under the conformance profile's NEAREST_EVENT polar day, a progressed chart is founded wherever the birth was | falsified | 5 of 432 refused, at 2 births; a polar day's nearest event can lie weeks from the sky a later age reads; CIVIL_MIDNIGHT holds them all |
+| under the conformance profile's NEAREST_EVENT polar day, a progressed chart is founded wherever the birth was | **holds** | 0 of 432 refused, at 0 births; each polar date is a day of its own under NEAREST_EVENT (C1900), so every age's sky is founded, as under CIVIL_MIDNIGHT |
 
 ## The midheaven, against Leo's map
 

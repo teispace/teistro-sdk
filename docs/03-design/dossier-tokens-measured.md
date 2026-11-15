@@ -34,10 +34,10 @@ columns against each other, not as a model's bill.
 
 | written in | bytes | scalar values | tokens | tokens a chart | tokens against keys |
 |---|---|---|---|---|---|
-| keys (language-neutral) | 2 681 192 | 2 681 192 | 1 547 721 | 29 202 | 1.00 |
-| `en-Latn` names | 2 953 398 | 2 953 398 | 1 636 749 | 30 882 | 1.06 |
-| `hi-Deva-IN` names | 4 291 046 | 2 751 388 | 2 105 869 | 39 733 | 1.36 |
-| `ne-Deva-NP` names | 4 293 998 | 2 749 374 | 2 107 097 | 39 756 | 1.36 |
-| `sa-Deva` names | 4 293 438 | 2 751 962 | 2 106 795 | 39 750 | 1.36 |
-| `sa-Latn` names | 3 144 305 | 2 838 012 | 1 838 110 | 34 681 | 1.19 |
-| the document's canonical JSON | 7 150 634 | 7 150 351 | 4 006 839 | 75 600 | 2.59 |
+| keys (language-neutral) | 2 681 541 | 2 681 541 | 1 547 883 | 29 205 | 1.00 |
+| `en-Latn` names | 2 953 737 | 2 953 737 | 1 636 896 | 30 884 | 1.06 |
+| `hi-Deva-IN` names | 4 291 529 | 2 751 659 | 2 106 071 | 39 737 | 1.36 |
+| `ne-Deva-NP` names | 4 294 573 | 2 749 621 | 2 107 329 | 39 760 | 1.36 |
+| `sa-Deva` names | 4 293 921 | 2 752 233 | 2 106 997 | 39 754 | 1.36 |
+| `sa-Latn` names | 3 144 646 | 2 838 316 | 1 838 273 | 34 684 | 1.19 |
+| the document's canonical JSON | 7 005 108 | 7 004 825 | 3 927 698 | 74 107 | 2.54 |

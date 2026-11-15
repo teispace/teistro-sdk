@@ -193,23 +193,23 @@ boundary.
 
 The source's Table X-3 gives the Ithasala **three** kinds and sets
 Ishrafa a degree away from them. This sorts every pair of every annual
-chart of every recorded birth into them — 2155 charts, 45 255 pairs,
-of which 29 107 stand in signs that aspect at all — through
+chart of every recorded birth into them — 2160 charts, 45 360 pairs,
+of which 29 178 stand in signs that aspect at all — through
 `sdk.chart().drishtis`, so what is counted is what the module answers.
 
 | kind | what puts a pair there | pairs | of those that aspect |
 |---|---|---|---|
-| **Vartamana** | behind by a degree or more, inside the orb | 6656 | 22.9% |
-| **Poorna** | behind by less than a degree | 940 | 3.2% |
-| **Bhavishyat** | outside the orb, reaching from a sign's end | 321 | 1.1% |
-| **Ishrafa** | past by a degree or more, inside the orb | 6548 | 22.5% |
-| *the contested band* | past by less than a degree | **933** | **3.2%** |
+| **Vartamana** | behind by a degree or more, inside the orb | 6671 | 22.9% |
+| **Poorna** | behind by less than a degree | 941 | 3.2% |
+| **Bhavishyat** | outside the orb, reaching from a sign's end | 322 | 1.1% |
+| **Ishrafa** | past by a degree or more, inside the orb | 6567 | 22.5% |
+| *the contested band* | past by less than a degree | **934** | **3.2%** |
 
 ### What turns on the last row
 
 The last row is the one thing the source's two accounts do not settle
 (crux C112), and the count is why it is carried as a reading rather than
-decided quietly. Under the chapter's prose those 933 pairs are
+decided quietly. Under the chapter's prose those 934 pairs are
 **Ishrafa**, generally unfavourable and drawing apart. Under Table X-3
 read so that its rows interlock they are **Poorna**, the most fulfilled
 thing a pair can be. Under the table read at its narrowest they are
@@ -219,7 +219,7 @@ other.
 Two things about the size of it. It is 3.2% of every pair that aspects
 — not a rounding margin, and about a twelfth of every Ishrafa. And it
 is almost exactly the size of the **Poorna the table states outright**
-beside it, 940 against 933: the two sit symmetrically either side of an
+beside it, 941 against 934: the two sit symmetrically either side of an
 exact aspect, which is the argument for reading Poorna as covering both.
 A reading on which one side of exactness is immediate fulfilment and the
 other side is nothing would have to explain the asymmetry, and the book
@@ -233,25 +233,15 @@ judgements are contested.
 ### What the sweep could not reach
 
 Every recorded birth was asked for 40 years, which is **2200** years
-over the 55 of them, and 2155 charts were read. The whole of the
+over the 55 of them, and 2160 charts were read. The whole of the
 difference is accounted for below, because a sweep that reported only
 what it managed would get greener as the corpus got harder.
 
 **40 years** never returned from the search at all, belonging to 1
 birth: `c048-kathmandu-2399-12-30`. The built-in ephemeris's span runs
 out before those births reach their fortieth year, and the SDK answers
-the years it covers rather than refusing the whole request. A further
-**5 years** returned but could not be **founded**, belonging to 1 birth:
-`c028-troms-1988-06-21`. The SDK refuses rather than inventing a day —
-*unsupported: JD 2455369.556106608 UTC falls in a polar day at
-69.6492°N 18.9553°E 10 m, and under NEAREST_EVENT its day runs from JD
-2455403.4575143754 UTC to JD 2455404.477205172 UTC, which does not hold
-it (field `day.polar_day_policy`); choose CIVIL_MIDNIGHT, which reckons
-a polar day from civil midnight to the next* — because a birth above
-the polar circle in its own summer has no sunrise to divide a day by,
-and the hora and ghati a chart is built on are measured from one. That
-is a documented bound of the corpus (`05-testing/01-golden-vectors.md`,
-note 13) and not a fault of the aspects.
+the years it covers rather than refusing the whole request. Every return
+the search did produce was founded and read.
 
 ## 10. The sixteen yogas, and the matters they answer
 
@@ -259,7 +249,7 @@ Fourteen of the sixteen are not facts about a chart. They are judgements
 about a **pair** — the *lagnesha*, the lord of the annual lagna, and
 the *karyesha*, the lord of the house the matter asked about belongs to
 — so the same year answers differently for each of the twelve houses.
-Every chart above is asked all twelve, which is **25 860** questions.
+Every chart above is asked all twelve, which is **25 920** questions.
 Ikabala and Induvara are the two exceptions: facts about a chart, so
 each holds in all twelve of a chart's matters or in none — **147**
 charts and **1**, a divisibility the pass checks.
@@ -268,15 +258,15 @@ charts and **1**, a divisibility the pass checks.
 |---|---|---:|---|
 | **Ikabala** | built | 1764 | 6.8% |
 | **Induvara** | built | 12 | 0.0% |
-| **Ithasala** | built | 4243 | 16.4% |
-| **Ishrafa** | built | 3036 | 11.7% |
+| **Ithasala** | built | 4254 | 16.4% |
+| **Ishrafa** | built | 3053 | 11.8% |
 | **Nakta** | built | 603 | 2.3% |
 | **Yamaya** | built | 395 | 1.5% |
-| **Manau** | built | 1755 | 6.8% |
+| **Manau** | built | 1758 | 6.8% |
 | **Kamboola** | built | 1094 | 4.2% |
 | **GairiKamboola** | built | 0 | 0.0% |
 | **Khallasara** | built | 2 | 0.0% |
-| **Rudda** | built | 4011 | 15.5% |
+| **Rudda** | built | 4018 | 15.5% |
 | **DuhphaliKuttha** | built | 34 | 0.1% |
 | **DutthotthaDavira** | built | 4 | 0.0% |
 | **Tambira** | built | 20 | 0.1% |
@@ -290,7 +280,7 @@ call rather than left out of the answer, because *did not hold* and
 
 ### The first house is never a pair
 
-**3896** of the 25 860 matters — 15.1% — have one planet for both
+**3901** of the 25 920 matters — 15.1% — have one planet for both
 lords, so there is no pair to judge. That is not an edge case that crept
 in: the **first** house is the lagna itself, so its lord is the lagnesha
 by definition, and a question about the native's own self can never be
@@ -300,19 +290,19 @@ Cancer or Leo, where the luminaries rule one each. The answer reports it
 as `same_lord` rather than returning an empty list that would read as
 *nothing holds*.
 
-The count decomposes, and `cargo xtask muntha` **fails** if it ever stops decomposing, because a printed figure nobody can check is the part of a generated page that rots. Every one of the 2155 charts contributes its first house, and every chart but the 414 whose lagna a **luminary** rules contributes one more, since the Sun rules Leo alone and the Moon Cancer alone: 2155 + (2155 − 414) = **3896**.
+The count decomposes, and `cargo xtask muntha` **fails** if it ever stops decomposing, because a printed figure nobody can check is the part of a generated page that rots. Every one of the 2160 charts contributes its first house, and every chart but the 419 whose lagna a **luminary** rules contributes one more, since the Sun rules Leo alone and the Moon Cancer alone: 2160 + (2160 − 419) = **3901**.
 ### Why Khallasara is so rare
 
 Khallasara and Gairi-Kamboola both need an **unqualified** Moon, which
 the source defines outright: neither exalted nor debilitated, nor
 aspected or associated, nor in its own Hudda, Drekkana or Navamsha.
-Every clause must be false at once, and over the 2155 annual charts the
-Moon managed it **once**, one chart in 2155. The clause that does the
+Every clause must be false at once, and over the 2160 annual charts the
+Moon managed it **once**, one chart in 2160. The clause that does the
 disqualifying is not the interesting one to guess at, so it is counted:
 
 | clause | charts |
 |---|---:|
-| aspected or associated by another of the seven | 2151 |
+| aspected or associated by another of the seven | 2156 |
 | in a Drekkana it rules | 291 |
 | debilitated | 179 |
 | exalted | 169 |
@@ -353,7 +343,7 @@ what each costs (crux C116).
 
 Strength is a disjunction — "exalted, in its own house or otherwise
 strong" — so a **dignified** planet is strong under any floor at all.
-Of the 15 085 readings, seven to each of the 2155 charts, **3197**
+Of the 15 120 readings, seven to each of the 2160 charts, **3209**
 (21.2%) are dignified and beyond either floor's reach.
 
 ### Where the seven stand
@@ -363,19 +353,19 @@ Of the 15 085 readings, seven to each of the 2155 charts, **3197**
 | [0, 2) | 0 | 0.0% |
 | [2, 4) | 26 | 0.2% |
 | [4, 6) | 516 | 3.4% |
-| [6, 8) | 1739 | 11.5% |
-| [8, 10) | 3312 | 22.0% |
-| [10, 12) | 3930 | 26.1% |
-| [12, 14) | 3101 | 20.6% |
-| [14, 16) | 1965 | 13.0% |
-| [16, 18) | 477 | 3.2% |
+| [6, 8) | 1742 | 11.5% |
+| [8, 10) | 3320 | 22.0% |
+| [10, 12) | 3941 | 26.1% |
+| [12, 14) | 3108 | 20.6% |
+| [14, 16) | 1968 | 13.0% |
+| [16, 18) | 480 | 3.2% |
 | [18, 20] | 19 | 0.1% |
 
 The weakest reading anywhere in the corpus is **03:45:15**, on a scale
 of twenty. Under the default floors, **160** readings (1.1%) are weak,
-**5274** (35.0%) middling and **9651** (64.0%) strong.
+**5285** (35.0%) middling and **9675** (64.0%) strong.
 
-Of the 25 860 matters asked, **21 964** have two distinct lords to
+Of the 25 920 matters asked, **22 019** have two distinct lords to
 judge. The two floors are **separable** — whether a planet is weak
 turns only on the lower and whether it is strong only on the upper, so
 long as they do not cross — so each table moves one and holds the
@@ -389,21 +379,21 @@ other at its default.
 | **5** (default) | 1.1% | 6 | 0.0% |
 | 6 | 3.6% | 44 | 0.2% |
 | 8 | 15.1% | 566 | 2.6% |
-| 10 | 36.0% | 2845 | 13.0% |
+| 10 | 36.0% | 2852 | 13.0% |
 
 ### The upper floor: where strong begins
 
 | from | readings strong | both lords strong | of the judged |
 |---:|---:|---:|---:|
-| 5 | 98.9% | 21 476 | 97.8% |
-| 8 | 84.9% | 15 828 | 72.1% |
-| **10** (default) | 64.0% | 9098 | 41.4% |
-| 12 | 41.0% | 3710 | 16.9% |
-| 15 | 23.6% | 1299 | 5.9% |
+| 5 | 98.9% | 21 531 | 97.8% |
+| 8 | 84.9% | 15 850 | 72.0% |
+| **10** (default) | 64.0% | 9106 | 41.4% |
+| 12 | 41.0% | 3710 | 16.8% |
+| 15 | 23.7% | 1299 | 5.9% |
 | 20 | 21.2% | 1055 | 4.8% |
 
-**At the default floors, both lords are weak in 6 of the 21 964 judged
-matters (0.0%), both strong in 9098 (41.4%), and the other 12 860 are
+**At the default floors, both lords are weak in 6 of the 22 019 judged
+matters (0.0%), both strong in 9106 (41.4%), and the other 12 907 are
 mixed.** The first is a **ceiling**, not a count of anything that held:
 Dutthottha-Davira and Durapha both require a weak pair before asking
 anything else, so neither can hold in more matters than it allows.
@@ -416,7 +406,7 @@ this corpus: under the default floors the readings **partition** into
 weak, middling and strong, and the judged matters into both weak, both
 strong and mixed, each part counted on its own rather than by
 difference; raising the lower floor never makes a planet less weak, nor
-raising the upper one more strong; no upper floor falls below the 3197
+raising the upper one more strong; no upper floor falls below the 3209
 dignified readings; where the two floors are **equal** there is no
 middle, so the lower table's row at five and the upper table's meet
 exactly — the one check that ties the two tables to each other; and no
@@ -428,18 +418,18 @@ Rudda is the Ithasala spoilt: one where either of the pair is
 "retrograde, combust, debilitated, in the 6th, 8th or 12th, or under
 malefic influence". Retrograde and combustion are not in a chart's
 longitudes, so they are read from its graha states — over the corpus's
-15 085 readings, **2205** are retrograde and **2050** combust, under the
+15 120 readings, **2210** are retrograde and **2052** combust, under the
 `BPHS` combustion table the profile sets.
 
-Rudda held in **4011** of the 4243 matters in which an Ithasala stood
+Rudda held in **4018** of the 4254 matters in which an Ithasala stood
 (94.5%). Each clause, counted in the Ruddas where it held of either lord
 — so a Rudda with two afflictions is counted twice:
 
 | clause | Ruddas | of them |
 |---|---:|---|
-| under malefic influence | 3312 | 82.6% |
-| in the 6th, 8th or 12th | 1625 | 40.5% |
-| retrograde | 1203 | 30.0% |
+| under malefic influence | 3319 | 82.6% |
+| in the 6th, 8th or 12th | 1626 | 40.5% |
+| retrograde | 1203 | 29.9% |
 | combust | 1169 | 29.1% |
 | debilitated | 623 | 15.5% |
 
@@ -447,15 +437,15 @@ Rudda held in **4011** of the 4243 matters in which an Ithasala stood
 
 *Under malefic influence* is read as Manau reads it — joined, or
 aspected inimically, by Mars or Saturn — with the pair's own malefic
-counting against its partner (crux C118). **867** Ruddas (21.6%) held on
+counting against its partner (crux C118). **873** Ruddas (21.7%) held on
 that clause and nothing else. That bounds every **narrower** reading at
 once: excluding the partner, or any stricter sense of influence, can
 remove those and no other. A **wider** one — any aspect at all —
-could only add Ruddas, and at most the **232** Ithasalas not spoilt now.
+could only add Ruddas, and at most the **236** Ithasalas not spoilt now.
 
 **Read literally, Rudda spoils almost every Ithasala**, and no reading
-of that one clause changes it: the narrowest would still leave **3144**
-of the 4243 spoilt (74.1%). The breadth is the list itself — any one
+of that one clause changes it: the narrowest would still leave **3145**
+of the 4254 spoilt (73.9%). The breadth is the list itself — any one
 of five common afflictions, on either of two planets — which is the
 mirror of *unqualified* (crux C115), read so strictly that Khallasara
 almost never holds. It is recorded rather than corrected, because no
@@ -484,13 +474,13 @@ it.
 
 | step | Gairi-Kamboola | step | Tambira |
 |---|---:|---|---:|
-| an Ithasala | 4243 | the pair do not aspect | 7924 |
+| an Ithasala | 4254 | the pair do not aspect | 7938 |
 | the Moon, not one of the pair, at a sign's end | 107 | the karyesha at a sign's end | 277 |
 | that Moon unqualified | 0 | and not retrograde | 215 |
 | **held** | **0** | **held** | **20** |
 
 **The step from the second row to the third is the source's
-*unqualified*,** which §10 found the Moon meeting in 1 of 2155 charts.
+*unqualified*,** which §10 found the Moon meeting in 1 of 2160 charts.
 Whatever Gairi-Kamboola loses there is C115's to move, not this yoga's:
 narrowing that one reading is what would widen both it and Khallasara.
 Where it holds, Khallasara does not, though every printed clause of
@@ -510,74 +500,74 @@ A saham is **a − b + c**, carried one sign further when c does not
 fall between b and a counted from b (`03-design/tajika-sahams.md`). The
 source gives forty-one, and each is read here in every chart under its
 readings and under each rival, through `sdk.chart().sahams_with_rules`.
-1095 of the 2155 charts open by day and read the day formulas.
+1133 of the 2160 charts open by day and read the day formulas.
 
 **Two identities hold, and the pass fails if either does not:** a saham
 reading no other moves when no sign is ever added exactly as often as it
 took one, and a saham that reads no house never moves under equal houses
 — Samarthya and Manmatha among them, which read only the lagna's lord.
 The five that read another saham also move with it: with no sign ever
-added they move in 6734 placements to the 5310 in which they took a sign
+added they move in 6767 placements to the 5338 in which they took a sign
 themselves, because Punya, Guru and Vidya lose theirs. Over all
-forty-one, 40 513 of 88 355 placements took the sign. The three pairs
+forty-one, 40 599 of 88 560 placements took the sign. The three pairs
 the source gives one formula each — Vidya and Guru, Raja and Pitri,
 Kshama and Kali — agree in every column.
 
-**Counting "between" in whole signs moves 11 768 placements in all
+**Counting "between" in whole signs moves 11 816 placements in all
 (13.3%).** That is the reading a widely used program applies; the
 source's own birth-chart Punya refutes it, the Sun, lagna and Moon all
-in Leo. **Equal houses from the lagna put 22.9%** of the placements of
+in Leo. **Equal houses from the lagna put 23.0%** of the placements of
 the five sahams that read a house past the first in another sign than
 Sripati's mid-points do, which the source builds from the lagna and the
 midheaven and prints. This profile's own chalit is Vehlow's, equal
 houses centred on the lagna, which is why the default reads Sripati's
 from the angles and not the chart's chalit: read off the chalit, this
 column was zero. **Roga's second reading** stands in another sign in
-**1953** of 2155 charts.
+**1960** of 2160 charts.
 
 | saham | took the added sign | another sign, whole signs | another sign, equal houses |
 |---|---:|---:|---:|
-| 1 Punya | 26.4% | 11.9% | no house past the first |
-| 2 Guru | 73.6% | 11.6% | no house past the first |
-| 3 Vidya | 73.6% | 11.6% | no house past the first |
-| 4 Yasha | 50.6% | 21.1% | no house past the first |
-| 5 Mitra | 49.9% | 25.7% | no house past the first |
-| 6 Mahatmya | 43.5% | 21.9% | no house past the first |
-| 7 Asha | 34.7% | 12.3% | no house past the first |
-| 8 Samarthya | 38.9% | 13.0% | no house past the first |
-| 9 Bhratri | 50.4% | 10.7% | no house past the first |
-| 10 Gaurava | 50.5% | 12.1% | no house past the first |
-| 11 Pitri | 27.5% | 11.7% | no house past the first |
-| 12 Raja | 27.5% | 11.7% | no house past the first |
-| 13 Matri | 33.9% | 12.3% | no house past the first |
+| 1 Punya | 25.8% | 12.0% | no house past the first |
+| 2 Guru | 74.2% | 11.3% | no house past the first |
+| 3 Vidya | 74.2% | 11.3% | no house past the first |
+| 4 Yasha | 50.8% | 21.2% | no house past the first |
+| 5 Mitra | 50.0% | 25.6% | no house past the first |
+| 6 Mahatmya | 43.5% | 22.0% | no house past the first |
+| 7 Asha | 34.1% | 12.3% | no house past the first |
+| 8 Samarthya | 39.0% | 13.0% | no house past the first |
+| 9 Bhratri | 50.5% | 10.8% | no house past the first |
+| 10 Gaurava | 50.6% | 12.0% | no house past the first |
+| 11 Pitri | 26.8% | 11.8% | no house past the first |
+| 12 Raja | 26.8% | 11.8% | no house past the first |
+| 13 Matri | 33.7% | 12.5% | no house past the first |
 | 14 Putra | 50.3% | 12.6% | no house past the first |
-| 15 Jeeva | 48.9% | 10.6% | no house past the first |
+| 15 Jeeva | 48.4% | 10.7% | no house past the first |
 | 16 Roga | 0.0% | 7.8% | no house past the first |
-| 17 Karma | 35.6% | 14.5% | no house past the first |
-| 18 Manmatha | 34.7% | 11.3% | no house past the first |
-| 19 Kali | 45.3% | 12.4% | no house past the first |
-| 20 Kshama | 45.3% | 12.4% | no house past the first |
-| 21 Shastra | 50.3% | 12.8% | no house past the first |
-| 22 Bandhu | 51.8% | 12.2% | no house past the first |
-| 23 Mrityu | 50.6% | 11.8% | 13.5% |
-| 24 Deshantara | 69.1% | 8.6% | 32.9% |
-| 25 Artha | 8.6% | 6.9% | 19.4% |
-| 26 Paradara | 50.5% | 16.3% | no house past the first |
-| 27 AnyaKarma | 50.1% | 12.0% | no house past the first |
-| 28 Vanika | 48.2% | 11.4% | no house past the first |
-| 29 KaryaSiddhi | 38.1% | 21.4% | no house past the first |
+| 17 Karma | 35.4% | 14.5% | no house past the first |
+| 18 Manmatha | 34.4% | 11.3% | no house past the first |
+| 19 Kali | 45.5% | 12.5% | no house past the first |
+| 20 Kshama | 45.5% | 12.5% | no house past the first |
+| 21 Shastra | 50.2% | 12.7% | no house past the first |
+| 22 Bandhu | 51.9% | 12.2% | no house past the first |
+| 23 Mrityu | 50.6% | 11.8% | 13.6% |
+| 24 Deshantara | 69.2% | 8.7% | 33.1% |
+| 25 Artha | 8.6% | 6.9% | 19.6% |
+| 26 Paradara | 50.4% | 16.3% | no house past the first |
+| 27 AnyaKarma | 50.4% | 11.9% | no house past the first |
+| 28 Vanika | 48.1% | 11.4% | no house past the first |
+| 29 KaryaSiddhi | 38.0% | 22.0% | no house past the first |
 | 30 Vivaha | 50.3% | 12.0% | no house past the first |
-| 31 Prasava | 32.0% | 13.1% | no house past the first |
-| 32 Santaapa | 49.3% | 12.4% | 13.9% |
-| 33 Shraddha | 50.2% | 14.3% | no house past the first |
-| 34 Preeti | 52.4% | 17.5% | no house past the first |
-| 35 Jadya | 51.6% | 13.7% | no house past the first |
-| 36 Vyapara | 49.9% | 15.0% | no house past the first |
-| 37 PaneeyaPaata | 49.9% | 12.3% | no house past the first |
-| 38 Shatru | 56.1% | 11.3% | no house past the first |
-| 39 Jalapatha | 45.6% | 12.4% | no house past the first |
-| 40 Bandhana | 50.0% | 21.5% | no house past the first |
-| 41 Labha | 84.5% | 8.0% | 34.6% |
+| 31 Prasava | 31.9% | 13.1% | no house past the first |
+| 32 Santaapa | 49.2% | 12.4% | 13.9% |
+| 33 Shraddha | 50.2% | 14.4% | no house past the first |
+| 34 Preeti | 52.6% | 17.6% | no house past the first |
+| 35 Jadya | 51.6% | 13.6% | no house past the first |
+| 36 Vyapara | 49.8% | 15.0% | no house past the first |
+| 37 PaneeyaPaata | 49.6% | 12.3% | no house past the first |
+| 38 Shatru | 56.4% | 11.3% | no house past the first |
+| 39 Jalapatha | 46.4% | 12.4% | no house past the first |
+| 40 Bandhana | 50.2% | 21.6% | no house past the first |
+| 41 Labha | 84.4% | 8.1% | 34.7% |
 
 ## 15. The Harsha bala
 
@@ -587,14 +577,14 @@ own part of the day (`03-design/tajika-harsha.md`). Read in every chart
 through `sdk.chart().harsha`.
 
 **The source says fifteen is generally the most a planet reaches and
-twenty rather unusual.** Over 15 085 placements of the seven, 15 024
-hold fifteen or less and **61** hold all four (0.4%).
+twenty rather unusual.** Over 15 120 placements of the seven, 15 057
+hold fifteen or less and **63** hold all four (0.4%).
 
 **Venus's rival place moves Venus alone, and the pass fails if it moves
 anything else.** Read as a widely used program reads it, in the 12th
 rather than the verse's 5th, Venus holds another total in **347** of
-2155 charts (16.1%). The day part decomposes too: the Sun holds it in
-exactly the 1095 charts read by day, the Moon in exactly the 1060 read
+2160 charts (16.1%). The day part decomposes too: the Sun holds it in
+exactly the 1133 charts read by day, the Moon in exactly the 1027 read
 by night.
 
 **Sun, Venus and Saturn never hold all four, and the pass fails if one
@@ -605,13 +595,13 @@ and their twenties are zeros by the rule rather than by chance.
 
 | planet | Nirbala, 0 | Alpabali, 5 | Madhya Bali, 10 | Poorna Bali, 15 | twenty |
 |---|---:|---:|---:|---:|---:|
-| Sun | 19.9% | 40.6% | 33.5% | 6.1% | 0.0% |
-| Moon | 21.7% | 41.4% | 28.5% | 8.1% | 0.3% |
-| Mars | 19.0% | 41.0% | 29.5% | 9.6% | 0.9% |
-| Mercury | 21.2% | 44.4% | 26.7% | 7.4% | 0.3% |
-| Jupiter | 19.0% | 39.2% | 30.6% | 9.9% | 1.3% |
-| Venus | 18.7% | 38.7% | 33.9% | 8.7% | 0.0% |
-| Saturn | 15.6% | 42.6% | 34.8% | 7.1% | 0.0% |
+| Sun | 19.5% | 39.5% | 34.9% | 6.1% | 0.0% |
+| Moon | 22.3% | 41.4% | 28.2% | 7.7% | 0.3% |
+| Mars | 18.5% | 40.6% | 30.4% | 9.6% | 0.9% |
+| Mercury | 21.6% | 44.8% | 26.3% | 7.0% | 0.3% |
+| Jupiter | 18.5% | 38.8% | 31.1% | 10.2% | 1.4% |
+| Venus | 19.0% | 39.3% | 33.4% | 8.3% | 0.0% |
+| Saturn | 16.0% | 43.1% | 34.0% | 6.9% | 0.0% |
 
 ## 16. A saham's strength
 
@@ -621,9 +611,9 @@ judges its worked sahams in words, never by a score
 read in every chart through `sdk.chart().saham_strength`, under the
 year's own lord.
 
-**The two lists are not two verdicts.** Of 88 355 placements, 32 144
-meet a strong clause and no weak one, 1795 a weak clause and no strong
-one, and **54 416 meet clauses on both lists** (61.6%). A score would
+**The two lists are not two verdicts.** Of 88 560 placements, 32 242
+meet a strong clause and no weak one, 1802 a weak clause and no strong
+one, and **54 516 meet clauses on both lists** (61.6%). A score would
 have to weigh one list against the other, which is a rule the source
 does not state; the report gives the clauses. **None meets neither, and
 the pass fails if one does**: the strong list's "its lord aspects or
@@ -643,14 +633,14 @@ and the pass fails if one does.
 | strong | its lord is in its own Navamsha | 15.4% |
 | strong | its lord is in a friend's sign | 28.5% |
 | strong | it is with a friend of its lord | 12.7% |
-| strong | it is with a natural benefic | 28.9% |
-| strong | it is with the year lord | 8.8% |
+| strong | it is with a natural benefic | 28.8% |
+| strong | it is with the year lord | 8.9% |
 | strong | its lord conjoins it | 8.6% |
-| strong | its lord aspects it | 67.8% |
+| strong | its lord aspects it | 67.9% |
 | strong | its lord aspects the lagna | 66.8% |
-| weak | its lord is under the Panchavargiya floor | 1.1% |
-| weak | its lord has no Harsha bala | 18.9% |
-| weak | its lord neither aspects nor conjoins it | 32.2% |
+| weak | its lord is under the Panchavargiya floor | 1.0% |
+| weak | its lord has no Harsha bala | 19.0% |
+| weak | its lord neither aspects nor conjoins it | 32.1% |
 | weak | it is with an enemy of its lord | 13.0% |
 | weak | it is with a natural malefic | 23.9% |
 
@@ -658,9 +648,9 @@ and the pass fails if one does.
 
 Kuttha wants both lords powerful, in a kendra or a panaphara, under a
 benefic's aspect and no malefic's (`03-design/tajika-yogas.md`, crux
-C117). It held in **957** of the 21 964 judged matters (4.4%). It can
+C117). It held in **957** of the 22 019 judged matters (4.3%). It can
 hold only where both lords are strong, and the default floors find
-**9098** such matters, so 8141 of them were turned away by a clause
+**9106** such matters, so 8149 of them were turned away by a clause
 other than strength.
 
 **Which clause turns a strong pair away.** A clause fails a matter where
@@ -672,9 +662,9 @@ strong pairs are counted, and the pass fails if it does not.
 | clause | turned away | alone |
 |---|---:|---:|
 | powerful | 0 | 0 |
-| in a kendra or a panaphara | 5165 | 1395 |
+| in a kendra or a panaphara | 5167 | 1395 |
 | under a benefic's aspect | 647 | 50 |
-| under no malefic's aspect | 6608 | 2716 |
+| under no malefic's aspect | 6616 | 2722 |
 
 **The commentary's full Moon** (`moon_benefic: waxing`) holds Kuttha in
 **896** matters to the default's 957. It can only remove a benefic, so
@@ -693,8 +683,8 @@ view takes the successor at once (`moon: ithasala`).
 
 | step | Charak | Nilakanthi |
 |---|---:|---:|
-| `Strongest` | 2087 | 1913 |
-| `MostPortfolios` | 1 | 1 |
+| `Strongest` | 2093 | 1918 |
+| `MostPortfolios` | 0 | 0 |
 | `MunthaLordUnaspected` | 41 | 41 |
 | `MunthaLordAllWeak` | 0 | 0 |
 | `MunthaLordTied` | 0 | 0 |
@@ -702,14 +692,14 @@ view takes the successor at once (`moon: ithasala`).
 | `AnnualLagnaLordUnaspected` | 0 | 0 |
 | `StrongestUnaspected` | 0 | 0 |
 | `MoonsIthasala` | 22 | 154 |
-| `MoonsSignLord` | 4 | 46 |
+| `MoonsSignLord` | 4 | 47 |
 
-Of 2155 years, the Moon would have led the chain in **200**. Under
+Of 2160 years, the Moon would have led the chain in **201**. Under
 Charak it was succeeded in **26**: the case the build answered with the
 Moon itself until the successor was built. Of those successors, 14 hold
 no portfolio, which only the Moon's Ithasala allows. The Moon holds the
 year in 1, and only ever as a Moon in Cancer succeeding itself. The
-Nilakanthi's reading changes the lord of **132** years.
+Nilakanthi's reading changes the lord of **133** years.
 
 The rows for the lagna lord's and the strongest's readings of an
 unaspected lagna are zero by construction, since neither is asked here.
@@ -723,12 +713,12 @@ Moon did not lead, or if a reading not asked is ever counted.
 The Mudda, the Varsha Yogini and the Patyayini of every recorded year,
 through `sdk.chart().annual_dashas` under the default readings
 (`03-design/annual-dashas.md`): the Sun's clock and the birth Moon's
-balance. 2155 years were read, 545 147 periods listed to the antardasha.
+balance. 2160 years were read, 546 412 periods listed to the antardasha.
 
 Every one of them opens on its return. In every one, the mahadashas run
 end to end from the return to the year's close, and each mahadasha's
 antardashas run end to end across it. The pass fails on the first that
-does not. Where the sweep also found the next return (2101 years), the
+does not. Where the sweep also found the next return (2106 years), the
 Sun's clock closes on it **within 17.28 ms**, twice the search's
 tolerance: the clock's last knot and the return's own search each stop
 within it of the one crossing. The gap inside that bound is the two

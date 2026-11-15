@@ -306,7 +306,8 @@ fn differences(chart: &teistro::RuleChart, recorded: &serde_json::Value) -> [usi
     differ
 }
 
-/// The three pairs over the corpus's 51 charts with a hora lagna, by how the
+/// The three pairs over the corpus's 53 charts, every one with a hora lagna
+/// (Tromsø's two since C1900), by how the
 /// class was decided and what it came to: three independent pairs agree all
 /// three one time in nine and differ all three two times in nine, and these
 /// are 9 and 14; Saturn among the contributors takes five short lives to
@@ -315,9 +316,9 @@ fn differences(chart: &teistro::RuleChart, recorded: &serde_json::Value) -> [usi
 /// (the lagna pair's `Long` before the apparent Sun was put in the frame
 /// of date).
 const THREE_PAIRS: [(&str, usize); 12] = [
-    ("Agreement { pairs: 2 }/Long", 4),
+    ("Agreement { pairs: 2 }/Long", 5),
     ("Agreement { pairs: 2 }/Medium", 8),
-    ("Agreement { pairs: 2 }/Short", 12),
+    ("Agreement { pairs: 2 }/Short", 13),
     ("Agreement { pairs: 2 }/Yogarishta", 4),
     ("Agreement { pairs: 3 }/Long", 2),
     ("Agreement { pairs: 3 }/Medium", 4),
@@ -376,8 +377,8 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         // BPHS ch. 4 vv. 2 to 5: the bhava lagna moves a sign in five ghatis
         // and the hora lagna in two and a half, both from the Sun, so the one
         // is always half as far round as the other.
-        // A polar birth withholds both, as the verses count no lagna that
-        // far from a sunrise; every other chart has both.
+        // A birth too far from its sunrise withholds both, as the verses
+        // count no lagna that far; every corpus chart has both.
         let sun = document.foundation.graha(Graha::Sun).unwrap().longitude_deg;
         let derived = document.points.as_ref().unwrap();
         let from_sun = |point: Point| {
@@ -430,7 +431,8 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // than fails. No field differs anywhere else. Thirteen points from the
     // longitudes (the Indu lagna among them), and nineteen with the six the
     // day divides: Gulika and Mandi, Kala, Mrityu, Yamaghantaka and
-    // Ardhaprahara; fifteen at Tromsø, without the four time lagnas. The
+    // Ardhaprahara, Tromsø's two among them: its polar days count from the
+    // sunrise `NEAREST_EVENT` synthesises for each date (C1900). The
     // first special-lagna figure holds
     // on no chart; the second on one, c034, whose hora lagna stands 0.24°
     // into Cancer, 28 seconds of sunrise from Gemini, so that it holds or
@@ -439,19 +441,16 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // record the special lagnas, so the count is the SDK's own.
     assert_eq!(
         (charts, points, differ, special),
-        (53, 51 * 19 + 2 * 15, [1, 1, 1, 0, 7], [0, 1])
+        (53, 53 * 19, [1, 1, 1, 0, 7], [0, 1])
     );
     let decided: Vec<(&str, usize)> = decided
         .iter()
         .map(|(key, count)| (key.as_str(), *count))
         .collect();
     assert_eq!(decided, THREE_PAIRS);
-    // Tromsø's midnight sun and polar night have no sunrise for a time
-    // lagna to count from, so they withhold the four and keep the rest.
-    assert_eq!(
-        withheld,
-        ["c028-troms-1988-06-21.json", "c029-troms-1988-12-21.json"]
-    );
+    // No chart withholds them: Tromsø's polar days count from the sunrise
+    // `NEAREST_EVENT` synthesises for each date (C1900).
+    assert!(withheld.is_empty(), "{withheld:?}");
     // Refused: the two charts at the built-in ephemeris's edges, whose
     // strength reads the year before a birth outside 1800 to 2400.
     let refused: Vec<(&str, teistro::Status)> = refused
@@ -610,14 +609,15 @@ fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
 /// side a body falls is below a tier's accuracy, so the count is the
 /// tier's own; the comparison with the kernel holds on every tier.
 fn present_on_the_tier(charts: usize, present: usize, rules: usize) {
-    // Tromsø's two charts keep every point but the time lagnas, and one
-    // rule reading the rest holds there on every tier.
+    // Tromsø's two charts keep every point, the time lagnas counted from
+    // the sunrise `NEAREST_EVENT` synthesises (C1900), and fifteen rules
+    // more hold on them than when they withheld the four.
     let on_the_tier = if cfg!(feature = "builtin-full") {
-        17_103
+        17_118
     } else if cfg!(feature = "builtin-standard") {
-        17_101
+        17_116
     } else {
-        17_099
+        17_114
     };
     assert_eq!((charts, present, rules), (53, on_the_tier, 4608));
 }
@@ -699,7 +699,7 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
         charts += 1;
     }
     // About 300 of the set's 4605 rules hold a chart, which is why only the present
-    // are carried; Tromsø's two are read without the points a rule named, and
+    // are carried; Tromsø's two read every point, and
     // only the two charts at the built-in ephemeris's edges are refused.
     let refused: Vec<(&str, teistro::Status)> = refused
         .iter()
@@ -722,10 +722,7 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
             ("Samudaya", 6)
         ]
     );
-    assert_eq!(
-        unreadable,
-        ["c028-troms-1988-06-21.json", "c029-troms-1988-12-21.json"]
-    );
+    assert!(unreadable.is_empty(), "{unreadable:?}");
     assert_eq!(
         refused,
         [

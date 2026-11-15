@@ -24,7 +24,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::PolarDayPolicy;
 use teistro_core::time::LocalClock;
-use teistro_time::local_day::{DayState, LocalDay, PolarKind, local_day};
+use teistro_time::local_day::{LocalDay, local_day};
 
 /// Which part of a day's arc holds an instant.
 ///
@@ -181,11 +181,9 @@ impl ChartDay {
 ///
 /// Whatever `time::local_day` refuses — a date the calendar does not
 /// have, the solar model's own refusal, or a polar day under the
-/// `UNDEFINED` policy, which names the policies that synthesise one — and
-/// a polar day whose policy put its bounds where the instant is not:
-/// `NEAREST_EVENT` anchors the day to the nearest real sunrise, which at
-/// midsummer in the far north is weeks away. That refusal names the
-/// policy, where the ghati reckoning's would have named only the instant.
+/// `UNDEFINED` policy, which names the policies that synthesise one.
+/// Every policy that synthesises a day gives each civil date its own,
+/// touching the next (C1900), so every instant has one.
 pub fn chart_day(
     model: &dyn SolarModel,
     calendar: &dyn CalendarSystem,
@@ -217,36 +215,14 @@ pub fn chart_day(
     Ok(within(day, instant))
 }
 
-/// Why no day holds an instant: the polar policy put the day it belongs to
-/// somewhere else. A normal day holds every instant from its sunrise to
-/// the next, so only a synthesised one can miss.
+/// Why no day holds an instant. Every day, real or synthesised, meets
+/// the next at its sunrise under every policy (C1900), so a miss is this
+/// crate's error and not the consumer's choice.
 fn outside(day: &LocalDay, instant: JulianDay<Utc>) -> Error {
-    // Only `NEAREST_EVENT` places a day elsewhere: every other day, real
-    // or synthesised, meets the next at its sunrise, so a miss under any
-    // other is this crate's error and not the consumer's choice.
-    let DayState::Polar {
-        kind,
-        policy: policy @ PolarDayPolicy::NearestEvent,
-    } = day.state
-    else {
-        return Error::internal(format!(
-            "the day from {} to {} was chosen for {instant} and does not hold it",
-            day.sunrise, day.next_sunrise
-        ));
-    };
-    Error::unsupported(format!(
-        "{instant} falls in a polar {} at {}, and under {policy} its day runs from {} to {}, \
-         which does not hold it",
-        match kind {
-            PolarKind::Day => "day",
-            PolarKind::Night => "night",
-        },
-        day.place,
-        day.sunrise,
-        day.next_sunrise
+    Error::internal(format!(
+        "the day from {} to {} was chosen for {instant} and does not hold it",
+        day.sunrise, day.next_sunrise
     ))
-    .with_field("day.polar_day_policy")
-    .with_hint("choose CIVIL_MIDNIGHT, which reckons a polar day from civil midnight to the next")
 }
 
 /// Where an instant falls in a day whose arc already holds it.
@@ -416,15 +392,16 @@ mod tests {
         }
     }
 
-    /// Under `NEAREST_EVENT` a polar day is the nearest real one, twenty days
-    /// away, which cannot hold the instant: the refusal names the policy
-    /// and the one that does, where it once came from the ghati reckoning
-    /// naming only the instant. `CIVIL_MIDNIGHT` holds it.
+    /// Under `NEAREST_EVENT` a polar day is the civil date's own (C1900):
+    /// twenty days before the first sunrise, it runs from that sunrise's
+    /// hour on its own date, and holds the instant, as `CIVIL_MIDNIGHT`'s
+    /// civil day does. It once stood on the real sunrise twenty days away
+    /// and was refused.
     #[test]
-    fn a_polar_day_that_cannot_hold_the_instant_names_its_policy() {
+    fn a_polar_day_holds_its_own_instants_under_either_policy() {
         let noon = at(730_000, 12.0);
-        let found = |policy| {
-            chart_day(
+        for policy in [PolarDayPolicy::NearestEvent, PolarDayPolicy::CivilMidnight] {
+            let held = chart_day(
                 &MidnightSun,
                 &Gregorian,
                 &UtcOffset::UTC,
@@ -432,17 +409,19 @@ mod tests {
                 noon,
                 policy,
             )
-        };
-        let refused = found(PolarDayPolicy::NearestEvent).unwrap_err();
-        assert_eq!(refused.field(), Some("day.polar_day_policy"));
-        assert!(refused.message.contains("polar day"), "{}", refused.message);
-        assert!(
-            refused
-                .hint()
-                .is_some_and(|hint| hint.contains("CIVIL_MIDNIGHT"))
-        );
-        let held = found(PolarDayPolicy::CivilMidnight).unwrap();
-        assert!(held.day.contains(noon));
+            .unwrap();
+            assert!(held.day.contains(noon), "{policy:?}");
+        }
+        let nearest = chart_day(
+            &MidnightSun,
+            &Gregorian,
+            &UtcOffset::UTC,
+            &place(),
+            noon,
+            PolarDayPolicy::NearestEvent,
+        )
+        .unwrap();
+        assert!((nearest.day.sunrise.get() - at(730_000, 6.0).get()).abs() < 1e-9);
     }
 
     /// [`MidnightSun`] the other way round: the Sun rises and sets like
@@ -471,8 +450,8 @@ mod tests {
         }
     }
 
-    /// Under `CIVIL_MIDNIGHT` every instant belongs to a day, across both
-    /// seams of a polar season. The last polar day once ended at civil
+    /// Under either synthesising policy every instant belongs to a day,
+    /// across both seams of a polar season. The last polar day once ended at civil
     /// midnight while the first real day began at its sunrise, so the
     /// small hours between belonged to none: found progressing Tromsø's
     /// midsummer birth thirty and a half years on
@@ -480,7 +459,8 @@ mod tests {
     #[test]
     fn every_instant_across_a_polar_seam_has_a_day() {
         let models: [&dyn SolarModel; 2] = [&MidnightSun, &SunThatStopsSetting];
-        for model in models {
+        let policies = [PolarDayPolicy::CivilMidnight, PolarDayPolicy::NearestEvent];
+        for (model, policy) in models.into_iter().flat_map(|m| policies.map(|p| (m, p))) {
             for half_hour in 0..(10 * 48) {
                 let instant = at(730_015, f64::from(half_hour) / 2.0);
                 let day = chart_day(
@@ -489,7 +469,7 @@ mod tests {
                     &UtcOffset::UTC,
                     &place(),
                     instant,
-                    PolarDayPolicy::CivilMidnight,
+                    policy,
                 )
                 .unwrap_or_else(|e| panic!("{} at {instant}: {e}", model.describe()));
                 assert!(day.day.contains(instant));

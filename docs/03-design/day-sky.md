@@ -108,9 +108,9 @@ for the same reason a moonrise is: a window of 24 hours can hold no moon
 transit, about once a lunation, and sometimes two.
 
 **The window.** It is the day's `window`. On a polar day that window is the
-policy's: under `NEAREST_EVENT` it is the nearest day with a sunrise, five weeks
-from midsummer at Tromsø, so it says nothing of the date asked
-(`settings-and-profiles.md`, the polar note). A day whose state is polar takes
+policy's: under `NEAREST_EVENT` it is the date's own synthesised day, its
+sunrise carried between the season's real ones (C1900,
+`settings-and-profiles.md`, the polar note). A day whose state is polar takes
 the civil day instead, midnight to midnight on the request's offset, and the
 section's provenance names the rule under the convention `sky.window`.
 

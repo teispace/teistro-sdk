@@ -166,8 +166,8 @@ fn the_locale_defaults_to_the_contexts() {
 
 /// The polar sankranti: at Tromso on the Karka and Makara sankrantis, the
 /// day under `NEAREST_EVENT` answers rather than refusing, says the Sun
-/// neither rises nor sets, and withholds what its window holds elsewhere.
-/// Under `UNDEFINED`, the day's own refusal names the policy.
+/// neither rises nor sets, and says its own limbs (C1900). Under
+/// `UNDEFINED`, the day's own refusal names the policy.
 #[test]
 fn a_polar_sankranti_is_answered_under_a_policy_and_refused_without() {
     const TROMSO: (f64, f64) = (69.6492, 18.9553);
@@ -182,8 +182,8 @@ fn a_polar_sankranti_is_answered_under_a_policy_and_refused_without() {
             .unwrap()
             .value;
         assert!(said.sentences.iter().any(|s| s.key == sentence), "{date:?}");
-        assert!(said.withheld.iter().any(|fact| fact == "tithi"));
-        assert!(said.sentences.iter().all(|s| s.key != "sdk.day.tithi"));
+        assert_eq!(said.withheld, Vec::<String>::new());
+        assert!(said.sentences.iter().any(|s| s.key == "sdk.day.tithi"));
     }
     let undefined = context(r#"{"day": {"polar_day_policy": "UNDEFINED"}}"#);
     let refused = undefined
@@ -194,10 +194,10 @@ fn a_polar_sankranti_is_answered_under_a_policy_and_refused_without() {
 }
 
 /// Tromso on 21 December 2026 under both polar policies. `NEAREST_EVENT`
-/// runs from the last sunrise to the next, some fifty-five tithis, which
-/// is its intended reading, so a sentence of one tithi would be false of
-/// the date and the limbs are withheld. `CIVIL_MIDNIGHT` is what a
-/// calendar shows: the date's own limbs, and still no sunrise.
+/// gives the date its own day, its sunrise carried from the last real one
+/// to the next (C1900): one to three tithis, as on any day, where it once
+/// ran from the last sunrise to the next, some fifty-five. `CIVIL_MIDNIGHT`
+/// is what a calendar shows: the date's own limbs, and still no sunrise.
 #[test]
 fn tromso_at_midwinter_reads_as_each_policy_means() {
     const TROMSO: (f64, f64) = (69.6492, 18.9553);
@@ -211,14 +211,13 @@ fn tromso_at_midwinter_reads_as_each_policy_means() {
         .unwrap()
         .value;
     assert!(
-        (45..=65).contains(&span.limbs.tithi.len()),
+        (1..=3).contains(&span.limbs.tithi.len()),
         "{}",
         span.limbs.tithi.len()
     );
     let said = nearest.almanac().sentences(&request).unwrap().value;
-    let keys: Vec<&str> = said.sentences.iter().map(|s| s.key.as_str()).collect();
-    assert_eq!(keys, ["sdk.day.vara", "sdk.day.sunDown", "sdk.day.ritu"]);
-    assert!(said.withheld.iter().any(|fact| fact == "tithi"));
+    assert!(said.sentences.iter().any(|s| s.key == "sdk.day.sunDown"));
+    assert_eq!(said.withheld, Vec::<String>::new());
 
     let civil = context(r#"{"day": {"polar_day_policy": "CIVIL_MIDNIGHT"}}"#);
     let said = civil.almanac().sentences(&request).unwrap().value;

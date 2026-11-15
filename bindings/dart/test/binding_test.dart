@@ -9657,9 +9657,8 @@ void _engineTests() {
       ),
     );
 
-    // Tromsø at midsummer: civil midnight holds the instant and says so;
-    // the nearest real sunrise is weeks away, and the refusal names the
-    // policy rather than the instant.
+    // Tromsø at midsummer: civil midnight holds the instant and says so,
+    // and so does the nearest event's synthesised day.
     final tromso = Observer(
       latitudeDeg: Latitude(69.65),
       longitudeDeg: Longitude(18.96),
@@ -9681,20 +9680,16 @@ void _engineTests() {
       [PolarKind.day, PolarDayPolicy.civilMidnight],
     );
     civil.dispose();
+    // Each polar date is a day of its own (C1900).
     final nearest = under('NEAREST_EVENT');
+    final synthesised =
+        nearest.chart
+            .found(instant: 2451716.5, place: tromso, utcOffsetSeconds: 7200)
+            .day
+            .polar!;
     expect(
-      () => nearest.chart.found(
-        instant: 2451716.5,
-        place: tromso,
-        utcOffsetSeconds: 7200,
-      ),
-      throwsA(
-        isA<TeistroException>().having(
-          (e) => e.field,
-          'field',
-          'day.polar_day_policy',
-        ),
-      ),
+      [synthesised.kind, synthesised.policy],
+      [PolarKind.day, PolarDayPolicy.nearestEvent],
     );
     nearest.dispose();
   });

@@ -26,9 +26,9 @@ built-in ephemeris does not reach: `c047-london-1800-01-02`,
 
 ## A chart whole
 
-Over 53 births the dossiers come to 2 681 192 bytes and the documents'
-canonical JSON to 7 150 634: 0.37 of it, a chart's own ratio between
-0.23 and 0.40.
+Over 53 births the dossiers come to 2 681 541 bytes and the documents'
+canonical JSON to 7 005 108: 0.38 of it, a chart's own ratio between
+0.38 and 0.40.
 
 ## Section by section
 
@@ -39,17 +39,17 @@ against the foundation and the state), summed over the births.
 
 | sections | charts carrying them | dossier bytes | JSON bytes | dossier / JSON | charts where the dossier is not smaller |
 |---|---|---|---|---|---|
-| `CHART`, `GRAHAS` | 53 | 102 520 | 695 141 | 0.15 | 0 |
+| `CHART`, `GRAHAS` | 53 | 102 526 | 695 151 | 0.15 | 0 |
 | `HOUSES` | 53 | 32 648 | 90 456 | 0.36 | 0 |
 | `VARGAS` | 53 | 27 943 | 114 819 | 0.24 | 0 |
 | `DASHAS` | 53 | 2 187 257 | 4 086 672 | 0.54 | 0 |
-| `PANCHANGA` | 53 | 17 036 | 650 482 | 0.03 | 0 |
+| `PANCHANGA` | 53 | 17 037 | 504 588 | 0.03 | 0 |
 | `ASHTAKAVARGA` | 53 | 42 188 | 51 858 | 0.81 | 0 |
-| `SHADBALA` | 53 | 55 510 | 230 192 | 0.24 | 0 |
-| `BHAVA_BALA` | 53 | 43 571 | 82 834 | 0.53 | 0 |
+| `SHADBALA` | 53 | 55 518 | 230 290 | 0.24 | 0 |
+| `BHAVA_BALA` | 53 | 43 571 | 82 836 | 0.53 | 0 |
 | `VIMSHOPAKA` | 53 | 24 866 | 37 072 | 0.67 | 0 |
 | `JAIMINI` | 53 | 18 331 | 95 573 | 0.19 | 0 |
-| `POINTS` | 53 | 46 150 | 182 640 | 0.25 | 0 |
+| `POINTS` | 53 | 46 484 | 182 898 | 0.25 | 0 |
 | `ASPECTS` | 53 | 57 384 | 813 219 | 0.07 | 0 |
 | `AVAKAHADA` | 53 | 14 711 | 20 312 | 0.72 | 0 |
 

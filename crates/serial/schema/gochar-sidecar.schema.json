@@ -2570,7 +2570,7 @@
         },
         {
           "const": "NEAREST_EVENT",
-          "description": "The nearest rise or set.",
+          "description": "A day of each date's own, its sunrise carried between the season's nearest real ones (C1900).",
           "type": "string"
         },
         {

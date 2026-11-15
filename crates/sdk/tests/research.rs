@@ -211,9 +211,10 @@ fn a_slow_predicate_stays_stable_across_a_narrow_window() {
 }
 
 #[test]
-fn a_rule_on_a_point_is_unreadable_on_a_day_with_no_sunrise() {
-    // The baseline's profile founds a polar day by its nearest events; the
-    // special lagnas still have no sunrise to count from.
+fn a_rule_on_a_point_reads_a_polar_birth_by_its_synthesised_sunrise() {
+    // The baseline's profile founds a polar day by its nearest events, and
+    // since C1900 each date has its own sunrise, so the special lagnas
+    // count from it and a rule on them reads the birth.
     let sdk = Context::builder()
         .profile("conformance-baseline")
         .ephemeris([Ephemeris::Builtin])
@@ -246,12 +247,12 @@ fn a_rule_on_a_point_is_unreadable_on_a_day_with_no_sunrise() {
         .unwrap()
         .value;
     let row = &counted.rows[on_points];
-    assert_eq!(row.counts[1].unreadable, 1, "{}", row.predicate);
+    assert_eq!(row.counts[1].unreadable, 0, "{}", row.predicate);
     assert_eq!(row.counts[0].unreadable, 0);
-    // The other charts in the batch keep their reading of it.
+    // Every chart in the batch reads it, the polar night's among them.
     assert_eq!(
         row.counts.iter().map(|c| c.present + c.absent).sum::<u32>(),
-        4
+        5
     );
 }
 

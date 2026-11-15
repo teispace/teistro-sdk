@@ -208,6 +208,10 @@ name = "next"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "polar_day"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "sentences"
 required-features = ["builtin-ephemeris"]
 

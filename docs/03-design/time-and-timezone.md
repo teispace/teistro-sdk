@@ -330,10 +330,26 @@ refraction; a custom altitude) through `DrikSun`, with the provider's
 native rise and set as an override under `PREFER_NATIVE` when the
 context wires it (`astro-events-and-crossings.md`). Above the polar
 circles the solver reports no event; `polar_day_policy` then yields an
-`undefined` state (`UNDEFINED`), the nearest event of the right kind
-(`NEAREST_EVENT`, stamped as a convention), or civil midnight
-(`CIVIL_MIDNIGHT`, stamped). The baseline engine synthesises polar days;
-the SDK reports what it did.
+`undefined` state (`UNDEFINED`), a day synthesised from the season's
+nearest events (`NEAREST_EVENT`, stamped as a convention), or civil
+midnight (`CIVIL_MIDNIGHT`, stamped). The baseline engine synthesises
+polar days; the SDK reports what it did.
+
+**The polar season under `NEAREST_EVENT`** (C1900). Every civil date of a
+polar season is a day of its own. The season's ends are the nearest
+dates with a real arc before and after it; where a polar night meets a
+midnight sun with no arc between (above about 89.8°), the end is the
+seam: the first date of the later season, at its mean midnight when a
+midnight sun begins and its mean noon when a polar night does. A date's
+sunrise is carried from one end's sunrise to the other's in equal
+steps, and its daylight, the share of the day before its sunset, the
+same way from the ends' daylight (a whole day or none at a seam). So
+each day is a day plus the ends' drift over the season's dates, 23 to
+25 hours at any latitude from 66.6° to 89.9°, and its next sunrise is
+the following date's sunrise to the bit. Before C1900 the policy ran a
+polar date from the last real sunrise to the next, weeks long: 18 to 26
+May 2025 at Tromsø answered one 68-day window holding 72 tithis
+(consumer addendum 8, SR-103).
 
 **Planetary hours.** Twenty-four horas from sunrise, each ruled by a
 graha: the first by the day's vara lord, each next by the lord of the

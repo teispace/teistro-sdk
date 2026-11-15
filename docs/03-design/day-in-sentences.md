@@ -104,14 +104,15 @@ What else it says depends on the policy (C931):
 | `polar_day_policy` | window | said | `withheld` |
 |---|---|---|---|
 | `CIVIL_MIDNIGHT` | the civil date | everything but sunrise and sunset | nothing |
-| `NEAREST_EVENT` | the last sunrise to the next, weeks long | the vara, the Sun's state and the season | tithi, nakshatra, yoga, karana, sun, moon, month, ayana, kaala |
+| `NEAREST_EVENT` | the date's own synthesised day, 23 to 25 hours (C1900) | everything but sunrise and sunset | nothing |
 | `UNDEFINED` | none | `UNSUPPORTED` on `day.polar_day_policy`, the day's own refusal | |
 
-`NEAREST_EVENT`'s long span is its intended reading, from the last sunrise to
-the next: Tromso on 2026-12-21 holds about 55 tithis. `CIVIL_MIDNIGHT` is what a
-calendar shows. A sentence "the tithi is X" fits the second and is false of the
-date under the first, so under `NEAREST_EVENT` those facts are named in
-`withheld`; the span itself stays in `almanac.day`. The vara comes
+Under `NEAREST_EVENT` a polar date was once the span from the last sunrise to
+the next, weeks long (Tromso on 2026-12-21 held about 55 tithis), and the
+sentences named its limbs in `withheld`. Since C1900 each date of a polar season
+is a day of its own, its sunrise carried between the season's real ones
+(`time-and-timezone.md` §4), so the day says its limbs as `CIVIL_MIDNIGHT`
+does and `withheld` stays empty; the field remains for a policy that needs it. The vara comes
 from the civil date, and the season is read from the civil date's own signs
 (`calendar-bikram-sambat.md` §6, C930).
 

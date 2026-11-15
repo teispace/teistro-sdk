@@ -134,7 +134,7 @@ knob!(
 knob!(
     /// What a day without a sunrise is.
     PolarDayPolicy { /// An undefined state.
-        Undefined = "UNDEFINED", /// The nearest rise or set.
+        Undefined = "UNDEFINED", /// A day of each date's own, its sunrise carried between the season's nearest real ones (C1900).
         NearestEvent = "NEAREST_EVENT", /// Civil midnight.
         CivilMidnight = "CIVIL_MIDNIGHT" }
 );

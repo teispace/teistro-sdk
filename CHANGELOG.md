@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every date of a polar season is a day of its own under `NEAREST_EVENT` (SR-103, C1900).**
+**Numbers:** every day above a polar circle under `NEAREST_EVENT` moves (the profiles
+`nepali-drik`, `kp-default` and the conformance profile): its sunrise, sunset and next sunrise,
+and so its limbs, periods and hashes. 18 to 26 May 2025 at Tromsø answered one 68-day window
+holding 72 tithis; each date is now 23 to 25 hours holding one to three. The last day with a sunrise before each season moves its next sunrise (to the
+first polar date's); no other day with a real sunrise moves, and `CIVIL_MIDNIGHT` and `UNDEFINED` are unchanged.
+In the conformance corpus, Tromsø's two births (c028, c029) now read their four time lagnas, so
+fifteen more rules hold over the corpus (17 116 on the standard tier, from 17 101); c028's sect
+now agrees with the recording and c029's does not (its synthesised daylight holds noon), and c029
+gains a Sarvartha Siddhi (Wednesday, Rohini at the synthesised sunrise). The measured pages move
+with them: `panchanga-at-the-boundary` (a polar day's lists are an ordinary day's, karanas 2 to
+4 where they reached 122), `sect`, `muntha` (2160 annual charts, from 2155),
+`progressed-angles` (0 of 432 refused, from 5) and `rectification`.
+- **Changed:** a polar date's sunrise is carried in equal steps between the real sunrises that
+  bound its season, and its daylight the same way; where a polar night meets a midnight sun with
+  no arc between (above about 89.8°) the season ends at the seam's mean midnight or noon. Each day
+  touches the next to the bit, at any latitude from 66.6° to 89.9°, polar day or night, at either
+  end of the season (`03-design/time-and-timezone.md` §4).
+- **Changed:** a polar day's sentences say its limbs; `withheld` stays in the answer, empty
+  (C931 superseded). A polar day's sky, chart day and sankranti searches answer where they refused.
+
 **The port states every convention (boundary audit ranks 2 to 7).**
 **Numbers:** under the built-in ephemeris no answer moves: the limb oracle (every
 tithi, karana, nakshatra, yoga, sankranti and sunrise of five years from 1900 to 2100
