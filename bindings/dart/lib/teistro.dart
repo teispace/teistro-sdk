@@ -33686,6 +33686,7 @@ final class Span<T> {
     required this.inside,
     required this.sunrises,
     required this.ends,
+    required this.marginMinutes,
   });
 
   /// Which member ran.
@@ -33713,6 +33714,19 @@ final class Span<T> {
   /// `day.ghati_reckoning`; a member outlasting the day reads as the day's
   /// whole count.
   final GhatiPala ends;
+
+  /// How close the member's end came to deciding which day it names: the
+  /// minutes from the nearer of the day's two sunrises (its own and the
+  /// next) to `whole.to`, positive when it ends after that sunrise and
+  /// negative before it (SR-95).
+  ///
+  /// ```dart
+  /// final close = [
+  ///   for (final span in day.tithi)
+  ///     if (span.marginMinutes.abs() <= 2) span.member,
+  /// ];
+  /// ```
+  final double marginMinutes;
 }
 
 /// A count from sunrise in ghatis of sixty palas of sixty vipalas.
@@ -34146,6 +34160,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Tithi.byId,
     );
   }
@@ -34161,6 +34176,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Nakshatra.byId,
     );
   }
@@ -34176,6 +34192,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Yoga.byId,
     );
   }
@@ -34191,6 +34208,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Karana.byId,
     );
   }
@@ -34206,6 +34224,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Panchaka.byId,
     );
   }
@@ -34224,6 +34243,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Nakshatra.byId,
     );
   }
@@ -34242,6 +34262,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Nakshatra.byId,
     );
   }
@@ -34262,6 +34283,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Rashi.byId,
     );
   }
@@ -34282,6 +34304,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Direction.byId,
     );
   }
@@ -34298,6 +34321,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Direction.byId,
     );
   }
@@ -34316,6 +34340,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Rashi.byId,
     );
   }
@@ -34334,6 +34359,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       AgniVasa.byId,
     );
   }
@@ -34352,6 +34378,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       AshubhaYoga.byId,
     );
   }
@@ -34370,6 +34397,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       BhadraVasa.byId,
     );
   }
@@ -34387,6 +34415,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       ShivaVasa.byId,
     );
   }
@@ -34406,6 +34435,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Panchaka.byId,
     );
   }
@@ -34423,6 +34453,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Direction.byId,
     );
   }
@@ -34442,6 +34473,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Rashi.byId,
     );
   }
@@ -34461,6 +34493,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Graha.byId,
     );
   }
@@ -34482,6 +34515,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       DayMarker.byId,
     );
   }
@@ -34497,6 +34531,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Rashi.byId,
     );
   }
@@ -34512,6 +34547,7 @@ final class AlmanacDay {
       c.insideFrom,
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
       Rashi.byId,
     );
   }
@@ -34624,6 +34660,7 @@ final class AlmanacDay {
     Float64List insideFrom,
     Float64List insideTo,
     (Uint8List, Uint8List, Uint8List, Uint8List) turns,
+    Float64List margins,
     T Function(int) byId,
   ) {
     final (sunrises, ghati, pala, vipala) = turns;
@@ -34635,6 +34672,7 @@ final class AlmanacDay {
         inside: Interval(from: insideFrom[i], to: insideTo[i]),
         sunrises: Sunrises.byId(sunrises[i]),
         ends: GhatiPala(ghati: ghati[i], pala: pala[i], vipala: vipala[i]),
+        marginMinutes: margins[i],
       ),
     );
   }

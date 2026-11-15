@@ -12,6 +12,17 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every limb span carries its decision margin (SR-95, C1901).**
+**Numbers:** no instant moves. Every day's JSON gains `margin_minutes` on each tithi, nakshatra,
+yoga and karana span, so every answer hash over a day moves (`almanac.day`, the MCP's day
+answers, a digest's day sections); the blob's span sections gain the column `margin_minutes`.
+- **New:** `Span::margin_minutes`, the signed minutes from the nearer of the day's two sunrises
+  (its own and the next; its own on a tie) to the span's end, positive when it ends after that
+  sunrise: how far the end could move before it names another day. `Span::margin_from`,
+  `with_margin`, `Limbs::with_margins` and `Panchanga::margin_minutes` in Rust; `marginMinutes`
+  on `Span` in Node, wasm, Dart and Java, `margin_minutes` in Python and the C blob. A property
+  test holds it to the end less the nearer sunrise to 0.1 s over fifty years and ±60° of latitude.
+
 **Every date of a polar season is a day of its own under `NEAREST_EVENT` (SR-103, C1900).**
 **Numbers:** every day above a polar circle under `NEAREST_EVENT` moves (the profiles
 `nepali-drik`, `kp-default` and the conformance profile): its sunrise, sunset and next sunrise,

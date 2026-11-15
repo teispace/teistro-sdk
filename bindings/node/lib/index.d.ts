@@ -5712,6 +5712,17 @@ export interface Span<T> {
    * whole count.
    */
   readonly ends: GhatiPala;
+  /**
+   * How close the member's end came to deciding which day it names: the
+   * minutes from the nearer of the day's two sunrises (its own and the
+   * next) to `whole.to`, positive when it ends after that sunrise and
+   * negative before it (SR-95).
+   *
+   * ```ts
+   * const close = day.tithi.filter((span) => Math.abs(span.marginMinutes) <= 2);
+   * ```
+   */
+  readonly marginMinutes: number;
 }
 
 /** A count from sunrise in ghatis of sixty palas of sixty vipalas. */

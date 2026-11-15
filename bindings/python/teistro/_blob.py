@@ -8234,6 +8234,9 @@ class PanchangaTithi:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8272,6 +8275,9 @@ class PanchangaNakshatra:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8312,6 +8318,9 @@ class PanchangaYoga:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8350,6 +8359,9 @@ class PanchangaKarana:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8390,6 +8402,9 @@ class PanchangaPanchaka:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8429,6 +8444,9 @@ class PanchangaMoonSigns:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8467,6 +8485,9 @@ class PanchangaSunSigns:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8654,6 +8675,9 @@ class PanchangaVarjyam:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8692,6 +8716,9 @@ class PanchangaNakshatraShool:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8732,6 +8759,9 @@ class PanchangaChandraVasa:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8770,6 +8800,9 @@ class PanchangaChandrashtama:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8810,6 +8843,9 @@ class PanchangaAmritKalam:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8848,6 +8884,9 @@ class PanchangaLagnas:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8888,6 +8927,9 @@ class PanchangaAgniVasa:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -8926,6 +8968,9 @@ class PanchangaRahuVasa:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -8966,6 +9011,9 @@ class PanchangaPunyaKala:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9004,6 +9052,9 @@ class PanchangaHomaAhuti:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -9044,6 +9095,9 @@ class PanchangaAshubhaYogas:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9082,6 +9136,9 @@ class PanchangaBhadraVasa:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -9122,6 +9179,9 @@ class PanchangaShivaVasa:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9161,6 +9221,9 @@ class PanchangaNamedPanchaka:
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
 
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9199,6 +9262,9 @@ class PanchangaMarkers:
 
     ends_vipala: memoryview[int]
     """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
 
     length: int
     """The number of rows every column holds."""
@@ -9566,6 +9632,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_ghati=blob.column(at_tithi, 6, 1, at_tithi.count).cast("B"),
             ends_pala=blob.column(at_tithi, 7, 1, at_tithi.count).cast("B"),
             ends_vipala=blob.column(at_tithi, 8, 1, at_tithi.count).cast("B"),
+            margin_minutes=blob.column(
+                at_tithi, 9, 8, at_tithi.count
+            ).cast("d"),
             length=at_tithi.count,
         ),
         nakshatra=PanchangaNakshatra(
@@ -9596,6 +9665,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_nakshatra, 8, 1, at_nakshatra.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_nakshatra, 9, 8, at_nakshatra.count
+            ).cast("d"),
             length=at_nakshatra.count,
         ),
         yoga=PanchangaYoga(
@@ -9608,6 +9680,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_ghati=blob.column(at_yoga, 6, 1, at_yoga.count).cast("B"),
             ends_pala=blob.column(at_yoga, 7, 1, at_yoga.count).cast("B"),
             ends_vipala=blob.column(at_yoga, 8, 1, at_yoga.count).cast("B"),
+            margin_minutes=blob.column(at_yoga, 9, 8, at_yoga.count).cast("d"),
             length=at_yoga.count,
         ),
         karana=PanchangaKarana(
@@ -9624,6 +9697,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_karana, 8, 1, at_karana.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_karana, 9, 8, at_karana.count
+            ).cast("d"),
             length=at_karana.count,
         ),
         panchaka=PanchangaPanchaka(
@@ -9652,6 +9728,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_panchaka, 8, 1, at_panchaka.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_panchaka, 9, 8, at_panchaka.count
+            ).cast("d"),
             length=at_panchaka.count,
         ),
         moon_signs=PanchangaMoonSigns(
@@ -9682,6 +9761,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_moon_signs, 8, 1, at_moon_signs.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_moon_signs, 9, 8, at_moon_signs.count
+            ).cast("d"),
             length=at_moon_signs.count,
         ),
         sun_signs=PanchangaSunSigns(
@@ -9712,6 +9794,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_sun_signs, 8, 1, at_sun_signs.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_sun_signs, 9, 8, at_sun_signs.count
+            ).cast("d"),
             length=at_sun_signs.count,
         ),
         kaalas=PanchangaKaalas(
@@ -9817,6 +9902,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_varjyam, 8, 1, at_varjyam.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_varjyam, 9, 8, at_varjyam.count
+            ).cast("d"),
             length=at_varjyam.count,
         ),
         nakshatra_shool=PanchangaNakshatraShool(
@@ -9847,6 +9935,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_nakshatra_shool, 8, 1, at_nakshatra_shool.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_nakshatra_shool, 9, 8, at_nakshatra_shool.count
+            ).cast("d"),
             length=at_nakshatra_shool.count,
         ),
         chandra_vasa=PanchangaChandraVasa(
@@ -9877,6 +9968,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_chandra_vasa, 8, 1, at_chandra_vasa.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_chandra_vasa, 9, 8, at_chandra_vasa.count
+            ).cast("d"),
             length=at_chandra_vasa.count,
         ),
         chandrashtama=PanchangaChandrashtama(
@@ -9907,6 +10001,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_chandrashtama, 8, 1, at_chandrashtama.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_chandrashtama, 9, 8, at_chandrashtama.count
+            ).cast("d"),
             length=at_chandrashtama.count,
         ),
         amrit_kalam=PanchangaAmritKalam(
@@ -9937,6 +10034,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_amrit_kalam, 8, 1, at_amrit_kalam.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_amrit_kalam, 9, 8, at_amrit_kalam.count
+            ).cast("d"),
             length=at_amrit_kalam.count,
         ),
         lagnas=PanchangaLagnas(
@@ -9953,6 +10053,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_lagnas, 8, 1, at_lagnas.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_lagnas, 9, 8, at_lagnas.count
+            ).cast("d"),
             length=at_lagnas.count,
         ),
         agni_vasa=PanchangaAgniVasa(
@@ -9983,6 +10086,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_agni_vasa, 8, 1, at_agni_vasa.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_agni_vasa, 9, 8, at_agni_vasa.count
+            ).cast("d"),
             length=at_agni_vasa.count,
         ),
         rahu_vasa=PanchangaRahuVasa(
@@ -10013,6 +10119,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_rahu_vasa, 8, 1, at_rahu_vasa.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_rahu_vasa, 9, 8, at_rahu_vasa.count
+            ).cast("d"),
             length=at_rahu_vasa.count,
         ),
         punya_kala=PanchangaPunyaKala(
@@ -10043,6 +10152,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_punya_kala, 8, 1, at_punya_kala.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_punya_kala, 9, 8, at_punya_kala.count
+            ).cast("d"),
             length=at_punya_kala.count,
         ),
         homa_ahuti=PanchangaHomaAhuti(
@@ -10073,6 +10185,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_homa_ahuti, 8, 1, at_homa_ahuti.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_homa_ahuti, 9, 8, at_homa_ahuti.count
+            ).cast("d"),
             length=at_homa_ahuti.count,
         ),
         ashubha_yogas=PanchangaAshubhaYogas(
@@ -10103,6 +10218,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_ashubha_yogas, 8, 1, at_ashubha_yogas.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_ashubha_yogas, 9, 8, at_ashubha_yogas.count
+            ).cast("d"),
             length=at_ashubha_yogas.count,
         ),
         bhadra_vasa=PanchangaBhadraVasa(
@@ -10133,6 +10251,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_bhadra_vasa, 8, 1, at_bhadra_vasa.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_bhadra_vasa, 9, 8, at_bhadra_vasa.count
+            ).cast("d"),
             length=at_bhadra_vasa.count,
         ),
         shiva_vasa=PanchangaShivaVasa(
@@ -10163,6 +10284,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_shiva_vasa, 8, 1, at_shiva_vasa.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_shiva_vasa, 9, 8, at_shiva_vasa.count
+            ).cast("d"),
             length=at_shiva_vasa.count,
         ),
         named_panchaka=PanchangaNamedPanchaka(
@@ -10193,6 +10317,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_named_panchaka, 8, 1, at_named_panchaka.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_named_panchaka, 9, 8, at_named_panchaka.count
+            ).cast("d"),
             length=at_named_panchaka.count,
         ),
         sky=blob.text(at_sky, "sky"),
@@ -10218,6 +10345,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ends_vipala=blob.column(
                 at_markers, 8, 1, at_markers.count
             ).cast("B"),
+            margin_minutes=blob.column(
+                at_markers, 9, 8, at_markers.count
+            ).cast("d"),
             length=at_markers.count,
         ),
         gowri=PanchangaGowri(

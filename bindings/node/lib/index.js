@@ -2487,6 +2487,7 @@ export class AlmanacDay {
       inside: { from: c.insideFrom[i], to: c.insideTo[i] },
       sunrises: SunrisesById.get(c.sunrises[i]) ?? 'unknown',
       ends: Object.freeze({ ghati: c.endsGhati[i], pala: c.endsPala[i], vipala: c.endsVipala[i] }),
+      marginMinutes: c.marginMinutes[i],
     }));
   }
 }

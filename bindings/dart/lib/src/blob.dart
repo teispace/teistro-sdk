@@ -7939,6 +7939,7 @@ final class PanchangaTithi {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -7969,6 +7970,9 @@ final class PanchangaTithi {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -7988,6 +7992,7 @@ final class PanchangaNakshatra {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8018,6 +8023,9 @@ final class PanchangaNakshatra {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8037,6 +8045,7 @@ final class PanchangaYoga {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8067,6 +8076,9 @@ final class PanchangaYoga {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8086,6 +8098,7 @@ final class PanchangaKarana {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8116,6 +8129,9 @@ final class PanchangaKarana {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8135,6 +8151,7 @@ final class PanchangaPanchaka {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8165,6 +8182,9 @@ final class PanchangaPanchaka {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8184,6 +8204,7 @@ final class PanchangaMoonSigns {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8214,6 +8235,9 @@ final class PanchangaMoonSigns {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8233,6 +8257,7 @@ final class PanchangaSunSigns {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8262,6 +8287,9 @@ final class PanchangaSunSigns {
 
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
+
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
 
   /// The number of rows every column holds.
   final int length;
@@ -8460,6 +8488,7 @@ final class PanchangaVarjyam {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8490,6 +8519,9 @@ final class PanchangaVarjyam {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8509,6 +8541,7 @@ final class PanchangaNakshatraShool {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8539,6 +8572,9 @@ final class PanchangaNakshatraShool {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8558,6 +8594,7 @@ final class PanchangaChandraVasa {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8588,6 +8625,9 @@ final class PanchangaChandraVasa {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8607,6 +8647,7 @@ final class PanchangaChandrashtama {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8637,6 +8678,9 @@ final class PanchangaChandrashtama {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8656,6 +8700,7 @@ final class PanchangaAmritKalam {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8686,6 +8731,9 @@ final class PanchangaAmritKalam {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8705,6 +8753,7 @@ final class PanchangaLagnas {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8735,6 +8784,9 @@ final class PanchangaLagnas {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8754,6 +8806,7 @@ final class PanchangaAgniVasa {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8784,6 +8837,9 @@ final class PanchangaAgniVasa {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8803,6 +8859,7 @@ final class PanchangaRahuVasa {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8833,6 +8890,9 @@ final class PanchangaRahuVasa {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8852,6 +8912,7 @@ final class PanchangaPunyaKala {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8882,6 +8943,9 @@ final class PanchangaPunyaKala {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8901,6 +8965,7 @@ final class PanchangaHomaAhuti {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8931,6 +8996,9 @@ final class PanchangaHomaAhuti {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8950,6 +9018,7 @@ final class PanchangaAshubhaYogas {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -8980,6 +9049,9 @@ final class PanchangaAshubhaYogas {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -8999,6 +9071,7 @@ final class PanchangaBhadraVasa {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -9029,6 +9102,9 @@ final class PanchangaBhadraVasa {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -9048,6 +9124,7 @@ final class PanchangaShivaVasa {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -9078,6 +9155,9 @@ final class PanchangaShivaVasa {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -9097,6 +9177,7 @@ final class PanchangaNamedPanchaka {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -9127,6 +9208,9 @@ final class PanchangaNamedPanchaka {
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
 
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -9146,6 +9230,7 @@ final class PanchangaMarkers {
     required this.endsGhati,
     required this.endsPala,
     required this.endsVipala,
+    required this.marginMinutes,
     required this.length,
   });
 
@@ -9175,6 +9260,9 @@ final class PanchangaMarkers {
 
   /// And vipalas, 0 to 59.
   final Uint8List endsVipala;
+
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
 
   /// The number of rows every column holds.
   final int length;
@@ -9550,6 +9638,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atTithi, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atTithi, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atTithi, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atTithi, 9, 8, Float64List.sublistView),
       length: atTithi.count,
     ),
     nakshatra: PanchangaNakshatra(
@@ -9562,6 +9651,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atNakshatra, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atNakshatra, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atNakshatra, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atNakshatra, 9, 8, Float64List.sublistView),
       length: atNakshatra.count,
     ),
     yoga: PanchangaYoga(
@@ -9574,6 +9664,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atYoga, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atYoga, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atYoga, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atYoga, 9, 8, Float64List.sublistView),
       length: atYoga.count,
     ),
     karana: PanchangaKarana(
@@ -9586,6 +9677,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atKarana, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atKarana, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atKarana, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atKarana, 9, 8, Float64List.sublistView),
       length: atKarana.count,
     ),
     panchaka: PanchangaPanchaka(
@@ -9598,6 +9690,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atPanchaka, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atPanchaka, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atPanchaka, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atPanchaka, 9, 8, Float64List.sublistView),
       length: atPanchaka.count,
     ),
     moonSigns: PanchangaMoonSigns(
@@ -9610,6 +9703,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atMoonSigns, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atMoonSigns, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atMoonSigns, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atMoonSigns, 9, 8, Float64List.sublistView),
       length: atMoonSigns.count,
     ),
     sunSigns: PanchangaSunSigns(
@@ -9622,6 +9716,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atSunSigns, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atSunSigns, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atSunSigns, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atSunSigns, 9, 8, Float64List.sublistView),
       length: atSunSigns.count,
     ),
     kaalas: PanchangaKaalas(
@@ -9685,6 +9780,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atVarjyam, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atVarjyam, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atVarjyam, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atVarjyam, 9, 8, Float64List.sublistView),
       length: atVarjyam.count,
     ),
     nakshatraShool: PanchangaNakshatraShool(
@@ -9697,6 +9793,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atNakshatraShool, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atNakshatraShool, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atNakshatraShool, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atNakshatraShool, 9, 8, Float64List.sublistView),
       length: atNakshatraShool.count,
     ),
     chandraVasa: PanchangaChandraVasa(
@@ -9709,6 +9806,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atChandraVasa, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atChandraVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atChandraVasa, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atChandraVasa, 9, 8, Float64List.sublistView),
       length: atChandraVasa.count,
     ),
     chandrashtama: PanchangaChandrashtama(
@@ -9721,6 +9819,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atChandrashtama, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atChandrashtama, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atChandrashtama, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atChandrashtama, 9, 8, Float64List.sublistView),
       length: atChandrashtama.count,
     ),
     amritKalam: PanchangaAmritKalam(
@@ -9733,6 +9832,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atAmritKalam, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atAmritKalam, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atAmritKalam, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atAmritKalam, 9, 8, Float64List.sublistView),
       length: atAmritKalam.count,
     ),
     lagnas: PanchangaLagnas(
@@ -9745,6 +9845,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atLagnas, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atLagnas, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atLagnas, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atLagnas, 9, 8, Float64List.sublistView),
       length: atLagnas.count,
     ),
     agniVasa: PanchangaAgniVasa(
@@ -9757,6 +9858,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atAgniVasa, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atAgniVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atAgniVasa, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atAgniVasa, 9, 8, Float64List.sublistView),
       length: atAgniVasa.count,
     ),
     rahuVasa: PanchangaRahuVasa(
@@ -9769,6 +9871,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atRahuVasa, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atRahuVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atRahuVasa, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atRahuVasa, 9, 8, Float64List.sublistView),
       length: atRahuVasa.count,
     ),
     punyaKala: PanchangaPunyaKala(
@@ -9781,6 +9884,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atPunyaKala, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atPunyaKala, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atPunyaKala, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atPunyaKala, 9, 8, Float64List.sublistView),
       length: atPunyaKala.count,
     ),
     homaAhuti: PanchangaHomaAhuti(
@@ -9793,6 +9897,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atHomaAhuti, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atHomaAhuti, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atHomaAhuti, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atHomaAhuti, 9, 8, Float64List.sublistView),
       length: atHomaAhuti.count,
     ),
     ashubhaYogas: PanchangaAshubhaYogas(
@@ -9805,6 +9910,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atAshubhaYogas, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atAshubhaYogas, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atAshubhaYogas, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atAshubhaYogas, 9, 8, Float64List.sublistView),
       length: atAshubhaYogas.count,
     ),
     bhadraVasa: PanchangaBhadraVasa(
@@ -9817,6 +9923,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atBhadraVasa, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atBhadraVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atBhadraVasa, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atBhadraVasa, 9, 8, Float64List.sublistView),
       length: atBhadraVasa.count,
     ),
     shivaVasa: PanchangaShivaVasa(
@@ -9829,6 +9936,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atShivaVasa, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atShivaVasa, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atShivaVasa, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atShivaVasa, 9, 8, Float64List.sublistView),
       length: atShivaVasa.count,
     ),
     namedPanchaka: PanchangaNamedPanchaka(
@@ -9841,6 +9949,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atNamedPanchaka, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atNamedPanchaka, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atNamedPanchaka, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atNamedPanchaka, 9, 8, Float64List.sublistView),
       length: atNamedPanchaka.count,
     ),
     sky: blob.text(atSky, 'sky'),
@@ -9854,6 +9963,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsGhati: blob.column(atMarkers, 6, 1, Uint8List.sublistView),
       endsPala: blob.column(atMarkers, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atMarkers, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atMarkers, 9, 8, Float64List.sublistView),
       length: atMarkers.count,
     ),
     gowri: PanchangaGowri(

@@ -27933,6 +27933,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -27988,6 +27993,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28043,6 +28053,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28098,6 +28113,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28153,6 +28173,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28208,6 +28233,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28263,6 +28293,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28557,6 +28592,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28612,6 +28652,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28667,6 +28712,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28722,6 +28772,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28777,6 +28832,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28832,6 +28892,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28887,6 +28952,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28942,6 +29012,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -28997,6 +29072,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29052,6 +29132,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29107,6 +29192,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29162,6 +29252,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29217,6 +29312,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29272,6 +29372,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },
@@ -29334,6 +29439,11 @@
               "name": "ends_vipala",
               "scalar": "u8",
               "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         },

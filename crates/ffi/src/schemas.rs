@@ -439,8 +439,8 @@ fn positions_summary_section(id: u32) -> SectionSchema {
 /// A list of spans of one catalogue's members, clipped to a day.
 ///
 /// Seven of the panchanga's lists are this shape — the four moving limbs,
-/// panchaka, and the signs the Moon and the Sun stood in — so the five
-/// columns are declared once here.
+/// panchaka, and the signs the Moon and the Sun stood in — so the columns
+/// are declared once here.
 ///
 /// They deliberately do **not** carry a `shape` name. A shape makes two
 /// sections decode to one type, which is right when they are the same
@@ -491,6 +491,11 @@ fn span_section(id: u32, name: &str, doc: &str, member: &str, enum_name: &str) -
             ),
             ColumnDef::new("ends_pala", Scalar::U8, "And palas, 0 to 59."),
             ColumnDef::new("ends_vipala", Scalar::U8, "And vipalas, 0 to 59."),
+            ColumnDef::new(
+                "margin_minutes",
+                Scalar::F64,
+                "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).",
+            ),
         ],
     )
 }

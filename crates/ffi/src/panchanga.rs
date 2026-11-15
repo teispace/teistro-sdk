@@ -652,8 +652,8 @@ fn span_rows<T>(
 }
 
 /// One span as the row every span section writes: its member, its whole
-/// and the part inside the day, the sunrises it holds, and where its whole
-/// ends in ghatis.
+/// and the part inside the day, the sunrises it holds, where its whole
+/// ends in ghatis, and its margin from the nearer sunrise (SR-95).
 fn span_row<T>(
     day: &Panchanga,
     span: &Span<T>,
@@ -665,6 +665,7 @@ fn span_row<T>(
     row.push((TsSunrises::from(day.sunrises(span)) as u64).into());
     let ends = day.ghati_pala(span.whole.to)?;
     row.extend([ends.ghati, ends.pala, ends.vipala].map(|part| FixedValue::from(u64::from(part))));
+    row.push(day.margin_minutes(span).into());
     Ok(row)
 }
 

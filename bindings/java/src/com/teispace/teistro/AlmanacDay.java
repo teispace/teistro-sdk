@@ -183,7 +183,7 @@ public final class AlmanacDay {
     public List<Span<Tithi>> tithi() {
         Panchanga.Tithi c = batch.decoded().tithi();
         return spans("tithi", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Tithi::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Tithi::of);
     }
 
     /**
@@ -194,7 +194,7 @@ public final class AlmanacDay {
     public List<Span<Nakshatra>> nakshatra() {
         Panchanga.Nakshatra c = batch.decoded().nakshatra();
         return spans("nakshatra", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Nakshatra::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Nakshatra::of);
     }
 
     /**
@@ -205,7 +205,7 @@ public final class AlmanacDay {
     public List<Span<Yoga>> yoga() {
         Panchanga.Yoga c = batch.decoded().yoga();
         return spans("yoga", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Yoga::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Yoga::of);
     }
 
     /**
@@ -216,7 +216,7 @@ public final class AlmanacDay {
     public List<Span<Karana>> karana() {
         Panchanga.Karana c = batch.decoded().karana();
         return spans("karana", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Karana::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Karana::of);
     }
 
     /**
@@ -227,7 +227,7 @@ public final class AlmanacDay {
     public List<Span<Panchaka>> panchaka() {
         Panchanga.Panchaka c = batch.decoded().panchaka();
         return spans("panchaka", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Panchaka::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Panchaka::of);
     }
 
     /**
@@ -239,7 +239,7 @@ public final class AlmanacDay {
     public List<Span<Nakshatra>> varjyam() {
         Panchanga.Varjyam c = batch.decoded().varjyam();
         return spans("varjyam", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Nakshatra::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Nakshatra::of);
     }
 
     /**
@@ -252,7 +252,7 @@ public final class AlmanacDay {
     public List<Span<Nakshatra>> amritKalam() {
         Panchanga.AmritKalam c = batch.decoded().amritKalam();
         return spans("amrit_kalam", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Nakshatra::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Nakshatra::of);
     }
 
     /**
@@ -265,7 +265,7 @@ public final class AlmanacDay {
     public List<Span<Rashi>> lagnas() {
         Panchanga.Lagnas c = batch.decoded().lagnas();
         return spans("lagnas", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
     }
 
     /**
@@ -278,7 +278,7 @@ public final class AlmanacDay {
     public List<Span<Direction>> nakshatraShool() {
         Panchanga.NakshatraShool c = batch.decoded().nakshatraShool();
         return spans("nakshatra_shool", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Direction::of);
     }
 
     /**
@@ -289,7 +289,7 @@ public final class AlmanacDay {
     public List<Span<Direction>> chandraVasa() {
         Panchanga.ChandraVasa c = batch.decoded().chandraVasa();
         return spans("chandra_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Direction::of);
     }
 
     /**
@@ -301,7 +301,7 @@ public final class AlmanacDay {
     public List<Span<Rashi>> chandrashtama() {
         Panchanga.Chandrashtama c = batch.decoded().chandrashtama();
         return spans("chandrashtama", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
     }
 
     /**
@@ -313,7 +313,7 @@ public final class AlmanacDay {
     public List<Span<AgniVasa>> agniVasa() {
         Panchanga.AgniVasa c = batch.decoded().agniVasa();
         return spans("agni_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), AgniVasa::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), AgniVasa::of);
     }
 
     /**
@@ -326,7 +326,7 @@ public final class AlmanacDay {
     public List<Span<AshubhaYoga>> ashubhaYogas() {
         Panchanga.AshubhaYogas c = batch.decoded().ashubhaYogas();
         return spans("ashubha_yogas", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), AshubhaYoga::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), AshubhaYoga::of);
     }
 
     /**
@@ -339,7 +339,7 @@ public final class AlmanacDay {
     public List<Span<BhadraVasa>> bhadraVasa() {
         Panchanga.BhadraVasa c = batch.decoded().bhadraVasa();
         return spans("bhadra_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), BhadraVasa::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), BhadraVasa::of);
     }
 
     /**
@@ -351,7 +351,7 @@ public final class AlmanacDay {
     public List<Span<ShivaVasa>> shivaVasa() {
         Panchanga.ShivaVasa c = batch.decoded().shivaVasa();
         return spans("shiva_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), ShivaVasa::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), ShivaVasa::of);
     }
 
     /**
@@ -365,7 +365,7 @@ public final class AlmanacDay {
     public List<Span<Panchaka>> namedPanchaka() {
         Panchanga.NamedPanchaka c = batch.decoded().namedPanchaka();
         return spans("named_panchaka", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Panchaka::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Panchaka::of);
     }
 
     /**
@@ -377,7 +377,7 @@ public final class AlmanacDay {
     public List<Span<Direction>> rahuVasa() {
         Panchanga.RahuVasa c = batch.decoded().rahuVasa();
         return spans("rahu_vasa", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Direction::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Direction::of);
     }
 
     /**
@@ -390,7 +390,7 @@ public final class AlmanacDay {
     public List<Span<Rashi>> punyaKala() {
         Panchanga.PunyaKala c = batch.decoded().punyaKala();
         return spans("punya_kala", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
     }
 
     /**
@@ -403,7 +403,7 @@ public final class AlmanacDay {
     public List<Span<Graha>> homaAhuti() {
         Panchanga.HomaAhuti c = batch.decoded().homaAhuti();
         return spans("homa_ahuti", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Graha::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Graha::of);
     }
 
     /**
@@ -418,7 +418,7 @@ public final class AlmanacDay {
     public List<Span<DayMarker>> markers() {
         Panchanga.Markers c = batch.decoded().markers();
         return spans("markers", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
-                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), DayMarker::of);
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), DayMarker::of);
     }
 
     /**
@@ -429,7 +429,7 @@ public final class AlmanacDay {
     public List<Span<Rashi>> moonSigns() {
         Panchanga.MoonSigns c = batch.decoded().moonSigns();
         return spans("moon_signs", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
     }
 
     /**
@@ -440,7 +440,7 @@ public final class AlmanacDay {
     public List<Span<Rashi>> sunSigns() {
         Panchanga.SunSigns c = batch.decoded().sunSigns();
         return spans("sun_signs", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom, c::insideTo,
-                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), Rashi::of);
+                c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
     }
 
     /**
@@ -531,7 +531,8 @@ public final class AlmanacDay {
     private record SpanColumns(
             IntUnaryOperator member, IntToDoubleFunction wholeFrom, IntToDoubleFunction wholeTo,
             IntToDoubleFunction insideFrom, IntToDoubleFunction insideTo, IntUnaryOperator sunrises,
-            IntUnaryOperator endsGhati, IntUnaryOperator endsPala, IntUnaryOperator endsVipala) {}
+            IntUnaryOperator endsGhati, IntUnaryOperator endsPala, IntUnaryOperator endsVipala,
+            IntToDoubleFunction marginMinutes) {}
 
     private <T> List<Span<T>> spans(String listName, SpanColumns c, IntFunction<T> member) {
         return rows(listName, i -> new Span<T>(
@@ -539,6 +540,7 @@ public final class AlmanacDay {
                 new Interval(c.wholeFrom().applyAsDouble(i), c.wholeTo().applyAsDouble(i)),
                 new Interval(c.insideFrom().applyAsDouble(i), c.insideTo().applyAsDouble(i)),
                 Sunrises.of(c.sunrises().applyAsInt(i)),
-                new GhatiPala(c.endsGhati().applyAsInt(i), c.endsPala().applyAsInt(i), c.endsVipala().applyAsInt(i))));
+                new GhatiPala(c.endsGhati().applyAsInt(i), c.endsPala().applyAsInt(i), c.endsVipala().applyAsInt(i)),
+                c.marginMinutes().applyAsDouble(i)));
     }
 }

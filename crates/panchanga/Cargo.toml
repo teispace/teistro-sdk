@@ -37,6 +37,8 @@ schemars = { version = "1.2", optional = true }
 [dev-dependencies]
 # Signs the test packs with a key made in the test.
 ed25519-dalek = { version = "3", default-features = false }
+# The limbs' sunrise margins as a property (SR-95).
+proptest = "1"
 teistro-test-allocator = { path = "../test-allocator" }
 
 [lints]

@@ -392,6 +392,21 @@ impl Panchanga {
         span.sunrises(self.day.sunrise, self.day.next_sunrise)
     }
 
+    /// The signed minutes from the nearer of the day's two sunrises to a
+    /// span's end ([`Span::margin_from`]; SR-95): what a day's limbs carry
+    /// as `margin_minutes`, for any span the day holds.
+    ///
+    /// ```no_run
+    /// # fn day() -> teistro_panchanga::almanac::Panchanga { unimplemented!() }
+    /// let day = day();
+    /// let tithi = &day.limbs.tithi[0];
+    /// assert_eq!(tithi.margin_minutes, Some(day.margin_minutes(tithi)));
+    /// ```
+    #[must_use]
+    pub fn margin_minutes<T>(&self, span: &Span<T>) -> f64 {
+        span.margin_from(self.day.sunrise, self.day.next_sunrise)
+    }
+
     /// The member of a limb that names two days running: the one this
     /// day's sunrise and the next both fall in (vriddhi).
     ///
@@ -3470,7 +3485,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             longitudes = longitudes.with_observer(*place);
         }
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
-        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
+            .with_margins(day.sunrise, day.next_sunrise);
         let month = self.month(&longitudes, window, &limbs.tithi, (zodiac, frame), memo)?;
         memo.known = known.map(|known| (frame, known));
         Ok((
@@ -3508,7 +3524,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             window,
             fixed,
         )?;
-        let tithi = limb::tithis_with(&longitudes, window, zodiac, known.as_ref())?;
+        let tithi = limb::with_margins(
+            limb::tithis_with(&longitudes, window, zodiac, known.as_ref())?,
+            day.sunrise,
+            day.next_sunrise,
+        );
         let month = self.month(&longitudes, window, &tithi, (zodiac, frame), memo)?;
         memo.known = known.map(|known| (frame, known));
         Ok((CellDay::of(&day, month, tithi), frame))
@@ -3534,7 +3554,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             longitudes = longitudes.with_observer(*place);
         }
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
-        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
+            .with_margins(day.sunrise, day.next_sunrise);
         // As a day's own: the Moon's signs geocentric, whatever the limbs'
         // centre, and the range's crossings only where they are that.
         let geocentric = known
@@ -3591,7 +3612,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             longitudes = longitudes.with_observer(*place);
         }
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
-        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
+            .with_margins(day.sunrise, day.next_sunrise);
 
         let horas = hora::horas(&day, settings.day.hora_reckoning.try_into()?)?;
         let previous_night = match memo.day.take() {

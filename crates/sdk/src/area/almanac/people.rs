@@ -547,6 +547,7 @@ mod tests {
             member,
             whole,
             inside: whole,
+            margin_minutes: None,
         }
     }
 

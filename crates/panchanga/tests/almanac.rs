@@ -640,3 +640,45 @@ fn an_undefined_polar_day_is_refused_with_the_policy_named() {
     let refused = with_almanac(&patch, |a| a.day(&date(2024, 7, 16), &tromso).unwrap_err());
     assert_eq!(refused.field(), Some("day.polar_day_policy"));
 }
+
+proptest::proptest! {
+    #![proptest_config(proptest::prelude::ProptestConfig::with_cases(24))]
+
+    /// SR-95: every limb span of a day carries its margin, and the margin
+    /// is its end less the nearer of the day's two sunrises, to 0.1 s,
+    /// at any date, place and day boundary.
+    #[test]
+    fn a_limb_s_margin_is_its_end_less_the_nearer_sunrise(
+        year in 2000_i32..2050,
+        month in 1_u8..=12,
+        day in 1_u8..=28,
+        latitude in -60.0_f64..60.0,
+        longitude in -180.0_f64..180.0,
+        midnight in proptest::bool::ANY,
+    ) {
+        let mut patch = SettingsPatch::default();
+        if midnight {
+            patch.day.day_boundary = Some(DayBoundary::Midnight);
+        }
+        let at = Place::new(
+            Latitude::literal(latitude),
+            Longitude::literal(longitude),
+            Altitude::literal(0.0),
+        );
+        let answer = with_almanac(&patch, |a| a.day(&date(year, month, day), &at).unwrap()).value;
+        let (sunrise, next) = (answer.day.sunrise.get(), answer.day.next_sunrise.get());
+        let limbs = &answer.limbs;
+        let ends = limbs.tithi.iter().map(|s| (s.whole.to, s.margin_minutes))
+            .chain(limbs.nakshatra.iter().map(|s| (s.whole.to, s.margin_minutes)))
+            .chain(limbs.yoga.iter().map(|s| (s.whole.to, s.margin_minutes)))
+            .chain(limbs.karana.iter().map(|s| (s.whole.to, s.margin_minutes)));
+        for (end, margin) in ends {
+            let margin = margin.unwrap_or_else(|| panic!("a limb ending {end} has no margin"));
+            let (own, after) = (end.get() - sunrise, end.get() - next);
+            let nearer = if after.abs() < own.abs() { after } else { own };
+            let seconds = (margin * 60.0 - nearer * 86_400.0).abs();
+            proptest::prop_assert!(seconds <= 0.1, "{end}: {margin} min, {seconds} s off");
+            proptest::prop_assert!(margin.abs() <= own.abs().min(after.abs()) * 1440.0 + 1e-6);
+        }
+    }
+}
