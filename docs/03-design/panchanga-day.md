@@ -681,7 +681,10 @@ evidence in the project that is not another implementation.
   that a polar day is a different question from the one `Almanac::day`
   answers, and should be refused or reported as a span rather than a
   day. The measurement makes the choice visible; a source, or a rank-1
-  polar panchangam, would settle it.
+  polar panchangam, would settle it. **Decided 2026-11-15 (C1900):**
+  each date of a polar season is a day of its own, its sunrise carried
+  between the season's real ones (`time-and-timezone.md` §4), so a
+  polar day holds one to three tithis as any other does.
 - **The vara under `day_boundary = MIDNIGHT`.** The window moves; the
   vara of a day is still the civil date's, and the horas still start at
   sunrise. Nothing measures this, because the recording engine has no

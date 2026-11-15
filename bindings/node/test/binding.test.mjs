@@ -5698,18 +5698,15 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   );
 
   // Tromsø at midsummer: the Sun does not set. Civil midnight holds the
-  // instant and says so; the nearest real sunrise is weeks away, and the
-  // refusal names the policy rather than the instant.
+  // instant and says so, and so does the nearest event's synthesised day,
+  // each date its own (C1900).
   const tromso = { latitude: 69.65, longitude: 18.96, altitude: 0 };
   const midsummer = { instant: 2451716.5, place: tromso, utcOffsetSeconds: 7200 };
   const civil = context({ settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } } });
   assert.deepEqual(civil.chart.found(midsummer).day.polar, { kind: 'DAY', policy: 'CIVIL_MIDNIGHT' });
   civil.dispose();
   const nearest = context({ settings: { day: { polar_day_policy: 'NEAREST_EVENT' } } });
-  assert.throws(
-    () => nearest.chart.found(midsummer),
-    (error) => error.field === 'day.polar_day_policy' && error.hint.includes('CIVIL_MIDNIGHT'),
-  );
+  assert.deepEqual(nearest.chart.found(midsummer).day.polar, { kind: 'DAY', policy: 'NEAREST_EVENT' });
   nearest.dispose();
 });
 

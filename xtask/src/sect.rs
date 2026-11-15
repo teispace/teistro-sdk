@@ -44,8 +44,8 @@ const RECORDED_OTHERWISE: [(&str, &str); 3] = [
         "the recording engine placed the birth, at 07:48 local, in the previous Hindu day: its sunrise is a day early and its ishtakaal 63 ghatis (`shadbala-measured.md`)",
     ),
     (
-        "c028-troms-1988-06-21",
-        "a midnight-sun day: the conformance profile's `NEAREST_EVENT` policy synthesises the chart's sunrise and sunset and noon falls outside them, where the recording engine took the civil day (`01-golden-vectors.md` §3)",
+        "c029-troms-1988-12-21",
+        "a polar night: the conformance profile's `NEAREST_EVENT` policy synthesises the chart's day, its daylight carried from the season's end arcs (C1900), so noon falls inside a daylight the Sun never stood in, where the recording engine says night (`01-golden-vectors.md` §3)",
     ),
     (
         "c039-mexico-city-1985-09-19",

@@ -12,9 +12,7 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::{Air, PolarDayPolicy, SunriseConvention};
 use teistro_core::time::LocalClock;
 
-/// How far a nearest-event search looks, in days: past half a year the
-/// other polar season has begun.
-const NEAREST_SEARCH_DAYS: i64 = 190;
+mod season;
 
 /// Which polar state a day is in.
 ///
@@ -259,25 +257,9 @@ pub fn local_midnight(clock: &dyn LocalClock, day: FixedDay) -> Result<JulianDay
     Ok(JulianDay::try_new(jd.get() - clock.offset_at(jd).days())?)
 }
 
-/// The first day after `day` with a sunrise.
-fn first_arc_after(
-    model: &dyn SolarModel,
-    clock: &dyn LocalClock,
-    place: &Place,
-    day: FixedDay,
-) -> Result<Option<(FixedDay, teistro_calendar::solar::DayArc)>, Error> {
-    for distance in 1..=NEAREST_SEARCH_DAYS {
-        let candidate = day.plus_days(distance);
-        if let DayLight::Arc(arc) = civil_day_light(model, clock, place, candidate)? {
-            return Ok(Some((candidate, arc)));
-        }
-    }
-    Ok(None)
-}
-
 /// The next sunrise after a day whose following day has none, under the
-/// policy: the first sunrise the season allows, or the next civil
-/// midnight.
+/// policy: the following day's own synthesised sunrise, so the two days
+/// touch.
 fn next_sunrise_after(
     model: &dyn SolarModel,
     clock: &dyn LocalClock,
@@ -286,20 +268,7 @@ fn next_sunrise_after(
     policy: PolarDayPolicy,
     kind: PolarKind,
 ) -> Result<JulianDay<Utc>, Error> {
-    match policy {
-        PolarDayPolicy::NearestEvent => first_arc_after(model, clock, place, day)?
-            .map(|(_, arc)| arc.sunrise)
-            .ok_or_else(|| no_sunrise_within(day, place)),
-        _ => synthesised(model, clock, place, day.plus_days(1), kind, policy)
-            .map(|bounds| bounds.sunrise),
-    }
-}
-
-fn no_sunrise_within(day: FixedDay, place: &Place) -> Error {
-    Error::unsupported(format!(
-        "no sunrise within {NEAREST_SEARCH_DAYS} days of {day} at {place}"
-    ))
-    .with_field("day.polar_day_policy")
+    synthesised(model, clock, place, day.plus_days(1), kind, policy).map(|bounds| bounds.sunrise)
 }
 
 /// The arc a civil day has under a policy: the sky's where the Sun rises
@@ -330,9 +299,8 @@ fn no_sunrise_within(day: FixedDay, place: &Place) -> Error {
 ///
 /// # Errors
 ///
-/// The model's refusal; a day with no arc under `UNDEFINED`, or with no
-/// sunrise within the policy's reach, `UNSUPPORTED` on
-/// `day.polar_day_policy`.
+/// The model's refusal; a day with no arc under `UNDEFINED`,
+/// `UNSUPPORTED` on `day.polar_day_policy`.
 pub fn standing_arc(
     model: &dyn SolarModel,
     clock: &dyn LocalClock,
@@ -357,23 +325,6 @@ struct Bounds {
     sunrise: JulianDay<Utc>,
     sunset: JulianDay<Utc>,
     next_sunrise: JulianDay<Utc>,
-}
-
-/// The nearest day to `day` with a sunrise, searching both ways.
-fn nearest_arc(
-    model: &dyn SolarModel,
-    clock: &dyn LocalClock,
-    place: &Place,
-    day: FixedDay,
-) -> Result<Option<(FixedDay, teistro_calendar::solar::DayArc)>, Error> {
-    for distance in 1..=NEAREST_SEARCH_DAYS {
-        for candidate in [day.plus_days(distance), day.plus_days(-distance)] {
-            if let DayLight::Arc(arc) = civil_day_light(model, clock, place, candidate)? {
-                return Ok(Some((candidate, arc)));
-            }
-        }
-    }
-    Ok(None)
 }
 
 /// The local day of a civil date at a place.
@@ -673,15 +624,7 @@ fn synthesised(
             })
         }
         PolarDayPolicy::NearestEvent => {
-            let (found_day, arc) = nearest_arc(model, clock, place, day)?
-                .ok_or_else(|| no_sunrise_within(day, place))?;
-            let next_sunrise = first_arc_after(model, clock, place, found_day)?
-                .map_or(arc.sunset, |(_, next)| next.sunrise);
-            Ok(Bounds {
-                sunrise: arc.sunrise,
-                sunset: arc.sunset,
-                next_sunrise,
-            })
+            season::bounds(season::Season::of(model, clock, place, day, kind)?, day)
         }
         other => Err(crate::ghati::unknown_knob(
             "day.polar_day_policy",
@@ -1048,11 +991,13 @@ mod tests {
                 policy: PolarDayPolicy::NearestEvent
             }
         );
-        // Day 150 is nearer to day 99 (51 away) than to day 200 (50 away)?
-        // No: 200 is 50 away, so the next season's first sunrise answers.
-        let (found, _) = FixedDay::from_jd(nearest.sunrise);
-        assert_eq!(found, FixedDay::new(200));
-        // The last day before the night borrows its next sunrise.
+        // Day 150 is its own day, carried from day 99's sunrise to day
+        // 200's in equal steps (C1900): both rise at 06:00, so it does too.
+        let (found, hour) = FixedDay::from_jd(nearest.sunrise);
+        assert_eq!(found, FixedDay::new(150));
+        assert!((hour - 0.25).abs() < 1e-9, "{hour}");
+        assert!((nearest.next_sunrise.get() - nearest.sunrise.get() - 1.0).abs() < 1e-9);
+        // The last day before the night runs to the night's first.
         let day_99 = calendar.date_of(FixedDay::new(99)).unwrap();
         let edge = local_day(
             &Polar,
@@ -1070,8 +1015,173 @@ mod tests {
                 ..
             }
         ));
-        assert_eq!(FixedDay::from_jd(edge.next_sunrise).0, FixedDay::new(200));
+        assert_eq!(FixedDay::from_jd(edge.next_sunrise).0, FixedDay::new(100));
         let (y, m, d) = gregorian::gregorian_from_fixed(FixedDay::new(150));
         assert_eq!((y, m, d), (1, 5, 30));
+    }
+
+    /// The day of a fixed day under a policy, at a place on a clock.
+    fn day_of(
+        model: &dyn SolarModel,
+        clock: &dyn LocalClock,
+        place: &Place,
+        day: FixedDay,
+        policy: PolarDayPolicy,
+    ) -> LocalDay {
+        let date = Gregorian.date_of(day).unwrap();
+        local_day(model, &Gregorian, clock, place, &date, policy)
+            .unwrap_or_else(|e| panic!("{date} at {place}: {e}"))
+    }
+
+    /// What every day of a polar season must be under `NEAREST_EVENT`
+    /// (SR-103): its own, 23 to 25 hours long, its sunset inside it, and
+    /// touching the days either side to the bit.
+    fn assert_its_own_day(
+        model: &dyn SolarModel,
+        clock: &dyn LocalClock,
+        place: &Place,
+        day: FixedDay,
+    ) {
+        let policy = PolarDayPolicy::NearestEvent;
+        let (before, this, after) = (
+            day_of(model, clock, place, day.plus_days(-1), policy),
+            day_of(model, clock, place, day, policy),
+            day_of(model, clock, place, day.plus_days(1), policy),
+        );
+        // The day before is held too when it is the season's last real
+        // day, whose next sunrise is the season's first.
+        for row in [&before, &this] {
+            if matches!(row.state, DayState::Polar { .. }) {
+                let hours = (row.next_sunrise.get() - row.sunrise.get()) * 24.0;
+                assert!((23.0..=25.0).contains(&hours), "{row}: {hours} h");
+            }
+        }
+        assert!(
+            this.sunrise.get() <= this.sunset.get() && this.sunset.get() <= this.next_sunrise.get(),
+            "{this}"
+        );
+        assert_eq!(
+            before.next_sunrise, this.sunrise,
+            "{this} meets the day before"
+        );
+        assert_eq!(
+            this.next_sunrise, after.sunrise,
+            "{this} meets the day after"
+        );
+    }
+
+    /// Tromsø, 18 to 26 May 2025 (the consumer's SR-103): each date was
+    /// one 68-day window; each is now a day of its own.
+    #[test]
+    fn tromso_s_first_polar_days_are_each_their_own() {
+        let text = SuryaSiddhanta::text();
+        let clock = UtcOffset::literal(2, 0, 0);
+        let tromso = Place::new(
+            Latitude::literal(69.6492),
+            Longitude::literal(18.9553),
+            Altitude::literal(0.0),
+        );
+        let first = gregorian::fixed_from_gregorian(2025, 5, 18);
+        let mut sunrises = Vec::new();
+        for offset in 0..9 {
+            let day = first.plus_days(offset);
+            assert_its_own_day(&text, &clock, &tromso, day);
+            let row = day_of(&text, &clock, &tromso, day, PolarDayPolicy::NearestEvent);
+            sunrises.push(FixedDay::from_jd(row.sunrise.plus_days(2.0 / 24.0).unwrap()).0);
+        }
+        // Each sunrise falls on its own civil date, on Tromsø's clock.
+        let dates: Vec<FixedDay> = (0..9).map(|offset| first.plus_days(offset)).collect();
+        assert_eq!(sunrises, dates);
+    }
+
+    /// A polar night meeting a midnight sun with no arc between, as near
+    /// the pole: each season runs to the seam, which opens the later one
+    /// on its own hour (mean midnight for a midnight sun), and the days
+    /// touch across it.
+    #[test]
+    fn a_seam_with_no_arc_between_is_crossed_day_by_day() {
+        struct Pole;
+        impl SolarModel for Pole {
+            fn sidereal_sun_deg(&self, _jd_ut: f64) -> Result<f64, Error> {
+                Ok(0.0)
+            }
+            fn day_light(&self, day: FixedDay, _place: &Place) -> Result<DayLight, Error> {
+                Ok(if day.get().rem_euclid(360) < 180 {
+                    DayLight::NeverUp
+                } else {
+                    DayLight::AlwaysUp
+                })
+            }
+            fn describe(&self) -> String {
+                String::from("pole")
+            }
+            fn convention(&self) -> SunriseConvention {
+                teistro_core::settings::Sunrise::CentreNoRefraction.into()
+            }
+        }
+        let place = Place::new(
+            Latitude::literal(89.9),
+            Longitude::literal(0.0),
+            Altitude::literal(0.0),
+        );
+        for n in [1, 90, 178, 179, 180, 181, 270, 358, 359, 360] {
+            assert_its_own_day(&Pole, &UtcOffset::UTC, &place, FixedDay::new(n));
+        }
+        let seam = day_of(
+            &Pole,
+            &UtcOffset::UTC,
+            &place,
+            FixedDay::new(180),
+            PolarDayPolicy::NearestEvent,
+        );
+        let (on, hour) = FixedDay::from_jd(seam.sunrise);
+        assert!(on == FixedDay::new(180) && hour.abs() < 1e-9, "{seam}");
+        // A midnight sun has no night; a polar night no daylight.
+        assert_eq!(seam.sunset, seam.next_sunrise);
+        let dark = day_of(
+            &Pole,
+            &UtcOffset::UTC,
+            &place,
+            FixedDay::new(90),
+            PolarDayPolicy::NearestEvent,
+        );
+        assert_eq!(dark.sunrise, dark.sunset);
+    }
+
+    proptest::proptest! {
+        #![proptest_config(proptest::prelude::ProptestConfig::with_cases(48))]
+
+        /// SR-103: every civil date in a polar day or night gets its own
+        /// day, 23 to 25 hours long, at any latitude from 66.6° to 89.9°,
+        /// either hemisphere, any longitude, through either season and
+        /// most often at its edges.
+        #[test]
+        fn every_polar_date_is_its_own_day(
+            latitude in 66.6_f64..=89.9,
+            south in proptest::bool::ANY,
+            longitude in -180.0_f64..180.0,
+            year in 1900_i32..2100,
+            winter in proptest::bool::ANY,
+            offset in -120_i64..=120,
+        ) {
+            let text = SuryaSiddhanta::text();
+            #[allow(clippy::cast_possible_truncation, reason = "a whole hour within ±12")]
+            let hours = (longitude / 15.0).round() as i32;
+            let clock = UtcOffset::literal(hours, 0, 0);
+            let place = Place::new(
+                Latitude::literal(if south { -latitude } else { latitude }),
+                Longitude::literal(longitude),
+                Altitude::literal(0.0),
+            );
+            let solstice = gregorian::fixed_from_gregorian(year, if winter { 12 } else { 6 }, 21);
+            // Walk from the offset back toward the solstice, which is
+            // polar at these latitudes, to the first polar date.
+            let step = if offset > 0 { -1 } else { 1 };
+            let mut day = solstice.plus_days(offset);
+            while civil_day_light(&text, &clock, &place, day).unwrap().arc().is_some() {
+                day = day.plus_days(step);
+            }
+            assert_its_own_day(&text, &clock, &place, day);
+        }
     }
 }

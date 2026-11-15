@@ -54,7 +54,7 @@ every shipped profile. The v1 inventory:
 | houses | `polar_policy` | enum | `ERROR`, `FALLBACK_WHOLE_SIGN`, `FALLBACK_PORPHYRY`, `CLAMP`: what a system undefined inside the polar circle does (`astro-house-systems.md` §4) |
 | day | `sunrise` | enum | `CENTRE_NO_REFRACTION`, `UPPER_LIMB_REFRACTION`, `LOWER_LIMB_REFRACTION`, `CENTRE_REFRACTION` (Nepal's daily print, C39), `CUSTOM { altitude_deg }`, `ATMOSPHERIC { which, air: { pressure_hpa?, temperature_c? } }` (a refracted convention through a named air; `horizon-atmosphere.md`) |
 | day | `day_boundary` | enum | `MIDNIGHT`, `SUNRISE`, `SUNSET`, `NOON` |
-| day | `polar_day_policy` | enum | `UNDEFINED`, `NEAREST_EVENT`, `CIVIL_MIDNIGHT`. `NEAREST_EVENT` runs a day with no sunrise from the last sunrise to the next, which near the pole can hold dozens of tithis; `CIVIL_MIDNIGHT` runs it midnight to midnight, which is what a calendar shows |
+| day | `polar_day_policy` | enum | `UNDEFINED`, `NEAREST_EVENT`, `CIVIL_MIDNIGHT`. `NEAREST_EVENT` gives every civil date of a polar season a day of its own, 23 to 25 hours long, its sunrise carried in equal steps between the real sunrises that bound the season (or, near the pole, the mean midnight or noon where a polar night meets a midnight sun) (C1900, `time-and-timezone.md` §4); `CIVIL_MIDNIGHT` runs it midnight to midnight, which is what a calendar shows |
 | day | `ghati_reckoning` | enum | `CIVIL`, `PROPORTIONAL` |
 | day | `hora_reckoning` | enum | `PROPORTIONAL`, `EQUAL` |
 | time | `dst_gap` | enum | `ERROR`, `SHIFT_FORWARD` |

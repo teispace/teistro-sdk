@@ -799,9 +799,11 @@ mod tests {
             let refused = asked(into, hours, PolarDayPolicy::Undefined).unwrap_err();
             assert_eq!(refused.field(), Some("day.polar_day_policy"));
         }
-        // Nothing to stand on within a season's reach is its own refusal.
-        let lost = asked(Rashi::Cancer, 3.0, PolarDayPolicy::NearestEvent).unwrap_err();
-        assert_eq!(lost.field(), Some("day.polar_day_policy"));
+        // A night with no sunrise within a year stands on its mean noon
+        // under `NEAREST_EVENT` (C1900), and is answered.
+        for (into, hours) in [(Rashi::Cancer, 3.0), (Rashi::Capricorn, 20.0)] {
+            assert!(asked(into, hours, PolarDayPolicy::NearestEvent).is_ok());
+        }
     }
 
     /// A day far from any sankranti is its sign's, whatever the rule, and

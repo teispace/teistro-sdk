@@ -34,7 +34,7 @@ through the façade's `dignities`, founding a chart at each step.
 ## Recorded otherwise
 
 - `c022-honolulu-1941-12-07`: the recording engine placed the birth, at 07:48 local, in the previous Hindu day: its sunrise is a day early and its ishtakaal 63 ghatis (`shadbala-measured.md`).
-- `c028-troms-1988-06-21`: a midnight-sun day: the conformance profile's `NEAREST_EVENT` policy synthesises the chart's sunrise and sunset and noon falls outside them, where the recording engine took the civil day (`01-golden-vectors.md` §3).
+- `c029-troms-1988-12-21`: a polar night: the conformance profile's `NEAREST_EVENT` policy synthesises the chart's day, its daylight carried from the season's end arcs (C1900), so noon falls inside a daylight the Sun never stood in, where the recording engine says night (`01-golden-vectors.md` §3).
 - `c039-mexico-city-1985-09-19`: the recording engine placed the birth, at 07:17 local, in the previous Hindu day: its sunrise is a day early and its ishtakaal 62 ghatis (`shadbala-measured.md`).
 
 ## Unbracketed
@@ -85,8 +85,8 @@ sunset to the horizon's setting, on the birth's own day.
 | c025-paris-1900-01-01 | 48.86° | night | night | night | 6.3 min | -6.3 min |
 | c026-berlin-1945-05-08 | 52.52° | night | night | night | 6.2 min | -6.3 min |
 | c027-reykjavik-1975-06-21 | 64.15° | night | night | night | 20.3 min | -20.4 min |
-| c028-troms-1988-06-21 | 69.65° | day | night | day | polar | polar |
-| c029-troms-1988-12-21 | 69.65° | night | night | night | polar | polar |
+| c028-troms-1988-06-21 | 69.65° | day | day | day | polar | polar |
+| c029-troms-1988-12-21 | 69.65° | night | day | night | polar | polar |
 | c030-istanbul-2016-09-07 | 41.01° | night | night | night | 4.5 min | -4.4 min |
 | c031-cairo-2023-04-28 | 30.04° | night | night | night | 4.0 min | -4.0 min |
 | c032-nairobi-1963-12-12 | -1.29° | night | night | night | 3.6 min | -3.6 min |

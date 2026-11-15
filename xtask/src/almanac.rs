@@ -6,8 +6,8 @@
 //! per-chart section has a stride the blob states once
 //! (`chart-at-the-boundary.md` §4). A panchanga does not. A day holds two
 //! tithis or three, a Moon that may rise twice or not at all, and — under
-//! a polar policy — an arc synthesised from the nearest real one, which
-//! can be a fortnight long. A layout that assumes a stride is either
+//! a polar policy — an arc synthesised for a day the Sun does not rise or
+//! set in. A layout that assumes a stride is either
 //! wrong or wasteful, and which of the two is a number rather than an
 //! opinion.
 //!
@@ -244,9 +244,8 @@ fn divisions_and_crossings(days: &[Day]) -> String {
         "\nEvery list that is fixed is a **division of an arc**: twenty-four\n\
          horas, fifteen muhurtas of the daylight and fifteen of the night,\n\
          sixteen choghadiya, three inauspicious kaalas. Its count is a\n\
-         convention, so it does not move when the arc does — a polar day\n\
-         whose synthesised arc runs for a fortnight still has twenty-four\n\
-         horas, each of them fourteen hours long.\n\n\
+         convention, so it does not move when the arc does — a polar day's\n\
+         synthesised arc still has twenty-four horas.\n\n\
          Every list that is not fixed is a **crossing of a quantity inside\n\
          the window**: a tithi boundary, a moonrise, the Moon entering a\n\
          sign. Its count is set by how long the window is and how fast the\n\
@@ -448,14 +447,26 @@ fn decides(days: &[Day]) -> String {
             Verdict::Holds,
             "24 horas and 15+15 muhurtas at 69.65°N, as at 27.7°N",
         ),
-        Claim::stated(
-            "a crossing list stays small enough for a rectangular layout",
-            Verdict::Falsified,
-            format!(
-                "`limbs.karana` reaches {} on a polar day against 4 on an ordinary one",
-                span(&all, "limbs.karana").1
-            ),
-        ),
+        {
+            let polar: Vec<&Day> = days.iter().filter(|day| day.polar).collect();
+            let ordinary: Vec<&Day> = days.iter().filter(|day| !day.polar).collect();
+            let (most_polar, most) = (
+                span(&polar, "limbs.karana").1,
+                span(&ordinary, "limbs.karana").1,
+            );
+            Claim::stated(
+                "a polar day's crossing lists are no longer than an ordinary day's",
+                if most_polar > most {
+                    Verdict::Falsified
+                } else {
+                    Verdict::Holds
+                },
+                format!(
+                    "`limbs.karana` reaches {most_polar} on a polar day and {most} on an ordinary one \
+                     (each polar date is a day of its own under `NEAREST_EVENT`, C1900)"
+                ),
+            )
+        },
         Claim::counted("the default profile can found a day at any latitude", 1, 1).with_note(
             "a polar day under `day.polar_day_policy = UNDEFINED` is refused by name, \
              which is `panchanga-day.md` §15's first row met in practice",
@@ -472,9 +483,10 @@ fn decides(days: &[Day]) -> String {
          the case that decides the layout, and until the scan's cap was\n\
          sized from its span the SDK could not produce one at 69.65°N at\n\
          all.\n\n\
-         What this pass does **not** decide, and the design page has to:\n\
-         whether a synthesised polar arc a fortnight long should carry\n\
-         sixty-two tithis at all, or whether an almanac that long is a\n\
+         What this pass once left to the design page, whether a\n\
+         synthesised polar arc a fortnight long should carry sixty-two\n\
+         tithis, C1900 decided: each polar date is a day of its own, 23\n\
+         to 25 hours, so no almanac day is a\n\
          different question from the one `Almanac::day` answers.\n",
         table(&claims)
     )

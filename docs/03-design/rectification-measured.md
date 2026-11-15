@@ -7,11 +7,8 @@ regenerates this page and fails on any difference.
 Each recorded birth's day, sunrise to the next sunrise, is narrowed
 under `conformance-baseline` by the purifier of BPHS ch. 2 vv. 67–78
 (`rectification.md`). A reading keeps a run when one of its clauses
-holds there. 52 days were narrowed; refused: `c028-troms-1988-06-21` (a
-window is at most 36 hours, and this one is 1703.71),
-`c029-troms-1988-12-21` (a window is at most 36 hours, and this one is
-1200.48), `c048-kathmandu-2399-12-30` (SUN at JD 2597641.2629888887 UT1:
-the provider answered OutOfRange).
+holds there. 54 days were narrowed; refused: `c048-kathmandu-2399-12-30`
+(SUN at JD 2597641.2629888887 UT1: the provider answered OutOfRange).
 
 ## How much of a day each reading keeps (X8)
 
@@ -23,23 +20,20 @@ Whether trusted birth times survive the bar waits for a corpus of them.
 
 | reading | kept | least kept day | most kept day | recorded instants kept |
 |---|---|---|---|---|
-| all three, with v. 76 | 86.3% | 62.5% | 100.0% | 45 of 52 (86.5%) |
-| all three, without v. 76 | 58.5% | 43.7% | 69.2% | 33 of 52 (63.5%) |
-| the pranapada alone | 25.0% | 24.1% | 26.0% | 16 of 52 (30.8%) |
-| Gulika alone, with v. 76 | 75.5% | 48.4% | 100.0% | 36 of 52 (69.2%) |
-| Gulika alone, without v. 76 | 26.9% | 16.4% | 34.3% | 10 of 52 (19.2%) |
-| the Moon alone | 25.1% | 20.4% | 37.6% | 10 of 52 (19.2%) |
-| the pranapada alone, the printed reading | 25.0% | 23.7% | 26.0% | 9 of 52 (17.3%) |
-| the pranapada alone, the SDK's point | 25.1% | 21.7% | 30.5% | 15 of 52 (28.8%) |
-| Gulika alone, with v. 76, at the start of Saturn's eighth | 72.8% | 48.6% | 100.0% | 38 of 52 (73.1%) |
+| all three, with v. 76 | 86.5% | 62.5% | 100.0% | 46 of 54 (85.2%) |
+| all three, without v. 76 | 58.7% | 43.7% | 69.2% | 34 of 54 (63.0%) |
+| the pranapada alone | 25.0% | 24.1% | 26.0% | 16 of 54 (29.6%) |
+| Gulika alone, with v. 76 | 75.7% | 48.4% | 100.0% | 37 of 54 (68.5%) |
+| Gulika alone, without v. 76 | 27.0% | 16.4% | 34.3% | 11 of 54 (20.4%) |
+| the Moon alone | 25.1% | 20.4% | 37.6% | 10 of 54 (18.5%) |
+| the pranapada alone, the printed reading | 25.0% | 23.7% | 26.0% | 10 of 54 (18.5%) |
+| the pranapada alone, the SDK's point | 25.0% | 21.7% | 30.5% | 15 of 54 (27.8%) |
+| Gulika alone, with v. 76, at the start of Saturn's eighth | 73.8% | 48.6% | 100.0% | 40 of 54 (74.1%) |
 
 ## The verse's pranapada and the SDK's point (X2)
 
-At 53 recorded instants the verse's pranapada and the SDK's point stand
-in the same sign at 4 (7.5%), 116.3° apart at the median. The verse
+At 55 recorded instants the verse's pranapada and the SDK's point stand
+in the same sign at 4 (7.3%), 116.3° apart at the median. The verse
 moves 300° an hour and the point 60°, so the two agree only where the
 shift and the hours happen to meet: the rate is the finding X2 raised,
-and the stage computes the verse's. Neither is reckoned at
-`c028-troms-1988-06-21` (the pranapada counts 0 to 36 hours from
-sunrise, not 102.11188888888888), `c029-troms-1988-12-21` (the pranapada
-counts 0 to 36 hours from sunrise, not 102.18277777777777).
+and the stage computes the verse's.

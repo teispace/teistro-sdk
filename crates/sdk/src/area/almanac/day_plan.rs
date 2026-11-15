@@ -6,9 +6,7 @@
 //! The composer decides nothing. It says the members the day's spans name
 //! and the instants they end at, read on the clock the day was asked on
 //! and rounded to the minute a printed day prints. A fact the day has not
-//! got is not said, and a fact a polar day holds only somewhere else is
-//! named in [`DayPlan::withheld`], so absence is reported as absence
-//! (`03-design/panchanga-day.md` §15).
+//! got is not said (`03-design/panchanga-day.md` §15).
 
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::interval::Interval;
@@ -77,28 +75,13 @@ const ALL_DAY: &str = "allDay";
 /// `ends` when it began in the day and held past its close.
 const REST: &str = "rest";
 
-/// What a polar day under `NEAREST_EVENT` does not say. Its window stands
-/// at the nearest real sunrise, which may be weeks off, so these facts are
-/// true of that stretch and not of the date asked.
-pub(crate) const WITHHELD: [&str; 9] = [
-    "tithi",
-    "nakshatra",
-    "yoga",
-    "karana",
-    "sun",
-    "moon",
-    "month",
-    "ayana",
-    "kaala",
-];
-
 /// A day's sentences as a plan, and the facts it did not say.
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct DayPlan {
     /// The sentences, in the order a printed day runs.
     pub(crate) plan: Plan,
-    /// The facts a polar day holds elsewhere and so does not say here,
-    /// from [`WITHHELD`]; empty on any other day.
+    /// The facts the day holds elsewhere and so does not say here. Every
+    /// polar policy now gives a date its own day (C1900), so none is.
     pub(crate) withheld: Vec<String>,
 }
 
@@ -175,10 +158,9 @@ const MINUTES_A_DAY_F: f64 = 1440.0;
 ///
 /// A limb that changes in the day is said once for each member, so a
 /// karana is said three or four times. A polar day says the Sun neither
-/// rises nor sets rather than the bounds a policy stood in. Under
-/// `NEAREST_EVENT` those bounds are elsewhere, so it also says only the
-/// vara and the season, the two facts read from the civil date, and names
-/// the rest in [`DayPlan::withheld`].
+/// rises nor sets rather than the bounds a policy stood in, and its limbs
+/// as any day's: under either synthesising policy the day is the civil
+/// date's own (C1900).
 ///
 /// Festivals are not said: a day's answer does not reckon them
 /// (`03-design/day-in-sentences.md` §5).
@@ -191,14 +173,6 @@ pub(crate) fn day_sentences(day: &Panchanga, clock: &dyn LocalClock) -> DayPlan 
         DayState::Polar { kind, policy } => Some((kind, policy)),
         DayState::Normal => None,
     };
-    if matches!(polar, Some((_, PolarDayPolicy::NearestEvent))) {
-        say_polar(&mut plan, polar);
-        plan.say(&messages::Ritu { ritu: day.sun.ritu });
-        return DayPlan {
-            plan,
-            withheld: WITHHELD.iter().map(|fact| String::from(*fact)).collect(),
-        };
-    }
     limbs(&mut plan, day, &reading);
     if polar.is_some() {
         say_polar(&mut plan, polar);
@@ -524,11 +498,11 @@ mod tests {
         assert!(en.iter().any(|text| text.contains("enters")), "{en:?}");
     }
 
-    /// Above the circle under `NEAREST_EVENT` the window stands elsewhere,
-    /// so the day says the Sun's state, the vara and the season, and names
-    /// the rest as withheld.
+    /// Above the circle under `NEAREST_EVENT` the day is the date's own
+    /// (C1900), so it says its limbs and the Sun's state, and withholds
+    /// nothing; it once said only the vara and the season.
     #[test]
-    fn a_polar_day_says_only_what_is_true_of_its_date() {
+    fn a_polar_day_says_its_own_limbs() {
         let tromso = place(69.6492, 18.9553);
         for (date, sentence) in [
             ((2024, 6, 21), "sdk.day.sunUp"),
@@ -536,9 +510,13 @@ mod tests {
         ] {
             let day = day_at(tromso, date, PolarDayPolicy::NearestEvent);
             let out = day_sentences(&day, &UtcOffset::literal(1, 0, 0));
-            assert_eq!(said(&out.plan), ["sdk.day.vara", sentence, "sdk.day.ritu"]);
-            assert_eq!(out.withheld.len(), WITHHELD.len());
-            assert_eq!(rendered(&out.plan, "ne-Deva-NP").len(), 3);
+            let keys = said(&out.plan);
+            assert!(
+                keys.contains(&"sdk.day.tithi") && keys.contains(&sentence),
+                "{keys:?}"
+            );
+            assert!(!keys.contains(&"sdk.day.sun"));
+            assert_eq!(out.withheld, Vec::<String>::new());
         }
     }
 

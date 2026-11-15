@@ -392,14 +392,18 @@ const OTHER_TABLE: &str = "the recording's vara-and-nakshatra table, not the pub
 /// pairs the published table lacks and Siddha on seven, and the published
 /// Sarvartha Siddhi table names Wednesday's Rohini, which the recording
 /// leaves clear. Tripushkar, the one yoga with a rule rather than a table,
-/// agrees on all fifty-three.
-const KNOWN_YOGAS: [(&str, &str, &str); 12] = [
+/// agrees on all fifty-three. One more parts on the day rather than the
+/// table: c029 is Tromsø's polar night, which the recording opens at civil
+/// midnight in Krittika and the conformance profile's `NEAREST_EVENT` at
+/// its synthesised sunrise (C1900), by when Rohini runs.
+const KNOWN_YOGAS: [(&str, &str, &str); 13] = [
     ("c002", "sarvartha_siddhi", "Budhavara, Rohini"),
     ("c005", "siddha", "Somavara, Pushya"),
     ("c015", "sarvartha_siddhi", "Guruvara, Magha"),
     ("c018", "sarvartha_siddhi", "Shukravara, UttaraBhadrapada"),
     ("c019", "sarvartha_siddhi", "Mangalavara, Dhanishtha"),
     ("c020", "sarvartha_siddhi", "Shanivara, PurvaBhadrapada"),
+    ("c029", "sarvartha_siddhi", "Budhavara, Rohini"),
     ("c039", "siddha", "Guruvara, Anuradha"),
     ("c040", "siddha", "Ravivara, Mula"),
     ("c044", "siddha", "Shukravara, Mula"),

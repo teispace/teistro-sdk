@@ -91,11 +91,11 @@ pub const INDU_SIGNS: u8 = 12;
 /// The longest elapsed time since sunrise a chart can have, hours.
 ///
 /// A day of the tradition runs sunrise to sunrise, a day and a night. A
-/// polar day has no sunrise, and the `NEAREST_EVENT` policy counts from the
-/// nearest one there was: a birth at noon under Tromsø's midnight sun on
-/// 21 June 1988 is 102 hours from it, and a hora lagna 102 hours on is not a
-/// time the verses count. So the bound refuses it, as it refuses a caller
-/// passing days rather than hours.
+/// polar day has no sunrise, and the `NEAREST_EVENT` policy synthesises
+/// one for each date (C1900), so even there a day is 23 to 25 hours; an
+/// elapsed time past this bound is a caller passing days rather than
+/// hours, or a policy counting from a sunrise weeks off, and a hora lagna
+/// that far on is not a time the verses count.
 pub const LONGEST_HOURS: f64 = 36.0;
 
 /// The bhava lagna: the Sun advanced one sign for each five ghatis since

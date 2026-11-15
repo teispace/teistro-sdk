@@ -1937,9 +1937,8 @@ class AnEngine(WithLibrary):
         with self.assertRaisesRegex(TeistroError, "does not refract"):
             refracted({"kind": "ATMOSPHERIC", "which": "CENTRE_NO_REFRACTION", "air": {}})
 
-        # Tromsø at midsummer: civil midnight holds the instant and says so;
-        # the nearest real sunrise is weeks away, and the refusal names the
-        # policy rather than the instant.
+        # Tromsø at midsummer: civil midnight holds the instant and says so,
+        # and so does the nearest event's synthesised day.
         tromso = Observer(
             latitude_deg=Latitude(69.65), longitude_deg=Longitude(18.96), altitude_m=Altitude(0)
         )
@@ -1956,9 +1955,11 @@ class AnEngine(WithLibrary):
         with self.teistro.context(
             profile=PROFILE, settings=policy("NEAREST_EVENT"), test_provider=True
         ) as ctx:
-            with self.assertRaises(TeistroError) as caught:
-                ctx.chart.found(instant=2451716.5, place=tromso, utc_offset_seconds=7200)
-            self.assertEqual(caught.exception.field, "day.polar_day_policy")
+            # Each polar date is a day of its own (C1900).
+            polar = ctx.chart.found(
+                instant=2451716.5, place=tromso, utc_offset_seconds=7200
+            ).day.polar
+            self.assertEqual(polar, PolarDay(kind=PolarKind.DAY, policy=PolarDayPolicy.NEAREST_EVENT))
 
     def test_a_chart_carries_the_day_it_belongs_to_and_both_house_readings(self) -> None:
         """A founded chart knows more than where the grahas are: which arc

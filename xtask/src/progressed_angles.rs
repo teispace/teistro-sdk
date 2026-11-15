@@ -169,6 +169,26 @@ fn refused<'a>(
     (refused, asked, at)
 }
 
+/// The claim that a polar birth's progressed charts are founded under the
+/// conformance profile, from [`refused`]'s counts.
+fn polar_claim((refused, asked, refused_at): (usize, usize, usize)) -> Claim {
+    Claim::stated(
+        "under the conformance profile's NEAREST_EVENT polar day, a progressed chart is founded wherever the birth was",
+        if refused == 0 { Verdict::Holds } else { Verdict::Falsified },
+        format!(
+            "{} of {} refused, at {}",
+            count(refused),
+            count(asked),
+            plural(refused_at, "birth")
+        ),
+    )
+    .with_note(if refused == 0 {
+        "each polar date is a day of its own under NEAREST_EVENT (C1900), so every age's sky is founded, as under CIVIL_MIDNIGHT"
+    } else {
+        "a polar day's nearest event can lie weeks from the sky a later age reads; CIVIL_MIDNIGHT holds them all"
+    })
+}
+
 fn claims(reads: &[Read]) -> Vec<Claim> {
     let born_wrong = reads
         .iter()
@@ -325,12 +345,6 @@ fn page(root: &Path) -> Result<String, String> {
     }
     let conformance = tropical()?;
     let in_range = births(root, &conformance)?;
-    let (refused, asked, refused_at) = refused(
-        &conformance,
-        in_range
-            .iter()
-            .filter(|birth| !beyond.contains(&birth.name)),
-    );
     let mut out = String::from(
         "# The progressed angles, measured\n\n\
          Status: `generated` by `cargo xtask progressed-angles` from the \
@@ -367,17 +381,12 @@ fn page(root: &Path) -> Result<String, String> {
         AGES[AGES.len() - 1],
     );
     let mut measured = claims(&reads);
-    measured.push(Claim::stated(
-        "under the conformance profile's NEAREST_EVENT polar day, a progressed chart is founded wherever the birth was",
-        if refused == 0 { Verdict::Holds } else { Verdict::Falsified },
-        format!(
-            "{} of {} refused, at {}",
-            count(refused),
-            count(asked),
-            plural(refused_at, "birth")
-        ),
-    )
-    .with_note("a polar day's nearest event can lie weeks from the sky a later age reads; CIVIL_MIDNIGHT holds them all"));
+    measured.push(polar_claim(refused(
+        &conformance,
+        in_range
+            .iter()
+            .filter(|birth| !beyond.contains(&birth.name)),
+    )));
     out.push_str(&table(&measured));
     out.push_str(
         "\n## The midheaven, against Leo's map\n\n\
