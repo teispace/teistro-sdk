@@ -5731,7 +5731,7 @@ fn panchanga_stepped(
 /// refused both ways, so a kind it starts reaching, or one it stops
 /// reaching, is seen rather than assumed (`muhurta-at-the-boundary.md`
 /// §4).
-const UNREACHED: [(&str, &str); 6] = [
+const UNREACHED: [(&str, &str); 7] = [
     (
         "MONTH",
         "every day is in Margashirsha, which Raman grades ordinary, and a middling grade is not reported",
@@ -5755,6 +5755,10 @@ const UNREACHED: [(&str, &str); 6] = [
     (
         "VRISHA_VASTU",
         "the bull of the house is read only where the rules set `vrishaVastu`, as Muhurta Chintamani's house rites do; Raman's marriage does not",
+    ),
+    (
+        "PRADOSHA",
+        "a day of pradosha is read only where the rules set `pradosha`, as Muhurta Chintamani's thread ceremony does; Raman's marriage does not",
     ),
 ];
 

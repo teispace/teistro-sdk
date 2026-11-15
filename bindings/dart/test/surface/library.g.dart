@@ -1323,6 +1323,7 @@ final List<Surface> requests = [
   Built<MuhurtaRequestRulesChintamaniVastuShanti>('MuhurtaRequestRulesChintamaniVastuShanti', MuhurtaRequestRulesChintamaniVastuShanti.new, const [], parent: 'MuhurtaRequestRules', fields: (_) => const []),
   Built<MuhurtaRequestRulesChintamaniVipani>('MuhurtaRequestRulesChintamaniVipani', MuhurtaRequestRulesChintamaniVipani.new, const [], parent: 'MuhurtaRequestRules', fields: (_) => const []),
   Built<MuhurtaRequestRulesChintamaniVivaha>('MuhurtaRequestRulesChintamaniVivaha', MuhurtaRequestRulesChintamaniVivaha.new, const [], parent: 'MuhurtaRequestRules', fields: (_) => const []),
+  Built<MuhurtaRequestRulesChintamaniUpanayana>('MuhurtaRequestRulesChintamaniUpanayana', MuhurtaRequestRulesChintamaniUpanayana.new, const [], parent: 'MuhurtaRequestRules', fields: (_) => const []),
   Built<MuhurtaRequestRulesValue>('MuhurtaRequestRulesValue', MuhurtaRequestRulesValue.new, [
     Param('value', Named('ActivityRules'), named: false),
   ], parent: 'MuhurtaRequestRules', fields: (v) => [v.value]),
@@ -1676,11 +1677,12 @@ final List<Surface> requests = [
     Param('lagnas', Named('GradedRashi')),
     Param('months', Named('MonthRule')),
     Param('padas', ListOf(Named('NakshatraPada'), (items) => List<NakshatraPada>.from(items))),
+    Param('pradosha', Scalar('bool')),
     Param('shool', ListOf(Named('Shool'), (items) => List<Shool>.from(items))),
     Param('unjudged', ListOf(Scalar('Object'), (items) => List<Object?>.from(items))),
     Param('unwanted', ListOf(Named('MuhurtaUnwanted'), (items) => List<MuhurtaUnwanted>.from(items))),
     Param('vrishaVastu', Scalar('bool')),
-  ], fields: (v) => [v.bars, v.baseline, v.day, v.heeds, v.hours, v.lagnas, v.months, v.padas, v.shool, v.unjudged, v.unwanted, v.vrishaVastu]),
+  ], fields: (v) => [v.bars, v.baseline, v.day, v.heeds, v.hours, v.lagnas, v.months, v.padas, v.pradosha, v.shool, v.unjudged, v.unwanted, v.vrishaVastu]),
   Built<HouseholdTie>('HouseholdTie', HouseholdTie.new, [
     Param('abroad', Scalar('bool')),
     Param('event', Scalar('String')),
@@ -2242,6 +2244,7 @@ final List<Surface> requests = [
   Built<BarGhata>('BarGhata', BarGhata.new, const [], parent: 'Bar', fields: (_) => const []),
   Built<BarAshubhaYoga>('BarAshubhaYoga', BarAshubhaYoga.new, const [], parent: 'Bar', fields: (_) => const []),
   Built<BarVrishaVastu>('BarVrishaVastu', BarVrishaVastu.new, const [], parent: 'Bar', fields: (_) => const []),
+  Built<BarPradosha>('BarPradosha', BarPradosha.new, const [], parent: 'Bar', fields: (_) => const []),
   Built<BarValue>('BarValue', BarValue.new, [
     Param('value', Scalar('Object'), named: false),
   ], parent: 'Bar', fields: (v) => [v.value]),

@@ -1032,6 +1032,7 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
         let day = sources.day(date)?;
         let mut held = day_clauses(&day, request.native.as_ref(), &rules.day);
         held.extend(rules.month_clauses(&day));
+        held.extend(rules.pradosha_clauses(&day));
         let mut judged = Judgement::of(day.window, &held, rules);
         judged.score = event
             .zip(DayReading::of(&day))

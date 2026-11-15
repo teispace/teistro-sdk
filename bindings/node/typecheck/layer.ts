@@ -2908,6 +2908,8 @@ function theMuhurta(almanac: Almanac): string {
           return clause.yoga;
         case 'VRISHA_VASTU':
           return `${clause.count} ${clause.grade}`;
+        case 'PRADOSHA':
+          return clause.tithi;
         default:
           return clause.clause;
       }

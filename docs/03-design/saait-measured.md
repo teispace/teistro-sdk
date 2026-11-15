@@ -43,6 +43,8 @@ much the rules narrow the year before the list chose.
 |---|---|---:|---|---:|---:|---:|---:|
 | bratabandha | `RAMAN_UPANAYANA` | 2083 | the committee's | 12 | 12 | 12 | 131 of 365 |
 | bratabandha | `RAMAN_UPANAYANA` | 2083 | modern | 12 | 12 | 12 | 129 of 365 |
+| bratabandha | `CHINTAMANI_UPANAYANA` | 2083 | the committee's | 12 | 12 | 12 | 34 of 365 |
+| bratabandha | `CHINTAMANI_UPANAYANA` | 2083 | modern | 12 | 12 | 12 | 32 of 365 |
 | vivaha | `RAMAN_MARRIAGE` | 2083 | the committee's | 39 | 10 | 4 | 32 of 365 |
 | vivaha | `RAMAN_MARRIAGE` | 2083 | modern | 39 | 10 | 4 | 33 of 365 |
 | vivaha | `CHINTAMANI_VIVAHA` | 2083 | the committee's | 39 | 32 | 32 | 132 of 365 |
@@ -65,6 +67,7 @@ much the rules narrow the year before the list chose.
 | proposed rule | verdict | measured |
 |---|---|---|
 | over the committee's sky, every printed bratabandha day has a clean window under `RAMAN_UPANAYANA` | **holds** | 0 of 12 disagree |
+| over the committee's sky, every printed bratabandha day has a clean window under `CHINTAMANI_UPANAYANA` | **holds** | 0 of 12 disagree |
 | over the committee's sky, every printed vivaha day has a clean window under `RAMAN_MARRIAGE` | falsified | 35 of 39 disagree |
 | over the committee's sky, every printed vivaha day has a clean window under `CHINTAMANI_VIVAHA` | falsified | 7 of 39 disagree |
 | over the committee's sky, every printed pasni day has a clean window under `RAMAN_ANNAPRASANA` | falsified | 8 of 35 disagree |
@@ -129,20 +132,35 @@ days are day-clean, against 10 under his rules as shipped.
 | rite | rules | list | BS | day | printed | committee's sky | modern sky |
 |---|---|---|---|---|---|---|---|
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-1-20 | 2026-05-03 | RAVIVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-1-20 | 2026-05-03 | RAVIVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-1-21 | 2026-05-04 | SOMAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-1-21 | 2026-05-04 | SOMAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-1-23 | 2026-05-06 | BUDHAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-1-23 | 2026-05-06 | BUDHAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-3-10 | 2026-06-24 | BUDHAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-3-10 | 2026-06-24 | BUDHAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-10-25 | 2027-02-08 | SOMAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-10-25 | 2027-02-08 | SOMAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-10-21 | 2027-02-04 | SOMAVARA (the date's GURUVARA) | — | — |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-10-21 | 2027-02-04 | SOMAVARA (the date's GURUVARA) | — | — |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-10-23 | 2027-02-06 | BUDHAVARA (the date's SHANIVARA) | — | — |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-10-23 | 2027-02-06 | BUDHAVARA (the date's SHANIVARA) | — | — |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-11-10 | 2027-02-22 | SOMAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-11-10 | 2027-02-22 | SOMAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-11-13 | 2027-02-25 | GURUVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-11-13 | 2027-02-25 | GURUVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-11-26 | 2027-03-10 | BUDHAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-11-26 | 2027-03-10 | BUDHAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-12-03 | 2027-03-17 | BUDHAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-12-03 | 2027-03-17 | BUDHAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-12-04 | 2027-03-18 | SOMAVARA (the date's GURUVARA) | — | — |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-12-04 | 2027-03-18 | SOMAVARA (the date's GURUVARA) | — | — |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-12-10 | 2027-03-24 | BUDHAVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-12-10 | 2027-03-24 | BUDHAVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-12-25 | 2027-04-08 | GURUVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-12-25 | 2027-04-08 | GURUVARA | clean | clean |
 | bratabandha | `RAMAN_UPANAYANA` | the committee's sheet | 2083-12-28 | 2027-04-11 | RAVIVARA | clean | clean |
+| bratabandha | `CHINTAMANI_UPANAYANA` | the committee's sheet | 2083-12-28 | 2027-04-11 | RAVIVARA | clean | clean |
 | vivaha | `RAMAN_MARRIAGE` | the committee's sheet | 2083-1-07 | 2026-04-20 | SOMAVARA | day clean; MOON_JOINED | day clean; MOON_JOINED |
 | vivaha | `CHINTAMANI_VIVAHA` | the committee's sheet | 2083-1-07 | 2026-04-20 | SOMAVARA | clean | clean |
 | vivaha | `RAMAN_MARRIAGE` | the committee's sheet | 2083-1-08 | 2026-04-21 | MANGALAVARA | VARA MANGALAVARA | VARA MANGALAVARA |
@@ -358,3 +376,29 @@ days are day-clean, against 10 under his rules as shipped.
 | dokan | `CHINTAMANI_VIPANI` | the Surya Panchanga | 2082-12-14 | 2026-03-28 | — | clean | clean |
 | dokan | `CHINTAMANI_VIPANI` | the Surya Panchanga | 2082-12-27 | 2026-04-10 | — | clean | clean |
 | dokan | `CHINTAMANI_VIPANI` | the Surya Panchanga | 2082-12-28 | 2026-04-11 | — | TITHI KRISHNA_NAVAMI | TITHI KRISHNA_NAVAMI |
+
+## 5. The thread ceremony, clause by clause
+
+Each printed bratabandha day under `CHINTAMANI_UPANAYANA` over the
+committee's sky: every day-level clause held in the daylight before the
+afternoon, in the order they begin, and the day's verdict. A row whose
+printed weekday is not its date's is read here by its date, which the
+tables above refuse to do; what that reading means is crux C1965.
+
+| BS, printed | day | clauses; day verdict |
+|---|---|---|
+| 2083-1-20 RAVIVARA | 2026-05-03 | TITHI KRISHNA_DVITIYA BEST, NAKSHATRA VISHAKHA REJECTED, VARA RAVIVARA BEST, NAKSHATRA ANURADHA BEST; day-clean |
+| 2083-1-21 SOMAVARA | 2026-05-04 | TITHI KRISHNA_TRITIYA BEST, NAKSHATRA ANURADHA BEST, VARA SOMAVARA BEST, NAKSHATRA JYESHTHA REJECTED; day-clean |
+| 2083-1-23 BUDHAVARA | 2026-05-06 | TITHI KRISHNA_CHATURTHI REJECTED, NAKSHATRA MULA BEST, VARA BUDHAVARA BEST, TITHI KRISHNA_PANCHAMI BEST, NAKSHATRA PURVA_ASHADHA BEST; day-clean |
+| 2083-3-10 BUDHAVARA | 2026-06-24 | TITHI SHUKLA_DASHAMI BEST, NAKSHATRA CHITRA BEST, VARA BUDHAVARA BEST; day-clean |
+| 2083-10-25 SOMAVARA | 2027-02-08 | TITHI SHUKLA_DVITIYA BEST, NAKSHATRA SHATABHISHA BEST, VARA SOMAVARA BEST; day-clean |
+| 2083-10-21 SOMAVARA | 2027-02-04 | TITHI KRISHNA_TRAYODASHI REJECTED, NAKSHATRA PURVA_ASHADHA BEST, VARA GURUVARA BEST; TITHI KRISHNA_TRAYODASHI, read by its date |
+| 2083-10-23 BUDHAVARA | 2027-02-06 | TITHI AMAVASYA REJECTED, NAKSHATRA SHRAVANA BEST, VARA SHANIVARA REJECTED; TITHI AMAVASYA, VARA SHANIVARA, read by its date |
+| 2083-11-10 SOMAVARA | 2027-02-22 | TITHI KRISHNA_DVITIYA BEST, NAKSHATRA PURVA_PHALGUNI BEST, VARA SOMAVARA BEST, NAKSHATRA UTTARA_PHALGUNI BEST; day-clean |
+| 2083-11-13 GURUVARA | 2027-02-25 | TITHI KRISHNA_PANCHAMI BEST, NAKSHATRA CHITRA BEST, VARA GURUVARA BEST, NAKSHATRA SWATI BEST; day-clean |
+| 2083-11-26 BUDHAVARA | 2027-03-10 | TITHI SHUKLA_DVITIYA BEST, NAKSHATRA UTTARA_BHADRAPADA BEST, VARA BUDHAVARA BEST, NAKSHATRA REVATI BEST; day-clean |
+| 2083-12-03 BUDHAVARA | 2027-03-17 | TITHI SHUKLA_DASHAMI BEST, NAKSHATRA PUNARVASU BEST, VARA BUDHAVARA BEST; day-clean |
+| 2083-12-04 SOMAVARA | 2027-03-18 | TITHI SHUKLA_EKADASHI BEST, NAKSHATRA PUSHYA BEST, VARA GURUVARA BEST; day-clean, read by its date |
+| 2083-12-10 BUDHAVARA | 2027-03-24 | TITHI KRISHNA_DVITIYA BEST, NAKSHATRA CHITRA BEST, VARA BUDHAVARA BEST; day-clean |
+| 2083-12-25 GURUVARA | 2027-04-08 | TITHI SHUKLA_DVITIYA BEST, NAKSHATRA ASHWINI BEST, VARA GURUVARA BEST; day-clean |
+| 2083-12-28 RAVIVARA | 2027-04-11 | TITHI SHUKLA_PANCHAMI BEST, NAKSHATRA ROHINI BEST, VARA RAVIVARA BEST; day-clean |

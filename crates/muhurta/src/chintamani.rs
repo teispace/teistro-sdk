@@ -2,8 +2,9 @@
 //! *Muhurta Chintamani* (1600): beginning a house (griharambha), which is
 //! the laying of the foundation, shilanyas; the ground's worship before
 //! digging (bhumi puja); the house's propitiation (vastu shanti); opening
-//! a shop (vipani); and the marriage (vivaha) — each a value of
-//! [`ActivityRules`] like Raman's.
+//! a shop (vipani); the marriage (vivaha); and the thread ceremony
+//! (upanayana, Nepal's bratabandha) — each a value of [`ActivityRules`]
+//! like Raman's.
 //!
 //! The verses are read in two printings with Hindi commentaries: Mahidhara's
 //! (Bombay, 1905) and Pyarelal Mishra's (1939), with *Muhurta Martanda*
@@ -23,7 +24,7 @@
 //! — is listed in `unjudged`. `saait-measured.md` holds the rites to the
 //! days Nepal's panchanga committee decided for two years.
 
-use teistro_core::catalogue::{Masa, Nakshatra, Rashi, Tithi, Vara};
+use teistro_core::catalogue::{Graha, Masa, Nakshatra, Rashi, Tithi, Vara};
 
 use crate::activity::{ActivityRules, Hours, MonthRule, MonthWithSun, Pada, Unjudged, Unwanted};
 use crate::day::DayRules;
@@ -140,6 +141,98 @@ const SET_AND_UNEVEN_MONTHS: [BlackoutKind; 4] = [
     BlackoutKind::KshayaMasa,
 ];
 
+/// The thread ceremony's tithis (ch. V vv. 40, 48 and 54): v. 40's good
+/// numbers of the bright half and of the dark half's first third, the
+/// galagrahas, the anadhyayas and the dark half past its first third
+/// rejected, the bright 6th alone left middling.
+fn upanayana_tithis() -> Graded<Tithi> {
+    let good_numbers = [2, 3, 5, 10, 11, 12];
+    let mut good_tithis: Vec<Tithi> = good_numbers.iter().filter_map(|n| bright(*n)).collect();
+    good_tithis.extend([2, 3, 5].iter().filter_map(|n| dark(*n)));
+    // v. 48's galagrahas (13, 14, 15, 1, 7, 8, 9, 4) and v. 54's
+    // anadhyayas (14, 15, 1, 8), of both halves; the 15th is the full
+    // Moon and the new.
+    let mut rejected = both(&[1, 4, 7, 8, 9, 13, 14]);
+    rejected.extend([Tithi::Purnima, Tithi::Amavasya]);
+    // v. 48's "कृष्णे": the dark half past its first third.
+    rejected.extend((6..=14).filter_map(dark));
+    Graded {
+        best: good_tithis,
+        middling: Vec::new(),
+        rejected,
+        otherwise: Grade::Middling,
+    }
+}
+
+/// What the thread ceremony's verses ask that a muhurta request does not
+/// carry or the rule language does not yet express.
+fn upanayana_unjudged() -> Vec<Unjudged> {
+    vec![
+        unjudged(
+            "the boy's age: the 8th year from conception or birth for a brahmin, the 5th for one who wants learning, the 6th and 11th for a kshatriya, the 8th and 12th for a vaishya, and twice the time as the secondary season (v. 39)",
+            "the boy's age, which a muhurta request does not carry: a consumer keeps the days that fall in it",
+        ),
+        unjudged(
+            "the lagna's lord in the 6th or 8th (v. 41)",
+            "an unwanted placement names grahas, not a lord that turns with the lagna",
+        ),
+        unjudged(
+            "malefics in the 3rd, 6th and 11th, and the full Moon in Taurus or Cancer in the lagna (v. 42)",
+            "they favour the time and are not graded",
+        ),
+        unjudged(
+            "the lord of the boy's Veda and varna, its weekday and strength, and Jupiter or Venus in an enemy's sign, debilitated or defeated (vv. 43–44)",
+            "the boy's Veda, which a muhurta request does not carry, and a graha's dignity, which is not graded",
+        ),
+        unjudged(
+            "the boy's birth star, month and lagna, for an eldest son (v. 45)",
+            "the boy's chart, which a muhurta request does not carry",
+        ),
+        unjudged(
+            "Jupiter's transit from the boy's Moon sign: good in the 9th, 5th, 11th, 2nd and 7th, propitiated in the 10th, 6th, 3rd and 1st, bad in the 4th, 8th and 12th, an exalted or own-sign Jupiter excepted (vv. 46–47)",
+            "the boy's chart, which a muhurta request does not carry",
+        ),
+        unjudged(
+            "thunder before the morning twilight (v. 48)",
+            "a day's weather is not a time",
+        ),
+        unjudged(
+            "the lagna's navamsha and the Moon's, with their fruits (vv. 49–53)",
+            "a navamsha's grade is not yet expressed",
+        ),
+        unjudged(
+            "the bright 10th of Ashadha, 2nd of Jyeshtha, 11th of Pausha and 12th of Magha, and the day of the Sun's sidereal sankranti, as anadhyayas (v. 54)",
+            "a tithi's grade that turns on the lunar month, and the sankranti's day, are not yet expressed; the four months' other anadhyayas are graded",
+        ),
+        unjudged(
+            "the stars of each Veda (v. 57), and Punarvasu for a brahmin (the Piyushadhara on v. 40)",
+            "the boy's Veda and varna, which a muhurta request does not carry",
+        ),
+        unjudged(
+            "the mother in her courses after the nandi shraddha (v. 58)",
+            "not a time",
+        ),
+        unjudged(
+            "Jupiter in Leo or Capricorn, and the Sun with Jupiter (ch. I v. 48)",
+            "a graha's sign closing the season is not yet expressed",
+        ),
+        bala_vriddha(),
+    ]
+}
+
+/// The months of the thread ceremony: the five from Magha, which the
+/// Piyushadhara on ch. V v. 40 gives as common to all three twice-born
+/// after shutting the Sun's southern course ("माघादिषु च पंचसु", Vasishtha
+/// and Kashyapa), its Ashadha rejected; Pausha joins them while the Sun is
+/// in Capricorn, the northern course's part of that month (crux C1960).
+const UPANAYANA_MONTHS: [Masa; 5] = [
+    Masa::Magha,
+    Masa::Phalguna,
+    Masa::Chaitra,
+    Masa::Vaishakha,
+    Masa::Jyeshtha,
+];
+
 /// Jupiter's and Venus's infancy and old age, which ch. I v. 47 forbids
 /// with their setting.
 fn bala_vriddha() -> Unjudged {
@@ -246,6 +339,7 @@ fn house_beginning(beyond: Vec<Unjudged>) -> ActivityRules {
         // 12th.
         unwanted: vec![Unwanted::of(BENEFICS.into(), vec![8, 12])],
         vrisha_vastu: true,
+        pradosha: false,
         bars: Vec::new(),
         unjudged: unjudged_list,
         baseline: None,
@@ -360,6 +454,7 @@ impl ActivityRules {
             heeds: SET_AND_UNEVEN_MONTHS.into(),
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -420,6 +515,7 @@ impl ActivityRules {
             // "व्ययाष्टरहितैः पापैः": the malefics out of the 12th and 8th.
             unwanted: vec![Unwanted::of(MALEFICS.into(), vec![8, 12])],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -508,6 +604,7 @@ impl ActivityRules {
             heeds: SET_AND_UNEVEN_MONTHS.into(),
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -531,13 +628,134 @@ impl ActivityRules {
             baseline: None,
         }
     }
+
+    /// The thread ceremony, upanayana — Nepal's bratabandha ("व्रतबन्ध") —
+    /// by *Muhurta Chintamani*, Samskara-prakarana (ch. V vv. 40–42, 48,
+    /// 54 and 55), heeding ch. I v. 47, which names the mauñji among the
+    /// rites a set Jupiter or Venus and an uneven month forbid.
+    ///
+    /// - **Stars** (v. 40, "क्षिप्रध्रुवाहिचरमूलमृदुत्रिपूर्वारौद्रे"): the
+    ///   swift, the fixed, Ashlesha, the movable, Mula, the soft, the three
+    ///   Purvas and Ardra good — twenty-two; the other five, Bharani,
+    ///   Krittika, Magha, Vishakha and Jyeshtha, rejected, as the
+    ///   Piyushadhara on v. 40 reads the verse ("अर्थात् भरणीकृत्तिकामघा-
+    ///   विशाखाज्येष्ठासु न कार्यम्", crux C1967).
+    /// - **Varas** (v. 40, "अर्कविद्गुरुसितेन्दुदिने"): Sunday, Wednesday,
+    ///   Thursday, Friday and Monday good; (v. 48, "शनौ") Saturday
+    ///   rejected; Tuesday unnamed, middling.
+    /// - **Tithis** (v. 40, "द्वित्रीषुरुद्ररविदिक्प्रमिते तिथौ च
+    ///   कृष्णादिमत्रिलवकेऽपि"): the 2nd, 3rd, 5th, 11th, 12th and 10th good,
+    ///   of the bright half and of the dark half's first third. Rejected:
+    ///   (v. 48) the dark half past its first third, its 6th to the new
+    ///   Moon; the galagrahas, the 13th, 14th, 15th and 1st, the 7th, 8th
+    ///   and 9th and the 4th, of either half (the Piyushadhara on v. 48,
+    ///   after Guru); and (v. 54) the anadhyayas the 14th, the full and new
+    ///   Moon, the 1st and the 8th. The bright 6th alone is unnamed.
+    /// - **Months**: the verses name none. The Piyushadhara on v. 40 shuts
+    ///   the southern course, so the northern course's six months are
+    ///   praised; it gives the five lunar months from Magha as the common
+    ///   season of every varna and sets Ashadha aside. Read as the five,
+    ///   with Pausha admitted while the Sun is in Capricorn, the northern
+    ///   course's part of it, and Ashadha rejected (crux C1960).
+    /// - **Hours** (v. 40, "न चापराह्णे"; v. 48, "निश्यपराह्णके"): before
+    ///   the afternoon, the daylight's last third, and not at night
+    ///   ([`Hours::BeforeAfternoon`]).
+    /// - **Pradosha** (vv. 48, 55): a day whose 12th, 6th or 3rd gives way
+    ///   before half the night, a prahara and a half, or a prahara, counts
+    ///   against the time ([`ActivityRules::pradosha`]).
+    /// - **Against** (v. 41): Venus, Jupiter and the Moon in the 6th or 8th,
+    ///   the Moon and Venus in the 12th, a malefic in the lagna, the 5th or
+    ///   the 8th, "अधमाः"; (v. 42) a benefic in the 8th, 6th or 12th.
+    /// - **Heeds** (ch. I v. 47): Jupiter or Venus set, and an adhika or
+    ///   kshaya month.
+    ///
+    /// The verses avoid and do not rank, so nothing bars (crux C205, C1962).
+    /// What turns on the boy — his age, his Veda's lord and stars, his
+    /// birth star and month, Jupiter's transit from his Moon — is listed in
+    /// `unjudged`.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
+    /// use teistro_muhurta::{ActivityRules, Grade, Hours};
+    ///
+    /// let thread = ActivityRules::chintamani_upanayana();
+    /// thread.check()?;
+    /// assert_eq!(thread.day.nakshatras.grade(&Nakshatra::Ardra), Grade::Best);
+    /// assert_eq!(thread.day.nakshatras.grade(&Nakshatra::Bharani), Grade::Rejected);
+    /// // The dark half's first third keeps its 2nd, 3rd and 5th; its 6th is past it.
+    /// assert_eq!(thread.day.tithis.grade(&Tithi::KrishnaPanchami), Grade::Best);
+    /// assert_eq!(thread.day.tithis.grade(&Tithi::KrishnaShashthi), Grade::Rejected);
+    /// assert_eq!(thread.day.varas.grade(&Vara::Shanivara), Grade::Rejected);
+    /// assert_eq!(thread.hours, Hours::BeforeAfternoon);
+    /// assert!(thread.pradosha && thread.bars.is_empty());
+    /// # Ok::<(), teistro_core::Error>(())
+    /// ```
+    #[must_use]
+    pub fn chintamani_upanayana() -> ActivityRules {
+        let mut best: Vec<Nakshatra> = KSHIPRA.into();
+        best.extend(DHRUVA);
+        best.push(Nakshatra::Ashlesha);
+        best.extend(CHARA);
+        best.push(Nakshatra::Mula);
+        best.extend(MRIDU);
+        best.extend([
+            Nakshatra::PurvaPhalguni,
+            Nakshatra::PurvaAshadha,
+            Nakshatra::PurvaBhadrapada,
+            Nakshatra::Ardra,
+        ]);
+        ActivityRules {
+            day: verse_day(
+                upanayana_tithis(),
+                good(best, Grade::Rejected),
+                Graded {
+                    best: vec![
+                        Vara::Ravivara,
+                        Vara::Budhavara,
+                        Vara::Guruvara,
+                        Vara::Shukravara,
+                        Vara::Somavara,
+                    ],
+                    middling: Vec::new(),
+                    rejected: vec![Vara::Shanivara],
+                    otherwise: Grade::Middling,
+                },
+            ),
+            months: MonthRule::Lunar {
+                months: Graded::admitting(UPANAYANA_MONTHS.into()),
+                with_sun: vec![MonthWithSun {
+                    masa: Masa::Pausha,
+                    sun: Rashi::Capricorn,
+                }],
+            },
+            lagnas: Graded::none(),
+            hours: Hours::BeforeAfternoon,
+            shool: Vec::new(),
+            padas: Vec::new(),
+            heeds: SET_AND_UNEVEN_MONTHS.into(),
+            unwanted: vec![
+                // v. 41: "कवीज्यचन्द्रलग्नपा रिपौ मृतौ व्रतेऽधमाः । व्ययेऽब्जभार्गवौ
+                // तथा तनौ मृतौ सुते खलाः".
+                Unwanted::of(vec![Graha::Venus, Graha::Jupiter, Graha::Moon], vec![6, 8]),
+                Unwanted::of(vec![Graha::Moon, Graha::Venus], vec![12]),
+                Unwanted::of(MALEFICS.into(), vec![1, 5, 8]),
+                // v. 42: "व्रतबन्धेऽष्टषड्रिःफवर्जिताः शोभनाः शुभाः".
+                Unwanted::of(BENEFICS.into(), vec![6, 8, 12]),
+            ],
+            vrisha_vastu: false,
+            pradosha: true,
+            bars: Vec::new(),
+            unjudged: upanayana_unjudged(),
+            baseline: None,
+        }
+    }
 }
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{CHARA, DHRUVA, KSHIPRA, MRIDU};
-    use crate::activity::{ActivityRules, MonthRule, vrisha_count, vrisha_grade};
+    use crate::activity::{ActivityRules, MonthRule, MonthWithSun, vrisha_count, vrisha_grade};
     use crate::grade::Grade;
     use crate::rites::{bright, dark};
     use crate::season::BlackoutKind;
@@ -551,6 +769,7 @@ mod tests {
             ActivityRules::chintamani_vastu_shanti(),
             ActivityRules::chintamani_vipani(),
             ActivityRules::chintamani_vivaha(),
+            ActivityRules::chintamani_upanayana(),
         ] {
             assert_eq!(rules.check(), Ok(()));
             assert!(rules.bars.is_empty(), "a verse avoids and does not bar");
@@ -641,6 +860,62 @@ mod tests {
         let shop = ActivityRules::chintamani_vipani();
         assert_eq!(shop.day.varas.grade(&Vara::Ravivara), Grade::Middling);
         assert_eq!(shop.day.tithis.grade(&Tithi::Amavasya), Grade::Middling);
+    }
+
+    #[test]
+    fn the_thread_ceremonys_tithis_are_the_verses() {
+        let thread = ActivityRules::chintamani_upanayana();
+        let grade = |t: Option<Tithi>| t.map(|t| thread.day.tithis.grade(&t));
+        // v. 40's numbers, of the bright half and the dark half's first third.
+        for n in [2, 3, 5, 10, 11, 12] {
+            assert_eq!(grade(bright(n)), Some(Grade::Best), "bright {n}");
+        }
+        for n in [2, 3, 5] {
+            assert_eq!(grade(dark(n)), Some(Grade::Best), "dark {n}");
+        }
+        // The dark half's 10th to 12th are v. 40's numbers past its first third.
+        for n in [10, 11, 12] {
+            assert_eq!(grade(dark(n)), Some(Grade::Rejected), "dark {n}");
+        }
+        // Thirty tithis: nine good, one unnamed, twenty rejected.
+        let all: Vec<Grade> = (0..30)
+            .filter_map(Tithi::from_id)
+            .map(|t| thread.day.tithis.grade(&t))
+            .collect();
+        let count = |g: Grade| all.iter().filter(|x| **x == g).count();
+        assert_eq!(
+            (
+                count(Grade::Best),
+                count(Grade::Middling),
+                count(Grade::Rejected)
+            ),
+            (9, 1, 20)
+        );
+        assert_eq!(grade(bright(6)), Some(Grade::Middling));
+    }
+
+    #[test]
+    fn the_thread_ceremonys_stars_and_months() {
+        let thread = ActivityRules::chintamani_upanayana();
+        let best = (0..27)
+            .filter_map(Nakshatra::from_id)
+            .filter(|n| thread.day.nakshatras.grade(n) == Grade::Best)
+            .count();
+        assert_eq!(best, 22);
+        assert_eq!(
+            thread.day.nakshatras.grade(&Nakshatra::Jyeshtha),
+            Grade::Rejected
+        );
+        assert!(matches!(
+            &thread.months,
+            MonthRule::Lunar { months, with_sun }
+                if with_sun == &[MonthWithSun { masa: Masa::Pausha, sun: Rashi::Capricorn }]
+                    && months.grade(&Masa::Jyeshtha) == Grade::Middling
+                    && months.grade(&Masa::Ashadha) == Grade::Rejected
+                    && months.grade(&Masa::Pausha) == Grade::Rejected
+        ));
+        assert_eq!(thread.day.varas.grade(&Vara::Mangalavara), Grade::Middling);
+        assert!(thread.heeds.contains(&BlackoutKind::ShukraAsta));
     }
 
     #[test]

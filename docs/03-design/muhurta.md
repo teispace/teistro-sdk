@@ -680,7 +680,7 @@ graded as printed, though two of them fall outside the northern course
 the same chapter asks (C204).
 
 **The house, the shop and *Muhurta Chintamani*'s marriage**
-(`crates/muhurta/src/chintamani.rs`). Five rites are read from Daivajna
+(`crates/muhurta/src/chintamani.rs`). Six rites are read from Daivajna
 Rama's *Muhurta Chintamani* (1600), in Mahidhara's (1905) and Pyarelal
 Mishra's (1939) printings with their Hindi commentaries, with *Muhurta
 Martanda* (1904) where it words the same rule:
@@ -692,6 +692,7 @@ Martanda* (1904) where it words the same rule:
 | `CHINTAMANI_VASTU_SHANTI` | the vastu puja and bhutabali, Grihapravesha-prakarana XIII v. 3 | vastu shanti |
 | `CHINTAMANI_VIPANI` | the market, Nakshatra-prakarana II v. 17 (its second half) | dokan kholne |
 | `CHINTAMANI_VIVAHA` | the marriage, Vivaha-prakarana VI vv. 13 and 55 | vivaha |
+| `CHINTAMANI_UPANAYANA` | the thread ceremony, Samskara-prakarana V vv. 40–42, 48, 54–55 | bratabandha ("व्रतबन्ध") |
 
 Each clause is the verse's: the house's months are lunar months each
 with the Sun's sign (v. 15, `MonthRule::Lunar` with every month shut
@@ -723,6 +724,41 @@ both halves (C1132), vastu shanti heeding the consecration's blackouts
 facing, Rahu's mouth, the first stone's corner, the owner's chart and
 the vedha of the marriage's stars are listed in `unjudged`.
 
+**The thread ceremony** (`CHINTAMANI_UPANAYANA`, Samskara-prakarana V,
+read in Mahidhara's printing and the Piyushadhara of the 1954 one).
+v. 40 gives twenty-two good stars (the swift, the fixed, Ashlesha, the
+movable, Mula, the soft, the three Purvas and Ardra), the Piyushadhara
+reading the other five as forbidden (C1967); the days of the Sun,
+Mercury, Jupiter, Venus and the Moon; and the 2nd, 3rd, 5th, 10th, 11th
+and 12th of the bright half and of the dark half's first third, "not in
+the afternoon". v. 48 does not want the dark half (past v. 40's first third), pradosha, an
+anadhyaya, Saturday, the night, the afternoon or a galagraha tithi (the
+13th, 14th, 15th, 1st, 7th, 8th, 9th and 4th, C1964); v. 54's
+anadhyayas reject the 14th, the full and new Moon, the 1st and the 8th.
+The verses name no month: the commentary shuts the southern course and
+gives the five lunar months from Magha, Ashadha set aside, read with
+Pausha while the Sun is in Capricorn (C1960). v. 41's placements, Venus,
+Jupiter and the Moon in the 6th or 8th, the Moon and Venus in the 12th
+and a malefic in the 1st, 5th or 8th, and v. 42's benefic in the 6th,
+8th or 12th are unwanted and weigh (C1962). Two clauses are new to the
+rule language:
+
+- **`BEFORE_AFTERNOON`** (`ActivityRules.hours`): sunrise to the end of
+  the daylight's second third, the aparahna, its last third, left out.
+  v. 40's "न चापराह्णे" is a "not", so the hours bar (C1961).
+- **`PRADOSHA`** (`ActivityRules.pradosha`, v. 55): a day holding a
+  12th, 6th or 3rd that gives way to the next tithi before half the
+  night, a prahara and a half or a prahara after sunset (the night's
+  half, three eighths and a quarter) gets a `PRADOSHA { tithi }` clause
+  over the whole day. It counts against the time; the measurement reads
+  it as v. 48's other "not wanted" limbs, a rejection (C1963). Rules
+  that leave the field out read `false`.
+
+What turns on the boy — his age, his Veda's lord and stars, his birth
+star and month, Jupiter's transit from his Moon — and v. 54's anadhyayas
+of a named month, the sankranti's day and the navamshas, are listed in
+`unjudged`.
+
 **Measured** (`saait-measured.md`, gated by `check-saait`): the
 committee's VS 2083 muhurta sheet, 148 rows, and the Surya Panchanga's
 VS 2082 lists of the foundation, the house entry and the shop, 41 rows
@@ -731,7 +767,10 @@ images, founded at Kathmandu over the committee's sky and the modern one
 and searched with each set of the rite's rules. Six rows of the sheet
 print a weekday their own date contradicts, and are read neither way.
 Over the committee's sky every readable bratabandha day has a clean
-window; 27 of 35 pasni days do, most of the rest parting at the 10th
+window, under Raman's thread ceremony, which leaves 131 of the year's
+365 days open, and under *Muhurta Chintamani*'s, which leaves 34;
+§5 of the page lists each printed day clause by clause, and the days the
+text leaves open and the committee does not print are C1966; 27 of 35 pasni days do, most of the rest parting at the 10th
 that must be empty; 3 of 5 griha pravesh days do, the two VS 2082 ones
 parting on Saturday and on Venus set. Of 39 vivaha days, 4 are clean
 under Raman's marriage, which parts by Tuesday, Pausha, dark-half tithis

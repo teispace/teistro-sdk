@@ -8522,6 +8522,7 @@ fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
         ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
         ("upanayana", "RAMAN_UPANAYANA", "TEXTS"),
         ("griharambha", "CHINTAMANI_GRIHARAMBHA", "TEXTS"),
+        ("bratabandha", "CHINTAMANI_UPANAYANA", "TEXTS"),
     ] {
         let asked = teistro::MuhurtaRequest::from_json(&format!(
             r#"{{"rules":"{rules}","ranking":"{ranking}","native":{{"star":"ROHINI","moonSign":"TAURUS","lagna":"LEO"}},"daysWithWindows":3,"most":12}}"#

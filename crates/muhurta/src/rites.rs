@@ -249,6 +249,7 @@ impl ActivityRules {
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 10th, 12th or 16th day from the birth"),
@@ -339,6 +340,7 @@ impl ActivityRules {
                 Unwanted::of(vec![Graha::Venus], vec![9]),
             ],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![age("the 6th, 8th, 9th or 12th month of the child")],
             baseline: None,
@@ -454,6 +456,7 @@ impl ActivityRules {
                 Unwanted::of(vec![Graha::Moon], vec![1]),
             ],
             vrisha_vastu: false,
+            pradosha: false,
             bars: vec![Bar::Key(ClauseKey::MoonInDusthana)],
             unjudged: upanayana_unjudged(),
             baseline: None,
@@ -535,6 +538,7 @@ impl ActivityRules {
             heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
             unwanted: vec![Unwanted::vacant(vec![8])],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -588,6 +592,7 @@ impl ActivityRules {
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 12th or 16th day of the child, or its 6th, 7th or 8th month"),
@@ -690,6 +695,7 @@ impl ActivityRules {
             heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 3rd or 5th year of the child"),
@@ -799,6 +805,7 @@ impl ActivityRules {
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -921,6 +928,7 @@ impl ActivityRules {
             heeds: vec![BlackoutKind::Sankranti],
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -1144,6 +1152,7 @@ impl ActivityRules {
             heeds: Vec::new(),
             unwanted: Vec::new(),
             vrisha_vastu: false,
+            pradosha: false,
             bars: Vec::new(),
             unjudged: Vec::new(),
             baseline: None,

@@ -259,6 +259,16 @@ pub enum ClauseKind {
         /// Best on the eleven good counts, rejected on the seventeen bad.
         grade: Grade,
     },
+    /// A day of pradosha (*Muhurta Chintamani*, Samskara-prakarana V
+    /// v. 55): its 12th, 6th or 3rd gives way to the next tithi before half
+    /// the night, a prahara and a half, or a prahara. Against the time,
+    /// over the whole day, for the rites whose rules ask it
+    /// (`ActivityRules::pradosha`); v. 48 names it among what a thread
+    /// ceremony is not wanted on.
+    Pradosha {
+        /// The 12th, 6th or 3rd whose evening it is.
+        tithi: Tithi,
+    },
 }
 
 /// Which clause, without what it found: the name a rule uses to point at
@@ -347,6 +357,8 @@ pub enum ClauseKey {
     AshubhaYoga,
     /// [`ClauseKind::VrishaVastu`].
     VrishaVastu,
+    /// [`ClauseKind::Pradosha`].
+    Pradosha,
 }
 
 impl ClauseKey {
@@ -359,7 +371,7 @@ impl ClauseKey {
     ///
     /// assert!(ClauseKey::ALL.iter().enumerate().all(|(place, key)| *key as usize == place));
     /// ```
-    pub const ALL: [ClauseKey; 35] = [
+    pub const ALL: [ClauseKey; 36] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -395,6 +407,7 @@ impl ClauseKey {
         ClauseKey::Ghata,
         ClauseKey::AshubhaYoga,
         ClauseKey::VrishaVastu,
+        ClauseKey::Pradosha,
     ];
 }
 
@@ -445,6 +458,7 @@ impl ClauseKind {
             ClauseKind::Ghata { .. } => ClauseKey::Ghata,
             ClauseKind::AshubhaYoga { .. } => ClauseKey::AshubhaYoga,
             ClauseKind::VrishaVastu { .. } => ClauseKey::VrishaVastu,
+            ClauseKind::Pradosha { .. } => ClauseKey::Pradosha,
         }
     }
 

@@ -37,7 +37,7 @@ impl ClauseKey {
     #[must_use]
     pub const fn members(self) -> &'static [(&'static str, Kind)] {
         match self {
-            ClauseKey::Tithi => &[("tithi", Kind::Tithi)],
+            ClauseKey::Tithi | ClauseKey::Pradosha => &[("tithi", Kind::Tithi)],
             ClauseKey::Nakshatra | ClauseKey::Varjyam => &[("nakshatra", Kind::Nakshatra)],
             ClauseKey::Yoga => &[("yoga", Kind::Yoga)],
             ClauseKey::Karana => &[("karana", Kind::Karana)],
@@ -342,6 +342,9 @@ mod tests {
             ClauseKey::VrishaVastu => ClauseKind::VrishaVastu {
                 count: 1,
                 grade: Grade::Rejected,
+            },
+            ClauseKey::Pradosha => ClauseKind::Pradosha {
+                tithi: Tithi::KrishnaTritiya,
             },
         }
     }

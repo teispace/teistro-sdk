@@ -3219,6 +3219,7 @@ void main() {
       MuhurtaActivity.chintamaniGriharambha,
       MuhurtaRanking.texts,
     ),
+    ('bratabandha', MuhurtaActivity.chintamaniUpanayana, MuhurtaRanking.texts),
   ]) {
     final muhurta =
         geo.almanac
