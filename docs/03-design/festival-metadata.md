@@ -225,3 +225,105 @@ Every other key's `unsourced` names `fast`, which does not say it has none.
 their packs' `input_hash` moves; `unsourced` gains `fast` on every row
 without one. No day moved.
 
+
+## 7. Significance: a day's order (rc.7)
+
+A consumer showing a day's observances asked for "the main one first": a
+tier on every rule and a day's list sorted by it. `meta.significance` is
+the tier a source marks a rule with; `PackRow.significance` is the tier it
+has, marked or derived. From the highest:
+
+| tier | what it is | how a rule gets it |
+|---|---|---|
+| `NATIONAL` | a government's holiday for the whole country, no office's choice | `kind` `GAZETTED`, not `optional`, with no community and no region below a country; in Nepal's packs only a key the notice gives the whole country a holiday for |
+| `MAJOR` | a day a text gives a fast, or one the national print sets above the day's others | `fast` holds a reading; else marked |
+| `PERIOD` | the first or last day of a stretch (Kartik snan, Swasthani, the Mahalakshmi vrata) | marked |
+| `REGIONAL` | a holiday or festival of a part of a country or of a community, or an office's choice | `GAZETTED` otherwise, `REGIONAL_ETHNIC`, or any community or region below a country; else marked |
+| `MINOR` | the rest | the default |
+
+A mark wins over the fields, and says its source. For Nepal's packs the
+first is the gazetted notice (`nepal-gazette-holidays.md`): a key a clause
+gives a holiday for the whole country is `NATIONAL`, so Ubhauli, the
+Lhosars, Chhath and Maghi are; one for only some (a community, a region,
+women, schools, a religion's followers) is `REGIONAL`, or `MAJOR` where a
+text gives it a fast (Teej), so Gaura parva, Guru Nanak Jayanti and the
+disability day are no longer national by their group. One rule holds the
+rest: a key the notice gives the whole country no holiday is not
+`NATIONAL`, whatever its group says, and takes the tier its fields give
+below it. A holiday of several days granted as one festival's (the
+notice's "Tihar" and "Dashain") grants that festival's days inside it, as
+Nepal reads it: a key counts when it is a day of that festival in the
+pack's own grouping (its gazetted group, not a festival that shares the
+dates) and its VS 2083 day lies inside the span. So Mahashtami and
+Mahanavami (Kartik 1 and 3, inside Asoj 31 to Kartik 6), Kukur Tihar
+(Kartik 22) and Govardhan puja (Kartik 24, inside Kartik 22 to 26) are
+`NATIONAL`; Kag Tihar (Kartik 21, the day before) is not, and is `MAJOR` by
+the print's bold; Mha puja, a Newar festival in the pack's grouping and
+not named by the notice, keeps its tier. Rama Navami, which the notice
+gives no holiday, is `MAJOR` by its fast. A day kept with offices open keeps its fields'
+tier. The tiers are read from VS 2083's notice, the one in hand; a later
+year's notice, when added, is read the same way and replaces them. A test
+holds every `NATIONAL` key to a nationwide clause. Then `MARKS`
+(`crates/panchanga/src/festival/meta.rs`), 85 rows:
+
+- **`MAJOR`**, 60: what the committee's VS 2083 print sets in bold on the
+  days it prints it, where no fast and no clause says so: the moonrise, the
+  purnima, Mangal chauthi, Ravi saptami and the Budha and Bhauma ashtami
+  vratas, the ten sankrantis no clause names, the sixteen shraddhas,
+  Akshaya tritiya, Nag panchami, Rishi panchami, Kojagrat, Dhanteras, Kag
+  Tihar, Mha puja, Nepal Sambat's new year and the rest of the bold rows. The bold is
+  the print's, not a reading of it: a key bold on most of its days is
+  marked, as the moonrise is though two of its rows are plain.
+- **`PERIOD`**, 23: a key whose printed name opens or closes a stretch
+  (आरम्भ, सुरु, समाप्ति, समापन): Kartik, Magh, Vaishakh, Dashahara and
+  Gosaikunda snan, the Swasthani and Mahalakshmi vratas, the chaturmas,
+  the sorha shraddha's start, Gunla, Bisket, the yamapanchaka and the
+  Bhishma panchaka. The day marks the stretch, so it ranks below a day kept
+  for itself, bold or not.
+- **`REGIONAL`**, 2: the sarai jatras the print names by their place,
+  Khanchi and Argha, in Arghakhanchi.
+
+**A day's order.** A day's observances (`DayCell.festivals`) are sorted by
+tier, then by where the print sets each among the day's others
+(`printed_order`, 24 keys: a sankranti leads its day; Chandi Purnima,
+Buddha Jayanti, Labour Day, then Ubhauli; Kukur Tihar, then Lakshmi Puja;
+the pradosha vrata before Dhanteras and the shraddhas; the moonrise, Mha
+puja, then Nepal Sambat; Kartik snan's end before the chaturmas'; the
+Swasthani vrata before Magh snan, every tie the print and the rule order
+part on over VS 2083), then by the rule's place in its pack: the lunar rules,
+the Ekadashis, the counted, the dated, the anniversaries and the published
+days, each in the pack's order. The sort is stable and costs a key per
+observance. A request's `order` is `SIGNIFICANCE`, the default, or
+`RULE_ORDER`, the order before rc.7.
+
+**Changing a tier.** A request's `meta` lays a patch on a key's values,
+any field of the six, so a consumer sets its own tier:
+
+```json
+{"rules": "NEPAL_PANCHANGA", "meta": {"LAKSHMI_PUJA": {"significance": "MINOR"}}}
+```
+
+A key the pack does not hold is refused, named `festivals.meta.<KEY>`.
+`only` takes `minSignificance`, keeping the rules of that tier or higher:
+
+```json
+{"rules": "NEPAL_PANCHANGA", "only": {"minSignificance": "MAJOR"}}
+```
+
+**Kartik 2083, as the print orders it.** The print's days are the test
+(`crates/sdk/tests/festival_rank.rs`): Kartik 5, Papankusha ekadashi before
+the Annapurna jatra; 7, the Khanchi sarai before the UN day; 9, Kartik snan
+before the Argha sarai and Katin punhi; 19, Rama ekadashi before Govatsa
+dwadashi; 22, Kukur Tihar and Lakshmi Puja, both `NATIONAL` (Kukur Tihar a
+day of the notice's Tihar holiday), in the print's order, Kukur Tihar first
+as the committee's VS 2083 print sets it, then Narak chaturdashi; 23, Somabare aunsi first (the
+print's Gai puja has no rule).
+
+**What moved.** The cells' festival lists are in the new order by default.
+`NEPAL` and `NEPAL_PANCHANGA`'s marked and gazetted rules carry
+`significance`, so both packs' `input_hash` moves; no day moved. Every pack
+listing row gains `significance`.
+
+**Open.** A tier set per profile (a profile choosing its own tiers, as a
+request's `meta` does per call) is not built: a profile setting moves every
+settings hash, and it belongs with rc.8's configurability work.

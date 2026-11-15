@@ -82,6 +82,14 @@ final List<Surface> _facades = [
     ),
     const Param('only', Named('MetaFilter')),
     const Param('hijriOffset', Scalar('int')),
+    Param(
+      'meta',
+      MapOf(
+        const Named('MetaPatch'),
+        (entries) => Map<String, MetaPatch>.from(entries),
+      ),
+    ),
+    const Param('order', Named('DayOrder')),
   ]),
   Built<FestivalWindow>('FestivalWindow', FestivalWindow.new, const [
     Param('window', Scalar('String')),

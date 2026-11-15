@@ -1221,5 +1221,16 @@
     "MOON": {},
     "SUN": {},
     "BHAVA": {}
+  },
+  "holiday_scope": {
+    "NATIONAL": {},
+    "CONCERNED": {},
+    "COMMUNITY": {},
+    "REGION": {},
+    "RELIGION": {},
+    "WOMEN": {},
+    "SCHOOLS": {},
+    "DISABILITY": {},
+    "OFFICES_OPEN": {}
   }
 }

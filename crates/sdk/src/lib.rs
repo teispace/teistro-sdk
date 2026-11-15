@@ -407,7 +407,7 @@ pub use crate::sade_sati_request::SadeSatiRequest;
 pub use crate::sarvatobhadra_request::{SarvatobhadraMotion, SarvatobhadraRequest};
 // Muhurta: an activity's windows over a range, judged clause by clause
 // (`03-design/muhurta.md`), and how asta is seen.
-pub use crate::festival_request::{FestivalPack, FestivalRequest};
+pub use crate::festival_request::{DayOrder, FestivalPack, FestivalRequest};
 // A range of days and what is asked beside them, read whole from JSON
 // (`03-design/mcp-server.md`, step 2).
 pub use crate::days_request::DaysRequest;

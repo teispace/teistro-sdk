@@ -355,3 +355,24 @@ pub fn with_festivals(cells: &mut [DayCell], found: &Observances) {
         cell.festivals = found.keys_on(&cell.date);
     }
 }
+
+/// [`with_festivals`], each cell's keys ordered by `rank`
+/// ([`Observances::keys_on_by`]).
+///
+/// ```
+/// use teistro_panchanga::cell::with_festivals_by;
+/// use teistro_panchanga::festival::Observances;
+///
+/// let mut cells = Vec::new();
+/// with_festivals_by(&mut cells, &Observances::default(), |key| key.len());
+/// assert!(cells.is_empty());
+/// ```
+pub fn with_festivals_by<R: Ord>(
+    cells: &mut [DayCell],
+    found: &Observances,
+    rank: impl Fn(&str) -> R,
+) {
+    for cell in cells {
+        cell.festivals = found.keys_on_by(&cell.date, &rank);
+    }
+}

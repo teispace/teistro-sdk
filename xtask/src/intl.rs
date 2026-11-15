@@ -313,13 +313,19 @@ fn every_festival_is_named(tree: &Tree) -> usize {
             let following = pack.following().into_iter().map(|rule| rule.key);
             rules.chain(ekadashis).chain(following).collect::<Vec<_>>()
         })
+        .chain(
+            teistro::festival::HolidaySet::ALL
+                .into_iter()
+                .flat_map(teistro::festival::HolidaySet::holidays)
+                .flat_map(|holiday| holiday.festivals),
+        )
         .collect();
     let mut failures = 0;
     for key in &keys {
         for (tag, locale) in &strict {
             if locale.entity(&format!("festival.{key}")).is_none() {
                 println!(
-                    "FAIL  festival.{key}: a shipped pack answers with it and {tag} does not name it"
+                    "FAIL  festival.{key}: a shipped pack or holiday answers with it and {tag} does not name it"
                 );
                 failures += 1;
             }
@@ -327,8 +333,51 @@ fn every_festival_is_named(tree: &Tree) -> usize {
     }
     if failures == 0 {
         println!(
-            "ok    every rule key of every shipped festival pack ({}) is named in every strict locale",
+            "ok    every rule key of every shipped festival pack and every festival a shipped holiday names ({}) is named in every strict locale",
             keys.len()
+        );
+    }
+    failures + no_two_festivals_share_a_name(tree)
+}
+
+/// That no two festival keys share a name in one locale: a reader shows
+/// the name, so two keys under one name read as one festival on two days.
+/// Bala Chaturdashi's two keys and the two Democracy Days once did
+/// (`03-design/nepal-gazette-holidays.md` §3).
+fn no_two_festivals_share_a_name(tree: &Tree) -> usize {
+    let mut failures = 0;
+    let mut named = 0;
+    for (tag, locale) in &tree.locales {
+        let mut by_name: std::collections::BTreeMap<&str, Vec<&str>> =
+            std::collections::BTreeMap::new();
+        let entries = locale
+            .namespaces
+            .get(teistro_intl::ENTITY_NAMESPACE)
+            .into_iter()
+            .flat_map(|namespace| &namespace.entries);
+        for (key, entry) in entries {
+            let (Some(festival), teistro_intl::source::Entry::Entity(entity)) =
+                (key.strip_prefix("festival."), entry)
+            else {
+                continue;
+            };
+            if let Some(name) = entity.forms.get("name") {
+                by_name.entry(name).or_default().push(festival);
+                named += 1;
+            }
+        }
+        for (name, keys) in by_name.iter().filter(|(_, keys)| keys.len() > 1) {
+            println!(
+                "FAIL  {tag}: festivals {} share the name \"{name}\"; give each its own",
+                keys.join(", ")
+            );
+            failures += 1;
+        }
+    }
+    if failures == 0 {
+        println!(
+            "ok    no two festival keys share a name in one locale ({named} names in {} locales)",
+            tree.locales.len()
         );
     }
     failures

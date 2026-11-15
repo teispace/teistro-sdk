@@ -272,6 +272,29 @@
       "calendar": "calendar.JULIAN",
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -279,6 +302,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -286,6 +310,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -321,6 +346,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -400,6 +429,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -485,6 +518,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -525,6 +562,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -614,6 +655,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",
@@ -686,6 +731,29 @@
       "eclipses": true,
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -693,6 +761,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -700,6 +769,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -735,6 +805,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -814,6 +888,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -899,6 +977,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -939,6 +1021,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -1028,6 +1114,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",
@@ -1361,6 +1451,29 @@
       "days": 1,
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -1368,6 +1481,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -1375,6 +1489,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -1410,6 +1525,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -1489,6 +1608,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -1574,6 +1697,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -1614,6 +1741,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -1703,6 +1834,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",
@@ -2021,6 +2156,29 @@
       ],
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -2028,6 +2186,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -2035,6 +2194,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -2070,6 +2230,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -2149,6 +2313,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -2234,6 +2402,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -2274,6 +2446,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -2363,6 +2539,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",
@@ -2629,6 +2809,29 @@
       "calendar": "calendar.JULIAN",
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -2636,6 +2839,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -2643,6 +2847,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -2678,6 +2883,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -2757,6 +2966,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -2842,6 +3055,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -2882,6 +3099,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -2971,6 +3192,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",
@@ -3022,6 +3247,29 @@
         {
           "festivals": {
             "hijriOffset": 1,
+            "meta": {
+              "x": {
+                "communities": [
+                  "x"
+                ],
+                "fast": [
+                  {
+                    "end": "NIGHT",
+                    "ifUnable": true,
+                    "kind": "fast_kind.EKABHAKTA",
+                    "source": "x",
+                    "start": "MORNING"
+                  }
+                ],
+                "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                "optional": true,
+                "regions": [
+                  "x"
+                ],
+                "significance": "MAJOR",
+                "tradition": "tradition.BUDDHIST"
+              }
+            },
             "only": {
               "communities": [
                 "x"
@@ -3029,6 +3277,7 @@
               "kinds": [
                 "festival_kind.RELIGIOUS_CULTURAL"
               ],
+              "minSignificance": "MAJOR",
               "regions": [
                 "x"
               ],
@@ -3036,6 +3285,7 @@
                 "tradition.BUDDHIST"
               ]
             },
+            "order": "RULE_ORDER",
             "published": [
               {
                 "entries": [
@@ -3071,6 +3321,10 @@
                       "regions": [
                         "x"
                       ],
+                      "significance": {
+                        "source": "x",
+                        "tier": "MAJOR"
+                      },
                       "tradition": "tradition.BUDDHIST"
                     },
                     "names": {
@@ -3150,6 +3404,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "parana": {
@@ -3235,6 +3493,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "source": "x"
@@ -3275,6 +3537,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "nakshatraInMonth": {
@@ -3364,6 +3630,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "month": "masa.VAISHAKHA",
@@ -3472,6 +3742,29 @@
       "calendar": "calendar.JULIAN",
       "festivals": {
         "hijriOffset": 1,
+        "meta": {
+          "x": {
+            "communities": [
+              "x"
+            ],
+            "fast": [
+              {
+                "end": "NIGHT",
+                "ifUnable": true,
+                "kind": "fast_kind.EKABHAKTA",
+                "source": "x",
+                "start": "MORNING"
+              }
+            ],
+            "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "optional": true,
+            "regions": [
+              "x"
+            ],
+            "significance": "MAJOR",
+            "tradition": "tradition.BUDDHIST"
+          }
+        },
         "only": {
           "communities": [
             "x"
@@ -3479,6 +3772,7 @@
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
+          "minSignificance": "MAJOR",
           "regions": [
             "x"
           ],
@@ -3486,6 +3780,7 @@
             "tradition.BUDDHIST"
           ]
         },
+        "order": "RULE_ORDER",
         "published": [
           {
             "entries": [
@@ -3521,6 +3816,10 @@
                   "regions": [
                     "x"
                   ],
+                  "significance": {
+                    "source": "x",
+                    "tier": "MAJOR"
+                  },
                   "tradition": "tradition.BUDDHIST"
                 },
                 "names": {
@@ -3600,6 +3899,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "parana": {
@@ -3685,6 +3988,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "source": "x"
@@ -3725,6 +4032,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "nakshatraInMonth": {
@@ -3814,6 +4125,10 @@
               "regions": [
                 "x"
               ],
+              "significance": {
+                "source": "x",
+                "tier": "MAJOR"
+              },
               "tradition": "tradition.BUDDHIST"
             },
             "month": "masa.VAISHAKHA",

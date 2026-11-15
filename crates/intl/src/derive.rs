@@ -572,7 +572,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1437,
+            derived.entities, 1452,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -588,7 +588,8 @@ mod tests {
              1336 until its fifty-six UN and organisers' days, \
              1392 until SR-01's twenty-nine Nepal and organisers' days, \
              1421 until the six printed charhe and Ghantakarna, \
-             1428 until Bihar's nine"
+             1428 until Bihar's nine, \
+             1437 until the gazette's six unruled festivals and nine holiday scopes"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 

@@ -12,7 +12,7 @@ use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
     Anniversary, Dated, DatedRule, EkadashiRule, FestivalMeta, FestivalRule, FollowingRule,
-    KindRules, MetaFilter, PublishedEntry, PublishedSet, SaitRule, region,
+    KindRules, MetaFilter, MetaPatch, PublishedEntry, PublishedSet, SaitRule, Significance, region,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -550,6 +550,47 @@ pub struct FestivalRequest {
     /// (`03-design/published-overrides.md` §7).
     #[serde(rename = "hijriOffset", skip_serializing_if = "no_offset")]
     hijri_offset: HijriOffset,
+    /// How a day's observances are listed; left out when by significance,
+    /// so a request that does not ask hashes as it did.
+    #[serde(skip_serializing_if = "DayOrder::is_significance")]
+    order: DayOrder,
+}
+
+/// How a day's observances are listed (`03-design/festival-metadata.md`
+/// §7): a month grid's cell, `almanac.cells`.
+///
+/// ```
+/// use teistro::{DayOrder, FestivalPack, FestivalRequest};
+///
+/// let asked = FestivalRequest::from_json(r#"{"rules": "NEPAL_PANCHANGA", "order": "RULE_ORDER"}"#)?;
+/// assert_eq!(asked.order(), DayOrder::RuleOrder);
+/// assert_eq!(FestivalRequest::from(FestivalPack::NepalPanchanga).order(), DayOrder::Significance);
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DayOrder {
+    /// By each rule's tier ([`FestivalMeta::tier`]), then by the order
+    /// Nepal's national panchanga prints them in, then by the rules'
+    /// order in the request.
+    #[default]
+    Significance,
+    /// As the answer holds them: the festivals in the order of their
+    /// tithis, then the fasts, the dated days, the anniversaries and the
+    /// published days added.
+    RuleOrder,
+}
+
+impl DayOrder {
+    /// Whether it is the default, for serde.
+    #[expect(
+        clippy::trivially_copy_pass_by_ref,
+        reason = "serde's skip_serializing_if passes the field by reference"
+    )]
+    fn is_significance(&self) -> bool {
+        *self == DayOrder::Significance
+    }
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -620,6 +661,102 @@ impl FestivalRequest {
             saits: Vec::new(),
             only: None,
             hijri_offset: HijriOffset::NONE,
+            order: DayOrder::Significance,
+        }
+    }
+
+    /// The same request listing each day's observances in `order`.
+    #[must_use]
+    pub fn with_order(mut self, order: DayOrder) -> FestivalRequest {
+        self.order = order;
+        self
+    }
+
+    /// How a day's observances are listed.
+    #[must_use]
+    pub fn order(&self) -> DayOrder {
+        self.order
+    }
+
+    /// The same request with `patch` laid over the meta of every rule it
+    /// holds with this key, of whichever kind, and of a published day
+    /// added under it (`03-design/festival-metadata.md` §7): how a caller
+    /// changes what a shipped rule is, its tier among them, call by call.
+    /// A rule added after keeps its own.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::festival::{MetaPatch, Significance};
+    ///
+    /// let minor = MetaPatch { significance: Some(Significance::Minor), ..MetaPatch::default() };
+    /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga).with_meta("LAKSHMI_PUJA", &minor);
+    /// assert_eq!(asked.meta_of("LAKSHMI_PUJA").map(|meta| meta.tier()), Some(Significance::Minor));
+    /// let text = r#"{"rules": "NEPAL_PANCHANGA", "meta": {"LAKSHMI_PUJA": {"significance": "MINOR"}}}"#;
+    /// assert_eq!(FestivalRequest::from_json(text)?, asked);
+    /// let refused = FestivalRequest::from_json(r#"{"rules": "NEPAL", "meta": {"NO_SUCH": {}}}"#).unwrap_err();
+    /// assert_eq!(refused.field(), Some("festivals.meta.NO_SUCH"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_meta(mut self, key: &str, patch: &MetaPatch) -> FestivalRequest {
+        fn lay<T: Stamped>(rules: &mut [T], key: &str, patch: &MetaPatch) {
+            for rule in rules.iter_mut().filter(|rule| rule.key() == key) {
+                let meta = std::mem::take(rule.meta_mut());
+                *rule.meta_mut() = meta.patched(patch);
+            }
+        }
+        lay(&mut self.rules, key, patch);
+        lay(&mut self.ekadashis, key, patch);
+        lay(&mut self.following, key, patch);
+        lay(&mut self.dated, key, patch);
+        for entry in self.published.iter_mut().flat_map(|set| &mut set.entries) {
+            if let PublishedEntry::Add {
+                key: added, meta, ..
+            } = entry
+                && added == key
+            {
+                *meta = std::mem::take(meta).patched(patch);
+            }
+        }
+        self
+    }
+
+    /// Where a key stands in a day's list by significance: its tier,
+    /// then its place in Nepal's national panchanga's print, then its
+    /// rule's place in the request (`03-design/festival-metadata.md` §7).
+    /// A key no rule has (an anniversary's) is `MINOR`, after the rules.
+    pub fn day_rank(&self) -> impl Fn(&str) -> (Significance, u16, usize) + '_ {
+        let keys: Vec<&str> = self
+            .rules
+            .iter()
+            .map(|rule| rule.key.as_str())
+            .chain(self.ekadashis.iter().map(|rule| rule.key.as_str()))
+            .chain(self.following.iter().map(|rule| rule.key.as_str()))
+            .chain(self.dated.iter().map(|rule| rule.key.as_str()))
+            .chain(self.anniversaries.iter().map(|rule| rule.key.as_str()))
+            .chain(
+                self.published
+                    .iter()
+                    .flat_map(|set| &set.entries)
+                    .filter_map(|entry| match entry {
+                        PublishedEntry::Add { key, .. } => Some(key.as_str()),
+                        _ => None,
+                    }),
+            )
+            .collect();
+        let placed: std::collections::HashMap<&str, usize> = keys
+            .iter()
+            .enumerate()
+            .rev()
+            .map(|(at, &key)| (key, at))
+            .collect();
+        move |key: &str| {
+            (
+                self.meta_of(key)
+                    .map_or(Significance::Minor, FestivalMeta::tier),
+                teistro_panchanga::festival::printed_order(key).unwrap_or(u16::MAX),
+                placed.get(key).copied().unwrap_or(usize::MAX),
+            )
         }
     }
 
@@ -980,6 +1117,7 @@ impl FestivalRequest {
         Some(FestivalRequest {
             only: self.only.clone(),
             hijri_offset: self.hijri_offset,
+            order: self.order,
             rules: self
                 .rules
                 .iter()
@@ -1277,6 +1415,18 @@ impl FestivalRequest {
             let offset = HijriOffset::new(days).map_err(|why| why.under(FESTIVALS))?;
             request = request.with_hijri_offset(offset);
         }
+        for (key, patch) in &asked.meta {
+            if request.meta_of(key).is_none() {
+                return Err(Error::invalid_arg(format!(
+                    "`meta` names {key}, which no rule of the request has"
+                ))
+                .with_field(format!("{FESTIVALS}.meta.{key}")));
+            }
+            request = request.with_meta(key, patch);
+        }
+        if let Some(order) = asked.order {
+            request = request.with_order(order);
+        }
         request.check().map_err(|why| why.under(FESTIVALS))?;
         Ok(request)
     }
@@ -1392,6 +1542,13 @@ pub(crate) struct Asked {
     )]
     #[cfg_attr(feature = "schema", schemars(range(min = -2, max = 2)))]
     hijri_offset: Option<i8>,
+    /// What a caller lays over the meta of the rules of each key: each
+    /// field given replaces the rule's, a tier among them.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    meta: std::collections::BTreeMap<String, MetaPatch>,
+    /// How a day's observances are listed: `SIGNIFICANCE` when left out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    order: Option<DayOrder>,
 }
 
 /// The schema of [`Asked::rules`]: a pack's name, or a list of

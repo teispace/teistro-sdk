@@ -12,11 +12,13 @@ import java.util.Objects;
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  *
  * @param hijriOffset The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out. Null leaves the SDK's default.
+ * @param meta What a caller lays over the meta of the rules of each key: each field given replaces the rule's, a tier among them. Null leaves the SDK's default.
  * @param only What the answer keeps, by the rules' `meta`; every rule when left out. Null leaves the SDK's default.
+ * @param order How a day's observances are listed: `SIGNIFICANCE` when left out. Null leaves the SDK's default.
  * @param published The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence. Null leaves the SDK's default.
  * @param rules The rules: a pack's name, or a list of names and rules spelt out.
  */
-public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
+public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, MetaFilter only, DayOrder order, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -28,6 +30,7 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
         if (hijriOffset != null) {
             Read.range(hijriOffset, "FestivalRequest.hijriOffset", -128L, 127L);
         }
+        meta = meta == null ? null : Map.copyOf(meta);
         published = published == null ? null : List.copyOf(published);
         Objects.requireNonNull(rules, "`FestivalRequest.rules` is required");
     }
@@ -39,7 +42,7 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
      * @param rules The rules: a pack's name, or a list of names and rules spelt out.
      */
     public FestivalRequest(FestivalRules rules) {
-        this(null, null, null, rules);
+        this(null, null, null, null, null, rules);
     }
 
     /**
@@ -55,7 +58,9 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
     /** Builds a {@link FestivalRequest} a field at a time. */
     public static final class Builder {
         private Integer hijriOffset;
+        private Map<String, MetaPatch> meta;
         private MetaFilter only;
+        private DayOrder order;
         private List<PublishedSet> published;
         private FestivalRules rules;
 
@@ -73,6 +78,17 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
         }
 
         /**
+         * Sets {@code meta}.
+         *
+         * @param meta What a caller lays over the meta of the rules of each key: each field given replaces the rule's, a tier among them. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder meta(Map<String, MetaPatch> meta) {
+            this.meta = meta;
+            return this;
+        }
+
+        /**
          * Sets {@code only}.
          *
          * @param only What the answer keeps, by the rules' `meta`; every rule when left out. Null leaves the SDK's default.
@@ -80,6 +96,17 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
          */
         public Builder only(MetaFilter only) {
             this.only = only;
+            return this;
+        }
+
+        /**
+         * Sets {@code order}.
+         *
+         * @param order How a day's observances are listed: `SIGNIFICANCE` when left out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder order(DayOrder order) {
+            this.order = order;
             return this;
         }
 
@@ -112,7 +139,7 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRequest build() {
-            return new FestivalRequest(hijriOffset, only, published, rules);
+            return new FestivalRequest(hijriOffset, meta, only, order, published, rules);
         }
     }
 
@@ -127,7 +154,9 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
         Map<String, Object> json = Read.object(raw, "FestivalRequest");
         return new FestivalRequest(
             Read.orNull(json.get("hijriOffset"), present -> Read.int32(present, "FestivalRequest.hijriOffset")),
+            Read.orNull(json.get("meta"), present -> Read.map(present, "FestivalRequest.meta", value0 -> MetaPatch.of(value0))),
             Read.orNull(json.get("only"), present -> MetaFilter.of(present)),
+            Read.orNull(json.get("order"), present -> Read.member(present, "FestivalRequest.order", DayOrder::byKey)),
             Read.orNull(json.get("published"), present -> Read.list(present, "FestivalRequest.published", item0 -> PublishedSet.of(item0))),
             FestivalRules.of(Read.required(json.get("rules"), "FestivalRequest.rules")));
     }
@@ -138,8 +167,14 @@ public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<Publish
         if (hijriOffset != null) {
             json.put("hijriOffset", hijriOffset);
         }
+        if (meta != null) {
+            json.put("meta", Read.mapValues(meta, value0 -> value0.toJson()));
+        }
         if (only != null) {
             json.put("only", only.toJson());
+        }
+        if (order != null) {
+            json.put("order", order.toJson());
         }
         if (published != null) {
             json.put("published", published.stream().map(item0 -> item0.toJson()).toList());

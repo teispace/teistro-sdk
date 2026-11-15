@@ -945,7 +945,8 @@ test('every catalogue enum has a complete id table', () => {
   // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`;
   // 1558 since `TsDeltaTSource` gained `PROVIDER`.
   // 1559 since `TsEra` gained `KIRAT_YELE`.
-  assert.equal(entries, 1559, 'every member of every enum is in a table');
+  // 1569 since a holiday's `TsHolidayScope`, nine, with its member of `TsKind`.
+  assert.equal(entries, 1569, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

@@ -3112,8 +3112,8 @@
       "iast": "Paśupatinātha Halesī Mahādeva Melā"
     },
     "BALA_CHATURDASHI": {
-      "name": "Bālācaturdaśī",
-      "prose": "Bālācaturdaśī",
+      "name": "Bālā Cahre",
+      "prose": "Bālā Cahre",
       "iast": "Bālā Caturdaśī"
     },
     "DATTATREYA_JAYANTI": {
@@ -5430,6 +5430,30 @@
     "RAJENDRA_PRASAD_JAYANTI": {
       "name": "Rājendraprasādajayantī",
       "prose": "Rājendraprasādajayantī"
+    },
+    "EID_AL_FITR": {
+      "name": "Īda Ula Phitra",
+      "prose": "Īda Ula Phitra"
+    },
+    "EID_AL_ADHA": {
+      "name": "Bakara Īda",
+      "prose": "Bakara Īda"
+    },
+    "MAWLID": {
+      "name": "Mohammada Jayantī",
+      "prose": "Mohammada Jayantī"
+    },
+    "DURA_MHAIPRU_NAKUMA": {
+      "name": "Durā Mhaipru Nakumā",
+      "prose": "Durā Mhaipru Nakumā"
+    },
+    "SIRUWA_PAVANI": {
+      "name": "Siruvā Pāvanī",
+      "prose": "Siruvā Pāvanī"
+    },
+    "BHOTO_JATRA": {
+      "name": "Bhoṭojātrā",
+      "prose": "Bhoṭojātrā"
     }
   },
   "year_office": {
@@ -6858,6 +6882,44 @@
     "PIG": {
       "name": "Varāha",
       "prose": "Varāha"
+    }
+  },
+  "holiday_scope": {
+    "NATIONAL": {
+      "name": "Sārvajanikāvakāśaḥ",
+      "prose": "Sārvajanikāvakāśaḥ"
+    },
+    "CONCERNED": {
+      "name": "Sambaddhebhya Eva Avakāśaḥ",
+      "prose": "Sambaddhebhya Eva Avakāśaḥ"
+    },
+    "COMMUNITY": {
+      "name": "Samudāyāya Eva Avakāśaḥ",
+      "prose": "Samudāyāya Eva Avakāśaḥ"
+    },
+    "REGION": {
+      "name": "Kṣetraviśeṣe Eva Avakāśaḥ",
+      "prose": "Kṣetraviśeṣe Eva Avakāśaḥ"
+    },
+    "RELIGION": {
+      "name": "Dharmānuyāyibhya Eva Avakāśaḥ",
+      "prose": "Dharmānuyāyibhya Eva Avakāśaḥ"
+    },
+    "WOMEN": {
+      "name": "Mahilākarmacāriṇībhya Eva Avakāśaḥ",
+      "prose": "Mahilākarmacāriṇībhya Eva Avakāśaḥ"
+    },
+    "SCHOOLS": {
+      "name": "Śikṣaṇasaṃsthābhya Eva Avakāśaḥ",
+      "prose": "Śikṣaṇasaṃsthābhya Eva Avakāśaḥ"
+    },
+    "DISABILITY": {
+      "name": "Divyāṅgakarmacāribhya Eva Avakāśaḥ",
+      "prose": "Divyāṅgakarmacāribhya Eva Avakāśaḥ"
+    },
+    "OFFICES_OPEN": {
+      "name": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni",
+      "prose": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni"
     }
   }
 }

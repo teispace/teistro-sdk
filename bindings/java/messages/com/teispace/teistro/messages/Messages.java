@@ -1447,6 +1447,43 @@ public final class Messages {
         }
     }
 
+    /** A `holiday_scope` as a message names it: the full catalogue key. */
+    public enum HolidayScopeKey {
+        /** `holiday_scope.NATIONAL`. */
+        NATIONAL("holiday_scope.NATIONAL"),
+        /** `holiday_scope.CONCERNED`. */
+        CONCERNED("holiday_scope.CONCERNED"),
+        /** `holiday_scope.COMMUNITY`. */
+        COMMUNITY("holiday_scope.COMMUNITY"),
+        /** `holiday_scope.REGION`. */
+        REGION("holiday_scope.REGION"),
+        /** `holiday_scope.RELIGION`. */
+        RELIGION("holiday_scope.RELIGION"),
+        /** `holiday_scope.WOMEN`. */
+        WOMEN("holiday_scope.WOMEN"),
+        /** `holiday_scope.SCHOOLS`. */
+        SCHOOLS("holiday_scope.SCHOOLS"),
+        /** `holiday_scope.DISABILITY`. */
+        DISABILITY("holiday_scope.DISABILITY"),
+        /** `holiday_scope.OFFICES_OPEN`. */
+        OFFICES_OPEN("holiday_scope.OFFICES_OPEN");
+
+        private final String value;
+
+        HolidayScopeKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `house_system` as a message names it: the full catalogue key. */
     public enum HouseSystemKey {
         /** `house_system.WHOLE_SIGN`. */
@@ -9846,6 +9883,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.BHOTO_JATRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhotoJatra() {
+                    return r.entity("festival.BHOTO_JATRA");
+                }
+
+                /**
                  * The forms of `festival.BHUMIRAJ` in the current locale.
                  *
                  * @return the forms
@@ -10530,6 +10576,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.DURA_MHAIPRU_NAKUMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms duraMhaipruNakuma() {
+                    return r.entity("festival.DURA_MHAIPRU_NAKUMA");
+                }
+
+                /**
                  * The forms of `festival.DURGA_CHATURTHI` in the current locale.
                  *
                  * @return the forms
@@ -10635,6 +10690,24 @@ public final class Messages {
                  */
                 public EntityForms easterSaturday() {
                     return r.entity("festival.EASTER_SATURDAY");
+                }
+
+                /**
+                 * The forms of `festival.EID_AL_ADHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eidAlAdha() {
+                    return r.entity("festival.EID_AL_ADHA");
+                }
+
+                /**
+                 * The forms of `festival.EID_AL_FITR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eidAlFitr() {
+                    return r.entity("festival.EID_AL_FITR");
                 }
 
                 /**
@@ -12618,6 +12691,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.MAWLID` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mawlid() {
+                    return r.entity("festival.MAWLID");
+                }
+
+                /**
                  * The forms of `festival.MESHA_SANKRANTI` in the current locale.
                  *
                  * @return the forms
@@ -13812,6 +13894,15 @@ public final class Messages {
                  */
                 public EntityForms sindoorJatra() {
                     return r.entity("festival.SINDOOR_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.SIRUWA_PAVANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms siruwaPavani() {
+                    return r.entity("festival.SIRUWA_PAVANI");
                 }
 
                 /**
@@ -15474,6 +15565,106 @@ public final class Messages {
                  */
                 public EntityForms tamas() {
                     return r.entity("guna.TAMAS");
+                }
+            }
+
+
+            /**
+             * The messages under `holiday_scope`.
+             *
+             * @return the group
+             */
+            public SdkEntityHolidayScope holidayScope() {
+                return new SdkEntityHolidayScope(r);
+            }
+
+            /** The messages under `SdkEntityHolidayScope`, each rendered by its own key. */
+            public static final class SdkEntityHolidayScope {
+                private final Renderer r;
+
+                SdkEntityHolidayScope(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `holiday_scope.COMMUNITY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms community() {
+                    return r.entity("holiday_scope.COMMUNITY");
+                }
+
+                /**
+                 * The forms of `holiday_scope.CONCERNED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms concerned() {
+                    return r.entity("holiday_scope.CONCERNED");
+                }
+
+                /**
+                 * The forms of `holiday_scope.DISABILITY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms disability() {
+                    return r.entity("holiday_scope.DISABILITY");
+                }
+
+                /**
+                 * The forms of `holiday_scope.NATIONAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms national() {
+                    return r.entity("holiday_scope.NATIONAL");
+                }
+
+                /**
+                 * The forms of `holiday_scope.OFFICES_OPEN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms officesOpen() {
+                    return r.entity("holiday_scope.OFFICES_OPEN");
+                }
+
+                /**
+                 * The forms of `holiday_scope.REGION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms region() {
+                    return r.entity("holiday_scope.REGION");
+                }
+
+                /**
+                 * The forms of `holiday_scope.RELIGION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms religion() {
+                    return r.entity("holiday_scope.RELIGION");
+                }
+
+                /**
+                 * The forms of `holiday_scope.SCHOOLS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms schools() {
+                    return r.entity("holiday_scope.SCHOOLS");
+                }
+
+                /**
+                 * The forms of `holiday_scope.WOMEN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms women() {
+                    return r.entity("holiday_scope.WOMEN");
                 }
             }
 

@@ -769,6 +769,12 @@
           "value": 162,
           "doc": "What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.",
           "key": "chart_frame"
+        },
+        {
+          "name": "HolidayScope",
+          "value": 167,
+          "doc": "Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.",
+          "key": "holiday_scope"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7438,6 +7444,69 @@
           "value": 3,
           "doc": "The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in",
           "key": "BHAVA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "HolidayScope",
+      "doc": "Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.",
+      "repr": "u16",
+      "kind": "holiday_scope",
+      "values": [
+        {
+          "name": "National",
+          "value": 0,
+          "doc": "A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide",
+          "key": "NATIONAL"
+        },
+        {
+          "name": "Concerned",
+          "value": 1,
+          "doc": "A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them",
+          "key": "CONCERNED"
+        },
+        {
+          "name": "Community",
+          "value": 2,
+          "doc": "A holiday only for the community its clause names (the Newar, the Dura)",
+          "key": "COMMUNITY"
+        },
+        {
+          "name": "Region",
+          "value": 3,
+          "doc": "A holiday only in the districts or the valley its clause names",
+          "key": "REGION"
+        },
+        {
+          "name": "Religion",
+          "value": 4,
+          "doc": "A holiday only for the followers of the religion its clause names",
+          "key": "RELIGION"
+        },
+        {
+          "name": "Women",
+          "value": 5,
+          "doc": "A holiday only for women employees",
+          "key": "WOMEN"
+        },
+        {
+          "name": "Schools",
+          "value": 6,
+          "doc": "A holiday only for educational institutions",
+          "key": "SCHOOLS"
+        },
+        {
+          "name": "Disability",
+          "value": 7,
+          "doc": "A holiday only for employees with disabilities",
+          "key": "DISABILITY"
+        },
+        {
+          "name": "OfficesOpen",
+          "value": 8,
+          "doc": "Not a holiday: a day kept nationally on which offices open",
+          "key": "OFFICES_OPEN"
         }
       ],
       "source": "catalogue/catalogue.json"

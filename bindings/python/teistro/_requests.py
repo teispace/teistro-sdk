@@ -218,7 +218,9 @@ __all__ = [
     "AshauchKind",
     "AshauchRite",
     "AshauchRiteRow",
+    "MetaPatch",
     "MetaFilter",
+    "DayOrder",
     "PublishedSet",
     "FestivalRules",
     "MuhurtaRequestAsta",
@@ -338,6 +340,8 @@ __all__ = [
     "KinKeeps",
     "RiteBeginning",
     "RiteVerdict",
+    "VrataFast",
+    "Significance",
     "PublishedEntry",
     "PublishedEntrySet",
     "PublishedEntryAdd",
@@ -590,6 +594,8 @@ __all__ = [
     "Masters",
     "NameReduction",
     "NonLatin",
+    "FastEnd",
+    "FastStart",
     "Interval",
     "FestivalMeta",
     "SubjectTo",
@@ -671,7 +677,7 @@ __all__ = [
     "Unit",
     "LifeClass",
     "SubDegree",
-    "VrataFast",
+    "SignificanceMark",
     "SaitChoice",
     "SaitRising",
     "SaitWindowRule",
@@ -750,8 +756,6 @@ __all__ = [
     "EnemySign",
     "OfficeOrder",
     "SettingPart",
-    "FastEnd",
-    "FastStart",
     "RisingOf",
     "SaitAvoid",
     "SaitAvoidTithiStart",
@@ -2363,8 +2367,14 @@ class FestivalRequest(TypedDict, total=False):
     hijriOffset: Optional[int]
     """The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out."""
 
+    meta: Mapping[str, MetaPatch]
+    """What a caller lays over the meta of the rules of each key: each field given replaces the rule's, a tier among them."""
+
     only: Optional[MetaFilter]
     """What the answer keeps, by the rules' `meta`; every rule when left out."""
+
+    order: Optional[DayOrder]
+    """How a day's observances are listed: `SIGNIFICANCE` when left out."""
 
     published: Sequence[PublishedSet]
     """The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence."""
@@ -4169,6 +4179,31 @@ class AshauchRiteRow(TypedDict, total=False):
     """The verdict."""
 
 
+class MetaPatch(TypedDict, total=False):
+    """The fields of a `FestivalMeta` a caller lays over a rule's own (`03-design/festival-metadata.md` §7): each one given replaces the rule's, and each left out keeps it. A tier given is marked as the caller's own."""
+
+    communities: Optional[Sequence[str]]
+    """In place of its communities."""
+
+    fast: Optional[Sequence[VrataFast]]
+    """In place of its fast's readings."""
+
+    kind: Optional[Union[_catalogue.FestivalKind, str]]
+    """In place of its kind."""
+
+    optional: Optional[bool]
+    """In place of whether it is an office's choice."""
+
+    regions: Optional[Sequence[str]]
+    """In place of its regions."""
+
+    significance: Optional[Significance]
+    """In place of its tier."""
+
+    tradition: Optional[Union[_catalogue.Tradition, str]]
+    """In place of its tradition."""
+
+
 class MetaFilter(TypedDict, total=False):
     """What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not."""
 
@@ -4178,11 +4213,22 @@ class MetaFilter(TypedDict, total=False):
     kinds: Sequence[Union[_catalogue.FestivalKind, str]]
     """The kinds kept."""
 
+    minSignificance: Optional[Significance]
+    """The least tier kept: `REGIONAL` keeps every tier but `MINOR`."""
+
     regions: Sequence[str]
     """The regions kept."""
 
     traditions: Sequence[Union[_catalogue.Tradition, str]]
     """The traditions kept."""
+
+
+DayOrder: TypeAlias = Literal['SIGNIFICANCE', 'RULE_ORDER']
+"""How a day's observances are listed (`03-design/festival-metadata.md` §7): a month grid's cell, `almanac.cells`.
+
+`SIGNIFICANCE`: By each rule's tier (`FestivalMeta::tier`), then by the order Nepal's national panchanga prints them in, then by the rules' order in the request.
+`RULE_ORDER`: As the answer holds them: the festivals in the order of their tithis, then the fasts, the dated days, the anniversaries and the published days added.
+"""
 
 
 class PublishedSet(TypedDict, total=False):
@@ -5538,6 +5584,36 @@ RiteVerdict: TypeAlias = Literal['GOES_ON', 'IN_PART', 'BARRED']
 `GOES_ON`: It goes on.
 `IN_PART`: Its bodily part goes on; the rest is done by another or after the period, as the clause says.
 `BARRED`: It waits for the period's end.
+"""
+
+
+class VrataFast(TypedDict, total=False):
+    """One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say."""
+
+    end: Optional[FastEnd]
+    """When it is broken; unset when the clause does not say."""
+
+    ifUnable: bool
+    """Whether the text allows it only to one unable to keep the reading before it."""
+
+    kind: Optional[Union[_catalogue.FastKind, str]]
+    """How it is kept; unset when the clause names no kind."""
+
+    source: Required[str]
+    """Where it is stated."""
+
+    start: Optional[FastStart]
+    """When it begins; unset when the clause does not say."""
+
+
+Significance: TypeAlias = Literal['NATIONAL', 'MAJOR', 'PERIOD', 'REGIONAL', 'MINOR']
+"""How much a festival weighs beside the others kept on its day (`03-design/festival-metadata.md` §7), first to last: a day's observances are listed in this order.
+
+`NATIONAL`: A public holiday of the whole country: a government's notice lists it, for everyone, as no office's choice.
+`MAJOR`: A festival a source sets above the day's others: the committee's print sets it in bold, or a text gives it a fast.
+`PERIOD`: A day that opens or closes a span the print names (a month of bathing, the Chaturmas, a panchaka), marked by its source.
+`REGIONAL`: A holiday of a part of the country or of a community, an office's choice, or a community's or a region's own festival.
+`MINOR`: Everything else.
 """
 
 
@@ -8606,6 +8682,23 @@ NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
 """
 
 
+FastEnd: TypeAlias = Literal['PARANA', 'NIGHT', 'MOONRISE']
+"""When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
+
+`PARANA`: On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
+`NIGHT`: The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+`MOONRISE`: The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
+"""
+
+
+FastStart: TypeAlias = Literal['AFTER_EKABHAKTA', 'MORNING']
+"""When a vrata's fast begins.
+
+`AFTER_EKABHAKTA`: After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+`MORNING`: On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+"""
+
+
 # A half-open interval of time, `[from, to)`.
 Interval = TypedDict(
     "Interval",
@@ -8636,6 +8729,9 @@ class FestivalMeta(TypedDict, total=False):
 
     regions: Sequence[str]
     """Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says."""
+
+    significance: Optional[SignificanceMark]
+    """The tier a source marks it with, or a caller sets; unset when the fields above derive it (`FestivalMeta::tier`, §7 of the page)."""
 
     tradition: Optional[Union[_catalogue.Tradition, str]]
     """Its religion; unset when no source places it."""
@@ -9507,23 +9603,14 @@ SubDegree: TypeAlias = Literal['POORNA', 'ISHRAFA', 'NONE']
 """
 
 
-class VrataFast(TypedDict, total=False):
-    """One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say."""
+class SignificanceMark(TypedDict, total=False):
+    """A tier a row is marked with, and where it is said."""
 
-    end: Optional[FastEnd]
-    """When it is broken; unset when the clause does not say."""
+    source: str
+    """Where it is said; empty for a caller's own."""
 
-    ifUnable: bool
-    """Whether the text allows it only to one unable to keep the reading before it."""
-
-    kind: Optional[Union[_catalogue.FastKind, str]]
-    """How it is kept; unset when the clause names no kind."""
-
-    source: Required[str]
-    """Where it is stated."""
-
-    start: Optional[FastStart]
-    """When it begins; unset when the clause does not say."""
+    tier: Required[Significance]
+    """The tier."""
 
 
 SaitChoice: TypeAlias = Literal['EARLIEST', 'LATEST']
@@ -10352,23 +10439,6 @@ SettingPart: TypeAlias = Literal['NAVAMSHA_SIGN', 'NAVAMSHA_ARC']
 
 `NAVAMSHA_SIGN`: Any navāṁśa whose sign is the seventh from the sign of the Sun's navāṁśa: the gloss counts from "the navāṁśa of the sign the Sun is in", and the seventh from a sign is where it sets.
 `NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
-"""
-
-
-FastEnd: TypeAlias = Literal['PARANA', 'NIGHT', 'MOONRISE']
-"""When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
-
-`PARANA`: On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
-`NIGHT`: The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
-`MOONRISE`: The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
-"""
-
-
-FastStart: TypeAlias = Literal['AFTER_EKABHAKTA', 'MORNING']
-"""When a vrata's fast begins.
-
-`AFTER_EKABHAKTA`: After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
-`MORNING`: On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
 """
 
 

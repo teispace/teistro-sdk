@@ -23733,6 +23733,169 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "holiday_scope",
+      "number": 167,
+      "version": 1,
+      "doc": "Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "NATIONAL",
+          "id": 0,
+          "doc": "A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "2.1, 6.1, 7.1: मुलुकभरि सार्वजनिक बिदा"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CONCERNED",
+          "id": 1,
+          "doc": "A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "2.2: सम्बन्धित धर्म, संस्कृति, भौगोलिक क्षेत्र र स्थान विशेषका लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "COMMUNITY",
+          "id": 2,
+          "doc": "A holiday only for the community its clause names (the Newar, the Dura)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "2.2 (क), (ग): समुदायका लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "REGION",
+          "id": 3,
+          "doc": "A holiday only in the districts or the valley its clause names",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "2.1 (द), 2.2 (घ), 5: जिल्लामा; काठमाडौँ उपत्यकालाई मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RELIGION",
+          "id": 4,
+          "doc": "A holiday only for the followers of the religion its clause names",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "7.2: सम्बन्धित धर्मावलम्बीहरूका लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "WOMEN",
+          "id": 5,
+          "doc": "A holiday only for women employees",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "3: महिला कर्मचारीको लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SCHOOLS",
+          "id": 6,
+          "doc": "A holiday only for educational institutions",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "4: शिक्षण संस्थाको लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DISABILITY",
+          "id": 7,
+          "doc": "A holiday only for employees with disabilities",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "6.2: अपाङ्गता भएका कर्मचारीको लागि मात्र"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "OFFICES_OPEN",
+          "id": 8,
+          "doc": "Not a holiday: a day kept nationally on which offices open",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays",
+              "ref": "8: राष्ट्रियरूपमा मनाइने तर कार्यालय खुल्ने प्रकृतिका दिवस"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

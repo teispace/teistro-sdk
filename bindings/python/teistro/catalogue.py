@@ -333,6 +333,9 @@ class Kind(Member):
     chart_frame = 162
     """What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in."""
 
+    holiday_scope = 167
+    """Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -4051,6 +4054,42 @@ class ChartFrame(Catalogued):
     """
 
 
+class HolidayScope(Catalogued):
+    """Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`."""
+
+    NATIONAL = 0
+    """A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide"""
+
+    CONCERNED = 1
+    """A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them"""
+
+    COMMUNITY = 2
+    """A holiday only for the community its clause names (the Newar, the Dura)"""
+
+    REGION = 3
+    """A holiday only in the districts or the valley its clause names"""
+
+    RELIGION = 4
+    """A holiday only for the followers of the religion its clause names"""
+
+    WOMEN = 5
+    """A holiday only for women employees"""
+
+    SCHOOLS = 6
+    """A holiday only for educational institutions"""
+
+    DISABILITY = 7
+    """A holiday only for employees with disabilities"""
+
+    OFFICES_OPEN = 8
+    """Not a holiday: a day kept nationally on which offices open"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -6342,6 +6381,7 @@ _KEYS: dict[str, dict[int, str]] = {
         160: "vastu_yoni",
         161: "vyaya_kind",
         162: "chart_frame",
+        167: "holiday_scope",
     },
     "Graha": {
         0: "SUN",
@@ -7582,6 +7622,18 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "BHAVA",
         -1: "UNKNOWN",
     },
+    "HolidayScope": {
+        0: "NATIONAL",
+        1: "CONCERNED",
+        2: "COMMUNITY",
+        3: "REGION",
+        4: "RELIGION",
+        5: "WOMEN",
+        6: "SCHOOLS",
+        7: "DISABILITY",
+        8: "OFFICES_OPEN",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -8362,4 +8414,5 @@ _KINDS: dict[str, str] = {
     "VastuYoni": "vastu_yoni",
     "VyayaKind": "vyaya_kind",
     "ChartFrame": "chart_frame",
+    "HolidayScope": "holiday_scope",
 }

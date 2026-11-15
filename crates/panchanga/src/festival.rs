@@ -36,6 +36,7 @@ mod dated;
 mod ekadashi;
 mod following;
 mod gaudiya;
+mod holiday;
 mod in_month;
 mod india_andhra_pradesh;
 mod india_assam;
@@ -74,8 +75,12 @@ pub use ekadashi::{
     ekadashis,
 };
 pub use following::{FollowingRule, following};
+pub use holiday::{Holiday, HolidayNotice, HolidaySet, nepal_gazette_scope};
 pub use in_month::InMonth;
-pub use meta::{FastEnd, FastStart, FestivalMeta, MetaFilter, VrataFast};
+pub use meta::{
+    FastEnd, FastStart, FestivalMeta, MetaFilter, MetaPatch, Significance, SignificanceMark,
+    VrataFast, printed_order,
+};
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,
 };
@@ -2901,6 +2906,30 @@ impl Observances {
     /// ```
     #[must_use]
     pub fn keys_on(&self, date: &CalendarDate) -> Vec<String> {
+        self.answered_on(date)
+    }
+
+    /// [`Observances::keys_on`], ordered by `rank` of each key, keys
+    /// ranked alike keeping that order: how a request lists a day by
+    /// significance (`03-design/festival-metadata.md` §7).
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_panchanga::festival::Observances;
+    ///
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2026, 11, 8);
+    /// assert!(Observances::default().keys_on_by(&day, |key| key.len()).is_empty());
+    /// ```
+    #[must_use]
+    pub fn keys_on_by<R: Ord>(&self, date: &CalendarDate, rank: impl Fn(&str) -> R) -> Vec<String> {
+        let mut keys = self.answered_on(date);
+        keys.sort_by_cached_key(|key| rank(key));
+        keys
+    }
+
+    /// The keys on `date` in the answer's order, each once.
+    fn answered_on(&self, date: &CalendarDate) -> Vec<String> {
         let mut keys: Vec<String> = Vec::new();
         let on = self
             .observances

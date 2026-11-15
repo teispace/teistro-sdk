@@ -96,6 +96,7 @@ from .catalogue import (
     Guna,
     HarshaGrade,
     HitKind,
+    HolidayScope,
     HoraReckoning,
     HouseSystem,
     ImpedimentKind,
