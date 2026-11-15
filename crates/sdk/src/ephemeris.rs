@@ -4,10 +4,10 @@
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_core::settings::recorded::RequiredEphemeris;
-use teistro_core::settings::{AyanamshaBasis, Siddhanta, SuryaPlanets, SuryaSunrise};
+use teistro_core::settings::{AyanamshaBasis, Siddhanta, SuryaPlanets, SuryaSunrise, SuryaTrig};
 use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
 use teistro_siddhanta::vakya::VakyaSky;
-use teistro_siddhanta::{ModernParts, SiddhantaProvider};
+use teistro_siddhanta::{ModernParts, SiddhantaProvider, Trig};
 
 /// One entry of the chain: an ephemeris the SDK carries, or one a
 /// consumer brings.
@@ -188,6 +188,18 @@ impl Ephemeris {
     /// let committee = Siddhanta::surya(SuryaBija::NepalCommittee);
     /// let provider = Ephemeris::SuryaSiddhanta.open_under(committee)?.expect("a provider");
     /// assert!(provider.capabilities().identity.data_version.contains("moon_apsis -4"));
+    /// assert!(provider.capabilities().identity.data_version.contains("the sine table"));
+    ///
+    /// // The true sine in place of the text's table (C1950).
+    /// use teistro::settings::{SuryaPlanets, SuryaSunrise, SuryaTrig};
+    /// let exact = Siddhanta::Surya {
+    ///     bija: SuryaBija::NepalCommittee,
+    ///     sunrise: SuryaSunrise::Text,
+    ///     planets: SuryaPlanets::Text,
+    ///     trig: SuryaTrig::Exact,
+    /// };
+    /// let provider = Ephemeris::SuryaSiddhanta.open_under(exact)?.expect("a provider");
+    /// assert!(provider.capabilities().identity.data_version.contains("exact trigonometry"));
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -235,11 +247,13 @@ impl Ephemeris {
                     bija,
                     sunrise,
                     planets,
+                    trig,
                 } = siddhanta
                 else {
                     return Ok(Some(Box::new(SiddhantaProvider::text())));
                 };
-                let text = SiddhantaProvider::with_bija(bija.revolutions());
+                let text =
+                    SiddhantaProvider::with_bija(bija.revolutions()).with_trig(model_trig(trig)?);
                 let (text, modern_sunrise) = match sunrise {
                     SuryaSunrise::Text => (text, false),
                     SuryaSunrise::Bhujantara => (text.with_bhujantara(), false),
@@ -277,6 +291,18 @@ impl Ephemeris {
             Ephemeris::Provider(provider) => Ok(Some(provider)),
             Ephemeris::Opening(opening) => (opening.open)().map(Some),
         }
+    }
+}
+
+/// The model's trigonometry a setting names (C1950).
+fn model_trig(trig: SuryaTrig) -> Result<Trig, Error> {
+    match trig {
+        SuryaTrig::Table => Ok(Trig::Table),
+        SuryaTrig::Exact => Ok(Trig::Exact),
+        other => Err(Error::unsupported(format!(
+            "the {other} trigonometry; this build knows TABLE and EXACT"
+        ))
+        .with_field("settings.frame.siddhanta.trig")),
     }
 }
 

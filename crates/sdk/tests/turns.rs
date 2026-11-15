@@ -120,7 +120,7 @@ fn a_consumers_own_bija_is_the_named_one_when_the_counts_agree() {
     let own = Context::builder()
         .profile("nepali-committee")
         .settings_json(
-            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"moon_apsis": -4}}, "sunrise": "MODERN"}}}"#,
+            r#"{"frame": {"siddhanta": {"kind": "SURYA", "bija": {"kind": "CUSTOM", "revolutions": {"moon_apsis": -4}}, "sunrise": "MODERN", "trig": "EXACT"}}}"#,
         )
         .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()

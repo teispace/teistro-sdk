@@ -133,6 +133,27 @@ impl SiddhantaProvider {
         self
     }
 
+    /// The same provider computing with another trigonometry: the text's
+    /// sine table or the true sine (C1950). The bija and the sunrise are
+    /// kept, and the stamp names the trigonometry, so two never share one.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    /// use teistro_siddhanta::{Bija, SiddhantaProvider, Trig};
+    ///
+    /// let table = SiddhantaProvider::with_bija(Bija::NEPAL_COMMITTEE);
+    /// let exact = table.clone().with_trig(Trig::Exact);
+    /// assert_eq!(exact.model().trig(), Trig::Exact);
+    /// assert_eq!(exact.model().parameters(), table.model().parameters());
+    /// let stamp = exact.capabilities().identity.data_version;
+    /// assert!(stamp.contains("exact trigonometry") && stamp.contains("moon_apsis -4"), "{stamp}");
+    /// ```
+    #[must_use]
+    pub fn with_trig(mut self, trig: Trig) -> SiddhantaProvider {
+        self.model = self.model.with_trig(trig);
+        self
+    }
+
     /// The model.
     ///
     /// ```
@@ -704,6 +725,34 @@ mod tests {
             "{}",
             committee.data_version
         );
+    }
+
+    #[test]
+    fn the_true_sine_moves_the_sun_by_seconds_of_arc_and_is_stamped() {
+        let table = SiddhantaProvider::text();
+        let exact = SiddhantaProvider::text().with_trig(Trig::Exact);
+        let jds = [2_460_413.5, 2_460_520.5];
+        let request = PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &[Body::Sun, Body::Moon],
+            SiddhantaProvider::FRAME,
+        );
+        let (a, b) = (
+            table.positions(&request).unwrap(),
+            exact.positions(&request).unwrap(),
+        );
+        for (row, body) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
+            let (x, y) = (a.at(row, body).unwrap(), b.at(row, body).unwrap());
+            // The table reads a sine by proportion between its 24 rows; the
+            // equation of centre it gives differs from the true sine's by
+            // under a minute of arc, never by nothing on a general day.
+            let apart = ((x.lon - y.lon + 180.0).rem_euclid(360.0) - 180.0).abs() * 3600.0;
+            assert!(apart > 0.0 && apart < 60.0, "{row} {body} {apart}");
+        }
+        let stamp = exact.capabilities().identity.data_version;
+        assert!(stamp.contains("exact trigonometry"), "{stamp}");
+        assert_ne!(stamp, table.capabilities().identity.data_version);
     }
 
     #[test]

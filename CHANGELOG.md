@@ -12,6 +12,36 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Surya Siddhanta's trigonometry, a setting (SR-101).**
+**Numbers:** these move, under `nepali-committee` 6 to 7 alone, which is also what
+`Context::builder().nepal_official(..)` resolves (`frame.siddhanta.trig` `EXACT`, C1950),
+measured at Kathmandu over 2025-04-14 to 2027-04-13 against the same build with `TABLE`:
+the Sun's sidereal longitude by up to 5.0 arcseconds (mean 1.9 over 730 sunrises), the
+Moon's by up to 14.9 (mean 6.1); the star planets, nodes, sunrise and sunset not at all;
+so the sankrantis by up to 1.37 minutes (mean 0.60), tithi and karana ends by up to 0.67,
+yoga ends by up to 0.56, nakshatra and Moon-sign ends by up to 0.48; no end crosses a
+sunrise, so no day names another member. Against the print the committee's limbs fit
+to its rounding (mean |error| 0.23 to 0.27 minutes, from 0.29 to 0.35; the Aries
+sankranti from 1.61 and 1.22 minutes early to within 0.24) and its printed Sun to 0.7
+arcseconds (from 2.0). The pinned digest of `crates/sdk/tests/digest.rs` (a week of
+`nepal_official` from 2025-09-20) moves from `42e9d25a…` to `8c20d6b4…`. The settings
+hash of every resolved Surya reckoning moves, its document now naming `trig`;
+`mithila-makaranda` and the text's own reckoning keep `TABLE` and their places. Pages
+re-rendered: `nepal-day-measured.md` (the committee's sky against the public daily
+records: worst tithi, nakshatra and yoga ends -1.2 to +0.9 minutes become -0.6 to
++0.4), `CONFORMANCE.md` (the committee's Sun compared on 4, from 2, the true sine's
+added) and `baseline-map.md` (the Surya example names `trig`).
+- **New:** `frame.siddhanta.trig`, `TABLE` (the text's twenty-four sines by
+  proportion, II.15 to 33, the default) or `EXACT` (the true sine on the same radius),
+  per profile, per context and per call on every surface through the settings
+  document. A document that does not name it reads as `TABLE`. Both are bit-identical
+  on every target: the true sine is `teistro_core::math`, never the platform's libm.
+- **New:** `SiddhantaProvider::with_trig` and `SuryaSiddhanta::with_trig`; the provider
+  stamp names the trigonometry (`the sine table` or `exact trigonometry`).
+- **Changed:** `nepali-committee` 6 to 7, `frame.siddhanta.trig` `EXACT`, cited to
+  `docs/03-design/committee-trig-measured.md`, which gives both fits per limb, year and
+  sign as statistics.
+
 **The committee fixture's sunset of 2026-04-29 read as printed (teistro-conformance 0.12.1).**
 **Numbers:** none of the SDK's move. One recorded value moves by a minute: the sunset of
 2026-04-29 in `fixtures/official/npns-2082-2083.json` is 18:36, where the fixture had 18:35.

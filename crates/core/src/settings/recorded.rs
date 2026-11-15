@@ -33,7 +33,7 @@ use super::knobs::{
 use super::profiles::conformance_baseline;
 use super::{
     Profile, ProfileId, Resolved, Settings, SettingsPatch, Siddhanta, SunriseConvention, SuryaBija,
-    SuryaPlanets, SuryaSunrise,
+    SuryaPlanets, SuryaSunrise, SuryaTrig,
 };
 use crate::catalogue::{Ayanamsha, DashaSystem, HouseSystem};
 use crate::error::{Error, Status};
@@ -628,6 +628,7 @@ pub const ROWS: &[Row] = &[
                     bija: SuryaBija::None,
                     sunrise: SuryaSunrise::Modern,
                     planets: SuryaPlanets::Text,
+                    trig: SuryaTrig::Table,
                 });
                 patch.frame.centre = Some(Centre::Geocentric);
                 patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());

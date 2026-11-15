@@ -83,17 +83,25 @@ fn the_committees_sun_is_the_texts_to_a_few_arcseconds() {
         "the Surya Siddhanta's Sun, against the committee's printed Sun",
     );
     let text = SuryaSiddhanta::text();
+    // The committee computes with the true sine (C1950): over its 730
+    // printed mornings the text's table leaves a yearly wave of up to 6",
+    // the true sine 1.9" at most, a printed second and the Sun's travel in
+    // the half minute its sunrise is rounded to.
+    let exact = SuryaSiddhanta::text().with_trig(Trig::Exact);
     let mut compared = 0;
     for row in fixture()["planets_at_sunrise"].as_array().unwrap() {
         let Some(sunrise) = row["sunrise"].as_str() else {
             continue;
         };
         let at = instant(row["gregorian"].as_str().unwrap(), sunrise);
-        let ours = text.sun(at).longitude.get();
         let theirs = printed_degrees(row["positions"]["SUN"].as_str().unwrap());
-        let arcsec = arcminutes_apart(ours, theirs) * 60.0;
-        tally.holds(arcsec.abs() < 6.0, || {
-            format!("{}: {arcsec:+.1}\"", row["gregorian"])
+        let table = arcminutes_apart(text.sun(at).longitude.get(), theirs) * 60.0;
+        let sine = arcminutes_apart(exact.sun(at).longitude.get(), theirs) * 60.0;
+        tally.holds(table.abs() < 6.0, || {
+            format!("{} (table): {table:+.1}\"", row["gregorian"])
+        });
+        tally.holds(sine.abs() < 2.0, || {
+            format!("{} (true sine): {sine:+.1}\"", row["gregorian"])
         });
         compared += 1;
     }
