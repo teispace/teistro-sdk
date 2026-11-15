@@ -545,6 +545,8 @@ mod tests {
         CustomOff,
         /// Every Delta T model refused.
         DeltaTRefused,
+        /// A custom Delta T refused, every model answered.
+        CustomRefused,
         /// A model's Delta T two seconds off.
         DeltaTLate,
         /// The ayanamsha fails outright.
@@ -559,6 +561,8 @@ mod tests {
         East,
         /// No Sun and no Moon offered.
         NoLuminaries,
+        /// No body offered at all.
+        Bodiless,
         /// Crossings refused as a frame it does not offer.
         CrossingsRefused,
         /// Crossings fail.
@@ -603,7 +607,9 @@ mod tests {
                     .with(Overrides::TOPOCENTRIC)
                     .with(Overrides::CROSSINGS),
                 ayanamshas: vec![teistro_core::catalogue::Ayanamsha::Lahiri],
-                bodies: if self.0 == Fault::NoLuminaries {
+                bodies: if self.0 == Fault::Bodiless {
+                    Vec::new()
+                } else if self.0 == Fault::NoLuminaries {
                     plain
                         .bodies
                         .iter()
@@ -652,6 +658,9 @@ mod tests {
             match self.0 {
                 Fault::DeltaTFails => return Err(ProviderError::invalid("no bulletin")),
                 Fault::DeltaTRefused => return Err(ProviderError::unsupported("any Delta T")),
+                Fault::CustomRefused if custom => {
+                    return Err(ProviderError::unsupported("a custom Delta T"));
+                }
                 Fault::DeltaTNotANumber => estimate.seconds = f64::NAN,
                 Fault::CustomOff if custom => estimate.seconds += 1.0,
                 Fault::DeltaTLate if !custom => estimate.seconds += 2.0,
@@ -761,9 +770,61 @@ mod tests {
             "{}",
             late.detail
         );
+        // A custom value refused while the models answer passes, and says
+        // which it refused.
+        let custom = delta_t_of(Fault::CustomRefused);
+        assert!(custom.passed, "{}", custom.detail);
+        assert!(!custom.detail.contains("refused none"), "{}", custom.detail);
         // Undeclared, it is not asked.
         let plain = TestProvider::new();
         assert!(!check_delta_t(&plain, &plain.capabilities(), &Bounds::DEFAULT).ran());
+    }
+
+    #[test]
+    fn a_check_with_nothing_to_hold_is_not_asked_and_says_why() {
+        let probe = Probe(Fault::None);
+        let declared = probe.capabilities();
+        let bounds = &Bounds::DEFAULT;
+        let skipped = |check: Check, says: &str| {
+            assert!(
+                !check.ran() && check.detail.contains(says),
+                "{says}: {}",
+                check.detail
+            );
+        };
+        // Coverage from 1941 to 1968 misses 1900, 2000 and 2050.
+        let narrow = Capabilities {
+            jd_range: (2_430_000.5, 2_440_000.5),
+            ..declared.clone()
+        };
+        skipped(check_delta_t(&probe, &narrow, bounds), "the coverage misses");
+        // A classical text's ayanamsha is its own definition.
+        let classical = Capabilities {
+            astronomy: Astronomy::Classical,
+            ..declared.clone()
+        };
+        skipped(
+            check_ayanamsha_values(&probe, &classical, bounds),
+            "its own definition",
+        );
+        // No ayanamsha listed: no value to compare, no zodiac to cross in.
+        let unlisted = Capabilities {
+            ayanamshas: Vec::new(),
+            ..declared
+        };
+        skipped(
+            check_ayanamsha_values(&probe, &unlisted, bounds),
+            "no listed member",
+        );
+        skipped(
+            check_sidereal_crossings(&probe, &unlisted, &jds(), bounds),
+            "no ayanamsha listed",
+        );
+        // A provider offering no body shares none with its reference.
+        skipped(
+            check_reference(&Probe(Fault::Bodiless), &TestProvider::new(), bounds),
+            "no body or instant",
+        );
     }
 
     #[test]
