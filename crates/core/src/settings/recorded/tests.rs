@@ -21,7 +21,7 @@ use crate::settings::knobs::{
 };
 use crate::settings::{
     AyanamshaChoice, Profile, ProfileId, Settings, SettingsPatch, Siddhanta, SunriseConvention,
-    SuryaBija, SuryaPlanets, SuryaSunrise,
+    SuryaBija, SuryaPlanets, SuryaSunrise, SuryaTrig,
 };
 
 /// The corpus's `default` profile, as its manifest's canonical form holds it.
@@ -274,6 +274,7 @@ fn the_surya_bija_is_refused_and_its_absence_is_the_text() {
             bija: SuryaBija::None,
             sunrise: SuryaSunrise::Modern,
             planets: SuryaPlanets::Text,
+            trig: SuryaTrig::Table,
         })
     );
     // The text's places are geocentric and in its own zodiac, whatever the

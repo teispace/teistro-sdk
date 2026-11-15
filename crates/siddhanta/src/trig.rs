@@ -55,8 +55,11 @@ pub enum Trig {
     /// which uses no platform mathematics and is bit-identical everywhere.
     #[default]
     Table,
-    /// The platform's sine on the same radius: what a modern reformulation
-    /// of the text computes; not bit-identical across platforms.
+    /// The true sine on the same radius: what a modern reformulation of
+    /// the text computes. It is the SDK's own sine (`teistro_core::math`,
+    /// one pure-Rust implementation compiled alike on every target,
+    /// ADR-0022) and never the platform's C library, so it too is
+    /// bit-identical everywhere.
     Exact,
 }
 

@@ -37,7 +37,7 @@ the record exactly.
 | `official` | 1 | the Surya Siddhanta under punya-kala, against the committee's printed sankrantis and months | 50 | 50 | 0 |
 | `official` | 1 | the Surya Siddhanta's Moon with the committee's bija, against its printed Moon and tithi ends | 12 | 12 | 0 |
 | `official` | 1 | the Surya Siddhanta's Saturn and node, against the committee's printed ones | 8 | 0 | 8 |
-| `official` | 1 | the Surya Siddhanta's Sun, against the committee's printed Sun | 2 | 2 | 0 |
+| `official` | 1 | the Surya Siddhanta's Sun, against the committee's printed Sun | 4 | 4 | 0 |
 | `jpl` | 1 | geometric positions over the built-in compact tier | 2680 | 2533 | 147 |
 | `jpl` | 1 | geometric positions over the built-in full tier | 2680 | 2149 | 531 |
 | `jpl` | 1 | geometric positions over the built-in standard tier | 2680 | 2350 | 330 |

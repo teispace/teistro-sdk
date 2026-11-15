@@ -1116,6 +1116,23 @@ knob!(
         Bhujantara = "BHUJANTARA" }
 );
 knob!(
+    /// The trigonometry the Surya Siddhanta's equations are computed with
+    /// (C1950, `03-design/committee-trig-measured.md`).
+    ///
+    /// The text gives twenty-four R-sines on a radius of 3438 and reads
+    /// between them by proportion (II.15 to 33); a modern reckoning of the
+    /// same text takes the true sine. Both are the same bits on every
+    /// platform: the table uses no transcendental function at all, and the
+    /// exact sine is the SDK's own (`teistro_core::math`, one pure-Rust
+    /// implementation on every target, ADR-0022), never the platform's C
+    /// library, whose sines differ by an ulp from one system to the next.
+    #[derive(Default)]
+    SuryaTrig { /// The text's table, read by proportion (II.31 to 33).
+        #[default]
+        Table = "TABLE", /// The true sine on the same radius.
+        Exact = "EXACT" }
+);
+knob!(
     /// The provider override policy (ADR-0013).
     OverridePolicy { /// A declared native implementation is used.
         PreferNative = "PREFER_NATIVE", /// The SDK's own everywhere.

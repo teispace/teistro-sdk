@@ -151,7 +151,7 @@ Each stored field and value, folded in this order over `conformance-baseline`, a
 | `useTopocentric` | `false` | knobs | `{"frame":{"centre":"GEOCENTRIC"}}` |
 | `houseSystem` | the 22 names, a house system's key lower-cased with hyphens | read | read from the value; `houseSystem: "placidus"` sets `{"houses":{"placement_system":"PLACIDUS","polar_policy":"FALLBACK_PORPHYRY"}}` |
 | `siddhanta` | `drik` | knobs | `{"frame":{"siddhanta":{"kind":"DRIK"}}}` |
-| `siddhanta` | `surya` | knobs and an ephemeris | `{"frame":{"ayanamsha":{"kind":"CATALOGUED","id":"SURYASIDDHANTA"},"centre":"GEOCENTRIC","siddhanta":{"kind":"SURYA","bija":{"kind":"NONE"},"sunrise":"MODERN","planets":{"kind":"TEXT"}}}}`, with `SURYA_SIDDHANTA` at the front of the natal chain |
+| `siddhanta` | `surya` | knobs and an ephemeris | `{"frame":{"ayanamsha":{"kind":"CATALOGUED","id":"SURYASIDDHANTA"},"centre":"GEOCENTRIC","siddhanta":{"kind":"SURYA","bija":{"kind":"NONE"},"sunrise":"MODERN","planets":{"kind":"TEXT"},"trig":"TABLE"}}}`, with `SURYA_SIDDHANTA` at the front of the natal chain |
 | `suryaBija` | `false` | a note | the text's own revolutions, which `siddhanta: surya` already asks for |
 | `suryaBija` | `true` | refused | C777: the baseline's bija re-anchors the mean node alone, and no named set of revolutions does that |
 | `sunriseMode` | `apparent-refraction` | knobs | `{"day":{"sunrise":{"kind":"NAMED","which":"UPPER_LIMB_REFRACTION"}}}` |

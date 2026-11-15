@@ -16,9 +16,9 @@ the modern sky would print instead (C187).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed tithi end within 1.5 minutes | **holds** | 0 of 333 disagree; median -0.1 min |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed tithi end within 1.5 minutes | **holds** | 0 of 333 disagree; median -0.0 min |
 | the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed nakshatra end within 1.5 minutes | **holds** | 0 of 326 disagree; median -0.1 min |
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed yoga end within 1.5 minutes | **holds** | 0 of 331 disagree; median -0.0 min |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise: every printed yoga end within 1.5 minutes | **holds** | 0 of 331 disagree; median -0.1 min |
 | the same text at its own sunrise: every printed tithi end within 1.5 minutes | **holds** | 0 of 333 disagree; median -0.1 min |
 | the same text at its own sunrise: every printed nakshatra end within 1.5 minutes | **holds** | 0 of 326 disagree; median -0.1 min |
 | the same text at its own sunrise: every printed yoga end within 1.5 minutes | **holds** | 0 of 331 disagree; median -0.0 min |
@@ -61,9 +61,9 @@ place within a day of the printed end is unpaired.
 
 | reading | limb | ends | median | least | most | beyond 1.5 min | unpaired |
 |---|---|---|---|---|---|---|---|
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | tithi | 333 | -0.1 | -1.2 | +0.9 | 0 | 0 |
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | nakshatra | 326 | -0.1 | -0.9 | +0.7 | 0 | 0 |
-| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | yoga | 331 | -0.0 | -0.9 | +0.7 | 0 | 0 |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | tithi | 333 | -0.0 | -0.6 | +0.4 | 0 | 0 |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | nakshatra | 326 | -0.1 | -0.6 | +0.4 | 0 | 0 |
+| the committee's sky (`nepali-committee`): the Surya Siddhanta with its bija, in its own zodiac, at a modern sunrise | yoga | 331 | -0.1 | -0.6 | +0.4 | 0 | 0 |
 | the same text at its own sunrise | tithi | 333 | -0.1 | -1.2 | +0.9 | 0 | 0 |
 | the same text at its own sunrise | nakshatra | 326 | -0.1 | -0.9 | +0.7 | 0 | 0 |
 | the same text at its own sunrise | yoga | 331 | -0.0 | -0.9 | +0.7 | 0 | 0 |

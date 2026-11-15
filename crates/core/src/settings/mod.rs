@@ -49,8 +49,8 @@ pub use knobs::{
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
     ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
-    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime,
+    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 pub use snapshot::SettingsSnapshot;
@@ -615,6 +615,10 @@ pub enum Siddhanta {
         /// default) or a modern ephemeris beside it.
         #[serde(default)]
         planets: SuryaPlanets,
+        /// The trigonometry the text's equations take: its table of
+        /// twenty-four sines (the default) or the true sine (C1950).
+        #[serde(default)]
+        trig: SuryaTrig,
     },
     /// The *Vakyakarana*'s Sun and its Moon with the almanac makers'
     /// manyadi, as the Tamil vakya almanacs reckon the tithi and the
@@ -667,10 +671,10 @@ pub enum SuryaPlanets {
 
 impl Siddhanta {
     /// The Surya Siddhanta under a bija, its day beginning at the text's
-    /// own sunrise.
+    /// own sunrise, its equations by the text's sine table.
     ///
     /// ```
-    /// use teistro_core::settings::{Siddhanta, SuryaBija, SuryaPlanets, SuryaSunrise};
+    /// use teistro_core::settings::{Siddhanta, SuryaBija, SuryaPlanets, SuryaSunrise, SuryaTrig};
     ///
     /// let text = Siddhanta::surya(SuryaBija::None);
     /// assert_eq!(
@@ -679,6 +683,7 @@ impl Siddhanta {
     ///         bija: SuryaBija::None,
     ///         sunrise: SuryaSunrise::Text,
     ///         planets: SuryaPlanets::Text,
+    ///         trig: SuryaTrig::Table,
     ///     }
     /// );
     /// ```
@@ -688,6 +693,7 @@ impl Siddhanta {
             bija,
             sunrise: SuryaSunrise::Text,
             planets: SuryaPlanets::Text,
+            trig: SuryaTrig::Table,
         }
     }
 }
@@ -2850,6 +2856,7 @@ mod tests {
                 bija: SuryaBija::None,
                 sunrise: SuryaSunrise::Modern,
                 planets: SuryaPlanets::Text,
+                trig: SuryaTrig::Table,
             }
         );
         // The committee's sky: the text's limbs at a modern sunrise, the
@@ -2865,6 +2872,7 @@ mod tests {
                 planets: SuryaPlanets::Modern {
                     ayanamsha: crate::catalogue::Ayanamsha::Lahiri.into(),
                 },
+                trig: SuryaTrig::Exact,
             }
         );
         assert_eq!(
@@ -2881,6 +2889,38 @@ mod tests {
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = warned.warnings.iter().map(|d| d.rule).collect();
         assert_eq!(rules, ["siddhanta-text-sunrise-convention"]);
+    }
+
+    #[test]
+    fn the_texts_equations_take_its_sine_table_unless_asked_for_the_true_sine() {
+        let read =
+            |json: &str| serde_json::from_str::<Siddhanta>(json).unwrap_or_else(|e| panic!("{e}"));
+        // A document written before the knob reads as the text's table.
+        assert_eq!(
+            read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}}"#),
+            read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}, "trig": "TABLE"}"#)
+        );
+        let exact = read(r#"{"kind": "SURYA", "bija": {"kind": "NONE"}, "trig": "EXACT"}"#);
+        assert_eq!(
+            exact,
+            Siddhanta::Surya {
+                bija: SuryaBija::None,
+                sunrise: SuryaSunrise::Text,
+                planets: SuryaPlanets::Text,
+                trig: SuryaTrig::Exact,
+            }
+        );
+        let json = serde_json::to_string(&exact).unwrap_or_else(|e| panic!("{e}"));
+        assert!(json.contains(r#""trig":"EXACT""#), "{json}");
+        assert_eq!(read(&json), exact);
+        assert!(
+            serde_json::from_str::<Siddhanta>(
+                r#"{"kind": "SURYA", "bija": {"kind": "NONE"}, "trig": "CHORD"}"#
+            )
+            .is_err()
+        );
+        assert_eq!(SuryaTrig::from_key("EXACT"), Some(SuryaTrig::Exact));
+        assert_eq!(SuryaTrig::ALL, &[SuryaTrig::Table, SuryaTrig::Exact]);
     }
 
     #[test]

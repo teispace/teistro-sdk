@@ -169,6 +169,21 @@ impl SuryaSiddhanta {
         SuryaSiddhanta { params, trig }
     }
 
+    /// The same parameters computed with another trigonometry (C1950).
+    ///
+    /// ```
+    /// use teistro_siddhanta::{SuryaSiddhanta, Trig};
+    ///
+    /// let exact = SuryaSiddhanta::text().with_trig(Trig::Exact);
+    /// assert_eq!(exact.trig(), Trig::Exact);
+    /// assert_eq!(exact.parameters(), SuryaSiddhanta::text().parameters());
+    /// ```
+    #[must_use]
+    pub const fn with_trig(mut self, trig: Trig) -> SuryaSiddhanta {
+        self.trig = trig;
+        self
+    }
+
     /// The parameters.
     ///
     /// ```

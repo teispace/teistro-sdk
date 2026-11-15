@@ -23,8 +23,9 @@ use super::knobs::{
     PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart, ReleasingSharedSign,
     RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja,
     SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana,
-    SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig,
+    Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha,
+    Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
@@ -491,7 +492,8 @@ fn nepali_drik() -> Profile {
         // 3: the season follows the civil calendar's solar months.
         // 4: an eclipse's vedha is the committee's fixed hours.
         // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
-        version: 6,
+        // 7: the text's equations take the true sine (C1950).
+        version: 7,
         base: None,
         patch,
         sources: vec![
@@ -571,6 +573,7 @@ fn nepali_committee() -> Profile {
         planets: SuryaPlanets::Modern {
             ayanamsha: Ayanamsha::Lahiri.into(),
         },
+        trig: SuryaTrig::Exact,
     });
     patch.day.sunrise = Some(Sunrise::CentreRefraction.into());
     patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
@@ -581,14 +584,15 @@ fn nepali_committee() -> Profile {
     Profile {
         id: ProfileId::new("nepali-committee"),
         // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
-        version: 6,
+        // 7: the text's equations take the true sine (C1950).
+        version: 7,
         base: Some(ProfileId::new("nepali-drik")),
         patch,
         sources: vec![
             Citation::new(
                 "frame.siddhanta",
                 committee(
-                    "measured: the Rashtriya Panchangam 2082 and 2083 print the text's Moon with its apsis four revolutions an age fewer, and modern star planets in Lahiri's zodiac (a root mean square of 9 to 33 arcminutes over 49 printed mornings, the text's 94 to 459); docs/calendars/bikram-sambat.md R2, docs/03-design/nepal-day-measured.md and docs/03-design/committee-star-planets.md",
+                    "measured: the Rashtriya Panchangam 2082 and 2083 print the text's Moon with its apsis four revolutions an age fewer, and modern star planets in Lahiri's zodiac (a root mean square of 9 to 33 arcminutes over 49 printed mornings, the text's 94 to 459), computed with the true sine rather than the text's table of sines (over 730 printed days the Sun's mean error falls from 2.0 to 0.7 arcseconds and every limb's mean end error to the print's rounding, 0.26 minutes); docs/calendars/bikram-sambat.md R2, docs/03-design/nepal-day-measured.md, docs/03-design/committee-star-planets.md and docs/03-design/committee-trig-measured.md, C1950",
                 ),
             ),
             Citation::new(
@@ -740,6 +744,7 @@ fn mithila_makaranda() -> Profile {
         bija: SuryaBija::Makaranda,
         sunrise: SuryaSunrise::Bhujantara,
         planets: SuryaPlanets::Text,
+        trig: SuryaTrig::Table,
     });
     let makaranda = |what: &'static str| Source::new("Makarandasarini", what);
     Profile {
