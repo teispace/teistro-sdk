@@ -211,6 +211,7 @@ fn calendars() -> Calendars {
         lunar_month: LunarMonth::Amanta,
         samvatsara: SamvatsaraCount::Barhaspatya,
         eras: [Era::Vikrama, Era::Shaka, Era::Kali].into_iter().collect(),
+        marginal_month_minutes: crate::settings::DEFAULT_MARGINAL_MONTH_MINUTES,
     }
 }
 

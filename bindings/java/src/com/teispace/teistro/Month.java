@@ -12,5 +12,7 @@ package com.teispace.teistro;
  *     name needs no case for the intercalary one (an adhika month and the
  *     nija month after it take the same name), so this is the mark beside
  *     the name
+ * @param margin how near the month came to another kind (SR-92)
  */
-public record Month(Masa month, Masa amanta, Masa purnimanta, Paksha paksha, LunarMonth convention, MonthKind kind) {}
+public record Month(Masa month, Masa amanta, Masa purnimanta, Paksha paksha, LunarMonth convention, MonthKind kind,
+        MonthMargin margin) {}

@@ -5128,6 +5128,29 @@
         }
       ]
     },
+    "MonthMargin": {
+      "description": "How close a month came to another kind: the Sun against the nearest sign boundary at each of its two new moons, and whether the nearer is inside the threshold `calendars.marginal_month_minutes` names.",
+      "properties": {
+        "closing": {
+          "$ref": "#/$defs/NewMoonMargin",
+          "description": "At the new moon that closes it."
+        },
+        "marginal": {
+          "description": "Whether either new moon fell within the threshold of a sankranti, so that a reckoning whose Sun differs by that much may decide the month's kind otherwise.",
+          "type": "boolean"
+        },
+        "opening": {
+          "$ref": "#/$defs/NewMoonMargin",
+          "description": "At the new moon that opened the month."
+        }
+      },
+      "required": [
+        "opening",
+        "closing",
+        "marginal"
+      ],
+      "type": "object"
+    },
     "MoonBinduFromJupiter": {
       "description": "Where Jupiter gives the Moon a bindu in the Ashtakavarga: the one place the tables of BPHS ch. 66 and Phaladeepika ch. 23 v. 4 part (crux C144). Either way Jupiter gives seven, so every chart still holds 49 in the Moon's and 337 in all.",
       "oneOf": [
@@ -5570,6 +5593,31 @@
       "description": "A key of the `nature` catalogue, bare or full.",
       "x-teistro-kind": "nature"
     },
+    "NewMoonMargin": {
+      "description": "The Sun at one of a month's two new moons, against the nearest sign boundary.",
+      "properties": {
+        "degrees": {
+          "description": "The Sun's sidereal longitude less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came before the new moon), negative when it was short of it (the sankranti came after).",
+          "format": "double",
+          "type": "number"
+        },
+        "minutes": {
+          "description": "The new moon less the nearest sankranti, minutes: the Sun's own time over `degrees`, with the same sign.",
+          "format": "double",
+          "type": "number"
+        },
+        "new_moon": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "The new moon."
+        }
+      },
+      "required": [
+        "new_moon",
+        "degrees",
+        "minutes"
+      ],
+      "type": "object"
+    },
     "NoBrahma": {
       "description": "Why a chart has no Brahma graha under the rule asked for.",
       "oneOf": [
@@ -5993,6 +6041,17 @@
         "kind": {
           "$ref": "#/$defs/MonthKind",
           "description": "Whether the month is ordinary, intercalary or omitted."
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MonthMargin"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "How near the month came to another kind: the Sun against the nearest sign boundary at each of its two new moons, in degrees and in minutes of its motion, and whether the nearer is inside `calendars.marginal_month_minutes` (SR-92, C1902)."
         },
         "month": {
           "$ref": "#/$defs/Masa",

@@ -212,6 +212,10 @@ name = "polar_day"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "month_margin"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "sentences"
 required-features = ["builtin-ephemeris"]
 

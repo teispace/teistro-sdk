@@ -263,7 +263,7 @@ pub use teistro_panchanga::almanac::Panchanga;
 // Whether a day's lunar month is nija, adhika (Nepal's malmas) or kshaya:
 // every almanac day carries it, a consumer matches on it, and
 // `sdk.calendar.lunarMonth` says it (`03-design/calendar-indian-lunisolar.md` §9).
-pub use teistro_calendar::lunisolar::MonthKind;
+pub use teistro_calendar::lunisolar::{MonthKind, MonthMargin, NewMoonMargin};
 pub use teistro_panchanga::festival;
 // What a day is said to be: the panchaka, the muhurta yogas, the disha
 // shool and the varjyam, with the tables that place them, so a consumer

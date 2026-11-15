@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every lunar month carries its decision margin, and a marginal flag on a setting (SR-92, C1902).**
+**Numbers:** no instant moves. Every day's JSON gains
+`month.margin`, so every answer hash over a day moves; the blob's `days` section gains seven
+columns (`month_marginal`, `opening_new_moon`, `opening_margin_deg`, `opening_margin_minutes`,
+`closing_new_moon`, `closing_margin_deg`, `closing_margin_minutes`); the settings gain
+`calendars.marginal_month_minutes`, so every settings hash moves.
+- **New:** `LunarMonth::margin`, a `MonthMargin` of the Sun against the nearest sign boundary at
+  the month's opening and closing new moons (`NewMoonMargin`: the new moon, degrees from −15 to
+  15 and the minutes to that sankranti, both positive when the Sun had passed it) and `marginal`,
+  when either is nearer than `calendars.marginal_month_minutes`. `lunisolar::new_moon_margin`
+  and `month_margin` in Rust; `month.margin` on `AlmanacDay`, the cells and the sankalpa in Node,
+  wasm, Python, Dart and Java.
+- **New:** `calendars.marginal_month_minutes`, default `DEFAULT_MARGINAL_MONTH_MINUTES` (420):
+  the nineteen years AD 1900–2100 in which Nepal's committee and a drik almanac decide a month
+  differently each turn on a new moon 0.3 to 6.3 hours from a sankranti (tithipatra's research
+  note §3.11, reproduced from the field as a golden in `crates/sdk/tests/month_margin.rs`). Set
+  per profile, per context or per call; nought flags no month.
+- AD 2028 under `nepali-committee` (adhika Kartika, kshaya Margashirsha) turns on 0.044° and
+  0.017°; 2029's adhika Chaitra under `nepali-drik` on 43.96 minutes (37.46 on the mean basis
+  `nepali-drik` had before SR-100).
+
 **Every limb span carries its decision margin (SR-95, C1901).**
 **Numbers:** no instant moves. Every day's JSON gains `margin_minutes` on each tithi, nakshatra,
 yoga and karana span, so every answer hash over a day moves (`almanac.day`, the MCP's day

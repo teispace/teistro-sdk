@@ -8051,6 +8051,27 @@ class PanchangaDays:
     month_kind: memoryview[int]
     """Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it."""
 
+    month_marginal: memoryview[int]
+    """1 when either of the month's two new moons fell nearer a sankranti than `calendars.marginal_month_minutes`, so that a reckoning with another Sun may decide its kind otherwise; 0 otherwise (SR-92, C1902)."""
+
+    opening_new_moon: memoryview[float]
+    """The new moon that opened the month, as a Julian day (UTC)."""
+
+    opening_margin_deg: memoryview[float]
+    """The Sun's sidereal longitude at the opening new moon less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came first), negative when it was short of it."""
+
+    opening_margin_minutes: memoryview[float]
+    """The opening new moon less the nearest sankranti, minutes: the Sun's own time over `opening_margin_deg`, with its sign."""
+
+    closing_new_moon: memoryview[float]
+    """The new moon that closes the month, as a Julian day (UTC)."""
+
+    closing_margin_deg: memoryview[float]
+    """As `opening_margin_deg`, at the closing new moon."""
+
+    closing_margin_minutes: memoryview[float]
+    """As `opening_margin_minutes`, at the closing new moon."""
+
     ayana: memoryview[int]
     """Which half of the year the day falls in."""
 
@@ -9508,28 +9529,47 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             purnimanta=blob.column(at_days, 4, 2, at_days.count).cast("H"),
             paksha=blob.column(at_days, 5, 2, at_days.count).cast("H"),
             month_kind=blob.column(at_days, 6, 1, at_days.count).cast("B"),
-            ayana=blob.column(at_days, 7, 2, at_days.count).cast("H"),
-            ritu=blob.column(at_days, 8, 2, at_days.count).cast("H"),
-            disha_shool=blob.column(at_days, 9, 2, at_days.count).cast("H"),
-            has_sankranti=blob.column(at_days, 10, 1, at_days.count).cast("B"),
-            sankranti=blob.column(at_days, 11, 8, at_days.count).cast("d"),
-            has_abhijit=blob.column(at_days, 12, 1, at_days.count).cast("B"),
-            abhijit_from=blob.column(at_days, 13, 8, at_days.count).cast("d"),
-            abhijit_to=blob.column(at_days, 14, 8, at_days.count).cast("d"),
+            month_marginal=blob.column(at_days, 7, 1, at_days.count).cast("B"),
+            opening_new_moon=blob.column(
+                at_days, 8, 8, at_days.count
+            ).cast("d"),
+            opening_margin_deg=blob.column(
+                at_days, 9, 8, at_days.count
+            ).cast("d"),
+            opening_margin_minutes=blob.column(
+                at_days, 10, 8, at_days.count
+            ).cast("d"),
+            closing_new_moon=blob.column(
+                at_days, 11, 8, at_days.count
+            ).cast("d"),
+            closing_margin_deg=blob.column(
+                at_days, 12, 8, at_days.count
+            ).cast("d"),
+            closing_margin_minutes=blob.column(
+                at_days, 13, 8, at_days.count
+            ).cast("d"),
+            ayana=blob.column(at_days, 14, 2, at_days.count).cast("H"),
+            ritu=blob.column(at_days, 15, 2, at_days.count).cast("H"),
+            disha_shool=blob.column(at_days, 16, 2, at_days.count).cast("H"),
+            has_sankranti=blob.column(at_days, 17, 1, at_days.count).cast("B"),
+            sankranti=blob.column(at_days, 18, 8, at_days.count).cast("d"),
+            has_abhijit=blob.column(at_days, 19, 1, at_days.count).cast("B"),
+            abhijit_from=blob.column(at_days, 20, 8, at_days.count).cast("d"),
+            abhijit_to=blob.column(at_days, 21, 8, at_days.count).cast("d"),
             abhijit_effective=blob.column(
-                at_days, 15, 1, at_days.count
+                at_days, 22, 1, at_days.count
             ).cast("B"),
-            has_brahma=blob.column(at_days, 16, 1, at_days.count).cast("B"),
-            brahma_from=blob.column(at_days, 17, 8, at_days.count).cast("d"),
-            brahma_to=blob.column(at_days, 18, 8, at_days.count).cast("d"),
+            has_brahma=blob.column(at_days, 23, 1, at_days.count).cast("B"),
+            brahma_from=blob.column(at_days, 24, 8, at_days.count).cast("d"),
+            brahma_to=blob.column(at_days, 25, 8, at_days.count).cast("d"),
             moon_window_from=blob.column(
-                at_days, 19, 8, at_days.count
+                at_days, 26, 8, at_days.count
             ).cast("d"),
             moon_window_to=blob.column(
-                at_days, 20, 8, at_days.count
+                at_days, 27, 8, at_days.count
             ).cast("d"),
             utc_offset_seconds=blob.column(
-                at_days, 21, 4, at_days.count
+                at_days, 28, 4, at_days.count
             ).cast("i"),
             length=at_days.count,
         ),

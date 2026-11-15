@@ -487,6 +487,24 @@ final class AlmanacReads {
                 }));
     }
 
+    /** A day's lunar month as the Rust types serialise it, members resolved. */
+    private static Month lunarMonth(Map<?, ?> m) {
+        Map<?, ?> margin = Reads.object(m, "margin");
+        java.util.function.Function<String, NewMoonMargin> side = which -> {
+            Map<?, ?> raw = Reads.object(margin, which);
+            return new NewMoonMargin(Reads.number(raw, "new_moon"), Reads.number(raw, "degrees"),
+                    Reads.number(raw, "minutes"));
+        };
+        return new Month(
+                member(m, "month", "Masa", Masa::byKey),
+                member(m, "amanta", "Masa", Masa::byKey),
+                member(m, "purnimanta", "Masa", Masa::byKey),
+                member(m, "paksha", "Paksha", Paksha::byKey),
+                member(m, "convention", "LunarMonth", LunarMonth::byKey),
+                member(m, "kind", "MonthKind", MonthKind::byKey),
+                new MonthMargin(side.apply("opening"), side.apply("closing"), Reads.flag(margin, "marginal")));
+    }
+
     /** {@code ts_almanac_sankalpa}'s answer: the time recited, its members resolved, with the provenance beside it. */
     static SankalpaAnswer sankalpaAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
@@ -503,13 +521,7 @@ final class AlmanacReads {
                 Reads.string(v, "ayanaReckoning"),
                 member(v, "ritu", "Ritu", Ritu::byKey),
                 Reads.string(v, "rituReckoning"),
-                new Month(
-                        member(m, "month", "Masa", Masa::byKey),
-                        member(m, "amanta", "Masa", Masa::byKey),
-                        member(m, "purnimanta", "Masa", Masa::byKey),
-                        member(m, "paksha", "Paksha", Paksha::byKey),
-                        member(m, "convention", "LunarMonth", LunarMonth::byKey),
-                        member(m, "kind", "MonthKind", MonthKind::byKey)),
+                lunarMonth(m),
                 member(v, "paksha", "Paksha", Paksha::byKey),
                 member(v, "tithi", "Tithi", Tithi::byKey),
                 member(v, "nakshatra", "Nakshatra", Nakshatra::byKey),
@@ -535,13 +547,7 @@ final class AlmanacReads {
                     Reads.flag(c, "normal"),
                     member(c, "tithi", "Tithi", Tithi::byKey),
                     member(c, "paksha", "Paksha", Paksha::byKey),
-                    new Month(
-                            member(m, "month", "Masa", Masa::byKey),
-                            member(m, "amanta", "Masa", Masa::byKey),
-                            member(m, "purnimanta", "Masa", Masa::byKey),
-                            member(m, "paksha", "Paksha", Paksha::byKey),
-                            member(m, "convention", "LunarMonth", LunarMonth::byKey),
-                            member(m, "kind", "MonthKind", MonthKind::byKey)),
+                    lunarMonth(m),
                     Reads.each(c, "ends", end -> {
                         Map<?, ?> e = Reads.object(end);
                         return new DayCells.TithiEnd(member(e, "tithi", "Tithi", Tithi::byKey),

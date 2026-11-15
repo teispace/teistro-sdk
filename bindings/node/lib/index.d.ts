@@ -5754,6 +5754,28 @@ export interface Month {
    * beside the name.
    */
   readonly kind: MonthKind | 'unknown';
+  /** How near the month came to another kind (SR-92). */
+  readonly margin: MonthMargin;
+}
+
+/** The Sun at one of a lunar month's two new moons, against the nearest sign boundary. */
+export interface NewMoonMargin {
+  /** The new moon, as a Julian day (UTC). */
+  readonly newMoon: number;
+  /** The Sun's sidereal longitude less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it, negative when short of it. */
+  readonly degrees: number;
+  /** The new moon less the nearest sankranti, minutes, with the same sign. */
+  readonly minutes: number;
+}
+
+/** How near a lunar month came to another kind: the Sun against the nearest sign boundary at each of its new moons. */
+export interface MonthMargin {
+  /** At the new moon that opened the month. */
+  readonly opening: NewMoonMargin;
+  /** At the new moon that closes it. */
+  readonly closing: NewMoonMargin;
+  /** Whether either new moon fell nearer a sankranti than `calendars.marginal_month_minutes`. */
+  readonly marginal: boolean;
 }
 
 /** One inauspicious eighth of the daylight. */

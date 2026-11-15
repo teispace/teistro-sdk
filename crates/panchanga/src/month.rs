@@ -17,7 +17,7 @@
 //! not decide it.
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::lunisolar::MonthKind;
+use teistro_calendar::lunisolar::{MonthKind, MonthMargin};
 use teistro_core::catalogue::{Masa, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
 
@@ -57,9 +57,40 @@ pub struct LunarMonth {
     /// beside the name, and the calendar decides it from the count of
     /// sankrantis in the month.
     pub kind: MonthKind,
+    /// How near the month came to another kind: the Sun against the
+    /// nearest sign boundary at each of its two new moons, in degrees
+    /// and in minutes of its motion, and whether the nearer is inside
+    /// `calendars.marginal_month_minutes` (SR-92, C1902).
+    ///
+    /// Present on every month the almanac answers; absent on a month
+    /// built from its parts alone ([`of`]), which knows no new moons.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub margin: Option<MonthMargin>,
 }
 
 impl LunarMonth {
+    /// The month with its decision margin.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::{MonthKind, MonthMargin, NewMoonMargin};
+    /// use teistro_core::catalogue::{Masa, Tithi};
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::LunarMonth as Convention;
+    /// use teistro_panchanga::month;
+    ///
+    /// let at = |degrees: f64| NewMoonMargin { new_moon: JulianDay::literal(2_462_000.0), degrees, minutes: degrees * 1440.0 };
+    /// let margin = MonthMargin::of(at(0.044), at(-0.017), 420);
+    /// let day = month::of(Masa::Kartika, Tithi::ShuklaDashami, Convention::Amanta, MonthKind::Adhika).with_margin(margin);
+    /// assert!(day.margin.is_some_and(|margin| margin.marginal));
+    /// ```
+    #[must_use]
+    pub const fn with_margin(self, margin: MonthMargin) -> Self {
+        LunarMonth {
+            margin: Some(margin),
+            ..self
+        }
+    }
+
     /// The month under a convention, whichever the value leads with.
     ///
     /// ```
@@ -125,6 +156,7 @@ pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKi
         purnimanta,
         paksha,
         kind,
+        margin: None,
     }
 }
 

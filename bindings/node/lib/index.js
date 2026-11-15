@@ -2158,6 +2158,20 @@ export class AlmanacDay {
       // needs no case for it — an adhika month and the nija month after
       // it take the same name — so this is the mark beside the name.
       kind: MonthKindById.get(d.monthKind[i]) ?? 'unknown',
+      // How near the month came to another kind (SR-92).
+      margin: {
+        opening: {
+          newMoon: d.openingNewMoon[i],
+          degrees: d.openingMarginDeg[i],
+          minutes: d.openingMarginMinutes[i],
+        },
+        closing: {
+          newMoon: d.closingNewMoon[i],
+          degrees: d.closingMarginDeg[i],
+          minutes: d.closingMarginMinutes[i],
+        },
+        marginal: d.monthMarginal[i] !== 0,
+      },
     };
   }
 
@@ -6786,6 +6800,18 @@ function fastFrom(fast) {
 }
 
 /**
+ * A lunar month's margin as the Rust types serialise it (SR-92), in the
+ * shape `AlmanacDay.month.margin` reads from the blob.
+ *
+ * @param {object} json
+ * @returns {object}
+ */
+function monthMarginFrom(json) {
+  const at = (side) => ({ newMoon: side.new_moon, degrees: side.degrees, minutes: side.minutes });
+  return { opening: at(json.opening), closing: at(json.closing), marginal: json.marginal };
+}
+
+/**
  * A date as the Rust types serialise it, in the shape `date(...)` builds
  * and `calendar.convert` answers: the era flattened beside its year, and
  * the resolution by name with a divergent one's computed day.
@@ -8338,7 +8364,11 @@ export class AlmanacArea extends Area {
       run(this, (inner) => inner.almanacSankalpa(JSON.stringify(asked))),
     );
     return deepFreeze({
-      value: { ...value, date: dateFrom(value.date) },
+      value: {
+        ...value,
+        date: dateFrom(value.date),
+        month: { ...value.month, margin: monthMarginFrom(value.month.margin) },
+      },
       provenance: decodeProvenance(provenance),
     });
   }
@@ -9238,6 +9268,7 @@ export class AlmanacArea extends Area {
         amanta: keyed('masa', cell.month.amanta),
         purnimanta: keyed('masa', cell.month.purnimanta),
         paksha: keyed('paksha', cell.month.paksha),
+        margin: monthMarginFrom(cell.month.margin),
       },
       ends: cell.ends.map((end) => ({ ...end, tithi: keyed('tithi', end.tithi) })),
       festivals: cell.festivals ?? [],

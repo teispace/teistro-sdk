@@ -570,6 +570,13 @@ public final class Panchanga {
         private final int purnimantaAt;
         private final int pakshaAt;
         private final int monthKindAt;
+        private final int monthMarginalAt;
+        private final int openingNewMoonAt;
+        private final int openingMarginDegAt;
+        private final int openingMarginMinutesAt;
+        private final int closingNewMoonAt;
+        private final int closingMarginDegAt;
+        private final int closingMarginMinutesAt;
         private final int ayanaAt;
         private final int rituAt;
         private final int dishaShoolAt;
@@ -597,21 +604,28 @@ public final class Panchanga {
             this.purnimantaAt = blob.column(at, 4, 2);
             this.pakshaAt = blob.column(at, 5, 2);
             this.monthKindAt = blob.column(at, 6, 1);
-            this.ayanaAt = blob.column(at, 7, 2);
-            this.rituAt = blob.column(at, 8, 2);
-            this.dishaShoolAt = blob.column(at, 9, 2);
-            this.hasSankrantiAt = blob.column(at, 10, 1);
-            this.sankrantiAt = blob.column(at, 11, 8);
-            this.hasAbhijitAt = blob.column(at, 12, 1);
-            this.abhijitFromAt = blob.column(at, 13, 8);
-            this.abhijitToAt = blob.column(at, 14, 8);
-            this.abhijitEffectiveAt = blob.column(at, 15, 1);
-            this.hasBrahmaAt = blob.column(at, 16, 1);
-            this.brahmaFromAt = blob.column(at, 17, 8);
-            this.brahmaToAt = blob.column(at, 18, 8);
-            this.moonWindowFromAt = blob.column(at, 19, 8);
-            this.moonWindowToAt = blob.column(at, 20, 8);
-            this.utcOffsetSecondsAt = blob.column(at, 21, 4);
+            this.monthMarginalAt = blob.column(at, 7, 1);
+            this.openingNewMoonAt = blob.column(at, 8, 8);
+            this.openingMarginDegAt = blob.column(at, 9, 8);
+            this.openingMarginMinutesAt = blob.column(at, 10, 8);
+            this.closingNewMoonAt = blob.column(at, 11, 8);
+            this.closingMarginDegAt = blob.column(at, 12, 8);
+            this.closingMarginMinutesAt = blob.column(at, 13, 8);
+            this.ayanaAt = blob.column(at, 14, 2);
+            this.rituAt = blob.column(at, 15, 2);
+            this.dishaShoolAt = blob.column(at, 16, 2);
+            this.hasSankrantiAt = blob.column(at, 17, 1);
+            this.sankrantiAt = blob.column(at, 18, 8);
+            this.hasAbhijitAt = blob.column(at, 19, 1);
+            this.abhijitFromAt = blob.column(at, 20, 8);
+            this.abhijitToAt = blob.column(at, 21, 8);
+            this.abhijitEffectiveAt = blob.column(at, 22, 1);
+            this.hasBrahmaAt = blob.column(at, 23, 1);
+            this.brahmaFromAt = blob.column(at, 24, 8);
+            this.brahmaToAt = blob.column(at, 25, 8);
+            this.moonWindowFromAt = blob.column(at, 26, 8);
+            this.moonWindowToAt = blob.column(at, 27, 8);
+            this.utcOffsetSecondsAt = blob.column(at, 28, 4);
         }
 
         /**
@@ -708,6 +722,83 @@ public final class Panchanga {
          */
         public int monthKind(int row) {
             return Byte.toUnsignedInt(bytes.get(monthKindAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when either of the month's two new moons fell nearer a sankranti than `calendars.marginal_month_minutes`, so that a reckoning with another Sun may decide its kind otherwise; 0 otherwise (SR-92, C1902).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int monthMarginal(int row) {
+            return Byte.toUnsignedInt(bytes.get(monthMarginalAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The new moon that opened the month, as a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double openingNewMoon(int row) {
+            return bytes.getDouble(openingNewMoonAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The Sun's sidereal longitude at the opening new moon less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came first), negative when it was short of it.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double openingMarginDeg(int row) {
+            return bytes.getDouble(openingMarginDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The opening new moon less the nearest sankranti, minutes: the Sun's own time over `opening_margin_deg`, with its sign.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double openingMarginMinutes(int row) {
+            return bytes.getDouble(openingMarginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The new moon that closes the month, as a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double closingNewMoon(int row) {
+            return bytes.getDouble(closingNewMoonAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * As `opening_margin_deg`, at the closing new moon.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double closingMarginDeg(int row) {
+            return bytes.getDouble(closingMarginDegAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * As `opening_margin_minutes`, at the closing new moon.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double closingMarginMinutes(int row) {
+            return bytes.getDouble(closingMarginMinutesAt + Objects.checkIndex(row, length) * 8);
         }
 
         /**

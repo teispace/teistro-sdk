@@ -891,6 +891,24 @@ pub struct Precision {
 /// ```
 pub const DEFAULT_CACHE_CELLS: u32 = 65_536;
 
+/// How near a sankranti a lunar month's new moon may fall, minutes,
+/// before the month is called marginal by default: seven hours.
+///
+/// The Surya Siddhanta's Sun and a drik Sun in Lahiri's zodiac decide a
+/// month differently in nineteen years of AD 1900–2100, and in each of
+/// them a month the two part on has a new moon within 0.3 to 6.3 hours
+/// of a sankranti (tithipatra's `sdk-gap-research.md` §3.11 and §A.14;
+/// reproduced from the field in `crates/sdk/tests/month_margin.rs`).
+/// Seven hours flags every one of those years, the widest by 0.7 hours
+/// (C1902).
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_MARGINAL_MONTH_MINUTES, root};
+///
+/// assert_eq!(root().calendars.marginal_month_minutes, DEFAULT_MARGINAL_MONTH_MINUTES);
+/// ```
+pub const DEFAULT_MARGINAL_MONTH_MINUTES: u32 = 420;
+
 macro_rules! group {
     ($(#[$m:meta])* $name:ident, $patch:ident, $path:ident {
         $(#[$ffm:meta])* $first:ident : $fty:ty
@@ -1339,6 +1357,17 @@ group!(
         /// lint: knob-has-a-reader — as `civil_calendar` above — `crates/calendar` renders the eras a
         /// caller asks for rather than the ones the settings name.
         eras: BTreeSet<Era>,
+        /// How near a sankranti, in minutes of the Sun's motion, one of a
+        /// lunar month's two new moons may fall before the month is
+        /// called `marginal`: near enough that a reckoning with another
+        /// Sun may count its sankrantis, and so its kind, otherwise
+        /// (SR-92, C1902).
+        ///
+        /// Read by the almanac into every month's `margin`. Nought calls
+        /// no month marginal. [`DEFAULT_MARGINAL_MONTH_MINUTES`] covers
+        /// every month Nepal's committee and a drik almanac decided
+        /// differently in AD 1900–2100, the widest by 6.3 hours.
+        marginal_month_minutes: u32,
     }
 );
 
