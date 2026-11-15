@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A fortnight's short name and a rashi's Indian name in every pack.**
+**Numbers:** none; two record forms are added and no existing form changes.
+- `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:
+  `Shukla` and `Krishna` in English, `शुक्ल` and `कृष्ण` in Nepali, Hindi and `sa-Deva`
+  (`sa-Latn` derives `Śukla`, `Kṛṣṇa`), so a consumer no longer strips " Paksha".
+- Every rashi carries `indic`, its Indian name where `name` may be the Western sign: in
+  English Mesha, Vrishabha, Mithuna, Karka, Simha, Kanya, Tula, Vrishchika, Dhanu, Makara,
+  Kumbha, Mina, without diacritics; in Devanagari the `name`; `sa-Latn` the IAST
+  (`03-design/entity-names.md` §4f).
+
 **The true ayanamsha basis (SR-100, SR-105, SR-118).**
 **Numbers:** every sidereal longitude of a modern sky under a shipped profile but
 `conformance-baseline` moves by the nutation in longitude, at most 17.2 arcseconds:

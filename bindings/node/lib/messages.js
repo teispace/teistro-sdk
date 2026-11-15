@@ -2132,6 +2132,7 @@ export function entityForms(json) {
     name: forms.name ?? '',
     prose: forms.prose ?? '',
     abbrev: forms.abbrev,
+    indic: forms.indic,
     locative: forms.locative,
     short: forms.short,
     glyph: forms.glyph,

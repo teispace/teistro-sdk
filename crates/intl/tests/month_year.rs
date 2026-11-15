@@ -6,6 +6,7 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::indexing_slicing,
+    clippy::panic,
     reason = "tests fail by panicking"
 )]
 
@@ -376,4 +377,59 @@ fn an_abbreviation_renders_where_a_message_asks_for_it() {
     assert_eq!(render(&intl, "nakshatra.UTTARA_BHADRAPADA"), "उ.भा.");
     intl.set_locale("hi-Deva-IN").unwrap();
     assert_eq!(render(&intl, "masa.MARGASHIRSHA"), "मार्ग.");
+}
+
+/// A fortnight's `short` is the word a tithi's name begins with, and a
+/// rashi's `indic` is its Indian name where `name` may be the Western one
+/// (`docs/03-design/entity-names.md` §4f): a day reads "Shukla Shashthi"
+/// and an English calendar "Moon in Dhanu", in every shipped locale.
+#[test]
+fn every_fortnight_has_a_short_and_every_rashi_an_indian_name() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    for tag in LOCALES {
+        let entities = &tree.locales[tag].namespaces["sdk.entity"];
+        let form = |key: &str, form: &str| {
+            let Some(Entry::Entity(entity)) = entities.entries.get(key) else {
+                panic!("{tag} has no {key}");
+            };
+            let text = entity.form(form);
+            assert!(
+                text.is_some_and(|text| !text.is_empty()),
+                "{tag} {key} has no `{form}`"
+            );
+            (text.unwrap().to_owned(), entity.name().to_owned())
+        };
+        for key in ["paksha.SHUKLA", "paksha.KRISHNA"] {
+            let (short, name) = form(key, "short");
+            assert!(
+                name.starts_with(&short),
+                "{tag} {key}: `{short}` does not begin `{name}`"
+            );
+        }
+        let mut indic: Vec<String> = [
+            "ARIES",
+            "TAURUS",
+            "GEMINI",
+            "CANCER",
+            "LEO",
+            "VIRGO",
+            "LIBRA",
+            "SCORPIO",
+            "SAGITTARIUS",
+            "CAPRICORN",
+            "AQUARIUS",
+            "PISCES",
+        ]
+        .iter()
+        .map(|rashi| form(&format!("rashi.{rashi}"), "indic").0)
+        .collect();
+        indic.sort();
+        indic.dedup();
+        assert_eq!(indic.len(), 12, "{tag}: two rashis share an Indian name");
+    }
+    let english = &tree.locales["en-Latn"].namespaces["sdk.entity"];
+    let Some(Entry::Entity(dhanu)) = english.entries.get("rashi.SAGITTARIUS") else {
+        panic!("en-Latn has no rashi.SAGITTARIUS");
+    };
+    assert_eq!(dhanu.form("indic"), Some("Dhanu"));
 }

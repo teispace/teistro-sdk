@@ -945,11 +945,13 @@
   },
   "paksha": {
     "SHUKLA": {
+      "short": "Śukla",
       "name": "Śukla",
       "prose": "Śukla",
       "iast": "Śukla Pakṣa"
     },
     "KRISHNA": {
+      "short": "Kṛṣṇa",
       "name": "Kṛṣṇa",
       "prose": "Kṛṣṇa",
       "iast": "Kṛṣṇa Pakṣa"
@@ -1152,6 +1154,7 @@
       "name": "Meṣa",
       "prose": "Meṣa",
       "iast": "Meṣa",
+      "indic": "Meṣa",
       "glyph": "♈",
       "gender": "m"
     },
@@ -1160,6 +1163,7 @@
       "name": "Vṛṣabha",
       "prose": "Vṛṣabha",
       "iast": "Vṛṣabha",
+      "indic": "Vṛṣabha",
       "glyph": "♉",
       "gender": "f"
     },
@@ -1168,6 +1172,7 @@
       "name": "Mithuna",
       "prose": "Mithuna",
       "iast": "Mithuna",
+      "indic": "Mithuna",
       "glyph": "♊",
       "gender": "m"
     },
@@ -1176,6 +1181,7 @@
       "name": "Karka",
       "prose": "Karka",
       "iast": "Karka",
+      "indic": "Karka",
       "glyph": "♋",
       "gender": "f"
     },
@@ -1184,6 +1190,7 @@
       "name": "Siṃha",
       "prose": "Siṃha",
       "iast": "Siṃha",
+      "indic": "Siṃha",
       "glyph": "♌",
       "gender": "m"
     },
@@ -1192,6 +1199,7 @@
       "name": "Kanyā",
       "prose": "Kanyā",
       "iast": "Kanyā",
+      "indic": "Kanyā",
       "glyph": "♍",
       "gender": "f"
     },
@@ -1200,6 +1208,7 @@
       "name": "Tulā",
       "prose": "Tulā",
       "iast": "Tulā",
+      "indic": "Tulā",
       "glyph": "♎",
       "gender": "m"
     },
@@ -1208,6 +1217,7 @@
       "name": "Vṛścika",
       "prose": "Vṛścika",
       "iast": "Vṛścika",
+      "indic": "Vṛścika",
       "glyph": "♏",
       "gender": "f"
     },
@@ -1216,6 +1226,7 @@
       "name": "Dhanu",
       "prose": "Dhanu",
       "iast": "Dhanu",
+      "indic": "Dhanu",
       "glyph": "♐",
       "gender": "m"
     },
@@ -1224,6 +1235,7 @@
       "name": "Makara",
       "prose": "Makara",
       "iast": "Makara",
+      "indic": "Makara",
       "glyph": "♑",
       "gender": "f"
     },
@@ -1232,6 +1244,7 @@
       "name": "Kumbha",
       "prose": "Kumbha",
       "iast": "Kumbha",
+      "indic": "Kumbha",
       "glyph": "♒",
       "gender": "m"
     },
@@ -1240,6 +1253,7 @@
       "name": "Mīna",
       "prose": "Mīna",
       "iast": "Mīna",
+      "indic": "Mīna",
       "glyph": "♓",
       "gender": "f"
     }

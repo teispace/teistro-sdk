@@ -103,6 +103,7 @@
       "name": "Aries",
       "prose": "Aries",
       "iast": "Meṣa",
+      "indic": "Mesha",
       "glyph": "♈",
       "gender": "m"
     },
@@ -111,6 +112,7 @@
       "name": "Taurus",
       "prose": "Taurus",
       "iast": "Vṛṣabha",
+      "indic": "Vrishabha",
       "glyph": "♉",
       "gender": "f"
     },
@@ -119,6 +121,7 @@
       "name": "Gemini",
       "prose": "Gemini",
       "iast": "Mithuna",
+      "indic": "Mithuna",
       "glyph": "♊",
       "gender": "m"
     },
@@ -127,6 +130,7 @@
       "name": "Cancer",
       "prose": "Cancer",
       "iast": "Karka",
+      "indic": "Karka",
       "glyph": "♋",
       "gender": "f"
     },
@@ -135,6 +139,7 @@
       "name": "Leo",
       "prose": "Leo",
       "iast": "Siṃha",
+      "indic": "Simha",
       "glyph": "♌",
       "gender": "m"
     },
@@ -143,6 +148,7 @@
       "name": "Virgo",
       "prose": "Virgo",
       "iast": "Kanyā",
+      "indic": "Kanya",
       "glyph": "♍",
       "gender": "f"
     },
@@ -151,6 +157,7 @@
       "name": "Libra",
       "prose": "Libra",
       "iast": "Tulā",
+      "indic": "Tula",
       "glyph": "♎",
       "gender": "m"
     },
@@ -159,6 +166,7 @@
       "name": "Scorpio",
       "prose": "Scorpio",
       "iast": "Vṛścika",
+      "indic": "Vrishchika",
       "glyph": "♏",
       "gender": "f"
     },
@@ -167,6 +175,7 @@
       "name": "Sagittarius",
       "prose": "Sagittarius",
       "iast": "Dhanu",
+      "indic": "Dhanu",
       "glyph": "♐",
       "gender": "m"
     },
@@ -175,6 +184,7 @@
       "name": "Capricorn",
       "prose": "Capricorn",
       "iast": "Makara",
+      "indic": "Makara",
       "glyph": "♑",
       "gender": "f"
     },
@@ -183,6 +193,7 @@
       "name": "Aquarius",
       "prose": "Aquarius",
       "iast": "Kumbha",
+      "indic": "Kumbha",
       "glyph": "♒",
       "gender": "m"
     },
@@ -191,6 +202,7 @@
       "name": "Pisces",
       "prose": "Pisces",
       "iast": "Mīna",
+      "indic": "Mina",
       "glyph": "♓",
       "gender": "f"
     }
@@ -1169,11 +1181,13 @@
   },
   "paksha": {
     "SHUKLA": {
+      "short": "Shukla",
       "name": "Shukla Paksha",
       "prose": "Shukla Paksha",
       "iast": "Śukla Pakṣa"
     },
     "KRISHNA": {
+      "short": "Krishna",
       "name": "Krishna Paksha",
       "prose": "Krishna Paksha",
       "iast": "Kṛṣṇa Pakṣa"
