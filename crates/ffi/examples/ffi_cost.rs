@@ -207,6 +207,7 @@ fn main() {
         jd_count: jds.len(),
         bodies: bodies.as_ptr(),
         body_count: bodies.len(),
+        conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
     };
     let one = [2_451_545.0_f64];
     let three = [Body::Sun.id(), Body::Moon.id(), Body::Mars.id()];

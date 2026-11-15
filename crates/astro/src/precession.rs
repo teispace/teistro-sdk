@@ -24,7 +24,9 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
+use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt};
+use teistro_core::settings::Precession;
 
 use crate::iau::vector::{Matrix3, Vector3, ir, rx, rxp, ry, rz, trxp};
 use crate::iau::{DAS2R, DJ00, DJC, DJY, RAD2DEG, ltp, obl06, obl80, p06};
@@ -63,6 +65,77 @@ pub enum PrecessionModel {
 }
 
 impl PrecessionModel {
+    /// The model a context's `frame.precession` names; `None` for one this
+    /// crate does not implement.
+    ///
+    /// ```
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_core::settings::Precession;
+    ///
+    /// for knob in Precession::ALL {
+    ///     let model = PrecessionModel::from_knob(*knob).expect("every precession the settings name");
+    ///     assert_eq!(model.knob(), *knob);
+    ///     assert_eq!(model.key(), knob.key());
+    /// }
+    /// // The root setting is the SDK's default model.
+    /// assert_eq!(PrecessionModel::from_knob(Precession::Vondrak2011), Some(PrecessionModel::default()));
+    /// ```
+    #[must_use]
+    pub const fn from_knob(knob: Precession) -> Option<PrecessionModel> {
+        match knob {
+            Precession::Vondrak2011 => Some(PrecessionModel::Vondrak2011),
+            Precession::Iau2006 => Some(PrecessionModel::Iau2006),
+            Precession::Iau1976 => Some(PrecessionModel::Iau1976),
+            Precession::Newcomb => Some(PrecessionModel::Newcomb),
+            _ => None,
+        }
+    }
+
+    /// The model a context's `frame.precession` names, for an SDK step
+    /// that precesses: [`PrecessionModel::from_knob`], or the setting
+    /// named in a refusal for one this crate does not implement.
+    ///
+    /// ```
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_core::settings::Precession;
+    ///
+    /// assert_eq!(PrecessionModel::of_setting(Precession::Iau2006)?, PrecessionModel::Iau2006);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` on `frame.precession` for a model the SDK's steps do
+    /// not implement.
+    pub fn of_setting(knob: Precession) -> Result<PrecessionModel, Error> {
+        PrecessionModel::from_knob(knob).ok_or_else(|| {
+            Error::unsupported(format!(
+                "the SDK's steps do not implement the {} precession",
+                knob.key()
+            ))
+            .with_field("frame.precession")
+        })
+    }
+
+    /// The setting that names this model.
+    ///
+    /// ```
+    /// use teistro_astro::precession::PrecessionModel;
+    /// use teistro_core::settings::Precession;
+    ///
+    /// assert_eq!(PrecessionModel::Vondrak2011.knob(), Precession::Vondrak2011);
+    /// assert_eq!(PrecessionModel::from_knob(PrecessionModel::Iau1976.knob()), Some(PrecessionModel::Iau1976));
+    /// ```
+    #[must_use]
+    pub const fn knob(self) -> Precession {
+        match self {
+            PrecessionModel::Vondrak2011 => Precession::Vondrak2011,
+            PrecessionModel::Iau2006 => Precession::Iau2006,
+            PrecessionModel::Iau1976 => Precession::Iau1976,
+            PrecessionModel::Newcomb => Precession::Newcomb,
+        }
+    }
+
     /// The stable key.
     ///
     /// ```
@@ -307,6 +380,16 @@ mod tests {
     use crate::iau::vector::{c2s, pdp};
 
     use super::*;
+
+    #[test]
+    fn every_precession_the_settings_name_is_a_model_and_back() {
+        for knob in Precession::ALL {
+            let model = PrecessionModel::of_setting(*knob).unwrap_or_else(|e| panic!("{e}"));
+            assert_eq!(PrecessionModel::from_knob(*knob), Some(model));
+            assert_eq!(model.knob(), *knob);
+            assert_eq!(model.key(), knob.key());
+        }
+    }
 
     const ALL: [PrecessionModel; 4] = [
         PrecessionModel::Vondrak2011,

@@ -328,6 +328,47 @@ pub trait Longitudes: Send + Sync {
     /// assert!(longitudes.describe().starts_with("test-provider in "));
     /// ```
     fn describe(&self) -> String;
+
+    /// The crossings of a quantity over a lattice inside a window from the
+    /// provider's own search, when the source is a provider's sky whose
+    /// policy lets it answer one (the crossings override, boundary audit
+    /// rank 6); `None` for a source that has none, which the SDK's scan
+    /// answers instead.
+    ///
+    /// Only a tropical frame is asked: a sidereal quantity is shifted by
+    /// an ayanamsha on the basis a context names, which a crossing request
+    /// does not carry, so the scan answers it over the provider's places.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{JulianDay, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// # let longitudes = sky.longitudes(Frame::CANONICAL);
+    /// # let j2000 = JulianDay::<Ut1>::J2000;
+    ///
+    /// use teistro_astro::events::{Lattice, Longitudes, Quantity};
+    ///
+    /// // The test provider declares no search of its own.
+    /// let asked = longitudes.native_crossings(Quantity::Longitude(Body::Sun), Lattice::SIGNS, j2000, j2000.plus_days(31.0)?, 1e-7);
+    /// assert!(asked.is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    fn native_crossings(
+        &self,
+        quantity: Quantity,
+        lattice: Lattice,
+        from: JulianDay<Ut1>,
+        to: JulianDay<Ut1>,
+        tolerance_days: f64,
+    ) -> Option<Result<Vec<Event>, Error>> {
+        let _ = (quantity, lattice, from, to, tolerance_days);
+        None
+    }
 }
 
 impl<S: Longitudes + ?Sized> Longitudes for &S {
@@ -365,6 +406,17 @@ impl<S: Longitudes + ?Sized> Longitudes for &S {
 
     fn describe(&self) -> String {
         (**self).describe()
+    }
+
+    fn native_crossings(
+        &self,
+        quantity: Quantity,
+        lattice: Lattice,
+        from: JulianDay<Ut1>,
+        to: JulianDay<Ut1>,
+        tolerance_days: f64,
+    ) -> Option<Result<Vec<Event>, Error>> {
+        (**self).native_crossings(quantity, lattice, from, to, tolerance_days)
     }
 }
 
@@ -585,6 +637,44 @@ impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
             self.completion.capabilities().identity.name,
             self.frame
         )
+    }
+
+    fn native_crossings(
+        &self,
+        quantity: Quantity,
+        lattice: Lattice,
+        from: JulianDay<Ut1>,
+        to: JulianDay<Ut1>,
+        tolerance_days: f64,
+    ) -> Option<Result<Vec<Event>, Error>> {
+        if self.frame.zodiac != teistro_port_ephemeris::Zodiac::Tropical
+            || self
+                .completion
+                .choose(Overrides::CROSSINGS, "crossings")
+                .ok()?
+                != Implementation::Native
+        {
+            return None;
+        }
+        let request = CrossingRequest {
+            quantity,
+            lattice,
+            from,
+            to,
+            tolerance_days,
+            frame: self.frame,
+            observer: self.observer,
+            conventions: self.completion.conventions(),
+        };
+        match self.completion.provider().crossings(&request) {
+            Ok(events) => Some(Ok(events)),
+            Err(ProviderError::Unsupported { .. })
+                if self.completion.policy() == OverridePolicy::PreferNative =>
+            {
+                None
+            }
+            Err(error) => Some(Err(CompletionError::from(error).into())),
+        }
     }
 }
 
@@ -1525,6 +1615,7 @@ pub struct Station {
 ///     tolerance_days: 1e-7,
 ///     frame: Frame::CANONICAL,
 ///     observer: None,
+///     conventions: sky.conventions(),
 /// })?;
 /// assert_eq!(found.implementation, Implementation::Sdk);
 /// assert!(found.events.windows(2).all(|pair| pair[0].instant.get() < pair[1].instant.get()));
@@ -1563,6 +1654,7 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     ///     tolerance_days: 1e-7,
     ///     frame: Frame::CANONICAL,
     ///     observer: None,
+    ///     conventions: completion.conventions(),
     /// }).expect("the Sun's ingresses");
     /// assert_eq!(found.events.len(), 12);
     /// ```
@@ -1574,7 +1666,13 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
     pub fn crossings(&self, request: &CrossingRequest) -> Result<Crossings, Error> {
         let implementation = self.choose(Overrides::CROSSINGS, "crossings")?;
         if implementation == Implementation::Native {
-            match self.provider().crossings(request) {
+            // The completion's conventions are the question's, whatever the
+            // caller filled in.
+            let stated = CrossingRequest {
+                conventions: self.conventions(),
+                ..*request
+            };
+            match self.provider().crossings(&stated) {
                 Ok(events) => {
                     return Ok(Crossings {
                         events,
@@ -2068,6 +2166,25 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     ) -> Result<Vec<Vec<Event>>, Error> {
         self.check()?;
         check_window("search", from, to)?;
+        // A provider's own search answers when its sky offers one, lattice
+        // by lattice; the scan answers every lattice otherwise, so a
+        // search is never half the engine's and half the SDK's.
+        let mut native = Vec::with_capacity(self.lattices.len());
+        for lattice in &self.lattices {
+            match self.source.native_crossings(
+                self.quantity,
+                *lattice,
+                from,
+                to,
+                self.tolerance_days,
+            ) {
+                Some(found) => native.push(found?),
+                None => break,
+            }
+        }
+        if native.len() == self.lattices.len() {
+            return Ok(native);
+        }
         // The scan is compiled once, over any source, rather than once for
         // every source type a caller searches: it is the bulk of this
         // module and a wasm module pays for each copy, while the one
@@ -2556,6 +2673,132 @@ mod tests {
     use super::*;
 
     const J2000: JulianDay<Ut1> = JulianDay::literal(2_451_545.0);
+
+    /// How a provider declaring the crossings override answers a search.
+    #[derive(Clone, Copy, Debug, PartialEq)]
+    enum Searches {
+        /// The SDK's events, stamped as its own (no evaluations).
+        Answers,
+        /// `Unsupported`.
+        Refuses,
+        /// Another failure.
+        Fails,
+    }
+
+    /// The test sky with its own crossing search, counting the questions.
+    #[derive(Debug)]
+    struct Searcher {
+        searches: Searches,
+        asked: std::sync::atomic::AtomicUsize,
+    }
+
+    impl Searcher {
+        fn new(searches: Searches) -> Searcher {
+            Searcher { searches, asked: std::sync::atomic::AtomicUsize::new(0) }
+        }
+
+        fn asked(&self) -> usize {
+            self.asked.load(std::sync::atomic::Ordering::Relaxed)
+        }
+    }
+
+    impl EphemerisProvider for Searcher {
+        fn capabilities(&self) -> teistro_port_ephemeris::Capabilities {
+            teistro_port_ephemeris::Capabilities {
+                overrides: Overrides::CROSSINGS,
+                ..TestProvider.capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &teistro_port_ephemeris::PositionRequest<'_>,
+        ) -> Result<teistro_port_ephemeris::PositionColumns, ProviderError> {
+            TestProvider.positions(request)
+        }
+
+        fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
+            self.asked.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            match self.searches {
+                Searches::Refuses => Err(ProviderError::unsupported("crossings")),
+                Searches::Fails => Err(ProviderError::invalid("the search diverged")),
+                Searches::Answers => {
+                    let provider = TestProvider::new();
+                    let sdk = Completion::new(&provider, OverridePolicy::SdkOnly, request.conventions.delta_t);
+                    let found = sdk.crossings(request).map_err(|e| ProviderError::invalid(e.to_string()))?;
+                    Ok(found.events.into_iter().map(|event| Event { evaluations: 0, ..event }).collect())
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_search_is_the_engines_lattice_by_lattice_or_wholly_the_scans() {
+        let to = J2000.plus_days(60.0).unwrap();
+        let sun = Quantity::Longitude(Body::Sun);
+        let scanned = {
+            let provider = TestProvider::new();
+            let sdk = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+            let longitudes = sdk.longitudes(Frame::CANONICAL);
+            Search::each(&longitudes, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS]).between(J2000, to).unwrap()
+        };
+        assert!(scanned.iter().any(|event| event.evaluations > 0));
+        for (searches, policy, native) in [
+            (Searches::Answers, OverridePolicy::PreferNative, Some(true)),
+            (Searches::Answers, OverridePolicy::SdkOnly, Some(false)),
+            (Searches::Refuses, OverridePolicy::PreferNative, Some(false)),
+            (Searches::Refuses, OverridePolicy::NativeOnly, None),
+            (Searches::Fails, OverridePolicy::PreferNative, None),
+        ] {
+            let provider = Searcher::new(searches);
+            let completion = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
+            let longitudes = completion.longitudes(Frame::CANONICAL);
+            // Through a reference to the source, as a caller holding one does.
+            let source = &longitudes;
+            let found = Search::each(&source, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS]).between(J2000, to);
+            let direct = completion.crossings(&CrossingRequest {
+                quantity: sun,
+                lattice: Lattice::SIGNS,
+                from: J2000,
+                to,
+                tolerance_days: TOLERANCE_DAYS,
+                frame: Frame::CANONICAL,
+                observer: None,
+                conventions: completion.conventions(),
+            });
+            match native {
+                Some(native) => {
+                    let found = found.unwrap();
+                    assert_eq!(found.len(), scanned.len(), "{searches:?} {policy:?}");
+                    for (a, b) in found.iter().zip(&scanned) {
+                        assert!((a.instant.get() - b.instant.get()).abs() < 1e-6);
+                        assert_eq!(a.boundary_deg, b.boundary_deg);
+                    }
+                    assert_eq!(found.iter().all(|event| event.evaluations == 0), native, "{searches:?} {policy:?}");
+                    let direct = direct.unwrap();
+                    let by = if native { Implementation::Native } else { Implementation::Sdk };
+                    assert_eq!(direct.implementation, by, "{searches:?} {policy:?}");
+                }
+                None => {
+                    assert!(found.is_err(), "{searches:?} {policy:?}");
+                    assert!(direct.is_err(), "{searches:?} {policy:?}");
+                }
+            }
+            if policy == OverridePolicy::SdkOnly {
+                assert_eq!(provider.asked(), 0);
+            }
+        }
+        // A sidereal frame is never the engine's search: the scan answers it.
+        let provider = Searcher::new(Searches::Fails);
+        let completion = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        let sidereal = Frame {
+            zodiac: teistro_port_ephemeris::Zodiac::sidereal(teistro_core::catalogue::Ayanamsha::Raman),
+            ..Frame::CANONICAL
+        };
+        let longitudes = completion.longitudes(sidereal);
+        assert!(!Search::new(&longitudes, sun, Lattice::SIGNS).between(J2000, to).unwrap().is_empty());
+        assert_eq!(provider.asked(), 0);
+    }
 
     #[test]
     fn lines_between_lists_the_lattice_lines_a_curve_passes() {

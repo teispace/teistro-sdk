@@ -590,6 +590,13 @@ function row(columns, index) {
 const CUSTOM_SUNRISE = 0xff;
 
 /**
+ * The standard conventions, zeroed as they cross. A consumer's positions
+ * request carries them only to fill the port's struct: the context states
+ * its own settings' conventions over them.
+ */
+const STANDARD_CONVENTIONS = Object.freeze({ deltaTModel: 0, models: 0, deltaTSeconds: 0 });
+
+/**
  * One row of a `day` section -- a chart's or an almanac's, which share it --
  * read into the record both layers hand back: the civil date as
  * `calendar.convert` spells one, so it can be handed straight back to it,
@@ -9719,6 +9726,9 @@ export class Context {
           observer: request.observer,
           jds: instants(request.instants, 'instants'),
           bodies: request.bodies,
+          // The context's own settings govern: the SDK states its
+          // conventions over whatever the request carries.
+          conventions: STANDARD_CONVENTIONS,
         }),
       ),
     );

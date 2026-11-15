@@ -18,7 +18,7 @@ from typing import Callable, Optional, Sequence
 
 from teistro import Body, EphemerisProvider, PositionAnswer, PositionQuery, Teistro, TimeScale
 from teistro._blob import decode_positions
-from teistro._ffi import PositionRequest
+from teistro._ffi import Conventions, PositionRequest
 
 RUN_SECONDS = 0.05
 RUNS = 5
@@ -111,6 +111,7 @@ def main() -> None:
             jds=year,
             bodies=list(BODIES),
             observer=None,
+            conventions=Conventions(delta_t_model=0, models=0, delta_t_seconds=0.0),
         )
         raw = native.inner.positions(request)
         timed("decode", lambda: decode_positions(raw).jd_count)

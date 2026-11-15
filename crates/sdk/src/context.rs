@@ -7,8 +7,10 @@ use std::sync::{Arc, OnceLock};
 use serde::Serialize;
 use teistro_astro::DeltaTModel;
 use teistro_astro::completion::{Completed, Completion};
+use teistro_astro::precession::PrecessionModel;
 use teistro_core::envelope::{Envelope, Hash, PackStamp, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
+use teistro_core::quantity::{JulianDay, Ut1};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Diagnostic, Profile, Resolved, Settings, SettingsPatch, Severity, Siddhanta,
 };
@@ -20,7 +22,7 @@ use teistro_intl::locales::Locales;
 #[cfg(feature = "chart")]
 use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
-    Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
+    Astronomy, CachingProvider, EphemerisProvider, Frame, Models, PositionRequest, TimeScale,
 };
 use teistro_port_geo::GeoProvider;
 use teistro_time::{EmbeddedTzdb, TimeZoneProvider, ZonePack};
@@ -669,12 +671,33 @@ impl Context {
     /// A context with no ephemeris.
     pub fn completion(&self) -> Result<Completion<'_, dyn EphemerisProvider>, Error> {
         let provider = self.core.provider.as_deref().ok_or_else(no_ephemeris)?;
-        Ok(Completion::new(
+        Ok(self.completion_over(provider).deriving_speeds())
+    }
+
+    /// The precession every SDK step precesses by: `frame.precession`.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` for a model the SDK's steps do not implement.
+    pub(crate) fn precession(&self) -> Result<PrecessionModel, Error> {
+        PrecessionModel::of_setting(self.settings().frame.precession)
+    }
+
+    /// The frame completion over a provider under this context: its
+    /// override policy, Delta T and models (`frame.precession`,
+    /// `frame.nutation`, `frame.frame_bias`, `time.sidereal_time`). Every
+    /// area builds its completion here, so no area asks the provider under
+    /// models other than the context's.
+    pub(crate) fn completion_over<'p, P: EphemerisProvider + ?Sized>(
+        &self,
+        provider: &'p P,
+    ) -> Completion<'p, P> {
+        Completion::new(
             provider,
             self.settings().provider.overrides,
             self.core.delta_t,
         )
-        .deriving_speeds())
+        .with_models(Models::of(self.settings()))
     }
 
     /// The provenance [`Context::positions`] stamps its answer with: this
@@ -699,6 +722,12 @@ impl Context {
             completed.step_keys(),
         );
         provenance.content_hash = content_hash(&completed.columns);
+        // Delta T at the grid's first instant, when the grid is civil time.
+        if let (Ok(completion), TimeScale::Ut1, Some(first)) =
+            (self.completion(), request.scale, request.jds.first())
+        {
+            completion.stamp_time(&mut provenance.time, JulianDay::<Ut1>::try_new(*first).ok());
+        }
         provenance
     }
 
@@ -716,6 +745,7 @@ impl Context {
             provenance.provider = provider.capabilities().identity.stamp(frame, steps);
         }
         provenance.time.delta_t_model = self.core.delta_t.key().to_string();
+        provenance.time.models = Some(Models::of(self.settings()).key());
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance.time.tzdb_version = self.zones.borrow().provider.version().to_string();
         provenance.packs = self.pack_stamps(provenance.catalogue_version);
@@ -1158,7 +1188,6 @@ impl ContextBuilder {
         let opened = ephemeris::open(
             chain,
             settings.settings.frame.siddhanta,
-            delta_t,
             settings.settings.frame.ayanamsha_basis,
         )?;
         let mut settings = settings;

@@ -15,11 +15,12 @@
 use teistro_astro::{DeltaTModel, ut1_from_tt};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Latitude, Ut1};
+use teistro_core::settings::{Dip, HorizonModel};
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates,
-    Corrections, DiscPoint, DistanceUnit, EphemerisKind, EphemerisProvider, Equinox, Frame,
+    Angles, AnglesRequest, Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Conventions,
+    Coordinates, Corrections, DistanceUnit, EphemerisKind, EphemerisProvider, Equinox, Frame,
     Horizon, HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
-    PositionRequest, ProviderError, Refraction, Source, SpeedModel, TimeScale, Zodiac, validate,
+    PositionRequest, ProviderError, Source, SpeedModel, TimeScale, Zodiac, validate,
 };
 
 use crate::model::{SuryaSiddhanta, Trace};
@@ -190,14 +191,19 @@ impl SiddhantaProvider {
     };
 
     /// The UT1 instant of a request's instant: a TT instant through the
-    /// SDK's Delta T, since the text reckons in mean solar time.
-    pub(crate) fn ut1_of(jd: f64, scale: TimeScale) -> Result<JulianDay<Ut1>, ProviderError> {
+    /// Delta T model the request's conventions name, since the text
+    /// reckons in mean solar time.
+    pub(crate) fn ut1_of(
+        jd: f64,
+        scale: TimeScale,
+        model: DeltaTModel,
+    ) -> Result<JulianDay<Ut1>, ProviderError> {
         let invalid = |error: &dyn core::fmt::Display| ProviderError::invalid(error.to_string());
         match scale {
             TimeScale::Ut1 => JulianDay::try_new(jd).map_err(|e| invalid(&e)),
             TimeScale::Tt => {
                 let tt = JulianDay::try_new(jd).map_err(|e| invalid(&e))?;
-                ut1_from_tt(tt, DeltaTModel::TableThenModel)
+                ut1_from_tt(tt, model)
                     .map(|(ut1, _)| ut1)
                     .map_err(|e| invalid(&e))
             }
@@ -340,7 +346,7 @@ impl EphemerisProvider for SiddhantaProvider {
         let mut columns =
             PositionColumns::new(request.jds.len(), request.bodies.len(), request.frame);
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            let at = SiddhantaProvider::ut1_of(*jd, request.scale)?;
+            let at = SiddhantaProvider::ut1_of(*jd, request.scale, request.conventions.delta_t)?;
             for (body_index, body) in request.bodies.iter().enumerate() {
                 let cell = if capabilities.covers(at.get()) {
                     self.cell(*body, at, request.speeds)
@@ -353,7 +359,12 @@ impl EphemerisProvider for SiddhantaProvider {
         Ok(columns)
     }
 
-    fn obliquity(&self, _jd: f64, _scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        _jd: f64,
+        _scale: TimeScale,
+        _conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
         // The text's greatest declination (II.28), the arc of its sine on
         // the radius; the text has no nutation.
         let obliquity = self
@@ -374,6 +385,7 @@ impl EphemerisProvider for SiddhantaProvider {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
         // The text's precession (III.9 to 12) is its definition and the
         // text has no nutation, so its value is the same on either basis.
@@ -384,12 +396,12 @@ impl EphemerisProvider for SiddhantaProvider {
                 ayanamsha.key()
             )));
         }
-        let at = SiddhantaProvider::ut1_of(jd, scale)?;
+        let at = SiddhantaProvider::ut1_of(jd, scale, conventions.delta_t)?;
         Ok(self.model.ayanamsha_deg(at))
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
-        let at = SiddhantaProvider::ut1_of(request.jd, request.scale)?;
+        let at = SiddhantaProvider::ut1_of(request.jd, request.scale, request.conventions.delta_t)?;
         let lagna = self
             .model
             .lagna(at, request.place.latitude, request.place.longitude)
@@ -401,7 +413,7 @@ impl EphemerisProvider for SiddhantaProvider {
         // are carried by that ayanamsha: the chart's Lagna is then the
         // text's to the last bit.
         let ayanamsha = self.model.ayanamsha_deg(at);
-        let obliquity = self.obliquity(request.jd, request.scale)?;
+        let obliquity = self.obliquity(request.jd, request.scale, request.conventions)?;
         Ok(Angles {
             ascendant_deg: (lagna.sidereal_deg + ayanamsha).rem_euclid(360.0),
             midheaven_deg: (lagna.meridian_sidereal_deg + ayanamsha).rem_euclid(360.0),
@@ -419,12 +431,14 @@ impl EphemerisProvider for SiddhantaProvider {
                 request.body.key()
             )));
         }
-        let geometric = Horizon {
-            disc: DiscPoint::Centre,
-            refraction: Refraction::None,
-            altitude_deg: 0.0,
-        };
-        if request.horizon != geometric {
+        // The text's horizon is the geometric one: a model's formula, disc
+        // and radii do not reach an unrefracted centre, and the Sun has no
+        // latitude in the text, but a dip or a raised horizon does.
+        let model = request.horizon.model;
+        if request.horizon.with_model(HorizonModel::STANDARD) != Horizon::CENTRE_NO_REFRACTION
+            || model.dip != Dip::None
+            || model.altitude_deg != 0.0
+        {
             return Err(ProviderError::unsupported(format!(
                 "the {} convention; the text gives the centre on the geometric horizon",
                 request.horizon
@@ -545,7 +559,9 @@ mod tests {
     fn the_overrides_are_the_texts_obliquity_ayanamsha_and_sunrise() {
         let provider = SiddhantaProvider::text();
         let from = JulianDay::literal(2_460_413.5);
-        let obliquity = provider.obliquity(2_460_413.5, TimeScale::Ut1).unwrap();
+        let obliquity = provider
+            .obliquity(2_460_413.5, TimeScale::Ut1, Conventions::STANDARD)
+            .unwrap();
         assert!(
             (obliquity.true_deg - 24.0).abs() < 0.05,
             "{}",
@@ -558,6 +574,7 @@ mod tests {
                     TimeScale::Ut1,
                     Ayanamsha::Suryasiddhanta,
                     basis,
+                    Conventions::STANDARD,
                 )
                 .unwrap()
         };
@@ -573,7 +590,8 @@ mod tests {
                     2_460_413.5,
                     TimeScale::Ut1,
                     Ayanamsha::Lahiri,
-                    AyanamshaBasis::Mean
+                    AyanamshaBasis::Mean,
+                    Conventions::STANDARD,
                 )
                 .is_err()
         );
@@ -590,6 +608,7 @@ mod tests {
                 from,
                 window_days: 1.0,
                 horizon: Horizon::CENTRE_NO_REFRACTION,
+                conventions: Conventions::STANDARD,
             })
             .unwrap()
             .unwrap();
@@ -602,6 +621,7 @@ mod tests {
                 from: sunrise,
                 window_days: 1.0,
                 horizon: Horizon::CENTRE_NO_REFRACTION,
+                conventions: Conventions::STANDARD,
             })
             .unwrap()
             .unwrap();
@@ -613,6 +633,7 @@ mod tests {
             from,
             window_days: 1.0,
             horizon: Horizon::UPPER_LIMB_REFRACTION,
+            conventions: Conventions::STANDARD,
         });
         assert!(matches!(refracted, Err(ProviderError::Unsupported { .. })));
         let moon = provider.horizon_event(&HorizonRequest {
@@ -622,6 +643,7 @@ mod tests {
             from,
             window_days: 1.0,
             horizon: Horizon::CENTRE_NO_REFRACTION,
+            conventions: Conventions::STANDARD,
         });
         assert!(matches!(moon, Err(ProviderError::Unsupported { .. })));
         assert!(
@@ -698,6 +720,7 @@ mod tests {
             from: JulianDay::literal(from),
             window_days,
             horizon: Horizon::CENTRE_NO_REFRACTION,
+            conventions: Conventions::STANDARD,
         };
         // Kathmandu's sunrise is near 00:15 UT; a window opened at 02:24 UT
         // and closed five hours later holds none, and the next one ends it.

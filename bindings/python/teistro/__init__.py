@@ -101,6 +101,7 @@ from ._ffi import (
     Longitude,
     Observer,
     PanchangaRequest,
+    Conventions,
     PositionRequest,
     TeistroContext,
     TeistroProvider,
@@ -1076,6 +1077,12 @@ from .catalogue import (
     YearOffice,
     Yoni,
 )
+
+
+# The standard conventions, zeroed as they cross. A consumer's positions
+# request carries them only to fill the port's struct: the context states
+# its own settings' conventions over them.
+_STANDARD_CONVENTIONS = Conventions(delta_t_model=0, models=0, delta_t_seconds=0.0)
 
 __all__ = [
     "tithi_month_number",
@@ -6223,6 +6230,7 @@ class Context(RecordCalls):
             jds=list(instants),
             bodies=list(bodies),
             observer=observer,
+            conventions=_STANDARD_CONVENTIONS,
         )
         return PositionGrid(
             decode_positions(self._through_provider(lambda: self.inner.positions(request)))

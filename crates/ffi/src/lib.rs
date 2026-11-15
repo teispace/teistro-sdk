@@ -108,12 +108,19 @@ use teistro_core::Status;
 /// 2: the provider vtable's ayanamsha override takes the basis asked
 /// (vtable version 5, SR-100).
 ///
+/// 3: every question to a provider states its conventions (vtable
+/// version 6, the boundary audit): the Delta T model and the models of
+/// the precession, the nutation, the frame bias and the sidereal time on
+/// each request and on the obliquity, Delta T and ayanamsha overrides; the
+/// horizon model on a rise or set; Delta T answered with its uncertainty
+/// and band.
+///
 /// `api: constant`
 ///
 /// ```
-/// assert_eq!(teistro_ffi::TS_ABI_VERSION, 2);
+/// assert_eq!(teistro_ffi::TS_ABI_VERSION, 3);
 /// ```
-pub const TS_ABI_VERSION: u32 = 2;
+pub const TS_ABI_VERSION: u32 = 3;
 
 /// The SDK version this crate was built as, the one `ts_sdk_version`
 /// returns and the description records.
@@ -323,7 +330,7 @@ mod tests {
 
     #[test]
     fn the_static_answers_read_back() {
-        assert_eq!(ts_abi_version(), 2);
+        assert_eq!(ts_abi_version(), 3);
         // SAFETY: static NUL-terminated strings.
         let (version, profile, message, unknown) = unsafe {
             (

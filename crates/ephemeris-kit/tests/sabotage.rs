@@ -161,8 +161,16 @@ impl EphemerisProvider for Sabotaged {
         }
     }
 
-    fn delta_t_seconds(&self, _jd_ut1: f64) -> Result<f64, ProviderError> {
-        Ok(86_400.0)
+    fn delta_t(
+        &self,
+        _jd_ut1: f64,
+        _model: teistro_port_ephemeris::DeltaTModel,
+    ) -> Result<teistro_port_ephemeris::DeltaTEstimate, ProviderError> {
+        Ok(teistro_port_ephemeris::DeltaTEstimate {
+            seconds: 86_400.0,
+            sigma_seconds: None,
+            band: teistro_port_ephemeris::DeltaTBand::Unstated,
+        })
     }
 }
 

@@ -181,7 +181,7 @@ fn page() -> Result<String, String> {
             &completion,
             place(),
             criterion,
-            Horizon::from_convention(resolved.settings.day.sunrise),
+            Horizon::of(resolved.settings.day.sunrise, &resolved.settings),
             delta_t,
         )
     };

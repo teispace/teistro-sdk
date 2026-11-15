@@ -28,6 +28,17 @@ use teistro_port_ephemeris::{
 
 const J2000: f64 = 2_451_545.0;
 
+/// Days from J2000.0 in TT of a UT1 instant: the analytic test planets
+/// answer in TT, which is what the SDK asks a provider that owns no
+/// Delta T.
+fn days_tt(at: JulianDay<Ut1>) -> f64 {
+    teistro_astro::tt_of(at, DeltaTModel::TableThenModel)
+        .unwrap()
+        .0
+        .get()
+        - J2000
+}
+
 /// A body on an epicycle: `rate` degrees a day forward, carried round an
 /// `amplitude`-degree circle every `period` days, so its speed swings by
 /// `amplitude × 2π / period` either side of the mean and it turns back
@@ -141,7 +152,7 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
         assert_ne!(pair[0].kind, pair[1].kind);
     }
     for station in &found {
-        let speed = LOOPING.speed(station.instant.get() - J2000);
+        let speed = LOOPING.speed(days_tt(station.instant));
         assert!(speed.abs() < 1e-5, "{speed}");
         let (lon, _) = longitudes
             .longitude_and_speed(LOOPING.body, station.instant)
@@ -170,7 +181,7 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     assert!(most <= 4, "{most}");
     let mut falling = 0;
     for event in &crossings {
-        let lon = LOOPING.longitude(event.instant.get() - J2000);
+        let lon = LOOPING.longitude(days_tt(event.instant));
         assert!(
             // The Newton point from the nearer end, to the instant's last
             // bits (an ulp of a Julian day is 5e-10 days), where a
@@ -776,7 +787,7 @@ fn a_strided_scan_keeps_every_retrograde_recrossing() {
     assert_eq!(rising - falling, net, "{crossings:?}");
     assert!(falling >= 10, "only {falling} retrograde crossings");
     for event in &crossings {
-        let lon = saturn.longitude(event.instant.get() - J2000);
+        let lon = saturn.longitude(days_tt(event.instant));
         assert!(difference_deg(lon, event.boundary_deg).abs() < 1e-9);
     }
 }

@@ -40,8 +40,8 @@ use teistro_core::settings::{
 use teistro_core::time::{ClockReading, LocalClock, ZoneSource};
 use teistro_port_ephemeris::columns::{Cell, CellStatus};
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Frame, Overrides, PositionRequest,
-    ProviderError, TimeScale,
+    Angles, AnglesRequest, Astronomy, Body, Conventions, EphemerisProvider, Frame, Models,
+    Overrides, PositionRequest, ProviderError, TimeScale,
 };
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
@@ -1061,20 +1061,33 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             }),
             chart.zodiac.request,
             chart.steps.clone(),
+            Some(chart.instant),
         )
     }
 
     /// The stamp over an input, the frame the provider was asked in and
     /// the steps that answered: what a foundation and the grahas' places
     /// alone ([`Founder::longitudes`]) both say of themselves.
-    fn stamp(&self, input_hash: Hash, frame: Frame, steps: Vec<String>) -> Provenance {
+    ///
+    /// Delta T is stated at `at`, the first instant the answer was
+    /// computed at, when it has one.
+    fn stamp(
+        &self,
+        input_hash: Hash,
+        frame: Frame,
+        steps: Vec<String>,
+        at: Option<JulianDay<Utc>>,
+    ) -> Provenance {
         let mut provenance = self.resolved.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
             input_hash,
         );
         provenance.deviation = self.deviation(&steps);
         provenance.provider = self.provider.capabilities().identity.stamp(frame, steps);
-        provenance.time.delta_t_model = self.delta_t.key().to_string();
+        self.placing().stamp_time(
+            &mut provenance.time,
+            at.map(|at| JulianDay::<Ut1>::literal(at.get())),
+        );
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
     }
@@ -1286,7 +1299,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let Some(first) = zodiacs.first() else {
             return Ok(Envelope::new(
                 Vec::new(),
-                self.stamp(input_hash, request_of(self.settings()), Vec::new()),
+                self.stamp(input_hash, request_of(self.settings()), Vec::new(), None),
             ));
         };
         let bodies = bodies_of(self.settings());
@@ -1325,7 +1338,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         steps.push(format!("zodiac:{}", zodiac_from.key()));
         Ok(Envelope::new(
             rows,
-            self.stamp(input_hash, first.request, steps),
+            self.stamp(input_hash, first.request, steps, instants.first().copied()),
         ))
     }
 
@@ -1855,7 +1868,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             lilith: None,
         });
         let steps = vec![format!("crossings:{}", Implementation::Sdk.key())];
-        Envelope::new(value, self.stamp(input_hash, frame, steps))
+        Envelope::new(value, self.stamp(input_hash, frame, steps, Some(from)))
     }
 
     /// The stamp of a batch that founded nothing, which still says under
@@ -2283,6 +2296,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             jd: ut1.get(),
             scale: TimeScale::Ut1,
             place: *place,
+            conventions: self.conventions(),
         }) {
             Ok(angles) => Ok(Some(angles)),
             Err(ProviderError::Unsupported { .. })
@@ -2314,6 +2328,16 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             self.delta_t,
         )
         .with_precession(self.precession)
+        .with_models(Models::of(self.settings()))
+    }
+
+    /// The conventions every question to the provider is asked under:
+    /// the context's Delta T and models.
+    fn conventions(&self) -> Conventions {
+        Conventions {
+            delta_t: self.delta_t,
+            models: Models::of(self.settings()),
+        }
     }
 
     /// The chart's zodiac at an instant, its rate against the tropical

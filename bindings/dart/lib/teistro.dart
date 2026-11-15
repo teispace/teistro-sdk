@@ -520,6 +520,15 @@ final class Teistro {
 /// The profile [Teistro.nepalOfficial] opens: the Nepali committee's.
 const String nepalOfficialProfile = 'nepali-committee';
 
+/// The standard conventions, zeroed as they cross. A consumer's positions
+/// request carries them only to fill the port's struct: the context states
+/// its own settings' conventions over them.
+const Conventions _standardConventions = Conventions(
+  deltaTModel: 0,
+  models: 0,
+  deltaTSeconds: 0,
+);
+
 /// The chain [Teistro.nepalOfficial] opens: the Surya Siddhanta, then
 /// `modern` for the day's sunrise and the outer planets.
 List<EphemerisChoice> nepalOfficialChain([
@@ -4257,6 +4266,9 @@ final class Context {
             observer: observer,
             jds: instants,
             bodies: bodies,
+            // The context's own settings govern: the SDK states its
+            // conventions over whatever the request carries.
+            conventions: _standardConventions,
           ),
         ),
       ),

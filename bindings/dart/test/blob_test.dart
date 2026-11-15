@@ -168,9 +168,9 @@ void main() {
   });
 
   test('the constants come from the boundary, not from a literal', () {
-    expect(generatedAbiVersion, 2);
+    expect(generatedAbiVersion, 3);
     expect(contextTestProvider, 1);
-    expect(vtableAbiVersion, 5);
+    expect(vtableAbiVersion, 6);
   });
 
   test(

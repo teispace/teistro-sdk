@@ -184,7 +184,7 @@ fn sky_at(
     let disc = Disc::of(body, apparent.distance_au);
     Some((
         apparent.dec_deg,
-        centre_altitude_deg(horizon, &disc, place.altitude),
+        centre_altitude_deg(horizon, &disc, place.altitude).ok()?,
     ))
 }
 

@@ -276,7 +276,7 @@ impl AlmanacArea<'_> {
         }
         let settings = context.settings();
         let delta_t = context.delta_t();
-        let source = teistro_astro::Completion::new(provider, settings.provider.overrides, delta_t);
+        let source = context.completion_over(provider);
         let node = settings.frame.node;
         let view = sky_view(
             &source,

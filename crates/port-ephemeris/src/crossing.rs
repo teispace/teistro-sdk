@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 
 use crate::body::Body;
+use crate::conventions::Conventions;
 use crate::frame::Frame;
 
 /// What is searched for a boundary.
@@ -483,7 +484,7 @@ pub struct Event {
 ///
 /// ```
 /// use teistro_core::quantity::JulianDay;
-/// use teistro_port_ephemeris::{CrossingRequest, Frame, Lattice, Quantity};
+/// use teistro_port_ephemeris::{Conventions, CrossingRequest, Frame, Lattice, Quantity};
 ///
 /// // Every tithi boundary of January 2024.
 /// let request = CrossingRequest {
@@ -494,6 +495,7 @@ pub struct Event {
 ///     tolerance_days: 1e-6,
 ///     frame: Frame::CANONICAL,
 ///     observer: None,
+///     conventions: Conventions::STANDARD,
 /// };
 /// assert!(request.to.get() > request.from.get());
 /// ```
@@ -514,6 +516,9 @@ pub struct CrossingRequest {
     pub frame: Frame,
     /// The observer, for a topocentric frame.
     pub observer: Option<Place>,
+    /// The Delta T model the window's UT1 instants are carried to TT by,
+    /// and the models the quantity is computed under.
+    pub conventions: Conventions,
 }
 
 #[cfg(test)]

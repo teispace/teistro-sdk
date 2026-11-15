@@ -6,6 +6,12 @@ import 'dart:typed_data';
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
+/// How far each instant a provider was asked for stands after the UT1 one
+/// it was asked for, whole seconds: the Delta T the SDK carried it by.
+List<int> aheadBySeconds(List<double> asked, List<double> ut1) => [
+  for (var i = 0; i < asked.length; i++) ((asked[i] - ut1[i]) * 86400).round(),
+];
+
 final Teistro teistro = Teistro.open();
 
 /// A provider whose longitudes are a straight line per body, so a cell's
@@ -78,9 +84,12 @@ void main() {
     // One call for the whole grid: the port is a batch call, not a loop.
     expect(provider.calls, hasLength(1));
     final asked = provider.calls.single;
-    expect(asked.jds, [2451545.0, 2451546.0]);
+    // A provider that answers no Delta T of its own is asked on TT: the
+    // SDK carries each UT1 instant there under `time.delta_t`, about 64 s
+    // at J2000.0.
+    expect(asked.scale, TimeScale.tt);
+    expect(aheadBySeconds(asked.jds, [2451545.0, 2451546.0]), [64, 64]);
     expect(asked.bodies, [Body.sun, Body.moon]);
-    expect(asked.scale, TimeScale.ut1);
     expect(asked.speeds, isTrue);
     expect(
       asked.observer,
@@ -89,7 +98,7 @@ void main() {
     );
 
     expect(positions.cells.length, 4);
-    expect(positions.at(0, 0).longitude, closeTo(2451545 % 360, 1e-9));
+    expect(positions.at(0, 0).longitude, closeTo(asked.jds[0] % 360, 1e-9));
     expect(positions.at(0, 1).longitudeSpeed, 13.176);
     final stamp = positions.provenance.provider;
     expect(stamp.name, 'a-provider-in-dart');
@@ -215,7 +224,7 @@ void main() {
       ProviderCode.outOfRange,
     );
     expect(ProviderCode.byId(positions.at(1, 0).status), ProviderCode.ok);
-    expect(provider.calls.single.jds, [2451545.0]);
+    expect(aheadBySeconds(provider.calls.single.jds, [2451545.0]), [64]);
   });
 
   /// A provider written in Dart is a chain entry too, so the text takes

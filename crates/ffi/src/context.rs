@@ -1253,9 +1253,10 @@ pub unsafe extern "C" fn ts_context_profile(
 /// let mut json = TsString::empty();
 /// // SAFETY: a live context and a writable slot.
 /// assert_eq!(unsafe { ts_context_settings_json(&raw const ctx, &raw mut json) }, Status::Ok);
-/// // The resolved settings, every group written.
-/// let settings: serde_json::Value = serde_json::from_str(&owned(json))?;
-/// assert_eq!(settings, serde_json::to_value(ctx.settings())?);
+/// // The resolved settings, every group written: read back, the same
+/// // settings (a whole-valued number may be written without its `.0`).
+/// let settings: teistro_core::settings::Settings = serde_json::from_str(&owned(json))?;
+/// assert_eq!(&settings, ctx.settings());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

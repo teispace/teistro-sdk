@@ -77,6 +77,7 @@ use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::{Cell, PositionColumns};
+use crate::conventions::{Conventions, DeltaTEstimate, DeltaTModel};
 use crate::crossing::{CrossingRequest, Event};
 use crate::error::ProviderError;
 use crate::frame::Frame;
@@ -109,6 +110,7 @@ pub(crate) struct CellKey {
     frame: u32,
     speeds: bool,
     observer: Option<[u64; 3]>,
+    conventions: [u64; 2],
 }
 
 /// A cell and the frame it was answered in.
@@ -352,6 +354,7 @@ struct ShapeKey {
     frame: u32,
     speeds: bool,
     observer: Option<[u64; 3]>,
+    conventions: [u64; 2],
     bodies: Vec<u16>,
 }
 
@@ -362,6 +365,7 @@ impl ShapeKey {
             frame: request.frame.to_bits(),
             speeds: request.speeds,
             observer: request.observer.map(place_bits),
+            conventions: request.conventions.bits(),
             bodies: request.bodies.iter().map(|body| body.id()).collect(),
         }
     }
@@ -386,6 +390,7 @@ impl CellKey {
             frame: request.frame.to_bits(),
             speeds: request.speeds,
             observer: request.observer.map(place_bits),
+            conventions: request.conventions.bits(),
         }
     }
 }
@@ -511,12 +516,17 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
         ))
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.inner.obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        self.inner.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.inner.delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        self.inner.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -525,8 +535,10 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.inner
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -908,6 +920,8 @@ mod tests {
             },
             // And so is asking without speeds.
             base.without_speeds(),
+            // And under another Delta T model.
+            base.under(Conventions::STANDARD.with_delta_t(DeltaTModel::EspenakMeeus2006)),
         ];
         for request in variants {
             cached.positions(&request).unwrap();

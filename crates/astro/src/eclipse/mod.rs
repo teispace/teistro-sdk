@@ -62,7 +62,9 @@ mod local;
 
 pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
 
-/// The Sun's radius, km (IAU 2015 nominal).
+/// The Sun's radius, km (IAU 2015 nominal): the one radius the sunrise's
+/// limb reckons by too ([`crate::rise_set::SUN_RADIUS_KM`]). The eclipse
+/// module kept the older 696 000 km until the two were made one.
 ///
 /// ```
 /// use teistro_astro::eclipse::SUN_RADIUS_KM;
@@ -71,7 +73,7 @@ pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, Sola
 /// // The Sun is some 109 Earths across.
 /// assert!((SUN_RADIUS_KM / EARTH_EQUATORIAL_RADIUS_KM - 109.1).abs() < 0.1);
 /// ```
-pub const SUN_RADIUS_KM: f64 = 696_000.0;
+pub use crate::rise_set::SUN_RADIUS_KM;
 
 /// The Moon's radius in Earth radii for a lunar eclipse and the penumbra
 /// of a solar one (IAU 1982).

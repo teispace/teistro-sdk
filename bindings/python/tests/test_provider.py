@@ -27,10 +27,17 @@ from teistro import (
     ProviderCode,
     Status,
     TeistroError,
+    TimeScale,
     nepal_official,
 )
 from teistro._ffi import Longitude
 from tests.support import PROFILE, WithLibrary
+
+
+def ahead_by_seconds(asked: Sequence[float], ut1: Sequence[float]) -> list[int]:
+    """How far each instant a provider was asked for stands after the UT1
+    one it was asked for, whole seconds: the Delta T the SDK carried it by."""
+    return [round((jd - at) * 86400.0) for jd, at in zip(asked, ut1, strict=True)]
 
 
 class StraightLine(EphemerisProvider):
@@ -89,7 +96,14 @@ class AProviderWrittenInPython(WithLibrary):
         self.assertEqual(provider.asked, 1, "one call, not six")
         assert provider.last is not None
         self.assertEqual(provider.last.cell_count, 6)
-        self.assertEqual(list(provider.last.jds), [2451545.0, 2451546.0, 2451547.0])
+        # A provider that answers no Delta T of its own is asked on TT: the
+        # SDK carries each UT1 instant there under `time.delta_t`, about
+        # 64 s at J2000.0.
+        self.assertEqual(provider.last.scale, TimeScale.TT)
+        self.assertEqual(
+            ahead_by_seconds(provider.last.jds, [2451545.0, 2451546.0, 2451547.0]),
+            [64, 64, 64],
+        )
         self.assertEqual(list(provider.last.bodies), [Body.SUN, Body.MOON])
         self.assertEqual(sky.cell_count, 6)
         self.assertAlmostEqual(sky.at(0, 0).longitude, 0.0)
@@ -147,7 +161,7 @@ class AProviderWrittenInPython(WithLibrary):
         self.assertEqual(inside.distance, 1.0)
         self.assertEqual(provider.asked, 1)
         assert provider.last is not None
-        self.assertEqual(list(provider.last.jds), [2451545.5])
+        self.assertEqual(ahead_by_seconds(provider.last.jds, [2451545.5]), [64])
 
     def test_what_it_raises_reaches_the_caller(self) -> None:
         # This is the one that matters: a Python exception escaping a

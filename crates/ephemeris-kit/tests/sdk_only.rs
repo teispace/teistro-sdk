@@ -37,7 +37,12 @@ impl EphemerisProvider for Overriding {
         self.0.positions(request)
     }
 
-    fn obliquity(&self, _jd: f64, _scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        _jd: f64,
+        _scale: TimeScale,
+        _conventions: teistro_port_ephemeris::Conventions,
+    ) -> Result<Obliquity, ProviderError> {
         let arcsecond = 1.0 / 3600.0;
         Ok(Obliquity {
             mean_deg: 23.4 + arcsecond,
@@ -47,8 +52,16 @@ impl EphemerisProvider for Overriding {
         })
     }
 
-    fn delta_t_seconds(&self, _jd_ut1: f64) -> Result<f64, ProviderError> {
-        Ok(100.0)
+    fn delta_t(
+        &self,
+        _jd_ut1: f64,
+        _model: teistro_port_ephemeris::DeltaTModel,
+    ) -> Result<teistro_port_ephemeris::DeltaTEstimate, ProviderError> {
+        Ok(teistro_port_ephemeris::DeltaTEstimate {
+            seconds: 100.0,
+            sigma_seconds: None,
+            band: teistro_port_ephemeris::DeltaTBand::Unstated,
+        })
     }
 
     fn ayanamsha_deg(
@@ -57,6 +70,7 @@ impl EphemerisProvider for Overriding {
         _scale: TimeScale,
         _ayanamsha: Ayanamsha,
         _basis: teistro_core::settings::AyanamshaBasis,
+        _conventions: teistro_port_ephemeris::Conventions,
     ) -> Result<f64, ProviderError> {
         Ok(23.0)
     }
@@ -96,5 +110,12 @@ fn the_native_frame_alone_answers_nothing_else() {
     let capabilities = reduced.capabilities();
     assert_eq!(capabilities.overrides, Overrides::NONE);
     assert!(capabilities.ayanamshas.is_empty() && !capabilities.native);
-    assert!(reduced.delta_t_seconds(2_451_545.0).is_err());
+    assert!(
+        reduced
+            .delta_t(
+                2_451_545.0,
+                teistro_port_ephemeris::DeltaTModel::EspenakMeeus2006
+            )
+            .is_err()
+    );
 }

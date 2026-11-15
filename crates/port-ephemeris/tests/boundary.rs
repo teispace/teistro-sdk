@@ -15,14 +15,14 @@ use std::ffi::CString;
 
 use teistro_core::quantity::{JulianDay, Place};
 use teistro_port_ephemeris::vtable::{
-    CapabilitiesC, CrossingEventC, CrossingRequestC, HorizonRequestC, ObliquityC, ObserverC,
-    PositionColumnsC,
+    CapabilitiesC, ConventionsC, CrossingEventC, CrossingRequestC, DeltaTEstimateC,
+    HorizonRequestC, ObliquityC, ObserverC, PositionColumnsC,
 };
 use teistro_port_ephemeris::{
-    AYANAMSHA_BASIS_MEAN, Astronomy, Body, CrossingRequest, DistanceUnit, EphemerisProvider,
-    Exported, Frame, Horizon, HorizonEventKind, HorizonRequest, Lattice, Overrides,
-    PositionRequest, PositionRequestC, ProviderCode, ProviderError, ProviderVtable, Quantity,
-    SpeedModel, TestProvider, TimeScale, VTABLE_ABI_VERSION, VtableProvider,
+    AYANAMSHA_BASIS_MEAN, Astronomy, Body, Conventions, CrossingRequest, DeltaTModel, DistanceUnit,
+    EphemerisProvider, Exported, Frame, Horizon, HorizonEventKind, HorizonRequest, Lattice,
+    Overrides, PositionRequest, PositionRequestC, ProviderCode, ProviderError, ProviderVtable,
+    Quantity, SpeedModel, TestProvider, TimeScale, VTABLE_ABI_VERSION, VtableProvider,
 };
 
 const INVALID: i32 = ProviderCode::Invalid as i32;
@@ -157,7 +157,23 @@ unsafe extern "C" fn positions(
     script.code
 }
 
-unsafe extern "C" fn obliquity(user_data: *mut c_void, _: f64, _: u32, _: *mut ObliquityC) -> i32 {
+unsafe extern "C" fn obliquity(
+    user_data: *mut c_void,
+    _: f64,
+    _: u32,
+    _: *const ConventionsC,
+    _: *mut ObliquityC,
+) -> i32 {
+    // SAFETY: the table's contract.
+    unsafe { script(user_data) }.code
+}
+
+unsafe extern "C" fn delta_t(
+    user_data: *mut c_void,
+    _: f64,
+    _: *const ConventionsC,
+    _: *mut DeltaTEstimateC,
+) -> i32 {
     // SAFETY: the table's contract.
     unsafe { script(user_data) }.code
 }
@@ -173,6 +189,7 @@ unsafe extern "C" fn ayanamsha(
     _: u32,
     _: u16,
     _: u32,
+    _: *const ConventionsC,
     _: *mut f64,
 ) -> i32 {
     // SAFETY: the table's contract.
@@ -268,7 +285,7 @@ fn bare() -> ProviderVtable {
 fn full() -> ProviderVtable {
     ProviderVtable {
         obliquity: Some(obliquity),
-        delta_t: Some(seconds),
+        delta_t: Some(delta_t),
         ayanamsha: Some(ayanamsha),
         dut1: Some(seconds),
         horizon_event: Some(horizon),
@@ -291,6 +308,7 @@ fn horizon_request() -> HorizonRequest {
         from: JulianDay::try_new(2_451_545.0).unwrap(),
         window_days: 1.0,
         horizon: Horizon::UPPER_LIMB_REFRACTION,
+        conventions: Conventions::STANDARD,
     }
 }
 
@@ -306,6 +324,7 @@ fn crossing_request() -> CrossingRequest {
         tolerance_days: 1e-6,
         frame: Frame::CANONICAL,
         observer: Some(place()),
+        conventions: Conventions::STANDARD,
     }
 }
 
@@ -403,10 +422,17 @@ fn a_function_the_table_leaves_out_is_unsupported_by_name() {
         );
     };
     unsupported(
-        bound.obliquity(2_451_545.0, TimeScale::Tt).map(drop),
+        bound
+            .obliquity(2_451_545.0, TimeScale::Tt, Conventions::STANDARD)
+            .map(drop),
         "obliquity",
     );
-    unsupported(bound.delta_t_seconds(2_451_545.0).map(drop), "delta_t");
+    unsupported(
+        bound
+            .delta_t(2_451_545.0, DeltaTModel::TableThenModel)
+            .map(drop),
+        "delta_t",
+    );
     unsupported(
         bound
             .ayanamsha_deg(
@@ -414,6 +440,7 @@ fn a_function_the_table_leaves_out_is_unsupported_by_name() {
                 TimeScale::Tt,
                 teistro_core::catalogue::Ayanamsha::Lahiri,
                 teistro_core::settings::AyanamshaBasis::True,
+                Conventions::STANDARD,
             )
             .map(drop),
         "ayanamsha",
@@ -447,16 +474,20 @@ fn each_code_a_table_answers_is_the_error_it_names() {
         for error in [
             bound.positions(&request).map(drop).unwrap_err(),
             bound
-                .obliquity(2_451_545.0, TimeScale::Tt)
+                .obliquity(2_451_545.0, TimeScale::Tt, Conventions::STANDARD)
                 .map(drop)
                 .unwrap_err(),
-            bound.delta_t_seconds(2_451_545.0).map(drop).unwrap_err(),
+            bound
+                .delta_t(2_451_545.0, DeltaTModel::TableThenModel)
+                .map(drop)
+                .unwrap_err(),
             bound
                 .ayanamsha_deg(
                     2_451_545.0,
                     TimeScale::Tt,
                     teistro_core::catalogue::Ayanamsha::Raman,
                     teistro_core::settings::AyanamshaBasis::Mean,
+                    Conventions::STANDARD,
                 )
                 .map(drop)
                 .unwrap_err(),
@@ -634,6 +665,7 @@ fn request_c(jds: &[f64], bodies: &[u16]) -> PositionRequestC {
         jd_count: jds.len(),
         bodies: bodies.as_ptr(),
         body_count: bodies.len(),
+        conventions: ConventionsC::default(),
     }
 }
 
@@ -682,6 +714,14 @@ fn a_request_struct_is_decoded_or_refused_for_what_it_gets_wrong() {
             observer.decode(),
             Err(ProviderError::Invalid { .. })
         ));
+        let conventions = PositionRequestC {
+            conventions: ConventionsC {
+                delta_t_model: 99,
+                ..ConventionsC::default()
+            },
+            ..request_c(&jds, &bodies)
+        };
+        assert!(is_invalid(conventions.decode().map(drop), "conventions id"));
         let empty = PositionRequestC {
             jds: ptr::null(),
             bodies: ptr::null(),
@@ -700,7 +740,13 @@ fn each_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
     let user_data = provider.user_data();
     let null = ptr::null_mut::<c_void>();
     let mut seconds = 0.0_f64;
+    let mut estimate = DeltaTEstimateC::default();
     let mut obliquity = ObliquityC::default();
+    let stated = ConventionsC::default();
+    let unnamed = ConventionsC {
+        models: u32::MAX,
+        ..ConventionsC::default()
+    };
     // SAFETY: every pointer passed is null, a live local or the box's own
     // user data; the trampolines refuse each null before reading it.
     unsafe {
@@ -716,33 +762,99 @@ fn each_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
         );
 
         let obliquity_fn = vtable.obliquity.unwrap();
-        assert_eq!(obliquity_fn(null, 0.0, 0, &raw mut obliquity), INVALID);
         assert_eq!(
-            obliquity_fn(user_data, 2_451_545.0, 99, &raw mut obliquity),
+            obliquity_fn(null, 0.0, 0, &raw const stated, &raw mut obliquity),
             INVALID
         );
         assert_eq!(
             obliquity_fn(
                 user_data,
                 2_451_545.0,
+                99,
+                &raw const stated,
+                &raw mut obliquity
+            ),
+            INVALID
+        );
+        // Conventions are part of the question: none, or ones that name
+        // nothing, are refused before the provider is asked.
+        for conventions in [ptr::null(), &raw const unnamed] {
+            assert_eq!(
+                obliquity_fn(
+                    user_data,
+                    2_451_545.0,
+                    TimeScale::Tt.id(),
+                    conventions,
+                    &raw mut obliquity
+                ),
+                INVALID
+            );
+        }
+        assert_eq!(
+            obliquity_fn(
+                user_data,
+                2_451_545.0,
                 TimeScale::Tt.id(),
+                &raw const stated,
                 &raw mut obliquity
             ),
             ProviderCode::Unsupported as i32,
             "a well-formed call reaches the provider, which answers none"
         );
-        for f in [vtable.delta_t.unwrap(), vtable.dut1.unwrap()] {
-            assert_eq!(f(null, 0.0, &raw mut seconds), INVALID);
-            assert_eq!(f(user_data, 0.0, ptr::null_mut()), INVALID);
-            assert_eq!(
-                f(user_data, 2_451_545.0, &raw mut seconds),
-                ProviderCode::Unsupported as i32
-            );
-        }
+        let delta_t = vtable.delta_t.unwrap();
+        assert_eq!(
+            delta_t(null, 0.0, &raw const stated, &raw mut estimate),
+            INVALID
+        );
+        assert_eq!(
+            delta_t(user_data, 0.0, &raw const stated, ptr::null_mut()),
+            INVALID
+        );
+        assert_eq!(
+            delta_t(user_data, 0.0, ptr::null(), &raw mut estimate),
+            INVALID
+        );
+        assert_eq!(
+            delta_t(user_data, 2_451_545.0, &raw const stated, &raw mut estimate),
+            ProviderCode::Unsupported as i32
+        );
+        let dut1 = vtable.dut1.unwrap();
+        assert_eq!(dut1(null, 0.0, &raw mut seconds), INVALID);
+        assert_eq!(dut1(user_data, 0.0, ptr::null_mut()), INVALID);
+        assert_eq!(
+            dut1(user_data, 2_451_545.0, &raw mut seconds),
+            ProviderCode::Unsupported as i32
+        );
+        assert_eq!(
+            obliquity_fn(user_data, 0.0, 0, &raw const stated, ptr::null_mut()),
+            INVALID
+        );
+    }
+}
+
+#[test]
+fn the_ayanamsha_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
+    let (provider, vtable) = exported();
+    let user_data = provider.user_data();
+    let null = ptr::null_mut::<c_void>();
+    let mut seconds = 0.0_f64;
+    let stated = ConventionsC::default();
+    let unnamed = ConventionsC {
+        models: u32::MAX,
+        ..ConventionsC::default()
+    };
+    // SAFETY: every pointer passed is null, a live local or the box's own
+    // user data; the trampoline refuses each null before reading it.
+    unsafe {
         let ayanamsha = vtable.ayanamsha.unwrap();
-        assert_eq!(ayanamsha(null, 0.0, 0, 0, 0, &raw mut seconds), INVALID);
-        assert_eq!(ayanamsha(user_data, 0.0, 0, 0, 0, ptr::null_mut()), INVALID);
-        assert_eq!(obliquity_fn(user_data, 0.0, 0, ptr::null_mut()), INVALID);
+        assert_eq!(
+            ayanamsha(null, 0.0, 0, 0, 0, &raw const stated, &raw mut seconds),
+            INVALID
+        );
+        assert_eq!(
+            ayanamsha(user_data, 0.0, 0, 0, 0, &raw const stated, ptr::null_mut()),
+            INVALID
+        );
         assert_eq!(
             ayanamsha(
                 user_data,
@@ -750,17 +862,46 @@ fn each_trampoline_refuses_a_malformed_call_before_the_provider_is_asked() {
                 TimeScale::Tt.id(),
                 u16::MAX,
                 AYANAMSHA_BASIS_MEAN,
+                &raw const stated,
                 &raw mut seconds
             ),
             INVALID
         );
         assert_eq!(
-            ayanamsha(user_data, 0.0, 99, 0, 0, &raw mut seconds),
+            ayanamsha(
+                user_data,
+                0.0,
+                99,
+                0,
+                0,
+                &raw const stated,
+                &raw mut seconds
+            ),
+            INVALID
+        );
+        assert_eq!(
+            ayanamsha(
+                user_data,
+                0.0,
+                TimeScale::Tt.id(),
+                0,
+                AYANAMSHA_BASIS_MEAN,
+                &raw const unnamed,
+                &raw mut seconds
+            ),
             INVALID
         );
         // A basis number that names none is refused, never read as a default.
         assert_eq!(
-            ayanamsha(user_data, 0.0, TimeScale::Tt.id(), 0, 7, &raw mut seconds),
+            ayanamsha(
+                user_data,
+                0.0,
+                TimeScale::Tt.id(),
+                0,
+                7,
+                &raw const stated,
+                &raw mut seconds
+            ),
             INVALID
         );
     }
@@ -995,6 +1136,27 @@ fn the_horizon_trampoline_refuses_a_request_it_cannot_read() {
             from_jd_ut1: f64::NAN,
             ..good
         },
+        HorizonRequestC { dip: 99, ..good },
+        HorizonRequestC {
+            disc_size: 99,
+            ..good
+        },
+        HorizonRequestC { radii: 99, ..good },
+        HorizonRequestC {
+            refraction_formula: 99,
+            ..good
+        },
+        HorizonRequestC {
+            latitude: 99,
+            ..good
+        },
+        HorizonRequestC {
+            conventions: ConventionsC {
+                delta_t_model: 99,
+                ..ConventionsC::default()
+            },
+            ..good
+        },
     ];
     // SAFETY: every pointer is null or a live local.
     unsafe {
@@ -1056,16 +1218,13 @@ fn crossing_c() -> CrossingRequestC {
             latitude_deg: 27.7,
             altitude_m: 1_300.0,
         },
+        conventions: ConventionsC::default(),
     }
 }
 
-#[test]
-fn the_crossings_trampoline_refuses_a_request_it_cannot_read() {
-    let (provider, vtable) = exported();
-    let user_data = provider.user_data();
-    let crossings = vtable.crossings.unwrap();
-    let good = crossing_c();
-    let wrong = [
+/// A crossing request wrong in one field each, the trampoline's refusals.
+fn malformed_crossings(good: CrossingRequestC) -> [CrossingRequestC; 9] {
+    [
         CrossingRequestC {
             struct_size: 8,
             ..good
@@ -1098,7 +1257,23 @@ fn the_crossings_trampoline_refuses_a_request_it_cannot_read() {
             observer: NOWHERE,
             ..good
         },
-    ];
+        CrossingRequestC {
+            conventions: ConventionsC {
+                models: u32::MAX,
+                ..ConventionsC::default()
+            },
+            ..good
+        },
+    ]
+}
+
+#[test]
+fn the_crossings_trampoline_refuses_a_request_it_cannot_read() {
+    let (provider, vtable) = exported();
+    let user_data = provider.user_data();
+    let crossings = vtable.crossings.unwrap();
+    let good = crossing_c();
+    let wrong = malformed_crossings(good);
     let mut events = [CrossingEventC::default(); 4];
     let mut count = 0_u32;
     // SAFETY: every pointer is null or a live local; `events` holds four.

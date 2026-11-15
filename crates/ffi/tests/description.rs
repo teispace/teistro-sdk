@@ -43,12 +43,14 @@ fn every_struct_has_the_layout_the_description_computes() {
         TsCivilDateTime, TsCivilTime, TsDeltaT, TsTimeConversion, TsZoneResolution, TsZoneSpec,
     };
     use teistro_port_ephemeris::vtable::{
-        CapabilitiesC, CrossingEventC, CrossingRequestC, DataHashC, HorizonRequestC, ObliquityC,
-        ObserverC, PositionColumnsC, PositionRequestC, ProviderVtable,
+        CapabilitiesC, ConventionsC, CrossingEventC, CrossingRequestC, DataHashC, DeltaTEstimateC,
+        HorizonRequestC, ObliquityC, ObserverC, PositionColumnsC, PositionRequestC, ProviderVtable,
     };
 
     let api = api();
     let expected = rust_layouts!(
+        ConventionsC => ConventionsC,
+        DeltaTEstimateC => DeltaTEstimateC,
         ObserverC => ObserverC,
         PositionRequestC => PositionRequestC,
         PositionColumnsC => PositionColumnsC,

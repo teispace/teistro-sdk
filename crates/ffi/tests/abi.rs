@@ -96,7 +96,7 @@ fn blank_date() -> TsCalendarDate {
 
 #[test]
 fn a_context_with_every_default_reports_its_settings() {
-    assert_eq!(ts_abi_version(), 2);
+    assert_eq!(ts_abi_version(), 3);
     let ctx = Ctx::defaults();
     let mut profile = TsStr {
         data: ptr::null(),
@@ -462,6 +462,7 @@ fn a_loaded_engine_answers(
             jd_count: jds.len(),
             bodies: bodies.as_ptr(),
             body_count: bodies.len(),
+            conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
         },
         |r, s| r.struct_size = s,
     );
@@ -562,6 +563,7 @@ fn the_built_in_ephemeris_computes_a_real_sky_across_the_boundary() {
             jd_count: jds.len(),
             bodies: bodies.as_ptr(),
             body_count: bodies.len(),
+            conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
         },
         |r, s| r.struct_size = s,
     );
@@ -630,6 +632,7 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
             jd_count: jds.len(),
             bodies: bodies.as_ptr(),
             body_count: bodies.len(),
+            conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
         },
         |r, s| r.struct_size = s,
     );

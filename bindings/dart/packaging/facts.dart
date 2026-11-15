@@ -64,7 +64,7 @@ void consumerFacts(
     );
     final sun = positions.at(0, 0);
     say('the Sun at J2000 is at ${sun.longitude.toStringAsFixed(4)} degrees');
-    expect(sun.longitude.toStringAsFixed(4), '278.5768', 'the Sun');
+    expect(sun.longitude.toStringAsFixed(4), '278.5776', 'the Sun');
   } finally {
     context.dispose();
   }

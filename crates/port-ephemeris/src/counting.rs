@@ -30,6 +30,7 @@ use crate::body::TimeScale;
 use crate::caching::CellKey;
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::PositionColumns;
+use crate::conventions::{Conventions, DeltaTEstimate, DeltaTModel};
 use crate::crossing::{CrossingRequest, Event};
 use crate::error::ProviderError;
 use crate::horizon::HorizonRequest;
@@ -95,7 +96,7 @@ impl ProviderCalls {
     /// let request = PositionRequest::new(&[2_451_545.0, 2_451_546.0], TimeScale::Ut1, &[Body::Sun, Body::Moon], Frame::CANONICAL);
     /// counting.positions(&request)?;
     /// counting.positions(&request)?;
-    /// counting.delta_t_seconds(2_451_545.0).ok();
+    /// counting.delta_t(2_451_545.0, Default::default()).ok();
     /// // A refused override is still a call.
     /// assert_eq!(counting.calls().total(), 3);
     /// # Ok::<(), teistro_port_ephemeris::ProviderError>(())
@@ -356,14 +357,19 @@ impl<P: EphemerisProvider> EphemerisProvider for CountingProvider<P> {
         self.inner.positions(request)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
         self.obliquity.fetch_add(1, Ordering::Relaxed);
-        self.inner.obliquity(jd, scale)
+        self.inner.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
         self.delta_t.fetch_add(1, Ordering::Relaxed);
-        self.inner.delta_t_seconds(jd_ut1)
+        self.inner.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -372,9 +378,11 @@ impl<P: EphemerisProvider> EphemerisProvider for CountingProvider<P> {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
         self.ayanamsha.fetch_add(1, Ordering::Relaxed);
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.inner
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -453,7 +461,9 @@ mod tests {
         let jds = [2_451_545.0];
         let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
         counted.positions(&request).unwrap();
-        counted.obliquity(2_451_545.0, TimeScale::Ut1).ok();
+        counted
+            .obliquity(2_451_545.0, TimeScale::Ut1, Conventions::STANDARD)
+            .ok();
         assert_eq!(counted.calls().total(), 2);
         counted.reset();
         assert_eq!(counted.calls(), ProviderCalls::default());

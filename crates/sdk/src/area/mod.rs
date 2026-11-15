@@ -45,7 +45,7 @@ use teistro_calendar::{CalendarSystem, shipped};
 use teistro_core::catalogue::{Ayanamsha, Calendar};
 use teistro_core::error::Error;
 use teistro_core::settings::AyanamshaChoice;
-use teistro_port_ephemeris::EphemerisProvider;
+use teistro_port_ephemeris::{EphemerisProvider, Models};
 
 use crate::context::Context;
 
@@ -90,6 +90,9 @@ pub(crate) fn drik_sun<'p>(
     // adhika test counts, kept the mean basis under every profile,
     // `conformance-baseline`'s true one included (SR-100, C1751).
     .with_ayanamsha_basis(settings.frame.ayanamsha_basis)
+    // The engine's models and the horizon's (boundary audit, ranks 3
+    // and 4): the sunrise and the sankrantis under the context's own.
+    .under(Models::of(settings), settings.day.horizon)
 }
 
 #[cfg(feature = "schema")]

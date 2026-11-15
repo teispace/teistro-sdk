@@ -320,14 +320,23 @@ impl EphemerisProvider for Watched {
         Ok(answer)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: teistro_port_ephemeris::Conventions,
+    ) -> Result<Obliquity, ProviderError> {
         self.shared.step(1)?;
-        self.inner.obliquity(jd, scale)
+        self.inner.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
+    fn delta_t(
+        &self,
+        jd_ut1: f64,
+        model: teistro_port_ephemeris::DeltaTModel,
+    ) -> Result<teistro_port_ephemeris::DeltaTEstimate, ProviderError> {
         self.shared.step(1)?;
-        self.inner.delta_t_seconds(jd_ut1)
+        self.inner.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -336,9 +345,11 @@ impl EphemerisProvider for Watched {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: teistro_port_ephemeris::Conventions,
     ) -> Result<f64, ProviderError> {
         self.shared.step(1)?;
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.inner
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {

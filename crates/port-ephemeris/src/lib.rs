@@ -14,6 +14,8 @@
 //!   corrections) and its 32-bit packing;
 //! - [`columns`]: the columnar response with a status and a source per
 //!   cell;
+//! - [`conventions`]: the Delta T model and the precession, nutation,
+//!   frame-bias and sidereal-time models every question states;
 //! - [`capabilities`]: identity with content hashes, coverage, overrides
 //!   as a bit set, the obliquity record;
 //! - [`error`]: a whole-batch failure with its C code and its form as the
@@ -47,6 +49,7 @@ pub mod body;
 pub mod caching;
 pub mod capabilities;
 pub mod columns;
+pub mod conventions;
 pub mod counting;
 pub mod crossing;
 pub mod error;
@@ -69,6 +72,7 @@ pub use capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
 };
 pub use columns::{Cell, CellStatus, EphemerisKind, PositionColumns, Source};
+pub use conventions::{Conventions, DeltaTBand, DeltaTEstimate, DeltaTModel, Models};
 pub use counting::{CountingProvider, ProviderCalls};
 pub use crossing::{CrossingRequest, Direction, Event as CrossingEvent, Lattice, Quantity};
 pub use error::ProviderError;

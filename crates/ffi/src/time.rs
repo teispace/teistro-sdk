@@ -16,7 +16,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Longitude, Tt, Ut1, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_time::scale::{
-    tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc, utc_from_tt, utc_from_ut1,
+    tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc_under, utc_from_tt, utc_from_ut1_under,
 };
 use teistro_time::{
     Chosen, CivilDateTime, CivilTime, DstOutcome, Policy, Warning, ZoneEra, ZoneResolution,
@@ -251,6 +251,9 @@ pub enum TsDeltaTSource {
     LeapSeconds = 2,
     /// Supplied by the consumer.
     Custom = 3,
+    /// The ephemeris engine's, under the model asked, answered through the
+    /// port.
+    Provider = 4,
 }
 
 impl From<DeltaTSource> for TsDeltaTSource {
@@ -260,6 +263,7 @@ impl From<DeltaTSource> for TsDeltaTSource {
             DeltaTSource::Model => TsDeltaTSource::Model,
             DeltaTSource::LeapSeconds => TsDeltaTSource::LeapSeconds,
             DeltaTSource::Custom => TsDeltaTSource::Custom,
+            DeltaTSource::Provider => TsDeltaTSource::Provider,
         }
     }
 }
@@ -1042,7 +1046,11 @@ fn convert(jd: f64, from: TsScale, to: TsScale, ctx: &TsContext) -> Result<(f64,
             )
         }
         (TsScale::Utc, TsScale::Ut1) => {
-            let (ut1, basis) = ut1_from_utc(jd_in("jd")?.relabel::<Utc>());
+            let (ut1, basis) = ut1_from_utc_under(
+                jd_in("jd")?.relabel::<Utc>(),
+                ctx.settings().time.dut1,
+                ctx.provider(),
+            )?;
             (
                 ut1.get(),
                 Applied {
@@ -1053,7 +1061,8 @@ fn convert(jd: f64, from: TsScale, to: TsScale, ctx: &TsContext) -> Result<(f64,
             )
         }
         (TsScale::Ut1, TsScale::Utc) => {
-            let (utc, basis) = utc_from_ut1(jd_in("jd")?);
+            let (utc, basis) =
+                utc_from_ut1_under(jd_in("jd")?, ctx.settings().time.dut1, ctx.provider())?;
             (
                 utc.get(),
                 Applied {

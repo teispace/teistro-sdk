@@ -440,6 +440,13 @@ impl ApparentPositions for Fitted<'_> {
     fn describe(&self) -> String {
         self.source.describe()
     }
+
+    fn native_horizon_event(
+        &self,
+        request: &teistro_port_ephemeris::HorizonRequest,
+    ) -> Option<Result<Option<JulianDay<Ut1>>, Error>> {
+        self.source.native_horizon_event(request)
+    }
 }
 
 /// One instant's frame, which every body read at it shares.

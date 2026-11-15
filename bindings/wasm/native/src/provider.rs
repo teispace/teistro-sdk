@@ -20,6 +20,7 @@
 
 use serde::Deserialize;
 use teistro_port_ephemeris::host::{self, Answer, Bound, Declared, HostCallback, Unanswered};
+use teistro_port_ephemeris::vtable::ConventionsC;
 use teistro_port_ephemeris::{PositionRequest, ProviderVtable};
 use wasm_bindgen::{JsCast, JsValue};
 
@@ -129,6 +130,11 @@ fn asked(request: &PositionRequest<'_>) -> JsRequest {
             altitude_m: place.altitude.get(),
         }),
         jds: request.jds.to_vec(),
+        // SAFETY: `ConventionsC` is plain data with no pointers, so the
+        // generated reader reads nothing beyond the value it is lent.
+        conventions: unsafe {
+            crate::generated::Conventions::write(&ConventionsC::of(request.conventions))
+        },
         bodies: request
             .bodies
             .iter()

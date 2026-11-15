@@ -2,10 +2,8 @@
 //! for a day or a run of them.
 
 use serde::Serialize;
-use teistro_astro::Completion;
 use teistro_astro::day_sky::{DaySky, SkyStep, day_sky};
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
-use teistro_astro::precession::PrecessionModel;
 use teistro_astro::terrain::{HorizonProfile, VisibleDay, visible_day};
 use teistro_calendar::CalendarDate;
 #[cfg(feature = "muhurta")]
@@ -437,7 +435,7 @@ impl<'a> AlmanacArea<'a> {
             &model,
             calendar,
             self.clock.unwrap_or(&offset),
-            PrecessionModel::default(),
+            self.context.precession()?,
             self.context.delta_t(),
         ))
     }
@@ -871,8 +869,8 @@ impl<'a> AlmanacArea<'a> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
-        let source = Completion::new(provider, settings.provider.overrides, delta_t);
-        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let source = self.context.completion_over(provider);
+        let horizon = Horizon::of(settings.day.sunrise, settings);
         let visible = days
             .value
             .iter()
@@ -913,8 +911,8 @@ impl<'a> AlmanacArea<'a> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
-        let source = Completion::new(provider, settings.provider.overrides, delta_t);
-        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let source = self.context.completion_over(provider);
+        let horizon = Horizon::of(settings.day.sunrise, settings);
         let skies = days
             .value
             .iter()
@@ -968,7 +966,7 @@ impl<'a> AlmanacArea<'a> {
             &model,
             calendar,
             &offset,
-            PrecessionModel::default(),
+            self.context.precession()?,
             self.context.delta_t(),
         );
         for day in days.iter_mut() {
@@ -1118,8 +1116,8 @@ impl<'a> AlmanacArea<'a> {
         let end = local_midnight(&offset, calendar.fixed_of(to)?.plus_days(1))?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
-        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
-        let horizon = Horizon::from_convention(settings.panchanga.eclipse_horizon);
+        let sky = self.context.completion_over(provider);
+        let horizon = Horizon::of(settings.panchanga.eclipse_horizon, settings);
         let found = Eclipses::new(&sky, delta_t)
             .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
             .here_between(start.relabel(), end.relabel(), *place, &horizon)?;

@@ -14,25 +14,28 @@
 //! the first provider that returns a geometric J2000 frame.
 
 use core::fmt;
+use std::sync::OnceLock;
 use teistro_core::math;
 
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::Ayanamsha;
+use teistro_core::envelope::TimeStamp;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
-use teistro_core::settings::OverridePolicy;
+use teistro_core::settings::{FrameBias, Nutation, OverridePolicy, SiderealTime};
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, Cell, Centre, Coordinates, Corrections, DistanceUnit,
-    EphemerisProvider, Equinox, Frame, Obliquity, Overrides, PositionColumns, PositionRequest,
-    ProviderError, SpeedModel, TimeScale, Zodiac, ask_positions,
+    Astronomy, Body, Capabilities, Cell, Centre, Conventions, Coordinates, Corrections,
+    DeltaTEstimate, DistanceUnit, EphemerisProvider, Equinox, Frame, HorizonRequest, Models,
+    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, SpeedModel, TimeScale,
+    Zodiac, ask_positions,
 };
 
 use crate::ayanamsha::{self, Basis};
-use crate::delta_t::DeltaTModel;
+use crate::delta_t::{DeltaT, DeltaTModel};
 use crate::iau;
 use crate::precession::{self, PrecessionModel};
-use crate::scale::{tt_of, ut1_from_tt};
+use crate::scale::{tt_from_ut1, tt_of, ut1_from_tt};
 use crate::sky::{self, Apparent, ApparentPositions, Spherical};
 use crate::topocentric::Station;
 
@@ -186,7 +189,8 @@ impl Completed {
     ///
     /// let jds = [2_460_483.4];
     /// let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
-    /// assert_eq!(sky.positions(&request)?.step_keys(), ["positions:PASS_THROUGH"]);
+    /// // The provider owns no Delta T: the SDK carried the UT1 instant to TT.
+    /// assert_eq!(sky.positions(&request)?.step_keys(), ["positions:PASS_THROUGH", "delta-t:SDK"]);
     /// # Ok::<(), teistro_astro::completion::CompletionError>(())
     /// ```
     #[must_use]
@@ -297,8 +301,24 @@ impl From<CompletionError> for Error {
     }
 }
 
-/// The completion engine over one provider, one policy and one Delta T
-/// model (for the SDK's own obliquity, which is a function of TT).
+/// The completion engine over one provider, one policy and one set of
+/// conventions: the Delta T model a UT1 instant is carried to TT by, and
+/// the precession, nutation, frame bias and sidereal time every step is
+/// computed under (boundary audit, ranks 2 and 3).
+///
+/// The conventions are stated on every question the completion asks the
+/// provider, so an engine answers under them or refuses; the SDK's own
+/// steps implement Vondrák 2011, IAU 2006, IAU 1976 and Newcomb precession,
+/// IAU 2000B nutation, the IAU 2006 frame bias and the IERS 2010 sidereal
+/// time, and refuse any other model by the step's name rather than
+/// substitute their own.
+///
+/// **One owner of Delta T.** A UT1 instant is carried to TT by whoever
+/// the policy chooses for `DELTA_T`: a provider that declares it and
+/// implements the model asked answers in UT1 itself, and every other
+/// provider is asked in TT, converted by the SDK under the model — so a
+/// provider is never left to apply its own default. A classical astronomy
+/// reckons civil time and is asked in UT1 as given.
 ///
 /// ```
 /// use teistro_astro::{Completion, DeltaTModel, Implementation};
@@ -318,10 +338,13 @@ pub struct Completion<'p, P: EphemerisProvider + ?Sized> {
     provider: &'p P,
     capabilities: Capabilities,
     policy: OverridePolicy,
-    delta_t: DeltaTModel,
+    conventions: Conventions,
     precession: PrecessionModel,
     ayanamsha_basis: Basis,
     derived_speeds: bool,
+    /// Whether the provider implements the Delta T model asked, once it
+    /// has been asked.
+    native_delta_t: OnceLock<bool>,
 }
 
 impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
@@ -349,11 +372,53 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             provider,
             capabilities: provider.capabilities(),
             policy,
-            delta_t,
+            conventions: Conventions::STANDARD.with_delta_t(delta_t),
             precession: PrecessionModel::default(),
             ayanamsha_basis: Basis::True,
             derived_speeds: false,
+            native_delta_t: OnceLock::new(),
         }
+    }
+
+    /// The same completion under a context's models: the precession, the
+    /// nutation, the frame bias and the sidereal time, which every
+    /// question to the provider states and every SDK step either
+    /// implements or refuses.
+    ///
+    /// ```
+    /// use teistro_astro::{Completion, DeltaTModel};
+    /// use teistro_core::settings::{OverridePolicy, Precession};
+    /// use teistro_port_ephemeris::{Models, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let models = Models { precession: Precession::Iau2006, ..Models::STANDARD };
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel).with_models(models);
+    /// assert_eq!(sky.conventions().models, models);
+    /// assert_eq!(sky.precession(), teistro_astro::precession::PrecessionModel::Iau2006);
+    /// ```
+    #[must_use]
+    pub fn with_models(mut self, models: Models) -> Self {
+        self.conventions.models = models;
+        if let Some(model) = PrecessionModel::from_knob(models.precession) {
+            self.precession = model;
+        }
+        self
+    }
+
+    /// The conventions every question is asked under.
+    ///
+    /// ```
+    /// use teistro_astro::{Completion, DeltaTModel};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{Conventions, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::EspenakMeeus2006);
+    /// assert_eq!(sky.conventions(), Conventions::STANDARD.with_delta_t(DeltaTModel::EspenakMeeus2006));
+    /// ```
+    #[must_use]
+    pub const fn conventions(&self) -> Conventions {
+        self.conventions
     }
 
     /// Speeds that are **reported** rather than stepped by: through a
@@ -413,6 +478,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     #[must_use]
     pub const fn with_precession(mut self, model: PrecessionModel) -> Self {
         self.precession = model;
+        self.conventions.models.precession = model.knob();
         self
     }
 
@@ -505,8 +571,141 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         self.precession
     }
 
+    /// Who carries a UT1 instant to TT under the model asked: the
+    /// provider, when it declares Delta T, the policy lets it answer and
+    /// it implements the model; the SDK otherwise. Asked of the provider
+    /// once, at the first instant a question needs it.
+    ///
+    /// The SDK's conversion is the context's named model, not a routine
+    /// standing in for the provider's, so no policy refuses it: under
+    /// `native-only` a provider that declares no Delta T, or lacks the
+    /// model, is asked in TT as under any other policy.
+    ///
+    /// # Errors
+    ///
+    /// The provider's own failure at the instant under `native-only`.
+    fn delta_t_by(&self, jd_ut1: f64) -> Result<Implementation, CompletionError> {
+        if !self.capabilities.has(Overrides::DELTA_T) || self.policy == OverridePolicy::SdkOnly {
+            return Ok(Implementation::Sdk);
+        }
+        let answers = match self.native_delta_t.get() {
+            Some(answers) => *answers,
+            None => match self.provider.delta_t(jd_ut1, self.conventions.delta_t) {
+                Ok(estimate) => *self.native_delta_t.get_or_init(|| estimate.is_valid()),
+                Err(ProviderError::Unsupported { .. }) => {
+                    *self.native_delta_t.get_or_init(|| false)
+                }
+                // An instant the engine's model does not reach is not a
+                // model it lacks, so nothing is remembered.
+                Err(_) if self.policy != OverridePolicy::NativeOnly => false,
+                Err(error) => return Err(error.into()),
+            },
+        };
+        Ok(if answers {
+            Implementation::Native
+        } else {
+            Implementation::Sdk
+        })
+    }
+
+    /// Delta T at a UT1 instant from whoever owns it (the engine when it
+    /// declares `DELTA_T`, the policy chooses it and it implements the
+    /// model; else the SDK, `03-design/ephemeris-port-and-adapters.md`
+    /// §12.2), with its uncertainty and which implementation answered: what
+    /// a stamp records of the instant an answer was computed at.
+    ///
+    /// ```
+    /// use teistro_astro::{Completion, DeltaTModel, Implementation};
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{DeltaTBand, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// let (applied, by) = sky.delta_t_at(JulianDay::<Ut1>::literal(2_451_544.5))?;
+    /// // The SDK's: the provider declares none. Inside the IERS table, measured.
+    /// assert_eq!((by, applied.band()), (Implementation::Sdk, DeltaTBand::Measured));
+    /// assert!(applied.seconds > 63.0 && applied.seconds < 64.5);
+    /// # Ok::<(), teistro_astro::completion::CompletionError>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// The provider's refusal, a policy refusal, or a model that cannot
+    /// answer at the instant.
+    pub fn delta_t_at(
+        &self,
+        jd_ut1: JulianDay<Ut1>,
+    ) -> Result<(DeltaT, Implementation), CompletionError> {
+        let model = self.conventions.delta_t;
+        match self.delta_t_by(jd_ut1.get())? {
+            Implementation::Native => {
+                let estimate: DeltaTEstimate = self.provider.delta_t(jd_ut1.get(), model)?;
+                Ok((
+                    DeltaT::from_provider(model, estimate),
+                    Implementation::Native,
+                ))
+            }
+            _ => Ok((crate::delta_t::delta_t(jd_ut1, model)?, Implementation::Sdk)),
+        }
+    }
+
+    /// States in an answer's time stamp the conventions it was computed
+    /// under: the Delta T model and the models always, and Delta T's value,
+    /// uncertainty, band and owner at an instant of the answer when one is
+    /// given (the first birth, the first day's noon).
+    ///
+    /// ```
+    /// use teistro_astro::{Completion, DeltaTModel};
+    /// use teistro_core::envelope::TimeStamp;
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// let mut time = TimeStamp::default();
+    /// sky.stamp_time(&mut time, Some(JulianDay::<Ut1>::literal(2_451_544.5)));
+    /// assert_eq!(time.delta_t_model, "TABLE_THEN_MODEL");
+    /// assert_eq!(time.models.as_deref(), Some("VONDRAK_2011/IAU_2000B/IAU_2006/IERS_2010"));
+    /// assert_eq!((time.delta_t_by.as_deref(), time.delta_t_band.as_deref()), (Some("SDK"), Some("MEASURED")));
+    /// assert!(time.delta_t_seconds > 63.0 && time.delta_t_seconds < 64.5);
+    /// ```
+    pub fn stamp_time(&self, time: &mut TimeStamp, at: Option<JulianDay<Ut1>>) {
+        self.conventions
+            .delta_t
+            .key()
+            .clone_into(&mut time.delta_t_model);
+        time.models = Some(self.conventions.models.key());
+        // An instant the answer was computed at has a Delta T already: a
+        // refusal here would be the answer's own, which it did not meet.
+        if let Some(Ok((applied, by))) = at.map(|at| self.delta_t_at(at)) {
+            time.delta_t_seconds = applied.seconds;
+            time.uncertainty_seconds = applied.uncertainty_seconds;
+            time.delta_t_band = Some(applied.band().key().to_owned());
+            time.delta_t_by = Some(by.key().to_owned());
+        }
+    }
+
+    /// The TT instant of a UT1 one from Delta T's owner, stamping who.
+    fn tt_of_ut1(
+        &self,
+        ut1: JulianDay<Ut1>,
+        steps: &mut Vec<Step>,
+    ) -> Result<JulianDay<Tt>, CompletionError> {
+        let (applied, implementation) = self.delta_t_at(ut1)?;
+        push_once(
+            steps,
+            Step {
+                name: "delta-t",
+                implementation,
+            },
+        );
+        Ok(tt_from_ut1(ut1, &applied))
+    }
+
     /// The TT instant of a request's instant, converting from UT1 through
-    /// the Delta T model and stamping the step.
+    /// the Delta T model's owner and stamping the step.
     fn tt_at(
         &self,
         jd: f64,
@@ -515,18 +714,63 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     ) -> Result<JulianDay<Tt>, CompletionError> {
         match scale {
             TimeScale::Tt => Ok(JulianDay::try_new(jd).map_err(Error::from)?),
-            TimeScale::Ut1 => {
-                let (tt, _) = tt_of(JulianDay::try_new(jd).map_err(Error::from)?, self.delta_t)?;
-                push_once(
-                    steps,
-                    Step {
-                        name: "delta-t",
-                        implementation: Implementation::Sdk,
-                    },
-                );
-                Ok(tt)
-            }
+            TimeScale::Ut1 => self.tt_of_ut1(JulianDay::try_new(jd).map_err(Error::from)?, steps),
         }
+    }
+
+    /// The SDK's precession model for the one the conventions name, or
+    /// the step refused by name.
+    fn sdk_precession(&self) -> Result<PrecessionModel, CompletionError> {
+        if PrecessionModel::from_knob(self.conventions.models.precession).is_some() {
+            Ok(self.precession)
+        } else {
+            Err(CompletionError::Unsupported { step: "precession" })
+        }
+    }
+
+    /// Refuses an SDK step that would sum a nutation, a frame bias or a
+    /// sidereal time other than the ones it implements (IAU 2000B, IAU
+    /// 2006, IERS 2010): the step is named rather than answered under the
+    /// SDK's own model.
+    /// The SDK's own ayanamsha at `tt` on the context's basis, under the
+    /// models it computes (its precession, and IAU 2000B for the true
+    /// basis's nutation); another model is `Unsupported`.
+    fn sdk_ayanamsha_deg(
+        &self,
+        ayanamsha: Ayanamsha,
+        tt: JulianDay<Tt>,
+    ) -> Result<f64, CompletionError> {
+        if self.ayanamsha_basis == Basis::True {
+            self.sdk_models(true, false, false)?;
+        }
+        Ok(ayanamsha::value_deg(
+            &ayanamsha.into(),
+            tt,
+            self.ayanamsha_basis,
+            self.sdk_precession()?,
+            self.conventions.delta_t,
+        )?)
+    }
+
+    fn sdk_models(
+        &self,
+        nutation: bool,
+        frame_bias: bool,
+        sidereal_time: bool,
+    ) -> Result<(), CompletionError> {
+        let models = self.conventions.models;
+        if nutation && models.nutation != Nutation::Iau2000B {
+            return Err(CompletionError::Unsupported { step: "nutation" });
+        }
+        if frame_bias && models.frame_bias != FrameBias::Iau2006 {
+            return Err(CompletionError::Unsupported { step: "frame-bias" });
+        }
+        if sidereal_time && models.sidereal_time != SiderealTime::Iers2010 {
+            return Err(CompletionError::Unsupported {
+                step: "sidereal-time",
+            });
+        }
+        Ok(())
     }
 
     /// The UT1 and the TT instant of a request's instant, whichever it
@@ -538,26 +782,25 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         scale: TimeScale,
         steps: &mut Vec<Step>,
     ) -> Result<(JulianDay<Ut1>, JulianDay<Tt>), CompletionError> {
-        let (ut1, tt) = match scale {
+        match scale {
             TimeScale::Ut1 => {
                 let ut1 = JulianDay::try_new(jd).map_err(Error::from)?;
-                let (tt, _) = tt_of(ut1, self.delta_t)?;
-                (ut1, tt)
+                Ok((ut1, self.tt_of_ut1(ut1, steps)?))
             }
             TimeScale::Tt => {
+                // A TT instant's UT1 is the SDK's inversion of the model.
                 let tt = JulianDay::try_new(jd).map_err(Error::from)?;
-                let (ut1, _) = ut1_from_tt(tt, self.delta_t)?;
-                (ut1, tt)
+                let (ut1, _) = ut1_from_tt(tt, self.conventions.delta_t)?;
+                push_once(
+                    steps,
+                    Step {
+                        name: "delta-t",
+                        implementation: Implementation::Sdk,
+                    },
+                );
+                Ok((ut1, tt))
             }
-        };
-        push_once(
-            steps,
-            Step {
-                name: "delta-t",
-                implementation: Implementation::Sdk,
-            },
-        );
-        Ok((ut1, tt))
+        }
     }
 
     /// The provider's capabilities, as read at construction.
@@ -757,8 +1000,9 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     ) -> Result<(Obliquity, Implementation), CompletionError> {
         let implementation = self.choose(Overrides::OBLIQUITY, "obliquity")?;
         let value = if implementation == Implementation::Native {
-            self.provider.obliquity(jd, scale)?
+            self.provider.obliquity(jd, scale, self.conventions)?
         } else {
+            self.sdk_models(true, false, false)?;
             let tt = self.tt_at(jd, scale, steps)?;
             sky::obliquity(tt)
         };
@@ -773,10 +1017,61 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     }
 
     /// The provider's positions, asked as the port asks: validated, and
-    /// only for the instants it covers. Every call this completion makes
-    /// goes through here.
-    fn ask(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
-        ask_positions(self.provider, &self.capabilities, request)
+    /// only for the instants it covers, under the completion's
+    /// conventions. Every call this completion makes goes through here.
+    ///
+    /// A UT1 request reaches the provider in UT1 only when it owns Delta T
+    /// ([`Self::delta_t_by`]); otherwise its instants are carried to TT by
+    /// the SDK under the model and the provider is asked in TT, so no
+    /// provider applies a Delta T the context did not name. The rows are
+    /// the request's, in its order, whichever scale was asked.
+    fn ask(
+        &self,
+        request: &PositionRequest<'_>,
+        steps: &mut Vec<Step>,
+    ) -> Result<PositionColumns, CompletionError> {
+        let stated = request.under(self.conventions);
+        let first = stated.jds.first().copied();
+        let civil =
+            stated.scale == TimeScale::Ut1 && self.capabilities.astronomy == Astronomy::Classical;
+        match first {
+            Some(jd) if stated.scale == TimeScale::Ut1 && !civil => {
+                if self.delta_t_by(jd)? == Implementation::Native {
+                    push_once(
+                        steps,
+                        Step {
+                            name: "delta-t",
+                            implementation: Implementation::Native,
+                        },
+                    );
+                    return Ok(ask_positions(self.provider, &self.capabilities, &stated)?);
+                }
+                // One allocation whatever the grid: the column is sized
+                // before it is filled.
+                let mut tt = Vec::with_capacity(stated.jds.len());
+                for jd in stated.jds {
+                    let ut1 = JulianDay::<Ut1>::try_new(*jd).map_err(Error::from)?;
+                    tt.push(tt_of(ut1, self.conventions.delta_t)?.0.get());
+                }
+                push_once(
+                    steps,
+                    Step {
+                        name: "delta-t",
+                        implementation: Implementation::Sdk,
+                    },
+                );
+                Ok(ask_positions(
+                    self.provider,
+                    &self.capabilities,
+                    &PositionRequest {
+                        jds: &tt,
+                        scale: TimeScale::Tt,
+                        ..stated
+                    },
+                )?)
+            }
+            _ => Ok(ask_positions(self.provider, &self.capabilities, &stated)?),
+        }
     }
 
     /// Positions in the requested frame, completed from the provider's
@@ -827,14 +1122,12 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             });
         }
         if wanted == native {
-            let columns = self.ask(request)?;
-            return Ok(Completed {
-                columns,
-                steps: vec![Step {
-                    name: "positions",
-                    implementation: Implementation::PassThrough,
-                }],
-            });
+            let mut steps = vec![Step {
+                name: "positions",
+                implementation: Implementation::PassThrough,
+            }];
+            let columns = self.ask(request, &mut steps)?;
+            return Ok(Completed { columns, steps });
         }
         // A provider that can produce the frame natively answers itself;
         // one that refuses with `Unsupported` is asked for its native frame
@@ -878,18 +1171,16 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             return Ok(done);
         }
         if self.policy != OverridePolicy::SdkOnly && !shifted {
-            match self.ask(request) {
-                Ok(columns) => {
-                    return Ok(Completed {
-                        columns,
-                        steps: vec![Step {
-                            name: "positions",
-                            implementation: Implementation::Native,
-                        }],
-                    });
-                }
-                Err(ProviderError::Unsupported { .. }) => {}
-                Err(error) => return Err(error.into()),
+            let mut steps = vec![Step {
+                name: "positions",
+                implementation: Implementation::Native,
+            }];
+            match self.ask(request, &mut steps) {
+                Ok(columns) => return Ok(Completed { columns, steps }),
+                Err(CompletionError::Provider {
+                    error: ProviderError::Unsupported { .. },
+                }) => {}
+                Err(error) => return Err(error),
             }
         }
 
@@ -984,7 +1275,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             implementation: Implementation::Native,
         }];
         let native_request = request.in_frame(native);
-        let mut columns = self.ask(&native_request)?;
+        let mut columns = self.ask(&native_request, &mut steps)?;
         // The equinox before the centre, and before everything else.
         //
         // Every other step is a rotation or a shift within one epoch, and
@@ -1109,7 +1400,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 policy: self.policy,
             });
         }
-        let model = self.precession;
+        let model = self.sdk_precession()?;
         let epoch = JulianDay::<Tt>::literal(2_451_545.0);
         let from_obliquity = precession::mean_obliquity_deg(model, epoch);
         for (jd_index, jd) in request.jds.iter().enumerate() {
@@ -1200,6 +1491,9 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 policy: self.policy,
             });
         }
+        // The Earth's place is carried by the IAU 2006 bias-precession and
+        // the nutation summed is IAU 2000B.
+        self.sdk_models(wanted.nutation, true, false)?;
         for (jd_index, jd) in request.jds.iter().enumerate() {
             let tt = self.tt_at(*jd, request.scale, steps)?;
             let earth = sky::earth_at_fitted(tt);
@@ -1289,6 +1583,8 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         let Some(place) = request.observer else {
             return Err(CompletionError::Unsupported { step: "centre" });
         };
+        // The station turns with the IERS 2010 sidereal time.
+        self.sdk_models(false, false, true)?;
         for (jd_index, jd) in request.jds.iter().enumerate() {
             let (ut1, tt) = self.both_scales(*jd, request.scale, steps)?;
             let mut station = Station::at(place, ut1, tt);
@@ -1411,6 +1707,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                     request.scale,
                     ayanamsha,
                     self.ayanamsha_basis,
+                    self.conventions,
                 ) {
                     Ok(value) => return Ok(value),
                     Err(ProviderError::Unsupported { .. })
@@ -1430,13 +1727,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 }
             }
             let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
-            Ok(ayanamsha::value_deg(
-                &ayanamsha.into(),
-                tt,
-                self.ayanamsha_basis,
-                self.precession,
-                self.delta_t,
-            )?)
+            self.sdk_ayanamsha_deg(ayanamsha, tt)
         };
         for (jd_index, jd) in request.jds.iter().enumerate() {
             let shift = value(from_side, 0, *jd)? - value(to_side, 1, *jd)?;
@@ -1560,6 +1851,35 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
             self.capabilities.identity,
             self.policy.key()
         )
+    }
+
+    /// A modern engine's own rise and set search, under a policy that
+    /// lets it answer (boundary audit, rank 6). A classical astronomy's
+    /// sunrise is its definition and is asked where the text's day is
+    /// reckoned, not here; an engine that declines the request's horizon
+    /// under `prefer-native` hands it back to the SDK's solver.
+    fn native_horizon_event(
+        &self,
+        request: &HorizonRequest,
+    ) -> Option<Result<Option<JulianDay<Ut1>>, Error>> {
+        if self.capabilities.astronomy != Astronomy::Modern
+            || self.choose(Overrides::RISE_SET, "rise-set").ok()? != Implementation::Native
+        {
+            return None;
+        }
+        let request = HorizonRequest {
+            conventions: self.conventions,
+            ..*request
+        };
+        match self.provider.horizon_event(&request) {
+            Ok(found) => Some(Ok(found)),
+            Err(ProviderError::Unsupported { .. })
+                if self.policy == OverridePolicy::PreferNative =>
+            {
+                None
+            }
+            Err(error) => Some(Err(CompletionError::from(error).into())),
+        }
     }
 }
 
@@ -1957,6 +2277,32 @@ mod tests {
         Completion::new(&PROVIDER, policy, DeltaTModel::TableThenModel)
     }
 
+    /// UT1 instants carried to TT under the default model: what a
+    /// provider without the Delta T override is asked at.
+    fn tt(jds: &[f64]) -> Vec<f64> {
+        jds.iter()
+            .map(|jd| {
+                tt_of(JulianDay::literal(*jd), DeltaTModel::TableThenModel)
+                    .unwrap()
+                    .0
+                    .get()
+            })
+            .collect()
+    }
+
+    /// The test provider's answer to `request` asked as the completion
+    /// asks it: in TT, the SDK carrying the instants.
+    fn at_tt(request: &PositionRequest<'_>) -> PositionColumns {
+        let tt = tt(request.jds);
+        TestProvider
+            .positions(&PositionRequest {
+                jds: &tt,
+                scale: TimeScale::Tt,
+                ..*request
+            })
+            .unwrap()
+    }
+
     #[test]
     fn the_settings_read_back_and_each_error_names_its_step() {
         let completion = completion(OverridePolicy::SdkOnly)
@@ -1997,7 +2343,11 @@ mod tests {
             done.steps.first().map(|s| s.implementation),
             Some(Implementation::PassThrough)
         );
-        assert_eq!(done.step_keys(), vec!["positions:PASS_THROUGH"]);
+        // The provider owns no Delta T, so the SDK carried UT1 to TT.
+        assert_eq!(
+            done.step_keys(),
+            vec!["positions:PASS_THROUGH", "delta-t:SDK"]
+        );
         assert!(completion.describe().starts_with("test-provider"));
         assert_eq!(completion.policy(), OverridePolicy::PreferNative);
         assert_eq!(completion.capabilities().bodies.len(), 11);
@@ -2011,7 +2361,7 @@ mod tests {
         let canonical = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
         let equatorial =
             canonical.in_frame(Frame::CANONICAL.with_coordinates(Coordinates::Equatorial));
-        let native = completion.provider().positions(&canonical).unwrap();
+        let native = at_tt(&canonical);
         let done = completion.positions(&equatorial).unwrap();
         assert!(
             done.steps
@@ -2046,6 +2396,172 @@ mod tests {
             .unwrap();
         assert!((apparent.ra_deg - done.columns.at(0, 0).unwrap().lon).abs() < 1e-12);
         assert!((apparent.distance_au - 1.0).abs() < 1e-12);
+    }
+
+    /// How a provider that declares the Delta T override answers it.
+    #[derive(Clone, Copy, Debug, PartialEq)]
+    enum Bulletin {
+        /// The model asked, as the SDK reckons it, three seconds on.
+        Answers,
+        /// `Unsupported`: it lacks the model.
+        Refuses,
+        /// Another failure, at this instant only.
+        Fails,
+        /// A value that is not one.
+        NotANumber,
+    }
+
+    /// The test sky, declaring Delta T and counting how often it is asked.
+    #[derive(Debug)]
+    struct Owner {
+        bulletin: Bulletin,
+        asked: std::sync::atomic::AtomicUsize,
+    }
+
+    impl Owner {
+        fn new(bulletin: Bulletin) -> Owner {
+            Owner { bulletin, asked: std::sync::atomic::AtomicUsize::new(0) }
+        }
+
+        fn asked(&self) -> usize {
+            self.asked.load(std::sync::atomic::Ordering::Relaxed)
+        }
+    }
+
+    impl EphemerisProvider for Owner {
+        fn capabilities(&self) -> Capabilities {
+            Capabilities { overrides: Overrides::DELTA_T, ..TestProvider.capabilities() }
+        }
+
+        fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+            TestProvider.positions(request)
+        }
+
+        fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+            self.asked.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let mut estimate = crate::delta_t::delta_t(JulianDay::<Ut1>::literal(jd_ut1), model)
+                .map_err(|e| ProviderError::invalid(e.to_string()))?
+                .estimate();
+            match self.bulletin {
+                Bulletin::Answers => estimate.seconds += 3.0,
+                Bulletin::Refuses => return Err(ProviderError::unsupported("this model")),
+                Bulletin::Fails => return Err(ProviderError::invalid("no bulletin for the day")),
+                Bulletin::NotANumber => estimate.seconds = f64::NAN,
+            }
+            Ok(estimate)
+        }
+    }
+
+    /// The delta-t step a grid of UT1 positions was stamped with.
+    fn delta_t_step(completion: &Completion<'_, Owner>) -> Result<Implementation, CompletionError> {
+        let jds = [J2000_JD, J2000_JD + 1.0];
+        let done = completion.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL))?;
+        Ok(done
+            .steps
+            .iter()
+            .find(|step| step.name == "delta-t")
+            .map(|step| step.implementation)
+            .unwrap())
+    }
+
+    const J2000_JD: f64 = 2_451_545.0;
+
+    #[test]
+    fn delta_t_is_the_engines_only_when_it_answers_the_model_and_the_policy_lets_it() {
+        use Implementation::{Native, Sdk};
+        let j2000 = JulianDay::<Ut1>::literal(J2000_JD);
+        let sdk_seconds = crate::delta_t::delta_t(j2000, DeltaTModel::TableThenModel).unwrap().seconds;
+        for (bulletin, policy, owner) in [
+            (Bulletin::Answers, OverridePolicy::PreferNative, Some(Native)),
+            (Bulletin::Answers, OverridePolicy::NativeOnly, Some(Native)),
+            (Bulletin::Answers, OverridePolicy::SdkOnly, Some(Sdk)),
+            (Bulletin::Refuses, OverridePolicy::PreferNative, Some(Sdk)),
+            (Bulletin::Refuses, OverridePolicy::NativeOnly, Some(Sdk)),
+            (Bulletin::NotANumber, OverridePolicy::PreferNative, Some(Sdk)),
+            (Bulletin::Fails, OverridePolicy::PreferNative, Some(Sdk)),
+            // The engine's own failure at the instant, under `native-only`,
+            // is the answer's.
+            (Bulletin::Fails, OverridePolicy::NativeOnly, None),
+        ] {
+            let provider = Owner::new(bulletin);
+            let completion = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
+            let at = completion.delta_t_at(j2000);
+            let step = delta_t_step(&completion);
+            match owner {
+                Some(owner) => {
+                    let (value, by) = at.unwrap();
+                    assert_eq!(by, owner, "{bulletin:?} {policy:?}");
+                    assert_eq!(step.unwrap(), owner, "{bulletin:?} {policy:?}");
+                    let offset = if owner == Native { 3.0 } else { 0.0 };
+                    assert!((value.seconds - sdk_seconds - offset).abs() < 1e-9, "{bulletin:?} {policy:?}");
+                }
+                None => {
+                    assert!(matches!(at, Err(CompletionError::Provider { .. })), "{at:?}");
+                    assert!(step.is_err());
+                }
+            }
+            if policy == OverridePolicy::SdkOnly {
+                assert_eq!(provider.asked(), 0, "not asked under sdk-only");
+            }
+        }
+        // A model it lacks is learnt once; a failure at an instant is not
+        // a model it lacks, so it is asked again.
+        let refusing = Owner::new(Bulletin::Refuses);
+        let completion = Completion::new(&refusing, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        for _ in 0..3 {
+            completion.delta_t_at(j2000).unwrap();
+        }
+        assert_eq!(refusing.asked(), 1);
+        let failing = Owner::new(Bulletin::Fails);
+        let completion = Completion::new(&failing, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        for _ in 0..3 {
+            completion.delta_t_at(j2000).unwrap();
+        }
+        assert_eq!(failing.asked(), 3);
+        // A provider that declares nothing is never asked.
+        assert_eq!(completion(OverridePolicy::NativeOnly).delta_t_at(j2000).unwrap().1, Sdk);
+    }
+
+    #[test]
+    fn an_sdk_step_refuses_a_model_it_does_not_implement_by_name() {
+        let standard = completion(OverridePolicy::SdkOnly);
+        assert_eq!(standard.conventions(), Conventions::STANDARD);
+        assert!(standard.sdk_models(true, true, true).is_ok());
+        let under = |models: Models| completion(OverridePolicy::SdkOnly).with_models(models);
+        let base = Models::STANDARD;
+        for (models, refused) in [
+            (Models { nutation: Nutation::Iau2000A, ..base }, "nutation"),
+            (Models { frame_bias: FrameBias::Iau2000, ..base }, "frame-bias"),
+            (Models { sidereal_time: SiderealTime::Iau2006, ..base }, "sidereal-time"),
+        ] {
+            let error = under(models).sdk_models(true, true, true).unwrap_err();
+            assert!(matches!(error, CompletionError::Unsupported { step } if step == refused), "{error:?}");
+            // A step that does not sum the model is not refused by it.
+            assert!(under(models).sdk_models(false, false, false).is_ok());
+        }
+        // Through a question: the centre step turns the station with the
+        // sidereal time, so a topocentric sky under another is refused.
+        let jds = [J2000_JD];
+        let placed = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu());
+        let refused = under(Models { sidereal_time: SiderealTime::Iau2006, ..base }).positions(&placed);
+        assert!(matches!(refused, Err(CompletionError::Unsupported { step: "sidereal-time" })), "{refused:?}");
+    }
+
+    #[test]
+    fn a_tt_instant_seen_from_a_place_takes_its_ut1_from_the_sdks_inversion() {
+        let sky = completion(OverridePolicy::SdkOnly);
+        let jds = [J2000_JD];
+        let tt = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu());
+        let done = sky.positions(&tt).unwrap();
+        assert!(done.steps.iter().any(|step| step.name == "delta-t" && step.implementation == Implementation::Sdk));
+        // The same sky asked in UT1 at the instant the inversion found.
+        let (ut1, _) = ut1_from_tt(JulianDay::<Tt>::literal(J2000_JD), DeltaTModel::TableThenModel).unwrap();
+        let ut1_jds = [ut1.get()];
+        let again = sky
+            .positions(&PositionRequest::new(&ut1_jds, TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu()))
+            .unwrap();
+        let (a, b) = (done.columns.at(0, 0).unwrap(), again.columns.at(0, 0).unwrap());
+        assert!(difference_deg(a.lon, b.lon).abs() * 3600.0 < 1e-3, "{} {}", a.lon, b.lon);
     }
 
     /// A provider that answers whatever frame it is asked for, by
@@ -2172,7 +2688,7 @@ mod tests {
             DeltaTModel::TableThenModel,
         );
         let done = native.positions(&placed).unwrap();
-        assert_eq!(done.step_keys(), vec!["positions:NATIVE"]);
+        assert_eq!(done.step_keys(), vec!["positions:NATIVE", "delta-t:SDK"]);
         let sdk = Completion::new(
             &OBLIGING,
             OverridePolicy::SdkOnly,
@@ -2184,7 +2700,7 @@ mod tests {
         let plain = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
         assert_eq!(
             sdk.positions(&plain).unwrap().step_keys(),
-            vec!["positions:PASS_THROUGH"]
+            vec!["positions:PASS_THROUGH", "delta-t:SDK"]
         );
     }
 
@@ -2415,6 +2931,7 @@ mod tests {
             _scale: TimeScale,
             _ayanamsha: Ayanamsha,
             basis: Basis,
+            _conventions: Conventions,
         ) -> Result<f64, ProviderError> {
             match (basis, self.mean_only) {
                 (Basis::Mean, _) => Ok(24.0),
@@ -2450,9 +2967,7 @@ mod tests {
                 .with_ayanamsha_basis(basis)
                 .positions(&sidereal)
         };
-        let tropical = TestProvider
-            .positions(&sidereal.in_frame(Frame::CANONICAL))
-            .unwrap();
+        let tropical = at_tt(&sidereal.in_frame(Frame::CANONICAL));
         let shift = |done: &Completed| {
             difference_deg(
                 tropical.at(0, 0).unwrap().lon,
@@ -2562,6 +3077,7 @@ mod tests {
             _scale: TimeScale,
             _ayanamsha: Ayanamsha,
             basis: Basis,
+            _conventions: Conventions,
         ) -> Result<f64, ProviderError> {
             Ok(WholeSidereal::lahiri(jd, basis))
         }
@@ -2584,9 +3100,7 @@ mod tests {
             &bodies,
             Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
         );
-        let tropical = TestProvider
-            .positions(&sidereal.in_frame(Frame::CANONICAL))
-            .unwrap();
+        let tropical = at_tt(&sidereal.in_frame(Frame::CANONICAL));
         for basis in [Basis::True, Basis::Mean] {
             let done = Completion::new(
                 &ENGINE,

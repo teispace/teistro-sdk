@@ -1,6 +1,6 @@
 {
   "schema": "teistro-api/1",
-  "abi_version": 2,
+  "abi_version": 3,
   "sdk_version": "1.0.0-rc.4",
   "prefix": "ts_",
   "sources": [
@@ -45,9 +45,9 @@
   "constants": [
     {
       "name": "VTABLE_ABI_VERSION",
-      "doc": "The ABI version of the vtable layout.\n\n5: the ayanamsha override takes the basis asked (SR-100).",
+      "doc": "The ABI version of the vtable layout.\n\n5: the ayanamsha override takes the basis asked (SR-100).\n6: every question states its conventions (the Delta T model and the\nprecession, nutation, frame bias and sidereal time, `ConventionsC`),\nDelta T answers with its uncertainty (`DeltaTEstimateC`), and a\nhorizon request carries its model in full (boundary audit, ranks 2 to\n4).",
       "ty": "u32",
-      "value": 5,
+      "value": 6,
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
@@ -66,9 +66,9 @@
     },
     {
       "name": "TS_ABI_VERSION",
-      "doc": "The ABI version `ts_abi_version` returns; a binding refuses to load a\nlibrary whose version it was not generated for.\n\n2: the provider vtable's ayanamsha override takes the basis asked\n(vtable version 5, SR-100).",
+      "doc": "The ABI version `ts_abi_version` returns; a binding refuses to load a\nlibrary whose version it was not generated for.\n\n2: the provider vtable's ayanamsha override takes the basis asked\n(vtable version 5, SR-100).\n\n3: every question to a provider states its conventions (vtable\nversion 6, the boundary audit): the Delta T model and the models of\nthe precession, the nutation, the frame bias and the sidereal time on\neach request and on the obliquity, Delta T and ayanamsha overrides; the\nhorizon model on a rise or set; Delta T answered with its uncertainty\nand band.",
       "ty": "u32",
-      "value": 2,
+      "value": 3,
       "source": "crates/ffi/src/lib.rs"
     },
     {
@@ -10838,6 +10838,12 @@
           "value": 3,
           "doc": "Supplied by the consumer.",
           "key": "CUSTOM"
+        },
+        {
+          "name": "Provider",
+          "value": 4,
+          "doc": "The ephemeris engine's, under the model asked, answered through the\nport.",
+          "key": "PROVIDER"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -11279,7 +11285,7 @@
     },
     {
       "name": "ObliquityFn",
-      "doc": "The obliquity override: the mean and true obliquity and the nutation\nat an instant on a time scale (`TimeScale::id`).",
+      "doc": "The obliquity override: the mean and true obliquity and the nutation\nat an instant on a time scale (`TimeScale::id`) under the conventions\nasked; a nutation model the provider does not implement is\n`UNSUPPORTED`.",
       "params": [
         {
           "name": "user_data",
@@ -11312,6 +11318,19 @@
           "meta": {}
         },
         {
+          "name": "conventions",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "ConventionsC"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
           "name": "out",
           "ty": {
             "kind": "pointer",
@@ -11333,7 +11352,7 @@
     },
     {
       "name": "DeltaTFn",
-      "doc": "The Delta T override: TT less UT1 in seconds at a UT1 instant.",
+      "doc": "The Delta T override: TT less UT1 at a UT1 instant under the model the\nconventions name (their models are not read), with its uncertainty; a\nmodel the provider does not implement is `UNSUPPORTED`, never its own\ndefault's value.",
       "params": [
         {
           "name": "user_data",
@@ -11357,16 +11376,29 @@
           "meta": {}
         },
         {
-          "name": "out_seconds",
+          "name": "conventions",
           "ty": {
             "kind": "pointer",
             "to": {
-              "kind": "scalar",
-              "scalar": "f64"
+              "kind": "struct",
+              "name": "ConventionsC"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "out",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "DeltaTEstimateC"
             },
             "mutable": true
           },
-          "role": "scalar_out",
+          "role": "struct_out",
           "meta": {}
         }
       ],
@@ -11426,6 +11458,19 @@
             "scalar": "u32"
           },
           "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "conventions",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "ConventionsC"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
           "meta": {}
         },
         {
@@ -11767,6 +11812,132 @@
   ],
   "structs": [
     {
+      "name": "ConventionsC",
+      "doc": "The conventions a question is asked under, as they cross: the Delta T\nmodel by id (`DeltaTModel::id`) with a custom model's seconds, and the\nfour models packed one byte each (`Models::to_bits`: precession,\nnutation, frame bias, sidereal time, each its index among the knob's\nmembers).",
+      "role": "object",
+      "fields": [
+        {
+          "name": "delta_t_model",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The Delta T model: 0 the SDK's table then Morrison and Stephenson,\n1 Espenak and Meeus 2006, 2 Stephenson, Morrison and Hohenkerk\n2016, 3 a custom value.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "reserved",
+          "ty": {
+            "kind": "array",
+            "of": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "len": 3
+          },
+          "doc": "Reserved, zero.",
+          "meta": {}
+        },
+        {
+          "name": "models",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "The precession, nutation, frame bias and sidereal time, one byte\neach from the low byte.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "delta_t_seconds",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "A custom model's Delta T, seconds; else zero.",
+          "meta": {
+            "unit": "s",
+            "range": "[-1000000,1000000]",
+            "example": "69.2"
+          }
+        }
+      ],
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
+      "name": "DeltaTEstimateC",
+      "doc": "Delta T as it crosses: the value, its one-sigma uncertainty when the\nmodel states one, and the band it comes from (`DeltaTBand::id`).",
+      "role": "object",
+      "fields": [
+        {
+          "name": "seconds",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "TT less UT1, seconds.",
+          "meta": {
+            "unit": "s",
+            "range": "[-1000000,1000000]",
+            "example": "69.2"
+          }
+        },
+        {
+          "name": "sigma_seconds",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The one-sigma uncertainty, seconds; read when `has_sigma` is set.",
+          "meta": {
+            "unit": "s",
+            "range": "[0,1000000]",
+            "example": "0.1",
+            "present_if": "has_sigma"
+          }
+        },
+        {
+          "name": "has_sigma",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "Whether `sigma_seconds` is stated.",
+          "meta": {
+            "flag": true
+          }
+        },
+        {
+          "name": "band",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The band: 0 unstated, 1 measured, 2 Morrison and Stephenson 2004,\n3 Stephenson, Morrison and Hohenkerk 2016.",
+          "meta": {
+            "example": "1"
+          }
+        },
+        {
+          "name": "reserved",
+          "ty": {
+            "kind": "array",
+            "of": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "len": 6
+          },
+          "doc": "Reserved, zero.",
+          "meta": {}
+        }
+      ],
+      "source": "crates/port-ephemeris/src/vtable.rs"
+    },
+    {
       "name": "ObserverC",
       "doc": "A C observer: degrees and metres, validated into a `Place` on the\nway in.",
       "role": "object",
@@ -11948,6 +12119,15 @@
             "scalar": "usize"
           },
           "doc": "How many bodies.",
+          "meta": {}
+        },
+        {
+          "name": "conventions",
+          "ty": {
+            "kind": "struct",
+            "name": "ConventionsC"
+          },
+          "doc": "The conventions the positions are computed under. Appended in\nABI 6.",
           "meta": {}
         }
       ],
@@ -12223,6 +12403,61 @@
           "meta": {}
         },
         {
+          "name": "refraction_formula",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The formula a named air refracts through: 0 Bennett, 1\nSaemundsson, 2 Sinclair. ABI 6, from the reserved bytes.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "disc_size",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The disc's size: 0 actual, 1 at the mean distance, 2 fixed at\n`semidiameter_arcmin`. ABI 6.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "radii",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The radii: 0 IAU 2015, 1 `sun_radius_km` and `moon_radius_km`.\nABI 6.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "latitude",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The rising body's latitude: 0 its own, 1 zero. ABI 6.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
+          "name": "dip",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "doc": "The dip: 0 none, 1 geometric, 2 refracted. ABI 6.",
+          "meta": {
+            "example": "0"
+          }
+        },
+        {
           "name": "reserved",
           "ty": {
             "kind": "array",
@@ -12230,7 +12465,7 @@
               "kind": "scalar",
               "scalar": "u8"
             },
-            "len": 7
+            "len": 2
           },
           "doc": "Reserved, zero.",
           "meta": {}
@@ -12307,6 +12542,67 @@
             "range": "[-90,60]",
             "example": "15"
           }
+        },
+        {
+          "name": "semidiameter_arcmin",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "A fixed disc's semidiameter, arcminutes; else zero. ABI 6.",
+          "meta": {
+            "unit": "arcmin",
+            "range": "[0,60]",
+            "example": "16"
+          }
+        },
+        {
+          "name": "sun_radius_km",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The Sun's radius under custom radii, kilometres; else zero. ABI 6.",
+          "meta": {
+            "unit": "km",
+            "range": "[0,1000000]",
+            "example": "695700"
+          }
+        },
+        {
+          "name": "moon_radius_km",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The Moon's radius under custom radii, kilometres; else zero. ABI 6.",
+          "meta": {
+            "unit": "km",
+            "range": "[0,10000]",
+            "example": "1737.4"
+          }
+        },
+        {
+          "name": "horizon_altitude_deg",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The apparent altitude of the horizon itself, degrees: raised\nabove the ideal one when positive. ABI 6.",
+          "meta": {
+            "unit": "deg",
+            "range": "[-4,20]",
+            "example": "0"
+          }
+        },
+        {
+          "name": "conventions",
+          "ty": {
+            "kind": "struct",
+            "name": "ConventionsC"
+          },
+          "doc": "The conventions the body's place is computed under. ABI 6.",
+          "meta": {}
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -12477,6 +12773,15 @@
             "name": "ObserverC"
           },
           "doc": "The observer, read when `has_observer` is set.",
+          "meta": {}
+        },
+        {
+          "name": "conventions",
+          "ty": {
+            "kind": "struct",
+            "name": "ConventionsC"
+          },
+          "doc": "The conventions the quantity is computed under. Appended in ABI 6.",
           "meta": {}
         }
       ],
@@ -30323,6 +30628,24 @@
             "null": true
           },
           {
+            "name": "delta_t_band",
+            "doc": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an instant of the answer.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
+          },
+          {
+            "name": "delta_t_by",
+            "doc": "Who gave Delta T: `SDK` from its own model, `NATIVE` from the ephemeris engine that owns the model asked.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
+          },
+          {
             "name": "delta_t_model",
             "doc": "The Delta T model's key.",
             "ty": {
@@ -30345,6 +30668,15 @@
               "kind": "TEXT"
             },
             "nullable": false
+          },
+          {
+            "name": "models",
+            "doc": "The models the answer's positions were asked under, as `precession/nutation/frame bias/sidereal time` (`VONDRAK_2011/IAU_2000B/IAU_2006/IERS_2010` by default).",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
           },
           {
             "name": "time_basis_applied",

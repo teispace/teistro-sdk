@@ -14,9 +14,9 @@ use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{AyanamshaBasis, OverridePolicy, SunriseConvention};
+use teistro_core::settings::{AyanamshaBasis, HorizonModel, OverridePolicy, SunriseConvention};
 use teistro_port_ephemeris::{
-    Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Overrides,
+    Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Models, Overrides,
     PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
@@ -125,6 +125,32 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
         self
     }
 
+    /// The model under a context's conventions: the engine's models
+    /// (`frame.precession`, `frame.nutation`, `frame.frame_bias`,
+    /// `time.sidereal_time`) its positions are asked under, and the
+    /// horizon model (`day.horizon`) its sunrise is reckoned by.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::DrikSun;
+    /// use teistro_core::catalogue::Ayanamsha;
+    /// use teistro_core::settings::{Dip, HorizonModel, OverridePolicy, Precession, Sunrise};
+    /// use teistro_port_ephemeris::{Models, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let models = Models { precession: Precession::Iau2006, ..Models::STANDARD };
+    /// let dipped = HorizonModel { dip: Dip::Geometric, ..HorizonModel::STANDARD };
+    /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::UpperLimbRefraction.into(), OverridePolicy::SdkOnly, DeltaTModel::TableThenModel)
+    ///     .under(models, dipped);
+    /// assert_eq!(drik.completion().conventions().models, models);
+    /// ```
+    #[must_use]
+    pub fn under(mut self, models: Models, horizon: HorizonModel) -> DrikSun<'p, P> {
+        self.completion = self.completion.with_models(models);
+        self.horizon = self.horizon.with_model(horizon);
+        self
+    }
+
     /// The frame completion the model reads positions through.
     ///
     /// ```
@@ -210,6 +236,7 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
                 from,
                 window_days: 1.0,
                 horizon: self.horizon,
+                conventions: self.completion.conventions(),
             }) {
             Ok(found) => Ok(found),
             Err(ProviderError::Unsupported { .. }) if !native_only => {
@@ -374,6 +401,7 @@ mod tests {
             _scale: TimeScale,
             _ayanamsha: Ayanamsha,
             _basis: teistro_core::settings::AyanamshaBasis,
+            _conventions: teistro_port_ephemeris::Conventions,
         ) -> Result<f64, ProviderError> {
             Ok(24.0)
         }

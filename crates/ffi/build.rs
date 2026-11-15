@@ -64,7 +64,7 @@ fn build_info(out: &Path, identity: Option<(String, bool)>) {
         "{{\"sdk\":\"{sdk}\",\"abi\":{abi},\"catalogue\":{catalogue},\"commit\":\"{commit}\",\"dirty\":{dirty},\"profile\":\"{profile}\",\"target\":\"{target}\",\"debug_assertions\":{debug},\"optimised\":{optimised},\"sanitizer\":\"{sanitizer}\",\"rustc\":\"{rustc}\"}}",
         sdk = std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| String::from("0.0.0")),
         // `TS_ABI_VERSION` in `src/lib.rs`, which `the_build_describes_itself` holds this to.
-        abi = 2,
+        abi = 3,
         catalogue = 1,
     );
     let path = out.join("buildinfo.json");

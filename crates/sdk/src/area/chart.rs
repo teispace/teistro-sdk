@@ -2,10 +2,8 @@
 //! founded in one crossing.
 
 use teistro_aspect::Aspects;
-use teistro_astro::completion::Completion;
 use teistro_astro::eclipse::{Eclipses, ShadowRule, Visible};
 use teistro_astro::events::{FrameLongitudes, StationKind};
-use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_astro::sky::{Spherical, altitude_by_midheaven_deg};
 use teistro_astro::stars::{Options as StarOptions, place_of};
@@ -391,7 +389,7 @@ impl<'a> ChartArea<'a> {
             &model,
             calendar,
             clock,
-            PrecessionModel::default(),
+            self.context.precession()?,
             self.context.delta_t(),
         ))
     }
@@ -1978,7 +1976,7 @@ impl<'a> ChartArea<'a> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
-        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
+        let sky = self.context.completion_over(provider);
         if sky.capabilities().astronomy == Astronomy::Classical {
             return Err(Error::unsupported(
                 "a classical astronomy's eclipse is its own method, which a hit list does not read",
@@ -2833,15 +2831,11 @@ impl<'a> ChartArea<'a> {
     ) -> Result<R, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
-        let completion = Completion::new(
-            provider,
-            settings.provider.overrides,
-            self.context.delta_t(),
-        );
+        let completion = self.context.completion_over(provider);
         let searched = foundation.zodiac.search(
             &completion,
             settings.frame.ayanamsha_basis,
-            (PrecessionModel::default(), self.context.delta_t()),
+            (self.context.precession()?, self.context.delta_t()),
         )?;
         let (frame, zodiac) = (searched.frame, searched.zodiac);
         let mut longitudes = completion.longitudes(frame);
@@ -3356,7 +3350,7 @@ impl<'a> ChartArea<'a> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
-        let sky = Completion::new(provider, settings.provider.overrides, delta_t);
+        let sky = self.context.completion_over(provider);
         if sky.capabilities().astronomy == Astronomy::Classical {
             return Ok(Moment {
                 rising,
@@ -3373,7 +3367,7 @@ impl<'a> ChartArea<'a> {
                 JulianDay::<Ut1>::literal(at - ECLIPSE_REACH_DAYS),
                 JulianDay::<Ut1>::literal(at + ECLIPSE_REACH_DAYS),
                 *place,
-                &Horizon::from_convention(settings.panchanga.eclipse_horizon),
+                &Horizon::of(settings.panchanga.eclipse_horizon, settings),
             )?;
         let covers = |seen: Option<Visible>| {
             seen.is_some_and(|span| span.from.get() <= at && at <= span.to.get())

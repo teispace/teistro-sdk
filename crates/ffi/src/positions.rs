@@ -44,7 +44,7 @@ use crate::support::{with_context, write_plain};
 /// use teistro_ffi::blob::TsBlob;
 /// use teistro_ffi::positions::ts_positions;
 /// use teistro_idl::blob::Reader;
-/// use teistro_port_ephemeris::vtable::ObserverC;
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC};
 /// use teistro_port_ephemeris::{Body, Frame, PositionRequestC, TimeScale};
 ///
 /// // The Sun at J2000.0, apparent and tropical.
@@ -54,6 +54,7 @@ use crate::support::{with_context, write_plain};
 ///     scale: TimeScale::Tt.id(), frame_bits: Frame::CANONICAL.to_bits(),
 ///     speeds: 1, has_observer: 0, reserved: [0; 2], observer: ObserverC::default(),
 ///     jds: jds.as_ptr(), jd_count: jds.len(), bodies: bodies.as_ptr(), body_count: bodies.len(),
+///     conventions: ConventionsC::default(),
 /// };
 /// let mut blob = TsBlob::empty();
 /// // SAFETY: a live context, a sized request and a writable slot.

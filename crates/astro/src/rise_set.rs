@@ -17,9 +17,13 @@
 //! altitude, less the refraction at the horizon, less the semidiameter
 //! for the upper limb (more for the lower), plus the horizontal parallax,
 //! since the observer sees the body lower than the Earth's centre does.
-//! The observer's height above the ground is not applied: the almanacs
-//! and the panchanga reckon from sea level, and a dip is a custom
-//! altitude of the convention when a caller wants one.
+//! The rest of the horizon is the convention's model (`day.horizon`,
+//! [`HorizonModel`]): the formula a named air refracts through (Bennett,
+//! Saemundsson or Sinclair), the disc's size and radii, the rising body's
+//! latitude, the dip of the horizon from the observer's height (none,
+//! geometric, or refracted) and a raised or lowered horizon. Its standard
+//! is what the solver has always reckoned: no dip, since the almanacs and
+//! the panchanga reckon from sea level.
 
 use core::cell::Cell;
 use core::fmt;
@@ -29,14 +33,22 @@ use serde::Serialize;
 use teistro_core::angle::difference_deg;
 use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Place, Ut1};
-use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refraction};
+use teistro_core::settings::{
+    Atmosphere, Dip, DiscSize, HorizonModel, Radii, RefractionFormula, RisingLatitude,
+};
+use teistro_port_ephemeris::{
+    Body, Conventions, DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction,
+};
 
 use crate::day_sky::horizontal;
 use crate::delta_t::DeltaTModel;
 use crate::iau::{DEG2RAD, RAD2DEG};
 use crate::lockstep::{Lockstep, finished};
 use crate::scale::tt_of;
-use crate::sky::{Apparent, ApparentPositions, sidereal_time_deg};
+use crate::sky::{
+    Apparent, ApparentPositions, Spherical, ecliptic_to_equatorial, equatorial_to_ecliptic,
+    obliquity, sidereal_time_deg,
+};
 use crate::solve::{Caps, SCAN_CHUNK, Scan, first_zero_gridded_async};
 use crate::terrain::{HorizonProfile, refraction_scale};
 
@@ -79,6 +91,36 @@ pub const EARTH_EQUATORIAL_RADIUS_KM: f64 = 6_378.137;
 /// assert!((jupiter.semidiameter_deg * 3600.0 - 69_911.0 / (5.0 * AU_KM) * 206_264.8).abs() < 0.01);
 /// ```
 pub const AU_KM: f64 = 149_597_870.7;
+/// The Sun's nominal radius, kilometres (IAU 2015 Resolution B3): the one
+/// solar radius the SDK reckons by, for a sunrise's limb and an eclipse's
+/// disc alike. The eclipse module once kept the older 696 000 km.
+///
+/// ```
+/// use teistro_astro::rise_set::{SUN_RADIUS_KM, radius_km};
+/// use teistro_port_ephemeris::Body;
+///
+/// assert_eq!(radius_km(Body::Sun), SUN_RADIUS_KM);
+/// assert_eq!(teistro_astro::eclipse::SUN_RADIUS_KM, SUN_RADIUS_KM);
+/// ```
+pub const SUN_RADIUS_KM: f64 = 695_700.0;
+/// The Moon's mean radius, kilometres (Archinal et al. 2018).
+pub const MOON_RADIUS_KM: f64 = 1_737.4;
+/// The Moon's mean distance a disc of fixed size is reckoned at,
+/// astronomical units: the Swiss Ephemeris's `SE_BIT_FIXED_DISC_SIZE`
+/// value, 0.00257 au (384 463 km), which an engine's mean disc takes too.
+pub const MOON_MEAN_DISTANCE_AU: f64 = 0.002_57;
+/// The Earth's equatorial radius, metres (WGS 84), for the geometric dip:
+/// the tangent to the sphere from the observer's height.
+pub const DIP_EARTH_RADIUS_M: f64 = 6_378_137.0;
+/// The Earth's equatorial radius, metres (IERS Conventions 2010), for the
+/// refracted dip, as the Swiss Ephemeris's `swe_refrac_extended` takes it.
+pub const REFRACTED_DIP_EARTH_RADIUS_M: f64 = 6_378_136.6;
+/// The standard atmosphere's lapse rate, kelvin per metre, which the
+/// refracted dip's refraction coefficient is reckoned from.
+pub const LAPSE_RATE_K_PER_M: f64 = 0.0065;
+/// The lowest horizon Bennett's formula is read at, degrees: its pole is
+/// at −4.4°, so a horizon dipped and lowered past −4° is refused.
+pub const BENNETT_LOWEST_DEG: f64 = -4.0;
 /// How fast the hour angle grows, degrees per day of UT1: a rotation plus
 /// the day's share of the year.
 ///
@@ -259,8 +301,8 @@ pub const fn declination_chord_margin(body: Body) -> Option<f64> {
 #[must_use]
 pub fn radius_km(body: Body) -> f64 {
     match body {
-        Body::Sun => 695_700.0,
-        Body::Moon => 1_737.4,
+        Body::Sun => SUN_RADIUS_KM,
+        Body::Moon => MOON_RADIUS_KM,
         Body::Mercury => 2_439.7,
         Body::Venus => 6_051.8,
         Body::Mars => 3_389.5,
@@ -309,18 +351,292 @@ impl Disc {
     /// ```
     #[must_use]
     pub fn of(body: Body, distance_au: f64) -> Disc {
+        Disc::under(body, distance_au, &HorizonModel::STANDARD)
+    }
+
+    /// The disc of a body at a distance under a horizon model: the radii
+    /// it names, and the actual disc, the disc at the body's mean distance
+    /// or a fixed semidiameter. The parallax is always the actual one.
+    ///
+    /// ```
+    /// use teistro_astro::rise_set::Disc;
+    /// use teistro_core::settings::{DiscSize, HorizonModel, Radii};
+    /// use teistro_port_ephemeris::Body;
+    ///
+    /// let fixed = HorizonModel { disc_size: DiscSize::Fixed { semidiameter_arcmin: 16.0 }, ..HorizonModel::STANDARD };
+    /// assert_eq!(Disc::under(Body::Sun, 0.983, &fixed).semidiameter_deg, 16.0 / 60.0);
+    /// let mean = HorizonModel { disc_size: DiscSize::MeanDistance, ..HorizonModel::STANDARD };
+    /// assert_eq!(Disc::under(Body::Sun, 0.983, &mean).semidiameter_deg, Disc::of(Body::Sun, 1.0).semidiameter_deg);
+    /// // The older solar radius, by name.
+    /// let older = HorizonModel { radii: Radii::Custom { sun_km: 696_000.0, moon_km: 1_737.4 }, ..HorizonModel::STANDARD };
+    /// assert!(Disc::under(Body::Sun, 1.0, &older).semidiameter_deg > Disc::of(Body::Sun, 1.0).semidiameter_deg);
+    /// ```
+    #[must_use]
+    pub fn under(body: Body, distance_au: f64, model: &HorizonModel) -> Disc {
         if !body.has_distance() || distance_au <= 0.0 {
             return Disc {
                 semidiameter_deg: 0.0,
                 parallax_deg: 0.0,
             };
         }
+        let radius = match (model.radii, body) {
+            (Radii::Custom { sun_km, .. }, Body::Sun) => sun_km,
+            (Radii::Custom { moon_km, .. }, Body::Moon) => moon_km,
+            _ => radius_km(body),
+        };
         let distance_km = distance_au * AU_KM;
+        let semidiameter = |at_km: f64| math::asin((radius / at_km).min(1.0)) * RAD2DEG;
+        let semidiameter_deg = match (model.disc_size, body) {
+            (
+                DiscSize::Fixed {
+                    semidiameter_arcmin,
+                },
+                _,
+            ) if radius > 0.0 => semidiameter_arcmin / 60.0,
+            (DiscSize::MeanDistance, Body::Sun) => semidiameter(AU_KM),
+            (DiscSize::MeanDistance, Body::Moon) => semidiameter(MOON_MEAN_DISTANCE_AU * AU_KM),
+            _ => semidiameter(distance_km),
+        };
         Disc {
-            semidiameter_deg: math::asin((radius_km(body) / distance_km).min(1.0)) * RAD2DEG,
+            semidiameter_deg,
             parallax_deg: math::asin((EARTH_EQUATORIAL_RADIUS_KM / distance_km).min(1.0)) * RAD2DEG,
         }
     }
+}
+
+/// A horizon reckoned once at a place: the apparent altitude of the
+/// horizon itself (the model's raised or lowered horizon with its dip),
+/// and the refraction at it, both in degrees.
+///
+/// ```
+/// use teistro_astro::rise_set::{Reckoned, reckon};
+/// use teistro_core::quantity::Altitude;
+/// use teistro_port_ephemeris::Horizon;
+///
+/// // The almanac's sunrise: the ideal horizon and its 34′.
+/// let sea = Altitude::try_new(0.0)?;
+/// assert_eq!(reckon(&Horizon::UPPER_LIMB_REFRACTION, sea)?, Reckoned { height_deg: 0.0, refraction_deg: 34.0 / 60.0 });
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Reckoned {
+    /// The horizon's apparent altitude, degrees: the model's altitude plus
+    /// the dip (negative).
+    pub height_deg: f64,
+    /// The refraction at the horizon, degrees.
+    pub refraction_deg: f64,
+}
+
+/// The dip of the horizon from a height under a convention, degrees
+/// (negative), for a ray through `air` when the dip is refracted.
+///
+/// The geometric dip is the tangent to the sphere, `−acos(R / (R + h))`;
+/// the refracted one is Sinclair's through the near-ground layer's
+/// refraction coefficient (Thom 1973, in Reijs's metric form, as the Swiss
+/// Ephemeris's `swe_refrac_extended` reckons it), `−acos(1 / (1 + h / R))
+/// · √(1 − 1.8480 k P / T²)` with `k = (0.0342 + λ) / (0.154 · 0.0238)`.
+///
+/// ```
+/// use teistro_astro::rise_set::dip_deg;
+/// use teistro_core::quantity::Altitude;
+/// use teistro_core::settings::{Atmosphere, Dip};
+///
+/// let kathmandu = Altitude::try_new(1400.0)?;
+/// let geometric = dip_deg(Dip::Geometric, kathmandu, Atmosphere::STANDARD);
+/// // About 1.2° from 1400 m, and the air lifts the horizon a little.
+/// assert!((geometric + 1.2).abs() < 0.01);
+/// let refracted = dip_deg(Dip::Refracted, kathmandu, Atmosphere::STANDARD);
+/// assert!(refracted > geometric && refracted < 0.0);
+/// assert_eq!(dip_deg(Dip::None, kathmandu, Atmosphere::STANDARD), 0.0);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[must_use]
+pub fn dip_deg(dip: Dip, height: Altitude, air: Atmosphere) -> f64 {
+    let h = height.get().max(0.0);
+    match dip {
+        Dip::Geometric => -math::acos(DIP_EARTH_RADIUS_M / (DIP_EARTH_RADIUS_M + h)) * RAD2DEG,
+        Dip::Refracted => {
+            let air = air.at(height);
+            let kelvin = 273.15 + air.temperature_c;
+            let coefficient = (0.0342 + LAPSE_RATE_K_PER_M) / (0.154 * 0.0238);
+            let d = 1.0 - 1.8480 * coefficient * air.pressure_hpa / kelvin / kelvin;
+            -math::acos(1.0 / (1.0 + h / REFRACTED_DIP_EARTH_RADIUS_M))
+                * RAD2DEG
+                * d.max(0.0).sqrt()
+        }
+        _ => 0.0,
+    }
+}
+
+/// Saemundsson's refraction at a **true** altitude, arcminutes, at the air
+/// it was fitted to (1010 hPa, 10 °C): `1.02 / tan(h + 10.3° / (h +
+/// 5.11))` (Sæmundsson 1986; Meeus, eq. 16.4).
+///
+/// ```
+/// use teistro_astro::rise_set::saemundsson_refraction_arcmin;
+///
+/// assert!((saemundsson_refraction_arcmin(-0.5) - 33.0).abs() < 1.0);
+/// ```
+#[must_use]
+pub fn saemundsson_refraction_arcmin(true_deg: f64) -> f64 {
+    1.02 / math::tan((true_deg + 10.3 / (true_deg + 5.11)) * DEG2RAD)
+}
+
+/// Sinclair's refraction at an **apparent** altitude through an air,
+/// arcminutes (Sinclair 1982, as the Swiss Ephemeris reckons it): `(34.46 +
+/// 4.23 a + 0.004 a²) / (1 + 0.505 a + 0.0845 a²)` up to 17.904°, where it
+/// meets `0.97 / tan a`, scaled by `(P − 80) / 930 / (1 + 0.00008 (r + 39)
+/// (T − 10))`.
+///
+/// ```
+/// use teistro_astro::rise_set::sinclair_refraction_arcmin;
+///
+/// // At the horizon through the standard sea-level air: 33.6′.
+/// assert!((sinclair_refraction_arcmin(0.0, 1013.25, 15.0) - 33.593).abs() < 1e-3);
+/// ```
+#[must_use]
+pub fn sinclair_refraction_arcmin(apparent_deg: f64, pressure_hpa: f64, temperature_c: f64) -> f64 {
+    let a = apparent_deg;
+    let r = if a > 17.904_104_638_432 {
+        0.97 / math::tan(a * DEG2RAD)
+    } else {
+        (34.46 + 4.23 * a + 0.004 * a * a) / (1.0 + 0.505 * a + 0.0845 * a * a)
+    };
+    (pressure_hpa - 80.0) / 930.0 / (1.0 + 0.000_08 * (r + 39.0) * (temperature_c - 10.0)) * r
+}
+
+/// The horizon a convention names at a height: its apparent altitude
+/// (the model's altitude and the dip) and the refraction there, the
+/// almanac's stated 34′ for the standard refraction and the model's
+/// formula through a named air.
+///
+/// Bennett's formula is read at the horizon's own altitude with the dip,
+/// as an engine reads it, and Saemundsson's at the true altitude whose
+/// apparent one is the horizon's (a fixed point, which contracts by some
+/// 0.06 a step there).
+///
+/// ```
+/// use teistro_astro::rise_set::reckon;
+/// use teistro_core::quantity::Altitude;
+/// use teistro_core::settings::{Atmosphere, Dip, HorizonModel, RefractionFormula};
+/// use teistro_port_ephemeris::{Horizon, Refraction};
+///
+/// let air = Horizon { refraction: Refraction::Atmosphere(Atmosphere::STANDARD), ..Horizon::UPPER_LIMB_REFRACTION };
+/// let kathmandu = Altitude::try_new(1400.0)?;
+/// let bennett = reckon(&air, kathmandu)?;
+/// for formula in [RefractionFormula::Saemundsson, RefractionFormula::Sinclair] {
+///     let other = reckon(&air.with_model(HorizonModel { refraction: formula, ..HorizonModel::STANDARD }), kathmandu)?;
+///     // The three formulas agree at the horizon to under a minute of arc.
+///     assert!((other.refraction_deg - bennett.refraction_deg).abs() * 60.0 < 1.0);
+/// }
+/// // A dipped horizon is lower and refracts more.
+/// let dipped = reckon(&air.with_model(HorizonModel { dip: Dip::Geometric, ..HorizonModel::STANDARD }), kathmandu)?;
+/// assert!(dipped.height_deg < -1.0 && dipped.refraction_deg > bennett.refraction_deg);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `INVALID_ARG` for Bennett's formula read below −4°, past which its
+/// pole at −4.4° makes it meaningless.
+pub fn reckon(horizon: &Horizon, height: Altitude) -> Result<Reckoned, Error> {
+    let model = horizon.model;
+    let air = match horizon.refraction {
+        Refraction::Atmosphere(air) => air,
+        // The dip's air when the refraction names none.
+        _ => Atmosphere::STANDARD,
+    };
+    let height_deg = model.altitude_deg + dip_deg(model.dip, height, air);
+    let refraction_deg = match horizon.refraction {
+        Refraction::Atmosphere(air) => {
+            let air = air.at(height);
+            match model.refraction {
+                RefractionFormula::Saemundsson => {
+                    let factor = air_factor(air.pressure_hpa, air.temperature_c);
+                    let mut true_deg = height_deg - 0.5;
+                    for _ in 0..12 {
+                        true_deg =
+                            height_deg - saemundsson_refraction_arcmin(true_deg) * factor / 60.0;
+                    }
+                    height_deg - true_deg
+                }
+                RefractionFormula::Sinclair => {
+                    sinclair_refraction_arcmin(height_deg, air.pressure_hpa, air.temperature_c)
+                        / 60.0
+                }
+                _ => {
+                    if height_deg < BENNETT_LOWEST_DEG {
+                        return Err(Error::invalid_arg(format!(
+                            "Bennett's refraction is not defined at a horizon of {height_deg:.3}° (its pole is at -4.4°)"
+                        ))
+                        .with_field("day.horizon"));
+                    }
+                    horizon_refraction_at_arcmin(height_deg, air.pressure_hpa, air.temperature_c)
+                        / 60.0
+                }
+            }
+        }
+        other => horizon_refraction_arcmin(other, height) / 60.0,
+    };
+    Ok(Reckoned {
+        height_deg,
+        refraction_deg,
+    })
+}
+
+/// The point of the ecliptic a body stands over, as right ascension and
+/// declination: its ecliptic latitude set to zero, the rest kept. The
+/// Hindu rising (`RisingLatitude::Zero`) is the rising of that point.
+///
+/// ```
+/// use teistro_astro::rise_set::on_the_ecliptic;
+/// use teistro_astro::sky::{Apparent, Spherical, equatorial_to_ecliptic};
+///
+/// let moon = Apparent { ra_deg: 120.0, dec_deg: 25.0, distance_au: 0.0026 };
+/// let point = on_the_ecliptic(&moon, 23.44);
+/// let ecliptic = equatorial_to_ecliptic(Spherical { lon_deg: point.ra_deg, lat_deg: point.dec_deg }, 23.44);
+/// assert!(ecliptic.lat_deg.abs() < 1e-9 && point.distance_au == moon.distance_au);
+/// ```
+#[must_use]
+pub fn on_the_ecliptic(apparent: &Apparent, obliquity_deg: f64) -> Apparent {
+    let ecliptic = equatorial_to_ecliptic(
+        Spherical {
+            lon_deg: apparent.ra_deg,
+            lat_deg: apparent.dec_deg,
+        },
+        obliquity_deg,
+    );
+    let point = ecliptic_to_equatorial(
+        Spherical {
+            lon_deg: ecliptic.lon_deg,
+            lat_deg: 0.0,
+        },
+        obliquity_deg,
+    );
+    Apparent {
+        ra_deg: point.lon_deg,
+        dec_deg: point.lat_deg,
+        distance_au: apparent.distance_au,
+    }
+}
+
+/// Meeus's scaling of a refraction from the air it was fitted to (1010
+/// hPa, 10 °C) to another, `(P / 1010) · (283 / (273 + T))`.
+fn air_factor(pressure_hpa: f64, temperature_c: f64) -> f64 {
+    (pressure_hpa / 1010.0) * (283.0 / (273.0 + temperature_c))
+}
+
+/// Bennett's refraction at an apparent altitude through an air, arcminutes,
+/// in the order [`horizon_refraction_arcmin`] has always multiplied it.
+fn horizon_refraction_at_arcmin(apparent_deg: f64, pressure_hpa: f64, temperature_c: f64) -> f64 {
+    /// The air Bennett's formula was fitted to.
+    const REFERENCE_HPA: f64 = 1010.0;
+    const REFERENCE_K: f64 = 283.0;
+    const CELSIUS_TO_K: f64 = 273.0;
+    bennett_refraction_arcmin(apparent_deg)
+        * (pressure_hpa / REFERENCE_HPA)
+        * (REFERENCE_K / (CELSIUS_TO_K + temperature_c))
 }
 
 /// The refraction at the horizon, arcminutes, as the SDK's solver
@@ -349,18 +665,12 @@ impl Disc {
 /// ```
 #[must_use]
 pub fn horizon_refraction_arcmin(refraction: Refraction, height: Altitude) -> f64 {
-    /// The air Bennett's formula was fitted to.
-    const REFERENCE_HPA: f64 = 1010.0;
-    const REFERENCE_K: f64 = 283.0;
-    const CELSIUS_TO_K: f64 = 273.0;
     match refraction {
         Refraction::None => 0.0,
         Refraction::Standard => STANDARD_HORIZON_REFRACTION_ARCMIN,
         Refraction::Atmosphere(air) => {
             let air = air.at(height);
-            bennett_refraction_arcmin(0.0)
-                * (air.pressure_hpa / REFERENCE_HPA)
-                * (REFERENCE_K / (CELSIUS_TO_K + air.temperature_c))
+            horizon_refraction_at_arcmin(0.0, air.pressure_hpa, air.temperature_c)
         }
     }
 }
@@ -386,9 +696,9 @@ pub fn bennett_refraction_arcmin(apparent_deg: f64) -> f64 {
 
 /// The geocentric altitude of the body's centre at the event under a
 /// convention, for an observer at a height, degrees: the disc point's
-/// target altitude, less the refraction ([`horizon_refraction_arcmin`]),
-/// less the semidiameter for the upper limb (plus it for the lower), plus
-/// the horizontal parallax.
+/// target altitude on the horizon the model reckons ([`reckon`]), less the
+/// refraction, less the semidiameter for the upper limb (plus it for the
+/// lower), plus the horizontal parallax.
 ///
 /// ```
 /// use teistro_astro::rise_set::{centre_altitude_deg, Disc};
@@ -397,28 +707,28 @@ pub fn bennett_refraction_arcmin(apparent_deg: f64) -> f64 {
 ///
 /// let sun = Disc::of(Body::Sun, 1.0);
 /// let sea = Altitude::try_new(0.0).unwrap();
-/// let almanac = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea);
+/// let almanac = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea)?;
 /// assert!((almanac + 50.0 / 60.0).abs() < 0.01); // about -0°50′, Meeus's value
-/// assert_eq!(centre_altitude_deg(&Horizon::CENTRE_NO_REFRACTION, &sun, sea), sun.parallax_deg);
+/// assert_eq!(centre_altitude_deg(&Horizon::CENTRE_NO_REFRACTION, &sun, sea)?, sun.parallax_deg);
+/// # Ok::<(), teistro_core::error::Error>(())
 /// ```
-#[must_use]
-pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc, height: Altitude) -> f64 {
-    event_altitude_deg(
-        horizon,
-        disc,
-        horizon_refraction_arcmin(horizon.refraction, height) / 60.0,
-    )
+///
+/// # Errors
+///
+/// As [`reckon`].
+pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc, height: Altitude) -> Result<f64, Error> {
+    Ok(event_altitude_deg(horizon, disc, reckon(horizon, height)?))
 }
 
-/// [`centre_altitude_deg`] with the refraction already reckoned, degrees,
+/// [`centre_altitude_deg`] with the horizon already reckoned, degrees,
 /// which the solver does once rather than at every sample.
-fn event_altitude_deg(horizon: &Horizon, disc: &Disc, refraction: f64) -> f64 {
+fn event_altitude_deg(horizon: &Horizon, disc: &Disc, reckoned: Reckoned) -> f64 {
     let limb = match horizon.disc {
         DiscPoint::Centre => 0.0,
         DiscPoint::UpperLimb => -disc.semidiameter_deg,
         DiscPoint::LowerLimb => disc.semidiameter_deg,
     };
-    horizon.altitude_deg - refraction + limb + disc.parallax_deg
+    horizon.altitude_deg + reckoned.height_deg - reckoned.refraction_deg + limb + disc.parallax_deg
 }
 
 /// Which method answered.
@@ -454,6 +764,9 @@ pub enum Method {
     Iterated,
     /// The window scanned for the altitude's sign change and bisected.
     Scanned,
+    /// The ephemeris engine's own search (the rise and set override),
+    /// which the policy chose (boundary audit, rank 6).
+    Native,
 }
 
 /// A found horizon event.
@@ -602,8 +915,9 @@ pub struct Solver<'a> {
     body: Body,
     place: Place,
     horizon: Horizon,
-    /// The horizon's refraction at the place, degrees, reckoned once.
-    refraction_deg: f64,
+    /// The horizon at the place, reckoned once ([`reckon`]), or why it
+    /// cannot be, which every reading then answers.
+    reckoned: Result<Reckoned, Error>,
     /// The terrain the event is reckoned against in place of the
     /// convention's altitude ([`Solver::with_terrain`]).
     terrain: Option<&'a HorizonProfile>,
@@ -663,7 +977,7 @@ impl<'a> Solver<'a> {
             body,
             place,
             horizon,
-            refraction_deg: horizon_refraction_arcmin(horizon.refraction, place.altitude) / 60.0,
+            reckoned: reckon(&horizon, place.altitude),
             terrain: None,
             delta_t,
             chunk: SCAN_CHUNK,
@@ -1103,26 +1417,38 @@ impl<'a> Solver<'a> {
     /// and the declination. Shared by the walk and the grid so that
     /// neither can drift from the other.
     fn reading(&self, ut1: JulianDay<Ut1>, apparent: &Apparent) -> Result<Sample, Error> {
+        let reckoned = self.reckoned.clone()?;
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let sidereal = sidereal_time_deg(ut1, tt, self.place.longitude);
+        // The rising of the ecliptic point the body stands over, when the
+        // convention takes the body's latitude as zero (the Hindu rising).
+        let apparent = match self.horizon.model.latitude {
+            RisingLatitude::Zero => on_the_ecliptic(apparent, obliquity(tt).true_deg),
+            _ => *apparent,
+        };
         let hour_angle_deg = difference_deg(sidereal, apparent.ra_deg);
         let (sin_phi, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
         let (sin_dec, cos_dec) = math::sin_cos(apparent.dec_deg * DEG2RAD);
         let sin_alt = sin_phi * sin_dec + cos_phi * cos_dec * math::cos(hour_angle_deg * DEG2RAD);
-        let disc = Disc::of(self.body, apparent.distance_au);
+        let disc = Disc::under(self.body, apparent.distance_au, &self.horizon.model);
         let target_deg = match self.terrain {
-            None => event_altitude_deg(&self.horizon, &disc, self.refraction_deg),
+            None => event_altitude_deg(&self.horizon, &disc, reckoned),
             Some(profile) => {
                 let (_, azimuth) =
                     horizontal(hour_angle_deg, apparent.dec_deg, self.place.latitude.get());
                 let skyline = profile.elevation_at(azimuth);
+                // The skyline is the horizon: neither the model's altitude
+                // nor a dip enters it.
                 event_altitude_deg(
                     &Horizon {
                         altitude_deg: skyline,
                         ..self.horizon
                     },
                     &disc,
-                    self.refraction_deg * refraction_scale(skyline),
+                    Reckoned {
+                        height_deg: 0.0,
+                        refraction_deg: reckoned.refraction_deg * refraction_scale(skyline),
+                    },
                 )
             }
         };
@@ -1310,6 +1636,28 @@ impl<'a> Solver<'a> {
                 "a search window is a positive number of days, not {window_days}"
             ))
             .with_field("window_days"));
+        }
+        // The engine's own search, when the sky offers one and no terrain
+        // stands in for the horizon (the rise and set override).
+        if self.terrain.is_none() {
+            let request = HorizonRequest {
+                body: self.body,
+                kind,
+                place: self.place,
+                from,
+                window_days,
+                horizon: self.horizon,
+                conventions: Conventions::STANDARD.with_delta_t(self.delta_t),
+            };
+            if let Some(found) = self.sky.native_horizon_event(&request) {
+                return found.map(|instant| {
+                    instant.map(|instant| HorizonEvent {
+                        instant,
+                        method: Method::Native,
+                        evaluations: 0,
+                    })
+                });
+            }
         }
         let start = from.get();
         let end = start + window_days;
@@ -2132,6 +2480,163 @@ mod tests {
     }
 
     #[test]
+    fn a_disc_follows_the_models_size_and_radii() {
+        let standard = HorizonModel::STANDARD;
+        // The actual disc at the body's distance, from the IAU 2015 radius.
+        let sun = Disc::under(Body::Sun, 1.0, &standard);
+        assert!((sun.semidiameter_deg * 3600.0 - 959.2).abs() < 0.1);
+        assert!(sun.parallax_deg > 0.0);
+        // A custom radius is the body's own: the Sun's for the Sun, the
+        // Moon's for the Moon, and a planet keeps its catalogue radius.
+        let custom = HorizonModel { radii: Radii::Custom { sun_km: 696_000.0, moon_km: 1_738.0 }, ..standard };
+        assert!(Disc::under(Body::Sun, 1.0, &custom).semidiameter_deg > sun.semidiameter_deg);
+        let moon = Disc::under(Body::Moon, MOON_MEAN_DISTANCE_AU, &standard);
+        assert!(Disc::under(Body::Moon, MOON_MEAN_DISTANCE_AU, &custom).semidiameter_deg > moon.semidiameter_deg);
+        assert_eq!(Disc::under(Body::Mars, 1.5, &custom), Disc::under(Body::Mars, 1.5, &standard));
+        // At the mean distance whatever the actual one.
+        let mean = HorizonModel { disc_size: DiscSize::MeanDistance, ..standard };
+        assert_eq!(Disc::under(Body::Sun, 0.983, &mean).semidiameter_deg, sun.semidiameter_deg);
+        assert_eq!(Disc::under(Body::Moon, 0.0024, &mean).semidiameter_deg, moon.semidiameter_deg);
+        // A fixed angle for any body with a size, and none for a point.
+        let fixed = HorizonModel { disc_size: DiscSize::Fixed { semidiameter_arcmin: 16.0 }, ..standard };
+        assert!((Disc::under(Body::Moon, 0.0024, &fixed).semidiameter_deg - 16.0 / 60.0).abs() < 1e-12);
+        let none = Disc::under(Body::MeanNode, 1.0, &fixed);
+        assert_eq!((none.semidiameter_deg, none.parallax_deg), (0.0, 0.0));
+        let nowhere = Disc::under(Body::Sun, 0.0, &standard);
+        assert_eq!((nowhere.semidiameter_deg, nowhere.parallax_deg), (0.0, 0.0));
+    }
+
+    #[test]
+    fn the_dip_and_the_refraction_formulas_reckon_as_their_sources_do() {
+        let air = Atmosphere::STANDARD;
+        let sea = Altitude::literal(0.0);
+        let hill = Altitude::literal(1_400.0);
+        assert_eq!(dip_deg(Dip::None, hill, air), 0.0);
+        assert_eq!(dip_deg(Dip::Geometric, sea, air), 0.0);
+        let geometric = dip_deg(Dip::Geometric, hill, air);
+        // About 1.2 degrees from 1,400 m, and refraction lifts it a little.
+        assert!((geometric + 1.2).abs() < 0.05, "{geometric}");
+        let refracted = dip_deg(Dip::Refracted, hill, air);
+        assert!(refracted > geometric && refracted < 0.0, "{refracted}");
+        // Below the ground is the ground.
+        assert_eq!(dip_deg(Dip::Geometric, Altitude::literal(-100.0), air), 0.0);
+        // Saemundsson near the horizon, Sinclair on both sides of its seam.
+        assert!((saemundsson_refraction_arcmin(0.0) - 29.0).abs() < 1.0);
+        let low = sinclair_refraction_arcmin(17.9, 1013.25, 15.0);
+        let high = sinclair_refraction_arcmin(17.91, 1013.25, 15.0);
+        assert!((low - high).abs() < 0.01, "{low} {high}");
+        assert!(sinclair_refraction_arcmin(45.0, 1013.25, 15.0) < 1.0);
+        assert_eq!(horizon_refraction_arcmin(Refraction::None, hill), 0.0);
+        assert_eq!(horizon_refraction_arcmin(Refraction::Standard, hill), STANDARD_HORIZON_REFRACTION_ARCMIN);
+        assert!(horizon_refraction_arcmin(Refraction::Atmosphere(air), sea) > 30.0);
+    }
+
+    #[test]
+    fn each_formula_reckons_the_horizon_and_bennett_refuses_past_its_pole() {
+        let hill = Altitude::literal(1_400.0);
+        let named = |refraction: RefractionFormula, dip: Dip, altitude_deg: f64| Horizon {
+            refraction: Refraction::Atmosphere(Atmosphere::STANDARD),
+            model: HorizonModel { refraction, dip, altitude_deg, ..HorizonModel::STANDARD },
+            ..Horizon::UPPER_LIMB_REFRACTION
+        };
+        let mut seen = Vec::new();
+        for formula in [RefractionFormula::Bennett, RefractionFormula::Saemundsson, RefractionFormula::Sinclair] {
+            let reckoned = reckon(&named(formula, Dip::None, 0.0), hill).unwrap();
+            assert_eq!(reckoned.height_deg, 0.0);
+            // Each near half a degree at the horizon, thinner air at height.
+            assert!((0.3..0.6).contains(&reckoned.refraction_deg), "{formula:?}: {}", reckoned.refraction_deg);
+            seen.push(reckoned.refraction_deg);
+        }
+        assert!(seen.windows(2).any(|pair| pair[0] != pair[1]), "three formulas, three answers");
+        // The dip lowers the horizon, and the altitude raises it.
+        let dipped = reckon(&named(RefractionFormula::Bennett, Dip::Geometric, 0.5), hill).unwrap();
+        assert!((dipped.height_deg - (0.5 + dip_deg(Dip::Geometric, hill, Atmosphere::STANDARD))).abs() < 1e-12);
+        // Bennett's pole: refused, naming the setting; the others answer.
+        let error = reckon(&named(RefractionFormula::Bennett, Dip::None, -4.2), hill).unwrap_err();
+        assert_eq!(error.field(), Some("day.horizon"));
+        assert!(reckon(&named(RefractionFormula::Sinclair, Dip::None, -4.2), hill).is_ok());
+        // A refraction that names no air is the convention's own.
+        let standard = reckon(&Horizon::UPPER_LIMB_REFRACTION, hill).unwrap();
+        assert!((standard.refraction_deg - STANDARD_HORIZON_REFRACTION_ARCMIN / 60.0).abs() < 1e-12);
+        let geometric = reckon(&Horizon::CENTRE_NO_REFRACTION, hill).unwrap();
+        assert_eq!(geometric.refraction_deg, 0.0);
+    }
+
+    #[test]
+    fn the_hindu_rising_is_the_ecliptic_points() {
+        let provider = TestProvider::new();
+        let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+        let kathmandu = place(27.7172, 85.324);
+        let midnight = JulianDay::literal(2_460_482.5 - 85.324 / 360.0);
+        let rise = |latitude| {
+            let horizon = Horizon {
+                model: HorizonModel { latitude, ..HorizonModel::STANDARD },
+                ..Horizon::UPPER_LIMB_REFRACTION
+            };
+            Solver::new(&sky, Body::Moon, kathmandu, horizon, DeltaTModel::TableThenModel)
+                .event(HorizonEventKind::Rise, midnight, 2.0)
+                .unwrap()
+                .unwrap()
+                .instant
+                .get()
+        };
+        // The test sky's Moon stands off the ecliptic, so the point under
+        // it rises at another instant, within minutes of it.
+        let (body, point) = (rise(RisingLatitude::Body), rise(RisingLatitude::Zero));
+        assert!(body != point && (body - point).abs() * 1_440.0 < 30.0, "{body} {point}");
+        let on = on_the_ecliptic(&Apparent { ra_deg: 10.0, dec_deg: -20.0, distance_au: 1.0 }, 23.44);
+        let back = equatorial_to_ecliptic(Spherical { lon_deg: on.ra_deg, lat_deg: on.dec_deg }, 23.44);
+        assert!(back.lat_deg.abs() < 1e-9);
+    }
+
+    /// The test sky, declaring the rise and set override and answering
+    /// every question with one instant.
+    struct Answering;
+
+    impl teistro_port_ephemeris::EphemerisProvider for Answering {
+        fn capabilities(&self) -> teistro_port_ephemeris::Capabilities {
+            teistro_port_ephemeris::Capabilities {
+                overrides: teistro_port_ephemeris::Overrides::RISE_SET,
+                ..TestProvider::new().capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &teistro_port_ephemeris::PositionRequest<'_>,
+        ) -> Result<teistro_port_ephemeris::PositionColumns, teistro_port_ephemeris::ProviderError> {
+            TestProvider::new().positions(request)
+        }
+
+        fn horizon_event(
+            &self,
+            request: &HorizonRequest,
+        ) -> Result<Option<JulianDay<Ut1>>, teistro_port_ephemeris::ProviderError> {
+            Ok(Some(JulianDay::literal(request.from.get() + 0.25)))
+        }
+    }
+
+    #[test]
+    fn under_prefer_native_an_engine_that_declares_rise_and_set_answers_it() {
+        let provider = Answering;
+        let midnight = JulianDay::literal(2_460_482.5);
+        let kathmandu = place(27.7172, 85.324);
+        for (policy, native) in [(OverridePolicy::PreferNative, true), (OverridePolicy::SdkOnly, false)] {
+            let sky = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
+            // Through a reference too, as an area holds its sky.
+            let held = &sky;
+            let found = Solver::new(&held, Body::Sun, kathmandu, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel)
+                .event(HorizonEventKind::Rise, midnight, 1.0)
+                .unwrap()
+                .unwrap();
+            assert_eq!(found.method == Method::Native, native, "{policy:?}");
+            if native {
+                assert_eq!((found.instant.get(), found.evaluations), (midnight.get() + 0.25, 0));
+            }
+        }
+    }
+
+    #[test]
     fn the_test_providers_sun_gives_a_kathmandu_day_under_every_convention() {
         let provider = TestProvider::new();
         let sky = Completion::new(
@@ -2240,8 +2745,8 @@ mod tests {
         assert_eq!(Disc::of(Body::Sun, 0.0).parallax_deg, 0.0);
         let sun = Disc::of(Body::Sun, 1.0);
         let sea = Altitude::try_new(0.0).unwrap();
-        let lower = centre_altitude_deg(&Horizon::LOWER_LIMB_REFRACTION, &sun, sea);
-        let upper = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea);
+        let lower = centre_altitude_deg(&Horizon::LOWER_LIMB_REFRACTION, &sun, sea).unwrap();
+        let upper = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea).unwrap();
         assert!((lower - upper - 2.0 * sun.semidiameter_deg).abs() < 1e-12);
         assert_eq!(radius_km(Body::MeanApogee), 0.0);
     }

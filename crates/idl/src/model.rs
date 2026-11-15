@@ -147,9 +147,12 @@ impl Api {
     ///
     /// use teistro_idl::model::Role;
     ///
-    /// // A provider's Delta T: the seconds come back through a pointer.
+    /// // A provider's UT1 less UTC: the seconds come back through a pointer;
+    /// // its Delta T comes back as an estimate struct.
+    /// let dut1 = api.callback_named("Dut1Fn").ok_or("declared")?;
+    /// assert_eq!(dut1.params.last().map(|param| param.role), Some(Role::ScalarOut));
     /// let delta_t = api.callback_named("DeltaTFn").ok_or("declared")?;
-    /// assert_eq!(delta_t.params.last().map(|param| param.role), Some(Role::ScalarOut));
+    /// assert_eq!(delta_t.params.last().map(|param| param.role), Some(Role::StructOut));
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]
