@@ -533,6 +533,69 @@ pub unsafe extern "C" fn ts_calendar_convert(
     })
 }
 
+/// A date viewed in a named era: its own calendar's reading, with the
+/// year that era gives it in `era` and `era_year`. An era the calendar
+/// attaches itself gives the calendar's own reading when that reading is
+/// in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+/// Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+/// year, month and day with the Yele year counted from the epoch the
+/// context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+/// `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+/// `UNSUPPORTED` naming `era`, with a hint listing those it can.
+///
+/// `api: era: enum=Era`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_core::catalogue::Era;
+/// use teistro_ffi::calendar::ts_calendar_in_era;
+///
+/// // Magh 1, 2082 BS (15 January 2026) opened Kirati Sambat 5086.
+/// let magh = sized(CalendarDate::defined(Calendar::BikramSambat, 2082, 10, 1))?;
+/// let mut yele = sized(CalendarDate::defined(Calendar::Gregorian, 1, 1, 1))?;
+/// // SAFETY: a live context and two sized dates.
+/// let status = unsafe { ts_calendar_in_era(&raw const ctx, &raw const magh, Era::KiratYele.id(), &raw mut yele) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!((yele.era, yele.era_year), (Era::KiratYele.id(), 5086));
+/// assert_eq!((yele.year, yele.month, yele.day), (2082, 10, 1));
+/// // The Bikram Sambat gives no Hijri year.
+/// // SAFETY: as above.
+/// let status = unsafe { ts_calendar_in_era(&raw const ctx, &raw const magh, Era::Hijri.id(), &raw mut yele) };
+/// assert_eq!(status, Status::Unsupported);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `date` valid for a read; `out_date`
+/// valid for a read of its `struct_size` and a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_calendar_in_era(
+    context: *const TsContext,
+    date: *const TsCalendarDate,
+    era: u16,
+    out_date: *mut TsCalendarDate,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let date = unsafe { read_in(date, "date") }?.to_date()?;
+        let era = Era::from_id(era).ok_or_else(|| unknown_member::<Era>(era, "era"))?;
+        let viewed = ctx.sdk().calendar().in_era(&date, era)?;
+        // SAFETY: the entry point's contract.
+        unsafe { write_out(out_date, "out_date", TsCalendarDate::of(&viewed)) }
+    })
+}
+
 /// The length of a month in a calendar.
 ///
 /// `api: calendar: enum=Calendar`

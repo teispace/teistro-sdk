@@ -41,16 +41,16 @@ pub use knobs::{
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
     Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
     HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus,
-    MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart, RefractionFormula,
-    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
-    SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime,
-    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
+    MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
+    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
+    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    RefractionFormula, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart,
+    StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn,
+    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 pub use snapshot::SettingsSnapshot;
@@ -1374,6 +1374,14 @@ group!(
         /// every month Nepal's committee and a drik almanac decided
         /// differently in AD 1900–2100, the widest by 6.3 hours.
         marginal_month_minutes: u32,
+        /// Where the Kirat Yele Sambat's year 1 stands, the year a
+        /// Bikram Sambat date carries in `era.KIRAT_YELE`: `KIRATI`, the
+        /// count printed today (5086 from Magh 1, 2082 BS; *Kantipur*,
+        /// 15 January 2026; G. Rai, *Indigenous Voice*, 2021), or
+        /// `YALAMBAR`, J. C. Regmi's count from Yalambar's accession
+        /// (*Kirat Yele Samvat Abhilekh*, 2010), 1281 years fewer
+        /// (`calendars/bikram-sambat.md` §Kirat Yele Sambat).
+        kirat_yele: KiratYeleEpoch,
     }
 );
 

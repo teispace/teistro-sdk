@@ -590,6 +590,24 @@ public final class BindingTest {
                 DateSpan back = calendar.between(Civil.date(Calendar.BIKRAM_SAMBAT, 2081, 7, 10),
                         Civil.date(Calendar.BIKRAM_SAMBAT, 2050, 1, 15), Overflow.CONSTRAIN);
                 same(List.of(-31, -5, -26), List.of(back.years(), back.months(), back.days()), "backwards");
+                // The Kirat Yele Sambat (SR-96): 15 January 2026 was Magh 1,
+                // 2082 BS, the first day of Kirati Sambat 5086 (Kantipur); the
+                // day before closed 5085; calendars.kirat_yele chooses Regmi's
+                // epoch from Yalambar; an era the Bikram Sambat cannot give is
+                // refused by its field.
+                CalendarDate magh = calendar.convert(Civil.date(Calendar.GREGORIAN, 2026, 1, 15), Calendar.BIKRAM_SAMBAT);
+                same(List.of(2082, 10, 1), List.of(magh.year(), magh.month(), magh.day()), "Magh 1, 2082");
+                CalendarDate yele = calendar.inEra(magh, Era.KIRAT_YELE);
+                same(Era.KIRAT_YELE, yele.era(), "the era asked");
+                same(5086, yele.eraYear(), "Kirati Sambat 5086 began");
+                same(List.of(2082, 10, 1), List.of(yele.year(), yele.month(), yele.day()), "the same day");
+                CalendarDate eve = calendar.convert(Civil.date(Calendar.GREGORIAN, 2026, 1, 14), Calendar.BIKRAM_SAMBAT);
+                same(5085, calendar.inEra(eve, Era.KIRAT_YELE).eraYear(), "the day before closed 5085");
+                same(2082, calendar.inEra(magh, Era.VIKRAMA).eraYear(), "its own era");
+                try (Context regmi = sky.withSettings(Map.of("calendars", Map.of("kirat_yele", "YALAMBAR")))) {
+                    same(3805, regmi.calendar().inEra(magh, Era.KIRAT_YELE).eraYear(), "Regmi's epoch");
+                }
+                same("era", refusal(() -> calendar.inEra(magh, Era.HIJRI)).field(), "no Hijri year");
             }
         });
 

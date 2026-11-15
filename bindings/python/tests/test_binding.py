@@ -33,6 +33,7 @@ from teistro import (
     RuleDefinition,
     TermEntry,
     Air,
+    CalendarDate,
     Context,
     nepal_official,
     Altitude,
@@ -458,6 +459,33 @@ class TheCalendars(WithLibrary):
             date(Calendar.BIKRAM_SAMBAT, 2081, 7, 10), date(Calendar.BIKRAM_SAMBAT, 2050, 1, 15)
         )
         self.assertEqual((back.years, back.months, back.days), (-31, -5, -26))
+
+    def test_a_bikram_sambat_date_is_viewed_in_the_kirat_yele_sambat(self) -> None:
+        """SR-96: 15 January 2026 was Magh 1, 2082 BS, the first day of
+        Kirati Sambat 5086 (Kantipur); the day before closed 5085;
+        `calendars.kirat_yele` chooses Regmi's epoch from Yalambar; an era
+        the Bikram Sambat cannot give is refused by its field."""
+
+        def bs(ctx: Context, year: int, month: int, day: int) -> CalendarDate:
+            return ctx.calendar.convert(date(Calendar.GREGORIAN, year, month, day), Calendar.BIKRAM_SAMBAT)
+
+        magh = bs(self.ctx, 2026, 1, 15)
+        self.assertEqual((magh.year, magh.month, magh.day), (2082, 10, 1))
+        yele = self.ctx.calendar.in_era(magh, Era.KIRAT_YELE)
+        self.assertEqual(
+            (yele.era, yele.era_year, yele.year, yele.month, yele.day),
+            (Era.KIRAT_YELE, 5086, 2082, 10, 1),
+        )
+        self.assertEqual(self.ctx.calendar.in_era(bs(self.ctx, 2026, 1, 14), Era.KIRAT_YELE).era_year, 5085)
+        self.assertEqual(self.ctx.calendar.in_era(magh, Era.VIKRAMA).era_year, 2082)
+        regmi = self.teistro.context(profile=PROFILE, settings={"calendars": {"kirat_yele": "YALAMBAR"}})
+        try:
+            self.assertEqual(regmi.calendar.in_era(magh, Era.KIRAT_YELE).era_year, 3805)
+        finally:
+            regmi.close()
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.calendar.in_era(magh, Era.HIJRI)
+        self.assertEqual(refused.exception.field, "era")
 
     def test_a_month_the_calendar_does_not_have_is_refused_by_field(self) -> None:
         with self.assertRaises(TeistroError) as caught:

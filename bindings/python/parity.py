@@ -91,6 +91,7 @@ from teistro import (
     Body,
     Calendar,
     CalendarDate,
+    Era,
     Graha,
     RashifalRequest,
     Ephemeris,
@@ -1315,6 +1316,14 @@ def main() -> None:
     put("bs-add", f"{added.year}-{added.month}-{added.day}")
     age = ctx.calendar.between(jestha, added)
     put("bs-between", f"{age.years} {age.months} {age.days}")
+    # The Kirat Yele Sambat (SR-96): Magh 1, 2082 BS opened 5086 and the
+    # day before closed 5085.
+    def yele(year: int, month: int, day: int) -> CalendarDate:
+        bs = ctx.calendar.convert(date(Calendar.GREGORIAN, year, month, day), Calendar.BIKRAM_SAMBAT)
+        return ctx.calendar.in_era(bs, Era.KIRAT_YELE)
+
+    magh = yele(2026, 1, 15)
+    put("bs-kirat-yele", f"{None if magh.era is None else magh.era.full_key} {magh.era_year} {yele(2026, 1, 14).era_year}")
     pack = ctx.almanac.festival_pack("INDIA_CENTRAL")
     put("india-pack", f"{len(pack['rules'])} {pack['rules'][0]['key']}")
     put("jd-of-fixed", teistro.julian_day_of_fixed(fixed))
@@ -3456,6 +3465,7 @@ def main() -> None:
         ("calendar.date_of", ctx.calendar.date_of),
         ("calendar.fixed_of", ctx.calendar.fixed_of),
         ("calendar.convert", ctx.calendar.convert),
+        ("calendar.in_era", ctx.calendar.in_era),
         ("calendar.weekday_of", ctx.calendar.weekday_of),
         ("calendar.month_length", ctx.calendar.month_length),
         ("calendar.is_leap", ctx.calendar.is_leap),

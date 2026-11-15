@@ -334,6 +334,28 @@ fn the_calendars(report: &mut Report, sdk: &Context) {
         "bs-between",
         format!("{} {} {}", age.years, age.months, age.days),
     );
+    // The Kirat Yele Sambat (SR-96): Magh 1, 2082 BS opened 5086 and the
+    // day before closed 5085.
+    let yele = |year, month, day| {
+        let bs = sdk
+            .calendar()
+            .convert(
+                &CalendarDate::defined(Calendar::Gregorian, year, month, day),
+                Calendar::BikramSambat,
+            )
+            .expect("a date inside the table");
+        sdk.calendar()
+            .in_era(&bs, teistro::catalogue::Era::KiratYele)
+            .expect("a Bikram Sambat date")
+            .era
+            .expect("the era asked")
+    };
+    let (magh, eve) = (yele(2026, 1, 15), yele(2026, 1, 14));
+    put(
+        report,
+        "bs-kirat-yele",
+        format!("{} {} {}", magh.era.full_key(), magh.year, eve.year),
+    );
     let listed = sdk.almanac().festival_pack(&teistro::PackRequest {
         pack: teistro::FestivalPack::IndiaCentral,
     });
@@ -847,6 +869,7 @@ fn the_surface(report: &mut Report) {
         ("calendar.add", "present"),
         ("calendar.between", "present"),
         ("calendar.convert", "present"),
+        ("calendar.in_era", "present"),
         ("calendar.date_of", "present"),
         ("calendar.fixed_of", "present"),
         ("calendar.is_leap", "present"),

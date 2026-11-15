@@ -488,6 +488,39 @@ void main() {
     ctx.dispose();
   });
 
+  // The Kirat Yele Sambat (SR-96): 15 January 2026 was Magh 1, 2082 BS, the
+  // first day of Kirati Sambat 5086 (Kantipur); the day before closed 5085;
+  // `calendars.kirat_yele` chooses Regmi's epoch from Yalambar; an era the
+  // Bikram Sambat cannot give is refused by its field.
+  test('a Bikram Sambat date is viewed in the Kirat Yele Sambat', () {
+    final ctx = context();
+    CalendarDate bs(int year, int month, int day) => ctx.calendar.convert(
+      Calendar.gregorian.date(year, month, day),
+      Calendar.bikramSambat,
+    );
+    final magh = bs(2026, 1, 15);
+    expect([magh.year, magh.month, magh.day], [2082, 10, 1]);
+    final yele = ctx.calendar.inEra(magh, Era.kiratYele);
+    expect(
+      [yele.era, yele.eraYear, yele.year, yele.month, yele.day],
+      [Era.kiratYele, 5086, 2082, 10, 1],
+    );
+    expect(ctx.calendar.inEra(bs(2026, 1, 14), Era.kiratYele).eraYear, 5085);
+    expect(ctx.calendar.inEra(magh, Era.vikrama).eraYear, 2082);
+    final regmi = context(
+      settings: {
+        'calendars': {'kirat_yele': 'YALAMBAR'},
+      },
+    );
+    expect(regmi.calendar.inEra(magh, Era.kiratYele).eraYear, 3805);
+    expect(
+      () => ctx.calendar.inEra(magh, Era.hijri),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'era')),
+    );
+    regmi.dispose();
+    ctx.dispose();
+  });
+
   // The finders (A2-1): an election ranked, an observance paired across
   // two reckonings, and a day for many people.
   test('the finders rank, pair and digest', () {

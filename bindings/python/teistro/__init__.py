@@ -452,6 +452,7 @@ from ._requests import (
     SuppliedEvent as SuppliedEvent,
     AddAsked as AddAsked,
     BetweenAsked as BetweenAsked,
+    InEraAsked as InEraAsked,
     NextKind as NextKind,
     NextRequest as NextRequest,
     FirstAbdika as FirstAbdika,
@@ -2985,6 +2986,21 @@ class CalendarArea(_Area):
     def convert(self, date: CalendarDate, into: Calendar) -> CalendarDate:
         """The same day in another calendar."""
         return self._context.inner.calendar_convert(date, into)
+
+    def in_era(self, date: CalendarDate, era: Era) -> CalendarDate:
+        """The date viewed in a named era: its calendar's own reading, with
+        the year that era gives it in `era_year`.
+
+        `Era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+        Sambat, its year counted from the epoch the settings'
+        `calendars.kirat_yele` names (`KIRATI`, the default, or
+        `YALAMBAR`) and turning on Magh 1; an era the calendar cannot give
+        is refused, naming `era`.
+
+        >>> # magh = ctx.calendar.convert(date(Calendar.GREGORIAN, 2026, 1, 15), Calendar.BIKRAM_SAMBAT)
+        >>> # ctx.calendar.in_era(magh, Era.KIRAT_YELE).era_year  # 5086
+        """
+        return self._context.inner.calendar_in_era(date, era)
 
     def weekday_of(self, date: CalendarDate) -> int:
         """The weekday of a date as its ISO number: Monday `1`, Sunday `7`.

@@ -29,8 +29,8 @@ use teistro_core::catalogue::{Calendar, DashaSystem, Era, Graha, Varga};
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
 use teistro_ffi::calendar::{
     TsCalendarDate, TsResolution, ts_calendar_convert, ts_calendar_fixed_of_jd,
-    ts_calendar_from_fixed, ts_calendar_is_leap, ts_calendar_jd_of_fixed, ts_calendar_month_length,
-    ts_calendar_to_fixed, ts_calendar_weekday,
+    ts_calendar_from_fixed, ts_calendar_in_era, ts_calendar_is_leap, ts_calendar_jd_of_fixed,
+    ts_calendar_month_length, ts_calendar_to_fixed, ts_calendar_weekday,
 };
 use teistro_ffi::chart::{
     TsChartRequest, TsKakshyaLord, TsSaham, TsSahamStrong, TsSahamWeak, TsSarvaStanding,
@@ -744,6 +744,83 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
         unsafe { ts_positions(ctx.handle, ptr::null(), &raw mut blob) },
         Status::InvalidArg
     );
+}
+
+/// SR-96: 15 January 2026 was Magh 1, 2082 BS, the first day of Kirati
+/// Sambat 5086 (*Kantipur*); the day before closed 5085; the context's
+/// `calendars.kirat_yele` chooses the epoch, and an era the calendar
+/// cannot give is refused by its field.
+#[test]
+fn a_bikram_sambat_date_is_viewed_in_the_kirat_yele_sambat() {
+    let in_era = |ctx: &Ctx, date: &TsCalendarDate, era: Era| {
+        let mut out = blank_date();
+        // SAFETY: a live handle and valid pointers.
+        let status =
+            unsafe { ts_calendar_in_era(ctx.handle, &raw const *date, era.id(), &raw mut out) };
+        (status, out)
+    };
+    let to_bs = |ctx: &Ctx, year: i32, month: u8, day: u8| {
+        let gregorian = date(Calendar::Gregorian, year, month, day);
+        let mut bs = blank_date();
+        // SAFETY: a live handle and valid pointers.
+        let status = unsafe {
+            ts_calendar_convert(
+                ctx.handle,
+                &raw const gregorian,
+                Calendar::BikramSambat.id(),
+                &raw mut bs,
+            )
+        };
+        assert_eq!(status, Status::Ok);
+        bs
+    };
+    let ctx = Ctx::defaults();
+    let magh = to_bs(&ctx, 2026, 1, 15);
+    assert_eq!((magh.year, magh.month, magh.day), (2082, 10, 1));
+    let (status, yele) = in_era(&ctx, &magh, Era::KiratYele);
+    assert_eq!(status, Status::Ok);
+    assert_eq!((yele.era, yele.era_year), (Era::KiratYele.id(), 5086));
+    assert_eq!(
+        (yele.calendar, yele.year, yele.month, yele.day),
+        (Calendar::BikramSambat.id(), 2082, 10, 1)
+    );
+    let (_, eve) = in_era(&ctx, &to_bs(&ctx, 2026, 1, 14), Era::KiratYele);
+    assert_eq!(eve.era_year, 5085);
+    // The calendar's own era is its own reading.
+    let (status, vikrama) = in_era(&ctx, &magh, Era::Vikrama);
+    assert_eq!(
+        (status, vikrama.era, vikrama.era_year),
+        (Status::Ok, Era::Vikrama.id(), 2082)
+    );
+
+    let regmi = Ctx::new(
+        0,
+        None,
+        Some(r#"{"calendars": {"kirat_yele": "YALAMBAR"}}"#),
+        None,
+    )
+    .expect("Regmi's epoch");
+    let (_, yalambar) = in_era(&regmi, &magh, Era::KiratYele);
+    assert_eq!(yalambar.era_year, 3805);
+
+    let (status, _) = in_era(&ctx, &magh, Era::Hijri);
+    assert_eq!(status, Status::Unsupported);
+    let (_, _, field, hint, _) = ctx.last_error();
+    assert_eq!(field.as_deref(), Some("era"));
+    assert!(hint.is_some_and(|hint| hint.contains("era.KIRAT_YELE")));
+    // A Gregorian date gives no Yele year.
+    let (status, _) = in_era(
+        &ctx,
+        &date(Calendar::Gregorian, 2026, 1, 15),
+        Era::KiratYele,
+    );
+    assert_eq!(status, Status::Unsupported);
+    // An era id the catalogue does not have.
+    let mut out = blank_date();
+    // SAFETY: as above.
+    let status = unsafe { ts_calendar_in_era(ctx.handle, &raw const magh, 0xFFFE, &raw mut out) };
+    assert_eq!(status, Status::Unsupported);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("era"));
 }
 
 #[test]

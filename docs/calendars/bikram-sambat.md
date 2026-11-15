@@ -315,6 +315,35 @@ sankrantis.
 5. Inside the official span the table wins and a disagreement is
    reported as `Divergent`, never hidden.
 
+## Kirat Yele Sambat
+
+The Kirat (Rai, Limbu, Yakkha, Sunuwar) era reads the Bikram Sambat date
+under another year number, one that turns on Maghe Sankranti, Magh 1,
+rather than Baisakh 1 (`teistro_calendar::kirat_yele`, `era.KIRAT_YELE`,
+SR-96). Days and months are the Bikram Sambat's. Two counts are in print,
+and the SDK names both rather than choosing silently (`kirat_yele::Epoch`):
+
+| Epoch | Yele year from Magh 1 | Dated in the source |
+|---|---|---|
+| `KIRATI` (default) | BS + 3004 | 5086 from Magh 1, 2082 (15 January 2026), *Kantipur*, Koshi Pradesh, 2082-10-01; 5076 from 16 January 2016, G. Rai, *Indigenous Voice*, 5 December 2021 |
+| `YALAMBAR` | BS + 1723 | 3790 in 2011 and 3795 from 15 January 2016, the same article after J. C. Regmi, *Kirat Yele Samvat Abhilekh* (Kirat Yele Samvat Adhyayan Samanvaya Samiti, 2010) |
+
+The epoch is the settings knob `calendars.kirat_yele`. Every binding
+reads the era through one entry, `calendar.in_era` (`ts_calendar_in_era`;
+`inEra` in Node, Dart and Java, `in_era` in Python, and the MCP tool
+`calendar.in_era`): a Bikram Sambat date asked in `era.KIRAT_YELE`
+answers the same year, month and day with the Yele year in `era_year`,
+so 15 January 2026 (Magh 1, 2082) is 5086 under `KIRATI` and 3805 under
+`YALAMBAR`, and the day before is 5085. The same entry answers a
+calendar's own era (`era.VIKRAMA` of a Bikram Sambat date) and refuses an
+era the calendar cannot give, `UNSUPPORTED` on `era` with a hint naming
+those it can.
+
+The English Wikipedia's 3797 for 2018 (from "1779.8 BC") disagrees with
+its own arithmetic and with Regmi's dated years by one; it is not used.
+The Government of Nepal stated on 15 January 2010 that it would
+recognise the era; no notice fixes either count.
+
 ## Open items
 
 - R3: a third independent source (an independent printed almanac, or

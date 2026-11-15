@@ -16,16 +16,16 @@ use super::knobs::{
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
     Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
     HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus,
-    MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme,
-    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
-    Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart, ReleasingSharedSign,
-    RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana,
-    SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig,
-    Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha,
-    Zodiac,
+    KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
+    MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
+    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
+    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
+    ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
+    SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka,
+    YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
@@ -213,6 +213,9 @@ fn calendars() -> Calendars {
         samvatsara: SamvatsaraCount::Barhaspatya,
         eras: [Era::Vikrama, Era::Shaka, Era::Kali].into_iter().collect(),
         marginal_month_minutes: crate::settings::DEFAULT_MARGINAL_MONTH_MINUTES,
+        // The count printed today (`calendars/bikram-sambat.md` §Kirat
+        // Yele Sambat).
+        kirat_yele: KiratYeleEpoch::Kirati,
     }
 }
 

@@ -1085,7 +1085,7 @@ mod tests {
         // names, the eleven BPHS names and the thirty named since
         // (`docs/03-design/entity-names.md` §4c, §4e).
         assert_eq!(kind("point").present, 49);
-        assert_eq!(kind("era").present, 12);
+        assert_eq!(kind("era").present, 13);
         for (name, total) in [
             ("tithi", 30),
             ("karana", 11),

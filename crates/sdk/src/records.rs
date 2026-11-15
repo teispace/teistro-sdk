@@ -932,6 +932,7 @@ pub fn records() -> Vec<Record> {
     all.extend(almanac_lookup_records());
     all.extend(sankalpa_records());
     all.extend(time_records());
+    all.extend(calendar_records());
     all.extend(geo_records());
     all.extend(engine_records());
     all.push(verify_record());
@@ -1953,9 +1954,9 @@ fn geo_records() -> [Record; 1] {
     }]
 }
 
-/// The clock and calendar records: what `TimeArea` and `CalendarArea`
-/// answer, each read from its own request record.
-fn time_records() -> [Record; 6] {
+/// The clock records: what `TimeArea` answers, each read from its own
+/// request record.
+fn time_records() -> [Record; 3] {
     [
         Record {
             name: "time.resolve",
@@ -2000,6 +2001,13 @@ fn time_records() -> [Record; 6] {
             brief: Brief::Whole,
             schemas: schemas!(crate::ScaleRequest => crate::scale::Conversion),
         },
+    ]
+}
+
+/// The calendar records: what `CalendarArea` answers, each read from its
+/// own request record.
+fn calendar_records() -> [Record; 4] {
+    [
         Record {
             name: "calendar.convert",
             boundary: "ts_calendar_convert",
@@ -2015,6 +2023,22 @@ fn time_records() -> [Record; 6] {
             compares: None,
             brief: Brief::Whole,
             schemas: schemas!(crate::time_request::CalendarAsked => crate::CalendarReading),
+        },
+        Record {
+            name: "calendar.in_era",
+            boundary: "ts_calendar_in_era",
+            title: "A date viewed in a named era, with its weekday",
+            reads: Some(crate::InEraRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::InEraRequest::from_json(json)?;
+                let calendars = context.calendar();
+                let date = calendars.in_era(&asked.date, asked.era)?;
+                let weekday = calendars.weekday_of(&date)?;
+                Answered::plain(&crate::CalendarReading { date, weekday })
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::time_request::InEraAsked => crate::CalendarReading),
         },
         Record {
             name: "calendar.add",

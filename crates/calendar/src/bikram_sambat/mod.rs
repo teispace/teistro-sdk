@@ -428,7 +428,9 @@ impl CalendarSystem for BikramSambat {
             range: (self.year_starts.first().copied().unwrap_or_default(), last),
             needs_place: false,
             needs_ephemeris: false,
-            eras: &[Era::Vikrama],
+            // The reading's own, then the Kirat Yele Sambat, a view of
+            // the same days (`kirat_yele`).
+            eras: &[Era::Vikrama, Era::KiratYele],
         }
     }
 

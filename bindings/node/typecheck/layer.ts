@@ -1631,9 +1631,13 @@ void theFeed;
 // A date adds by a span and a rule from the catalogue; a difference is a
 // span; the next occurrence names a kind or a rule.
 import type { DateSpan, NextOccurrence } from '../lib/index.js';
-import { Overflow } from '../lib/catalogue.js';
+import { Era, Overflow } from '../lib/catalogue.js';
 function theArithmetic(ctx: Context): string {
   const on: CalendarDate = ctx.calendar.add(someDate, { months: 1 }, Overflow.Carry);
+  // A date viewed in an era the catalogue names.
+  const yele: CalendarDate = ctx.calendar.inEra(on, Era.KiratYele);
+  // @ts-expect-error an era is a catalogue member
+  ctx.calendar.inEra(on, 'KIRAT_YELE');
   const age: DateSpan = ctx.calendar.between(someDate, on);
   // @ts-expect-error a rule is a catalogue member
   ctx.calendar.add(someDate, { months: 1 }, 'CLAMP');
@@ -1660,7 +1664,7 @@ function theArithmetic(ctx: Context): string {
   ctx.almanac.anniversaries({ fromYear: 2026, latitudeDeg: 0, longitudeDeg: 0, utcOffsetSeconds: 0, anniversaries: [] });
   // @ts-expect-error a kind is one of four
   ctx.almanac.next({ after: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, kind: 'HOLI' });
-  return `${age.years} ${next.keys.join()} ${next.day.day} ${next.searchedDays}`;
+  return `${age.years} ${yele.eraYear} ${next.keys.join()} ${next.day.day} ${next.searchedDays}`;
 }
 void theArithmetic;
 
