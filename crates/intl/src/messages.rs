@@ -4963,6 +4963,10 @@ pub mod sdk {
         pub mod guna {
         }
 
+        /// The `holiday_scope` group.
+        pub mod holiday_scope {
+        }
+
         /// The `house_system` group.
         pub mod house_system {
         }

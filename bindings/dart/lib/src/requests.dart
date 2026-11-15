@@ -5816,11 +5816,60 @@ final class AshauchRiteRow extends _Request {
   List<Object?> get _fields => [beginning, begun, calamity, clause, kind, noOtherWay, rite, verdict];
 }
 
+/// The fields of a [`FestivalMeta`] a caller lays over a rule's own (`03-design/festival-metadata.md` §7): each one given replaces the rule's, and each left out keeps it. A tier given is marked as the caller's own.
+final class MetaPatch extends _Request {
+  const MetaPatch({
+    this.communities,
+    this.fast,
+    this.kind,
+    this.optional,
+    this.regions,
+    this.significance,
+    this.tradition,
+  });
+
+  /// In place of its communities.
+  final List<String>? communities;
+
+  /// In place of its fast's readings.
+  final List<VrataFast>? fast;
+
+  /// In place of its kind.
+  final FestivalKind? kind;
+
+  /// In place of whether it is an office's choice.
+  final bool? optional;
+
+  /// In place of its regions.
+  final List<String>? regions;
+
+  /// In place of its tier.
+  final Significance? significance;
+
+  /// In place of its tradition.
+  final Tradition? tradition;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (communities case final communitiesValue?) 'communities': communitiesValue,
+    if (fast case final fastValue?) 'fast': [for (final e0 in fastValue) e0._wire],
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    if (optional case final optionalValue?) 'optional': optionalValue,
+    if (regions case final regionsValue?) 'regions': regionsValue,
+    if (significance case final significanceValue?) 'significance': significanceValue.key,
+    if (tradition case final traditionValue?) 'tradition': traditionValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition];
+}
+
 /// What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
 final class MetaFilter extends _Request {
   const MetaFilter({
     this.communities,
     this.kinds,
+    this.minSignificance,
     this.regions,
     this.traditions,
   });
@@ -5830,6 +5879,9 @@ final class MetaFilter extends _Request {
 
   /// The kinds kept.
   final List<FestivalKind>? kinds;
+
+  /// The least tier kept: `REGIONAL` keeps every tier but `MINOR`.
+  final Significance? minSignificance;
 
   /// The regions kept.
   final List<String>? regions;
@@ -5841,12 +5893,27 @@ final class MetaFilter extends _Request {
   Map<String, Object?> get _wire => <String, Object?>{
     if (communities case final communitiesValue?) 'communities': communitiesValue,
     if (kinds case final kindsValue?) 'kinds': [for (final e0 in kindsValue) e0.key],
+    if (minSignificance case final minSignificanceValue?) 'minSignificance': minSignificanceValue.key,
     if (regions case final regionsValue?) 'regions': regionsValue,
     if (traditions case final traditionsValue?) 'traditions': [for (final e0 in traditionsValue) e0.key],
   };
 
   @override
-  List<Object?> get _fields => [communities, kinds, regions, traditions];
+  List<Object?> get _fields => [communities, kinds, minSignificance, regions, traditions];
+}
+
+/// How a day's observances are listed (`03-design/festival-metadata.md` §7): a month grid's cell, `almanac.cells`.
+enum DayOrder implements _Keyed {
+  /// By each rule's tier ([`FestivalMeta::tier`]), then by the order Nepal's national panchanga prints them in, then by the rules' order in the request.
+  significance('SIGNIFICANCE'),
+  /// As the answer holds them: the festivals in the order of their tithis, then the fasts, the dated days, the anniversaries and the published days added.
+  ruleOrder('RULE_ORDER');
+
+  const DayOrder(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// A publisher's days for a span, read from JSON or built in code.
@@ -8331,6 +8398,64 @@ enum RiteVerdict implements _Keyed {
   barred('BARRED');
 
   const RiteVerdict(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
+final class VrataFast extends _Request {
+  const VrataFast({
+    this.end,
+    this.ifUnable,
+    this.kind,
+    required this.source,
+    this.start,
+  });
+
+  /// When it is broken; unset when the clause does not say.
+  final FastEnd? end;
+
+  /// Whether the text allows it only to one unable to keep the reading before it.
+  final bool? ifUnable;
+
+  /// How it is kept; unset when the clause names no kind.
+  final FastKind? kind;
+
+  /// Where it is stated.
+  final String source;
+
+  /// When it begins; unset when the clause does not say.
+  final FastStart? start;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (end case final endValue?) 'end': endValue.key,
+    if (ifUnable case final ifUnableValue?) 'ifUnable': ifUnableValue,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    'source': source,
+    if (start case final startValue?) 'start': startValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [end, ifUnable, kind, source, start];
+}
+
+/// How much a festival weighs beside the others kept on its day (`03-design/festival-metadata.md` §7), first to last: a day's observances are listed in this order.
+enum Significance implements _Keyed {
+  /// A public holiday of the whole country: a government's notice lists it, for everyone, as no office's choice.
+  national('NATIONAL'),
+  /// A festival a source sets above the day's others: the committee's print sets it in bold, or a text gives it a fast.
+  major('MAJOR'),
+  /// A day that opens or closes a span the print names (a month of bathing, the Chaturmas, a panchaka), marked by its source.
+  period('PERIOD'),
+  /// A holiday of a part of the country or of a community, an office's choice, or a community's or a region's own festival.
+  regional('REGIONAL'),
+  /// Everything else.
+  minor('MINOR');
+
+  const Significance(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -12198,6 +12323,36 @@ enum NonLatin implements _Keyed {
   final String key;
 }
 
+/// When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
+enum FastEnd implements _Keyed {
+  /// On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
+  parana('PARANA'),
+  /// The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+  night('NIGHT'),
+  /// The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
+  moonrise('MOONRISE');
+
+  const FastEnd(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// When a vrata's fast begins.
+enum FastStart implements _Keyed {
+  /// After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+  afterEkabhakta('AFTER_EKABHAKTA'),
+  /// On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+  morning('MORNING');
+
+  const FastStart(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// What a rule's festival is, as far as a source says.
 final class FestivalMeta extends _Request {
   const FestivalMeta({
@@ -12206,6 +12361,7 @@ final class FestivalMeta extends _Request {
     this.kind,
     this.optional,
     this.regions,
+    this.significance,
     this.tradition,
   });
 
@@ -12224,6 +12380,9 @@ final class FestivalMeta extends _Request {
   /// Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as [`super::region::REGIONS`] lists them; empty when no source says.
   final List<String>? regions;
 
+  /// The tier a source marks it with, or a caller sets; unset when the fields above derive it ([`FestivalMeta::tier`], §7 of the page).
+  final SignificanceMark? significance;
+
   /// Its religion; unset when no source places it.
   final Tradition? tradition;
 
@@ -12234,11 +12393,12 @@ final class FestivalMeta extends _Request {
     if (kind case final kindValue?) 'kind': kindValue.key,
     if (optional case final optionalValue?) 'optional': optionalValue,
     if (regions case final regionsValue?) 'regions': regionsValue,
+    if (significance case final significanceValue?) 'significance': significanceValue._wire,
     if (tradition case final traditionValue?) 'tradition': traditionValue.key,
   };
 
   @override
-  List<Object?> get _fields => [communities, fast, kind, optional, regions, tradition];
+  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition];
 }
 
 /// What may still move a published day.
@@ -14230,42 +14390,27 @@ enum SubDegree implements _Keyed {
   final String key;
 }
 
-/// One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
-final class VrataFast extends _Request {
-  const VrataFast({
-    this.end,
-    this.ifUnable,
-    this.kind,
-    required this.source,
-    this.start,
+/// A tier a row is marked with, and where it is said.
+final class SignificanceMark extends _Request {
+  const SignificanceMark({
+    this.source,
+    required this.tier,
   });
 
-  /// When it is broken; unset when the clause does not say.
-  final FastEnd? end;
+  /// Where it is said; empty for a caller's own.
+  final String? source;
 
-  /// Whether the text allows it only to one unable to keep the reading before it.
-  final bool? ifUnable;
-
-  /// How it is kept; unset when the clause names no kind.
-  final FastKind? kind;
-
-  /// Where it is stated.
-  final String source;
-
-  /// When it begins; unset when the clause does not say.
-  final FastStart? start;
+  /// The tier.
+  final Significance tier;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
-    if (end case final endValue?) 'end': endValue.key,
-    if (ifUnable case final ifUnableValue?) 'ifUnable': ifUnableValue,
-    if (kind case final kindValue?) 'kind': kindValue.key,
-    'source': source,
-    if (start case final startValue?) 'start': startValue.key,
+    if (source case final sourceValue?) 'source': sourceValue,
+    'tier': tier.key,
   };
 
   @override
-  List<Object?> get _fields => [end, ifUnable, kind, source, start];
+  List<Object?> get _fields => [source, tier];
 }
 
 /// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
@@ -15276,36 +15421,6 @@ enum SettingPart implements _Keyed {
   navamshaArc('NAVAMSHA_ARC');
 
   const SettingPart(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
-enum FastEnd implements _Keyed {
-  /// On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
-  parana('PARANA'),
-  /// The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
-  night('NIGHT'),
-  /// The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
-  moonrise('MOONRISE');
-
-  const FastEnd(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// When a vrata's fast begins.
-enum FastStart implements _Keyed {
-  /// After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
-  afterEkabhakta('AFTER_EKABHAKTA'),
-  /// On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
-  morning('MORNING');
-
-  const FastStart(this.key);
 
   /// The key the wire spells it with.
   @override

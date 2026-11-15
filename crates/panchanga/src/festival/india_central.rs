@@ -171,6 +171,7 @@ pub(super) fn gazetted(
         regions: regions.iter().map(|&region| region.to_owned()).collect(),
         optional,
         fast: Vec::new(),
+        significance: None,
     }
 }
 

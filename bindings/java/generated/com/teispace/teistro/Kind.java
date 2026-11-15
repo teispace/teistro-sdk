@@ -432,7 +432,12 @@ public enum Kind implements Member {
     /**
      * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
      */
-    CHART_FRAME(162, "chart_frame");
+    CHART_FRAME(162, "chart_frame"),
+
+    /**
+     * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
+     */
+    HOLIDAY_SCOPE(167, "holiday_scope");
 
     private static final Kind[] MEMBERS = values();
 

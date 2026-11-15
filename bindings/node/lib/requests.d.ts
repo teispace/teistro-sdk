@@ -1879,9 +1879,17 @@ export interface FestivalRequest {
    */
   readonly hijriOffset?: number | null;
   /**
+   * What a caller lays over the meta of the rules of each key: each field given replaces the rule's, a tier among them.
+   */
+  readonly meta?: Readonly<Record<string, MetaPatch>>;
+  /**
    * What the answer keeps, by the rules' `meta`; every rule when left out.
    */
   readonly only?: MetaFilter | null;
+  /**
+   * How a day's observances are listed: `SIGNIFICANCE` when left out.
+   */
+  readonly order?: DayOrder | null;
   /**
    * The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence.
    */
@@ -4076,6 +4084,40 @@ export interface AshauchRiteRow {
 }
 
 /**
+ * The fields of a [`FestivalMeta`] a caller lays over a rule's own (`03-design/festival-metadata.md` §7): each one given replaces the rule's, and each left out keeps it. A tier given is marked as the caller's own.
+ */
+export interface MetaPatch {
+  /**
+   * In place of its communities.
+   */
+  readonly communities?: readonly string[] | null;
+  /**
+   * In place of its fast's readings.
+   */
+  readonly fast?: readonly VrataFast[] | null;
+  /**
+   * In place of its kind.
+   */
+  readonly kind?: Member<catalogue.FestivalKind> | null;
+  /**
+   * In place of whether it is an office's choice.
+   */
+  readonly optional?: boolean | null;
+  /**
+   * In place of its regions.
+   */
+  readonly regions?: readonly string[] | null;
+  /**
+   * In place of its tier.
+   */
+  readonly significance?: Significance | null;
+  /**
+   * In place of its tradition.
+   */
+  readonly tradition?: Member<catalogue.Tradition> | null;
+}
+
+/**
  * What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
  */
 export interface MetaFilter {
@@ -4088,6 +4130,10 @@ export interface MetaFilter {
    */
   readonly kinds?: readonly Member<catalogue.FestivalKind>[];
   /**
+   * The least tier kept: `REGIONAL` keeps every tier but `MINOR`.
+   */
+  readonly minSignificance?: Significance | null;
+  /**
    * The regions kept.
    */
   readonly regions?: readonly string[];
@@ -4096,6 +4142,14 @@ export interface MetaFilter {
    */
   readonly traditions?: readonly Member<catalogue.Tradition>[];
 }
+
+/**
+ * How a day's observances are listed (`03-design/festival-metadata.md` §7): a month grid's cell, `almanac.cells`.
+ *
+ * `SIGNIFICANCE`: By each rule's tier ([`FestivalMeta::tier`]), then by the order Nepal's national panchanga prints them in, then by the rules' order in the request.
+ * `RULE_ORDER`: As the answer holds them: the festivals in the order of their tithis, then the fasts, the dated days, the anniversaries and the published days added.
+ */
+export type DayOrder = 'SIGNIFICANCE' | 'RULE_ORDER';
 
 /**
  * A publisher's days for a span, read from JSON or built in code.
@@ -5715,6 +5769,43 @@ export type RiteBeginning = 'NANDI_SHRADDHA' | 'SANKALPA' | 'VARANA' | 'COOKING'
  * `BARRED`: It waits for the period's end.
  */
 export type RiteVerdict = 'GOES_ON' | 'IN_PART' | 'BARRED';
+
+/**
+ * One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
+ */
+export interface VrataFast {
+  /**
+   * When it is broken; unset when the clause does not say.
+   */
+  readonly end?: FastEnd | null;
+  /**
+   * Whether the text allows it only to one unable to keep the reading before it.
+   */
+  readonly ifUnable?: boolean;
+  /**
+   * How it is kept; unset when the clause names no kind.
+   */
+  readonly kind?: Member<catalogue.FastKind> | null;
+  /**
+   * Where it is stated.
+   */
+  readonly source: string;
+  /**
+   * When it begins; unset when the clause does not say.
+   */
+  readonly start?: FastStart | null;
+}
+
+/**
+ * How much a festival weighs beside the others kept on its day (`03-design/festival-metadata.md` §7), first to last: a day's observances are listed in this order.
+ *
+ * `NATIONAL`: A public holiday of the whole country: a government's notice lists it, for everyone, as no office's choice.
+ * `MAJOR`: A festival a source sets above the day's others: the committee's print sets it in bold, or a text gives it a fast.
+ * `PERIOD`: A day that opens or closes a span the print names (a month of bathing, the Chaturmas, a panchaka), marked by its source.
+ * `REGIONAL`: A holiday of a part of the country or of a community, an office's choice, or a community's or a region's own festival.
+ * `MINOR`: Everything else.
+ */
+export type Significance = 'NATIONAL' | 'MAJOR' | 'PERIOD' | 'REGIONAL' | 'MINOR';
 
 /**
  * One published day.
@@ -8165,6 +8256,23 @@ export type NameReduction = 'BY_WORD' | 'WHOLE';
 export type NonLatin = 'REFUSE' | 'SKIP';
 
 /**
+ * When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
+ *
+ * `PARANA`: On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
+ * `NIGHT`: The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+ * `MOONRISE`: The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
+ */
+export type FastEnd = 'PARANA' | 'NIGHT' | 'MOONRISE';
+
+/**
+ * When a vrata's fast begins.
+ *
+ * `AFTER_EKABHAKTA`: After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+ * `MORNING`: On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+ */
+export type FastStart = 'AFTER_EKABHAKTA' | 'MORNING';
+
+/**
  * A half-open interval of time, `[from, to)`.
  */
 export interface Interval {
@@ -8202,6 +8310,10 @@ export interface FestivalMeta {
    * Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as [`super::region::REGIONS`] lists them; empty when no source says.
    */
   readonly regions?: readonly string[];
+  /**
+   * The tier a source marks it with, or a caller sets; unset when the fields above derive it ([`FestivalMeta::tier`], §7 of the page).
+   */
+  readonly significance?: SignificanceMark | null;
   /**
    * Its religion; unset when no source places it.
    */
@@ -9213,29 +9325,17 @@ export type LifeClass = 'balarishta' | 'yogarishta' | 'short' | 'medium' | 'long
 export type SubDegree = 'POORNA' | 'ISHRAFA' | 'NONE';
 
 /**
- * One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
+ * A tier a row is marked with, and where it is said.
  */
-export interface VrataFast {
+export interface SignificanceMark {
   /**
-   * When it is broken; unset when the clause does not say.
+   * Where it is said; empty for a caller's own.
    */
-  readonly end?: FastEnd | null;
+  readonly source?: string;
   /**
-   * Whether the text allows it only to one unable to keep the reading before it.
+   * The tier.
    */
-  readonly ifUnable?: boolean;
-  /**
-   * How it is kept; unset when the clause names no kind.
-   */
-  readonly kind?: Member<catalogue.FastKind> | null;
-  /**
-   * Where it is stated.
-   */
-  readonly source: string;
-  /**
-   * When it begins; unset when the clause does not say.
-   */
-  readonly start?: FastStart | null;
+  readonly tier: Significance;
 }
 
 /**
@@ -10285,23 +10385,6 @@ export type OfficeOrder = 'GLOSS' | 'HIGHEST' | 'LOWEST';
  * `NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
  */
 export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
-
-/**
- * When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
- *
- * `PARANA`: On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
- * `NIGHT`: The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
- * `MOONRISE`: The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
- */
-export type FastEnd = 'PARANA' | 'NIGHT' | 'MOONRISE';
-
-/**
- * When a vrata's fast begins.
- *
- * `AFTER_EKABHAKTA`: After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
- * `MORNING`: On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
- */
-export type FastStart = 'AFTER_EKABHAKTA' | 'MORNING';
 
 /**
  * Which rising sign a [`SaitRising`] reads.

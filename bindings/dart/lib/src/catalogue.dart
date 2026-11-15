@@ -359,7 +359,9 @@ enum Kind {
   /// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
   vyayaKind(161, 'vyaya_kind'),
   /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
-  chartFrame(162, 'chart_frame');
+  chartFrame(162, 'chart_frame'),
+  /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
+  holidayScope(167, 'holiday_scope');
 
   const Kind(this.id, this.key);
 
@@ -5493,6 +5495,61 @@ enum ChartFrame implements KeyOf<ChartFrame> {
 
   /// The member with a key, or `null` for one this build does not know.
   static ChartFrame? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
+enum HolidayScope implements KeyOf<HolidayScope> {
+  /// A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide
+  national(0, 'NATIONAL'),
+  /// A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them
+  concerned(1, 'CONCERNED'),
+  /// A holiday only for the community its clause names (the Newar, the Dura)
+  community(2, 'COMMUNITY'),
+  /// A holiday only in the districts or the valley its clause names
+  region(3, 'REGION'),
+  /// A holiday only for the followers of the religion its clause names
+  religion(4, 'RELIGION'),
+  /// A holiday only for women employees
+  women(5, 'WOMEN'),
+  /// A holiday only for educational institutions
+  schools(6, 'SCHOOLS'),
+  /// A holiday only for employees with disabilities
+  disability(7, 'DISABILITY'),
+  /// Not a holiday: a day kept nationally on which offices open
+  officesOpen(8, 'OFFICES_OPEN'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const HolidayScope(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'holiday_scope.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<HolidayScope> registered(String key) => Registered._('holiday_scope.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static HolidayScope byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => HolidayScope.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static HolidayScope? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

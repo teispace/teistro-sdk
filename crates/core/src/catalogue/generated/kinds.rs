@@ -194,9 +194,11 @@ pub enum Kind {
     VyayaKind = 161,
     /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
     ChartFrame = 162,
+    /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
+    HolidayScope = 167,
 }
 
-const BY_NAME: [(&str, Kind); 89] = [
+const BY_NAME: [(&str, Kind); 90] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -237,6 +239,7 @@ const BY_NAME: [(&str, Kind); 89] = [
     ("graha", Kind::Graha),
     ("graha_bhava", Kind::GrahaBhava),
     ("guna", Kind::Guna),
+    ("holiday_scope", Kind::HolidayScope),
     ("house_system", Kind::HouseSystem),
     ("kaala", Kind::Kaala),
     ("karana", Kind::Karana),
@@ -290,7 +293,7 @@ const BY_NAME: [(&str, Kind); 89] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 89] = [
+    pub const ALL: [Kind; 90] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -380,6 +383,7 @@ impl Kind {
         Kind::VastuYoni,
         Kind::VyayaKind,
         Kind::ChartFrame,
+        Kind::HolidayScope,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -481,6 +485,7 @@ impl Kind {
             Kind::VastuYoni => "vastu_yoni",
             Kind::VyayaKind => "vyaya_kind",
             Kind::ChartFrame => "chart_frame",
+            Kind::HolidayScope => "holiday_scope",
         }
     }
 
@@ -596,6 +601,7 @@ impl Kind {
             Kind::VastuYoni => 8,
             Kind::VyayaKind => 3,
             Kind::ChartFrame => 4,
+            Kind::HolidayScope => 9,
         }
     }
 
@@ -712,6 +718,7 @@ impl Kind {
             160 => Some(Kind::VastuYoni),
             161 => Some(Kind::VyayaKind),
             162 => Some(Kind::ChartFrame),
+            167 => Some(Kind::HolidayScope),
             _ => None,
         }
     }

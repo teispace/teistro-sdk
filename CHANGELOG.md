@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day's festivals in order of significance (rc.7), and Nepal's gazetted holidays (SR-123).**
+**Numbers:** no day moves. A cell's `festivals` now lists a day's observances by tier
+(`NATIONAL`, `MAJOR`, `PERIOD`, `REGIONAL`, `MINOR`), then by where Nepal's national
+panchanga prints them, then by rule order; a festival request's `order: "RULE_ORDER"`
+keeps the old order. `NEPAL` and `NEPAL_PANCHANGA`'s `input_hash` moves: their rules
+carry the tier the VS 2083 gazette gives them (Ubhauli, the Lhosars, Chhath and Maghi
+`NATIONAL`; Gaura parva, Guru Nanak Jayanti, the disability day `REGIONAL`; Teej `MAJOR`;
+Tihar's and Dashain's days inside the notice's spans `NATIONAL`; a key the notice gives
+the country no holiday, such as Kag Tihar and Rama Navami, below it) or the committee's
+print marks (60 `MAJOR` from its bold, 23 `PERIOD`
+stretch ends, 2 `REGIONAL` sarai jatras) (`03-design/festival-metadata.md` §7).
+- **Requests:** `meta` lays a patch on any key's values, its tier included; `only` takes
+  `minSignificance`. A pack listing's row gains `significance`.
+- **Holidays:** `NEPAL` and `NEPAL_PANCHANGA`'s listings gain `holidays`, the Ministry of
+  Home Affairs' 45 for VS 2083 (*Nepal Gazette* vol. 75 no. 67), each the notice's words
+  kept apart from the festival keys it names, with whom it is for (`holiday_scope`,
+  catalogue kind 167) (`03-design/nepal-gazette-holidays.md`).
+- **Names:** six festivals the notice names gain names in every locale (the two Eids,
+  Mawlid, Dura Mhaipru Nakuma, Sirua Pavani, Bhoto Jatra); `BALA_CHATURDASHI` is *Bala
+  Charhe* and `en-Latn`'s `LOKTANTRA_DIWAS` *Loktantra Diwas*, since `check-intl` now
+  fails two festival keys sharing a name in one locale.
+
 **The Kirat Yele Sambat (SR-96).**
 **Numbers:** no computed number moves. Every settings hash moves, `calendars` gaining
 the knob `kirat_yele`; a stored settings snapshot taken before it no longer reads

@@ -12,7 +12,7 @@
 //! it, one reading a clause.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{FastKind, FestivalKind, Tradition};
+use teistro_core::catalogue::{FastKind, FestivalKind, HolidayScope, Tradition};
 
 /// What a rule's festival is, as far as a source says.
 ///
@@ -60,6 +60,99 @@ pub struct FestivalMeta {
     /// says, which does not say there is none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub fast: Vec<VrataFast>,
+    /// The tier a source marks it with, or a caller sets; unset when the
+    /// fields above derive it ([`FestivalMeta::tier`], §7 of the page).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub significance: Option<SignificanceMark>,
+}
+
+/// How much a festival weighs beside the others kept on its day
+/// (`03-design/festival-metadata.md` §7), first to last: a day's
+/// observances are listed in this order.
+///
+/// ```
+/// use teistro_panchanga::festival::{FestivalMeta, Significance};
+///
+/// assert!(Significance::National < Significance::Minor);
+/// assert_eq!(FestivalMeta::nepal("LAKSHMI_PUJA").tier(), Significance::National);
+/// assert_eq!(FestivalMeta::nepal("GAI_JATRA").tier(), Significance::Regional);
+/// assert_eq!(FestivalMeta::nepal("PAPANKUSHA_EKADASHI").tier(), Significance::Major);
+/// assert_eq!(FestivalMeta::default().tier(), Significance::Minor);
+/// ```
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize,
+)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Significance {
+    /// A public holiday of the whole country: a government's notice lists
+    /// it, for everyone, as no office's choice.
+    National,
+    /// A festival a source sets above the day's others: the committee's
+    /// print sets it in bold, or a text gives it a fast.
+    Major,
+    /// A day that opens or closes a span the print names (a month of
+    /// bathing, the Chaturmas, a panchaka), marked by its source.
+    Period,
+    /// A holiday of a part of the country or of a community, an office's
+    /// choice, or a community's or a region's own festival.
+    Regional,
+    /// Everything else.
+    #[default]
+    Minor,
+}
+
+/// The fields of a [`FestivalMeta`] a caller lays over a rule's own
+/// (`03-design/festival-metadata.md` §7): each one given replaces the
+/// rule's, and each left out keeps it. A tier given is marked as the
+/// caller's own.
+///
+/// ```
+/// use teistro_panchanga::festival::{FestivalMeta, MetaPatch, Significance};
+///
+/// let patch: MetaPatch = serde_json::from_str(r#"{"significance": "MINOR"}"#)?;
+/// let mine = FestivalMeta::nepal("LAKSHMI_PUJA").patched(&patch);
+/// assert_eq!(mine.tier(), Significance::Minor);
+/// assert_eq!(mine.kind, FestivalMeta::nepal("LAKSHMI_PUJA").kind);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct MetaPatch {
+    /// In place of its kind.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<FestivalKind>,
+    /// In place of its tradition.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tradition: Option<Tradition>,
+    /// In place of its communities.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub communities: Option<Vec<String>>,
+    /// In place of its regions.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub regions: Option<Vec<String>>,
+    /// In place of whether it is an office's choice.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub optional: Option<bool>,
+    /// In place of its fast's readings.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fast: Option<Vec<VrataFast>>,
+    /// In place of its tier.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub significance: Option<Significance>,
+}
+
+/// A tier a row is marked with, and where it is said.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SignificanceMark {
+    /// The tier.
+    pub tier: Significance,
+    /// Where it is said; empty for a caller's own.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub source: String,
 }
 
 /// One way a text keeps a vrata's fast (`03-design/festival-metadata.md`
@@ -194,6 +287,7 @@ impl Group {
             regions: owned(self.regions),
             optional: false,
             fast: Vec::new(),
+            significance: None,
         }
     }
 }
@@ -247,6 +341,19 @@ impl FestivalMeta {
             .and_then(|&(_, group)| NEPAL_GROUPS.get(usize::from(group)))
             .map_or_else(FestivalMeta::default, Group::meta)
             .with_fast(key)
+            .with_gazette(key)
+            .with_mark(key)
+    }
+
+    /// [`FestivalMeta::nepal`] before [`MARKS`]: its group's values, its
+    /// fast and the gazette's tier.
+    #[cfg(test)]
+    fn nepal_unmarked(key: &str) -> FestivalMeta {
+        FestivalMeta {
+            significance: None,
+            ..FestivalMeta::nepal(key)
+        }
+        .with_gazette(key)
     }
 
     /// The values of a rule from a Hindu text and from no country's list:
@@ -272,6 +379,145 @@ impl FestivalMeta {
         FestivalMeta {
             fast: VrataFast::of(key),
             ..self
+        }
+    }
+
+    /// These values with the tier Nepal's gazetted notice gives `key`
+    /// (`nepal-gazette-holidays.md` §4), read from VS 2083's notice, the
+    /// one in hand: `NATIONAL` for a holiday the whole country keeps,
+    /// `REGIONAL` for one only some keep (a community, a region, women,
+    /// schools), or `MAJOR` when a text also gives it a fast. A holiday of
+    /// several days granted as one festival's grants that festival's days
+    /// inside it ([`super::nepal_gazette_scope`]). A key the
+    /// notice gives the whole country no holiday is not `NATIONAL`, whatever
+    /// its group says: it takes the tier its fields give below it. A later
+    /// year's notice is read the same way when it is added, and replaces
+    /// this one's tiers.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::{FestivalMeta, Significance};
+    ///
+    /// assert_eq!(FestivalMeta::nepal("TAMU_LHOSAR").tier(), Significance::National);
+    /// assert_eq!(FestivalMeta::nepal("GAURA_PARVA").tier(), Significance::Regional);
+    /// assert_eq!(FestivalMeta::nepal("HARITALIKA").tier(), Significance::Major);
+    /// // Gazetted in its group, and no holiday in VS 2083's notice.
+    /// assert_eq!(FestivalMeta::nepal("RAMA_NAVAMI").tier(), Significance::Major);
+    /// // A day of Tihar inside the notice's Tihar holiday, and one before it.
+    /// assert_eq!(FestivalMeta::nepal("KUKUR_TIHAR").tier(), Significance::National);
+    /// assert_eq!(FestivalMeta::nepal("KAG_TIHAR").tier(), Significance::Major);
+    /// ```
+    #[must_use]
+    pub fn with_gazette(self, key: &str) -> FestivalMeta {
+        let (tier, source) = match super::nepal_gazette_scope(key) {
+            Some((HolidayScope::National, source)) => (Significance::National, source),
+            Some((scope, source)) if scope != HolidayScope::OfficesOpen => {
+                let tier = if self.fast.is_empty() {
+                    Significance::Regional
+                } else {
+                    Significance::Major
+                };
+                (tier, source)
+            }
+            _ if self.fields_tier(true) == Significance::National => {
+                (self.fields_tier(false), NO_NATIONWIDE_HOLIDAY.to_owned())
+            }
+            _ => return self,
+        };
+        FestivalMeta {
+            significance: Some(SignificanceMark { tier, source }),
+            ..self
+        }
+    }
+
+    /// These values with the tier a source marks `key` with (§7 of the
+    /// page: the national panchanga's bold, a stretch's ends, a jatra
+    /// named by its place), when one does.
+    #[must_use]
+    pub fn with_mark(self, key: &str) -> FestivalMeta {
+        let marked = MARKS
+            .binary_search_by_key(&key, |&(held, _, _)| held)
+            .ok()
+            .and_then(|at| MARKS.get(at))
+            .map(|&(_, tier, source)| SignificanceMark {
+                tier,
+                source: source.to_owned(),
+            });
+        FestivalMeta {
+            significance: marked.or(self.significance),
+            ..self
+        }
+    }
+
+    /// These values with `patch` laid over them: each field it gives
+    /// replaces this one's.
+    #[must_use]
+    pub fn patched(self, patch: &MetaPatch) -> FestivalMeta {
+        FestivalMeta {
+            kind: patch.kind.or(self.kind),
+            tradition: patch.tradition.or(self.tradition),
+            communities: patch.communities.clone().unwrap_or(self.communities),
+            regions: patch.regions.clone().unwrap_or(self.regions),
+            optional: patch.optional.unwrap_or(self.optional),
+            fast: patch.fast.clone().unwrap_or(self.fast),
+            significance: patch
+                .significance
+                .map(|tier| SignificanceMark {
+                    tier,
+                    source: String::new(),
+                })
+                .or(self.significance),
+        }
+    }
+
+    /// Its tier (§7 of the page): the one it is marked with, else what
+    /// its fields say. A government's holiday for the whole country,
+    /// no office's choice, is `NATIONAL`; a day a text gives a fast is
+    /// `MAJOR`; a holiday or festival of a part of the country or of a
+    /// community, or an office's choice, `REGIONAL`; the rest `MINOR`.
+    /// `PERIOD`, and `MAJOR` beyond the fasts, are marked, since no field
+    /// says them.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::FestivalKind;
+    /// use teistro_panchanga::festival::{FestivalMeta, Significance, SignificanceMark};
+    ///
+    /// let state = FestivalMeta {
+    ///     kind: Some(FestivalKind::Gazetted),
+    ///     regions: vec!["IN".to_owned(), "IN-BR".to_owned()],
+    ///     ..FestivalMeta::default()
+    /// };
+    /// assert_eq!(state.tier(), Significance::Regional);
+    /// let mine = FestivalMeta {
+    ///     significance: Some(SignificanceMark { tier: Significance::Major, source: String::new() }),
+    ///     ..state
+    /// };
+    /// assert_eq!(mine.tier(), Significance::Major);
+    /// ```
+    #[must_use]
+    pub fn tier(&self) -> Significance {
+        self.significance
+            .as_ref()
+            .map_or_else(|| self.fields_tier(true), |mark| mark.tier)
+    }
+
+    /// The tier its fields give, `NATIONAL` among them only when
+    /// `national` allows it.
+    fn fields_tier(&self, national: bool) -> Significance {
+        // A part of a country: a state's ISO code, or a key no ISO code is.
+        let limited = !self.communities.is_empty()
+            || self
+                .regions
+                .iter()
+                .any(|region| super::region::country(region) != Some(region.as_str()));
+        let gazetted = self.kind == Some(FestivalKind::Gazetted);
+        if national && gazetted && !self.optional && !limited {
+            Significance::National
+        } else if !self.fast.is_empty() {
+            Significance::Major
+        } else if gazetted || self.kind == Some(FestivalKind::RegionalEthnic) || limited {
+            Significance::Regional
+        } else {
+            Significance::Minor
         }
     }
 }
@@ -307,6 +553,9 @@ pub struct MetaFilter {
     /// The regions kept.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub regions: Vec<String>,
+    /// The least tier kept: `REGIONAL` keeps every tier but `MINOR`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min_significance: Option<Significance>,
 }
 
 impl MetaFilter {
@@ -332,6 +581,9 @@ impl MetaFilter {
                     .is_some_and(|tradition| self.traditions.contains(&tradition)))
             && one_of(&self.communities, &meta.communities)
             && in_region(&self.regions, &meta.regions)
+            && self
+                .min_significance
+                .is_none_or(|least| meta.tier() <= least)
     }
 }
 
@@ -562,6 +814,170 @@ const GAURA_PURNIMA: [Reading; 1] = [reading(
     (None, Some(FastEnd::Moonrise)),
     "a published Gaudiya calendar (VaisnavaCalendar.Info, from GCal 11): \"fast till moonrise\" (C1123)",
 )];
+
+/// Where Nepal's national panchanga prints a key among the others on its
+/// day, first to last (§7 of the page): the order a day's observances of
+/// one tier keep. `None` for a key it does not print, which keeps its
+/// rule's place.
+///
+/// ```
+/// use teistro_panchanga::festival::printed_order;
+///
+/// assert_eq!(printed_order("NO_SUCH_DAY"), None);
+/// ```
+#[must_use]
+pub fn printed_order(key: &str) -> Option<u16> {
+    PRINTED_ORDER
+        .binary_search_by_key(&key, |&(held, _)| held)
+        .ok()
+        .and_then(|at| PRINTED_ORDER.get(at))
+        .map(|&(_, place)| place)
+}
+
+/// [`printed_order`]'s table, sorted by key: the places the committee's
+/// VS 2083 print gives keys of one tier on the days they meet, read off
+/// its rows. A sankranti leads its day; on Baisakh 18 Chandi Purnima,
+/// Buddha Jayanti, Labour Day, then Ubhauli; the pradosha vrata before
+/// the day's shraddhas and Dhanteras; on Kartik 24 the moonrise, Mha puja,
+/// then Nepal Sambat's new year; on Kartik 22 Kukur Tihar, then Lakshmi
+/// Puja; Kartik snan's end before the chaturmas
+/// vrata's, and the Swasthani vrata's start before Magh snan's. A place
+/// orders only keys of one day; a key not here follows those that are.
+const PRINTED_ORDER: [(&str, u16); 24] = [
+    ("BUDDHA_JAYANTI", 2),
+    ("CHANDI_PURNIMA", 1),
+    ("CHANDRODAYA", 1),
+    ("DHANU_SANKRANTI", 0),
+    ("INTERNATIONAL_LABOUR_DAY", 3),
+    ("KANYA_SANKRANTI", 0),
+    ("KARKATA_SANKRANTI", 0),
+    ("KARTIK_SNAN_ENDS", 1),
+    ("KUKUR_TIHAR", 1),
+    ("KUMBHA_SANKRANTI", 0),
+    ("LAKSHMI_PUJA", 2),
+    ("MAKARA_SANKRANTI", 0),
+    ("MESHA_SANKRANTI", 0),
+    ("MHA_PUJA", 2),
+    ("MINA_SANKRANTI", 0),
+    ("MITHUNA_SANKRANTI", 0),
+    ("NEPAL_SAMBAT_NEW_YEAR", 3),
+    ("PRADOSHA_VRATA", 1),
+    ("SIMHA_SANKRANTI", 0),
+    ("SWASTHANI_VRAT_BEGINS", 1),
+    ("TULA_SANKRANTI", 0),
+    ("UBHAULI", 4),
+    ("VRISHABHA_SANKRANTI", 0),
+    ("VRISHCHIKA_SANKRANTI", 0),
+];
+
+/// Why a key gazetted in its group is not `NATIONAL` in Nepal's packs.
+const NO_NATIONWIDE_HOLIDAY: &str = "the Ministry of Home Affairs' notice of VS 2083's holidays (Nepal Gazette vol. 75 no. 67) gives the whole country no holiday for it";
+
+/// What Nepal's national panchanga sets in bold: the day's main
+/// observances, a vrata's day most of all (§7 of the page).
+const BOLD: &str = "Nepal's national panchanga (the committee's VS 2083 print) sets it in bold among the day's observances on the days it prints it";
+
+/// A day that opens or closes a stretch.
+const SPAN: &str = "its name in Nepal's national panchanga opens or closes a stretch of days (आरम्भ, सुरु, समाप्ति, समापन): the day marks the stretch, not itself";
+
+/// A jatra printed by its place.
+const PLACE: &str = "Nepal's national panchanga (the committee's VS 2083 print) names it by its place, in Arghakhanchi (खाँचीमा, अर्घामा सरायपर्व): kept there, not across the country";
+
+/// The tiers a source marks a shipped key with, sorted for the binary
+/// search (§7 of the page): what no field of its meta says. A key a
+/// gazetted clause gives a holiday takes the clause's tier instead
+/// ([`FestivalMeta::with_gazette`]), and is not here.
+const MARKS: [(&str, Significance, &str); 85] = [
+    ("ADUKHA_NAVAMI", Significance::Major, BOLD),
+    ("AKSHAYA_TRITIYA", Significance::Major, BOLD),
+    ("AMAVASYA_SHRADDHA", Significance::Major, BOLD),
+    ("ANANTA_CHATURDASHI", Significance::Major, BOLD),
+    ("ARGHA_SARAI_PARVA", Significance::Regional, PLACE),
+    ("ASHTAMI_SHRADDHA", Significance::Major, BOLD),
+    ("BAISAKH_SNAN_ENDS", Significance::Period, SPAN),
+    ("BALA_CHATURDASHI_BALA", Significance::Major, BOLD),
+    ("BHAUMASHTAMI", Significance::Major, BOLD),
+    ("BHISHMA_PANCHAKA_ARAMBHA", Significance::Period, SPAN),
+    ("BILVA_NIMANTRAN", Significance::Major, BOLD),
+    ("BISKET_JATRA_BEGINS", Significance::Period, SPAN),
+    ("BISKET_JATRA_ENDS", Significance::Period, SPAN),
+    ("BUDHASHTAMI", Significance::Major, BOLD),
+    ("CHANDRODAYA", Significance::Major, BOLD),
+    ("CHATURDASHI_SHRADDHA", Significance::Major, BOLD),
+    ("CHATURMAS_BEGINS", Significance::Period, SPAN),
+    ("CHATURMAS_ENDS", Significance::Period, SPAN),
+    ("CHATURTHI_SHRADDHA", Significance::Major, BOLD),
+    ("CIVIL_SERVICE_DAY", Significance::Major, BOLD),
+    ("DASHAHARA_SNANA_ARAMBHA", Significance::Period, SPAN),
+    ("DASHAMI_SHRADDHA", Significance::Major, BOLD),
+    ("DEVI_VISARJAN", Significance::Major, BOLD),
+    ("DHANTERAS", Significance::Major, BOLD),
+    ("DHANU_SANKRANTI", Significance::Major, BOLD),
+    ("DURVA_ASHTAMI", Significance::Major, BOLD),
+    ("DWADASHI_SHRADDHA", Significance::Major, BOLD),
+    ("DWITIYA_SHRADDHA", Significance::Major, BOLD),
+    ("EKADASHI_SHRADDHA", Significance::Major, BOLD),
+    ("ELECTION_DAY", Significance::Major, BOLD),
+    ("GANESHA_CHATURTHI", Significance::Major, BOLD),
+    ("GAURI_VRAT", Significance::Major, BOLD),
+    ("GOSAIKUNDA_SNANA_ARAMBHA", Significance::Period, SPAN),
+    ("GOSAIKUNDA_SNANA_SAMAPTI", Significance::Period, SPAN),
+    ("GUNLA_BEGINS", Significance::Period, SPAN),
+    ("GUNLA_ENDS", Significance::Period, SPAN),
+    ("GURU_PURNIMA", Significance::Major, BOLD),
+    ("KAG_TIHAR", Significance::Major, BOLD),
+    ("KANYA_SANKRANTI", Significance::Major, BOLD),
+    ("KARKATA_SANKRANTI", Significance::Major, BOLD),
+    ("KARTIK_SNAN_BEGINS", Significance::Period, SPAN),
+    ("KARTIK_SNAN_ENDS", Significance::Period, SPAN),
+    ("KHANCHI_SARAI_PARVA", Significance::Regional, PLACE),
+    ("KOJAGRAT_PURNIMA", Significance::Major, BOLD),
+    ("KUMBHA_SANKRANTI", Significance::Major, BOLD),
+    ("KUSHE_AUNSI", Significance::Major, BOLD),
+    ("MAGHA_SHRADDHA", Significance::Major, BOLD),
+    ("MAGH_SNAN_BEGINS", Significance::Period, SPAN),
+    ("MAGH_SNAN_ENDS", Significance::Period, SPAN),
+    ("MAHALAXMI_VRAT_BEGINS", Significance::Period, SPAN),
+    ("MAHALAXMI_VRAT_ENDS", Significance::Period, SPAN),
+    ("MANGALA_CHATURTHI", Significance::Major, BOLD),
+    ("MHA_PUJA", Significance::Major, BOLD),
+    ("MINA_SANKRANTI", Significance::Major, BOLD),
+    ("MITHUNA_SANKRANTI", Significance::Major, BOLD),
+    ("NAG_PANCHAMI", Significance::Major, BOLD),
+    ("NATIONAL_RECONCILIATION_DAY", Significance::Major, BOLD),
+    ("NAVAMI_SHRADDHA", Significance::Major, BOLD),
+    ("NEPAL_SAMBAT_NEW_YEAR", Significance::Major, BOLD),
+    ("NEW_YEAR_S_DAY_AD", Significance::Major, BOLD),
+    ("PANCHAMI_SHRADDHA", Significance::Major, BOLD),
+    ("PARASHURAMA_JAYANTI", Significance::Major, BOLD),
+    ("PRATIPADA_SHRADDHA", Significance::Major, BOLD),
+    ("PURNIMA_VRATA", Significance::Major, BOLD),
+    (
+        "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS",
+        Significance::Period,
+        SPAN,
+    ),
+    ("RAVI_SAPTAMI", Significance::Major, BOLD),
+    ("RISHI_PANCHAMI", Significance::Major, BOLD),
+    ("SAPTAMI_SHRADDHA", Significance::Major, BOLD),
+    ("SHASHTHI_SHRADDHA", Significance::Major, BOLD),
+    ("SIMHA_SANKRANTI", Significance::Major, BOLD),
+    ("SITA_NAVAMI", Significance::Major, BOLD),
+    ("SORHA_SHRADDHA_ARAMBHA", Significance::Period, SPAN),
+    ("SWASTHANI_VRAT_BEGINS", Significance::Period, SPAN),
+    ("SWASTHANI_VRAT_ENDS", Significance::Period, SPAN),
+    ("TRAYODASHI_SHRADDHA", Significance::Major, BOLD),
+    ("TRITIYA_SHRADDHA", Significance::Major, BOLD),
+    ("TULASI_VIVAHA", Significance::Major, BOLD),
+    ("TULA_SANKRANTI", Significance::Major, BOLD),
+    ("UPANGA_LALITA_VRATA", Significance::Major, BOLD),
+    ("VAISHAKHA_SNANA_ARAMBHA", Significance::Period, SPAN),
+    ("VAT_SAVITRI_VRAT", Significance::Major, BOLD),
+    ("VIVAH_PANCHAMI", Significance::Major, BOLD),
+    ("VRISHABHA_SANKRANTI", Significance::Major, BOLD),
+    ("VRISHCHIKA_SANKRANTI", Significance::Major, BOLD),
+    ("YAMAPANCHAKA_ARAMBHA", Significance::Period, SPAN),
+];
 
 /// Every key the texts in hand give a fast, sorted for the binary search,
 /// with its readings. Nirjala ekadashi waits on a text (C1080), and a key
@@ -1274,6 +1690,52 @@ mod tests {
                 .iter()
                 .all(|row| usize::from(row.1) < NEPAL_GROUPS.len())
         );
+    }
+
+    #[test]
+    fn a_mark_is_sorted_shipped_raises_its_key_and_leaves_a_gazetted_holiday_alone() {
+        assert!(
+            MARKS
+                .windows(2)
+                .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
+        );
+        assert!(
+            PRINTED_ORDER
+                .windows(2)
+                .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
+        );
+        for &(key, tier, _) in &MARKS {
+            assert!(
+                NEPAL_KEYS.binary_search_by_key(&key, |row| row.0).is_ok(),
+                "{key} is not a Nepal key"
+            );
+            let unmarked = FestivalMeta::nepal_unmarked(key);
+            assert!(tier < unmarked.tier(), "{key}'s mark does not raise it");
+            assert!(
+                super::super::nepal_gazette_scope(key)
+                    .is_none_or(|(scope, _)| scope == HolidayScope::OfficesOpen),
+                "{key}: a gazetted holiday takes the clause's tier"
+            );
+        }
+        for &(key, _) in &PRINTED_ORDER {
+            assert!(
+                NEPAL_KEYS.binary_search_by_key(&key, |row| row.0).is_ok(),
+                "{key} is not a Nepal key"
+            );
+        }
+    }
+
+    #[test]
+    fn every_national_key_has_a_nationwide_holiday_in_the_notice() {
+        for &(key, _) in &NEPAL_KEYS {
+            if FestivalMeta::nepal(key).tier() == Significance::National {
+                assert!(
+                    super::super::nepal_gazette_scope(key)
+                        .is_some_and(|(scope, _)| scope == HolidayScope::National),
+                    "{key} is NATIONAL and VS 2083's notice gives the country no holiday for it"
+                );
+            }
+        }
     }
 
     #[test]

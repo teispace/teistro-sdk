@@ -322,7 +322,8 @@ export type Kind =
   | 'mundane_kind'
   | 'vastu_yoni'
   | 'vyaya_kind'
-  | 'chart_frame';
+  | 'chart_frame'
+  | 'holiday_scope';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -666,6 +667,10 @@ export declare const Kind: {
    * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
    */
   readonly ChartFrame: 'chart_frame';
+  /**
+   * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
+   */
+  readonly HolidayScope: 'holiday_scope';
 };
 
 /**
@@ -6780,6 +6785,67 @@ export declare const ChartFrame: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const ChartFrameById: ReadonlyMap<number, ChartFrame>;
+
+/**
+ * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
+ */
+export type HolidayScope =
+  | 'holiday_scope.NATIONAL'
+  | 'holiday_scope.CONCERNED'
+  | 'holiday_scope.COMMUNITY'
+  | 'holiday_scope.REGION'
+  | 'holiday_scope.RELIGION'
+  | 'holiday_scope.WOMEN'
+  | 'holiday_scope.SCHOOLS'
+  | 'holiday_scope.DISABILITY'
+  | 'holiday_scope.OFFICES_OPEN'
+  | 'unknown';
+
+/** Every HolidayScope by name; the values are the strings the union accepts. */
+export declare const HolidayScope: {
+  /**
+   * A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide
+   */
+  readonly National: 'holiday_scope.NATIONAL';
+  /**
+   * A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them
+   */
+  readonly Concerned: 'holiday_scope.CONCERNED';
+  /**
+   * A holiday only for the community its clause names (the Newar, the Dura)
+   */
+  readonly Community: 'holiday_scope.COMMUNITY';
+  /**
+   * A holiday only in the districts or the valley its clause names
+   */
+  readonly Region: 'holiday_scope.REGION';
+  /**
+   * A holiday only for the followers of the religion its clause names
+   */
+  readonly Religion: 'holiday_scope.RELIGION';
+  /**
+   * A holiday only for women employees
+   */
+  readonly Women: 'holiday_scope.WOMEN';
+  /**
+   * A holiday only for educational institutions
+   */
+  readonly Schools: 'holiday_scope.SCHOOLS';
+  /**
+   * A holiday only for employees with disabilities
+   */
+  readonly Disability: 'holiday_scope.DISABILITY';
+  /**
+   * Not a holiday: a day kept nationally on which offices open
+   */
+  readonly OfficesOpen: 'holiday_scope.OFFICES_OPEN';
+};
+
+/**
+ * Every HolidayScope by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HolidayScopeById: ReadonlyMap<number, HolidayScope>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

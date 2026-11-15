@@ -3667,8 +3667,8 @@
       "iast": "Paśupatinātha Halesī Mahādeva Melā"
     },
     "BALA_CHATURDASHI": {
-      "name": "Bala Chaturdashi",
-      "prose": "Bala Chaturdashi",
+      "name": "Bala Charhe",
+      "prose": "Bala Charhe",
       "iast": "Bālā Caturdaśī"
     },
     "DATTATREYA_JAYANTI": {
@@ -3862,8 +3862,8 @@
       "iast": "Mīnasaṅkrānti"
     },
     "LOKTANTRA_DIWAS": {
-      "name": "Democracy Day",
-      "prose": "Democracy Day, Baisakh 11",
+      "name": "Loktantra Diwas",
+      "prose": "Loktantra Diwas, Baisakh 11",
       "iast": "Lokatantra divasa"
     },
     "CONSTITUTION_DAY": {
@@ -5967,6 +5967,30 @@
     "RAJENDRA_PRASAD_JAYANTI": {
       "name": "Dr Rajendra Prasad Jayanti",
       "prose": "Dr Rajendra Prasad Jayanti"
+    },
+    "EID_AL_FITR": {
+      "name": "Eid al-Fitr",
+      "prose": "Eid al-Fitr"
+    },
+    "EID_AL_ADHA": {
+      "name": "Eid al-Adha",
+      "prose": "Eid al-Adha"
+    },
+    "MAWLID": {
+      "name": "Mawlid",
+      "prose": "Mawlid"
+    },
+    "DURA_MHAIPRU_NAKUMA": {
+      "name": "Dura Mhaipru Nakuma",
+      "prose": "Dura Mhaipru Nakuma"
+    },
+    "SIRUWA_PAVANI": {
+      "name": "Siruwa Pavani",
+      "prose": "Siruwa Pavani"
+    },
+    "BHOTO_JATRA": {
+      "name": "Bhoto Jatra",
+      "prose": "Bhoto Jatra"
     }
   },
   "agni_vasa": {
@@ -7696,6 +7720,44 @@
     "PIG": {
       "name": "Pig",
       "prose": "pig"
+    }
+  },
+  "holiday_scope": {
+    "NATIONAL": {
+      "name": "Public holiday",
+      "prose": "Public holiday"
+    },
+    "CONCERNED": {
+      "name": "Holiday for those it concerns",
+      "prose": "Holiday for those it concerns"
+    },
+    "COMMUNITY": {
+      "name": "Holiday for a community",
+      "prose": "Holiday for a community"
+    },
+    "REGION": {
+      "name": "Holiday in a region",
+      "prose": "Holiday in a region"
+    },
+    "RELIGION": {
+      "name": "Holiday for a religion's followers",
+      "prose": "Holiday for a religion's followers"
+    },
+    "WOMEN": {
+      "name": "Holiday for women employees",
+      "prose": "Holiday for women employees"
+    },
+    "SCHOOLS": {
+      "name": "Holiday for educational institutions",
+      "prose": "Holiday for educational institutions"
+    },
+    "DISABILITY": {
+      "name": "Holiday for employees with disabilities",
+      "prose": "Holiday for employees with disabilities"
+    },
+    "OFFICES_OPEN": {
+      "name": "National day, offices open",
+      "prose": "National day, offices open"
     }
   }
 }

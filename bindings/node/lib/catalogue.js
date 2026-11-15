@@ -322,6 +322,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   VastuYoni: 'vastu_yoni',
   VyayaKind: 'vyaya_kind',
   ChartFrame: 'chart_frame',
+  HolidayScope: 'holiday_scope',
 });
 
 /**
@@ -414,6 +415,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [160, 'vastu_yoni'],
   [161, 'vyaya_kind'],
   [162, 'chart_frame'],
+  [167, 'holiday_scope'],
 ]);
 
 /** Every Graha by name. */
@@ -3317,6 +3319,35 @@ export const ChartFrameById = /* @__PURE__ */ new Map([
   [1, 'chart_frame.MOON'],
   [2, 'chart_frame.SUN'],
   [3, 'chart_frame.BHAVA'],
+]);
+
+/** Every HolidayScope by name. */
+export const HolidayScope = /* @__PURE__ */ Object.freeze({
+  National: 'holiday_scope.NATIONAL',
+  Concerned: 'holiday_scope.CONCERNED',
+  Community: 'holiday_scope.COMMUNITY',
+  Region: 'holiday_scope.REGION',
+  Religion: 'holiday_scope.RELIGION',
+  Women: 'holiday_scope.WOMEN',
+  Schools: 'holiday_scope.SCHOOLS',
+  Disability: 'holiday_scope.DISABILITY',
+  OfficesOpen: 'holiday_scope.OFFICES_OPEN',
+});
+
+/**
+ * Every HolidayScope by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HolidayScopeById = /* @__PURE__ */ new Map([
+  [0, 'holiday_scope.NATIONAL'],
+  [1, 'holiday_scope.CONCERNED'],
+  [2, 'holiday_scope.COMMUNITY'],
+  [3, 'holiday_scope.REGION'],
+  [4, 'holiday_scope.RELIGION'],
+  [5, 'holiday_scope.WOMEN'],
+  [6, 'holiday_scope.SCHOOLS'],
+  [7, 'holiday_scope.DISABILITY'],
+  [8, 'holiday_scope.OFFICES_OPEN'],
 ]);
 
 /** Every Status by name. */

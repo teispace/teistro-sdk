@@ -5,7 +5,9 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
-use teistro_panchanga::festival::{FestivalMeta, PublishedEntry, SubjectTo};
+use teistro_panchanga::festival::{
+    FestivalMeta, Holiday, HolidaySet, PublishedEntry, Significance, SubjectTo,
+};
 
 use super::AlmanacArea;
 use crate::festival_request::{FestivalPack, pack};
@@ -88,6 +90,9 @@ pub struct PackRow {
     /// `communities`, `regions`, `fast`, and `fast.kind`, `fast.start` or
     /// `fast.end` when no reading of the fast gives it.
     pub unsourced: Vec<String>,
+    /// Its tier among a day's observances: the one `meta` is marked with,
+    /// else what its fields say (`03-design/festival-metadata.md` §7).
+    pub significance: Significance,
     /// For a published row, what may move its days.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub subject_to: Option<SubjectTo>,
@@ -105,6 +110,7 @@ impl PackRow {
             source: source.to_owned(),
             meta: meta.clone(),
             unsourced: meta.unsourced().into_iter().map(str::to_owned).collect(),
+            significance: meta.tier(),
             subject_to: None,
             last_year: None,
         }
@@ -119,6 +125,11 @@ pub struct PackListing {
     pub pack: String,
     /// Its rows, by key.
     pub rules: Vec<PackRow>,
+    /// The holidays a government's notice gives the pack's country, in the
+    /// notice's order (`03-design/nepal-gazette-holidays.md`): each names
+    /// its festivals by key, kept apart from the notice's words.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub holidays: Vec<Holiday>,
 }
 
 impl FestivalPack {
@@ -185,6 +196,30 @@ impl FestivalPack {
         PackListing {
             pack: self.key().to_owned(),
             rules,
+            holidays: self
+                .holiday_sets()
+                .iter()
+                .flat_map(|set| set.holidays())
+                .collect(),
+        }
+    }
+
+    /// The holiday notices of the pack's country: Nepal's gazette for
+    /// Nepal's two packs, none for a pack whose country's notice is not
+    /// in hand.
+    ///
+    /// ```
+    /// use teistro::FestivalPack;
+    /// use teistro::festival::HolidaySet;
+    ///
+    /// assert_eq!(FestivalPack::NepalPanchanga.holiday_sets(), [HolidaySet::NepalGazette]);
+    /// assert!(FestivalPack::IndiaCentral.holiday_sets().is_empty());
+    /// ```
+    #[must_use]
+    pub const fn holiday_sets(self) -> &'static [HolidaySet] {
+        match self {
+            FestivalPack::Nepal | FestivalPack::NepalPanchanga => &[HolidaySet::NepalGazette],
+            _ => &[],
         }
     }
 }

@@ -16,9 +16,10 @@ import java.util.Objects;
  * @param kind Its kind; unset when no source classes it. Null leaves the SDK's default.
  * @param optional Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it. Null leaves the SDK's default.
  * @param regions Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says. Null leaves the SDK's default.
+ * @param significance The tier a source marks it with, or a caller sets; unset when the fields above derive it (`FestivalMeta::tier`, §7 of the page). Null leaves the SDK's default.
  * @param tradition Its religion; unset when no source places it. Null leaves the SDK's default.
  */
-public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, com.teispace.teistro.Tradition tradition) implements RequestJson {
+public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, SignificanceMark significance, com.teispace.teistro.Tradition tradition) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,7 +39,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
      *
      */
     public FestivalMeta() {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
     /**
@@ -58,6 +59,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         private com.teispace.teistro.FestivalKind kind;
         private Boolean optional;
         private List<String> regions;
+        private SignificanceMark significance;
         private com.teispace.teistro.Tradition tradition;
 
         private Builder() {}
@@ -118,6 +120,17 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         }
 
         /**
+         * Sets {@code significance}.
+         *
+         * @param significance The tier a source marks it with, or a caller sets; unset when the fields above derive it (`FestivalMeta::tier`, §7 of the page). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder significance(SignificanceMark significance) {
+            this.significance = significance;
+            return this;
+        }
+
+        /**
          * Sets {@code tradition}.
          *
          * @param tradition Its religion; unset when no source places it. Null leaves the SDK's default.
@@ -135,7 +148,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalMeta build() {
-            return new FestivalMeta(communities, fast, kind, optional, regions, tradition);
+            return new FestivalMeta(communities, fast, kind, optional, regions, significance, tradition);
         }
     }
 
@@ -154,6 +167,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
             Read.orNull(json.get("kind"), present -> Read.member(present, "FestivalMeta.kind", com.teispace.teistro.FestivalKind::byKey)),
             Read.orNull(json.get("optional"), present -> Read.bool(present, "FestivalMeta.optional")),
             Read.orNull(json.get("regions"), present -> Read.list(present, "FestivalMeta.regions", item0 -> Read.text(item0, "FestivalMeta.regions"))),
+            Read.orNull(json.get("significance"), present -> SignificanceMark.of(present)),
             Read.orNull(json.get("tradition"), present -> Read.member(present, "FestivalMeta.tradition", com.teispace.teistro.Tradition::byKey)));
     }
 
@@ -174,6 +188,9 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         }
         if (regions != null) {
             json.put("regions", regions);
+        }
+        if (significance != null) {
+            json.put("significance", significance.toJson());
         }
         if (tradition != null) {
             json.put("tradition", tradition.fullKey());

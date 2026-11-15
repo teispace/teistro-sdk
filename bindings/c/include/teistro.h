@@ -576,6 +576,10 @@ typedef enum ts_kind {
      * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
      */
     TS_KIND_CHART_FRAME = 162,
+    /**
+     * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
+     */
+    TS_KIND_HOLIDAY_SCOPE = 167,
 } ts_kind;
 
 /**
@@ -5193,6 +5197,50 @@ typedef enum ts_chart_frame {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CHART_FRAME_UNKNOWN = -1,
 } ts_chart_frame;
+
+/**
+ * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
+ */
+typedef enum ts_holiday_scope {
+    /**
+     * A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide
+     */
+    TS_HOLIDAY_SCOPE_NATIONAL = 0,
+    /**
+     * A holiday only for the religion, culture, geographic area or place its festival concerns, the clause naming none of them
+     */
+    TS_HOLIDAY_SCOPE_CONCERNED = 1,
+    /**
+     * A holiday only for the community its clause names (the Newar, the Dura)
+     */
+    TS_HOLIDAY_SCOPE_COMMUNITY = 2,
+    /**
+     * A holiday only in the districts or the valley its clause names
+     */
+    TS_HOLIDAY_SCOPE_REGION = 3,
+    /**
+     * A holiday only for the followers of the religion its clause names
+     */
+    TS_HOLIDAY_SCOPE_RELIGION = 4,
+    /**
+     * A holiday only for women employees
+     */
+    TS_HOLIDAY_SCOPE_WOMEN = 5,
+    /**
+     * A holiday only for educational institutions
+     */
+    TS_HOLIDAY_SCOPE_SCHOOLS = 6,
+    /**
+     * A holiday only for employees with disabilities
+     */
+    TS_HOLIDAY_SCOPE_DISABILITY = 7,
+    /**
+     * Not a holiday: a day kept nationally on which offices open
+     */
+    TS_HOLIDAY_SCOPE_OFFICES_OPEN = 8,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_HOLIDAY_SCOPE_UNKNOWN = -1,
+} ts_holiday_scope;
 
 /**
  * The status of a call, with the code it has at the C boundary.

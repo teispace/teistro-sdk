@@ -18308,6 +18308,8 @@ final class FestivalRequest extends _Facade {
     this.published = const [],
     this.only,
     this.hijriOffset,
+    this.meta = const {},
+    this.order,
   });
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
@@ -18352,6 +18354,21 @@ final class FestivalRequest extends _Facade {
   /// ```
   final int? hijriOffset;
 
+  /// A patch laid on a key's values, its tier among them, by key; a key the
+  /// rules do not hold is refused (`03-design/festival-metadata.md` §7).
+  ///
+  /// ```dart
+  /// const FestivalRequest(
+  ///   rules: FestivalPack.nepalPanchanga,
+  ///   meta: {'LAKSHMI_PUJA': MetaPatch(significance: Significance.minor)},
+  /// );
+  /// ```
+  final Map<String, MetaPatch> meta;
+
+  /// How a day's observances are listed in a cell; by significance when
+  /// null (`03-design/festival-metadata.md` §7).
+  final DayOrder? order;
+
   /// Its JSON, as the SDK reads it.
   @override
   Object? get _wire => <String, Object?>{
@@ -18366,6 +18383,11 @@ final class FestivalRequest extends _Facade {
       'published': [for (final set in published) _written(set)],
     if (only case final kept?) 'only': _written(kept),
     if (hijriOffset case final days?) 'hijriOffset': days,
+    if (meta.isNotEmpty)
+      'meta': {
+        for (final MapEntry(:key, :value) in meta.entries) key: _written(value),
+      },
+    if (order case final listed?) 'order': listed.key,
   };
 
   String get _json => jsonEncode(_wire);

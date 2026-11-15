@@ -13,10 +13,11 @@ import java.util.Objects;
  *
  * @param communities The communities kept. Null leaves the SDK's default.
  * @param kinds The kinds kept. Null leaves the SDK's default.
+ * @param minSignificance The least tier kept: `REGIONAL` keeps every tier but `MINOR`. Null leaves the SDK's default.
  * @param regions The regions kept. Null leaves the SDK's default.
  * @param traditions The traditions kept. Null leaves the SDK's default.
  */
-public record MetaFilter(List<String> communities, List<com.teispace.teistro.FestivalKind> kinds, List<String> regions, List<com.teispace.teistro.Tradition> traditions) implements RequestJson {
+public record MetaFilter(List<String> communities, List<com.teispace.teistro.FestivalKind> kinds, Significance minSignificance, List<String> regions, List<com.teispace.teistro.Tradition> traditions) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -37,7 +38,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
      *
      */
     public MetaFilter() {
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
     /**
@@ -54,6 +55,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
     public static final class Builder {
         private List<String> communities;
         private List<com.teispace.teistro.FestivalKind> kinds;
+        private Significance minSignificance;
         private List<String> regions;
         private List<com.teispace.teistro.Tradition> traditions;
 
@@ -78,6 +80,17 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
          */
         public Builder kinds(List<com.teispace.teistro.FestivalKind> kinds) {
             this.kinds = kinds;
+            return this;
+        }
+
+        /**
+         * Sets {@code minSignificance}.
+         *
+         * @param minSignificance The least tier kept: `REGIONAL` keeps every tier but `MINOR`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder minSignificance(Significance minSignificance) {
+            this.minSignificance = minSignificance;
             return this;
         }
 
@@ -110,7 +123,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
          * @throws NullPointerException naming a required field left unset
          */
         public MetaFilter build() {
-            return new MetaFilter(communities, kinds, regions, traditions);
+            return new MetaFilter(communities, kinds, minSignificance, regions, traditions);
         }
     }
 
@@ -126,6 +139,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
         return new MetaFilter(
             Read.orNull(json.get("communities"), present -> Read.list(present, "MetaFilter.communities", item0 -> Read.text(item0, "MetaFilter.communities"))),
             Read.orNull(json.get("kinds"), present -> Read.list(present, "MetaFilter.kinds", item0 -> Read.member(item0, "MetaFilter.kinds", com.teispace.teistro.FestivalKind::byKey))),
+            Read.orNull(json.get("minSignificance"), present -> Read.member(present, "MetaFilter.minSignificance", Significance::byKey)),
             Read.orNull(json.get("regions"), present -> Read.list(present, "MetaFilter.regions", item0 -> Read.text(item0, "MetaFilter.regions"))),
             Read.orNull(json.get("traditions"), present -> Read.list(present, "MetaFilter.traditions", item0 -> Read.member(item0, "MetaFilter.traditions", com.teispace.teistro.Tradition::byKey))));
     }
@@ -138,6 +152,9 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
         }
         if (kinds != null) {
             json.put("kinds", kinds.stream().map(item0 -> item0.fullKey()).toList());
+        }
+        if (minSignificance != null) {
+            json.put("minSignificance", minSignificance.toJson());
         }
         if (regions != null) {
             json.put("regions", regions);

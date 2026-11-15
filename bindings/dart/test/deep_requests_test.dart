@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 572 of the examples' 587 members.
+/// The cases compare 593 of the examples' 608 members.
 library;
 
 import 'dart:convert';
@@ -227,6 +227,32 @@ void main() {
     );
   });
 
+  test('almanac.cells at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.cells',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.cells at festivals.only: MetaFilter', () {
     _holds(
       'almanac.cells',
@@ -236,6 +262,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -274,6 +301,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -335,6 +363,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -394,6 +423,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -427,6 +457,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -491,6 +522,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -562,6 +594,32 @@ void main() {
     );
   });
 
+  test('almanac.days at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.days',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.days at festivals.only: MetaFilter', () {
     _holds(
       'almanac.days',
@@ -571,6 +629,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -609,6 +668,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -670,6 +730,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -729,6 +790,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -762,6 +824,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -826,6 +889,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -1001,6 +1065,32 @@ void main() {
     );
   });
 
+  test('almanac.digest at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.digest',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.digest at festivals.only: MetaFilter', () {
     _holds(
       'almanac.digest',
@@ -1010,6 +1100,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -1048,6 +1139,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -1109,6 +1201,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -1168,6 +1261,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -1201,6 +1295,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -1265,6 +1360,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -1457,6 +1553,32 @@ void main() {
     );
   });
 
+  test('almanac.festival_calendar at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.festival_calendar at festivals.only: MetaFilter', () {
     _holds(
       'almanac.festival_calendar',
@@ -1466,6 +1588,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -1504,6 +1627,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -1565,6 +1689,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -1624,6 +1749,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -1657,6 +1783,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -1721,6 +1848,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -1906,6 +2034,32 @@ void main() {
     );
   });
 
+  test('almanac.next at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.next',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.next at festivals.only: MetaFilter', () {
     _holds(
       'almanac.next',
@@ -1915,6 +2069,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -1953,6 +2108,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -2014,6 +2170,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -2073,6 +2230,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -2106,6 +2264,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -2170,6 +2329,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -2204,6 +2364,32 @@ void main() {
     );
   });
 
+  test('almanac.observance at traditions[0].festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.observance',
+      path: ['traditions', 0, 'festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.observance at traditions[0].festivals.only: MetaFilter', () {
     _holds(
       'almanac.observance',
@@ -2213,6 +2399,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -2251,6 +2438,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -2312,6 +2500,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -2371,6 +2560,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -2404,6 +2594,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -2468,6 +2659,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,
@@ -2543,6 +2735,32 @@ void main() {
     );
   });
 
+  test('almanac.publishedReasons at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.publishedReasons',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
   test('almanac.publishedReasons at festivals.only: MetaFilter', () {
     _holds(
       'almanac.publishedReasons',
@@ -2552,6 +2770,7 @@ void main() {
       written: MetaFilter(
         communities: ['x'],
         kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
         regions: ['x'],
         traditions: [Tradition.buddhist],
       ).toJson(),
@@ -2590,6 +2809,7 @@ void main() {
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
             ),
             names: {'x': 'x'},
@@ -2651,6 +2871,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
@@ -2710,6 +2931,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           source: 'x',
@@ -2743,6 +2965,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
@@ -2807,6 +3030,7 @@ void main() {
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
           ),
           month: Masa.vaishakha,

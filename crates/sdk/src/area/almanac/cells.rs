@@ -232,7 +232,12 @@ impl AlmanacArea<'_> {
                 })?;
                 let found =
                     self.reckoning(first, last, &asked.place, offset, request, festival_days)?;
-                cell::with_festivals(&mut cells, &found.value);
+                match request.order() {
+                    crate::DayOrder::Significance => {
+                        cell::with_festivals_by(&mut cells, &found.value, request.day_rank());
+                    }
+                    crate::DayOrder::RuleOrder => cell::with_festivals(&mut cells, &found.value),
+                }
                 // The festivals' conventions, the widened days among them.
                 provenance = found.provenance;
                 Some(found.value)

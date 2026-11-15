@@ -298,8 +298,14 @@ fn the_festivals_are_the_festival_requests_own() {
         0,
         "a Nepal October keeps festivals"
     );
+    // A day's festivals, by tier, the print's order and the rule's.
     for cell in &answer.value.cells {
-        assert_eq!(cell.festivals, found.keys_on(&cell.date), "{}", cell.date);
+        assert_eq!(
+            cell.festivals,
+            found.keys_on_by(&cell.date, festivals.day_rank()),
+            "{}",
+            cell.date
+        );
     }
     assert!(
         answer
