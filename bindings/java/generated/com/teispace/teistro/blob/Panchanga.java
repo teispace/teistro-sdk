@@ -1301,6 +1301,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Tithi(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1315,6 +1316,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -1428,6 +1430,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -1447,6 +1460,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Nakshatra(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1461,6 +1475,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -1574,6 +1589,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -1593,6 +1619,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Yoga(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1607,6 +1634,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -1720,6 +1748,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -1739,6 +1778,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Karana(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1753,6 +1793,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -1866,6 +1907,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -1885,6 +1937,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Panchaka(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1899,6 +1952,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -2012,6 +2066,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -2031,6 +2096,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         MoonSigns(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -2045,6 +2111,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -2158,6 +2225,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -2177,6 +2255,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         SunSigns(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -2191,6 +2270,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -2303,6 +2383,17 @@ public final class Panchanga {
          */
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
         }
     }
 
@@ -2818,6 +2909,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Varjyam(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -2832,6 +2924,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -2945,6 +3038,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -2964,6 +3068,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         NakshatraShool(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -2978,6 +3083,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3091,6 +3197,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3110,6 +3227,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         ChandraVasa(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3124,6 +3242,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3237,6 +3356,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3256,6 +3386,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Chandrashtama(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3270,6 +3401,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3383,6 +3515,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3402,6 +3545,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         AmritKalam(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3416,6 +3560,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3529,6 +3674,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3548,6 +3704,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Lagnas(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3562,6 +3719,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3675,6 +3833,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3694,6 +3863,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         AgniVasa(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3708,6 +3878,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3821,6 +3992,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3840,6 +4022,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         RahuVasa(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -3854,6 +4037,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -3967,6 +4151,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -3986,6 +4181,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         PunyaKala(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4000,6 +4196,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4113,6 +4310,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4132,6 +4340,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         HomaAhuti(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4146,6 +4355,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4259,6 +4469,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4278,6 +4499,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         AshubhaYogas(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4292,6 +4514,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4405,6 +4628,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4424,6 +4658,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         BhadraVasa(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4438,6 +4673,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4551,6 +4787,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4570,6 +4817,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         ShivaVasa(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4584,6 +4832,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4697,6 +4946,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4716,6 +4976,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         NamedPanchaka(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4730,6 +4991,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4843,6 +5105,17 @@ public final class Panchanga {
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
         }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
+        }
     }
 
     /**
@@ -4862,6 +5135,7 @@ public final class Panchanga {
         private final int endsGhatiAt;
         private final int endsPalaAt;
         private final int endsVipalaAt;
+        private final int marginMinutesAt;
 
         Markers(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -4876,6 +5150,7 @@ public final class Panchanga {
             this.endsGhatiAt = blob.column(at, 6, 1);
             this.endsPalaAt = blob.column(at, 7, 1);
             this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
         }
 
         /**
@@ -4988,6 +5263,17 @@ public final class Panchanga {
          */
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
         }
     }
 

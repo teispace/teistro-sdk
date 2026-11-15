@@ -22772,6 +22772,15 @@ class Span(Generic[T]):
     `day.ghati_reckoning`; a member outlasting the day reads as the day's
     whole count."""
 
+    margin_minutes: float
+    """How close the member's end came to deciding which day it names: the
+    minutes from the nearer of the day's two sunrises (its own and the
+    next) to `whole.to_jd`, positive when it ends after that sunrise and
+    negative before it (SR-95).
+
+    >>> close = [s.member for s in day.tithi if abs(s.margin_minutes) <= 2]  # doctest: +SKIP
+    """
+
 
 @dataclass(frozen=True)
 class GhatiPala:
@@ -23329,6 +23338,7 @@ class AlmanacDay:
                 ends=GhatiPala(
                     columns.ends_ghati[i], columns.ends_pala[i], columns.ends_vipala[i]
                 ),
+                margin_minutes=columns.margin_minutes[i],
             ),
         )
 

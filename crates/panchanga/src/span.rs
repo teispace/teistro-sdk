@@ -39,6 +39,16 @@ pub struct Span<T> {
     pub whole: Interval,
     /// The part of it inside the day: what an almanac row prints.
     pub inside: Interval,
+    /// How close its end came to deciding which day it names: the minutes
+    /// from the nearer of its day's two sunrises (the day's own and the
+    /// next) to `whole.to`, positive when it ends after that sunrise and
+    /// negative before it (SR-95, C1901). A tithi with a margin of +1
+    /// ends a minute after the next sunrise, so it names tomorrow too, and
+    /// a printed patro on another sunrise may not. Set on a day's four
+    /// limbs ([`Span::with_margin`]); absent on a span not read against a
+    /// day's sunrises, and then left out of the day's document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub margin_minutes: Option<f64>,
 }
 
 impl<T> Span<T> {
@@ -65,6 +75,7 @@ impl<T> Span<T> {
             member,
             whole,
             inside,
+            margin_minutes: None,
         })
     }
 
@@ -201,9 +212,59 @@ impl<T> Span<T> {
             member: f(self.member),
             whole: self.whole,
             inside: self.inside,
+            margin_minutes: self.margin_minutes,
+        }
+    }
+
+    /// The signed minutes from the nearer of a day's two sunrises to the
+    /// member's end, `whole.to`: positive when it ends after that sunrise.
+    /// The nearer of two equally near is the day's own.
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// use teistro_panchanga::span::Span;
+    ///
+    /// // A day from 100.25 to 101.25: a tithi ending an hour before the
+    /// // next sunrise, and one ending ten minutes after the day's own.
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let late = Span::new("Tritiya", Interval::literal(99.9, 101.25 - 1.0 / 24.0), day).ok_or("it meets the day")?;
+    /// assert!((late.margin_from(day.from, day.to) + 60.0).abs() < 1e-6);
+    /// let early = Span::new("Dvitiya", Interval::literal(99.2, 100.25 + 10.0 / 1440.0), day).ok_or("it meets the day")?;
+    /// assert!((early.margin_from(day.from, day.to) - 10.0).abs() < 1e-6);
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn margin_from(&self, sunrise: JulianDay<Utc>, next_sunrise: JulianDay<Utc>) -> f64 {
+        let end = self.whole.to.get();
+        let (own, next) = (end - sunrise.get(), end - next_sunrise.get());
+        let nearer = if next.abs() < own.abs() { next } else { own };
+        nearer * MINUTES_PER_DAY
+    }
+
+    /// The span with its margin from a day's two sunrises set
+    /// ([`Span::margin_from`]).
+    ///
+    /// ```
+    /// # use teistro_core::interval::Interval;
+    /// use teistro_panchanga::span::Span;
+    ///
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let tithi = Span::new("Tritiya", Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    /// let marked = tithi.with_margin(day.from, day.to);
+    /// assert_eq!(marked.margin_minutes, Some(tithi.margin_from(day.from, day.to)));
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn with_margin(self, sunrise: JulianDay<Utc>, next_sunrise: JulianDay<Utc>) -> Self {
+        Span {
+            margin_minutes: Some(self.margin_from(sunrise, next_sunrise)),
+            ..self
         }
     }
 }
+
+/// Minutes in a day, for a margin.
+const MINUTES_PER_DAY: f64 = 1440.0;
 
 /// Which of a day's two sunrises a member was running at
 /// ([`Span::sunrises`]).

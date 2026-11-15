@@ -2103,6 +2103,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2118,6 +2119,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2133,6 +2135,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2148,6 +2151,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2163,6 +2167,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2178,6 +2183,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2193,6 +2199,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2301,6 +2308,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2316,6 +2324,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2331,6 +2340,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2346,6 +2356,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2361,6 +2372,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2376,6 +2388,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2391,6 +2404,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2406,6 +2420,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2421,6 +2436,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2436,6 +2452,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2451,6 +2468,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2466,6 +2484,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2481,6 +2500,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2496,6 +2516,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }
@@ -2515,6 +2536,7 @@ export function decodePanchanga(bytes) {
       endsGhati: column(blob, at, 6, 'u8', at.count),
       endsPala: column(blob, at, 7, 'u8', at.count),
       endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }

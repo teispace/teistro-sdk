@@ -2462,6 +2462,14 @@
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
         },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "member": {
           "$ref": "#/$defs/DayMarker",
           "description": "Which member ran."
@@ -3696,6 +3704,14 @@
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
         },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "member": {
           "$ref": "#/$defs/Graha",
           "description": "Which member ran."
@@ -4532,6 +4548,14 @@
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "member": {
           "$ref": "#/$defs/Karana",
@@ -5422,6 +5446,14 @@
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
         },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "member": {
           "$ref": "#/$defs/Nakshatra",
           "description": "Which member ran."
@@ -5769,6 +5801,14 @@
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "member": {
           "$ref": "#/$defs/Panchaka",
@@ -6835,6 +6875,14 @@
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
         },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
         "member": {
           "$ref": "#/$defs/Rashi",
           "description": "Which member ran."
@@ -7333,6 +7381,14 @@
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "member": {
           "$ref": "#/$defs/ShivaVasa",
@@ -8069,6 +8125,14 @@
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "member": {
           "$ref": "#/$defs/Tithi",
@@ -8910,6 +8974,14 @@
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "margin_minutes": {
+          "description": "How close its end came to deciding which day it names: the minutes from the nearer of its day's two sunrises (the day's own and the next) to `whole.to`, positive when it ends after that sunrise and negative before it (SR-95, C1901). A tithi with a margin of +1 ends a minute after the next sunrise, so it names tomorrow too, and a printed patro on another sunrise may not. Set on a day's four limbs (`Span::with_margin`); absent on a span not read against a day's sunrises, and then left out of the day's document.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
         },
         "member": {
           "$ref": "#/$defs/Yoga",

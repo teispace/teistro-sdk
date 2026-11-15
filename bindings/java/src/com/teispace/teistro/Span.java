@@ -12,6 +12,11 @@ package com.teispace.teistro;
  * @param ends when the member ended, in ghati-pala from the day's sunrise
  *     under the day's ghati reckoning; a member outlasting the day reads as
  *     the day's whole count
+ * @param marginMinutes how close the member's end came to deciding which day
+ *     it names: the minutes from the nearer of the day's two sunrises (its
+ *     own and the next) to {@code whole.to}, positive when it ends after that
+ *     sunrise and negative before it (SR-95)
  * @param <T> the limb's member type
  */
-public record Span<T>(T member, Interval whole, Interval inside, Sunrises sunrises, GhatiPala ends) {}
+public record Span<T>(T member, Interval whole, Interval inside, Sunrises sunrises, GhatiPala ends,
+        double marginMinutes) {}

@@ -2071,6 +2071,7 @@ name = "teistro-panchanga"
 version = "1.0.0-rc.4"
 dependencies = [
  "ed25519-dalek",
+ "proptest",
  "schemars",
  "serde",
  "serde_json",

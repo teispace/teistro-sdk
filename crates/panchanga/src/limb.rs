@@ -101,6 +101,61 @@ pub struct Limbs {
     pub karana: Vec<Span<Karana>>,
 }
 
+impl Limbs {
+    /// The limbs with each span's margin from the day's two sunrises set
+    /// ([`Span::with_margin`]; SR-95): what a day answers.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Tithi;
+    /// # use teistro_core::interval::Interval;
+    /// use teistro_panchanga::limb::Limbs;
+    /// use teistro_panchanga::span::Span;
+    ///
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let tithi = Span::new(Tithi::ShuklaTritiya, Interval::literal(99.9, 100.6), day).ok_or("it meets the day")?;
+    /// let limbs = Limbs { tithi: vec![tithi], nakshatra: vec![], yoga: vec![], karana: vec![] };
+    /// let marked = limbs.with_margins(day.from, day.to);
+    /// assert!(marked.tithi.iter().all(|span| span.margin_minutes.is_some()));
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn with_margins(self, sunrise: JulianDay<Utc>, next_sunrise: JulianDay<Utc>) -> Self {
+        Limbs {
+            tithi: with_margins(self.tithi, sunrise, next_sunrise),
+            nakshatra: with_margins(self.nakshatra, sunrise, next_sunrise),
+            yoga: with_margins(self.yoga, sunrise, next_sunrise),
+            karana: with_margins(self.karana, sunrise, next_sunrise),
+        }
+    }
+}
+
+/// A limb's spans with their margins from a day's two sunrises set.
+///
+/// ```
+/// # use teistro_core::interval::Interval;
+/// use teistro_panchanga::limb::with_margins;
+/// use teistro_panchanga::span::Span;
+///
+/// let day = Interval::literal(100.25, 101.25);
+/// let spans = [Interval::literal(99.9, 100.6), Interval::literal(100.6, 101.3)]
+///     .into_iter()
+///     .filter_map(|whole| Span::new("Tithi", whole, day))
+///     .collect();
+/// let marked = with_margins(spans, day.from, day.to);
+/// assert!(marked.iter().all(|span| span.margin_minutes.is_some()));
+/// ```
+#[must_use]
+pub fn with_margins<T>(
+    spans: Vec<Span<T>>,
+    sunrise: JulianDay<Utc>,
+    next_sunrise: JulianDay<Utc>,
+) -> Vec<Span<T>> {
+    spans
+        .into_iter()
+        .map(|span| span.with_margin(sunrise, next_sunrise))
+        .collect()
+}
+
 /// Which limb a list belongs to: the lattice it is found on and how a
 /// span between two boundaries is named.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

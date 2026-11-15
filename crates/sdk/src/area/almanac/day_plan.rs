@@ -449,6 +449,7 @@ mod tests {
             member: (),
             whole: Interval::literal(a, b),
             inside: Interval::literal(from.get(), to.get()),
+            margin_minutes: None,
         };
         let open = from.get();
         let close = to.get();

@@ -6350,6 +6350,10 @@ export interface PanchangaTithi {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6399,6 +6403,10 @@ export interface PanchangaNakshatra {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6448,6 +6456,10 @@ export interface PanchangaYoga {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6497,6 +6509,10 @@ export interface PanchangaKarana {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6546,6 +6562,10 @@ export interface PanchangaPanchaka {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6595,6 +6615,10 @@ export interface PanchangaMoonSigns {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6644,6 +6668,10 @@ export interface PanchangaSunSigns {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6869,6 +6897,10 @@ export interface PanchangaVarjyam {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6918,6 +6950,10 @@ export interface PanchangaNakshatraShool {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -6967,6 +7003,10 @@ export interface PanchangaChandraVasa {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7016,6 +7056,10 @@ export interface PanchangaChandrashtama {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7065,6 +7109,10 @@ export interface PanchangaAmritKalam {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7114,6 +7162,10 @@ export interface PanchangaLagnas {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7163,6 +7215,10 @@ export interface PanchangaAgniVasa {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7212,6 +7268,10 @@ export interface PanchangaRahuVasa {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7261,6 +7321,10 @@ export interface PanchangaPunyaKala {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7310,6 +7374,10 @@ export interface PanchangaHomaAhuti {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7359,6 +7427,10 @@ export interface PanchangaAshubhaYogas {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7408,6 +7480,10 @@ export interface PanchangaBhadraVasa {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7457,6 +7533,10 @@ export interface PanchangaShivaVasa {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7506,6 +7586,10 @@ export interface PanchangaNamedPanchaka {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7555,6 +7639,10 @@ export interface PanchangaMarkers {
    * And vipalas, 0 to 59.
    */
   readonly endsVipala: Uint8Array;
+  /**
+   * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+   */
+  readonly marginMinutes: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
