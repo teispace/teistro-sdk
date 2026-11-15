@@ -2694,7 +2694,10 @@ mod tests {
 
     impl Searcher {
         fn new(searches: Searches) -> Searcher {
-            Searcher { searches, asked: std::sync::atomic::AtomicUsize::new(0) }
+            Searcher {
+                searches,
+                asked: std::sync::atomic::AtomicUsize::new(0),
+            }
         }
 
         fn asked(&self) -> usize {
@@ -2718,15 +2721,29 @@ mod tests {
         }
 
         fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
-            self.asked.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.asked
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             match self.searches {
                 Searches::Refuses => Err(ProviderError::unsupported("crossings")),
                 Searches::Fails => Err(ProviderError::invalid("the search diverged")),
                 Searches::Answers => {
                     let provider = TestProvider::new();
-                    let sdk = Completion::new(&provider, OverridePolicy::SdkOnly, request.conventions.delta_t);
-                    let found = sdk.crossings(request).map_err(|e| ProviderError::invalid(e.to_string()))?;
-                    Ok(found.events.into_iter().map(|event| Event { evaluations: 0, ..event }).collect())
+                    let sdk = Completion::new(
+                        &provider,
+                        OverridePolicy::SdkOnly,
+                        request.conventions.delta_t,
+                    );
+                    let found = sdk
+                        .crossings(request)
+                        .map_err(|e| ProviderError::invalid(e.to_string()))?;
+                    Ok(found
+                        .events
+                        .into_iter()
+                        .map(|event| Event {
+                            evaluations: 0,
+                            ..event
+                        })
+                        .collect())
                 }
             }
         }
@@ -2738,9 +2755,15 @@ mod tests {
         let sun = Quantity::Longitude(Body::Sun);
         let scanned = {
             let provider = TestProvider::new();
-            let sdk = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+            let sdk = Completion::new(
+                &provider,
+                OverridePolicy::SdkOnly,
+                DeltaTModel::TableThenModel,
+            );
             let longitudes = sdk.longitudes(Frame::CANONICAL);
-            Search::each(&longitudes, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS]).between(J2000, to).unwrap()
+            Search::each(&longitudes, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS])
+                .between(J2000, to)
+                .unwrap()
         };
         assert!(scanned.iter().any(|event| event.evaluations > 0));
         for (searches, policy, native) in [
@@ -2755,7 +2778,8 @@ mod tests {
             let longitudes = completion.longitudes(Frame::CANONICAL);
             // Through a reference to the source, as a caller holding one does.
             let source = &longitudes;
-            let found = Search::each(&source, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS]).between(J2000, to);
+            let found = Search::each(&source, sun, Lattice::SIGNS, [Lattice::NAKSHATRAS])
+                .between(J2000, to);
             let direct = completion.crossings(&CrossingRequest {
                 quantity: sun,
                 lattice: Lattice::SIGNS,
@@ -2766,23 +2790,28 @@ mod tests {
                 observer: None,
                 conventions: completion.conventions(),
             });
-            match native {
-                Some(native) => {
-                    let found = found.unwrap();
-                    assert_eq!(found.len(), scanned.len(), "{searches:?} {policy:?}");
-                    for (a, b) in found.iter().zip(&scanned) {
-                        assert!((a.instant.get() - b.instant.get()).abs() < 1e-6);
-                        assert_eq!(a.boundary_deg, b.boundary_deg);
-                    }
-                    assert_eq!(found.iter().all(|event| event.evaluations == 0), native, "{searches:?} {policy:?}");
-                    let direct = direct.unwrap();
-                    let by = if native { Implementation::Native } else { Implementation::Sdk };
-                    assert_eq!(direct.implementation, by, "{searches:?} {policy:?}");
+            if let Some(native) = native {
+                let found = found.unwrap();
+                assert_eq!(found.len(), scanned.len(), "{searches:?} {policy:?}");
+                for (a, b) in found.iter().zip(&scanned) {
+                    assert!((a.instant.get() - b.instant.get()).abs() < 1e-6);
+                    assert_eq!(a.boundary_deg, b.boundary_deg);
                 }
-                None => {
-                    assert!(found.is_err(), "{searches:?} {policy:?}");
-                    assert!(direct.is_err(), "{searches:?} {policy:?}");
-                }
+                assert_eq!(
+                    found.iter().all(|event| event.evaluations == 0),
+                    native,
+                    "{searches:?} {policy:?}"
+                );
+                let direct = direct.unwrap();
+                let by = if native {
+                    Implementation::Native
+                } else {
+                    Implementation::Sdk
+                };
+                assert_eq!(direct.implementation, by, "{searches:?} {policy:?}");
+            } else {
+                assert!(found.is_err(), "{searches:?} {policy:?}");
+                assert!(direct.is_err(), "{searches:?} {policy:?}");
             }
             if policy == OverridePolicy::SdkOnly {
                 assert_eq!(provider.asked(), 0);
@@ -2790,13 +2819,25 @@ mod tests {
         }
         // A sidereal frame is never the engine's search: the scan answers it.
         let provider = Searcher::new(Searches::Fails);
-        let completion = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
         let sidereal = Frame {
-            zodiac: teistro_port_ephemeris::Zodiac::sidereal(teistro_core::catalogue::Ayanamsha::Raman),
+            zodiac: teistro_port_ephemeris::Zodiac::sidereal(
+                teistro_core::catalogue::Ayanamsha::Raman,
+            ),
             ..Frame::CANONICAL
         };
         let longitudes = completion.longitudes(sidereal);
-        assert!(!Search::new(&longitudes, sun, Lattice::SIGNS).between(J2000, to).unwrap().is_empty());
+        assert!(
+            !Search::new(&longitudes, sun, Lattice::SIGNS)
+                .between(J2000, to)
+                .unwrap()
+                .is_empty(),
+            "a sidereal frame's sign ingresses are found"
+        );
         assert_eq!(provider.asked(), 0);
     }
 

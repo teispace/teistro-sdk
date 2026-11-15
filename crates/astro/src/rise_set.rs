@@ -2488,18 +2488,46 @@ mod tests {
         assert!(sun.parallax_deg > 0.0);
         // A custom radius is the body's own: the Sun's for the Sun, the
         // Moon's for the Moon, and a planet keeps its catalogue radius.
-        let custom = HorizonModel { radii: Radii::Custom { sun_km: 696_000.0, moon_km: 1_738.0 }, ..standard };
+        let custom = HorizonModel {
+            radii: Radii::Custom {
+                sun_km: 696_000.0,
+                moon_km: 1_738.0,
+            },
+            ..standard
+        };
         assert!(Disc::under(Body::Sun, 1.0, &custom).semidiameter_deg > sun.semidiameter_deg);
         let moon = Disc::under(Body::Moon, MOON_MEAN_DISTANCE_AU, &standard);
-        assert!(Disc::under(Body::Moon, MOON_MEAN_DISTANCE_AU, &custom).semidiameter_deg > moon.semidiameter_deg);
-        assert_eq!(Disc::under(Body::Mars, 1.5, &custom), Disc::under(Body::Mars, 1.5, &standard));
+        assert!(
+            Disc::under(Body::Moon, MOON_MEAN_DISTANCE_AU, &custom).semidiameter_deg
+                > moon.semidiameter_deg
+        );
+        assert_eq!(
+            Disc::under(Body::Mars, 1.5, &custom),
+            Disc::under(Body::Mars, 1.5, &standard)
+        );
         // At the mean distance whatever the actual one.
-        let mean = HorizonModel { disc_size: DiscSize::MeanDistance, ..standard };
-        assert_eq!(Disc::under(Body::Sun, 0.983, &mean).semidiameter_deg, sun.semidiameter_deg);
-        assert_eq!(Disc::under(Body::Moon, 0.0024, &mean).semidiameter_deg, moon.semidiameter_deg);
+        let mean = HorizonModel {
+            disc_size: DiscSize::MeanDistance,
+            ..standard
+        };
+        assert_eq!(
+            Disc::under(Body::Sun, 0.983, &mean).semidiameter_deg,
+            sun.semidiameter_deg
+        );
+        assert_eq!(
+            Disc::under(Body::Moon, 0.0024, &mean).semidiameter_deg,
+            moon.semidiameter_deg
+        );
         // A fixed angle for any body with a size, and none for a point.
-        let fixed = HorizonModel { disc_size: DiscSize::Fixed { semidiameter_arcmin: 16.0 }, ..standard };
-        assert!((Disc::under(Body::Moon, 0.0024, &fixed).semidiameter_deg - 16.0 / 60.0).abs() < 1e-12);
+        let fixed = HorizonModel {
+            disc_size: DiscSize::Fixed {
+                semidiameter_arcmin: 16.0,
+            },
+            ..standard
+        };
+        assert!(
+            (Disc::under(Body::Moon, 0.0024, &fixed).semidiameter_deg - 16.0 / 60.0).abs() < 1e-12
+        );
         let none = Disc::under(Body::MeanNode, 1.0, &fixed);
         assert_eq!((none.semidiameter_deg, none.parallax_deg), (0.0, 0.0));
         let nowhere = Disc::under(Body::Sun, 0.0, &standard);
@@ -2527,7 +2555,10 @@ mod tests {
         assert!((low - high).abs() < 0.01, "{low} {high}");
         assert!(sinclair_refraction_arcmin(45.0, 1013.25, 15.0) < 1.0);
         assert_eq!(horizon_refraction_arcmin(Refraction::None, hill), 0.0);
-        assert_eq!(horizon_refraction_arcmin(Refraction::Standard, hill), STANDARD_HORIZON_REFRACTION_ARCMIN);
+        assert_eq!(
+            horizon_refraction_arcmin(Refraction::Standard, hill),
+            STANDARD_HORIZON_REFRACTION_ARCMIN
+        );
         assert!(horizon_refraction_arcmin(Refraction::Atmosphere(air), sea) > 30.0);
     }
 
@@ -2536,28 +2567,53 @@ mod tests {
         let hill = Altitude::literal(1_400.0);
         let named = |refraction: RefractionFormula, dip: Dip, altitude_deg: f64| Horizon {
             refraction: Refraction::Atmosphere(Atmosphere::STANDARD),
-            model: HorizonModel { refraction, dip, altitude_deg, ..HorizonModel::STANDARD },
+            model: HorizonModel {
+                refraction,
+                dip,
+                altitude_deg,
+                ..HorizonModel::STANDARD
+            },
             ..Horizon::UPPER_LIMB_REFRACTION
         };
         let mut seen = Vec::new();
-        for formula in [RefractionFormula::Bennett, RefractionFormula::Saemundsson, RefractionFormula::Sinclair] {
+        for formula in [
+            RefractionFormula::Bennett,
+            RefractionFormula::Saemundsson,
+            RefractionFormula::Sinclair,
+        ] {
             let reckoned = reckon(&named(formula, Dip::None, 0.0), hill).unwrap();
             assert_eq!(reckoned.height_deg, 0.0);
             // Each near half a degree at the horizon, thinner air at height.
-            assert!((0.3..0.6).contains(&reckoned.refraction_deg), "{formula:?}: {}", reckoned.refraction_deg);
+            assert!(
+                (0.3..0.6).contains(&reckoned.refraction_deg),
+                "{formula:?}: {}",
+                reckoned.refraction_deg
+            );
             seen.push(reckoned.refraction_deg);
         }
-        assert!(seen.windows(2).any(|pair| pair[0] != pair[1]), "three formulas, three answers");
+        assert!(
+            seen.windows(2).any(|pair| matches!(pair, [a, b] if a != b)),
+            "three formulas, three answers"
+        );
         // The dip lowers the horizon, and the altitude raises it.
-        let dipped = reckon(&named(RefractionFormula::Bennett, Dip::Geometric, 0.5), hill).unwrap();
-        assert!((dipped.height_deg - (0.5 + dip_deg(Dip::Geometric, hill, Atmosphere::STANDARD))).abs() < 1e-12);
+        let dipped = reckon(
+            &named(RefractionFormula::Bennett, Dip::Geometric, 0.5),
+            hill,
+        )
+        .unwrap();
+        assert!(
+            (dipped.height_deg - (0.5 + dip_deg(Dip::Geometric, hill, Atmosphere::STANDARD))).abs()
+                < 1e-12
+        );
         // Bennett's pole: refused, naming the setting; the others answer.
         let error = reckon(&named(RefractionFormula::Bennett, Dip::None, -4.2), hill).unwrap_err();
         assert_eq!(error.field(), Some("day.horizon"));
         assert!(reckon(&named(RefractionFormula::Sinclair, Dip::None, -4.2), hill).is_ok());
         // A refraction that names no air is the convention's own.
         let standard = reckon(&Horizon::UPPER_LIMB_REFRACTION, hill).unwrap();
-        assert!((standard.refraction_deg - STANDARD_HORIZON_REFRACTION_ARCMIN / 60.0).abs() < 1e-12);
+        assert!(
+            (standard.refraction_deg - STANDARD_HORIZON_REFRACTION_ARCMIN / 60.0).abs() < 1e-12
+        );
         let geometric = reckon(&Horizon::CENTRE_NO_REFRACTION, hill).unwrap();
         assert_eq!(geometric.refraction_deg, 0.0);
     }
@@ -2565,27 +2621,56 @@ mod tests {
     #[test]
     fn the_hindu_rising_is_the_ecliptic_points() {
         let provider = TestProvider::new();
-        let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+        let sky = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
         let kathmandu = place(27.7172, 85.324);
         let midnight = JulianDay::literal(2_460_482.5 - 85.324 / 360.0);
         let rise = |latitude| {
             let horizon = Horizon {
-                model: HorizonModel { latitude, ..HorizonModel::STANDARD },
+                model: HorizonModel {
+                    latitude,
+                    ..HorizonModel::STANDARD
+                },
                 ..Horizon::UPPER_LIMB_REFRACTION
             };
-            Solver::new(&sky, Body::Moon, kathmandu, horizon, DeltaTModel::TableThenModel)
-                .event(HorizonEventKind::Rise, midnight, 2.0)
-                .unwrap()
-                .unwrap()
-                .instant
-                .get()
+            Solver::new(
+                &sky,
+                Body::Moon,
+                kathmandu,
+                horizon,
+                DeltaTModel::TableThenModel,
+            )
+            .event(HorizonEventKind::Rise, midnight, 2.0)
+            .unwrap()
+            .unwrap()
+            .instant
+            .get()
         };
         // The test sky's Moon stands off the ecliptic, so the point under
         // it rises at another instant, within minutes of it.
         let (body, point) = (rise(RisingLatitude::Body), rise(RisingLatitude::Zero));
-        assert!(body != point && (body - point).abs() * 1_440.0 < 30.0, "{body} {point}");
-        let on = on_the_ecliptic(&Apparent { ra_deg: 10.0, dec_deg: -20.0, distance_au: 1.0 }, 23.44);
-        let back = equatorial_to_ecliptic(Spherical { lon_deg: on.ra_deg, lat_deg: on.dec_deg }, 23.44);
+        assert!(
+            body != point && (body - point).abs() * 1_440.0 < 30.0,
+            "{body} {point}"
+        );
+        let on = on_the_ecliptic(
+            &Apparent {
+                ra_deg: 10.0,
+                dec_deg: -20.0,
+                distance_au: 1.0,
+            },
+            23.44,
+        );
+        let back = equatorial_to_ecliptic(
+            Spherical {
+                lon_deg: on.ra_deg,
+                lat_deg: on.dec_deg,
+            },
+            23.44,
+        );
         assert!(back.lat_deg.abs() < 1e-9);
     }
 
@@ -2604,7 +2689,8 @@ mod tests {
         fn positions(
             &self,
             request: &teistro_port_ephemeris::PositionRequest<'_>,
-        ) -> Result<teistro_port_ephemeris::PositionColumns, teistro_port_ephemeris::ProviderError> {
+        ) -> Result<teistro_port_ephemeris::PositionColumns, teistro_port_ephemeris::ProviderError>
+        {
             TestProvider::new().positions(request)
         }
 
@@ -2621,17 +2707,29 @@ mod tests {
         let provider = Answering;
         let midnight = JulianDay::literal(2_460_482.5);
         let kathmandu = place(27.7172, 85.324);
-        for (policy, native) in [(OverridePolicy::PreferNative, true), (OverridePolicy::SdkOnly, false)] {
+        for (policy, native) in [
+            (OverridePolicy::PreferNative, true),
+            (OverridePolicy::SdkOnly, false),
+        ] {
             let sky = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
             // Through a reference too, as an area holds its sky.
             let held = &sky;
-            let found = Solver::new(&held, Body::Sun, kathmandu, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel)
-                .event(HorizonEventKind::Rise, midnight, 1.0)
-                .unwrap()
-                .unwrap();
+            let found = Solver::new(
+                &held,
+                Body::Sun,
+                kathmandu,
+                Horizon::UPPER_LIMB_REFRACTION,
+                DeltaTModel::TableThenModel,
+            )
+            .event(HorizonEventKind::Rise, midnight, 1.0)
+            .unwrap()
+            .unwrap();
             assert_eq!(found.method == Method::Native, native, "{policy:?}");
             if native {
-                assert_eq!((found.instant.get(), found.evaluations), (midnight.get() + 0.25, 0));
+                assert_eq!(
+                    (found.instant.get(), found.evaluations),
+                    (midnight.get() + 0.25, 0)
+                );
             }
         }
     }
