@@ -59,8 +59,8 @@ impl ChartArea<'_> {
     /// assert_eq!(read.reference.day, 16);
     /// let leo = read.of(Rashi::Leo);
     /// println!("Saturn in the {} from Leo", leo.saturn.house);
-    /// let score = read.baseline_score(Rashi::Leo, Period::Monthly);
-    /// println!("the baseline engine's score: {}", score.overall);
+    /// let score = read.baseline_score(Rashi::Leo, Period::Monthly, sdk.settings().rashifal.score_bands);
+    /// println!("the baseline engine's score: {}, {}", score.overall, score.band());
     /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
@@ -183,6 +183,10 @@ impl ChartArea<'_> {
     ) -> Result<Envelope<Vec<RashifalAnswer>>, Error> {
         let Envelope { value, provenance } = self.rashifal_many(&batch.periods)?;
         let interpret = self.context().interpret();
+        // Each score banded as the context's settings band it, per call
+        // through a derived context (`03-design/rashifal.md`, "The score
+        // band").
+        let bands = self.context().settings().rashifal.score_bands;
         let answers = value
             .into_iter()
             .map(|period| RashifalAnswer {
@@ -197,7 +201,7 @@ impl ChartArea<'_> {
                     period
                         .readings
                         .iter()
-                        .map(|reading| period.baseline_score(reading.rashi, asked))
+                        .map(|reading| period.baseline_score(reading.rashi, asked, bands))
                         .collect()
                 }),
                 period,

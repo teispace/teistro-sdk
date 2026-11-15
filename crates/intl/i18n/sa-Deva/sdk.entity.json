@@ -6884,6 +6884,119 @@
       "prose": "वराह"
     }
   },
+  "life_area": {
+    "OVERALL": {
+      "short": "समग्र",
+      "name": "समग्र",
+      "prose": "समग्र"
+    },
+    "CAREER": {
+      "short": "कर्म",
+      "name": "कर्म",
+      "prose": "कर्म"
+    },
+    "FINANCE": {
+      "short": "धन",
+      "name": "धन",
+      "prose": "धन"
+    },
+    "HEALTH": {
+      "short": "आरोग्य",
+      "name": "आरोग्य",
+      "prose": "आरोग्य"
+    },
+    "RELATIONSHIPS": {
+      "short": "सम्बन्ध",
+      "name": "सम्बन्ध",
+      "prose": "सम्बन्ध"
+    },
+    "FAMILY": {
+      "short": "कुटुम्ब",
+      "name": "कुटुम्ब",
+      "prose": "कुटुम्ब"
+    },
+    "EDUCATION": {
+      "short": "विद्या",
+      "name": "विद्या",
+      "prose": "विद्या"
+    },
+    "SPIRITUALITY": {
+      "short": "अध्यात्म",
+      "name": "अध्यात्म",
+      "prose": "अध्यात्म"
+    }
+  },
+  "colour": {
+    "RED": {
+      "short": "रक्त",
+      "name": "रक्त",
+      "prose": "रक्त"
+    },
+    "WHITE": {
+      "short": "श्वेत",
+      "name": "श्वेत",
+      "prose": "श्वेत"
+    },
+    "GREEN": {
+      "short": "हरित",
+      "name": "हरित",
+      "prose": "हरित"
+    },
+    "ORANGE": {
+      "short": "नारङ्ग",
+      "name": "नारङ्ग",
+      "prose": "नारङ्ग"
+    },
+    "YELLOW": {
+      "short": "पीत",
+      "name": "पीत",
+      "prose": "पीत"
+    },
+    "BLUE": {
+      "short": "नील",
+      "name": "नील",
+      "prose": "नील"
+    }
+  },
+  "gochar_verdict": {
+    "GOOD": {
+      "short": "शुभ",
+      "name": "शुभ",
+      "prose": "शुभ"
+    },
+    "OBSTRUCTED": {
+      "short": "बाधित",
+      "name": "वेधबाधित",
+      "prose": "वेधबाधित"
+    },
+    "NOT_GOOD": {
+      "short": "अशुभ",
+      "name": "अशुभ",
+      "prose": "अशुभ"
+    }
+  },
+  "score_band": {
+    "EXCELLENT": {
+      "short": "उत्तम",
+      "name": "उत्तमदिन",
+      "prose": "उत्तमदिन"
+    },
+    "GOOD": {
+      "short": "शोभन",
+      "name": "शोभनदिन",
+      "prose": "शोभनदिन"
+    },
+    "MIXED": {
+      "short": "मिश्र",
+      "name": "मिश्रदिन",
+      "prose": "मिश्रदिन"
+    },
+    "CARE": {
+      "short": "सावधान",
+      "name": "सावधानदिन",
+      "prose": "सावधानदिन"
+    }
+  },
   "holiday_scope": {
     "NATIONAL": {
       "name": "सार्वजनिकावकाशः",

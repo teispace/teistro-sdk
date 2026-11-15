@@ -76,7 +76,9 @@ fn say_graha(plan: &mut Plan, graha: &GrahaGochar) {
     plan.say(&said::Transit {
         graha: graha.graha,
         house: i64::from(graha.house),
-        verdict: String::from(verdict_key(graha.verdict)),
+        // The selector reads a verdict by its catalogue key, its serde
+        // spelling too.
+        verdict: String::from(graha.verdict.key()),
     });
     if let (Verdict::Obstructed, Some(house)) = (graha.verdict, graha.vedha_house) {
         plan.say(&said::Vedha {
@@ -105,16 +107,6 @@ const fn from_key(from: GocharFrom) -> Option<&'static str> {
         GocharFrom::Moon => Some("MOON"),
         GocharFrom::Lagna => Some("LAGNA"),
         _ => None,
-    }
-}
-
-/// The selector `sdk.reason.gochar.transit` reads a verdict by: the
-/// verdict's own serde spelling.
-const fn verdict_key(verdict: Verdict) -> &'static str {
-    match verdict {
-        Verdict::Good => "GOOD",
-        Verdict::Obstructed => "OBSTRUCTED",
-        Verdict::NotGood => "NOT_GOOD",
     }
 }
 

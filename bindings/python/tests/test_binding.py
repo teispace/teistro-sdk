@@ -2655,10 +2655,43 @@ class AnEngine(WithLibrary):
                 self.assertEqual(reading.gochar.instant, period.instant)
             assert read.baseline is not None
             self.assertEqual(len(read.baseline), 12)
+            from teistro import Colour, GocharVerdict, LifeArea, ScoreBand
+
+            def banded(overall: int, bands: List[int]) -> ScoreBand:
+                excellent, good, mixed = bands
+                if overall >= excellent:
+                    return ScoreBand.EXCELLENT
+                if overall >= good:
+                    return ScoreBand.GOOD
+                return ScoreBand.MIXED if overall >= mixed else ScoreBand.CARE
+
+            # Tithipatra's bands by default (SR-124), and every word a score
+            # carries a catalogue member a locale names.
+            self.assertEqual(ctx.settings["rashifal"]["score_bands"], [75, 50, 30])
             for score in read.baseline:
                 self.assertTrue(0 <= score.overall <= 100)
                 self.assertEqual(len(score.areas), 8)
                 self.assertIsInstance(score.lucky.day, Vara)
+                self.assertEqual(score.areas[0][0], LifeArea.OVERALL)
+                self.assertIsInstance(score.lucky.colour, Colour)
+                self.assertTrue(all(isinstance(k.verdict, GocharVerdict) for k in score.key_influences))
+                self.assertIs(score.band, banded(score.overall, [75, 50, 30]))
+                self.assertTrue(ctx.intl.entity(score.band.full_key).name)
+            # A call's own thresholds band the same scores otherwise.
+            with ctx.with_settings({"rashifal": {"score_bands": [99, 98, 97]}}) as strict:
+                rebanded = strict.chart.rashifal(week, "WEEKLY").baseline
+                assert rebanded is not None
+                for score, before in zip(rebanded, read.baseline):
+                    self.assertEqual(score.overall, before.overall, "the score does not move")
+                    self.assertIs(score.band, banded(score.overall, [99, 98, 97]))
+            for bands, field in (
+                ([101, 50, 30], "settings.rashifal.score_bands[0]"),
+                ([75, 75, 30], "settings.rashifal.score_bands[1]"),
+                ([75, 50, 60], "settings.rashifal.score_bands[2]"),
+            ):
+                with self.assertRaises(TeistroError) as banding:
+                    ctx.with_settings({"rashifal": {"score_bands": bands}})
+                self.assertEqual(banding.exception.field, field)
             self.assertIsNone(ctx.chart.rashifal(week).baseline)
             self.assertIsNone(read.plans, "words only when asked for")
 
@@ -6064,7 +6097,8 @@ class AnEngine(WithLibrary):
                 rahu, ketu = reading.grahas[7], reading.grahas[8]
                 self.assertEqual((ketu.house - rahu.house) % 12, 6, "the nodes stand opposite")
                 self.assertNotIn(Graha.KETU, rahu.obstructed_by, "C140: the nodes spare each other")
-        self.assertEqual(verdicts, set(GocharVerdict))
+        # Every verdict but the open kind's UNKNOWN, which no reading carries.
+        self.assertEqual(verdicts, set(GocharVerdict) - {GocharVerdict.UNKNOWN})
         judged = self.ctx.chart.found(
             instant=birth, place=observer, utc_offset_seconds=20700, gochar={"instants": instants, "ashtakavarga": True}
         ).gochar

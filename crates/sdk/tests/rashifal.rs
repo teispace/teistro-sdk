@@ -13,7 +13,7 @@ use teistro::catalogue::{Calendar, ChartKind, Graha, Rashi};
 use teistro::gochar::hits::HitEvent;
 use teistro::gochar::{GocharRules, Reference, Transit, gochar};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::rashifal::baseline::Period;
+use teistro::rashifal::baseline::{Period, ScoreBand, ScoreBands};
 use teistro::{
     CalendarDate, Context, Ephemeris, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
     UtcOffset,
@@ -196,7 +196,7 @@ fn the_baseline_score_reads_the_period_it_was_given() {
     let read = period(&sdk, &month);
     assert_eq!(ymd(&read.reference), (2026, 10, 16));
     for rashi in Rashi::ALL {
-        let score = read.baseline_score(rashi, Period::Monthly);
+        let score = read.baseline_score(rashi, Period::Monthly, ScoreBands::DEFAULT);
         assert!(score.overall <= 100, "{rashi:?}");
         assert!(score.key_influences.len() <= 5);
     }
@@ -319,4 +319,166 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     assert!(!plain.plans);
     let read = sdk.chart().rashifal_answers(&plain).unwrap().value;
     assert_eq!(read[0].plans, None);
+}
+
+/// A batch of the days from `first` to `last` of November 2026 at
+/// Kathmandu, a binding's record, with the baseline read for `baseline`.
+fn november(first: u8, last: u8, baseline: &str) -> RashifalBatch {
+    RashifalBatch::from_json(&format!(
+        r#"{{"periods": [{{"first": {{"year": 2026, "month": 11, "day": {first}}},
+            "last": {{"year": 2026, "month": 11, "day": {last}}},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700}}], "baseline": "{baseline}"}}"#
+    ))
+    .unwrap()
+}
+
+/// Each sign's overall and band, Aries to Pisces.
+fn bands_of(sdk: &Context, batch: &RashifalBatch) -> Vec<(u8, ScoreBand)> {
+    let answers = sdk.chart().rashifal_answers(batch).unwrap().value;
+    answers[0]
+        .baseline
+        .as_ref()
+        .expect("a baseline was asked for")
+        .iter()
+        .map(|score| (score.overall, score.band()))
+        .collect()
+}
+
+/// `rashifal.score_bands` reaches a score by the context's settings, by a
+/// patch the context was built with and by one a call derives with, and
+/// moves the band and nothing else.
+#[test]
+fn a_score_is_banded_by_the_settings_it_was_read_under() {
+    let sdk = context();
+    assert_eq!(sdk.settings().rashifal.score_bands, ScoreBands::DEFAULT);
+    let batch = november(15, 15, "DAILY");
+    let default = bands_of(&sdk, &batch);
+    for (overall, band) in &default {
+        assert_eq!(*band, ScoreBands::DEFAULT.band(*overall));
+    }
+    // Every score excellent, by a context's own patch and by a call's.
+    let lenient = r#"{"rashifal": {"score_bands": [2, 1, 0]}}"#;
+    let built = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .settings_json(lenient)
+        .build()
+        .unwrap();
+    let derived = sdk.with_patch_json(lenient, None).unwrap();
+    assert_ne!(derived.settings_hash(), sdk.settings_hash());
+    for other in [&built, &derived] {
+        assert_eq!(other.settings().rashifal.score_bands, ScoreBands([2, 1, 0]));
+        let banded = bands_of(other, &batch);
+        for ((overall, band), (before, _)) in banded.iter().zip(&default) {
+            assert_eq!(overall, before, "the score does not move");
+            assert_eq!(*band, ScoreBands([2, 1, 0]).band(*overall));
+        }
+    }
+    // The answer's JSON carries the band beside the score.
+    let answers = sdk.chart().rashifal_answers(&batch).unwrap().value;
+    let json = serde_json::to_value(&answers[0]).unwrap();
+    let first = &json["baseline"][0];
+    assert_eq!(first["band"], default[0].1.key());
+    assert_eq!(first["overall"], default[0].0);
+}
+
+/// Thresholds that are not strictly descending, or pass 100, are refused,
+/// each naming the threshold at fault, wherever the settings are given.
+#[test]
+fn score_bands_out_of_order_or_range_are_refused_by_their_field() {
+    let sdk = context();
+    for (bands, field) in [
+        ("[101, 50, 30]", "settings.rashifal.score_bands[0]"),
+        ("[75, 75, 30]", "settings.rashifal.score_bands[1]"),
+        ("[75, 50, 60]", "settings.rashifal.score_bands[2]"),
+        ("[30, 50, 75]", "settings.rashifal.score_bands[1]"),
+    ] {
+        let patch = format!(r#"{{"rashifal": {{"score_bands": {bands}}}}}"#);
+        let refused = sdk.with_patch_json(&patch, None).unwrap_err();
+        assert_eq!(refused.field(), Some(field), "{bands}: {refused}");
+        let built = Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .settings_json(patch.as_str())
+            .build()
+            .unwrap_err();
+        // A built context names the field within its settings, as every
+        // coherence refusal at build does.
+        assert_eq!(
+            built.field(),
+            field.strip_prefix("settings."),
+            "{bands}: {built}"
+        );
+    }
+    // Neither two thresholds nor a fraction nor a number past a byte reads.
+    for bands in [
+        "[75, 50]",
+        "[75, 50, 30.5]",
+        "[300, 50, 30]",
+        "[-1, 50, 30]",
+    ] {
+        let patch = format!(r#"{{"rashifal": {{"score_bands": {bands}}}}}"#);
+        let refused = sdk.with_patch_json(&patch, None).unwrap_err();
+        assert!(
+            refused
+                .field()
+                .is_some_and(|field| field.starts_with("settings.rashifal.score_bands")),
+            "{bands}: {refused}"
+        );
+    }
+}
+
+/// Tithipatra's acceptance (SR-124): the home page's day, every sign, a day
+/// and a month, at Kathmandu under the Nepal committee's profile. Every
+/// area, colour, verdict and band the answer carries is named, `name` and
+/// `short`, in English and in each Devanagari locale in its own script.
+#[test]
+fn every_word_a_rashifal_answer_carries_is_named_in_each_locale() {
+    let sdk = Context::builder()
+        .nepal_official([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    assert_eq!(sdk.profile(), "nepali-committee");
+    let mut keys = std::collections::BTreeSet::new();
+    // The day, and the month it falls in.
+    for batch in [november(15, 15, "DAILY"), november(1, 30, "MONTHLY")] {
+        let answers = sdk.chart().rashifal_answers(&batch).unwrap().value;
+        let answer = &answers[0];
+        let scores = answer.baseline.as_ref().expect("a baseline was asked for");
+        assert_eq!(scores.len(), 12);
+        for score in scores {
+            keys.insert(score.band().full_key());
+            keys.insert(score.lucky.colour.full_key());
+            keys.extend(score.areas.iter().map(|(area, _)| area.full_key()));
+            keys.extend(
+                score
+                    .key_influences
+                    .iter()
+                    .map(|one| one.verdict.full_key()),
+            );
+        }
+        for reading in &answer.period.readings {
+            keys.extend(
+                reading
+                    .gochar
+                    .grahas
+                    .iter()
+                    .map(|one| one.verdict.full_key()),
+            );
+        }
+    }
+    // Eight areas, a colour, a band and a verdict at the least.
+    assert!(keys.len() > 8 + 1 + 1, "{keys:?}");
+    for tag in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN", "sa-Deva"] {
+        sdk.intl().set_locale(tag).unwrap();
+        for key in &keys {
+            let entity = sdk.intl().entity(key).unwrap();
+            for form in ["name", "short"] {
+                let said = entity.form(form);
+                assert!(said.is_some(), "{tag} {key} {form}");
+                let said = said.unwrap_or_default();
+                let devanagari = said.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+                assert_eq!(devanagari, tag != "en-Latn", "{tag} {key} {form}: {said}");
+            }
+        }
+    }
 }

@@ -3459,7 +3459,7 @@ fn chart_gochar_grahas_section(id: u32) -> SectionSchema {
                 "The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`.",
             ),
             ColumnDef::new("verdict", Scalar::U8, "What the transit comes to.")
-                .of_enum("TsGocharVerdict"),
+                .of_enum("GocharVerdict"),
             ColumnDef::new(
                 "fruition",
                 Scalar::U8,

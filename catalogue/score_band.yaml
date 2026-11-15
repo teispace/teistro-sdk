@@ -1,0 +1,33 @@
+kind: score_band
+number: 166
+version: 1
+doc: "A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`)."
+members:
+  - key: EXCELLENT
+    id: 0
+    doc: "At or above the first threshold, 75 by default"
+    sources:
+      - text: "Tithipatra's home page design (SR-124)"
+        ref: "`03-design/rashifal.md` (The score band)"
+    mark: V
+  - key: GOOD
+    id: 1
+    doc: "At or above the second, 50 by default, and below the first"
+    sources:
+      - text: "Tithipatra's home page design (SR-124)"
+        ref: "`03-design/rashifal.md` (The score band)"
+    mark: V
+  - key: MIXED
+    id: 2
+    doc: "At or above the third, 30 by default, and below the second"
+    sources:
+      - text: "Tithipatra's home page design (SR-124)"
+        ref: "`03-design/rashifal.md` (The score band)"
+    mark: V
+  - key: CARE
+    id: 3
+    doc: "Below the third: a day for care"
+    sources:
+      - text: "Tithipatra's home page design (SR-124)"
+        ref: "`03-design/rashifal.md` (The score band)"
+    mark: V

@@ -7722,6 +7722,119 @@
       "prose": "pig"
     }
   },
+  "life_area": {
+    "OVERALL": {
+      "short": "Overall",
+      "name": "Overall",
+      "prose": "overall"
+    },
+    "CAREER": {
+      "short": "Career",
+      "name": "Career",
+      "prose": "career"
+    },
+    "FINANCE": {
+      "short": "Money",
+      "name": "Finance",
+      "prose": "finance"
+    },
+    "HEALTH": {
+      "short": "Health",
+      "name": "Health",
+      "prose": "health"
+    },
+    "RELATIONSHIPS": {
+      "short": "Relations",
+      "name": "Relationships",
+      "prose": "relationships"
+    },
+    "FAMILY": {
+      "short": "Family",
+      "name": "Family",
+      "prose": "family"
+    },
+    "EDUCATION": {
+      "short": "Study",
+      "name": "Education",
+      "prose": "education"
+    },
+    "SPIRITUALITY": {
+      "short": "Spirit",
+      "name": "Spirituality",
+      "prose": "spirituality"
+    }
+  },
+  "colour": {
+    "RED": {
+      "short": "Red",
+      "name": "Red",
+      "prose": "red"
+    },
+    "WHITE": {
+      "short": "White",
+      "name": "White",
+      "prose": "white"
+    },
+    "GREEN": {
+      "short": "Green",
+      "name": "Green",
+      "prose": "green"
+    },
+    "ORANGE": {
+      "short": "Orange",
+      "name": "Orange",
+      "prose": "orange"
+    },
+    "YELLOW": {
+      "short": "Yellow",
+      "name": "Yellow",
+      "prose": "yellow"
+    },
+    "BLUE": {
+      "short": "Blue",
+      "name": "Blue",
+      "prose": "blue"
+    }
+  },
+  "gochar_verdict": {
+    "GOOD": {
+      "short": "Good",
+      "name": "Favourable",
+      "prose": "favourable"
+    },
+    "OBSTRUCTED": {
+      "short": "Obstructed",
+      "name": "Obstructed",
+      "prose": "obstructed"
+    },
+    "NOT_GOOD": {
+      "short": "Not good",
+      "name": "Unfavourable",
+      "prose": "unfavourable"
+    }
+  },
+  "score_band": {
+    "EXCELLENT": {
+      "short": "Excellent",
+      "name": "Excellent",
+      "prose": "excellent"
+    },
+    "GOOD": {
+      "short": "Good",
+      "name": "Good",
+      "prose": "good"
+    },
+    "MIXED": {
+      "short": "Mixed",
+      "name": "Mixed",
+      "prose": "mixed"
+    },
+    "CARE": {
+      "short": "Care",
+      "name": "A day for care",
+      "prose": "a day for care"
+    }
+  },
   "holiday_scope": {
     "NATIONAL": {
       "name": "Public holiday",

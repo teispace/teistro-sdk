@@ -19,7 +19,7 @@ use teistro::catalogue::{Calendar, Graha};
 use teistro::gochar::Verdict;
 use teistro::gochar::hits::HitEvent;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::rashifal::baseline::{Period, baseline_gochar, baseline_score};
+use teistro::rashifal::baseline::{Period, ScoreBands, baseline_gochar, baseline_score};
 use teistro::rashifal::{PeriodEvent, RashiReading};
 use teistro::{
     CalendarDate, Context, Ephemeris, FixedDay, RashifalPeriod, RashifalRequest, Snapshot,
@@ -171,7 +171,14 @@ fn over_days(sunrise: &[RashifalPeriod], six: &[RashifalPeriod]) -> OverDays {
                 }
             }
             let score = |reading: &RashiReading, period: &RashifalPeriod| {
-                baseline_score(reading, &period.retrograde, period.panchanga, Period::Daily).overall
+                baseline_score(
+                    reading,
+                    &period.retrograde,
+                    period.panchanga,
+                    Period::Daily,
+                    ScoreBands::DEFAULT,
+                )
+                .overall
             };
             let ours = score(text, dawn);
             let by_tables = ours.abs_diff(score(&baseline, dawn));
@@ -278,7 +285,14 @@ fn over_panchanga(months: &[RashifalPeriod], first_days: &[RashifalPeriod]) -> (
         for reading in &month.readings {
             of += 1;
             let score = |panchanga| {
-                baseline_score(reading, &month.retrograde, panchanga, Period::Monthly).overall
+                baseline_score(
+                    reading,
+                    &month.retrograde,
+                    panchanga,
+                    Period::Monthly,
+                    ScoreBands::DEFAULT,
+                )
+                .overall
             };
             if score(month.panchanga) != score(first.panchanga) {
                 moved += 1;

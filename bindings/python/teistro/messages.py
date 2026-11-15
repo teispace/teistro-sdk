@@ -306,6 +306,17 @@ class ChoghadiyaKey(enum.StrEnum):
     ROG = "choghadiya.ROG"
 
 
+class ColourKey(enum.StrEnum):
+    """A `colour` as a message names it: the full catalogue key."""
+
+    RED = "colour.RED"
+    WHITE = "colour.WHITE"
+    GREEN = "colour.GREEN"
+    ORANGE = "colour.ORANGE"
+    YELLOW = "colour.YELLOW"
+    BLUE = "colour.BLUE"
+
+
 class DashaFamilyKey(enum.StrEnum):
     """A `dasha_family` as a message names it: the full catalogue key."""
 
@@ -1162,6 +1173,14 @@ class GenderKey(enum.StrEnum):
     NEUTRAL = "gender.NEUTRAL"
 
 
+class GocharVerdictKey(enum.StrEnum):
+    """A `gochar_verdict` as a message names it: the full catalogue key."""
+
+    GOOD = "gochar_verdict.GOOD"
+    OBSTRUCTED = "gochar_verdict.OBSTRUCTED"
+    NOT_GOOD = "gochar_verdict.NOT_GOOD"
+
+
 class GowriKey(enum.StrEnum):
     """A `gowri` as a message names it: the full catalogue key."""
 
@@ -1280,6 +1299,19 @@ class KootaKey(enum.StrEnum):
     VEDHA = "koota.VEDHA"
     STREE_DEERGHA = "koota.STREE_DEERGHA"
     MAHENDRA = "koota.MAHENDRA"
+
+
+class LifeAreaKey(enum.StrEnum):
+    """A `life_area` as a message names it: the full catalogue key."""
+
+    OVERALL = "life_area.OVERALL"
+    CAREER = "life_area.CAREER"
+    FINANCE = "life_area.FINANCE"
+    HEALTH = "life_area.HEALTH"
+    RELATIONSHIPS = "life_area.RELATIONSHIPS"
+    FAMILY = "life_area.FAMILY"
+    EDUCATION = "life_area.EDUCATION"
+    SPIRITUALITY = "life_area.SPIRITUALITY"
 
 
 class LunarEclipseKindKey(enum.StrEnum):
@@ -1632,6 +1664,15 @@ class SamvatsaraKey(enum.StrEnum):
     RAKTAKSHI = "samvatsara.RAKTAKSHI"
     KRODHANA = "samvatsara.KRODHANA"
     AKSHAYA = "samvatsara.AKSHAYA"
+
+
+class ScoreBandKey(enum.StrEnum):
+    """A `score_band` as a message names it: the full catalogue key."""
+
+    EXCELLENT = "score_band.EXCELLENT"
+    GOOD = "score_band.GOOD"
+    MIXED = "score_band.MIXED"
+    CARE = "score_band.CARE"
 
 
 class SexKey(enum.StrEnum):
@@ -3220,6 +3261,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityChoghadiya(self._r)
 
     @property
+    def colour(self) -> MessagesSdkEntityColour:
+        """The messages under `colour`."""
+        return MessagesSdkEntityColour(self._r)
+
+    @property
     def dasha_family(self) -> MessagesSdkEntityDashaFamily:
         """The messages under `dasha_family`."""
         return MessagesSdkEntityDashaFamily(self._r)
@@ -3285,6 +3331,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityGender(self._r)
 
     @property
+    def gochar_verdict(self) -> MessagesSdkEntityGocharVerdict:
+        """The messages under `gochar_verdict`."""
+        return MessagesSdkEntityGocharVerdict(self._r)
+
+    @property
     def gowri(self) -> MessagesSdkEntityGowri:
         """The messages under `gowri`."""
         return MessagesSdkEntityGowri(self._r)
@@ -3323,6 +3374,11 @@ class MessagesSdkEntity:
     def koota(self) -> MessagesSdkEntityKoota:
         """The messages under `koota`."""
         return MessagesSdkEntityKoota(self._r)
+
+    @property
+    def life_area(self) -> MessagesSdkEntityLifeArea:
+        """The messages under `life_area`."""
+        return MessagesSdkEntityLifeArea(self._r)
 
     @property
     def lunar_eclipse_kind(self) -> MessagesSdkEntityLunarEclipseKind:
@@ -3433,6 +3489,11 @@ class MessagesSdkEntity:
     def samvatsara(self) -> MessagesSdkEntitySamvatsara:
         """The messages under `samvatsara`."""
         return MessagesSdkEntitySamvatsara(self._r)
+
+    @property
+    def score_band(self) -> MessagesSdkEntityScoreBand:
+        """The messages under `score_band`."""
+        return MessagesSdkEntityScoreBand(self._r)
 
     @property
     def sex(self) -> MessagesSdkEntitySex:
@@ -5456,6 +5517,34 @@ class MessagesSdkEntitySex:
         return self._r.entity("sex.MALE")
 
 
+class MessagesSdkEntityScoreBand:
+    """The messages under `MessagesSdkEntityScoreBand`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def care(self) -> EntityForms:
+        """The forms of `score_band.CARE` in the current locale."""
+        return self._r.entity("score_band.CARE")
+
+    @property
+    def excellent(self) -> EntityForms:
+        """The forms of `score_band.EXCELLENT` in the current locale."""
+        return self._r.entity("score_band.EXCELLENT")
+
+    @property
+    def good(self) -> EntityForms:
+        """The forms of `score_band.GOOD` in the current locale."""
+        return self._r.entity("score_band.GOOD")
+
+    @property
+    def mixed(self) -> EntityForms:
+        """The forms of `score_band.MIXED` in the current locale."""
+        return self._r.entity("score_band.MIXED")
+
+
 class MessagesSdkEntitySamvatsara:
     """The messages under `MessagesSdkEntitySamvatsara`, each rendered by its own key."""
 
@@ -6842,6 +6931,54 @@ class MessagesSdkEntityLunarEclipseKind:
         return self._r.entity("lunar_eclipse_kind.TOTAL")
 
 
+class MessagesSdkEntityLifeArea:
+    """The messages under `MessagesSdkEntityLifeArea`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def career(self) -> EntityForms:
+        """The forms of `life_area.CAREER` in the current locale."""
+        return self._r.entity("life_area.CAREER")
+
+    @property
+    def education(self) -> EntityForms:
+        """The forms of `life_area.EDUCATION` in the current locale."""
+        return self._r.entity("life_area.EDUCATION")
+
+    @property
+    def family(self) -> EntityForms:
+        """The forms of `life_area.FAMILY` in the current locale."""
+        return self._r.entity("life_area.FAMILY")
+
+    @property
+    def finance(self) -> EntityForms:
+        """The forms of `life_area.FINANCE` in the current locale."""
+        return self._r.entity("life_area.FINANCE")
+
+    @property
+    def health(self) -> EntityForms:
+        """The forms of `life_area.HEALTH` in the current locale."""
+        return self._r.entity("life_area.HEALTH")
+
+    @property
+    def overall(self) -> EntityForms:
+        """The forms of `life_area.OVERALL` in the current locale."""
+        return self._r.entity("life_area.OVERALL")
+
+    @property
+    def relationships(self) -> EntityForms:
+        """The forms of `life_area.RELATIONSHIPS` in the current locale."""
+        return self._r.entity("life_area.RELATIONSHIPS")
+
+    @property
+    def spirituality(self) -> EntityForms:
+        """The forms of `life_area.SPIRITUALITY` in the current locale."""
+        return self._r.entity("life_area.SPIRITUALITY")
+
+
 class MessagesSdkEntityKoota:
     """The messages under `MessagesSdkEntityKoota`, each rendered by its own key."""
 
@@ -7304,6 +7441,29 @@ class MessagesSdkEntityGowri:
     def visham(self) -> EntityForms:
         """The forms of `gowri.VISHAM` in the current locale."""
         return self._r.entity("gowri.VISHAM")
+
+
+class MessagesSdkEntityGocharVerdict:
+    """The messages under `MessagesSdkEntityGocharVerdict`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def good(self) -> EntityForms:
+        """The forms of `gochar_verdict.GOOD` in the current locale."""
+        return self._r.entity("gochar_verdict.GOOD")
+
+    @property
+    def not_good(self) -> EntityForms:
+        """The forms of `gochar_verdict.NOT_GOOD` in the current locale."""
+        return self._r.entity("gochar_verdict.NOT_GOOD")
+
+    @property
+    def obstructed(self) -> EntityForms:
+        """The forms of `gochar_verdict.OBSTRUCTED` in the current locale."""
+        return self._r.entity("gochar_verdict.OBSTRUCTED")
 
 
 class MessagesSdkEntityGender:
@@ -11363,6 +11523,44 @@ class MessagesSdkEntityDashaFamily:
     def udu(self) -> EntityForms:
         """The forms of `dasha_family.UDU` in the current locale."""
         return self._r.entity("dasha_family.UDU")
+
+
+class MessagesSdkEntityColour:
+    """The messages under `MessagesSdkEntityColour`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def blue(self) -> EntityForms:
+        """The forms of `colour.BLUE` in the current locale."""
+        return self._r.entity("colour.BLUE")
+
+    @property
+    def green(self) -> EntityForms:
+        """The forms of `colour.GREEN` in the current locale."""
+        return self._r.entity("colour.GREEN")
+
+    @property
+    def orange(self) -> EntityForms:
+        """The forms of `colour.ORANGE` in the current locale."""
+        return self._r.entity("colour.ORANGE")
+
+    @property
+    def red(self) -> EntityForms:
+        """The forms of `colour.RED` in the current locale."""
+        return self._r.entity("colour.RED")
+
+    @property
+    def white(self) -> EntityForms:
+        """The forms of `colour.WHITE` in the current locale."""
+        return self._r.entity("colour.WHITE")
+
+    @property
+    def yellow(self) -> EntityForms:
+        """The forms of `colour.YELLOW` in the current locale."""
+        return self._r.entity("colour.YELLOW")
 
 
 class MessagesSdkEntityChoghadiya:

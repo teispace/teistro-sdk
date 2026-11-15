@@ -348,6 +348,19 @@ enum ChoghadiyaKey {
   final String key;
 }
 
+enum ColourKey {
+  red('colour.RED'),
+  white('colour.WHITE'),
+  green('colour.GREEN'),
+  orange('colour.ORANGE'),
+  yellow('colour.YELLOW'),
+  blue('colour.BLUE');
+
+  const ColourKey(this.key);
+
+  final String key;
+}
+
 enum DashaFamilyKey {
   udu('dasha_family.UDU'),
   rashi('dasha_family.RASHI'),
@@ -1230,6 +1243,16 @@ enum GenderKey {
   final String key;
 }
 
+enum GocharVerdictKey {
+  good('gochar_verdict.GOOD'),
+  obstructed('gochar_verdict.OBSTRUCTED'),
+  notGood('gochar_verdict.NOT_GOOD');
+
+  const GocharVerdictKey(this.key);
+
+  final String key;
+}
+
 enum GowriKey {
   uthi('gowri.UTHI'),
   amirtham('gowri.AMIRTHAM'),
@@ -1362,6 +1385,21 @@ enum KootaKey {
   mahendra('koota.MAHENDRA');
 
   const KootaKey(this.key);
+
+  final String key;
+}
+
+enum LifeAreaKey {
+  overall('life_area.OVERALL'),
+  career('life_area.CAREER'),
+  finance('life_area.FINANCE'),
+  health('life_area.HEALTH'),
+  relationships('life_area.RELATIONSHIPS'),
+  family('life_area.FAMILY'),
+  education('life_area.EDUCATION'),
+  spirituality('life_area.SPIRITUALITY');
+
+  const LifeAreaKey(this.key);
 
   final String key;
 }
@@ -1758,6 +1796,17 @@ enum SamvatsaraKey {
   akshaya('samvatsara.AKSHAYA');
 
   const SamvatsaraKey(this.key);
+
+  final String key;
+}
+
+enum ScoreBandKey {
+  excellent('score_band.EXCELLENT'),
+  good('score_band.GOOD'),
+  mixed('score_band.MIXED'),
+  care('score_band.CARE');
+
+  const ScoreBandKey(this.key);
 
   final String key;
 }
@@ -3202,6 +3251,19 @@ final class MessagesSdkEntityChoghadiya {
   EntityForms get udveg => _r.entity('choghadiya.UDVEG');
 }
 
+final class MessagesSdkEntityColour {
+  const MessagesSdkEntityColour(this._r);
+
+  final Renderer _r;
+
+  EntityForms get blue => _r.entity('colour.BLUE');
+  EntityForms get green => _r.entity('colour.GREEN');
+  EntityForms get orange => _r.entity('colour.ORANGE');
+  EntityForms get red => _r.entity('colour.RED');
+  EntityForms get white => _r.entity('colour.WHITE');
+  EntityForms get yellow => _r.entity('colour.YELLOW');
+}
+
 final class MessagesSdkEntityDashaFamily {
   const MessagesSdkEntityDashaFamily(this._r);
 
@@ -4084,6 +4146,16 @@ final class MessagesSdkEntityGender {
   EntityForms get neutral => _r.entity('gender.NEUTRAL');
 }
 
+final class MessagesSdkEntityGocharVerdict {
+  const MessagesSdkEntityGocharVerdict(this._r);
+
+  final Renderer _r;
+
+  EntityForms get good => _r.entity('gochar_verdict.GOOD');
+  EntityForms get notGood => _r.entity('gochar_verdict.NOT_GOOD');
+  EntityForms get obstructed => _r.entity('gochar_verdict.OBSTRUCTED');
+}
+
 final class MessagesSdkEntityGowri {
   const MessagesSdkEntityGowri(this._r);
 
@@ -4218,6 +4290,21 @@ final class MessagesSdkEntityKoota {
   EntityForms get vashya => _r.entity('koota.VASHYA');
   EntityForms get vedha => _r.entity('koota.VEDHA');
   EntityForms get yoni => _r.entity('koota.YONI');
+}
+
+final class MessagesSdkEntityLifeArea {
+  const MessagesSdkEntityLifeArea(this._r);
+
+  final Renderer _r;
+
+  EntityForms get career => _r.entity('life_area.CAREER');
+  EntityForms get education => _r.entity('life_area.EDUCATION');
+  EntityForms get family => _r.entity('life_area.FAMILY');
+  EntityForms get finance => _r.entity('life_area.FINANCE');
+  EntityForms get health => _r.entity('life_area.HEALTH');
+  EntityForms get overall => _r.entity('life_area.OVERALL');
+  EntityForms get relationships => _r.entity('life_area.RELATIONSHIPS');
+  EntityForms get spirituality => _r.entity('life_area.SPIRITUALITY');
 }
 
 final class MessagesSdkEntityLunarEclipseKind {
@@ -4614,6 +4701,17 @@ final class MessagesSdkEntitySamvatsara {
   EntityForms get vrisha => _r.entity('samvatsara.VRISHA');
   EntityForms get vyaya => _r.entity('samvatsara.VYAYA');
   EntityForms get yuva => _r.entity('samvatsara.YUVA');
+}
+
+final class MessagesSdkEntityScoreBand {
+  const MessagesSdkEntityScoreBand(this._r);
+
+  final Renderer _r;
+
+  EntityForms get care => _r.entity('score_band.CARE');
+  EntityForms get excellent => _r.entity('score_band.EXCELLENT');
+  EntityForms get good => _r.entity('score_band.GOOD');
+  EntityForms get mixed => _r.entity('score_band.MIXED');
 }
 
 final class MessagesSdkEntitySex {
@@ -5144,6 +5242,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityChartKind get chartKind => MessagesSdkEntityChartKind(_r);
   MessagesSdkEntityChartLayout get chartLayout => MessagesSdkEntityChartLayout(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
+  MessagesSdkEntityColour get colour => MessagesSdkEntityColour(_r);
   MessagesSdkEntityDashaFamily get dashaFamily => MessagesSdkEntityDashaFamily(_r);
   MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
   MessagesSdkEntityDayMarker get dayMarker => MessagesSdkEntityDayMarker(_r);
@@ -5157,6 +5256,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityFestivalKind get festivalKind => MessagesSdkEntityFestivalKind(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
   MessagesSdkEntityGender get gender => MessagesSdkEntityGender(_r);
+  MessagesSdkEntityGocharVerdict get gocharVerdict => MessagesSdkEntityGocharVerdict(_r);
   MessagesSdkEntityGowri get gowri => MessagesSdkEntityGowri(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
   MessagesSdkEntityGuna get guna => MessagesSdkEntityGuna(_r);
@@ -5165,6 +5265,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityKaala get kaala => MessagesSdkEntityKaala(_r);
   MessagesSdkEntityKarana get karana => MessagesSdkEntityKarana(_r);
   MessagesSdkEntityKoota get koota => MessagesSdkEntityKoota(_r);
+  MessagesSdkEntityLifeArea get lifeArea => MessagesSdkEntityLifeArea(_r);
   MessagesSdkEntityLunarEclipseKind get lunarEclipseKind => MessagesSdkEntityLunarEclipseKind(_r);
   MessagesSdkEntityMasa get masa => MessagesSdkEntityMasa(_r);
   MessagesSdkEntityModality get modality => MessagesSdkEntityModality(_r);
@@ -5187,6 +5288,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityRulerDayRule get rulerDayRule => MessagesSdkEntityRulerDayRule(_r);
   MessagesSdkEntityRulerText get rulerText => MessagesSdkEntityRulerText(_r);
   MessagesSdkEntitySamvatsara get samvatsara => MessagesSdkEntitySamvatsara(_r);
+  MessagesSdkEntityScoreBand get scoreBand => MessagesSdkEntityScoreBand(_r);
   MessagesSdkEntitySex get sex => MessagesSdkEntitySex(_r);
   MessagesSdkEntityShivaVasa get shivaVasa => MessagesSdkEntityShivaVasa(_r);
   MessagesSdkEntitySolarEclipseKind get solarEclipseKind => MessagesSdkEntitySolarEclipseKind(_r);

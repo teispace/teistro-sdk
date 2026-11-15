@@ -1644,36 +1644,6 @@ impl TsNodeObstruction {
     }
 }
 
-/// What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
-///
-/// ```
-/// use teistro_ffi::chart::TsGocharVerdict;
-///
-/// // A member crosses the boundary as its number: `Good` is 0, `NotGood` 2.
-/// assert_eq!((TsGocharVerdict::Good as u8, TsGocharVerdict::NotGood as u8), (0, 2));
-/// ```
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TsGocharVerdict {
-    /// In a good house, and nothing stands in its vedha house.
-    Good = 0,
-    /// In a good house, and another graha stands in its vedha house.
-    Obstructed = 1,
-    /// Not in a house v. 2 names good.
-    NotGood = 2,
-}
-
-impl From<teistro::gochar::Verdict> for TsGocharVerdict {
-    fn from(verdict: teistro::gochar::Verdict) -> TsGocharVerdict {
-        use teistro::gochar::Verdict;
-        match verdict {
-            Verdict::Good => TsGocharVerdict::Good,
-            Verdict::Obstructed => TsGocharVerdict::Obstructed,
-            Verdict::NotGood => TsGocharVerdict::NotGood,
-        }
-    }
-}
-
 /// Where in a sign a graha's transit bears fruit (v. 25).
 ///
 /// ```
@@ -3285,9 +3255,12 @@ impl GocharColumns {
                     columns.good_house.push(u8::from(read.good_house));
                     columns.vedha_house.push(read.vedha_house.unwrap_or(0));
                     columns.obstructed_by.push(graha_mask(&read.obstructed_by));
-                    columns
-                        .verdict
-                        .push(TsGocharVerdict::from(read.verdict) as u8);
+                    // The catalogue's `gochar_verdict` id, a byte as the
+                    // column has always carried it.
+                    columns.verdict.push(
+                        u8::try_from(read.verdict.id())
+                            .map_err(|_| Error::internal("a gochar verdict past a byte"))?,
+                    );
                     columns.fruition.push(TsFruition::from(read.fruition) as u8);
                     columns.fruitful_now.push(u8::from(read.fruitful_now));
                 }

@@ -28,7 +28,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, Source,
+    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source,
 };
 use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
@@ -881,6 +881,70 @@ pub struct Precision {
     pub score_decimals: u8,
 }
 
+/// The three thresholds a rashifal's overall score is banded by,
+/// descending: a score at or above the first is
+/// [`ScoreBand::Excellent`], at or above the second
+/// [`ScoreBand::Good`], at or above the third [`ScoreBand::Mixed`], and
+/// below it [`ScoreBand::Care`].
+///
+/// No text bands a score, which is the baseline engine's own number
+/// (C361). [`ScoreBands::DEFAULT`], 75, 50 and 30, is Tithipatra's
+/// design (SR-124), and the knob `rashifal.score_bands` sets another
+/// (`03-design/rashifal.md`, "The score band"). The settings refuse
+/// thresholds that are not strictly descending or exceed 100.
+///
+/// ```
+/// use teistro_core::catalogue::ScoreBand;
+/// use teistro_core::settings::{ScoreBands, root};
+///
+/// let bands = root().rashifal.score_bands;
+/// assert_eq!(bands, ScoreBands::DEFAULT);
+/// assert_eq!((bands.band(75), bands.band(74)), (ScoreBand::Excellent, ScoreBand::Good));
+/// assert_eq!((bands.band(30), bands.band(29)), (ScoreBand::Mixed, ScoreBand::Care));
+/// // The JSON form is the three numbers.
+/// assert_eq!(serde_json::to_string(&bands).unwrap(), "[75,50,30]");
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(transparent)]
+pub struct ScoreBands(pub [u8; 3]);
+
+impl ScoreBands {
+    /// Tithipatra's thresholds (SR-124): 75, 50 and 30.
+    pub const DEFAULT: ScoreBands = ScoreBands([75, 50, 30]);
+
+    /// The band an overall score from 0 to 100 falls in.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::ScoreBand;
+    /// use teistro_core::settings::ScoreBands;
+    ///
+    /// let strict = ScoreBands([90, 60, 40]);
+    /// assert_eq!(strict.band(100), ScoreBand::Excellent);
+    /// assert_eq!(strict.band(75), ScoreBand::Good);
+    /// assert_eq!(strict.band(0), ScoreBand::Care);
+    /// ```
+    #[must_use]
+    pub const fn band(self, overall: u8) -> ScoreBand {
+        let [excellent, good, mixed] = self.0;
+        if overall >= excellent {
+            ScoreBand::Excellent
+        } else if overall >= good {
+            ScoreBand::Good
+        } else if overall >= mixed {
+            ScoreBand::Mixed
+        } else {
+            ScoreBand::Care
+        }
+    }
+}
+
+impl Default for ScoreBands {
+    fn default() -> ScoreBands {
+        ScoreBands::DEFAULT
+    }
+}
+
 /// How many ephemeris cells a context remembers by default.
 ///
 /// A fifty-day almanac range asks for 53 935 cells of which 21 446 are
@@ -1227,6 +1291,18 @@ group!(
 );
 
 group!(
+    /// A period read for each sign (`03-design/rashifal.md`).
+    Rashifal,
+    RashifalPatch,
+    rashifal {
+        /// The three descending thresholds a baseline score's overall is
+        /// banded by: Tithipatra's 75, 50 and 30 (SR-124), since no text
+        /// bands a score (`03-design/rashifal.md`, "The score band").
+        score_bands: ScoreBands,
+    }
+);
+
+group!(
     /// Krishnamurti Paddhati (`03-design/kp.md`).
     Kp,
     KpPatch,
@@ -1457,6 +1533,8 @@ pub struct Settings {
     pub jaimini: Jaimini,
     /// Transits.
     pub gochar: Gochar,
+    /// A period read for each sign.
+    pub rashifal: Rashifal,
     /// Krishnamurti Paddhati.
     pub kp: Kp,
     /// Aspects.
@@ -1496,7 +1574,7 @@ impl Settings {
     /// ```
     #[must_use]
     pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
-        let groups: [(&str, &[&str]); 16] = [
+        let groups: [(&str, &[&str]); 17] = [
             ("frame", Frame::KNOBS),
             ("houses", Houses::KNOBS),
             ("day", Day::KNOBS),
@@ -1505,6 +1583,7 @@ impl Settings {
             ("dasha", Dasha::KNOBS),
             ("jaimini", Jaimini::KNOBS),
             ("gochar", Gochar::KNOBS),
+            ("rashifal", Rashifal::KNOBS),
             ("kp", Kp::KNOBS),
             ("aspect", Aspect::KNOBS),
             ("state", State::KNOBS),
@@ -1551,6 +1630,8 @@ pub struct SettingsPatch {
     pub jaimini: JaiminiPatch,
     /// Transits.
     pub gochar: GocharPatch,
+    /// A period read for each sign.
+    pub rashifal: RashifalPatch,
     /// Krishnamurti Paddhati.
     pub kp: KpPatch,
     /// Aspects.
@@ -1636,6 +1717,7 @@ impl Settings {
         self.dasha.apply(&patch.dasha);
         self.jaimini.apply(&patch.jaimini);
         self.gochar.apply(&patch.gochar);
+        self.rashifal.apply(&patch.rashifal);
         self.kp.apply(&patch.kp);
         self.aspect.apply(&patch.aspect);
         self.state.apply(&patch.state);
@@ -2106,6 +2188,41 @@ fn dut1_coherence(dut1: Dut1, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// Each threshold of `rashifal.score_bands`, as a refusal names it.
+const SCORE_BAND_FIELDS: [&str; 3] = [
+    "rashifal.score_bands[0]",
+    "rashifal.score_bands[1]",
+    "rashifal.score_bands[2]",
+];
+
+/// What the settings refuse of the score bands: a threshold past 100,
+/// which no score reaches, and one not below the threshold before it,
+/// which would leave a band empty.
+fn score_bands_coherence(bands: ScoreBands, out: &mut Vec<Diagnostic>) {
+    let mut above = None;
+    for (threshold, field) in bands.0.into_iter().zip(SCORE_BAND_FIELDS) {
+        if threshold > 100 {
+            out.push(Diagnostic::error(
+                "score-band-range",
+                format!("a score band's threshold is 0 to 100, not {threshold}"),
+                &[field],
+            ));
+        }
+        if let Some(previous) = above
+            && threshold >= previous
+        {
+            out.push(Diagnostic::error(
+                "score-bands-descending",
+                format!(
+                    "the score bands' thresholds descend strictly, and {threshold} is not below {previous}"
+                ),
+                &[field],
+            ));
+        }
+        above = Some(threshold);
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -2125,6 +2242,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
     sunrise_coherence(s.day.sunrise, &mut out);
     horizon_coherence(&s.day.horizon, &mut out);
     dut1_coherence(s.time.dut1, &mut out);
+    score_bands_coherence(s.rashifal.score_bands, &mut out);
     if s.frame.nakshatra_scheme == NakshatraScheme::TwentyEight {
         let seeded: Vec<&DashaSystem> = s
             .dasha
@@ -2681,6 +2799,79 @@ mod tests {
             );
         }
         assert!(!sunrise(-6.0).contains(&"sunrise-altitude"));
+    }
+
+    #[test]
+    fn score_bands_are_refused_by_the_threshold_at_fault() {
+        let refused = |bands: [u8; 3]| {
+            let mut settings = root();
+            settings.rashifal.score_bands = ScoreBands(bands);
+            settings
+                .validated(ProfileId::new("mine"))
+                .map(drop)
+                .map_err(|found| {
+                    found
+                        .errors()
+                        .map(|d| (d.rule, d.fields.clone()))
+                        .collect::<Vec<_>>()
+                })
+        };
+        assert_eq!(refused([75, 50, 30]), Ok(()));
+        assert_eq!(refused([100, 99, 0]), Ok(()));
+        assert_eq!(
+            refused([101, 50, 30]),
+            Err(vec![("score-band-range", vec!["rashifal.score_bands[0]"])])
+        );
+        assert_eq!(
+            refused([75, 75, 30]),
+            Err(vec![(
+                "score-bands-descending",
+                vec!["rashifal.score_bands[1]"]
+            )])
+        );
+        assert_eq!(
+            refused([75, 50, 60]),
+            Err(vec![(
+                "score-bands-descending",
+                vec!["rashifal.score_bands[2]"]
+            )])
+        );
+        // Every fault is said, each by its own threshold.
+        assert_eq!(
+            refused([30, 50, 200]),
+            Err(vec![
+                ("score-bands-descending", vec!["rashifal.score_bands[1]"]),
+                ("score-band-range", vec!["rashifal.score_bands[2]"]),
+                ("score-bands-descending", vec!["rashifal.score_bands[2]"]),
+            ])
+        );
+        // As a patch, under `settings`; and a list not of three bytes is
+        // refused when it is read.
+        let mut patch = SettingsPatch::default();
+        patch.rashifal.score_bands = Some(ScoreBands([75, 80, 30]));
+        assert_eq!(
+            root()
+                .derived(&patch, ProfileId::new("mine"))
+                .unwrap_err()
+                .field(),
+            Some("settings.rashifal.score_bands[1]")
+        );
+        for bands in [
+            "[75, 50]",
+            "[75, 50, 30, 10]",
+            "[256, 50, 30]",
+            "[75.5, 50, 30]",
+        ] {
+            let json = format!(r#"{{"rashifal": {{"score_bands": {bands}}}}}"#);
+            assert!(SettingsPatch::from_json(&json).is_err(), "{bands}");
+        }
+        assert_eq!(
+            SettingsPatch::from_json(r#"{"rashifal": {"score_bands": [80, 60, 40]}}"#)
+                .unwrap()
+                .rashifal
+                .score_bands,
+            Some(ScoreBands([80, 60, 40]))
+        );
     }
 
     #[test]

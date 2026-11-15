@@ -1222,6 +1222,35 @@
     "SUN": {},
     "BHAVA": {}
   },
+  "life_area": {
+    "OVERALL": {},
+    "CAREER": {},
+    "FINANCE": {},
+    "HEALTH": {},
+    "RELATIONSHIPS": {},
+    "FAMILY": {},
+    "EDUCATION": {},
+    "SPIRITUALITY": {}
+  },
+  "colour": {
+    "RED": {},
+    "WHITE": {},
+    "GREEN": {},
+    "ORANGE": {},
+    "YELLOW": {},
+    "BLUE": {}
+  },
+  "gochar_verdict": {
+    "GOOD": {},
+    "OBSTRUCTED": {},
+    "NOT_GOOD": {}
+  },
+  "score_band": {
+    "EXCELLENT": {},
+    "GOOD": {},
+    "MIXED": {},
+    "CARE": {}
+  },
   "holiday_scope": {
     "NATIONAL": {},
     "CONCERNED": {},

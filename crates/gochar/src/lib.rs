@@ -266,7 +266,8 @@ impl GocharRules {
     }
 }
 
-/// What a transit comes to.
+/// What a transit comes to: the catalogue kind `gochar_verdict`, so a
+/// reader names a verdict in any locale (`gochar_verdict.OBSTRUCTED`).
 ///
 /// ```
 /// use teistro_core::catalogue::{Graha, Rashi};
@@ -281,18 +282,11 @@ impl GocharRules {
 /// let sun = &reading.grahas[Graha::Sun as usize];
 /// assert_eq!(sun.verdict, Verdict::Obstructed);
 /// assert_eq!(sun.obstructed_by, [Graha::Moon]);
+/// // One type: the catalogue's, spelled as it always was.
+/// assert_eq!(sun.verdict.full_key(), "gochar_verdict.OBSTRUCTED");
+/// assert_eq!(serde_json::to_value(sun.verdict).unwrap(), "OBSTRUCTED");
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Verdict {
-    /// In a good house, and nothing stands in its vedha house.
-    Good,
-    /// In a good house, and another graha stands in its vedha house.
-    Obstructed,
-    /// Not in a house v. 2 names good.
-    NotGood,
-}
+pub use teistro_core::catalogue::GocharVerdict as Verdict;
 
 /// Where in a sign a graha's transit bears fruit (v. 25).
 ///

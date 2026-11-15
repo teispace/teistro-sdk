@@ -3551,8 +3551,9 @@ void main() {
         put(
           'rashifal-$n-$r-baseline',
           '${score.overall} ${[for (final a in score.areas) a.score].join(',')} '
-              '${named.isEmpty ? 'none' : named.join(',')} ${lucky.colour} '
-              '${lucky.number} ${lucky.day.fullKey} ${lucky.direction.fullKey}',
+              '${named.isEmpty ? 'none' : named.join(',')} ${lucky.colour.key} '
+              '${lucky.number} ${lucky.day.fullKey} ${lucky.direction.fullKey} '
+              '${score.band.fullKey}',
         );
       }
       if (answer.plans case final plans?) {

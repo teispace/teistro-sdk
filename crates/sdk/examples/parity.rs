@@ -8233,14 +8233,15 @@ fn rashifal_signs(
                 report,
                 &key(&format!("-{r}-baseline")),
                 format!(
-                    "{} {} {} {} {} {} {}",
+                    "{} {} {} {} {} {} {} {}",
                     score.overall,
                     areas.join(","),
                     named.replace(' ', ","),
                     wire_key(&score.lucky.colour),
                     score.lucky.number,
                     score.lucky.day.full_key(),
-                    score.lucky.direction.full_key()
+                    score.lucky.direction.full_key(),
+                    score.band().full_key()
                 ),
             );
         }

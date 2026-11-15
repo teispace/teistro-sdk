@@ -894,6 +894,9 @@ from ._requests import (
     ManasaraMeasure as ManasaraMeasure,
 )
 from .catalogue import (
+    Colour,
+    LifeArea,
+    ScoreBand,
     VastuYoni,
     VyayaKind,
     FestivalKind,
@@ -2113,6 +2116,9 @@ __all__ = [
     "NodeVedha",
     "NodeObstruction",
     "GocharVerdict",
+    "LifeArea",
+    "Colour",
+    "ScoreBand",
     "Fruition",
     "AshtakavargaTransit",
     "Kakshya",
@@ -13220,7 +13226,7 @@ class KeyInfluence:
 class LuckyElements:
     """A sign lord's lucky elements, as the baseline engine gives them."""
 
-    colour: str
+    colour: Colour
     number: int
     day: Vara
     direction: Direction
@@ -13234,9 +13240,13 @@ class BaselineScore:
     overall: int
     """0 to 100."""
 
-    areas: Tuple[Tuple[str, int], ...]
+    band: ScoreBand
+    """The band `overall` falls in under the context's
+    `rashifal.score_bands`, 75, 50 and 30 by default (SR-124)."""
+
+    areas: Tuple[Tuple[LifeArea, int], ...]
     """The eight life areas and their scores, each 0 to 100, in the
-    baseline's order (`"OVERALL"` first)."""
+    baseline's order (`LifeArea.OVERALL` first)."""
 
     key_influences: Tuple[KeyInfluence, ...]
     lucky: LuckyElements
@@ -17244,13 +17254,14 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
         lucky = one["lucky"]
         return BaselineScore(
             overall=one["overall"],
-            areas=tuple((area, value) for area, value in one["areas"]),
+            band=_member(ScoreBand, one["band"]),
+            areas=tuple((_member(LifeArea, area), value) for area, value in one["areas"]),
             key_influences=tuple(
                 KeyInfluence(graha=_member(Graha, k["graha"]), house=k["house"], verdict=_member(GocharVerdict, k["verdict"]))
                 for k in one["keyInfluences"]
             ),
             lucky=LuckyElements(
-                colour=lucky["colour"],
+                colour=_member(Colour, lucky["colour"]),
                 number=lucky["number"],
                 day=_member(Vara, lucky["day"]),
                 direction=_member(Direction, lucky["direction"]),

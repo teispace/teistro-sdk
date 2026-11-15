@@ -6,23 +6,26 @@ package com.teispace.teistro;
 import java.util.Optional;
 
 /**
- * What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+ * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT &lt;&lt; 16) | member`.
  */
-public enum GocharVerdict implements Member {
+public enum GocharVerdict implements Catalogued {
     /**
-     * In a good house, and nothing stands in its vedha house.
+     * In a good house, and nothing stands in its vedha house
      */
     GOOD(0, "GOOD"),
 
     /**
-     * In a good house, and another graha stands in its vedha house.
+     * In a good house, and another graha stands in its vedha house
      */
     OBSTRUCTED(1, "OBSTRUCTED"),
 
     /**
-     * Not in a house v. 2 names good.
+     * Not in a house v. 2 names good
      */
-    NOT_GOOD(2, "NOT_GOOD");
+    NOT_GOOD(2, "NOT_GOOD"),
+
+    /** A member this build does not know: from a newer library, or registered at run time. */
+    UNKNOWN(-1, "UNKNOWN");
 
     private static final GocharVerdict[] MEMBERS = values();
 
@@ -44,21 +47,30 @@ public enum GocharVerdict implements Member {
         return key;
     }
 
+    @Override
+    public String fullKey() {
+        return "gochar_verdict." + key;
+    }
+
+    @Override
+    public Kind kind() {
+        return Kind.GOCHAR_VERDICT;
+    }
+
     /**
-     * The member with an id. The set is closed, so an id outside it is a
-     * fault and not a state.
+     * The member with an id, or {@link #UNKNOWN} for one this build does not
+     * know.
      *
      * @param id the id the boundary carries
      * @return the member
-     * @throws IllegalArgumentException for an id that is no member
      */
     public static GocharVerdict of(int id) {
         for (GocharVerdict member : MEMBERS) {
-            if (member.id == id) {
+            if (member.id == id && member != UNKNOWN) {
                 return member;
             }
         }
-        throw new IllegalArgumentException("no GocharVerdict has the id " + id);
+        return UNKNOWN;
     }
 
     /**
@@ -71,7 +83,7 @@ public enum GocharVerdict implements Member {
     public static Optional<GocharVerdict> byKey(String key) {
         String wanted = key.substring(key.lastIndexOf('.') + 1);
         for (GocharVerdict member : MEMBERS) {
-            if (member.key.equals(wanted)) {
+            if (member.key.equals(wanted) && member != UNKNOWN) {
                 return Optional.of(member);
             }
         }

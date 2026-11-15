@@ -194,19 +194,21 @@ final class RashifalReads {
         Map<?, ?> lucky = Reads.object(one, "lucky");
         return new BaselineScore(
                 Reads.integer(one, "overall"),
+                member(one, "band", "ScoreBand", ScoreBand::byKey),
                 Reads.each(one, "areas", pair -> {
                     List<?> both = Reads.array(pair);
                     if (both.size() != 2) {
                         throw Reads.internal("a baseline area is a name and a score, and the library wrote " + both);
                     }
-                    return Map.entry(Reads.string(both.get(0)), Reads.integer(both.get(1)));
+                    String area = Reads.string(both.get(0));
+                    return Map.entry(Reads.member(LifeArea.byKey(area), "LifeArea", area), Reads.integer(both.get(1)));
                 }),
                 Reads.each(one, "keyInfluences", k -> {
                     Map<?, ?> o = Reads.object(k);
                     return new KeyInfluence(graha(Reads.field(o, "graha")), Reads.integer(o, "house"),
                             member(o, "verdict", "GocharVerdict", GocharVerdict::byKey));
                 }),
-                new LuckyElements(Reads.string(lucky, "colour"), Reads.integer(lucky, "number"),
+                new LuckyElements(member(lucky, "colour", "Colour", Colour::byKey), Reads.integer(lucky, "number"),
                         member(lucky, "day", "Vara", Vara::byKey),
                         member(lucky, "direction", "Direction", Direction::byKey)));
     }

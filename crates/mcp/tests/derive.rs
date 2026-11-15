@@ -164,3 +164,73 @@ fn a_full_cache_lets_go_of_the_scope_used_longest_ago() {
         "every scope derives from one base"
     );
 }
+
+/// Every score of an answer, `(overall, band)`, wherever it sits.
+fn bands(answer: &Value, found: &mut Vec<(u64, String)>) {
+    match answer {
+        Value::Object(fields) => {
+            if let (Some(overall), Some(band)) = (fields.get("overall"), fields.get("band")) {
+                found.push((overall.as_u64().unwrap(), band.as_str().unwrap().to_owned()));
+            }
+            fields.values().for_each(|field| bands(field, found));
+        }
+        Value::Array(items) => items.iter().for_each(|item| bands(item, found)),
+        _ => {}
+    }
+}
+
+/// `rashifal.score_bands` per call: a call's own thresholds band its
+/// rashifal's scores, and thresholds out of order are refused by the one
+/// at fault (`03-design/rashifal.md`, "The score band").
+#[test]
+fn a_calls_score_bands_band_its_rashifal() {
+    let (mut server, _) = counted();
+    let request = json!({"periods": [{"first": {"year": 2026, "month": 11, "day": 15},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700}], "baseline": "DAILY"});
+    let band = |overall: u64, [excellent, good, mixed]: [u64; 3]| {
+        if overall >= excellent {
+            "EXCELLENT"
+        } else if overall >= good {
+            "GOOD"
+        } else if overall >= mixed {
+            "MIXED"
+        } else {
+            "CARE"
+        }
+    };
+    for (settings, thresholds) in [
+        (json!({}), [75, 50, 30]),
+        (
+            json!({"rashifal": {"score_bands": [99, 98, 97]}}),
+            [99, 98, 97],
+        ),
+    ] {
+        let answer = call(
+            &mut server,
+            "chart.rashifal",
+            &json!({"request": request, "detail": "full", "settings": settings}),
+        );
+        assert_eq!(answer["isError"], false, "{answer}");
+        let mut found = Vec::new();
+        bands(&answer["structuredContent"], &mut found);
+        assert_eq!(found.len(), 12, "{answer}");
+        for (overall, named) in found {
+            assert_eq!(
+                named,
+                band(overall, thresholds),
+                "{overall} under {thresholds:?}"
+            );
+        }
+    }
+    let refused = call(
+        &mut server,
+        "chart.rashifal",
+        &json!({"request": request, "settings": {"rashifal": {"score_bands": [75, 80, 30]}}}),
+    );
+    assert_eq!(refused["isError"], true, "{refused}");
+    assert_eq!(
+        refused["structuredContent"]["field"],
+        "settings.rashifal.score_bands[1]"
+    );
+}

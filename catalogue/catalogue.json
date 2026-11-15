@@ -23735,6 +23735,403 @@
       ]
     },
     {
+      "kind": "life_area",
+      "number": 163,
+      "version": 1,
+      "doc": "The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "OVERALL",
+          "id": 0,
+          "doc": "The whole, which every transit also feeds",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CAREER",
+          "id": 1,
+          "doc": "Work: the 3rd, 6th, 10th and 11th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "FINANCE",
+          "id": 2,
+          "doc": "Money: the 2nd and 11th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "HEALTH",
+          "id": 3,
+          "doc": "The body: the 1st, 6th, 8th and 12th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RELATIONSHIPS",
+          "id": 4,
+          "doc": "Partners: the 5th and 7th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "FAMILY",
+          "id": 5,
+          "doc": "Kin: the 2nd and 4th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "EDUCATION",
+          "id": 6,
+          "doc": "Learning: the 3rd, 5th and 9th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SPIRITUALITY",
+          "id": 7,
+          "doc": "The inner life: the 8th, 9th and 12th houses",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "colour",
+      "number": 164,
+      "version": 1,
+      "doc": "A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "RED",
+          "id": 0,
+          "doc": "Mars's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "WHITE",
+          "id": 1,
+          "doc": "Venus's and the Moon's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GREEN",
+          "id": 2,
+          "doc": "Mercury's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ORANGE",
+          "id": 3,
+          "doc": "The Sun's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "YELLOW",
+          "id": 4,
+          "doc": "Jupiter's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BLUE",
+          "id": 5,
+          "doc": "Saturn's",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the baseline engine's rashifal package",
+              "ref": "`03-design/rashifal.md` (What the baseline does)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "gochar_verdict",
+      "number": 165,
+      "version": 1,
+      "doc": "What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "GOOD",
+          "id": 0,
+          "doc": "In a good house, and nothing stands in its vedha house",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Phaladeepika",
+              "ref": "ch. 26 v. 2, and vv. 3 to 8 unmet"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "OBSTRUCTED",
+          "id": 1,
+          "doc": "In a good house, and another graha stands in its vedha house",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Phaladeepika",
+              "ref": "ch. 26 vv. 3 to 8"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NOT_GOOD",
+          "id": 2,
+          "doc": "Not in a house v. 2 names good",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Phaladeepika",
+              "ref": "ch. 26 v. 2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "score_band",
+      "number": 166,
+      "version": 1,
+      "doc": "A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "EXCELLENT",
+          "id": 0,
+          "doc": "At or above the first threshold, 75 by default",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Tithipatra's home page design (SR-124)",
+              "ref": "`03-design/rashifal.md` (The score band)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GOOD",
+          "id": 1,
+          "doc": "At or above the second, 50 by default, and below the first",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Tithipatra's home page design (SR-124)",
+              "ref": "`03-design/rashifal.md` (The score band)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MIXED",
+          "id": 2,
+          "doc": "At or above the third, 30 by default, and below the second",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Tithipatra's home page design (SR-124)",
+              "ref": "`03-design/rashifal.md` (The score band)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CARE",
+          "id": 3,
+          "doc": "Below the third: a day for care",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Tithipatra's home page design (SR-124)",
+              "ref": "`03-design/rashifal.md` (The score band)"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
       "kind": "holiday_scope",
       "number": 167,
       "version": 1,
