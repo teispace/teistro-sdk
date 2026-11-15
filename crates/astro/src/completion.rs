@@ -2420,7 +2420,10 @@ mod tests {
 
     impl Owner {
         fn new(bulletin: Bulletin) -> Owner {
-            Owner { bulletin, asked: std::sync::atomic::AtomicUsize::new(0) }
+            Owner {
+                bulletin,
+                asked: std::sync::atomic::AtomicUsize::new(0),
+            }
         }
 
         fn asked(&self) -> usize {
@@ -2430,15 +2433,26 @@ mod tests {
 
     impl EphemerisProvider for Owner {
         fn capabilities(&self) -> Capabilities {
-            Capabilities { overrides: Overrides::DELTA_T, ..TestProvider.capabilities() }
+            Capabilities {
+                overrides: Overrides::DELTA_T,
+                ..TestProvider.capabilities()
+            }
         }
 
-        fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
             TestProvider.positions(request)
         }
 
-        fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
-            self.asked.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        fn delta_t(
+            &self,
+            jd_ut1: f64,
+            model: DeltaTModel,
+        ) -> Result<DeltaTEstimate, ProviderError> {
+            self.asked
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             let mut estimate = crate::delta_t::delta_t(JulianDay::<Ut1>::literal(jd_ut1), model)
                 .map_err(|e| ProviderError::invalid(e.to_string()))?
                 .estimate();
@@ -2455,7 +2469,12 @@ mod tests {
     /// The delta-t step a grid of UT1 positions was stamped with.
     fn delta_t_step(completion: &Completion<'_, Owner>) -> Result<Implementation, CompletionError> {
         let jds = [J2000_JD, J2000_JD + 1.0];
-        let done = completion.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL))?;
+        let done = completion.positions(&PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &[Body::Sun],
+            Frame::CANONICAL,
+        ))?;
         Ok(done
             .steps
             .iter()
@@ -2470,35 +2489,48 @@ mod tests {
     fn delta_t_is_the_engines_only_when_it_answers_the_model_and_the_policy_lets_it() {
         use Implementation::{Native, Sdk};
         let j2000 = JulianDay::<Ut1>::literal(J2000_JD);
-        let sdk_seconds = crate::delta_t::delta_t(j2000, DeltaTModel::TableThenModel).unwrap().seconds;
+        let sdk_seconds = crate::delta_t::delta_t(j2000, DeltaTModel::TableThenModel)
+            .unwrap()
+            .seconds;
         for (bulletin, policy, owner) in [
-            (Bulletin::Answers, OverridePolicy::PreferNative, Some(Native)),
+            (
+                Bulletin::Answers,
+                OverridePolicy::PreferNative,
+                Some(Native),
+            ),
             (Bulletin::Answers, OverridePolicy::NativeOnly, Some(Native)),
             (Bulletin::Answers, OverridePolicy::SdkOnly, Some(Sdk)),
             (Bulletin::Refuses, OverridePolicy::PreferNative, Some(Sdk)),
             (Bulletin::Refuses, OverridePolicy::NativeOnly, Some(Sdk)),
-            (Bulletin::NotANumber, OverridePolicy::PreferNative, Some(Sdk)),
+            (
+                Bulletin::NotANumber,
+                OverridePolicy::PreferNative,
+                Some(Sdk),
+            ),
             (Bulletin::Fails, OverridePolicy::PreferNative, Some(Sdk)),
             // The engine's own failure at the instant, under `native-only`,
             // is the answer's.
             (Bulletin::Fails, OverridePolicy::NativeOnly, None),
         ] {
             let provider = Owner::new(bulletin);
-            let completion = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
-            let at = completion.delta_t_at(j2000);
-            let step = delta_t_step(&completion);
-            match owner {
-                Some(owner) => {
-                    let (value, by) = at.unwrap();
-                    assert_eq!(by, owner, "{bulletin:?} {policy:?}");
-                    assert_eq!(step.unwrap(), owner, "{bulletin:?} {policy:?}");
-                    let offset = if owner == Native { 3.0 } else { 0.0 };
-                    assert!((value.seconds - sdk_seconds - offset).abs() < 1e-9, "{bulletin:?} {policy:?}");
-                }
-                None => {
-                    assert!(matches!(at, Err(CompletionError::Provider { .. })), "{at:?}");
-                    assert!(step.is_err());
-                }
+            let sky = Completion::new(&provider, policy, DeltaTModel::TableThenModel);
+            let at = sky.delta_t_at(j2000);
+            let step = delta_t_step(&sky);
+            if let Some(owner) = owner {
+                let (value, by) = at.unwrap();
+                assert_eq!(by, owner, "{bulletin:?} {policy:?}");
+                assert_eq!(step.unwrap(), owner, "{bulletin:?} {policy:?}");
+                let offset = if owner == Native { 3.0 } else { 0.0 };
+                assert!(
+                    (value.seconds - sdk_seconds - offset).abs() < 1e-9,
+                    "{bulletin:?} {policy:?}"
+                );
+            } else {
+                assert!(
+                    matches!(at, Err(CompletionError::Provider { .. })),
+                    "{at:?}"
+                );
+                assert!(step.is_err());
             }
             if policy == OverridePolicy::SdkOnly {
                 assert_eq!(provider.asked(), 0, "not asked under sdk-only");
@@ -2507,19 +2539,33 @@ mod tests {
         // A model it lacks is learnt once; a failure at an instant is not
         // a model it lacks, so it is asked again.
         let refusing = Owner::new(Bulletin::Refuses);
-        let completion = Completion::new(&refusing, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        let sky = Completion::new(
+            &refusing,
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
         for _ in 0..3 {
-            completion.delta_t_at(j2000).unwrap();
+            sky.delta_t_at(j2000).unwrap();
         }
         assert_eq!(refusing.asked(), 1);
         let failing = Owner::new(Bulletin::Fails);
-        let completion = Completion::new(&failing, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+        let sky = Completion::new(
+            &failing,
+            OverridePolicy::PreferNative,
+            DeltaTModel::TableThenModel,
+        );
         for _ in 0..3 {
-            completion.delta_t_at(j2000).unwrap();
+            sky.delta_t_at(j2000).unwrap();
         }
         assert_eq!(failing.asked(), 3);
         // A provider that declares nothing is never asked.
-        assert_eq!(completion(OverridePolicy::NativeOnly).delta_t_at(j2000).unwrap().1, Sdk);
+        assert_eq!(
+            completion(OverridePolicy::NativeOnly)
+                .delta_t_at(j2000)
+                .unwrap()
+                .1,
+            Sdk
+        );
     }
 
     #[test]
@@ -2530,38 +2576,92 @@ mod tests {
         let under = |models: Models| completion(OverridePolicy::SdkOnly).with_models(models);
         let base = Models::STANDARD;
         for (models, refused) in [
-            (Models { nutation: Nutation::Iau2000A, ..base }, "nutation"),
-            (Models { frame_bias: FrameBias::Iau2000, ..base }, "frame-bias"),
-            (Models { sidereal_time: SiderealTime::Iau2006, ..base }, "sidereal-time"),
+            (
+                Models {
+                    nutation: Nutation::Iau2000A,
+                    ..base
+                },
+                "nutation",
+            ),
+            (
+                Models {
+                    frame_bias: FrameBias::Iau2000,
+                    ..base
+                },
+                "frame-bias",
+            ),
+            (
+                Models {
+                    sidereal_time: SiderealTime::Iau2006,
+                    ..base
+                },
+                "sidereal-time",
+            ),
         ] {
             let error = under(models).sdk_models(true, true, true).unwrap_err();
-            assert!(matches!(error, CompletionError::Unsupported { step } if step == refused), "{error:?}");
+            assert!(
+                matches!(error, CompletionError::Unsupported { step } if step == refused),
+                "{error:?}"
+            );
             // A step that does not sum the model is not refused by it.
             assert!(under(models).sdk_models(false, false, false).is_ok());
         }
         // Through a question: the centre step turns the station with the
         // sidereal time, so a topocentric sky under another is refused.
         let jds = [J2000_JD];
-        let placed = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu());
-        let refused = under(Models { sidereal_time: SiderealTime::Iau2006, ..base }).positions(&placed);
-        assert!(matches!(refused, Err(CompletionError::Unsupported { step: "sidereal-time" })), "{refused:?}");
+        let placed = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL)
+            .from_place(kathmandu());
+        let refused = under(Models {
+            sidereal_time: SiderealTime::Iau2006,
+            ..base
+        })
+        .positions(&placed);
+        assert!(
+            matches!(
+                refused,
+                Err(CompletionError::Unsupported {
+                    step: "sidereal-time"
+                })
+            ),
+            "{refused:?}"
+        );
     }
 
     #[test]
     fn a_tt_instant_seen_from_a_place_takes_its_ut1_from_the_sdks_inversion() {
         let sky = completion(OverridePolicy::SdkOnly);
         let jds = [J2000_JD];
-        let tt = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu());
+        let tt = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Moon], Frame::CANONICAL)
+            .from_place(kathmandu());
         let done = sky.positions(&tt).unwrap();
-        assert!(done.steps.iter().any(|step| step.name == "delta-t" && step.implementation == Implementation::Sdk));
+        assert!(
+            done.steps
+                .iter()
+                .any(|step| step.name == "delta-t" && step.implementation == Implementation::Sdk)
+        );
         // The same sky asked in UT1 at the instant the inversion found.
-        let (ut1, _) = ut1_from_tt(JulianDay::<Tt>::literal(J2000_JD), DeltaTModel::TableThenModel).unwrap();
+        let (ut1, _) = ut1_from_tt(
+            JulianDay::<Tt>::literal(J2000_JD),
+            DeltaTModel::TableThenModel,
+        )
+        .unwrap();
         let ut1_jds = [ut1.get()];
         let again = sky
-            .positions(&PositionRequest::new(&ut1_jds, TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL).from_place(kathmandu()))
+            .positions(
+                &PositionRequest::new(&ut1_jds, TimeScale::Ut1, &[Body::Moon], Frame::CANONICAL)
+                    .from_place(kathmandu()),
+            )
             .unwrap();
-        let (a, b) = (done.columns.at(0, 0).unwrap(), again.columns.at(0, 0).unwrap());
-        assert!(difference_deg(a.lon, b.lon).abs() * 3600.0 < 1e-3, "{} {}", a.lon, b.lon);
+        let (a, b) = (
+            done.columns.at(0, 0).unwrap(),
+            again.columns.at(0, 0).unwrap(),
+        );
+        assert!(
+            difference_deg(a.lon, b.lon).abs() * 3600.0 < 1e-3,
+            "{} {}",
+            a.lon,
+            b.lon
+        );
     }
 
     /// A provider that answers whatever frame it is asked for, by

@@ -2247,13 +2247,18 @@ mod tests {
             rules_broken(&patch)
         };
         let standard = HorizonModel::STANDARD;
-        assert!(with(standard).is_empty());
+        assert!(with(standard).is_empty(), "the standard horizon");
         let fixed = |semidiameter_arcmin| HorizonModel {
-            disc_size: DiscSize::Fixed { semidiameter_arcmin },
+            disc_size: DiscSize::Fixed {
+                semidiameter_arcmin,
+            },
             ..standard
         };
-        assert!(with(fixed(16.0)).is_empty());
-        assert!(with(fixed(LARGEST_FIXED_SEMIDIAMETER_ARCMIN)).is_empty());
+        assert!(with(fixed(16.0)).is_empty(), "a 16 arcminute disc");
+        assert!(
+            with(fixed(LARGEST_FIXED_SEMIDIAMETER_ARCMIN)).is_empty(),
+            "the largest fixed disc"
+        );
         for bad in [0.0, -1.0, 61.0, f64::NAN] {
             assert_eq!(with(fixed(bad)), ["horizon-semidiameter"], "{bad}");
         }
@@ -2261,11 +2266,14 @@ mod tests {
             radii: Radii::Custom { sun_km, moon_km },
             ..standard
         };
-        assert!(with(radii(696_000.0, 1_738.0)).is_empty());
+        assert!(with(radii(696_000.0, 1_738.0)).is_empty(), "radii in range");
         for (sun, moon) in [(0.0, 1_738.0), (696_000.0, -1.0), (f64::INFINITY, 1_738.0)] {
             assert_eq!(with(radii(sun, moon)), ["horizon-radii"], "{sun} {moon}");
         }
-        let altitude = |altitude_deg| HorizonModel { altitude_deg, ..standard };
+        let altitude = |altitude_deg| HorizonModel {
+            altitude_deg,
+            ..standard
+        };
         for good in [-4.0, 0.0, 20.0] {
             assert!(with(altitude(good)).is_empty(), "{good}");
         }
@@ -2274,26 +2282,43 @@ mod tests {
         }
         // Every rule a model breaks is named, not only the first.
         let all = HorizonModel {
-            disc_size: DiscSize::Fixed { semidiameter_arcmin: 0.0 },
-            radii: Radii::Custom { sun_km: 0.0, moon_km: 0.0 },
+            disc_size: DiscSize::Fixed {
+                semidiameter_arcmin: 0.0,
+            },
+            radii: Radii::Custom {
+                sun_km: 0.0,
+                moon_km: 0.0,
+            },
             altitude_deg: 90.0,
             ..standard
         };
-        assert_eq!(with(all), ["horizon-semidiameter", "horizon-radii", "horizon-altitude"]);
+        assert_eq!(
+            with(all),
+            ["horizon-semidiameter", "horizon-radii", "horizon-altitude"]
+        );
     }
 
     #[test]
     fn a_horizon_models_key_names_every_field() {
-        assert_eq!(HorizonModel::STANDARD.key(), "BENNETT/ACTUAL/IAU_2015/BODY/NONE/0");
+        assert_eq!(
+            HorizonModel::STANDARD.key(),
+            "BENNETT/ACTUAL/IAU_2015/BODY/NONE/0"
+        );
         let every = HorizonModel {
             refraction: RefractionFormula::Saemundsson,
             disc_size: DiscSize::MeanDistance,
-            radii: Radii::Custom { sun_km: 696_000.0, moon_km: 1_738.0 },
+            radii: Radii::Custom {
+                sun_km: 696_000.0,
+                moon_km: 1_738.0,
+            },
             latitude: RisingLatitude::Zero,
             dip: Dip::Geometric,
             altitude_deg: 1.5,
         };
-        assert_eq!(every.key(), "SAEMUNDSSON/MEAN_DISTANCE/CUSTOM[696000,1738]/ZERO/GEOMETRIC/1.5");
+        assert_eq!(
+            every.key(),
+            "SAEMUNDSSON/MEAN_DISTANCE/CUSTOM[696000,1738]/ZERO/GEOMETRIC/1.5"
+        );
         assert_eq!(HorizonModel::default(), HorizonModel::STANDARD);
     }
 
@@ -2304,7 +2329,12 @@ mod tests {
             patch.time.dut1 = Some(dut1);
             rules_broken(&patch)
         };
-        for good in [Dut1::None, Dut1::Iers, Dut1::Custom { seconds: -0.9 }, Dut1::Custom { seconds: 0.3 }] {
+        for good in [
+            Dut1::None,
+            Dut1::Iers,
+            Dut1::Custom { seconds: -0.9 },
+            Dut1::Custom { seconds: 0.3 },
+        ] {
             assert!(with(good).is_empty(), "{good:?}");
         }
         for seconds in [0.91, -2.0, f64::NAN] {

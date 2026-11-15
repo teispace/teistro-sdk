@@ -553,14 +553,19 @@ mod tests {
         // `IERS`: the engine's, when it declares the override; refused when
         // there is no engine or the engine does not declare it, and the
         // engine's own out-of-bound value is its error, not the setting's.
-        assert!((dut1_under(Dut1::Iers, utc, Some(&bulletin)).unwrap() + 0.25).abs() < f64::EPSILON);
+        assert!(
+            (dut1_under(Dut1::Iers, utc, Some(&bulletin)).unwrap() + 0.25).abs() < f64::EPSILON
+        );
         for provider in [None, Some(&plain as &dyn EphemerisProvider)] {
             let error = dut1_under(Dut1::Iers, utc, provider).unwrap_err();
             assert_eq!(error.status, Status::Unsupported);
             assert_eq!(error.field(), Some("time.dut1"));
         }
         let wild = Bulletin(2.0);
-        assert_eq!(dut1_under(Dut1::Iers, utc, Some(&wild)).unwrap_err().status, Status::Provider);
+        assert_eq!(
+            dut1_under(Dut1::Iers, utc, Some(&wild)).unwrap_err().status,
+            Status::Provider
+        );
     }
 
     #[test]
@@ -578,7 +583,12 @@ mod tests {
         let early = JulianDay::<Utc>::try_new(2_415_020.5).unwrap();
         let (ut1, basis) = ut1_from_utc_under(early, Dut1::None, None).unwrap();
         assert!(basis.proleptic_utc);
-        assert!(utc_from_ut1_under(ut1, Dut1::None, None).unwrap().1.proleptic_utc);
+        assert!(
+            utc_from_ut1_under(ut1, Dut1::None, None)
+                .unwrap()
+                .1
+                .proleptic_utc
+        );
         // A refused setting refuses the conversion.
         let forbidden = Dut1::Custom { seconds: 3.0 };
         assert!(ut1_from_utc_under(utc, forbidden, None).is_err());

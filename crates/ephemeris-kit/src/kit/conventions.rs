@@ -528,9 +528,7 @@ mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use teistro_core::quantity::Ut1;
-    use teistro_port_ephemeris::{
-        CrossingEvent, DeltaTEstimate, PositionColumns, TestProvider,
-    };
+    use teistro_port_ephemeris::{CrossingEvent, DeltaTEstimate, PositionColumns, TestProvider};
 
     use super::*;
 
@@ -585,10 +583,14 @@ mod tests {
             if request.frame == Frame::CANONICAL {
                 return TestProvider::new().positions(request);
             }
-            Completion::new(&TestProvider::new(), OverridePolicy::SdkOnly, DeltaTModel::TableThenModel)
-                .positions(request)
-                .map(|done| done.columns)
-                .map_err(|e| ProviderError::invalid(e.to_string()))
+            Completion::new(
+                &TestProvider::new(),
+                OverridePolicy::SdkOnly,
+                DeltaTModel::TableThenModel,
+            )
+            .positions(request)
+            .map(|done| done.columns)
+            .map_err(|e| ProviderError::invalid(e.to_string()))
         }
     }
 
@@ -602,7 +604,12 @@ mod tests {
                     .with(Overrides::CROSSINGS),
                 ayanamshas: vec![teistro_core::catalogue::Ayanamsha::Lahiri],
                 bodies: if self.0 == Fault::NoLuminaries {
-                    plain.bodies.iter().copied().filter(|b| !matches!(b, Body::Sun | Body::Moon)).collect()
+                    plain
+                        .bodies
+                        .iter()
+                        .copied()
+                        .filter(|b| !matches!(b, Body::Sun | Body::Moon))
+                        .collect()
                 } else {
                     plain.bodies.clone()
                 },
@@ -610,11 +617,15 @@ mod tests {
             }
         }
 
-        fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
             match self.0 {
                 Fault::PositionsFail => Err(ProviderError::invalid("the table is torn")),
                 Fault::Geocentric if request.observer.is_some() => {
-                    let mut columns = TestProvider::new().positions(&request.in_frame(Frame::CANONICAL))?;
+                    let mut columns =
+                        TestProvider::new().positions(&request.in_frame(Frame::CANONICAL))?;
                     columns.frame = request.frame;
                     Ok(columns)
                 }
@@ -629,7 +640,11 @@ mod tests {
             }
         }
 
-        fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        fn delta_t(
+            &self,
+            jd_ut1: f64,
+            model: DeltaTModel,
+        ) -> Result<DeltaTEstimate, ProviderError> {
             let mut estimate = delta_t(JulianDay::<Ut1>::literal(jd_ut1), model)
                 .map(|d| d.estimate())
                 .map_err(|e| ProviderError::invalid(e.to_string()))?;
@@ -655,7 +670,9 @@ mod tests {
         ) -> Result<f64, ProviderError> {
             match (self.0, basis) {
                 (Fault::AyanamshaFails, _) => Err(ProviderError::invalid("no table")),
-                (Fault::MeanOnly, AyanamshaBasis::True) => Err(ProviderError::unsupported("the true basis")),
+                (Fault::MeanOnly, AyanamshaBasis::True) => {
+                    Err(ProviderError::unsupported("the true basis"))
+                }
                 _ => ayanamsha::value_deg(
                     &a.into(),
                     JulianDay::literal(jd),
@@ -667,14 +684,20 @@ mod tests {
             }
         }
 
-        fn crossings(&self, request: &CrossingRequest) -> Result<Vec<CrossingEvent>, ProviderError> {
+        fn crossings(
+            &self,
+            request: &CrossingRequest,
+        ) -> Result<Vec<CrossingEvent>, ProviderError> {
             match self.0 {
-                Fault::CrossingsRefused => return Err(ProviderError::unsupported("a sidereal zodiac")),
+                Fault::CrossingsRefused => {
+                    return Err(ProviderError::unsupported("a sidereal zodiac"));
+                }
                 Fault::CrossingsFail => return Err(ProviderError::invalid("the search diverged")),
                 _ => {}
             }
-            let completion = Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel)
-                .with_ayanamsha_basis(AyanamshaBasis::Mean);
+            let completion =
+                Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel)
+                    .with_ayanamsha_basis(AyanamshaBasis::Mean);
             let longitudes = completion.longitudes(request.frame);
             let mut events = Search::new(&longitudes, request.quantity, request.lattice)
                 .between(request.from, request.to)
@@ -712,7 +735,11 @@ mod tests {
     #[test]
     fn delta_t_is_held_model_by_model_and_a_custom_value_to_the_bit() {
         let honest = delta_t_of(Fault::None);
-        assert!(honest.passed && honest.measured == Some(0.0), "{}", honest.detail);
+        assert!(
+            honest.passed && honest.measured == Some(0.0),
+            "{}",
+            honest.detail
+        );
         assert!(honest.detail.contains("refused none"), "{}", honest.detail);
         for (fault, says) in [
             (Fault::DeltaTFails, "declared, but failed"),
@@ -721,11 +748,19 @@ mod tests {
             (Fault::DeltaTRefused, "every model was refused"),
         ] {
             let check = delta_t_of(fault);
-            assert!(!check.passed && check.detail.contains(says), "{fault:?}: {}", check.detail);
+            assert!(
+                !check.passed && check.detail.contains(says),
+                "{fault:?}: {}",
+                check.detail
+            );
         }
         let late = delta_t_of(Fault::DeltaTLate);
         assert!(!late.passed, "{}", late.detail);
-        assert!(late.measured.is_some_and(|m| (m - 2.0).abs() < 1e-9), "{}", late.detail);
+        assert!(
+            late.measured.is_some_and(|m| (m - 2.0).abs() < 1e-9),
+            "{}",
+            late.detail
+        );
         // Undeclared, it is not asked.
         let plain = TestProvider::new();
         assert!(!check_delta_t(&plain, &plain.capabilities(), &Bounds::DEFAULT).ran());
@@ -738,13 +773,25 @@ mod tests {
             check_ayanamsha_values(&probe, &probe.capabilities(), &Bounds::DEFAULT)
         };
         let honest = of(Fault::None);
-        assert!(honest.passed && honest.measured == Some(0.0), "{}", honest.detail);
+        assert!(
+            honest.passed && honest.measured == Some(0.0),
+            "{}",
+            honest.detail
+        );
         assert!(honest.detail.starts_with("6 values"), "{}", honest.detail);
         // The mean basis alone: the true values are the catalogue's.
         let mean = of(Fault::MeanOnly);
-        assert!(mean.passed && mean.detail.starts_with("3 values"), "{}", mean.detail);
+        assert!(
+            mean.passed && mean.detail.starts_with("3 values"),
+            "{}",
+            mean.detail
+        );
         let failed = of(Fault::AyanamshaFails);
-        assert!(!failed.passed && failed.detail.contains("declared, but failed"), "{}", failed.detail);
+        assert!(
+            !failed.passed && failed.detail.contains("declared, but failed"),
+            "{}",
+            failed.detail
+        );
     }
 
     #[test]
@@ -756,14 +803,27 @@ mod tests {
         };
         let honest = of(Fault::None);
         assert!(honest.passed && honest.ran(), "{}", honest.detail);
-        assert!(honest.measured.is_some_and(|m| m < 1e-6), "{}", honest.detail);
-        // From the centre of the Earth the Moon is a parallax away, near a
-        // degree: the check sees it.
+        assert!(
+            honest.measured.is_some_and(|m| m < 1e-6),
+            "{}",
+            honest.detail
+        );
+        // From the centre of the Earth the Moon is a parallax away: the
+        // check sees it, past its bound.
         let geocentric = of(Fault::Geocentric);
         assert!(!geocentric.passed, "{}", geocentric.detail);
-        assert!(geocentric.measured.is_some_and(|m| m > 1_000.0), "{}", geocentric.detail);
+        let bound = Bounds::DEFAULT.topocentric_arcsec;
+        assert!(
+            geocentric.measured.is_some_and(|m| m > bound),
+            "{}",
+            geocentric.detail
+        );
         let failed = of(Fault::PositionsFail);
-        assert!(!failed.passed && failed.detail.contains("declared, but failed"), "{}", failed.detail);
+        assert!(
+            !failed.passed && failed.detail.contains("declared, but failed"),
+            "{}",
+            failed.detail
+        );
         assert!(!of(Fault::NoLuminaries).ran());
         let plain = TestProvider::new();
         assert!(!check_topocentric(&plain, &plain.capabilities(), &jds, &Bounds::DEFAULT).ran());
@@ -777,11 +837,23 @@ mod tests {
         // A hundredth of a degree is 36 arcseconds, past the bound.
         let east = check_reference(&Probe(Fault::East), &plain, &Bounds::DEFAULT);
         assert!(!east.passed, "{}", east.detail);
-        assert!(east.measured.is_some_and(|m| (m - 36.0).abs() < 1e-6), "{}", east.detail);
+        assert!(
+            east.measured.is_some_and(|m| (m - 36.0).abs() < 1e-6),
+            "{}",
+            east.detail
+        );
         let failed = check_reference(&Probe(Fault::PositionsFail), &plain, &Bounds::DEFAULT);
-        assert!(failed.detail.contains("the provider failed"), "{}", failed.detail);
+        assert!(
+            failed.detail.contains("the provider failed"),
+            "{}",
+            failed.detail
+        );
         let reference = check_reference(&plain, &Probe(Fault::PositionsFail), &Bounds::DEFAULT);
-        assert!(reference.detail.contains("the reference failed"), "{}", reference.detail);
+        assert!(
+            reference.detail.contains("the reference failed"),
+            "{}",
+            reference.detail
+        );
         // As a trait object too.
         let dynamic: &dyn EphemerisProvider = &plain;
         assert!(check_reference(dynamic, dynamic, &Bounds::DEFAULT).passed);
@@ -795,20 +867,47 @@ mod tests {
             check_sidereal_crossings(&probe, &probe.capabilities(), &jds, &Bounds::DEFAULT)
         };
         let honest = of(Fault::None);
-        assert!(honest.passed && honest.measured == Some(0.0), "{}", honest.detail);
-        assert!(honest.detail.contains("ingresses of the Sun"), "{}", honest.detail);
+        assert!(
+            honest.passed && honest.measured == Some(0.0),
+            "{}",
+            honest.detail
+        );
+        assert!(
+            honest.detail.contains("ingresses of the Sun"),
+            "{}",
+            honest.detail
+        );
         assert!(!of(Fault::CrossingsRefused).ran());
         for (fault, says) in [
             (Fault::CrossingsFail, "declared, but failed"),
-            (Fault::CrossingDropped, "sidereal ingresses where the SDK's kernel found"),
+            (
+                Fault::CrossingDropped,
+                "sidereal ingresses where the SDK's kernel found",
+            ),
             (Fault::CrossingMoved, "where the SDK's kernel crossed"),
         ] {
             let check = of(fault);
-            assert!(!check.passed && check.detail.contains(says), "{fault:?}: {}", check.detail);
+            assert!(
+                !check.passed && check.detail.contains(says),
+                "{fault:?}: {}",
+                check.detail
+            );
         }
         let late = of(Fault::CrossingsLate);
-        assert!(!late.passed && late.measured.is_some_and(|m| (m - 600.0).abs() < 1e-3), "{}", late.detail);
+        assert!(
+            !late.passed && late.measured.is_some_and(|m| (m - 600.0).abs() < 1e-3),
+            "{}",
+            late.detail
+        );
         assert!(!of(Fault::NoLuminaries).ran());
-        assert!(!check_sidereal_crossings(&Probe(Fault::None), &Probe(Fault::None).capabilities(), &[], &Bounds::DEFAULT).ran());
+        assert!(
+            !check_sidereal_crossings(
+                &Probe(Fault::None),
+                &Probe(Fault::None).capabilities(),
+                &[],
+                &Bounds::DEFAULT
+            )
+            .ran()
+        );
     }
 }

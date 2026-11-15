@@ -1556,7 +1556,9 @@ mod tests {
         let provider = TestProvider::new();
         let proxy = Refusing::new(&provider, Frame::CANONICAL);
         let standard = Conventions::STANDARD;
-        let same = |a: &dyn core::fmt::Debug, b: &dyn core::fmt::Debug| assert_eq!(format!("{a:?}"), format!("{b:?}"));
+        let same = |a: &dyn core::fmt::Debug, b: &dyn core::fmt::Debug| {
+            assert_eq!(format!("{a:?}"), format!("{b:?}"));
+        };
         same(
             &proxy.obliquity(2_451_545.0, TimeScale::Tt, standard),
             &provider.obliquity(2_451_545.0, TimeScale::Tt, standard),
@@ -1567,8 +1569,20 @@ mod tests {
         );
         for basis in [AyanamshaBasis::Mean, AyanamshaBasis::True] {
             same(
-                &proxy.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Raman, basis, standard),
-                &provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Raman, basis, standard),
+                &proxy.ayanamsha_deg(
+                    2_451_545.0,
+                    TimeScale::Tt,
+                    Ayanamsha::Raman,
+                    basis,
+                    standard,
+                ),
+                &provider.ayanamsha_deg(
+                    2_451_545.0,
+                    TimeScale::Tt,
+                    Ayanamsha::Raman,
+                    basis,
+                    standard,
+                ),
             );
         }
     }

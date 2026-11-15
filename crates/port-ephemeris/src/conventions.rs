@@ -577,16 +577,63 @@ mod tests {
 
     #[test]
     fn an_estimate_is_valid_only_with_a_finite_value_and_a_sound_sigma() {
-        let stated = DeltaTEstimate { seconds: 69.2, sigma_seconds: Some(0.1), band: DeltaTBand::Measured };
+        let stated = DeltaTEstimate {
+            seconds: 69.2,
+            sigma_seconds: Some(0.1),
+            band: DeltaTBand::Measured,
+        };
         for (estimate, valid) in [
             (stated, true),
-            (DeltaTEstimate { sigma_seconds: None, ..stated }, true),
-            (DeltaTEstimate { sigma_seconds: Some(0.0), ..stated }, true),
-            (DeltaTEstimate { seconds: f64::NAN, ..stated }, false),
-            (DeltaTEstimate { seconds: f64::INFINITY, sigma_seconds: None, ..stated }, false),
-            (DeltaTEstimate { sigma_seconds: Some(-1.0), ..stated }, false),
-            (DeltaTEstimate { sigma_seconds: Some(f64::NAN), ..stated }, false),
-            (DeltaTEstimate { sigma_seconds: Some(f64::INFINITY), ..stated }, false),
+            (
+                DeltaTEstimate {
+                    sigma_seconds: None,
+                    ..stated
+                },
+                true,
+            ),
+            (
+                DeltaTEstimate {
+                    sigma_seconds: Some(0.0),
+                    ..stated
+                },
+                true,
+            ),
+            (
+                DeltaTEstimate {
+                    seconds: f64::NAN,
+                    ..stated
+                },
+                false,
+            ),
+            (
+                DeltaTEstimate {
+                    seconds: f64::INFINITY,
+                    sigma_seconds: None,
+                    ..stated
+                },
+                false,
+            ),
+            (
+                DeltaTEstimate {
+                    sigma_seconds: Some(-1.0),
+                    ..stated
+                },
+                false,
+            ),
+            (
+                DeltaTEstimate {
+                    sigma_seconds: Some(f64::NAN),
+                    ..stated
+                },
+                false,
+            ),
+            (
+                DeltaTEstimate {
+                    sigma_seconds: Some(f64::INFINITY),
+                    ..stated
+                },
+                false,
+            ),
         ] {
             assert_eq!(estimate.is_valid(), valid, "{estimate:?}");
         }
