@@ -83,7 +83,13 @@ public final class AlmanacDay {
         Panchanga.Days days = days();
         return new Month(Masa.of(days.month(index)), Masa.of(days.amanta(index)), Masa.of(days.purnimanta(index)),
                 Paksha.of(days.paksha(index)), LunarMonth.of(batch.decoded().lunarMonth()),
-                MonthKind.of(days.monthKind(index)));
+                MonthKind.of(days.monthKind(index)),
+                new MonthMargin(
+                        new NewMoonMargin(days.openingNewMoon(index), days.openingMarginDeg(index),
+                                days.openingMarginMinutes(index)),
+                        new NewMoonMargin(days.closingNewMoon(index), days.closingMarginDeg(index),
+                                days.closingMarginMinutes(index)),
+                        days.monthMarginal(index) != 0));
     }
 
     /**

@@ -1148,6 +1148,8 @@ __all__ = [
     "KaalaPeriod",
     "MoonEvent",
     "Month",
+    "MonthMargin",
+    "NewMoonMargin",
     "Muhurta",
     "Observer",
     "PlacedGraha",
@@ -18990,9 +18992,15 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
     )
 
 
+def _new_moon_margin(raw: Mapping[str, Any]) -> "NewMoonMargin":
+    """One new moon's margin as the Rust types serialise it."""
+    return NewMoonMargin(raw["new_moon"], raw["degrees"], raw["minutes"])
+
+
 def _lunar_month(raw: Mapping[str, Any]) -> "Month":
     """A day's lunar month as the Rust types serialise it, members as this
     binding's enums."""
+    margin = raw["margin"]
     return Month(
         month=_member(Masa, raw["month"]),
         amanta=_member(Masa, raw["amanta"]),
@@ -19000,6 +19008,11 @@ def _lunar_month(raw: Mapping[str, Any]) -> "Month":
         paksha=_member(Paksha, raw["paksha"]),
         convention=_member(LunarMonth, raw["convention"]),
         kind=_member(MonthKind, raw["kind"]),
+        margin=MonthMargin(
+            opening=_new_moon_margin(margin["opening"]),
+            closing=_new_moon_margin(margin["closing"]),
+            marginal=margin["marginal"],
+        ),
     )
 
 
@@ -19055,14 +19068,7 @@ def _sankalpa_answer(text: str) -> "SankalpaAnswer":
             ayana_reckoning=raw["ayanaReckoning"],
             ritu=_member(Ritu, raw["ritu"]),
             ritu_reckoning=raw["rituReckoning"],
-            month=Month(
-                month=_member(Masa, month["month"]),
-                amanta=_member(Masa, month["amanta"]),
-                purnimanta=_member(Masa, month["purnimanta"]),
-                paksha=_member(Paksha, month["paksha"]),
-                convention=_member(LunarMonth, month["convention"]),
-                kind=_member(MonthKind, month["kind"]),
-            ),
+            month=_lunar_month(month),
             paksha=_member(Paksha, raw["paksha"]),
             tithi=_member(Tithi, raw["tithi"]),
             nakshatra=_member(Nakshatra, raw["nakshatra"]),
@@ -22797,6 +22803,40 @@ class GhatiPala:
 
 
 @dataclass(frozen=True)
+class NewMoonMargin:
+    """The Sun at one of a lunar month's two new moons, against the nearest
+    sign boundary."""
+
+    new_moon: float
+    """The new moon, as a Julian day (UTC)."""
+
+    degrees: float
+    """The Sun's sidereal longitude less the nearest sign boundary, degrees,
+    -15 to 15: positive when the Sun had passed it, negative when short of
+    it."""
+
+    minutes: float
+    """The new moon less the nearest sankranti, minutes, with the same
+    sign."""
+
+
+@dataclass(frozen=True)
+class MonthMargin:
+    """How near a lunar month came to another kind: the Sun against the
+    nearest sign boundary at each of its two new moons."""
+
+    opening: NewMoonMargin
+    """At the new moon that opened the month."""
+
+    closing: NewMoonMargin
+    """At the new moon that closes it."""
+
+    marginal: bool
+    """Whether either new moon fell nearer a sankranti than
+    `calendars.marginal_month_minutes`."""
+
+
+@dataclass(frozen=True)
 class Month:
     """The lunar month a day falls in, under both conventions."""
 
@@ -22822,6 +22862,9 @@ class Month:
     month and the nija month after it take the same name — so this is the
     mark beside the name.
     """
+
+    margin: MonthMargin
+    """How near the month came to another kind (SR-92)."""
 
 
 @dataclass(frozen=True)
@@ -22979,6 +23022,19 @@ class AlmanacDay:
             paksha=Paksha(days.paksha[self.index]),
             convention=LunarMonth(self.batch.decoded.lunar_month),
             kind=MonthKind(days.month_kind[self.index]),
+            margin=MonthMargin(
+                opening=NewMoonMargin(
+                    days.opening_new_moon[self.index],
+                    days.opening_margin_deg[self.index],
+                    days.opening_margin_minutes[self.index],
+                ),
+                closing=NewMoonMargin(
+                    days.closing_new_moon[self.index],
+                    days.closing_margin_deg[self.index],
+                    days.closing_margin_minutes[self.index],
+                ),
+                marginal=days.month_marginal[self.index] != 0,
+            ),
         )
 
     @property

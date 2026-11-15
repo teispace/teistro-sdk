@@ -35,6 +35,10 @@ use teistro_core::quantity::{JulianDay, Utc};
 use crate::fixed::FixedDay;
 use crate::solar::{SolarModel, find_sankranti};
 
+mod margin;
+
+pub use margin::{MonthMargin, NewMoonMargin, month_margin, new_moon_margin};
+
 /// The Moon a lunisolar calendar needs, beside the Sun a [`SolarModel`]
 /// gives.
 ///

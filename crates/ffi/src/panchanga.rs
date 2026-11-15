@@ -30,7 +30,7 @@ use core::ffi::c_char;
 
 use teistro::day_sky::SkyStep;
 use teistro_calendar::CalendarDate;
-use teistro_calendar::lunisolar::MonthKind;
+use teistro_calendar::lunisolar::{MonthKind, MonthMargin};
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
@@ -539,16 +539,46 @@ pub const TS_PANCHANGA_MARKERS: u32 = 128;
 /// ```
 pub const TS_PANCHANGA_GOWRI: u32 = 256;
 
+/// A month's decision margin as the `days` columns from `month_marginal`
+/// to `closing_margin_minutes`: zeros for a month that carries none,
+/// which no almanac day is (SR-92).
+fn month_margin(margin: Option<MonthMargin>) -> [FixedValue; 7] {
+    let Some(margin) = margin else {
+        return [
+            flag(false),
+            0.0.into(),
+            0.0.into(),
+            0.0.into(),
+            0.0.into(),
+            0.0.into(),
+            0.0.into(),
+        ];
+    };
+    let (opening, closing) = (margin.opening, margin.closing);
+    [
+        flag(margin.marginal),
+        opening.new_moon.get().into(),
+        opening.degrees.into(),
+        opening.minutes.into(),
+        closing.new_moon.get().into(),
+        closing.degrees.into(),
+        closing.minutes.into(),
+    ]
+}
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
     let mut row = interval(day.window);
     row.extend([
-        u64::from(day.month.month.id()).into(),
+        FixedValue::from(u64::from(day.month.month.id())),
         u64::from(day.month.amanta.id()).into(),
         u64::from(day.month.purnimanta.id()).into(),
         u64::from(day.month.paksha.id()).into(),
         (TsMonthKind::from(day.month.kind) as u64).into(),
+    ]);
+    row.extend(month_margin(day.month.margin));
+    row.extend([
         u64::from(day.sun.ayana.id()).into(),
         u64::from(day.sun.ritu.id()).into(),
         u64::from(day.omens.disha_shool.id()).into(),

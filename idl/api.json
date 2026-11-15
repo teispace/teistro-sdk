@@ -27532,6 +27532,41 @@
               "enum": "TsMonthKind"
             },
             {
+              "name": "month_marginal",
+              "scalar": "u8",
+              "doc": "1 when either of the month's two new moons fell nearer a sankranti than `calendars.marginal_month_minutes`, so that a reckoning with another Sun may decide its kind otherwise; 0 otherwise (SR-92, C1902)."
+            },
+            {
+              "name": "opening_new_moon",
+              "scalar": "f64",
+              "doc": "The new moon that opened the month, as a Julian day (UTC)."
+            },
+            {
+              "name": "opening_margin_deg",
+              "scalar": "f64",
+              "doc": "The Sun's sidereal longitude at the opening new moon less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came first), negative when it was short of it."
+            },
+            {
+              "name": "opening_margin_minutes",
+              "scalar": "f64",
+              "doc": "The opening new moon less the nearest sankranti, minutes: the Sun's own time over `opening_margin_deg`, with its sign."
+            },
+            {
+              "name": "closing_new_moon",
+              "scalar": "f64",
+              "doc": "The new moon that closes the month, as a Julian day (UTC)."
+            },
+            {
+              "name": "closing_margin_deg",
+              "scalar": "f64",
+              "doc": "As `opening_margin_deg`, at the closing new moon."
+            },
+            {
+              "name": "closing_margin_minutes",
+              "scalar": "f64",
+              "doc": "As `opening_margin_minutes`, at the closing new moon."
+            },
+            {
               "name": "ayana",
               "scalar": "u16",
               "doc": "Which half of the year the day falls in.",

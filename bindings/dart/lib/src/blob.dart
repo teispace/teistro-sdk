@@ -7707,6 +7707,13 @@ final class PanchangaDays {
     required this.purnimanta,
     required this.paksha,
     required this.monthKind,
+    required this.monthMarginal,
+    required this.openingNewMoon,
+    required this.openingMarginDeg,
+    required this.openingMarginMinutes,
+    required this.closingNewMoon,
+    required this.closingMarginDeg,
+    required this.closingMarginMinutes,
     required this.ayana,
     required this.ritu,
     required this.dishaShool,
@@ -7745,6 +7752,27 @@ final class PanchangaDays {
 
   /// Whether the month is ordinary, intercalary or omitted. The month's *name* needs no case for the intercalary one — the Sun stands in the same sign at an adhika month's new moon as at the following nija month's, so `month` names both — and this is the mark beside it.
   final Uint8List monthKind;
+
+  /// 1 when either of the month's two new moons fell nearer a sankranti than `calendars.marginal_month_minutes`, so that a reckoning with another Sun may decide its kind otherwise; 0 otherwise (SR-92, C1902).
+  final Uint8List monthMarginal;
+
+  /// The new moon that opened the month, as a Julian day (UTC).
+  final Float64List openingNewMoon;
+
+  /// The Sun's sidereal longitude at the opening new moon less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came first), negative when it was short of it.
+  final Float64List openingMarginDeg;
+
+  /// The opening new moon less the nearest sankranti, minutes: the Sun's own time over `opening_margin_deg`, with its sign.
+  final Float64List openingMarginMinutes;
+
+  /// The new moon that closes the month, as a Julian day (UTC).
+  final Float64List closingNewMoon;
+
+  /// As `opening_margin_deg`, at the closing new moon.
+  final Float64List closingMarginDeg;
+
+  /// As `opening_margin_minutes`, at the closing new moon.
+  final Float64List closingMarginMinutes;
 
   /// Which half of the year the day falls in.
   final Uint16List ayana;
@@ -9556,21 +9584,28 @@ Panchanga decodePanchanga(Uint8List bytes) {
       purnimanta: blob.column(atDays, 4, 2, Uint16List.sublistView),
       paksha: blob.column(atDays, 5, 2, Uint16List.sublistView),
       monthKind: blob.column(atDays, 6, 1, Uint8List.sublistView),
-      ayana: blob.column(atDays, 7, 2, Uint16List.sublistView),
-      ritu: blob.column(atDays, 8, 2, Uint16List.sublistView),
-      dishaShool: blob.column(atDays, 9, 2, Uint16List.sublistView),
-      hasSankranti: blob.column(atDays, 10, 1, Uint8List.sublistView),
-      sankranti: blob.column(atDays, 11, 8, Float64List.sublistView),
-      hasAbhijit: blob.column(atDays, 12, 1, Uint8List.sublistView),
-      abhijitFrom: blob.column(atDays, 13, 8, Float64List.sublistView),
-      abhijitTo: blob.column(atDays, 14, 8, Float64List.sublistView),
-      abhijitEffective: blob.column(atDays, 15, 1, Uint8List.sublistView),
-      hasBrahma: blob.column(atDays, 16, 1, Uint8List.sublistView),
-      brahmaFrom: blob.column(atDays, 17, 8, Float64List.sublistView),
-      brahmaTo: blob.column(atDays, 18, 8, Float64List.sublistView),
-      moonWindowFrom: blob.column(atDays, 19, 8, Float64List.sublistView),
-      moonWindowTo: blob.column(atDays, 20, 8, Float64List.sublistView),
-      utcOffsetSeconds: blob.column(atDays, 21, 4, Int32List.sublistView),
+      monthMarginal: blob.column(atDays, 7, 1, Uint8List.sublistView),
+      openingNewMoon: blob.column(atDays, 8, 8, Float64List.sublistView),
+      openingMarginDeg: blob.column(atDays, 9, 8, Float64List.sublistView),
+      openingMarginMinutes: blob.column(atDays, 10, 8, Float64List.sublistView),
+      closingNewMoon: blob.column(atDays, 11, 8, Float64List.sublistView),
+      closingMarginDeg: blob.column(atDays, 12, 8, Float64List.sublistView),
+      closingMarginMinutes: blob.column(atDays, 13, 8, Float64List.sublistView),
+      ayana: blob.column(atDays, 14, 2, Uint16List.sublistView),
+      ritu: blob.column(atDays, 15, 2, Uint16List.sublistView),
+      dishaShool: blob.column(atDays, 16, 2, Uint16List.sublistView),
+      hasSankranti: blob.column(atDays, 17, 1, Uint8List.sublistView),
+      sankranti: blob.column(atDays, 18, 8, Float64List.sublistView),
+      hasAbhijit: blob.column(atDays, 19, 1, Uint8List.sublistView),
+      abhijitFrom: blob.column(atDays, 20, 8, Float64List.sublistView),
+      abhijitTo: blob.column(atDays, 21, 8, Float64List.sublistView),
+      abhijitEffective: blob.column(atDays, 22, 1, Uint8List.sublistView),
+      hasBrahma: blob.column(atDays, 23, 1, Uint8List.sublistView),
+      brahmaFrom: blob.column(atDays, 24, 8, Float64List.sublistView),
+      brahmaTo: blob.column(atDays, 25, 8, Float64List.sublistView),
+      moonWindowFrom: blob.column(atDays, 26, 8, Float64List.sublistView),
+      moonWindowTo: blob.column(atDays, 27, 8, Float64List.sublistView),
+      utcOffsetSeconds: blob.column(atDays, 28, 4, Int32List.sublistView),
       length: atDays.count,
     ),
     counts: PanchangaCounts(

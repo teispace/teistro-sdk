@@ -3839,24 +3839,48 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             {
                 known
             }
-            _ => {
+            known => {
                 let span = limb::lunar_month_span(longitudes, window, zodiac)?;
                 let found = Lunation {
                     span,
                     frame,
                     amanta: limb::masa_at(longitudes, span.from, zodiac)?,
                     kind: teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?,
+                    margin: self.month_margin(span, known)?,
                 };
                 memo.lunation = Some(found);
                 found
             }
         };
-        let (amanta, kind) = (lunation.amanta, lunation.kind);
         Ok(month::of(
-            amanta,
+            lunation.amanta,
             at_sunrise,
             self.settings().calendars.lunar_month,
-            kind,
+            lunation.kind,
+        )
+        .with_margin(lunation.margin))
+    }
+
+    /// A lunation's decision margin (SR-92, C1902), on this almanac's
+    /// calendar sky as its kind is. The new moon that closed the lunation
+    /// before is the one that opens this, so a range reads its margin
+    /// from the last rather than searching its sankranti again: the
+    /// margin is a function of the instant alone, so that is the same
+    /// answer to the bit.
+    fn month_margin(
+        &self,
+        span: Interval,
+        before: Option<Lunation>,
+    ) -> Result<teistro_calendar::lunisolar::MonthMargin, Error> {
+        use teistro_calendar::lunisolar::{MonthMargin, new_moon_margin};
+        let opening = match before {
+            Some(last) if last.margin.closing.new_moon == span.from => last.margin.closing,
+            _ => new_moon_margin(self.model, span.from)?,
+        };
+        Ok(MonthMargin::of(
+            opening,
+            new_moon_margin(self.model, span.to)?,
+            self.settings().calendars.marginal_month_minutes,
         ))
     }
 
@@ -4402,6 +4426,7 @@ struct Lunation {
     frame: Frame,
     amanta: teistro_core::catalogue::Masa,
     kind: MonthKind,
+    margin: teistro_calendar::lunisolar::MonthMargin,
 }
 
 /// The most lunar years before a range the samvatsara's naming may read:

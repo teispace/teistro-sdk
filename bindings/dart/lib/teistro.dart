@@ -3154,9 +3154,6 @@ DayCells _cells(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
   final value = envelope['value']! as Map<String, Object?>;
   double jd(Object? raw) => (raw! as num).toDouble();
-  T must<T>(Object? key, T? Function(String) byKey, String kind) =>
-      byKey(key! as String) ??
-      (throw ArgumentError.value(key, kind, 'not a $kind'));
   DayCell cell(Map<String, Object?> raw) {
     final month = raw['month']! as Map<String, Object?>;
     return DayCell(
@@ -3167,14 +3164,7 @@ DayCells _cells(String json) {
       normal: raw['normal']! as bool,
       tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
       paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
-      month: Month(
-        month: _key(month['month'], Masa.byKey, Masa.unknown),
-        amanta: _key(month['amanta'], Masa.byKey, Masa.unknown),
-        purnimanta: _key(month['purnimanta'], Masa.byKey, Masa.unknown),
-        paksha: _key(month['paksha'], Paksha.byKey, Paksha.unknown),
-        convention: must(month['convention'], LunarMonth.byKey, 'LunarMonth'),
-        kind: must(month['kind'], MonthKind.byKey, 'MonthKind'),
-      ),
+      month: _lunarMonth(month),
       ends: List.unmodifiable(
         (raw['ends']! as List<Object?>).cast<Map<String, Object?>>().map(
           (end) => TithiEnd(
@@ -20871,6 +20861,39 @@ LunarYears _lunarYears(String json) {
   );
 }
 
+/// A key's member, or an [ArgumentError] naming the kind it is not.
+T _must<T>(Object? key, T? Function(String) byKey, String kind) =>
+    byKey(key! as String) ??
+    (throw ArgumentError.value(key, kind, 'not a $kind'));
+
+/// A day's lunar month as the Rust types serialise it, members as this
+/// binding's enums.
+Month _lunarMonth(Map<String, Object?> month) {
+  final margin = month['margin']! as Map<String, Object?>;
+  NewMoonMargin side(String which) {
+    final raw = margin[which]! as Map<String, Object?>;
+    return NewMoonMargin(
+      newMoon: (raw['new_moon']! as num).toDouble(),
+      degrees: (raw['degrees']! as num).toDouble(),
+      minutes: (raw['minutes']! as num).toDouble(),
+    );
+  }
+
+  return Month(
+    month: _key(month['month'], Masa.byKey, Masa.unknown),
+    amanta: _key(month['amanta'], Masa.byKey, Masa.unknown),
+    purnimanta: _key(month['purnimanta'], Masa.byKey, Masa.unknown),
+    paksha: _key(month['paksha'], Paksha.byKey, Paksha.unknown),
+    convention: _must(month['convention'], LunarMonth.byKey, 'LunarMonth'),
+    kind: _must(month['kind'], MonthKind.byKey, 'MonthKind'),
+    margin: MonthMargin(
+      opening: side('opening'),
+      closing: side('closing'),
+      marginal: margin['marginal']! as bool,
+    ),
+  );
+}
+
 /// One lunar year as a JSON answer writes it.
 LunarYear _lunarYear(Map<String, Object?> raw) {
   double jd(Object? raw) => (raw! as num).toDouble();
@@ -21083,9 +21106,6 @@ SankalpaAnswer _sankalpa(String json) {
   final raw = envelope['value']! as Map<String, Object?>;
   final month = raw['month']! as Map<String, Object?>;
   double jd(Object? raw) => (raw! as num).toDouble();
-  T must<T>(Object? key, T? Function(String) byKey, String kind) =>
-      byKey(key! as String) ??
-      (throw ArgumentError.value(key, kind, 'not a $kind'));
   return SankalpaAnswer(
     value: Sankalpa(
       at: jd(raw['at']),
@@ -21098,14 +21118,7 @@ SankalpaAnswer _sankalpa(String json) {
       ayanaReckoning: _keyedIn(AyanaReckoning.values, raw['ayanaReckoning']),
       ritu: _key(raw['ritu'], Ritu.byKey, Ritu.unknown),
       rituReckoning: raw['rituReckoning']! as String,
-      month: Month(
-        month: _key(month['month'], Masa.byKey, Masa.unknown),
-        amanta: _key(month['amanta'], Masa.byKey, Masa.unknown),
-        purnimanta: _key(month['purnimanta'], Masa.byKey, Masa.unknown),
-        paksha: _key(month['paksha'], Paksha.byKey, Paksha.unknown),
-        convention: must(month['convention'], LunarMonth.byKey, 'LunarMonth'),
-        kind: must(month['kind'], MonthKind.byKey, 'MonthKind'),
-      ),
+      month: _lunarMonth(month),
       paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
       tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
       nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
@@ -33756,6 +33769,7 @@ final class Month {
     required this.paksha,
     required this.convention,
     required this.kind,
+    required this.margin,
   });
 
   /// The month under the profile's own convention.
@@ -33779,6 +33793,51 @@ final class Month {
   /// month and the nija month after it take the same name — so this is
   /// the mark beside the name.
   final MonthKind kind;
+
+  /// How near the month came to another kind (SR-92).
+  final MonthMargin margin;
+}
+
+/// The Sun at one of a lunar month's two new moons, against the nearest
+/// sign boundary.
+final class NewMoonMargin {
+  const NewMoonMargin({
+    required this.newMoon,
+    required this.degrees,
+    required this.minutes,
+  });
+
+  /// The new moon, as a Julian day (UTC).
+  final double newMoon;
+
+  /// The Sun's sidereal longitude less the nearest sign boundary,
+  /// degrees, −15 to 15: positive when the Sun had passed it, negative
+  /// when short of it.
+  final double degrees;
+
+  /// The new moon less the nearest sankranti, minutes, with the same
+  /// sign.
+  final double minutes;
+}
+
+/// How near a lunar month came to another kind: the Sun against the
+/// nearest sign boundary at each of its two new moons.
+final class MonthMargin {
+  const MonthMargin({
+    required this.opening,
+    required this.closing,
+    required this.marginal,
+  });
+
+  /// At the new moon that opened the month.
+  final NewMoonMargin opening;
+
+  /// At the new moon that closes it.
+  final NewMoonMargin closing;
+
+  /// Whether either new moon fell nearer a sankranti than
+  /// `calendars.marginal_month_minutes`.
+  final bool marginal;
 }
 
 /// One inauspicious eighth of the daylight.
@@ -34105,6 +34164,19 @@ final class AlmanacDay {
       paksha: Paksha.byId(d.paksha[index]),
       convention: LunarMonth.byId(batch.decoded.lunarMonth),
       kind: MonthKind.byId(d.monthKind[index]),
+      margin: MonthMargin(
+        opening: NewMoonMargin(
+          newMoon: d.openingNewMoon[index],
+          degrees: d.openingMarginDeg[index],
+          minutes: d.openingMarginMinutes[index],
+        ),
+        closing: NewMoonMargin(
+          newMoon: d.closingNewMoon[index],
+          degrees: d.closingMarginDeg[index],
+          minutes: d.closingMarginMinutes[index],
+        ),
+        marginal: d.monthMarginal[index] != 0,
+      ),
     );
   }
 

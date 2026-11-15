@@ -6112,6 +6112,34 @@ export interface PanchangaDays {
    */
   readonly monthKind: Uint8Array;
   /**
+   * 1 when either of the month's two new moons fell nearer a sankranti than `calendars.marginal_month_minutes`, so that a reckoning with another Sun may decide its kind otherwise; 0 otherwise (SR-92, C1902).
+   */
+  readonly monthMarginal: Uint8Array;
+  /**
+   * The new moon that opened the month, as a Julian day (UTC).
+   */
+  readonly openingNewMoon: Float64Array;
+  /**
+   * The Sun's sidereal longitude at the opening new moon less the nearest sign boundary, degrees, −15 to 15: positive when the Sun had passed it (the sankranti came first), negative when it was short of it.
+   */
+  readonly openingMarginDeg: Float64Array;
+  /**
+   * The opening new moon less the nearest sankranti, minutes: the Sun's own time over `opening_margin_deg`, with its sign.
+   */
+  readonly openingMarginMinutes: Float64Array;
+  /**
+   * The new moon that closes the month, as a Julian day (UTC).
+   */
+  readonly closingNewMoon: Float64Array;
+  /**
+   * As `opening_margin_deg`, at the closing new moon.
+   */
+  readonly closingMarginDeg: Float64Array;
+  /**
+   * As `opening_margin_minutes`, at the closing new moon.
+   */
+  readonly closingMarginMinutes: Float64Array;
+  /**
    * Which half of the year the day falls in.
    * The values are `Ayana` ids.
    */

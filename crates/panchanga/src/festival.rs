@@ -3522,12 +3522,16 @@ fn month_of(
         days.partition_point(|day| day.sunrise.get() < occurrence.whole.from.get())
     };
     let day = days.get(at)?;
-    let month = month::of(
-        day.month.amanta,
-        occurrence.member,
-        rule.convention,
-        day.month.kind,
-    );
+    // The occurrence's lunation is the day's, so its margin is too.
+    let month = LunarMonth {
+        margin: day.month.margin,
+        ..month::of(
+            day.month.amanta,
+            occurrence.member,
+            rule.convention,
+            day.month.kind,
+        )
+    };
     let name = month.under(rule.convention);
     if rule.month.is_some_and(|wanted| name != wanted) {
         return None;

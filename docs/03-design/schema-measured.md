@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 326 distinct paths between them. A recorded sample would go
+provider, 333 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 9 | 326 |
-| `day` | a foundation and the almanac of its day | 2 | 177 |
+| `whole` | every section the layer can produce | 9 | 333 |
+| `day` | a foundation and the almanac of its day | 2 | 184 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-15 boolean, 57 integer, 6 null, 134 number, 128 string.
+16 boolean, 57 integer, 6 null, 140 number, 128 string.
 
 ## 3. A whole double is written as an integer
 
@@ -46,7 +46,7 @@ that really is a count.
 
 | numeric paths | integer in every sample | decimal somewhere | both, across samples |
 |---|---|---|---|
-| 179 | 45 | 122 | 12 |
+| 185 | 45 | 128 | 12 |
 
 The ambiguity is not theoretical. 12 paths are written both ways within
 the same sample set:
@@ -99,7 +99,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 254 | 9 |
+| 72 | 261 | 9 |
 
 The top-level sections of the widest document are `aspects`, `dashas`,
 `drawings`, `foundation`, `houses`, `panchanga`, `points`, `state`,
@@ -232,8 +232,8 @@ exponent.
 
 | sample | largest number | decimals resolved there | numbers | a correct parser moves | this build's parser moves |
 |---|---|---|---|---|---|
-| `whole` | 2502450 | 10 | 4983 | 0 | 0 |
-| `day` | 2460506 | 10 | 438 | 0 | 0 |
+| `whole` | 2502450 | 10 | 4989 | 0 | 0 |
+| `day` | 2460506 | 10 | 444 | 0 | 0 |
 | `bare` | 2460483 | 10 | 171 | 0 | 0 |
 
 Both of the last two columns are nought, and the second only because the
@@ -266,12 +266,12 @@ for, and that is where a fixed count of decimals ran out.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the schema can be derived from the documents | falsified | 45 of 179 numeric paths are ambiguous |
+| the schema can be derived from the documents | falsified | 45 of 185 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | **holds** | 235 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
-| every number the form writes reads back as the same double | **holds** | 0 of 5592 move under a correct parser |
-| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5592 |
+| every number the form writes reads back as the same double | **holds** | 0 of 5604 move under a correct parser |
+| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5604 |
 
 The measurement falsifies 2 of the 6 proposed rules. Those three say the
 same thing about **where** a schema comes from: the description, beside
