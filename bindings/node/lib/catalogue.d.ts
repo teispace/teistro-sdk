@@ -4066,6 +4066,7 @@ export type Era =
   | 'era.HIJRI'
   | 'era.VIRA_NIRVANA'
   | 'era.BHASKARABDA'
+  | 'era.KIRAT_YELE'
   | 'unknown';
 
 /** Every Era by name; the values are the strings the union accepts. */
@@ -4118,6 +4119,10 @@ export declare const Era: {
    * Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
    */
   readonly Bhaskarabda: 'era.BHASKARABDA';
+  /**
+   * Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar
+   */
+  readonly KiratYele: 'era.KIRAT_YELE';
 };
 
 /**

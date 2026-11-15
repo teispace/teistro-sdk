@@ -1503,6 +1503,31 @@ final class CalendarAsked extends _Request {
   List<Object?> get _fields => [calendar, date, into];
 }
 
+/// An era request as a binding writes it.
+final class InEraAsked extends _Request {
+  const InEraAsked({
+    this.calendar,
+    required this.date,
+    required this.era,
+  });
+
+  final Calendar? calendar;
+
+  final DayAsked date;
+
+  final Era era;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'date': date._wire,
+    'era': era.key,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, date, era];
+}
+
 /// The lines of a map at one instant.
 final class AstrocartographyRequest extends _Request {
   const AstrocartographyRequest({
@@ -16064,6 +16089,9 @@ abstract final class Records {
   /// `calendar.convert`, whose request is [CalendarAsked].
   static const calendarConvert = RecordOf<CalendarAsked>._('calendar.convert');
 
+  /// `calendar.in_era`, whose request is [InEraAsked].
+  static const calendarInEra = RecordOf<InEraAsked>._('calendar.in_era');
+
   /// `chart.astrocartography`, whose request is [AstrocartographyRequest].
   static const chartAstrocartography = RecordOf<AstrocartographyRequest>._('chart.astrocartography');
 
@@ -16179,6 +16207,7 @@ abstract final class Records {
     calendarAdd,
     calendarBetween,
     calendarConvert,
+    calendarInEra,
     chartAstrocartography,
     chartDisagreements,
     chartFound,

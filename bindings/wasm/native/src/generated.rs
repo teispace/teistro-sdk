@@ -385,6 +385,7 @@ pub fn era_from_str(value: &str) -> Result<u16> {
         "era.HIJRI" => Ok(9),
         "era.VIRA_NIRVANA" => Ok(10),
         "era.BHASKARABDA" => Ok(11),
+        "era.KIRAT_YELE" => Ok(12),
         other => Err(Error::from_reason(format!("`{other}` is not a Era"))),
     }
 }
@@ -405,6 +406,7 @@ pub fn era_to_str(value: u16) -> String {
         9 => "era.HIJRI",
         10 => "era.VIRA_NIRVANA",
         11 => "era.BHASKARABDA",
+        12 => "era.KIRAT_YELE",
         _ => "unknown",
     }
     .to_string()
@@ -4551,6 +4553,36 @@ impl Context {
         let status = unsafe {
             ffi::calendar::ts_calendar_convert(self.handle, date, into, &raw mut out_date)
         };
+        self.leave()?;
+        self.check(status)?;
+        Ok(to_js(&unsafe { CalendarDate::write(&out_date) })?)
+    }
+
+    /// A date viewed in a named era: its own calendar's reading, with the
+    /// year that era gives it in `era` and `era_year`. An era the calendar
+    /// attaches itself gives the calendar's own reading when that reading is
+    /// in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+    /// Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+    /// year, month and day with the Yele year counted from the epoch the
+    /// context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+    /// `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+    /// `UNSUPPORTED` naming `era`, with a hint listing those it can.
+    #[wasm_bindgen(js_name = calendarInEra)]
+    pub fn calendar_in_era(&self, date: JsValue, era: String) -> Result<JsValue> {
+        let date: CalendarDate = from_js(date)?;
+        let held_date = date.read()?;
+        let raw_date = held_date.as_c();
+        let date = &raw const raw_date;
+        let era = era_from_str(&era)? as u16;
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_date: ffi::calendar::TsCalendarDate = unsafe { core::mem::zeroed() };
+        out_date.struct_size = core::mem::size_of::<ffi::calendar::TsCalendarDate>() as u32;
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status =
+            unsafe { ffi::calendar::ts_calendar_in_era(self.handle, date, era, &raw mut out_date) };
         self.leave()?;
         self.check(status)?;
         Ok(to_js(&unsafe { CalendarDate::write(&out_date) })?)

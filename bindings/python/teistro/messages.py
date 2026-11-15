@@ -473,6 +473,7 @@ class EraKey(enum.StrEnum):
     VIRA_NIRVANA = "era.VIRA_NIRVANA"
     BHASKARABDA = "era.BHASKARABDA"
     HIJRI = "era.HIJRI"
+    KIRAT_YELE = "era.KIRAT_YELE"
 
 
 class FastKindKey(enum.StrEnum):
@@ -10583,6 +10584,11 @@ class MessagesSdkEntityEra:
     def kali(self) -> EntityForms:
         """The forms of `era.KALI` in the current locale."""
         return self._r.entity("era.KALI")
+
+    @property
+    def kirat_yele(self) -> EntityForms:
+        """The forms of `era.KIRAT_YELE` in the current locale."""
+        return self._r.entity("era.KIRAT_YELE")
 
     @property
     def kollam(self) -> EntityForms:

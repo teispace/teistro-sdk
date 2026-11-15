@@ -39,6 +39,7 @@ public final class Requests {
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
             Map.entry("calendar.convert", CalendarAsked::of),
+            Map.entry("calendar.in_era", InEraAsked::of),
             Map.entry("chart.astrocartography", AstrocartographyRequest::of),
             Map.entry("chart.disagreements", ChartDisagreementsRequest::of),
             Map.entry("chart.found", ChartFoundRequest::of),
@@ -154,6 +155,9 @@ public final class Requests {
 
     /** {@code calendar.convert}, whose request is {@link CalendarAsked}. */
     public static final RecordOf<CalendarAsked> CALENDAR_CONVERT = new RecordOf<>("calendar.convert");
+
+    /** {@code calendar.in_era}, whose request is {@link InEraAsked}. */
+    public static final RecordOf<InEraAsked> CALENDAR_IN_ERA = new RecordOf<>("calendar.in_era");
 
     /** {@code chart.astrocartography}, whose request is {@link AstrocartographyRequest}. */
     public static final RecordOf<AstrocartographyRequest> CHART_ASTROCARTOGRAPHY = new RecordOf<>("chart.astrocartography");

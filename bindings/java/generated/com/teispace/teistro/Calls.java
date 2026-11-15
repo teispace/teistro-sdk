@@ -213,6 +213,31 @@ final class Calls {
     }
 
     /**
+     * `ts_calendar_in_era`: A date viewed in a named era: its own calendar's reading, with the
+     * year that era gives it in `era` and `era_year`. An era the calendar
+     * attaches itself gives the calendar's own reading when that reading is
+     * in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+     * Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+     * year, month and day with the Yele year counted from the epoch the
+     * context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+     * `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+     * `UNSUPPORTED` naming `era`, with a hint listing those it can.
+     */
+    static CalendarDate calendarInEra(Native lib, MemorySegment context, CalendarDate date, Era era) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment dateRaw = Objects.requireNonNull(date, "date").toC(arena);
+            short eraRaw = Values.u16("era", Values.id("era", era));
+            MemorySegment outDate = arena.allocate(Native.TsCalendarDate.LAYOUT);
+            Native.TsCalendarDate.STRUCT_SIZE.set(outDate, 0L, (int) Native.TsCalendarDate.SIZE);
+            int status = Boundary.call(() -> (int) lib.ts_calendar_in_era.invokeExact(context, dateRaw, eraRaw, outDate));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return CalendarDate.of(outDate);
+        }
+    }
+
+    /**
      * `ts_calendar_month_length`: The length of a month in a calendar.
      */
     static int calendarMonthLength(Native lib, MemorySegment context, Calendar calendar, int year, int month) {

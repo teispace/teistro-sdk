@@ -2410,6 +2410,9 @@ class Era(Catalogued):
     BHASKARABDA = 11
     """Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name"""
 
+    KIRAT_YELE = 12
+    """Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -7032,6 +7035,7 @@ _KEYS: dict[str, dict[int, str]] = {
         9: "HIJRI",
         10: "VIRA_NIRVANA",
         11: "BHASKARABDA",
+        12: "KIRAT_YELE",
         -1: "UNKNOWN",
     },
     "BodyClass": {

@@ -514,6 +514,11 @@ final List<Surface> requests = [
     Param('date', Named('DayAsked')),
     Param('into', Named('Calendar')),
   ], fields: (v) => [v.calendar, v.date, v.into]),
+  Built<InEraAsked>('InEraAsked', InEraAsked.new, [
+    Param('calendar', Named('Calendar')),
+    Param('date', Named('DayAsked')),
+    Param('era', Named('Era')),
+  ], fields: (v) => [v.calendar, v.date, v.era]),
   Built<AstrocartographyRequest>('AstrocartographyRequest', AstrocartographyRequest.new, [
     Param('bodies', ListOf(Named('Graha'), (items) => List<Graha>.from(items))),
     Param('instant', Scalar('double')),

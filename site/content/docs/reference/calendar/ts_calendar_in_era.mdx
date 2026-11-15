@@ -1,0 +1,72 @@
+---
+title: ts_calendar_in_era
+description: "A date viewed in a named era: its own calendar's reading, with the year that era gives it in `era` and `era_year`."
+---
+
+A date viewed in a named era: its own calendar's reading, with the year that era gives it in `era` and `era_year`. An era the calendar attaches itself gives the calendar's own reading when that reading is in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same year, month and day with the Yele year counted from the epoch the context's `calendars.kirat_yele` names (`KIRATI`, the default, or `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is `UNSUPPORTED` naming `era`, with a hint listing those it can.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.inEra
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.in_era
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.inEra
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().inEra
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().in_era
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_calendar_in_era(const ts_context * context, const ts_calendar_date * date, uint16_t era, ts_calendar_date * out_date);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `calendar.in_era` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `date` | `const ts_calendar_date *` | a struct read | — |
+| `era` | `uint16_t` | a value | One of `ts_era`. |
+| `out_date` | `ts_calendar_date *` | a struct written | — |
+
+## What it hands back
+
+`date`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `date` valid for a read; `out_date` valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

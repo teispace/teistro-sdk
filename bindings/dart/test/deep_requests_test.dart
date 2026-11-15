@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 570 of the examples' 585 members.
+/// The cases compare 572 of the examples' 587 members.
 library;
 
 import 'dart:convert';
@@ -2997,6 +2997,20 @@ void main() {
         calendar: Calendar.julian,
         date: DayAsked(day: 1, month: 1, year: 1),
         into: Calendar.julian,
+      ).toJson(),
+    );
+  });
+
+  test('calendar.in_era: InEraAsked', () {
+    _holds(
+      'calendar.in_era',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: InEraAsked(
+        calendar: Calendar.julian,
+        date: DayAsked(day: 1, month: 1, year: 1),
+        era: Era.shaka,
       ).toJson(),
     );
   });

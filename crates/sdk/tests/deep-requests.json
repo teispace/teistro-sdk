@@ -4018,6 +4018,18 @@
     }
   },
   {
+    "record": "calendar.in_era",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "era": "era.SHAKA"
+    }
+  },
+  {
     "record": "chart.astrocartography",
     "request": {
       "bodies": [

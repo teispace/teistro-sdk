@@ -2106,6 +2106,8 @@ typedef TsCalendarToFixedNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.P
 typedef TsCalendarToFixedDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<ffi.Int64>);
 typedef TsCalendarConvertNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Uint16, ffi.Pointer<CalendarDateStruct>);
 typedef TsCalendarConvertDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, int, ffi.Pointer<CalendarDateStruct>);
+typedef TsCalendarInEraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Uint16, ffi.Pointer<CalendarDateStruct>);
+typedef TsCalendarInEraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, int, ffi.Pointer<CalendarDateStruct>);
 typedef TsCalendarMonthLengthNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Uint16, ffi.Int32, ffi.Uint8, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarMonthLengthDart = int Function(ffi.Pointer<Context>, int, int, int, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarIsLeapNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Uint16, ffi.Int32, ffi.Pointer<ffi.Uint8>);
@@ -2308,6 +2310,7 @@ final class TeistroLibrary {
         ts_calendar_from_fixed = library.lookupFunction<TsCalendarFromFixedNative, TsCalendarFromFixedDart>('ts_calendar_from_fixed'),
         ts_calendar_to_fixed = library.lookupFunction<TsCalendarToFixedNative, TsCalendarToFixedDart>('ts_calendar_to_fixed'),
         ts_calendar_convert = library.lookupFunction<TsCalendarConvertNative, TsCalendarConvertDart>('ts_calendar_convert'),
+        ts_calendar_in_era = library.lookupFunction<TsCalendarInEraNative, TsCalendarInEraDart>('ts_calendar_in_era'),
         ts_calendar_month_length = library.lookupFunction<TsCalendarMonthLengthNative, TsCalendarMonthLengthDart>('ts_calendar_month_length'),
         ts_calendar_is_leap = library.lookupFunction<TsCalendarIsLeapNative, TsCalendarIsLeapDart>('ts_calendar_is_leap'),
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
@@ -2533,6 +2536,17 @@ final class TeistroLibrary {
 
   /// Converts a date into another calendar.
   final TsCalendarConvertDart ts_calendar_convert;
+
+  /// A date viewed in a named era: its own calendar's reading, with the
+  /// year that era gives it in `era` and `era_year`. An era the calendar
+  /// attaches itself gives the calendar's own reading when that reading is
+  /// in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+  /// Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+  /// year, month and day with the Yele year counted from the epoch the
+  /// context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+  /// `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+  /// `UNSUPPORTED` naming `era`, with a hint listing those it can.
+  final TsCalendarInEraDart ts_calendar_in_era;
 
   /// The length of a month in a calendar.
   final TsCalendarMonthLengthDart ts_calendar_month_length;
@@ -7012,6 +7026,28 @@ final class TeistroContext implements ffi.Finalizable {
         final outDate = arena<CalendarDateStruct>();
         outDate.ref.structSize = ffi.sizeOf<CalendarDateStruct>();
         final status = _lib.ts_calendar_convert(_handle, rawdate, into.id, outDate);
+        if (status != 0) _fail(status);
+        return CalendarDate.read(outDate);
+    });
+  }
+
+  /// A date viewed in a named era: its own calendar's reading, with the
+  /// year that era gives it in `era` and `era_year`. An era the calendar
+  /// attaches itself gives the calendar's own reading when that reading is
+  /// in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+  /// Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+  /// year, month and day with the Yele year counted from the epoch the
+  /// context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+  /// `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+  /// `UNSUPPORTED` naming `era`, with a hint listing those it can.
+  CalendarDate calendarInEra(CalendarDate date, Era era) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawdate = arena<CalendarDateStruct>();
+        date.write(rawdate, arena);
+        final outDate = arena<CalendarDateStruct>();
+        outDate.ref.structSize = ffi.sizeOf<CalendarDateStruct>();
+        final status = _lib.ts_calendar_in_era(_handle, rawdate, era.id, outDate);
         if (status != 0) _fail(status);
         return CalendarDate.read(outDate);
     });

@@ -561,6 +561,7 @@ export function messages(r) {
           commonEra: () => r.entity('era.COMMON_ERA'),
           hijri: () => r.entity('era.HIJRI'),
           kali: () => r.entity('era.KALI'),
+          kiratYele: () => r.entity('era.KIRAT_YELE'),
           kollam: () => r.entity('era.KOLLAM'),
           nepalSambat: () => r.entity('era.NEPAL_SAMBAT'),
           shaka: () => r.entity('era.SHAKA'),

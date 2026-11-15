@@ -2950,6 +2950,8 @@ enum Era implements KeyOf<Era> {
   viraNirvana(10, 'VIRA_NIRVANA'),
   /// Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
   bhaskarabda(11, 'BHASKARABDA'),
+  /// Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar
+  kiratYele(12, 'KIRAT_YELE'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

@@ -526,7 +526,8 @@ enum EraKey {
   beforeCommonEra('era.BEFORE_COMMON_ERA'),
   viraNirvana('era.VIRA_NIRVANA'),
   bhaskarabda('era.BHASKARABDA'),
-  hijri('era.HIJRI');
+  hijri('era.HIJRI'),
+  kiratYele('era.KIRAT_YELE');
 
   const EraKey(this.key);
 
@@ -3357,6 +3358,7 @@ final class MessagesSdkEntityEra {
   EntityForms get commonEra => _r.entity('era.COMMON_ERA');
   EntityForms get hijri => _r.entity('era.HIJRI');
   EntityForms get kali => _r.entity('era.KALI');
+  EntityForms get kiratYele => _r.entity('era.KIRAT_YELE');
   EntityForms get kollam => _r.entity('era.KOLLAM');
   EntityForms get nepalSambat => _r.entity('era.NEPAL_SAMBAT');
   EntityForms get shaka => _r.entity('era.SHAKA');

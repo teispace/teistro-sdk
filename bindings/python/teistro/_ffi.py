@@ -4439,6 +4439,14 @@ class TeistroLibrary:
             ctypes.POINTER(_CalendarDateStruct),
         ]
         self.ts_calendar_convert.restype = ctypes.c_int32
+        self.ts_calendar_in_era: Any = library.ts_calendar_in_era
+        self.ts_calendar_in_era.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_CalendarDateStruct),
+            ctypes.c_uint16,
+            ctypes.POINTER(_CalendarDateStruct),
+        ]
+        self.ts_calendar_in_era.restype = ctypes.c_int32
         self.ts_calendar_month_length: Any = library.ts_calendar_month_length
         self.ts_calendar_month_length.argtypes = [
             ctypes.POINTER(_Context),
@@ -5387,6 +5395,34 @@ class TeistroContext:
                 self._raw,
                 ctypes.byref(_date),
                 _c_value(into),
+                ctypes.byref(_out_date),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            date = CalendarDate._of(_out_date)
+            return date
+
+    def calendar_in_era(self, date: CalendarDate, era: Era) -> CalendarDate:
+        """A date viewed in a named era: its own calendar's reading, with the
+        year that era gives it in `era` and `era_year`. An era the calendar
+        attaches itself gives the calendar's own reading when that reading is
+        in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+        Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+        year, month and day with the Yele year counted from the epoch the
+        context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+        `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+        `UNSUPPORTED` naming `era`, with a hint listing those it can.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _date = date._to_c(owned)
+            _out_date = _CalendarDateStruct()
+            _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
+            status = Status(self._lib.ts_calendar_in_era(
+                self._raw,
+                ctypes.byref(_date),
+                _c_value(era),
                 ctypes.byref(_out_date),
             ))
             if status != Status.OK:

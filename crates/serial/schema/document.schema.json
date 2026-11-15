@@ -3059,7 +3059,8 @@
             "BEFORE_COMMON_ERA",
             "HIJRI",
             "VIRA_NIRVANA",
-            "BHASKARABDA"
+            "BHASKARABDA",
+            "KIRAT_YELE"
           ],
           "type": "string"
         },
@@ -3077,7 +3078,8 @@
             "era.BEFORE_COMMON_ERA",
             "era.HIJRI",
             "era.VIRA_NIRVANA",
-            "era.BHASKARABDA"
+            "era.BHASKARABDA",
+            "era.KIRAT_YELE"
           ],
           "type": "string",
           "writeOnly": true

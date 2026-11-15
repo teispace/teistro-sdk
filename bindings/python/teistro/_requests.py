@@ -47,6 +47,7 @@ __all__ = [
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
+    "InEraAsked",
     "AstrocartographyRequest",
     "ChartDisagreementsRequest",
     "ChartFoundRequest",
@@ -1538,6 +1539,16 @@ class CalendarAsked(TypedDict, total=False):
     date: Required[DayAsked]
 
     into: Required[Union[_catalogue.Calendar, str]]
+
+
+class InEraAsked(TypedDict, total=False):
+    """An era request as a binding writes it."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+
+    date: Required[DayAsked]
+
+    era: Required[Union[_catalogue.Era, str]]
 
 
 class AstrocartographyRequest(TypedDict, total=False):
@@ -10749,7 +10760,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10842,6 +10853,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['calendar.convert'], request: CalendarAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['calendar.in_era'], request: InEraAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['chart.astrocartography'], request: AstrocartographyRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
