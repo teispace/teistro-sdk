@@ -129,9 +129,6 @@ const BODIES: [Body; 14] = [
 pub struct Builtin {
     /// Whether the Moon's mean longitude carries ADR-0027's correction.
     bija: bool,
-    /// Which Delta T model turns a UT1 request into the dynamical time
-    /// the theories are stated in.
-    delta_t: DeltaTModel,
     /// Whether the Moon and the Earth are answered from fitted series
     /// ([`crate::fitted`]) rather than from their theories at every
     /// instant.
@@ -176,7 +173,6 @@ impl Builtin {
     pub const fn new() -> Builtin {
         Builtin {
             bija: true,
-            delta_t: DeltaTModel::TableThenModel,
             fitted: true,
         }
     }
@@ -216,14 +212,21 @@ impl Builtin {
         self
     }
 
-    /// The same provider under another Delta T model, for a consumer who
-    /// pins one (ADR-0020 counts it in the calculation version).
+    /// The instant the theories want, from the instant the request gives,
+    /// through the Delta T model the request's conventions name.
+    ///
+    /// A UT1 request is civil time and the series are dynamical, so the
+    /// difference is Delta T — about seventy seconds now and minutes at
+    /// the ends of the span. Ignoring it would move the Moon by twenty
+    /// seconds of tithi. The model is the request's (`time.delta_t`), so
+    /// a per-call patch reaches the theories; the provider kept its own
+    /// until the boundary audit found every caller but one ignored it.
     ///
     /// ```
     /// # use teistro_ephemeris_builtin::provider::Builtin;
     /// # use teistro_port_ephemeris::{
-    /// #     Body, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame, PositionRequest,
-    /// #     TimeScale, Zodiac,
+    /// #     Body, Centre, Conventions, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
+    /// #     PositionRequest, TimeScale, Zodiac,
     /// # };
     /// #
     /// # let frame = Frame {
@@ -235,36 +238,22 @@ impl Builtin {
     /// # };
     /// use teistro_astro::DeltaTModel;
     ///
-    /// // A civil instant becomes dynamical time by the model: a minute more of
-    /// // Delta T moves the Moon by about half a minute of arc.
-    /// let request = PositionRequest::new(&[2_460_000.3], TimeScale::Ut1, &[Body::Moon], frame);
-    /// let moon = |model| -> Result<f64, Box<dyn std::error::Error>> {
-    ///     let provider = Builtin::new().with_delta_t(model);
-    ///     Ok(provider.positions(&request)?.at(0, 0).ok_or("a cell")?.lon)
+    /// // A minute more of Delta T moves the Moon by about half a minute of arc.
+    /// let moon = |seconds| -> Result<f64, Box<dyn std::error::Error>> {
+    ///     let conventions = Conventions::STANDARD.with_delta_t(DeltaTModel::Custom { seconds });
+    ///     let request = PositionRequest::new(&[2_460_000.3], TimeScale::Ut1, &[Body::Moon], frame).under(conventions);
+    ///     Ok(Builtin::new().positions(&request)?.at(0, 0).ok_or("a cell")?.lon)
     /// };
-    /// let plus_a_minute = moon(DeltaTModel::Custom { seconds: 129.2 })? - moon(DeltaTModel::Custom { seconds: 69.2 })?;
-    /// assert!((plus_a_minute * 60.0 - 0.5).abs() < 0.1);
+    /// assert!(((moon(129.2)? - moon(69.2)?) * 60.0 - 0.5).abs() < 0.1);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    #[must_use]
-    pub const fn with_delta_t(mut self, model: DeltaTModel) -> Builtin {
-        self.delta_t = model;
-        self
-    }
-
-    /// The instant the theories want, from the instant the request gives.
-    ///
-    /// A UT1 request is civil time and the series are dynamical, so the
-    /// difference is Delta T — about seventy seconds now and minutes at
-    /// the ends of the span. Ignoring it would move the Moon by twenty
-    /// seconds of tithi.
-    fn dynamical(self, jd: f64, scale: TimeScale) -> Result<f64, ProviderError> {
+    fn dynamical(jd: f64, scale: TimeScale, model: DeltaTModel) -> Result<f64, ProviderError> {
         match scale {
             TimeScale::Tt => Ok(jd),
             TimeScale::Ut1 => {
                 let instant = JulianDay::<Ut1>::try_new(jd)
                     .map_err(|error| ProviderError::invalid(error.to_string()))?;
-                let (tt, _) = tt_of(instant, self.delta_t)
+                let (tt, _) = tt_of(instant, model)
                     .map_err(|error| ProviderError::invalid(error.to_string()))?;
                 Ok(tt.get())
             }
@@ -302,7 +291,6 @@ impl Builtin {
     pub const fn without_bija() -> Builtin {
         Builtin {
             bija: false,
-            delta_t: DeltaTModel::TableThenModel,
             fitted: true,
         }
     }
@@ -365,7 +353,7 @@ impl Builtin {
     /// analytic alternative differentiates the eccentricity vector
     /// through the Moon's own rate, which is the derivative of a quotient
     /// of series and buys nothing a consumer can feel.
-    fn osculating_apogee_cell(&self, jd: f64, source: Source) -> Cell {
+    fn osculating_apogee_cell(self, jd: f64, source: Source) -> Cell {
         const STEP: f64 = 0.5;
         let longitude_at = |at: f64| {
             let (place, speed) = self.moon(at);
@@ -712,7 +700,7 @@ impl EphemerisProvider for Builtin {
         let mut columns = PositionColumns::new(request.jds.len(), request.bodies.len(), frame);
         for (jd_index, jd) in request.jds.iter().enumerate() {
             // The scale is converted once an instant, not once a body.
-            let dynamical = self.dynamical(*jd, request.scale)?;
+            let dynamical = Builtin::dynamical(*jd, request.scale, request.conventions.delta_t)?;
             // The Earth is subtracted from every planet, so it too is
             // computed once an instant rather than once a body.
             let earth = capabilities
@@ -819,15 +807,19 @@ mod tests {
         let (series, plain) = (normal.with_series(), Builtin::without_bija());
         assert!(normal.fitted && !series.fitted && series.bija);
         assert!(!plain.bija && plain.fitted);
-        let pinned = normal.with_delta_t(DeltaTModel::EspenakMeeus2006);
-        assert_eq!(pinned.delta_t, DeltaTModel::EspenakMeeus2006);
-        assert!(pinned.bija && pinned.fitted);
-        // A UT1 instant reaches the theories through the Delta T model it
-        // names; a TT instant does not.
+        // A UT1 instant reaches the theories through the Delta T model
+        // the request names; a TT instant does not.
         let jd = 2_451_545.0;
-        let tt = |provider: Builtin, scale| provider.dynamical(jd, scale).unwrap();
-        assert_ne!(tt(normal, TimeScale::Ut1), tt(pinned, TimeScale::Ut1));
-        assert_eq!(tt(normal, TimeScale::Tt), tt(pinned, TimeScale::Tt));
-        assert!(normal.dynamical(f64::NAN, TimeScale::Ut1).is_err());
+        let pinned = DeltaTModel::EspenakMeeus2006;
+        let tt = |scale, model| Builtin::dynamical(jd, scale, model).unwrap();
+        assert_ne!(
+            tt(TimeScale::Ut1, DeltaTModel::TableThenModel),
+            tt(TimeScale::Ut1, pinned)
+        );
+        assert_eq!(
+            tt(TimeScale::Tt, DeltaTModel::TableThenModel),
+            tt(TimeScale::Tt, pinned)
+        );
+        assert!(Builtin::dynamical(f64::NAN, TimeScale::Ut1, pinned).is_err());
     }
 }

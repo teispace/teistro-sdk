@@ -7,7 +7,7 @@
 // Type-checked by `cargo xtask check-node`.
 
 import type { Body, Graha, Status, TimeScale } from '../lib/catalogue.js';
-import type { CalendarDate, DeltaT, PositionRequest, ZoneResolution } from '../lib/types.js';
+import type { CalendarDate, Conventions, DeltaT, PositionRequest, ZoneResolution } from '../lib/types.js';
 import type { IntlRender, Positions } from '../lib/blob.js';
 
 // A catalogue member is its full key, everywhere.
@@ -85,16 +85,19 @@ function rendered(message: IntlRender): string {
  * the counts and the presence flags the C struct carries are the
  * boundary's business, not a consumer's.
  */
+/** The standard conventions, zeroed as they cross. */
+const conventions: Conventions = { deltaTModel: 0, models: 0, deltaTSeconds: 0 };
+
 function request(instants: readonly number[], bodies: readonly Body[]): PositionRequest {
-  return { scale: 'UT1', frameBits: 0, speeds: true, jds: instants, bodies };
+  return { scale: 'UT1', frameBits: 0, speeds: true, jds: instants, bodies, conventions };
 }
 
 // @ts-expect-error `jdCount` is the boundary's bookkeeping, not a field
-const withCount: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [], jdCount: 0 };
+const withCount: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [], jdCount: 0, conventions };
 // @ts-expect-error a body is named by its key, not its id
-const byId: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [0] };
+const byId: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [0], conventions };
 // @ts-expect-error `speeds` is a boolean, not the integer the C struct holds
-const byInteger: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: 1, jds: [], bodies: [] };
+const byInteger: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: 1, jds: [], bodies: [], conventions };
 
 export {
   abbreviation,

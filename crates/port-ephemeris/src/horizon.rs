@@ -6,9 +6,10 @@ use core::fmt;
 
 use serde::{Deserialize, Serialize};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
+use teistro_core::settings::{Atmosphere, HorizonModel, Settings, Sunrise, SunriseConvention};
 
 use crate::body::Body;
+use crate::conventions::Conventions;
 
 /// Which event at the horizon.
 ///
@@ -257,9 +258,11 @@ impl Refraction {
 }
 
 /// The horizon a rise or set is reckoned against: which point of the
-/// disc, whether refraction applies, and the altitude the point reaches
-/// at the event (zero for the ideal horizon; negative for a twilight or a
-/// custom depression).
+/// disc, whether refraction applies, the altitude the point reaches at the
+/// event (zero for the ideal horizon; negative for a twilight or a custom
+/// depression), and the model the rest is reckoned by (`day.horizon`: the
+/// refraction formula, the disc's size and radii, the latitude, the dip
+/// and a raised horizon).
 ///
 /// ```
 /// use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
@@ -280,6 +283,10 @@ pub struct Horizon {
     pub refraction: Refraction,
     /// The altitude of the point at the event, degrees.
     pub altitude_deg: f64,
+    /// How the rest is reckoned; [`HorizonModel::STANDARD`] is what the
+    /// SDK has always reckoned.
+    #[serde(default)]
+    pub model: HorizonModel,
 }
 
 impl Horizon {
@@ -289,6 +296,7 @@ impl Horizon {
         disc: DiscPoint::Centre,
         refraction: Refraction::None,
         altitude_deg: 0.0,
+        model: HorizonModel::STANDARD,
     };
 
     /// The upper limb with standard refraction: the almanac's sunrise
@@ -297,6 +305,7 @@ impl Horizon {
         disc: DiscPoint::UpperLimb,
         refraction: Refraction::Standard,
         altitude_deg: 0.0,
+        model: HorizonModel::STANDARD,
     };
 
     /// The lower limb with standard refraction (`LOWER_LIMB_REFRACTION`).
@@ -304,6 +313,7 @@ impl Horizon {
         disc: DiscPoint::LowerLimb,
         refraction: Refraction::Standard,
         altitude_deg: 0.0,
+        model: HorizonModel::STANDARD,
     };
 
     /// The centre of the disc with standard refraction
@@ -314,7 +324,41 @@ impl Horizon {
         disc: DiscPoint::Centre,
         refraction: Refraction::Standard,
         altitude_deg: 0.0,
+        model: HorizonModel::STANDARD,
     };
+
+    /// The same horizon under another model.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Dip, HorizonModel};
+    /// use teistro_port_ephemeris::Horizon;
+    ///
+    /// let dipped = HorizonModel { dip: Dip::Geometric, ..HorizonModel::STANDARD };
+    /// assert_eq!(Horizon::UPPER_LIMB_REFRACTION.with_model(dipped).model, dipped);
+    /// ```
+    #[must_use]
+    pub const fn with_model(self, model: HorizonModel) -> Horizon {
+        Horizon { model, ..self }
+    }
+
+    /// The horizon a convention names under a context's settings: the
+    /// convention as [`Horizon::from_convention`] reads it, reckoned by
+    /// `day.horizon`.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Dip, SettingsPatch, root};
+    /// use teistro_port_ephemeris::Horizon;
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// patch.day.horizon = Some(teistro_core::settings::HorizonModel { dip: Dip::Refracted, ..Default::default() });
+    /// let settings = root().patched(&patch);
+    /// let horizon = Horizon::of(settings.day.sunrise, &settings);
+    /// assert_eq!(horizon.model.dip, Dip::Refracted);
+    /// ```
+    #[must_use]
+    pub const fn of(convention: SunriseConvention, settings: &Settings) -> Horizon {
+        Horizon::from_convention(convention).with_model(settings.day.horizon)
+    }
 
     /// The horizon a named convention is.
     const fn named(which: Sunrise) -> Horizon {
@@ -378,11 +422,16 @@ impl Horizon {
     ///     assert_eq!(Horizon::from_convention(convention).convention(), Some(convention));
     /// }
     /// // The lower limb without refraction is a horizon the settings cannot name.
-    /// let unnamed = Horizon { disc: DiscPoint::LowerLimb, refraction: Refraction::None, altitude_deg: 0.0 };
+    /// let unnamed = Horizon { disc: DiscPoint::LowerLimb, ..Horizon::CENTRE_NO_REFRACTION };
     /// assert_eq!(unnamed.convention(), None);
     /// ```
     #[must_use]
     pub fn convention(&self) -> Option<SunriseConvention> {
+        // The model is a setting of its own (`day.horizon`), so the
+        // convention is read with it set aside.
+        if self.model != HorizonModel::STANDARD {
+            return self.with_model(HorizonModel::STANDARD).convention();
+        }
         if *self == Horizon::CENTRE_NO_REFRACTION {
             Some(Sunrise::CentreNoRefraction.into())
         } else if *self == Horizon::UPPER_LIMB_REFRACTION {
@@ -413,7 +462,8 @@ impl Horizon {
 
     /// The key stamped in provenance: disc, refraction and altitude, and
     /// an atmosphere's air as it was named (`STANDARD` for a part left to
-    /// the standard at the place).
+    /// the standard at the place), then the model's key when it is not the
+    /// standard one, so a default horizon keeps the key it always had.
     ///
     /// ```
     /// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
@@ -435,7 +485,12 @@ impl Horizon {
             }
             other => String::from(other.key()),
         };
-        format!("{}/{}/{}", self.disc.key(), refraction, self.altitude_deg)
+        let stated = format!("{}/{}/{}", self.disc.key(), refraction, self.altitude_deg);
+        if self.model == HorizonModel::STANDARD {
+            stated
+        } else {
+            format!("{stated}+{}", self.model.key())
+        }
     }
 }
 
@@ -451,7 +506,7 @@ impl fmt::Display for Horizon {
 /// ```
 /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 /// use teistro_core::quantity::JulianDay;
-/// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest};
+/// use teistro_port_ephemeris::{Body, Conventions, Horizon, HorizonEventKind, HorizonRequest};
 ///
 /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
 /// // The next sunrise at Kathmandu within a day of midnight UT, 1 January 2024.
@@ -462,6 +517,7 @@ impl fmt::Display for Horizon {
 ///     from: JulianDay::literal(2_460_310.5),
 ///     window_days: 1.0,
 ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+///     conventions: Conventions::STANDARD,
 /// };
 /// assert_eq!(request.kind.key(), "RISE");
 /// ```
@@ -481,6 +537,9 @@ pub struct HorizonRequest {
     pub window_days: f64,
     /// The horizon convention.
     pub horizon: Horizon,
+    /// The Delta T model the search's UT1 instants are carried to TT by,
+    /// and the models the body's place is computed under.
+    pub conventions: Conventions,
 }
 
 #[cfg(test)]
@@ -558,10 +617,22 @@ mod tests {
         assert_eq!(Horizon::from_convention(custom).convention(), Some(custom));
         let unnamed = Horizon {
             disc: DiscPoint::LowerLimb,
-            refraction: Refraction::None,
-            altitude_deg: 0.0,
+            ..Horizon::CENTRE_NO_REFRACTION
         };
         assert_eq!(unnamed.convention(), None);
+        // A model leaves the convention alone and joins the key.
+        let dipped = Horizon::UPPER_LIMB_REFRACTION.with_model(HorizonModel {
+            dip: teistro_core::settings::Dip::Geometric,
+            ..HorizonModel::STANDARD
+        });
+        assert_eq!(
+            dipped.convention(),
+            Some(Sunrise::UpperLimbRefraction.into())
+        );
+        assert_eq!(
+            dipped.key(),
+            "UPPER_LIMB/STANDARD_REFRACTION/0+BENNETT/ACTUAL/IAU_2015/BODY/GEOMETRIC/0"
+        );
         assert_eq!(
             Horizon::UPPER_LIMB_REFRACTION.to_string(),
             "UPPER_LIMB/STANDARD_REFRACTION/0"

@@ -6,11 +6,16 @@
 //! step; an instant outside coverage and a body outside the declared set
 //! are reported, never guessed; every declared override answers and
 //! agrees with the SDK's own routine within the published bound (the
-//! obliquity and nutation against IAU 2006 and 2000B, Delta T against the
-//! IERS table, the ayanamsha against the published values at J2000.0,
-//! rise and set against the SDK's solver); and, for a provider that can
-//! return equatorial coordinates, the SDK's frame completion reproduces
-//! the provider's native ecliptic positions.
+//! obliquity and nutation against IAU 2006 and 2000B; Delta T per model
+//! at 1900, 2000 and 2050, a custom value exactly; the ayanamsha against
+//! the published values at J2000.0 and against the SDK on both bases;
+//! rise and set for the Sun and Moon over geometric, refracted,
+//! lower-limb, atmospheric and twilight horizons against the SDK's
+//! solver; tropical, sidereal and speed crossings and stations); and, for
+//! a provider that can return equatorial coordinates, the SDK's frame
+//! completion reproduces the provider's native ecliptic positions and
+//! its topocentric places. [`check_reference`] holds a provider's
+//! positions against another (the built-in, or a reference ephemeris).
 
 use std::fmt::Write;
 use std::time::Instant;
@@ -18,19 +23,23 @@ use std::time::Instant;
 use serde::Serialize;
 use teistro_astro::events::Search;
 use teistro_astro::rise_set::Solver;
-use teistro_astro::{Completion, DeltaTModel, delta_t, sky, tt_of};
+use teistro_astro::{Completion, DeltaTModel, sky};
 use teistro_core::angle::difference_deg;
 use teistro_core::catalogue::Ayanamsha;
-use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Tt, Ut1};
 use teistro_core::settings::{AyanamshaBasis, OverridePolicy};
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, CellStatus, Coordinates, CrossingEvent, CrossingRequest,
-    EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Identity, Lattice,
-    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, Quantity, SpeedModel,
-    TimeScale,
+    Astronomy, Body, Capabilities, CellStatus, Conventions, Coordinates, CrossingEvent,
+    CrossingRequest, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Identity,
+    Lattice, Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, Quantity,
+    SpeedModel, TimeScale,
 };
 
 use crate::bench::Row;
+
+mod conventions;
+
+pub use conventions::check_reference;
 
 /// The bounds the kit holds a provider to; one set, published in
 /// `docs/03-design/ephemeris-port-and-adapters.md`, never per provider.
@@ -55,10 +64,14 @@ pub struct Bounds {
     pub continuity_step_days: f64,
     /// A native obliquity against the SDK's, arcseconds.
     pub obliquity_arcsec: f64,
-    /// A native Delta T against the SDK's table, seconds, inside the table's span.
+    /// A native Delta T against the SDK's routine for the same model,
+    /// seconds, under each model the provider answers.
     pub delta_t_seconds: f64,
     /// A native ayanamsha at J2000.0 against the published value, degrees.
     pub ayanamsha_deg: f64,
+    /// A native ayanamsha on either basis against the SDK's catalogue
+    /// under the standard models, degrees.
+    pub ayanamsha_value_deg: f64,
     /// A native ayanamsha's true value less its mean one against the SDK's
     /// IAU 2000B nutation in longitude (none for a classical text),
     /// arcseconds: the two bases the port asks for (SR-100).
@@ -82,6 +95,12 @@ pub struct Bounds {
     pub completion_native_arcsec: f64,
     /// The same with the SDK's obliquity and nutation, arcseconds.
     pub completion_sdk_arcsec: f64,
+    /// A provider's own topocentric Sun and Moon against the SDK's
+    /// correction of its geocentric ones, arcseconds.
+    pub topocentric_arcsec: f64,
+    /// A provider's positions against a reference provider's,
+    /// arcseconds ([`check_reference`]).
+    pub reference_arcsec: f64,
 }
 
 impl Bounds {
@@ -101,6 +120,7 @@ impl Bounds {
         obliquity_arcsec: 0.01,
         delta_t_seconds: 1.0,
         ayanamsha_deg: 0.1,
+        ayanamsha_value_deg: 1e-4,
         ayanamsha_basis_arcsec: 0.01,
         dut1_seconds: 0.9,
         rise_set_geometric_seconds: 1.0,
@@ -108,6 +128,8 @@ impl Bounds {
         crossings_seconds: 1.0,
         completion_native_arcsec: 1e-4,
         completion_sdk_arcsec: 0.05,
+        topocentric_arcsec: 0.1,
+        reference_arcsec: 1.0,
     };
 }
 
@@ -158,7 +180,7 @@ impl Check {
         }
     }
 
-    fn measured(
+    pub(crate) fn measured(
         name: &'static str,
         measured: f64,
         bound: f64,
@@ -175,14 +197,14 @@ impl Check {
         }
     }
 
-    fn skipped(name: &'static str, detail: impl Into<String>) -> Check {
+    pub(crate) fn skipped(name: &'static str, detail: impl Into<String>) -> Check {
         Check::pass(name, format!("skipped: {}", detail.into()))
     }
 
     /// A measurement published without a bound: a classical text's
     /// definition against modern astronomy, or a rule's speed against
     /// the derivative.
-    fn informational(
+    pub(crate) fn informational(
         name: &'static str,
         measured: f64,
         unit: &'static str,
@@ -480,45 +502,21 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
     checks.push(check_out_of_range(provider, &capabilities, &bodies, frame));
     checks.push(check_unsupported_body(provider, &capabilities, &jds, frame));
     checks.push(check_obliquity(provider, &capabilities, &jds, bounds));
-    checks.push(check_delta_t(provider, &capabilities, bounds));
+    checks.push(conventions::check_delta_t(provider, &capabilities, bounds));
     checks.push(check_ayanamsha(provider, &capabilities, bounds));
     checks.push(check_ayanamsha_basis(provider, &capabilities, bounds));
     checks.push(check_dut1(provider, &capabilities, &jds, bounds));
-    checks.push(check_rise_set(
+    checks.extend(event_checks(provider, &capabilities, &jds, bounds));
+    checks.push(conventions::check_ayanamsha_values(
         provider,
         &capabilities,
-        &jds,
-        "override_rise_set_geometric",
-        Horizon::CENTRE_NO_REFRACTION,
-        bounds.rise_set_geometric_seconds,
+        bounds,
     ));
-    checks.push(check_rise_set(
+    checks.push(conventions::check_topocentric(
         provider,
         &capabilities,
         &jds,
-        "override_rise_set_refracted",
-        Horizon::UPPER_LIMB_REFRACTION,
-        bounds.rise_set_refracted_seconds,
-    ));
-    checks.push(check_crossings(
-        provider,
-        &capabilities,
-        &jds,
-        "override_crossings_longitude",
-        Quantity::Longitude(Body::Mercury),
-        Lattice::SIGNS,
-        120.0,
-        bounds.crossings_seconds,
-    ));
-    checks.push(check_crossings(
-        provider,
-        &capabilities,
-        &jds,
-        "override_crossings_composite",
-        Quantity::ELONGATION,
-        Lattice::TITHIS,
-        30.0,
-        bounds.crossings_seconds,
+        bounds,
     ));
     checks.extend(check_completion(provider, &capabilities, &jds, bounds));
 
@@ -531,6 +529,68 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
         passed,
         elapsed_ms: start.elapsed().as_secs_f64() * 1e3,
     }
+}
+
+/// The event checks: rise and set over every horizon the kit holds, the
+/// tropical crossings (a longitude, a composite and the stations) and the
+/// sidereal ones.
+fn event_checks<P: EphemerisProvider + ?Sized>(
+    provider: &P,
+    capabilities: &Capabilities,
+    jds: &[f64],
+    bounds: &Bounds,
+) -> Vec<Check> {
+    let mut checks = Vec::new();
+    for (name, asked, bound) in conventions::horizons(bounds) {
+        checks.push(check_rise_set(
+            provider,
+            capabilities,
+            jds,
+            name,
+            asked,
+            bound,
+        ));
+    }
+    // A longitude over the signs, a composite over the tithis and a
+    // speed through zero (the stations), each over its own span in days.
+    for (name, quantity, lattice, days) in [
+        (
+            "override_crossings_longitude",
+            Quantity::Longitude(Body::Mercury),
+            Lattice::SIGNS,
+            120.0,
+        ),
+        (
+            "override_crossings_composite",
+            Quantity::ELONGATION,
+            Lattice::TITHIS,
+            30.0,
+        ),
+        (
+            "override_crossings_station",
+            Quantity::Speed(Body::Mercury),
+            Lattice::single(0.0),
+            240.0,
+        ),
+    ] {
+        checks.push(check_crossings(
+            provider,
+            capabilities,
+            jds,
+            name,
+            quantity,
+            lattice,
+            days,
+            bounds.crossings_seconds,
+        ));
+    }
+    checks.push(conventions::check_sidereal_crossings(
+        provider,
+        capabilities,
+        jds,
+        bounds,
+    ));
+    checks
 }
 
 fn check_capabilities(c: &Capabilities) -> Check {
@@ -879,18 +939,6 @@ fn check_unsupported_body<P: EphemerisProvider + ?Sized>(
     }
 }
 
-/// The SDK's obliquity at a UT1 instant, through the provider's Delta T
-/// when it has one (so the comparison isolates the obliquity) and the
-/// SDK's table otherwise.
-fn sdk_obliquity<P: EphemerisProvider + ?Sized>(provider: &P, jd_ut1: f64) -> Option<Obliquity> {
-    let ut1 = JulianDay::<Ut1>::try_new(jd_ut1).ok()?;
-    let tt = match provider.delta_t_seconds(jd_ut1) {
-        Ok(seconds) => JulianDay::try_new(jd_ut1 + seconds / 86_400.0).ok()?,
-        Err(_) => tt_of(ut1, DeltaTModel::TableThenModel).ok()?.0,
-    };
-    Some(sky::obliquity(tt))
-}
-
 fn check_obliquity<P: EphemerisProvider + ?Sized>(
     provider: &P,
     capabilities: &Capabilities,
@@ -902,7 +950,9 @@ fn check_obliquity<P: EphemerisProvider + ?Sized>(
     }
     let mut worst = 0.0f64;
     for jd in jds {
-        let native = match provider.obliquity(*jd, TimeScale::Ut1) {
+        // Asked on TT, so the comparison isolates the obliquity from
+        // whichever Delta T either side would carry a UT instant by.
+        let native = match provider.obliquity(*jd, TimeScale::Tt, Conventions::STANDARD) {
             Ok(o) => o,
             Err(error) => {
                 return Check::fail(
@@ -911,9 +961,10 @@ fn check_obliquity<P: EphemerisProvider + ?Sized>(
                 );
             }
         };
-        let Some(sdk) = sdk_obliquity(provider, *jd) else {
+        let Ok(tt) = JulianDay::<Tt>::try_new(*jd) else {
             return Check::fail("override_obliquity", format!("JD {jd} is not an instant"));
         };
+        let sdk = sky::obliquity(tt);
         let error = ((native.true_deg - sdk.true_deg).abs())
             .max((native.mean_deg - sdk.mean_deg).abs())
             * 3600.0;
@@ -933,58 +984,6 @@ fn check_obliquity<P: EphemerisProvider + ?Sized>(
         bounds.obliquity_arcsec,
         "arcsec",
         "native against IAU 2006 and IAU 2000B",
-    )
-}
-
-fn check_delta_t<P: EphemerisProvider + ?Sized>(
-    provider: &P,
-    capabilities: &Capabilities,
-    bounds: &Bounds,
-) -> Check {
-    if !capabilities.has(Overrides::DELTA_T) {
-        return Check::skipped("override_delta_t", "not declared");
-    }
-    let Some((table_lo, table_hi)) = teistro_astro::delta_t::table_span() else {
-        return Check::skipped("override_delta_t", "the SDK has no table");
-    };
-    let (lo, hi) = (
-        table_lo.max(capabilities.jd_range.0),
-        table_hi.min(capabilities.jd_range.1),
-    );
-    if lo >= hi {
-        return Check::skipped("override_delta_t", "the coverage misses the table's span");
-    }
-    let mut worst = (0.0f64, lo);
-    for i in 0..=10 {
-        let jd = lo + (hi - lo) * f64::from(i) / 10.0;
-        let sdk = match JulianDay::<Ut1>::try_new(jd)
-            .map_err(teistro_core::Error::from)
-            .and_then(|ut1| delta_t(ut1, DeltaTModel::TableThenModel))
-        {
-            Ok(value) => value.seconds,
-            Err(error) => return Check::fail("override_delta_t", format!("{error}")),
-        };
-        match provider.delta_t_seconds(jd) {
-            Ok(native) => {
-                let gap = (native - sdk).abs();
-                if gap > worst.0 {
-                    worst = (gap, jd);
-                }
-            }
-            Err(error) => {
-                return Check::fail("override_delta_t", format!("declared, but failed: {error}"));
-            }
-        }
-    }
-    Check::measured(
-        "override_delta_t",
-        worst.0,
-        bounds.delta_t_seconds,
-        "s",
-        format!(
-            "native against the IERS table over JD {lo:.1} to {hi:.1}; worst at JD {}",
-            worst.1
-        ),
     )
 }
 
@@ -1049,7 +1048,13 @@ fn check_ayanamsha<P: EphemerisProvider + ?Sized>(
         let (true, Some(value)) = (capabilities.has_ayanamsha(ayanamsha), value) else {
             continue;
         };
-        match provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha, AyanamshaBasis::Mean) {
+        match provider.ayanamsha_deg(
+            jd,
+            TimeScale::Tt,
+            ayanamsha,
+            AyanamshaBasis::Mean,
+            Conventions::STANDARD,
+        ) {
             Ok(native) => {
                 worst = worst.max((native - value).abs());
                 details.push(format!("{} at {at}: {native:.4}", ayanamsha.key()));
@@ -1096,7 +1101,9 @@ fn check_ayanamsha_basis<P: EphemerisProvider + ?Sized>(
     };
     let mut worst = 0.0f64;
     for jd in [2_415_020.0, teistro_astro::iau::DJ00, 2_469_807.5] {
-        let at = |basis| provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha, basis);
+        let at = |basis| {
+            provider.ayanamsha_deg(jd, TimeScale::Tt, ayanamsha, basis, Conventions::STANDARD)
+        };
         let mean = match at(AyanamshaBasis::Mean) {
             Ok(mean) => mean,
             Err(error) => return Check::fail(NAME, format!("the mean basis failed: {error}")),
@@ -1145,7 +1152,7 @@ fn check_ayanamsha_basis<P: EphemerisProvider + ?Sized>(
     clippy::too_many_arguments,
     reason = "a check is named, quantified and bounded by its caller, as the rise and set checks are"
 )]
-fn check_crossings<P: EphemerisProvider + ?Sized>(
+pub(crate) fn check_crossings<P: EphemerisProvider + ?Sized>(
     provider: &P,
     capabilities: &Capabilities,
     jds: &[f64],
@@ -1179,6 +1186,7 @@ fn check_crossings<P: EphemerisProvider + ?Sized>(
         tolerance_days: 1e-7,
         frame: Frame::CANONICAL,
         observer: None,
+        conventions: Conventions::STANDARD,
     };
     let native = match provider.crossings(&request) {
         Ok(events) => events,
@@ -1244,23 +1252,28 @@ fn check_crossings<P: EphemerisProvider + ?Sized>(
     )
 }
 
-fn check_rise_set<P: EphemerisProvider + ?Sized>(
+/// The native rise and set of a body against the SDK's solver over the
+/// same provider, under one horizon convention, at three places, on the
+/// kit's instants. The SDK's side is `sdk-only`, so its solver searches
+/// rather than handing the question back to the provider (rank 6 of the
+/// boundary audit routes a modern engine's rise and set through it).
+pub(crate) fn check_rise_set<P: EphemerisProvider + ?Sized>(
     provider: &P,
     capabilities: &Capabilities,
     jds: &[f64],
     name: &'static str,
-    horizon: Horizon,
+    (body, horizon): (Body, Horizon),
     bound: f64,
 ) -> Check {
     if !capabilities.has(Overrides::RISE_SET) {
         return Check::skipped(name, "not declared");
     }
-    if !capabilities.has_body(Body::Sun) {
-        return Check::skipped(name, "the Sun is not offered");
+    if !capabilities.has_body(body) {
+        return Check::skipped(name, format!("{} is not offered", body.key()));
     }
     let completion = Completion::new(
         provider,
-        OverridePolicy::PreferNative,
+        OverridePolicy::SdkOnly,
         DeltaTModel::TableThenModel,
     );
     let mut worst = (0.0f64, String::new());
@@ -1268,7 +1281,7 @@ fn check_rise_set<P: EphemerisProvider + ?Sized>(
     for (place_name, place) in places() {
         let solver = Solver::new(
             &completion,
-            Body::Sun,
+            body,
             place,
             horizon,
             DeltaTModel::TableThenModel,
@@ -1279,12 +1292,13 @@ fn check_rise_set<P: EphemerisProvider + ?Sized>(
             };
             for kind in [HorizonEventKind::Rise, HorizonEventKind::Set] {
                 let native = match provider.horizon_event(&HorizonRequest {
-                    body: Body::Sun,
+                    body,
                     kind,
                     place,
                     from,
                     window_days: 1.0,
                     horizon,
+                    conventions: Conventions::STANDARD,
                 }) {
                     Ok(found) => found,
                     Err(ProviderError::Unsupported { what }) => {
@@ -1485,12 +1499,21 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
         self.inner.positions(request)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.inner.obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: teistro_port_ephemeris::Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        self.inner.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.inner.delta_t_seconds(jd_ut1)
+    fn delta_t(
+        &self,
+        jd_ut1: f64,
+        model: teistro_port_ephemeris::DeltaTModel,
+    ) -> Result<teistro_port_ephemeris::DeltaTEstimate, ProviderError> {
+        self.inner.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -1499,8 +1522,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: teistro_port_ephemeris::Conventions,
     ) -> Result<f64, ProviderError> {
-        self.inner.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.inner
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn horizon_event(
@@ -1520,9 +1545,33 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
+    use teistro_astro::delta_t;
     use teistro_port_ephemeris::{Direction, TestProvider};
 
     use super::*;
+
+    #[test]
+    fn a_refusing_proxy_passes_every_other_question_through() {
+        use teistro_port_ephemeris::Conventions;
+        let provider = TestProvider::new();
+        let proxy = Refusing::new(&provider, Frame::CANONICAL);
+        let standard = Conventions::STANDARD;
+        let same = |a: &dyn core::fmt::Debug, b: &dyn core::fmt::Debug| assert_eq!(format!("{a:?}"), format!("{b:?}"));
+        same(
+            &proxy.obliquity(2_451_545.0, TimeScale::Tt, standard),
+            &provider.obliquity(2_451_545.0, TimeScale::Tt, standard),
+        );
+        same(
+            &proxy.delta_t(2_451_545.0, standard.delta_t),
+            &provider.delta_t(2_451_545.0, standard.delta_t),
+        );
+        for basis in [AyanamshaBasis::Mean, AyanamshaBasis::True] {
+            same(
+                &proxy.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Raman, basis, standard),
+                &provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Raman, basis, standard),
+            );
+        }
+    }
 
     #[test]
     fn the_test_provider_passes_the_kit() {
@@ -1534,7 +1583,7 @@ mod tests {
         assert!(!report.check("override_crossings_longitude").unwrap().ran());
         assert!(!report.check("override_dut1").unwrap().ran());
         assert!(report.check("speed_consistency").unwrap().ran());
-        assert_eq!(report.checks.len(), 18);
+        assert_eq!(report.checks.len(), 26);
         assert!(report.markdown().contains("all passed"));
         let results = Results {
             provider: String::from("test-provider"),
@@ -1623,7 +1672,23 @@ mod tests {
                     .map(|done| done.columns)
                     .map_err(|e| ProviderError::invalid(e.to_string()));
             }
-            let mut columns = TestProvider::new().positions(request)?;
+            // It owns Delta T, so a UT1 instant is carried to TT under the
+            // model the request states, as an engine would.
+            let tt = request
+                .jds
+                .iter()
+                .map(|jd| match request.scale {
+                    TimeScale::Ut1 => {
+                        Ok(jd + self.delta_t(*jd, request.conventions.delta_t)?.seconds / 86_400.0)
+                    }
+                    TimeScale::Tt => Ok(*jd),
+                })
+                .collect::<Result<Vec<f64>, ProviderError>>()?;
+            let mut columns = TestProvider::new().positions(&PositionRequest {
+                jds: &tt,
+                scale: TimeScale::Tt,
+                ..*request
+            })?;
             if self.0 == Twist::Still {
                 let j2000 = vec![2_451_545.0; request.jds.len()];
                 let still = PositionRequest {
@@ -1635,10 +1700,15 @@ mod tests {
             Ok(columns)
         }
 
-        fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+        fn obliquity(
+            &self,
+            jd: f64,
+            scale: TimeScale,
+            conventions: Conventions,
+        ) -> Result<Obliquity, ProviderError> {
             let tt = match scale {
+                TimeScale::Ut1 => jd + self.delta_t(jd, conventions.delta_t)?.seconds / 86_400.0,
                 TimeScale::Tt => jd,
-                TimeScale::Ut1 => jd + self.delta_t_seconds(jd)? / 86_400.0,
             };
             Ok(sky::obliquity(JulianDay::literal(tt)))
         }
@@ -1647,9 +1717,13 @@ mod tests {
             Ok(0.0)
         }
 
-        fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-            delta_t(JulianDay::literal(jd_ut1), DeltaTModel::TableThenModel)
-                .map(|d| d.seconds)
+        fn delta_t(
+            &self,
+            jd_ut1: f64,
+            model: DeltaTModel,
+        ) -> Result<teistro_port_ephemeris::DeltaTEstimate, ProviderError> {
+            delta_t(JulianDay::literal(jd_ut1), model)
+                .map(|d| d.estimate())
                 .map_err(|e| ProviderError::invalid(e.to_string()))
         }
 
@@ -1657,9 +1731,22 @@ mod tests {
             &self,
             jd: f64,
             _scale: TimeScale,
-            _a: Ayanamsha,
-            basis: AyanamshaBasis,
+            a: Ayanamsha,
+            basis: teistro_core::settings::AyanamshaBasis,
+            _conventions: Conventions,
         ) -> Result<f64, ProviderError> {
+            // The catalogue's own value on the basis asked, so the
+            // published value at J2000.0 and the catalogue's both hold it.
+            let value = |basis| {
+                teistro_astro::ayanamsha::value_deg(
+                    &a.into(),
+                    JulianDay::literal(jd),
+                    basis,
+                    teistro_astro::precession::PrecessionModel::default(),
+                    DeltaTModel::TableThenModel,
+                )
+                .map_err(|e| ProviderError::invalid(e.to_string()))
+            };
             Ok(match (self.0, basis) {
                 (Twist::Infinite, _) => f64::INFINITY,
                 // Burgess's worked example, III.9 to 12, with no nutation.
@@ -1667,10 +1754,8 @@ mod tests {
                 (Twist::MeanOnly, AyanamshaBasis::True) => {
                     return Err(ProviderError::unsupported("the true basis"));
                 }
-                (Twist::Unnutated, _) | (_, AyanamshaBasis::Mean) => 23.85,
-                (_, AyanamshaBasis::True) => {
-                    23.85 + teistro_astro::iau::nut00b(jd, 0.0).dpsi.to_degrees()
-                }
+                (Twist::Unnutated, _) | (_, AyanamshaBasis::Mean) => value(AyanamshaBasis::Mean)?,
+                (_, AyanamshaBasis::True) => value(AyanamshaBasis::True)?,
                 (_, _) => return Err(ProviderError::unsupported("ayanamsha basis")),
             })
         }
@@ -1706,8 +1791,10 @@ mod tests {
             &self,
             request: &CrossingRequest,
         ) -> Result<Vec<CrossingEvent>, ProviderError> {
+            // A sidereal frame on the mean basis, as an engine's is.
             let completion =
-                Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+                Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel)
+                    .with_ayanamsha_basis(AyanamshaBasis::Mean);
             let longitudes = completion.longitudes(request.frame);
             let mut events = Search::new(&longitudes, request.quantity, request.lattice)
                 .with_tolerance_days(request.tolerance_days)
@@ -1735,17 +1822,32 @@ mod tests {
         for name in [
             "override_obliquity",
             "override_delta_t",
-            "override_ayanamsha",
+            "override_ayanamsha_value",
             "override_dut1",
             "override_rise_set_geometric",
             "override_rise_set_refracted",
+            "override_rise_set_lower_limb",
+            "override_rise_set_atmosphere",
+            "override_rise_set_twilight",
+            "override_rise_set_moon",
             "override_crossings_longitude",
             "override_crossings_composite",
+            "override_crossings_sidereal",
         ] {
             let check = report.check(name).unwrap();
             assert!(check.ran(), "{name}");
             assert_eq!(check.measured, Some(0.0), "{name}: {}", check.detail);
         }
+        // The test sky's Mercury never stations: its periodic term moves it
+        // at most 0.41 of its mean rate backwards. The check runs and finds
+        // nothing on either side to compare.
+        let station = report.check("override_crossings_station").unwrap();
+        assert!(station.ran() && station.passed, "{}", station.detail);
+        assert_eq!(station.measured, None, "{}", station.detail);
+        // The catalogue's Lahiri at J2000.0, inside the published value's
+        // tenth of a degree.
+        let published = report.check("override_ayanamsha").unwrap();
+        assert!(published.ran() && published.passed, "{}", published.detail);
         // Its true value less its mean one is the SDK's nutation in
         // longitude, read back through a degree-to-arcsecond round trip.
         let basis = report.check("override_ayanamsha_basis").unwrap();
@@ -1909,7 +2011,12 @@ mod tests {
             TestProvider::new().positions(request)
         }
 
-        fn obliquity(&self, _jd: f64, _scale: TimeScale) -> Result<Obliquity, ProviderError> {
+        fn obliquity(
+            &self,
+            _jd: f64,
+            _scale: TimeScale,
+            _conventions: teistro_port_ephemeris::Conventions,
+        ) -> Result<Obliquity, ProviderError> {
             Ok(Obliquity {
                 mean_deg: 24.4,
                 true_deg: 24.4,

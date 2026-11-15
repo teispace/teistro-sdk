@@ -12,6 +12,66 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The port states every convention (boundary audit ranks 2 to 7).**
+**Numbers:** under the built-in ephemeris no answer moves: the limb oracle (every
+tithi, karana, nakshatra, yoga, sankranti and sunrise of five years from 1900 to 2100
+against DE440) reads the same on the true and the mean basis as before, and no
+golden, conformance fixture or measured page moves. A modern engine is now asked on
+TT under the context's `time.delta_t` rather than converting UT by its own Delta T,
+which is the fix for `nepali-drik` ignoring that setting. Eclipses move by the
+one solar radius (695,700 km for the eclipse module's 696,000 km): over the 454
+eclipses of 2000 to 2100 seen from Kathmandu no kind, greatest moment or verdict
+on whether the place sees one moves; a lunar penumbral contact moves at most 31.4 s,
+a total phase's 20.2 s, an umbral contact's 6.1 s, a solar local first or last
+contact 12.1 s, a sutak (`vedha`) bound 5.8 s, a magnitude at most 0.00047 and an
+obscuration 0.00075. The test provider's Sun at J2000.0 reads 278.5776° for
+278.5768°, asked on TT (below).
+- **Port:** every `PositionRequest`, `HorizonRequest`, `CrossingRequest` and
+  `AnglesRequest` carries `Conventions` (the Delta T model and the precession,
+  nutation, frame bias and sidereal time), and `obliquity` and `ayanamsha_deg` take
+  them; `delta_t(jd_ut1, model)` replaces `delta_t_seconds` and answers a
+  `DeltaTEstimate` (seconds, one-sigma uncertainty, band). The vtable's
+  `abi_version` is 6 and the C ABI (`ts_abi_version`, `abiVersion`) is 3
+  (`03-design/ephemeris-port-and-adapters.md` §12).
+- **Delta T:** one owner. The engine answers it only when it declares `DELTA_T`,
+  the policy chooses it and it implements the model asked; otherwise the SDK carries
+  UT to TT and asks on TT, under every policy (`delta-t:SDK`). Provenance states the
+  value, model, uncertainty, band and owner (`provenance.time.delta_t_seconds`,
+  `delta_t_model`, `uncertainty_seconds`, `delta_t_band`, `delta_t_by`) and the
+  models (`provenance.time.models`). `TestProvider` reads no time scale, so an
+  instant asked of it on UT1 now lands about 64 to 69 s later on its geometry, and
+  a provider written in Node, wasm, Python, Dart or Java that answers no Delta T is asked
+  on TT. Moved with it: the astro, events and kit unit tests that read the test sky,
+  two host-provider tests in each of Node (and so wasm), Python and Dart, and the
+  packaged consumers' J2000.0 Sun (Node, Dart, the site). No golden, conformance
+  fixture or measured page moved.
+- **New settings,** each defaulting to what the SDK already reckoned by:
+  `frame.precession` `VONDRAK_2011` (Vondrák et al. 2011), `frame.nutation`
+  `IAU_2000B` (McCarthy and Luzum 2003), `frame.frame_bias` `IAU_2006` (IERS
+  Conventions 2010 §5.4.4), `time.sidereal_time` `IERS_2010` (IERS Conventions 2010
+  eq. 5.32), `time.dut1` `NONE` | `IERS` | `CUSTOM{seconds}` (UT1 taken as UTC,
+  within the 0.9 s a leap second keeps them; IERS EOP 14 C04 and Bulletin A through
+  the `DUT1` override), and `day.horizon`: refraction formula `BENNETT` (Bennett
+  1982; Meeus eq. 16.4), disc size `ACTUAL`, radii `IAU_2015` (the Sun 695,700 km,
+  IAU 2015 Resolution B3; the Moon 1,737.4 km), rising latitude `BODY`, dip `NONE`,
+  altitude 0. Each is in the settings hash and the provenance; the standard
+  refraction stays the almanac's stated 34′, named `STANDARD`.
+- **Changed:** one solar radius, 695,700 km; `eclipse::SUN_RADIUS_KM` (696,000 km)
+  is the rise-and-set constant now.
+- **Changed:** rise and set and crossings go through the completion's `choose`:
+  under `prefer-native` a modern engine that declares `RISE_SET` or `CROSSINGS`
+  answers, under any horizon model; a sidereal crossing and a terrain profile stay
+  the SDK's.
+- **Kit:** `override_delta_t`, `override_ayanamsha_value`,
+  `override_rise_set_lower_limb`, `_atmosphere`, `_twilight`, `_moon`,
+  `override_crossings_station`, `override_crossings_sidereal` and
+  `override_topocentric` (the test provider runs 26 checks, from 18), and
+  `kit::check_reference` for a provider against a reference provider.
+- **Bindings:** the generated `PositionRequest` carries `conventions`; a consumer's
+  `positions` call sends the standard ones, and the context's own settings state
+  theirs over them. A provider written in Node or wasm is asked with them; one
+  written in Python, Java or Dart is not shown them yet.
+
 **A fortnight's short name and a rashi's Indian name in every pack.**
 **Numbers:** none; two record forms are added and no existing form changes.
 - `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:

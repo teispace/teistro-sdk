@@ -7,7 +7,7 @@ use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::Error;
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Longitude, Place, Tt, Ut1};
-use teistro_port_ephemeris::{Body, Obliquity};
+use teistro_port_ephemeris::{Body, HorizonRequest, Obliquity};
 
 use crate::delta_t::{DeltaTModel, delta_t};
 use crate::iau::vector::Vector3;
@@ -626,9 +626,56 @@ pub trait ApparentPositions: Send + Sync {
     /// assert!(ApparentPositions::describe(&sky).starts_with("test-provider"));
     /// ```
     fn describe(&self) -> String;
+
+    /// The engine's own search for a rise or a set, when the policy lets
+    /// it answer one (the rise and set override): `None` to have the
+    /// SDK's solver search, as every source but an engine's does.
+    ///
+    /// A source answering it keeps the request's horizon, its model
+    /// included; it answers with its own conventions, which it stamps on
+    /// the request in place of the solver's.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Conventions, Horizon, HorizonEventKind, HorizonRequest, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::sky::ApparentPositions;
+    ///
+    /// let request = HorizonRequest {
+    ///     body: Body::Sun,
+    ///     kind: HorizonEventKind::Rise,
+    ///     place: Place::new(Latitude::literal(27.7), Longitude::literal(85.3), Altitude::literal(1400.0)),
+    ///     from: JulianDay::<Ut1>::J2000,
+    ///     window_days: 1.0,
+    ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+    ///     conventions: Conventions::STANDARD,
+    /// };
+    /// // The test provider declares no override: the SDK's solver searches.
+    /// assert!(sky.native_horizon_event(&request).is_none());
+    /// ```
+    fn native_horizon_event(
+        &self,
+        request: &HorizonRequest,
+    ) -> Option<Result<Option<JulianDay<Ut1>>, Error>> {
+        let _ = request;
+        None
+    }
 }
 
 impl<S: ApparentPositions + ?Sized> ApparentPositions for &S {
+    fn native_horizon_event(
+        &self,
+        request: &HorizonRequest,
+    ) -> Option<Result<Option<JulianDay<Ut1>>, Error>> {
+        (**self).native_horizon_event(request)
+    }
+
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
         (**self).apparent(body, ut1)
     }

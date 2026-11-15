@@ -499,11 +499,7 @@ impl ChartArea<'_> {
         let context = self.context();
         let provider = context.ephemeris().ok_or_else(no_ephemeris)?;
         let sky = Sky {
-            completion: Completion::new(
-                provider,
-                context.settings().provider.overrides,
-                context.delta_t(),
-            ),
+            completion: context.completion_over(provider),
             settings: context.settings(),
             delta_t: context.delta_t(),
             place: *place,
@@ -548,7 +544,10 @@ impl Sky<'_> {
             &self.completion,
             self.settings,
             JulianDay::<Tt>::literal(from.get()),
-            (PrecessionModel::default(), self.delta_t),
+            (
+                PrecessionModel::of_setting(self.settings.frame.precession)?,
+                self.delta_t,
+            ),
         )?;
         let (frame, zodiac) = if own {
             (searched.frame, searched.zodiac)

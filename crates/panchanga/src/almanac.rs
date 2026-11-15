@@ -33,7 +33,7 @@ use teistro_core::settings::{
     Centre, GhatiReckoning, MoonEvents, PanchakaName, Resolved, RituReckoning, Settings,
 };
 use teistro_core::time::{ClockReading, LocalClock, ZoneSource};
-use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
+use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, Models};
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
 use teistro_time::local_day::{
@@ -1460,6 +1460,19 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for Almanac<'_, P> {
 }
 
 impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
+    /// The frame completion the almanac reads its sky through: the
+    /// context's override policy and Delta T, under its models
+    /// (`frame.precession`, `frame.nutation`, `frame.frame_bias`,
+    /// `time.sidereal_time`).
+    fn completion(&self) -> Completion<'a, P> {
+        Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        )
+        .with_models(Models::of(self.settings()))
+    }
+
     /// An almanac.
     ///
     /// ```
@@ -2028,11 +2041,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ///
     /// A search the provider refuses.
     pub fn moonrises(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let solver = self.moon_solver(&completion, place);
         let round = Lockstep::new();
         let searched: Vec<Interval> = days
@@ -2115,11 +2124,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// A day its calendar cannot convert, or a reading the provider
     /// refuses.
     pub fn sun_entries(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let mut read: Option<(FixedDay, Nakshatra)> = None;
         for day in days.iter_mut() {
             let fixed = self.calendar.fixed_of(&day.date)?;
@@ -2181,11 +2186,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ///
     /// A reading the provider refuses.
     pub fn sunrise_entries(&self, days: &mut [FestivalDay], place: &Place) -> Result<(), Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let mut read: Option<(f64, Nakshatra)> = None;
         for day in days.iter_mut() {
             let opening = match read {
@@ -2257,11 +2258,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ///
     /// A reading the provider refuses.
     pub fn homa_ahuti(&self, days: &mut [Panchanga], place: &Place) -> Result<(), Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         for day in days.iter_mut() {
             let (frame, zodiac) = self.at_instant(&completion, day.window.from)?;
             let mut longitudes = completion.longitudes(frame);
@@ -2321,11 +2318,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ///
     /// A search the provider refuses.
     pub fn samsarpas(&self, days: &[FestivalDay], place: &Place) -> Result<Vec<Interval>, Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let mut found: Vec<Interval> = Vec::new();
         for day in days
             .iter()
@@ -2416,11 +2409,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
         arcs: &[(Nakshatra, (f64, f64))],
     ) -> Result<(), Error> {
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let span_deg = 360.0 / 27.0;
         // A stay is searched once though the days beside it meet it too.
         let mut found: Vec<MoonArc> = Vec::new();
@@ -2782,7 +2771,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .into_iter()
             .next()
             .ok_or_else(|| Error::internal("a day's own range answered no lunar year"))?;
-        let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
+        let completion = self.completion();
         let (instant_frame, zodiac) = self.at_instant(&completion, at)?;
         let mut longitudes = completion.longitudes(instant_frame);
         if instant_frame.centre == teistro_port_ephemeris::Centre::Topocentric {
@@ -3296,11 +3285,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         days_in(first, last, from, to, MOST_DAYS)?;
         let start = local_midnight(self.clock, first)?;
         let end = local_midnight(self.clock, last.plus_days(1))?;
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let count = self.settings().calendars.samvatsara;
         // The opening at or before the range's first instant, then the
         // one before it too when the range starts ahead of that year's
@@ -3478,11 +3463,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // The daylight and the night a panchanga divides, refused alike.
         Interval::new(day.sunrise, day.sunset)?;
         Interval::new(day.sunset, day.next_sunrise)?;
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let (frame, zodiac) = self.at_instant(&completion, window.from)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
@@ -3514,11 +3495,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // Refused as a festival day's are.
         Interval::new(day.sunrise, day.sunset)?;
         Interval::new(day.sunset, day.next_sunrise)?;
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let (frame, zodiac) = self.at_instant(&completion, window.from)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
@@ -3550,11 +3527,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let fixed = self.calendar.fixed_of(&date)?;
         let (day, _) = self.local_day_of(&date, fixed, place, memo)?;
         let window = self.window(&day)?;
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        );
+        let completion = self.completion();
         let (frame, zodiac) = self.at_instant(&completion, window.from)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
@@ -3609,7 +3582,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let window = self.window(&day)?;
         let daylight = Interval::new(day.sunrise, day.sunset)?;
         let night = Interval::new(day.sunset, day.next_sunrise)?;
-        let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
+        let completion = self.completion();
         // One ayanamsha evaluation for the day; everything below reads
         // it rather than asking again at the same instant.
         let (frame, zodiac) = self.at_instant(&completion, window.from)?;
@@ -3928,7 +3901,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             completion,
             Body::Moon,
             *place,
-            Horizon::from_convention(self.settings().day.sunrise),
+            Horizon::of(self.settings().day.sunrise, self.settings()),
             self.delta_t,
         )
     }
@@ -3977,7 +3950,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                     .ok()
             })
             .collect();
-        let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
+        let completion = self.completion();
         let solver = self.moon_solver(&completion, place);
         let round = Lockstep::new();
         let mut found = round
@@ -4241,7 +4214,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .capabilities()
             .identity
             .stamp(frame, Vec::new());
-        provenance.time.delta_t_model = self.delta_t.key().to_string();
+        self.completion().stamp_time(&mut provenance.time, None);
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
     }
@@ -4267,6 +4240,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let mut provenance = self.provenance(input, frame);
         if let Some(instant) = instant {
             provenance.time.state_clock(self.clock, instant);
+            // Delta T at the same noon the clock is read at.
+            self.completion().stamp_time(
+                &mut provenance.time,
+                Some(JulianDay::<Ut1>::literal(instant.get())),
+            );
         }
         provenance
     }

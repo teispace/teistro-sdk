@@ -1,8 +1,6 @@
 //! Each observance's sait (`03-design/festival-sait.md`): its day founded
 //! whole, and the lagna's navamsas found over each window the rule tries.
 
-use teistro_astro::Completion;
-use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_chart::foundation::Founder;
 use teistro_chart::zodiac::ChartZodiac;
@@ -39,7 +37,7 @@ impl AlmanacArea<'_> {
         }
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let resolved = self.context.resolved();
-        let (precession, delta_t) = (PrecessionModel::default(), self.context.delta_t());
+        let (precession, delta_t) = (self.context.precession()?, self.context.delta_t());
         let system = system_of(calendar)?;
         let model = drik_sun(self.context, provider);
         // A zone's days read each instant at its own offset (C1252).
@@ -48,7 +46,7 @@ impl AlmanacArea<'_> {
             provider, resolved, &model, system, clock, precession, delta_t,
         );
         let settings = &resolved.settings;
-        let completion = Completion::new(provider, settings.provider.overrides, delta_t);
+        let completion = self.context.completion_over(provider);
         let founder = Founder::new(
             provider, resolved, &model, system, clock, precession, delta_t,
         );

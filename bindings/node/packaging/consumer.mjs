@@ -62,6 +62,6 @@ assert.equal(rendered.text, 'गुरु ७औं भावमा');
 const positions = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
 const sun = positions.at(0, 0);
 console.log(`the Sun at J2000 is at ${sun.longitude.toFixed(4)} degrees, ${positions.cells.length} cells`);
-assert.equal(sun.longitude.toFixed(4), '278.5768');
+assert.equal(sun.longitude.toFixed(4), '278.5776');
 
 console.log(`the published ${PACKAGE} answers as the library does`);

@@ -14,6 +14,7 @@
 use teistro_core::envelope::TimeStamp;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Tt, Ut1, Utc};
+use teistro_core::settings::Dut1;
 use teistro_port_ephemeris::{EphemerisProvider, Overrides};
 
 use crate::delta_t::{DeltaT, DeltaTModel, DeltaTSource, delta_t};
@@ -111,8 +112,9 @@ pub fn ut1_from_utc(instant: JulianDay<Utc>) -> (JulianDay<Ut1>, TimeBasis) {
 }
 
 /// The bound DUT1 keeps inside by definition, seconds: a leap second is
-/// scheduled before UT1 and UTC drift further apart.
-pub const DUT1_BOUND_SECONDS: f64 = 0.9;
+/// scheduled before UT1 and UTC drift further apart. One constant with
+/// the settings' coherence rule (`dut1-bound`).
+pub use teistro_core::settings::DUT1_BOUND_SECONDS;
 
 /// DUT1 from a provider that declares the override, checked against the
 /// definition's bound; `None` when the provider does not declare it.
@@ -200,6 +202,124 @@ pub fn utc_from_ut1_with(
         TimeBasis {
             proleptic_utc: leap::tai_minus_utc(utc).is_none(),
             dut1_applied_seconds: dut1,
+        },
+    ))
+}
+
+/// DUT1 at a UTC instant under `time.dut1`: zero for `NONE`, the stated
+/// value for `CUSTOM`, and for `IERS` the ephemeris engine's, asked
+/// through the port's DUT1 override (rank 5 of the boundary audit).
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::settings::Dut1;
+/// use teistro_port_ephemeris::TestProvider;
+/// use teistro_time::scale::dut1_under;
+///
+/// let utc = JulianDay::<Utc>::try_new(2_460_000.5)?;
+/// assert_eq!(dut1_under(Dut1::None, utc, None)?, 0.0);
+/// assert_eq!(dut1_under(Dut1::Custom { seconds: -0.12 }, utc, None)?, -0.12);
+/// // IERS needs an engine that declares the override.
+/// assert!(dut1_under(Dut1::Iers, utc, Some(&TestProvider::new())).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `UNSUPPORTED` on `time.dut1` for `IERS` with no engine that declares
+/// the override, a declared override that fails, and a value outside the
+/// definition's bound.
+pub fn dut1_under(
+    dut1: Dut1,
+    instant: JulianDay<Utc>,
+    provider: Option<&dyn EphemerisProvider>,
+) -> Result<f64, Error> {
+    match dut1 {
+        Dut1::Custom { seconds } if seconds.is_finite() && seconds.abs() <= DUT1_BOUND_SECONDS => {
+            Ok(seconds)
+        }
+        Dut1::Custom { seconds } => Err(Error::invalid_arg(format!(
+            "UT1 less UTC of {seconds} s is outside the ±{DUT1_BOUND_SECONDS} s a leap second keeps it within"
+        ))
+        .with_field("time.dut1")),
+        Dut1::Iers => provider
+            .map(|provider| provider_dut1(provider, instant))
+            .transpose()?
+            .flatten()
+            .ok_or_else(|| {
+                Error::unsupported(
+                    "the IERS's UT1 less UTC comes from an ephemeris engine that declares the DUT1 override, and this context has none",
+                )
+                .with_field("time.dut1")
+            }),
+        Dut1::None => Ok(0.0),
+    }
+}
+
+/// UT1 from UTC under `time.dut1` ([`dut1_under`]); the basis says what
+/// was applied.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Utc};
+/// use teistro_core::settings::Dut1;
+/// use teistro_time::scale::ut1_from_utc_under;
+///
+/// let utc = JulianDay::<Utc>::try_new(2_460_000.5)?;
+/// let (ut1, basis) = ut1_from_utc_under(utc, Dut1::Custom { seconds: 0.5 }, None)?;
+/// // Half a second, to within the day number's last bits (≈ 40 µs).
+/// assert!(((ut1.get() - utc.get()) * 86_400.0 - 0.5).abs() < 1e-4);
+/// assert_eq!(basis.dut1_applied_seconds, 0.5);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`dut1_under`].
+pub fn ut1_from_utc_under(
+    instant: JulianDay<Utc>,
+    dut1: Dut1,
+    provider: Option<&dyn EphemerisProvider>,
+) -> Result<(JulianDay<Ut1>, TimeBasis), Error> {
+    let seconds = dut1_under(dut1, instant, provider)?;
+    Ok((
+        JulianDay::try_new(instant.get() + seconds / SECONDS_PER_DAY)?,
+        TimeBasis {
+            proleptic_utc: leap::tai_minus_utc(instant).is_none(),
+            dut1_applied_seconds: seconds,
+        },
+    ))
+}
+
+/// UTC from UT1 under `time.dut1`, DUT1 read at the UT1 instant (within a
+/// second of the UTC one).
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Ut1};
+/// use teistro_core::settings::Dut1;
+/// use teistro_time::scale::{ut1_from_utc_under, utc_from_ut1_under};
+///
+/// let ut1 = JulianDay::<Ut1>::try_new(2_460_000.5)?;
+/// let (utc, _) = utc_from_ut1_under(ut1, Dut1::Custom { seconds: 0.5 }, None)?;
+/// let (back, _) = ut1_from_utc_under(utc, Dut1::Custom { seconds: 0.5 }, None)?;
+/// assert!((back.get() - ut1.get()).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`dut1_under`].
+pub fn utc_from_ut1_under(
+    instant: JulianDay<Ut1>,
+    dut1: Dut1,
+    provider: Option<&dyn EphemerisProvider>,
+) -> Result<(JulianDay<Utc>, TimeBasis), Error> {
+    let seconds = dut1_under(dut1, instant.relabel(), provider)?;
+    let utc: JulianDay<Utc> = JulianDay::try_new(instant.get() - seconds / SECONDS_PER_DAY)?;
+    Ok((
+        utc,
+        TimeBasis {
+            proleptic_utc: leap::tai_minus_utc(utc).is_none(),
+            dut1_applied_seconds: seconds,
         },
     ))
 }
@@ -330,6 +450,9 @@ pub fn stamp(delta_t: &DeltaT, basis: &TimeBasis, tzdb_version: &str) -> TimeSta
         time_basis_applied: basis.describe(),
         uncertainty_seconds: delta_t.uncertainty_seconds,
         clock: None,
+        delta_t_band: None,
+        delta_t_by: None,
+        models: None,
     }
 }
 
@@ -405,6 +528,61 @@ mod tests {
             assert_eq!(error.status, Status::Provider, "{forbidden}");
             assert_eq!(error.field(), Some("dut1"));
         }
+    }
+
+    #[test]
+    fn each_dut1_setting_answers_or_refuses_as_it_says() {
+        let utc = JulianDay::<Utc>::try_new(2_460_000.5).unwrap();
+        let bulletin = Bulletin(-0.25);
+        let plain = teistro_port_ephemeris::TestProvider::new();
+        // `NONE`: zero, with or without an engine, whatever it declares.
+        for provider in [None, Some(&bulletin as &dyn EphemerisProvider)] {
+            assert!(dut1_under(Dut1::None, utc, provider).unwrap().abs() < f64::EPSILON);
+        }
+        // `CUSTOM`: the value given, within the bound and at it; past it,
+        // or not a number, refused naming the setting.
+        for seconds in [0.4, -DUT1_BOUND_SECONDS, DUT1_BOUND_SECONDS] {
+            let custom = Dut1::Custom { seconds };
+            assert!((dut1_under(custom, utc, None).unwrap() - seconds).abs() < f64::EPSILON);
+        }
+        for seconds in [0.95, -1.0, f64::NAN, f64::NEG_INFINITY] {
+            let error = dut1_under(Dut1::Custom { seconds }, utc, None).unwrap_err();
+            assert_eq!(error.status, Status::InvalidArg, "{seconds}");
+            assert_eq!(error.field(), Some("time.dut1"));
+        }
+        // `IERS`: the engine's, when it declares the override; refused when
+        // there is no engine or the engine does not declare it, and the
+        // engine's own out-of-bound value is its error, not the setting's.
+        assert!((dut1_under(Dut1::Iers, utc, Some(&bulletin)).unwrap() + 0.25).abs() < f64::EPSILON);
+        for provider in [None, Some(&plain as &dyn EphemerisProvider)] {
+            let error = dut1_under(Dut1::Iers, utc, provider).unwrap_err();
+            assert_eq!(error.status, Status::Unsupported);
+            assert_eq!(error.field(), Some("time.dut1"));
+        }
+        let wild = Bulletin(2.0);
+        assert_eq!(dut1_under(Dut1::Iers, utc, Some(&wild)).unwrap_err().status, Status::Provider);
+    }
+
+    #[test]
+    fn a_setting_carries_utc_to_ut1_and_back_and_says_what_it_applied() {
+        let utc = JulianDay::<Utc>::try_new(2_460_000.5).unwrap();
+        let custom = Dut1::Custom { seconds: 0.5 };
+        let (ut1, basis) = ut1_from_utc_under(utc, custom, None).unwrap();
+        assert!(((ut1.get() - utc.get()) * SECONDS_PER_DAY - 0.5).abs() < 1e-3);
+        assert!((basis.dut1_applied_seconds - 0.5).abs() < f64::EPSILON);
+        assert!(!basis.proleptic_utc);
+        let (back, again) = utc_from_ut1_under(ut1, custom, None).unwrap();
+        assert!((back.get() - utc.get()).abs() < 1e-9);
+        assert!((again.dut1_applied_seconds - 0.5).abs() < f64::EPSILON);
+        // Before 1972 the UTC is proleptic, and the basis says so both ways.
+        let early = JulianDay::<Utc>::try_new(2_415_020.5).unwrap();
+        let (ut1, basis) = ut1_from_utc_under(early, Dut1::None, None).unwrap();
+        assert!(basis.proleptic_utc);
+        assert!(utc_from_ut1_under(ut1, Dut1::None, None).unwrap().1.proleptic_utc);
+        // A refused setting refuses the conversion.
+        let forbidden = Dut1::Custom { seconds: 3.0 };
+        assert!(ut1_from_utc_under(utc, forbidden, None).is_err());
+        assert!(utc_from_ut1_under(utc.relabel(), forbidden, None).is_err());
     }
 
     #[test]

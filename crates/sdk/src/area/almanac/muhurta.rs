@@ -1,8 +1,6 @@
 //! The muhurta search over an almanac's days (`03-design/muhurta.md`): the
 //! windows an activity's rules leave, and the days beside them.
 
-use teistro_astro::Completion;
-use teistro_astro::precession::PrecessionModel;
 use teistro_astro::visibility::Heliacal;
 use teistro_calendar::{CalendarDate, CalendarSystem};
 use teistro_chart::foundation::Founder;
@@ -129,7 +127,7 @@ impl AlmanacArea<'_> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let resolved = self.context.resolved();
         let settings = &resolved.settings;
-        let (precession, delta_t) = (PrecessionModel::default(), self.context.delta_t());
+        let (precession, delta_t) = (self.context.precession()?, self.context.delta_t());
         let calendar = system_of(from.calendar)?;
         let zodiac_at = middle(calendar, offset, from, to)?;
         let model = drik_sun(self.context, provider);
@@ -139,12 +137,12 @@ impl AlmanacArea<'_> {
         let founder = Founder::new(
             provider, resolved, &model, calendar, &offset, precession, delta_t,
         );
-        let completion = Completion::new(provider, settings.provider.overrides, delta_t);
+        let completion = self.context.completion_over(provider);
         let heliacal = Heliacal::new(
             &completion,
             *place,
             *request.asta(),
-            Horizon::from_convention(settings.day.sunrise),
+            Horizon::of(settings.day.sunrise, settings),
             delta_t,
         );
         let over = Over {

@@ -947,10 +947,12 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         };
         let here = self.topocentric(at, syzygy, place)?;
         let distance_au = pm(here.of(body)) * EARTH_EQUATORIAL_RADIUS_KM / AU_KM;
-        let disc = Disc::of(body, distance_au);
+        // The convention's disc and radii; its rising latitude does not
+        // enter, since an eclipse is seen where the body is.
+        let disc = Disc::under(body, distance_au, &horizon.model);
         // The convention's line is a geocentric altitude of the centre;
         // the altitude here is topocentric, so the parallax is taken off.
-        let line = centre_altitude_deg(horizon, &disc, place.altitude) - disc.parallax_deg;
+        let line = centre_altitude_deg(horizon, &disc, place.altitude)? - disc.parallax_deg;
         Ok(here.altitude_deg(body) - line)
     }
 

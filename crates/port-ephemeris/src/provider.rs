@@ -10,6 +10,7 @@ use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::{CellStatus, PositionColumns};
+use crate::conventions::{Conventions, DeltaTEstimate, DeltaTModel};
 use crate::crossing::{CrossingRequest, Event};
 use crate::error::ProviderError;
 use crate::frame::{Centre, Frame};
@@ -45,6 +46,11 @@ pub struct PositionRequest<'a> {
     pub observer: Option<Place>,
     /// Whether speeds are wanted.
     pub speeds: bool,
+    /// The Delta T model a UT1 instant is carried to TT by, and the
+    /// precession, nutation, frame bias and sidereal time the positions
+    /// are computed under. An engine answers under these or refuses the
+    /// request; it never substitutes its own.
+    pub conventions: Conventions,
 }
 
 impl<'a> PositionRequest<'a> {
@@ -71,6 +77,24 @@ impl<'a> PositionRequest<'a> {
             frame,
             observer: None,
             speeds: true,
+            conventions: Conventions::STANDARD,
+        }
+    }
+
+    /// The same request under other conventions.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Conventions, DeltaTModel, Frame, PositionRequest, TimeScale};
+    ///
+    /// let request = PositionRequest::new(&[2_451_545.0], TimeScale::Ut1, &[Body::Sun], Frame::CANONICAL);
+    /// let stated = Conventions::STANDARD.with_delta_t(DeltaTModel::EspenakMeeus2006);
+    /// assert_eq!(request.under(stated).conventions, stated);
+    /// ```
+    #[must_use]
+    pub const fn under(self, conventions: Conventions) -> PositionRequest<'a> {
+        PositionRequest {
+            conventions,
+            ..self
         }
     }
 
@@ -162,7 +186,7 @@ impl<'a> PositionRequest<'a> {
 /// }
 ///
 /// let provider = Delegating(TestProvider::new());
-/// assert!(provider.delta_t_seconds(2_451_545.0).is_err());
+/// assert!(provider.delta_t(2_451_545.0, Default::default()).is_err());
 /// assert_eq!(provider.capabilities().identity.name, "test-provider");
 /// ```
 pub trait EphemerisProvider: Send + Sync {
@@ -200,42 +224,59 @@ pub trait EphemerisProvider: Send + Sync {
     /// statuses, not errors.
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError>;
 
-    /// The obliquity and nutation at an instant; an override.
+    /// The obliquity and nutation at an instant under the conventions
+    /// asked (the nutation model, and the Delta T model when the instant
+    /// is UT1); an override.
     ///
     /// ```
-    /// use teistro_port_ephemeris::TimeScale;
+    /// use teistro_port_ephemeris::{Conventions, TimeScale};
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
     /// let provider = TestProvider::new();
     /// assert!(!provider.capabilities().has(Overrides::OBLIQUITY));
-    /// assert!(matches!(provider.obliquity(2_451_545.0, TimeScale::Tt), Err(ProviderError::Unsupported { .. })));
+    /// assert!(matches!(provider.obliquity(2_451_545.0, TimeScale::Tt, Conventions::STANDARD), Err(ProviderError::Unsupported { .. })));
     /// ```
     ///
     /// # Errors
     ///
-    /// [`ProviderError::Unsupported`] unless declared.
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        let _ = (jd, scale);
+    /// [`ProviderError::Unsupported`] unless declared, or under a model the
+    /// provider does not implement.
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        let _ = (jd, scale, conventions);
         Err(ProviderError::unsupported("obliquity"))
     }
 
-    /// Delta T in seconds at a UT1 instant; an override.
+    /// Delta T at a UT1 instant **under the model asked**, with its
+    /// uncertainty where the model states one; an override.
+    ///
+    /// The model is part of the question, as the ayanamsha's basis is:
+    /// an engine answers it from its own implementation of that model or
+    /// refuses with [`ProviderError::Unsupported`], and then the SDK's own
+    /// Delta T answers instead under `prefer-native`. Before the model was
+    /// asked, a provider declaring Delta T answered with its own default
+    /// whatever `time.delta_t` said (boundary audit, rank 2).
     ///
     /// ```
-    /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
+    /// use teistro_port_ephemeris::{DeltaTModel, EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
     /// let provider = TestProvider::new();
     /// assert!(!provider.capabilities().has(Overrides::DELTA_T));
-    /// assert!(matches!(provider.delta_t_seconds(2_451_545.0), Err(ProviderError::Unsupported { .. })));
+    /// assert!(matches!(provider.delta_t(2_451_545.0, DeltaTModel::TableThenModel), Err(ProviderError::Unsupported { .. })));
     /// ```
     ///
     /// # Errors
     ///
-    /// [`ProviderError::Unsupported`] unless declared.
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        let _ = jd_ut1;
+    /// [`ProviderError::Unsupported`] unless declared, or for a model the
+    /// provider does not implement.
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        let _ = (jd_ut1, model);
         Err(ProviderError::unsupported("delta_t"))
     }
 
@@ -251,20 +292,23 @@ pub trait EphemerisProvider: Send + Sync {
     /// nutation, as the SDK's catalogue answers it from its own, and
     /// returns [`ProviderError::Unsupported`] for a basis it cannot
     /// answer; under `prefer-native` the SDK's catalogue answers instead,
-    /// under `native-only` the step is refused. A classical astronomy's
+    /// under `native-only` the step is refused. The conventions name the
+    /// precession and nutation the value is reckoned under, and the
+    /// Delta T model for a UT1 instant. A classical astronomy's
     /// value is the text's definition, which has no nutation, so it gives
     /// the same value on either basis.
     ///
     /// ```
     /// use teistro_core::catalogue::Ayanamsha;
     /// use teistro_core::settings::AyanamshaBasis;
-    /// use teistro_port_ephemeris::TimeScale;
+    /// use teistro_port_ephemeris::{Conventions, TimeScale};
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
     /// let provider = TestProvider::new();
     /// assert!(!provider.capabilities().has(Overrides::AYANAMSHA));
-    /// assert!(matches!(provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri, AyanamshaBasis::True), Err(ProviderError::Unsupported { .. })));
+    /// let asked = provider.ayanamsha_deg(2_451_545.0, TimeScale::Tt, Ayanamsha::Lahiri, AyanamshaBasis::True, Conventions::STANDARD);
+    /// assert!(matches!(asked, Err(ProviderError::Unsupported { .. })));
     /// ```
     ///
     /// # Errors
@@ -277,8 +321,9 @@ pub trait EphemerisProvider: Send + Sync {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        let _ = (jd, scale, ayanamsha, basis);
+        let _ = (jd, scale, ayanamsha, basis, conventions);
         Err(ProviderError::unsupported("ayanamsha"))
     }
 
@@ -311,7 +356,7 @@ pub trait EphemerisProvider: Send + Sync {
     /// ```
     /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
     /// use teistro_core::quantity::JulianDay;
-    /// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest};
+    /// use teistro_port_ephemeris::{Body, Conventions, Horizon, HorizonEventKind, HorizonRequest};
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
@@ -322,6 +367,7 @@ pub trait EphemerisProvider: Send + Sync {
     ///     from: JulianDay::literal(2_460_310.5),
     ///     window_days: 1.0,
     ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+    ///     conventions: Conventions::STANDARD,
     /// };
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
@@ -349,11 +395,11 @@ pub trait EphemerisProvider: Send + Sync {
     ///
     /// ```
     /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
-    /// use teistro_port_ephemeris::{AnglesRequest, TimeScale};
+    /// use teistro_port_ephemeris::{AnglesRequest, Conventions, TimeScale};
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
-    /// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu };
+    /// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu, conventions: Conventions::STANDARD };
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
     /// let provider = TestProvider::new();
@@ -378,7 +424,7 @@ pub trait EphemerisProvider: Send + Sync {
     ///
     /// ```
     /// use teistro_core::quantity::JulianDay;
-    /// use teistro_port_ephemeris::{Body, CrossingRequest, Frame, Lattice, Quantity};
+    /// use teistro_port_ephemeris::{Body, Conventions, CrossingRequest, Frame, Lattice, Quantity};
     /// use teistro_port_ephemeris::{EphemerisProvider, Overrides, ProviderError, TestProvider};
     ///
     /// // The Sun's ingresses into the signs over 2024.
@@ -390,6 +436,7 @@ pub trait EphemerisProvider: Send + Sync {
     ///     tolerance_days: 1e-6,
     ///     frame: Frame::CANONICAL,
     ///     observer: None,
+    ///     conventions: Conventions::STANDARD,
     /// };
     ///
     /// // The test provider declares no overrides, so the SDK does the work itself.
@@ -492,12 +539,17 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         (**self).positions(request)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        (**self).obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        (**self).obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        (**self).delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        (**self).delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -506,8 +558,9 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis)
+        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -552,12 +605,17 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
         (**self).positions(request)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        (**self).obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        (**self).obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        (**self).delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        (**self).delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -566,8 +624,9 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis)
+        (**self).ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -865,8 +924,13 @@ mod tests {
         assert!(!request.without_speeds().speeds);
         let provider = TestProvider::new();
         let by_ref: &dyn EphemerisProvider = &provider;
-        assert!(by_ref.obliquity(2_451_545.0, TimeScale::Tt).is_err());
-        assert!(by_ref.delta_t_seconds(2_451_545.0).is_err());
+        let stated = Conventions::STANDARD;
+        assert!(
+            by_ref
+                .obliquity(2_451_545.0, TimeScale::Tt, stated)
+                .is_err()
+        );
+        assert!(by_ref.delta_t(2_451_545.0, stated.delta_t).is_err());
         assert!(by_ref.dut1_seconds(2_451_545.0).is_err());
         assert!(
             by_ref
@@ -874,7 +938,8 @@ mod tests {
                     2_451_545.0,
                     TimeScale::Tt,
                     Ayanamsha::Lahiri,
-                    AyanamshaBasis::Mean
+                    AyanamshaBasis::Mean,
+                    stated
                 )
                 .is_err()
         );

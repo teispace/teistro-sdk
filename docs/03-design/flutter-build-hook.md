@@ -330,8 +330,8 @@ since an Apple silicon Mac runs no simulator older than 14.
    ios-simulator` on the newest iOS runtime's first iPhone, which it boots
    and shuts down. Run here on an iPhone 18 Pro simulator: every fact held
    (`aarch64-apple-ios-sim`, release; 2072-1-1 BS; the Nepali message; the
-   Sun at 278.5768°), and an expected 2072-1-2 failed the run naming the
-   fact.
+   Sun at 278.5768°, 278.5776° since the test sky is asked on TT), and an
+   expected 2072-1-2 failed the run naming the fact.
 4. `check-flutter-ios` (verify.yml, macos-latest): `flutter build ios
    --release --no-codesign` must produce
    `Runner.app/Frameworks/teistro_ffi.framework/teistro_ffi` with arm64 and

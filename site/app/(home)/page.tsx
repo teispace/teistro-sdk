@@ -5,7 +5,7 @@ import { appName, tagline } from '@/lib/shared';
 const facts = [
   ['14 April 2015', '2072-01-01 BS', 'the calendars, with the era and how the date was resolved'],
   ['00:20, 1 January 1986, Kathmandu', 'JD 2446431.274306 UTC', '+05:45, from tzdb 2026c, with the rule that applied'],
-  ['the Sun at J2000', '278.5768°', 'apparent geocentric ecliptic of date, from any provider'],
+  ['the Sun at J2000', '278.5776°', 'apparent geocentric ecliptic of date, from any provider'],
   ['sdk.reason.grahaInBhava', 'गुरु ७औं भावमा', 'the locale engine, Nepali-first'],
 ];
 

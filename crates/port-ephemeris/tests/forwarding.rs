@@ -10,9 +10,10 @@
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Body, Capabilities, CountingProvider, CrossingEvent, CrossingRequest,
-    EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Lattice, Obliquity,
-    PositionColumns, PositionRequest, ProviderError, Quantity, TestProvider, TimeScale,
+    Angles, AnglesRequest, Body, Capabilities, Conventions, CountingProvider, CrossingEvent,
+    CrossingRequest, DeltaTEstimate, DeltaTModel, EphemerisProvider, Frame, Horizon,
+    HorizonEventKind, HorizonRequest, Lattice, Obliquity, PositionColumns, PositionRequest,
+    ProviderError, Quantity, TestProvider, TimeScale,
 };
 
 /// Answers every method with an error naming it, so a forwarded answer
@@ -32,11 +33,11 @@ impl EphemerisProvider for Marked {
         Err(marked("positions"))
     }
 
-    fn obliquity(&self, _: f64, _: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(&self, _: f64, _: TimeScale, _: Conventions) -> Result<Obliquity, ProviderError> {
         Err(marked("obliquity"))
     }
 
-    fn delta_t_seconds(&self, _: f64) -> Result<f64, ProviderError> {
+    fn delta_t(&self, _: f64, _: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
         Err(marked("delta_t"))
     }
 
@@ -46,6 +47,7 @@ impl EphemerisProvider for Marked {
         _: TimeScale,
         _: Ayanamsha,
         _: teistro_core::settings::AyanamshaBasis,
+        _: Conventions,
     ) -> Result<f64, ProviderError> {
         Err(marked("ayanamsha"))
     }
@@ -88,11 +90,13 @@ fn answers(provider: &impl EphemerisProvider) -> Vec<String> {
         from: jd,
         window_days: 1.0,
         horizon: Horizon::CENTRE_NO_REFRACTION,
+        conventions: Conventions::STANDARD,
     };
     let angles = AnglesRequest {
         jd: jd.get(),
         scale: TimeScale::Ut1,
         place,
+        conventions: Conventions::STANDARD,
     };
     let crossing = CrossingRequest {
         quantity: Quantity::Longitude(Body::Sun),
@@ -102,19 +106,27 @@ fn answers(provider: &impl EphemerisProvider) -> Vec<String> {
         tolerance_days: 1e-7,
         frame: Frame::CANONICAL,
         observer: None,
+        conventions: Conventions::STANDARD,
     };
     vec![
         format!("{:?}", provider.capabilities()),
         format!("{:?}", provider.positions(&request).err()),
-        format!("{:?}", provider.obliquity(jd.get(), TimeScale::Ut1)),
-        format!("{:?}", provider.delta_t_seconds(jd.get())),
+        format!(
+            "{:?}",
+            provider.obliquity(jd.get(), TimeScale::Ut1, Conventions::STANDARD)
+        ),
+        format!(
+            "{:?}",
+            provider.delta_t(jd.get(), DeltaTModel::TableThenModel)
+        ),
         format!(
             "{:?}",
             provider.ayanamsha_deg(
                 jd.get(),
                 TimeScale::Ut1,
                 Ayanamsha::Lahiri,
-                teistro_core::settings::AyanamshaBasis::True
+                teistro_core::settings::AyanamshaBasis::True,
+                Conventions::STANDARD
             )
         ),
         format!("{:?}", provider.dut1_seconds(jd.get())),

@@ -19,7 +19,10 @@ use std::sync::Arc;
 
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{Atmosphere, AyanamshaBasis};
+use teistro_core::settings::{
+    Atmosphere, AyanamshaBasis, Dip, DiscSize, HorizonModel, Radii, RefractionFormula,
+    RisingLatitude,
+};
 
 use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
@@ -27,6 +30,7 @@ use crate::capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
 };
 use crate::columns::{CellStatus, PositionColumns, Source, tier_bits, tier_from_bits};
+use crate::conventions::{Conventions, DeltaTBand, DeltaTEstimate, DeltaTModel, Models, index_of};
 use crate::crossing::{CrossingRequest, Direction, Event, Lattice, Quantity};
 use crate::error::ProviderError;
 use crate::frame::Frame;
@@ -36,9 +40,14 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 /// The ABI version of the vtable layout.
 ///
 /// 5: the ayanamsha override takes the basis asked (SR-100).
+/// 6: every question states its conventions (the Delta T model and the
+/// precession, nutation, frame bias and sidereal time, [`ConventionsC`]),
+/// Delta T answers with its uncertainty ([`DeltaTEstimateC`]), and a
+/// horizon request carries its model in full (boundary audit, ranks 2 to
+/// 4).
 ///
 /// `api: constant`
-pub const VTABLE_ABI_VERSION: u32 = 5;
+pub const VTABLE_ABI_VERSION: u32 = 6;
 
 /// The ayanamsha override's `basis`: the mean value, without the nutation
 /// in longitude.
@@ -68,6 +77,151 @@ const fn basis_from_id(id: u32) -> Option<AyanamshaBasis> {
         AYANAMSHA_BASIS_MEAN => Some(AyanamshaBasis::Mean),
         AYANAMSHA_BASIS_TRUE => Some(AyanamshaBasis::True),
         _ => None,
+    }
+}
+
+/// The conventions a question is asked under, as they cross: the Delta T
+/// model by id ([`DeltaTModel::id`]) with a custom model's seconds, and the
+/// four models packed one byte each ([`Models::to_bits`]: precession,
+/// nutation, frame bias, sidereal time, each its index among the knob's
+/// members).
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::ConventionsC;
+/// use teistro_port_ephemeris::{Conventions, DeltaTModel};
+///
+/// let stated = Conventions::STANDARD.with_delta_t(DeltaTModel::Custom { seconds: 69.2 });
+/// let c = ConventionsC::of(stated);
+/// assert_eq!((c.delta_t_model, c.models, c.delta_t_seconds), (3, 0, 69.2));
+/// assert_eq!(c.conventions(), Some(stated));
+/// // Zeroed is the standard conventions.
+/// assert_eq!(ConventionsC::default().conventions(), Some(Conventions::STANDARD));
+/// ```
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct ConventionsC {
+    /// The Delta T model: 0 the SDK's table then Morrison and Stephenson,
+    /// 1 Espenak and Meeus 2006, 2 Stephenson, Morrison and Hohenkerk
+    /// 2016, 3 a custom value.
+    /// `api: example=0`
+    pub delta_t_model: u8,
+    /// Reserved, zero.
+    pub reserved: [u8; 3],
+    /// The precession, nutation, frame bias and sidereal time, one byte
+    /// each from the low byte.
+    /// `api: example=0`
+    pub models: u32,
+    /// A custom model's Delta T, seconds; else zero.
+    /// `api: unit=s range=[-1000000,1000000] example=69.2`
+    pub delta_t_seconds: f64,
+}
+
+impl ConventionsC {
+    /// The C form of the conventions.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::Conventions;
+    /// use teistro_port_ephemeris::vtable::ConventionsC;
+    ///
+    /// let c = ConventionsC::of(Conventions::STANDARD);
+    /// assert_eq!(c.conventions(), Some(Conventions::STANDARD));
+    /// ```
+    #[must_use]
+    pub fn of(conventions: Conventions) -> ConventionsC {
+        ConventionsC {
+            delta_t_model: conventions.delta_t.id(),
+            reserved: [0; 3],
+            models: conventions.models.to_bits(),
+            delta_t_seconds: conventions.delta_t.custom_seconds(),
+        }
+    }
+
+    /// The conventions a C form names, `None` for an id that names none.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::vtable::ConventionsC;
+    ///
+    /// // Models that name nothing are no conventions.
+    /// let unnamed = ConventionsC { models: u32::MAX, ..ConventionsC::default() };
+    /// assert_eq!(unnamed.conventions(), None);
+    /// ```
+    #[must_use]
+    pub fn conventions(&self) -> Option<Conventions> {
+        Some(Conventions {
+            delta_t: DeltaTModel::from_id(self.delta_t_model, self.delta_t_seconds)?,
+            models: Models::from_bits(self.models)?,
+        })
+    }
+}
+
+/// Delta T as it crosses: the value, its one-sigma uncertainty when the
+/// model states one, and the band it comes from ([`DeltaTBand::id`]).
+///
+/// ```
+/// use teistro_port_ephemeris::vtable::DeltaTEstimateC;
+/// use teistro_port_ephemeris::{DeltaTBand, DeltaTEstimate};
+///
+/// let estimate = DeltaTEstimate { seconds: 69.2, sigma_seconds: Some(0.1), band: DeltaTBand::Measured };
+/// assert_eq!(DeltaTEstimateC::of(estimate).estimate(), Some(estimate));
+/// ```
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct DeltaTEstimateC {
+    /// TT less UT1, seconds.
+    /// `api: unit=s range=[-1000000,1000000] example=69.2`
+    pub seconds: f64,
+    /// The one-sigma uncertainty, seconds; read when `has_sigma` is set.
+    /// `api: unit=s range=[0,1000000] example=0.1 present_if=has_sigma`
+    pub sigma_seconds: f64,
+    /// Whether `sigma_seconds` is stated.
+    /// `api: flag`
+    pub has_sigma: u8,
+    /// The band: 0 unstated, 1 measured, 2 Morrison and Stephenson 2004,
+    /// 3 Stephenson, Morrison and Hohenkerk 2016.
+    /// `api: example=1`
+    pub band: u8,
+    /// Reserved, zero.
+    pub reserved: [u8; 6],
+}
+
+impl DeltaTEstimateC {
+    /// The C form of an estimate.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{DeltaTBand, DeltaTEstimate};
+    /// use teistro_port_ephemeris::vtable::DeltaTEstimateC;
+    ///
+    /// let estimate = DeltaTEstimate { seconds: 69.2, sigma_seconds: None, band: DeltaTBand::Unstated };
+    /// let c = DeltaTEstimateC::of(estimate);
+    /// assert_eq!((c.seconds, c.has_sigma), (69.2, 0));
+    /// assert_eq!(c.estimate(), Some(estimate));
+    /// ```
+    #[must_use]
+    pub fn of(estimate: DeltaTEstimate) -> DeltaTEstimateC {
+        DeltaTEstimateC {
+            seconds: estimate.seconds,
+            sigma_seconds: estimate.sigma_seconds.unwrap_or(0.0),
+            has_sigma: u8::from(estimate.sigma_seconds.is_some()),
+            band: estimate.band.id(),
+            reserved: [0; 6],
+        }
+    }
+
+    /// The estimate a C form names, `None` for a band that names none.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::vtable::DeltaTEstimateC;
+    ///
+    /// // A band id that names none is no estimate.
+    /// assert_eq!(DeltaTEstimateC { band: 9, ..DeltaTEstimateC::default() }.estimate(), None);
+    /// ```
+    #[must_use]
+    pub fn estimate(&self) -> Option<DeltaTEstimate> {
+        Some(DeltaTEstimate {
+            seconds: self.seconds,
+            sigma_seconds: (self.has_sigma != 0).then_some(self.sigma_seconds),
+            band: DeltaTBand::from_id(self.band)?,
+        })
     }
 }
 
@@ -106,7 +260,7 @@ pub enum ProviderCode {
 /// way in.
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionColumnsC, PositionRequestC};
 /// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
 ///
 /// let exported = Exported::new(TestProvider::new());
@@ -124,6 +278,7 @@ pub enum ProviderCode {
 ///     jd_count: jds.len(),
 ///     bodies: bodies.as_ptr(),
 ///     body_count: bodies.len(),
+///     conventions: ConventionsC::default(),
 /// };
 /// // Caller-owned columns, one cell per instant and body.
 /// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
@@ -183,7 +338,7 @@ impl ObserverC {
 /// A C position request over a grid.
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionColumnsC, PositionRequestC};
 /// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
 ///
 /// let exported = Exported::new(TestProvider::new());
@@ -201,6 +356,7 @@ impl ObserverC {
 ///     jd_count: jds.len(),
 ///     bodies: bodies.as_ptr(),
 ///     body_count: bodies.len(),
+///     conventions: ConventionsC::default(),
 /// };
 /// // Caller-owned columns, one cell per instant and body.
 /// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
@@ -262,13 +418,16 @@ pub struct PositionRequestC {
     pub bodies: *const u16,
     /// How many bodies.
     pub body_count: usize,
+    /// The conventions the positions are computed under. Appended in
+    /// ABI 6.
+    pub conventions: ConventionsC,
 }
 
 /// A C request read into Rust: the instants borrowed from the caller, the
 /// bodies decoded from their ids, and the typed fields.
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionRequestC};
 /// use teistro_port_ephemeris::{Body, Centre, Frame, TimeScale};
 ///
 /// let (jds, bodies) = ([2_451_545.0], [Body::Moon.id()]);
@@ -284,6 +443,7 @@ pub struct PositionRequestC {
 ///     jd_count: jds.len(),
 ///     bodies: bodies.as_ptr(),
 ///     body_count: bodies.len(),
+///     conventions: ConventionsC::default(),
 /// };
 /// // SAFETY: both arrays are valid for their counts while `decoded` is used.
 /// let decoded = unsafe { request.decode() }?;
@@ -305,13 +465,15 @@ pub struct DecodedRequest<'a> {
     pub observer: Option<Place>,
     /// Whether speeds are wanted.
     pub speeds: bool,
+    /// The conventions.
+    pub conventions: Conventions,
 }
 
 impl DecodedRequest<'_> {
     /// The request as the trait takes it.
     ///
     /// ```
-    /// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+    /// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionRequestC};
     /// use teistro_port_ephemeris::{Body, Frame, TimeScale};
     ///
     /// let (jds, bodies) = ([2_451_545.0, 2_451_546.0], [Body::Sun.id(), Body::Moon.id()]);
@@ -327,6 +489,7 @@ impl DecodedRequest<'_> {
     ///     jd_count: jds.len(),
     ///     bodies: bodies.as_ptr(),
     ///     body_count: bodies.len(),
+    ///     conventions: ConventionsC::default(),
     /// };
     /// // SAFETY: both arrays outlive `decoded`.
     /// let decoded = unsafe { request.decode() }?;
@@ -342,6 +505,7 @@ impl DecodedRequest<'_> {
             frame: self.frame,
             observer: self.observer,
             speeds: self.speeds,
+            conventions: self.conventions,
         }
     }
 }
@@ -351,7 +515,7 @@ impl PositionRequestC {
     /// observer, the instants and the body ids.
     ///
     /// ```
-    /// use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
+    /// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionRequestC};
     /// use teistro_port_ephemeris::{Frame, ProviderError, TimeScale};
     ///
     /// let jds = [2_451_545.0];
@@ -369,6 +533,7 @@ impl PositionRequestC {
     ///     jd_count: jds.len(),
     ///     bodies: bodies.as_ptr(),
     ///     body_count: bodies.len(),
+    ///     conventions: ConventionsC::default(),
     /// };
     /// // SAFETY: both arrays are valid for their counts.
     /// assert!(matches!(unsafe { request.decode() }, Err(ProviderError::Unsupported { .. })));
@@ -415,6 +580,10 @@ impl PositionRequestC {
         if bodies.len() != ids.len() {
             return Err(ProviderError::unsupported("body id"));
         }
+        let conventions = self
+            .conventions
+            .conventions()
+            .ok_or_else(|| ProviderError::invalid("conventions id"))?;
         Ok(DecodedRequest {
             jds,
             bodies,
@@ -422,6 +591,7 @@ impl PositionRequestC {
             frame,
             observer,
             speeds: self.speeds != 0,
+            conventions,
         })
     }
 }
@@ -432,7 +602,7 @@ impl PositionRequestC {
 /// `api: role=columns`
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::{ObserverC, PositionColumnsC, PositionRequestC};
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObserverC, PositionColumnsC, PositionRequestC};
 /// use teistro_port_ephemeris::{Body, CellStatus, Exported, Frame, TestProvider, TimeScale};
 ///
 /// let exported = Exported::new(TestProvider::new());
@@ -450,6 +620,7 @@ impl PositionRequestC {
 ///     jd_count: jds.len(),
 ///     bodies: bodies.as_ptr(),
 ///     body_count: bodies.len(),
+///     conventions: ConventionsC::default(),
 /// };
 /// // Caller-owned columns, one cell per instant and body.
 /// let (mut lon, mut lat, mut dist) = ([0.0; 2], [0.0; 2], [0.0; 2]);
@@ -516,14 +687,15 @@ pub struct PositionColumnsC {
 /// A C obliquity.
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::ObliquityC;
+/// use teistro_port_ephemeris::vtable::{ConventionsC, ObliquityC};
 /// use teistro_port_ephemeris::{Exported, ProviderCode, TestProvider, TimeScale};
 ///
 /// let exported = Exported::new(TestProvider::new());
 /// let obliquity = Exported::<TestProvider>::vtable().obliquity.unwrap();
 /// let mut out = ObliquityC { mean_deg: 0.0, true_deg: 0.0, nutation_lon_deg: 0.0, nutation_obl_deg: 0.0 };
 /// // SAFETY: the box is live and `out` is writable.
-/// let code = unsafe { obliquity(exported.user_data(), 2_451_545.0, TimeScale::Tt.id(), &mut out) };
+/// let stated = ConventionsC::default();
+/// let code = unsafe { obliquity(exported.user_data(), 2_451_545.0, TimeScale::Tt.id(), &stated, &mut out) };
 /// // The test provider declares no obliquity, and says so with a code.
 /// assert_eq!(code, ProviderCode::Unsupported as i32);
 /// ```
@@ -549,7 +721,7 @@ pub struct ObliquityC {
 /// ```
 /// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 /// use teistro_port_ephemeris::vtable::HorizonRequestC;
-/// use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, HorizonRequest};
+/// use teistro_port_ephemeris::{Body, Conventions, DiscPoint, Horizon, HorizonEventKind, HorizonRequest};
 ///
 /// let request = HorizonRequest {
 ///     body: Body::Sun,
@@ -558,6 +730,7 @@ pub struct ObliquityC {
 ///     from: JulianDay::literal(2_460_310.5),
 ///     window_days: 1.0,
 ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+///     conventions: Conventions::STANDARD,
 /// };
 /// let c = HorizonRequestC::of(&request);
 /// assert_eq!((c.body, c.kind, c.disc), (Body::Sun.id(), HorizonEventKind::Set.id(), DiscPoint::UpperLimb.id()));
@@ -576,8 +749,26 @@ pub struct HorizonRequestC {
     pub disc: u8,
     /// [`Refraction::id`].
     pub refraction: u8,
+    /// The formula a named air refracts through: 0 Bennett, 1
+    /// Saemundsson, 2 Sinclair. ABI 6, from the reserved bytes.
+    /// `api: example=0`
+    pub refraction_formula: u8,
+    /// The disc's size: 0 actual, 1 at the mean distance, 2 fixed at
+    /// `semidiameter_arcmin`. ABI 6.
+    /// `api: example=0`
+    pub disc_size: u8,
+    /// The radii: 0 IAU 2015, 1 `sun_radius_km` and `moon_radius_km`.
+    /// ABI 6.
+    /// `api: example=0`
+    pub radii: u8,
+    /// The rising body's latitude: 0 its own, 1 zero. ABI 6.
+    /// `api: example=0`
+    pub latitude: u8,
+    /// The dip: 0 none, 1 geometric, 2 refracted. ABI 6.
+    /// `api: example=0`
+    pub dip: u8,
     /// Reserved, zero.
-    pub reserved: [u8; 7],
+    pub reserved: [u8; 2],
     /// The place.
     pub observer: ObserverC,
     /// The search begins here, UT1.
@@ -598,6 +789,92 @@ pub struct HorizonRequestC {
     /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
     /// `api: unit=degC range=[-90,60] example=15`
     pub temperature_c: f64,
+    /// A fixed disc's semidiameter, arcminutes; else zero. ABI 6.
+    /// `api: unit=arcmin range=[0,60] example=16`
+    pub semidiameter_arcmin: f64,
+    /// The Sun's radius under custom radii, kilometres; else zero. ABI 6.
+    /// `api: unit=km range=[0,1000000] example=695700`
+    pub sun_radius_km: f64,
+    /// The Moon's radius under custom radii, kilometres; else zero. ABI 6.
+    /// `api: unit=km range=[0,10000] example=1737.4`
+    pub moon_radius_km: f64,
+    /// The apparent altitude of the horizon itself, degrees: raised
+    /// above the ideal one when positive. ABI 6.
+    /// `api: unit=deg range=[-4,20] example=0`
+    pub horizon_altitude_deg: f64,
+    /// The conventions the body's place is computed under. ABI 6.
+    pub conventions: ConventionsC,
+}
+
+/// A horizon model's disc size as it crosses: its id and a fixed
+/// semidiameter.
+const fn disc_size_parts(size: DiscSize) -> (u8, f64) {
+    match size {
+        DiscSize::Actual => (0, 0.0),
+        DiscSize::MeanDistance => (1, 0.0),
+        DiscSize::Fixed {
+            semidiameter_arcmin,
+        } => (2, semidiameter_arcmin),
+    }
+}
+
+/// A horizon model's radii as they cross: the id and the two radii.
+const fn radii_parts(radii: Radii) -> (u8, f64, f64) {
+    match radii {
+        Radii::Iau2015 => (0, 0.0, 0.0),
+        Radii::Custom { sun_km, moon_km } => (1, sun_km, moon_km),
+    }
+}
+
+impl HorizonRequestC {
+    /// The horizon model a C request names, `None` for an id that names
+    /// none.
+    ///
+    /// ```
+    /// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro_core::settings::{Dip, DiscSize, HorizonModel};
+    /// use teistro_port_ephemeris::vtable::HorizonRequestC;
+    /// use teistro_port_ephemeris::{Body, Conventions, Horizon, HorizonEventKind, HorizonRequest};
+    ///
+    /// let model = HorizonModel { dip: Dip::Refracted, disc_size: DiscSize::Fixed { semidiameter_arcmin: 16.0 }, ..HorizonModel::STANDARD };
+    /// let request = HorizonRequest {
+    ///     body: Body::Sun,
+    ///     kind: HorizonEventKind::Rise,
+    ///     place: Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0)),
+    ///     from: JulianDay::literal(2_460_310.5),
+    ///     window_days: 1.0,
+    ///     horizon: Horizon::UPPER_LIMB_REFRACTION.with_model(model),
+    ///     conventions: Conventions::STANDARD,
+    /// };
+    /// assert_eq!(HorizonRequestC::of(&request).model(), Some(model));
+    /// ```
+    #[must_use]
+    pub fn model(&self) -> Option<HorizonModel> {
+        let disc_size = match self.disc_size {
+            0 => DiscSize::Actual,
+            1 => DiscSize::MeanDistance,
+            2 => DiscSize::Fixed {
+                semidiameter_arcmin: self.semidiameter_arcmin,
+            },
+            _ => return None,
+        };
+        let radii = match self.radii {
+            0 => Radii::Iau2015,
+            1 => Radii::Custom {
+                sun_km: self.sun_radius_km,
+                moon_km: self.moon_radius_km,
+            },
+            _ => return None,
+        };
+        Some(HorizonModel {
+            refraction: *RefractionFormula::ALL.get(usize::from(self.refraction_formula))?,
+            disc_size,
+            radii,
+            latitude: *RisingLatitude::ALL.get(usize::from(self.latitude))?,
+            dip: *Dip::ALL.get(usize::from(self.dip))?,
+            altitude_deg: self.horizon_altitude_deg,
+        })
+    }
 }
 
 impl HorizonRequestC {
@@ -609,7 +886,7 @@ impl HorizonRequestC {
     /// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro_core::settings::Atmosphere;
     /// use teistro_port_ephemeris::vtable::HorizonRequestC;
-    /// use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, HorizonRequest, Refraction};
+    /// use teistro_port_ephemeris::{Body, Conventions, Horizon, HorizonEventKind, HorizonRequest, Refraction};
     ///
     /// // A named air crosses resolved: the given pressure and temperature.
     /// let air = Horizon { refraction: Refraction::Atmosphere(Atmosphere::given(860.0, 12.0)), ..Horizon::UPPER_LIMB_REFRACTION };
@@ -620,6 +897,7 @@ impl HorizonRequestC {
     ///     from: JulianDay::literal(2_460_310.5),
     ///     window_days: 1.0,
     ///     horizon: air,
+    ///     conventions: Conventions::STANDARD,
     /// };
     /// let c = HorizonRequestC::of(&request);
     /// assert_eq!((c.pressure_hpa, c.temperature_c), (860.0, 12.0));
@@ -633,19 +911,32 @@ impl HorizonRequestC {
             Refraction::Atmosphere(air) => Some(air.at(request.place.altitude)),
             Refraction::None | Refraction::Standard => None,
         };
+        let model = request.horizon.model;
+        let (disc_size, semidiameter_arcmin) = disc_size_parts(model.disc_size);
+        let (radii, sun_radius_km, moon_radius_km) = radii_parts(model.radii);
         HorizonRequestC {
             struct_size: size_of_u32::<HorizonRequestC>(),
             body: request.body.id(),
             kind: request.kind.id(),
             disc: request.horizon.disc.id(),
             refraction: request.horizon.refraction.id(),
-            reserved: [0; 7],
+            refraction_formula: index_of(RefractionFormula::ALL, &model.refraction),
+            disc_size,
+            radii,
+            latitude: index_of(RisingLatitude::ALL, &model.latitude),
+            dip: index_of(Dip::ALL, &model.dip),
+            reserved: [0; 2],
             observer: ObserverC::of(request.place),
             from_jd_ut1: request.from.get(),
             window_days: request.window_days,
             altitude_deg: request.horizon.altitude_deg,
             pressure_hpa: air.map_or(0.0, |air| air.pressure_hpa),
             temperature_c: air.map_or(0.0, |air| air.temperature_c),
+            semidiameter_arcmin,
+            sun_radius_km,
+            moon_radius_km,
+            horizon_altitude_deg: model.altitude_deg,
+            conventions: ConventionsC::of(request.conventions),
         }
     }
 }
@@ -653,7 +944,7 @@ impl HorizonRequestC {
 /// A C crossings request.
 ///
 /// ```
-/// use teistro_port_ephemeris::vtable::{CrossingEventC, CrossingRequestC, ObserverC};
+/// use teistro_port_ephemeris::vtable::{ConventionsC, CrossingEventC, CrossingRequestC, ObserverC};
 /// use teistro_port_ephemeris::{Body, Exported, Frame, Lattice, ProviderCode, Quantity, TestProvider};
 ///
 /// // The tithi boundaries of January 2024, asked of a provider that has no search of its own.
@@ -673,6 +964,7 @@ impl HorizonRequestC {
 ///     to_jd_ut1: 2_460_341.5,
 ///     tolerance_days: 1e-6,
 ///     observer: ObserverC { longitude_deg: 0.0, latitude_deg: 0.0, altitude_m: 0.0 },
+///     conventions: ConventionsC::default(),
 /// };
 /// let exported = Exported::new(TestProvider::new());
 /// let crossings = Exported::<TestProvider>::vtable().crossings.unwrap();
@@ -721,6 +1013,8 @@ pub struct CrossingRequestC {
     pub tolerance_days: f64,
     /// The observer, read when `has_observer` is set.
     pub observer: ObserverC,
+    /// The conventions the quantity is computed under. Appended in ABI 6.
+    pub conventions: ConventionsC,
 }
 
 /// A C crossing event.
@@ -883,13 +1177,27 @@ pub type PositionsFn = unsafe extern "C" fn(
 ) -> i32;
 
 /// The obliquity override: the mean and true obliquity and the nutation
-/// at an instant on a time scale ([`TimeScale::id`]).
-pub type ObliquityFn =
-    unsafe extern "C" fn(user_data: *mut c_void, jd: f64, scale: u32, out: *mut ObliquityC) -> i32;
+/// at an instant on a time scale ([`TimeScale::id`]) under the conventions
+/// asked; a nutation model the provider does not implement is
+/// `UNSUPPORTED`.
+pub type ObliquityFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    jd: f64,
+    scale: u32,
+    conventions: *const ConventionsC,
+    out: *mut ObliquityC,
+) -> i32;
 
-/// The Delta T override: TT less UT1 in seconds at a UT1 instant.
-pub type DeltaTFn =
-    unsafe extern "C" fn(user_data: *mut c_void, jd_ut1: f64, out_seconds: *mut f64) -> i32;
+/// The Delta T override: TT less UT1 at a UT1 instant under the model the
+/// conventions name (their models are not read), with its uncertainty; a
+/// model the provider does not implement is `UNSUPPORTED`, never its own
+/// default's value.
+pub type DeltaTFn = unsafe extern "C" fn(
+    user_data: *mut c_void,
+    jd_ut1: f64,
+    conventions: *const ConventionsC,
+    out: *mut DeltaTEstimateC,
+) -> i32;
 
 /// The ayanamsha override: an ayanamsha in degrees at an instant, by
 /// catalogue id, on the basis asked (`AYANAMSHA_BASIS_MEAN` or
@@ -901,6 +1209,7 @@ pub type AyanamshaFn = unsafe extern "C" fn(
     scale: u32,
     ayanamsha: u16,
     basis: u32,
+    conventions: *const ConventionsC,
     out_deg: *mut f64,
 ) -> i32;
 
@@ -1349,6 +1658,7 @@ impl EphemerisProvider for VtableProvider {
             jd_count: request.jds.len(),
             bodies: ids.as_ptr(),
             body_count: ids.len(),
+            conventions: ConventionsC::of(request.conventions),
         };
         let mut columns =
             PositionColumns::new(request.jds.len(), request.bodies.len(), request.frame);
@@ -1383,14 +1693,29 @@ impl EphemerisProvider for VtableProvider {
         Ok(columns)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
         let Some(f) = self.vtable.obliquity else {
             return Err(ProviderError::unsupported("obliquity"));
         };
+        let stated = ConventionsC::of(conventions);
         let mut out = ObliquityC::default();
-        // SAFETY: `out` is a valid, writable struct for the call.
+        // SAFETY: `stated` outlives the call; `out` is a valid, writable
+        // struct for it.
         check(
-            unsafe { f(self.user_data, jd, scale.id(), &raw mut out) },
+            unsafe {
+                f(
+                    self.user_data,
+                    jd,
+                    scale.id(),
+                    &raw const stated,
+                    &raw mut out,
+                )
+            },
             "obliquity",
         )?;
         Ok(Obliquity {
@@ -1401,17 +1726,21 @@ impl EphemerisProvider for VtableProvider {
         })
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
         let Some(f) = self.vtable.delta_t else {
             return Err(ProviderError::unsupported("delta_t"));
         };
-        let mut out = 0.0f64;
-        // SAFETY: `out` is a valid, writable f64 for the call.
+        let stated = ConventionsC::of(Conventions::STANDARD.with_delta_t(model));
+        let mut out = DeltaTEstimateC::default();
+        // SAFETY: `stated` outlives the call; `out` is a valid, writable
+        // struct for it.
         check(
-            unsafe { f(self.user_data, jd_ut1, &raw mut out) },
+            unsafe { f(self.user_data, jd_ut1, &raw const stated, &raw mut out) },
             "delta_t",
         )?;
-        Ok(out)
+        out.estimate()
+            .filter(DeltaTEstimate::is_valid)
+            .ok_or_else(|| ProviderError::invalid("a Delta T estimate out of its bounds"))
     }
 
     fn ayanamsha_deg(
@@ -1420,6 +1749,7 @@ impl EphemerisProvider for VtableProvider {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
         let Some(f) = self.vtable.ayanamsha else {
             return Err(ProviderError::unsupported("ayanamsha"));
@@ -1427,8 +1757,10 @@ impl EphemerisProvider for VtableProvider {
         let Some(basis) = basis_id(basis) else {
             return Err(ProviderError::unsupported("ayanamsha basis"));
         };
+        let stated = ConventionsC::of(conventions);
         let mut out = 0.0f64;
-        // SAFETY: `out` is a valid, writable f64 for the call.
+        // SAFETY: `stated` outlives the call; `out` is a valid, writable
+        // f64 for it.
         check(
             unsafe {
                 f(
@@ -1437,6 +1769,7 @@ impl EphemerisProvider for VtableProvider {
                     scale.id(),
                     ayanamsha.id(),
                     basis,
+                    &raw const stated,
                     &raw mut out,
                 )
             },
@@ -1538,6 +1871,7 @@ impl EphemerisProvider for VtableProvider {
             observer: request
                 .observer
                 .map_or_else(ObserverC::default, ObserverC::of),
+            conventions: ConventionsC::of(request.conventions),
         };
         // A buffer that grows to what the provider reports: two rounds at
         // most for any window.
@@ -1846,21 +2180,39 @@ unsafe fn copy_column(dst: *mut f64, src: &[f64]) {
     }
 }
 
+/// The conventions a trampoline is handed, `None` for a null pointer or an
+/// id that names none.
+///
+/// # Safety
+///
+/// `conventions` must be null or readable.
+unsafe fn read_conventions(conventions: *const ConventionsC) -> Option<Conventions> {
+    if conventions.is_null() {
+        return None;
+    }
+    // SAFETY: the caller promises a readable struct.
+    unsafe { &*conventions }.conventions()
+}
+
 unsafe extern "C" fn obliquity_trampoline<P: EphemerisProvider>(
     user_data: *mut c_void,
     jd: f64,
     scale: u32,
+    conventions: *const ConventionsC,
     out: *mut ObliquityC,
 ) -> i32 {
     if user_data.is_null() || out.is_null() {
         return invalid_call();
     }
-    let Some(scale) = TimeScale::from_id(scale) else {
+    // SAFETY: the caller promises a readable struct or null.
+    let (Some(scale), Some(conventions)) = (TimeScale::from_id(scale), unsafe {
+        read_conventions(conventions)
+    }) else {
         return invalid_call();
     };
     // SAFETY: `user_data` is the `Exported` box registered with this vtable.
     let this = unsafe { &*user_data.cast::<Exported<P>>() };
-    status(this.provider.obliquity(jd, scale).map(|o| {
+    status(this.provider.obliquity(jd, scale, conventions).map(|o| {
         // SAFETY: the caller promises a writable struct.
         unsafe {
             out.write(ObliquityC {
@@ -1876,18 +2228,23 @@ unsafe extern "C" fn obliquity_trampoline<P: EphemerisProvider>(
 unsafe extern "C" fn delta_t_trampoline<P: EphemerisProvider>(
     user_data: *mut c_void,
     jd_ut1: f64,
-    out: *mut f64,
+    conventions: *const ConventionsC,
+    out: *mut DeltaTEstimateC,
 ) -> i32 {
     if user_data.is_null() || out.is_null() {
         return invalid_call();
     }
+    // SAFETY: the caller promises a readable struct or null.
+    let Some(conventions) = (unsafe { read_conventions(conventions) }) else {
+        return invalid_call();
+    };
     // SAFETY: `user_data` is the `Exported` box registered with this vtable.
     let this = unsafe { &*user_data.cast::<Exported<P>>() };
-    // SAFETY: the caller promises a writable f64.
+    // SAFETY: the caller promises a writable struct.
     status(
         this.provider
-            .delta_t_seconds(jd_ut1)
-            .map(|v| unsafe { out.write(v) }),
+            .delta_t(jd_ut1, conventions.delta_t)
+            .map(|v| unsafe { out.write(DeltaTEstimateC::of(v)) }),
     )
 }
 
@@ -1915,15 +2272,18 @@ unsafe extern "C" fn ayanamsha_trampoline<P: EphemerisProvider>(
     scale: u32,
     ayanamsha: u16,
     basis: u32,
+    conventions: *const ConventionsC,
     out: *mut f64,
 ) -> i32 {
     if user_data.is_null() || out.is_null() {
         return invalid_call();
     }
-    let (Some(scale), Some(ayanamsha), Some(basis)) = (
+    let (Some(scale), Some(ayanamsha), Some(basis), Some(conventions)) = (
         TimeScale::from_id(scale),
         Ayanamsha::from_id(ayanamsha),
         basis_from_id(basis),
+        // SAFETY: the caller promises a readable struct or null.
+        unsafe { read_conventions(conventions) },
     ) else {
         return invalid_call();
     };
@@ -1932,7 +2292,7 @@ unsafe extern "C" fn ayanamsha_trampoline<P: EphemerisProvider>(
     // SAFETY: the caller promises a writable f64.
     status(
         this.provider
-            .ayanamsha_deg(jd, scale, ayanamsha, basis)
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
             .map(|v| unsafe { out.write(v) }),
     )
 }
@@ -1966,6 +2326,9 @@ unsafe extern "C" fn horizon_event_trampoline<P: EphemerisProvider>(
     let (Ok(place), Ok(from)) = (raw.observer.place(), JulianDay::try_new(raw.from_jd_ut1)) else {
         return invalid_call();
     };
+    let (Some(model), Some(conventions)) = (raw.model(), raw.conventions.conventions()) else {
+        return invalid_call();
+    };
     let request = HorizonRequest {
         body,
         kind,
@@ -1976,7 +2339,9 @@ unsafe extern "C" fn horizon_event_trampoline<P: EphemerisProvider>(
             disc,
             refraction,
             altitude_deg: raw.altitude_deg,
+            model,
         },
+        conventions,
     };
     status(this.provider.horizon_event(&request).map(|found| {
         // SAFETY: the caller promises two writable outs.
@@ -2133,6 +2498,9 @@ unsafe extern "C" fn crossings_trampoline<P: EphemerisProvider>(
             Err(_) => return invalid_call(),
         }
     };
+    let Some(conventions) = raw.conventions.conventions() else {
+        return invalid_call();
+    };
     let request = CrossingRequest {
         quantity,
         lattice: Lattice {
@@ -2144,6 +2512,7 @@ unsafe extern "C" fn crossings_trampoline<P: EphemerisProvider>(
         tolerance_days: raw.tolerance_days,
         frame,
         observer,
+        conventions,
     };
     status(this.provider.crossings(&request).map(|events| {
         // SAFETY: the caller promises a writable count and a buffer of
@@ -2189,12 +2558,17 @@ impl EphemerisProvider for ExportedVtable<'_> {
         self.provider.positions(request)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.provider.obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        self.provider.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.provider.delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        self.provider.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -2203,8 +2577,10 @@ impl EphemerisProvider for ExportedVtable<'_> {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        self.provider.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.provider
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn dut1_seconds(&self, jd_utc: f64) -> Result<f64, ProviderError> {
@@ -2267,8 +2643,9 @@ mod tests {
         let via_trait = exported.provider().positions(&request).unwrap();
         assert!(via_vtable.bit_identical(&via_trait));
         assert_eq!(via_vtable.frame, via_trait.frame);
-        assert!(bound.obliquity(2_460_000.5, TimeScale::Tt).is_err());
-        assert!(bound.delta_t_seconds(2_460_000.5).is_err());
+        let stated = Conventions::STANDARD;
+        assert!(bound.obliquity(2_460_000.5, TimeScale::Tt, stated).is_err());
+        assert!(bound.delta_t(2_460_000.5, stated.delta_t).is_err());
         assert!(bound.dut1_seconds(2_460_000.5).is_err());
         assert!(
             bound
@@ -2276,7 +2653,8 @@ mod tests {
                     2_460_000.5,
                     TimeScale::Tt,
                     Ayanamsha::Lahiri,
-                    AyanamshaBasis::True
+                    AyanamshaBasis::True,
+                    stated
                 )
                 .is_err()
         );
@@ -2292,6 +2670,7 @@ mod tests {
             from: JulianDay::literal(2_460_000.5),
             window_days: 1.0,
             horizon: Horizon::CENTRE_NO_REFRACTION,
+            conventions: Conventions::STANDARD,
         };
         assert!(matches!(
             bound.horizon_event(&horizon),
@@ -2305,6 +2684,7 @@ mod tests {
             tolerance_days: 1e-7,
             frame: Frame::CANONICAL,
             observer: None,
+            conventions: Conventions::STANDARD,
         };
         assert!(matches!(
             bound.crossings(&crossings),
@@ -2398,7 +2778,35 @@ mod tests {
                 air: Atmosphere::given(987.0, -4.5),
             }),
         ];
-        for horizon in named {
+        // Every part of the model and the conventions cross with it.
+        let model = HorizonModel {
+            refraction: RefractionFormula::Saemundsson,
+            disc_size: DiscSize::Fixed {
+                semidiameter_arcmin: 16.0,
+            },
+            radii: Radii::Custom {
+                sun_km: 696_000.0,
+                moon_km: 1_738.0,
+            },
+            latitude: RisingLatitude::Zero,
+            dip: Dip::Refracted,
+            altitude_deg: 0.25,
+        };
+        let stated = Conventions {
+            delta_t: DeltaTModel::Custom { seconds: 69.25 },
+            models: Models {
+                precession: teistro_core::settings::Precession::Iau2006,
+                nutation: teistro_core::settings::Nutation::Iau2000A,
+                frame_bias: teistro_core::settings::FrameBias::Iau2000,
+                sidereal_time: teistro_core::settings::SiderealTime::LongTerm,
+            },
+        };
+        for (index, horizon) in named.into_iter().enumerate() {
+            let (horizon, conventions) = if index == 0 {
+                (horizon.with_model(model), stated)
+            } else {
+                (horizon, Conventions::STANDARD)
+            };
             let request = HorizonRequest {
                 body: Body::Sun,
                 kind: HorizonEventKind::Rise,
@@ -2406,6 +2814,7 @@ mod tests {
                 from: JulianDay::literal(2_460_000.5),
                 window_days: 1.0,
                 horizon,
+                conventions,
             };
             assert_eq!(bound.horizon_event(&request).unwrap(), Some(request.from));
             let arrived = exported.provider().1.lock().unwrap().pop().unwrap();
@@ -2414,6 +2823,8 @@ mod tests {
                 (request.body, request.kind, place)
             );
             assert_eq!(arrived.horizon.disc, horizon.disc);
+            assert_eq!(arrived.horizon.model, horizon.model);
+            assert_eq!(arrived.conventions, conventions);
             // What arrives is the air the SDK's solver refracts by: a part
             // left to the standard comes resolved at the place's height.
             let expected = match horizon.refraction {
@@ -2489,6 +2900,7 @@ mod tests {
                 tolerance_days: 1e-7,
                 frame: Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
                 observer: None,
+                conventions: Conventions::STANDARD,
             };
             let via_vtable = bound.crossings(&request).unwrap();
             let direct = exported.provider().crossings(&request).unwrap();
@@ -2507,6 +2919,7 @@ mod tests {
                 Longitude::literal(85.324),
                 Altitude::literal(1400.0),
             )),
+            conventions: Conventions::STANDARD,
         };
         assert!(matches!(
             bound.crossings(&topocentric),

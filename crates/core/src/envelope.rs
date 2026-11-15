@@ -681,6 +681,22 @@ pub struct TimeStamp {
     /// (`docs/03-design/time-and-timezone.md` §3.4).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub clock: Option<crate::time::ClockReading>,
+    /// Where Delta T's uncertainty comes from (`MEASURED` inside the IERS
+    /// table, `STEPHENSON_MORRISON_HOHENKERK_2016` or
+    /// `MORRISON_STEPHENSON_2004` for a model's published band,
+    /// `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an
+    /// instant of the answer.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delta_t_band: Option<String>,
+    /// Who gave Delta T: `SDK` from its own model, `NATIVE` from the
+    /// ephemeris engine that owns the model asked.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delta_t_by: Option<String>,
+    /// The models the answer's positions were asked under, as
+    /// `precession/nutation/frame bias/sidereal time`
+    /// (`VONDRAK_2011/IAU_2000B/IAU_2006/IERS_2010` by default).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub models: Option<String>,
 }
 
 impl TimeStamp {

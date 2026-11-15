@@ -468,19 +468,263 @@ packs) with a cited model either side and an uncertainty on every value
 override under the same policy as the others, bounded by the kit inside
 the table's span.
 
+Since the boundary audit (2026-11-14, rank 2) Delta T has **one owner per
+question**, and every request says which model it is asked under
+(§12.1): the engine when it declares the override, the policy lets it
+answer and it implements the model asked; the SDK's routine otherwise,
+which then carries the UT instant to TT itself and asks the engine on
+TT. Until then a modern provider was handed UT and its own Delta T
+answered, whatever `time.delta_t` said.
+
 ## 11. Localisation
 
 None: the port emits keys and numbers; body and ayanamsha names are the
 catalogue's.
 
-## 12. Open questions
+## 12. The conventions every question states
+
+The boundary audit of 2026-11-14 (`notes/boundary-audit-2026-11-14.md`,
+ranks 2 to 7) found an engine answering under conventions nobody had
+asked for: its own Delta T, its own precession and nutation, its own
+refraction and solar radius. The port now states each one on every
+question, an engine answers under it or refuses, and it never
+substitutes its own. Vtable version 6, `TS_ABI_VERSION` 3.
+
+### 12.1 What a request carries
+
+`Conventions` (`port-ephemeris/src/conventions.rs`) rides on every
+`PositionRequest`, `HorizonRequest`, `CrossingRequest` and
+`AnglesRequest`, and is an argument of `obliquity` and `ayanamsha_deg`:
+
+- `delta_t`, the `DeltaTModel` a UT instant is carried to TT by
+  (`time.delta_t`; a custom value travels as its seconds);
+- `models`, the precession, nutation, frame bias and sidereal time
+  (`frame.precession`, `frame.nutation`, `frame.frame_bias`,
+  `time.sidereal_time`), packed at the C boundary in one `u32`.
+
+A request's conventions are the context's, so a per-call patch reaches
+them like any other setting. A cache keys a cell by them (`bits()`), so
+two models never share a cell.
+
+`delta_t(jd_ut1, model)` replaces `delta_t_seconds(jd_ut1)` and answers a
+`DeltaTEstimate`: the seconds, the one-sigma uncertainty when the model
+publishes one, and the band it comes from (`MEASURED` inside the IERS
+table, `STEPHENSON_MORRISON_HOHENKERK_2016`, `MORRISON_STEPHENSON_2004`,
+`UNSTATED`).
+
+### 12.2 Who owns Delta T
+
+The engine answers Delta T only when three things hold: it declares the
+`DELTA_T` override, the policy chooses it (`prefer-native` or
+`native-only`), and it implements the model asked, which the completion
+learns once by asking (`delta_t(jd, model)`; a refusal is remembered).
+Then a UT instant goes to the engine as UT and the step is stamped
+`delta-t:NATIVE`. Otherwise the SDK's routine owns it: the completion
+carries the UT instant to TT with the model and asks the engine on TT,
+stamped `delta-t:SDK`. A classical text is asked on UT as given, since it
+reckons in civil time.
+
+Why this rule and not "always the SDK" or "always the engine": the SDK
+cannot make an engine's UT answers agree with a model the engine does
+not implement, and it should not override an engine that implements the
+model asked, since that engine also knows its own tidal acceleration.
+The built-in implements no Delta T of its own, so the SDK's conversion
+was already its conversion and its answers do not move; a modern engine
+under the default `TABLE_THEN_MODEL` is now asked on TT, which is the
+fix for `nepali-drik` ignoring `time.delta_t` (rank 2).
+
+The answer's provenance states the value, the model, the uncertainty,
+the band and the owner at the answer's first instant
+(`provenance.time.delta_t_seconds`, `delta_t_model`,
+`uncertainty_seconds`, `delta_t_band`, `delta_t_by`) and the models
+(`provenance.time.models`).
+
+### 12.3 The horizon
+
+`day.horizon` (`HorizonModel`) states what a convention left implicit,
+and `Horizon` carries it on every rise and set:
+
+| field | values | default, and why |
+|---|---|---|
+| `refraction` | `BENNETT`, `SAEMUNDSSON`, `SINCLAIR` | `BENNETT` (Bennett 1982; Meeus, eq. 16.4): what the SDK has reckoned a named air by |
+| `disc_size` | `ACTUAL`, `MEAN_DISTANCE`, `FIXED{semidiameter_arcmin}` | `ACTUAL`: the disc at the body's distance |
+| `radii` | `IAU_2015`, `CUSTOM{sun_km, moon_km}` | `IAU_2015`: the Sun 695,700 km (IAU 2015 B3), the Moon 1,737.4 km |
+| `latitude` | `BODY`, `ZERO` | `BODY`: the body where it is; `ZERO` is the Hindu rising of the ecliptic point it stands over |
+| `dip` | `NONE`, `GEOMETRIC`, `REFRACTED` | `NONE`: the almanacs reckon from sea level |
+| `altitude_deg` | −4 to 20 | 0 |
+
+The formula applies to a named air (`Refraction::Atmosphere`); the
+almanac's standard refraction stays the stated 34′, named as such. The
+geometric dip is `−acos(R / (R + h))` on the WGS 84 radius; the refracted
+one is Sinclair's through the near-ground refraction coefficient, as the
+Swiss Ephemeris reckons it. Bennett's formula is refused below −4°, where
+its pole at −4.4° makes it meaningless. A terrain profile stands in for
+the model's altitude and dip.
+
+There is one solar radius, 695,700 km: the eclipse module's 696,000 km is
+retired (`eclipse::SUN_RADIUS_KM` is the rise-and-set constant).
+
+### 12.4 DUT1
+
+`time.dut1` is `NONE` (UT1 taken as UTC, within the 0.9 s a leap second
+keeps them; the default, so no answer moves), `IERS` (the engine's,
+asked through the `DUT1` override; refused when no engine declares it)
+or `CUSTOM{seconds}` (within ±0.9 s). `time.convert` applies it between
+UTC and UT1 and says what it applied.
+
+### 12.5 Routed through the policy
+
+Rise and set and crossings go through the completion's `choose`, as every
+other override does: under `prefer-native` a modern engine that declares
+`RISE_SET` answers the SDK's solver's question, at any altitude and under
+any horizon model, and one that declares `CROSSINGS` answers a tropical
+crossing search. An engine that refuses the convention hands the
+question back to the SDK under `prefer-native` and refuses under
+`native-only`. A sidereal crossing stays the SDK's: the request carries
+no ayanamsha basis, and an engine's sidereal frame is the mean basis
+alone. A terrain profile stays the SDK's too.
+
+### 12.6 What the kit adds
+
+| check | bound | what it holds |
+|---|---:|---|
+| `override_delta_t` | 1 s | Delta T under each model the engine answers (`TABLE_THEN_MODEL`, `ESPENAK_MEEUS_2006`, `STEPHENSON_MORRISON_HOHENKERK_2016`) against the SDK's routine for the same model at 1900, 2000 and 2050, and a custom value exactly; an engine that declares the override and answers no model fails |
+| `override_ayanamsha_value` | 1e-4° | every listed member on both bases against the SDK's catalogue under the standard models |
+| `override_rise_set_lower_limb`, `_atmosphere`, `_twilight`, `_moon` | 10 s, 10 s, 1 s, 10 s | the lower limb, Bennett through the standard air, the Sun's centre at −12°, and the Moon's upper limb, against the SDK's solver under `sdk-only` |
+| `override_crossings_station` | 1 s | Mercury's stations over 240 days |
+| `override_crossings_sidereal` | 1 s | the Sun's sidereal ingresses over a year, mean basis |
+| `override_topocentric` | 0.1″ | the engine's topocentric Sun and Moon from Kathmandu at 1,400 m against the SDK's correction of its geocentric ones |
+| `positions_reference` (`kit::check_reference`) | 1″ | a provider's positions against a reference provider's, the built-in for an engine |
+
+The rise and set checks ask the SDK's side under `sdk-only`, since under
+`prefer-native` the solver now hands the question to the engine it is
+checking.
+
+### 12.7 The Teimeris adapter, change by change
+
+Each new question maps one to one onto a call the engine already has on
+its `main` from f27f3bb (`teimeris/teistro/docs/engine-conventions-calls.md`,
+header `teimeris/core/include/teimeris/events.h` and siblings). The change
+is a separate Teimeris commit, in `teimeris/teistro/rust/src/`:
+
+`lib.rs`
+
+1. `TeimerisProvider::over`: keep the overrides; add `Overrides::DUT1`
+   once item 8 lands.
+2. `positions`: before the call, `stated(request.conventions)` (a new
+   helper, below); when `request.scale` is `UT1`, pass the Delta T model
+   through `tm_set_model(ctx, TM_MODEL_DELTA_T, model)` (or
+   `tm_set_delta_t_override(ctx, s)` for `CUSTOM`), so the engine's UT
+   conversion is the one asked. The completion only sends UT when item 4
+   said yes.
+3. `obliquity(jd, scale, conventions)`: `stated(conventions)`, then
+   `ctx.obliquity` as today.
+4. `delta_t(jd_ut1, model)` replaces `delta_t_seconds`:
+   `tm_delta_t_estimate_calc(ctx, jd_ut1, model, &e)` with
+   `STEPHENSON_MORRISON_HOHENKERK_2016` → `TM_DELTA_T_STEPHENSON_ETC_2016`
+   (5), `ESPENAK_MEEUS_2006` → `TM_DELTA_T_ESPENAK_MEEUS_2006` (4),
+   `CUSTOM(s)` → `tm_set_delta_t_override(ctx, s)` then model 0 (check
+   `e.override_applied`), and `TABLE_THEN_MODEL` refused `UNSUPPORTED`:
+   the engine's chain is its own table, not the SDK's, so the SDK owns
+   the default. Answer `DeltaTEstimate { seconds: e.seconds,
+   sigma_seconds: Some(e.sigma_seconds), band }` with `TM_DELTA_T_BAND_SMH_2016`
+   → `StephensonMorrisonHohenkerk2016`, `TM_DELTA_T_BAND_MS_2004` →
+   `MorrisonStephenson2004`.
+5. `ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)`:
+   `stated(conventions)`, then `tm_ayanamsha_bases_calc(ctx, jd, scale,
+   mode, 0, 0, &b)` and answer `b.mean_deg` or `b.true_deg` by `basis`;
+   `set_ayanamsha` leaves this path.
+6. `horizon_event`: today (f27f3bb) it builds `EventOptions` with the
+   engine's defaults for the conventions the request does not name; it
+   builds `tm_event_request` from the request's whole horizon instead,
+   `engine_horizon_options` retiring its refusals:
+   - `refraction`: `Refraction::None` → `NO_REFRACTION`;
+     `Refraction::Standard` → `TM_EVENT_REFRACTION_FIXED` with
+     `refraction_arcmin = 34`; `Refraction::Atmosphere(air)` → the model's
+     formula, `BENNETT` → `_BENNETT`, `SAEMUNDSSON` → `_SAEMUNDSSON`,
+     `SINCLAIR` → `_ENGINE`, with `atmosphere` the air resolved at the
+     place (`engine_atmosphere`, unchanged);
+   - `disc`: as today; `disc_size` `ACTUAL` / `MEAN_DISTANCE` /
+     `FIXED{a}` → `TM_EVENT_DISC_SIZE_ACTUAL` / `_MEAN_DISTANCE` /
+     `_FIXED_ANGLE` with `semidiameter_deg = a / 60`, and `ACTUAL` for the
+     centre, which the engine refuses with a fixed disc;
+   - `radii`: `IAU_2015` → `TM_EVENT_RADII_IAU_2015`; `CUSTOM` →
+     `TM_EVENT_RADII_CUSTOM` with the body's `radius_km`;
+   - `latitude`: `ZERO` → `TM_EVENT_HINDU_RISING`;
+   - `dip`: `NONE` / `GEOMETRIC` / `REFRACTED` → `TM_EVENT_DIP_NONE` /
+     `_GEOMETRIC` / `_REFRACTED`;
+   - the altitude: the convention's altitude plus the model's
+     `altitude_deg` → `horizon_height_deg`, the Sun's and the Moon's at
+     any depression as the centre unrefracted (the engine's twilight
+     rule), so the −6/−12/−18 table and the Moon's refusal go.
+   The search asks with `request.conventions.delta_t` set as in item 2.
+7. `crossings`: `stated(request.conventions)`; a sidereal frame keeps
+   `set_ayanamsha` (mean basis), which the SDK never routes here.
+8. `dut1_seconds(jd_utc)`, new: `tm_dut1_calc(ctx, jd_utc, TM_DUT1_IERS,
+   0, &d)`, answering `d.seconds`; outside the data it answers 0 and the
+   adapter refuses `OUT_OF_RANGE` when `!d.in_data`, so `time.dut1 = IERS`
+   says so rather than applying a silent zero.
+9. `stated(conventions) -> Result<(), ProviderError>`, new: for each of
+   the four models, `tm_set_model(ctx, kind, engine_model(knob))` with
+   `TM_MODEL_PRECESSION_LONG`/`_SHORT` (both from `frame.precession`),
+   `_NUTATION`, `_FRAME_BIAS`, `_SIDEREAL_TIME`, remembering the last set
+   so an unchanged request costs nothing; a model the engine lacks is
+   `UNSUPPORTED`.
+10. `over` and `Data::context`: after the models are set,
+    `tm_identity_get(ctx, &id)`; `Identity.data_version` gains
+    `id.fingerprint` (FNV-1a 64), so two runs under different models
+    compare unequal. `$TEIMERIS_PROFILE` stays a default only.
+11. `tm_set_nutation_fast_path(ctx, 1)` stays off; a dense scan
+    (crossings) may turn it on around its own calls.
+
+`dispatch.rs` and `passthrough.rs`: already regenerated at f27f3bb
+(`teistro-gen engine`), so `engine.*` names the six new entry points
+(146 of 169 functions) and needs no further change here. The engine
+pass-through (`engine.call`, ADR-0030) builds `tm_event_request` in the
+generated `read_tm_event_request`, reading every field through
+`Within::number`/`Within::narrow`, which refuse a missing key
+(`` `req.refraction_model` is required ``). The seven appended horizon
+fields (`refraction_model`, `refraction_arcmin`, `disc_size`,
+`semidiameter_deg`, `radii`, `radius_km`, `dip`) are therefore
+**exposed, not defaulted**: a caller states them as it states every
+other field, and the generated typed wrappers (`engine.d.ts`,
+`engine.py`'s `TmEventRequest`, and the Dart and Java wrappers)
+already list them. The SDK builds no engine request itself: `engine.call`
+forwards the caller's JSON to the adapter unread, so the SDK cannot and
+should not fill an engine's defaults (it is engine-agnostic, §12.5).
+Filling them in the pass-through was rejected: the pass-through's one
+rule is that a key left out is a mistake, and an old caller's request
+with `struct_size` the full size would be answered as all-zero anyway,
+which the engine documents as the default, so a silent fill would hide
+the mistake without changing an answer. The change a caller needs is
+named instead: a request written before f27f3bb adds the seven keys,
+each `0` for the engine's default (its old behaviour, bit for bit), or
+starts from `engine.call("tm_event_request_init_sized")`, which the
+pass-through already offers and which answers the engine's default
+request, the seven fields included, for the caller to edit. The
+adapter's README gains that example; nothing else changes.
+
+`ranges.rs`: nothing.
+
+The solar eclipse's seen maximum (SR-106) reads
+`tm_solar_eclipse_search_local`'s `seen_maximum`, `seen_magnitude` and
+`seen_limited_by` once the port grows a local-eclipse override; until
+then the SDK's own search answers.
+
+The adapter's gate (`gate.sh`) relocks against the SDK revision that
+carries vtable 6 and runs the kit, whose new rows (§12.6) are the
+acceptance test.
+
+## 13. Open questions
 
 - Whether the SDK's context holds one provider or a pool for parallel
   requests, and how the Teimeris adapter maps onto that (Phase 1).
 - The `reference` tier's JPL kernel adapter and its completion chain
   (ADR-0021, Phase 3).
 - The refraction convention of the rise and set override against the
-  SDK's (cruxes C34; `astro-events-and-crossings.md`).
+  SDK's (cruxes C34; `astro-events-and-crossings.md`). Settled
+  2026-11-14 by naming it: the request carries the formula, the air and
+  the rest of the horizon (§12.3).
 - The Teimeris adapter as the Teimeris package's own crate. Done
   2026-11-12: it is private to Teispace, in the engine's own repository
   (`06-cicd/adapter-gate.md`).

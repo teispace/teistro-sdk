@@ -20,9 +20,9 @@ use std::sync::Mutex;
 
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Body, Capabilities, Cell, CellStatus, EphemerisProvider, Horizon,
-    HorizonEventKind, HorizonRequest, Obliquity, PositionColumns, PositionRequest, ProviderError,
-    TimeScale,
+    Angles, AnglesRequest, Body, Capabilities, Cell, CellStatus, Conventions, DeltaTEstimate,
+    DeltaTModel, EphemerisProvider, Horizon, HorizonEventKind, HorizonRequest, Obliquity,
+    PositionColumns, PositionRequest, ProviderError, TimeScale,
 };
 
 use super::moon::{Arc, almanac_moon, true_sun};
@@ -180,6 +180,9 @@ impl VakyaSky {
                 from,
                 window_days: 1.0,
                 horizon: self.horizon,
+                // The day count is the sky's, kept by noon whatever a
+                // request names: its sunrise under the standard models.
+                conventions: Conventions::STANDARD,
             })?
             .ok_or_else(|| ProviderError::Refused {
                 detail: format!("no sunrise at {} to count a vakya day from", self.place),
@@ -258,7 +261,8 @@ impl EphemerisProvider for VakyaSky {
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
         let mut columns = self.parts.positions(request)?;
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            let ut1 = SiddhantaProvider::ut1_of(*jd, request.scale)?.get();
+            let ut1 =
+                SiddhantaProvider::ut1_of(*jd, request.scale, request.conventions.delta_t)?.get();
             for (body_index, body) in request.bodies.iter().enumerate() {
                 if !matches!(body, Body::Sun | Body::Moon) {
                     continue;
@@ -277,12 +281,17 @@ impl EphemerisProvider for VakyaSky {
         Ok(columns)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.parts.obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        self.parts.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.parts.delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        self.parts.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -291,8 +300,10 @@ impl EphemerisProvider for VakyaSky {
         scale: TimeScale,
         ayanamsha: teistro_core::catalogue::Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        self.parts.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.parts
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
@@ -428,13 +439,19 @@ mod tests {
         let parts = &sky.parts;
         let same = |ours: String, text: String| assert_eq!(ours, text);
         same(
-            format!("{:?}", sky.obliquity(NOON, TimeScale::Ut1)),
-            format!("{:?}", parts.obliquity(NOON, TimeScale::Ut1)),
+            format!(
+                "{:?}",
+                sky.obliquity(NOON, TimeScale::Ut1, Conventions::STANDARD)
+            ),
+            format!(
+                "{:?}",
+                parts.obliquity(NOON, TimeScale::Ut1, Conventions::STANDARD)
+            ),
         );
         // Delta T is the text sky's answer, a refusal included.
         same(
-            format!("{:?}", sky.delta_t_seconds(NOON)),
-            format!("{:?}", parts.delta_t_seconds(NOON)),
+            format!("{:?}", sky.delta_t(NOON, DeltaTModel::default())),
+            format!("{:?}", parts.delta_t(NOON, DeltaTModel::default())),
         );
         same(
             format!(
@@ -444,6 +461,7 @@ mod tests {
                     TimeScale::Ut1,
                     Ayanamsha::Suryasiddhanta,
                     teistro_core::settings::AyanamshaBasis::True,
+                    Conventions::STANDARD,
                 )
             ),
             format!(
@@ -453,6 +471,7 @@ mod tests {
                     TimeScale::Ut1,
                     Ayanamsha::Suryasiddhanta,
                     teistro_core::settings::AyanamshaBasis::True,
+                    Conventions::STANDARD,
                 )
             ),
         );
@@ -460,6 +479,7 @@ mod tests {
             jd: NOON,
             scale: TimeScale::Ut1,
             place: CHENNAI,
+            conventions: Conventions::STANDARD,
         };
         same(
             format!("{:?}", sky.angles(&angles)),
@@ -472,6 +492,7 @@ mod tests {
             from: JulianDay::<Ut1>::try_new(NOON - 0.5).unwrap(),
             window_days: 1.0,
             horizon: Horizon::UPPER_LIMB_REFRACTION,
+            conventions: Conventions::STANDARD,
         };
         same(
             format!("{:?}", sky.horizon_event(&rise)),

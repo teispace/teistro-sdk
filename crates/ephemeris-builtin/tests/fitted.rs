@@ -31,7 +31,7 @@ fn frame() -> Frame {
     }
 }
 
-fn ask(provider: &Builtin, jds: &[f64], bodies: &[Body]) -> PositionColumns {
+fn ask(provider: Builtin, jds: &[f64], bodies: &[Body]) -> PositionColumns {
     provider
         .positions(&PositionRequest::new(jds, TimeScale::Tt, bodies, frame()))
         .unwrap_or_else(|error| panic!("the provider refused: {error}"))
@@ -57,8 +57,8 @@ fn the_fit_is_the_theory_to_the_resolution_of_the_instant() {
     let bodies = [Body::Sun, Body::Moon, Body::Mars, Body::TrueNode];
     let jds = instants();
     let (fitted, series) = (
-        ask(&Builtin::new(), &jds, &bodies),
-        ask(&Builtin::new().with_series(), &jds, &bodies),
+        ask(Builtin::new(), &jds, &bodies),
+        ask(Builtin::new().with_series(), &jds, &bodies),
     );
     // (body, position in arcseconds, distance in parts, rate in degrees
     // a day). A planet's rate is a difference that passes through zero at
@@ -110,11 +110,11 @@ fn an_instant_answers_the_same_bits_however_it_is_asked() {
     let provider = Builtin::new();
     let bodies = [Body::Sun, Body::Moon];
     let jd = 2_461_000.271_828;
-    let alone = std::thread::spawn(move || ask(&Builtin::new(), &[jd], &[Body::Sun, Body::Moon]))
+    let alone = std::thread::spawn(move || ask(Builtin::new(), &[jd], &[Body::Sun, Body::Moon]))
         .join()
         .unwrap();
-    let _ = ask(&provider, &instants(), &bodies);
-    let batched = ask(&provider, &[jd - 0.5, jd, jd + 0.5], &bodies);
+    let _ = ask(provider, &instants(), &bodies);
+    let batched = ask(provider, &[jd - 0.5, jd, jd + 0.5], &bodies);
     for (b, body) in bodies.iter().enumerate() {
         assert_eq!(
             format!("{:?}", alone.at(0, b).unwrap()),

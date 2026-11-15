@@ -37,7 +37,9 @@ use teistro_ffi::time::{
 /// The structs the provider port fills or reads, not a caller: their
 /// ranges describe what a provider answers, and the conformance kit holds
 /// a provider to them (`provider conformance kit`).
-const PROVIDER_SIDE: [&str; 5] = [
+const PROVIDER_SIDE: [&str; 7] = [
+    "ConventionsC",
+    "DeltaTEstimateC",
     "ObserverC",
     "ObliquityC",
     "HorizonRequestC",

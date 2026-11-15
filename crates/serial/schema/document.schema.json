@@ -7893,6 +7893,20 @@
           ],
           "description": "The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4)."
         },
+        "delta_t_band": {
+          "description": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when `TimeStamp::delta_t_seconds` was read at an instant of the answer.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delta_t_by": {
+          "description": "Who gave Delta T: `SDK` from its own model, `NATIVE` from the ephemeris engine that owns the model asked.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "delta_t_model": {
           "description": "The Delta T model's key.",
           "type": "string"
@@ -7905,6 +7919,13 @@
         "leap_table": {
           "description": "The leap-second table version.",
           "type": "string"
+        },
+        "models": {
+          "description": "The models the answer's positions were asked under, as `precession/nutation/frame bias/sidereal time` (`VONDRAK_2011/IAU_2000B/IAU_2006/IERS_2010` by default).",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "time_basis_applied": {
           "description": "What was applied when tzdb had no rule (`LMT before 1880` and the like).",

@@ -239,7 +239,13 @@ impl ChartZodiac {
         let value = |days: f64| {
             completion
                 .provider()
-                .ayanamsha_deg(at.get() + days, TimeScale::Tt, id, frame.ayanamsha_basis)
+                .ayanamsha_deg(
+                    at.get() + days,
+                    TimeScale::Tt,
+                    id,
+                    frame.ayanamsha_basis,
+                    completion.conventions(),
+                )
                 .map_err(Error::from)
         };
         let rate = (value(RATE_STEP_DAYS)? - value(-RATE_STEP_DAYS)?) / (2.0 * RATE_STEP_DAYS);

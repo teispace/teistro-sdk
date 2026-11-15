@@ -29,6 +29,12 @@ import com.teispace.teistro.request.RequestJson;
  */
 public final class Context implements AutoCloseable {
     private static final Cleaner CLEANER = Cleaner.create();
+    /**
+     * The standard conventions, zeroed as they cross. A consumer's positions
+     * request carries them only to fill the port's struct: the context states
+     * its own settings' conventions over them.
+     */
+    static final Conventions STANDARD_CONVENTIONS = new Conventions(0, 0L, 0.0);
     private static final java.util.concurrent.atomic.AtomicLong ORDINALS = new java.util.concurrent.atomic.AtomicLong();
 
     private final Native lib;
@@ -694,7 +700,7 @@ public final class Context implements AutoCloseable {
         }
         java.util.Objects.requireNonNull(frame, "frame");
         long bits = Calls.framePack(lib, frame);
-        return positions(new PositionRequest(TimeScale.UT1, bits, true, null, instants, bodies));
+        return positions(new PositionRequest(TimeScale.UT1, bits, true, null, instants, bodies, STANDARD_CONVENTIONS));
     }
 
     /**

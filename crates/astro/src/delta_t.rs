@@ -9,6 +9,8 @@ use core::fmt;
 use teistro_core::error::{Detail, Error};
 use teistro_core::quantity::{JulianDay, Ut1};
 
+use teistro_port_ephemeris::{DeltaTBand, DeltaTEstimate};
+
 use crate::generated::{DELTA_T_ROWS, DELTA_T_SOURCE, HISTORICAL_ROWS, HISTORICAL_SOURCE};
 
 /// J2000.0 as a Julian day.
@@ -24,81 +26,7 @@ const LINEAR_TAIL_YEARS: f64 = 10.0;
 /// in years.
 const SEAM_TAPER_YEARS: f64 = 10.0;
 
-/// Which Delta T.
-///
-/// ```
-/// use teistro_astro::delta_t::DeltaTModel;
-///
-/// // Written with its kind.
-/// let custom: DeltaTModel = serde_json::from_str(r#"{"kind": "CUSTOM", "seconds": 69.2}"#)?;
-/// assert_eq!(custom, DeltaTModel::Custom { seconds: 69.2 });
-/// assert_eq!(DeltaTModel::default(), DeltaTModel::TableThenModel);
-/// # Ok::<(), serde_json::Error>(())
-/// ```
-#[derive(Clone, Copy, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum DeltaTModel {
-    /// The IERS table where measured (1956 to the present), the model
-    /// either side, continuous at the seams: the default.
-    #[default]
-    TableThenModel,
-    /// The polynomial fits of Espenak and Meeus (2006) alone, for
-    /// reproducing older software.
-    EspenakMeeus2006,
-    /// Stephenson, Morrison and Hohenkerk (2016): registered, unsourced
-    /// until the paper's coefficients are cited (cruxes register C32).
-    StephensonMorrisonHohenkerk2016,
-    /// A value the consumer supplies.
-    Custom {
-        /// Delta T in seconds.
-        seconds: f64,
-    },
-}
-
-impl DeltaTModel {
-    /// The model a settings knob names; `None` for the provider's own,
-    /// which the context supplies through the ephemeris port.
-    ///
-    /// ```
-    /// use teistro_astro::delta_t::DeltaTModel;
-    /// use teistro_core::settings::DeltaT;
-    ///
-    /// assert_eq!(DeltaTModel::from_knob(DeltaT::EspenakMeeus2006), Some(DeltaTModel::EspenakMeeus2006));
-    /// ```
-    #[must_use]
-    pub const fn from_knob(knob: teistro_core::settings::DeltaT) -> Option<DeltaTModel> {
-        use teistro_core::settings::DeltaT as Knob;
-        match knob {
-            Knob::TableThenModel => Some(DeltaTModel::TableThenModel),
-            Knob::EspenakMeeus2006 => Some(DeltaTModel::EspenakMeeus2006),
-            Knob::StephensonMorrisonHohenkerk2016 => {
-                Some(DeltaTModel::StephensonMorrisonHohenkerk2016)
-            }
-            // The provider's own, and any knob value core adds before this
-            // crate learns it: the context supplies those.
-            _ => None,
-        }
-    }
-
-    /// The key stamped in provenance.
-    ///
-    /// ```
-    /// use teistro_astro::delta_t::DeltaTModel;
-    ///
-    /// assert_eq!(DeltaTModel::TableThenModel.key(), "TABLE_THEN_MODEL");
-    /// assert_eq!(DeltaTModel::Custom { seconds: 1.0 }.key(), "CUSTOM");
-    /// ```
-    #[must_use]
-    pub const fn key(self) -> &'static str {
-        match self {
-            DeltaTModel::TableThenModel => "TABLE_THEN_MODEL",
-            DeltaTModel::EspenakMeeus2006 => "ESPENAK_MEEUS_2006",
-            DeltaTModel::StephensonMorrisonHohenkerk2016 => "STEPHENSON_MORRISON_HOHENKERK_2016",
-            DeltaTModel::Custom { .. } => "CUSTOM",
-        }
-    }
-}
+pub use teistro_port_ephemeris::DeltaTModel;
 
 /// Where a value came from.
 ///
@@ -126,6 +54,9 @@ pub enum DeltaTSource {
     LeapSeconds,
     /// Supplied by the consumer.
     Custom,
+    /// The ephemeris engine's, under the model asked, answered through the
+    /// port.
+    Provider,
 }
 
 /// Delta T at an instant, with what produced it.
@@ -169,6 +100,70 @@ impl DeltaT {
     #[must_use]
     pub fn days(&self) -> f64 {
         self.seconds / 86_400.0
+    }
+
+    /// Where the uncertainty comes from: the IERS's measurement inside its
+    /// table, Morrison and Stephenson's (2004) standard errors for the
+    /// SDK's models outside it, and none for a custom value.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::{DeltaTModel, delta_t};
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_port_ephemeris::DeltaTBand;
+    ///
+    /// let measured = delta_t(JulianDay::<Ut1>::literal(2_451_544.5), DeltaTModel::TableThenModel)?;
+    /// assert_eq!(measured.band(), DeltaTBand::Measured);
+    /// let custom = delta_t(JulianDay::<Ut1>::literal(2_451_544.5), DeltaTModel::Custom { seconds: 64.0 })?;
+    /// assert_eq!(custom.band(), DeltaTBand::Unstated);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn band(&self) -> DeltaTBand {
+        match self.source {
+            DeltaTSource::Table | DeltaTSource::LeapSeconds => DeltaTBand::Measured,
+            DeltaTSource::Model => DeltaTBand::MorrisonStephenson2004,
+            DeltaTSource::Custom | DeltaTSource::Provider => DeltaTBand::Unstated,
+        }
+    }
+
+    /// An engine's answer under a model, as the SDK carries it.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::{DeltaT, DeltaTSource};
+    /// use teistro_port_ephemeris::{DeltaTBand, DeltaTEstimate, DeltaTModel};
+    ///
+    /// let answered = DeltaTEstimate { seconds: 69.1, sigma_seconds: Some(0.9), band: DeltaTBand::StephensonMorrisonHohenkerk2016 };
+    /// let carried = DeltaT::from_provider(DeltaTModel::StephensonMorrisonHohenkerk2016, answered);
+    /// assert_eq!((carried.source, carried.uncertainty_seconds), (DeltaTSource::Provider, Some(0.9)));
+    /// ```
+    #[must_use]
+    pub const fn from_provider(model: DeltaTModel, estimate: DeltaTEstimate) -> DeltaT {
+        DeltaT {
+            seconds: estimate.seconds,
+            model,
+            source: DeltaTSource::Provider,
+            uncertainty_seconds: estimate.sigma_seconds,
+        }
+    }
+
+    /// The value as the port carries it.
+    ///
+    /// ```
+    /// use teistro_astro::{DeltaTModel, delta_t};
+    /// use teistro_core::quantity::JulianDay;
+    ///
+    /// let applied = delta_t(JulianDay::literal(2_451_545.0), DeltaTModel::TableThenModel)?;
+    /// let carried = applied.estimate();
+    /// assert_eq!((carried.seconds, carried.band), (applied.seconds, applied.band()));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn estimate(&self) -> DeltaTEstimate {
+        DeltaTEstimate {
+            seconds: self.seconds,
+            sigma_seconds: self.uncertainty_seconds,
+            band: self.band(),
+        }
     }
 }
 

@@ -324,6 +324,7 @@ fn every_named_horizon_and_frame_key_reads_back() {
         disc: DiscPoint::Centre,
         refraction: Refraction::None,
         altitude_deg: -6.0,
+        model: teistro_core::settings::HorizonModel::STANDARD,
     };
     assert!(matches!(
         twilight.convention(),

@@ -30,11 +30,37 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::Place;
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, DistanceUnit,
-    EphemerisKind, EphemerisProvider, Equinox, Frame, Identity, Obliquity, Overrides,
-    PositionColumns, PositionRequest, ProviderError, Source, SpeedModel, TimeScale, Zodiac, sefile,
-    validate,
+    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Conventions, Coordinates,
+    DeltaTBand, DeltaTEstimate, DeltaTModel, DistanceUnit, EphemerisKind, EphemerisProvider,
+    Equinox, Frame, Identity, Models, Obliquity, Overrides, PositionColumns, PositionRequest,
+    ProviderError, Source, SpeedModel, TimeScale, Zodiac, sefile, validate,
 };
+
+/// The Delta T model the library reckons a UT instant by: its default
+/// since 2.06, `SEMOD_DELTAT_STEPHENSON_ETC_2016` (Stephenson, Morrison and
+/// Hohenkerk 2016, with the IERS table where it reaches).
+const LIBRARY_DELTA_T: DeltaTModel = DeltaTModel::StephensonMorrisonHohenkerk2016;
+
+/// Refuses conventions the library does not compute under: its own models
+/// are its defaults (Vondrák 2011, IAU 2000B, IAU 2006 bias, IERS 2010
+/// sidereal time), the SDK's standard ones, and a UT instant is carried
+/// by its own Delta T.
+fn stated(conventions: Conventions, scale: TimeScale) -> Result<(), ProviderError> {
+    if conventions.models != Models::STANDARD {
+        return Err(ProviderError::unsupported(format!(
+            "the models {}; the library computes under its defaults",
+            conventions.models.key()
+        )));
+    }
+    if scale == TimeScale::Ut1 && conventions.delta_t != LIBRARY_DELTA_T {
+        return Err(ProviderError::unsupported(format!(
+            "a UT instant under Delta T {}; the library's is {}",
+            conventions.delta_t.key(),
+            LIBRARY_DELTA_T.key()
+        )));
+    }
+    Ok(())
+}
 
 /// The environment variable naming the data directory.
 pub const DATA_DIR_ENV: &str = "SWEPH_DATA_DIR";
@@ -388,6 +414,7 @@ impl EphemerisProvider for SwephProvider {
 
     fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
         validate(&self.capabilities, request)?;
+        stated(request.conventions, request.scale)?;
         let numbers = library_bodies(request.bodies)?;
         let flags = map_flags(request.frame, request.speeds);
         let mut columns =
@@ -415,7 +442,13 @@ impl EphemerisProvider for SwephProvider {
         Ok(columns)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        stated(conventions, scale)?;
         let answer = Session::take().calc(jd, scale, ffi::ECL_NUT, ffi::flag::SWIEPH);
         if answer.retflag < 0 {
             return Err(failed(&answer));
@@ -429,8 +462,24 @@ impl EphemerisProvider for SwephProvider {
         })
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        Ok(Session::take().delta_t_seconds(jd_ut1))
+    fn delta_t(
+        &self,
+        jd_ut1: f64,
+        model: DeltaTModel,
+    ) -> Result<DeltaTEstimate, ProviderError> {
+        if model != LIBRARY_DELTA_T {
+            return Err(ProviderError::unsupported(format!(
+                "Delta T {}; the library's is {}",
+                model.key(),
+                LIBRARY_DELTA_T.key()
+            )));
+        }
+        Ok(DeltaTEstimate {
+            seconds: Session::take().delta_t_seconds(jd_ut1),
+            // The library states no uncertainty for its value.
+            sigma_seconds: None,
+            band: DeltaTBand::Unstated,
+        })
     }
 
     fn ayanamsha_deg(
@@ -439,7 +488,9 @@ impl EphemerisProvider for SwephProvider {
         scale: TimeScale,
         ayanamsha: Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
+        stated(conventions, scale)?;
         if !self.capabilities.has_ayanamsha(ayanamsha) {
             return Err(ProviderError::unsupported(format!(
                 "the {} ayanamsha",
@@ -487,6 +538,7 @@ mod tests {
             frame,
             observer,
             speeds: true,
+            conventions: Conventions::STANDARD.with_delta_t(LIBRARY_DELTA_T),
         }
     }
 

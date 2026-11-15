@@ -226,6 +226,7 @@ fn main() {
         jd_count: jds.len(),
         bodies: bodies.as_ptr(),
         body_count: bodies.len(),
+        conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
     };
     let mut blob = TsBlob::empty();
     // SAFETY: a live handle, a valid request and a valid slot.

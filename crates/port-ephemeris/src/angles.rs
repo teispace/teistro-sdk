@@ -14,15 +14,17 @@ use serde::{Deserialize, Serialize};
 use teistro_core::quantity::Place;
 
 use crate::body::TimeScale;
+use crate::conventions::Conventions;
 
-/// What the angles are asked for: an instant and a place.
+/// What the angles are asked for: an instant, a place and the conventions
+/// (the Delta T model for a UT1 instant, the sidereal time and nutation).
 ///
 /// ```
 /// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
-/// use teistro_port_ephemeris::{AnglesRequest, TimeScale};
+/// use teistro_port_ephemeris::{AnglesRequest, Conventions, TimeScale};
 ///
 /// let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
-/// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu };
+/// let request = AnglesRequest { jd: 2_460_310.5, scale: TimeScale::Ut1, place: kathmandu, conventions: Conventions::STANDARD };
 /// assert_eq!(serde_json::to_value(request).unwrap()["scale"], "UT1");
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -34,6 +36,9 @@ pub struct AnglesRequest {
     pub scale: TimeScale,
     /// The place.
     pub place: Place,
+    /// The conventions the angles are reckoned under.
+    #[serde(default)]
+    pub conventions: Conventions,
 }
 
 /// A provider's angles, **tropical** degrees of date, with the obliquity

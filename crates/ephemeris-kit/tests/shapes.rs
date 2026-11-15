@@ -166,7 +166,7 @@ fn rise_and_set_declared_without_the_sun_are_skipped() {
     for name in ["override_rise_set_geometric", "override_rise_set_refracted"] {
         let (said, passed) = detail(&report, name);
         assert!(passed, "{name}");
-        assert_eq!(said, "skipped: the Sun is not offered", "{name}");
+        assert_eq!(said, "skipped: SUN is not offered", "{name}");
     }
 }
 
@@ -259,7 +259,7 @@ fn a_coverage_past_the_delta_t_table_skips_its_check() {
     );
     let (said, passed) = detail(&report, "override_delta_t");
     assert!(passed);
-    assert_eq!(said, "skipped: the coverage misses the table's span");
+    assert_eq!(said, "skipped: the coverage misses 1900, 2000 and 2050");
 }
 
 #[test]

@@ -1,0 +1,3 @@
+# `doc_markdown` (pedantic) takes a capital inside a word for code; an
+# author's surname is not. ".." keeps clippy's own list.
+doc-valid-idents = ["..", "McCarthy"]

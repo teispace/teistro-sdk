@@ -27,6 +27,7 @@ use std::cell::Cell;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use teistro_port_ephemeris::host::{self, Answer, Bound, Declared, HostCallback, Unanswered};
+use teistro_port_ephemeris::vtable::ConventionsC;
 use teistro_port_ephemeris::{PositionRequest, ProviderError, ProviderVtable};
 
 use crate::generated::{Observer, PositionColumns as JsColumns, PositionRequest as JsRequest};
@@ -133,6 +134,11 @@ fn asked(request: &PositionRequest<'_>) -> JsRequest {
             altitude_m: place.altitude.get(),
         }),
         jds: request.jds.to_vec(),
+        // SAFETY: `ConventionsC` is plain data with no pointers, so the
+        // generated reader reads nothing beyond the value it is lent.
+        conventions: unsafe {
+            crate::generated::Conventions::write(&ConventionsC::of(request.conventions))
+        },
         bodies: request
             .bodies
             .iter()

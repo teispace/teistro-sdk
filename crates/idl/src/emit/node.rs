@@ -848,7 +848,9 @@ fn render_held(
             FieldRole::Text => String::from("Option<std::ffi::CString>"),
             FieldRole::Optional { .. } => match &f.ty {
                 TypeRef::Struct { name } => format!("Option<Held{}>", binding_type_name(name)),
-                _ => continue,
+                // A scalar stated or not (`present_if`): held as stated, so
+                // its presence flag and value are read from one place.
+                _ => format!("Option<{}>", c_field_type(api, f)),
             },
             FieldRole::Nested { name } => format!("Held{}", binding_type_name(name)),
             FieldRole::FixedBytes { len } => format!("[u8; {len}]"),
@@ -887,7 +889,7 @@ fn render_held(
                     "self.{field}.as_ref().map_or_else(\n                // SAFETY: the struct is plain data, so all-zero is a value.\n                || unsafe {{ core::mem::zeroed() }},\n                Held{}::as_c,\n            )",
                     binding_type_name(name)
                 ),
-                _ => format!("self.{field}"),
+                _ => format!("self.{field}.unwrap_or_default()"),
             },
             FieldRole::Nested { .. } => format!("self.{field}.as_c()"),
             _ => format!("self.{field}"),
@@ -962,15 +964,17 @@ fn render_read_write(
                     "{value}\n                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))\n                .transpose()?"
                 )
             }
-            FieldRole::Optional { .. } => match &f.ty {
-                TypeRef::Struct { .. } => {
+            FieldRole::Optional { .. } => {
+                if let TypeRef::Struct { .. } = &f.ty {
                     format!(
                         "self.{field}.as_ref().map({name_of_read}).transpose()?",
                         name_of_read = "|v| v.read()"
                     )
+                } else {
+                    let scalar = f.ty.as_scalar().unwrap_or(Scalar::F64);
+                    format!("self.{field}.map(|v| v as {})", scalar.rust_name())
                 }
-                _ => format!("self.{field}.unwrap_or_default()"),
-            },
+            }
             FieldRole::Nested { .. } => format!("self.{field}.read()?"),
             FieldRole::Column => format!("self.{field}.iter().map(|v| *v as _).collect()"),
             FieldRole::FixedBytes { len } => format!(

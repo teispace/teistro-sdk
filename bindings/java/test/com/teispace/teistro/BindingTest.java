@@ -812,7 +812,7 @@ public final class BindingTest {
             try (Context sky = context(teistro)) {
                 PositionRequest request = new PositionRequest(TimeScale.UT1,
                         teistro.packFrame(teistro.canonicalFrame()), true, null,
-                        new double[] {2_451_545.0}, List.of(Body.SUN));
+                        new double[] {2_451_545.0}, List.of(Body.SUN), Context.STANDARD_CONVENTIONS);
                 byte[] raw = sky.locked((lib, handle) -> Calls.positions(lib, handle, request));
                 Positions.decode(raw);
                 java.util.function.Function<byte[], String> refused = bytes -> {

@@ -107,6 +107,7 @@ fn positions_and_charts_give_back_their_blobs() {
             jd_count: jds.len(),
             bodies: bodies.as_ptr(),
             body_count: bodies.len(),
+            conventions: teistro_port_ephemeris::vtable::ConventionsC::default(),
         },
         |r, s| r.struct_size = s,
     );

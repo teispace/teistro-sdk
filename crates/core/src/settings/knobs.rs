@@ -516,6 +516,98 @@ knob!(
         Provider = "PROVIDER" }
 );
 knob!(
+    /// Which precession carries a position or an ayanamsha from one epoch
+    /// to another: the equinox step of the completion and every
+    /// epoch-defined ayanamsha (`03-design/ephemeris-port-and-adapters.md`
+    /// §12). Asked of an engine with every position, so it answers under
+    /// it or refuses.
+    Precession { /// Vondrák, Capitaine and Wallace (2011), *A&A* 534, A22:
+        /// valid over two hundred millennia either side of J2000.0, which
+        /// the ayanamsha catalogue's first-millennium epochs need; the
+        /// default.
+        Vondrak2011 = "VONDRAK_2011", /// IAU 2006 (Capitaine, Wallace and
+        /// Chapront 2003, *A&A* 412, 567): the short-term model.
+        Iau2006 = "IAU_2006", /// IAU 1976 (Lieske et al. 1977, *A&A* 58, 1):
+        /// for ayanamsha constants fitted with it.
+        Iau1976 = "IAU_1976", /// Newcomb's, in Kinoshita's (1975) form.
+        Newcomb = "NEWCOMB" }
+);
+knob!(
+    /// Which nutation series an apparent position, the true obliquity and
+    /// the true ayanamsha take.
+    Nutation { /// IAU 2000B (McCarthy and Luzum 2003, *Celest. Mech.* 85, 37):
+        /// within a milliarcsecond of 2000A over 1995 to 2050; the default,
+        /// and the series the SDK's own completion computes.
+        Iau2000B = "IAU_2000B", /// IAU 2000A (Mathews, Herring and Buffett
+        /// 2002, *J. Geophys. Res.* 107): the full series, for
+        /// milliarcsecond work; an engine's.
+        Iau2000A = "IAU_2000A", /// IAU 1980 (Wahr 1981; Seidelmann 1982):
+        /// for reproducing ephemerides computed before 2003; an engine's.
+        Iau1980 = "IAU_1980" }
+);
+knob!(
+    /// The frame bias between the ICRS and the mean equator and equinox of
+    /// J2000.0 an engine applies before precessing.
+    FrameBias { /// IAU 2006 (IERS Conventions 2010, §5.4.4): the default.
+        Iau2006 = "IAU_2006", /// IAU 2000 (IERS Conventions 2003, §5.4).
+        Iau2000 = "IAU_2000", /// None: the dynamical J2000 frame taken as
+        /// the ICRS, as ephemerides before 2000 did.
+        None = "NONE" }
+);
+knob!(
+    /// Which sidereal time turns the Earth: the meridian a house, the lagna
+    /// and a rise or set are read against.
+    SiderealTime { /// The IAU 2006 mean sidereal time plus the equation of
+        /// the equinoxes, the equinox-based expression of IERS Conventions
+        /// 2010 (§5.5.7, eq. 5.32): the default, and the SDK's own.
+        Iers2010 = "IERS_2010", /// The IAU 2006 sidereal time of Capitaine,
+        /// Guinot and McCarthy (2000), *A&A* 355, 398; an engine's.
+        Iau2006 = "IAU_2006", /// The IAU 1982 sidereal time (Aoki et al.
+        /// 1982, *A&A* 105, 359), with the IAU 1976 precession; an engine's.
+        Iau1976 = "IAU_1976", /// IERS 2010 near the present and a long-term
+        /// expression consistent with Vondrák (2011) beyond it, the Swiss
+        /// Ephemeris's default; an engine's.
+        LongTerm = "LONG_TERM" }
+);
+knob!(
+    /// Which formula refracts a horizon given an air
+    /// (`03-design/horizon-atmosphere.md`): the almanac's standard
+    /// refraction is a stated 34′ and takes none.
+    RefractionFormula { /// Bennett (1982), *J. Navigation* 35, 255; Meeus,
+        /// *Astronomical Algorithms*, eq. 16.4: `cot(h + 7.31 / (h + 4.4))`
+        /// arcminutes at the apparent altitude, scaled by
+        /// `(P / 1010) · (283 / (273 + T))`; the default.
+        Bennett = "BENNETT", /// Saemundsson (1986), *Sky and Telescope*
+        /// 72, 70; Meeus eq. 16.4: `1.02 cot(h + 10.3 / (h + 5.11))` at the
+        /// true altitude, scaled alike.
+        Saemundsson = "SAEMUNDSSON", /// Sinclair (1982), through the
+        /// layered atmosphere and its lapse rate, as the Swiss Ephemeris's
+        /// `swe_refrac_extended` reckons it; an engine's.
+        Sinclair = "SINCLAIR" }
+);
+knob!(
+    /// Which latitude a rising body has: its own, or none, the "Hindu
+    /// rising" that times the rising of the point of the ecliptic the body
+    /// occupies.
+    RisingLatitude { /// The body's own latitude: the default.
+        Body = "BODY", /// The body's ecliptic latitude set to zero
+        /// (the Swiss Ephemeris's `SE_BIT_GEOCTR_NO_ECL_LAT`).
+        Zero = "ZERO" }
+);
+knob!(
+    /// The dip of the horizon an observer above the ground sees: the
+    /// visible horizon lies below the ideal one.
+    Dip { /// No dip: the ideal horizon at every height; the default, and
+        /// what every almanac reckons by.
+        None = "NONE", /// The geometric dip, `−acos(R / (R + h))` with the WGS 84
+        /// equatorial radius.
+        Geometric = "GEOMETRIC", /// The dip seen through the air near the
+        /// ground: the geometric dip scaled by Thom's (1973) refraction
+        /// coefficient at the standard lapse rate, as the Swiss Ephemeris
+        /// reckons it.
+        Refracted = "REFRACTED" }
+);
+knob!(
     /// How a dasha's first period is balanced.
     Balance { /// By the elapsed fraction of the seed span.
         Spatial = "SPATIAL", /// By elapsed time.

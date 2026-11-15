@@ -3,7 +3,6 @@
 //! the sahams, the strengths and the annual dashas.
 
 use teistro_astro::completion::Completion;
-use teistro_astro::precession::PrecessionModel;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
@@ -210,15 +209,11 @@ impl ChartArea<'_> {
         let natal = Self::natal_of(foundation)?;
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
-        let completion = Completion::new(
-            provider,
-            settings.provider.overrides,
-            self.context.delta_t(),
-        );
+        let completion = self.context.completion_over(provider);
         let searched = foundation.zodiac.search(
             &completion,
             settings.frame.ayanamsha_basis,
-            (PrecessionModel::default(), self.context.delta_t()),
+            (self.context.precession()?, self.context.delta_t()),
         )?;
         let (frame, zodiac) = (searched.frame, searched.zodiac);
         let mut longitudes = completion.longitudes(frame);

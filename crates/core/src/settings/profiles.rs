@@ -14,22 +14,22 @@ use super::knobs::{
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
     DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
-    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
-    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
-    MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaName,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
-    PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
-    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
-    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
+    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus,
+    MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
+    PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart, ReleasingSharedSign,
+    RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana,
+    SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
+    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
-    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
-    LagnaTable, Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch,
-    Siddhanta, State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
+    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
+    Houses, Jaimini, Kp, LagnaTable, Output, Panchanga, Precision, Provider, Resolved, SCHEMA,
+    Settings, SettingsPatch, Siddhanta, State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -286,6 +286,12 @@ pub fn root() -> Settings {
             positions: Positions::Apparent,
             siddhanta: Siddhanta::Drik,
             nakshatra_scheme: NakshatraScheme::TwentySeven,
+            // Vondrák et al. (2011): valid at every catalogued epoch (C1752).
+            precession: Precession::Vondrak2011,
+            // IAU 2000B (McCarthy and Luzum 2003), the SDK's own series.
+            nutation: Nutation::Iau2000B,
+            // IAU 2006 (IERS Conventions 2010, §5.4.4).
+            frame_bias: FrameBias::Iau2006,
         },
         houses: Houses {
             placement_system: HouseSystem::WholeSign,
@@ -306,14 +312,13 @@ pub fn root() -> Settings {
             polar_day_policy: PolarDayPolicy::Undefined,
             ghati_reckoning: GhatiReckoning::Civil,
             hora_reckoning: HoraReckoning::Proportional,
+            // Bennett's formula for a named air (Meeus eq. 16.4), the IAU
+            // 2015 radii, the body's own latitude, no dip and the ideal
+            // horizon: what every almanac and the SDK have reckoned by.
+            horizon: HorizonModel::STANDARD,
         },
         panchanga: root_panchanga(),
-        time: Time {
-            dst_gap: DstGap::Error,
-            dst_overlap: DstOverlap::Earlier,
-            unknown_time: UnknownTime::Refuse,
-            delta_t: DeltaT::TableThenModel,
-        },
+        time: root_time(),
         dasha: Dasha {
             balance: Balance::Spatial,
             year_length: year_lengths(),
@@ -399,6 +404,21 @@ pub fn root() -> Settings {
                 score_decimals: 3,
             },
         },
+    }
+}
+
+/// The root's time conventions.
+fn root_time() -> Time {
+    Time {
+        dst_gap: DstGap::Error,
+        dst_overlap: DstOverlap::Earlier,
+        unknown_time: UnknownTime::Refuse,
+        delta_t: DeltaT::TableThenModel,
+        // UT1 taken as UTC, within the 0.9 s leap seconds keep them:
+        // what a civil clock reads and every almanac assumes.
+        dut1: Dut1::None,
+        // IERS Conventions 2010, eq. 5.32: the SDK's own.
+        sidereal_time: SiderealTime::Iers2010,
     }
 }
 

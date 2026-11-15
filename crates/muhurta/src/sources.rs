@@ -308,7 +308,7 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
             delta_t: over.delta_t,
             shadow: ShadowRule::of_setting(over.settings.panchanga.eclipse_shadow)?,
             vedha: over.settings.panchanga.eclipse_vedha,
-            horizon: Horizon::from_convention(over.settings.panchanga.eclipse_horizon),
+            horizon: Horizon::of(over.settings.panchanga.eclipse_horizon, over.settings),
         })
     }
 

@@ -9,7 +9,7 @@ use teistro_core::quantity::{JulianDay, Tt, Ut1, Utc};
 #[cfg(feature = "signed-packs")]
 use teistro_time::ZonePack;
 use teistro_time::scale::{
-    tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc, utc_from_tt, utc_from_ut1,
+    tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc_under, utc_from_tt, utc_from_ut1_under,
 };
 use teistro_time::{
     CivilDateTime, Policy, Resolved, ZoneResolution, ZoneSpec, civil_of_with, resolve,
@@ -213,7 +213,11 @@ impl<'a> TimeArea<'a> {
                 }
             }
             (Scale::Utc, Scale::Ut1) => {
-                let (ut1, basis) = ut1_from_utc(given("jd")?.relabel::<Utc>());
+                let (ut1, basis) = ut1_from_utc_under(
+                    given("jd")?.relabel::<Utc>(),
+                    self.context.settings().time.dut1,
+                    self.context.ephemeris(),
+                )?;
                 Conversion {
                     jd: ut1.get(),
                     proleptic_utc: basis.proleptic_utc,
@@ -222,7 +226,11 @@ impl<'a> TimeArea<'a> {
                 }
             }
             (Scale::Ut1, Scale::Utc) => {
-                let (utc, basis) = utc_from_ut1(given("jd")?);
+                let (utc, basis) = utc_from_ut1_under(
+                    given("jd")?,
+                    self.context.settings().time.dut1,
+                    self.context.ephemeris(),
+                )?;
                 Conversion {
                     jd: utc.get(),
                     proleptic_utc: basis.proleptic_utc,

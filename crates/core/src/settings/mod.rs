@@ -37,17 +37,18 @@ pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
+    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Dip, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
-    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
-    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
-    MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaName,
-    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
-    PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
-    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
+    Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
+    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus,
+    MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy, Positions,
+    PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart, RefractionFormula,
+    ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude, RituReckoning,
+    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
+    ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
     SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
     Vimshopaka, YearLength, Yuddha, Zodiac,
 };
@@ -372,6 +373,211 @@ pub struct Air {
     pub pressure_hpa: f64,
     /// Degrees Celsius.
     pub temperature_c: f64,
+}
+
+/// UT1 less UTC: none, the IERS's measured value, or a value the consumer
+/// gives (`03-design/time-and-timezone.md` §3.1).
+///
+/// UTC is kept within 0.9 s of UT1 by leap seconds, so the default, none,
+/// moves a civil instant by at most that; a precise lagna takes the IERS
+/// value, which an engine reads from the IERS Earth orientation series
+/// (EOP 14 C04 and `finals`) and answers through the port.
+///
+/// ```
+/// use teistro_core::settings::Dut1;
+///
+/// assert_eq!(serde_json::to_value(Dut1::None).unwrap(), serde_json::json!({"kind": "NONE"}));
+/// let own: Dut1 = serde_json::from_str(r#"{"kind": "CUSTOM", "seconds": -0.12}"#).unwrap();
+/// assert_eq!(own, Dut1::Custom { seconds: -0.12 });
+/// assert_eq!(Dut1::default(), Dut1::None);
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Dut1 {
+    /// UT1 taken as UTC: the default, within the 0.9 s a leap second
+    /// keeps them.
+    #[default]
+    None,
+    /// The IERS's UT1 less UTC (IERS Earth orientation parameters, EOP 14
+    /// C04 and Bulletin A's `finals`), from the ephemeris engine; zero,
+    /// and stamped so, outside the series it holds.
+    Iers,
+    /// A value the consumer gives, within ±0.9 s.
+    Custom {
+        /// UT1 less UTC, seconds.
+        seconds: f64,
+    },
+}
+
+/// The bound on UT1 less UTC a leap second keeps, seconds.
+///
+/// ```
+/// use teistro_core::settings::DUT1_BOUND_SECONDS;
+///
+/// assert_eq!(DUT1_BOUND_SECONDS, 0.9);
+/// ```
+pub const DUT1_BOUND_SECONDS: f64 = 0.9;
+
+/// The size of the disc whose limb rises or sets.
+///
+/// ```
+/// use teistro_core::settings::DiscSize;
+///
+/// assert_eq!(DiscSize::default(), DiscSize::Actual);
+/// // An almanac's fixed sixteen minutes of arc.
+/// let fixed: DiscSize = serde_json::from_str(r#"{"kind": "FIXED", "semidiameter_arcmin": 16.0}"#).unwrap();
+/// assert_eq!(fixed, DiscSize::Fixed { semidiameter_arcmin: 16.0 });
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DiscSize {
+    /// The disc at the body's distance at the instant: the default.
+    #[default]
+    Actual,
+    /// The disc at the body's mean distance (the Sun at 1 au, the Moon at
+    /// 384 400 km), so every day's rise is defined alike (the Swiss
+    /// Ephemeris's `SE_BIT_FIXED_DISC_SIZE`).
+    MeanDistance,
+    /// A semidiameter the convention fixes, as an almanac's sixteen minutes
+    /// of arc.
+    Fixed {
+        /// The semidiameter, arcminutes.
+        semidiameter_arcmin: f64,
+    },
+}
+
+/// The radii a disc's size is reckoned from.
+///
+/// ```
+/// use teistro_core::settings::Radii;
+///
+/// assert_eq!(Radii::default(), Radii::Iau2015);
+/// // The older solar radius the Swiss Ephemeris keeps.
+/// let older: Radii = serde_json::from_str(r#"{"kind": "CUSTOM", "sun_km": 696000.0, "moon_km": 1737.4}"#).unwrap();
+/// assert_eq!(older, Radii::Custom { sun_km: 696_000.0, moon_km: 1_737.4 });
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Radii {
+    /// The Sun's nominal radius, 695 700 km (IAU 2015 Resolution B3), and
+    /// the IAU Working Group on Cartographic Coordinates' mean radii for
+    /// the Moon and the planets (Archinal et al. 2018, *Celest. Mech. Dyn.
+    /// Astr.* 130, 22): the default.
+    #[default]
+    #[serde(rename = "IAU_2015")]
+    Iau2015,
+    /// The Sun's and the Moon's radii a convention gives; the planets keep
+    /// the IAU's.
+    Custom {
+        /// The Sun's radius, kilometres.
+        sun_km: f64,
+        /// The Moon's radius, kilometres.
+        moon_km: f64,
+    },
+}
+
+/// How a horizon is reckoned beyond which point of the disc and whether it
+/// refracts (`day.sunrise`): the refraction formula an air is read through,
+/// the disc's size and radii, the rising body's latitude, the dip and a
+/// raised or lowered horizon.
+///
+/// One value for every horizon a context reads (the sunrise, the eclipse
+/// horizon, the Moon's rise and set), so that the Sun has one radius and
+/// the air one formula wherever the SDK meets the horizon. Every part
+/// defaults to what the SDK has always reckoned, so a document that leaves
+/// them out answers as before.
+///
+/// ```
+/// use teistro_core::settings::{Dip, HorizonModel, RefractionFormula};
+///
+/// // Every part may be left out.
+/// let raised: HorizonModel = serde_json::from_str(r#"{"dip": "GEOMETRIC", "altitude_deg": 0.5}"#).unwrap();
+/// assert_eq!((raised.dip, raised.refraction), (Dip::Geometric, RefractionFormula::Bennett));
+/// assert_eq!(serde_json::from_str::<HorizonModel>("{}").unwrap(), HorizonModel::STANDARD);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default, deny_unknown_fields)]
+pub struct HorizonModel {
+    /// The formula a named air refracts through (an `ATMOSPHERIC`
+    /// sunrise); the standard refraction is the almanac's stated 34′.
+    pub refraction: RefractionFormula,
+    /// The disc's size.
+    pub disc_size: DiscSize,
+    /// The radii the disc is reckoned from.
+    pub radii: Radii,
+    /// The rising body's latitude: its own, or zero.
+    pub latitude: RisingLatitude,
+    /// The dip of the horizon from the observer's height.
+    pub dip: Dip,
+    /// The apparent altitude of the horizon the point reaches, degrees:
+    /// positive for a horizon raised above the ideal one, as hills raise
+    /// it, negative for one below. Added to a custom sunrise's altitude.
+    pub altitude_deg: f64,
+}
+
+impl HorizonModel {
+    /// What the SDK has always reckoned: Bennett's formula for a named
+    /// air, the actual disc of the IAU 2015 radii, the body's own latitude,
+    /// no dip and the ideal horizon.
+    ///
+    /// ```
+    /// use teistro_core::settings::{HorizonModel, root};
+    ///
+    /// assert_eq!(root().day.horizon, HorizonModel::STANDARD);
+    /// assert_eq!(HorizonModel::default(), HorizonModel::STANDARD);
+    /// ```
+    pub const STANDARD: HorizonModel = HorizonModel {
+        refraction: RefractionFormula::Bennett,
+        disc_size: DiscSize::Actual,
+        radii: Radii::Iau2015,
+        latitude: RisingLatitude::Body,
+        dip: Dip::None,
+        altitude_deg: 0.0,
+    };
+}
+
+impl HorizonModel {
+    /// The key stamped in provenance: formula, disc, radii, latitude, dip
+    /// and altitude.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DiscSize, HorizonModel};
+    ///
+    /// assert_eq!(HorizonModel::STANDARD.key(), "BENNETT/ACTUAL/IAU_2015/BODY/NONE/0");
+    /// let fixed = HorizonModel { disc_size: DiscSize::Fixed { semidiameter_arcmin: 16.0 }, ..HorizonModel::STANDARD };
+    /// assert_eq!(fixed.key(), "BENNETT/FIXED[16']/IAU_2015/BODY/NONE/0");
+    /// ```
+    #[must_use]
+    pub fn key(&self) -> String {
+        let disc = match self.disc_size {
+            DiscSize::Actual => String::from("ACTUAL"),
+            DiscSize::MeanDistance => String::from("MEAN_DISTANCE"),
+            DiscSize::Fixed {
+                semidiameter_arcmin,
+            } => format!("FIXED[{semidiameter_arcmin}']"),
+        };
+        let radii = match self.radii {
+            Radii::Iau2015 => String::from("IAU_2015"),
+            Radii::Custom { sun_km, moon_km } => format!("CUSTOM[{sun_km},{moon_km}]"),
+        };
+        format!(
+            "{}/{disc}/{radii}/{}/{}/{}",
+            self.refraction.key(),
+            self.latitude.key(),
+            self.dip.key(),
+            self.altitude_deg
+        )
+    }
+}
+
+impl Default for HorizonModel {
+    fn default() -> HorizonModel {
+        HorizonModel::STANDARD
+    }
 }
 
 /// Which astronomy: modern, the Surya Siddhanta under a bija, or the
@@ -766,6 +972,13 @@ group!(
         /// by twenty-seven today; the twenty-eighth (Abhijit) is unequal and
         /// wants its own measurement before either reads this.
         nakshatra_scheme: NakshatraScheme,
+        /// Which precession carries positions and epoch-defined ayanamshas
+        /// between epochs; asked of the engine with every position.
+        precession: Precession,
+        /// Which nutation series; asked of the engine with every position.
+        nutation: Nutation,
+        /// Which frame bias; asked of the engine with every position.
+        frame_bias: FrameBias,
     }
 );
 
@@ -798,6 +1011,10 @@ group!(
         ghati_reckoning: GhatiReckoning,
         /// How the planetary hours are counted.
         hora_reckoning: HoraReckoning,
+        /// How every horizon is reckoned beyond the sunrise convention: the
+        /// refraction formula, the disc's size and radii, the rising
+        /// body's latitude, the dip and the horizon's altitude.
+        horizon: HorizonModel,
     }
 );
 
@@ -876,6 +1093,10 @@ group!(
         unknown_time: UnknownTime,
         /// Which Delta T.
         delta_t: DeltaT,
+        /// UT1 less UTC: none, the IERS's, or a given value.
+        dut1: Dut1,
+        /// Which sidereal time turns the Earth.
+        sidereal_time: SiderealTime,
     }
 );
 
@@ -1715,6 +1936,55 @@ impl Resolved {
 /// What the settings refuse in a sunrise convention: a custom altitude
 /// that is not one, an air given to a convention that does not refract,
 /// and an air outside what the Earth's surface has seen.
+/// The largest fixed semidiameter a horizon may name, arcminutes: a degree,
+/// twice the Moon's largest.
+pub const LARGEST_FIXED_SEMIDIAMETER_ARCMIN: f64 = 60.0;
+
+/// How far a horizon may be raised or lowered, degrees: Bennett's formula
+/// has its pole at −4.4°, and no skyline stands higher than this above a
+/// place's ideal horizon.
+pub const HORIZON_ALTITUDE_DEG: core::ops::RangeInclusive<f64> = -4.0..=20.0;
+
+fn horizon_coherence(model: &HorizonModel, out: &mut Vec<Diagnostic>) {
+    if let DiscSize::Fixed {
+        semidiameter_arcmin,
+    } = model.disc_size
+    {
+        if !(semidiameter_arcmin.is_finite()
+            && semidiameter_arcmin > 0.0
+            && semidiameter_arcmin <= LARGEST_FIXED_SEMIDIAMETER_ARCMIN)
+        {
+            out.push(Diagnostic::error(
+                "horizon-semidiameter",
+                format!(
+                    "a fixed semidiameter is a positive number of arcminutes up to {LARGEST_FIXED_SEMIDIAMETER_ARCMIN}"
+                ),
+                &["day.horizon"],
+            ));
+        }
+    }
+    if let Radii::Custom { sun_km, moon_km } = model.radii {
+        if !(sun_km.is_finite() && sun_km > 0.0 && moon_km.is_finite() && moon_km > 0.0) {
+            out.push(Diagnostic::error(
+                "horizon-radii",
+                "a custom radius is a positive, finite number of kilometres",
+                &["day.horizon"],
+            ));
+        }
+    }
+    if !(model.altitude_deg.is_finite() && HORIZON_ALTITUDE_DEG.contains(&model.altitude_deg)) {
+        out.push(Diagnostic::error(
+            "horizon-altitude",
+            format!(
+                "the horizon's altitude is a finite number of degrees from {} to {}",
+                HORIZON_ALTITUDE_DEG.start(),
+                HORIZON_ALTITUDE_DEG.end()
+            ),
+            &["day.horizon"],
+        ));
+    }
+}
+
 fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
     if let SunriseConvention::Custom { altitude_deg } = convention {
         if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
@@ -1778,6 +2048,21 @@ fn basis_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// A custom UT1 less UTC is finite and within the bound leap seconds keep.
+fn dut1_coherence(dut1: Dut1, out: &mut Vec<Diagnostic>) {
+    if let Dut1::Custom { seconds } = dut1 {
+        if !(seconds.is_finite() && seconds.abs() <= DUT1_BOUND_SECONDS) {
+            out.push(Diagnostic::error(
+                "dut1-bound",
+                format!(
+                    "UT1 less UTC is a finite number of seconds within ±{DUT1_BOUND_SECONDS}, which leap seconds keep it within"
+                ),
+                &["time.dut1"],
+            ));
+        }
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -1795,6 +2080,8 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         }
     }
     sunrise_coherence(s.day.sunrise, &mut out);
+    horizon_coherence(&s.day.horizon, &mut out);
+    dut1_coherence(s.time.dut1, &mut out);
     if s.frame.nakshatra_scheme == NakshatraScheme::TwentyEight {
         let seeded: Vec<&DashaSystem> = s
             .dasha
@@ -1942,6 +2229,87 @@ mod tests {
 
     fn shipped(id: &str) -> Profile {
         Profile::shipped(id).unwrap_or_else(|| panic!("{id}"))
+    }
+
+    /// The rules a settings document breaks with this patch.
+    fn rules_broken(patch: &SettingsPatch) -> Vec<&'static str> {
+        match shipped(DEFAULT_PROFILE).resolve(patch) {
+            Ok(_) => Vec::new(),
+            Err(diagnostics) => diagnostics.errors().map(|d| d.rule).collect(),
+        }
+    }
+
+    #[test]
+    fn a_horizon_model_is_refused_outside_what_it_can_mean() {
+        let with = |model: HorizonModel| {
+            let mut patch = SettingsPatch::default();
+            patch.day.horizon = Some(model);
+            rules_broken(&patch)
+        };
+        let standard = HorizonModel::STANDARD;
+        assert!(with(standard).is_empty());
+        let fixed = |semidiameter_arcmin| HorizonModel {
+            disc_size: DiscSize::Fixed { semidiameter_arcmin },
+            ..standard
+        };
+        assert!(with(fixed(16.0)).is_empty());
+        assert!(with(fixed(LARGEST_FIXED_SEMIDIAMETER_ARCMIN)).is_empty());
+        for bad in [0.0, -1.0, 61.0, f64::NAN] {
+            assert_eq!(with(fixed(bad)), ["horizon-semidiameter"], "{bad}");
+        }
+        let radii = |sun_km, moon_km| HorizonModel {
+            radii: Radii::Custom { sun_km, moon_km },
+            ..standard
+        };
+        assert!(with(radii(696_000.0, 1_738.0)).is_empty());
+        for (sun, moon) in [(0.0, 1_738.0), (696_000.0, -1.0), (f64::INFINITY, 1_738.0)] {
+            assert_eq!(with(radii(sun, moon)), ["horizon-radii"], "{sun} {moon}");
+        }
+        let altitude = |altitude_deg| HorizonModel { altitude_deg, ..standard };
+        for good in [-4.0, 0.0, 20.0] {
+            assert!(with(altitude(good)).is_empty(), "{good}");
+        }
+        for bad in [-4.5, 20.5, f64::NAN] {
+            assert_eq!(with(altitude(bad)), ["horizon-altitude"], "{bad}");
+        }
+        // Every rule a model breaks is named, not only the first.
+        let all = HorizonModel {
+            disc_size: DiscSize::Fixed { semidiameter_arcmin: 0.0 },
+            radii: Radii::Custom { sun_km: 0.0, moon_km: 0.0 },
+            altitude_deg: 90.0,
+            ..standard
+        };
+        assert_eq!(with(all), ["horizon-semidiameter", "horizon-radii", "horizon-altitude"]);
+    }
+
+    #[test]
+    fn a_horizon_models_key_names_every_field() {
+        assert_eq!(HorizonModel::STANDARD.key(), "BENNETT/ACTUAL/IAU_2015/BODY/NONE/0");
+        let every = HorizonModel {
+            refraction: RefractionFormula::Saemundsson,
+            disc_size: DiscSize::MeanDistance,
+            radii: Radii::Custom { sun_km: 696_000.0, moon_km: 1_738.0 },
+            latitude: RisingLatitude::Zero,
+            dip: Dip::Geometric,
+            altitude_deg: 1.5,
+        };
+        assert_eq!(every.key(), "SAEMUNDSSON/MEAN_DISTANCE/CUSTOM[696000,1738]/ZERO/GEOMETRIC/1.5");
+        assert_eq!(HorizonModel::default(), HorizonModel::STANDARD);
+    }
+
+    #[test]
+    fn a_custom_dut1_is_refused_past_the_bound_leap_seconds_keep() {
+        let with = |dut1: Dut1| {
+            let mut patch = SettingsPatch::default();
+            patch.time.dut1 = Some(dut1);
+            rules_broken(&patch)
+        };
+        for good in [Dut1::None, Dut1::Iers, Dut1::Custom { seconds: -0.9 }, Dut1::Custom { seconds: 0.3 }] {
+            assert!(with(good).is_empty(), "{good:?}");
+        }
+        for seconds in [0.91, -2.0, f64::NAN] {
+            assert_eq!(with(Dut1::Custom { seconds }), ["dut1-bound"], "{seconds}");
+        }
     }
 
     /// The rules a settings document breaks with this sunrise convention.

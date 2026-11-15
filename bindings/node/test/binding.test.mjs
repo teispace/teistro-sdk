@@ -86,7 +86,7 @@ function gregorian(year, month, day) {
 }
 
 test('the addon and the types were generated for the same ABI', () => {
-  assert.equal(abiVersion(), 2);
+  assert.equal(abiVersion(), 3);
   assert.equal(catalogueVersion(), 1);
   assert.equal(defaultProfile(), 'parashari-classical');
   assert.match(sdkVersion(), /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+)?)?$/u);
@@ -610,6 +610,14 @@ test('a catalogue key packs to an id and back', () => {
   assert.throws(() => ctx.keys.name(0xffffffff), (error) => error.status === 'UNSUPPORTED');
 });
 
+/**
+ * How far each instant a provider was asked for stands after the UT1 one
+ * it was asked for, whole seconds: the Delta T the SDK carried it by.
+ */
+function aheadBySeconds(asked, ut1) {
+  return Array.from(asked, (jd, i) => Math.round((jd - ut1[i]) * 86400));
+}
+
 /** An ephemeris written in JavaScript: a straight line per body. */
 function jsProvider(over = {}) {
   const calls = [];
@@ -649,14 +657,17 @@ test('an ephemeris written in JavaScript answers the SDK', () => {
   // One call for the whole grid: the port is a batch call, not a loop.
   assert.equal(calls.length, 1);
   const asked = calls[0];
-  assert.deepEqual(Array.from(asked.jds), [2451545, 2451546]);
+  // A provider that answers no Delta T of its own is asked on TT: the SDK
+  // carries each UT1 instant there under `time.delta_t`, about 64 s at
+  // J2000.0.
+  assert.equal(asked.scale, 'TT');
+  assert.deepEqual(aheadBySeconds(asked.jds, [2451545, 2451546]), [64, 64]);
   assert.deepEqual(asked.bodies, ['SUN', 'MOON']);
-  assert.equal(asked.scale, 'UT1');
   assert.equal(asked.speeds, true);
   assert.equal(asked.observer, undefined, 'a geocentric frame needs none');
 
   assert.equal(positions.cells.length, 4);
-  assert.ok(Math.abs(positions.at(0, 0).longitude - ((2451545 + 0) % 360)) < 1e-9);
+  assert.ok(Math.abs(positions.at(0, 0).longitude - ((asked.jds[0] + 0) % 360)) < 1e-9);
   assert.equal(positions.at(0, 1).longitudeSpeed, 13.176);
   assert.equal(positions.provenance.provider.name, 'a-provider-in-javascript');
   assert.equal(positions.provenance.provider.version, '1.2.3');
@@ -671,9 +682,9 @@ test('an instant outside its coverage is a cell, and never asked for', () => {
   const positions = ctx.positions({ instants: [2400000.0, 2451545.5], bodies: [Body.Sun] });
   assert.equal(ProviderCodeById.get(positions.at(0, 0).status), ProviderCode.OutOfRange);
   assert.equal(ProviderCodeById.get(positions.at(1, 0).status), ProviderCode.Ok);
-  assert.ok(Math.abs(positions.at(1, 0).longitude - (2451545.5 % 360)) < 1e-9);
   assert.equal(calls.length, 1);
-  assert.deepEqual(Array.from(calls[0].jds), [2451545.5]);
+  assert.deepEqual(aheadBySeconds(calls[0].jds, [2451545.5]), [64]);
+  assert.ok(Math.abs(positions.at(1, 0).longitude - (calls[0].jds[0] % 360)) < 1e-9);
   ctx.positions({ instants: [2400000.0], bodies: [Body.Sun] });
   assert.equal(calls.length, 1, 'nothing it covers, so it is not asked at all');
   ctx.dispose();
@@ -906,8 +917,9 @@ test('every catalogue enum has a complete id table', () => {
   // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two;
   // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`;
   // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`;
-  // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`.
-  assert.equal(entries, 1557, 'every member of every enum is in a table');
+  // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`;
+  // 1558 since `TsDeltaTSource` gained `PROVIDER`.
+  assert.equal(entries, 1558, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

@@ -26,8 +26,9 @@ use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::{AyanamshaBasis, AyanamshaChoice, OverridePolicy};
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Body, Capabilities, EphemerisProvider, Frame, HorizonRequest, Obliquity,
-    Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale,
+    Angles, AnglesRequest, Body, Capabilities, Conventions, DeltaTEstimate, EphemerisProvider,
+    Frame, HorizonRequest, Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError,
+    TimeScale,
 };
 
 use crate::provider::SiddhantaProvider;
@@ -47,7 +48,7 @@ use crate::provider::SiddhantaProvider;
 /// ```
 /// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 /// use teistro_port_ephemeris::{
-///     Body, EphemerisProvider, Horizon, HorizonEventKind, HorizonRequest, TestProvider,
+///     Body, Conventions, EphemerisProvider, Horizon, HorizonEventKind, HorizonRequest, TestProvider,
 /// };
 /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
 ///
@@ -64,6 +65,7 @@ use crate::provider::SiddhantaProvider;
 ///     from: JulianDay::literal(2_460_482.0),
 ///     window_days: 1.0,
 ///     horizon: Horizon::UPPER_LIMB_REFRACTION,
+///     conventions: Conventions::STANDARD,
 /// })?;
 /// assert!(rise.is_some());
 /// // And the stamp names both.
@@ -73,7 +75,6 @@ use crate::provider::SiddhantaProvider;
 pub struct ModernParts {
     text: SiddhantaProvider,
     modern: Box<dyn EphemerisProvider>,
-    delta_t: DeltaTModel,
     sunrise: bool,
     planets: Option<AyanamshaChoice>,
     basis: AyanamshaBasis,
@@ -84,7 +85,6 @@ impl core::fmt::Debug for ModernParts {
         f.debug_struct("ModernParts")
             .field("text", &self.text)
             .field("modern", &self.modern.capabilities().identity.name)
-            .field("delta_t", &self.delta_t)
             .field("sunrise", &self.sunrise)
             .field("planets", &self.planets)
             .field("basis", &self.basis)
@@ -129,7 +129,6 @@ impl ModernParts {
         ModernParts {
             text,
             modern,
-            delta_t: DeltaTModel::default(),
             sunrise: false,
             planets: None,
             basis: AyanamshaBasis::True,
@@ -195,23 +194,6 @@ impl ModernParts {
         ModernParts { basis, ..self }
     }
 
-    /// The same, with the Delta T the modern parts are found under.
-    ///
-    /// ```
-    /// use teistro_astro::DeltaTModel;
-    /// use teistro_port_ephemeris::TestProvider;
-    /// use teistro_siddhanta::{ModernParts, SiddhantaProvider};
-    ///
-    /// let sky = ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()))
-    ///     .with_sunrise()
-    ///     .with_delta_t(DeltaTModel::TableThenModel);
-    /// assert!(format!("{sky:?}").contains("TableThenModel"));
-    /// ```
-    #[must_use]
-    pub fn with_delta_t(self, delta_t: DeltaTModel) -> ModernParts {
-        ModernParts { delta_t, ..self }
-    }
-
     /// The text this sky's places come from.
     ///
     /// ```
@@ -250,11 +232,15 @@ impl ModernParts {
         wanted: &[Body],
         ayanamsha: &AyanamshaChoice,
     ) -> Result<PositionColumns, ProviderError> {
-        let sky = Completion::new(
-            self.modern.as_ref(),
-            OverridePolicy::PreferNative,
-            self.delta_t,
-        );
+        let conventions = request.conventions;
+        let sky = self.completion(conventions);
+        let precession =
+            PrecessionModel::from_knob(conventions.models.precession).ok_or_else(|| {
+                ProviderError::unsupported(format!(
+                    "the {} precession in the SDK's ayanamsha",
+                    conventions.models.precession.key()
+                ))
+            })?;
         let modern = PositionRequest {
             bodies: wanted,
             frame: Frame::CANONICAL,
@@ -266,23 +252,13 @@ impl ModernParts {
             .map_err(|error| refused_at(&Error::from(error), request.jds.first().copied()))?
             .columns;
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            let at = self.tt_at(*jd, request.scale)?;
-            let offset = ayanamsha::value_deg(
-                ayanamsha,
-                at,
-                self.basis,
-                PrecessionModel::default(),
-                self.delta_t,
-            )
-            .map_err(|error| refused_at(&error, Some(*jd)))?;
+            let at = ModernParts::tt_at(*jd, request.scale, conventions.delta_t)?;
+            let offset =
+                ayanamsha::value_deg(ayanamsha, at, self.basis, precession, conventions.delta_t)
+                    .map_err(|error| refused_at(&error, Some(*jd)))?;
             let rate = if request.speeds {
-                ayanamsha::speed_deg_per_day(
-                    ayanamsha,
-                    at,
-                    PrecessionModel::default(),
-                    self.delta_t,
-                )
-                .map_err(|error| refused_at(&error, Some(*jd)))?
+                ayanamsha::speed_deg_per_day(ayanamsha, at, precession, conventions.delta_t)
+                    .map_err(|error| refused_at(&error, Some(*jd)))?
             } else {
                 0.0
             };
@@ -299,16 +275,29 @@ impl ModernParts {
         Ok(columns)
     }
 
-    /// An instant of the request on TT.
-    fn tt_at(&self, jd: f64, scale: TimeScale) -> Result<JulianDay<Tt>, ProviderError> {
+    /// The SDK's completion over the modern ephemeris, under a request's
+    /// conventions: its Delta T and its models.
+    fn completion(&self, conventions: Conventions) -> Completion<'_, dyn EphemerisProvider> {
+        Completion::new(
+            self.modern.as_ref(),
+            OverridePolicy::PreferNative,
+            conventions.delta_t,
+        )
+        .with_models(conventions.models)
+    }
+
+    /// An instant of the request on TT, through the request's Delta T.
+    fn tt_at(
+        jd: f64,
+        scale: TimeScale,
+        model: DeltaTModel,
+    ) -> Result<JulianDay<Tt>, ProviderError> {
         let invalid = |error: &dyn core::fmt::Display| ProviderError::invalid(error.to_string());
         match scale {
             TimeScale::Tt => JulianDay::try_new(jd).map_err(|e| invalid(&e)),
             TimeScale::Ut1 => {
                 let ut1 = JulianDay::<Ut1>::try_new(jd).map_err(|e| invalid(&e))?;
-                tt_of(ut1, self.delta_t)
-                    .map(|(tt, _)| tt)
-                    .map_err(|e| invalid(&e))
+                tt_of(ut1, model).map(|(tt, _)| tt).map_err(|e| invalid(&e))
             }
         }
     }
@@ -383,12 +372,17 @@ impl EphemerisProvider for ModernParts {
         Ok(columns)
     }
 
-    fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
-        self.text.obliquity(jd, scale)
+    fn obliquity(
+        &self,
+        jd: f64,
+        scale: TimeScale,
+        conventions: Conventions,
+    ) -> Result<Obliquity, ProviderError> {
+        self.text.obliquity(jd, scale, conventions)
     }
 
-    fn delta_t_seconds(&self, jd_ut1: f64) -> Result<f64, ProviderError> {
-        self.text.delta_t_seconds(jd_ut1)
+    fn delta_t(&self, jd_ut1: f64, model: DeltaTModel) -> Result<DeltaTEstimate, ProviderError> {
+        self.text.delta_t(jd_ut1, model)
     }
 
     fn ayanamsha_deg(
@@ -397,8 +391,10 @@ impl EphemerisProvider for ModernParts {
         scale: TimeScale,
         ayanamsha: teistro_core::catalogue::Ayanamsha,
         basis: teistro_core::settings::AyanamshaBasis,
+        conventions: Conventions,
     ) -> Result<f64, ProviderError> {
-        self.text.ayanamsha_deg(jd, scale, ayanamsha, basis)
+        self.text
+            .ayanamsha_deg(jd, scale, ayanamsha, basis, conventions)
     }
 
     fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
@@ -420,19 +416,15 @@ impl EphemerisProvider for ModernParts {
         }
         // The route a modern sky's sunrise takes in the almanac: the SDK's
         // solver over the modern ephemeris's apparent Sun, completed by the
-        // SDK. A modern provider's own rise and set is not consulted there
-        // either, since only a classical astronomy defines its sunrise.
-        let sky = Completion::new(
-            self.modern.as_ref(),
-            OverridePolicy::PreferNative,
-            self.delta_t,
-        );
+        // SDK, or the engine's own search where it declares one and the
+        // policy lets it answer (boundary audit, rank 6), as there.
+        let sky = self.completion(request.conventions);
         let solver = Solver::new(
             &sky,
             Body::Sun,
             request.place,
             request.horizon,
-            self.delta_t,
+            request.conventions.delta_t,
         );
         solver
             .event(request.kind, request.from, request.window_days)

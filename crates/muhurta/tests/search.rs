@@ -348,7 +348,7 @@ fn a_seen_eclipse_bars_its_star_and_its_vedha_and_an_unseen_one_nothing() {
                 JulianDay::<Ut1>::literal(range.from.get()),
                 JulianDay::<Ut1>::literal(range.to.get()),
                 place(),
-                &Horizon::from_convention(over.settings.day.sunrise),
+                &Horizon::of(over.settings.day.sunrise, over.settings),
             )
             .unwrap();
         let lunar = &found.lunar[0];
