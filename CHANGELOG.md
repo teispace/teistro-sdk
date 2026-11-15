@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The committee fixture's sunset of 2026-04-29 read as printed (teistro-conformance 0.12.1).**
+**Numbers:** none of the SDK's move. One recorded value moves by a minute: the sunset of
+2026-04-29 in `fixtures/official/npns-2082-2083.json` is 18:36, where the fixture had 18:35.
+Only the Node A/B bench's reference (`bindings/node/bench/ab-reference.mjs`) reads it.
+- A full reading of the committee's BS 2082 and 2083 editions, glyph by glyph from the PDFs'
+  outlines, agrees with the fixture's other 79 values and finds this one misread. The row's
+  printed day length (32 ghatis 48 palas) fits 18:36 within 0.2 minutes.
+
 **Every lunar month carries its decision margin, and a marginal flag on a setting (SR-92, C1902).**
 **Numbers:** no instant moves. Every day's JSON gains
 `month.margin`, so every answer hash over a day moves; the blob's `days` section gains seven

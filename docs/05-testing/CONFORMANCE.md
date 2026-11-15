@@ -3,7 +3,7 @@
 Status: `generated`, by `cargo xtask conformance` from the crates' corpus tests
 and `fixtures/corpus.json`, held by `cargo xtask check-conformance`; do not edit.
 
-The SDK against the conformance corpus 0.12.0 (released 2026-10-09,
+The SDK against the conformance corpus 0.12.1 (released 2026-10-09,
 https://github.com/teispace/teistro-conformance), one section per corpus directory. Each row is one test's comparisons under one reading:
 **compared** counts every comparison the test attempted, **explained** the
 misses a named entry accounts for, listed below with its count, and
@@ -13,7 +13,7 @@ across sections, since a yoga decision and a longitude are not one unit
 (`03-design/generated-pages.md` §2.1).
 
 The default tier's positions are scored live; the other built-in tiers are
-recorded from verify's tier jobs (`compact` from run `37891440602` at commit `2636120dead2`, `full` from run `37891440602` at commit `2636120dead2`), and verify holds each later run to
+recorded from verify's tier jobs (`compact` by hand, outside CI, `full` by hand, outside CI), and verify holds each later run to
 the record exactly.
 
 | section | rank | reading | compared | agree | explained |
