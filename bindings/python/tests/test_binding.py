@@ -590,6 +590,28 @@ class TheLocaleEngine(WithLibrary):
         ).text
         self.assertEqual(typed, loose)
 
+    def test_every_generated_accessor_reaches_a_named_entity_in_the_pack(self) -> None:
+        # The generated tree under `messages`, walked to its leaves: every
+        # group a property opens and every catalogued member's forms. A
+        # member the en-Latn pack does not name fails here by its path,
+        # rather than in a reader's hands.
+        self.ctx.intl.locale = "en-Latn"
+        groups: List[Tuple[str, object]] = [("messages", self.ctx.intl.messages)]
+        reached = 0
+        while groups:
+            path, group = groups.pop()
+            for name, member in vars(type(group)).items():
+                if not isinstance(member, property):
+                    continue
+                got = getattr(group, name)
+                if isinstance(got, intl.EntityForms):
+                    self.assertTrue(got.name, f"{path}.{name}")
+                    reached += 1
+                else:
+                    groups.append((f"{path}.{name}", got))
+        # Every catalogue kind's members, not a sample.
+        self.assertGreater(reached, 1500)
+
     def test_a_lunar_month_is_said_with_its_kind_an_adhika_one_the_nepali_way(self) -> None:
         self.ctx.intl.locale = "ne-Deva-NP"
         said = self.ctx.intl.messages.sdk.calendar.lunar_month
