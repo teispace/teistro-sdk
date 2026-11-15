@@ -1214,7 +1214,9 @@ public final class Messages {
         /** `era.BHASKARABDA`. */
         BHASKARABDA("era.BHASKARABDA"),
         /** `era.HIJRI`. */
-        HIJRI("era.HIJRI");
+        HIJRI("era.HIJRI"),
+        /** `era.KIRAT_YELE`. */
+        KIRAT_YELE("era.KIRAT_YELE");
 
         private final String value;
 
@@ -9164,6 +9166,15 @@ public final class Messages {
                  */
                 public EntityForms kali() {
                     return r.entity("era.KALI");
+                }
+
+                /**
+                 * The forms of `era.KIRAT_YELE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kiratYele() {
+                    return r.entity("era.KIRAT_YELE");
                 }
 
                 /**

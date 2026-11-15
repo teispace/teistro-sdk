@@ -47,9 +47,11 @@ pub enum Era {
     ViraNirvana = 10,
     /// Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
     Bhaskarabda = 11,
+    /// Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar
+    KiratYele = 12,
 }
 
-const BY_KEY: [(&str, Era); 12] = [
+const BY_KEY: [(&str, Era); 13] = [
     ("BEFORE_COMMON_ERA", Era::BeforeCommonEra),
     ("BENGALI", Era::Bengali),
     ("BHASKARABDA", Era::Bhaskarabda),
@@ -57,6 +59,7 @@ const BY_KEY: [(&str, Era); 12] = [
     ("COMMON_ERA", Era::CommonEra),
     ("HIJRI", Era::Hijri),
     ("KALI", Era::Kali),
+    ("KIRAT_YELE", Era::KiratYele),
     ("KOLLAM", Era::Kollam),
     ("NEPAL_SAMBAT", Era::NepalSambat),
     ("SHAKA", Era::Shaka),
@@ -72,7 +75,7 @@ impl Era {
     pub const KIND: Kind = Kind::Era;
 
     /// Every member, in id order.
-    pub const ALL: [Era; 12] = [
+    pub const ALL: [Era; 13] = [
         Era::Vikrama,
         Era::Shaka,
         Era::Kali,
@@ -85,6 +88,7 @@ impl Era {
         Era::Hijri,
         Era::ViraNirvana,
         Era::Bhaskarabda,
+        Era::KiratYele,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -109,6 +113,7 @@ impl Era {
             Era::Hijri => "HIJRI",
             Era::ViraNirvana => "VIRA_NIRVANA",
             Era::Bhaskarabda => "BHASKARABDA",
+            Era::KiratYele => "KIRAT_YELE",
         }
     }
 
@@ -134,6 +139,7 @@ impl Era {
             Era::Hijri => "era.HIJRI",
             Era::ViraNirvana => "era.VIRA_NIRVANA",
             Era::Bhaskarabda => "era.BHASKARABDA",
+            Era::KiratYele => "era.KIRAT_YELE",
         }
     }
 
@@ -159,6 +165,7 @@ impl Era {
             Era::Hijri => "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
             Era::ViraNirvana => "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada",
             Era::Bhaskarabda => "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name",
+            Era::KiratYele => "Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar",
         }
     }
 
@@ -184,6 +191,7 @@ impl Era {
             Era::Hijri => None,
             Era::ViraNirvana => None,
             Era::Bhaskarabda => None,
+            Era::KiratYele => None,
         }
     }
 
@@ -209,6 +217,7 @@ impl Era {
             Era::Hijri => Mark::Verified,
             Era::ViraNirvana => Mark::Verified,
             Era::Bhaskarabda => Mark::Verified,
+            Era::KiratYele => Mark::Verified,
         }
     }
 
@@ -234,6 +243,7 @@ impl Era {
             Era::Hijri => false,
             Era::ViraNirvana => false,
             Era::Bhaskarabda => false,
+            Era::KiratYele => false,
         }
     }
 
@@ -260,6 +270,7 @@ impl Era {
             Era::Hijri => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
             Era::ViraNirvana => &[Source { text: "Sircar, Indian Epigraphy (1965), pp. 321-322", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }, Source { text: "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }],
             Era::Bhaskarabda => &[Source { text: "Government of Assam, General Administration Department, list of holidays for 2025 (1 Bohag 1432 = 15 April 2025)", reference: "docs/calendars/regional-solar.md" }],
+            Era::KiratYele => &[Source { text: "Kantipur, Koshi Pradesh, 15 January 2026: Kirati Sambat 5086 began on Magh 1, 2082", reference: "docs/calendars/bikram-sambat.md" }, Source { text: "G. Rai, Kirant identity and Yele Sambat, Indigenous Voice, 5 December 2021 (5076 and 3795 from January 2016)", reference: "docs/calendars/bikram-sambat.md" }, Source { text: "J. C. Regmi, Kirat Yele Samvat Abhilekh, Kirat Yele Samvat Adhyayan Samanvaya Samiti, 2010", reference: "docs/calendars/bikram-sambat.md" }],
         }
     }
 
@@ -285,6 +296,7 @@ impl Era {
             Era::Hijri => &[],
             Era::ViraNirvana => &[],
             Era::Bhaskarabda => &[],
+            Era::KiratYele => &[],
         }
     }
 
@@ -333,7 +345,7 @@ impl Era {
     /// use teistro_core::catalogue::Era;
     ///
     /// assert_eq!(Era::from_id(0), Some(Era::Vikrama));
-    /// assert_eq!(Era::from_id(12), None);
+    /// assert_eq!(Era::from_id(13), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Era> {
@@ -350,6 +362,7 @@ impl Era {
             9 => Some(Era::Hijri),
             10 => Some(Era::ViraNirvana),
             11 => Some(Era::Bhaskarabda),
+            12 => Some(Era::KiratYele),
             _ => None,
         }
     }

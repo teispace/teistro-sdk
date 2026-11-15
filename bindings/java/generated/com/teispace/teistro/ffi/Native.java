@@ -4371,6 +4371,7 @@ public final class Native {
         "ts_calendar_from_fixed",
         "ts_calendar_to_fixed",
         "ts_calendar_convert",
+        "ts_calendar_in_era",
         "ts_calendar_month_length",
         "ts_calendar_is_leap",
         "ts_calendar_weekday",
@@ -4642,6 +4643,19 @@ public final class Native {
      * Converts a date into another calendar.
      */
     public final MethodHandle ts_calendar_convert;
+
+    /**
+     * A date viewed in a named era: its own calendar's reading, with the
+     * year that era gives it in `era` and `era_year`. An era the calendar
+     * attaches itself gives the calendar's own reading when that reading is
+     * in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+     * Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+     * year, month and day with the Yele year counted from the epoch the
+     * context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+     * `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+     * `UNSUPPORTED` naming `era`, with a hint listing those it can.
+     */
+    public final MethodHandle ts_calendar_in_era;
 
     /**
      * The length of a month in a calendar.
@@ -6135,6 +6149,7 @@ public final class Native {
         ts_calendar_from_fixed = linker.downcallHandle(symbols.find("ts_calendar_from_fixed").orElseThrow(() -> missing("ts_calendar_from_fixed")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_LONG, ADDRESS));
         ts_calendar_to_fixed = linker.downcallHandle(symbols.find("ts_calendar_to_fixed").orElseThrow(() -> missing("ts_calendar_to_fixed")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_calendar_convert = linker.downcallHandle(symbols.find("ts_calendar_convert").orElseThrow(() -> missing("ts_calendar_convert")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_SHORT, ADDRESS));
+        ts_calendar_in_era = linker.downcallHandle(symbols.find("ts_calendar_in_era").orElseThrow(() -> missing("ts_calendar_in_era")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_SHORT, ADDRESS));
         ts_calendar_month_length = linker.downcallHandle(symbols.find("ts_calendar_month_length").orElseThrow(() -> missing("ts_calendar_month_length")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, JAVA_BYTE, ADDRESS));
         ts_calendar_is_leap = linker.downcallHandle(symbols.find("ts_calendar_is_leap").orElseThrow(() -> missing("ts_calendar_is_leap")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, ADDRESS));
         ts_calendar_weekday = linker.downcallHandle(symbols.find("ts_calendar_weekday").orElseThrow(() -> missing("ts_calendar_weekday")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

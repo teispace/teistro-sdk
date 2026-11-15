@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 541 of 541 | 100.0% | 230 of 230 | 100.0% |
-| `hi-Deva-IN` | base | 427 of 541 | 78.9% | 217 of 230 | 94.3% |
-| `ne-Deva-NP` | strict | 541 of 541 | 100.0% | 230 of 230 | 100.0% |
-| `sa-Deva` | base | 426 of 541 | 78.7% | 214 of 230 | 93.0% |
-| `sa-Latn` | base | 426 of 541 | 78.7% | 214 of 230 | 93.0% |
+| `en-Latn` | strict | 542 of 542 | 100.0% | 230 of 230 | 100.0% |
+| `hi-Deva-IN` | base | 427 of 542 | 78.8% | 217 of 230 | 94.3% |
+| `ne-Deva-NP` | strict | 542 of 542 | 100.0% | 230 of 230 | 100.0% |
+| `sa-Deva` | base | 426 of 542 | 78.6% | 214 of 230 | 93.0% |
+| `sa-Latn` | base | 426 of 542 | 78.6% | 214 of 230 | 93.0% |
 
-541 members of 44 kinds, 230 messages.
+542 members of 44 kinds, 230 messages.
 
 ## By kind
 
@@ -34,7 +34,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `day_marker` | 3 | 3 | 0 | 3 | 0 | 0 |
 | `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `era` | 12 | 12 | 2 | 12 | 1 | 1 |
+| `era` | 13 | 13 | 2 | 13 | 1 | 1 |
 | `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `gowri` | 8 | 8 | 0 | 8 | 0 | 0 |
 | `graha` | 12 | 12 | 12 | 12 | 12 | 12 |

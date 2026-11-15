@@ -4582,6 +4582,12 @@
           "value": 11,
           "doc": "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name",
           "key": "BHASKARABDA"
+        },
+        {
+          "name": "KiratYele",
+          "value": 12,
+          "doc": "Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar",
+          "key": "KIRAT_YELE"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -16374,6 +16380,69 @@
           "role": "value",
           "meta": {
             "enum": "Calendar"
+          }
+        },
+        {
+          "name": "out_date",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": true
+          },
+          "role": "struct_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_calendar_in_era",
+      "doc": "A date viewed in a named era: its own calendar's reading, with the\nyear that era gives it in `era` and `era_year`. An era the calendar\nattaches itself gives the calendar's own reading when that reading is\nin it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele\nSambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same\nyear, month and day with the Yele year counted from the epoch the\ncontext's `calendars.kirat_yele` names (`KIRATI`, the default, or\n`YALAMBAR`), turning on Magh 1. An era the calendar cannot give is\n`UNSUPPORTED` naming `era`, with a hint listing those it can.",
+      "safety": "`context` must be a live handle; `date` valid for a read; `out_date`\nvalid for a read of its `struct_size` and a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "date",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "era",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u16"
+          },
+          "role": "value",
+          "meta": {
+            "enum": "Era"
           }
         },
         {

@@ -3194,6 +3194,10 @@ typedef enum ts_era {
      * Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
      */
     TS_ERA_BHASKARABDA = 11,
+    /**
+     * Kirat Yele Sambat, the Kirat era: the Bikram Sambat date under a year that turns on Magh 1, BS + 3004 from Magh (5086 from 15 January 2026), or BS + 1723 on Regmi's count from Yalambar
+     */
+    TS_ERA_KIRAT_YELE = 12,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_ERA_UNKNOWN = -1,
 } ts_era;
@@ -10450,6 +10454,21 @@ ts_status ts_calendar_to_fixed(const ts_context * context, const ts_calendar_dat
  * valid for a read of its `struct_size` and a write.
  */
 ts_status ts_calendar_convert(const ts_context * context, const ts_calendar_date * date, uint16_t into, ts_calendar_date * out_date);
+
+/**
+ * A date viewed in a named era: its own calendar's reading, with the
+ * year that era gives it in `era` and `era_year`. An era the calendar
+ * attaches itself gives the calendar's own reading when that reading is
+ * in it; `era.KIRAT_YELE` views a Bikram Sambat date in the Kirat Yele
+ * Sambat (`calendars/bikram-sambat.md` §Kirat Yele Sambat), the same
+ * year, month and day with the Yele year counted from the epoch the
+ * context's `calendars.kirat_yele` names (`KIRATI`, the default, or
+ * `YALAMBAR`), turning on Magh 1. An era the calendar cannot give is
+ * `UNSUPPORTED` naming `era`, with a hint listing those it can.
+ * Safety: `context` must be a live handle; `date` valid for a read; `out_date`
+ * valid for a read of its `struct_size` and a write.
+ */
+ts_status ts_calendar_in_era(const ts_context * context, const ts_calendar_date * date, uint16_t era, ts_calendar_date * out_date);
 
 /**
  * The length of a month in a calendar.

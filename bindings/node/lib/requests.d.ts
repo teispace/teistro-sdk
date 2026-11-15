@@ -903,6 +903,15 @@ export interface CalendarAsked {
 }
 
 /**
+ * An era request as a binding writes it.
+ */
+export interface InEraAsked {
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly date: DayAsked;
+  readonly era: Member<catalogue.Era>;
+}
+
+/**
  * The lines of a map at one instant.
  */
 export interface AstrocartographyRequest {
@@ -10767,6 +10776,7 @@ export interface RecordRequests {
   readonly 'calendar.add': AddAsked;
   readonly 'calendar.between': BetweenAsked;
   readonly 'calendar.convert': CalendarAsked;
+  readonly 'calendar.in_era': InEraAsked;
   readonly 'chart.astrocartography': AstrocartographyRequest;
   readonly 'chart.disagreements': ChartDisagreementsRequest;
   readonly 'chart.found': ChartFoundRequest;

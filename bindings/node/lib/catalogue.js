@@ -1978,6 +1978,7 @@ export const Era = /* @__PURE__ */ Object.freeze({
   Hijri: 'era.HIJRI',
   ViraNirvana: 'era.VIRA_NIRVANA',
   Bhaskarabda: 'era.BHASKARABDA',
+  KiratYele: 'era.KIRAT_YELE',
 });
 
 /**
@@ -1997,6 +1998,7 @@ export const EraById = /* @__PURE__ */ new Map([
   [9, 'era.HIJRI'],
   [10, 'era.VIRA_NIRVANA'],
   [11, 'era.BHASKARABDA'],
+  [12, 'era.KIRAT_YELE'],
 ]);
 
 /** Every BodyClass by name. */

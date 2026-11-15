@@ -552,6 +552,7 @@ final List<EntitySurface> entities = [
   EntitySurface('MessagesSdkEntityEra.commonEra', (m) => m.sdk.entity.era.commonEra),
   EntitySurface('MessagesSdkEntityEra.hijri', (m) => m.sdk.entity.era.hijri),
   EntitySurface('MessagesSdkEntityEra.kali', (m) => m.sdk.entity.era.kali),
+  EntitySurface('MessagesSdkEntityEra.kiratYele', (m) => m.sdk.entity.era.kiratYele),
   EntitySurface('MessagesSdkEntityEra.kollam', (m) => m.sdk.entity.era.kollam),
   EntitySurface('MessagesSdkEntityEra.nepalSambat', (m) => m.sdk.entity.era.nepalSambat),
   EntitySurface('MessagesSdkEntityEra.shaka', (m) => m.sdk.entity.era.shaka),
