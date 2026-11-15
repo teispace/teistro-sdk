@@ -1,5 +1,5 @@
-//! The Nepal Sambat date of a day: its year, its month and its half
-//! (`03-design/calendar-indian-lunisolar.md` §11).
+//! The Nepal Sambat date of a day: its year, its month, its half and
+//! the day of the half (`03-design/calendar-indian-lunisolar.md` §11).
 //!
 //! Nepal Sambat is a reading of the lunisolar calendar the almanac
 //! already keeps, not a calendar of its own. Its months are the amanta
@@ -30,9 +30,10 @@ use crate::almanac::Panchanga;
 /// 2026.
 const YEAR_AT_ZERO: i32 = -880;
 
-/// A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)".
+/// A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)",
+/// with the day of the half Newar dates add: "कछलाथ्व १".
 ///
-/// The tithi that completes the date is the day's own
+/// The day of the half is the day's sunrise tithi's number
 /// (`Panchanga::limbs`), and `sdk.calendar.nepalSambatMonth`,
 /// `nepalSambatHalf` and `nepalSambatDate` say the rest in every locale.
 ///
@@ -70,6 +71,7 @@ const YEAR_AT_ZERO: i32 = -880;
 /// let ns = day.nepal_sambat();
 /// assert_eq!((ns.year, ns.month), (1147, 1));
 /// assert!(matches!(ns.paksha, Paksha::Shukla | Paksha::Krishna));
+/// assert!((1..=15).contains(&ns.day));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -87,6 +89,12 @@ pub struct NepalSambatDate {
     pub kind: MonthKind,
     /// The half: Shukla is *thwa* and Krishna *gā*.
     pub paksha: Paksha,
+    /// The day of the half, as Newar dates count it: the number of the
+    /// tithi at the day's sunrise within its half, 1 to 15, so the full
+    /// moon (*punhi*) is *thwa* 15 and the new moon (*amai*) *gā* 15. A
+    /// tithi no sunrise holds is skipped and one two sunrises hold
+    /// repeats, as the printed date does.
+    pub day: u8,
 }
 
 impl NepalSambatDate {
@@ -112,6 +120,9 @@ impl NepalSambatDate {
             month: month_of(day.month.amanta),
             kind: day.month.kind,
             paksha: day.month.paksha,
+            day: day
+                .tithi_at(day.day.sunrise)
+                .map_or(1, |span| span.member.attributes().number),
         }
     }
 

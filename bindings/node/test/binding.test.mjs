@@ -4918,19 +4918,19 @@ test('an almanac carries each day\'s Nepal Sambat date', () => {
   const { value, provenance } = almanac.nepalSambat;
   assert.equal(value.length, almanac.length);
   assert.deepEqual(
-    value.map(({ year, month, paksha }) => [year, month, paksha]),
+    value.map(({ year, month, paksha, day }) => [year, month, paksha, day]),
     [
-      [1145, 12, 'paksha.KRISHNA'],
-      [1145, 12, 'paksha.KRISHNA'],
-      [1146, 1, 'paksha.SHUKLA'],
-      [1146, 1, 'paksha.SHUKLA'],
+      [1145, 12, 'paksha.KRISHNA', 14],
+      [1145, 12, 'paksha.KRISHNA', 15],
+      [1146, 1, 'paksha.SHUKLA', 1],
+      [1146, 1, 'paksha.SHUKLA', 2],
     ],
   );
   assert.ok(Object.isFrozen(value[0]), 'frozen to its leaves');
   assert.equal(provenance.inputHash, almanac.provenance.inputHash);
   const said = ctx.intl.render('sdk.calendar.nepalSambatDate', value[2]);
   assert.deepEqual(said.warnings, []);
-  assert.equal(said.text, 'ने.सं. ११४६ कछलाथ्व');
+  assert.equal(said.text, 'ने.सं. ११४६ कछलाथ्व १');
   // Beside the days, as a flag with its step.
   assert.equal(ctx.almanac.of(days).sky, null);
   const { sky } = ctx.almanac.of({ ...days, sky: true, skyStepMinutes: 60 });

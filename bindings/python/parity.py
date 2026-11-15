@@ -3124,7 +3124,7 @@ def main() -> None:
         put("nepal-sambat-hash", nepal_sambat.provenance.content_hash)
         put(
             "nepal-sambat",
-            listed(f"{d.year}:{d.month}:{d.kind.key}:{d.paksha.full_key}" for d in nepal_sambat.value),
+            listed(f"{d.year}:{d.month}:{d.kind.key}:{d.paksha.full_key}:{d.day}" for d in nepal_sambat.value),
         )
 
         # The day's sky over two days, at an hour's step.

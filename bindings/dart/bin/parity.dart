@@ -3434,7 +3434,7 @@ void main() {
     'nepal-sambat',
     listed([
       for (final d in nepalSambat.value)
-        '${d.year}:${d.month}:${d.kind.key}:${d.paksha.fullKey}',
+        '${d.year}:${d.month}:${d.kind.key}:${d.paksha.fullKey}:${d.day}',
     ]),
   );
 

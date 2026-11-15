@@ -4,7 +4,7 @@
   "lunarMonth": ".input {$masa :entity kind=masa} .input {$kind :string} .match $kind ADHIKA {{अधिक-{$masa}}} KSHAYA {{क्षय-{$masa}}} * {{{$masa}}}",
   "nepalSambatMonth": ".input {$month :integer} .input {$kind :string} .match $kind $month ADHIKA * {{अनला}} * 1 {{कछला}} * 2 {{थिंल्ला}} * 3 {{पोहेला}} * 4 {{सिल्ला}} * 5 {{चिल्ला}} * 6 {{चौला}} * 7 {{वछला}} * 8 {{तछला}} * 9 {{दिल्ला}} * 10 {{गुंला}} * 11 {{ञँला}} * 12 {{कौला}} * * {{{$month}}}",
   "nepalSambatHalf": ".input {$paksha :string} .match $paksha SHUKLA {{थ्व}} paksha.SHUKLA {{थ्व}} KRISHNA {{गा}} paksha.KRISHNA {{गा}} * {{{$paksha}}}",
-  "nepalSambatDate": ".input {$year :integer} .input {$month :integer} .input {$kind :string} .input {$paksha :string} {{ने.सं. {$year :integer useGrouping=false} {sdk.calendar.nepalSambatMonth :msg}{sdk.calendar.nepalSambatHalf :msg}}}",
+  "nepalSambatDate": ".input {$year :integer} .input {$month :integer} .input {$kind :string} .input {$paksha :string} .input {$day :integer} {{ने.सं. {$year :integer useGrouping=false} {sdk.calendar.nepalSambatMonth :msg}{sdk.calendar.nepalSambatHalf :msg} {$day :integer}}}",
   "parana": ".input {$fast :string} {{पारणम्: {$fast}}}",
   "GREGORIAN": {
     "monthName": ".input {$month :integer} .match $month 1 {{जनवरीमासः}} 2 {{फरवरीमासः}} 3 {{मार्चमासः}} 4 {{अप्रैलमासः}} 5 {{मईमासः}} 6 {{जूनमासः}} 7 {{जुलाईमासः}} 8 {{अगस्तमासः}} 9 {{सितंबरमासः}} 10 {{अक्तूबरमासः}} 11 {{नवंबरमासः}} 12 {{दिसंबरमासः}} * {{{$month}}}",

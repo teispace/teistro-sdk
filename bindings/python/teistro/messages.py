@@ -12609,11 +12609,11 @@ class MessagesSdkCalendar:
             {"kind": kind, "masa": {"$entity": masa.value}},
         )
 
-    def nepal_sambat_date(self, *, kind: str, month: int, paksha: str, year: int) -> str:
+    def nepal_sambat_date(self, *, day: int, kind: str, month: int, paksha: str, year: int) -> str:
         """`sdk.calendar.nepalSambatDate`"""
         return self._r.render(
             "sdk.calendar.nepalSambatDate",
-            {"kind": kind, "month": month, "paksha": paksha, "year": year},
+            {"day": day, "kind": kind, "month": month, "paksha": paksha, "year": year},
         )
 
     def nepal_sambat_half(self, *, paksha: str) -> str:

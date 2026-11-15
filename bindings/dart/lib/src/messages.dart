@@ -2763,8 +2763,8 @@ final class MessagesSdkCalendar {
   MessagesSdkCalendarGhati get ghati => MessagesSdkCalendarGhati(_r);
   String lunarMonth({required String kind, required MasaKey masa}) =>
       _r.render('sdk.calendar.lunarMonth', {'kind': kind, 'masa': {r'$entity': masa.key}});
-  String nepalSambatDate({required String kind, required int month, required String paksha, required int year}) =>
-      _r.render('sdk.calendar.nepalSambatDate', {'kind': kind, 'month': month, 'paksha': paksha, 'year': year});
+  String nepalSambatDate({required int day, required String kind, required int month, required String paksha, required int year}) =>
+      _r.render('sdk.calendar.nepalSambatDate', {'day': day, 'kind': kind, 'month': month, 'paksha': paksha, 'year': year});
   String nepalSambatHalf({required String paksha}) =>
       _r.render('sdk.calendar.nepalSambatHalf', {'paksha': paksha});
   String nepalSambatMonth({required String kind, required int month}) =>
