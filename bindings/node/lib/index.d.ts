@@ -100,6 +100,9 @@ import type {
   MoonPhase,
   Lilith,
   GocharVerdict,
+  LifeArea,
+  Colour,
+  ScoreBand,
   NodeObstruction,
   NodeVedha,
   Relationship,
@@ -1358,15 +1361,20 @@ export interface RashifalPeriod {
 export interface BaselineScore {
   /** 0 to 100. */
   readonly overall: number;
-  /** The eight life areas, each 0 to 100, in the baseline's order. */
+  /**
+   * The band `overall` falls in under the context's `rashifal.score_bands`,
+   * 75, 50 and 30 by default: `score_band.EXCELLENT` to `score_band.CARE`.
+   */
+  readonly band: ScoreBand;
+  /** The eight life areas, each 0 to 100, in the baseline's order (`life_area.OVERALL` first). */
   readonly areas: readonly {
-    readonly area: 'OVERALL' | 'CAREER' | 'FINANCE' | 'HEALTH' | 'RELATIONSHIPS' | 'FAMILY' | 'EDUCATION' | 'SPIRITUALITY';
+    readonly area: LifeArea;
     readonly score: number;
   }[];
   /** The five grahas the baseline names, in its order. */
   readonly keyInfluences: readonly { readonly graha: Graha | 'unknown'; readonly house: number; readonly verdict: GocharVerdict }[];
   /** The sign lord's lucky elements. */
-  readonly lucky: { readonly colour: string; readonly number: number; readonly day: Vara | 'unknown'; readonly direction: Direction | 'unknown' };
+  readonly lucky: { readonly colour: Colour; readonly number: number; readonly day: Vara | 'unknown'; readonly direction: Direction | 'unknown' };
 }
 
 /** One period's answer: the reading, the baseline's twelve scores and the twelve plans when asked. */

@@ -4899,6 +4899,10 @@ pub mod sdk {
         pub mod choghadiya {
         }
 
+        /// The `colour` group.
+        pub mod colour {
+        }
+
         /// The `dasha_family` group.
         pub mod dasha_family {
         }
@@ -4951,6 +4955,10 @@ pub mod sdk {
         pub mod gender {
         }
 
+        /// The `gochar_verdict` group.
+        pub mod gochar_verdict {
+        }
+
         /// The `gowri` group.
         pub mod gowri {
         }
@@ -4981,6 +4989,10 @@ pub mod sdk {
 
         /// The `koota` group.
         pub mod koota {
+        }
+
+        /// The `life_area` group.
+        pub mod life_area {
         }
 
         /// The `lunar_eclipse_kind` group.
@@ -5069,6 +5081,10 @@ pub mod sdk {
 
         /// The `samvatsara` group.
         pub mod samvatsara {
+        }
+
+        /// The `score_band` group.
+        pub mod score_band {
         }
 
         /// The `sex` group.

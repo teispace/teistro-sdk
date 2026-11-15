@@ -13,6 +13,12 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Direction, Graha, Rashi, Tithi, TithiClass, Vara, Yoga};
+// The eight areas a score is split into, in the baseline's order
+// (`LifeArea::ALL`), the colours it names lucky and the band a score falls
+// in are catalogue kinds, so a reader names each in any locale
+// (`life_area.CAREER`, `colour.RED`, `score_band.GOOD`).
+pub use teistro_core::catalogue::{Colour, LifeArea, ScoreBand};
+pub use teistro_core::settings::ScoreBands;
 use teistro_gochar::hits::HitEvent;
 use teistro_gochar::sade_sati::Phase;
 use teistro_gochar::{GRAHAS, GocharReading, Verdict};
@@ -65,81 +71,6 @@ pub struct Panchanga {
     pub muhurta_yogas: u8,
 }
 
-/// The eight areas a score is split into.
-///
-/// ```
-/// use teistro_rashifal::baseline::LifeArea;
-///
-/// assert_eq!(serde_json::to_value(LifeArea::Relationships).unwrap(), "RELATIONSHIPS");
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum LifeArea {
-    /// The whole, which every transit also feeds.
-    Overall,
-    /// Work.
-    Career,
-    /// Money.
-    Finance,
-    /// The body.
-    Health,
-    /// Partners.
-    Relationships,
-    /// Kin.
-    Family,
-    /// Learning.
-    Education,
-    /// The inner life.
-    Spirituality,
-}
-
-impl LifeArea {
-    /// The eight, in the baseline's order.
-    ///
-    /// ```
-    /// use teistro_rashifal::baseline::LifeArea;
-    ///
-    /// assert_eq!(LifeArea::ALL.first(), Some(&LifeArea::Overall));
-    /// assert_eq!(LifeArea::ALL.len(), 8);
-    /// ```
-    pub const ALL: [LifeArea; 8] = [
-        LifeArea::Overall,
-        LifeArea::Career,
-        LifeArea::Finance,
-        LifeArea::Health,
-        LifeArea::Relationships,
-        LifeArea::Family,
-        LifeArea::Education,
-        LifeArea::Spirituality,
-    ];
-}
-
-/// A colour the baseline names lucky.
-///
-/// ```
-/// use teistro_rashifal::baseline::Colour;
-///
-/// assert_eq!(serde_json::to_value(Colour::Yellow).unwrap(), "YELLOW");
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Colour {
-    /// Mars's.
-    Red,
-    /// Venus's and the Moon's.
-    White,
-    /// Mercury's.
-    Green,
-    /// The Sun's.
-    Orange,
-    /// Jupiter's.
-    Yellow,
-    /// Saturn's.
-    Blue,
-}
-
 /// A sign's lucky elements, looked up by its lord: the same every day,
 /// and the same for the two signs one graha rules.
 ///
@@ -158,10 +89,10 @@ pub enum Colour {
 /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
 /// use teistro_core::catalogue::{Direction, Vara};
 /// use teistro_rashifal::Period;
-/// use teistro_rashifal::baseline::{Colour, baseline_score};
+/// use teistro_rashifal::baseline::{Colour, ScoreBands, baseline_score};
 ///
 /// // Aries's lord is Mars: red, 9, the south, Tuesday.
-/// let lucky = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily).lucky;
+/// let lucky = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT).lucky;
 /// assert_eq!((lucky.colour, lucky.number), (Colour::Red, 9));
 /// assert_eq!((lucky.direction, lucky.day), (Direction::South, Vara::Mangalavara));
 /// ```
@@ -195,9 +126,9 @@ pub struct LuckyElements {
 /// # use teistro_rashifal::baseline::Panchanga;
 /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
 /// use teistro_rashifal::Period;
-/// use teistro_rashifal::baseline::baseline_score;
+/// use teistro_rashifal::baseline::{ScoreBands, baseline_score};
 ///
-/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily);
+/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
 /// assert!(score.key_influences.len() <= 5);
 /// assert!(score.key_influences.iter().all(|influence| (1..=12).contains(&influence.house)));
 /// ```
@@ -229,11 +160,13 @@ pub struct KeyInfluence {
 /// # use teistro_rashifal::baseline::Panchanga;
 /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
 /// use teistro_rashifal::Period;
-/// use teistro_rashifal::baseline::{LifeArea, baseline_score};
+/// use teistro_rashifal::baseline::{LifeArea, ScoreBands, baseline_score};
 ///
-/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Weekly);
+/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Weekly, ScoreBands::DEFAULT);
 /// assert!(score.overall <= 100);
 /// assert_eq!(score.areas.map(|(area, _)| area), LifeArea::ALL);
+/// // Its band is the overall's under the thresholds it was scored with.
+/// assert_eq!(score.band(), ScoreBands::DEFAULT.band(score.overall));
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -247,6 +180,38 @@ pub struct BaselineScore {
     pub key_influences: Vec<KeyInfluence>,
     /// The sign's lucky elements.
     pub lucky: LuckyElements,
+    /// The band `overall` falls in under the thresholds it was scored
+    /// with, [`BaselineScore::band`]. Not a field a caller sets: it is
+    /// read from `overall`, so it cannot disagree with it.
+    band: ScoreBand,
+}
+
+impl BaselineScore {
+    /// The band the overall score falls in, under the thresholds
+    /// [`baseline_score`] was given: `rashifal.score_bands` through the
+    /// façade (`03-design/rashifal.md`, "The score band").
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Graha, Rashi, Tithi, Yoga};
+    /// # use teistro_gochar::Transit;
+    /// # let transits = [Transit::new(Rashi::Aries, 5.0); 9];
+    /// # use teistro_rashifal::{RashifalRules, rashifal};
+    /// # let read = rashifal(&transits, &[], &RashifalRules::default());
+    /// # use teistro_rashifal::baseline::Panchanga;
+    /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+    /// use teistro_rashifal::Period;
+    /// use teistro_rashifal::baseline::{ScoreBands, baseline_score};
+    ///
+    /// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
+    /// assert_eq!(score.band(), ScoreBands::DEFAULT.band(score.overall));
+    /// // It crosses with the score, beside `overall`.
+    /// let json = serde_json::to_value(&score).unwrap();
+    /// assert_eq!(json["band"], score.band().key());
+    /// ```
+    #[must_use]
+    pub const fn band(&self) -> ScoreBand {
+        self.band
+    }
 }
 
 /// The order the baseline lists the grahas in, which breaks ties among the
@@ -287,7 +252,8 @@ fn contribution(verdict: Verdict, retrograde: bool, weight: f64) -> f64 {
     match verdict {
         Verdict::Good => weight * if retrograde { 0.75 } else { 1.0 },
         Verdict::Obstructed => weight * 0.15,
-        Verdict::NotGood => -weight * 0.6 * if retrograde { 1.25 } else { 1.0 },
+        // Not good, v. 2's third verdict.
+        _ => -weight * 0.6 * if retrograde { 1.25 } else { 1.0 },
     }
 }
 
@@ -390,7 +356,8 @@ fn rounded(score: f64) -> u8 {
 
 /// The baseline's score of `reading` for `period`, with each graha's
 /// motion at the snapshot (`retrograde`, the Sun to Ketu: the mean nodes
-/// always are) and the reference day's `panchanga`.
+/// always are) and the reference day's `panchanga`, its overall banded by
+/// `bands`.
 ///
 /// ```
 /// # use teistro_core::catalogue::{Graha, Rashi};
@@ -406,14 +373,18 @@ fn rounded(score: f64) -> u8 {
 /// # use teistro_rashifal::baseline::Panchanga;
 /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
 /// use teistro_rashifal::Period;
-/// use teistro_rashifal::baseline::baseline_score;
+/// use teistro_rashifal::baseline::{ScoreBand, ScoreBands, baseline_score};
 ///
 /// // The same reading weighed for a day and for a year: the Moon counts
 /// // for the one and not the other.
-/// let day = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily);
-/// let year = baseline_score(&read[3], &[false; 9], panchanga, Period::Yearly);
+/// let day = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
+/// let year = baseline_score(&read[3], &[false; 9], panchanga, Period::Yearly, ScoreBands::DEFAULT);
 /// assert!(day.overall <= 100 && year.overall <= 100);
 /// assert_eq!(day.lucky, year.lucky);
+/// // Thresholds of nought band every score excellent.
+/// let lenient = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily, ScoreBands([2, 1, 0]));
+/// assert_eq!(lenient.overall, day.overall);
+/// assert!(day.overall < 2 || lenient.band() == ScoreBand::Excellent);
 /// ```
 #[must_use]
 pub fn baseline_score(
@@ -421,6 +392,7 @@ pub fn baseline_score(
     retrograde: &[bool; 9],
     panchanga: Panchanga,
     period: Period,
+    bands: ScoreBands,
 ) -> BaselineScore {
     let mut raw = 0.0;
     let mut most = 0.0;
@@ -486,11 +458,13 @@ pub fn baseline_score(
     weighed
         .sort_by(|a, b| weight(b.graha, Period::Daily).total_cmp(&weight(a.graha, Period::Daily)));
     weighed.truncate(5);
+    let overall = rounded(overall);
     BaselineScore {
-        overall: rounded(overall),
+        overall,
         areas,
         key_influences: weighed,
         lucky: lucky(lord_of(reading.rashi)),
+        band: bands.band(overall),
     }
 }
 

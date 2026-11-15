@@ -962,7 +962,7 @@ def put_rashifal(geo: Context, place: Observer) -> None:
                 lucky = score.lucky
                 put(
                     f"rashifal-{n}-{r}-baseline",
-                    f"{score.overall} {','.join(str(value) for _, value in score.areas)} {named or 'none'} {lucky.colour} {lucky.number} {lucky.day.full_key} {lucky.direction.full_key}",
+                    f"{score.overall} {','.join(str(value) for _, value in score.areas)} {named or 'none'} {lucky.colour.key} {lucky.number} {lucky.day.full_key} {lucky.direction.full_key} {score.band.full_key}",
                 )
             if answer.plans is not None:
                 put_plan(geo, f"rashifal-{n}-{r}-plan", answer.plans[r])

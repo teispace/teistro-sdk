@@ -25,7 +25,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::catalogue::{Graha, Rashi};
-use teistro::gochar::{GRAHAS, GocharReading, GocharRules, Reference, Transit, Verdict, gochar};
+use teistro::gochar::{GRAHAS, GocharReading, GocharRules, Reference, Transit, gochar};
 use teistro::quantity::{JulianDay, Utc};
 use teistro::settings::{NodeObstruction, NodeVedha};
 use teistro::{Context, Ephemeris, GocharFrom, GocharRequest};
@@ -137,11 +137,9 @@ type Verdicts = [[usize; 3]; 9];
 
 fn tally(verdicts: &mut Verdicts, reading: &GocharReading) {
     for read in &reading.grahas {
-        let column = match read.verdict {
-            Verdict::Good => 0,
-            Verdict::Obstructed => 1,
-            Verdict::NotGood => 2,
-        };
+        // The verdict's catalogue id is its column: good, obstructed, not
+        // good.
+        let column = usize::from(read.verdict.id());
         if let Some(cell) = verdicts
             .get_mut(index(read.graha))
             .and_then(|row| row.get_mut(column))

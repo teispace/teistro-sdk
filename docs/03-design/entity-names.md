@@ -701,6 +701,75 @@ optional field.
 fortnight's `short` begins its `name`, and the twelve `indic` names are
 distinct.
 
+## 4g. The rashifal's words (SR-124, 2026-11-15)
+
+A consumer's home page shows a sign's rashifal as words: the life areas
+it scores, its lucky colour, each graha's gochar verdict and the day's
+band. Each is now a catalogue kind (`life_area`, `colour`,
+`gochar_verdict`, `score_band`; `03-design/rashifal.md`, "One type per
+concept"), and each member is named in `en-Latn`, `ne-Deva-NP`,
+`hi-Deva-IN` and `sa-Deva`, with `sa-Latn` derived. Each record is `name`,
+`short` and `prose`; the English `prose` is lower case, these being
+common nouns.
+
+| member | en | ne | hi | sa |
+|---|---|---|---|---|
+| `life_area.OVERALL` | Overall | समग्र | समग्र | समग्र |
+| `life_area.CAREER` | Career (short Career) | पेशा | कार्यक्षेत्र (short कार्य) | कर्म |
+| `life_area.FINANCE` | Finance (short Money) | आर्थिक स्थिति (short धन) | आर्थिक स्थिति (short धन) | धन |
+| `life_area.HEALTH` | Health | स्वास्थ्य | स्वास्थ्य | आरोग्य |
+| `life_area.RELATIONSHIPS` | Relationships (short Relations) | सम्बन्ध | संबंध | सम्बन्ध |
+| `life_area.FAMILY` | Family | परिवार | परिवार | कुटुम्ब |
+| `life_area.EDUCATION` | Education (short Study) | शिक्षा | शिक्षा | विद्या |
+| `life_area.SPIRITUALITY` | Spirituality (short Spirit) | अध्यात्म | अध्यात्म | अध्यात्म |
+| `colour.RED` … `BLUE` | Red, White, Green, Orange, Yellow, Blue | रातो, सेतो, हरियो, सुन्तला, पहेँलो, निलो | लाल, सफ़ेद, हरा, नारंगी, पीला, नीला | रक्त, श्वेत, हरित, नारङ्ग, पीत, नील |
+| `gochar_verdict.GOOD` | Favourable (short Good) | शुभ | शुभ | शुभ |
+| `gochar_verdict.OBSTRUCTED` | Obstructed | वेधले बाधित (short बाधित) | वेध से बाधित (short बाधित) | वेधबाधित (short बाधित) |
+| `gochar_verdict.NOT_GOOD` | Unfavourable (short Not good) | अशुभ | अशुभ | अशुभ |
+| `score_band.EXCELLENT` | Excellent | उत्तम दिन (short उत्तम) | उत्तम दिन (short उत्तम) | उत्तमदिन (short उत्तम) |
+| `score_band.GOOD` | Good | राम्रो दिन (short राम्रो) | अच्छा दिन (short अच्छा) | शोभनदिन (short शोभन) |
+| `score_band.MIXED` | Mixed | मिश्रित दिन (short मिश्रित) | मिश्रित दिन (short मिश्रित) | मिश्रदिन (short मिश्र) |
+| `score_band.CARE` | A day for care (short Care) | सावधानीको दिन (short सावधानी) | सावधानी का दिन (short सावधानी) | सावधानदिन (short सावधान) |
+
+The reasons:
+
+- **The areas are the house significations in the everyday words a
+  horoscope column prints.** Nepali `पेशा` over `करियर`: both are in use,
+  but `पेशा` is the established Nepali word for one's occupation and needs
+  no English loan, and the 10th house it reads is the कर्मभाव, which the
+  Sanskrit `कर्म` names directly. Hindi `कार्यक्षेत्र` is the Hindi press's
+  word for the career column. Finance is `आर्थिक स्थिति` in Nepali and
+  Hindi, with `धन` (the 2nd house's own name, धनभाव) as the short form and
+  as the Sanskrit. Spirituality is the noun `अध्यात्म` in every Devanagari
+  locale, not the adjective `आध्यात्मिक`, since a member is named as a
+  noun beside `स्वास्थ्य` and `शिक्षा`. Sanskrit reads the areas in its own
+  words: `आरोग्य` (health), `कुटुम्ब` (the 2nd house's family, कुटुम्बभाव),
+  `विद्या` (learning, the 4th and 5th houses' signification).
+- **The colours are the common colour words**, Nepali's in their Nepali
+  spelling (`पहेँलो` with the candrabindu, `निलो` as the Nepali
+  dictionary writes it), Hindi's with the nukta in `सफ़ेद`. Sanskrit takes
+  the classical colour adjectives (`रक्त`, `श्वेत`, `हरित`, `पीत`, `नील`)
+  and `नारङ्ग`, the orange fruit's Sanskrit name, for orange, which has no
+  older colour word.
+- **The verdicts follow the gochar reasons the SDK already prints**
+  (`sdk.reason`): a transit in a good house is `शुभ`, one in a bad house
+  `अशुभ`, the auspicious and inauspicious of the almanacs; an obstructed
+  one is blocked by vedha, Phaladeepika ch. 26's term, so the name says
+  `वेध` and the short form says only `बाधित`. English `Favourable` and
+  `Unfavourable` are the words translations of Phaladeepika use for a
+  transit's result; `Good` and `Not good` are their short forms, the
+  catalogue's own keys.
+- **The bands are a day's character**, as the home page shows them: `दिन`
+  in the name, dropped from the short form, which sits beside a date that
+  already says it is a day. Nepali `सावधानीको दिन` and Hindi `सावधानी का
+  दिन` (a day to be careful) carry the band `CARE` without calling a day
+  bad, as the English `A day for care` does. Sanskrit compounds each band
+  with `दिन` and takes `शोभन` (fair, auspicious) for good.
+
+None of these is a text's term except the verdicts' `शुभ`, `अशुभ` and
+`वेध`: the areas, the colours and the bands are presentation words for a
+score no text fixes, chosen as everyday usage under the policy of §4e.
+
 ## 5. What this does not settle
 
 - **The maintainer's review.** The names ship final and are corrected

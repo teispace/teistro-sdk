@@ -29,8 +29,9 @@ use super::knobs::{
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
-    Houses, Jaimini, Kp, LagnaTable, Output, Panchanga, Precision, Provider, Resolved, SCHEMA,
-    Settings, SettingsPatch, Siddhanta, State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
+    Houses, Jaimini, Kp, LagnaTable, Output, Panchanga, Precision, Provider, Rashifal, Resolved,
+    SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State, Strength, SuryaBija,
+    SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -373,6 +374,11 @@ pub fn root() -> Settings {
             ashtakavarga_good_from: AshtakavargaGoodFrom::Five,
             // Each transit from the chart's own centre (C778).
             transit_centre: TransitCentre::AsChart,
+        },
+        // No text bands a score; Tithipatra's thresholds, 75, 50 and 30
+        // (SR-124; `03-design/rashifal.md`, "The score band").
+        rashifal: Rashifal {
+            score_bands: ScoreBands::DEFAULT,
         },
         kp: kp_readers(),
         aspect: Aspect {

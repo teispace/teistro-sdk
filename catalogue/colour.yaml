@@ -1,0 +1,47 @@
+kind: colour
+number: 164
+version: 1
+doc: "A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361)."
+members:
+  - key: RED
+    id: 0
+    doc: "Mars's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V
+  - key: WHITE
+    id: 1
+    doc: "Venus's and the Moon's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V
+  - key: GREEN
+    id: 2
+    doc: "Mercury's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V
+  - key: ORANGE
+    id: 3
+    doc: "The Sun's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V
+  - key: YELLOW
+    id: 4
+    doc: "Jupiter's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V
+  - key: BLUE
+    id: 5
+    doc: "Saturn's"
+    sources:
+      - text: "the baseline engine's rashifal package"
+        ref: "`03-design/rashifal.md` (What the baseline does)"
+    mark: V

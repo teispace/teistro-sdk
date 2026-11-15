@@ -14,7 +14,7 @@ use teistro_gochar::hits::{Hit, HitEvent, Motion};
 use teistro_gochar::sade_sati::Phase;
 use teistro_gochar::{Reference, Transit, Verdict, gochar};
 
-use crate::baseline::{LifeArea, Panchanga, Period, baseline_score};
+use crate::baseline::{Colour, LifeArea, Panchanga, Period, ScoreBand, ScoreBands, baseline_score};
 use crate::{PeriodEvent, RashifalRules, rashifal, reference_day};
 
 fn rules() -> RashifalRules {
@@ -143,7 +143,7 @@ fn the_baseline_scores_an_all_good_day_by_hand() {
     let mut retrograde = [false; 9];
     retrograde[7] = true;
     retrograde[8] = true;
-    let score = baseline_score(read, &retrograde, QUIET, Period::Daily);
+    let score = baseline_score(read, &retrograde, QUIET, Period::Daily, ScoreBands::DEFAULT);
     // Re-derived from the formula: each verdict's contribution, a quiet
     // panchanga's -2 (bhadra) + 0 (Vajra), no events, no Saturn penalty.
     let raw: f64 = read
@@ -156,7 +156,7 @@ fn the_baseline_scores_an_all_good_day_by_hand() {
             match one.verdict {
                 Verdict::Good => w * if back { 0.75 } else { 1.0 },
                 Verdict::Obstructed => w * 0.15,
-                Verdict::NotGood => -w * 0.6 * if back { 1.25 } else { 1.0 },
+                _ => -w * 0.6 * if back { 1.25 } else { 1.0 },
             }
         })
         .sum();
@@ -181,7 +181,13 @@ fn the_baseline_scores_an_all_good_day_by_hand() {
 fn the_baseline_counts_the_first_and_fourth_twice_in_the_whole() {
     // Everything in Aries, the 1st from Aries, but the nodes.
     let read = &rashifal(&sky(&[]), &[], &rules())[0];
-    let score = baseline_score(read, &[false; 9], QUIET, Period::Yearly);
+    let score = baseline_score(
+        read,
+        &[false; 9],
+        QUIET,
+        Period::Yearly,
+        ScoreBands::DEFAULT,
+    );
     let area = |which: LifeArea| score.areas.iter().find(|(one, _)| *one == which).unwrap().1;
     // Finance (the 2nd and the 11th) holds no transit and takes the whole.
     assert_eq!(area(LifeArea::Finance), score.overall);
@@ -193,7 +199,8 @@ fn the_baseline_counts_the_first_and_fourth_twice_in_the_whole() {
 fn sade_sati_at_its_peak_lowers_the_score() {
     let calm = &rashifal(&sky(&[(Graha::Saturn, Rashi::Leo)]), &[], &rules())[0];
     let peak = &rashifal(&sky(&[(Graha::Saturn, Rashi::Aries)]), &[], &rules())[0];
-    let score = |read| baseline_score(read, &[false; 9], QUIET, Period::Daily).overall;
+    let score =
+        |read| baseline_score(read, &[false; 9], QUIET, Period::Daily, ScoreBands::DEFAULT).overall;
     assert!(score(peak) < score(calm));
 }
 
@@ -247,4 +254,137 @@ fn the_baselines_tables_depart_where_its_report_says() {
             (theirs.house, theirs.good_house)
         );
     }
+}
+
+/// Every band edge under a set of thresholds: each threshold is its band's
+/// lowest score, one less is the band below, and 0 and 100 the ends.
+fn holds_edges(bands: ScoreBands) {
+    let [excellent, good, mixed] = bands.0;
+    for (score, band) in [
+        (100, ScoreBand::Excellent),
+        (excellent, ScoreBand::Excellent),
+        (excellent - 1, ScoreBand::Good),
+        (good, ScoreBand::Good),
+        (good - 1, ScoreBand::Mixed),
+        (mixed, ScoreBand::Mixed),
+        (
+            0,
+            if mixed == 0 {
+                ScoreBand::Mixed
+            } else {
+                ScoreBand::Care
+            },
+        ),
+    ] {
+        assert_eq!(bands.band(score), band, "{score} under {bands:?}");
+    }
+    if mixed > 0 {
+        assert_eq!(bands.band(mixed - 1), ScoreBand::Care, "{bands:?}");
+    }
+}
+
+#[test]
+fn a_score_is_banded_at_each_threshold() {
+    // Tithipatra's 75, 50 and 30: 75 and 74, 50 and 49, 30 and 29.
+    holds_edges(ScoreBands::DEFAULT);
+    let bands = ScoreBands::DEFAULT;
+    assert_eq!(
+        [75, 74, 50, 49, 30, 29, 0, 100].map(|score| bands.band(score)),
+        [
+            ScoreBand::Excellent,
+            ScoreBand::Good,
+            ScoreBand::Good,
+            ScoreBand::Mixed,
+            ScoreBand::Mixed,
+            ScoreBand::Care,
+            ScoreBand::Care,
+            ScoreBand::Excellent,
+        ]
+    );
+    // Thresholds of a caller's own, the extremes among them.
+    for custom in [[90, 60, 40], [100, 99, 1], [3, 2, 0], [51, 50, 49]] {
+        holds_edges(ScoreBands(custom));
+    }
+}
+
+#[test]
+fn a_score_carries_the_band_of_its_overall_under_the_thresholds_given() {
+    let read = &rashifal(&sky(&[]), &[], &rules())[0];
+    let score = |bands| baseline_score(read, &[false; 9], QUIET, Period::Daily, bands);
+    let default = score(ScoreBands::DEFAULT);
+    assert_eq!(default.band(), ScoreBands::DEFAULT.band(default.overall));
+    // Thresholds at and just above the score move the band, not the score.
+    let at = default.overall.min(98);
+    let raised = score(ScoreBands([at + 2, at + 1, at]));
+    assert_eq!(raised.overall, default.overall);
+    assert_eq!(
+        raised.band(),
+        ScoreBands([at + 2, at + 1, at]).band(raised.overall)
+    );
+    let json = serde_json::to_value(&default).unwrap();
+    assert_eq!(json["band"], default.band().key());
+}
+
+/// The catalogue kinds hold every value the baseline computes, in its
+/// order, and spell each as the score's JSON did before they were kinds:
+/// a table checking itself against the code that fills it.
+#[test]
+fn the_catalogue_kinds_are_the_values_the_baseline_computes() {
+    // Every area a score names, in `LifeArea::ALL`'s order, as the
+    // baseline lists them.
+    let read = &rashifal(&sky(&[]), &[], &rules())[0];
+    let score = baseline_score(
+        read,
+        &[false; 9],
+        QUIET,
+        Period::Weekly,
+        ScoreBands::DEFAULT,
+    );
+    assert_eq!(score.areas.map(|(area, _)| area), LifeArea::ALL);
+    assert_eq!(
+        LifeArea::ALL.map(|area| serde_json::to_value(area).unwrap()),
+        [
+            "OVERALL",
+            "CAREER",
+            "FINANCE",
+            "HEALTH",
+            "RELATIONSHIPS",
+            "FAMILY",
+            "EDUCATION",
+            "SPIRITUALITY"
+        ]
+        .map(serde_json::Value::from)
+    );
+    // Every colour some sign's lord is lucky with, and no colour unused.
+    let colours: std::collections::BTreeSet<Colour> = rashifal(&sky(&[]), &[], &rules())
+        .iter()
+        .map(|read| {
+            baseline_score(read, &[false; 9], QUIET, Period::Daily, ScoreBands::DEFAULT)
+                .lucky
+                .colour
+        })
+        .collect();
+    assert_eq!(colours.into_iter().collect::<Vec<_>>(), Colour::ALL);
+    assert_eq!(
+        Colour::ALL.map(|colour| serde_json::to_value(colour).unwrap()),
+        ["RED", "WHITE", "GREEN", "ORANGE", "YELLOW", "BLUE"].map(serde_json::Value::from)
+    );
+    // Every verdict the gochar reaches, and its spelling: NOT_GOOD keeps 2.
+    let mut seen = std::collections::BTreeSet::new();
+    for sign in Rashi::ALL {
+        for read in rashifal(&sky(&[(Graha::Saturn, sign)]), &[], &rules()) {
+            seen.extend(read.gochar.grahas.iter().map(|one| one.verdict));
+        }
+    }
+    assert_eq!(seen.into_iter().collect::<Vec<_>>(), Verdict::ALL);
+    assert_eq!(
+        Verdict::ALL.map(|verdict| (verdict.id(), serde_json::to_value(verdict).unwrap())),
+        [(0, "GOOD"), (1, "OBSTRUCTED"), (2, "NOT_GOOD")]
+            .map(|(id, key)| (id, serde_json::Value::from(key)))
+    );
+    // Every band some score reaches under the default thresholds.
+    let bands: std::collections::BTreeSet<ScoreBand> = (0..=100)
+        .map(|score| ScoreBands::DEFAULT.band(score))
+        .collect();
+    assert_eq!(bands.into_iter().collect::<Vec<_>>(), ScoreBand::ALL);
 }

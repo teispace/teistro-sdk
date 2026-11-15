@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The rashifal's words, and a band for its score (SR-124).**
+**Numbers:** no score, verdict or date moves. Every settings hash moves, the
+settings gaining `rashifal.score_bands`; no profile version moves, since no
+profile but the root sets it. Each baseline score gains a `band`. Node reads
+the rashifal's and gochar's verdicts, areas and lucky colours as full catalogue
+keys (`'gochar_verdict.OBSTRUCTED'`, `'life_area.CAREER'`, `'colour.RED'`) where
+it read bare keys; the JSON everywhere else is unchanged.
+- **New:** the catalogue kinds `life_area`, `colour`, `gochar_verdict` and
+  `score_band` (163 to 166), each named in `en`, `ne`, `hi` and `sa`
+  (`03-design/entity-names.md` §4g).
+- **New:** `BaselineScore::band() -> ScoreBand`, read from the rounded overall
+  under the setting `rashifal.score_bands`, three strictly descending thresholds
+  in 0 to 100, `[75, 50, 30]` by default. The default is Tithipatra's design and
+  no text fixes it (`03-design/rashifal.md`, "The score band"). It is reached per
+  profile, per context and per call on every surface, and a refusal names its
+  threshold (`settings.rashifal.score_bands[1]`).
+- **Changed:** `teistro-rashifal`'s `LifeArea` and `Colour` and
+  `teistro-gochar`'s `Verdict` are the catalogue's types, re-exported; the C
+  ABI's `TsGocharVerdict` is gone and the gochar blob's verdict column carries
+  the catalogue kind's id in the same byte. Python, Dart and Java read these as
+  catalogue types, with their `UNKNOWN` member. `baseline_score` takes the bands.
+
 **A day's festivals in order of significance (rc.7), and Nepal's gazetted holidays (SR-123).**
 **Numbers:** no day moves. A cell's `festivals` now lists a day's observances by tier
 (`NATIONAL`, `MAJOR`, `PERIOD`, `REGIONAL`, `MINOR`), then by where Nepal's national

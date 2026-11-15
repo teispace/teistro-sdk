@@ -1011,7 +1011,7 @@ for (const chart of charts) {
       put(
         `chart-${i}-gochar-${at}-${k}`,
         `${g.graha} ${g.transit.sign} ${number(g.transit.degrees)} ${g.house} ${g.goodHouse} ` +
-          `${g.vedhaHouse ?? '-'} ${g.obstructedBy.join(',') || '-'} ${g.verdict} ${g.fruition} ${g.fruitfulNow}`,
+          `${g.vedhaHouse ?? '-'} ${g.obstructedBy.join(',') || '-'} ${g.verdict.slice(g.verdict.indexOf('.') + 1)} ${g.fruition} ${g.fruitfulNow}`,
       );
     });
   });
@@ -2276,7 +2276,7 @@ for (const [name, rules, published, hijriOffset] of [
         const named = score.keyInfluences.map((k) => `${k.graha}:${k.house}:${bare(k.verdict)}`);
         put(
           key(`-${r}-baseline`),
-          `${score.overall} ${score.areas.map((a) => a.score).join(',')} ${named.length ? named.join(',') : 'none'} ${score.lucky.colour} ${score.lucky.number} ${score.lucky.day} ${score.lucky.direction}`,
+          `${score.overall} ${score.areas.map((a) => a.score).join(',')} ${named.length ? named.join(',') : 'none'} ${bare(score.lucky.colour)} ${score.lucky.number} ${score.lucky.day} ${score.lucky.direction} ${score.band}`,
         );
       }
       if (plans) putPlan(geo, key(`-${r}-plan`), plans[r]);

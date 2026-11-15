@@ -3765,6 +3765,7 @@ function rashifalPeriodAsked(request) {
 function rashifalAnswerFrom({ period, baseline, plans }) {
   const graha = (key) => `graha.${key}`;
   const rashi = (key) => `rashi.${key}`;
+  const verdict = (key) => `gochar_verdict.${key}`;
   const transit = (one) => ({ sign: rashi(one.sign), degrees: one.degrees });
   const hitEvent = (event) => {
     switch (event.kind) {
@@ -3787,6 +3788,7 @@ function rashifalAnswerFrom({ period, baseline, plans }) {
         graha: graha(g.graha),
         transit: transit(g.transit),
         obstructedBy: g.obstructedBy.map(graha),
+        verdict: verdict(g.verdict),
       })),
       ashtakavarga: null,
     },
@@ -3802,9 +3804,16 @@ function rashifalAnswerFrom({ period, baseline, plans }) {
   });
   const score = (one) => ({
     overall: one.overall,
-    areas: one.areas.map(([area, value]) => ({ area, score: value })),
-    keyInfluences: one.keyInfluences.map((k) => ({ ...k, graha: graha(k.graha) })),
-    lucky: { ...one.lucky, day: `vara.${one.lucky.day}`, direction: `direction.${one.lucky.direction}` },
+    // The band the overall falls in under `rashifal.score_bands`.
+    band: `score_band.${one.band}`,
+    areas: one.areas.map(([area, value]) => ({ area: `life_area.${area}`, score: value })),
+    keyInfluences: one.keyInfluences.map((k) => ({ ...k, graha: graha(k.graha), verdict: verdict(k.verdict) })),
+    lucky: {
+      ...one.lucky,
+      colour: `colour.${one.lucky.colour}`,
+      day: `vara.${one.lucky.day}`,
+      direction: `direction.${one.lucky.direction}`,
+    },
   });
   return {
     period: {

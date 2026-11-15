@@ -5766,8 +5766,9 @@ final class LuckyElements {
     required this.direction,
   });
 
-  /// `RED`, `WHITE`, `GREEN`, `ORANGE`, `YELLOW` or `BLUE`.
-  final String colour;
+  /// The lord's colour, a catalogue member a locale names
+  /// (`colour.RED`).
+  final Colour colour;
 
   /// 1 to 9.
   final int number;
@@ -5784,6 +5785,7 @@ final class LuckyElements {
 final class BaselineScore {
   const BaselineScore({
     required this.overall,
+    required this.band,
     required this.areas,
     required this.keyInfluences,
     required this.lucky,
@@ -5792,10 +5794,13 @@ final class BaselineScore {
   /// 0 to 100.
   final int overall;
 
-  /// The eight life areas (`OVERALL`, `CAREER`, `FINANCE`, `HEALTH`,
-  /// `RELATIONSHIPS`, `FAMILY`, `EDUCATION`, `SPIRITUALITY`) and their
-  /// scores, each 0 to 100, in that order.
-  final List<({String area, int score})> areas;
+  /// The band [overall] falls in under the context's
+  /// `rashifal.score_bands`, 75, 50 and 30 by default (SR-124).
+  final ScoreBand band;
+
+  /// The eight life areas and their scores, each 0 to 100, in the
+  /// baseline's order ([LifeArea.overall] first).
+  final List<({LifeArea area, int score})> areas;
 
   /// The grahas the score names.
   final List<KeyInfluence> keyInfluences;
@@ -18049,7 +18054,11 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
             goodHouse: g['goodHouse']! as bool,
             vedhaHouse: g['vedhaHouse'] as int?,
             obstructedBy: _keys(g['obstructedBy'], Graha.byKey, Graha.unknown),
-            verdict: GocharVerdict.byKey(g['verdict']! as String)!,
+            verdict: _key(
+              g['verdict'],
+              GocharVerdict.byKey,
+              GocharVerdict.unknown,
+            ),
             fruition: Fruition.byKey(g['fruition']! as String)!,
             fruitfulNow: g['fruitfulNow']! as bool,
           ),
@@ -18095,21 +18104,26 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
     final lucky = one['lucky']! as Map<String, Object?>;
     return BaselineScore(
       overall: one['overall']! as int,
+      band: _key(one['band'], ScoreBand.byKey, ScoreBand.unknown),
       areas: List.unmodifiable([
         for (final pair in one['areas']! as List<Object?>)
           if (pair case [final String area, final int score])
-            (area: area, score: score),
+            (area: _key(area, LifeArea.byKey, LifeArea.unknown), score: score),
       ]),
       keyInfluences: List<KeyInfluence>.unmodifiable([
         for (final k in rows(one['keyInfluences']))
           KeyInfluence(
             graha: _key(k['graha'], Graha.byKey, Graha.unknown),
             house: k['house']! as int,
-            verdict: GocharVerdict.byKey(k['verdict']! as String)!,
+            verdict: _key(
+              k['verdict'],
+              GocharVerdict.byKey,
+              GocharVerdict.unknown,
+            ),
           ),
       ]),
       lucky: LuckyElements(
-        colour: lucky['colour']! as String,
+        colour: _key(lucky['colour'], Colour.byKey, Colour.unknown),
         number: lucky['number']! as int,
         day: _key(lucky['day'], Vara.byKey, Vara.unknown),
         direction: _key(lucky['direction'], Direction.byKey, Direction.unknown),

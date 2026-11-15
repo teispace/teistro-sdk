@@ -1,0 +1,26 @@
+kind: gochar_verdict
+number: 165
+version: 1
+doc: "What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`)."
+members:
+  - key: GOOD
+    id: 0
+    doc: "In a good house, and nothing stands in its vedha house"
+    sources:
+      - text: "Phaladeepika"
+        ref: "ch. 26 v. 2, and vv. 3 to 8 unmet"
+    mark: V
+  - key: OBSTRUCTED
+    id: 1
+    doc: "In a good house, and another graha stands in its vedha house"
+    sources:
+      - text: "Phaladeepika"
+        ref: "ch. 26 vv. 3 to 8"
+    mark: V
+  - key: NOT_GOOD
+    id: 2
+    doc: "Not in a house v. 2 names good"
+    sources:
+      - text: "Phaladeepika"
+        ref: "ch. 26 v. 2"
+    mark: V

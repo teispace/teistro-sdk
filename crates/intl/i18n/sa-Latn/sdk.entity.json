@@ -6884,6 +6884,119 @@
       "prose": "Varāha"
     }
   },
+  "life_area": {
+    "OVERALL": {
+      "short": "Samagra",
+      "name": "Samagra",
+      "prose": "Samagra"
+    },
+    "CAREER": {
+      "short": "Karma",
+      "name": "Karma",
+      "prose": "Karma"
+    },
+    "FINANCE": {
+      "short": "Dhana",
+      "name": "Dhana",
+      "prose": "Dhana"
+    },
+    "HEALTH": {
+      "short": "Ārogya",
+      "name": "Ārogya",
+      "prose": "Ārogya"
+    },
+    "RELATIONSHIPS": {
+      "short": "Sambandha",
+      "name": "Sambandha",
+      "prose": "Sambandha"
+    },
+    "FAMILY": {
+      "short": "Kuṭumba",
+      "name": "Kuṭumba",
+      "prose": "Kuṭumba"
+    },
+    "EDUCATION": {
+      "short": "Vidyā",
+      "name": "Vidyā",
+      "prose": "Vidyā"
+    },
+    "SPIRITUALITY": {
+      "short": "Adhyātma",
+      "name": "Adhyātma",
+      "prose": "Adhyātma"
+    }
+  },
+  "colour": {
+    "RED": {
+      "short": "Rakta",
+      "name": "Rakta",
+      "prose": "Rakta"
+    },
+    "WHITE": {
+      "short": "Śveta",
+      "name": "Śveta",
+      "prose": "Śveta"
+    },
+    "GREEN": {
+      "short": "Harita",
+      "name": "Harita",
+      "prose": "Harita"
+    },
+    "ORANGE": {
+      "short": "Nāraṅga",
+      "name": "Nāraṅga",
+      "prose": "Nāraṅga"
+    },
+    "YELLOW": {
+      "short": "Pīta",
+      "name": "Pīta",
+      "prose": "Pīta"
+    },
+    "BLUE": {
+      "short": "Nīla",
+      "name": "Nīla",
+      "prose": "Nīla"
+    }
+  },
+  "gochar_verdict": {
+    "GOOD": {
+      "short": "Śubha",
+      "name": "Śubha",
+      "prose": "Śubha"
+    },
+    "OBSTRUCTED": {
+      "short": "Bādhita",
+      "name": "Vedhabādhita",
+      "prose": "Vedhabādhita"
+    },
+    "NOT_GOOD": {
+      "short": "Aśubha",
+      "name": "Aśubha",
+      "prose": "Aśubha"
+    }
+  },
+  "score_band": {
+    "EXCELLENT": {
+      "short": "Uttama",
+      "name": "Uttamadina",
+      "prose": "Uttamadina"
+    },
+    "GOOD": {
+      "short": "Śobhana",
+      "name": "Śobhanadina",
+      "prose": "Śobhanadina"
+    },
+    "MIXED": {
+      "short": "Miśra",
+      "name": "Miśradina",
+      "prose": "Miśradina"
+    },
+    "CARE": {
+      "short": "Sāvadhāna",
+      "name": "Sāvadhānadina",
+      "prose": "Sāvadhānadina"
+    }
+  },
   "holiday_scope": {
     "NATIONAL": {
       "name": "Sārvajanikāvakāśaḥ",

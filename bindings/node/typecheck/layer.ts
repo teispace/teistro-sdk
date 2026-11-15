@@ -332,6 +332,9 @@ import type {
   Nakshatra,
   VastuYoni,
   VyayaKind,
+  Colour,
+  LifeArea,
+  ScoreBand,
 } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { ashauchRunning, decodeProvenance, returnsRequest } from '../lib/index.js';
@@ -1100,9 +1103,9 @@ function theTransits(ctx: Context): string {
   const vedha: number | null = sun.vedhaHouse;
   const by: readonly Graha[] = sun.obstructedBy;
   const verdicts: Record<typeof sun.verdict, string> = {
-    GOOD: 'good',
-    OBSTRUCTED: 'obstructed',
-    NOT_GOOD: 'not good',
+    'gochar_verdict.GOOD': 'good',
+    'gochar_verdict.OBSTRUCTED': 'obstructed',
+    'gochar_verdict.NOT_GOOD': 'not good',
     unknown: 'unknown',
   };
   // @ts-expect-error a reference is named by its key
@@ -2558,6 +2561,10 @@ function theRashifal(ctx: Context): string {
     score?.areas[0]?.area ?? 'NONE',
     score?.keyInfluences[0]?.graha ?? 'NONE',
     score?.lucky.day ?? 'NONE',
+    // A rashifal's words are catalogue members, each named by its full key.
+    (score?.band satisfies ScoreBand | undefined) ?? 'NONE',
+    (score?.lucky.colour satisfies Colour | undefined) ?? 'NONE',
+    (score?.areas[0]?.area satisfies LifeArea | undefined) ?? 'NONE',
     many.value.length,
     many.provenance.inputHash,
     answer.baseline?.length ?? 0,

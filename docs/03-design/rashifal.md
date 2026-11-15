@@ -92,6 +92,57 @@ does this:
 
 No baseline test pins a table or a score.
 
+## The score band
+
+A consumer's home page shows a score as a word, not a number: an
+excellent day, a good one, a mixed one, a day for care. Tithipatra's
+design (SR-124) draws the lines at 75, 50 and 30. **No text fixes these
+numbers.** The baseline score is itself unsourced (C361), so a band read
+from it is a presentation of that score and nothing more; the default is
+the consumer's design, kept so that every surface answers the same word.
+
+- **`BaselineScore::band() -> ScoreBand`** is `EXCELLENT` at or above the
+  first threshold, `GOOD` at or above the second, `MIXED` at or above the
+  third and `CARE` below it. It is read from the rounded overall, so the
+  band and the number a reader sees always agree (74.6 shows 75 and is
+  excellent).
+- **The setting `rashifal.score_bands`** holds the three thresholds,
+  `[75, 50, 30]` in the root profile, so every profile inherits it. A
+  profile, a context's patch or one call's `withSettings` changes it as
+  any knob is changed. The thresholds must descend strictly and lie in 0
+  to 100; a refusal names the threshold at fault
+  (`settings.rashifal.score_bands[1]`).
+- **It crosses as data.** The band is computed in Rust when the score is,
+  under the context's settings, and is a field of the score's JSON
+  (`"band": "GOOD"`), so the C ABI, Node, wasm, Python, Dart, Java and MCP
+  answer it with no rule of their own.
+
+### One type per concept
+
+The score's areas, its lucky colour, a graha's gochar verdict and the band
+are catalogue kinds (`life_area`, `colour`, `gochar_verdict`,
+`score_band`), so that each has a name in every locale and each binding
+one type. The crates keep no enum of their own beside them:
+
+- `teistro-rashifal` re-exports `LifeArea` and `Colour` from the
+  catalogue in place of the enums it held, with the same members in the
+  same order.
+- `teistro-gochar`'s `Verdict` is the catalogue's `GocharVerdict` under
+  its old name, a re-export, and the C ABI's `TsGocharVerdict` is gone:
+  the gochar blob's verdict column names the catalogue kind and carries
+  its id in the same byte. `NOT_GOOD` keeps id 2.
+- The JSON a consumer reads does not change: serde writes a member's bare
+  key (`"OBSTRUCTED"`, `"CAREER"`, `"RED"`) as it did. In the bindings
+  the types are the catalogue's: Node reads these values as full keys
+  (`'gochar_verdict.OBSTRUCTED'`), as it reads every other catalogue
+  member, and Python, Dart and Java gain the `UNKNOWN` member a catalogue
+  type carries for a member a newer engine adds.
+
+The alternative, keeping the hand enums and mapping each to a catalogue
+member for its name, would leave two types per concept in Rust and two
+`GocharVerdict` types in the bindings (the C ABI's and the catalogue's),
+two types the bindings could not both name.
+
 ## The design
 
 A new crate, `teistro-rashifal`, depending on `teistro-core` and
@@ -109,10 +160,11 @@ A new crate, `teistro-rashifal`, depending on `teistro-core` and
     it is not obstructed.
 - **`rashifal(snapshot, events, rules) -> [RashiReading; 12]`** builds
   all twelve from one set of nine transits and one event list.
-- **`baseline_score(reading, panchanga, period) -> BaselineScore`**
+- **`baseline_score(reading, retrograde, panchanga, period, bands) -> BaselineScore`**
   reproduces the formula above number for number. It returns the
   overall score, the eight areas, the key influences and the lucky
-  elements, and is reached only when asked. It is `BASELINE` and
+  elements, banded under the context's `rashifal.score_bands`, and is
+  reached only when asked. It is `BASELINE` and
   unsourced (C361).
 
 The façade, `sdk.chart().rashifal(&RashifalRequest)`, takes:

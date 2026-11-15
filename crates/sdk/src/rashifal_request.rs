@@ -8,7 +8,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::Transit;
 use teistro_rashifal::RashiReading;
-use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period};
+use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period, ScoreBands};
 
 use teistro_time::ZoneSpec;
 
@@ -274,14 +274,18 @@ impl RashifalPeriod {
     }
 
     /// The baseline engine's score of one sign's reading for `period`,
-    /// `BASELINE` and unsourced (C361).
+    /// `BASELINE` and unsourced (C361), its overall banded by `bands`: a
+    /// context's are `settings().rashifal.score_bands`, which a batch
+    /// ([`ChartArea::rashifal_answers`](crate::ChartArea::rashifal_answers))
+    /// bands by.
     #[must_use]
-    pub fn baseline_score(&self, rashi: Rashi, period: Period) -> BaselineScore {
+    pub fn baseline_score(&self, rashi: Rashi, period: Period, bands: ScoreBands) -> BaselineScore {
         teistro_rashifal::baseline::baseline_score(
             self.of(rashi),
             &self.retrograde,
             self.panchanga,
             period,
+            bands,
         )
     }
 }

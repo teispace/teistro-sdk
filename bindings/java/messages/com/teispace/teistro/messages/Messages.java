@@ -822,6 +822,37 @@ public final class Messages {
         }
     }
 
+    /** A `colour` as a message names it: the full catalogue key. */
+    public enum ColourKey {
+        /** `colour.RED`. */
+        RED("colour.RED"),
+        /** `colour.WHITE`. */
+        WHITE("colour.WHITE"),
+        /** `colour.GREEN`. */
+        GREEN("colour.GREEN"),
+        /** `colour.ORANGE`. */
+        ORANGE("colour.ORANGE"),
+        /** `colour.YELLOW`. */
+        YELLOW("colour.YELLOW"),
+        /** `colour.BLUE`. */
+        BLUE("colour.BLUE");
+
+        private final String value;
+
+        ColourKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `dasha_family` as a message names it: the full catalogue key. */
     public enum DashaFamilyKey {
         /** `dasha_family.UDU`. */
@@ -1344,6 +1375,31 @@ public final class Messages {
         }
     }
 
+    /** A `gochar_verdict` as a message names it: the full catalogue key. */
+    public enum GocharVerdictKey {
+        /** `gochar_verdict.GOOD`. */
+        GOOD("gochar_verdict.GOOD"),
+        /** `gochar_verdict.OBSTRUCTED`. */
+        OBSTRUCTED("gochar_verdict.OBSTRUCTED"),
+        /** `gochar_verdict.NOT_GOOD`. */
+        NOT_GOOD("gochar_verdict.NOT_GOOD");
+
+        private final String value;
+
+        GocharVerdictKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `gowri` as a message names it: the full catalogue key. */
     public enum GowriKey {
         /** `gowri.UTHI`. */
@@ -1643,6 +1699,41 @@ public final class Messages {
         private final String value;
 
         KootaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `life_area` as a message names it: the full catalogue key. */
+    public enum LifeAreaKey {
+        /** `life_area.OVERALL`. */
+        OVERALL("life_area.OVERALL"),
+        /** `life_area.CAREER`. */
+        CAREER("life_area.CAREER"),
+        /** `life_area.FINANCE`. */
+        FINANCE("life_area.FINANCE"),
+        /** `life_area.HEALTH`. */
+        HEALTH("life_area.HEALTH"),
+        /** `life_area.RELATIONSHIPS`. */
+        RELATIONSHIPS("life_area.RELATIONSHIPS"),
+        /** `life_area.FAMILY`. */
+        FAMILY("life_area.FAMILY"),
+        /** `life_area.EDUCATION`. */
+        EDUCATION("life_area.EDUCATION"),
+        /** `life_area.SPIRITUALITY`. */
+        SPIRITUALITY("life_area.SPIRITUALITY");
+
+        private final String value;
+
+        LifeAreaKey(String value) {
             this.value = value;
         }
 
@@ -2545,6 +2636,33 @@ public final class Messages {
         private final String value;
 
         SamvatsaraKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `score_band` as a message names it: the full catalogue key. */
+    public enum ScoreBandKey {
+        /** `score_band.EXCELLENT`. */
+        EXCELLENT("score_band.EXCELLENT"),
+        /** `score_band.GOOD`. */
+        GOOD("score_band.GOOD"),
+        /** `score_band.MIXED`. */
+        MIXED("score_band.MIXED"),
+        /** `score_band.CARE`. */
+        CARE("score_band.CARE");
+
+        private final String value;
+
+        ScoreBandKey(String value) {
             this.value = value;
         }
 
@@ -7935,6 +8053,79 @@ public final class Messages {
                  */
                 public EntityForms udveg() {
                     return r.entity("choghadiya.UDVEG");
+                }
+            }
+
+
+            /**
+             * The messages under `colour`.
+             *
+             * @return the group
+             */
+            public SdkEntityColour colour() {
+                return new SdkEntityColour(r);
+            }
+
+            /** The messages under `SdkEntityColour`, each rendered by its own key. */
+            public static final class SdkEntityColour {
+                private final Renderer r;
+
+                SdkEntityColour(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `colour.BLUE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms blue() {
+                    return r.entity("colour.BLUE");
+                }
+
+                /**
+                 * The forms of `colour.GREEN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms green() {
+                    return r.entity("colour.GREEN");
+                }
+
+                /**
+                 * The forms of `colour.ORANGE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms orange() {
+                    return r.entity("colour.ORANGE");
+                }
+
+                /**
+                 * The forms of `colour.RED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms red() {
+                    return r.entity("colour.RED");
+                }
+
+                /**
+                 * The forms of `colour.WHITE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms white() {
+                    return r.entity("colour.WHITE");
+                }
+
+                /**
+                 * The forms of `colour.YELLOW` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yellow() {
+                    return r.entity("colour.YELLOW");
                 }
             }
 
@@ -15306,6 +15497,52 @@ public final class Messages {
 
 
             /**
+             * The messages under `gochar_verdict`.
+             *
+             * @return the group
+             */
+            public SdkEntityGocharVerdict gocharVerdict() {
+                return new SdkEntityGocharVerdict(r);
+            }
+
+            /** The messages under `SdkEntityGocharVerdict`, each rendered by its own key. */
+            public static final class SdkEntityGocharVerdict {
+                private final Renderer r;
+
+                SdkEntityGocharVerdict(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `gochar_verdict.GOOD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms good() {
+                    return r.entity("gochar_verdict.GOOD");
+                }
+
+                /**
+                 * The forms of `gochar_verdict.NOT_GOOD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms notGood() {
+                    return r.entity("gochar_verdict.NOT_GOOD");
+                }
+
+                /**
+                 * The forms of `gochar_verdict.OBSTRUCTED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms obstructed() {
+                    return r.entity("gochar_verdict.OBSTRUCTED");
+                }
+            }
+
+
+            /**
              * The messages under `gowri`.
              *
              * @return the group
@@ -16173,6 +16410,97 @@ public final class Messages {
                  */
                 public EntityForms yoni() {
                     return r.entity("koota.YONI");
+                }
+            }
+
+
+            /**
+             * The messages under `life_area`.
+             *
+             * @return the group
+             */
+            public SdkEntityLifeArea lifeArea() {
+                return new SdkEntityLifeArea(r);
+            }
+
+            /** The messages under `SdkEntityLifeArea`, each rendered by its own key. */
+            public static final class SdkEntityLifeArea {
+                private final Renderer r;
+
+                SdkEntityLifeArea(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `life_area.CAREER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms career() {
+                    return r.entity("life_area.CAREER");
+                }
+
+                /**
+                 * The forms of `life_area.EDUCATION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms education() {
+                    return r.entity("life_area.EDUCATION");
+                }
+
+                /**
+                 * The forms of `life_area.FAMILY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms family() {
+                    return r.entity("life_area.FAMILY");
+                }
+
+                /**
+                 * The forms of `life_area.FINANCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms finance() {
+                    return r.entity("life_area.FINANCE");
+                }
+
+                /**
+                 * The forms of `life_area.HEALTH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms health() {
+                    return r.entity("life_area.HEALTH");
+                }
+
+                /**
+                 * The forms of `life_area.OVERALL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms overall() {
+                    return r.entity("life_area.OVERALL");
+                }
+
+                /**
+                 * The forms of `life_area.RELATIONSHIPS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms relationships() {
+                    return r.entity("life_area.RELATIONSHIPS");
+                }
+
+                /**
+                 * The forms of `life_area.SPIRITUALITY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms spirituality() {
+                    return r.entity("life_area.SPIRITUALITY");
                 }
             }
 
@@ -18769,6 +19097,61 @@ public final class Messages {
                  */
                 public EntityForms yuva() {
                     return r.entity("samvatsara.YUVA");
+                }
+            }
+
+
+            /**
+             * The messages under `score_band`.
+             *
+             * @return the group
+             */
+            public SdkEntityScoreBand scoreBand() {
+                return new SdkEntityScoreBand(r);
+            }
+
+            /** The messages under `SdkEntityScoreBand`, each rendered by its own key. */
+            public static final class SdkEntityScoreBand {
+                private final Renderer r;
+
+                SdkEntityScoreBand(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `score_band.CARE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms care() {
+                    return r.entity("score_band.CARE");
+                }
+
+                /**
+                 * The forms of `score_band.EXCELLENT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms excellent() {
+                    return r.entity("score_band.EXCELLENT");
+                }
+
+                /**
+                 * The forms of `score_band.GOOD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms good() {
+                    return r.entity("score_band.GOOD");
+                }
+
+                /**
+                 * The forms of `score_band.MIXED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mixed() {
+                    return r.entity("score_band.MIXED");
                 }
             }
 

@@ -9251,7 +9251,11 @@ void _engineTests() {
           expect(rahu.obstructedBy, isNot(contains(Graha.ketu)));
         }
       }
-      expect(verdicts, GocharVerdict.values.toSet());
+      // Every verdict but the open kind's unknown, which no reading carries.
+      expect(
+        verdicts,
+        GocharVerdict.values.where((v) => v != GocharVerdict.unknown).toSet(),
+      );
       final judged =
           ctx.chart
               .found(
@@ -10830,9 +10834,53 @@ void _engineTests() {
       expect(reading.gochar.instant, period.instant);
     }
     expect(read.baseline, hasLength(12));
+    // Tithipatra's bands by default (SR-124), and every word a score
+    // carries a catalogue member a locale names.
+    ScoreBand banded(int overall, List<int> bands) =>
+        overall >= bands[0]
+            ? ScoreBand.excellent
+            : overall >= bands[1]
+            ? ScoreBand.good
+            : overall >= bands[2]
+            ? ScoreBand.mixed
+            : ScoreBand.care;
+    expect((ctx.settings['rashifal']! as Map<String, Object?>)['score_bands'], [
+      75,
+      50,
+      30,
+    ]);
     for (final score in read.baseline!) {
       expect(score.overall, inInclusiveRange(0, 100));
       expect(score.areas, hasLength(8));
+      expect(score.areas.first.area, LifeArea.overall);
+      expect(score.lucky.colour, isNot(Colour.unknown));
+      expect(score.band, banded(score.overall, [75, 50, 30]));
+      expect(ctx.intl.entity(score.band.fullKey).name, isNotEmpty);
+    }
+    // A call's own thresholds band the same scores otherwise.
+    final strict = ctx.withSettings({
+      'rashifal': {
+        'score_bands': [99, 98, 97],
+      },
+    });
+    final rebanded =
+        strict.chart.rashifal(week, baseline: BaselinePeriod.weekly).baseline!;
+    for (final (k, score) in rebanded.indexed) {
+      expect(score.overall, read.baseline![k].overall);
+      expect(score.band, banded(score.overall, [99, 98, 97]));
+    }
+    strict.dispose();
+    for (final (bands, field) in [
+      ([101, 50, 30], 'settings.rashifal.score_bands[0]'),
+      ([75, 75, 30], 'settings.rashifal.score_bands[1]'),
+      ([75, 50, 60], 'settings.rashifal.score_bands[2]'),
+    ]) {
+      expect(
+        () => ctx.withSettings({
+          'rashifal': {'score_bands': bands},
+        }),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
     }
     expect(ctx.chart.rashifal(week).baseline, isNull);
     expect(read.plans, isNull, reason: 'words only when asked for');

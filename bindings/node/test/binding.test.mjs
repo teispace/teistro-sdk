@@ -946,7 +946,11 @@ test('every catalogue enum has a complete id table', () => {
   // 1558 since `TsDeltaTSource` gained `PROVIDER`.
   // 1559 since `TsEra` gained `KIRAT_YELE`.
   // 1569 since a holiday's `TsHolidayScope`, nine, with its member of `TsKind`.
-  assert.equal(entries, 1569, 'every member of every enum is in a table');
+  // 1591 since a rashifal's words became catalogue kinds (SR-124):
+  // `life_area`'s eight, `colour`'s six, `score_band`'s four and
+  // `gochar_verdict`'s three, each with its member of `TsKind`, the last in
+  // place of `TsGocharVerdict`'s three.
+  assert.equal(entries, 1591, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -2432,7 +2436,8 @@ test('a chart carries its transits, each verdict its own house and vedha', () =>
       for (const g of reading.grahas) {
         assert.ok(g.house >= 1 && g.house <= 12, `${g.house}`);
         assert.ok(g.transit.degrees >= 0 && g.transit.degrees < 30, `${g.transit.degrees}`);
-        const expected = !g.goodHouse ? 'NOT_GOOD' : g.obstructedBy.length > 0 ? 'OBSTRUCTED' : 'GOOD';
+        // A catalogue member by its full key, as every other one reads.
+        const expected = `gochar_verdict.${!g.goodHouse ? 'NOT_GOOD' : g.obstructedBy.length > 0 ? 'OBSTRUCTED' : 'GOOD'}`;
         assert.equal(g.verdict, expected, `${g.graha} in ${g.house}`);
         if (!g.goodHouse) assert.equal(g.vedhaHouse, null);
         verdicts.add(g.verdict);
@@ -2442,7 +2447,7 @@ test('a chart carries its transits, each verdict its own house and vedha', () =>
       assert.ok(!rahu.obstructedBy.includes('graha.KETU'), 'C140: the nodes spare each other');
     });
   }
-  assert.deepEqual([...verdicts].sort(), ['GOOD', 'NOT_GOOD', 'OBSTRUCTED']);
+  assert.deepEqual([...verdicts].sort(), ['gochar_verdict.GOOD', 'gochar_verdict.NOT_GOOD', 'gochar_verdict.OBSTRUCTED']);
   // Asked for, the seven judged by the natal Ashtakavarga; not asked, null.
   const lords = ['SATURN', 'JUPITER', 'MARS', 'SUN', 'VENUS', 'MERCURY', 'MOON', 'LAGNA'];
   for (const reading of ctx.chart.found({ ...birth, gochar: { instants, ashtakavarga: true } }).gochar) {
@@ -7023,10 +7028,39 @@ test('a rashifal period is read for each of the twelve signs', () => {
     assert.equal(reading.gochar.instant, period.instant);
   }
   assert.equal(read.baseline.length, 12);
+  // Tithipatra's bands by default (SR-124): 75, 50 and 30.
+  const banded = (overall, [excellent, good, mixed]) =>
+    `score_band.${overall >= excellent ? 'EXCELLENT' : overall >= good ? 'GOOD' : overall >= mixed ? 'MIXED' : 'CARE'}`;
+  assert.deepEqual(ctx.settings.rashifal.score_bands, [75, 50, 30]);
   for (const score of read.baseline) {
     assert.ok(score.overall >= 0 && score.overall <= 100);
     assert.equal(score.areas.length, 8);
     assert.ok(score.lucky.day.startsWith('vara.') && score.lucky.direction.startsWith('direction.'));
+    // Every word a score carries is a catalogue member, named by its full key.
+    assert.equal(score.areas[0].area, 'life_area.OVERALL');
+    assert.ok(score.lucky.colour.startsWith('colour.'), score.lucky.colour);
+    assert.ok(score.keyInfluences.every((k) => k.verdict.startsWith('gochar_verdict.')));
+    assert.equal(score.band, banded(score.overall, [75, 50, 30]));
+    assert.ok(ctx.intl.entity(score.band).name.length > 0, score.band);
+  }
+  // A call's own thresholds band the same scores otherwise.
+  const strict = ctx.withSettings({ rashifal: { score_bands: [99, 98, 97] } });
+  const rebanded = strict.chart.rashifal(week, 'WEEKLY').baseline;
+  for (const [k, score] of rebanded.entries()) {
+    assert.equal(score.overall, read.baseline[k].overall, 'the score does not move');
+    assert.equal(score.band, banded(score.overall, [99, 98, 97]));
+  }
+  strict.dispose();
+  for (const [bands, field] of [
+    [[101, 50, 30], 'settings.rashifal.score_bands[0]'],
+    [[75, 75, 30], 'settings.rashifal.score_bands[1]'],
+    [[75, 50, 60], 'settings.rashifal.score_bands[2]'],
+  ]) {
+    assert.throws(
+      () => ctx.withSettings({ rashifal: { score_bands: bands } }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
   }
   assert.equal(ctx.chart.rashifal(week).baseline, null);
   assert.equal(read.plans, null, 'words only when asked for');

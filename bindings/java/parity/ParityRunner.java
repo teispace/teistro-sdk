@@ -1036,8 +1036,8 @@ public final class ParityRunner {
                     LuckyElements lucky = score.lucky();
                     put("rashifal-" + n + "-" + r + "-baseline", score.overall() + " "
                             + join(",", score.areas(), area -> String.valueOf(area.getValue())) + " " + orNone(named)
-                            + " " + lucky.colour() + " " + lucky.number() + " " + lucky.day().fullKey() + " "
-                            + lucky.direction().fullKey());
+                            + " " + lucky.colour().key() + " " + lucky.number() + " " + lucky.day().fullKey() + " "
+                            + lucky.direction().fullKey() + " " + score.band().fullKey());
                 }
                 if (answer.plans() != null) {
                     putPlan(geo, "rashifal-" + n + "-" + r + "-plan", answer.plans().get(r));

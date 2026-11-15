@@ -6026,6 +6026,119 @@
       "iast": "Dinamāna"
     }
   },
+  "life_area": {
+    "OVERALL": {
+      "short": "समग्र",
+      "name": "समग्र",
+      "prose": "समग्र"
+    },
+    "CAREER": {
+      "short": "कार्य",
+      "name": "कार्यक्षेत्र",
+      "prose": "कार्यक्षेत्र"
+    },
+    "FINANCE": {
+      "short": "धन",
+      "name": "आर्थिक स्थिति",
+      "prose": "आर्थिक स्थिति"
+    },
+    "HEALTH": {
+      "short": "स्वास्थ्य",
+      "name": "स्वास्थ्य",
+      "prose": "स्वास्थ्य"
+    },
+    "RELATIONSHIPS": {
+      "short": "संबंध",
+      "name": "संबंध",
+      "prose": "संबंध"
+    },
+    "FAMILY": {
+      "short": "परिवार",
+      "name": "परिवार",
+      "prose": "परिवार"
+    },
+    "EDUCATION": {
+      "short": "शिक्षा",
+      "name": "शिक्षा",
+      "prose": "शिक्षा"
+    },
+    "SPIRITUALITY": {
+      "short": "अध्यात्म",
+      "name": "अध्यात्म",
+      "prose": "अध्यात्म"
+    }
+  },
+  "colour": {
+    "RED": {
+      "short": "लाल",
+      "name": "लाल",
+      "prose": "लाल"
+    },
+    "WHITE": {
+      "short": "सफ़ेद",
+      "name": "सफ़ेद",
+      "prose": "सफ़ेद"
+    },
+    "GREEN": {
+      "short": "हरा",
+      "name": "हरा",
+      "prose": "हरा"
+    },
+    "ORANGE": {
+      "short": "नारंगी",
+      "name": "नारंगी",
+      "prose": "नारंगी"
+    },
+    "YELLOW": {
+      "short": "पीला",
+      "name": "पीला",
+      "prose": "पीला"
+    },
+    "BLUE": {
+      "short": "नीला",
+      "name": "नीला",
+      "prose": "नीला"
+    }
+  },
+  "gochar_verdict": {
+    "GOOD": {
+      "short": "शुभ",
+      "name": "शुभ",
+      "prose": "शुभ"
+    },
+    "OBSTRUCTED": {
+      "short": "बाधित",
+      "name": "वेध से बाधित",
+      "prose": "वेध से बाधित"
+    },
+    "NOT_GOOD": {
+      "short": "अशुभ",
+      "name": "अशुभ",
+      "prose": "अशुभ"
+    }
+  },
+  "score_band": {
+    "EXCELLENT": {
+      "short": "उत्तम",
+      "name": "उत्तम दिन",
+      "prose": "उत्तम दिन"
+    },
+    "GOOD": {
+      "short": "अच्छा",
+      "name": "अच्छा दिन",
+      "prose": "अच्छा दिन"
+    },
+    "MIXED": {
+      "short": "मिश्रित",
+      "name": "मिश्रित दिन",
+      "prose": "मिश्रित दिन"
+    },
+    "CARE": {
+      "short": "सावधानी",
+      "name": "सावधानी का दिन",
+      "prose": "सावधानी का दिन"
+    }
+  },
   "holiday_scope": {
     "NATIONAL": {
       "name": "सार्वजनिक अवकाश",

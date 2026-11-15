@@ -422,6 +422,14 @@ export function messages(r) {
           shubha: () => r.entity('choghadiya.SHUBHA'),
           udveg: () => r.entity('choghadiya.UDVEG'),
         },
+        colour: {
+          blue: () => r.entity('colour.BLUE'),
+          green: () => r.entity('colour.GREEN'),
+          orange: () => r.entity('colour.ORANGE'),
+          red: () => r.entity('colour.RED'),
+          white: () => r.entity('colour.WHITE'),
+          yellow: () => r.entity('colour.YELLOW'),
+        },
         dashaFamily: {
           composition: () => r.entity('dasha_family.COMPOSITION'),
           decennials: () => r.entity('dasha_family.DECENNIALS'),
@@ -1239,6 +1247,11 @@ export function messages(r) {
           male: () => r.entity('gender.MALE'),
           neutral: () => r.entity('gender.NEUTRAL'),
         },
+        gocharVerdict: {
+          good: () => r.entity('gochar_verdict.GOOD'),
+          notGood: () => r.entity('gochar_verdict.NOT_GOOD'),
+          obstructed: () => r.entity('gochar_verdict.OBSTRUCTED'),
+        },
         gowri: {
           amirtham: () => r.entity('gowri.AMIRTHAM'),
           dhanam: () => r.entity('gowri.DHANAM'),
@@ -1334,6 +1347,16 @@ export function messages(r) {
           vashya: () => r.entity('koota.VASHYA'),
           vedha: () => r.entity('koota.VEDHA'),
           yoni: () => r.entity('koota.YONI'),
+        },
+        lifeArea: {
+          career: () => r.entity('life_area.CAREER'),
+          education: () => r.entity('life_area.EDUCATION'),
+          family: () => r.entity('life_area.FAMILY'),
+          finance: () => r.entity('life_area.FINANCE'),
+          health: () => r.entity('life_area.HEALTH'),
+          overall: () => r.entity('life_area.OVERALL'),
+          relationships: () => r.entity('life_area.RELATIONSHIPS'),
+          spirituality: () => r.entity('life_area.SPIRITUALITY'),
         },
         lunarEclipseKind: {
           partial: () => r.entity('lunar_eclipse_kind.PARTIAL'),
@@ -1620,6 +1643,12 @@ export function messages(r) {
           vrisha: () => r.entity('samvatsara.VRISHA'),
           vyaya: () => r.entity('samvatsara.VYAYA'),
           yuva: () => r.entity('samvatsara.YUVA'),
+        },
+        scoreBand: {
+          care: () => r.entity('score_band.CARE'),
+          excellent: () => r.entity('score_band.EXCELLENT'),
+          good: () => r.entity('score_band.GOOD'),
+          mixed: () => r.entity('score_band.MIXED'),
         },
         sex: {
           female: () => r.entity('sex.FEMALE'),
