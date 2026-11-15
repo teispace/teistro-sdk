@@ -392,6 +392,59 @@ mod tests {
         }
     }
 
+    /// A sky whose day 730 009 rises at 05:30 the next morning, after the
+    /// instant that comes before day 730 010's own sunrise at 06:00: no
+    /// sky can do this, so no day holds the instant and the miss is this
+    /// crate's error, named with the day it chose, never a wrong day.
+    struct RisesLate;
+
+    impl SolarModel for RisesLate {
+        fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
+            SixToSix.sidereal_sun_deg(jd_ut)
+        }
+
+        fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
+            if day.get() != 730_009 {
+                return SixToSix.day_light(day, place);
+            }
+            Ok(DayLight::Arc(teistro_calendar::solar::DayArc {
+                sunrise: at(730_010, 5.5),
+                sunset: at(730_010, 5.75),
+            }))
+        }
+
+        fn describe(&self) -> String {
+            String::from("rises-late")
+        }
+
+        fn convention(&self) -> SunriseConvention {
+            SixToSix.convention()
+        }
+    }
+
+    #[test]
+    fn an_instant_no_day_holds_is_the_crates_own_error() {
+        let refused = chart_day(
+            &RisesLate,
+            &Gregorian,
+            &UtcOffset::UTC,
+            &place(),
+            at(730_010, 5.0),
+            PolarDayPolicy::NearestEvent,
+        )
+        .unwrap_err();
+        assert_eq!(
+            refused.status,
+            teistro_core::Status::Internal,
+            "{refused:?}"
+        );
+        assert!(
+            refused.message.contains("does not hold it"),
+            "{}",
+            refused.message
+        );
+    }
+
     /// Under `NEAREST_EVENT` a polar day is the civil date's own (C1900):
     /// twenty days before the first sunrise, it runs from that sunrise's
     /// hour on its own date, and holds the instant, as `CIVIL_MIDNIGHT`'s
