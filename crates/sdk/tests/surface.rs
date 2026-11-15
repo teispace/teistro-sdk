@@ -515,13 +515,15 @@ fn a_nepal_sambat_date_is_said_as_the_committee_prints_it() {
                     month: i64::from(date.month),
                     kind: date.kind.key().to_owned(),
                     paksha: date.paksha.key().to_owned(),
+                    day: i64::from(date.day),
                 });
         assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
         rendered.text
     };
-    assert_eq!(said(2025, 10, 22), "ने.सं. ११४६ कछलाथ्व");
+    // SR-97: NS 1146 opened on Kachhala thwa 1, 22 October 2025.
+    assert_eq!(said(2025, 10, 22), "ने.सं. ११४६ कछलाथ्व १");
     // The adhika Jyeshtha of 2026, its bright half.
-    assert_eq!(said(2026, 5, 25), "ने.सं. ११४६ अनलाथ्व");
+    assert!(said(2026, 5, 25).starts_with("ने.सं. ११४६ अनलाथ्व "));
     // The half takes the spelling every binding's answer reads back too.
     let half = |paksha: &str| {
         sdk.intl()

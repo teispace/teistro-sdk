@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A full Nepal Sambat date (SR-97).**
+**Numbers:** none move; the `nepal_sambat` section gains a field. Each day's
+`NepalSambatDate` carries `day`, the number of the tithi at its sunrise within its
+half, 1 to 15 (thwa 15 the full moon, *punhi*; gā 15 the new moon, *amai*), so a date
+reads as Newar calendars print it: NS 1146 Kachhala thwa 1 is 22 October 2025.
+`sdk.calendar.nepalSambatDate` takes `$day` and says it last in every locale
+("ने.सं. ११४६ कछलाथ्व १"), a breaking change for a caller that rendered the message
+without it. Rust, C (the section's JSON), Node, Python, Dart, Java and wasm read it;
+the parity runners print it.
+
 **The Surya Siddhanta's trigonometry, a setting (SR-101).**
 **Numbers:** these move, under `nepali-committee` 6 to 7 alone, which is also what
 `Context::builder().nepal_official(..)` resolves (`frame.siddhanta.trig` `EXACT`, C1950),

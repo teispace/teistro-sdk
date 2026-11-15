@@ -5381,14 +5381,15 @@ public final class Messages {
             /**
              * `sdk.calendar.nepalSambatDate`
              *
+             * @param day `day`
              * @param kind `kind`
              * @param month `month`
              * @param paksha `paksha`
              * @param year `year`
              * @return the text
              */
-            public String nepalSambatDate(String kind, long month, String paksha, long year) {
-                return r.render("sdk.calendar.nepalSambatDate", Map.ofEntries(Map.entry("kind", kind), Map.entry("month", month), Map.entry("paksha", paksha), Map.entry("year", year)));
+            public String nepalSambatDate(long day, String kind, long month, String paksha, long year) {
+                return r.render("sdk.calendar.nepalSambatDate", Map.ofEntries(Map.entry("day", day), Map.entry("kind", kind), Map.entry("month", month), Map.entry("paksha", paksha), Map.entry("year", year)));
             }
 
             /**

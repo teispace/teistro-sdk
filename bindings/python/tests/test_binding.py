@@ -5509,12 +5509,12 @@ class AnEngine(WithLibrary):
             self.assertTrue(all(point.moon is None for point in today.sun.track))
             self.assertEqual(len(answer.value), len(almanac))
             self.assertEqual(
-                [(d.year, d.month, d.kind, d.paksha) for d in answer.value],
+                [(d.year, d.month, d.kind, d.paksha, d.day) for d in answer.value],
                 [
-                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA),
-                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA),
-                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA),
-                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA),
+                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA, 14),
+                    (1145, 12, MonthKind.NIJA, Paksha.KRISHNA, 15),
+                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA, 1),
+                    (1146, 1, MonthKind.NIJA, Paksha.SHUKLA, 2),
                 ],
             )
             self.assertEqual(answer.provenance.input_hash, almanac.provenance.input_hash)
@@ -5522,9 +5522,13 @@ class AnEngine(WithLibrary):
                 answer.value[0].year = 0  # type: ignore[misc]
             first = answer.value[2]
             said = ctx.intl.messages.sdk.calendar.nepal_sambat_date(
-                year=first.year, month=first.month, kind=first.kind.key, paksha=first.paksha.key
+                year=first.year,
+                month=first.month,
+                kind=first.kind.key,
+                paksha=first.paksha.key,
+                day=first.day,
             )
-            self.assertEqual(said, "ने.सं. ११४६ कछलाथ्व")
+            self.assertEqual(said, "ने.सं. ११४६ कछलाथ्व १")
 
     def test_an_almanac_carries_the_festivals_it_was_asked_for(self) -> None:
         """Festival rules cross beside the days they fall on

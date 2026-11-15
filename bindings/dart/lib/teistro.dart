@@ -20602,6 +20602,7 @@ final class NepalSambatDate {
     required this.month,
     required this.kind,
     required this.paksha,
+    required this.day,
   });
 
   /// The year, which opens at Kachhala's first day: 1146 from 2025-10-22.
@@ -20617,16 +20618,22 @@ final class NepalSambatDate {
   /// The half: [Paksha.shukla] is thwa and [Paksha.krishna] ga.
   final Paksha paksha;
 
+  /// The day of the half, the number of the tithi at the day's sunrise
+  /// within its half, 1 to 15: thwa 15 is the full moon (punhi), ga 15 the
+  /// new moon (amai).
+  final int day;
+
   @override
   bool operator ==(Object other) =>
       other is NepalSambatDate &&
       other.year == year &&
       other.month == month &&
       other.kind == kind &&
-      other.paksha == paksha;
+      other.paksha == paksha &&
+      other.day == day;
 
   @override
-  int get hashCode => Object.hash(year, month, kind, paksha);
+  int get hashCode => Object.hash(year, month, kind, paksha, day);
 }
 
 /// Each day of an almanac's Nepal Sambat date, in the days' order.
@@ -20660,6 +20667,7 @@ NepalSambatDates _nepalSambat(String json) {
           MonthKind.byKey(kind) ??
           (throw ArgumentError.value(kind, 'kind', 'not a MonthKind')),
       paksha: _key(raw['paksha'], Paksha.byKey, Paksha.unknown),
+      day: raw['day']! as int,
     );
   }
 

@@ -3227,7 +3227,7 @@ public final class ParityRunner {
                 null, null, false, false, true).nepalSambat().orElseThrow();
         put("nepal-sambat-hash", nepalSambat.provenance().contentHash());
         put("nepal-sambat", orNone(join(" ", nepalSambat.value(),
-                one -> one.year() + ":" + one.month() + ":" + one.kind().key() + ":" + one.paksha().fullKey())));
+                one -> one.year() + ":" + one.month() + ":" + one.kind().key() + ":" + one.paksha().fullKey() + ":" + one.day())));
 
         // The day's sky over two days, at an hour's step.
         DaySkies sky = geo.almanac().of(date(2024, 10, 30), date(2024, 10, 31), place, 20700,

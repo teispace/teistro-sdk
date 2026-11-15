@@ -12648,7 +12648,7 @@ class NepalSambatDate:
     `sdk.calendar.nepalSambatDate` says one:
 
     >>> # ctx.intl.render("sdk.calendar.nepalSambatDate", {"year": date.year,
-    >>> #     "month": date.month, "kind": date.kind.key, "paksha": date.paksha.key})
+    >>> #     "month": date.month, "kind": date.kind.key, "paksha": date.paksha.key, "day": date.day})
     """
 
     year: int
@@ -12663,6 +12663,11 @@ class NepalSambatDate:
 
     paksha: Paksha
     """The half: Shukla is thwa and Krishna ga."""
+
+    day: int
+    """The day of the half, the number of the tithi at the day's sunrise
+    within its half, 1 to 15: thwa 15 is the full moon (punhi), ga 15 the
+    new moon (amai)."""
 
 
 @dataclass(frozen=True)
@@ -19345,6 +19350,7 @@ def _nepal_sambat_answer(text: str) -> NepalSambatDates:
                 month=raw["month"],
                 kind=_member(MonthKind, raw["kind"]),
                 paksha=_member(Paksha, raw["paksha"]),
+                day=raw["day"],
             )
             for raw in envelope["value"]
         ),

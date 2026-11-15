@@ -246,6 +246,7 @@ fn every_typed_message_renders_from_the_sdk_sources() {
         masa: teistro_core::catalogue::Masa::ALL[0],
     }, false);
     renders(&intl, &teistro_intl::messages::sdk::calendar::NepalSambatDate {
+        day: 2,
         kind: String::from("kind"),
         month: 2,
         paksha: String::from("paksha"),

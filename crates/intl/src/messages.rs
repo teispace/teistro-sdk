@@ -3413,6 +3413,7 @@ pub mod sdk {
         /// use teistro_intl::{Intl, TypedMessage, sdk_root};
         ///
         /// let message = NepalSambatDate {
+        ///     day: 2,
         ///     kind: String::from("kind"),
         ///     month: 2,
         ///     paksha: String::from("paksha"),
@@ -3427,6 +3428,8 @@ pub mod sdk {
         /// ```
         #[derive(Clone, Debug, PartialEq)]
         pub struct NepalSambatDate {
+            /// The `day` parameter.
+            pub day: i64,
             /// The `kind` parameter.
             pub kind: String,
             /// The `month` parameter.
@@ -3441,6 +3444,7 @@ pub mod sdk {
             const KEY: &'static str = "sdk.calendar.nepalSambatDate";
             fn params(&self) -> crate::Params {
                 crate::params([
+                    ("day", crate::Value::Int(self.day)),
                     ("kind", crate::Value::Str(self.kind.clone())),
                     ("month", crate::Value::Int(self.month)),
                     ("paksha", crate::Value::Str(self.paksha.clone())),

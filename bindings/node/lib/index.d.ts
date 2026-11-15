@@ -6902,7 +6902,7 @@ export interface MoonShape {
   readonly parallacticAngleDeg: number;
 }
 
-/** A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)". */
+/** A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)", with the day of the half Newar dates add, "कछलाथ्व १". */
 export interface NepalSambatDate {
   /** The year, which opens at Kachhala's first day: 1146 from 2025-10-22. */
   readonly year: number;
@@ -6912,6 +6912,8 @@ export interface NepalSambatDate {
   readonly kind: MonthKind;
   /** The half: `'paksha.SHUKLA'` is thwa and `'paksha.KRISHNA'` ga. */
   readonly paksha: Paksha;
+  /** The day of the half, the number of the tithi at the day's sunrise within its half, 1 to 15: thwa 15 is the full moon (punhi), ga 15 the new moon (amai). */
+  readonly day: number;
 }
 
 /** One Jovian year of the Surya Siddhanta's count (I.55). */

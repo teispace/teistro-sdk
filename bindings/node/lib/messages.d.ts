@@ -272,7 +272,7 @@ export interface Messages {
         readonly numeric: (p: { ghati: number; pala: number }) => string;
       };
       readonly lunarMonth: (p: { kind: string; masa: MasaKey }) => string;
-      readonly nepalSambatDate: (p: { kind: string; month: number; paksha: string; year: number }) => string;
+      readonly nepalSambatDate: (p: { day: number; kind: string; month: number; paksha: string; year: number }) => string;
       readonly nepalSambatHalf: (p: { paksha: string }) => string;
       readonly nepalSambatMonth: (p: { kind: string; month: number }) => string;
       readonly parana: (p: { fast: string }) => string;

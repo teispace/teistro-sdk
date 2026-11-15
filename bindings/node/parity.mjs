@@ -2098,7 +2098,7 @@ for (const [name, rules, published, hijriOffset] of [
     nepalSambat: true,
   });
   put('nepal-sambat-hash', nepalSambat.provenance.contentHash);
-  put('nepal-sambat', listed(nepalSambat.value.map((d) => `${d.year}:${d.month}:${d.kind}:${d.paksha}`)));
+  put('nepal-sambat', listed(nepalSambat.value.map((d) => `${d.year}:${d.month}:${d.kind}:${d.paksha}:${d.day}`)));
 }
 
 // ── The day's sky ──────────────────────────────────────────────────────

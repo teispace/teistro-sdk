@@ -4265,24 +4265,28 @@ void _engineTests() {
         month: 12,
         kind: MonthKind.nija,
         paksha: Paksha.krishna,
+        day: 14,
       ),
       NepalSambatDate(
         year: 1145,
         month: 12,
         kind: MonthKind.nija,
         paksha: Paksha.krishna,
+        day: 15,
       ),
       NepalSambatDate(
         year: 1146,
         month: 1,
         kind: MonthKind.nija,
         paksha: Paksha.shukla,
+        day: 1,
       ),
       NepalSambatDate(
         year: 1146,
         month: 1,
         kind: MonthKind.nija,
         paksha: Paksha.shukla,
+        day: 2,
       ),
     ]);
     expect(() => answer.value.add(answer.value.first), throwsUnsupportedError);
@@ -4294,8 +4298,9 @@ void _engineTests() {
         month: first.month,
         kind: first.kind.key,
         paksha: first.paksha.key,
+        day: first.day,
       ),
-      'ने.सं. ११४६ कछलाथ्व',
+      'ने.सं. ११४६ कछलाथ्व १',
     );
     ctx.dispose();
   });

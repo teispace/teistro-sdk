@@ -7399,11 +7399,12 @@ fn nepal_sambat(report: &mut Report, geo: &Context, place: &Place, offset: UtcOf
         "nepal-sambat",
         listed(dates.iter().map(|date| {
             format!(
-                "{}:{}:{}:{}",
+                "{}:{}:{}:{}:{}",
                 date.year,
                 date.month,
                 tag(&date.kind),
-                date.paksha.full_key()
+                date.paksha.full_key(),
+                date.day
             )
         })),
     );

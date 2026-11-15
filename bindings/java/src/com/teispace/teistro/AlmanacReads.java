@@ -790,7 +790,8 @@ final class AlmanacReads {
         return new NepalSambatDates(Reads.each(envelope, "value", raw -> {
             Map<?, ?> d = Reads.object(raw);
             return new NepalSambatDate(Reads.integer(d, "year"), Reads.integer(d, "month"),
-                    member(d, "kind", "MonthKind", MonthKind::byKey), member(d, "paksha", "Paksha", Paksha::byKey));
+                    member(d, "kind", "MonthKind", MonthKind::byKey), member(d, "paksha", "Paksha", Paksha::byKey),
+                    Reads.integer(d, "day"));
         }), provenance(envelope));
     }
 
