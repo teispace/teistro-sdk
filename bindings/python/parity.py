@@ -3374,9 +3374,17 @@ def main() -> None:
             utc_offset_seconds=20700,
             markers=True,
             gowri=True,
+            uncertainty=True,
         ).at(0)
         put("markers", " ".join(s.member.full_key for s in marked_day.markers))
         put("gowri", " ".join(p.gowri.full_key for p in marked_day.gowri))
+        band = marked_day.uncertainty
+        assert band is not None
+        put(
+            "uncertainty",
+            f"{band.band.key} {number(band.delta_t_seconds)} {number_or_dash(band.limbs_seconds)} "
+            f"{number_or_dash(band.sunrise_seconds)} {number_or_dash(band.moonrise_seconds)}",
+        )
 
     # Ashwini's navatara chakra, every row `star:tara:round:special`
     # (`03-design/navatara-chakra.md`).

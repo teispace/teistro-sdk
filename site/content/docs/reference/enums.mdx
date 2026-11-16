@@ -2871,6 +2871,19 @@ What produced a Delta T value.
 | `TS_DELTA_T_SOURCE_LEAP_SECONDS` | 2 | Through the leap-second table: TT less UTC, exact. |
 | `TS_DELTA_T_SOURCE_CUSTOM` | 3 | Supplied by the consumer. |
 | `TS_DELTA_T_SOURCE_PROVIDER` | 4 | The ephemeris engine's, under the model asked, answered through the port. |
+| `TS_DELTA_T_SOURCE_EXTRAPOLATED` | 5 | From a model beyond the data it was fitted to, with Huber's (2000) band. |
+
+## ts_delta_t_band
+
+Where a Delta T's uncertainty comes from, as it crosses the boundary (`DeltaTBand`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DELTA_T_BAND_UNSTATED` | 0 | No uncertainty is stated: a custom value. |
+| `TS_DELTA_T_BAND_MEASURED` | 1 | The IERS's measured series, good to milliseconds. |
+| `TS_DELTA_T_BAND_MORRISON_STEPHENSON_2004` | 2 | Morrison and Stephenson's (2004) standard errors, from −500 to the IERS era. |
+| `TS_DELTA_T_BAND_STEPHENSON_MORRISON_HOHENKERK_2016` | 3 | The published σ of Stephenson, Morrison and Hohenkerk (2016). |
+| `TS_DELTA_T_BAND_HUBER_2000` | 4 | Huber's (2000) random walk beyond the data. |
 
 ## ts_lunar_month
 

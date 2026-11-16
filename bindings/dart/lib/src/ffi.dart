@@ -1982,7 +1982,9 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// in the `sky` section, at `sky_step_minutes`;
   /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
   /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-  /// each day's Gowri panchangam, in the `gowri` section.
+  /// each day's Gowri panchangam, in the `gowri` section;
+  /// `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+  /// Delta T, in the `uncertainty` section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -6641,7 +6643,9 @@ final class PanchangaRequest {
   /// in the `sky` section, at `sky_step_minutes`;
   /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
   /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-  /// each day's Gowri panchangam, in the `gowri` section.
+  /// each day's Gowri panchangam, in the `gowri` section;
+  /// `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+  /// Delta T, in the `uncertainty` section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.

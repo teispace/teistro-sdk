@@ -203,6 +203,15 @@ pub struct Panchanga {
     /// its document (`docs/03-design/time-and-timezone.md` §3.4).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub clock: Option<ClockReading>,
+    /// The day's times with a ± band from Delta T: the Delta T the day was
+    /// reckoned under, its band, and how much of its uncertainty the
+    /// limbs' ends and the rises take on
+    /// ([`crate::uncertainty::TimesUncertainty`], SR-104). **Left out
+    /// unless asked for** (the façade's
+    /// `AlmanacRequest::with_uncertainty`), and then out of the day's
+    /// document, so a day not asked hashes as it did before.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uncertainty: Option<crate::uncertainty::TimesUncertainty>,
 }
 
 impl Panchanga {
@@ -2231,6 +2240,62 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         limb::sun_nakshatra_at(&longitudes, at, zodiac)
     }
 
+    /// Gives each day its times' ± band from Delta T
+    /// ([`Panchanga::uncertainty`], SR-104): the Delta T the almanac's
+    /// sky was read under at the middle of the day's window, from whoever
+    /// owns it (the engine or the SDK, as every other reading), and the
+    /// one-sigma band its limbs' ends and its rises take on
+    /// ([`crate::uncertainty::TimesUncertainty`]).
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::{DeltaTBand, TestProvider};
+    /// #
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2100, 6, 1);
+    /// let mut days = almanac.between(&day, &day, &kathmandu)?.value;
+    /// assert!(days[0].uncertainty.is_none(), "not asked for");
+    /// almanac.uncertainty(&mut days)?;
+    /// let band = days[0].uncertainty.ok_or("asked")?;
+    /// // Far beyond the IERS table: Huber's walk, half a minute by 2100.
+    /// assert_eq!(band.band, DeltaTBand::Huber2000);
+    /// assert!(band.limbs_seconds.ok_or("stated")? > 20.0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A Delta T the provider or the model refuses at a day.
+    pub fn uncertainty(&self, days: &mut [Panchanga]) -> Result<(), Error> {
+        let completion = self.completion();
+        for day in days {
+            let middle = JulianDay::<Ut1>::try_new(f64::midpoint(
+                day.window.from.get(),
+                day.window.to.get(),
+            ))?;
+            let (applied, _) = completion.delta_t_at(middle)?;
+            day.uncertainty = Some(crate::uncertainty::TimesUncertainty::of(&applied));
+        }
+        Ok(())
+    }
+
     /// Fills each day's homa ahuti ([`Panchanga::homa_ahuti`]): the Sun's
     /// nakshatras over the day, searched in the sky and zodiac the day's
     /// own limbs were read in, laid against the Moon's
@@ -3368,7 +3433,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             years.push(year);
         }
         let frame = self.at_instant(&completion, opened)?.0;
-        let provenance = self.provenance(
+        let mut provenance = self.provenance(
             content_hash(&RangeInput {
                 from: from.to_string(),
                 to: to.to_string(),
@@ -3377,6 +3442,12 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 altitude_m: place.altitude.get(),
             }),
             frame,
+        );
+        // Delta T at the first year's opening new moon, the instant the
+        // answer is read from (SR-104).
+        completion.stamp_time(
+            &mut provenance.time,
+            Some(JulianDay::<Ut1>::literal(opened.get())),
         );
         Ok(Envelope::new(years, provenance))
     }
@@ -3677,6 +3748,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 named_panchaka,
                 clock: Some(self.clock.reading(window.from))
                     .filter(|clock| clock.source != ZoneSource::Manual),
+                uncertainty: None,
             },
             frame,
         ))

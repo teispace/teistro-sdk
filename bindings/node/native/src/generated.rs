@@ -818,6 +818,7 @@ pub fn delta_t_source_from_str(value: &str) -> Result<u8> {
         "LEAP_SECONDS" => Ok(2),
         "CUSTOM" => Ok(3),
         "PROVIDER" => Ok(4),
+        "EXTRAPOLATED" => Ok(5),
         other => Err(Error::from_reason(format!(
             "`{other}` is not a DeltaTSource"
         ))),
@@ -833,6 +834,7 @@ pub fn delta_t_source_to_str(value: u8) -> String {
         2 => "LEAP_SECONDS",
         3 => "CUSTOM",
         4 => "PROVIDER",
+        5 => "EXTRAPOLATED",
         _ => "unknown",
     }
     .to_string()
@@ -3865,7 +3867,9 @@ pub struct PanchangaRequest {
     /// in the `sky` section, at `sky_step_minutes`;
     /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
     /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-    /// each day's Gowri panchangam, in the `gowri` section.
+    /// each day's Gowri panchangam, in the `gowri` section;
+    /// `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+    /// Delta T, in the `uncertainty` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.

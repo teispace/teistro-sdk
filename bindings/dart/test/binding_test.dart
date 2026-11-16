@@ -4332,6 +4332,41 @@ void _engineTests() {
     expect(risen.umbralMagnitude!, lessThan(lunar.eclipse.umbralMagnitude));
   });
 
+  // SR-104: asked, a day carries Delta T and the one-sigma band its limbs'
+  // ends (all of Delta T's) and its rises (a 365th for the Sun) take on;
+  // far beyond the IERS table the band is Huber's walk.
+  test('an almanac carries each day\'s band from Delta T when asked', () {
+    final ctx = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    AlmanacDay on(int year, {bool uncertainty = false}) => ctx.almanac
+        .of(
+          from: gregorian(year, 6, 1),
+          to: gregorian(year, 6, 1),
+          place: place,
+          utcOffsetSeconds: 20700,
+          uncertainty: uncertainty,
+        )
+        .at(0);
+    expect(on(2025).uncertainty, isNull);
+    final now = on(2025, uncertainty: true).uncertainty!;
+    expect(now.band, DeltaTBand.measured);
+    expect(now.deltaTSeconds, closeTo(69.2, 0.2));
+    expect(now.limbsSeconds!, lessThan(0.01));
+    final far = on(2100, uncertainty: true).uncertainty!;
+    expect(far.band, DeltaTBand.huber2000);
+    expect(far.limbsSeconds!, greaterThan(20));
+    expect(far.sunriseSeconds!, lessThan(far.limbsSeconds! / 300));
+    expect(far.moonriseSeconds!, greaterThan(far.sunriseSeconds!));
+    ctx.dispose();
+  });
+
   // Each day's Nepal Sambat date beside the days
   // (`03-design/calendar-indian-lunisolar.md` §11): one a day, the year
   // turning at Kachhala's first day, said as the committee's page header

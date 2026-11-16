@@ -184,7 +184,9 @@ class TheCatalogue(unittest.TestCase):
             # `LifeArea`'s eight, `Colour`'s six, `ScoreBand`'s four and
             # `GocharVerdict`'s three, each with its UNKNOWN and its member
             # of `Kind`; the boundary's `GocharVerdict`, three, gone.
-            + 10 + 8 + 6 + 5 - 3,
+            + 10 + 8 + 6 + 5 - 3
+            # `DeltaTSource`'s `EXTRAPOLATED`.
+            + 1,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

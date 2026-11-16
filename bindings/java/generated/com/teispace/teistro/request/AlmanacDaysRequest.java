@@ -29,11 +29,12 @@ import java.util.Objects;
  * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one. Null leaves the SDK's default.
  * @param sky The {@code sky} field. Null leaves the SDK's default.
  * @param skyStepMinutes The sky's step, minutes; ten when left out. Null leaves the SDK's default.
+ * @param uncertainty Each day's times' ± band from Delta T (SR-104). Null leaves the SDK's default.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
  * @param years The {@code years} field. Null leaves the SDK's default.
  * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
  */
-public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, List<HorizonSample> horizonProfile, Boolean lagnas, DayAsked last, Double latitudeDeg, Double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, ResolvedPlace place, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
+public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean gowri, Boolean homaAhuti, List<HorizonSample> horizonProfile, Boolean lagnas, DayAsked last, Double latitudeDeg, Double longitudeDeg, Boolean markers, MuhurtaRequest muhurta, Boolean nepalSambat, ResolvedPlace place, Boolean sky, Integer skyStepMinutes, Boolean uncertainty, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -56,7 +57,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      * @param first A civil day as a request names it.
      */
     public AlmanacDaysRequest(DayAsked first) {
-        this(null, null, null, null, first, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        this(null, null, null, null, first, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -89,6 +90,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         private ResolvedPlace place;
         private Boolean sky;
         private Integer skyStepMinutes;
+        private Boolean uncertainty;
         private Integer utcOffsetSeconds;
         private Boolean years;
         private ZoneSpec zone;
@@ -294,6 +296,17 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
 
         /**
+         * Sets {@code uncertainty}.
+         *
+         * @param uncertainty Each day's times' ± band from Delta T (SR-104). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder uncertainty(boolean uncertainty) {
+            this.uncertainty = uncertainty;
+            return this;
+        }
+
+        /**
          * Sets {@code utcOffsetSeconds}.
          *
          * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
@@ -333,7 +346,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          * @throws NullPointerException naming a required field left unset
          */
         public AlmanacDaysRequest build() {
-            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
+            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, uncertainty, utcOffsetSeconds, years, zone);
         }
     }
 
@@ -365,6 +378,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
             Read.orNull(json.get("place"), present -> ResolvedPlace.of(present)),
             Read.orNull(json.get("sky"), present -> Read.bool(present, "AlmanacDaysRequest.sky")),
             Read.orNull(json.get("skyStepMinutes"), present -> Read.int32(present, "AlmanacDaysRequest.skyStepMinutes")),
+            Read.orNull(json.get("uncertainty"), present -> Read.bool(present, "AlmanacDaysRequest.uncertainty")),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "AlmanacDaysRequest.utcOffsetSeconds")),
             Read.orNull(json.get("years"), present -> Read.bool(present, "AlmanacDaysRequest.years")),
             Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
@@ -424,6 +438,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
         if (skyStepMinutes != null) {
             json.put("skyStepMinutes", skyStepMinutes);
+        }
+        if (uncertainty != null) {
+            json.put("uncertainty", uncertainty);
         }
         if (utcOffsetSeconds != null) {
             json.put("utcOffsetSeconds", utcOffsetSeconds);

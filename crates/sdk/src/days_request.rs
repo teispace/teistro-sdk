@@ -55,7 +55,7 @@ pub struct DaysRequest {
 impl DaysRequest {
     /// What a JSON days request is, for a caller choosing it by name (the
     /// agent server's `almanac.days`).
-    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`, or in place of the coordinates and the zone a `place` as `geo.resolve` answers it (its zone or `utcOffsetSeconds` where it has none, and its ground height as the observer's for the sunrise unless `altitudeM` states one, the provenance naming where the height came from); and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out), and `horizonProfile`, the terrain's apparent elevation by azimuth as `[{azimuthDeg, elevationDeg}]` (azimuths from north through east in [0, 360), strictly increasing, read linearly between samples and round through north; elevations above -5 and below 45 degrees; 1 to 36000 samples), which answers in `visible` each day's Sun and Moon `rise` and `set` on the level horizon beside their `visibleRise` and `visibleSet` behind the terrain and a `visibleState` that says why a day has neither, the days themselves still opening at the astronomical sunrise. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
+    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`, or in place of the coordinates and the zone a `place` as `geo.resolve` answers it (its zone or `utcOffsetSeconds` where it has none, and its ground height as the observer's for the sunrise unless `altitudeM` states one, the provenance naming where the height came from); and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses`, each day's `nepalSambat` date and `uncertainty`, its times' ± band from Delta T (a limb's end takes on Delta T's whole uncertainty, a sunrise a 365th of it), and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out), and `horizonProfile`, the terrain's apparent elevation by azimuth as `[{azimuthDeg, elevationDeg}]` (azimuths from north through east in [0, 360), strictly increasing, read linearly between samples and round through north; elevations above -5 and below 45 degrees; 1 to 36000 samples), which answers in `visible` each day's Sun and Moon `rise` and `set` on the level horizon beside their `visibleRise` and `visibleSet` behind the terrain and a `visibleState` that says why a day has neither, the days themselves still opening at the astronomical sunrise. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
 
     /// The request a binding writes for a range of days, read and checked;
     /// a refusal names the field as written, a record's from the record's
@@ -81,7 +81,7 @@ impl DaysRequest {
         }
         let asked: Asked = strict::read_value(&Value::Object(fields), "")?;
         let calendar = asked.calendar.unwrap_or(Calendar::Gregorian);
-        let flags: [(bool, Asking); 7] = [
+        let flags: [(bool, Asking); 8] = [
             (asked.years, AlmanacRequest::with_years),
             (asked.eclipses, AlmanacRequest::with_eclipses),
             (asked.nepal_sambat, AlmanacRequest::with_nepal_sambat),
@@ -89,6 +89,7 @@ impl DaysRequest {
             (asked.homa_ahuti, AlmanacRequest::with_homa_ahuti),
             (asked.markers, AlmanacRequest::with_markers),
             (asked.gowri, AlmanacRequest::with_gowri),
+            (asked.uncertainty, AlmanacRequest::with_uncertainty),
         ];
         for (asked, add) in flags {
             if asked {
@@ -231,6 +232,9 @@ pub(crate) struct Asked {
     markers: bool,
     #[serde(default)]
     gowri: bool,
+    /// Each day's times' ± band from Delta T (SR-104).
+    #[serde(default)]
+    uncertainty: bool,
     #[serde(default)]
     sky: bool,
     /// The sky's step, minutes; ten when left out.

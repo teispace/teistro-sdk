@@ -234,6 +234,10 @@ export interface AlmanacDaysRequest {
    * The sky's step, minutes; ten when left out.
    */
   readonly skyStepMinutes?: number | null;
+  /**
+   * Each day's times' ± band from Delta T (SR-104).
+   */
+  readonly uncertainty?: boolean;
   readonly utcOffsetSeconds?: number | null;
   readonly years?: boolean;
   /**
