@@ -6220,6 +6220,22 @@
     }
   },
   {
+    "record": "settings.diff",
+    "request": {
+      "knobs": [
+        "x"
+      ]
+    }
+  },
+  {
+    "record": "settings.explain",
+    "request": {
+      "knobs": [
+        "frame"
+      ]
+    }
+  },
+  {
     "record": "time.civil",
     "request": {
       "calendar": "calendar.JULIAN",

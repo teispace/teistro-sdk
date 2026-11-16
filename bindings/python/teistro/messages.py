@@ -2331,6 +2331,700 @@ class MessagesSdk:
         """The messages under `sankalpa`."""
         return MessagesSdkSankalpa(self._r)
 
+    @property
+    def settings(self) -> MessagesSdkSettings:
+        """The messages under `settings`."""
+        return MessagesSdkSettings(self._r)
+
+
+class MessagesSdkSettings:
+    """The messages under `MessagesSdkSettings`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def effect(self) -> MessagesSdkSettingsEffect:
+        """The messages under `effect`."""
+        return MessagesSdkSettingsEffect(self._r)
+
+
+class MessagesSdkSettingsEffect:
+    """The messages under `MessagesSdkSettingsEffect`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def aspect(self) -> MessagesSdkSettingsEffectAspect:
+        """The messages under `aspect`."""
+        return MessagesSdkSettingsEffectAspect(self._r)
+
+    @property
+    def calendars(self) -> MessagesSdkSettingsEffectCalendars:
+        """The messages under `calendars`."""
+        return MessagesSdkSettingsEffectCalendars(self._r)
+
+    @property
+    def dasha(self) -> MessagesSdkSettingsEffectDasha:
+        """The messages under `dasha`."""
+        return MessagesSdkSettingsEffectDasha(self._r)
+
+    @property
+    def day(self) -> MessagesSdkSettingsEffectDay:
+        """The messages under `day`."""
+        return MessagesSdkSettingsEffectDay(self._r)
+
+    @property
+    def frame(self) -> MessagesSdkSettingsEffectFrame:
+        """The messages under `frame`."""
+        return MessagesSdkSettingsEffectFrame(self._r)
+
+    @property
+    def gochar(self) -> MessagesSdkSettingsEffectGochar:
+        """The messages under `gochar`."""
+        return MessagesSdkSettingsEffectGochar(self._r)
+
+    @property
+    def houses(self) -> MessagesSdkSettingsEffectHouses:
+        """The messages under `houses`."""
+        return MessagesSdkSettingsEffectHouses(self._r)
+
+    @property
+    def jaimini(self) -> MessagesSdkSettingsEffectJaimini:
+        """The messages under `jaimini`."""
+        return MessagesSdkSettingsEffectJaimini(self._r)
+
+    @property
+    def kp(self) -> MessagesSdkSettingsEffectKp:
+        """The messages under `kp`."""
+        return MessagesSdkSettingsEffectKp(self._r)
+
+    @property
+    def output(self) -> MessagesSdkSettingsEffectOutput:
+        """The messages under `output`."""
+        return MessagesSdkSettingsEffectOutput(self._r)
+
+    @property
+    def panchanga(self) -> MessagesSdkSettingsEffectPanchanga:
+        """The messages under `panchanga`."""
+        return MessagesSdkSettingsEffectPanchanga(self._r)
+
+    @property
+    def provider(self) -> MessagesSdkSettingsEffectProvider:
+        """The messages under `provider`."""
+        return MessagesSdkSettingsEffectProvider(self._r)
+
+    @property
+    def state(self) -> MessagesSdkSettingsEffectState:
+        """The messages under `state`."""
+        return MessagesSdkSettingsEffectState(self._r)
+
+    @property
+    def strength(self) -> MessagesSdkSettingsEffectStrength:
+        """The messages under `strength`."""
+        return MessagesSdkSettingsEffectStrength(self._r)
+
+    @property
+    def time(self) -> MessagesSdkSettingsEffectTime:
+        """The messages under `time`."""
+        return MessagesSdkSettingsEffectTime(self._r)
+
+    @property
+    def vargas(self) -> MessagesSdkSettingsEffectVargas:
+        """The messages under `vargas`."""
+        return MessagesSdkSettingsEffectVargas(self._r)
+
+
+class MessagesSdkSettingsEffectVargas:
+    """The messages under `MessagesSdkSettingsEffectVargas`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def unattested_dn(self) -> str:
+        """`sdk.settings.effect.vargas.unattestedDn`"""
+        return self._r.render("sdk.settings.effect.vargas.unattestedDn")
+
+
+class MessagesSdkSettingsEffectTime:
+    """The messages under `MessagesSdkSettingsEffectTime`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def delta_t(self) -> str:
+        """`sdk.settings.effect.time.deltaT`"""
+        return self._r.render("sdk.settings.effect.time.deltaT")
+
+    def dst_gap(self) -> str:
+        """`sdk.settings.effect.time.dstGap`"""
+        return self._r.render("sdk.settings.effect.time.dstGap")
+
+    def dst_overlap(self) -> str:
+        """`sdk.settings.effect.time.dstOverlap`"""
+        return self._r.render("sdk.settings.effect.time.dstOverlap")
+
+    def unknown_time(self) -> str:
+        """`sdk.settings.effect.time.unknownTime`"""
+        return self._r.render("sdk.settings.effect.time.unknownTime")
+
+
+class MessagesSdkSettingsEffectStrength:
+    """The messages under `MessagesSdkSettingsEffectStrength`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def bala_scheme(self) -> str:
+        """`sdk.settings.effect.strength.balaScheme`"""
+        return self._r.render("sdk.settings.effect.strength.balaScheme")
+
+    def benefics(self) -> str:
+        """`sdk.settings.effect.strength.benefics`"""
+        return self._r.render("sdk.settings.effect.strength.benefics")
+
+    def bhava_dig(self) -> str:
+        """`sdk.settings.effect.strength.bhavaDig`"""
+        return self._r.render("sdk.settings.effect.strength.bhavaDig")
+
+    def bhava_division(self) -> str:
+        """`sdk.settings.effect.strength.bhavaDivision`"""
+        return self._r.render("sdk.settings.effect.strength.bhavaDivision")
+
+    def bhava_drishti(self) -> str:
+        """`sdk.settings.effect.strength.bhavaDrishti`"""
+        return self._r.render("sdk.settings.effect.strength.bhavaDrishti")
+
+    def bhava_special_rules(self) -> str:
+        """`sdk.settings.effect.strength.bhavaSpecialRules`"""
+        return self._r.render("sdk.settings.effect.strength.bhavaSpecialRules")
+
+    def cheshta(self) -> str:
+        """`sdk.settings.effect.strength.cheshta`"""
+        return self._r.render("sdk.settings.effect.strength.cheshta")
+
+    def dig(self) -> str:
+        """`sdk.settings.effect.strength.dig`"""
+        return self._r.render("sdk.settings.effect.strength.dig")
+
+    def drekkana(self) -> str:
+        """`sdk.settings.effect.strength.drekkana`"""
+        return self._r.render("sdk.settings.effect.strength.drekkana")
+
+    def drik(self) -> str:
+        """`sdk.settings.effect.strength.drik`"""
+        return self._r.render("sdk.settings.effect.strength.drik")
+
+    def ekadhipatya(self) -> str:
+        """`sdk.settings.effect.strength.ekadhipatya`"""
+        return self._r.render("sdk.settings.effect.strength.ekadhipatya")
+
+    def ishta_kashta(self) -> str:
+        """`sdk.settings.effect.strength.ishtaKashta`"""
+        return self._r.render("sdk.settings.effect.strength.ishtaKashta")
+
+    def kaala_lords(self) -> str:
+        """`sdk.settings.effect.strength.kaalaLords`"""
+        return self._r.render("sdk.settings.effect.strength.kaalaLords")
+
+    def kranti(self) -> str:
+        """`sdk.settings.effect.strength.kranti`"""
+        return self._r.render("sdk.settings.effect.strength.kranti")
+
+    def luminary_cheshta(self) -> str:
+        """`sdk.settings.effect.strength.luminaryCheshta`"""
+        return self._r.render("sdk.settings.effect.strength.luminaryCheshta")
+
+    def moon_bindu_from_jupiter(self) -> str:
+        """`sdk.settings.effect.strength.moonBinduFromJupiter`"""
+        return self._r.render("sdk.settings.effect.strength.moonBinduFromJupiter")
+
+    def moon_paksha(self) -> str:
+        """`sdk.settings.effect.strength.moonPaksha`"""
+        return self._r.render("sdk.settings.effect.strength.moonPaksha")
+
+    def naisargika(self) -> str:
+        """`sdk.settings.effect.strength.naisargika`"""
+        return self._r.render("sdk.settings.effect.strength.naisargika")
+
+    def nathonnatha(self) -> str:
+        """`sdk.settings.effect.strength.nathonnatha`"""
+        return self._r.render("sdk.settings.effect.strength.nathonnatha")
+
+    def pre_dawn_night(self) -> str:
+        """`sdk.settings.effect.strength.preDawnNight`"""
+        return self._r.render("sdk.settings.effect.strength.preDawnNight")
+
+    def required_rupas(self) -> str:
+        """`sdk.settings.effect.strength.requiredRupas`"""
+        return self._r.render("sdk.settings.effect.strength.requiredRupas")
+
+    def saptavargaja(self) -> str:
+        """`sdk.settings.effect.strength.saptavargaja`"""
+        return self._r.render("sdk.settings.effect.strength.saptavargaja")
+
+    def shodhana(self) -> str:
+        """`sdk.settings.effect.strength.shodhana`"""
+        return self._r.render("sdk.settings.effect.strength.shodhana")
+
+    def sun_ayana(self) -> str:
+        """`sdk.settings.effect.strength.sunAyana`"""
+        return self._r.render("sdk.settings.effect.strength.sunAyana")
+
+    def vimshopaka(self) -> str:
+        """`sdk.settings.effect.strength.vimshopaka`"""
+        return self._r.render("sdk.settings.effect.strength.vimshopaka")
+
+    def yuddha(self) -> str:
+        """`sdk.settings.effect.strength.yuddha`"""
+        return self._r.render("sdk.settings.effect.strength.yuddha")
+
+
+class MessagesSdkSettingsEffectState:
+    """The messages under `MessagesSdkSettingsEffectState`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def combustion_orbs(self) -> str:
+        """`sdk.settings.effect.state.combustionOrbs`"""
+        return self._r.render("sdk.settings.effect.state.combustionOrbs")
+
+    def marana_saturn(self) -> str:
+        """`sdk.settings.effect.state.maranaSaturn`"""
+        return self._r.render("sdk.settings.effect.state.maranaSaturn")
+
+    def marana_venus(self) -> str:
+        """`sdk.settings.effect.state.maranaVenus`"""
+        return self._r.render("sdk.settings.effect.state.maranaVenus")
+
+    def pushkara_bhaga(self) -> str:
+        """`sdk.settings.effect.state.pushkaraBhaga`"""
+        return self._r.render("sdk.settings.effect.state.pushkaraBhaga")
+
+    def sayanadi_ghatis(self) -> str:
+        """`sdk.settings.effect.state.sayanadiGhatis`"""
+        return self._r.render("sdk.settings.effect.state.sayanadiGhatis")
+
+    def sayanadi_nodes(self) -> str:
+        """`sdk.settings.effect.state.sayanadiNodes`"""
+        return self._r.render("sdk.settings.effect.state.sayanadiNodes")
+
+
+class MessagesSdkSettingsEffectProvider:
+    """The messages under `MessagesSdkSettingsEffectProvider`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def cache_cells(self) -> str:
+        """`sdk.settings.effect.provider.cacheCells`"""
+        return self._r.render("sdk.settings.effect.provider.cacheCells")
+
+    def overrides(self) -> str:
+        """`sdk.settings.effect.provider.overrides`"""
+        return self._r.render("sdk.settings.effect.provider.overrides")
+
+    def tier(self) -> str:
+        """`sdk.settings.effect.provider.tier`"""
+        return self._r.render("sdk.settings.effect.provider.tier")
+
+
+class MessagesSdkSettingsEffectPanchanga:
+    """The messages under `MessagesSdkSettingsEffectPanchanga`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def amrit_kalam(self) -> str:
+        """`sdk.settings.effect.panchanga.amritKalam`"""
+        return self._r.render("sdk.settings.effect.panchanga.amritKalam")
+
+    def centre(self) -> str:
+        """`sdk.settings.effect.panchanga.centre`"""
+        return self._r.render("sdk.settings.effect.panchanga.centre")
+
+    def durmuhurta(self) -> str:
+        """`sdk.settings.effect.panchanga.durmuhurta`"""
+        return self._r.render("sdk.settings.effect.panchanga.durmuhurta")
+
+    def eclipse_horizon(self) -> str:
+        """`sdk.settings.effect.panchanga.eclipseHorizon`"""
+        return self._r.render("sdk.settings.effect.panchanga.eclipseHorizon")
+
+    def eclipse_shadow(self) -> str:
+        """`sdk.settings.effect.panchanga.eclipseShadow`"""
+        return self._r.render("sdk.settings.effect.panchanga.eclipseShadow")
+
+    def eclipse_vedha(self) -> str:
+        """`sdk.settings.effect.panchanga.eclipseVedha`"""
+        return self._r.render("sdk.settings.effect.panchanga.eclipseVedha")
+
+    def lagna_table(self) -> str:
+        """`sdk.settings.effect.panchanga.lagnaTable`"""
+        return self._r.render("sdk.settings.effect.panchanga.lagnaTable")
+
+    def moon_events(self) -> str:
+        """`sdk.settings.effect.panchanga.moonEvents`"""
+        return self._r.render("sdk.settings.effect.panchanga.moonEvents")
+
+    def muhurta_tables(self) -> str:
+        """`sdk.settings.effect.panchanga.muhurtaTables`"""
+        return self._r.render("sdk.settings.effect.panchanga.muhurtaTables")
+
+    def panchaka_name(self) -> str:
+        """`sdk.settings.effect.panchanga.panchakaName`"""
+        return self._r.render("sdk.settings.effect.panchanga.panchakaName")
+
+    def panchaka_start(self) -> str:
+        """`sdk.settings.effect.panchanga.panchakaStart`"""
+        return self._r.render("sdk.settings.effect.panchanga.panchakaStart")
+
+    def punya_kala(self) -> str:
+        """`sdk.settings.effect.panchanga.punyaKala`"""
+        return self._r.render("sdk.settings.effect.panchanga.punyaKala")
+
+    def ritu(self) -> str:
+        """`sdk.settings.effect.panchanga.ritu`"""
+        return self._r.render("sdk.settings.effect.panchanga.ritu")
+
+    def shiva_vasa(self) -> str:
+        """`sdk.settings.effect.panchanga.shivaVasa`"""
+        return self._r.render("sdk.settings.effect.panchanga.shivaVasa")
+
+    def solar_month_start(self) -> str:
+        """`sdk.settings.effect.panchanga.solarMonthStart`"""
+        return self._r.render("sdk.settings.effect.panchanga.solarMonthStart")
+
+    def varjyam(self) -> str:
+        """`sdk.settings.effect.panchanga.varjyam`"""
+        return self._r.render("sdk.settings.effect.panchanga.varjyam")
+
+
+class MessagesSdkSettingsEffectOutput:
+    """The messages under `MessagesSdkSettingsEffectOutput`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def precision(self) -> str:
+        """`sdk.settings.effect.output.precision`"""
+        return self._r.render("sdk.settings.effect.output.precision")
+
+
+class MessagesSdkSettingsEffectKp:
+    """The messages under `MessagesSdkSettingsEffectKp`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def day_lord_day(self) -> str:
+        """`sdk.settings.effect.kp.dayLordDay`"""
+        return self._r.render("sdk.settings.effect.kp.dayLordDay")
+
+    def node_rulers(self) -> str:
+        """`sdk.settings.effect.kp.nodeRulers`"""
+        return self._r.render("sdk.settings.effect.kp.nodeRulers")
+
+    def retrograde_rejection(self) -> str:
+        """`sdk.settings.effect.kp.retrogradeRejection`"""
+        return self._r.render("sdk.settings.effect.kp.retrogradeRejection")
+
+    def ruling_count(self) -> str:
+        """`sdk.settings.effect.kp.rulingCount`"""
+        return self._r.render("sdk.settings.effect.kp.rulingCount")
+
+
+class MessagesSdkSettingsEffectJaimini:
+    """The messages under `MessagesSdkSettingsEffectJaimini`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def brahma(self) -> str:
+        """`sdk.settings.effect.jaimini.brahma`"""
+        return self._r.render("sdk.settings.effect.jaimini.brahma")
+
+    def chara_karakas(self) -> str:
+        """`sdk.settings.effect.jaimini.charaKarakas`"""
+        return self._r.render("sdk.settings.effect.jaimini.charaKarakas")
+
+    def eight_karaka_order(self) -> str:
+        """`sdk.settings.effect.jaimini.eightKarakaOrder`"""
+        return self._r.render("sdk.settings.effect.jaimini.eightKarakaOrder")
+
+    def graha_arudha_exception(self) -> str:
+        """`sdk.settings.effect.jaimini.grahaArudhaException`"""
+        return self._r.render("sdk.settings.effect.jaimini.grahaArudhaException")
+
+    def node_co_lordship(self) -> str:
+        """`sdk.settings.effect.jaimini.nodeCoLordship`"""
+        return self._r.render("sdk.settings.effect.jaimini.nodeCoLordship")
+
+
+class MessagesSdkSettingsEffectHouses:
+    """The messages under `MessagesSdkSettingsEffectHouses`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def chalit_system(self) -> str:
+        """`sdk.settings.effect.houses.chalitSystem`"""
+        return self._r.render("sdk.settings.effect.houses.chalitSystem")
+
+    def module_overrides(self) -> str:
+        """`sdk.settings.effect.houses.moduleOverrides`"""
+        return self._r.render("sdk.settings.effect.houses.moduleOverrides")
+
+    def placement_system(self) -> str:
+        """`sdk.settings.effect.houses.placementSystem`"""
+        return self._r.render("sdk.settings.effect.houses.placementSystem")
+
+    def polar_policy(self) -> str:
+        """`sdk.settings.effect.houses.polarPolicy`"""
+        return self._r.render("sdk.settings.effect.houses.polarPolicy")
+
+
+class MessagesSdkSettingsEffectGochar:
+    """The messages under `MessagesSdkSettingsEffectGochar`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ashtakavarga_good_from(self) -> str:
+        """`sdk.settings.effect.gochar.ashtakavargaGoodFrom`"""
+        return self._r.render("sdk.settings.effect.gochar.ashtakavargaGoodFrom")
+
+    def node_obstruction(self) -> str:
+        """`sdk.settings.effect.gochar.nodeObstruction`"""
+        return self._r.render("sdk.settings.effect.gochar.nodeObstruction")
+
+    def node_vedha(self) -> str:
+        """`sdk.settings.effect.gochar.nodeVedha`"""
+        return self._r.render("sdk.settings.effect.gochar.nodeVedha")
+
+    def transit_centre(self) -> str:
+        """`sdk.settings.effect.gochar.transitCentre`"""
+        return self._r.render("sdk.settings.effect.gochar.transitCentre")
+
+
+class MessagesSdkSettingsEffectFrame:
+    """The messages under `MessagesSdkSettingsEffectFrame`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ayanamsha(self) -> str:
+        """`sdk.settings.effect.frame.ayanamsha`"""
+        return self._r.render("sdk.settings.effect.frame.ayanamsha")
+
+    def ayanamsha_basis(self) -> str:
+        """`sdk.settings.effect.frame.ayanamshaBasis`"""
+        return self._r.render("sdk.settings.effect.frame.ayanamshaBasis")
+
+    def centre(self) -> str:
+        """`sdk.settings.effect.frame.centre`"""
+        return self._r.render("sdk.settings.effect.frame.centre")
+
+    def nakshatra_scheme(self) -> str:
+        """`sdk.settings.effect.frame.nakshatraScheme`"""
+        return self._r.render("sdk.settings.effect.frame.nakshatraScheme")
+
+    def node(self) -> str:
+        """`sdk.settings.effect.frame.node`"""
+        return self._r.render("sdk.settings.effect.frame.node")
+
+    def positions(self) -> str:
+        """`sdk.settings.effect.frame.positions`"""
+        return self._r.render("sdk.settings.effect.frame.positions")
+
+    def siddhanta(self) -> str:
+        """`sdk.settings.effect.frame.siddhanta`"""
+        return self._r.render("sdk.settings.effect.frame.siddhanta")
+
+    def zodiac(self) -> str:
+        """`sdk.settings.effect.frame.zodiac`"""
+        return self._r.render("sdk.settings.effect.frame.zodiac")
+
+
+class MessagesSdkSettingsEffectDay:
+    """The messages under `MessagesSdkSettingsEffectDay`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def day_boundary(self) -> str:
+        """`sdk.settings.effect.day.dayBoundary`"""
+        return self._r.render("sdk.settings.effect.day.dayBoundary")
+
+    def ghati_reckoning(self) -> str:
+        """`sdk.settings.effect.day.ghatiReckoning`"""
+        return self._r.render("sdk.settings.effect.day.ghatiReckoning")
+
+    def hora_reckoning(self) -> str:
+        """`sdk.settings.effect.day.horaReckoning`"""
+        return self._r.render("sdk.settings.effect.day.horaReckoning")
+
+    def polar_day_policy(self) -> str:
+        """`sdk.settings.effect.day.polarDayPolicy`"""
+        return self._r.render("sdk.settings.effect.day.polarDayPolicy")
+
+    def sunrise(self) -> str:
+        """`sdk.settings.effect.day.sunrise`"""
+        return self._r.render("sdk.settings.effect.day.sunrise")
+
+
+class MessagesSdkSettingsEffectDasha:
+    """The messages under `MessagesSdkSettingsEffectDasha`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def after_cycle(self) -> str:
+        """`sdk.settings.effect.dasha.afterCycle`"""
+        return self._r.render("sdk.settings.effect.dasha.afterCycle")
+
+    def ashtottari_grouping(self) -> str:
+        """`sdk.settings.effect.dasha.ashtottariGrouping`"""
+        return self._r.render("sdk.settings.effect.dasha.ashtottariGrouping")
+
+    def ayurdaya_place(self) -> str:
+        """`sdk.settings.effect.dasha.ayurdayaPlace`"""
+        return self._r.render("sdk.settings.effect.dasha.ayurdayaPlace")
+
+    def ayurdaya_readings(self) -> str:
+        """`sdk.settings.effect.dasha.ayurdayaReadings`"""
+        return self._r.render("sdk.settings.effect.dasha.ayurdayaReadings")
+
+    def ayurdaya_span(self) -> str:
+        """`sdk.settings.effect.dasha.ayurdayaSpan`"""
+        return self._r.render("sdk.settings.effect.dasha.ayurdayaSpan")
+
+    def balance(self) -> str:
+        """`sdk.settings.effect.dasha.balance`"""
+        return self._r.render("sdk.settings.effect.dasha.balance")
+
+    def birth_period(self) -> str:
+        """`sdk.settings.effect.dasha.birthPeriod`"""
+        return self._r.render("sdk.settings.effect.dasha.birthPeriod")
+
+    def decennial_division(self) -> str:
+        """`sdk.settings.effect.dasha.decennialDivision`"""
+        return self._r.render("sdk.settings.effect.dasha.decennialDivision")
+
+    def depth(self) -> str:
+        """`sdk.settings.effect.dasha.depth`"""
+        return self._r.render("sdk.settings.effect.dasha.depth")
+
+    def dual_lord(self) -> str:
+        """`sdk.settings.effect.dasha.dualLord`"""
+        return self._r.render("sdk.settings.effect.dasha.dualLord")
+
+    def firdaria_nodes(self) -> str:
+        """`sdk.settings.effect.dasha.firdariaNodes`"""
+        return self._r.render("sdk.settings.effect.dasha.firdariaNodes")
+
+    def kalachakra_after_ninth(self) -> str:
+        """`sdk.settings.effect.dasha.kalachakraAfterNinth`"""
+        return self._r.render("sdk.settings.effect.dasha.kalachakraAfterNinth")
+
+    def kalachakra_balance(self) -> str:
+        """`sdk.settings.effect.dasha.kalachakraBalance`"""
+        return self._r.render("sdk.settings.effect.dasha.kalachakraBalance")
+
+    def kalachakra_membership(self) -> str:
+        """`sdk.settings.effect.dasha.kalachakraMembership`"""
+        return self._r.render("sdk.settings.effect.dasha.kalachakraMembership")
+
+    def karaka_division(self) -> str:
+        """`sdk.settings.effect.dasha.karakaDivision`"""
+        return self._r.render("sdk.settings.effect.dasha.karakaDivision")
+
+    def naisargika_division(self) -> str:
+        """`sdk.settings.effect.dasha.naisargikaDivision`"""
+        return self._r.render("sdk.settings.effect.dasha.naisargikaDivision")
+
+    def rashi_start(self) -> str:
+        """`sdk.settings.effect.dasha.rashiStart`"""
+        return self._r.render("sdk.settings.effect.dasha.rashiStart")
+
+    def releasing_shared_sign(self) -> str:
+        """`sdk.settings.effect.dasha.releasingSharedSign`"""
+        return self._r.render("sdk.settings.effect.dasha.releasingSharedSign")
+
+    def seed_overflow(self) -> str:
+        """`sdk.settings.effect.dasha.seedOverflow`"""
+        return self._r.render("sdk.settings.effect.dasha.seedOverflow")
+
+    def shanta_sign(self) -> str:
+        """`sdk.settings.effect.dasha.shantaSign`"""
+        return self._r.render("sdk.settings.effect.dasha.shantaSign")
+
+    def strongest_graha(self) -> str:
+        """`sdk.settings.effect.dasha.strongestGraha`"""
+        return self._r.render("sdk.settings.effect.dasha.strongestGraha")
+
+    def year_length(self) -> str:
+        """`sdk.settings.effect.dasha.yearLength`"""
+        return self._r.render("sdk.settings.effect.dasha.yearLength")
+
+
+class MessagesSdkSettingsEffectCalendars:
+    """The messages under `MessagesSdkSettingsEffectCalendars`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def civil_calendar(self) -> str:
+        """`sdk.settings.effect.calendars.civilCalendar`"""
+        return self._r.render("sdk.settings.effect.calendars.civilCalendar")
+
+    def eras(self) -> str:
+        """`sdk.settings.effect.calendars.eras`"""
+        return self._r.render("sdk.settings.effect.calendars.eras")
+
+    def lunar_month(self) -> str:
+        """`sdk.settings.effect.calendars.lunarMonth`"""
+        return self._r.render("sdk.settings.effect.calendars.lunarMonth")
+
+    def samvatsara(self) -> str:
+        """`sdk.settings.effect.calendars.samvatsara`"""
+        return self._r.render("sdk.settings.effect.calendars.samvatsara")
+
+
+class MessagesSdkSettingsEffectAspect:
+    """The messages under `MessagesSdkSettingsEffectAspect`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def drishti_table(self) -> str:
+        """`sdk.settings.effect.aspect.drishtiTable`"""
+        return self._r.render("sdk.settings.effect.aspect.drishtiTable")
+
+    def node_aspects(self) -> str:
+        """`sdk.settings.effect.aspect.nodeAspects`"""
+        return self._r.render("sdk.settings.effect.aspect.nodeAspects")
+
 
 class MessagesSdkSankalpa:
     """The messages under `MessagesSdkSankalpa`, each rendered by its own key."""

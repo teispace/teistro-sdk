@@ -11917,3 +11917,118 @@ fn a_people_digest_crosses_as_the_facade_reads_it() {
     );
     assert_eq!(ctx.last_error().2.as_deref(), Some("people.people[1].name"));
 }
+
+/// The settings explained across the boundary: owned JSON, or the status.
+fn settings_json(
+    ctx: &Ctx,
+    other: Option<*const TsContext>,
+    request: &str,
+) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    let status = match other {
+        // SAFETY: two live contexts or a null other, a NUL-terminated
+        // request and a valid slot.
+        Some(other) => unsafe {
+            teistro_ffi::context::ts_context_diff_settings(
+                ctx.handle,
+                other,
+                request.as_ptr(),
+                &raw mut json,
+            )
+        },
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        None => unsafe {
+            teistro_ffi::context::ts_context_explain_settings(
+                ctx.handle,
+                request.as_ptr(),
+                &raw mut json,
+            )
+        },
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// Every shipped profile explained across the boundary cites every knob,
+/// as the façade explains it; the context's patch is its layer; the
+/// committee's profile and `nepali-drik` part on the knobs SR-110 names;
+/// and a null other and an unknown knob are refused by name
+/// (`03-design/settings-and-profiles.md` §3.5).
+#[test]
+fn the_settings_explain_and_compare_as_the_facade_answers() {
+    for profile in teistro_core::settings::SHIPPED_PROFILES {
+        let ctx = Ctx::new(0, Some(profile), None, None).unwrap();
+        let crossed: serde_json::Value =
+            serde_json::from_str(&settings_json(&ctx, None, "{}").unwrap()).unwrap();
+        let knobs = crossed["knobs"].as_array().unwrap();
+        assert_eq!(
+            knobs.len(),
+            teistro_core::settings::Settings::knobs().len(),
+            "{profile}"
+        );
+        assert!(
+            knobs
+                .iter()
+                .all(|knob| knob["citation"]["reference"].is_string()),
+            "{profile} leaves a knob uncited"
+        );
+        let facade = teistro::Context::builder()
+            .profile(profile)
+            .build()
+            .unwrap()
+            .explain_settings(&teistro_core::settings::SettingsQuery::default())
+            .unwrap();
+        assert_eq!(crossed, serde_json::to_value(&facade).unwrap(), "{profile}");
+    }
+
+    let patched = Ctx::new(
+        0,
+        Some("nepali-drik"),
+        Some(r#"{"frame": {"node": "TRUE"}}"#),
+        None,
+    )
+    .unwrap();
+    let node: serde_json::Value = serde_json::from_str(
+        &settings_json(&patched, None, r#"{"knobs": ["frame.node"]}"#).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(node["knobs"][0]["layer"], "CONTEXT");
+    assert_eq!(node["knobs"][0]["citation"], serde_json::Value::Null);
+
+    let committee = Ctx::new(0, Some("nepali-committee"), None, None).unwrap();
+    let drik = Ctx::new(0, Some("nepali-drik"), None, None).unwrap();
+    let diff: serde_json::Value =
+        serde_json::from_str(&settings_json(&committee, Some(drik.handle), "{}").unwrap()).unwrap();
+    let parted: Vec<&str> = diff["knobs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|knob| knob["knob"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        parted,
+        [
+            "frame.ayanamsha",
+            "frame.centre",
+            "frame.siddhanta",
+            "panchanga.lagna_table"
+        ]
+    );
+
+    assert_eq!(
+        settings_json(&committee, Some(ptr::null()), "{}").unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(committee.last_error().2.as_deref(), Some("other"));
+    assert_eq!(
+        settings_json(&committee, None, r#"{"knobs": ["frame.nod"]}"#).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(committee.last_error().2.as_deref(), Some("knobs[0]"));
+}

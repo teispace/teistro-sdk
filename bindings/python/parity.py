@@ -3329,6 +3329,27 @@ def main() -> None:
     assert rising is not None
     put("sky-pose-ascendant", placement(rising[1]))
 
+    # ── The settings explained and compared ───────────────────────────
+    # `nepali-drik` with the node patched per call, every knob explained,
+    # and the knobs on which the committee's profile and `nepali-drik`
+    # part (`03-design/settings-and-profiles.md` §3.5).
+    with teistro.context(profile="nepali-drik") as drik:
+        with drik.with_settings({"frame": {"node": "MEAN"}}) as mean:
+            explained = mean.explain_settings()
+        by_name = {one["knob"]: one for one in explained["knobs"]}
+        settings_node, settings_centre = by_name["frame.node"], by_name["frame.centre"]
+        cited = sum(1 for one in explained["knobs"] if one["citation"] is not None)
+        put(
+            "settings-explain",
+            f"{len(explained['knobs'])} {cited} {settings_node['layer']} {settings_centre['layer']} "
+            f"{settings_centre['profile'] or '-'}",
+        )
+        put("settings-explain-hash", explained["settingsHash"])
+        put("settings-explain-effect", settings_node["effect"])
+        with teistro.context(profile="nepali-committee") as committee:
+            parted = committee.diff_settings(drik)
+        put("settings-diff", ",".join(f"{one['knob']}:{one['moves']}" for one in parted["knobs"]))
+
     # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
     # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share

@@ -1330,5 +1330,15 @@
       },
       "era": "era.KIRAT_YELE"
     }
+  },
+  {
+    "record": "settings.explain",
+    "request": {
+      "knobs": ["frame", "day.sunrise"]
+    }
+  },
+  {
+    "record": "settings.diff",
+    "request": {}
   }
 ]

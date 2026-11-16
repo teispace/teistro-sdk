@@ -24032,6 +24032,1383 @@ public final class Messages {
             }
         }
 
+
+        /**
+         * The messages under `settings`.
+         *
+         * @return the group
+         */
+        public SdkSettings settings() {
+            return new SdkSettings(r);
+        }
+
+        /** The messages under `SdkSettings`, each rendered by its own key. */
+        public static final class SdkSettings {
+            private final Renderer r;
+
+            SdkSettings(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * The messages under `effect`.
+             *
+             * @return the group
+             */
+            public SdkSettingsEffect effect() {
+                return new SdkSettingsEffect(r);
+            }
+
+            /** The messages under `SdkSettingsEffect`, each rendered by its own key. */
+            public static final class SdkSettingsEffect {
+                private final Renderer r;
+
+                SdkSettingsEffect(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `aspect`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectAspect aspect() {
+                    return new SdkSettingsEffectAspect(r);
+                }
+
+                /** The messages under `SdkSettingsEffectAspect`, each rendered by its own key. */
+                public static final class SdkSettingsEffectAspect {
+                    private final Renderer r;
+
+                    SdkSettingsEffectAspect(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.aspect.drishtiTable`
+                     *
+                     * @return the text
+                     */
+                    public String drishtiTable() {
+                        return r.render("sdk.settings.effect.aspect.drishtiTable", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.aspect.nodeAspects`
+                     *
+                     * @return the text
+                     */
+                    public String nodeAspects() {
+                        return r.render("sdk.settings.effect.aspect.nodeAspects", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `calendars`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectCalendars calendars() {
+                    return new SdkSettingsEffectCalendars(r);
+                }
+
+                /** The messages under `SdkSettingsEffectCalendars`, each rendered by its own key. */
+                public static final class SdkSettingsEffectCalendars {
+                    private final Renderer r;
+
+                    SdkSettingsEffectCalendars(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.civilCalendar`
+                     *
+                     * @return the text
+                     */
+                    public String civilCalendar() {
+                        return r.render("sdk.settings.effect.calendars.civilCalendar", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.eras`
+                     *
+                     * @return the text
+                     */
+                    public String eras() {
+                        return r.render("sdk.settings.effect.calendars.eras", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.lunarMonth`
+                     *
+                     * @return the text
+                     */
+                    public String lunarMonth() {
+                        return r.render("sdk.settings.effect.calendars.lunarMonth", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.samvatsara`
+                     *
+                     * @return the text
+                     */
+                    public String samvatsara() {
+                        return r.render("sdk.settings.effect.calendars.samvatsara", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `dasha`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectDasha dasha() {
+                    return new SdkSettingsEffectDasha(r);
+                }
+
+                /** The messages under `SdkSettingsEffectDasha`, each rendered by its own key. */
+                public static final class SdkSettingsEffectDasha {
+                    private final Renderer r;
+
+                    SdkSettingsEffectDasha(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.afterCycle`
+                     *
+                     * @return the text
+                     */
+                    public String afterCycle() {
+                        return r.render("sdk.settings.effect.dasha.afterCycle", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.ashtottariGrouping`
+                     *
+                     * @return the text
+                     */
+                    public String ashtottariGrouping() {
+                        return r.render("sdk.settings.effect.dasha.ashtottariGrouping", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.ayurdayaPlace`
+                     *
+                     * @return the text
+                     */
+                    public String ayurdayaPlace() {
+                        return r.render("sdk.settings.effect.dasha.ayurdayaPlace", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.ayurdayaReadings`
+                     *
+                     * @return the text
+                     */
+                    public String ayurdayaReadings() {
+                        return r.render("sdk.settings.effect.dasha.ayurdayaReadings", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.ayurdayaSpan`
+                     *
+                     * @return the text
+                     */
+                    public String ayurdayaSpan() {
+                        return r.render("sdk.settings.effect.dasha.ayurdayaSpan", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.balance`
+                     *
+                     * @return the text
+                     */
+                    public String balance() {
+                        return r.render("sdk.settings.effect.dasha.balance", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.birthPeriod`
+                     *
+                     * @return the text
+                     */
+                    public String birthPeriod() {
+                        return r.render("sdk.settings.effect.dasha.birthPeriod", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.decennialDivision`
+                     *
+                     * @return the text
+                     */
+                    public String decennialDivision() {
+                        return r.render("sdk.settings.effect.dasha.decennialDivision", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.depth`
+                     *
+                     * @return the text
+                     */
+                    public String depth() {
+                        return r.render("sdk.settings.effect.dasha.depth", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.dualLord`
+                     *
+                     * @return the text
+                     */
+                    public String dualLord() {
+                        return r.render("sdk.settings.effect.dasha.dualLord", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.firdariaNodes`
+                     *
+                     * @return the text
+                     */
+                    public String firdariaNodes() {
+                        return r.render("sdk.settings.effect.dasha.firdariaNodes", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.kalachakraAfterNinth`
+                     *
+                     * @return the text
+                     */
+                    public String kalachakraAfterNinth() {
+                        return r.render("sdk.settings.effect.dasha.kalachakraAfterNinth", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.kalachakraBalance`
+                     *
+                     * @return the text
+                     */
+                    public String kalachakraBalance() {
+                        return r.render("sdk.settings.effect.dasha.kalachakraBalance", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.kalachakraMembership`
+                     *
+                     * @return the text
+                     */
+                    public String kalachakraMembership() {
+                        return r.render("sdk.settings.effect.dasha.kalachakraMembership", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.karakaDivision`
+                     *
+                     * @return the text
+                     */
+                    public String karakaDivision() {
+                        return r.render("sdk.settings.effect.dasha.karakaDivision", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.naisargikaDivision`
+                     *
+                     * @return the text
+                     */
+                    public String naisargikaDivision() {
+                        return r.render("sdk.settings.effect.dasha.naisargikaDivision", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.rashiStart`
+                     *
+                     * @return the text
+                     */
+                    public String rashiStart() {
+                        return r.render("sdk.settings.effect.dasha.rashiStart", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.releasingSharedSign`
+                     *
+                     * @return the text
+                     */
+                    public String releasingSharedSign() {
+                        return r.render("sdk.settings.effect.dasha.releasingSharedSign", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.seedOverflow`
+                     *
+                     * @return the text
+                     */
+                    public String seedOverflow() {
+                        return r.render("sdk.settings.effect.dasha.seedOverflow", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.shantaSign`
+                     *
+                     * @return the text
+                     */
+                    public String shantaSign() {
+                        return r.render("sdk.settings.effect.dasha.shantaSign", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.strongestGraha`
+                     *
+                     * @return the text
+                     */
+                    public String strongestGraha() {
+                        return r.render("sdk.settings.effect.dasha.strongestGraha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.dasha.yearLength`
+                     *
+                     * @return the text
+                     */
+                    public String yearLength() {
+                        return r.render("sdk.settings.effect.dasha.yearLength", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `day`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectDay day() {
+                    return new SdkSettingsEffectDay(r);
+                }
+
+                /** The messages under `SdkSettingsEffectDay`, each rendered by its own key. */
+                public static final class SdkSettingsEffectDay {
+                    private final Renderer r;
+
+                    SdkSettingsEffectDay(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.day.dayBoundary`
+                     *
+                     * @return the text
+                     */
+                    public String dayBoundary() {
+                        return r.render("sdk.settings.effect.day.dayBoundary", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.day.ghatiReckoning`
+                     *
+                     * @return the text
+                     */
+                    public String ghatiReckoning() {
+                        return r.render("sdk.settings.effect.day.ghatiReckoning", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.day.horaReckoning`
+                     *
+                     * @return the text
+                     */
+                    public String horaReckoning() {
+                        return r.render("sdk.settings.effect.day.horaReckoning", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.day.polarDayPolicy`
+                     *
+                     * @return the text
+                     */
+                    public String polarDayPolicy() {
+                        return r.render("sdk.settings.effect.day.polarDayPolicy", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.day.sunrise`
+                     *
+                     * @return the text
+                     */
+                    public String sunrise() {
+                        return r.render("sdk.settings.effect.day.sunrise", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `frame`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectFrame frame() {
+                    return new SdkSettingsEffectFrame(r);
+                }
+
+                /** The messages under `SdkSettingsEffectFrame`, each rendered by its own key. */
+                public static final class SdkSettingsEffectFrame {
+                    private final Renderer r;
+
+                    SdkSettingsEffectFrame(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.ayanamsha`
+                     *
+                     * @return the text
+                     */
+                    public String ayanamsha() {
+                        return r.render("sdk.settings.effect.frame.ayanamsha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.ayanamshaBasis`
+                     *
+                     * @return the text
+                     */
+                    public String ayanamshaBasis() {
+                        return r.render("sdk.settings.effect.frame.ayanamshaBasis", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.centre`
+                     *
+                     * @return the text
+                     */
+                    public String centre() {
+                        return r.render("sdk.settings.effect.frame.centre", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.nakshatraScheme`
+                     *
+                     * @return the text
+                     */
+                    public String nakshatraScheme() {
+                        return r.render("sdk.settings.effect.frame.nakshatraScheme", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.node`
+                     *
+                     * @return the text
+                     */
+                    public String node() {
+                        return r.render("sdk.settings.effect.frame.node", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.positions`
+                     *
+                     * @return the text
+                     */
+                    public String positions() {
+                        return r.render("sdk.settings.effect.frame.positions", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.siddhanta`
+                     *
+                     * @return the text
+                     */
+                    public String siddhanta() {
+                        return r.render("sdk.settings.effect.frame.siddhanta", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.zodiac`
+                     *
+                     * @return the text
+                     */
+                    public String zodiac() {
+                        return r.render("sdk.settings.effect.frame.zodiac", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `gochar`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectGochar gochar() {
+                    return new SdkSettingsEffectGochar(r);
+                }
+
+                /** The messages under `SdkSettingsEffectGochar`, each rendered by its own key. */
+                public static final class SdkSettingsEffectGochar {
+                    private final Renderer r;
+
+                    SdkSettingsEffectGochar(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.gochar.ashtakavargaGoodFrom`
+                     *
+                     * @return the text
+                     */
+                    public String ashtakavargaGoodFrom() {
+                        return r.render("sdk.settings.effect.gochar.ashtakavargaGoodFrom", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.gochar.nodeObstruction`
+                     *
+                     * @return the text
+                     */
+                    public String nodeObstruction() {
+                        return r.render("sdk.settings.effect.gochar.nodeObstruction", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.gochar.nodeVedha`
+                     *
+                     * @return the text
+                     */
+                    public String nodeVedha() {
+                        return r.render("sdk.settings.effect.gochar.nodeVedha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.gochar.transitCentre`
+                     *
+                     * @return the text
+                     */
+                    public String transitCentre() {
+                        return r.render("sdk.settings.effect.gochar.transitCentre", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `houses`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectHouses houses() {
+                    return new SdkSettingsEffectHouses(r);
+                }
+
+                /** The messages under `SdkSettingsEffectHouses`, each rendered by its own key. */
+                public static final class SdkSettingsEffectHouses {
+                    private final Renderer r;
+
+                    SdkSettingsEffectHouses(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.houses.chalitSystem`
+                     *
+                     * @return the text
+                     */
+                    public String chalitSystem() {
+                        return r.render("sdk.settings.effect.houses.chalitSystem", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.houses.moduleOverrides`
+                     *
+                     * @return the text
+                     */
+                    public String moduleOverrides() {
+                        return r.render("sdk.settings.effect.houses.moduleOverrides", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.houses.placementSystem`
+                     *
+                     * @return the text
+                     */
+                    public String placementSystem() {
+                        return r.render("sdk.settings.effect.houses.placementSystem", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.houses.polarPolicy`
+                     *
+                     * @return the text
+                     */
+                    public String polarPolicy() {
+                        return r.render("sdk.settings.effect.houses.polarPolicy", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `jaimini`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectJaimini jaimini() {
+                    return new SdkSettingsEffectJaimini(r);
+                }
+
+                /** The messages under `SdkSettingsEffectJaimini`, each rendered by its own key. */
+                public static final class SdkSettingsEffectJaimini {
+                    private final Renderer r;
+
+                    SdkSettingsEffectJaimini(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.brahma`
+                     *
+                     * @return the text
+                     */
+                    public String brahma() {
+                        return r.render("sdk.settings.effect.jaimini.brahma", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.charaKarakas`
+                     *
+                     * @return the text
+                     */
+                    public String charaKarakas() {
+                        return r.render("sdk.settings.effect.jaimini.charaKarakas", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.eightKarakaOrder`
+                     *
+                     * @return the text
+                     */
+                    public String eightKarakaOrder() {
+                        return r.render("sdk.settings.effect.jaimini.eightKarakaOrder", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.grahaArudhaException`
+                     *
+                     * @return the text
+                     */
+                    public String grahaArudhaException() {
+                        return r.render("sdk.settings.effect.jaimini.grahaArudhaException", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.nodeCoLordship`
+                     *
+                     * @return the text
+                     */
+                    public String nodeCoLordship() {
+                        return r.render("sdk.settings.effect.jaimini.nodeCoLordship", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `kp`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectKp kp() {
+                    return new SdkSettingsEffectKp(r);
+                }
+
+                /** The messages under `SdkSettingsEffectKp`, each rendered by its own key. */
+                public static final class SdkSettingsEffectKp {
+                    private final Renderer r;
+
+                    SdkSettingsEffectKp(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.kp.dayLordDay`
+                     *
+                     * @return the text
+                     */
+                    public String dayLordDay() {
+                        return r.render("sdk.settings.effect.kp.dayLordDay", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.kp.nodeRulers`
+                     *
+                     * @return the text
+                     */
+                    public String nodeRulers() {
+                        return r.render("sdk.settings.effect.kp.nodeRulers", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.kp.retrogradeRejection`
+                     *
+                     * @return the text
+                     */
+                    public String retrogradeRejection() {
+                        return r.render("sdk.settings.effect.kp.retrogradeRejection", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.kp.rulingCount`
+                     *
+                     * @return the text
+                     */
+                    public String rulingCount() {
+                        return r.render("sdk.settings.effect.kp.rulingCount", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `output`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectOutput output() {
+                    return new SdkSettingsEffectOutput(r);
+                }
+
+                /** The messages under `SdkSettingsEffectOutput`, each rendered by its own key. */
+                public static final class SdkSettingsEffectOutput {
+                    private final Renderer r;
+
+                    SdkSettingsEffectOutput(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.output.precision`
+                     *
+                     * @return the text
+                     */
+                    public String precision() {
+                        return r.render("sdk.settings.effect.output.precision", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `panchanga`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectPanchanga panchanga() {
+                    return new SdkSettingsEffectPanchanga(r);
+                }
+
+                /** The messages under `SdkSettingsEffectPanchanga`, each rendered by its own key. */
+                public static final class SdkSettingsEffectPanchanga {
+                    private final Renderer r;
+
+                    SdkSettingsEffectPanchanga(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.amritKalam`
+                     *
+                     * @return the text
+                     */
+                    public String amritKalam() {
+                        return r.render("sdk.settings.effect.panchanga.amritKalam", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.centre`
+                     *
+                     * @return the text
+                     */
+                    public String centre() {
+                        return r.render("sdk.settings.effect.panchanga.centre", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.durmuhurta`
+                     *
+                     * @return the text
+                     */
+                    public String durmuhurta() {
+                        return r.render("sdk.settings.effect.panchanga.durmuhurta", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.eclipseHorizon`
+                     *
+                     * @return the text
+                     */
+                    public String eclipseHorizon() {
+                        return r.render("sdk.settings.effect.panchanga.eclipseHorizon", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.eclipseShadow`
+                     *
+                     * @return the text
+                     */
+                    public String eclipseShadow() {
+                        return r.render("sdk.settings.effect.panchanga.eclipseShadow", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.eclipseVedha`
+                     *
+                     * @return the text
+                     */
+                    public String eclipseVedha() {
+                        return r.render("sdk.settings.effect.panchanga.eclipseVedha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.lagnaTable`
+                     *
+                     * @return the text
+                     */
+                    public String lagnaTable() {
+                        return r.render("sdk.settings.effect.panchanga.lagnaTable", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.moonEvents`
+                     *
+                     * @return the text
+                     */
+                    public String moonEvents() {
+                        return r.render("sdk.settings.effect.panchanga.moonEvents", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.muhurtaTables`
+                     *
+                     * @return the text
+                     */
+                    public String muhurtaTables() {
+                        return r.render("sdk.settings.effect.panchanga.muhurtaTables", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.panchakaName`
+                     *
+                     * @return the text
+                     */
+                    public String panchakaName() {
+                        return r.render("sdk.settings.effect.panchanga.panchakaName", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.panchakaStart`
+                     *
+                     * @return the text
+                     */
+                    public String panchakaStart() {
+                        return r.render("sdk.settings.effect.panchanga.panchakaStart", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.punyaKala`
+                     *
+                     * @return the text
+                     */
+                    public String punyaKala() {
+                        return r.render("sdk.settings.effect.panchanga.punyaKala", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.ritu`
+                     *
+                     * @return the text
+                     */
+                    public String ritu() {
+                        return r.render("sdk.settings.effect.panchanga.ritu", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.shivaVasa`
+                     *
+                     * @return the text
+                     */
+                    public String shivaVasa() {
+                        return r.render("sdk.settings.effect.panchanga.shivaVasa", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.solarMonthStart`
+                     *
+                     * @return the text
+                     */
+                    public String solarMonthStart() {
+                        return r.render("sdk.settings.effect.panchanga.solarMonthStart", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.panchanga.varjyam`
+                     *
+                     * @return the text
+                     */
+                    public String varjyam() {
+                        return r.render("sdk.settings.effect.panchanga.varjyam", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `provider`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectProvider provider() {
+                    return new SdkSettingsEffectProvider(r);
+                }
+
+                /** The messages under `SdkSettingsEffectProvider`, each rendered by its own key. */
+                public static final class SdkSettingsEffectProvider {
+                    private final Renderer r;
+
+                    SdkSettingsEffectProvider(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.provider.cacheCells`
+                     *
+                     * @return the text
+                     */
+                    public String cacheCells() {
+                        return r.render("sdk.settings.effect.provider.cacheCells", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.provider.overrides`
+                     *
+                     * @return the text
+                     */
+                    public String overrides() {
+                        return r.render("sdk.settings.effect.provider.overrides", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.provider.tier`
+                     *
+                     * @return the text
+                     */
+                    public String tier() {
+                        return r.render("sdk.settings.effect.provider.tier", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `state`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectState state() {
+                    return new SdkSettingsEffectState(r);
+                }
+
+                /** The messages under `SdkSettingsEffectState`, each rendered by its own key. */
+                public static final class SdkSettingsEffectState {
+                    private final Renderer r;
+
+                    SdkSettingsEffectState(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.combustionOrbs`
+                     *
+                     * @return the text
+                     */
+                    public String combustionOrbs() {
+                        return r.render("sdk.settings.effect.state.combustionOrbs", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.maranaSaturn`
+                     *
+                     * @return the text
+                     */
+                    public String maranaSaturn() {
+                        return r.render("sdk.settings.effect.state.maranaSaturn", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.maranaVenus`
+                     *
+                     * @return the text
+                     */
+                    public String maranaVenus() {
+                        return r.render("sdk.settings.effect.state.maranaVenus", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.pushkaraBhaga`
+                     *
+                     * @return the text
+                     */
+                    public String pushkaraBhaga() {
+                        return r.render("sdk.settings.effect.state.pushkaraBhaga", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.sayanadiGhatis`
+                     *
+                     * @return the text
+                     */
+                    public String sayanadiGhatis() {
+                        return r.render("sdk.settings.effect.state.sayanadiGhatis", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.state.sayanadiNodes`
+                     *
+                     * @return the text
+                     */
+                    public String sayanadiNodes() {
+                        return r.render("sdk.settings.effect.state.sayanadiNodes", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `strength`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectStrength strength() {
+                    return new SdkSettingsEffectStrength(r);
+                }
+
+                /** The messages under `SdkSettingsEffectStrength`, each rendered by its own key. */
+                public static final class SdkSettingsEffectStrength {
+                    private final Renderer r;
+
+                    SdkSettingsEffectStrength(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.balaScheme`
+                     *
+                     * @return the text
+                     */
+                    public String balaScheme() {
+                        return r.render("sdk.settings.effect.strength.balaScheme", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.benefics`
+                     *
+                     * @return the text
+                     */
+                    public String benefics() {
+                        return r.render("sdk.settings.effect.strength.benefics", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.bhavaDig`
+                     *
+                     * @return the text
+                     */
+                    public String bhavaDig() {
+                        return r.render("sdk.settings.effect.strength.bhavaDig", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.bhavaDivision`
+                     *
+                     * @return the text
+                     */
+                    public String bhavaDivision() {
+                        return r.render("sdk.settings.effect.strength.bhavaDivision", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.bhavaDrishti`
+                     *
+                     * @return the text
+                     */
+                    public String bhavaDrishti() {
+                        return r.render("sdk.settings.effect.strength.bhavaDrishti", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.bhavaSpecialRules`
+                     *
+                     * @return the text
+                     */
+                    public String bhavaSpecialRules() {
+                        return r.render("sdk.settings.effect.strength.bhavaSpecialRules", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.cheshta`
+                     *
+                     * @return the text
+                     */
+                    public String cheshta() {
+                        return r.render("sdk.settings.effect.strength.cheshta", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.dig`
+                     *
+                     * @return the text
+                     */
+                    public String dig() {
+                        return r.render("sdk.settings.effect.strength.dig", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.drekkana`
+                     *
+                     * @return the text
+                     */
+                    public String drekkana() {
+                        return r.render("sdk.settings.effect.strength.drekkana", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.drik`
+                     *
+                     * @return the text
+                     */
+                    public String drik() {
+                        return r.render("sdk.settings.effect.strength.drik", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.ekadhipatya`
+                     *
+                     * @return the text
+                     */
+                    public String ekadhipatya() {
+                        return r.render("sdk.settings.effect.strength.ekadhipatya", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.ishtaKashta`
+                     *
+                     * @return the text
+                     */
+                    public String ishtaKashta() {
+                        return r.render("sdk.settings.effect.strength.ishtaKashta", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.kaalaLords`
+                     *
+                     * @return the text
+                     */
+                    public String kaalaLords() {
+                        return r.render("sdk.settings.effect.strength.kaalaLords", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.kranti`
+                     *
+                     * @return the text
+                     */
+                    public String kranti() {
+                        return r.render("sdk.settings.effect.strength.kranti", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.luminaryCheshta`
+                     *
+                     * @return the text
+                     */
+                    public String luminaryCheshta() {
+                        return r.render("sdk.settings.effect.strength.luminaryCheshta", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.moonBinduFromJupiter`
+                     *
+                     * @return the text
+                     */
+                    public String moonBinduFromJupiter() {
+                        return r.render("sdk.settings.effect.strength.moonBinduFromJupiter", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.moonPaksha`
+                     *
+                     * @return the text
+                     */
+                    public String moonPaksha() {
+                        return r.render("sdk.settings.effect.strength.moonPaksha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.naisargika`
+                     *
+                     * @return the text
+                     */
+                    public String naisargika() {
+                        return r.render("sdk.settings.effect.strength.naisargika", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.nathonnatha`
+                     *
+                     * @return the text
+                     */
+                    public String nathonnatha() {
+                        return r.render("sdk.settings.effect.strength.nathonnatha", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.preDawnNight`
+                     *
+                     * @return the text
+                     */
+                    public String preDawnNight() {
+                        return r.render("sdk.settings.effect.strength.preDawnNight", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.requiredRupas`
+                     *
+                     * @return the text
+                     */
+                    public String requiredRupas() {
+                        return r.render("sdk.settings.effect.strength.requiredRupas", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.saptavargaja`
+                     *
+                     * @return the text
+                     */
+                    public String saptavargaja() {
+                        return r.render("sdk.settings.effect.strength.saptavargaja", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.shodhana`
+                     *
+                     * @return the text
+                     */
+                    public String shodhana() {
+                        return r.render("sdk.settings.effect.strength.shodhana", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.sunAyana`
+                     *
+                     * @return the text
+                     */
+                    public String sunAyana() {
+                        return r.render("sdk.settings.effect.strength.sunAyana", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.vimshopaka`
+                     *
+                     * @return the text
+                     */
+                    public String vimshopaka() {
+                        return r.render("sdk.settings.effect.strength.vimshopaka", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.strength.yuddha`
+                     *
+                     * @return the text
+                     */
+                    public String yuddha() {
+                        return r.render("sdk.settings.effect.strength.yuddha", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `time`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectTime time() {
+                    return new SdkSettingsEffectTime(r);
+                }
+
+                /** The messages under `SdkSettingsEffectTime`, each rendered by its own key. */
+                public static final class SdkSettingsEffectTime {
+                    private final Renderer r;
+
+                    SdkSettingsEffectTime(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.time.deltaT`
+                     *
+                     * @return the text
+                     */
+                    public String deltaT() {
+                        return r.render("sdk.settings.effect.time.deltaT", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.time.dstGap`
+                     *
+                     * @return the text
+                     */
+                    public String dstGap() {
+                        return r.render("sdk.settings.effect.time.dstGap", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.time.dstOverlap`
+                     *
+                     * @return the text
+                     */
+                    public String dstOverlap() {
+                        return r.render("sdk.settings.effect.time.dstOverlap", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.time.unknownTime`
+                     *
+                     * @return the text
+                     */
+                    public String unknownTime() {
+                        return r.render("sdk.settings.effect.time.unknownTime", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `vargas`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectVargas vargas() {
+                    return new SdkSettingsEffectVargas(r);
+                }
+
+                /** The messages under `SdkSettingsEffectVargas`, each rendered by its own key. */
+                public static final class SdkSettingsEffectVargas {
+                    private final Renderer r;
+
+                    SdkSettingsEffectVargas(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.vargas.unattestedDn`
+                     *
+                     * @return the text
+                     */
+                    public String unattestedDn() {
+                        return r.render("sdk.settings.effect.vargas.unattestedDn", Map.of());
+                    }
+                }
+
+            }
+
+        }
+
     }
 
 }

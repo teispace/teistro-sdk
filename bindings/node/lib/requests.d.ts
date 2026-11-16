@@ -1415,6 +1415,26 @@ export interface ResearchRequest {
 }
 
 /**
+ * What `settings.diff` reads: the knobs to compare, as [`SettingsQuery`] names them; a record of its own so that each record has its own request type (a comparison may come to read more).
+ */
+export interface SettingsDiffQuery {
+  /**
+   * Groups (`frame`) or knobs (`frame.ayanamsha`) to compare, in any order; the answer keeps document order. Every knob when left out.
+   */
+  readonly knobs?: readonly string[] | null;
+}
+
+/**
+ * The knobs an explanation or a comparison is asked about: each a group (`frame`) or a knob (`frame.ayanamsha`); every knob when left out.
+ */
+export interface SettingsQuery {
+  /**
+   * Groups (`frame`) or knobs (`frame.ayanamsha`), in any order; the answer keeps document order. Every knob when left out.
+   */
+  readonly knobs?: readonly string[] | null;
+}
+
+/**
  * A civil request as a binding writes it.
  */
 export interface CivilAsked {
@@ -10886,6 +10906,8 @@ export interface RecordRequests {
   readonly 'naming.syllables': NamingSyllablesRequest;
   readonly 'numerology.profile': NumerologyRequest;
   readonly 'research.study': ResearchRequest;
+  readonly 'settings.diff': SettingsDiffQuery;
+  readonly 'settings.explain': SettingsQuery;
   readonly 'time.civil': CivilAsked;
   readonly 'time.convert': ScaleRequest;
   readonly 'time.resolve': ResolveAsked;

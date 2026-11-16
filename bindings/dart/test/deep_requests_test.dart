@@ -4350,6 +4350,26 @@ void main() {
     );
   });
 
+  test('settings.diff: SettingsDiffQuery', () {
+    _holds(
+      'settings.diff',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: SettingsDiffQuery(knobs: ['x']).toJson(),
+    );
+  });
+
+  test('settings.explain: SettingsQuery', () {
+    _holds(
+      'settings.explain',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: SettingsQuery(knobs: ['frame']).toJson(),
+    );
+  });
+
   test('time.civil: CivilAsked', () {
     _holds(
       'time.civil',

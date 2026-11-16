@@ -4400,6 +4400,21 @@ class TeistroLibrary:
             ctypes.POINTER(_HashStruct),
         ]
         self.ts_context_settings_hash.restype = ctypes.c_int32
+        self.ts_context_explain_settings: Any = library.ts_context_explain_settings
+        self.ts_context_explain_settings.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_context_explain_settings.restype = ctypes.c_int32
+        self.ts_context_diff_settings: Any = library.ts_context_diff_settings
+        self.ts_context_diff_settings.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_context_diff_settings.restype = ctypes.c_int32
         self.ts_key_parse: Any = library.ts_key_parse
         self.ts_key_parse.argtypes = [
             ctypes.POINTER(_Context),
@@ -5325,6 +5340,71 @@ class TeistroContext:
                 self._raise(status)
             hash = Hash._of(_out_hash)
             return hash
+
+    def explain_settings(self, request_json: str) -> str:
+        """**Why each knob has its value** (`settings.explain`,
+        `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+        `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+        profile, citation, moves, effect}`. `layer` is the one that set it:
+        `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+        `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+        (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+        whole from a recorded document); `citation` is `{text, reference}`, the
+        source the root or the profile gives, null where a patch set the knob;
+        `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+        `TIME` or `FORM`); and `effect` is its one-line note in the context's
+        locale.
+
+        `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+        (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+        the document's order. A key it does not read, or an entry that names
+        no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_context_explain_settings(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def diff_settings(self, other: TeistroContext, request_json: str) -> str:
+        """**Where two contexts' settings part** (`settings.diff`), as canonical
+        JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+        each knob on which `context`'s settings and `other`'s differ as
+        `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+        `ts_context_explain_settings` gives them, the note in `context`'s
+        locale; no knobs when the two hash alike. `SKY` is what a calendar
+        comparison calls a model difference, `RULE` a rule difference.
+
+        `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+        it, every knob when left out. A null `other` is `INVALID_ARG` naming
+        `other`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_context_diff_settings(
+                self._raw,
+                other._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def key_parse(self, key: str) -> int:
         """Resolves a full key (`graha.SUN`, an alias, a former key, or a member the

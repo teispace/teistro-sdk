@@ -155,6 +155,43 @@ public final class BindingTest {
             }
         });
 
+        tests.put("explainSettings names each knob's layer and source, and diffSettings where two part", () -> {
+            // The context's own patch is its layer, a per-call patch the request's.
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .settingsJson("{\"frame\":{\"node\":\"TRUE\"}}").testProvider(true).build());
+                    Context derived = sky.withSettings(Map.of("day", Map.of("ghati_reckoning", "PROPORTIONAL")))) {
+                SettingsExplained explained = derived.explainSettings();
+                java.util.function.Function<String, SettingsExplained.Knob> knob = name -> explained.knobs().stream()
+                        .filter(one -> one.knob().equals(name)).findFirst().orElseThrow();
+                same(derived.settingsHash(), explained.settingsHash(), "the settings explained");
+                same(List.of("CONTEXT", "REQUEST", "PROFILE", "ROOT"),
+                        List.of("frame.node", "day.ghati_reckoning", "frame.centre", "output.precision").stream()
+                                .map(name -> knob.apply(name).layer()).toList(),
+                        "each layer");
+                check(knob.apply("frame.node").citation() == null, "a patch is the caller's choice");
+                same("nepali-drik", knob.apply("frame.centre").profile(), "the profile that set it");
+                same("SKY", knob.apply("frame.siddhanta").moves(), "what it moves");
+                check(knob.apply("frame.node").effect().contains("Rahu"), "the note in the context's locale");
+                check(sky.explainSettings().knobs().stream()
+                                .allMatch(one -> one.citation() != null || one.layer().equals("CONTEXT")),
+                        "a shipped profile cites every knob the caller did not set");
+                same(List.of("frame.zodiac", "frame.ayanamsha"),
+                        sky.explainSettings(List.of("day.sunrise", "frame")).knobs().stream().limit(2)
+                                .map(SettingsExplained.Knob::knob).toList(),
+                        "the document's order");
+                TeistroException refused = refusal(() -> sky.explainSettings(List.of("frame.nod")));
+                same("knobs[0]", refused.field(), "the knob refused");
+            }
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee").build());
+                    Context drik = teistro.context(ContextOptions.builder().profile("nepali-drik").build())) {
+                SettingsDiff diff = committee.diffSettings(drik);
+                same("nepali-drik", diff.otherProfile(), "the other profile");
+                same(List.of("frame.ayanamsha", "frame.centre", "frame.siddhanta", "panchanga.lagna_table"),
+                        diff.knobs().stream().map(SettingsDiff.Knob::knob).toList(), "the knobs they part on");
+                check(committee.diffSettings(committee).knobs().isEmpty(), "a context agrees with itself");
+            }
+        });
+
         tests.put("withSettings derives a context under a patch and leaves its parent as it was", () -> {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             java.util.function.ToDoubleFunction<Context> moon = sdk -> sdk.chart()

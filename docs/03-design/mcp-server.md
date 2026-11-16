@@ -107,6 +107,7 @@ the protocol's own failures.
 | `numerology.profile` | `NumerologyRequest` | step 1, built |
 | `matching.naam` | `NaamRequest` | step 1, built |
 | `settings.describe` | none: the knobs and the profiles | step 1, built |
+| `settings.explain`, `settings.diff` | `SettingsQuery`: groups or knobs; each knob's layer, citation, what it moves and its effect note, and the knobs on which the scope and `other` part | built since (`settings-and-profiles.md` §3.5) |
 | `chart.found` | `FoundRequest`: when, where, the sections and each family's record | step 2, built |
 | `almanac.days` | `DaysRequest`: a range of days, the place and clock, and what is asked beside them | step 2, built |
 | `time.resolve` | `ResolveRequest`: a civil date and time and a zone | step 3, built |

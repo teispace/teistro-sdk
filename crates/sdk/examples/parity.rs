@@ -8720,6 +8720,80 @@ fn listed(items: impl Iterator<Item = String>) -> String {
     }
 }
 
+/// The settings explained and compared (`03-design/settings-and-profiles.md`
+/// §3.5): `nepali-drik` with the node patched per call, every knob
+/// explained — how many, how many cited, the node's layer, the centre's
+/// layer and profile, the node's note — and the knobs on which the
+/// committee's profile and `nepali-drik` part, each `knob:MOVES`.
+fn settings(report: &mut Report) {
+    let drik = Context::builder()
+        .profile("nepali-drik")
+        .build()
+        .expect("a context with no ephemeris");
+    let mean = drik
+        .with_patch_json(r#"{"frame": {"node": "MEAN"}}"#, None)
+        .expect("a patch");
+    let explained = mean
+        .explain_settings(&teistro::settings::SettingsQuery::default())
+        .expect("every knob");
+    let knob = |name: &str| {
+        explained
+            .knobs
+            .iter()
+            .find(|knob| knob.knob == name)
+            .expect("a knob")
+    };
+    let layer = |layer: teistro::settings::Layer| {
+        serde_json::to_value(layer)
+            .ok()
+            .and_then(|value| value.as_str().map(str::to_owned))
+            .unwrap_or_default()
+    };
+    let (node, centre) = (knob("frame.node"), knob("frame.centre"));
+    let cited = explained
+        .knobs
+        .iter()
+        .filter(|knob| knob.citation.is_some())
+        .count();
+    put(
+        report,
+        "settings-explain",
+        format!(
+            "{} {} {} {} {}",
+            explained.knobs.len(),
+            cited,
+            layer(node.layer),
+            layer(centre.layer),
+            centre.profile.as_ref().map_or("-", |id| id.as_str())
+        ),
+    );
+    put(
+        report,
+        "settings-explain-hash",
+        explained.settings_hash.to_string(),
+    );
+    put(report, "settings-explain-effect", node.effect.clone());
+    let committee = Context::builder()
+        .profile("nepali-committee")
+        .build()
+        .expect("a context with no ephemeris");
+    let diff = committee
+        .diff_settings(&drik, &teistro::settings::SettingsQuery::default())
+        .expect("every knob");
+    let parted: Vec<String> = diff
+        .knobs
+        .iter()
+        .map(|knob| {
+            let moves = serde_json::to_value(knob.moves)
+                .ok()
+                .and_then(|value| value.as_str().map(str::to_owned))
+                .unwrap_or_default();
+            format!("{}:{moves}", knob.knob)
+        })
+        .collect();
+    put(report, "settings-diff", parted.join(","));
+}
+
 fn main() {
     let mut report = Report::new();
     // The **test** provider, as the other three runners use: the
@@ -8769,6 +8843,7 @@ fn main() {
     navatara(&mut report, &geo);
     sky_view(&mut report);
     sky_pose(&mut report);
+    settings(&mut report);
     aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);

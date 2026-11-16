@@ -12,6 +12,36 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Why each settings knob has its value, and where two settings part (SR-110).**
+**Numbers:** none; no computed value and no settings hash moves. `Resolved` gains
+`origins`, which resolution records and the hash does not read.
+- `settings.explain` answers, for each knob, its value, the layer that set it (`ROOT`,
+  `PROFILE` with the profile's id, `CONTEXT` for the context's patch, `REQUEST` for a
+  per-call patch, `DOCUMENT` for settings read whole), the source that layer cites, what
+  a difference in it moves (`SKY`, `SUNRISE`, `RULE`, `TIME`, `FORM`) and a one-line
+  effect note in the context's locale. `settings.diff` answers the knobs on which two
+  contexts' settings differ, with the same note; SR-94 reads `SKY` as a model
+  difference and `RULE` as a rule's. Both take `{knobs}`, groups or knobs.
+- Rust `explain_settings` and `diff_settings` on `Context`; C `ts_context_explain_settings`
+  and `ts_context_diff_settings`; `explainSettings` and `diffSettings` in Node, wasm,
+  Dart and Java, `explain_settings` and `diff_settings` in Python; the MCP tools
+  `settings.explain` and `settings.diff` (`other` names the second scope). An MCP call's
+  `settings` is now resolved as a build resolves a patch, so its layer is `CONTEXT`.
+- `Context::with_settings` handed the context's own settings keeps the context's layers,
+  so a receipt of `settings.explain` holds; any other snapshot's knobs are `DOCUMENT`.
+- The locale packs' budgets are set again, about a tenth over the bundles with the
+  notes (`05-testing/pack-budgets.json`).
+- Provenance is the merge's own accounting, not a second resolver: a test holds every
+  knob of every shipped profile to an independent reading of its patch. The root cites
+  every knob, and every shipped profile cites every knob it sets; `kp-default`,
+  `western-tropical-default`, `nepali-drik`, `surya-siddhanta` and `tamil-vakya` gain
+  the citations they lacked. Their true node is the SDK's own choice (crux C1990).
+- The effect notes are `sdk.settings` messages in en-Latn, ne-Deva-NP, hi-Deva-IN and
+  sa-Deva, with sa-Latn derived. The frame notes were measured with the built-in
+  ephemeris over 1900 to 2100: the true node up to 1°58′ from the mean, apparent
+  places 21″ from true for the Sun and 61″ for Mercury, and the Moon from Kathmandu
+  up to 61′ from the geocentric Moon (`03-design/settings-and-profiles.md` §3.5).
+
 **Delta T's band on a time, and which settings read the height (SR-104, SR-108).**
 **Numbers:** no computed time, position or day moves, and no day hash, golden or
 conformance fixture. What moves is what is *said* of them: Delta T's stated
