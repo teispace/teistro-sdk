@@ -7829,7 +7829,7 @@ mod tests {
                     as u8
             })
             .collect();
-        assert_eq!(sunrises, vec![0, 1, 2, 3], "one id each, in order");
+        assert_eq!(sunrises, vec![0, 1, 2, 3, 4, 5], "one id each, in order");
 
         let ghatis: Vec<u8> = GhatiReckoning::ALL
             .iter()

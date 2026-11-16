@@ -86,11 +86,12 @@ above the horizon carries meaning.
 ## 4. Rises and sets
 
 Each window's events come from `rise_set::Solver` under the day's own horizon
-convention (`day.sunrise`), the one the day's sunrise and moonrises use, so a
-day's `moon.rises` and the Moon's `RISE` points are the same events (§7 gives
-the agreement). The point's airless altitude shows what the convention means:
-−0.57° under `nepali-drik`'s centre with refraction, −0.83° under an
-upper-limb convention.
+conventions, the Sun's under `day.sunrise` and the Moon's under `day.moonrise`
+(the planets' under the Sun's), the ones the day's sunrise and moonrises use,
+so a day's `moon.rises` and the Moon's `RISE` points are the same events (§7
+gives the agreement; `moonrise-convention.md`). The point's airless altitude
+shows what the convention means: the Sun's −0.57° under `nepali-drik`'s
+centre with refraction, −0.83° under an upper-limb convention.
 
 ## 5. Polar days, and the window
 

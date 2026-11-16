@@ -20,6 +20,9 @@ package com.teispace.teistro;
  *     {@code convention} is null; null otherwise. May be null.
  * @param air The air the horizon was refracted through, resolved at the place, when the settings
  *     named one; null for the almanac's fixed 34 arcminutes or no refraction. May be null.
+ * @param dipDeg How far below the astronomical horizon the level horizon lay, degrees, for an
+ *     observer above it (a {@code COMPOSED} convention's {@code height_m}, SR-113); zero for the
+ *     almanacs' horizon at the eye.
  */
 public record LocalDay(
         CalendarDate date,
@@ -30,5 +33,6 @@ public record LocalDay(
         PolarDay polar,
         Sunrise convention,
         Double customAltitudeDeg,
-        Air air) {
+        Air air,
+        double dipDeg) {
 }

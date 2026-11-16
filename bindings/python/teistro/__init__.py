@@ -20140,6 +20140,11 @@ class LocalDay:
     when the settings named one (``{"kind": "ATMOSPHERIC", ...}``);
     `None` for the almanac's fixed 34 arcminutes or no refraction."""
 
+    dip_deg: float = 0.0
+    """How far below the astronomical horizon the level horizon lay,
+    degrees, for an observer above it (``{"kind": "COMPOSED", "height_m":
+    ...}``, SR-113); zero for the almanacs' horizon at the eye."""
+
 
 #: The convention column's value for a custom sunrise altitude.
 _CUSTOM_SUNRISE = 0xFF
@@ -20176,6 +20181,9 @@ def _local_day(section: Any, i: int) -> LocalDay:
         ),
         convention=None if custom else Sunrise(section.convention_kind[i]),
         custom_altitude_deg=section.convention_value[i] if custom else None,
+        # A named convention's value is the horizon's depression by the
+        # observer's height, negative, or zero.
+        dip_deg=0.0 if custom else 0.0 - section.convention_value[i],
         # No air has a pressure of zero, so a zero says the convention
         # named none.
         air=(

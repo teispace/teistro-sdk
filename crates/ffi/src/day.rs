@@ -37,11 +37,12 @@ impl From<DayPart> for TsDayPart {
 
 /// Which sunrise a day was reckoned from.
 ///
-/// The named conventions only. A profile may ask for the centre of the
-/// disc at a chosen altitude instead, which is a `Custom` convention;
-/// a blob carries that as its altitude beside this, because a variant
-/// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
-/// §8).
+/// The named conventions only: each point of the disc, with standard
+/// refraction or without. A profile may ask for the centre of the disc
+/// at a chosen altitude instead, which is a `Custom` convention, or for
+/// an observer's height, which is a `Composed` one; a blob carries that
+/// altitude or that dip beside this, because a variant with a payload
+/// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
 ///
 /// ```
 /// use teistro_ffi::day::TsSunrise;
@@ -60,6 +61,10 @@ pub enum TsSunrise {
     LowerLimbRefraction = 2,
     /// The centre of the disc with standard refraction.
     CentreRefraction = 3,
+    /// The upper limb on the geometric horizon, without refraction.
+    UpperLimbNoRefraction = 4,
+    /// The lower limb on the geometric horizon, without refraction.
+    LowerLimbNoRefraction = 5,
 }
 
 impl TsSunrise {
@@ -80,6 +85,8 @@ impl TsSunrise {
             Sunrise::UpperLimbRefraction => Some(TsSunrise::UpperLimbRefraction),
             Sunrise::LowerLimbRefraction => Some(TsSunrise::LowerLimbRefraction),
             Sunrise::CentreRefraction => Some(TsSunrise::CentreRefraction),
+            Sunrise::UpperLimbNoRefraction => Some(TsSunrise::UpperLimbNoRefraction),
+            Sunrise::LowerLimbNoRefraction => Some(TsSunrise::LowerLimbNoRefraction),
             _ => None,
         }
     }
@@ -310,6 +317,22 @@ impl TsDayState {
 /// assert_eq!(values.len(), 20);
 /// assert_eq!(values[0], FixedValue::Float(2_460_310.553));
 /// assert_eq!(values[16], FixedValue::Uint(TsSunrise::UpperLimbRefraction as u64));
+///
+/// // Composed from its parts, thirty metres up (SR-113): named by its disc
+/// // and refraction, its dip crossing as the horizon's altitude below zero.
+/// use teistro_core::settings::{DiscPoint, Refraction, dip_deg};
+/// let deck = LocalDay {
+///     convention: SunriseConvention::Composed {
+///         disc: DiscPoint::Centre,
+///         refraction: Refraction::None,
+///         height_m: 30.0,
+///     },
+///     ..day
+/// };
+/// let values = day_values(&deck);
+/// assert_eq!(values[16], FixedValue::Uint(TsSunrise::CentreNoRefraction as u64));
+/// assert_eq!(values[17], FixedValue::Float(-dip_deg(Refraction::None, 30.0)));
+/// assert!(dip_deg(Refraction::None, 30.0) > dip_deg(Refraction::Standard, 30.0));
 /// ```
 #[must_use]
 pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> {
@@ -327,6 +350,20 @@ pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> 
         teistro_core::settings::SunriseConvention::Custom { altitude_deg } => {
             (u64::from(u8::MAX), altitude_deg)
         }
+        // A composed convention is named by its disc and refraction, which
+        // every pair has; its dip crosses as the horizon's altitude, and
+        // an air beside it as an atmospheric one's (SR-113).
+        teistro_core::settings::SunriseConvention::Composed {
+            disc,
+            refraction,
+            height_m,
+        } => (
+            named(teistro_core::settings::Sunrise::of_parts(
+                disc,
+                refraction.refracts(),
+            )),
+            -teistro_core::settings::dip_deg(refraction, height_m),
+        ),
     };
     let air = local.air();
     let era = local.date.era;

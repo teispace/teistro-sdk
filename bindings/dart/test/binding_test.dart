@@ -9657,6 +9657,81 @@ void _engineTests() {
       ),
     );
 
+    // SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs'
+    // upper limb with refraction, not by the day's sunrise; a horizon
+    // composed of its parts dips by the observer's height, which the day
+    // hands back.
+    // Read before the context is disposed.
+    ({double sunrise, double dipDeg, Sunrise? convention, double moonrise})
+    almanacDay(Map<String, Object?> settings) {
+      final each = context(settings: settings);
+      try {
+        final day = each.almanac
+            .of(
+              from: gregorian(2026, 1, 5),
+              to: gregorian(2026, 1, 5),
+              place: place,
+              utcOffsetSeconds: 20700,
+            )
+            .at(0);
+        return (
+          sunrise: day.day.sunrise,
+          dipDeg: day.day.dipDeg,
+          convention: day.day.convention,
+          moonrise: day.moonEvents.firstWhere((event) => event.rise).instant,
+        );
+      } finally {
+        each.dispose();
+      }
+    }
+
+    final ownDay = almanacDay({});
+    expect(ownDay.dipDeg, 0.0);
+    final centreDay = almanacDay({
+      'day': {
+        'moonrise': {'kind': 'NAMED', 'which': 'CENTRE_REFRACTION'},
+      },
+    });
+    expect(centreDay.sunrise, ownDay.sunrise);
+    final moonLater = (centreDay.moonrise - ownDay.moonrise) * 86400.0;
+    expect(
+      moonLater > 55.0 && moonLater < 110.0,
+      isTrue,
+      reason: '$moonLater s',
+    );
+    final deck = almanacDay({
+      'day': {
+        'sunrise': {
+          'kind': 'COMPOSED',
+          'disc': 'CENTRE',
+          'refraction': 'STANDARD',
+          'height_m': 30,
+        },
+      },
+    });
+    expect(deck.convention, Sunrise.centreRefraction);
+    expect(deck.dipDeg, closeTo(1.76 * math.sqrt(30) / 60.0, 1e-12));
+    expect(deck.sunrise < ownDay.sunrise, isTrue);
+    expect(
+      () => almanacDay({
+        'day': {
+          'moonrise': {
+            'kind': 'COMPOSED',
+            'disc': 'UPPER_LIMB',
+            'refraction': 'NONE',
+            'height_m': 20000,
+          },
+        },
+      }),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          endsWith('day.moonrise'),
+        ),
+      ),
+    );
+
     // Tromsø at midsummer: civil midnight holds the instant and says so;
     // the nearest real sunrise is weeks away, and the refusal names the
     // policy rather than the instant.

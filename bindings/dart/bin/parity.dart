@@ -961,6 +961,7 @@ void putDay(String prefix, LocalDay day) {
         ? '${day.convention?.key} ${number(air.pressureHpa)} hPa ${number(air.temperatureC)} C'
         : day.convention?.key ?? 'custom ${number(day.customAltitudeDeg ?? 0)}',
   );
+  put('$prefix-dip', day.dipDeg);
 }
 
 /// The almanac's rites and the Tibetan year, as every runner asks them: a
@@ -3924,6 +3925,56 @@ void main() {
     ),
   );
   put('sky-pose-ascendant', placement(skyPose.value.ascendant()!.$2));
+
+  // ── The moonrise convention ──────────────────────────────────────────
+  // Kathmandu on 5 January 2026 over the built-in sky under nepali-drik
+  // (SR-102, SR-113): the day opens at the disc's centre with refraction
+  // while the Moon rises by the upper limb; then the Moon asked for the
+  // centre too, and the sunrise seen from thirty metres up.
+  for (final (name, moonSettings) in <(String, Map<String, Object?>)>[
+    ('own', {}),
+    (
+      'centre',
+      {
+        'day': {
+          'moonrise': {'kind': 'NAMED', 'which': 'CENTRE_REFRACTION'},
+        },
+      },
+    ),
+    (
+      'deck',
+      {
+        'day': {
+          'sunrise': {
+            'kind': 'COMPOSED',
+            'disc': 'UPPER_LIMB',
+            'refraction': 'STANDARD',
+            'height_m': 30,
+          },
+        },
+      },
+    ),
+  ]) {
+    final moonSky = teistro.context(
+      profile: 'nepali-drik',
+      settings: moonSettings,
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final moonDays = moonSky.almanac.of(
+      from: Calendar.gregorian.date(2026, 1, 5),
+      to: Calendar.gregorian.date(2026, 1, 5),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    final moonDay = moonDays.each.first;
+    final rises = moonDay.moonEvents.where((event) => event.rise);
+    put(
+      'moonrise-$name',
+      '${number(moonDay.day.sunrise)} ${number(rises.isEmpty ? 0 : rises.first.instant)}',
+    );
+    if (name == 'deck') putDay('moonrise-deck-day', moonDay.day);
+    moonSky.dispose();
+  }
 
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test

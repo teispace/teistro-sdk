@@ -625,6 +625,9 @@ function localDay(section, index) {
         : null,
     convention: custom ? null : (SunriseById.get(r.conventionKind) ?? 'unknown'),
     customAltitudeDeg: custom ? r.conventionValue : null,
+    // A named convention's value is the horizon's depression by the
+    // observer's height, negative, or zero (SR-113).
+    dipDeg: custom ? 0 : 0 - r.conventionValue,
     // No air has a pressure of zero, so a zero says the convention named
     // none.
     air:

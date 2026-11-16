@@ -34,7 +34,7 @@ use std::collections::BTreeMap;
 
 use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Nakshatra, Varga};
 use teistro::eclipse::{LocalMoment, LunarHere, SolarHere, Visible};
-use teistro::settings::SunriseConvention;
+use teistro::settings::{Sunrise, SunriseConvention, dip_deg};
 use teistro::{
     AlmanacRequest, Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest,
     Scale, Script, TimeScale, Timeline,
@@ -6451,8 +6451,33 @@ fn put_day(report: &mut Report, prefix: &str, day: &LocalDay) {
                     number(air.temperature_c)
                 )
             }
+            // A composed convention crosses as its named pair, with its air
+            // as an atmospheric one's, and its dip beside it (SR-113).
+            SunriseConvention::Composed {
+                disc, refraction, ..
+            } => {
+                let which = Sunrise::of_parts(disc, refraction.refracts());
+                match day.air() {
+                    Some(air) => format!(
+                        "{} {} hPa {} C",
+                        wire_key(&which),
+                        number(air.pressure_hpa),
+                        number(air.temperature_c)
+                    ),
+                    None => wire_key(&which),
+                }
+            }
         },
     );
+    let dip = match day.convention {
+        SunriseConvention::Composed {
+            refraction,
+            height_m,
+            ..
+        } => dip_deg(refraction, height_m),
+        _ => 0.0,
+    };
+    put(report, &key("dip"), number(dip));
 }
 
 /// One day of the almanac, as the report prints it.
@@ -7925,6 +7950,53 @@ fn aayadi(report: &mut Report, sdk: &Context) {
     );
 }
 
+/// The moonrise convention, one setting of its own (SR-102), and a
+/// horizon composed of its parts (SR-113): Kathmandu on 5 January 2026
+/// over the built-in sky under `nepali-drik`, whose day opens at the
+/// disc's centre with refraction while its Moon rises by the upper limb;
+/// then the Moon asked for the centre too, and the day's sunrise seen
+/// from thirty metres above a level horizon.
+const MOONRISE_CASES: [(&str, &str); 3] = [
+    ("own", "{}"),
+    (
+        "centre",
+        r#"{"day":{"moonrise":{"kind":"NAMED","which":"CENTRE_REFRACTION"}}}"#,
+    ),
+    (
+        "deck",
+        r#"{"day":{"sunrise":{"kind":"COMPOSED","disc":"UPPER_LIMB","refraction":"STANDARD","height_m":30}}}"#,
+    ),
+];
+
+/// The day's sunrise and first moonrise under each of [`MOONRISE_CASES`],
+/// and the deck's day as `put_day` prints every day.
+fn moonrise_conventions(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let date = CalendarDate::defined(Calendar::Gregorian, 2026, 1, 5);
+    for (name, patch) in MOONRISE_CASES {
+        let sky = Context::builder()
+            .profile("nepali-drik")
+            .ephemeris([Ephemeris::Builtin])
+            .settings_json(patch)
+            .build()
+            .expect("a context over the built-in sky");
+        let days = sky
+            .almanac()
+            .of(&date, &date, place, offset)
+            .expect("the built-in sky gives the day")
+            .value;
+        let day = days.first().expect("one day");
+        let rise = day.moon.rises.first().map_or(0.0, |at| at.get());
+        put(
+            report,
+            &format!("moonrise-{name}"),
+            format!("{} {}", number(day.day.sunrise.get()), number(rise)),
+        );
+        if name == "deck" {
+            put_day(report, "moonrise-deck-day", &day.day);
+        }
+    }
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -8662,6 +8734,7 @@ fn main() {
     the_rites(&mut report, &geo);
     the_published_and_tibetan(&mut report, &geo);
     eclipses(&mut report, &place, offset);
+    moonrise_conventions(&mut report, &place, offset);
     lagnas(&mut report, &place, offset);
     markers(&mut report, &place, offset);
     navatara(&mut report, &geo);

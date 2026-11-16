@@ -130,7 +130,10 @@ final class VedicReads {
                 custom ? null : Sunrise.of(section.conventionKind(i)),
                 custom ? Double.valueOf(section.conventionValue(i)) : null,
                 // No air has a pressure of zero, so a zero says the convention named none.
-                section.airPressureHpa(i) > 0 ? new Air(section.airPressureHpa(i), section.airTemperatureC(i)) : null);
+                section.airPressureHpa(i) > 0 ? new Air(section.airPressureHpa(i), section.airTemperatureC(i)) : null,
+                // A named convention's value is the horizon's depression by the observer's height,
+                // negative, or zero (SR-113).
+                custom ? 0.0 : 0.0 - section.conventionValue(i));
     }
 
     /** Where in its day the moment falls, in the reckonings the settings named. Ports {@code Chart.timing}. */

@@ -1267,6 +1267,7 @@ def put_day(prefix: str, day: LocalDay) -> None:
     else:
         convention = f"custom {number(day.custom_altitude_deg or 0.0)}"
     put(f"{prefix}-convention", convention)
+    put(f"{prefix}-dip", day.dip_deg)
 
 
 def main() -> None:
@@ -3253,6 +3254,31 @@ def main() -> None:
             eclipses=True,
         ).eclipses
     assert eclipses is not None
+
+    # ── The moonrise convention ───────────────────────────────────────
+    # Kathmandu on 5 January 2026 over the built-in sky under nepali-drik
+    # (SR-102, SR-113): the day opens at the disc's centre with refraction
+    # while the Moon rises by the upper limb; then the Moon asked for the
+    # centre too, and the sunrise seen from thirty metres up.
+    for name, moon_settings in (
+        ("own", {}),
+        ("centre", {"day": {"moonrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}}),
+        (
+            "deck",
+            {"day": {"sunrise": {"kind": "COMPOSED", "disc": "UPPER_LIMB", "refraction": "STANDARD", "height_m": 30}}},
+        ),
+    ):
+        with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN, settings=moon_settings) as builtin:
+            moon_day = next(iter(builtin.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                to_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                place=place,
+                utc_offset_seconds=20700,
+            )))
+            first_rise = next((event.instant for event in moon_day.moon_events if event.rise), 0.0)
+            put(f"moonrise-{name}", f"{number(moon_day.day.sunrise)} {number(first_rise)}")
+            if name == "deck":
+                put_day("moonrise-deck-day", moon_day.day)
 
     # ── The sky view ──────────────────────────────────────────────────
     # Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky

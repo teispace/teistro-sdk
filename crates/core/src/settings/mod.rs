@@ -37,8 +37,8 @@ pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
-    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
+    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, DiscPoint, Drekkana, Drik,
+    DstGap, DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
     Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
     IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
@@ -143,6 +143,11 @@ impl From<Ayanamsha> for AyanamshaChoice {
 /// let dawn = SunriseConvention::Custom { altitude_deg: -6.0 };
 /// assert_eq!(serde_json::to_value(dawn).unwrap()["altitude_deg"], -6.0);
 /// ```
+///
+/// The same type is the moonrise's (`day.moonrise`) and the eclipse
+/// horizon's (`panchanga.eclipse_horizon`): one convention, read for each
+/// body with that body's own semidiameter and parallax
+/// (`03-design/moonrise-convention.md`).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -181,6 +186,288 @@ pub enum SunriseConvention {
         /// The air.
         air: Atmosphere,
     },
+    /// Every part named (SR-113): the point of the disc, the refraction,
+    /// and the observer's height above a level horizon, whose dip lowers
+    /// the horizon by [`dip_deg`]. Each named convention is this with no
+    /// height, and each atmospheric one this with its air.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DiscPoint, Refraction, SunriseConvention};
+    ///
+    /// // The upper limb with the almanac's refraction, seen from thirty metres
+    /// // above the sea.
+    /// let deck = SunriseConvention::Composed { disc: DiscPoint::UpperLimb, refraction: Refraction::Standard, height_m: 30.0 };
+    /// assert_eq!(
+    ///     serde_json::to_value(deck).unwrap(),
+    ///     serde_json::json!({"kind": "COMPOSED", "disc": "UPPER_LIMB", "refraction": "STANDARD", "height_m": 30.0})
+    /// );
+    /// // The height may be left out for a level horizon at the eye.
+    /// let level: SunriseConvention =
+    ///     serde_json::from_str(r#"{"kind": "COMPOSED", "disc": "CENTRE", "refraction": "NONE"}"#).unwrap();
+    /// assert_eq!(level, SunriseConvention::Composed { disc: DiscPoint::Centre, refraction: Refraction::None, height_m: 0.0 });
+    /// ```
+    Composed {
+        /// The point of the disc.
+        disc: DiscPoint,
+        /// The refraction: none, the almanac's 34 arcminutes, or a named
+        /// air's.
+        refraction: Refraction,
+        /// The observer's height above the level horizon seen, metres;
+        /// zero, the almanacs' sea level, when left out. It is the height
+        /// above the horizon in view, not above sea level: a valley's
+        /// observer sees hills, which a horizon profile describes.
+        #[serde(default)]
+        height_m: f64,
+    },
+}
+
+/// The heights an observer may stand at above a level horizon, metres:
+/// the sea's horizon to a little above the highest summit.
+///
+/// ```
+/// use teistro_core::settings::OBSERVER_HEIGHT_M;
+///
+/// assert!(OBSERVER_HEIGHT_M.contains(&8_849.0) && !OBSERVER_HEIGHT_M.contains(&-1.0));
+/// ```
+pub const OBSERVER_HEIGHT_M: core::ops::RangeInclusive<f64> = 0.0..=10_000.0;
+
+/// The dip of the refracted horizon, arcminutes per square root of a
+/// metre of height: the *Nautical Almanac*'s `D = 1.76′√h`, which carries
+/// the terrestrial refraction of the ray grazing the sea (Bowditch,
+/// *American Practical Navigator*, appendix B).
+///
+/// ```
+/// use teistro_core::settings::{DIP_REFRACTED_ARCMIN_PER_ROOT_M, Refraction, dip_deg};
+///
+/// // A hundred metres up: 17.6 arcminutes.
+/// assert!((dip_deg(Refraction::Standard, 100.0) * 60.0 - 10.0 * DIP_REFRACTED_ARCMIN_PER_ROOT_M).abs() < 1e-12);
+/// ```
+pub const DIP_REFRACTED_ARCMIN_PER_ROOT_M: f64 = 1.76;
+
+/// The Earth's mean radius, metres (IUGG), for the geometric dip.
+///
+/// ```
+/// use teistro_core::settings::{EARTH_MEAN_RADIUS_M, Refraction, dip_deg};
+///
+/// // Without air the dip is the angle to the tangent: acos(R / (R + h)).
+/// let h = 100.0;
+/// assert!((dip_deg(Refraction::None, h) - (EARTH_MEAN_RADIUS_M / (EARTH_MEAN_RADIUS_M + h)).acos().to_degrees()).abs() < 1e-9);
+/// // Some 1.93 arcminutes a root metre, against the air's 1.76.
+/// assert!((dip_deg(Refraction::None, h) * 60.0 / 10.0 - 1.926).abs() < 0.001);
+/// ```
+pub const EARTH_MEAN_RADIUS_M: f64 = 6_371_008.8;
+
+/// How far a level horizon seen from `height_m` metres lies below the
+/// astronomical horizon, degrees: the geometric angle to the tangent,
+/// `acos(R / (R + h))`, without refraction, and the *Nautical Almanac*'s
+/// `1.76′√h` with it, since the air bends the grazing ray as it bends the
+/// body's (`03-design/moonrise-convention.md` §4). Zero at zero height,
+/// and for a height that is not one, which the settings refuse.
+///
+/// ```
+/// use teistro_core::settings::{Atmosphere, Refraction, dip_deg};
+///
+/// assert_eq!(dip_deg(Refraction::Standard, 0.0), 0.0);
+/// // The geometric dip is the larger: the air lifts the far horizon.
+/// assert!(dip_deg(Refraction::None, 30.0) > dip_deg(Refraction::Atmosphere(Atmosphere::STANDARD), 30.0));
+/// ```
+#[must_use]
+pub fn dip_deg(refraction: Refraction, height_m: f64) -> f64 {
+    if !(height_m.is_finite() && height_m > 0.0) {
+        return 0.0;
+    }
+    match refraction {
+        // acos(R / (R + h)), as the arcsine of its sine, which keeps its
+        // digits at a metre's height where the cosine is 1 − 1.6e-7.
+        Refraction::None => crate::math::asin(
+            (height_m * (2.0 * EARTH_MEAN_RADIUS_M + height_m)).sqrt()
+                / (EARTH_MEAN_RADIUS_M + height_m),
+        )
+        .to_degrees(),
+        Refraction::Standard | Refraction::Atmosphere(_) => {
+            DIP_REFRACTED_ARCMIN_PER_ROOT_M * height_m.sqrt() / 60.0
+        }
+    }
+}
+
+/// Whether atmospheric refraction lifts the body at the horizon, and by
+/// what.
+///
+/// ```
+/// use teistro_core::settings::{Atmosphere, Refraction};
+///
+/// assert_eq!(serde_json::to_value(Refraction::Standard).unwrap(), "STANDARD");
+/// // A named air, as a weather report gives it.
+/// let air = Refraction::Atmosphere(Atmosphere::given(860.0, 12.0));
+/// assert_eq!(serde_json::to_value(air).unwrap(), serde_json::json!({"ATMOSPHERE": {"pressure_hpa": 860.0, "temperature_c": 12.0}}));
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Refraction {
+    /// The geometric horizon: what the classical texts and the panchanga
+    /// reckon by.
+    None,
+    /// The standard refraction at the horizon (the almanac's 34 arcminutes
+    /// in the SDK's solver; an engine's own standard atmosphere in a
+    /// native search).
+    Standard,
+    /// The refraction through a named air, resolved at the observer's
+    /// height, which a native search is given too
+    /// (`03-design/horizon-atmosphere.md`).
+    Atmosphere(Atmosphere),
+}
+
+impl Refraction {
+    /// The stable id at the C boundary; an atmosphere's air crosses
+    /// beside it.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Atmosphere, Refraction};
+    ///
+    /// assert_eq!(Refraction::Atmosphere(Atmosphere::STANDARD).id(), 2);
+    /// ```
+    #[must_use]
+    pub const fn id(self) -> u8 {
+        match self {
+            Refraction::None => 0,
+            Refraction::Standard => 1,
+            Refraction::Atmosphere(_) => 2,
+        }
+    }
+
+    /// The refraction with an id, and the air an atmosphere is given
+    /// (read only for id 2).
+    ///
+    /// ```
+    /// use teistro_core::settings::{Atmosphere, Refraction};
+    ///
+    /// let air = Atmosphere::given(1013.25, 15.0);
+    /// assert_eq!(Refraction::from_id(2, air), Some(Refraction::Atmosphere(air)));
+    /// // The air is read for an atmosphere alone.
+    /// assert_eq!(Refraction::from_id(1, air), Some(Refraction::Standard));
+    /// assert_eq!(Refraction::from_id(3, air), None);
+    /// ```
+    #[must_use]
+    pub const fn from_id(id: u8, air: Atmosphere) -> Option<Refraction> {
+        match id {
+            0 => Some(Refraction::None),
+            1 => Some(Refraction::Standard),
+            2 => Some(Refraction::Atmosphere(air)),
+            _ => None,
+        }
+    }
+
+    /// The key stamped in provenance; an atmosphere's air is stamped by
+    /// the horizon's key.
+    ///
+    /// ```
+    /// use teistro_core::settings::Refraction;
+    ///
+    /// assert_eq!(Refraction::Standard.key(), "STANDARD_REFRACTION");
+    /// ```
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Refraction::None => "NO_REFRACTION",
+            Refraction::Standard => "STANDARD_REFRACTION",
+            Refraction::Atmosphere(_) => "ATMOSPHERE",
+        }
+    }
+
+    /// Whether the body is lifted at all.
+    ///
+    /// ```
+    /// use teistro_core::settings::Refraction;
+    ///
+    /// assert!(Refraction::Standard.refracts() && !Refraction::None.refracts());
+    /// ```
+    #[must_use]
+    pub const fn refracts(self) -> bool {
+        !matches!(self, Refraction::None)
+    }
+}
+
+impl DiscPoint {
+    /// How many semidiameters the point stands above the disc's centre:
+    /// one for the upper limb, none for the centre, minus one for the
+    /// lower limb. The centre is that many below the horizon when the
+    /// point is on it.
+    ///
+    /// ```
+    /// use teistro_core::settings::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::ALL.iter().map(|p| p.above_centre()).collect::<Vec<_>>(), [0.0, 1.0, -1.0]);
+    /// ```
+    #[must_use]
+    pub const fn above_centre(self) -> f64 {
+        match self {
+            DiscPoint::Centre => 0.0,
+            DiscPoint::UpperLimb => 1.0,
+            DiscPoint::LowerLimb => -1.0,
+        }
+    }
+
+    /// The stable id at the C boundary.
+    ///
+    /// ```
+    /// use teistro_core::settings::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::LowerLimb.id(), 2);
+    /// ```
+    #[must_use]
+    pub const fn id(self) -> u8 {
+        match self {
+            DiscPoint::Centre => 0,
+            DiscPoint::UpperLimb => 1,
+            DiscPoint::LowerLimb => 2,
+        }
+    }
+
+    /// The point with an id.
+    ///
+    /// ```
+    /// use teistro_core::settings::DiscPoint;
+    ///
+    /// assert_eq!(DiscPoint::from_id(1), Some(DiscPoint::UpperLimb));
+    /// assert_eq!(DiscPoint::from_id(3), None);
+    /// ```
+    #[must_use]
+    pub const fn from_id(id: u8) -> Option<DiscPoint> {
+        match id {
+            0 => Some(DiscPoint::Centre),
+            1 => Some(DiscPoint::UpperLimb),
+            2 => Some(DiscPoint::LowerLimb),
+            _ => None,
+        }
+    }
+}
+
+impl SunriseConvention {
+    /// The named convention of this one's disc point and whether it
+    /// refracts: itself when named, the convention an air was given to,
+    /// and a composed one's pair (every pair is named). `None` for a
+    /// custom altitude, which names no point of the disc.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DiscPoint, Refraction, Sunrise, SunriseConvention};
+    ///
+    /// let composed = SunriseConvention::Composed { disc: DiscPoint::LowerLimb, refraction: Refraction::None, height_m: 12.0 };
+    /// assert_eq!(composed.named(), Some(Sunrise::LowerLimbNoRefraction));
+    /// assert_eq!(SunriseConvention::Custom { altitude_deg: -6.0 }.named(), None);
+    /// ```
+    #[must_use]
+    pub const fn named(self) -> Option<Sunrise> {
+        match self {
+            SunriseConvention::Named { which } | SunriseConvention::Atmospheric { which, .. } => {
+                Some(which)
+            }
+            SunriseConvention::Custom { .. } => None,
+            SunriseConvention::Composed {
+                disc, refraction, ..
+            } => Some(Sunrise::of_parts(disc, refraction.refracts())),
+        }
+    }
 }
 
 impl From<Sunrise> for SunriseConvention {
@@ -206,6 +493,45 @@ impl Sunrise {
             self,
             Sunrise::UpperLimbRefraction | Sunrise::LowerLimbRefraction | Sunrise::CentreRefraction
         )
+    }
+
+    /// The point of the disc the convention reckons by.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DiscPoint, Sunrise};
+    ///
+    /// assert_eq!(Sunrise::UpperLimbNoRefraction.disc(), DiscPoint::UpperLimb);
+    /// assert_eq!(Sunrise::CentreRefraction.disc(), DiscPoint::Centre);
+    /// ```
+    #[must_use]
+    pub const fn disc(self) -> DiscPoint {
+        match self {
+            Sunrise::UpperLimbRefraction | Sunrise::UpperLimbNoRefraction => DiscPoint::UpperLimb,
+            Sunrise::LowerLimbRefraction | Sunrise::LowerLimbNoRefraction => DiscPoint::LowerLimb,
+            Sunrise::CentreNoRefraction | Sunrise::CentreRefraction => DiscPoint::Centre,
+        }
+    }
+
+    /// The named convention of a disc point, with standard refraction or
+    /// without: each of the six pairs has one.
+    ///
+    /// ```
+    /// use teistro_core::settings::{DiscPoint, Sunrise};
+    ///
+    /// for which in Sunrise::ALL {
+    ///     assert_eq!(Sunrise::of_parts(which.disc(), which.refracts()), *which);
+    /// }
+    /// ```
+    #[must_use]
+    pub const fn of_parts(disc: DiscPoint, refracts: bool) -> Sunrise {
+        match (disc, refracts) {
+            (DiscPoint::Centre, false) => Sunrise::CentreNoRefraction,
+            (DiscPoint::Centre, true) => Sunrise::CentreRefraction,
+            (DiscPoint::UpperLimb, true) => Sunrise::UpperLimbRefraction,
+            (DiscPoint::UpperLimb, false) => Sunrise::UpperLimbNoRefraction,
+            (DiscPoint::LowerLimb, true) => Sunrise::LowerLimbRefraction,
+            (DiscPoint::LowerLimb, false) => Sunrise::LowerLimbNoRefraction,
+        }
     }
 }
 
@@ -790,6 +1116,13 @@ group!(
     day {
         /// The sunrise convention.
         sunrise: SunriseConvention,
+        /// The moonrise convention: the Moon's rise and set, read with her
+        /// own semidiameter and horizontal parallax. The almanacs time the
+        /// upper limb with 34 arcminutes of refraction (USNO, *Rise, Set,
+        /// and Twilight Definitions*; *Explanatory Supplement* §9.33),
+        /// which is the root's; a day's sunrise convention does not carry
+        /// over (SR-102, `03-design/moonrise-convention.md`).
+        moonrise: SunriseConvention,
         /// When the day begins.
         day_boundary: DayBoundary,
         /// A day without a sunrise.
@@ -1712,43 +2045,73 @@ impl Resolved {
 }
 
 /// The coherence rules, every finding returned.
-/// What the settings refuse in a sunrise convention: a custom altitude
-/// that is not one, an air given to a convention that does not refract,
-/// and an air outside what the Earth's surface has seen.
-fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
-    if let SunriseConvention::Custom { altitude_deg } = convention {
-        if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
-            out.push(Diagnostic::error(
-                "sunrise-altitude",
-                "a custom sunrise altitude is a finite number of degrees within -90 to 90",
-                &["day.sunrise"],
-            ));
+/// The knobs that hold a horizon convention, each read by the same rules.
+const HORIZON_KNOBS: [&str; 3] = ["day.sunrise", "day.moonrise", "panchanga.eclipse_horizon"];
+
+/// What the settings refuse in a horizon convention, at the knob that
+/// holds it: a custom altitude that is not one, an air given to a
+/// convention that does not refract, an air outside what the Earth's
+/// surface has seen, and a height no observer stands at.
+fn sunrise_coherence(convention: SunriseConvention, knob: &'static str, out: &mut Vec<Diagnostic>) {
+    let air = match convention {
+        SunriseConvention::Custom { altitude_deg } => {
+            if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
+                out.push(Diagnostic::error(
+                    "sunrise-altitude",
+                    "a custom sunrise altitude is a finite number of degrees within -90 to 90",
+                    &[knob],
+                ));
+            }
+            None
         }
-    }
-    if let SunriseConvention::Atmospheric { which, air } = convention {
-        if !which.refracts() {
-            out.push(Diagnostic::error(
-                "sunrise-air-refracts",
-                format!(
-                    "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION, LOWER_LIMB_REFRACTION or CENTRE_REFRACTION",
-                    which.key()
-                ),
-                &["day.sunrise"],
-            ));
+        SunriseConvention::Atmospheric { which, air } => {
+            if !which.refracts() {
+                out.push(Diagnostic::error(
+                    "sunrise-air-refracts",
+                    format!(
+                        "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION, LOWER_LIMB_REFRACTION or CENTRE_REFRACTION",
+                        which.key()
+                    ),
+                    &[knob],
+                ));
+            }
+            Some(air)
         }
-        if !air.is_valid() {
-            out.push(Diagnostic::error(
-                "sunrise-air",
-                format!(
-                    "the air's pressure is {} to {} hPa and its temperature {} to {} °C, or left out for the standard at the place",
-                    AIR_PRESSURE_HPA.start(),
-                    AIR_PRESSURE_HPA.end(),
-                    AIR_TEMPERATURE_C.start(),
-                    AIR_TEMPERATURE_C.end()
-                ),
-                &["day.sunrise"],
-            ));
+        SunriseConvention::Composed {
+            refraction,
+            height_m,
+            ..
+        } => {
+            if !OBSERVER_HEIGHT_M.contains(&height_m) {
+                out.push(Diagnostic::error(
+                    "sunrise-height",
+                    format!(
+                        "the observer's height above the level horizon is {} to {} metres",
+                        OBSERVER_HEIGHT_M.start(),
+                        OBSERVER_HEIGHT_M.end()
+                    ),
+                    &[knob],
+                ));
+            }
+            match refraction {
+                Refraction::Atmosphere(air) => Some(air),
+                Refraction::None | Refraction::Standard => None,
+            }
         }
+        SunriseConvention::Named { .. } => None,
+    };
+    if air.is_some_and(|air| !air.is_valid()) {
+        out.push(Diagnostic::error(
+            "sunrise-air",
+            format!(
+                "the air's pressure is {} to {} hPa and its temperature {} to {} °C, or left out for the standard at the place",
+                AIR_PRESSURE_HPA.start(),
+                AIR_PRESSURE_HPA.end(),
+                AIR_TEMPERATURE_C.start(),
+                AIR_TEMPERATURE_C.end()
+            ),
+            &[knob],
+        ));
     }
 }
 
@@ -1794,7 +2157,13 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             ));
         }
     }
-    sunrise_coherence(s.day.sunrise, &mut out);
+    for (knob, convention) in
+        HORIZON_KNOBS
+            .into_iter()
+            .zip([s.day.sunrise, s.day.moonrise, s.panchanga.eclipse_horizon])
+    {
+        sunrise_coherence(convention, knob, &mut out);
+    }
     if s.frame.nakshatra_scheme == NakshatraScheme::TwentyEight {
         let seeded: Vec<&DashaSystem> = s
             .dasha
@@ -1854,6 +2223,23 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             "siddhanta-text-sunrise-convention",
             "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
             &["frame.siddhanta", "day.sunrise"],
+        ));
+    }
+    // The text's moonrise is the same horizon: Burgess's ch. X finds the
+    // Moon's rising from her ascensional difference, the centre on the
+    // geometric horizon (`03-design/moonrise-convention.md` §3).
+    if matches!(
+        s.frame.siddhanta,
+        Siddhanta::Surya {
+            sunrise: SuryaSunrise::Text,
+            ..
+        }
+    ) && s.day.moonrise != SunriseConvention::from(Sunrise::CentreNoRefraction)
+    {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-moonrise-convention",
+            "the text's moonrise is the centre on the geometric horizon (Surya Siddhanta ch. X); another convention is solved over the text's Moon, which is neither the text's moonrise nor a modern one",
+            &["frame.siddhanta", "day.moonrise"],
         ));
     }
     let root = profiles::root();
@@ -2069,6 +2455,95 @@ mod tests {
     }
 
     #[test]
+    fn every_horizon_knob_is_held_to_the_same_rules_and_named() {
+        // SR-113: a composed convention at each knob that holds one, refused
+        // at that knob for a height no observer stands at or an air the
+        // surface has not seen, and accepted at every height in range.
+        let composed = |refraction, height_m| SunriseConvention::Composed {
+            disc: DiscPoint::UpperLimb,
+            refraction,
+            height_m,
+        };
+        let root = shipped(DEFAULT_PROFILE);
+        for knob in HORIZON_KNOBS {
+            let at = |convention: SunriseConvention| {
+                let mut patch = SettingsPatch::default();
+                match knob {
+                    "day.sunrise" => patch.day.sunrise = Some(convention),
+                    "day.moonrise" => patch.day.moonrise = Some(convention),
+                    _ => patch.panchanga.eclipse_horizon = Some(convention),
+                }
+                root.resolve(&patch).map(|_| ()).map_err(|d| {
+                    d.errors()
+                        .map(|e| (e.rule, e.fields.join(",")))
+                        .collect::<Vec<_>>()
+                })
+            };
+            for height in [0.0, 1.5, 8_849.0, *OBSERVER_HEIGHT_M.end()] {
+                assert_eq!(
+                    at(composed(Refraction::Standard, height)),
+                    Ok(()),
+                    "{knob} {height}"
+                );
+            }
+            for height in [-1.0, 10_001.0, f64::NAN] {
+                assert_eq!(
+                    at(composed(Refraction::None, height)),
+                    Err(vec![("sunrise-height", String::from(knob))]),
+                    "{knob} {height}"
+                );
+            }
+            assert_eq!(
+                at(composed(
+                    Refraction::Atmosphere(Atmosphere::given(50.0, 15.0)),
+                    0.0
+                )),
+                Err(vec![("sunrise-air", String::from(knob))])
+            );
+            assert_eq!(
+                at(SunriseConvention::Custom { altitude_deg: 91.0 }),
+                Err(vec![("sunrise-altitude", String::from(knob))])
+            );
+        }
+        // Each disc point and refraction is one named convention.
+        for disc in DiscPoint::ALL {
+            for refraction in [Refraction::None, Refraction::Standard] {
+                let named = composed(refraction, 0.0);
+                let named = match named {
+                    SunriseConvention::Composed { height_m, .. } => SunriseConvention::Composed {
+                        disc: *disc,
+                        refraction,
+                        height_m,
+                    },
+                    other => other,
+                };
+                let which = named.named().unwrap();
+                assert_eq!(
+                    (which.disc(), which.refracts()),
+                    (*disc, refraction.refracts())
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn the_text_moonrise_is_the_centre_on_the_geometric_horizon() {
+        let text = shipped("surya-siddhanta");
+        let warned = |patch: &SettingsPatch| -> Vec<&'static str> {
+            text.resolve(patch)
+                .expect("a warning, not an error")
+                .warnings
+                .iter()
+                .map(|w| w.rule)
+                .collect()
+        };
+        assert!(!warned(&SettingsPatch::default()).contains(&"siddhanta-text-moonrise-convention"));
+        let mut patch = SettingsPatch::default();
+        patch.day.moonrise = Some(Sunrise::UpperLimbRefraction.into());
+        assert!(warned(&patch).contains(&"siddhanta-text-moonrise-convention"));
+    }
+
+    #[test]
     fn the_settings_refuse_an_air_that_cannot_be_applied() {
         let air = |which, air| SunriseConvention::Atmospheric { which, air };
         assert!(
@@ -2273,12 +2748,14 @@ mod tests {
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = resolved.warnings.iter().map(|d| d.rule).collect();
-        // nepali-drik's refracted sunrise is not the text's either.
+        // nepali-drik's refracted sunrise is not the text's either, nor
+        // its refracted moonrise.
         assert_eq!(
             rules,
             [
                 "siddhanta-topocentric",
                 "siddhanta-text-sunrise-convention",
+                "siddhanta-text-moonrise-convention",
                 "year-length-convention"
             ]
         );
@@ -2343,6 +2820,7 @@ mod tests {
         classical.frame.centre = Some(Centre::Geocentric);
         classical.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None));
         classical.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
+        classical.day.moonrise = Some(Sunrise::CentreNoRefraction.into());
         assert_eq!(rules(&classical), Vec::<&str>::new());
     }
 
@@ -2453,7 +2931,13 @@ mod tests {
             .resolve(&text)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = warned.warnings.iter().map(|d| d.rule).collect();
-        assert_eq!(rules, ["siddhanta-text-sunrise-convention"]);
+        assert_eq!(
+            rules,
+            [
+                "siddhanta-text-sunrise-convention",
+                "siddhanta-text-moonrise-convention"
+            ]
+        );
     }
 
     #[test]

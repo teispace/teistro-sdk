@@ -246,6 +246,38 @@ public final class BindingTest {
             same(30, AlmanacDay.tithiMonthNumber(Tithi.AMAVASYA), "the last");
         });
 
+        tests.put("the moon rises by its own convention and a composed horizon dips", () -> {
+            // SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs' upper
+            // limb with refraction, not by the day's sunrise; a horizon composed of its
+            // parts dips by the observer's height, which the day hands back.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            CalendarDate fifth = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 1, 5,
+                    Resolution.DEFINED, 0, 0, null);
+            // {sunrise, dip, first moonrise}, read before the context is closed.
+            java.util.function.Function<String, double[]> of = (settings) -> {
+                try (Context each = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                        .settingsJson(settings).testProvider(true).build())) {
+                    AlmanacDay day = each.almanac().of(fifth, fifth, kathmandu, 20_700).get(0);
+                    double rise = day.moonEvents().stream().filter(MoonEventMoment::rise).findFirst()
+                            .orElseThrow().instant();
+                    return new double[] {day.day().sunrise(), day.day().dipDeg(), rise};
+                }
+            };
+            double[] own = of.apply("{}");
+            double[] centre = of.apply("{\"day\":{\"moonrise\":{\"kind\":\"NAMED\",\"which\":\"CENTRE_REFRACTION\"}}}");
+            same(own[0], centre[0], "the day keeps its sunrise");
+            double later = (centre[2] - own[2]) * 86_400.0;
+            check(later > 55.0 && later < 110.0, later + " s");
+            same(0.0, own[1], "a level horizon");
+            double[] deck = of.apply("{\"day\":{\"sunrise\":{\"kind\":\"COMPOSED\",\"disc\":\"CENTRE\","
+                    + "\"refraction\":\"STANDARD\",\"height_m\":30}}}");
+            check(Math.abs(deck[1] - 1.76 * Math.sqrt(30) / 60.0) < 1e-12, "the dip: " + deck[1]);
+            check(deck[0] < own[0], "the dipped horizon is cleared sooner");
+            TeistroException refused = refusal(() -> of.apply("{\"day\":{\"moonrise\":{\"kind\":\"COMPOSED\","
+                    + "\"disc\":\"UPPER_LIMB\",\"refraction\":\"NONE\",\"height_m\":20000}}}"));
+            check(refused.field().endsWith("day.moonrise"), "the knob refused: " + refused.field());
+        });
+
         tests.put("a day says the clock it was read on, and a digest keeps it", () -> {
             Observer newYork = new Observer(new Longitude(-74.006), new Latitude(40.7128), new Altitude(10));
             CalendarDate first = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 10, 31,

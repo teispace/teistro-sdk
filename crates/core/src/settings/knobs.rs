@@ -121,7 +121,21 @@ knob!(
         LowerLimbRefraction = "LOWER_LIMB_REFRACTION", /// The centre of the disc
         /// with standard refraction: the Indian almanacs' disc middle,
         /// and Nepal's daily print (`03-design/nepal-day-measured.md`, C39).
-        CentreRefraction = "CENTRE_REFRACTION" }
+        CentreRefraction = "CENTRE_REFRACTION", /// The upper limb on the geometric
+        /// horizon, without refraction.
+        UpperLimbNoRefraction = "UPPER_LIMB_NO_REFRACTION", /// The lower limb on the
+        /// geometric horizon, without refraction.
+        LowerLimbNoRefraction = "LOWER_LIMB_NO_REFRACTION" }
+);
+knob!(
+    /// Which point of a body's disc a rise or set is reckoned by
+    /// (`03-design/sunrise-convention.md`).
+    DiscPoint { /// The centre of the disc.
+        Centre = "CENTRE", /// The upper limb: the first point to appear and the last
+        /// to vanish, which the almanacs time (USNO, *Rise, Set, and Twilight
+        /// Definitions*).
+        UpperLimb = "UPPER_LIMB", /// The lower limb.
+        LowerLimb = "LOWER_LIMB" }
 );
 knob!(
     /// When the day begins.

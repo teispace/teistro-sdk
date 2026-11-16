@@ -5796,6 +5796,12 @@ export interface LocalDay {
    * (`{ kind: 'ATMOSPHERIC', which, air }`); `null` for the almanac's fixed 34′ or no refraction.
    */
   readonly air: Air | null;
+  /**
+   * How far below the astronomical horizon the level horizon lay, degrees, for an observer above
+   * it (`{ kind: 'COMPOSED', disc, refraction, height_m }`, SR-113); zero for the almanacs' horizon
+   * at the eye.
+   */
+  readonly dipDeg: number;
 }
 
 /**

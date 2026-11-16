@@ -1174,6 +1174,7 @@ public final class ParityRunner {
             convention = "custom " + number(altitude);
         }
         put(prefix + "-convention", convention);
+        put(prefix + "-dip", day.dipDeg());
     }
 
     /** A rendered message's parts as every runner writes them, the one text part made where no markup came. */
@@ -1674,6 +1675,31 @@ public final class ParityRunner {
             }
             put("sky-pose-moon", onScreen.apply(skyScreen.grahas().get(skyMoonAt)));
             put("sky-pose-ascendant", onScreen.apply(skyPose.value().ascendant().orElseThrow().getValue()));
+
+            // ── The moonrise convention ───────────────────────────────────
+            // Kathmandu on 5 January 2026 over the built-in sky under nepali-drik
+            // (SR-102, SR-113): the day opens at the disc's centre with refraction
+            // while the Moon rises by the upper limb; then the Moon asked for the
+            // centre too, and the sunrise seen from thirty metres up.
+            String[][] moonCases = {
+                {"own", "{}"},
+                {"centre", "{\"day\":{\"moonrise\":{\"kind\":\"NAMED\",\"which\":\"CENTRE_REFRACTION\"}}}"},
+                {"deck", "{\"day\":{\"sunrise\":{\"kind\":\"COMPOSED\",\"disc\":\"UPPER_LIMB\","
+                        + "\"refraction\":\"STANDARD\",\"height_m\":30}}}"},
+            };
+            for (String[] moonCase : moonCases) {
+                try (Context moonSky = teistro.context(ContextOptions.builder()
+                        .profile("nepali-drik").settingsJson(moonCase[1]).ephemeris(Ephemeris.BUILTIN).build())) {
+                    AlmanacDay moonDay = moonSky.almanac().of(date(2026, 1, 5), date(2026, 1, 5), place, 20700)
+                            .iterator().next();
+                    double firstRise = moonDay.moonEvents().stream().filter(MoonEventMoment::rise)
+                            .mapToDouble(MoonEventMoment::instant).findFirst().orElse(0.0);
+                    put("moonrise-" + moonCase[0], number(moonDay.day().sunrise()) + " " + number(firstRise));
+                    if (moonCase[0].equals("deck")) {
+                        putDay("moonrise-deck-day", moonDay.day());
+                    }
+                }
+            }
 
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar

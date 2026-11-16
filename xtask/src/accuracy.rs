@@ -39,7 +39,7 @@ const TESTS: &[(&[&str], &str)] = &[
     ),
     (
         &["-p", "teistro", "--test", "limb_oracle"],
-        "the SDK's limb ends, sankrantis and sunrises against the limb oracle",
+        "the SDK's limb ends, sankrantis, sunrises and moonrises against the limb oracle",
     ),
 ];
 
@@ -222,8 +222,8 @@ fn limb_table(s: &mut String, list: &[&Measurement]) {
     centuries.sort_unstable();
     s.push_str(
         "\n## Limb times against the limb oracle\n\n\
-         The worst difference, SDK less reference, over every limb end, sankranti and\n\
-         sunrise of the sample years in each century under `nepali-drik`\n\
+         The worst difference, SDK less reference, over every limb end, sankranti,\n\
+         sunrise, moonrise and moonset of the sample years in each century under `nepali-drik`\n\
          (`crates/sdk/tests/limb_oracle.rs`, which holds every drik profile to the same\n\
          bounds; the reference and its distance from DE440 are in `limb-oracle.md`).\n\n",
     );

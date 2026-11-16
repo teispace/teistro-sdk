@@ -59,6 +59,12 @@ pyswisseph 2.10.03 (the ``.se1`` files of DIR), and for ``--de440``
 jplephem and numpy:
 
     python3 -I record_limbs.py --de440 de440.bsp --swiss-data DIR --out limbs.json
+
+With ``--moon`` it writes the moon oracle instead (``moonrises.json``):
+every moonrise and moonset at the place over each year, the upper limb
+with standard refraction, as the USNO defines them (SR-102):
+
+    python3 -I record_limbs.py --moon --de440 de440.bsp --swiss-data DIR --out moonrises.json
 """
 
 from __future__ import annotations
@@ -77,6 +83,8 @@ SEMIDIAMETER_AT_1AU_ARCSEC = 959.23  # IAU 2015 nominal radius, as the SDK's Dis
 EARTH_EQUATORIAL_RADIUS_KM = 6378.137
 AU_KM = 149_597_870.7
 STANDARD_REFRACTION_DEG = 34.0 / 60.0
+MOON_RADIUS_KM = 1737.4  # IAU WGAPS mean radius, as the SDK's Disc
+MOON_STEP_DAYS = 1.0 / 144.0  # ten minutes: the Moon is never up or down for less
 NAKSHATRA = 360.0 / 27.0
 
 
@@ -97,6 +105,10 @@ class Sky:
 
     def sun_altitude_geocentric(self, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
         """The Sun's geocentric apparent altitude, degrees, and distance, AU."""
+        return self.altitude_geocentric("sun", jd_ut1, lat, lng)
+
+    def altitude_geocentric(self, body: str, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
+        """A body's geocentric apparent altitude, degrees, and distance, AU."""
         raise NotImplementedError
 
 
@@ -123,10 +135,10 @@ class Swiss(Sky):
         # Without NONUT the value carries the nutation in longitude: true.
         return self.swe.get_ayanamsa_ex(jd_tt, self.flag)[1]
 
-    def sun_altitude_geocentric(self, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
+    def altitude_geocentric(self, body: str, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
         swe = self.swe
         jd_tt = jd_ut1 + swe.deltat(jd_ut1) + self.extra_delta_t_days
-        xx = swe.calc(jd_tt, swe.SUN, self.flag | swe.FLG_EQUATORIAL)[0]
+        xx = swe.calc(jd_tt, self.bodies[body], self.flag | swe.FLG_EQUATORIAL)[0]
         ra, dec, dist = math.radians(xx[0]), math.radians(xx[1]), xx[2]
         gast = self.gast_deg(jd_ut1, jd_tt)
         h = math.radians(gast + lng) - ra
@@ -246,14 +258,14 @@ class De440(Swiss):
     def lon(self, body: str, jd_tt: float) -> float:
         return super().lon(body, jd_tt) + self._shift(body, jd_tt)[0]
 
-    def sun_altitude_geocentric(self, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
+    def altitude_geocentric(self, body: str, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
         swe = self.swe
         jd_tt = jd_ut1 + swe.deltat(jd_ut1)
         jd_tt += self.extra_delta_t_days
-        _, d_ra, d_dec = self._shift("sun", jd_tt)
-        xx = swe.calc(jd_tt, swe.SUN, self.flag | swe.FLG_EQUATORIAL)[0]
+        _, d_ra, d_dec = self._shift(body, jd_tt)
+        xx = swe.calc(jd_tt, self.bodies[body], self.flag | swe.FLG_EQUATORIAL)[0]
         ra, dec = math.radians(xx[0] + d_ra), math.radians(xx[1] + d_dec)
-        dist = math.sqrt(sum(x * x for x in self._astrometric_de440("sun", jd_tt))) / AU_KM
+        dist = math.sqrt(sum(x * x for x in self._astrometric_de440(body, jd_tt))) / AU_KM
         gast = self.gast_deg(jd_ut1, jd_tt)
         h = math.radians(gast + lng) - ra
         phi = math.radians(lat)
@@ -297,9 +309,9 @@ class SkyfieldDe440(Sky):
         mean = self.A0 + self._p_a(jd_tt) - self._p_a(self.T0_JD)
         return mean + math.degrees(self.nut(t)[0])
 
-    def sun_altitude_geocentric(self, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
+    def altitude_geocentric(self, body: str, jd_ut1: float, lat: float, lng: float) -> tuple[float, float]:
         t = self.ts.ut1_jd(jd_ut1)
-        ra, dec, dist = self.earth.at(t).observe(self.targets["sun"]).apparent().radec(epoch="date")
+        ra, dec, dist = self.earth.at(t).observe(self.targets[body]).apparent().radec(epoch="date")
         h = math.radians(t.gast * 15.0 + lng) - ra.radians
         phi = math.radians(lat)
         d = dec.radians
@@ -409,6 +421,84 @@ def sunrises(sky: Sky, year: int) -> dict[str, list[list[float]]]:
     return out
 
 
+def moon_offset(sky: Sky, t: float) -> float:
+    """The Moon's geocentric altitude less the altitude its centre has when
+    the upper limb is on the horizon with 34' of refraction: the USNO's
+    zenith distance of 90 deg 34' plus the semidiameter less the
+    horizontal parallax, read for the centre seen from the Earth's centre."""
+    lat, lng = KATHMANDU
+    alt, dist = sky.altitude_geocentric("moon", t, lat, lng)
+    km = dist * AU_KM
+    sd = math.degrees(math.asin(MOON_RADIUS_KM / km))
+    parallax = math.degrees(math.asin(EARTH_EQUATORIAL_RADIUS_KM / km))
+    return alt - (-STANDARD_REFRACTION_DEG - sd + parallax)
+
+
+def moon_root(sky: Sky, a: float, b: float, ga: float, gb: float) -> float:
+    """The instant in [a, b] where moon_offset changes sign, by the secant
+    and bisection, to 1e-10 day."""
+    rising = ga < 0
+    m = a
+    for _ in range(200):
+        m = a + ga * (a - b) / (gb - ga)
+        if not a < m < b:
+            m = 0.5 * (a + b)
+        gm = moon_offset(sky, m)
+        if (gm < 0) == rising:
+            a, ga = m, gm
+        else:
+            b, gb = m, gm
+        if b - a < 1e-10 or abs(gm) < 1e-10:
+            break
+    return m
+
+
+def moon_events(sky: Sky, year: int) -> dict[str, list[list[float]]]:
+    """Every moonrise and moonset at Kathmandu in the year (UT1, from local
+    midnight of 1 January to that of the next), the upper limb with
+    standard refraction, as rows of [UT1, the Delta T in seconds the Moon's
+    place was read under, seconds of the event per second of Delta T]."""
+    out: dict[str, list[list[float]]] = {"rise": [], "set": []}
+    start = jd_of(year) - OFFSET_HOURS / 24.0
+    end = jd_of(year + 1) - OFFSET_HOURS / 24.0
+    a, ga = start, moon_offset(sky, start)
+    while a < end:
+        b = a + MOON_STEP_DAYS
+        gb = moon_offset(sky, b)
+        if (ga < 0) != (gb < 0):
+            kind = "rise" if ga < 0 else "set"
+            at = moon_root(sky, a, b, ga, gb)
+            delta_t = sky.delta_t_days(at) * 86_400.0
+            sky.extra_delta_t_days = DELTA_T_STEP_SECONDS / 86_400.0
+            moved = moon_root(sky, a, b, moon_offset(sky, a), moon_offset(sky, b))
+            sky.extra_delta_t_days = 0.0
+            rate = (moved - at) * 86_400.0 / DELTA_T_STEP_SECONDS
+            out[kind].append([at, round(delta_t, 6), round(rate, 9)])
+        a, ga = b, gb
+    return out
+
+
+def record_moon(sky: Sky, years: tuple[int, ...]) -> dict:
+    """The moon oracle: every year's moonrises and moonsets (SR-102)."""
+    data: dict = {
+        "schema": "teistro/moon-oracle/1",
+        "source": sky.name,
+        "recorded": dt.date.today().isoformat(),
+        "recorder": "crates/sdk/tests/oracle/record_limbs.py --moon",
+        "definitions": {
+            "moonrise": "the upper limb on the horizon with 34' of refraction (USNO, Rise, Set, and Twilight Definitions; Explanatory Supplement 9.33): the geocentric altitude of the Moon's centre at -34' - semidiameter + horizontal parallax, the semidiameter asin(1737.4 km / d) and the parallax asin(6378.137 km / d), apparent places of the true equator and equinox, Greenwich apparent sidereal time; rows of [UT1, the Delta T in seconds the Moon's place was read under, seconds of the event per second of Delta T], from local midnight of 1 January to the next year's",
+            "moonset": "the same, going down",
+        },
+        "place": {"latitude": KATHMANDU[0], "longitude": KATHMANDU[1], "altitude_m": 0.0, "utc_offset_hours": OFFSET_HOURS},
+        "years": {},
+    }
+    for year in years:
+        events = moon_events(sky, year)
+        data["years"][str(year)] = {"moonrise": events["rise"], "moonset": events["set"]}
+        print(year, {k: len(v) for k, v in events.items()}, file=sys.stderr)
+    return data
+
+
 def record(sky: Sky, years: tuple[int, ...]) -> dict:
     data: dict = {
         "schema": "teistro/limb-oracle/1",
@@ -485,6 +575,7 @@ def main() -> None:
     p.add_argument("--swiss-data", metavar="DIR", help="the .se1 files the --de440 reductions run over")
     p.add_argument("--states", metavar="FILE", help="fixtures/jpl/cspice/states.json, for the stand-in's distance from DE440")
     p.add_argument("--years", default=",".join(map(str, YEARS)))
+    p.add_argument("--moon", action="store_true", help="record the moon oracle (moonrises.json) instead of the limbs")
     p.add_argument("--out", required=True)
     a = p.parse_args()
     years = tuple(int(y) for y in a.years.split(","))
@@ -496,13 +587,13 @@ def main() -> None:
         sky = Swiss(a.swiss)
     else:
         sky = SkyfieldDe440(a.skyfield_de440)
-    data = record(sky, years)
+    data = record_moon(sky, years) if a.moon else record(sky, years)
     if isinstance(sky, De440):
         data["de440_shift"] = {
             "worst_arcsec": {k: round(v, 5) for k, v in sky.worst_arcsec.items()},
             "what": "the largest move from the .se1 files' astrometric place to DE440's over every place recorded",
         }
-    if a.states and type(sky) is Swiss:
+    if a.states and type(sky) is Swiss and not a.moon:
         data["against_de440"] = bridge(sky, a.states, years)
     with open(a.out, "w") as f:
         json.dump(data, f, separators=(",", ":"))

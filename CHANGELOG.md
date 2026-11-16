@@ -12,6 +12,35 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Moon rises by her own horizon; a horizon composed of its parts (SR-102, SR-113).**
+**Numbers:** every moonrise under `nepali-drik` and `nepali-committee` moves earlier, and
+every moonset later, by the time the Moon's semidiameter takes to cross the horizon: a
+median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The Moon rose by
+`day.sunrise`, the disc's centre in Nepal's profiles, and
+now rises by `day.moonrise`, the upper limb with refraction every almanac prints (USNO,
+the Explanatory Supplement §9.33; C2000). Under the root's profiles, `tamil-vakya` and
+`conformance-baseline` no moonrise moves (their sunrise already read the upper limb), nor
+under `surya-siddhanta` (the centre on the geometric horizon, as before); a caller who set
+`day.sunrise` to another convention sees the Moon keep the upper limb, and sets
+`day.moonrise` to the same value to keep the old answer. No sunrise moves.
+Every settings hash moves, because `day.moonrise` is a new knob of the canonical document;
+profile versions `nepali-drik` 7, `nepali-committee` 7, `surya-siddhanta` 4, `tamil-vakya` 3,
+`conformance-baseline` 15.
+- `day.moonrise` takes every form `day.sunrise` does; `Sunrise` names all six pairs of
+  disc point and refraction (`UPPER_LIMB_NO_REFRACTION` and `LOWER_LIMB_NO_REFRACTION` are
+  new). The Moon's every January 2026 rise and set at Kathmandu falls in timeanddate's
+  printed minute, and every one of five years' falls within 0.044 s of JPL's DE440
+  (`05-testing/limb-oracle.md` §4).
+- A convention `{"kind":"COMPOSED","disc":…,"refraction":…,"height_m":…}` composes the
+  horizon of its parts: the disc point, the refraction (none, standard or an air) and the
+  observer's height above the visible horizon, which lowers it by the dip (1.76′ √h with
+  refraction, the geometric dip without). Every binding's day carries the dip
+  (`dipDeg`, Python `dip_deg`); the C boundary names a composed convention by its disc and
+  refraction and carries the dip as the negated convention value. A horizon profile as a
+  setting is left open (C2001; `03-design/moonrise-convention.md`).
+- `surya-siddhanta` warns (`siddhanta-text-moonrise-convention`) when the text's sunrise is
+  read with any moonrise but the text's.
+
 **A fortnight's short name and a rashi's Indian name in every pack.**
 **Numbers:** none; two record forms are added and no existing form changes.
 - `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:

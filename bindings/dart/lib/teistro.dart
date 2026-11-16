@@ -32288,6 +32288,7 @@ final class LocalDay {
     required this.convention,
     required this.customAltitudeDeg,
     required this.air,
+    this.dipDeg = 0,
   });
 
   /// One row of a `day` section -- a chart's or an almanac's, which share
@@ -32320,6 +32321,9 @@ final class LocalDay {
               : null,
       convention: custom ? null : Sunrise.byId(section.conventionKind[i]),
       customAltitudeDeg: custom ? section.conventionValue[i] : null,
+      // A named convention's value is the horizon's depression by the
+      // observer's height, negative, or zero (SR-113).
+      dipDeg: custom ? 0.0 : 0.0 - section.conventionValue[i],
       // No air has a pressure of zero, so a zero says the convention named
       // none.
       air:
@@ -32369,6 +32373,11 @@ final class LocalDay {
   /// when the settings named one (`{'kind': 'ATMOSPHERIC', ...}`); `null`
   /// for the almanac's fixed 34′ or no refraction.
   final Air? air;
+
+  /// How far below the astronomical horizon the level horizon lay,
+  /// degrees, for an observer above it (`{'kind': 'COMPOSED', ...,
+  /// 'height_m': ...}`, SR-113); zero for the almanacs' horizon at the eye.
+  final double dipDeg;
 }
 
 /// An air as it was applied: a part the settings left out is the engines'

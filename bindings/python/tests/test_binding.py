@@ -1915,6 +1915,43 @@ class AnEngine(WithLibrary):
         with self.assertRaisesRegex(TeistroError, "does not refract"):
             refracted({"kind": "ATMOSPHERIC", "which": "CENTRE_NO_REFRACTION", "air": {}})
 
+        # SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs'
+        # upper limb with refraction, not by the day's sunrise; a horizon
+        # composed of its parts dips by the observer's height, which the
+        # day hands back.
+        def almanac_day(settings: dict[str, Any]) -> tuple[float, float, Any, float]:
+            """(sunrise, dip, convention, first moonrise), read before the
+            context closes."""
+            with self.teistro.context(
+                profile=PROFILE, settings=settings, test_provider=True
+            ) as each:
+                one = each.almanac.of(
+                    from_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                    to_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                    place=place,
+                    utc_offset_seconds=20700,
+                )[0]
+                rise = next(event.instant for event in one.moon_events if event.rise)
+                return (one.day.sunrise, one.day.dip_deg, one.day.convention, rise)
+
+        own = almanac_day({})
+        centre = almanac_day({"day": {"moonrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}})
+        self.assertEqual(own[0], centre[0])
+        later = (centre[3] - own[3]) * 86400.0
+        self.assertTrue(55.0 < later < 110.0, later)
+        self.assertEqual(own[1], 0.0)
+        deck = almanac_day(
+            {"day": {"sunrise": {"kind": "COMPOSED", "disc": "CENTRE", "refraction": "STANDARD", "height_m": 30}}}
+        )
+        self.assertEqual(deck[2], Sunrise.CENTRE_REFRACTION)
+        self.assertAlmostEqual(deck[1], 1.76 * 30**0.5 / 60.0, places=12)
+        self.assertLess(deck[0], own[0])
+        with self.assertRaises(TeistroError) as refused:
+            almanac_day(
+                {"day": {"moonrise": {"kind": "COMPOSED", "disc": "UPPER_LIMB", "refraction": "NONE", "height_m": 20000}}}
+            )
+        self.assertTrue(refused.exception.field.endswith("day.moonrise"), refused.exception.field)
+
         # Tromsø at midsummer: civil midnight holds the instant and says so;
         # the nearest real sunrise is weeks away, and the refusal names the
         # policy rather than the instant.

@@ -3922,13 +3922,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         })
     }
 
-    /// The solver a day's moonrises and moonsets are found by.
+    /// The solver a day's moonrises and moonsets are found by: under
+    /// `day.moonrise`, the Moon's own convention, which the day's sunrise
+    /// does not move (SR-102).
     fn moon_solver<'c>(&self, completion: &'c Completion<'_, P>, place: &Place) -> Solver<'c> {
         Solver::new(
             completion,
             Body::Moon,
             *place,
-            Horizon::from_convention(self.settings().day.sunrise),
+            Horizon::from_convention(self.settings().day.moonrise),
             self.delta_t,
         )
     }

@@ -17,9 +17,10 @@
 //! altitude, less the refraction at the horizon, less the semidiameter
 //! for the upper limb (more for the lower), plus the horizontal parallax,
 //! since the observer sees the body lower than the Earth's centre does.
-//! The observer's height above the ground is not applied: the almanacs
-//! and the panchanga reckon from sea level, and a dip is a custom
-//! altitude of the convention when a caller wants one.
+//! The observer's height above sea level is not applied: the almanacs
+//! and the panchanga reckon from a level horizon at the eye. A dip is a
+//! composed convention's height above the horizon in view, which lowers
+//! the event altitude by the dip (`SunriseConvention::Composed`, SR-113).
 
 use core::cell::Cell;
 use core::fmt;
@@ -29,7 +30,7 @@ use serde::Serialize;
 use teistro_core::angle::difference_deg;
 use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Place, Ut1};
-use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refraction};
+use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, Refraction};
 
 use crate::day_sky::horizontal;
 use crate::delta_t::DeltaTModel;
@@ -413,12 +414,8 @@ pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc, height: Altitude) -> 
 /// [`centre_altitude_deg`] with the refraction already reckoned, degrees,
 /// which the solver does once rather than at every sample.
 fn event_altitude_deg(horizon: &Horizon, disc: &Disc, refraction: f64) -> f64 {
-    let limb = match horizon.disc {
-        DiscPoint::Centre => 0.0,
-        DiscPoint::UpperLimb => -disc.semidiameter_deg,
-        DiscPoint::LowerLimb => disc.semidiameter_deg,
-    };
-    horizon.altitude_deg - refraction + limb + disc.parallax_deg
+    horizon.altitude_deg - refraction - horizon.disc.above_centre() * disc.semidiameter_deg
+        + disc.parallax_deg
 }
 
 /// Which method answered.

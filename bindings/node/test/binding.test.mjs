@@ -92,6 +92,40 @@ test('the addon and the types were generated for the same ABI', () => {
   assert.match(sdkVersion(), /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+)?)?$/u);
 });
 
+/**
+ * SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs' upper
+ * limb with refraction, not by the day's sunrise; and a horizon composed
+ * of its parts dips by the observer's height, which a day hands back.
+ */
+test('the moon rises by its own convention and a composed horizon dips', () => {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  // Read before the context is disposed.
+  const of = (settings) => {
+    const each = context({ settings });
+    try {
+      const [one] = each.almanac.of({ from: gregorian(2026, 1, 5), to: gregorian(2026, 1, 5), place, utcOffsetSeconds: 20700 });
+      return { day: { ...one.day }, rise: one.moonEvents.find((event) => event.kind === 'RISE').instant };
+    } finally {
+      each.dispose();
+    }
+  };
+  const rise = (read) => read.rise;
+  const own = of({});
+  const centre = of({ day: { moonrise: { kind: 'NAMED', which: 'CENTRE_REFRACTION' } } });
+  assert.equal(own.day.sunrise, centre.day.sunrise, 'the day keeps its sunrise');
+  const later = (rise(centre) - rise(own)) * 86400;
+  assert.ok(later > 55 && later < 110, `${later} s`);
+  assert.equal(own.day.dipDeg, 0);
+  const deck = of({ day: { sunrise: { kind: 'COMPOSED', disc: 'CENTRE', refraction: 'STANDARD', height_m: 30 } } });
+  assert.equal(deck.day.convention, 'CENTRE_REFRACTION');
+  assert.ok(Math.abs(deck.day.dipDeg - (1.76 * Math.sqrt(30)) / 60) < 1e-12, `${deck.day.dipDeg}`);
+  assert.ok(deck.day.sunrise < own.day.sunrise, 'the dipped horizon is cleared sooner');
+  assert.throws(
+    () => of({ day: { moonrise: { kind: 'COMPOSED', disc: 'UPPER_LIMB', refraction: 'NONE', height_m: 20000 } } }),
+    (error) => /^(settings\.)?day\.moonrise$/u.test(error.field),
+  );
+});
+
 test('a context resolves its settings and reports them', () => {
   const ctx = context();
   assert.equal(ctx.profile, 'nepali-drik');
