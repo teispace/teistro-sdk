@@ -707,10 +707,24 @@ knob!(
         Reject = "REJECT" }
 );
 knob!(
-    /// How many chara karakas.
-    CharaKarakas { /// Seven.
-        Seven = "SEVEN", /// Eight.
-        Eight = "EIGHT" }
+    /// How many chara karakas (BPHS ch. 32 vv. 1 and 2; crux C2062).
+    CharaKarakas { /// Seven, the Sun to Saturn (v. 1, and the Jaimini Sutras 1.1.13 to 18).
+        Seven = "SEVEN", /// Eight, Rahu counted by how far he has still to go (v. 1's other
+        /// count, v. 5).
+        Eight = "EIGHT", /// Seven, and eight when two of the seven stand equally far into
+        /// their signs (v. 2: अंशैः समौ ग्रहौ द्वौ चेद्राह्वन्तान् चिन्तयेत् तदा), so that no
+        /// karaka is lost to the tie.
+        EightOnATie = "EIGHT_ON_A_TIE" }
+);
+knob!(
+    /// Which karaka each rank carries when seven are counted (crux C2061).
+    SevenKarakaOrder { /// The Jaimini Sutras 1.1.13 to 18: the Amatya, Bhratri, Matri, Putra,
+        /// Gnati and Dara karakas in turn, with no Pitrikaraka; the recording
+        /// engine's seven, which every chart of its corpus reproduces.
+        Jaimini = "JAIMINI", /// BPHS ch. 32 v. 16 (मातृकारकमेवाऽन्ये वदन्ति सुतकारकम्) and the
+        /// Jaimini Sutras 1.1.19's "some": the Matrikaraka is the Putrakaraka
+        /// too, so the verses' Pitrikaraka holds the fifth rank (vv. 13 to 15).
+        MatriIsPutra = "MATRI_IS_PUTRA" }
 );
 knob!(
     /// Which karaka each rank carries when eight are counted (crux C101).
@@ -1068,6 +1082,87 @@ knob!(
         /// procedure.
         StarOrSub = "STAR_OR_SUB" }
 );
+knob!(
+    /// A named scheme a catalogued divisional chart is computed by
+    /// (`vargas.schemes`, `03-design/varga-schemes.md`, cruxes C2063 to
+    /// C2066). [`VargaVariant::serves`] says which charts each names.
+    VargaVariant { /// BPHS ch. 6, the scheme every chart ships by: the twenty-one rows
+        /// the conformance corpus reproduces.
+        Parashara = "PARASHARA", /// The cyclic (parivritti) chart, counted on round the zodiac from
+        /// Aries: the hora's parivritti-dwaya (P.V.R. Narasimha Rao, *Personal
+        /// Finances from Hora Chart*, 2003), the drekkana's parivritti-traya (the
+        /// Vriddha Karika, परिवृत्ति त्रयं तेषां मेषादेः क्रमशो भवेत्, as Iranganti
+        /// Rangacharya reads it), and the cyclic chaturthamsha and panchamsha
+        /// the same handout tabulates. D2, D3, D4 and D5.
+        Parivritti = "PARIVRITTI", /// Kashinatha's hora: the Sun's half of a sign goes to the day-strong
+        /// sign of its lord, the Moon's half to the night-strong one, Leo and
+        /// Cancer a pair (Narasimha Rao 2003, after Kashinath Rath). D2.
+        Kashinatha = "KASHINATHA", /// The Uma-Shambhu hora: two cycles from Aries, an even sign's two
+        /// halves reversed (Narasimha Rao, *Parasara's Hora Chart Decoded*,
+        /// 2012). D2.
+        UmaShambhu = "UMA_SHAMBHU", /// Somanatha's drekkana: odd signs counted on from Aries, even signs
+        /// back from Pisces (Somanatha's *Kalpalata* on Krishna Mishra's
+        /// *Phalaratnamala*, as Iranganti Rangacharya gives it). D3.
+        Somanatha = "SOMANATHA", /// Krishna Mishra's navamsha: an even sign's nine navamshas in reverse
+        /// (Narasimha Rao 2012). D9.
+        KrishnaMishra = "KRISHNA_MISHRA", /// A consumer's own rows, which a written chart names; chosen by
+        /// writing the rows (`{"kind": "CUSTOM", ...}`), never by this name.
+        Custom = "CUSTOM" }
+);
+
+impl Default for VargaVariant {
+    /// BPHS ch. 6's, what a chart no setting names is computed by.
+    ///
+    /// ```
+    /// use teistro_core::settings::VargaVariant;
+    ///
+    /// assert_eq!(VargaVariant::default(), VargaVariant::Parashara);
+    /// ```
+    fn default() -> VargaVariant {
+        VargaVariant::Parashara
+    }
+}
+
+impl VargaVariant {
+    /// Whether it is BPHS ch. 6's, which a written scheme leaves out.
+    ///
+    /// ```
+    /// use teistro_core::settings::VargaVariant;
+    ///
+    /// assert!(VargaVariant::Parashara.is_parashara());
+    /// assert!(!VargaVariant::Kashinatha.is_parashara());
+    /// ```
+    #[must_use]
+    pub fn is_parashara(&self) -> bool {
+        *self == VargaVariant::Parashara
+    }
+
+    /// Whether the scheme is one of `varga`'s: every chart has
+    /// `PARASHARA`, and a named variant the charts its source gives it.
+    /// `CUSTOM` is no chart's by name.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_core::settings::VargaVariant;
+    ///
+    /// assert!(VargaVariant::Parashara.serves(Varga::D60));
+    /// assert!(VargaVariant::Parivritti.serves(Varga::D3));
+    /// assert!(!VargaVariant::Somanatha.serves(Varga::D2));
+    /// assert!(!VargaVariant::Custom.serves(Varga::D2));
+    /// ```
+    #[must_use]
+    pub fn serves(self, varga: crate::catalogue::Varga) -> bool {
+        use crate::catalogue::Varga::{D2, D3, D4, D5, D9};
+        match self {
+            VargaVariant::Parashara => true,
+            VargaVariant::Parivritti => matches!(varga, D2 | D3 | D4 | D5),
+            VargaVariant::Kashinatha | VargaVariant::UmaShambhu => varga == D2,
+            VargaVariant::Somanatha => varga == D3,
+            VargaVariant::KrishnaMishra => varga == D9,
+            VargaVariant::Custom => false,
+        }
+    }
+}
 knob!(
     /// The convention for a divisional chart no text attests.
     UnattestedDn { /// Cyclic (parivritti).

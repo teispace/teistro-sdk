@@ -79,6 +79,7 @@ pub mod settings;
 pub mod signed;
 pub mod strict;
 pub mod time;
+pub mod varga_rows;
 
 pub use angle::Nas;
 pub use catalogue::{Catalogued, Kind, Mark, Source, UnknownKey};

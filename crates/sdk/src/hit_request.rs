@@ -643,7 +643,8 @@ pub(crate) fn repeated<T: PartialEq + std::fmt::Debug>(
 pub(crate) enum Meaning {
     Sign,
     Nakshatra,
-    Varga(Varga),
+    /// A divisional chart's lines, under the scheme the settings choose.
+    Varga(Varga, Scheme),
     Aspect(usize, NatalPoint, f64, Edge),
 }
 
@@ -675,6 +676,7 @@ pub(crate) fn groups(natals: &[&Document], topocentric: bool) -> Vec<(Place, Vec
 /// A natal chart without a point asked for, named `points`.
 pub(crate) fn lattices_of(
     request: &HitRequest,
+    settings: &teistro_core::settings::Settings,
     natals: &[&Document],
     midheavens: &[Option<f64>],
     members: &[usize],
@@ -688,10 +690,11 @@ pub(crate) fn lattices_of(
     }
     if request.asks(HitKind::VargaIngress) {
         for varga in &request.vargas {
-            let lines = teistro_vargas::change::lines(&Scheme::of(*varga)).ok_or_else(|| {
+            let scheme = Scheme::chosen(*varga, settings)?;
+            let lines = teistro_vargas::change::lines(&scheme).ok_or_else(|| {
                 Error::internal(format!("{} has no lattice of lines", varga.key()))
             })?;
-            meanings.push((Meaning::Varga(*varga), lines));
+            meanings.push((Meaning::Varga(*varga, scheme), lines));
         }
     }
     if !request.asks(HitKind::Aspect) {
@@ -955,9 +958,9 @@ pub(crate) fn hit_of(
             )),
             // Most of the trimshamsha's lines, and the hora's at each
             // sign's end, leave the sign as it was: no ingress.
-            Meaning::Varga(varga) => hits::varga_ingress(
+            Meaning::Varga(varga, scheme) => hits::varga_ingress(
                 varga,
-                teistro_vargas::change::either_side(&Scheme::of(varga), boundary_deg).ok()?,
+                teistro_vargas::change::either_side(&scheme, boundary_deg).ok()?,
                 motion(direction),
             )
             .map(|ingress| (ingress, None)),

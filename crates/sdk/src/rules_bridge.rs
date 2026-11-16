@@ -29,12 +29,12 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Degrees;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
-use teistro_core::settings::{EightKarakaOrder, Settings};
+use teistro_core::settings::{EightKarakaOrder, SevenKarakaOrder, Settings};
 use teistro_dasha::{Chain, Period, Timeline};
 use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
     Body, Eclipse, EightKarakas, Evaluator, House, LifeClass, Panchanga, Placement, PointAt,
-    Readings, RuleChart, Running, StrengthMeasure, Strengths, Tables, VargaSigns,
+    Readings, RuleChart, Running, SevenKarakas, StrengthMeasure, Strengths, Tables, VargaSigns,
 };
 use teistro_serial::Document;
 use teistro_state::GrahaState;
@@ -308,9 +308,12 @@ impl RuleInputs {
         })
     }
 
-    /// The inputs with the eight chara karakas named as the settings name
-    /// them (`jaimini.eight_karaka_order`, crux C101): the ranking is the
-    /// sky's, and [`RuleInputs::of`] names it in the verses' order.
+    /// The inputs as the settings read them: the chara karakas named as
+    /// `jaimini.seven_karaka_order` and `jaimini.eight_karaka_order` name
+    /// them (cruxes C2061, C101) — the ranking is the sky's, and
+    /// [`RuleInputs::of`] names it in the Jaimini Sutras' and the verses'
+    /// orders — and each body's navamsha under the D9 `vargas.schemes`
+    /// chooses.
     ///
     /// ```no_run
     /// # #[cfg(feature = "builtin-ephemeris")] {
@@ -325,15 +328,19 @@ impl RuleInputs {
     /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
     /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_state();
     /// let document = sdk.chart().reading(JulianDay::literal(2_447_995.489_583_333_5), &request)?.value;
-    /// let inputs = RuleInputs::of(&document)?.under(sdk.settings());
+    /// let inputs = RuleInputs::of(&document)?.under(sdk.settings())?;
     /// # let _ = inputs;
     /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    #[must_use]
-    pub fn under(mut self, settings: &Settings) -> RuleInputs {
-        self.chart = self.chart.with_chara_karakas(karaka_order(settings));
-        self
+    ///
+    /// # Errors
+    ///
+    /// A navamsha scheme the settings cannot give
+    /// (`teistro_vargas::Scheme::chosen`).
+    pub fn under(mut self, settings: &Settings) -> Result<RuleInputs, Error> {
+        self.chart = under_settings(self.chart, settings)?;
+        Ok(self)
     }
 
     /// An evaluator over the chart under `readings`, given the points, the
@@ -358,16 +365,37 @@ pub(crate) fn ruled(
     states: &[GrahaState],
     settings: &Settings,
 ) -> Result<RuleChart, Error> {
-    Ok(rule_chart(foundation, states, None, None)?.with_chara_karakas(karaka_order(settings)))
+    under_settings(rule_chart(foundation, states, None, None)?, settings)
 }
 
-/// The rules' naming of eight chara karakas under the settings
-/// (`jaimini.eight_karaka_order`, crux C101).
-pub(crate) fn karaka_order(settings: &Settings) -> EightKarakas {
-    match settings.jaimini.eight_karaka_order {
+/// A rule chart as the settings read it: its chara karakas named by
+/// `jaimini.seven_karaka_order` and `jaimini.eight_karaka_order`, and each
+/// body's navamsha under the D9 `vargas.schemes` chooses.
+fn under_settings(chart: RuleChart, settings: &Settings) -> Result<RuleChart, Error> {
+    let (seven, eight) = karaka_orders(settings);
+    let mut chart = chart.with_karaka_orders(seven, eight);
+    if settings.vargas.schemes.contains_key(&Varga::D9) {
+        let navamsha = Scheme::chosen(Varga::D9, settings)?;
+        for placement in &mut chart.placements {
+            placement.navamsha = sign(&navamsha, canonical(placement.longitude)?);
+        }
+    }
+    Ok(chart)
+}
+
+/// The rules' naming of seven and of eight chara karakas under the settings
+/// (`jaimini.seven_karaka_order`, crux C2061; `jaimini.eight_karaka_order`,
+/// crux C101).
+pub(crate) fn karaka_orders(settings: &Settings) -> (SevenKarakas, EightKarakas) {
+    let seven = match settings.jaimini.seven_karaka_order {
+        SevenKarakaOrder::MatriIsPutra => SevenKarakas::MatriIsPutra,
+        _ => SevenKarakas::Jaimini,
+    };
+    let eight = match settings.jaimini.eight_karaka_order {
         EightKarakaOrder::PitrikarakaLast => EightKarakas::PitrikarakaLast,
         _ => EightKarakas::Parashara,
-    }
+    };
+    (seven, eight)
 }
 
 /// A Shadbala reading as the rules compare strengths: each graha's rupas and
@@ -574,11 +602,17 @@ pub(crate) fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
 /// The sign of a sidereal longitude in a division, under the SDK's classical
 /// scheme for it.
 pub(crate) fn varga_sign(varga: Varga, longitude: f64) -> Result<Rashi, Error> {
+    Ok(sign(&Scheme::of(varga), canonical(longitude)?))
+}
+
+/// A sidereal longitude on the canonical angle, refused when it is not a
+/// finite number.
+fn canonical(longitude: f64) -> Result<Nas, Error> {
     let degrees = Degrees::try_new(longitude.rem_euclid(360.0)).map_err(|invalid| {
         Error::invalid_arg(format!(
             "a longitude of {longitude} cannot be placed: {invalid}"
         ))
         .with_field("longitude")
     })?;
-    Ok(sign(&Scheme::of(varga), Nas::from_degrees(degrees)))
+    Ok(Nas::from_degrees(degrees))
 }
