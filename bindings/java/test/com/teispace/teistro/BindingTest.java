@@ -1257,6 +1257,42 @@ public final class BindingTest {
                 check(lunar.vedha().from() < umbral.from(), "the sutak opens before the umbra is seen");
                 same(umbral.to(), lunar.vedha().to(), "and closes as it ends");
                 check(eclipses.value().solar().get(0).vedha() == null, "an unseen eclipse has none");
+                // Seen whole, the greatest eclipse is the largest phase seen; unseen, nothing is.
+                LunarSeenMaximum largest = lunar.here().seenMaximum();
+                same(SeenAt.MAXIMUM, largest.why(), "the greatest eclipse is seen");
+                same(lunar.here().greatest(), largest.moment(), "at its own moment");
+                same(lunar.eclipse().umbralMagnitude(), largest.umbralMagnitude(), "and magnitude");
+                SolarEclipseView unseen = eclipses.value().solar().get(0).here();
+                if (unseen != null) {
+                    same(new SolarSeenMaximum(SeenAt.NOT_SEEN, null, null, null), unseen.seenMaximum(),
+                            "nothing seen is a state, not a zero");
+                }
+            }
+        });
+        tests.put("an eclipse below the horizon at its maximum answers the largest phase seen", () -> {
+            // October and November 2022 at Kathmandu (SR-106): the partial solar eclipse of 25
+            // October is greatest 5.7 degrees below the horizon, so its largest phase seen is at
+            // sunset; the total lunar eclipse of 8 November rises in totality, so its largest
+            // phase seen is at moonrise.
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Eclipses eclipses = sky.almanac().of(Civil.date(Calendar.GREGORIAN, 2022, 10, 20),
+                        Civil.date(Calendar.GREGORIAN, 2022, 11, 10), kathmandu, 20_700, null, null, false, true,
+                        false).eclipses().orElseThrow();
+                SolarEclipseView solar = eclipses.value().solar().get(0).here();
+                check(solar.maximum().altitudeDeg() < -5, "the maximum is below the horizon");
+                check(Math.abs(solar.magnitude() - 0.49) < 0.001, "at its geometric magnitude");
+                SolarSeenMaximum sunset = solar.seenMaximum();
+                same(SeenAt.SETTING, sunset.why(), "the largest phase seen is at sunset");
+                same(solar.seen().to(), sunset.moment().at(), "the last instant seen");
+                check(Math.abs(sunset.magnitude() - 0.376) < 0.002, "magnitude " + sunset.magnitude());
+                check(sunset.obscuration() < solar.obscuration(), "less than the maximum's");
+                LunarEclipseHere lunar = eclipses.value().lunar().get(0);
+                LunarSeenMaximum risen = lunar.here().seenMaximum();
+                same(SeenAt.RISING, risen.why(), "the largest phase seen is at moonrise");
+                same(lunar.here().seen().from(), risen.moment().at(), "the first instant seen");
+                check(1 < risen.umbralMagnitude() && risen.umbralMagnitude() < lunar.eclipse().umbralMagnitude(),
+                        "in totality, short of the greatest");
             }
         });
         tests.put("a chart carries its moment, the eclipse its place sees", () -> {

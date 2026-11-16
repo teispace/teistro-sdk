@@ -11,7 +11,7 @@
 use std::collections::BTreeSet;
 
 use teistro::catalogue::Calendar;
-use teistro::eclipse::{LunarEclipseKind, ShadowRule, SolarEclipseKind};
+use teistro::eclipse::{LunarEclipseKind, SeenAt, ShadowRule, SolarEclipseKind};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
     AlmanacRequest, CalendarDate, Context, EclipsesHere, Envelope, Ephemeris, Status, UtcOffset,
@@ -67,6 +67,7 @@ fn kathmandu_saw_one_of_2025s_four_eclipses() {
     // March's lunar eclipse fell in Kathmandu's afternoon, the Moon below
     // the horizon; September's near midnight, seen whole.
     assert!(found.lunar[0].here.seen.is_none());
+    assert_eq!(found.lunar[0].here.seen_maximum.why, SeenAt::NotSeen);
     let september = &found.lunar[1];
     let seen = september.here.seen.unwrap();
     assert_eq!(
@@ -82,6 +83,48 @@ fn kathmandu_saw_one_of_2025s_four_eclipses() {
             .all(|e| e.here.is_none_or(|here| here.seen.is_none()))
     );
     assert!(found.any_seen());
+}
+
+/// SR-106: 2022-10-25 at Kathmandu is greatest 5.7° below the horizon, at
+/// magnitude 0.490. The largest phase seen is at sunset under the
+/// profile's `panchanga.eclipse_horizon`, the eye's upper limb lifted by
+/// refraction; a custom horizon at the upper limb on the geometric
+/// horizon, NASA's eclipse explorer's sunset, gives its 0.356 and the
+/// consumer's 0.354.
+#[test]
+fn kathmandu_saw_the_2022_october_eclipse_largest_at_sunset() {
+    let october = |patch| {
+        context("nepali-drik", patch)
+            .almanac()
+            .eclipses(
+                &CalendarDate::defined(Calendar::Gregorian, 2022, 10, 25),
+                &CalendarDate::defined(Calendar::Gregorian, 2022, 10, 25),
+                &kathmandu(),
+                UtcOffset::literal(5, 45, 0),
+            )
+            .unwrap()
+            .value
+            .solar[0]
+            .here
+            .unwrap()
+    };
+    let eye = october(None);
+    assert!((eye.magnitude - 0.490).abs() < 0.001);
+    assert!(eye.maximum.altitude_deg < -5.0);
+    let largest = eye.seen_maximum;
+    assert_eq!(largest.why, SeenAt::Setting);
+    assert!((largest.magnitude.unwrap() - 0.376).abs() < 0.002);
+    // A custom altitude is a limit; at the explorer's line (the upper
+    // limb on the geometric horizon is the centre 16′ down) the phase is
+    // NASA's.
+    let line = october(Some(
+        r#"{"panchanga": {"eclipse_horizon": {"kind": "CUSTOM", "altitude_deg": -0.27}}}"#,
+    ))
+    .seen_maximum;
+    assert_eq!(line.why, SeenAt::SettingPastLimit);
+    let magnitude = line.magnitude.unwrap();
+    assert!((magnitude - 0.354).abs() < 0.005, "{magnitude}");
+    assert!((magnitude - 0.3556).abs() < 0.005, "{magnitude}");
 }
 
 #[test]
@@ -171,8 +214,13 @@ fn string_paths(value: &serde_json::Value, path: &str, out: &mut BTreeSet<String
 /// rule, and every listed path is reached.
 #[test]
 fn the_eclipses_name_their_kinds_where_their_table_says() {
-    // The shadow rule, which is a setting's value.
-    const NOT_MEMBERS: [&str; 1] = ["lunar.eclipse.shadow"];
+    // The shadow rule, which is a setting's value, and where the largest
+    // phase seen falls, which is a reason written as its key.
+    const NOT_MEMBERS: [&str; 3] = [
+        "lunar.eclipse.shadow",
+        "lunar.here.seenMaximum.why",
+        "solar.here.seenMaximum.why",
+    ];
     // London saw March 2025's partial solar eclipse, so a view of each
     // kind is there to read.
     let london = Place::new(

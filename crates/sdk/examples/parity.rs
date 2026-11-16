@@ -8026,6 +8026,18 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
         line.push(seen(here.seen.as_ref()));
         line.push(seen(here.umbral_seen.as_ref()));
         put(report, &format!("eclipses-lunar-{k}-here"), line.join(" "));
+        let largest = &here.seen_maximum;
+        put(
+            report,
+            &format!("eclipses-lunar-{k}-seen-maximum"),
+            format!(
+                "{} {} {} {}",
+                largest.why.key(),
+                moment(largest.moment.as_ref()),
+                number_or_dash(largest.umbral_magnitude),
+                number_or_dash(largest.penumbral_magnitude),
+            ),
+        );
         put(
             report,
             &format!("eclipses-lunar-{k}-vedha"),
@@ -8103,6 +8115,20 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
             },
         );
         put(report, &format!("eclipses-solar-{k}-here"), line);
+        let largest = here.as_ref().map_or_else(
+            || "-".to_owned(),
+            |here| {
+                let largest = &here.seen_maximum;
+                format!(
+                    "{} {} {} {}",
+                    largest.why.key(),
+                    moment(largest.moment.as_ref()),
+                    number_or_dash(largest.magnitude),
+                    number_or_dash(largest.obscuration),
+                )
+            },
+        );
+        put(report, &format!("eclipses-solar-{k}-seen-maximum"), largest);
         put(
             report,
             &format!("eclipses-solar-{k}-vedha"),

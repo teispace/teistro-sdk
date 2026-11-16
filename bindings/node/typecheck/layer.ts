@@ -296,8 +296,10 @@ import type {
   RashiDashaDefinition,
   RuleRequest,
   Scale,
+  SeenAt,
   SolarEclipseHere,
   SolarEclipseView,
+  SolarSeenMaximum,
   ShippedTheme,
   Theme,
   nepalOfficial,
@@ -825,11 +827,19 @@ function eclipses(): string {
   const local: SolarEclipseView | null | undefined = solar?.here;
   const obscured: number | undefined = local?.obscuration;
   const where: number | undefined = solar?.eclipse.point.latitude;
+  const largest: SolarSeenMaximum | undefined = local?.seenMaximum;
+  const why: SeenAt | undefined = largest?.why;
+  const seenMagnitude: number | null | undefined = largest?.magnitude;
+  const risen: number | null | undefined = lunar?.here.seenMaximum.umbralMagnitude;
+  // @ts-expect-error a reason is one of six keys
+  const unknownWhy: SeenAt = 'HIDDEN';
+  // @ts-expect-error nothing seen leaves the moment null, so it needs a check
+  const seenAt: number = largest.moment.at;
   // @ts-expect-error a place's view of a solar eclipse is never hybrid
   const hybrid: SolarEclipseView['kind'] = 'solar_eclipse_kind.HYBRID';
   // @ts-expect-error an eclipse not asked for is null, so it needs a check
   const unchecked: number = asked.eclipses.value.lunar.length;
-  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked} ${bare}`;
+  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked} ${bare} ${why} ${seenMagnitude} ${risen} ${unknownWhy} ${seenAt}`;
 }
 
 void eclipses;
