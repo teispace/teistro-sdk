@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 365 524 | 113 736 | 31.1% |
-| the value | 342 767 | 110 185 | 32.1% |
-| the provenance | 22 155 | 2659 | 12.0% |
+| the envelope | 365 528 | 113 736 | 31.1% |
+| the value | 342 792 | 110 185 | 32.1% |
+| the provenance | 22 134 | 2659 | 12.0% |
 
 19 of the 57 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -52,11 +52,11 @@ value.
 | `almanac.ashauchKin` | 144 | 144 | 100.0% | the whole value |
 | `almanac.ashauchRite` | 106 | 106 | 100.0% | the whole value |
 | `almanac.cells` | 10 644 | 10 063 | 94.5% | the whole value |
-| `almanac.changes` | 852 | 257 | 30.2% | the whole value |
-| `almanac.days` | 152 282 | 11 760 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state`, `visible.value` |
+| `almanac.changes` | 848 | 257 | 30.3% | the whole value |
+| `almanac.days` | 152 303 | 11 760 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state`, `visible.value` |
 | `almanac.deathTime` | 885 | 311 | 35.1% | the whole value |
 | `almanac.digest` | 3572 | 176 | 4.9% | `format`, `days`, `size`, `seal` |
-| `almanac.elect` | 2642 | 872 | 33.0% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
+| `almanac.elect` | 2639 | 872 | 33.0% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
 | `almanac.festivalPack` | 3311 | 1644 | 49.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
 | `almanac.festival_calendar` | 6618 | 5916 | 89.4% | the whole value |
 | `almanac.firstYear` | 12 446 | 4193 | 33.7% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
@@ -65,8 +65,8 @@ value.
 | `almanac.next` | 1598 | 486 | 30.4% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
 | `almanac.observance` | 36 001 | 18 130 | 50.4% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
 | `almanac.pakshi` | 14 028 | 2728 | 19.4% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
-| `almanac.people` | 3825 | 1744 | 45.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 838 | 127 | 15.2% | the whole value |
+| `almanac.people` | 3821 | 1744 | 45.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
+| `almanac.publishedReasons` | 835 | 127 | 15.2% | the whole value |
 | `almanac.sankalpa` | 1289 | 708 | 54.9% | the whole value |
 | `almanac.sankalpaWords` | 1861 | 1289 | 69.3% | the whole value |
 | `almanac.sentences` | 3705 | 1010 | 27.3% | `sentences.text`, `locale`, `withheld`, `draft` |
@@ -79,7 +79,7 @@ value.
 | `chart.disagreements` | 1577 | 883 | 56.0% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
 | `chart.found` | 33 391 | 17 467 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
 | `chart.mundane` | 818 | 182 | 22.2% | the whole value |
-| `chart.rashifal` | 17 584 | 4645 | 26.4% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
+| `chart.rashifal` | 17 581 | 4645 | 26.4% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
 | `chart.relocated` | 1131 | 498 | 44.0% | the whole value |
 | `geo.resolve` | 229 | 229 | 100.0% | the whole value |
 | `intl.date` | 238 | 238 | 100.0% | the whole value |
@@ -114,7 +114,7 @@ names it.
 
 - `almanac.anniversaries`: `added`, `anniversaries.count`, `anniversaries.dayRule`, `anniversaries.monthBy`, `anniversaries.observance.barred`, `anniversaries.observance.decidedBy`, `anniversaries.observance.extents`, `anniversaries.observance.marginSeconds`, `anniversaries.observance.moonrise`, `anniversaries.observance.parana`, `anniversaries.observance.published`, `anniversaries.observance.sait`, `applied`, `dated`, `unplaced`.
 - `almanac.ashauch`: `clause`, `dayOne`, `dayOneBy`, `lastDay`, `overlap`, `ritesFrom`, `sex`, `table`.
-- `almanac.days`: `dayHashes`, `days.choghadiya`, `days.clock`, `days.ghati_reckoning`, `days.gowri`, `days.homa_ahuti`, `days.horas`, `days.lagnas`, `days.markers`, `days.muhurtas`, `days.named_panchaka`, `days.punya_kala`, `days.shiva_vasa`, `days.window`, `eclipses.provenance`, `festivals.provenance`, `muhurta.provenance`, `nepalSambat.provenance`, `sky.provenance`, `visible.provenance`, `years.provenance`.
+- `almanac.days`: `dayHashes`, `days.choghadiya`, `days.clock`, `days.ghati_reckoning`, `days.gowri`, `days.homa_ahuti`, `days.horas`, `days.lagnas`, `days.markers`, `days.muhurtas`, `days.named_panchaka`, `days.punya_kala`, `days.shiva_vasa`, `days.uncertainty`, `days.window`, `eclipses.provenance`, `festivals.provenance`, `muhurta.provenance`, `nepalSambat.provenance`, `sky.provenance`, `visible.provenance`, `years.provenance`.
 - `almanac.digest`: `base64`.
 - `almanac.elect`: `windows.fails.at`, `windows.fails.by`, `windows.fails.choghadiya`, `windows.fails.count`, `windows.fails.grade`, `windows.fails.grahas`, `windows.fails.holds`, `windows.fails.house`, `windows.fails.kaala`, `windows.fails.karana`, `windows.fails.lord`, `windows.fails.masa`, `windows.fails.nakshatra`, `windows.fails.navamsa`, `windows.fails.pada`, `windows.fails.panchaka`, `windows.fails.reading`, `windows.fails.row`, `windows.fails.second`, `windows.fails.sign`, `windows.fails.tithi`, `windows.fails.twelfth`, `windows.fails.vara`, `windows.fails.with`, `windows.fails.yoga`, `windows.holds.at`, `windows.holds.by`, `windows.holds.choghadiya`, `windows.holds.count`, `windows.holds.grahas`, `windows.holds.holds`, `windows.holds.house`, `windows.holds.kaala`, `windows.holds.karana`, `windows.holds.lord`, `windows.holds.masa`, `windows.holds.nakshatra`, `windows.holds.navamsa`, `windows.holds.pada`, `windows.holds.panchaka`, `windows.holds.reading`, `windows.holds.row`, `windows.holds.second`, `windows.holds.sign`, `windows.holds.tithi`, `windows.holds.twelfth`, `windows.holds.vara`, `windows.holds.with`, `windows.holds.yoga`, `windows.score`.
 - `almanac.festivalPack`: `rules.source`, `rules.unsourced`.
@@ -144,7 +144,7 @@ marked.
 - `almanac.ashauch`: `dayOne` 83, `lastDay` 83, `clause` 64, `dayOneBy` 15, `length` 15 (kept), `end` 11 (kept), `start` 11 (kept), `table` 10, `key` 9 (kept), `relation` 9 (kept), `kind` 8 (kept), `days` 5 (kept).
 - `almanac.cells`: `cells` 9944 (kept).
 - `almanac.changes`: `points` 101 (kept), `window` 32 (kept).
-- `almanac.days`: `sky` 96 776 (kept), `muhurta` 33 901 (kept), `days` 15 144 (kept), `years` 2477 (kept), `festivals` 1325 (kept), `nepalSambat` 961 (kept), `eclipses` 711 (kept), `dayHashes` 127.
+- `almanac.days`: `sky` 96 772 (kept), `muhurta` 33 897 (kept), `days` 15 144 (kept), `years` 2518 (kept), `festivals` 1321 (kept), `nepalSambat` 957 (kept), `eclipses` 711 (kept), `dayHashes` 127.
 - `almanac.deathTime`: `death` 88 (kept), `cremation` 86 (kept), `table` 10 (kept), `rites` 7 (kept).
 - `almanac.digest`: `base64` 2671, `seal` 42 (kept), `format` 6 (kept), `size` 6 (kept), `days` 5 (kept).
 - `almanac.elect`: `windows` 1467 (kept), `unjudged` 122 (kept), `ranking` 9 (kept), `windowsBlackedOut` 9 (kept), `closed` 7 (kept), `daysJudged` 7 (kept), `daysCut` 6 (kept).

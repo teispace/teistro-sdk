@@ -983,6 +983,9 @@ class AlmanacDaysRequest(TypedDict, total=False):
     skyStepMinutes: Optional[int]
     """The sky's step, minutes; ten when left out."""
 
+    uncertainty: bool
+    """Each day's times' ± band from Delta T (SR-104)."""
+
     utcOffsetSeconds: Optional[int]
 
     years: bool

@@ -181,6 +181,7 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
             "TS_PANCHANGA_SKY",
             "TS_PANCHANGA_MARKERS",
             "TS_PANCHANGA_GOWRI",
+            "TS_PANCHANGA_UNCERTAINTY",
         ]
     );
 }

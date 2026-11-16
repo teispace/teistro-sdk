@@ -301,7 +301,9 @@ pub struct TsPanchangaRequest {
     /// in the `sky` section, at `sky_step_minutes`;
     /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
     /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-    /// each day's Gowri panchangam, in the `gowri` section.
+    /// each day's Gowri panchangam, in the `gowri` section;
+    /// `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+    /// Delta T, in the `uncertainty` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -539,6 +541,24 @@ pub const TS_PANCHANGA_MARKERS: u32 = 128;
 /// ```
 pub const TS_PANCHANGA_GOWRI: u32 = 256;
 
+/// `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's times' ± band from Delta T, in the
+/// `uncertainty` section: the Delta T the day was reckoned under, its
+/// band, and the one-sigma band of the limbs' ends, the sunrise and the
+/// moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+/// that does not set it pays nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_GOWRI, TS_PANCHANGA_UNCERTAINTY};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_UNCERTAINTY, 1 << 9);
+/// assert_eq!((TS_PANCHANGA_UNCERTAINTY | TS_PANCHANGA_GOWRI) & TS_PANCHANGA_GOWRI, TS_PANCHANGA_GOWRI);
+/// ```
+pub const TS_PANCHANGA_UNCERTAINTY: u32 = 512;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
@@ -606,6 +626,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         usize::from(day.named_panchaka.is_some()),
         day.markers.len(),
         day.gowri.len(),
+        usize::from(day.uncertainty.is_some()),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -874,6 +895,7 @@ struct RaggedRows {
     named_panchaka: Vec<Vec<FixedValue>>,
     markers: Vec<Vec<FixedValue>>,
     gowri: Vec<Vec<FixedValue>>,
+    uncertainty: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -925,6 +947,23 @@ impl RaggedRows {
                     row.extend(interval(part.at));
                     row.push(flag(part.is_daytime));
                     row
+                })
+                .collect(),
+            uncertainty: days
+                .iter()
+                .filter_map(|day| day.uncertainty)
+                .map(|band| {
+                    // A band Delta T does not state crosses as zero, with
+                    // `stated` 0 saying so.
+                    let sigma = |value: Option<f64>| FixedValue::from(value.unwrap_or(0.0));
+                    vec![
+                        band.delta_t_seconds.into(),
+                        u64::from(crate::time::TsDeltaTBand::from(band.band) as u8).into(),
+                        flag(band.limbs_seconds.is_some()),
+                        sigma(band.limbs_seconds),
+                        sigma(band.sunrise_seconds),
+                        sigma(band.moonrise_seconds),
+                    ]
                 })
                 .collect(),
         })
@@ -1069,6 +1108,7 @@ pub fn encode(
         writer.bytes("sky", beside.sky.as_bytes())?;
         writer.rows("markers", &ragged.markers)?;
         writer.rows("gowri", &ragged.gowri)?;
+        writer.rows("uncertainty", &ragged.uncertainty)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1106,7 +1146,7 @@ fn with_sky(
 /// day's sky, which also reads its step.
 fn with_sections(mut beside: teistro::AlmanacRequest, sections: u32) -> teistro::AlmanacRequest {
     type Ask = fn(teistro::AlmanacRequest) -> teistro::AlmanacRequest;
-    let asks: [(u32, Ask); 8] = [
+    let asks: [(u32, Ask); 9] = [
         (TS_PANCHANGA_YEARS, teistro::AlmanacRequest::with_years),
         (
             TS_PANCHANGA_ECLIPSES,
@@ -1123,6 +1163,10 @@ fn with_sections(mut beside: teistro::AlmanacRequest, sections: u32) -> teistro:
         ),
         (TS_PANCHANGA_MARKERS, teistro::AlmanacRequest::with_markers),
         (TS_PANCHANGA_GOWRI, teistro::AlmanacRequest::with_gowri),
+        (
+            TS_PANCHANGA_UNCERTAINTY,
+            teistro::AlmanacRequest::with_uncertainty,
+        ),
         (
             TS_PANCHANGA_WITHOUT_DAYS,
             teistro::AlmanacRequest::without_days,

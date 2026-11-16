@@ -1613,7 +1613,7 @@ public final class ParityRunner {
             try (Context builtin = teistro.context(ContextOptions.builder()
                     .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 var markedDay = builtin.almanac().of(date(2025, 6, 11), date(2025, 6, 11), place, 20700,
-                        null, null, false, false, false, false, false, false, 0, true, true).at(0);
+                        null, null, false, false, false, false, false, false, 0, true, true, true).at(0);
                 var keys = new java.util.ArrayList<String>();
                 for (var span : markedDay.markers()) {
                     keys.add(span.member().fullKey());
@@ -1624,6 +1624,12 @@ public final class ParityRunner {
                     gowri.add(part.gowri().fullKey());
                 }
                 put("gowri", String.join(" ", gowri));
+                var band = markedDay.uncertainty().orElseThrow();
+                java.util.function.Function<java.util.Optional<Double>, String> sigma =
+                        value -> value.map(ParityRunner::number).orElse("-");
+                put("uncertainty", band.band().key() + " " + number(band.deltaTSeconds()) + " "
+                        + sigma.apply(band.limbsSeconds()) + " " + sigma.apply(band.sunriseSeconds()) + " "
+                        + sigma.apply(band.moonriseSeconds()));
             }
 
             // ── The sky view ──────────────────────────────────────────────

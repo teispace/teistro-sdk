@@ -2062,6 +2062,7 @@ export function decodePanchanga(bytes) {
       namedPanchaka: column(blob, at, 26, 'u32', at.count),
       markers: column(blob, at, 27, 'u32', at.count),
       gowri: column(blob, at, 28, 'u32', at.count),
+      uncertainty: column(blob, at, 29, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2525,6 +2526,18 @@ export function decodePanchanga(bytes) {
       from: column(blob, at, 1, 'f64', at.count),
       to: column(blob, at, 2, 'f64', at.count),
       daytime: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 43, 'uncertainty');
+    out.uncertainty = {
+      deltaTSeconds: column(blob, at, 0, 'f64', at.count),
+      band: column(blob, at, 1, 'u8', at.count),
+      stated: column(blob, at, 2, 'u8', at.count),
+      limbsSeconds: column(blob, at, 3, 'f64', at.count),
+      sunriseSeconds: column(blob, at, 4, 'f64', at.count),
+      moonriseSeconds: column(blob, at, 5, 'f64', at.count),
       length: at.count,
     };
   }

@@ -478,6 +478,25 @@ public final class AlmanacDay {
     }
 
     /**
+     * The day's times' ± band from Delta T, when the request asked for it (SR-104,
+     * {@code 03-design/time-and-timezone.md} §3.5): a limb's end takes on Delta T's whole uncertainty, a sunrise a
+     * 365th of it and a moonrise a 26th. Empty when not asked for.
+     *
+     * @return the band
+     */
+    public Optional<TimesUncertainty> uncertainty() {
+        Panchanga.Uncertainty c = batch.decoded().uncertainty();
+        List<TimesUncertainty> rows = rows("uncertainty", i -> {
+            boolean stated = c.stated(i) != 0;
+            return new TimesUncertainty(c.deltaTSeconds(i), DeltaTBand.of(c.band(i)),
+                    stated ? Optional.of(c.limbsSeconds(i)) : Optional.empty(),
+                    stated ? Optional.of(c.sunriseSeconds(i)) : Optional.empty(),
+                    stated ? Optional.of(c.moonriseSeconds(i)) : Optional.empty());
+        });
+        return rows.stream().findFirst();
+    }
+
+    /**
      * The twenty-four horas, from sunrise.
      *
      * @return the horas

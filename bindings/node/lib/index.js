@@ -48,6 +48,7 @@ import {
   PANCHANGA_MARKERS,
   PANCHANGA_NEPAL_SAMBAT,
   PANCHANGA_SKY,
+  PANCHANGA_UNCERTAINTY,
   PANCHANGA_WITHOUT_DAYS,
   PANCHANGA_YEARS,
   CalendarById,
@@ -81,6 +82,7 @@ import {
   MonthKindById,
   MuhurtaYogaById,
   SunrisesById,
+  DeltaTBandById,
   NakshatraById,
   PakshaById,
   PanchakaById,
@@ -2415,6 +2417,29 @@ export class AlmanacDay {
       to: c.to[i],
       daytime: c.daytime[i] === 1,
     }));
+  }
+
+  /**
+   * The day's times' ± band from Delta T, when the request asked with
+   * `uncertainty: true` (SR-104, `03-design/time-and-timezone.md` §3.5):
+   * Delta T at the middle of the day's window, where its uncertainty comes
+   * from, and the one-sigma band, in seconds, of the limbs' ends (all of
+   * Delta T's), the sunrise (a 365th of it) and the moonrise (a 26th);
+   * each band `null` when Delta T states none. `null` when not asked for.
+   */
+  get uncertainty() {
+    const c = this.#batch.decoded.uncertainty;
+    const [row] = this.#rows('uncertainty', (i) => {
+      const stated = c.stated[i] === 1;
+      return Object.freeze({
+        deltaTSeconds: c.deltaTSeconds[i],
+        band: DeltaTBandById.get(c.band[i]) ?? 'unknown',
+        limbsSeconds: stated ? c.limbsSeconds[i] : null,
+        sunriseSeconds: stated ? c.sunriseSeconds[i] : null,
+        moonriseSeconds: stated ? c.moonriseSeconds[i] : null,
+      });
+    });
+    return row ?? null;
   }
 
   /** The twenty-four horas, from sunrise. */
@@ -8108,6 +8133,8 @@ export class AlmanacArea extends Area {
    *   search a day does not otherwise make, so only on asking
    * @param {boolean} [request.markers] whether to give each day its ganda
    *   mula, gandanta and vinchudo, as `AlmanacDay.markers`
+   * @param {boolean} [request.uncertainty] whether to give each day its
+   *   times' ± band from Delta T, as `AlmanacDay.uncertainty`
    * @param {boolean} [request.gowri] whether to give each day its Gowri
    *   panchangam, as `AlmanacDay.gowri`
    * @param {boolean} [request.days] `false` to leave the days out and
@@ -8166,6 +8193,7 @@ export class AlmanacArea extends Area {
           (request.sky === true ? PANCHANGA_SKY : 0) |
           (request.markers === true ? PANCHANGA_MARKERS : 0) |
           (request.gowri === true ? PANCHANGA_GOWRI : 0) |
+          (request.uncertainty === true ? PANCHANGA_UNCERTAINTY : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -8188,7 +8216,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, markers: false, gowri: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, markers: false, gowri: false, uncertainty: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
   }
 
   /**

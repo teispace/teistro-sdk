@@ -19,6 +19,7 @@ import type {
   BhadraVasa,
   DayMarker,
   Gowri,
+  DeltaTBand,
   ShivaVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -5752,6 +5753,24 @@ export interface KaalaPeriod extends Interval {
 }
 
 /** One choghadiya, of the daylight or of the night. */
+/**
+ * A day's times' ± band from Delta T (SR-104): the Delta T the day was
+ * reckoned under and the one-sigma band, in seconds, each kind of time
+ * takes on from its uncertainty.
+ */
+export interface TimesUncertainty {
+  /** Delta T, TT less UT1, at the middle of the day's window, seconds. */
+  readonly deltaTSeconds: number;
+  /** Where its uncertainty comes from. */
+  readonly band: DeltaTBand | 'unknown';
+  /** A limb's end, a sankranti or a lunation: Delta T's whole band; `null` when Delta T states none. */
+  readonly limbsSeconds: number | null;
+  /** The sunrise and sunset and every period divided from them: a 365th of it. */
+  readonly sunriseSeconds: number | null;
+  /** The moonrise and moonset: a 26th of it. */
+  readonly moonriseSeconds: number | null;
+}
+
 /** One Gowri of the Gowri panchangam, of the daylight or of the night. */
 export interface GowriPeriod extends Interval {
   /** Which Gowri. */
@@ -6074,6 +6093,11 @@ export declare class AlmanacDay {
    * night, each an eighth of its arc, a printed reading (crux C1052). Empty when not asked for.
    */
   readonly gowri: readonly GowriPeriod[];
+  /**
+   * The day's times' ± band from Delta T, when the request asked with `uncertainty: true` (SR-104): a limb's end
+   * takes on Delta T's whole uncertainty, a sunrise a 365th of it. `null` when not asked for.
+   */
+  readonly uncertainty: TimesUncertainty | null;
   /** The twenty-four horas, from sunrise. */
   readonly horas: readonly Hora[];
   /** The thirty muhurtas. */
@@ -6114,6 +6138,8 @@ export interface AlmanacRequest {
   readonly markers?: boolean;
   /** Whether to give each day its Gowri panchangam, as `AlmanacDay.gowri`; `false` by default, which costs nothing. */
   readonly gowri?: boolean;
+  /** Whether to give each day its times' ± band from Delta T, as `AlmanacDay.uncertainty`; `false` by default, which costs nothing. */
+  readonly uncertainty?: boolean;
   /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
   readonly sky?: boolean;
   /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
@@ -8099,7 +8125,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'gowri' | 'sky' | 'skyStepMinutes' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'gowri' | 'uncertainty' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

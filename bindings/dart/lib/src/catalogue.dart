@@ -161,6 +161,14 @@ const int panchangaMarkers = 128;
 /// set it pays nothing.
 const int panchangaGowri = 256;
 
+/// `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+/// request's `sections` for each day's times' ± band from Delta T, in the
+/// `uncertainty` section: the Delta T the day was reckoned under, its
+/// band, and the one-sigma band of the limbs' ends, the sunrise and the
+/// moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+/// that does not set it pays nothing.
+const int panchangaUncertainty = 512;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {
@@ -9313,7 +9321,10 @@ enum DeltaTSource {
   custom(3, 'CUSTOM'),
   /// The ephemeris engine's, under the model asked, answered through the
   /// port.
-  provider(4, 'PROVIDER');
+  provider(4, 'PROVIDER'),
+  /// From a model beyond the data it was fitted to, with Huber's (2000)
+  /// band.
+  extrapolated(5, 'EXTRAPOLATED');
 
   const DeltaTSource(this.id, this.key);
 
@@ -9334,6 +9345,48 @@ enum DeltaTSource {
 
   /// The member with a key, or `null` for one this build does not know.
   static DeltaTSource? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where a Delta T's uncertainty comes from, as it crosses the boundary
+/// (`DeltaTBand`).
+enum DeltaTBand {
+  /// No uncertainty is stated: a custom value.
+  unstated(0, 'UNSTATED'),
+  /// The IERS's measured series, good to milliseconds.
+  measured(1, 'MEASURED'),
+  /// Morrison and Stephenson's (2004) standard errors, from −500 to the
+  /// IERS era.
+  morrisonStephenson2004(2, 'MORRISON_STEPHENSON_2004'),
+  /// The published σ of Stephenson, Morrison and Hohenkerk (2016).
+  stephensonMorrisonHohenkerk2016(3, 'STEPHENSON_MORRISON_HOHENKERK_2016'),
+  /// Huber's (2000) random walk beyond the data.
+  huber2000(4, 'HUBER_2000');
+
+  const DeltaTBand(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DeltaTBand byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DeltaTBand'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DeltaTBand? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

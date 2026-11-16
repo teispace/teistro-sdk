@@ -3976,6 +3976,7 @@ void main() {
         utcOffsetSeconds: 20700,
         markers: true,
         gowri: true,
+        uncertainty: true,
       )
       .at(0);
   put(
@@ -3983,6 +3984,13 @@ void main() {
     [for (final s in markedDay.markers) s.member.fullKey].join(' '),
   );
   put('gowri', [for (final p in markedDay.gowri) p.gowri.fullKey].join(' '));
+  final band = markedDay.uncertainty!;
+  put(
+    'uncertainty',
+    '${band.band.key} ${number(band.deltaTSeconds)} '
+        '${numberOrDash(band.limbsSeconds)} ${numberOrDash(band.sunriseSeconds)} '
+        '${numberOrDash(band.moonriseSeconds)}',
+  );
   // Ashwini's navatara chakra, every row `star:tara:round:special`
   // (`03-design/navatara-chakra.md`).
   put(

@@ -5445,6 +5445,41 @@ class AnEngine(WithLibrary):
         )
         self.assertNotEqual(chauvenet.provenance.settings_hash, answer.provenance.settings_hash)
 
+    def test_an_almanac_carries_each_days_band_from_delta_t(self) -> None:
+        """SR-104: asked, a day carries Delta T and the one-sigma band its
+        limbs' ends (all of Delta T's) and its rises (a 365th for the Sun)
+        take on; far beyond the IERS table the band is Huber's walk."""
+        from teistro import date
+        from teistro.catalogue import Calendar, DeltaTBand
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def on(year: int) -> dict[str, Any]:
+            return {
+                "from_date": date(Calendar.GREGORIAN, year, 6, 1),
+                "to_date": date(Calendar.GREGORIAN, year, 6, 1),
+                "place": observer,
+                "utc_offset_seconds": 20700,
+            }
+
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.almanac.of(**on(2025)).at(0).uncertainty)
+            now = ctx.almanac.of(**on(2025), uncertainty=True).at(0).uncertainty
+            assert now is not None
+            self.assertEqual(now.band, DeltaTBand.MEASURED)
+            self.assertAlmostEqual(now.delta_t_seconds, 69.2, delta=0.2)
+            assert now.limbs_seconds is not None
+            self.assertLess(now.limbs_seconds, 0.01)
+            far = ctx.almanac.of(**on(2100), uncertainty=True).at(0).uncertainty
+            assert far is not None and far.limbs_seconds is not None
+            assert far.sunrise_seconds is not None and far.moonrise_seconds is not None
+            self.assertEqual(far.band, DeltaTBand.HUBER_2000)
+            self.assertGreater(far.limbs_seconds, 20.0)
+            self.assertLess(far.sunrise_seconds, far.limbs_seconds / 300)
+            self.assertLess(far.sunrise_seconds, far.moonrise_seconds)
+
     def test_an_almanac_carries_each_days_nepal_sambat_date(self) -> None:
         """Each day's Nepal Sambat date crosses beside the days
         (`03-design/calendar-indian-lunisolar.md` §11): one a day, frozen,

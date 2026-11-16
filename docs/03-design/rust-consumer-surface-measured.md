@@ -12,7 +12,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 14 disagree; more than one: `almanac (5)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (4)` |
+| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 14 disagree; more than one: `almanac (5)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (5)` |
 | every area reaches the boundary, so every area names crates | **holds** | 0 of 15 disagree; so every row of the table below is a measurement and not a gap |
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 24 of 110 disagree; 24 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 13 disagree; so every area's composition has a home outside the C boundary |
@@ -38,7 +38,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | `naming` | 1 | `teistro-core` |
 | `numerology` | 1 | `teistro-core` |
 | `research` | 1 | `teistro-core` |
-| `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
+| `time` | 5 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
 | `verify` | 1 | `teistro-core` |
 
 ## What each entry point reaches
@@ -49,11 +49,11 @@ Widest first. Read through the boundary's own helpers, because a body that names
 |---|---|---|---|
 | `ts_chart_found` | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `ts_panchanga_days` | `panchanga` | 5 | `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-panchanga`, `teistro-time` |
-| `ts_time_civil` | `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
+| `ts_time_civil` | `time` | 5 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
+| `ts_time_convert` | `time` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
+| `ts_time_delta_t` | `time` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
+| `ts_time_resolve` | `time` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
 | `ts_positions` | `positions` | 3 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris` |
-| `ts_time_convert` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
-| `ts_time_delta_t` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
-| `ts_time_resolve` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
 | `ts_calendar_add` | `calendar` | 2 | `teistro-calendar`, `teistro-core` |
 | `ts_calendar_between` | `calendar` | 2 | `teistro-calendar`, `teistro-core` |
 | `ts_calendar_convert` | `calendar` | 2 | `teistro-calendar`, `teistro-core` |

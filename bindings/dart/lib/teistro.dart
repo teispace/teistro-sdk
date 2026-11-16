@@ -1815,7 +1815,8 @@ final class AlmanacArea extends _Area {
   /// a day does not otherwise make, so only on asking. [markers] gives
   /// each day its ganda mula, gandanta and vinchudo, as
   /// [AlmanacDay.markers], and [gowri] its Gowri panchangam, as
-  /// [AlmanacDay.gowri]. [days] `false` leaves the days out and answers only what is asked beside them;
+  /// [AlmanacDay.gowri]. [uncertainty] gives each day its times' ± band
+  /// from Delta T, as [AlmanacDay.uncertainty] (SR-104). [days] `false` leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
   Almanac of({
@@ -1832,6 +1833,7 @@ final class AlmanacArea extends _Area {
     bool homaAhuti = false,
     bool markers = false,
     bool gowri = false,
+    bool uncertainty = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1850,6 +1852,7 @@ final class AlmanacArea extends _Area {
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
         (gowri ? panchangaGowri : 0) |
+        (uncertainty ? panchangaUncertainty : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -1874,6 +1877,7 @@ final class AlmanacArea extends _Area {
     bool homaAhuti = false,
     bool markers = false,
     bool gowri = false,
+    bool uncertainty = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1892,6 +1896,7 @@ final class AlmanacArea extends _Area {
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
         (gowri ? panchangaGowri : 0) |
+        (uncertainty ? panchangaUncertainty : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -33800,6 +33805,36 @@ final class ChoghadiyaPeriod {
   final bool daytime;
 }
 
+/// A day's times' ± band from Delta T (SR-104): the Delta T the day was
+/// reckoned under and the one-sigma band, in seconds, each kind of time
+/// takes on from its uncertainty.
+final class TimesUncertainty {
+  const TimesUncertainty({
+    required this.deltaTSeconds,
+    required this.band,
+    required this.limbsSeconds,
+    required this.sunriseSeconds,
+    required this.moonriseSeconds,
+  });
+
+  /// Delta T, TT less UT1, at the middle of the day's window, seconds.
+  final double deltaTSeconds;
+
+  /// Where its uncertainty comes from.
+  final DeltaTBand band;
+
+  /// A limb's end, a sankranti or a lunation: Delta T's whole band; null
+  /// when Delta T states none.
+  final double? limbsSeconds;
+
+  /// The sunrise and sunset and every period divided from them: a 365th of
+  /// it.
+  final double? sunriseSeconds;
+
+  /// The moonrise and moonset: a 26th of it.
+  final double? moonriseSeconds;
+}
+
 /// One Gowri of the Gowri panchangam, of the daylight or of the night.
 final class GowriPeriod {
   const GowriPeriod({
@@ -34043,6 +34078,7 @@ final class Almanac {
       'namedPanchaka': counts.namedPanchaka,
       'markers': counts.markers,
       'gowri': counts.gowri,
+      'uncertainty': counts.uncertainty,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -34556,6 +34592,25 @@ final class AlmanacDay {
         daytime: c.daytime[i] == 1,
       ),
     );
+  }
+
+  /// The day's times' ± band from Delta T, when the request asked with
+  /// `uncertainty: true` (SR-104, `03-design/time-and-timezone.md` §3.5): a
+  /// limb's end takes on Delta T's whole uncertainty, a sunrise a 365th of
+  /// it and a moonrise a 26th. Null when not asked for.
+  TimesUncertainty? get uncertainty {
+    final c = batch.decoded.uncertainty;
+    final rows = _rows('uncertainty', (i) {
+      final stated = c.stated[i] == 1;
+      return TimesUncertainty(
+        deltaTSeconds: c.deltaTSeconds[i],
+        band: DeltaTBand.byId(c.band[i]),
+        limbsSeconds: stated ? c.limbsSeconds[i] : null,
+        sunriseSeconds: stated ? c.sunriseSeconds[i] : null,
+        moonriseSeconds: stated ? c.moonriseSeconds[i] : null,
+      );
+    });
+    return rows.isEmpty ? null : rows.first;
   }
 
   /// The twenty-four horas, from sunrise.

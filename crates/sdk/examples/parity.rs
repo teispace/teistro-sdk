@@ -7692,7 +7692,10 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
             &date,
             place,
             offset,
-            &AlmanacRequest::new().with_markers().with_gowri(),
+            &AlmanacRequest::new()
+                .with_markers()
+                .with_gowri()
+                .with_uncertainty(),
         )
         .expect("the built-in sky's markers");
     let day = answer
@@ -7718,6 +7721,21 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
             .map(|part| part.gowri.full_key())
             .collect::<Vec<_>>()
             .join(" "),
+    );
+    // And its times' band from Delta T (SR-104): the band's key, Delta T,
+    // and the limbs', the sunrise's and the moonrise's one-sigma bands.
+    let band = day.uncertainty.expect("asked for");
+    put(
+        report,
+        "uncertainty",
+        format!(
+            "{} {} {} {} {}",
+            band.band.key(),
+            number(band.delta_t_seconds),
+            number_or_dash(band.limbs_seconds),
+            number_or_dash(band.sunrise_seconds),
+            number_or_dash(band.moonrise_seconds),
+        ),
     );
 }
 

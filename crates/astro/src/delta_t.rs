@@ -25,6 +25,13 @@ const LINEAR_TAIL_YEARS: f64 = 10.0;
 /// How far before the table's first row the seam offset is tapered away,
 /// in years.
 const SEAM_TAPER_YEARS: f64 = 10.0;
+/// Huber's (2000) diffusion constant of the length of day, ms² a year.
+const HUBER_Q_MS2_PER_YEAR: f64 = 0.058;
+/// Huber's (2000) horizon of the drift's growth, years.
+const HUBER_M_YEARS: f64 = 2500.0;
+/// The last year Espenak and Meeus's (2006) polynomials were fitted to:
+/// where their extrapolation, and Huber's band for it, begins.
+const ESPENAK_MEEUS_LAST_YEAR: f64 = 2005.0;
 
 pub use teistro_port_ephemeris::DeltaTModel;
 
@@ -34,11 +41,14 @@ pub use teistro_port_ephemeris::DeltaTModel;
 /// use teistro_astro::delta_t::{DeltaTModel, DeltaTSource, delta_t};
 /// use teistro_core::quantity::{JulianDay, Ut1};
 ///
-/// // Measured in 2000, so the table answers; in 1000 BC only a model can.
+/// // Measured in 2000, so the table answers; in 1000 CE a model fitted to
+/// // the eclipse record; in 1000 BC only a model carried beyond its data.
 /// let measured = delta_t(JulianDay::<Ut1>::literal(2_451_544.5), DeltaTModel::TableThenModel)?;
 /// assert_eq!(measured.source, DeltaTSource::Table);
+/// let medieval = delta_t(JulianDay::<Ut1>::literal(2_086_308.0), DeltaTModel::TableThenModel)?;
+/// assert_eq!(medieval.source, DeltaTSource::Model);
 /// let ancient = delta_t(JulianDay::<Ut1>::literal(1_355_818.5), DeltaTModel::TableThenModel)?;
-/// assert_eq!(ancient.source, DeltaTSource::Model);
+/// assert_eq!(ancient.source, DeltaTSource::Extrapolated);
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -47,7 +57,8 @@ pub use teistro_port_ephemeris::DeltaTModel;
 pub enum DeltaTSource {
     /// Interpolated in the IERS table.
     Table,
-    /// From a model, outside the table.
+    /// From a model, outside the table, over the span the model's data
+    /// covers (Morrison and Stephenson's, from −500 to the IERS era).
     Model,
     /// Through the leap-second table: TT less UTC, exact, with the UT1
     /// difference (under 0.9 s) not applied.
@@ -57,6 +68,11 @@ pub enum DeltaTSource {
     /// The ephemeris engine's, under the model asked, answered through the
     /// port.
     Provider,
+    /// From a model **beyond** the data it was fitted to: after the IERS
+    /// table's last row (or 2005, Espenak and Meeus's last), or before
+    /// −500, Morrison and Stephenson's first. Its uncertainty is Huber's
+    /// (2000) random walk from the last value known ([`huber_2000_sigma`]).
+    Extrapolated,
 }
 
 /// Delta T at an instant, with what produced it.
@@ -122,6 +138,7 @@ impl DeltaT {
         match self.source {
             DeltaTSource::Table | DeltaTSource::LeapSeconds => DeltaTBand::Measured,
             DeltaTSource::Model => DeltaTBand::MorrisonStephenson2004,
+            DeltaTSource::Extrapolated => DeltaTBand::Huber2000,
             DeltaTSource::Custom | DeltaTSource::Provider => DeltaTBand::Unstated,
         }
     }
@@ -339,10 +356,36 @@ fn table(mjd: f64) -> Option<(f64, f64)> {
     Some((value, s0.max(s1)))
 }
 
+/// The one-sigma uncertainty of Delta T `years` from the last value
+/// known, seconds: Huber's (2000) model of the length of day as a random
+/// walk with drift, `σ = 365.25 N √(N Q / 3 · (1 + N / M)) / 1000` with
+/// `N` the years, `Q = 0.058 ms²/yr` and `M = 2500` years, as Espenak and
+/// Meeus apply it to the centuries before their data and after it
+/// ("Uncertainty in Delta T", eclipse.gsfc.nasa.gov/SEhelp/uncertainty2004.html,
+/// Table 3, calibrated at −500 and at 2005).
+///
+/// ```
+/// use teistro_astro::delta_t::huber_2000_sigma;
+///
+/// // Table 3: +2500 is 495 years from 2005, ±612 s; −1000 is 500 years
+/// // before −500, ±622 s; −4000, ±16291 s.
+/// assert_eq!(huber_2000_sigma(495.0).round(), 612.0);
+/// assert_eq!(huber_2000_sigma(500.0).round(), 622.0);
+/// assert_eq!(huber_2000_sigma(3500.0).round(), 16_291.0);
+/// assert_eq!(huber_2000_sigma(0.0), 0.0);
+/// ```
+#[must_use]
+pub fn huber_2000_sigma(years: f64) -> f64 {
+    let n = years.abs();
+    DAYS_PER_YEAR * n * (n * HUBER_Q_MS2_PER_YEAR / 3.0 * (1.0 + n / HUBER_M_YEARS)).sqrt() / 1000.0
+}
+
 /// The one-sigma uncertainty of the historical models at a year: the
 /// standard errors of Morrison and Stephenson's table, interpolated in
 /// the year; between 1800 and the IERS era, tapered from a second to
-/// five hundredths.
+/// five hundredths; before the table's first year, −500, the larger of
+/// its standard error there and Huber's walk from it (Espenak and
+/// Meeus's Table 3, crux C2020).
 fn historical_uncertainty(year: f64) -> f64 {
     let with_sigma: Vec<(f64, f64)> = HISTORICAL_ROWS
         .iter()
@@ -356,11 +399,9 @@ fn historical_uncertainty(year: f64) -> f64 {
         return 1.0;
     };
     if year <= first_year {
-        // Before the table: the parabola's own spread, growing with the
-        // square of the centuries (Morrison and Stephenson give ±8 s per
-        // century² as the uncertainty of the tidal term).
-        let centuries = (first_year - year) / 100.0;
-        return first_sigma + 8.0 * centuries * centuries;
+        // Before the table: Huber's walk back from its first row, never
+        // below that row's own standard error.
+        return first_sigma.max(huber_2000_sigma(first_year - year));
     }
     if year >= last_year {
         let table_end = DELTA_T_ROWS
@@ -385,6 +426,20 @@ fn historical_uncertainty(year: f64) -> f64 {
     }
 }
 
+/// What answered before or after the data a model was fitted to:
+/// [`DeltaTSource::Extrapolated`] before Morrison and Stephenson's first
+/// year (−500), [`DeltaTSource::Model`] after it.
+fn historical_source_at(year: f64) -> DeltaTSource {
+    let first = HISTORICAL_ROWS
+        .first()
+        .map_or(-500.0, |row| f64::from(row.0));
+    if year < first {
+        DeltaTSource::Extrapolated
+    } else {
+        DeltaTSource::Model
+    }
+}
+
 /// The table where measured, the model either side, continuous at the
 /// seams.
 fn table_then_model(jd: f64) -> DeltaT {
@@ -402,7 +457,7 @@ fn table_then_model(jd: f64) -> DeltaT {
         return DeltaT {
             seconds: espenak_meeus_2006(year),
             model: DeltaTModel::TableThenModel,
-            source: DeltaTSource::Model,
+            source: historical_source_at(year),
             uncertainty_seconds: Some(historical_uncertainty(year)),
         };
     };
@@ -416,14 +471,13 @@ fn table_then_model(jd: f64) -> DeltaT {
         DeltaT {
             seconds: espenak_meeus_2006(year) + offset * taper,
             model: DeltaTModel::TableThenModel,
-            source: DeltaTSource::Model,
+            source: historical_source_at(year),
             uncertainty_seconds: Some(historical_uncertainty(year)),
         }
     } else {
         // After the table: the end slope for ten years, then the model
-        // shifted to meet it, with an uncertainty that grows with the
-        // distance (a tenth of a second plus 0.15 s a year plus 0.02 s a
-        // year squared, the spread of the IERS predictions).
+        // shifted to meet it, with Huber's (2000) uncertainty walked from
+        // the table's last row, never below that row's own (crux C2020).
         let years_beyond = year - last_year;
         let slope = end_slope(last_year);
         let linear = |dy: f64| f64::from(last.1) + slope * dy;
@@ -436,10 +490,8 @@ fn table_then_model(jd: f64) -> DeltaT {
         DeltaT {
             seconds,
             model: DeltaTModel::TableThenModel,
-            source: DeltaTSource::Model,
-            uncertainty_seconds: Some(
-                0.1 + 0.15 * years_beyond + 0.02 * years_beyond * years_beyond,
-            ),
+            source: DeltaTSource::Extrapolated,
+            uncertainty_seconds: Some(f64::from(last.2).max(huber_2000_sigma(years_beyond))),
         }
     }
 }
@@ -479,12 +531,23 @@ pub fn delta_t(instant: JulianDay<Ut1>, model: DeltaTModel) -> Result<DeltaT, Er
     match model {
         DeltaTModel::TableThenModel => Ok(table_then_model(jd)),
         DeltaTModel::EspenakMeeus2006 => {
+            // The fit's own half second at least; after 2005, the last
+            // year it was fitted to, Huber's walk from there, as Espenak
+            // and Meeus calibrate their Table 3.
             let year = decimal_year(jd);
+            let (source, sigma) = if year > ESPENAK_MEEUS_LAST_YEAR {
+                (
+                    DeltaTSource::Extrapolated,
+                    huber_2000_sigma(year - ESPENAK_MEEUS_LAST_YEAR),
+                )
+            } else {
+                (historical_source_at(year), historical_uncertainty(year))
+            };
             Ok(DeltaT {
                 seconds: espenak_meeus_2006(year),
                 model,
-                source: DeltaTSource::Model,
-                uncertainty_seconds: Some(historical_uncertainty(year).max(0.5)),
+                source,
+                uncertainty_seconds: Some(sigma.max(0.5)),
             })
         }
         DeltaTModel::StephensonMorrisonHohenkerk2016 => Err(Error::unsupported(
@@ -542,7 +605,12 @@ mod tests {
                 (inside.seconds - outside.seconds).abs() < 0.5,
                 "seam {seam}: {inside} vs {outside}"
             );
-            assert_eq!(outside.source, DeltaTSource::Model);
+            let expected = if inward > 0.0 {
+                DeltaTSource::Model
+            } else {
+                DeltaTSource::Extrapolated
+            };
+            assert_eq!(outside.source, expected);
         }
         // Beyond the table the uncertainty grows and the value stays
         // near the table's end for a decade, not the fit's runaway.
@@ -596,6 +664,13 @@ mod tests {
         assert!((historical_uncertainty(1700.0) - 5.0).abs() < 0.5);
         assert!(historical_uncertainty(1850.0) < 1.0 && historical_uncertainty(1850.0) > 0.05);
         assert!(historical_uncertainty(-1500.0) > 430.0);
+        // Before −500, Huber's walk back from it once it passes the
+        // table's 430 s: Espenak and Meeus's Table 3 gives −1000 ±622 s,
+        // −1500 ±1900 s and −4000 ±16291 s.
+        assert_eq!(historical_uncertainty(-600.0), 430.0);
+        assert_eq!(historical_uncertainty(-1000.0).round(), 622.0);
+        assert_eq!(historical_uncertainty(-1500.0).round(), 1900.0);
+        assert!((historical_uncertainty(-4000.0) - 16_291.0).abs() < 1.0);
         let medieval = delta_t(at(2_086_308.0), DeltaTModel::TableThenModel).unwrap(); // about 1000 CE
         assert!(medieval.uncertainty_seconds.unwrap() > 50.0);
         assert!((decimal_year(2_086_308.0) - 1000.0).abs() < 0.5);
@@ -623,5 +698,37 @@ mod tests {
         assert_eq!(DeltaTModel::Custom { seconds: 1.0 }.key(), "CUSTOM");
         let json = serde_json::to_string(&custom).unwrap();
         assert_eq!(serde_json::from_str::<DeltaT>(&json).unwrap(), custom);
+    }
+
+    #[test]
+    fn beyond_the_data_the_band_is_hubers_walk() {
+        // Espenak and Meeus's Table 3 for the future, calibrated at 2005:
+        // +2500 ±612 s, +3000 ±1885 s, +5000 ±12341 s.
+        for (year, sigma) in [(2500.0, 612.0), (3000.0, 1885.0), (5000.0, 12_341.0)] {
+            let jd = J2000 + (year - 2000.0) * DAYS_PER_YEAR;
+            let fit = delta_t(at(jd), DeltaTModel::EspenakMeeus2006).unwrap();
+            assert_eq!(fit.source, DeltaTSource::Extrapolated);
+            assert_eq!(fit.band(), DeltaTBand::Huber2000);
+            assert!(
+                (fit.uncertainty_seconds.unwrap() - sigma).abs() < 1.0,
+                "{year}: {fit}"
+            );
+        }
+        // Inside the fit's data its own half second stands.
+        let fitted = delta_t(at(J2000), DeltaTModel::EspenakMeeus2006).unwrap();
+        assert_eq!(fitted.uncertainty_seconds, Some(0.5));
+        // The default walks from the IERS table's last row instead: in
+        // 2050 and 2100 the band is Huber's at that distance.
+        let (_, last) = table_span().unwrap();
+        for year in [2050.0, 2100.0] {
+            let jd = J2000 + (year - 2000.0) * DAYS_PER_YEAR;
+            let ahead = delta_t(at(jd), DeltaTModel::TableThenModel).unwrap();
+            let expected = huber_2000_sigma((jd - last) / DAYS_PER_YEAR);
+            assert_eq!(ahead.source, DeltaTSource::Extrapolated);
+            assert!((ahead.uncertainty_seconds.unwrap() - expected).abs() < 1e-9);
+        }
+        // A day past the table the band is still the measurement's scale.
+        let next = delta_t(at(last + 1.0), DeltaTModel::TableThenModel).unwrap();
+        assert!(next.uncertainty_seconds.unwrap() < 0.01, "{next}");
     }
 }

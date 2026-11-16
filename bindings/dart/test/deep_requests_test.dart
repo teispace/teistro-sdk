@@ -555,6 +555,7 @@ void main() {
         ),
         sky: true,
         skyStepMinutes: 1,
+        uncertainty: true,
         utcOffsetSeconds: 1,
         years: true,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},

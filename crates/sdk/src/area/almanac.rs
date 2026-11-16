@@ -796,6 +796,11 @@ impl<'a> AlmanacArea<'a> {
                 day.divide_gowri()?;
             }
         }
+        if request.uncertainty && request.days == Days::Handed {
+            self.with_almanac(from.calendar, offset, |almanac| {
+                almanac.uncertainty(&mut days.value)
+            })?;
+        }
         let festivals = request
             .festivals
             .as_ref()
@@ -1506,6 +1511,7 @@ pub struct AlmanacRequest {
     homa_ahuti: bool,
     markers: bool,
     gowri: bool,
+    uncertainty: bool,
     sky: Option<SkyStep>,
     visible: Option<HorizonProfile>,
     days: Days,
@@ -1631,6 +1637,26 @@ impl AlmanacRequest {
     #[must_use]
     pub fn with_gowri(mut self) -> AlmanacRequest {
         self.gowri = true;
+        self
+    }
+
+    /// With each day's times' ± band from Delta T
+    /// ([`Panchanga::uncertainty`](teistro_panchanga::Panchanga::uncertainty),
+    /// SR-104): the Delta T the day was reckoned under, where its
+    /// uncertainty comes from, and the one-sigma band the limbs' ends
+    /// (all of it) and the sunrise and moonrise (a 365th and a 26th part)
+    /// take on. Asked so that a day's answer grows only for a caller who
+    /// wants it.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_uncertainty().uncertainty());
+    /// assert!(!AlmanacRequest::new().uncertainty());
+    /// ```
+    #[must_use]
+    pub fn with_uncertainty(mut self) -> AlmanacRequest {
+        self.uncertainty = true;
         self
     }
 
@@ -1769,6 +1795,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn gowri(&self) -> bool {
         self.gowri
+    }
+
+    /// Whether the days' ± band from Delta T was asked.
+    #[must_use]
+    pub fn uncertainty(&self) -> bool {
+        self.uncertainty
     }
 
     /// The step of the days' sky, when it was asked.

@@ -202,6 +202,16 @@ export const PANCHANGA_MARKERS = 128;
  */
 export const PANCHANGA_GOWRI = 256;
 
+/**
+ * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's times' ± band from Delta T, in the
+ * `uncertainty` section: the Delta T the day was reckoned under, its
+ * band, and the one-sigma band of the limbs' ends, the sunrise and the
+ * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+ * that does not set it pays nothing.
+ */
+export const PANCHANGA_UNCERTAINTY = 512;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -5207,6 +5217,7 @@ export const DeltaTSource = /* @__PURE__ */ Object.freeze({
   LeapSeconds: 'LEAP_SECONDS',
   Custom: 'CUSTOM',
   Provider: 'PROVIDER',
+  Extrapolated: 'EXTRAPOLATED',
 });
 
 /**
@@ -5219,6 +5230,28 @@ export const DeltaTSourceById = /* @__PURE__ */ new Map([
   [2, 'LEAP_SECONDS'],
   [3, 'CUSTOM'],
   [4, 'PROVIDER'],
+  [5, 'EXTRAPOLATED'],
+]);
+
+/** Every DeltaTBand by name. */
+export const DeltaTBand = /* @__PURE__ */ Object.freeze({
+  Unstated: 'UNSTATED',
+  Measured: 'MEASURED',
+  MorrisonStephenson2004: 'MORRISON_STEPHENSON_2004',
+  StephensonMorrisonHohenkerk2016: 'STEPHENSON_MORRISON_HOHENKERK_2016',
+  Huber2000: 'HUBER_2000',
+});
+
+/**
+ * Every DeltaTBand by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DeltaTBandById = /* @__PURE__ */ new Map([
+  [0, 'UNSTATED'],
+  [1, 'MEASURED'],
+  [2, 'MORRISON_STEPHENSON_2004'],
+  [3, 'STEPHENSON_MORRISON_HOHENKERK_2016'],
+  [4, 'HUBER_2000'],
 ]);
 
 /** Every LunarMonth by name. */

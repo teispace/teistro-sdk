@@ -6046,6 +6046,34 @@ class DeltaTSource(Member):
     port.
     """
 
+    EXTRAPOLATED = 5
+    """From a model beyond the data it was fitted to, with Huber's (2000)
+    band.
+    """
+
+
+class DeltaTBand(Member):
+    """Where a Delta T's uncertainty comes from, as it crosses the boundary
+    (`DeltaTBand`).
+    """
+
+    UNSTATED = 0
+    """No uncertainty is stated: a custom value."""
+
+    MEASURED = 1
+    """The IERS's measured series, good to milliseconds."""
+
+    MORRISON_STEPHENSON_2004 = 2
+    """Morrison and Stephenson's (2004) standard errors, from −500 to the
+    IERS era.
+    """
+
+    STEPHENSON_MORRISON_HOHENKERK_2016 = 3
+    """The published σ of Stephenson, Morrison and Hohenkerk (2016)."""
+
+    HUBER_2000 = 4
+    """Huber's (2000) random walk beyond the data."""
+
 
 class LunarMonth(Member):
     """Which lunar-month convention a day's month leads with."""
@@ -8207,6 +8235,14 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "LEAP_SECONDS",
         3: "CUSTOM",
         4: "PROVIDER",
+        5: "EXTRAPOLATED",
+    },
+    "DeltaTBand": {
+        0: "UNSTATED",
+        1: "MEASURED",
+        2: "MORRISON_STEPHENSON_2004",
+        3: "STEPHENSON_MORRISON_HOHENKERK_2016",
+        4: "HUBER_2000",
     },
     "LunarMonth": {
         0: "AMANTA",

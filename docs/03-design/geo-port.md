@@ -212,6 +212,26 @@ it: at Kathmandu the test table's 1337 m moves the sunrise from sea level's,
 and `altitudeM: 0` beside the place moves it back. Whether a shipped profile
 should name the air is the maintainer's call, left open here.
 
+**Which conventions read the height (SR-108).** Measured at Kathmandu, a
+day's sunrise, sunset, moonrise and moonset are the same to the bit at
+0 m and at 8,848 m under the disc's centre with the almanac's fixed
+refraction (`CENTRE_REFRACTION`, the Nepal profiles' convention) and under
+every other named sunrise: a fixed 34′ or no refraction reads no height,
+and the ideal horizon has no dip (`crates/sdk/tests/geo.rs`). The height is
+read only by:
+
+| What | Knob | How |
+| --- | --- | --- |
+| the horizon's dip | `day.horizon.dip` `GEOMETRIC` or `REFRACTED` | the visible horizon lies `acos(R / (R + h))` below the ideal one |
+| the air's pressure | `day.sunrise` `ATMOSPHERIC` with `pressure_hpa` left out | the standard atmosphere's pressure at the height |
+| the topocentric places | `frame.centre` or `panchanga.centre` `TOPOCENTRIC` | the station stands at the height |
+
+So the `observer.height` convention says whether the settings read it: its
+value is the height used (`1337 m`), or `1337 m, not read` with a reason
+saying that nothing under these settings reads it; when something does,
+the reason names each reader by its knob. A receipt never implies that a
+height moved a value it did not move.
+
 The typed C entry points (`ts_panchanga_days`, `ts_chart_found`) take
 coordinates and not a place; a binding reaches a resolved place through the
 records, `record("almanac.days", ...)` and `record("chart.found", ...)`.

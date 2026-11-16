@@ -7830,6 +7830,7 @@ final class PanchangaCounts {
     required this.namedPanchaka,
     required this.markers,
     required this.gowri,
+    required this.uncertainty,
     required this.length,
   });
 
@@ -7919,6 +7920,9 @@ final class PanchangaCounts {
 
   /// How many rows of `gowri` belong to this day.
   final Uint32List gowri;
+
+  /// How many rows of `uncertainty` belong to this day.
+  final Uint32List uncertainty;
 
   /// The number of rows every column holds.
   final int length;
@@ -9209,6 +9213,43 @@ final class PanchangaGowri {
   final int length;
 }
 
+/// The `uncertainty` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+final class PanchangaUncertainty {
+  const PanchangaUncertainty({
+    required this.deltaTSeconds,
+    required this.band,
+    required this.stated,
+    required this.limbsSeconds,
+    required this.sunriseSeconds,
+    required this.moonriseSeconds,
+    required this.length,
+  });
+
+  /// Delta T, TT less UT1, at the middle of the day's window, seconds.
+  final Float64List deltaTSeconds;
+
+  /// Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020).
+  final Uint8List band;
+
+  /// 1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing.
+  final Uint8List stated;
+
+  /// The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own.
+  final Float64List limbsSeconds;
+
+  /// The one-sigma band of the sunrise and sunset and every period divided from them, seconds.
+  final Float64List sunriseSeconds;
+
+  /// The one-sigma band of the moonrise and moonset, seconds.
+  final Float64List moonriseSeconds;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -9261,6 +9302,7 @@ final class Panchanga {
     required this.sky,
     required this.markers,
     required this.gowri,
+    required this.uncertainty,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -9404,6 +9446,9 @@ final class Panchanga {
   /// The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
   final PanchangaGowri gowri;
 
+  /// Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+  final PanchangaUncertainty uncertainty;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -9453,6 +9498,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atSky = blob.section(40, 'sky');
   final atMarkers = blob.section(41, 'markers');
   final atGowri = blob.section(42, 'gowri');
+  final atUncertainty = blob.section(43, 'uncertainty');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -9515,6 +9561,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       namedPanchaka: blob.column(atCounts, 26, 4, Uint32List.sublistView),
       markers: blob.column(atCounts, 27, 4, Uint32List.sublistView),
       gowri: blob.column(atCounts, 28, 4, Uint32List.sublistView),
+      uncertainty: blob.column(atCounts, 29, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -9862,6 +9909,15 @@ Panchanga decodePanchanga(Uint8List bytes) {
       to: blob.column(atGowri, 2, 8, Float64List.sublistView),
       daytime: blob.column(atGowri, 3, 1, Uint8List.sublistView),
       length: atGowri.count,
+    ),
+    uncertainty: PanchangaUncertainty(
+      deltaTSeconds: blob.column(atUncertainty, 0, 8, Float64List.sublistView),
+      band: blob.column(atUncertainty, 1, 1, Uint8List.sublistView),
+      stated: blob.column(atUncertainty, 2, 1, Uint8List.sublistView),
+      limbsSeconds: blob.column(atUncertainty, 3, 8, Float64List.sublistView),
+      sunriseSeconds: blob.column(atUncertainty, 4, 8, Float64List.sublistView),
+      moonriseSeconds: blob.column(atUncertainty, 5, 8, Float64List.sublistView),
+      length: atUncertainty.count,
     ),
   );
 }

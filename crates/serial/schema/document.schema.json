@@ -2534,6 +2534,36 @@
         }
       ]
     },
+    "DeltaTBand": {
+      "description": "Where a Delta T's uncertainty comes from.",
+      "oneOf": [
+        {
+          "const": "UNSTATED",
+          "description": "No uncertainty is stated: a custom value.",
+          "type": "string"
+        },
+        {
+          "const": "MEASURED",
+          "description": "The IERS's measured series, good to milliseconds.",
+          "type": "string"
+        },
+        {
+          "const": "MORRISON_STEPHENSON_2004",
+          "description": "Morrison and Stephenson's (2004) standard errors, from −500 to the IERS era (their Table 1; `0.8 t²` seconds with `t` in centuries from 1820 where only the parabola stands): the band the SDK's model takes over the span its data covers.",
+          "type": "string"
+        },
+        {
+          "const": "STEPHENSON_MORRISON_HOHENKERK_2016",
+          "description": "The published σ of Stephenson, Morrison and Hohenkerk (2016).",
+          "type": "string"
+        },
+        {
+          "const": "HUBER_2000",
+          "description": "Huber's (2000) random walk in the length of day, beyond the data: `σ = 365.25 N √(N Q / 3 · (1 + N / M)) / 1000` seconds with `N` years from the last value known, `Q = 0.058 ms²/yr` and `M = 2500` years (Espenak and Meeus 2006, \"Uncertainty in Delta T\", Table 3).",
+          "type": "string"
+        }
+      ]
+    },
     "Depth": {
       "description": "A dasha depth, 1 to 6 levels.",
       "format": "uint8",
@@ -5917,6 +5947,17 @@
           "$ref": "#/$defs/SunDay",
           "description": "What the Sun did."
         },
+        "uncertainty": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimesUncertainty"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The day's times with a ± band from Delta T: the Delta T the day was reckoned under, its band, and how much of its uncertainty the limbs' ends and the rises take on (`crate::uncertainty::TimesUncertainty`, SR-104). **Left out unless asked for** (the façade's `AlmanacRequest::with_uncertainty`), and then out of the day's document, so a day not asked hashes as it did before."
+        },
         "window": {
           "$ref": "#/$defs/Interval",
           "description": "What the limb spans are clipped to: the arc under a sunrise boundary, the civil day under a midnight one."
@@ -7894,7 +7935,7 @@
           "description": "The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4)."
         },
         "delta_t_band": {
-          "description": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when `TimeStamp::delta_t_seconds` was read at an instant of the answer.",
+          "description": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `HUBER_2000` beyond the data, `UNSTATED`), when `TimeStamp::delta_t_seconds` was read at an instant of the answer (`docs/03-design/time-and-timezone.md` §3.5).",
           "type": [
             "string",
             "null"
@@ -7952,6 +7993,49 @@
         "delta_t_seconds",
         "leap_table",
         "tzdb_version"
+      ],
+      "type": "object"
+    },
+    "TimesUncertainty": {
+      "description": "A day's times with a ± band from Delta T: the Delta T the day was reckoned under, where its uncertainty comes from, and the one-sigma band each kind of time takes on from it. **Left out unless asked for** (the façade's `AlmanacRequest::with_uncertainty`).",
+      "properties": {
+        "band": {
+          "$ref": "#/$defs/DeltaTBand",
+          "description": "Where its uncertainty comes from."
+        },
+        "delta_t_seconds": {
+          "description": "Delta T at the day's window's middle, TT less UT1, seconds.",
+          "format": "double",
+          "type": "number"
+        },
+        "limbs_seconds": {
+          "description": "The one-sigma band of each limb's end (tithi, nakshatra, yoga, karana), of a sankranti and of a lunation, seconds: Delta T's own, since they are fixed in TT. `None` when Delta T states none (a custom value, or an engine's that gives none).",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "moonrise_seconds": {
+          "description": "The one-sigma band of the moonrise and moonset, seconds: `moonrise_share` of Delta T's.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sunrise_seconds": {
+          "description": "The one-sigma band of the sunrise and sunset, and of every period divided from them, seconds: `sunrise_share` of Delta T's.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "delta_t_seconds",
+        "band"
       ],
       "type": "object"
     },

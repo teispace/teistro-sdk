@@ -918,8 +918,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`;
   // 1552 since `TsChartLayout` gained `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`;
   // 1557 since a drawing's `TsChartFrame`, four, with its member of `TsKind`;
-  // 1558 since `TsDeltaTSource` gained `PROVIDER`.
-  assert.equal(entries, 1558, 'every member of every enum is in a table');
+  // 1558 since `TsDeltaTSource` gained `PROVIDER`; 1559 since it gained
+  // `EXTRAPOLATED`.
+  assert.equal(entries, 1559, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4905,6 +4906,30 @@ test('an almanac carries the eclipses it was asked for', () => {
  * day, the year turning at Kachhala's first day, and said as the
  * committee's page header prints it straight from the answer.
  */
+test('an almanac carries each day\'s band from Delta T when asked', () => {
+  // SR-104: a limb's end takes on Delta T's whole uncertainty, a sunrise a
+  // 365th of it; far beyond the IERS table the band is Huber's walk.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const on = (year) => ({
+    from: date(Calendar.Gregorian, year, 6, 1),
+    to: date(Calendar.Gregorian, year, 6, 1),
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(ctx.almanac.of(on(2025)).at(0).uncertainty, null);
+  const now = ctx.almanac.of({ ...on(2025), uncertainty: true }).at(0).uncertainty;
+  assert.equal(now.band, 'MEASURED');
+  assert.ok(Math.abs(now.deltaTSeconds - 69.2) < 0.2, String(now.deltaTSeconds));
+  assert.ok(now.limbsSeconds < 0.01);
+  const far = ctx.almanac.of({ ...on(2100), uncertainty: true }).at(0).uncertainty;
+  assert.equal(far.band, 'HUBER_2000');
+  assert.ok(far.limbsSeconds > 20, String(far.limbsSeconds));
+  assert.ok(far.sunriseSeconds < far.limbsSeconds / 300);
+  assert.ok(far.moonriseSeconds > far.sunriseSeconds && far.moonriseSeconds < far.limbsSeconds);
+  ctx.dispose();
+});
+
 test('an almanac carries each day\'s Nepal Sambat date', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const days = {

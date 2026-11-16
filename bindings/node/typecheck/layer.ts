@@ -309,6 +309,7 @@ import type {
   Ayanamsha,
   BhadraVasa,
   DayMarker,
+  DeltaTBand,
   Gowri,
   Panchaka,
   ShivaVasa,
@@ -785,6 +786,9 @@ function almanac(): string {
   const shunned: AshubhaYoga | undefined = day.ashubhaYogas[0]?.member;
   const bhadra: BhadraVasa | undefined = day.bhadraVasa[0]?.member;
   const gowri: Gowri | 'unknown' | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, gowri: true }).at(0).gowri[0]?.gowri;
+  const banded = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, uncertainty: true }).at(0).uncertainty;
+  const band: DeltaTBand | 'unknown' | undefined = banded?.band;
+  const limbs: number | null | undefined = banded?.limbsSeconds;
   const marked: DayMarker | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, markers: true }).at(0).markers[0]?.member;
   const shiva: ShivaVasa = day.shivaVasa[0]!.member;
   const named: Panchaka | undefined = day.namedPanchaka[0]?.member;

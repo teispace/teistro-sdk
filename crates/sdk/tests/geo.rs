@@ -406,6 +406,71 @@ fn a_resolved_height_reaches_the_sunrise_and_says_where_it_came_from() {
     assert!(reason.contains("knows no height here"), "{reason}");
 }
 
+#[test]
+fn a_height_no_convention_reads_says_it_was_not_read() {
+    // SR-108: under the disc's centre with the almanac's fixed refraction,
+    // `CENTRE_REFRACTION`, the height moves nothing from sea level to
+    // 8,848 m, and the provenance says it was not read rather than imply
+    // a height mattered. A dip reads it, and the provenance names it.
+    let builder = |settings: &str| {
+        Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .settings_json(settings)
+            .geo(Arc::new(GeoTable::from_json(TABLE).unwrap()))
+            .build()
+            .unwrap()
+    };
+    let centre =
+        builder(r#"{"day": {"sunrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}}"#);
+    let place = centre.geo().resolve(&KATHMANDU).unwrap();
+    let days = teistro::records::record("almanac.days").unwrap();
+    let first = json!({"year": 2026, "month": 6, "day": 1});
+    let at = |sdk: &Context, metres: f64| {
+        days.answer(
+            sdk,
+            &json!({"first": first, "place": place, "altitudeM": metres}).to_string(),
+        )
+        .unwrap()
+    };
+    let rises = |answered: &teistro::records::Answered| {
+        ["sunrise", "sunset", "moonrise", "moonset"]
+            .map(|key| find(&answered.value["days"][0], key).map(numbers))
+    };
+    let (sea, everest) = (at(&centre, 0.0), at(&centre, 8848.0));
+    assert!(rises(&sea)[0].is_some());
+    assert_eq!(rises(&sea), rises(&everest));
+    let (value, reason) = height_of(&everest);
+    assert_eq!(value, "8848 m, not read");
+    assert!(reason.contains("read by nothing"), "{reason}");
+    let resolved = days
+        .answer(
+            &centre,
+            &json!({"first": first, "place": place}).to_string(),
+        )
+        .unwrap();
+    assert_eq!(height_of(&resolved).0, "1337 m, not read");
+
+    let dipped = builder(
+        r#"{"day": {"sunrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}, "horizon": {"dip": "GEOMETRIC"}}}"#,
+    );
+    let (low, high) = (at(&dipped, 0.0), at(&dipped, 8848.0));
+    assert_ne!(rises(&low)[0], rises(&high)[0]);
+    let (value, reason) = height_of(&high);
+    assert_eq!(value, "8848 m");
+    assert!(reason.contains("`day.horizon.dip`"), "{reason}");
+    // The standard air reads it too.
+    let (value, reason) = height_of(
+        &days
+            .answer(
+                &airy(),
+                &json!({"first": first, "place": place}).to_string(),
+            )
+            .unwrap(),
+    );
+    assert_eq!(value, "1337 m");
+    assert!(reason.contains("ATMOSPHERIC"), "{reason}");
+}
+
 /// A context with the test table whose sunrise is reckoned under the
 /// standard air at the observer's height, the engines' own convention.
 fn airy() -> Context {

@@ -318,6 +318,31 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac carries each day's band from Delta T when asked", () -> {
+            // SR-104: a limb's end takes on Delta T's whole uncertainty, a
+            // sunrise a 365th of it; far beyond the IERS table the band is
+            // Huber's walk.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro)) {
+                java.util.function.BiFunction<Integer, Boolean, AlmanacDay> on = (year, asked) -> {
+                    CalendarDate day = Civil.date(Calendar.GREGORIAN, year, 6, 1);
+                    return sky.almanac().of(day, day, kathmandu, 20_700, null, null, false, false, false, false,
+                            false, false, 0, false, false, asked).get(0);
+                };
+                check(on.apply(2025, false).uncertainty().isEmpty(), "not asked for");
+                TimesUncertainty now = on.apply(2025, true).uncertainty().orElseThrow();
+                same(DeltaTBand.MEASURED, now.band(), "measured in 2025");
+                check(Math.abs(now.deltaTSeconds() - 69.2) < 0.2, "Delta T " + now.deltaTSeconds());
+                check(now.limbsSeconds().orElseThrow() < 0.01, "milliseconds");
+                TimesUncertainty far = on.apply(2100, true).uncertainty().orElseThrow();
+                same(DeltaTBand.HUBER_2000, far.band(), "extrapolated in 2100");
+                double limbs = far.limbsSeconds().orElseThrow();
+                check(limbs > 20.0, "half a minute: " + limbs);
+                check(far.sunriseSeconds().orElseThrow() < limbs / 300, "a 365th for the sunrise");
+                check(far.moonriseSeconds().orElseThrow() > far.sunriseSeconds().orElseThrow(), "the Moon moves faster");
+            }
+        });
+
         tests.put("a muhurta search, a match and a sade sati are refused naming their field", () -> {
             // The parity runner holds their answers to the other bindings';
             // these hold their refusals, each named under its section.

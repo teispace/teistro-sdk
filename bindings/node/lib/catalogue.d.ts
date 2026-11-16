@@ -235,6 +235,16 @@ export declare const PANCHANGA_MARKERS: 128;
 export declare const PANCHANGA_GOWRI: 256;
 
 /**
+ * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's times' ± band from Delta T, in the
+ * `uncertainty` section: the Delta T the day was reckoned under, its
+ * band, and the one-sigma band of the limbs' ends, the sunrise and the
+ * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+ * that does not set it pays nothing.
+ */
+export declare const PANCHANGA_UNCERTAINTY: 512;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =
@@ -10304,7 +10314,7 @@ export declare const ZoneWarningById: ReadonlyMap<number, ZoneWarning>;
 /**
  * What produced a Delta T value.
  */
-export type DeltaTSource = 'TABLE' | 'MODEL' | 'LEAP_SECONDS' | 'CUSTOM' | 'PROVIDER';
+export type DeltaTSource = 'TABLE' | 'MODEL' | 'LEAP_SECONDS' | 'CUSTOM' | 'PROVIDER' | 'EXTRAPOLATED';
 
 /** Every DeltaTSource by name; the values are the strings the union accepts. */
 export declare const DeltaTSource: {
@@ -10329,6 +10339,11 @@ export declare const DeltaTSource: {
    * port.
    */
   readonly Provider: 'PROVIDER';
+  /**
+   * From a model beyond the data it was fitted to, with Huber's (2000)
+   * band.
+   */
+  readonly Extrapolated: 'EXTRAPOLATED';
 };
 
 /**
@@ -10336,6 +10351,43 @@ export declare const DeltaTSource: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const DeltaTSourceById: ReadonlyMap<number, DeltaTSource>;
+
+/**
+ * Where a Delta T's uncertainty comes from, as it crosses the boundary
+ * (`DeltaTBand`).
+ */
+export type DeltaTBand = 'UNSTATED' | 'MEASURED' | 'MORRISON_STEPHENSON_2004' | 'STEPHENSON_MORRISON_HOHENKERK_2016' | 'HUBER_2000';
+
+/** Every DeltaTBand by name; the values are the strings the union accepts. */
+export declare const DeltaTBand: {
+  /**
+   * No uncertainty is stated: a custom value.
+   */
+  readonly Unstated: 'UNSTATED';
+  /**
+   * The IERS's measured series, good to milliseconds.
+   */
+  readonly Measured: 'MEASURED';
+  /**
+   * Morrison and Stephenson's (2004) standard errors, from −500 to the
+   * IERS era.
+   */
+  readonly MorrisonStephenson2004: 'MORRISON_STEPHENSON_2004';
+  /**
+   * The published σ of Stephenson, Morrison and Hohenkerk (2016).
+   */
+  readonly StephensonMorrisonHohenkerk2016: 'STEPHENSON_MORRISON_HOHENKERK_2016';
+  /**
+   * Huber's (2000) random walk beyond the data.
+   */
+  readonly Huber2000: 'HUBER_2000';
+};
+
+/**
+ * Every DeltaTBand by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DeltaTBandById: ReadonlyMap<number, DeltaTBand>;
 
 /**
  * Which lunar-month convention a day's month leads with.
