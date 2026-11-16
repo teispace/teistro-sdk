@@ -99,9 +99,10 @@ test('the addon and the types were generated for the same ABI', () => {
  */
 test('the moon rises by its own convention and a composed horizon dips', () => {
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
-  // Read before the context is disposed.
+  // Over the built-in sky, whose Moon has her real distance; read before
+  // the context is disposed.
   const of = (settings) => {
-    const each = context({ settings });
+    const each = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN', settings });
     try {
       const [one] = each.almanac.of({ from: gregorian(2026, 1, 5), to: gregorian(2026, 1, 5), place, utcOffsetSeconds: 20700 });
       return { day: { ...one.day }, rise: one.moonEvents.find((event) => event.kind === 'RISE').instant };

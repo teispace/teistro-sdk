@@ -255,8 +255,9 @@ public final class BindingTest {
                     Resolution.DEFINED, 0, 0, null);
             // {sunrise, dip, first moonrise}, read before the context is closed.
             java.util.function.Function<String, double[]> of = (settings) -> {
+                // Over the built-in sky, whose Moon has her real distance.
                 try (Context each = teistro.context(ContextOptions.builder().profile("nepali-drik")
-                        .settingsJson(settings).testProvider(true).build())) {
+                        .settingsJson(settings).ephemeris(Ephemeris.BUILTIN).build())) {
                     AlmanacDay day = each.almanac().of(fifth, fifth, kathmandu, 20_700).get(0);
                     double rise = day.moonEvents().stream().filter(MoonEventMoment::rise).findFirst()
                             .orElseThrow().instant();

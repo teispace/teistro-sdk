@@ -1076,6 +1076,26 @@
       "description": "A key of the `direction` catalogue, bare or full.",
       "x-teistro-kind": "direction"
     },
+    "DiscPoint": {
+      "description": "Which point of a body's disc a rise or set is reckoned by (`03-design/sunrise-convention.md`).",
+      "oneOf": [
+        {
+          "const": "CENTRE",
+          "description": "The centre of the disc.",
+          "type": "string"
+        },
+        {
+          "const": "UPPER_LIMB",
+          "description": "The upper limb: the first point to appear and the last to vanish, which the almanacs time (USNO, *Rise, Set, and Twilight Definitions*).",
+          "type": "string"
+        },
+        {
+          "const": "LOWER_LIMB",
+          "description": "The lower limb.",
+          "type": "string"
+        }
+      ]
+    },
     "Durmuhurta": {
       "description": "One censured muhurta of a day, a durmuhurta.",
       "properties": {
@@ -2679,6 +2699,34 @@
       ],
       "type": "object"
     },
+    "Refraction": {
+      "description": "Whether atmospheric refraction lifts the body at the horizon, and by what.",
+      "oneOf": [
+        {
+          "const": "NONE",
+          "description": "The geometric horizon: what the classical texts and the panchanga reckon by.",
+          "type": "string"
+        },
+        {
+          "const": "STANDARD",
+          "description": "The standard refraction at the horizon (the almanac's 34 arcminutes in the SDK's solver; an engine's own standard atmosphere in a native search).",
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "The refraction through a named air, resolved at the observer's height, which a native search is given too (`03-design/horizon-atmosphere.md`).",
+          "properties": {
+            "ATMOSPHERE": {
+              "$ref": "#/$defs/Atmosphere"
+            }
+          },
+          "required": [
+            "ATMOSPHERE"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "Ritu": {
       "anyOf": [
         {
@@ -2825,6 +2873,16 @@
           "const": "CENTRE_REFRACTION",
           "description": "The centre of the disc with standard refraction: the Indian almanacs' disc middle, and Nepal's daily print (`03-design/nepal-day-measured.md`, C39).",
           "type": "string"
+        },
+        {
+          "const": "UPPER_LIMB_NO_REFRACTION",
+          "description": "The upper limb on the geometric horizon, without refraction.",
+          "type": "string"
+        },
+        {
+          "const": "LOWER_LIMB_NO_REFRACTION",
+          "description": "The lower limb on the geometric horizon, without refraction.",
+          "type": "string"
         }
       ]
     },
@@ -2888,6 +2946,35 @@
             "kind",
             "which",
             "air"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Every part named (SR-113): the point of the disc, the refraction, and the observer's height above a level horizon, whose dip lowers the horizon by `dip_deg`. Each named convention is this with no height, and each atmospheric one this with its air.",
+          "properties": {
+            "disc": {
+              "$ref": "#/$defs/DiscPoint",
+              "description": "The point of the disc."
+            },
+            "height_m": {
+              "default": 0.0,
+              "description": "The observer's height above the level horizon seen, metres; zero, the almanacs' sea level, when left out. It is the height above the horizon in view, not above sea level: a valley's observer sees hills, which a horizon profile describes.",
+              "format": "double",
+              "type": "number"
+            },
+            "kind": {
+              "const": "COMPOSED",
+              "type": "string"
+            },
+            "refraction": {
+              "$ref": "#/$defs/Refraction",
+              "description": "The refraction: none, the almanac's 34 arcminutes, or a named air's."
+            }
+          },
+          "required": [
+            "kind",
+            "disc",
+            "refraction"
           ],
           "type": "object"
         }

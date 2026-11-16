@@ -96,6 +96,8 @@ stand within 1.5 minutes:
 | `UPPER_LIMB_REFRACTION` | -1.7 | -2.8 | +0.2 | 151 of 333 |
 | `LOWER_LIMB_REFRACTION` | +0.9 | -0.4 | +2.6 | 217 of 333 |
 | `CENTRE_REFRACTION` (shipped) | -0.4 | -1.6 | +1.4 | 320 of 333 |
+| `UPPER_LIMB_NO_REFRACTION` | +1.1 | -0.2 | +2.8 | 198 of 333 |
+| `LOWER_LIMB_NO_REFRACTION` | +3.8 | +2.2 | +5.2 | 0 of 333 |
 
 The disc's centre with the almanac's 34 arcminutes of refraction stands
 nearest; what remains is seasonal, the modern sunrise about a minute

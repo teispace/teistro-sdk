@@ -2141,6 +2141,40 @@ fn basis_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// The Surya Siddhanta's own sunrise and moonrise: both the body's centre
+/// on the geometric horizon, in local mean time. Asked for another
+/// convention, the provider declines and the SDK solves it over the
+/// text's Sun or Moon, which is neither the text's rising nor a modern one
+/// (`03-design/nepal-day-measured.md` §4; Burgess's ch. X finds the
+/// Moon's rising from her ascensional difference,
+/// `03-design/moonrise-convention.md` §3).
+fn text_horizon_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    if !matches!(
+        s.frame.siddhanta,
+        Siddhanta::Surya {
+            sunrise: SuryaSunrise::Text,
+            ..
+        }
+    ) {
+        return;
+    }
+    let text = SunriseConvention::from(Sunrise::CentreNoRefraction);
+    if s.day.sunrise != text {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-sunrise-convention",
+            "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
+            &["frame.siddhanta", "day.sunrise"],
+        ));
+    }
+    if s.day.moonrise != text {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-moonrise-convention",
+            "the text's moonrise is the centre on the geometric horizon (Surya Siddhanta ch. X); another convention is solved over the text's Moon, which is neither the text's moonrise nor a modern one",
+            &["frame.siddhanta", "day.moonrise"],
+        ));
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -2207,41 +2241,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         ));
     }
     basis_coherence(s, &mut out);
-    // The text's sunrise is the centre on the geometric horizon, in local
-    // mean time; asked for another convention, the provider declines and
-    // the SDK solves it over the text's Sun, which is neither the text's
-    // sunrise nor a modern one (`03-design/nepal-day-measured.md` §4).
-    if matches!(
-        s.frame.siddhanta,
-        Siddhanta::Surya {
-            sunrise: SuryaSunrise::Text,
-            ..
-        }
-    ) && s.day.sunrise != SunriseConvention::from(Sunrise::CentreNoRefraction)
-    {
-        out.push(Diagnostic::warning(
-            "siddhanta-text-sunrise-convention",
-            "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
-            &["frame.siddhanta", "day.sunrise"],
-        ));
-    }
-    // The text's moonrise is the same horizon: Burgess's ch. X finds the
-    // Moon's rising from her ascensional difference, the centre on the
-    // geometric horizon (`03-design/moonrise-convention.md` §3).
-    if matches!(
-        s.frame.siddhanta,
-        Siddhanta::Surya {
-            sunrise: SuryaSunrise::Text,
-            ..
-        }
-    ) && s.day.moonrise != SunriseConvention::from(Sunrise::CentreNoRefraction)
-    {
-        out.push(Diagnostic::warning(
-            "siddhanta-text-moonrise-convention",
-            "the text's moonrise is the centre on the geometric horizon (Surya Siddhanta ch. X); another convention is solved over the text's Moon, which is neither the text's moonrise nor a modern one",
-            &["frame.siddhanta", "day.moonrise"],
-        ));
-    }
+    text_horizon_coherence(s, &mut out);
     let root = profiles::root();
     for (system, length) in &s.dasha.year_length {
         if root

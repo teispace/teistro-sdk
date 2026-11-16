@@ -171,7 +171,10 @@ class TheCatalogue(unittest.TestCase):
             # `ChartLayout`'s `NEPALI_CIRCLE` and `NORTH_INDIAN_PETALS`.
             + 2
             # `ChartFrame`'s four frames, its UNKNOWN and its member of `Kind`.
-            + 4 + 1 + 1,
+            + 4 + 1 + 1
+            # `Sunrise`'s `UPPER_LIMB_NO_REFRACTION` and
+            # `LOWER_LIMB_NO_REFRACTION` (SR-113).
+            + 2,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

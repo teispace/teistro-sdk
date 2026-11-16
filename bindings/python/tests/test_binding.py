@@ -1920,10 +1920,11 @@ class AnEngine(WithLibrary):
         # composed of its parts dips by the observer's height, which the
         # day hands back.
         def almanac_day(settings: dict[str, Any]) -> tuple[float, float, Any, float]:
-            """(sunrise, dip, convention, first moonrise), read before the
-            context closes."""
+            """(sunrise, dip, convention, first moonrise) over the built-in
+            sky, whose Moon has her real distance, read before the context
+            closes."""
             with self.teistro.context(
-                profile=PROFILE, settings=settings, test_provider=True
+                profile="nepali-drik", settings=settings, ephemeris=Ephemeris.BUILTIN
             ) as each:
                 one = each.almanac.of(
                     from_date=date(Calendar.GREGORIAN, 2026, 1, 5),

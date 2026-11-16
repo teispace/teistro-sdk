@@ -9661,12 +9661,16 @@ void _engineTests() {
     // upper limb with refraction, not by the day's sunrise; a horizon
     // composed of its parts dips by the observer's height, which the day
     // hands back.
-    // Read before the context is disposed.
-    ({double sunrise, double dipDeg, Sunrise? convention, double moonrise})
-    almanacDay(Map<String, Object?> settings) {
-      final each = context(settings: settings);
+    // Over the built-in sky, whose Moon has her real distance; read
+    // before the context is disposed: [sunrise, dip, first moonrise].
+    List<double> almanacDay(Map<String, Object?> settings) {
+      final each = teistro.context(
+        profile: 'nepali-drik',
+        settings: settings,
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
       try {
-        final day = each.almanac
+        final one = each.almanac
             .of(
               from: gregorian(2026, 1, 5),
               to: gregorian(2026, 1, 5),
@@ -9674,26 +9678,25 @@ void _engineTests() {
               utcOffsetSeconds: 20700,
             )
             .at(0);
-        return (
-          sunrise: day.day.sunrise,
-          dipDeg: day.day.dipDeg,
-          convention: day.day.convention,
-          moonrise: day.moonEvents.firstWhere((event) => event.rise).instant,
-        );
+        return [
+          one.day.sunrise,
+          one.day.dipDeg,
+          one.moonEvents.firstWhere((event) => event.rise).instant,
+        ];
       } finally {
         each.dispose();
       }
     }
 
     final ownDay = almanacDay({});
-    expect(ownDay.dipDeg, 0.0);
+    expect(ownDay[1], 0.0);
     final centreDay = almanacDay({
       'day': {
         'moonrise': {'kind': 'NAMED', 'which': 'CENTRE_REFRACTION'},
       },
     });
-    expect(centreDay.sunrise, ownDay.sunrise);
-    final moonLater = (centreDay.moonrise - ownDay.moonrise) * 86400.0;
+    expect(centreDay[0], ownDay[0]);
+    final moonLater = (centreDay[2] - ownDay[2]) * 86400.0;
     expect(
       moonLater > 55.0 && moonLater < 110.0,
       isTrue,
@@ -9709,9 +9712,8 @@ void _engineTests() {
         },
       },
     });
-    expect(deck.convention, Sunrise.centreRefraction);
-    expect(deck.dipDeg, closeTo(1.76 * math.sqrt(30) / 60.0, 1e-12));
-    expect(deck.sunrise < ownDay.sunrise, isTrue);
+    expect(deck[1], closeTo(1.76 * math.sqrt(30) / 60.0, 1e-12));
+    expect(deck[0] < ownDay[0], isTrue);
     expect(
       () => almanacDay({
         'day': {

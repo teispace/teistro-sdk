@@ -337,6 +337,15 @@ pub struct Horizons {
 
 impl Horizons {
     /// The day settings' two conventions.
+    ///
+    /// ```
+    /// use teistro_core::settings::root;
+    /// use teistro_port_ephemeris::{Horizon, Horizons};
+    ///
+    /// // The root reads the upper limb with refraction for both.
+    /// let horizons = Horizons::of_day(&root().day);
+    /// assert_eq!((horizons.sun, horizons.moon), (Horizon::UPPER_LIMB_REFRACTION, Horizon::UPPER_LIMB_REFRACTION));
+    /// ```
     #[must_use]
     pub fn of_day(day: &teistro_core::settings::Day) -> Horizons {
         Horizons {
@@ -347,6 +356,14 @@ impl Horizons {
 
     /// The horizon a body rises by: the Moon's for the Moon, the Sun's
     /// for every other.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Horizon, Horizons};
+    ///
+    /// let horizons = Horizons { sun: Horizon::CENTRE_REFRACTION, moon: Horizon::UPPER_LIMB_REFRACTION };
+    /// assert_eq!(horizons.of(Body::Mars), Horizon::CENTRE_REFRACTION);
+    /// assert_eq!(horizons.of(Body::Moon), Horizon::UPPER_LIMB_REFRACTION);
+    /// ```
     #[must_use]
     pub const fn of(&self, body: Body) -> Horizon {
         match body {

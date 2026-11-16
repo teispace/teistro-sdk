@@ -113,7 +113,9 @@ struct Report {
 /// nutation's truncation, and its homa ahuti, whose shares begin and end
 /// where the Moon's and the Sun's stars change, a second or so apart on
 /// the compact tier, and the sky view and the sky pose, whose Moon stands
-/// a few ten-thousandths of a degree from the standard tier's. So these
+/// a few ten-thousandths of a degree from the standard tier's, and the
+/// moonrise conventions' days and moonrises, a tenth of a second from the
+/// standard tier's with the Sun's and the Moon's truncation. So these
 /// lines are
 /// held to the same **shape** — every kind, rule and count, and which
 /// contacts and stretches exist — and their numbers and hashes are the
@@ -121,13 +123,14 @@ struct Report {
 /// fails, and so does a prefix none of whose lines differ any more,
 /// because then the build carries the standard tier and the exception is
 /// stale.
-const WASM_TIER: [&str; 6] = [
+const WASM_TIER: [&str; 7] = [
     "eclipses-",
     "lilith-",
     "lagnas-",
     "homa-ahuti-",
     "sky-view-",
     "sky-pose-",
+    "moonrise-",
 ];
 
 /// The wasm runner's own values: its build's target, which must be a
