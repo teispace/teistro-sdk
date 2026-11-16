@@ -770,6 +770,112 @@ None of these is a text's term except the verdicts' `शुभ`, `अशुभ` 
 `वेध`: the areas, the colours and the bands are presentation words for a
 score no text fixes, chosen as everyday usage under the policy of §4e.
 
+## 4h. The festivals in Hindi, and names in their own script (SR-128, 2026-11-16)
+
+`hi-Deva-IN` named 400 of the 638 festival keys, and a base locale falls
+back to English for the rest, so a Hindi reader of `NEPAL_PANCHANGA` saw
+171 of VS 2083's 336 days in Latin letters ("Mata Tirtha Aunsi"). All 638
+are now named, in the base locale's order, each record `name` and
+`prose`, with `iast` copied from the Nepali record where it has one (163
+keys, as `sa-Deva` has), since `iast` is the same in every locale (§3).
+
+**The sources.** The Hindi a north Indian panchanga prints for the
+pan-Indian days: the ekadashis by the names Hindi Wikipedia's *एकादशी
+व्रत* table gives (देवशयनी, परिवर्तिनी, पापांकुशा, अपरा, आमलकी, सफला),
+the Bhadrapada new moon as कुशग्रहणी अमावस्या (also कुशोत्पाटिनी; the
+almanac pages of Bharat Discovery and Bhakti Bharat), and the
+Government of India's Hindi holiday names for the civic days it keeps
+(बुद्ध पूर्णिमा, गुरु नानक जयंती, महात्मा गांधी जयंती, क्रिसमस, गुड
+फ्राइडे). The UN's days take the names the UN's Hindi pages and the
+Indian press print (विश्व पर्यावरण दिवस, विश्व तंबाकू निषेध दिवस, अंतरराष्ट्रीय
+दिव्यांगजन दिवस, the term the Government of India adopted in 2016).
+Spelling follows the Central Hindi Directorate's *Devanagari Lipi tatha
+Hindi Vartani ka Manakikaran* (2016), which the pack's 400 earlier names
+already follow. A Nepal-only day has no Hindi name of its own, so it keeps
+the Nepali record's name, written by the rules below; Hindi has a name
+of its own for a Nepal day only where India keeps the same rite on the
+same tithi (Kushe Aunsi, Guga Navami, Kojagrat Purnima, Buddha Jayanti,
+Shree Ballabh Jayanti), and then takes it.
+
+**The rules, once.** Each rule is applied to every name it reaches, not
+chosen name by name:
+
+| rule | Nepali | Hindi | why |
+|---|---|---|---|
+| a nasal before a consonant of its own class is the anusvara | पञ्चमी, जयन्ती, आरम्भ, सङ्क्रान्ति, चण्डी, कुण्ड, सम्भव | पंचमी, जयंती, आरंभ, संक्रांति, चंडी, कुंड, संभव | the Directorate's standard (§3.4.1), and the pack's earlier names; a nasal before य, र, ल, व, ह or a doubled nasal is kept (अन्न, सम्मेलन) |
+| a chandrabindu on a syllable with a sign above the headline is the anusvara; elsewhere it stays | औँसी, योसिँ, गोसाइँ; चाँगु, गुँला, उँधौली | औंसी, योसिं, गोसाईं; चाँगु, गुँला, उँधौली | the standard's rule for ँ beside ि ी े ै ो ौ, as the pack's गोसाईंकुंड already writes |
+| Nepali spellings Hindi writes otherwise | राष्ट्रिय, अन्तर्राष्ट्रिय, सहिद, कानुन, छुवाछूत | राष्ट्रीय, अंतरराष्ट्रीय, शहीद, कानून, छुआछूत | the Hindi words; अंतरराष्ट्रीय is the Directorate's and the Government of India's form |
+| Nepali grammar words take Hindi's | र, को, मा, सुरु, नयाँ वर्ष, खाने दिन | और, का, में, आरंभ, नववर्ष, खाने का दिन | a name is read in Hindi's grammar (पशुपतिनाथ में दमन पुष्पार्पण, भारत का गणतंत्र दिवस) |
+| a generic new moon is अमावस्या; a proper name keeps औंसी | औँसी श्राद्ध; मातातीर्थ औँसी, गया मौनी औँसी | अमावस्या श्राद्ध; मातातीर्थ औंसी, गया मौनी औंसी | Hindi says *amāvasyā*; Mata Tirtha and Gaya Mauni Aunsi are Nepal's names for days India does not keep (Gaya Mauni is Margashirsha's new moon, not Magha's मौनी अमावस्या) |
+| a Nepal jatra keeps जात्रा | इन्द्रजात्रा, बिस्केट जात्रा | इंद्र जात्रा, बिस्केट जात्रा | the festival's proper name, as Hindi Wikipedia titles इन्द्र जात्रा and the pack's हिले जात्रा; India's own rath yatra is यात्रा (जगन्नाथ रथयात्रा) |
+| Newar, Kirat and Tharu names are kept as the Nepali record writes them | पुन्ही, चह्रे, नखः, बहीद्यः बोयेगु, माघी | the same, by the rules above | no Hindi name exists |
+| one deity, one spelling in the pack | मच्छिन्द्रनाथ | मत्स्येन्द्रनाथ | the pack already wrote Seto Machhindranath श्वेत मत्स्येन्द्रनाथ, the national panchanga's form; the Rato and Nala days and the bath follow it, with *rāto* kept as the deity's Nepali title (रातो मत्स्येन्द्रनाथ) |
+
+**Hindi's own names, where it has one** (C2083): Harishayani is देवशयनी
+एकादशी, Haribodhini देवउठनी (as the pack already wrote), Hariparivartini
+परिवर्तिनी, Utpattika उत्पन्ना; Kushe Aunsi कुशग्रहणी अमावस्या; Guga Navami
+गोगा नवमी; Kojagrat Purnima कोजागरी पूर्णिमा; Buddha Jayanti बुद्ध पूर्णिमा;
+Shree Ballabh Jayanti वल्लभाचार्य जयंती; Shiva Baikuntha Chaturdashi बैकुंठ
+चतुर्दशी; the chaturmas चातुर्मास. India's two national days are
+named as the English and Nepali records name them, of India (भारत का
+गणतंत्र दिवस), since a Nepal pack also carries Nepal's गणतंत्र दिवस.
+
+**The names least sure.** कुशग्रहणी अमावस्या for a day Nepal also keeps
+as fathers' day, which the Hindi name does not say; खाँची में सराय पर्व and
+दर खाने का दिन, Nepali names put into Hindi grammar; रोपाईं जात्रा; सिविल
+सेवा दिवस for Nepal's *nijāmatī sevā* day. A correction that finds a Hindi
+print saying otherwise overturns the name.
+
+**The gate.** Two checks in `check-intl` hold a locale written in a script
+other than Latin to its script (C2080, C2081):
+
+- every rule key a shipped festival pack answers with is named in every
+  strict locale **and every non-Latin locale**, so `hi-Deva-IN` and
+  `sa-Deva` must name a festival as `ne-Deva-NP` must;
+- no member of any kind falls back to a Latin-script locale, except the
+  members `LATIN_FALLBACK` in `xtask/src/intl.rs` counts, kind by kind:
+  14 in Hindi and 35 in Sanskrit (below). The list fails both ways and can
+  only shrink, and `festival` may never stand on it. A record a Devanagari locale holds itself fails when
+  a form other than `iast` has Latin letters and no Devanagari one (`J2000
+  युगादि` passes).
+
+`crates/sdk/tests/festival.rs` reads the same through the façade: every
+day `NEPAL_PANCHANGA` keeps over VS 2083 at Kathmandu is named in
+Devanagari in Hindi, Nepali and Sanskrit.
+
+**The other kinds (C2085).** The gate's first count found 164 Hindi and
+184 Sanskrit members of 26 and 28 other kinds falling back to English:
+the text terms §4c and §4d name in Nepali and the kinds added since
+(`varga`, `vaiseshikamsa`, the avasthas, the vasas, `gowri`, `fast_kind`,
+`paya`, `tridosha`, the year's rulers, the vastu yonis). Each is a
+Sanskrit term the Nepali record already carries from its text (BPHS for
+the vargas, vaiseshikamshas, avasthas and points; *Muhūrta Cintāmaṇi*
+for the vasas and the inauspicious yogas; the southern almanacs' gowri
+read through their Sanskrit equivalents), and a tatsama term reads the
+same in all three languages. So Hindi takes the Nepali term by the
+spelling rules above (व्यंजन, कुंडल, चंदनवन, संक्रांति, खंडग्रास, यमघंट,
+गंडमूल) and Sanskrit takes it as Nepali writes it, the conjuncts kept;
+150 Hindi and 149 Sanskrit records, each with the Nepali record's `iast`,
+glyph and gender. Where a language says it otherwise:
+
+| key | Hindi | Sanskrit | why |
+|---|---|---|---|
+| `blackout_kind.CHATURMAS` | चातुर्मास | चातुर्मास्य | the Hindi word and the texts' *cāturmāsya*, where Nepali writes चतुर्मास |
+| `blackout_kind.GURU_ASTA`, `SHUKRA_ASTA` | गुरु अस्त, शुक्र अस्त | गुर्वस्त, शुक्रास्त | Sanskrit closes the compound with its sandhi (§4d's form) |
+| `muhurta_yoga.RAVI_PUSHYA`, `GURU_PUSHYA` | रवि पुष्य, गुरु पुष्य | रविपुष्य, गुरुपुष्य | the same |
+| `shiva_vasa.KAILASA` | कैलाश | कैलास | the Sanskrit stem *kailāsa*; Hindi and Nepali write श |
+| `shiva_vasa.KRIDA`, `day_marker.VINCHUDO` | क्रीड़ा, वींछुड़ो | क्रीडा, वींछुडो | Hindi writes the flap ड़ |
+| `year_office.NIRASADHIPATI` | (named) | नीरसाधिप | Sanskrit's other offices are *-adhipa* (रसाधिप, मेघाधिप) |
+| `tradition` | हिंदू, बौद्ध, जैन, सिख, इस्लामी, ईसाई, पारसी | not named | the Hindi words; Sanskrit's would need English overrides in `sa-Latn` for the Christian and Zoroastrian, left with the kind |
+
+What still falls back, and stays on `LATIN_FALLBACK`: the eras in both
+(10 Hindi, 11 Sanskrit), whose `short` forms every Hindi and Sanskrit date
+prints, so naming them moves dates and wants its own pass against the
+date tests; the four festival kinds in both (the lexicon's test reads
+Hindi's fallback through them); and Sanskrit's seven traditions and
+thirteen mundane chart kinds, phrases Sanskrit needs composed rather
+than copied (प्रवेशात् पूर्वम् अमावास्या).
+
 ## 5. What this does not settle
 
 - **The maintainer's review.** The names ship final and are corrected
@@ -781,4 +887,6 @@ score no text fixes, chosen as everyday usage under the policy of §4e.
   `short`; no other new record does.
 - **Hindi and Sanskrit beyond the list.** §4e named the members no strict
   locale had. The kinds Hindi and Sanskrit still fall back to English for
-  (`varga`, `tradition`, the BPHS points named in §4c) are a separate pass.
+  (`varga`, `tradition`, the BPHS points named in §4c) are a separate pass,
+  counted kind by kind in `LATIN_FALLBACK` (§4g), which fails when one is
+  named and its count is not lowered.

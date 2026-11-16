@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every festival named in Hindi, and a gate on Latin names in Devanagari (SR-128).**
+**Numbers:** no computed value moves. Names move in Hindi, Sanskrit and `sa-Latn` (below), and
+so do the locale coverage counts. `hi-Deva-IN` names all 638
+festival keys, from 400, so the 238 it lacked (171 of the 336 days `NEPAL_PANCHANGA`
+keeps over VS 2083) read in Devanagari instead of falling back to English; the Hindi
+pack's festival records are reordered to the base locale's order. Every hash of the
+`hi-Deva-IN`, `sa-Deva` and `sa-Latn` packs and the bundles carrying them moves with
+their bytes; `en-Latn`'s and `ne-Deva-NP`'s do not.
+- **Changed:** `check-intl` requires every festival key of every shipped pack in every
+  locale written in a script other than Latin, as it did of the strict ones, and fails a
+  non-Latin locale's record whose form (but `iast`) is in Latin letters alone, or a member
+  falling back to a Latin-script locale beyond the counts `LATIN_FALLBACK` holds (14 in
+  Hindi, 35 in Sanskrit, none of them festivals; `03-design/entity-names.md` §4h,
+  C2080–C2085).
+- **Changed:** Hindi names 150 more members and Sanskrit 149 (the vargas, the
+  vaiseshikamshas, the avasthas, the vasas, the points, the dasha systems, the
+  blackouts, the eclipse kinds, gowri, the fasts, the paya, the doshas, the year's
+  rulers; Hindi's traditions; Sanskrit's vastu yonis and vyaya kinds), which read in
+  Devanagari instead of English; `sa-Latn` derives its 149 from them.
+- **Tests:** `every_day_of_a_nepali_year_is_named_in_devanagari` reads every day
+  `NEPAL_PANCHANGA` keeps over VS 2083 in Hindi, Nepali and Sanskrit through the façade.
+
 **Varga schemes and karaka namings a consumer chooses (SR-114, SR-115).**
 **Numbers:** every settings hash moves, the settings gaining `jaimini.seven_karaka_order`
 and `vargas.schemes`, which the canonical document writes; no computed value moves under

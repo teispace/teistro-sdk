@@ -575,7 +575,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1473,
+            derived.entities, 1622,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -593,7 +593,8 @@ mod tests {
              1421 until the six printed charhe and Ghantakarna, \
              1428 until Bihar's nine, \
              1437 until the gazette's six unruled festivals and nine holiday scopes, \
-             1452 until the rashifal's twenty-one words (SR-124)"
+             1452 until the rashifal's twenty-one words (SR-124), \
+             1473 until the text terms of 28 kinds (SR-128)"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -656,9 +657,11 @@ mod tests {
         // 519 with SR-01's महालक्ष्मीव्रतारम्भ, a closed compound too; 520
         // with the six charhe and Ghantakarna, one of whose IAST forms the
         // transliterator writes letter for letter (the charhe's `Carhe` is
-        // the spoken name, as Dila's and Lai's are).
+        // the spoken name, as Dila's and Lai's are). 549 with the text
+        // terms of 28 kinds (SR-128): 29 of them carry an IAST form the
+        // Sanskrit term spells letter for letter.
         assert_eq!(
-            derived.agreeing, 520,
+            derived.agreeing, 549,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }
