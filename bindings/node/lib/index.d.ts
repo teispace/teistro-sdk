@@ -6709,13 +6709,50 @@ export interface LunarEclipseView {
   readonly seen: EclipseSeen | null;
   /** When the Moon is up during the umbral phase, the part the eye sees, or `null` (always for a penumbral eclipse). */
   readonly umbralSeen: EclipseSeen | null;
+  /** The largest phase the place sees: the greatest eclipse when the Moon is up at it, else where it rises or sets. */
+  readonly seenMaximum: LunarSeenMaximum;
+}
+
+/**
+ * Where the largest phase a place sees falls: at the maximum (`MAXIMUM`), where the body rises
+ * after it or sets before it (`RISING`, `SETTING`; `RISING_PAST_LIMIT`, `SETTING_PAST_LIMIT`
+ * against a custom altitude), or nowhere (`NOT_SEEN`).
+ */
+export type SeenAt =
+  | 'MAXIMUM'
+  | 'RISING'
+  | 'SETTING'
+  | 'RISING_PAST_LIMIT'
+  | 'SETTING_PAST_LIMIT'
+  | 'NOT_SEEN';
+
+/** The largest phase of a solar eclipse the place sees; `moment` and the magnitudes are `null` exactly when nothing is seen. */
+export interface SolarSeenMaximum {
+  readonly why: SeenAt;
+  /** When, with the Sun's topocentric geometric altitude. */
+  readonly moment: EclipseMoment | null;
+  /** The magnitude then. */
+  readonly magnitude: number | null;
+  /** The obscuration then. */
+  readonly obscuration: number | null;
+}
+
+/** The largest phase of a lunar eclipse the place sees; `moment` and the magnitudes are `null` exactly when nothing is seen. */
+export interface LunarSeenMaximum {
+  readonly why: SeenAt;
+  /** When, with the Moon's topocentric geometric altitude. */
+  readonly moment: EclipseMoment | null;
+  /** The umbral magnitude then, negative while the Moon is clear of the umbra. */
+  readonly umbralMagnitude: number | null;
+  /** The penumbral magnitude then. */
+  readonly penumbralMagnitude: number | null;
 }
 
 /** A solar eclipse at the place: its own contacts, maximum and magnitude. */
 export interface SolarEclipseView {
   /** What the place sees at its maximum: never hybrid. */
   readonly kind: Exclude<SolarEclipseKind, 'solar_eclipse_kind.HYBRID'>;
-  /** The fraction of the Sun's diameter covered; the ratio of the diameters in a central phase. */
+  /** The fraction of the Sun's diameter covered at the maximum, even below the horizon; the ratio of the diameters in a central phase. */
   readonly magnitude: number;
   /** The fraction of the Sun's disc covered. */
   readonly obscuration: number;
@@ -6728,6 +6765,8 @@ export interface SolarEclipseView {
   readonly maximum: EclipseMoment;
   /** When the Sun is up during the eclipse, or `null` where the place does not see it. */
   readonly seen: EclipseSeen | null;
+  /** The largest phase the place sees: the maximum when the Sun is up at it, else where it rises or sets. */
+  readonly seenMaximum: SolarSeenMaximum;
 }
 
 /**

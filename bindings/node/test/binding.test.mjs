@@ -4880,11 +4880,48 @@ test('an almanac carries the eclipses it was asked for', () => {
   assert.ok(solar.here === null || solar.here.seen === null);
   assert.equal(solar.vedha, null);
   assert.ok(provenance.appliedConventions.some((c) => c.knob === 'eclipse.window'));
+  // Seen whole, the greatest eclipse is the largest phase seen; unseen,
+  // nothing is, which is a state and not a zero.
+  assert.equal(lunar.here.seenMaximum.why, 'MAXIMUM');
+  assert.deepEqual(lunar.here.seenMaximum.moment, lunar.here.greatest);
+  assert.equal(lunar.here.seenMaximum.umbralMagnitude, lunar.eclipse.umbralMagnitude);
+  if (solar.here !== null) {
+    assert.deepEqual(solar.here.seenMaximum, { why: 'NOT_SEEN', moment: null, magnitude: null, obscuration: null });
+  }
 
   const chauvenet = asked({ panchanga: { eclipse_shadow: 'CHAUVENET' } }).almanac.eclipses;
   assert.equal(chauvenet.value.lunar[0].eclipse.shadow, 'CHAUVENET');
   assert.ok(chauvenet.value.lunar[0].eclipse.umbralMagnitude > lunar.eclipse.umbralMagnitude);
   assert.notEqual(chauvenet.provenance.settingsHash, provenance.settingsHash);
+});
+
+test('an eclipse below the horizon at its maximum answers the largest phase seen', () => {
+  // October and November 2022 at Kathmandu: the partial solar eclipse of
+  // 25 October is greatest 5.7° below the horizon, so the largest phase
+  // seen is at sunset (SR-106); the total lunar eclipse of 8 November
+  // rises in totality, so its largest phase seen is at moonrise.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const { value } = ctx.almanac.of({
+    from: date(Calendar.Gregorian, 2022, 10, 20),
+    to: date(Calendar.Gregorian, 2022, 11, 10),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    eclipses: true,
+  }).eclipses;
+  ctx.dispose();
+  const [solar] = value.solar;
+  assert.ok(solar.here.maximum.altitudeDeg < -5);
+  assert.ok(Math.abs(solar.here.magnitude - 0.49) < 0.001);
+  const set = solar.here.seenMaximum;
+  assert.equal(set.why, 'SETTING');
+  assert.equal(set.moment.at, solar.here.seen.to);
+  assert.ok(Math.abs(set.magnitude - 0.376) < 0.002, `${set.magnitude}`);
+  assert.ok(set.obscuration < solar.here.obscuration);
+  const [lunar] = value.lunar;
+  const rose = lunar.here.seenMaximum;
+  assert.equal(rose.why, 'RISING');
+  assert.equal(rose.moment.at, lunar.here.seen.from);
+  assert.ok(rose.umbralMagnitude > 1 && rose.umbralMagnitude < lunar.eclipse.umbralMagnitude);
 });
 
 /**

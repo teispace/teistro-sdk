@@ -4068,6 +4068,16 @@ void main() {
         seen(here.umbralSeen),
       ].join(' '),
     );
+    final lunarLargest = here.seenMaximum;
+    put(
+      'eclipses-lunar-$k-seen-maximum',
+      [
+        lunarLargest.why.key,
+        moment(lunarLargest.moment),
+        numberOrDash(lunarLargest.umbralMagnitude),
+        numberOrDash(lunarLargest.penumbralMagnitude),
+      ].join(' '),
+    );
     put('eclipses-lunar-$k-vedha', seen(vedha));
   }
   for (final (k, SolarEclipseHere(:eclipse, :here, :vedha))
@@ -4100,6 +4110,18 @@ void main() {
             ])
               moment(m),
             seen(here.seen),
+          ].join(' '),
+    );
+    final solarLargest = here?.seenMaximum;
+    put(
+      'eclipses-solar-$k-seen-maximum',
+      solarLargest == null
+          ? '-'
+          : [
+            solarLargest.why.key,
+            moment(solarLargest.moment),
+            numberOrDash(solarLargest.magnitude),
+            numberOrDash(solarLargest.obscuration),
           ].join(' '),
     );
     put('eclipses-solar-$k-vedha', seen(vedha));

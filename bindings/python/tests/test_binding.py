@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
     CellsRequest,
+    SolarSeenMaximum,
     DevicePose,
     Detail,
     SankalpaRequest,
@@ -5437,6 +5438,14 @@ class AnEngine(WithLibrary):
         self.assertTrue(solar.here is None or solar.here.seen is None)
         self.assertIsNone(solar.vedha)
         self.assertIn("eclipse.window", [c.knob for c in answer.provenance.applied_conventions])
+        # Seen whole, the greatest eclipse is the largest phase seen; unseen,
+        # nothing is, which is a state and not a zero.
+        largest = lunar.here.seen_maximum
+        self.assertEqual(largest.why, "MAXIMUM")
+        self.assertEqual(largest.moment, lunar.here.greatest)
+        self.assertEqual(largest.umbral_magnitude, lunar.eclipse.umbral_magnitude)
+        if solar.here is not None:
+            self.assertEqual(solar.here.seen_maximum, SolarSeenMaximum("NOT_SEEN", None, None, None))
 
         chauvenet, _ = asked({"panchanga": {"eclipse_shadow": "CHAUVENET"}})
         self.assertEqual(chauvenet.value.lunar[0].eclipse.shadow, "CHAUVENET")
@@ -5444,6 +5453,44 @@ class AnEngine(WithLibrary):
             chauvenet.value.lunar[0].eclipse.umbral_magnitude, lunar.eclipse.umbral_magnitude
         )
         self.assertNotEqual(chauvenet.provenance.settings_hash, answer.provenance.settings_hash)
+
+    def test_an_eclipse_below_the_horizon_at_its_maximum_answers_the_largest_phase_seen(self) -> None:
+        """October and November 2022 at Kathmandu (SR-106): the partial
+        solar eclipse of 25 October is greatest 5.7° below the horizon, so
+        its largest phase seen is at sunset; the total lunar eclipse of 8
+        November rises in totality, so its largest phase seen is at
+        moonrise."""
+        from teistro import date
+        from teistro.catalogue import Calendar
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2022, 10, 20),
+                to_date=date(Calendar.GREGORIAN, 2022, 11, 10),
+                place=observer,
+                utc_offset_seconds=20700,
+                eclipses=True,
+            ).eclipses
+        assert found is not None
+        solar = found.value.solar[0].here
+        assert solar is not None and solar.seen is not None
+        self.assertLess(solar.maximum.altitude_deg, -5)
+        self.assertAlmostEqual(solar.magnitude, 0.49, delta=0.001)
+        sunset = solar.seen_maximum
+        assert sunset.moment is not None and sunset.magnitude is not None and sunset.obscuration is not None
+        self.assertEqual(sunset.why, "SETTING")
+        self.assertEqual(sunset.moment.at, solar.seen.to)
+        self.assertAlmostEqual(sunset.magnitude, 0.376, delta=0.002)
+        self.assertLess(sunset.obscuration, solar.obscuration)
+        lunar = found.value.lunar[0]
+        risen = lunar.here.seen_maximum
+        assert risen.moment is not None and risen.umbral_magnitude is not None and lunar.here.seen is not None
+        self.assertEqual(risen.why, "RISING")
+        self.assertEqual(risen.moment.at, lunar.here.seen.from_)
+        self.assertTrue(1 < risen.umbral_magnitude < lunar.eclipse.umbral_magnitude)
 
     def test_an_almanac_carries_each_days_nepal_sambat_date(self) -> None:
         """Each day's Nepal Sambat date crosses beside the days

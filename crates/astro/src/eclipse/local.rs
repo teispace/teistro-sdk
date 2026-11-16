@@ -7,7 +7,9 @@
 //! same instants everywhere; a place adds only whether the Moon is up.
 //! Each moment carries the body's topocentric altitude, and the view says
 //! when, inside the eclipse, the body stands above a horizon convention:
-//! what a sutak, observed only where the eclipse is seen, asks.
+//! what a sutak, observed only where the eclipse is seen, asks. The
+//! largest phase seen is the maximum when the body is up at it, and
+//! otherwise the phase at the edge of what is seen (crux C1980).
 
 use serde::Serialize;
 use teistro_core::catalogue::{Kind, write_in_full};
@@ -18,8 +20,9 @@ use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, Horizon};
 
 use super::{
-    COARSE_DAYS, CONTACT_REACH_DAYS, Eclipses, LunarEclipse, MOON_RADIUS, MOON_RADIUS_UMBRA, Pair,
-    ShadowSource, SolarEclipse, SolarEclipseKind, Syzygy, TOLERANCE_DAYS, angle, sub, sun_radius,
+    COARSE_DAYS, CONTACT_REACH_DAYS, Eclipses, LunarAt, LunarEclipse, MOON_RADIUS,
+    MOON_RADIUS_UMBRA, Pair, ShadowSource, SolarEclipse, SolarEclipseKind, Syzygy, TOLERANCE_DAYS,
+    angle, sub, sun_radius,
 };
 use crate::iau::vector::{Vector3, pdp, pm, pn, sxp};
 use crate::iau::{DAU, DEG2RAD, RAD2DEG};
@@ -117,6 +120,225 @@ pub struct Visible {
     pub to: JulianDay<Ut1>,
 }
 
+/// Where the largest phase a place sees falls, and so why it is or is
+/// not the eclipse's maximum there (crux C1980).
+///
+/// The phase grows to the maximum and shrinks after it, so the largest
+/// phase seen is the maximum when the body is up at it, and otherwise
+/// the edge of the stretch seen nearest it: where the body rises after
+/// the maximum or sets before it. The edge is the horizon convention the
+/// view was read under, the same line a rising or setting is timed
+/// against; a convention at a custom altitude is an altitude limit, and
+/// its edges are named apart.
+///
+/// ```
+/// use teistro_astro::eclipse::SeenAt;
+///
+/// assert_eq!(SeenAt::ALL.map(SeenAt::key), [
+///     "MAXIMUM",
+///     "RISING",
+///     "SETTING",
+///     "RISING_PAST_LIMIT",
+///     "SETTING_PAST_LIMIT",
+///     "NOT_SEEN",
+/// ]);
+/// // Only the maximum itself is the geometric one.
+/// assert!(SeenAt::Maximum.is_maximum() && !SeenAt::Setting.is_maximum());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SeenAt {
+    /// The body is up at the maximum, so the maximum is seen.
+    Maximum,
+    /// The body rises after the maximum: the eclipse rises in progress,
+    /// and its largest phase seen is at sunrise or moonrise.
+    Rising,
+    /// The body sets before the maximum: the largest phase seen is at
+    /// sunset or moonset.
+    Setting,
+    /// As [`SeenAt::Rising`], where the convention is an altitude limit
+    /// rather than a horizon: the body climbs past it after the maximum.
+    RisingPastLimit,
+    /// As [`SeenAt::Setting`], against an altitude limit: the body sinks
+    /// below it before the maximum.
+    SettingPastLimit,
+    /// The body is never up while the eclipse lasts: nothing is seen.
+    NotSeen,
+}
+
+impl SeenAt {
+    /// Every member, in order.
+    pub const ALL: [SeenAt; 6] = [
+        SeenAt::Maximum,
+        SeenAt::Rising,
+        SeenAt::Setting,
+        SeenAt::RisingPastLimit,
+        SeenAt::SettingPastLimit,
+        SeenAt::NotSeen,
+    ];
+
+    /// The key it is written as.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::SeenAt;
+    ///
+    /// assert_eq!(SeenAt::NotSeen.key(), "NOT_SEEN");
+    /// ```
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            SeenAt::Maximum => "MAXIMUM",
+            SeenAt::Rising => "RISING",
+            SeenAt::Setting => "SETTING",
+            SeenAt::RisingPastLimit => "RISING_PAST_LIMIT",
+            SeenAt::SettingPastLimit => "SETTING_PAST_LIMIT",
+            SeenAt::NotSeen => "NOT_SEEN",
+        }
+    }
+
+    /// Whether the largest phase seen is the maximum itself.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::SeenAt;
+    ///
+    /// assert!(!SeenAt::NotSeen.is_maximum());
+    /// ```
+    #[must_use]
+    pub const fn is_maximum(self) -> bool {
+        matches!(self, SeenAt::Maximum)
+    }
+
+    /// The edge a stretch seen ends at, on the maximum's side: where the
+    /// body rises after it (`after`) or sets before it, against a horizon
+    /// or, at a custom altitude, a limit.
+    fn edge(after: bool, horizon: &Horizon) -> SeenAt {
+        // A custom convention is the only one off the zero line
+        // (`Horizon::from_convention`), and that line is a limit.
+        let limit = horizon.altitude_deg.abs() > 0.0;
+        match (after, limit) {
+            (true, false) => SeenAt::Rising,
+            (false, false) => SeenAt::Setting,
+            (true, true) => SeenAt::RisingPastLimit,
+            (false, true) => SeenAt::SettingPastLimit,
+        }
+    }
+}
+
+/// The largest phase of a solar eclipse a place sees, and when: the
+/// geometric [`SolarView::magnitude`] whenever the Sun is up at the
+/// maximum, and the phase at sunrise or sunset when it is not.
+///
+/// ```
+/// use teistro_astro::eclipse::{SeenAt, SolarSeenMaximum};
+///
+/// // Nothing seen is a state of its own, not a zero phase.
+/// let none = SolarSeenMaximum::NOT_SEEN;
+/// assert_eq!(none.why, SeenAt::NotSeen);
+/// assert!(none.moment.is_none() && none.magnitude.is_none() && none.obscuration.is_none());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct SolarSeenMaximum {
+    /// Where it falls: at the maximum, where the Sun rises or sets, or
+    /// nowhere.
+    pub why: SeenAt,
+    /// When, with the Sun's topocentric geometric altitude; `None`
+    /// exactly when nothing is seen.
+    pub moment: Option<LocalMoment>,
+    /// The magnitude then, as [`SolarView::magnitude`]; `None` exactly
+    /// when nothing is seen.
+    pub magnitude: Option<f64>,
+    /// The obscuration then, as [`SolarView::obscuration`]; `None`
+    /// exactly when nothing is seen.
+    pub obscuration: Option<f64>,
+}
+
+impl SolarSeenMaximum {
+    /// Nothing seen.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::{SeenAt, SolarSeenMaximum};
+    ///
+    /// assert!(!SolarSeenMaximum::NOT_SEEN.why.is_maximum());
+    /// ```
+    pub const NOT_SEEN: SolarSeenMaximum = SolarSeenMaximum {
+        why: SeenAt::NotSeen,
+        moment: None,
+        magnitude: None,
+        obscuration: None,
+    };
+}
+
+/// The largest phase of a lunar eclipse a place sees, and when: the
+/// eclipse's own magnitudes whenever the Moon is up at the greatest
+/// eclipse, and the phase at moonrise or moonset when it is not.
+///
+/// ```
+/// # use teistro_astro::eclipse::Eclipses;
+/// # use teistro_astro::{Completion, DeltaTModel};
+/// # use teistro_core::quantity::{JulianDay, Ut1};
+/// # use teistro_core::settings::OverridePolicy;
+/// # use teistro_port_ephemeris::TestProvider;
+/// #
+/// # // The test provider's sky: a geometry, not the real eclipses.
+/// # let provider = TestProvider::new();
+/// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let eclipses = Eclipses::new(&sky, DeltaTModel::TableThenModel);
+/// # let j2000 = JulianDay::<Ut1>::J2000;
+///
+/// let lunar = eclipses.next_lunar(j2000)?;
+/// # use teistro_core::quantity::Place;
+/// # use teistro_port_ephemeris::Horizon;
+/// #
+/// # let kathmandu = Place::try_from_degrees(27.7172, 85.324, 1_400.0)?;
+///
+/// let view = eclipses.lunar_seen(&lunar, kathmandu, &Horizon::UPPER_LIMB_REFRACTION)?;
+/// let largest = view.seen_maximum;
+/// // Seen at all exactly when some of the eclipse is, and never more
+/// // than the eclipse's own magnitude.
+/// assert_eq!(largest.moment.is_some(), view.seen.is_some());
+/// if let Some(umbral) = largest.umbral_magnitude {
+///     assert!(umbral <= lunar.umbral_magnitude + 1e-9);
+/// }
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct LunarSeenMaximum {
+    /// Where it falls: at the greatest eclipse, where the Moon rises or
+    /// sets, or nowhere.
+    pub why: SeenAt,
+    /// When, with the Moon's topocentric geometric altitude; `None`
+    /// exactly when nothing is seen.
+    pub moment: Option<LocalMoment>,
+    /// The umbral magnitude then, negative while the Moon is clear of
+    /// the umbra; `None` exactly when nothing is seen.
+    pub umbral_magnitude: Option<f64>,
+    /// The penumbral magnitude then; `None` exactly when nothing is
+    /// seen.
+    pub penumbral_magnitude: Option<f64>,
+}
+
+impl LunarSeenMaximum {
+    /// Nothing seen.
+    ///
+    /// ```
+    /// use teistro_astro::eclipse::{LunarSeenMaximum, SeenAt};
+    ///
+    /// assert_eq!(LunarSeenMaximum::NOT_SEEN.why, SeenAt::NotSeen);
+    /// assert!(LunarSeenMaximum::NOT_SEEN.umbral_magnitude.is_none());
+    /// ```
+    pub const NOT_SEEN: LunarSeenMaximum = LunarSeenMaximum {
+        why: SeenAt::NotSeen,
+        moment: None,
+        umbral_magnitude: None,
+        penumbral_magnitude: None,
+    };
+}
+
 /// A solar eclipse at one place.
 ///
 /// ```
@@ -196,6 +418,9 @@ pub struct SolarView {
     /// When the Sun stands above the horizon convention between the
     /// first contact and the fourth; `None` when it never does.
     pub seen: Option<Visible>,
+    /// The largest phase the place sees: the maximum when the Sun is up
+    /// at it, else the phase where the Sun rises or sets (crux C1980).
+    pub seen_maximum: SolarSeenMaximum,
 }
 
 /// A lunar eclipse at one place: its contacts, each with the Moon's
@@ -255,6 +480,10 @@ pub struct LunarView {
     /// lasts as long as it can be seen); `None` when the Moon is down
     /// throughout it, or the umbra never touches.
     pub umbral_seen: Option<Visible>,
+    /// The largest phase the place sees: the greatest eclipse when the
+    /// Moon is up at it, else the phase where the Moon rises or sets
+    /// (crux C1980).
+    pub seen_maximum: LunarSeenMaximum,
 }
 
 /// A lunar eclipse and how one place sees it.
@@ -412,7 +641,8 @@ impl EclipsesHere {
     /// dotted path through the value, a list reaching each element. What
     /// a boundary section writes in full; `crates/sdk/tests/eclipses.rs`
     /// holds it to serde, both ways. The shadow rule is a setting's
-    /// value, written as it is.
+    /// value, written as it is, and a largest phase seen's reason
+    /// ([`SeenAt`]) its own key.
     ///
     /// ```
     /// use teistro_astro::eclipse::EclipsesHere;
@@ -699,17 +929,10 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         .map_err(|error| error.into_error(sought))?;
         let at = fine.instant;
         let there = self.topocentric(at, Syzygy::New, place)?;
-        let (d, sun, moon) = there.discs(MOON_RADIUS);
-        if d >= sun + moon {
+        let Some(phase) = SolarPhase::of(&there) else {
             return Ok(None);
-        }
-        let (_, _, moon_inner) = there.discs(MOON_RADIUS_UMBRA);
-        let central = d < (moon_inner - sun).abs();
-        let kind = match (central, moon_inner > sun) {
-            (true, true) => SolarEclipseKind::Total,
-            (true, false) => SolarEclipseKind::Annular,
-            (false, _) => SolarEclipseKind::Partial,
         };
+        let central = phase.kind != SolarEclipseKind::Partial;
         // A contact: where the separation meets the discs' sum (outer) or
         // difference (inner), on one side of the maximum.
         let contact = |inner: bool, after: bool| -> Result<LocalMoment, Error> {
@@ -738,17 +961,34 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         };
         let first = contact(false, false)?;
         let fourth = contact(false, true)?;
+        let spans = self.up_spans(Body::Sun, (first.at, fourth.at), place, horizon)?;
+        let seen_maximum = match largest_seen(&spans, at, horizon, |t| {
+            Ok(self
+                .topocentric(t, Syzygy::New, place)
+                .map(|there| SolarPhase::of(&there))?
+                .map_or(0.0, |phase| phase.magnitude))
+        })? {
+            None => SolarSeenMaximum::NOT_SEEN,
+            Some((t, why)) => {
+                let then = self.topocentric(t, Syzygy::New, place)?;
+                // At an edge of the stretch seen the discs still overlap,
+                // the edge lying strictly between the outer contacts.
+                let seen = SolarPhase::of(&then).unwrap_or(SolarPhase::NONE);
+                SolarSeenMaximum {
+                    why,
+                    moment: Some(LocalMoment {
+                        at: JulianDay::try_new(t)?,
+                        altitude_deg: then.altitude_deg(Body::Sun),
+                    }),
+                    magnitude: Some(seen.magnitude),
+                    obscuration: Some(seen.obscuration),
+                }
+            }
+        };
         Ok(Some(SolarView {
-            kind,
-            // Inside a central phase the Moon's disc is wholly over or
-            // inside the Sun's, and the magnitude is the ratio of the two
-            // diameters, as the global one is at greatest eclipse.
-            magnitude: if central {
-                moon_inner / sun
-            } else {
-                (sun + moon - d) / (2.0 * sun)
-            },
-            obscuration: obscuration(d, sun, moon),
+            kind: phase.kind,
+            magnitude: phase.magnitude,
+            obscuration: phase.obscuration,
             first,
             second: central.then(|| contact(true, false)).transpose()?,
             third: central.then(|| contact(true, true)).transpose()?,
@@ -757,7 +997,8 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
                 at: JulianDay::try_new(at)?,
                 altitude_deg: there.altitude_deg(Body::Sun),
             },
-            seen: self.seen(Body::Sun, (first.at, fourth.at), place, horizon)?,
+            seen: hull(&spans)?,
+            seen_maximum,
         }))
     }
 
@@ -800,6 +1041,33 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         let moment = |at: JulianDay<Ut1>| self.moment(at.get(), Syzygy::Full, place, Body::Moon);
         let optional = |at: Option<JulianDay<Ut1>>| at.map(moment).transpose();
         let c = &eclipse.contacts;
+        let spans = self.up_spans(Body::Moon, (c.p1, c.p4), place, horizon)?;
+        let shadow = |t: f64| {
+            self.pair(t, Syzygy::Full)
+                .map(|pair| LunarAt::of(&pair, eclipse.shadow))
+        };
+        let seen_maximum = match largest_seen(&spans, eclipse.greatest.get(), horizon, |t| {
+            shadow(t).map(|at| at.magnitude(at.penumbra))
+        })? {
+            None => LunarSeenMaximum::NOT_SEEN,
+            // The greatest eclipse's own magnitudes, not a recomputation
+            // seconds off them.
+            Some((_, SeenAt::Maximum)) => LunarSeenMaximum {
+                why: SeenAt::Maximum,
+                moment: Some(moment(eclipse.greatest)?),
+                umbral_magnitude: Some(eclipse.umbral_magnitude),
+                penumbral_magnitude: Some(eclipse.penumbral_magnitude),
+            },
+            Some((t, why)) => {
+                let then = shadow(t)?;
+                LunarSeenMaximum {
+                    why,
+                    moment: Some(moment(JulianDay::try_new(t)?)?),
+                    umbral_magnitude: Some(then.magnitude(then.umbra)),
+                    penumbral_magnitude: Some(then.magnitude(then.penumbra)),
+                }
+            }
+        };
         Ok(LunarView {
             p1: moment(c.p1)?,
             u1: optional(c.u1)?,
@@ -808,11 +1076,14 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
             u3: optional(c.u3)?,
             u4: optional(c.u4)?,
             p4: moment(c.p4)?,
-            seen: self.seen(Body::Moon, (c.p1, c.p4), place, horizon)?,
+            seen: hull(&spans)?,
             umbral_seen: match (c.u1, c.u4) {
-                (Some(u1), Some(u4)) => self.seen(Body::Moon, (u1, u4), place, horizon)?,
+                (Some(u1), Some(u4)) => {
+                    hull(&self.up_spans(Body::Moon, (u1, u4), place, horizon)?)?
+                }
                 _ => None,
             },
+            seen_maximum,
         })
     }
 
@@ -954,16 +1225,16 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
         Ok(here.altitude_deg(body) - line)
     }
 
-    /// The first and last instants in `span` the body stands above the
-    /// horizon convention: sampled every ten minutes, each change of side
-    /// refined to the search's tolerance.
-    fn seen(
+    /// The stretches of `span` the body stands above the horizon
+    /// convention, in order: sampled every ten minutes, each change of
+    /// side refined to the search's tolerance.
+    fn up_spans(
         &self,
         body: Body,
         (from, to): (JulianDay<Ut1>, JulianDay<Ut1>),
         place: Place,
         horizon: &Horizon,
-    ) -> Result<Option<Visible>, Error> {
+    ) -> Result<Vec<(f64, f64)>, Error> {
         let (from, to) = (from.get(), to.get());
         let height = |t: f64| self.above(body, t, place, horizon);
         let steps = ((to - from) / VISIBILITY_STEP_DAYS).ceil().max(1.0);
@@ -984,12 +1255,9 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
                     error.into_error(|| format!("the {}'s horizon at {place}", body.key()))
                 })
         };
-        let mut first = None;
-        let mut last = None;
+        let mut spans = Vec::new();
         let mut previous = (from, height(from)?);
-        if previous.1 > 0.0 {
-            first = Some(from);
-        }
+        let mut opened = (previous.1 > 0.0).then_some(from);
         for n in 1..=count {
             #[allow(clippy::cast_precision_loss, reason = "a few dozen steps")]
             let t = if n == count {
@@ -1001,33 +1269,177 @@ impl<S: ShadowSource + ?Sized> Eclipses<'_, S> {
             if (h > 0.0) != (previous.1 > 0.0) {
                 let at = crossing(previous.0, t)?;
                 if h > 0.0 {
-                    first.get_or_insert(at);
-                } else {
-                    last = Some(at);
+                    opened = Some(at);
+                } else if let Some(start) = opened.take() {
+                    spans.push((start, at));
                 }
             }
             previous = (t, h);
         }
-        let Some(first) = first else {
-            return Ok(None);
-        };
-        // Up at the end, or down since the last setting.
-        let last = if previous.1 > 0.0 {
-            to
+        // Up at the end.
+        if let Some(start) = opened {
+            spans.push((start, to));
+        }
+        Ok(spans)
+    }
+}
+
+/// The first instant of the stretches seen to the last: a body that set
+/// and rose again inside one eclipse, which only a place near a pole can
+/// see, is read as up between.
+fn hull(spans: &[(f64, f64)]) -> Result<Option<Visible>, Error> {
+    match (spans.first(), spans.last()) {
+        (Some(&(from, _)), Some(&(_, to))) => Ok(Some(Visible {
+            from: JulianDay::try_new(from)?,
+            to: JulianDay::try_new(to)?,
+        })),
+        _ => Ok(None),
+    }
+}
+
+/// The instant of the largest phase seen over the stretches `spans`, and
+/// why it falls there, for a phase that grows to `maximum` and shrinks
+/// after it (crux C1980); `None` when nothing is seen.
+///
+/// Inside a stretch the maximum is seen. Otherwise the largest phase is
+/// at the nearer edge on either side of it: the end of the last stretch
+/// before it, where the body set, or the start of the first after it,
+/// where it rose. A place near a pole can have both, and the larger
+/// `phase` of the two is the one seen.
+fn largest_seen(
+    spans: &[(f64, f64)],
+    maximum: f64,
+    horizon: &Horizon,
+    phase: impl Fn(f64) -> Result<f64, Error>,
+) -> Result<Option<(f64, SeenAt)>, Error> {
+    if spans
+        .iter()
+        .any(|&(from, to)| from <= maximum && maximum <= to)
+    {
+        return Ok(Some((maximum, SeenAt::Maximum)));
+    }
+    let set = spans
+        .iter()
+        .rev()
+        .find(|&&(_, to)| to < maximum)
+        .map(|&(_, to)| (to, SeenAt::edge(false, horizon)));
+    let rose = spans
+        .iter()
+        .find(|&&(from, _)| from > maximum)
+        .map(|&(from, _)| (from, SeenAt::edge(true, horizon)));
+    Ok(match (set, rose) {
+        (Some(set), Some(rose)) => Some(if phase(rose.0)? > phase(set.0)? {
+            rose
         } else {
-            last.unwrap_or(to)
-        };
-        Ok(Some(Visible {
-            from: JulianDay::try_new(first)?,
-            to: JulianDay::try_new(last)?,
-        }))
+            set
+        }),
+        (one, other) => one.or(other),
+    })
+}
+
+/// A solar eclipse's phase from a place at an instant.
+#[derive(Clone, Copy, Debug)]
+struct SolarPhase {
+    kind: SolarEclipseKind,
+    magnitude: f64,
+    obscuration: f64,
+}
+
+impl SolarPhase {
+    /// No overlap.
+    const NONE: SolarPhase = SolarPhase {
+        kind: SolarEclipseKind::Partial,
+        magnitude: 0.0,
+        obscuration: 0.0,
+    };
+
+    /// The phase, `None` when the discs do not overlap.
+    fn of(there: &Topocentric) -> Option<SolarPhase> {
+        let (d, sun, moon) = there.discs(MOON_RADIUS);
+        if d >= sun + moon {
+            return None;
+        }
+        let (_, _, moon_inner) = there.discs(MOON_RADIUS_UMBRA);
+        let central = d < (moon_inner - sun).abs();
+        Some(SolarPhase {
+            kind: match (central, moon_inner > sun) {
+                (true, true) => SolarEclipseKind::Total,
+                (true, false) => SolarEclipseKind::Annular,
+                (false, _) => SolarEclipseKind::Partial,
+            },
+            // Inside a central phase the Moon's disc is wholly over or
+            // inside the Sun's, and the magnitude is the ratio of the two
+            // diameters, as the global one is at greatest eclipse.
+            magnitude: if central {
+                moon_inner / sun
+            } else {
+                (sun + moon - d) / (2.0 * sun)
+            },
+            obscuration: obscuration(d, sun, moon),
+        })
     }
 }
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use super::obscuration;
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::{SeenAt, largest_seen, obscuration};
+    use teistro_core::settings::SunriseConvention;
+    use teistro_port_ephemeris::Horizon;
+
+    /// A phase peaking at 10, falling a tenth an hour either side.
+    #[allow(
+        clippy::unnecessary_wraps,
+        reason = "the phase a search reads can fail; this one cannot"
+    )]
+    fn peaked(t: f64) -> Result<f64, teistro_core::error::Error> {
+        Ok(1.0 - (t - 10.0).abs() / 10.0)
+    }
+
+    #[test]
+    fn the_largest_phase_seen_is_the_maximum_or_the_nearer_edge() {
+        let almanac = &Horizon::UPPER_LIMB_REFRACTION;
+        let seen =
+            |spans: &[(f64, f64)], horizon| largest_seen(spans, 10.0, horizon, peaked).unwrap();
+        assert_eq!(seen(&[], almanac), None);
+        assert_eq!(seen(&[(5.0, 15.0)], almanac), Some((10.0, SeenAt::Maximum)));
+        // The maximum on an edge is seen.
+        assert_eq!(
+            seen(&[(10.0, 15.0)], almanac),
+            Some((10.0, SeenAt::Maximum))
+        );
+        assert_eq!(seen(&[(5.0, 8.0)], almanac), Some((8.0, SeenAt::Setting)));
+        assert_eq!(seen(&[(13.0, 20.0)], almanac), Some((13.0, SeenAt::Rising)));
+        // Near a pole: set before the maximum and risen after it, the
+        // nearer edge, and on a tie the setting.
+        assert_eq!(
+            seen(&[(0.0, 7.0), (12.0, 20.0)], almanac),
+            Some((12.0, SeenAt::Rising))
+        );
+        assert_eq!(
+            seen(&[(0.0, 9.0), (12.0, 20.0)], almanac),
+            Some((9.0, SeenAt::Setting))
+        );
+        assert_eq!(
+            seen(&[(0.0, 8.0), (12.0, 20.0)], almanac),
+            Some((8.0, SeenAt::Setting))
+        );
+        // A custom altitude is a limit, and its edges say so.
+        let limit = &Horizon::from_convention(SunriseConvention::Custom { altitude_deg: 5.0 });
+        assert_eq!(
+            seen(&[(5.0, 8.0)], limit),
+            Some((8.0, SeenAt::SettingPastLimit))
+        );
+        assert_eq!(
+            seen(&[(13.0, 20.0)], limit),
+            Some((13.0, SeenAt::RisingPastLimit))
+        );
+        // The classical horizon is a horizon, not a limit.
+        let classical = &Horizon::CENTRE_NO_REFRACTION;
+        assert_eq!(seen(&[(5.0, 8.0)], classical), Some((8.0, SeenAt::Setting)));
+    }
 
     #[test]
     fn obscuration_is_the_lens_of_two_discs() {

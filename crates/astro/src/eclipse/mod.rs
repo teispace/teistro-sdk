@@ -60,7 +60,10 @@ use crate::solve::{Caps, SolveError, minimum, refine};
 
 mod local;
 
-pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
+pub use local::{
+    EclipsesHere, LocalMoment, LunarHere, LunarSeenMaximum, LunarView, SeenAt, SolarHere,
+    SolarSeenMaximum, SolarView, Visible,
+};
 
 /// The Sun's radius, km (IAU 2015 nominal).
 ///
