@@ -3546,10 +3546,12 @@ def main() -> None:
     # its field in the message.
     kashinatha = {"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}
     with teistro.context(test_provider=True, settings=kashinatha) as hora:
-        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
-        (d2,) = hora.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700, vargas=[Varga.D2]).vargas
-        for j, placed in enumerate(d2.grahas):
-            put(f"varga-scheme-kashinatha-graha-{j}", f"{placed.graha.full_key} {placed.at.sign.full_key}")
+        hora_place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        (hora_chart,) = hora.chart.found(
+            instant=2451545.0, place=hora_place, utc_offset_seconds=20700, vargas=[Varga.D2]
+        ).vargas
+        for j, in_hora in enumerate(hora_chart.grahas):
+            put(f"varga-scheme-kashinatha-graha-{j}", f"{in_hora.graha.full_key} {in_hora.at.sign.full_key}")
     broken = {
         "kind": "CUSTOM",
         "classifier": "ALL",

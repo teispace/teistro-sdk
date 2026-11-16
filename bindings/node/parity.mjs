@@ -2715,7 +2715,7 @@ shape.dispose();
   const kashinatha = { D2: { kind: 'NAMED', which: 'KASHINATHA' } };
   const hora = new Context({ testProvider: true, settings: { vargas: { schemes: kashinatha } } });
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
-  const [d2] = hora.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vargas: ['D2'] }).vargas;
+  const [d2] = hora.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vargas: ['varga.D2'] }).vargas;
   d2.grahas.forEach((placed, j) => put(`varga-scheme-kashinatha-graha-${j}`, `${placed.graha} ${placed.at.sign}`));
   hora.dispose();
   const broken = { kind: 'CUSTOM', classifier: 'ALL', groups: [{ spans: { spans: 'EQUAL' }, map: { map: 'LISTED', signs: [0] } }] };

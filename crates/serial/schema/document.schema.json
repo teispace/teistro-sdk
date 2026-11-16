@@ -1874,6 +1874,11 @@
           "const": "ELEMENT",
           "description": "Fire, earth, air and water.",
           "type": "string"
+        },
+        {
+          "const": "SIGN",
+          "description": "Each sign its own group: a whole table, one list per sign, for a rule no arithmetic over the sign's number gives (Kashinatha's hora, Somanatha's drekkana).",
+          "type": "string"
         }
       ]
     },
@@ -7082,9 +7087,14 @@
             }
           ],
           "description": "The catalogued chart, or `None` for an arbitrary D-N."
+        },
+        "variant": {
+          "$ref": "#/$defs/VargaVariant",
+          "description": "Which of the chart's schemes this is: BPHS ch. 6's, a named variant, or a consumer's own rows (`CUSTOM`). Left out of a written scheme when it is `PARASHARA`, so a chart computed by the shipped rows writes, and hashes, as it always has."
         }
       },
       "required": [
+        "variant",
         "divisions",
         "classifier",
         "groups"
@@ -8503,6 +8513,46 @@
         "sign"
       ],
       "type": "object"
+    },
+    "VargaVariant": {
+      "description": "A named scheme a catalogued divisional chart is computed by (`vargas.schemes`, `03-design/varga-schemes.md`, cruxes C2063 to C2066). `VargaVariant::serves` says which charts each names.",
+      "oneOf": [
+        {
+          "const": "PARASHARA",
+          "description": "BPHS ch. 6, the scheme every chart ships by: the twenty-one rows the conformance corpus reproduces.",
+          "type": "string"
+        },
+        {
+          "const": "PARIVRITTI",
+          "description": "The cyclic (parivritti) chart, counted on round the zodiac from Aries: the hora's parivritti-dwaya (P.V.R. Narasimha Rao, *Personal Finances from Hora Chart*, 2003), the drekkana's parivritti-traya (the Vriddha Karika, परिवृत्ति त्रयं तेषां मेषादेः क्रमशो भवेत्, as Iranganti Rangacharya reads it), and the cyclic chaturthamsha and panchamsha the same handout tabulates. D2, D3, D4 and D5.",
+          "type": "string"
+        },
+        {
+          "const": "KASHINATHA",
+          "description": "Kashinatha's hora: the Sun's half of a sign goes to the day-strong sign of its lord, the Moon's half to the night-strong one, Leo and Cancer a pair (Narasimha Rao 2003, after Kashinath Rath). D2.",
+          "type": "string"
+        },
+        {
+          "const": "UMA_SHAMBHU",
+          "description": "The Uma-Shambhu hora: two cycles from Aries, an even sign's two halves reversed (Narasimha Rao, *Parasara's Hora Chart Decoded*, 2012). D2.",
+          "type": "string"
+        },
+        {
+          "const": "SOMANATHA",
+          "description": "Somanatha's drekkana: odd signs counted on from Aries, even signs back from Pisces (Somanatha's *Kalpalata* on Krishna Mishra's *Phalaratnamala*, as Iranganti Rangacharya gives it). D3.",
+          "type": "string"
+        },
+        {
+          "const": "KRISHNA_MISHRA",
+          "description": "Krishna Mishra's navamsha: an even sign's nine navamshas in reverse (Narasimha Rao 2012). D9.",
+          "type": "string"
+        },
+        {
+          "const": "CUSTOM",
+          "description": "A consumer's own rows, which a written chart names; chosen by writing the rows (`{\"kind\": \"CUSTOM\", ...}`), never by this name.",
+          "type": "string"
+        }
+      ]
     },
     "Varna": {
       "anyOf": [

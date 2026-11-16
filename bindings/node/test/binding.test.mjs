@@ -164,7 +164,7 @@ test('a varga scheme the settings choose places the chart, and a broken row is r
   const signs = Object.values(catalogue.Rashi);
   const ctx = context({ settings: { vargas: { schemes: { D2: { kind: 'NAMED', which: 'KASHINATHA' } } } } });
   const at = { instant: 2451545, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
-  const [hora] = ctx.chart.found({ ...at, vargas: ['D2'] }).vargas;
+  const [hora] = ctx.chart.found({ ...at, vargas: [Varga.D2] }).vargas;
   assert.equal(hora.varga, 'varga.D2');
   for (const { at: placed } of hora.grahas) {
     assert.equal(placed.sign, signs[kashinatha[signs.indexOf(placed.rashi)][placed.part]]);

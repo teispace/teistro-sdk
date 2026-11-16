@@ -373,6 +373,10 @@ name = "jaimini"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "varga_schemes"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "baseline_chara_karakas"
 required-features = ["builtin-ephemeris"]
 
