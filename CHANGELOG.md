@@ -154,13 +154,10 @@ tithi, karana, nakshatra, yoga, sankranti and sunrise of five years from 1900 to
 against DE440) reads the same on the true and the mean basis as before, and no
 golden, conformance fixture or measured page moves. A modern engine is now asked on
 TT under the context's `time.delta_t` rather than converting UT by its own Delta T,
-which is the fix for `nepali-drik` ignoring that setting. Eclipses move by the
-one solar radius (695,700 km for the eclipse module's 696,000 km): over the 454
-eclipses of 2000 to 2100 seen from Kathmandu no kind, greatest moment or verdict
-on whether the place sees one moves; a lunar penumbral contact moves at most 31.4 s,
-a total phase's 20.2 s, an umbral contact's 6.1 s, a solar local first or last
-contact 12.1 s, a sutak (`vedha`) bound 5.8 s, a magnitude at most 0.00047 and an
-obscuration 0.00075. The test provider's Sun at J2000.0 reads 278.5776° for
+which is the fix for `nepali-drik` ignoring that setting. Eclipses keep the canons'
+solar radius (696,000 km, Auwers' 959.63″ at 1 AU, against which every one of the
+454 eclipses of 2000 to 2100 is checked with NASA's catalogue) and do not move. The
+test provider's Sun at J2000.0 reads 278.5776° for
 278.5768°, asked on TT (below).
 - **Port:** every `PositionRequest`, `HorizonRequest`, `CrossingRequest` and
   `AnglesRequest` carries `Conventions` (the Delta T model and the precession,
@@ -192,8 +189,9 @@ obscuration 0.00075. The test provider's Sun at J2000.0 reads 278.5776° for
   IAU 2015 Resolution B3; the Moon 1,737.4 km), rising latitude `BODY`, dip `NONE`,
   altitude 0. Each is in the settings hash and the provenance; the standard
   refraction stays the almanac's stated 34′, named `STANDARD`.
-- **Changed:** one solar radius, 695,700 km; `eclipse::SUN_RADIUS_KM` (696,000 km)
-  is the rise-and-set constant now.
+- **Docs:** the two solar radii name what each is held to: `eclipse::SUN_RADIUS_KM`
+  (696,000 km) is the eclipse canons' and `rise_set::SUN_RADIUS_KM` (695,700 km) the
+  IAU 2015 photosphere a sunrise limb is reckoned by.
 - **Changed:** rise and set and crossings go through the completion's `choose`:
   under `prefer-native` a modern engine that declares `RISE_SET` or `CROSSINGS`
   answers, under any horizon model; a sidereal crossing and a terrain profile stay
