@@ -714,6 +714,12 @@ final List<Surface> requests = [
     Param('test', Scalar('Object')),
     Param('uncertaintyStepMinutes', Scalar('double')),
   ], fields: (v) => [v.births, v.control, v.dasha, v.depth, v.design, v.holds, v.referents, v.rules, v.shuffle, v.strata, v.study, v.subjects, v.test, v.uncertaintyStepMinutes]),
+  Built<SettingsDiffQuery>('SettingsDiffQuery', SettingsDiffQuery.new, [
+    Param('knobs', ListOf(Scalar('String'), (items) => List<String>.from(items))),
+  ], fields: (v) => [v.knobs]),
+  Built<SettingsQuery>('SettingsQuery', SettingsQuery.new, [
+    Param('knobs', ListOf(Scalar('String'), (items) => List<String>.from(items))),
+  ], fields: (v) => [v.knobs]),
   Built<CivilAsked>('CivilAsked', CivilAsked.new, [
     Param('calendar', Named('Calendar')),
     Param('instant', Scalar('double')),

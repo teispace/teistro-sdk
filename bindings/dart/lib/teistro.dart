@@ -4350,6 +4350,183 @@ final class Context {
       _dashaSystems,
     );
   }
+
+  /// **Why each knob has its value** (`settings.explain`): each knob with
+  /// its value, the layer that set it (`ROOT`, `PROFILE`, `CONTEXT` for the
+  /// context's `settings`, `REQUEST` for a [withSettings] patch), the
+  /// source the root or the profile cites for it, what a difference in it
+  /// moves (`SKY`, `SUNRISE`, `RULE`, `TIME`, `FORM`) and its effect note
+  /// in this context's locale. [knobs] names groups (`frame`) or knobs
+  /// (`frame.ayanamsha`), every knob when left out; an unknown one throws a
+  /// [TeistroException] naming it (`knobs[0]`).
+  ///
+  /// ```dart
+  /// final explained = ctx.explainSettings(knobs: ['frame', 'day.sunrise']);
+  /// explained.knobs.first.citation?.reference;
+  /// ```
+  SettingsExplained explainSettings({List<String>? knobs}) =>
+      SettingsExplained._of(
+        jsonDecode(_inner.explainSettings(_settingsQuery(knobs)))
+            as Map<String, Object?>,
+      );
+
+  /// **Where two contexts' settings part** (`settings.diff`): each knob
+  /// [knobs] names, every one when left out, on which this context's
+  /// settings and [other]'s differ, both values beside what it moves and
+  /// its effect note in this context's locale.
+  ///
+  /// ```dart
+  /// final diff = committee.diffSettings(drik);
+  /// diff.knobs.map((knob) => knob.knob); // frame.ayanamsha, …
+  /// ```
+  SettingsDiff diffSettings(Context other, {List<String>? knobs}) =>
+      SettingsDiff._of(
+        jsonDecode(_inner.diffSettings(other._inner, _settingsQuery(knobs)))
+            as Map<String, Object?>,
+      );
+}
+
+/// A settings query as its JSON; the library names an unknown knob.
+String _settingsQuery(List<String>? knobs) =>
+    knobs == null ? '{}' : jsonEncode({'knobs': knobs});
+
+/// A source cited for a knob's value.
+final class KnobSource {
+  const KnobSource({required this.text, required this.reference});
+
+  factory KnobSource._of(Map<String, Object?> json) => KnobSource(
+    text: json['text']! as String,
+    reference: json['reference']! as String,
+  );
+
+  final String text;
+  final String reference;
+}
+
+/// One knob explained ([Context.explainSettings]).
+final class KnobExplained {
+  const KnobExplained({
+    required this.knob,
+    required this.value,
+    required this.layer,
+    required this.profile,
+    required this.citation,
+    required this.moves,
+    required this.effect,
+  });
+
+  factory KnobExplained._of(Map<String, Object?> json) => KnobExplained(
+    knob: json['knob']! as String,
+    value: json['value'],
+    layer: json['layer']! as String,
+    profile: json['profile'] as String?,
+    citation:
+        json['citation'] == null
+            ? null
+            : KnobSource._of(json['citation']! as Map<String, Object?>),
+    moves: json['moves']! as String,
+    effect: json['effect']! as String,
+  );
+
+  /// `group.knob`.
+  final String knob;
+
+  /// Its value, as the canonical settings document writes it.
+  final Object? value;
+
+  /// `ROOT`, `PROFILE`, `CONTEXT`, `REQUEST` or `DOCUMENT`.
+  final String layer;
+
+  /// The profile that set it, where a profile did.
+  final String? profile;
+
+  /// The root's or the profile's citation; null where a patch set it.
+  final KnobSource? citation;
+
+  /// `SKY`, `SUNRISE`, `RULE`, `TIME` or `FORM`.
+  final String moves;
+
+  /// What it changes, in one line, in the context's locale.
+  final String effect;
+}
+
+/// Every knob asked, each with the layer that set it, why and what it
+/// changes.
+final class SettingsExplained {
+  const SettingsExplained({
+    required this.profile,
+    required this.settingsHash,
+    required this.knobs,
+  });
+
+  factory SettingsExplained._of(Map<String, Object?> json) => SettingsExplained(
+    profile: json['profile']! as String,
+    settingsHash: json['settingsHash']! as String,
+    knobs: List.unmodifiable(
+      (json['knobs']! as List<Object?>).map(
+        (knob) => KnobExplained._of(knob! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final String profile;
+  final String settingsHash;
+  final List<KnobExplained> knobs;
+}
+
+/// One knob on which two contexts' settings differ.
+final class KnobDifference {
+  const KnobDifference({
+    required this.knob,
+    required this.value,
+    required this.otherValue,
+    required this.moves,
+    required this.effect,
+  });
+
+  factory KnobDifference._of(Map<String, Object?> json) => KnobDifference(
+    knob: json['knob']! as String,
+    value: json['value'],
+    otherValue: json['otherValue'],
+    moves: json['moves']! as String,
+    effect: json['effect']! as String,
+  );
+
+  final String knob;
+  final Object? value;
+  final Object? otherValue;
+  final String moves;
+  final String effect;
+}
+
+/// The knobs on which two contexts' settings differ
+/// ([Context.diffSettings]).
+final class SettingsDiff {
+  const SettingsDiff({
+    required this.profile,
+    required this.otherProfile,
+    required this.settingsHash,
+    required this.otherSettingsHash,
+    required this.knobs,
+  });
+
+  factory SettingsDiff._of(Map<String, Object?> json) => SettingsDiff(
+    profile: json['profile']! as String,
+    otherProfile: json['otherProfile']! as String,
+    settingsHash: json['settingsHash']! as String,
+    otherSettingsHash: json['otherSettingsHash']! as String,
+    knobs: List.unmodifiable(
+      (json['knobs']! as List<Object?>).map(
+        (knob) => KnobDifference._of(knob! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final String profile;
+  final String otherProfile;
+  final String settingsHash;
+  final String otherSettingsHash;
+  final List<KnobDifference> knobs;
 }
 
 /// What a library says about its own build: the SDK version, the ABI and

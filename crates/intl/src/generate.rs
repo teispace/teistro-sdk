@@ -2441,10 +2441,20 @@ mod tests {
             assert!(dart.contains(&format!("'{key}'")), "dart lacks {key}");
             assert!(java.contains(&format!("\"{key}\"")), "java lacks {key}");
         }
+        // Text standing as a word, not inside a camelCase key
+        // (`sdk.settings.effect.strength.moonBinduFromJupiter`).
+        let leaks = |surface: &str, text: &str| {
+            surface.match_indices(text).any(|(at, _)| {
+                !surface[..at]
+                    .chars()
+                    .next_back()
+                    .is_some_and(char::is_alphabetic)
+            })
+        };
         for text in ["Welcome to", "conjoins", "rules house", "Jupiter", "वृश्चिक"] {
-            assert!(!ts.contains(text), "ts leaks {text:?}");
-            assert!(!dart.contains(text), "dart leaks {text:?}");
-            assert!(!java.contains(text), "java leaks {text:?}");
+            assert!(!leaks(&ts, text), "ts leaks {text:?}");
+            assert!(!leaks(&dart, text), "dart leaks {text:?}");
+            assert!(!leaks(&java, text), "java leaks {text:?}");
         }
         assert!(java.contains("\npackage com.teispace.teistro.messages;\n"));
         assert!(java.contains("public String grahaInBhava(long bhava, GrahaKey graha) {"));

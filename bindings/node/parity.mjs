@@ -2555,6 +2555,28 @@ put(
   put('sky-pose-ascendant', placed(ecliptic[value.sky.ecliptic.findIndex((point) => point.kind === 'ASCENDANT')]));
 }
 
+// ── The settings explained and compared ────────────────────────────────
+// `nepali-drik` with the node patched per call, every knob explained, and
+// the knobs on which the committee's profile and `nepali-drik` part
+// (`03-design/settings-and-profiles.md` §3.5).
+{
+  const drik = new Context({ profile: 'nepali-drik' });
+  const mean = drik.withSettings({ frame: { node: 'MEAN' } });
+  const explained = mean.explainSettings();
+  const knob = (name) => explained.knobs.find((one) => one.knob === name);
+  const [node, centre] = [knob('frame.node'), knob('frame.centre')];
+  const cited = explained.knobs.filter((one) => one.citation !== null).length;
+  put('settings-explain', `${explained.knobs.length} ${cited} ${node.layer} ${centre.layer} ${centre.profile ?? '-'}`);
+  put('settings-explain-hash', explained.settingsHash);
+  put('settings-explain-effect', node.effect);
+  const committee = new Context({ profile: 'nepali-committee' });
+  const diff = committee.diffSettings(drik);
+  put('settings-diff', diff.knobs.map((one) => `${one.knob}:${one.moves}`).join(','));
+  committee.dispose();
+  mean.dispose();
+  drik.dispose();
+}
+
 // ── Aayadi ─────────────────────────────────────────────────────────────
 // The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana:
 // each quantity `QUANTITY:count`, the vyaya's kind, the tara, then each

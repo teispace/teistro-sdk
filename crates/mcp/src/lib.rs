@@ -1596,7 +1596,12 @@ impl Server {
             Some(json) => teistro::settings::SettingsPatch::from_json(json)?,
             None => teistro::settings::SettingsPatch::default(),
         };
-        let resolved = profile.settings().derived(&patch, profile.id.clone())?;
+        // The call's patch is the context's layer, as a build's patch is,
+        // so `settings.explain` under a scope names the same layers as
+        // under a context built with that profile and patch.
+        let resolved = profile
+            .resolve(&patch)
+            .map_err(|diagnostics| Error::from(diagnostics).under("settings"))?;
         let locale = asked.locale.as_deref();
         let base = self.base()?;
         let context = if base.derives(&resolved.settings) {

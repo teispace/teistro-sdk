@@ -114,6 +114,48 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('explainSettings names each knob\'s layer and source, and diffSettings where two contexts part', () => {
+  // The context's own patch is its layer, a per-call patch the request's.
+  const ctx = context({ settings: { frame: { node: 'TRUE' } } });
+  const derived = ctx.withSettings({ day: { ghati_reckoning: 'PROPORTIONAL' } });
+  const explained = derived.explainSettings();
+  const knob = (name) => explained.knobs.find((one) => one.knob === name);
+  assert.equal(explained.profile, 'nepali-drik');
+  assert.equal(explained.settingsHash, derived.settingsHash);
+  assert.deepEqual(
+    ['frame.node', 'day.ghati_reckoning', 'frame.centre', 'output.precision'].map((name) => knob(name).layer),
+    ['CONTEXT', 'REQUEST', 'PROFILE', 'ROOT'],
+  );
+  assert.equal(knob('frame.node').citation, null, 'a patch is the caller\'s choice');
+  assert.equal(knob('frame.centre').profile, 'nepali-drik');
+  assert.equal(typeof knob('frame.centre').citation.reference, 'string');
+  assert.equal(knob('frame.siddhanta').moves, 'SKY');
+  // The note in the context's locale, Nepali here.
+  assert.match(knob('frame.node').effect, /राहु/);
+  // A shipped profile cites every knob.
+  const shipped = context();
+  assert.ok(shipped.explainSettings().knobs.every((one) => one.citation !== null));
+  // A selection keeps the document's order; an unknown knob is named.
+  assert.deepEqual(
+    shipped.explainSettings({ knobs: ['day.sunrise', 'frame'] }).knobs.map((one) => one.knob).slice(0, 2),
+    ['frame.zodiac', 'frame.ayanamsha'],
+  );
+  assert.throws(() => shipped.explainSettings({ knobs: ['frame.nod'] }), (e) => e.field === 'knobs[0]');
+  assert.throws(() => shipped.explainSettings({ knobs: 'frame' }), TypeError);
+
+  const committee = new Context({ profile: 'nepali-committee' });
+  const drik = new Context({ profile: 'nepali-drik' });
+  const diff = committee.diffSettings(drik);
+  assert.equal(diff.otherProfile, 'nepali-drik');
+  assert.deepEqual(
+    diff.knobs.map((one) => one.knob),
+    ['frame.ayanamsha', 'frame.centre', 'frame.siddhanta', 'panchanga.lagna_table'],
+  );
+  assert.deepEqual(committee.diffSettings(committee).knobs, []);
+  assert.throws(() => committee.diffSettings({}), TypeError);
+  for (const one of [ctx, derived, shipped, committee, drik]) one.dispose();
+});
+
 test('withSettings derives a context under a patch and leaves its parent as it was', () => {
   const at = {
     instant: 2451545,

@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 230 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 345 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -609,4 +609,119 @@ fn every_typed_message_renders_from_the_sdk_sources() {
         vara: teistro_core::catalogue::Vara::ALL[0],
         vara_key: String::from("varaKey"),
     }, false);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::aspect::DrishtiTable, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::aspect::NodeAspects, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::CivilCalendar, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::Eras, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::LunarMonth, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::Samvatsara, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AfterCycle, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AshtottariGrouping, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaPlace, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaReadings, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaSpan, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::Balance, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::BirthPeriod, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::DecennialDivision, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::Depth, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::DualLord, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::FirdariaNodes, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::KalachakraAfterNinth, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::KalachakraBalance, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::KalachakraMembership, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::KarakaDivision, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::NaisargikaDivision, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::RashiStart, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::ReleasingSharedSign, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::SeedOverflow, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::ShantaSign, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::StrongestGraha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::YearLength, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::DayBoundary, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::GhatiReckoning, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::HoraReckoning, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Sunrise, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Ayanamsha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::AyanamshaBasis, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Centre, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::NakshatraScheme, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Node, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Positions, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Siddhanta, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Zodiac, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::gochar::AshtakavargaGoodFrom, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::gochar::NodeObstruction, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::gochar::NodeVedha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::gochar::TransitCentre, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::houses::ChalitSystem, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::houses::ModuleOverrides, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::houses::PlacementSystem, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::houses::PolarPolicy, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::Brahma, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::CharaKarakas, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::EightKarakaOrder, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::GrahaArudhaException, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::NodeCoLordship, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::DayLordDay, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::NodeRulers, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::RetrogradeRejection, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::RulingCount, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::output::Precision, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::AmritKalam, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::Centre, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::Durmuhurta, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::EclipseHorizon, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::EclipseShadow, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::EclipseVedha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::LagnaTable, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::MoonEvents, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::MuhurtaTables, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaName, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaStart, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::PunyaKala, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::Ritu, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::ShivaVasa, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::SolarMonthStart, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::panchanga::Varjyam, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::CacheCells, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::Overrides, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::Tier, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::CombustionOrbs, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::MaranaSaturn, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::MaranaVenus, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::PushkaraBhaga, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::SayanadiGhatis, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::SayanadiNodes, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::BalaScheme, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Benefics, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::BhavaDig, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::BhavaDivision, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::BhavaDrishti, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::BhavaSpecialRules, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Cheshta, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Dig, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Drekkana, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Drik, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Ekadhipatya, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::IshtaKashta, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::KaalaLords, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Kranti, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::LuminaryCheshta, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::MoonBinduFromJupiter, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::MoonPaksha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Naisargika, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Nathonnatha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::PreDawnNight, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::RequiredRupas, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Saptavargaja, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Shodhana, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::SunAyana, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Vimshopaka, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::strength::Yuddha, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DeltaT, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DstGap, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DstOverlap, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::UnknownTime, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn, true);
 }

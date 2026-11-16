@@ -447,6 +447,59 @@ public final class Context implements AutoCloseable {
     }
 
     /**
+     * <b>Why each knob has its value</b> ({@code settings.explain}): each
+     * knob with its value, the layer that set it ({@code ROOT},
+     * {@code PROFILE}, {@code CONTEXT} for the context's settings patch,
+     * {@code REQUEST} for a {@link #withSettings(Map)} patch), the source the
+     * root or the profile cites for it, what a difference in it moves and
+     * its effect note in this context's locale.
+     *
+     * @return every knob explained
+     */
+    public SettingsExplained explainSettings() {
+        return explainSettings(null);
+    }
+
+    /**
+     * {@link #explainSettings()} for the knobs {@code knobs} names.
+     *
+     * @param knobs groups ({@code frame}) or knobs ({@code frame.ayanamsha}); every knob when null
+     * @return the knobs asked, explained
+     * @throws TeistroException {@code INVALID_ARG} at {@code knobs[i]} for an entry that names no group or knob
+     */
+    public SettingsExplained explainSettings(List<String> knobs) {
+        String json = SettingsExplained.query(knobs);
+        return SettingsExplained.read(locked((lib, raw) -> Calls.explainSettings(lib, raw, json)));
+    }
+
+    /**
+     * <b>Where two contexts' settings part</b> ({@code settings.diff}):
+     * each knob on which this context's settings and {@code other}'s
+     * differ, both values beside what it moves and its effect note in this
+     * context's locale.
+     *
+     * @param other the context compared with
+     * @return the knobs that differ
+     */
+    public SettingsDiff diffSettings(Context other) {
+        return diffSettings(other, null);
+    }
+
+    /**
+     * {@link #diffSettings(Context)} over the knobs {@code knobs} names.
+     *
+     * @param other the context compared with
+     * @param knobs groups or knobs; every knob when null
+     * @return the knobs asked that differ
+     * @throws TeistroException {@code INVALID_ARG} at {@code knobs[i]} for an entry that names no group or knob
+     */
+    public SettingsDiff diffSettings(Context other, List<String> knobs) {
+        java.util.Objects.requireNonNull(other, "other");
+        String json = SettingsExplained.query(knobs);
+        return SettingsDiff.read(lockedWith(other, (lib, ours, theirs) -> Calls.diffSettings(lib, ours, theirs, json)));
+    }
+
+    /**
      * Any record entry point answered in full by its name, as the agent
      * server answers it ({@code 03-design/result-detail.md}): the envelope
      * {@code {value, provenance}}, or the value alone where the record

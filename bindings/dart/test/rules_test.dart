@@ -422,6 +422,8 @@ const Map<String, Type> _records = {
   'naming.syllables': NamingSyllablesRequest,
   'numerology.profile': NumerologyRequest,
   'research.study': ResearchRequest,
+  'settings.diff': SettingsDiffQuery,
+  'settings.explain': SettingsQuery,
   'time.civil': CivilAsked,
   'time.convert': ScaleRequest,
   'time.resolve': ResolveAsked,

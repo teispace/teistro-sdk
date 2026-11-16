@@ -234,6 +234,91 @@ document, so a later knob appends and an old document still hashes the
 same under the old schema; a hash is never recomputed under a newer
 schema without saying so.
 
+### 3.5 Explain and diff (SR-110)
+
+`settings.explain` answers, for each knob of a resolved value, the
+**layer** that set it, the source that layer cites for it, what a
+difference in it **moves** and a one-line **effect** note.
+`settings.diff` answers the knobs on which two resolved values differ,
+each with the same note. Both take `{knobs}`, groups (`frame`) or knobs
+(`frame.ayanamsha`), every knob when left out, and answer in document
+order.
+
+**Provenance is an accounting, not a second resolver.** The merge that
+resolves the settings records it: each group's `apply_noting` reports
+the knob a patch set, and `Settings::laid` stamps it with the layer and,
+for a profile, that profile's citation. `Resolved` carries the result as
+`origins`, so explain reads what resolution did rather than redoing it.
+A test reads every shipped profile's patch from its JSON, with and
+without a context patch, and holds explain's layer to that reading for
+every knob.
+
+| Layer | Set by |
+|---|---|
+| `ROOT` | `root()`, cited knob by knob (`ROOT_SOURCES`, one entry per knob) |
+| `PROFILE` | the shipped profile, or the base it extends; `profile` names which |
+| `CONTEXT` | the patch the context was built with (`options.settings`; an MCP call's `settings`) |
+| `REQUEST` | a per-call patch laid over a context (`withSettings`, `ts_context_derive`) |
+| `DOCUMENT` | settings read whole, from a snapshot or a recorded document |
+
+A consumer profile (SR-109) will be a layer between `PROFILE` and
+`CONTEXT` when it lands. The MCP server resolves a call's scope as a
+build resolves it, the profile and then the patch, so an MCP call's
+`settings` is the `CONTEXT` layer and an explanation through a tool is
+the one a context built with the same profile and patch gives.
+
+A snapshot handed back to the context it was taken from
+(`Context::with_settings`, which re-runs a receipt) keeps that context's
+layers, since the values are the ones they set; any other snapshot is
+`DOCUMENT` throughout. So a receipt of `settings.explain` holds where it
+was issued, and re-run elsewhere it differs only where the account of
+who set a knob does.
+
+**Single source.** A knob's `Moves` sits beside its declaration in the
+`group!` table (`frame.node: Node => Sky`), its citation beside the
+profile or the root value that sets it, and its effect note in the
+`sdk.settings` pack under `effect.<group>.<knob>`, the knob in
+camelCase (`effect.frame.ayanamshaBasis`). Tests hold every knob to a
+`Moves`, every knob of the root and of every shipped profile to a
+citation (a profile's `*` citation covers the knobs it sets wholesale),
+and every knob to a note in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva,
+with sa-Latn derived.
+
+`Moves` is `SKY` (a position or the frame it is read in), `SUNRISE` (when
+the day starts, so every limb read at it), `RULE` (how a text's rule is
+read), `TIME` (how a civil time maps to an instant) or `FORM` (how an
+answer is written, never what it is). `almanac.compare` (SR-94) maps
+`SKY` to its `MODEL` reason and `RULE` to `RULE`, from the same table.
+
+**The numbers in the notes.** The frame notes were measured with the
+built-in ephemeris over 1900 to 2100 every 3.1 days
+(`crates/sdk/tests/settings_effects.rs`; its full run is ignored by
+default and run with `--ignored`, and a coarse sample always runs):
+
+| Knob | Measured |
+|---|---|
+| `frame.node` | the true node stands up to 117.96′ (1°58′) from the mean |
+| `frame.positions` | apparent against true: the Sun 20.9″, the Moon 0.8″, Mercury 60.7″, Venus 49.3″, Mars 41.6″, Jupiter 33.4″, Saturn 28.8″ |
+| `frame.centre` | the Moon from Kathmandu stands up to 61.42′ from the geocentric Moon |
+
+The rest are standard values rather than measurements: nutation in
+longitude up to 17.2″ (`frame.ayanamsha_basis`), Lahiri against
+Krishnamurti about 6′, the compact tier's Moon about 1″, and 360 against
+365.25 days compounding to about 21 months over 120 years (crux C6).
+`kp-default` and `western-tropical-default` set the true node, which
+neither tradition's sources name; that choice is cited as the SDK's own
+and left open (crux C1990).
+
+| Surface | Explain | Diff |
+|---|---|---|
+| Rust | `ctx.explain_settings(&query)` | `ctx.diff_settings(&other, &query)` |
+| C | `ts_context_explain_settings(ctx, request_json, &out_json)` | `ts_context_diff_settings(ctx, other, request_json, &out_json)` |
+| Node, wasm | `ctx.explainSettings({ knobs })` | `ctx.diffSettings(other, { knobs })` |
+| Python | `ctx.explain_settings(knobs)` | `ctx.diff_settings(other, knobs)` |
+| Dart | `ctx.explainSettings(knobs: ...)` | `ctx.diffSettings(other, knobs: ...)` |
+| Java | `ctx.explainSettings(knobs)` | `ctx.diffSettings(other, knobs)` |
+| MCP | the `settings.explain` tool | the `settings.diff` tool, `other` naming the second scope |
+
 ## 4. Algorithms
 
 Resolution is a fold of patches with `Option::or`; validation is a list
@@ -346,9 +431,10 @@ a newer schema: `SCHEMA_VERSION`.
 
 ## 9. Localisation
 
-`sdk.settings` holds every knob's name and every value's label and
-description so a consumer can render a settings screen from the
-catalogue; the SDK renders none itself.
+`sdk.settings` holds every knob's effect note under
+`effect.<group>.<knob>` (§3.5), which `settings.explain` and
+`settings.diff` render in the context's locale. A knob's display name
+and each value's label are not in it yet.
 
 ## 10. Open questions
 

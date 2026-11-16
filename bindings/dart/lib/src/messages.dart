@@ -5604,6 +5604,264 @@ final class MessagesSdkSankalpa {
       _r.render('sdk.sankalpa.himavatkhandeVara', {'vara': {r'$entity': vara.key}, 'varaKey': varaKey});
 }
 
+final class MessagesSdkSettingsEffectAspect {
+  const MessagesSdkSettingsEffectAspect(this._r);
+
+  final Renderer _r;
+
+  String drishtiTable() => _r.render('sdk.settings.effect.aspect.drishtiTable');
+  String nodeAspects() => _r.render('sdk.settings.effect.aspect.nodeAspects');
+}
+
+final class MessagesSdkSettingsEffectCalendars {
+  const MessagesSdkSettingsEffectCalendars(this._r);
+
+  final Renderer _r;
+
+  String civilCalendar() => _r.render('sdk.settings.effect.calendars.civilCalendar');
+  String eras() => _r.render('sdk.settings.effect.calendars.eras');
+  String lunarMonth() => _r.render('sdk.settings.effect.calendars.lunarMonth');
+  String samvatsara() => _r.render('sdk.settings.effect.calendars.samvatsara');
+}
+
+final class MessagesSdkSettingsEffectDasha {
+  const MessagesSdkSettingsEffectDasha(this._r);
+
+  final Renderer _r;
+
+  String afterCycle() => _r.render('sdk.settings.effect.dasha.afterCycle');
+  String ashtottariGrouping() => _r.render('sdk.settings.effect.dasha.ashtottariGrouping');
+  String ayurdayaPlace() => _r.render('sdk.settings.effect.dasha.ayurdayaPlace');
+  String ayurdayaReadings() => _r.render('sdk.settings.effect.dasha.ayurdayaReadings');
+  String ayurdayaSpan() => _r.render('sdk.settings.effect.dasha.ayurdayaSpan');
+  String balance() => _r.render('sdk.settings.effect.dasha.balance');
+  String birthPeriod() => _r.render('sdk.settings.effect.dasha.birthPeriod');
+  String decennialDivision() => _r.render('sdk.settings.effect.dasha.decennialDivision');
+  String depth() => _r.render('sdk.settings.effect.dasha.depth');
+  String dualLord() => _r.render('sdk.settings.effect.dasha.dualLord');
+  String firdariaNodes() => _r.render('sdk.settings.effect.dasha.firdariaNodes');
+  String kalachakraAfterNinth() => _r.render('sdk.settings.effect.dasha.kalachakraAfterNinth');
+  String kalachakraBalance() => _r.render('sdk.settings.effect.dasha.kalachakraBalance');
+  String kalachakraMembership() => _r.render('sdk.settings.effect.dasha.kalachakraMembership');
+  String karakaDivision() => _r.render('sdk.settings.effect.dasha.karakaDivision');
+  String naisargikaDivision() => _r.render('sdk.settings.effect.dasha.naisargikaDivision');
+  String rashiStart() => _r.render('sdk.settings.effect.dasha.rashiStart');
+  String releasingSharedSign() => _r.render('sdk.settings.effect.dasha.releasingSharedSign');
+  String seedOverflow() => _r.render('sdk.settings.effect.dasha.seedOverflow');
+  String shantaSign() => _r.render('sdk.settings.effect.dasha.shantaSign');
+  String strongestGraha() => _r.render('sdk.settings.effect.dasha.strongestGraha');
+  String yearLength() => _r.render('sdk.settings.effect.dasha.yearLength');
+}
+
+final class MessagesSdkSettingsEffectDay {
+  const MessagesSdkSettingsEffectDay(this._r);
+
+  final Renderer _r;
+
+  String dayBoundary() => _r.render('sdk.settings.effect.day.dayBoundary');
+  String ghatiReckoning() => _r.render('sdk.settings.effect.day.ghatiReckoning');
+  String horaReckoning() => _r.render('sdk.settings.effect.day.horaReckoning');
+  String polarDayPolicy() => _r.render('sdk.settings.effect.day.polarDayPolicy');
+  String sunrise() => _r.render('sdk.settings.effect.day.sunrise');
+}
+
+final class MessagesSdkSettingsEffectFrame {
+  const MessagesSdkSettingsEffectFrame(this._r);
+
+  final Renderer _r;
+
+  String ayanamsha() => _r.render('sdk.settings.effect.frame.ayanamsha');
+  String ayanamshaBasis() => _r.render('sdk.settings.effect.frame.ayanamshaBasis');
+  String centre() => _r.render('sdk.settings.effect.frame.centre');
+  String nakshatraScheme() => _r.render('sdk.settings.effect.frame.nakshatraScheme');
+  String node() => _r.render('sdk.settings.effect.frame.node');
+  String positions() => _r.render('sdk.settings.effect.frame.positions');
+  String siddhanta() => _r.render('sdk.settings.effect.frame.siddhanta');
+  String zodiac() => _r.render('sdk.settings.effect.frame.zodiac');
+}
+
+final class MessagesSdkSettingsEffectGochar {
+  const MessagesSdkSettingsEffectGochar(this._r);
+
+  final Renderer _r;
+
+  String ashtakavargaGoodFrom() => _r.render('sdk.settings.effect.gochar.ashtakavargaGoodFrom');
+  String nodeObstruction() => _r.render('sdk.settings.effect.gochar.nodeObstruction');
+  String nodeVedha() => _r.render('sdk.settings.effect.gochar.nodeVedha');
+  String transitCentre() => _r.render('sdk.settings.effect.gochar.transitCentre');
+}
+
+final class MessagesSdkSettingsEffectHouses {
+  const MessagesSdkSettingsEffectHouses(this._r);
+
+  final Renderer _r;
+
+  String chalitSystem() => _r.render('sdk.settings.effect.houses.chalitSystem');
+  String moduleOverrides() => _r.render('sdk.settings.effect.houses.moduleOverrides');
+  String placementSystem() => _r.render('sdk.settings.effect.houses.placementSystem');
+  String polarPolicy() => _r.render('sdk.settings.effect.houses.polarPolicy');
+}
+
+final class MessagesSdkSettingsEffectJaimini {
+  const MessagesSdkSettingsEffectJaimini(this._r);
+
+  final Renderer _r;
+
+  String brahma() => _r.render('sdk.settings.effect.jaimini.brahma');
+  String charaKarakas() => _r.render('sdk.settings.effect.jaimini.charaKarakas');
+  String eightKarakaOrder() => _r.render('sdk.settings.effect.jaimini.eightKarakaOrder');
+  String grahaArudhaException() => _r.render('sdk.settings.effect.jaimini.grahaArudhaException');
+  String nodeCoLordship() => _r.render('sdk.settings.effect.jaimini.nodeCoLordship');
+}
+
+final class MessagesSdkSettingsEffectKp {
+  const MessagesSdkSettingsEffectKp(this._r);
+
+  final Renderer _r;
+
+  String dayLordDay() => _r.render('sdk.settings.effect.kp.dayLordDay');
+  String nodeRulers() => _r.render('sdk.settings.effect.kp.nodeRulers');
+  String retrogradeRejection() => _r.render('sdk.settings.effect.kp.retrogradeRejection');
+  String rulingCount() => _r.render('sdk.settings.effect.kp.rulingCount');
+}
+
+final class MessagesSdkSettingsEffectOutput {
+  const MessagesSdkSettingsEffectOutput(this._r);
+
+  final Renderer _r;
+
+  String precision() => _r.render('sdk.settings.effect.output.precision');
+}
+
+final class MessagesSdkSettingsEffectPanchanga {
+  const MessagesSdkSettingsEffectPanchanga(this._r);
+
+  final Renderer _r;
+
+  String amritKalam() => _r.render('sdk.settings.effect.panchanga.amritKalam');
+  String centre() => _r.render('sdk.settings.effect.panchanga.centre');
+  String durmuhurta() => _r.render('sdk.settings.effect.panchanga.durmuhurta');
+  String eclipseHorizon() => _r.render('sdk.settings.effect.panchanga.eclipseHorizon');
+  String eclipseShadow() => _r.render('sdk.settings.effect.panchanga.eclipseShadow');
+  String eclipseVedha() => _r.render('sdk.settings.effect.panchanga.eclipseVedha');
+  String lagnaTable() => _r.render('sdk.settings.effect.panchanga.lagnaTable');
+  String moonEvents() => _r.render('sdk.settings.effect.panchanga.moonEvents');
+  String muhurtaTables() => _r.render('sdk.settings.effect.panchanga.muhurtaTables');
+  String panchakaName() => _r.render('sdk.settings.effect.panchanga.panchakaName');
+  String panchakaStart() => _r.render('sdk.settings.effect.panchanga.panchakaStart');
+  String punyaKala() => _r.render('sdk.settings.effect.panchanga.punyaKala');
+  String ritu() => _r.render('sdk.settings.effect.panchanga.ritu');
+  String shivaVasa() => _r.render('sdk.settings.effect.panchanga.shivaVasa');
+  String solarMonthStart() => _r.render('sdk.settings.effect.panchanga.solarMonthStart');
+  String varjyam() => _r.render('sdk.settings.effect.panchanga.varjyam');
+}
+
+final class MessagesSdkSettingsEffectProvider {
+  const MessagesSdkSettingsEffectProvider(this._r);
+
+  final Renderer _r;
+
+  String cacheCells() => _r.render('sdk.settings.effect.provider.cacheCells');
+  String overrides() => _r.render('sdk.settings.effect.provider.overrides');
+  String tier() => _r.render('sdk.settings.effect.provider.tier');
+}
+
+final class MessagesSdkSettingsEffectState {
+  const MessagesSdkSettingsEffectState(this._r);
+
+  final Renderer _r;
+
+  String combustionOrbs() => _r.render('sdk.settings.effect.state.combustionOrbs');
+  String maranaSaturn() => _r.render('sdk.settings.effect.state.maranaSaturn');
+  String maranaVenus() => _r.render('sdk.settings.effect.state.maranaVenus');
+  String pushkaraBhaga() => _r.render('sdk.settings.effect.state.pushkaraBhaga');
+  String sayanadiGhatis() => _r.render('sdk.settings.effect.state.sayanadiGhatis');
+  String sayanadiNodes() => _r.render('sdk.settings.effect.state.sayanadiNodes');
+}
+
+final class MessagesSdkSettingsEffectStrength {
+  const MessagesSdkSettingsEffectStrength(this._r);
+
+  final Renderer _r;
+
+  String balaScheme() => _r.render('sdk.settings.effect.strength.balaScheme');
+  String benefics() => _r.render('sdk.settings.effect.strength.benefics');
+  String bhavaDig() => _r.render('sdk.settings.effect.strength.bhavaDig');
+  String bhavaDivision() => _r.render('sdk.settings.effect.strength.bhavaDivision');
+  String bhavaDrishti() => _r.render('sdk.settings.effect.strength.bhavaDrishti');
+  String bhavaSpecialRules() => _r.render('sdk.settings.effect.strength.bhavaSpecialRules');
+  String cheshta() => _r.render('sdk.settings.effect.strength.cheshta');
+  String dig() => _r.render('sdk.settings.effect.strength.dig');
+  String drekkana() => _r.render('sdk.settings.effect.strength.drekkana');
+  String drik() => _r.render('sdk.settings.effect.strength.drik');
+  String ekadhipatya() => _r.render('sdk.settings.effect.strength.ekadhipatya');
+  String ishtaKashta() => _r.render('sdk.settings.effect.strength.ishtaKashta');
+  String kaalaLords() => _r.render('sdk.settings.effect.strength.kaalaLords');
+  String kranti() => _r.render('sdk.settings.effect.strength.kranti');
+  String luminaryCheshta() => _r.render('sdk.settings.effect.strength.luminaryCheshta');
+  String moonBinduFromJupiter() => _r.render('sdk.settings.effect.strength.moonBinduFromJupiter');
+  String moonPaksha() => _r.render('sdk.settings.effect.strength.moonPaksha');
+  String naisargika() => _r.render('sdk.settings.effect.strength.naisargika');
+  String nathonnatha() => _r.render('sdk.settings.effect.strength.nathonnatha');
+  String preDawnNight() => _r.render('sdk.settings.effect.strength.preDawnNight');
+  String requiredRupas() => _r.render('sdk.settings.effect.strength.requiredRupas');
+  String saptavargaja() => _r.render('sdk.settings.effect.strength.saptavargaja');
+  String shodhana() => _r.render('sdk.settings.effect.strength.shodhana');
+  String sunAyana() => _r.render('sdk.settings.effect.strength.sunAyana');
+  String vimshopaka() => _r.render('sdk.settings.effect.strength.vimshopaka');
+  String yuddha() => _r.render('sdk.settings.effect.strength.yuddha');
+}
+
+final class MessagesSdkSettingsEffectTime {
+  const MessagesSdkSettingsEffectTime(this._r);
+
+  final Renderer _r;
+
+  String deltaT() => _r.render('sdk.settings.effect.time.deltaT');
+  String dstGap() => _r.render('sdk.settings.effect.time.dstGap');
+  String dstOverlap() => _r.render('sdk.settings.effect.time.dstOverlap');
+  String unknownTime() => _r.render('sdk.settings.effect.time.unknownTime');
+}
+
+final class MessagesSdkSettingsEffectVargas {
+  const MessagesSdkSettingsEffectVargas(this._r);
+
+  final Renderer _r;
+
+  String unattestedDn() => _r.render('sdk.settings.effect.vargas.unattestedDn');
+}
+
+final class MessagesSdkSettingsEffect {
+  const MessagesSdkSettingsEffect(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkSettingsEffectAspect get aspect => MessagesSdkSettingsEffectAspect(_r);
+  MessagesSdkSettingsEffectCalendars get calendars => MessagesSdkSettingsEffectCalendars(_r);
+  MessagesSdkSettingsEffectDasha get dasha => MessagesSdkSettingsEffectDasha(_r);
+  MessagesSdkSettingsEffectDay get day => MessagesSdkSettingsEffectDay(_r);
+  MessagesSdkSettingsEffectFrame get frame => MessagesSdkSettingsEffectFrame(_r);
+  MessagesSdkSettingsEffectGochar get gochar => MessagesSdkSettingsEffectGochar(_r);
+  MessagesSdkSettingsEffectHouses get houses => MessagesSdkSettingsEffectHouses(_r);
+  MessagesSdkSettingsEffectJaimini get jaimini => MessagesSdkSettingsEffectJaimini(_r);
+  MessagesSdkSettingsEffectKp get kp => MessagesSdkSettingsEffectKp(_r);
+  MessagesSdkSettingsEffectOutput get output => MessagesSdkSettingsEffectOutput(_r);
+  MessagesSdkSettingsEffectPanchanga get panchanga => MessagesSdkSettingsEffectPanchanga(_r);
+  MessagesSdkSettingsEffectProvider get provider => MessagesSdkSettingsEffectProvider(_r);
+  MessagesSdkSettingsEffectState get state => MessagesSdkSettingsEffectState(_r);
+  MessagesSdkSettingsEffectStrength get strength => MessagesSdkSettingsEffectStrength(_r);
+  MessagesSdkSettingsEffectTime get time => MessagesSdkSettingsEffectTime(_r);
+  MessagesSdkSettingsEffectVargas get vargas => MessagesSdkSettingsEffectVargas(_r);
+}
+
+final class MessagesSdkSettings {
+  const MessagesSdkSettings(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkSettingsEffect get effect => MessagesSdkSettingsEffect(_r);
+}
+
 final class MessagesSdk {
   const MessagesSdk(this._r);
 
@@ -5624,6 +5882,7 @@ final class MessagesSdk {
   MessagesSdkReason get reason => MessagesSdkReason(_r);
   MessagesSdkRite get rite => MessagesSdkRite(_r);
   MessagesSdkSankalpa get sankalpa => MessagesSdkSankalpa(_r);
+  MessagesSdkSettings get settings => MessagesSdkSettings(_r);
 }
 
 final class Messages {
