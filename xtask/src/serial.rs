@@ -238,6 +238,7 @@ fn header(docs: &[(String, Value)], numbers: &[f64]) -> String {
 /// source.
 fn assigned(root: &Path) -> Result<BTreeMap<&'static str, Vec<&'static str>>, String> {
     let mut found: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+    let stamper = time_stamper(root)?;
     for producer in PRODUCERS {
         let text = std::fs::read_to_string(root.join(producer))
             .map_err(|err| format!("{producer}: {err}"))?;
@@ -256,7 +257,13 @@ fn assigned(root: &Path) -> Result<BTreeMap<&'static str, Vec<&'static str>>, St
             // reported two producers as still shipping the hash of
             // nothing, which is the state the change ended.
             let sealed = field == "content_hash" && text.contains("Envelope::sealing(");
+            // **And `Completion::stamp_time`**, which fills the Delta T
+            // fields for every producer that calls it: those are the
+            // fields its own body assigns, read from it rather than listed
+            // here, so the page follows the helper when it changes.
+            let delegated = text.contains(".stamp_time(") && stamper.fills(field);
             if sealed
+                || delegated
                 || text.contains(&assignment)
                 || (field.contains('.') && text.contains(&literal))
             {
@@ -266,6 +273,38 @@ fn assigned(root: &Path) -> Result<BTreeMap<&'static str, Vec<&'static str>>, St
         found.insert(producer, fills);
     }
     Ok(found)
+}
+
+/// Where the time stamp's Delta T fields are filled for the producers
+/// that hand their stamp to the completion's owner of Delta T.
+const STAMPER: &str = "crates/astro/src/completion.rs";
+
+/// The body of `Completion::stamp_time`, which fills a `TimeStamp`.
+struct TimeStamper(String);
+
+impl TimeStamper {
+    /// Whether the body fills `field` (`time.…`): an assignment to it, or
+    /// a value cloned into it.
+    fn fills(&self, field: &str) -> bool {
+        let Some(name) = field.strip_prefix("time.") else {
+            return false;
+        };
+        let target = format!("time.{name}");
+        self.0.contains(&format!("{target} =")) || self.0.contains(&format!("&mut {target})"))
+    }
+}
+
+/// `Completion::stamp_time`'s body, from its signature to the closing
+/// brace at its own indentation.
+fn time_stamper(root: &Path) -> Result<TimeStamper, String> {
+    let text =
+        std::fs::read_to_string(root.join(STAMPER)).map_err(|err| format!("{STAMPER}: {err}"))?;
+    let start = text
+        .find("pub fn stamp_time(")
+        .ok_or_else(|| format!("{STAMPER}: no `stamp_time`"))?;
+    let body = &text[start..];
+    let end = body.find("\n    }\n").map_or(body.len(), |end| end + 6);
+    Ok(TimeStamper(body[..end].to_owned()))
 }
 
 /// The paragraph about `content_hash`, in whichever of its two forms
@@ -733,8 +772,22 @@ fn decides(root: &Path) -> Result<String, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect, depth, keys_sorted, reversed};
+    use super::{TimeStamper, collect, depth, keys_sorted, reversed};
     use serde_json::json;
+
+    #[test]
+    fn a_stamp_helper_fills_what_its_body_assigns() {
+        let stamper = TimeStamper(
+            "pub fn stamp_time(&self, time: &mut TimeStamp) {\n\
+             x.clone_into(&mut time.delta_t_model);\n\
+             time.delta_t_seconds = 1.0;\n    }\n"
+                .to_owned(),
+        );
+        assert!(stamper.fills("time.delta_t_model"));
+        assert!(stamper.fills("time.delta_t_seconds"));
+        assert!(!stamper.fills("time.tzdb_version"));
+        assert!(!stamper.fills("provider"));
+    }
 
     #[test]
     fn keys_are_read_in_order_at_every_depth() {

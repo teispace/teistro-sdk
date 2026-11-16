@@ -34,13 +34,13 @@ envelope exists to carry.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every value leaves the SDK carrying the hash of itself | falsified | 1 of 3 disagree; not sealing: crates/ffi/src/positions.rs |
-| every field the envelope documents is filled by someone | falsified | 6 of 10 disagree |
+| every field the envelope documents is filled by someone | falsified | 5 of 10 disagree |
 
 | producer | fills |
 |---|---|
-| `crates/chart/src/foundation.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
+| `crates/chart/src/foundation.rs` | `provider`, `time.delta_t_model`, `time.delta_t_seconds`, `time.leap_table` |
 | `crates/ffi/src/positions.rs` | — |
-| `crates/panchanga/src/almanac.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
+| `crates/panchanga/src/almanac.rs` | `provider`, `time.delta_t_model`, `time.delta_t_seconds`, `time.leap_table` |
 | `crates/serial/src/seal.rs` | `content_hash` |
 
 **`content_hash` is the hash of nothing on 1 of the 3 places a value is
@@ -57,10 +57,10 @@ forgets. `crates/serial`'s answer is to make the joining the only way to
 build the pair, so the hash is computed by the constructor and never by
 a caller who remembers.
 
-Nothing at all fills 6: `module_versions`, `packs`,
-`time.delta_t_seconds`, `time.tzdb_version`, `calendar`,
-`applied_conventions`. Each is a field the envelope documents and
-nothing sets, which a consumer reading the schema would expect to find.
+Nothing at all fills 5: `module_versions`, `packs`, `time.tzdb_version`,
+`calendar`, `applied_conventions`. Each is a field the envelope
+documents and nothing sets, which a consumer reading the schema would
+expect to find.
 
 ## 3. The canonical form is canonical
 
