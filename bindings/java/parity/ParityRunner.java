@@ -1635,9 +1635,12 @@ public final class ParityRunner {
                 var band = markedDay.uncertainty().orElseThrow();
                 java.util.function.Function<java.util.Optional<Double>, String> sigma =
                         value -> value.map(ParityRunner::number).orElse("-");
-                put("uncertainty", band.band().key() + " " + number(band.deltaTSeconds()) + " "
-                        + sigma.apply(band.limbsSeconds()) + " " + sigma.apply(band.sunriseSeconds()) + " "
-                        + sigma.apply(band.moonriseSeconds()));
+                put("uncertainty.band", band.band().key());
+                // Each number its own line, so it is compared as a number.
+                put("uncertainty.delta-t", number(band.deltaTSeconds()));
+                put("uncertainty.limbs", sigma.apply(band.limbsSeconds()));
+                put("uncertainty.sunrise", sigma.apply(band.sunriseSeconds()));
+                put("uncertainty.moonrise", sigma.apply(band.moonriseSeconds()));
             }
 
             // ── The sky view ──────────────────────────────────────────────

@@ -4014,12 +4014,12 @@ void main() {
   );
   put('gowri', [for (final p in markedDay.gowri) p.gowri.fullKey].join(' '));
   final band = markedDay.uncertainty!;
-  put(
-    'uncertainty',
-    '${band.band.key} ${number(band.deltaTSeconds)} '
-        '${numberOrDash(band.limbsSeconds)} ${numberOrDash(band.sunriseSeconds)} '
-        '${numberOrDash(band.moonriseSeconds)}',
-  );
+  put('uncertainty.band', band.band.key);
+  // Each number its own line, so it is compared as a number.
+  put('uncertainty.delta-t', number(band.deltaTSeconds));
+  put('uncertainty.limbs', numberOrDash(band.limbsSeconds));
+  put('uncertainty.sunrise', numberOrDash(band.sunriseSeconds));
+  put('uncertainty.moonrise', numberOrDash(band.moonriseSeconds));
   // Ashwini's navatara chakra, every row `star:tara:round:special`
   // (`03-design/navatara-chakra.md`).
   put(

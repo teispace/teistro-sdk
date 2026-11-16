@@ -7775,17 +7775,23 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
     // And its times' band from Delta T (SR-104): the band's key, Delta T,
     // and the limbs', the sunrise's and the moonrise's one-sigma bands.
     let band = day.uncertainty.expect("asked for");
+    put(report, "uncertainty.band", band.band.key().to_owned());
+    // Each number its own line, so it is compared as a number.
+    put(report, "uncertainty.delta-t", number(band.delta_t_seconds));
     put(
         report,
-        "uncertainty",
-        format!(
-            "{} {} {} {} {}",
-            band.band.key(),
-            number(band.delta_t_seconds),
-            number_or_dash(band.limbs_seconds),
-            number_or_dash(band.sunrise_seconds),
-            number_or_dash(band.moonrise_seconds),
-        ),
+        "uncertainty.limbs",
+        number_or_dash(band.limbs_seconds),
+    );
+    put(
+        report,
+        "uncertainty.sunrise",
+        number_or_dash(band.sunrise_seconds),
+    );
+    put(
+        report,
+        "uncertainty.moonrise",
+        number_or_dash(band.moonrise_seconds),
     );
 }
 
