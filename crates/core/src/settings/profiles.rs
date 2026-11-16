@@ -22,10 +22,10 @@ use super::knobs::{
     NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
     Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
-    SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka,
-    YearLength, Yuddha, Zodiac,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, SevenKarakaOrder,
+    ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
+    SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime,
+    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
@@ -954,6 +954,9 @@ fn jaimini() -> Jaimini {
         // BPHS ch. 29 vv. 6 and 7 state the count and no move
         // (`03-design/graha-arudhas.md`).
         graha_arudha_exception: GrahaArudhaException::None,
+        // The Jaimini Sutras 1.1.13 to 18, the seven the recording engine
+        // names and its corpus reproduces (crux C2061).
+        seven_karaka_order: SevenKarakaOrder::Jaimini,
     }
 }
 
@@ -1154,6 +1157,8 @@ pub fn root() -> Settings {
         strength: strength(),
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
+            // BPHS ch. 6 for every chart: no chart named here.
+            schemes: BTreeMap::new(),
         },
         calendars: calendars(),
         provider: Provider {

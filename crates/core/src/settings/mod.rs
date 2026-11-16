@@ -29,11 +29,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source,
+    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source, Varga,
 };
 use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
+pub use crate::varga_rows::VargaChoice;
 pub use explain::{
     Knob, KnobDifference, KnobExplained, KnobSource, Layer, Moves, Origin, Origins, SettingsDiff,
     SettingsDiffQuery, SettingsExplained, SettingsQuery,
@@ -53,9 +54,10 @@ pub use knobs::{
     Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     RefractionFormula, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart,
-    StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime,
+    SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier,
+    TransitCentre, UnattestedDn, UnknownTime, VargaVariant, Varjyam, Vimshopaka, YearLength,
+    Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 pub use snapshot::SettingsSnapshot;
@@ -1286,6 +1288,9 @@ group!(
         brahma: BrahmaRule => Rule,
         /// Whether a graha's arudha moves as a bhava's does (crux C132).
         graha_arudha_exception: GrahaArudhaException => Rule,
+        /// Which karaka each rank carries when seven are counted (crux
+        /// C2061): the ranking is the sky's, the names are this.
+        seven_karaka_order: SevenKarakaOrder => Rule,
     }
 );
 
@@ -1436,6 +1441,12 @@ group!(
     vargas {
         /// The convention for an unattested D-N.
         unattested_dn: UnattestedDn => Rule,
+        /// The scheme each catalogued chart is computed by, where it is not
+        /// `PARASHARA`: a named scheme of the texts or a consumer's own rows
+        /// (`03-design/varga-schemes.md`). A chart left out is BPHS ch. 6's.
+        /// Every reader of a chart under these settings asks
+        /// `teistro_vargas::Scheme::chosen`.
+        schemes: BTreeMap<Varga, VargaChoice> => Rule,
     }
 );
 
@@ -2360,6 +2371,19 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         ));
     }
     basis_coherence(s, &mut out);
+    for (varga, choice) in &s.vargas.schemes {
+        if let Err(refused) = choice.check(*varga) {
+            out.push(Diagnostic::error(
+                "varga-scheme",
+                format!(
+                    "{} (field `{}`)",
+                    refused.message,
+                    refused.field().unwrap_or("vargas.schemes")
+                ),
+                &["vargas.schemes"],
+            ));
+        }
+    }
     // The text's sunrise is the centre on the geometric horizon, in local
     // mean time; asked for another convention, the provider declines and
     // the SDK solves it over the text's Sun, which is neither the text's

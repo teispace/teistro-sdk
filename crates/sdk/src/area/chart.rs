@@ -38,7 +38,7 @@ use teistro_dasha::{
     KalachakraDasha, KalachakraRules, ProfectionDasha, RashiChart, RashiDasha, RashiRules,
     Rules as DashaRules, Wheel,
 };
-use teistro_geometry::{Layout, draw_from};
+use teistro_geometry::{Layout, draw_chosen};
 use teistro_hellenistic::{
     AccidentalSky, CHALDEAN_ORDER, ChartSky, ConsiderationRules, Considerations, Dignities,
     DignityRequest, Dispositions, FortitudeRequest, Fortitudes, Lot, LotFormula, LotPlace,
@@ -126,6 +126,17 @@ fn placed_chart(
     Ok(chart)
 }
 
+/// Whether the chara kāraka `scheme` counts eight on this chart: always
+/// under `EIGHT`, and under `EIGHT_ON_A_TIE` when two of the seven stand
+/// equally far into their signs (BPHS ch. 32 v. 2, crux C2062).
+fn counts_eight(ruled: &teistro_rules::RuleChart, scheme: CharaKarakas) -> bool {
+    match scheme {
+        CharaKarakas::Eight => true,
+        CharaKarakas::EightOnATie => ruled.seven_tie(),
+        _ => false,
+    }
+}
+
 /// The graha holding `karaka` under the chara kāraka `scheme`; every
 /// ruled chart ranks each of the scheme's kārakas.
 fn holder(
@@ -133,16 +144,8 @@ fn holder(
     scheme: CharaKarakas,
     karaka: CharaKaraka,
 ) -> Result<Graha, Error> {
-    GRAHAS_IN_ORDER
-        .into_iter()
-        .find(|&graha| {
-            let at = ruled.placement(teistro_rules::Body::Graha(graha));
-            let held = match scheme {
-                CharaKarakas::Eight => at.karaka8,
-                _ => at.karaka7,
-            };
-            held == Some(karaka)
-        })
+    ruled
+        .holder(karaka, counts_eight(ruled, scheme))
         .ok_or_else(|| Error::internal(format!("a chart ranks its {}", karaka.key())))
 }
 
@@ -541,7 +544,7 @@ impl<'a> ChartArea<'a> {
         let readings = set.readings().readings();
         let mut answered = Vec::with_capacity(documents.len());
         for document in documents {
-            let inputs = RuleInputs::of(&document)?.under(self.context.settings());
+            let inputs = RuleInputs::of(&document)?.under(self.context.settings())?;
             let lords = self.pada_lords_of(&document)?;
             let evaluator = inputs
                 .evaluator(readings)
@@ -768,7 +771,7 @@ impl<'a> ChartArea<'a> {
         let offset = clock.offset_at(foundation.instant);
         let mut document = Document::of(foundation.clone());
         for varga in request.vargas() {
-            document = document.with_varga(varga_chart(foundation, Axis::of(*varga))?);
+            document = document.with_varga(varga_chart(foundation, Axis::chosen(*varga, settings)?)?);
         }
         if request.sections.has(Sections::STATE) {
             document = document.with_state(state(foundation, settings)?);
@@ -825,7 +828,7 @@ impl<'a> ChartArea<'a> {
                 ))
                 .with_field(at.clone())
             })?;
-            let drawing = draw_from(row, foundation, asked.varga, asked.counts_from)
+            let drawing = draw_chosen(row, foundation, asked.varga, asked.counts_from, settings)
                 .map_err(|error| error.under(&at))?;
             document = document.with_drawing(drawing);
         }
@@ -1016,7 +1019,7 @@ impl<'a> ChartArea<'a> {
         let states = state(foundation, settings)?;
         let karakas = crate::rules_bridge::ruled(foundation, &states, settings)?;
         let lagna = karakas.lagna();
-        let eight = settings.jaimini.chara_karakas == CharaKarakas::Eight;
+        let eight = counts_eight(&karakas, settings.jaimini.chara_karakas);
         let lords = karakas
             .chara_karaka_ranking(eight)
             .into_iter()
@@ -1175,7 +1178,7 @@ impl<'a> ChartArea<'a> {
         if whole.state.is_none() {
             whole = whole.with_state(state(foundation, settings)?);
         }
-        let inputs = crate::rules_bridge::RuleInputs::of(&whole)?.under(settings);
+        let inputs = crate::rules_bridge::RuleInputs::of(&whole)?.under(settings)?;
         let evaluator = inputs.evaluator(teistro_rules::Readings::default());
         let readings = match settings.dasha.ayurdaya_readings {
             AyurdayaReadings::JatakaParijata => AyurdayaRules::PARIJATA,
@@ -1462,7 +1465,7 @@ impl<'a> ChartArea<'a> {
             .ok_or_else(|| Error::internal("a lagna in no sign"))?;
         let settings = self.context.settings();
         let mut chart = placed_chart(lagna, states, settings.jaimini.node_co_lordship)?;
-        chart.navamsa_lagna = varga_chart(foundation, Axis::of(Varga::D9))?.lagna.sign;
+        chart.navamsa_lagna = varga_chart(foundation, Axis::chosen(Varga::D9, settings)?)?.lagna.sign;
         // Brahma is read from the chart it then starts a dasha in, so the
         // chart is assembled first and the sign filled in after.
         chart.brahma = brahma(
@@ -1892,7 +1895,7 @@ impl<'a> ChartArea<'a> {
         };
         use teistro_gochar::hits::Hit;
 
-        let meanings = lattices_of(request, natals, midheavens, members)?;
+        let meanings = lattices_of(request, self.context.settings(), natals, midheavens, members)?;
         let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
         // The Moon's phases and each chart's phase return are lines of its
         // elongation from the Sun, one scan of their own.
@@ -3074,15 +3077,18 @@ impl<'a> ChartArea<'a> {
         })
     }
 
-    /// The seven strength grahas' signs in each of `vargas`, Sun to Saturn.
+    /// The seven strength grahas' signs in each of `vargas`, Sun to Saturn,
+    /// each chart under the scheme the settings choose for it
+    /// (`vargas.schemes`).
     fn varga_signs<const N: usize, const M: usize>(
         foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
         vargas: [Varga; N],
         grahas: [Graha; M],
     ) -> Result<[[Rashi; M]; N], Error> {
         let mut signs = [[Rashi::Aries; M]; N];
         for (row, varga) in signs.iter_mut().zip(vargas) {
-            let placed = varga_chart(foundation, Axis::of(varga))?;
+            let placed = varga_chart(foundation, Axis::chosen(varga, settings)?)?;
             for (slot, graha) in row.iter_mut().zip(grahas) {
                 *slot = placed.graha(graha).map(|at| at.sign).ok_or_else(|| {
                     Error::internal(format!("a founded chart places {}", graha.key()))
@@ -3101,6 +3107,7 @@ impl<'a> ChartArea<'a> {
         let chart = VimshopakaChart {
             signs: Self::varga_signs(
                 foundation,
+                settings,
                 teistro_strength::vimshopaka::VARGAS,
                 teistro_strength::ashtakavarga::GRAHAS,
             )?,
@@ -3145,6 +3152,7 @@ impl<'a> ChartArea<'a> {
             grahas,
             vargas: Self::varga_signs(
                 foundation,
+                settings,
                 teistro_strength::shadbala::SAPTAVARGAJA_VARGAS,
                 nine,
             )?,
@@ -3177,6 +3185,7 @@ impl<'a> ChartArea<'a> {
             signs: VimshopakaChart {
                 signs: Self::varga_signs(
                     foundation,
+                    settings,
                     teistro_strength::vimshopaka::VARGAS,
                     teistro_strength::ashtakavarga::GRAHAS,
                 )?,
@@ -3243,6 +3252,7 @@ impl<'a> ChartArea<'a> {
             rahu: foundation.graha(Graha::Rahu).map(|at| at.longitude_deg),
             vargas: Self::varga_signs(
                 foundation,
+                settings,
                 SAPTAVARGAJA_VARGAS,
                 teistro_strength::ashtakavarga::GRAHAS,
             )?,

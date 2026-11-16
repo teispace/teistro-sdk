@@ -55,4 +55,6 @@ pub mod scheme;
 
 pub use chart::{Axis, GrahaPlacement, VargaChart, chart, every_chart};
 pub use evaluate::{Placement, place, sign, table};
-pub use scheme::{Classifier, Group, MOST_DIVISIONS, Map, SCHEMES, Scheme, SignBase, Spans};
+pub use scheme::{
+    Classifier, Group, MOST_DIVISIONS, Map, SCHEMES, Scheme, SignBase, Spans, VARIANTS,
+};
