@@ -127,6 +127,49 @@ pub fn draw_from(
     varga: Varga,
     counts_from: ChartFrame,
 ) -> Result<Drawing, Error> {
+    draw_axis(layout, foundation, varga, Axis::of(varga), counts_from)
+}
+
+/// [`draw_from`], the divisional chart under the scheme `settings` choose
+/// for it (`vargas.schemes`): what a context draws.
+///
+/// ```
+/// # let foundation = teistro_chart::sample::foundation()?;
+/// use teistro_core::catalogue::{ChartFrame, Varga};
+/// use teistro_core::settings::{VargaChoice, VargaVariant};
+/// use teistro_geometry::{draw_chosen, draw_from, rows};
+///
+/// let mut settings = teistro_chart::sample::resolved().settings;
+/// let layout = rows::nepali_circle();
+/// let shipped = draw_from(&layout, &foundation, Varga::D2, ChartFrame::Lagna)?;
+/// assert_eq!(draw_chosen(&layout, &foundation, Varga::D2, ChartFrame::Lagna, &settings)?, shipped);
+/// settings.vargas.schemes.insert(Varga::D2, VargaChoice::Named { which: VargaVariant::Kashinatha });
+/// assert_ne!(draw_chosen(&layout, &foundation, Varga::D2, ChartFrame::Lagna, &settings)?, shipped);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`draw_from`], and a scheme the settings cannot give
+/// (`teistro_vargas::Scheme::chosen`).
+pub fn draw_chosen(
+    layout: &Layout,
+    foundation: &ChartFoundation,
+    varga: Varga,
+    counts_from: ChartFrame,
+    settings: &teistro_core::settings::Settings,
+) -> Result<Drawing, Error> {
+    draw_axis(layout, foundation, varga, Axis::chosen(varga, settings)?, counts_from)
+}
+
+/// A drawing of `varga` with its signs placed by `axis`.
+fn draw_axis(
+    layout: &Layout,
+    foundation: &ChartFoundation,
+    varga: Varga,
+    axis: Axis,
+    counts_from: ChartFrame,
+) -> Result<Drawing, Error> {
     let chart = if varga == Varga::D1 {
         Placements::of_chart(foundation)
     } else {
@@ -143,7 +186,7 @@ pub fn draw_from(
                 varga.key()
             )));
         }
-        Placements::of_varga(&varga_chart(foundation, Axis::of(varga))?)
+        Placements::of_varga(&varga_chart(foundation, axis)?)
     };
     Ok(Drawing {
         varga,

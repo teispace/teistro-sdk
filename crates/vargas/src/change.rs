@@ -386,6 +386,7 @@ mod tests {
             );
             lines(&Scheme {
                 varga: None,
+                variant: teistro_core::settings::VargaVariant::Custom,
                 divisions,
                 classifier: Classifier::Parity,
                 groups,

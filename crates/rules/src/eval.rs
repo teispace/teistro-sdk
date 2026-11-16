@@ -1145,14 +1145,10 @@ impl<'a> Evaluator<'a> {
                     .into_iter()
                     .find(|body| exaltation(*body) == Some(sign))
             }
-            BodyRef::Karaka { karaka, scheme } => Body::ALL.into_iter().find(|body| {
-                let placement = self.at(*body);
-                let held = match scheme {
-                    KarakaScheme::Seven => placement.karaka7,
-                    KarakaScheme::Eight => placement.karaka8,
-                };
-                held == Some(karaka.0)
-            }),
+            BodyRef::Karaka { karaka, scheme } => self
+                .chart
+                .holder(karaka.0, matches!(scheme, KarakaScheme::Eight))
+                .map(graha_body),
         };
         rec.resolved(|| Resolved::Body {
             reference: reference.clone(),

@@ -1180,7 +1180,7 @@ impl ResearchArea<'_> {
             })
             .collect();
         Ok(Lived {
-            inputs: RuleInputs::of(document)?.under(self.context.settings()),
+            inputs: RuleInputs::of(document)?.under(self.context.settings())?,
             cursor: self.context.chart().dasha(document, &study.dasha)?,
             results,
             unreadable: standing.iter().map(Option::is_none).collect(),
