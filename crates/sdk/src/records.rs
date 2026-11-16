@@ -930,6 +930,7 @@ pub fn records() -> Vec<Record> {
     all.push(sky_pose_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
+    all.extend(almanac_words_records());
     all.extend(sankalpa_records());
     all.extend(time_records());
     all.extend(calendar_records());
@@ -1512,9 +1513,9 @@ fn ashauch_records() -> [Record; 6] {
     ]
 }
 
-/// The rest of the almanac's records: what a pack holds, a digest, the next
-/// day of a rule, the day in sentences, and why a published day differs.
-fn almanac_lookup_records() -> [Record; 5] {
+/// The almanac's lookups: what a pack holds, a digest, the next day of a
+/// rule, and its days year by year.
+fn almanac_lookup_records() -> [Record; 4] {
     [
         Record {
             name: "almanac.festivalPack",
@@ -1571,6 +1572,36 @@ fn almanac_lookup_records() -> [Record; 5] {
             ]),
             schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence, parts: ["festivals"]),
         },
+        Record {
+            name: "almanac.occurrences",
+            boundary: "ts_almanac_occurrences",
+            title: "Every day a festival rule or a kind of day falls on, year by year over a span of years, a year it falls on no day or on two said so",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::OccurrencesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().occurrences_in_full(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Keeps(&[
+                "keys",
+                "years.year",
+                "years.days",
+                "years.festivals.observances.rule",
+                "years.festivals.observances.day",
+                "years.festivals.observances.tithi",
+                "years.festivals.observances.month",
+                "years.festivals.ekadashis",
+                "years.festivals.unjudged",
+            ]),
+            schemas: schemas!(crate::area::OccurrencesAsked => crate::Occurrences, parts: ["festivals"]),
+        },
+    ]
+}
+
+/// The rest of the almanac's records: the day in sentences, and why a
+/// published day differs.
+fn almanac_words_records() -> [Record; 2] {
+    [
         Record {
             name: "almanac.sentences",
             boundary: "ts_almanac_sentences",

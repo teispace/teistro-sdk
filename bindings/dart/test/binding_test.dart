@@ -871,6 +871,52 @@ void main() {
     ctx.dispose();
   });
 
+  // A rule's days year by year (`03-design/rule-years.md`): Pausha's
+  // bright Ekadashi falls twice in 2025 and on no day of 2026, and a span
+  // too long is refused on `years`.
+  test('a rule\'s days are answered year by year', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    OccurrencesRequest asked({int years = 2}) => OccurrencesRequest(
+      fromYear: 2025,
+      years: years,
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+      rule: 'PAUSHA_PUTRADA_EKADASHI',
+      festivals: const FestivalRequest(rules: FestivalPack.nepalPanchanga),
+    );
+    final span = ctx.almanac.occurrences(asked());
+    expect(span.keys, ['PAUSHA_PUTRADA_EKADASHI']);
+    expect([for (final y in span.years) y.year], [2025, 2026]);
+    expect(
+      [
+        for (final d in span.years.first.days)
+          '${d.day.month}-${d.day.day}:${d.keys.join('+')}',
+      ],
+      ['1-10:PAUSHA_PUTRADA_EKADASHI', '12-30:PAUSHA_PUTRADA_EKADASHI'],
+    );
+    expect(span.years[1].days, isEmpty);
+    expect(
+      span.provenance.appliedConventions.map((c) => c.knob),
+      contains('festival.years'),
+    );
+    expect(
+      () => ctx.almanac.occurrences(asked(years: 51)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'occurrences.years',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.

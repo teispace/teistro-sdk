@@ -1,7 +1,8 @@
 //! The calls the addendum's first wave added, across the boundary: a date
 //! moved and a span counted (`ts_calendar_add`, `ts_calendar_between`), an
 //! amount in words (`ts_intl_in_words`) and the next day of a rule
-//! (`ts_almanac_next`), each with every refusal its contract names, held
+//! (`ts_almanac_next`) and its days year by year (`ts_almanac_occurrences`),
+//! each with every refusal its contract names, held
 //! to the status and the field it says it gives.
 
 #![allow(
@@ -25,7 +26,9 @@ use teistro_ffi::calendar::{
 use teistro_ffi::intl::{
     ts_intl_date, ts_intl_dates, ts_intl_in_words, ts_intl_lexicon, ts_intl_lookup, ts_intl_time,
 };
-use teistro_ffi::panchanga::{ts_almanac_anniversaries, ts_almanac_next, ts_almanac_sentences};
+use teistro_ffi::panchanga::{
+    ts_almanac_anniversaries, ts_almanac_next, ts_almanac_occurrences, ts_almanac_sentences,
+};
 use teistro_ffi::string::TsString;
 
 mod common;
@@ -560,6 +563,99 @@ fn a_next_request_is_refused_as_its_contract_says() {
     let request = asking(&serde_json::json!({ "kind": "PURNIMA" }));
     assert_eq!(
         json_call(&bare, ts_almanac_next, &request).0,
+        Status::Capability
+    );
+}
+
+/// A span of years at Kathmandu, with `extra`'s fields.
+fn spanning(extra: &Value) -> Value {
+    let mut request = serde_json::json!({ "fromYear": 2026, "years": 2, "latitudeDeg": 27.7172,
+                                          "longitudeDeg": 85.324, "utcOffsetSeconds": 20_700 });
+    for (key, value) in extra.as_object().unwrap() {
+        request[key] = value.clone();
+    }
+    request
+}
+
+/// **A kind's and a rule's days year by year** across the boundary: every
+/// year of the span answered in order, each day with its keys and the
+/// catalogue members in full.
+#[test]
+fn the_days_of_a_kind_or_a_rule_are_answered_year_by_year() {
+    let ctx = test_ctx();
+    for extra in [
+        serde_json::json!({ "kind": "PURNIMA" }),
+        serde_json::json!({ "rule": "VIJAYA_DASHAMI", "festivals": { "rules": "NEPAL_PANCHANGA" } }),
+    ] {
+        let (status, answer) = json_call(&ctx, ts_almanac_occurrences, &spanning(&extra));
+        assert_eq!(status, Status::Ok, "{extra}: {:?}", ctx.last_error());
+        let value = &answer.unwrap()["value"];
+        let years = value["years"].as_array().unwrap();
+        assert_eq!(years.len(), 2, "{value}");
+        assert_eq!(
+            (years[0]["year"].as_i64(), years[1]["year"].as_i64()),
+            (Some(2026), Some(2027))
+        );
+        assert_eq!(years[0]["first"]["calendar"], "calendar.GREGORIAN");
+        assert!(!value["keys"].as_array().unwrap().is_empty(), "{value}");
+        for year in years {
+            for day in year["days"].as_array().unwrap() {
+                assert!(!day["keys"].as_array().unwrap().is_empty(), "{day}");
+            }
+        }
+    }
+}
+
+/// **Each refusal of the occurrences request**: what it looks for, said
+/// wrongly each way, a span out of range and a key it does not read.
+#[test]
+fn an_occurrences_request_is_refused_as_its_contract_says() {
+    let ctx = test_ctx();
+    let pack = serde_json::json!({ "rules": "NEPAL_PANCHANGA" });
+    for (extra, status, field) in [
+        (
+            serde_json::json!({}),
+            Status::InvalidArg,
+            "occurrences.kind",
+        ),
+        (
+            serde_json::json!({ "kind": "PURNIMA", "rule": "X" }),
+            Status::InvalidArg,
+            "occurrences.rule",
+        ),
+        (
+            serde_json::json!({ "kind": "PURNIMA", "festivals": pack }),
+            Status::InvalidArg,
+            "occurrences.festivals",
+        ),
+        (
+            serde_json::json!({ "rule": "X", "festivals": pack }),
+            Status::InvalidArg,
+            "rule",
+        ),
+        (
+            serde_json::json!({ "kind": "PURNIMA", "years": 0 }),
+            Status::OutOfRange,
+            "occurrences.years",
+        ),
+        (
+            serde_json::json!({ "kind": "PURNIMA", "years": 51 }),
+            Status::OutOfRange,
+            "occurrences.years",
+        ),
+        (
+            serde_json::json!({ "kind": "PURNIMA", "unknown": 1 }),
+            Status::InvalidArg,
+            "occurrences",
+        ),
+    ] {
+        let got = json_call(&ctx, ts_almanac_occurrences, &spanning(&extra));
+        refused(&ctx, &got, status, field);
+    }
+    let bare = Ctx::defaults();
+    let request = spanning(&serde_json::json!({ "kind": "PURNIMA" }));
+    assert_eq!(
+        json_call(&bare, ts_almanac_occurrences, &request).0,
         Status::Capability
     );
 }

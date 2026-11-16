@@ -158,6 +158,7 @@ from ._requests import (
     HorizonSample as HorizonSample,
     ChangeKind as ChangeKind,
     AnniversariesRequest as AnniversariesRequest,
+    OccurrencesRequest as OccurrencesRequest,
     ChangesRequest as ChangesRequest,
     CellsRequest as CellsRequest,
     MahadvadashiKind as MahadvadashiKind,
@@ -1195,6 +1196,9 @@ __all__ = [
     "DayCell",
     "DayCells",
     "NextOccurrence",
+    "OccurrenceDay",
+    "OccurrenceYear",
+    "Occurrences",
     "DaySentence",
     "DaySentences",
     "ZoneDatabase",
@@ -4932,6 +4936,46 @@ class AlmanacArea(_Area):
         """
         return _festivals_answer(
             self._context._through_provider(lambda: self._context.inner.almanac_anniversaries(json.dumps(_written(request))))
+        )
+
+    def occurrences(self, request: OccurrencesRequest) -> "Occurrences":
+        """**Every day a rule or a kind of day falls on, year by year** over
+        a span of years in one call (`03-design/rule-years.md`). The span's
+        days are founded once and the target reckoned once. Each year lists
+        the days its dates hold: none (a lunar rule's day slipped into the
+        year before, an adhika-only fast in a year with no adhika month),
+        one, or several (a lunar rule meeting a solar year twice, a kind).
+        `years` is 1 to 50, counted in `calendar` (Gregorian when left out);
+        a `kind`, or a `rule` or a `group` of `festivals`, as `next` reads
+        them.
+
+        >>> # span = ctx.almanac.occurrences({"fromYear": 2080, "years": 8,
+        >>> #     "calendar": "BIKRAM_SAMBAT", "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        >>> #     "utcOffsetSeconds": 20700, "rule": "VIJAYA_DASHAMI",
+        >>> #     "festivals": {"rules": "NEPAL_PANCHANGA"}})
+        >>> # span.years[0].days[0].day
+        """
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_occurrences(json.dumps(_written(request)))
+        )
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        provenance = envelope["provenance"]
+        return Occurrences(
+            keys=tuple(value["keys"]),
+            years=tuple(
+                OccurrenceYear(
+                    year=int(year["year"]),
+                    first=_serde_date(year["first"]),
+                    last=_serde_date(year["last"]),
+                    days=tuple(
+                        OccurrenceDay(day=_serde_date(d["day"]), keys=tuple(d["keys"])) for d in year["days"]
+                    ),
+                    festivals=_festivals_answer(json.dumps({"value": year["festivals"], "provenance": provenance})),
+                )
+                for year in value["years"]
+            ),
+            provenance=decode_provenance(provenance),
         )
 
     def festival_pack(self, pack: str) -> Mapping[str, Any]:
@@ -11651,6 +11695,55 @@ class NextOccurrence:
     group: Optional[GroupSpan] = None
     """For a `group`, its span: `day` is its first day; None for a rule
     or a kind."""
+
+
+@dataclass(frozen=True)
+class OccurrenceDay:
+    """A day of an `OccurrenceYear` and the keys that fall on it
+    (`03-design/rule-years.md`)."""
+
+    day: CalendarDate
+    """The day, in the request's calendar."""
+
+    keys: Tuple[str, ...]
+    """The keys looked for that fall on it, in the order they were looked
+    for."""
+
+
+@dataclass(frozen=True)
+class OccurrenceYear:
+    """One year of an `almanac.occurrences` answer."""
+
+    year: int
+    """The year, in the request's calendar."""
+
+    first: CalendarDate
+    """Its first day: month 1, day 1."""
+
+    last: CalendarDate
+    """Its last day: the day before the next year's first."""
+
+    days: Tuple[OccurrenceDay, ...]
+    """Each day the target falls on, in order: none, one or several."""
+
+    festivals: FestivalAnswer
+    """The reckoning's entries for the keys in the year, a withdrawn day
+    marked so, with the provenance."""
+
+
+@dataclass(frozen=True)
+class Occurrences:
+    """Every day a target falls on, year by year, as
+    `almanac.occurrences` answers it (`03-design/rule-years.md`)."""
+
+    keys: Tuple[str, ...]
+    """The keys looked for: the rule's, each of a kind's rules, or each of a group's members."""
+
+    years: Tuple[OccurrenceYear, ...]
+    """Each year of the span, in order."""
+
+    provenance: Provenance
+    """What computed it."""
 
 
 @dataclass(frozen=True)

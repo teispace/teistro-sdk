@@ -9229,6 +9229,42 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **Every day a rule or a kind of day falls on, year by year** over a
+   * span of years in one call (`03-design/rule-years.md`). The span's days
+   * are founded once and the target reckoned once. Each year lists the
+   * days its dates hold, so none (a lunar rule's day slipped into the year
+   * before, an adhika-only fast in a year with no adhika month), one, or
+   * several (a lunar rule meeting a solar year twice, a kind). `years` is 1
+   * to 50, counted in `calendar` (Gregorian when left out); a `kind` or a
+   * `rule` of `festivals`, as `next` reads them.
+   *
+   * @example
+   * const span = sdk.almanac.occurrences({
+   *   fromYear: 2080, years: 8, calendar: 'BIKRAM_SAMBAT',
+   *   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   rule: 'VIJAYA_DASHAMI', festivals: { rules: 'NEPAL_PANCHANGA' },
+   * });
+   * // span.years[0].days[0].day, span.years[0].festivals.observances[0]
+   *
+   * @param {object} request the `OccurrencesRequest` record
+   * @returns {object} `{ keys, years, provenance }`, each year `{ year, first, last, days, festivals }`
+   */
+  occurrences(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError("occurrences: expected a request, e.g. { fromYear, years, latitudeDeg, longitudeDeg, utcOffsetSeconds, kind: 'PURNIMA' }");
+    }
+    const { value, provenance } = JSON.parse(run(this, (inner) => inner.almanacOccurrences(JSON.stringify(request))));
+    const years = value.years.map((year) => ({
+      year: year.year,
+      first: dateFrom(year.first),
+      last: dateFrom(year.last),
+      days: year.days.map((d) => ({ day: dateFrom(d.day), keys: d.keys })),
+      festivals: festivalsFrom(JSON.stringify({ value: year.festivals, provenance })),
+    }));
+    return deepFreeze({ keys: value.keys, years, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
    * **A day in sentences** (`03-design/day-in-sentences.md`): one date's
    * facts as short sentences from templates, every value from the day's
    * answer. A locale without the templates is refused on `locale`.

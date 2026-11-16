@@ -1881,6 +1881,9 @@ public final class ParityRunner {
                     com.teispace.teistro.request.AnniversariesRequest.of(java.util.Map.of("fromYear", 2026, "years", 0,
                             "latitudeDeg", 0.0, "longitudeDeg", 0.0, "utcOffsetSeconds", 0,
                             "anniversaries", java.util.List.of()))));
+            surface("almanac.occurrences", () -> ctx.almanac().occurrences(
+                    com.teispace.teistro.request.OccurrencesRequest.of(java.util.Map.of("fromYear", 2026, "years", 0,
+                            "latitudeDeg", 0.0, "longitudeDeg", 0.0, "utcOffsetSeconds", 0, "kind", "PURNIMA"))));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));
