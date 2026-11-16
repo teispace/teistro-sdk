@@ -1080,7 +1080,11 @@ impl RuleChart {
     /// assert_eq!(chart.holder(CharaKaraka::Pitrikaraka, false), Some(Graha::Jupiter));
     /// ```
     #[must_use]
-    pub fn with_karaka_orders(mut self, seven_order: SevenKarakas, order: EightKarakas) -> RuleChart {
+    pub fn with_karaka_orders(
+        mut self,
+        seven_order: SevenKarakas,
+        order: EightKarakas,
+    ) -> RuleChart {
         let seconds = |graha: Graha| self.karaka_seconds(graha);
         let seven = KARAKA_GRAHAS.map(|graha| (graha, seconds(graha)));
         let mut with_rahu = [(Graha::Rahu, seconds(Graha::Rahu)); 8];
@@ -1141,15 +1145,26 @@ impl RuleChart {
             let at = self.placement(Body::Graha(*graha));
             (if with_rahu { at.karaka8 } else { at.karaka7 }) == Some(asked)
         };
-        let grahas = || KARAKA_GRAHAS.iter().chain(with_rahu.then_some(&Graha::Rahu));
-        grahas().find(|graha| held(graha, karaka)).copied().or_else(|| {
-            let matri_is_putra = !with_rahu
-                && karaka == CharaKaraka::Putrakaraka
-                && grahas().any(|graha| held(graha, CharaKaraka::Pitrikaraka));
-            matri_is_putra
-                .then(|| grahas().find(|graha| held(graha, CharaKaraka::Matrikaraka)).copied())
-                .flatten()
-        })
+        let grahas = || {
+            KARAKA_GRAHAS
+                .iter()
+                .chain(with_rahu.then_some(&Graha::Rahu))
+        };
+        grahas()
+            .find(|graha| held(graha, karaka))
+            .copied()
+            .or_else(|| {
+                let matri_is_putra = !with_rahu
+                    && karaka == CharaKaraka::Putrakaraka
+                    && grahas().any(|graha| held(graha, CharaKaraka::Pitrikaraka));
+                matri_is_putra
+                    .then(|| {
+                        grahas()
+                            .find(|graha| held(graha, CharaKaraka::Matrikaraka))
+                            .copied()
+                    })
+                    .flatten()
+            })
     }
 
     /// Whether two of the seven grahas stand equally far into their signs,

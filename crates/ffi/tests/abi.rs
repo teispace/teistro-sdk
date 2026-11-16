@@ -94,6 +94,87 @@ fn blank_date() -> TsCalendarDate {
     date(Calendar::Gregorian, 0, 0, 0)
 }
 
+/// A varga scheme the settings choose crosses the boundary: Kashinatha's hora
+/// (Narasimha Rao 2003) places each graha by its table in the
+/// `varga_grahas` section, and a consumer's broken row is refused with its
+/// field in the message (`03-design/varga-schemes.md`).
+#[test]
+fn a_varga_scheme_the_settings_choose_places_the_chart() {
+    const KASHINATHA: [[i64; 2]; 12] = [
+        [7, 0],
+        [1, 6],
+        [5, 2],
+        [3, 4],
+        [4, 3],
+        [2, 5],
+        [6, 1],
+        [0, 7],
+        [11, 8],
+        [9, 10],
+        [10, 9],
+        [8, 11],
+    ];
+    let ctx = Ctx::new(
+        TS_CONTEXT_TEST_PROVIDER,
+        None,
+        Some(r#"{"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}"#),
+        None,
+    )
+    .unwrap();
+    let instants = [2_451_545.0];
+    let vargas = [Varga::D2.id()];
+    let request = sized(
+        TsChartRequest {
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            vargas: vargas.as_ptr(),
+            varga_count: vargas.len(),
+            ..TsChartRequest::default()
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let column = |name: &str| -> Vec<i64> {
+        reader
+            .column("varga_grahas", name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_i64())
+            .collect()
+    };
+    let (rashi, part, sign) = (column("rashi"), column("part"), column("sign"));
+    assert_ne!(rashi.len(), 0);
+    for ((rashi, part), sign) in rashi.iter().zip(&part).zip(&sign) {
+        assert_eq!(*sign, KASHINATHA[*rashi as usize][*part as usize]);
+    }
+    let broken = r#"{"vargas": {"schemes": {"D9": {"kind": "CUSTOM", "classifier": "ALL",
+        "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}]}}}}"#;
+    let (status, message, ..) =
+        Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, Some(broken), None).unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert!(
+        message.contains("vargas.schemes.D9.groups[0].map.signs"),
+        "{message}"
+    );
+}
+
 #[test]
 fn a_context_with_every_default_reports_its_settings() {
     assert_eq!(ts_abi_version(), 3);

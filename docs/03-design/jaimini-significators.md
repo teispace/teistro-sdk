@@ -113,7 +113,11 @@ to be the Atmakaraka. It is recorded under C127's row as unread.
 the one the profile's chara karaka scheme (`jaimini.chara_karakas`)
 ranks first. A chart reports it with every graha's house counted from
 it in the rasi chart and in the navamsha, so both readings of C130 are
-answers rather than a choice.
+answers rather than a choice. The navamsha is the one `vargas.schemes`
+chooses for D9 (BPHS ch. 6's unless it chooses another), and
+`chara_karakas` may be `EIGHT_ON_A_TIE` and the seven named by
+`seven_karaka_order` ([`varga-schemes.md`](varga-schemes.md), C2061,
+C2062).
 
 **The Brahma graha** is the verses' rule under C124 to C127's defaults:
 the lords (with co-lords) of the 6th, 8th and 12th from the stronger of

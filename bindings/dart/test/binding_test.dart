@@ -305,6 +305,85 @@ void main() {
     mean.dispose();
   });
 
+  test('a varga scheme the settings choose places the chart, and a broken '
+      'row is refused by its field', () {
+    // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+    // each sign's two halves, as sign indices.
+    const kashinatha = [
+      [7, 0],
+      [1, 6],
+      [5, 2],
+      [3, 4],
+      [4, 3],
+      [2, 5],
+      [6, 1],
+      [0, 7],
+      [11, 8],
+      [9, 10],
+      [10, 9],
+      [8, 11],
+    ];
+    final ctx = context(
+      settings: {
+        'vargas': {
+          'schemes': {
+            'D2': {'kind': 'NAMED', 'which': 'KASHINATHA'},
+          },
+        },
+      },
+    );
+    final hora =
+        ctx.chart
+            .found(
+              instant: 2451545,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              vargas: const [Varga.d2],
+            )
+            .vargas
+            .single;
+    expect(hora.varga, Varga.d2);
+    for (final placed in hora.grahas) {
+      final at = placed.at;
+      expect(at.sign, Rashi.values[kashinatha[at.rashi.index][at.part]]);
+    }
+    ctx.dispose();
+    expect(
+      () => context(
+        settings: {
+          'vargas': {
+            'schemes': {
+              'D9': {
+                'kind': 'CUSTOM',
+                'classifier': 'ALL',
+                'groups': [
+                  {
+                    'spans': {'spans': 'EQUAL'},
+                    'map': {
+                      'map': 'LISTED',
+                      'signs': [0],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.message,
+          'message',
+          contains('vargas.schemes.D9.groups[0].map.signs'),
+        ),
+      ),
+    );
+  });
+
   test('a pack loads at runtime and lays its record over the one standing', () {
     // The fixture pack is the base locale's, so this context reads that
     // one: a record is a locale's, and loading into `en-Latn` does not

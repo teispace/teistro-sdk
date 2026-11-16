@@ -4300,6 +4300,73 @@ void main() {
     put('surface.${entry.$1}', entry.$2 == null ? 'missing' : 'present');
   }
 
+  // A varga scheme the settings choose (`03-design/varga-schemes.md`):
+  // Kashinatha's hora for the D2, and a consumer's broken row refused with
+  // its field in the message.
+  final hora = teistro.context(
+    testProvider: true,
+    settings: {
+      'vargas': {
+        'schemes': {
+          'D2': {'kind': 'NAMED', 'which': 'KASHINATHA'},
+        },
+      },
+    },
+  );
+  final d2 =
+      hora.chart
+          .found(
+            instant: 2451545,
+            place: Observer(
+              latitudeDeg: Latitude(27.7172),
+              longitudeDeg: Longitude(85.324),
+              altitudeM: Altitude(1400),
+            ),
+            utcOffsetSeconds: 20700,
+            vargas: const [Varga.d2],
+          )
+          .vargas
+          .single;
+  for (final (j, placed) in d2.grahas.indexed) {
+    put(
+      'varga-scheme-kashinatha-graha-$j',
+      '${placed.graha.fullKey} ${placed.at.sign.fullKey}',
+    );
+  }
+  hora.dispose();
+  try {
+    teistro
+        .context(
+          testProvider: true,
+          settings: {
+            'vargas': {
+              'schemes': {
+                'D9': {
+                  'kind': 'CUSTOM',
+                  'classifier': 'ALL',
+                  'groups': [
+                    {
+                      'spans': {'spans': 'EQUAL'},
+                      'map': {
+                        'map': 'LISTED',
+                        'signs': [0],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        )
+        .dispose();
+    put('varga-scheme-refused', false);
+  } on TeistroException catch (error) {
+    put(
+      'varga-scheme-refused',
+      error.message.contains('vargas.schemes.D9.groups[0].map.signs'),
+    );
+  }
+
   final keys = report.keys.toList()..sort();
   for (final key in keys) {
     stdout.write('$key\t${report[key]}\n');

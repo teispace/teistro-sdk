@@ -107,10 +107,14 @@ rule applies against a cumulative span table in `Nas`.
 | Navamsa: Kalachakra variant | a row | T |
 | count from the end of an even sign | a fifth parameter of uncertain definition (a third-party implementation marks its own as not matching reference software); registered, unimplemented | S |
 
-None of the variants is shipped yet: the twenty-one rows are the ones the
-corpus decides, and a variant with no source and no fixture would be a
-row nobody could check. Each arrives as a row of `SCHEMES` when a source
-for it is read, which costs nothing but the citation.
+Eight variants are shipped (SR-114), each a row of `VARIANTS` with its
+citation and its source's worked values as a test: the parivritti D2, D3,
+D4 and D5, Kashinatha's and the Uma-Shambhu hora, Somanatha's drekkana and
+Krishna Mishra's navamsha. A consumer chooses one per varga in
+`vargas.schemes`, or hands its own rows, checked as these are. A variant
+with no source read is not shipped: it would be a row nobody could check,
+and a consumer who has the source writes the row
+(`varga-schemes.md`).
 
 **Vargottama is a property of a body, not of a graha.** The recording
 engine computes it for the grahas alone — 837 readings agree with the

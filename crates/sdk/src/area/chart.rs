@@ -771,7 +771,8 @@ impl<'a> ChartArea<'a> {
         let offset = clock.offset_at(foundation.instant);
         let mut document = Document::of(foundation.clone());
         for varga in request.vargas() {
-            document = document.with_varga(varga_chart(foundation, Axis::chosen(*varga, settings)?)?);
+            document =
+                document.with_varga(varga_chart(foundation, Axis::chosen(*varga, settings)?)?);
         }
         if request.sections.has(Sections::STATE) {
             document = document.with_state(state(foundation, settings)?);
@@ -1465,7 +1466,9 @@ impl<'a> ChartArea<'a> {
             .ok_or_else(|| Error::internal("a lagna in no sign"))?;
         let settings = self.context.settings();
         let mut chart = placed_chart(lagna, states, settings.jaimini.node_co_lordship)?;
-        chart.navamsa_lagna = varga_chart(foundation, Axis::chosen(Varga::D9, settings)?)?.lagna.sign;
+        chart.navamsa_lagna = varga_chart(foundation, Axis::chosen(Varga::D9, settings)?)?
+            .lagna
+            .sign;
         // Brahma is read from the chart it then starts a dasha in, so the
         // chart is assembled first and the sign filled in after.
         chart.brahma = brahma(
@@ -1895,7 +1898,13 @@ impl<'a> ChartArea<'a> {
         };
         use teistro_gochar::hits::Hit;
 
-        let meanings = lattices_of(request, self.context.settings(), natals, midheavens, members)?;
+        let meanings = lattices_of(
+            request,
+            self.context.settings(),
+            natals,
+            midheavens,
+            members,
+        )?;
         let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
         // The Moon's phases and each chart's phase return are lines of its
         // elongation from the Sun, one scan of their own.

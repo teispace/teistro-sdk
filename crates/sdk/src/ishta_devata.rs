@@ -3,14 +3,14 @@
 //! same from the amātyakāraka, read in the rasi chart and in the navāṁśa
 //! both (C130).
 
-use teistro_core::catalogue::{CharaKaraka, Rashi};
+use teistro_core::catalogue::{CharaKaraka, Rashi, Varga};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_remedies::{AmatyaDevatas, DevataRules, IshtaDevatas, amatya_devata, ishta_devata};
 use teistro_serial::Document;
 
 use crate::ChartArea;
-use crate::rules_bridge::navamsha_of;
+use crate::rules_bridge::varga_sign;
 
 impl ChartArea<'_> {
     /// The deity a chart's 12th from the kārakāṁśa names, BPHS (1923) ch.
@@ -63,7 +63,7 @@ impl ChartArea<'_> {
             .ok_or_else(|| Error::internal("the amātya is one of the nine"))?;
         let lagna = Rashi::from_id(u16::from(foundation.lagna_sign_index()))
             .ok_or_else(|| Error::internal("a lagna in no sign"))?;
-        let lagna_navamsha = navamsha_of(foundation.lagna_deg)?;
+        let lagna_navamsha = varga_sign(Varga::D9, foundation.lagna_deg, self.context.settings())?;
         Ok(IshtaDevatas {
             atmakaraka: reading.atmakaraka,
             karakamsha: from,
