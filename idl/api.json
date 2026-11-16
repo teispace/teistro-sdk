@@ -252,6 +252,13 @@
       "ty": "u32",
       "value": 256,
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_UNCERTAINTY",
+      "doc": "`TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga\nrequest's `sections` for each day's times' ± band from Delta T, in the\n`uncertainty` section: the Delta T the day was reckoned under, its\nband, and the one-sigma band of the limbs' ends, the sunrise and the\nmoonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request\nthat does not set it pays nothing.",
+      "ty": "u32",
+      "value": 512,
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "enums": [
@@ -11079,6 +11086,50 @@
           "value": 4,
           "doc": "The ephemeris engine's, under the model asked, answered through the\nport.",
           "key": "PROVIDER"
+        },
+        {
+          "name": "Extrapolated",
+          "value": 5,
+          "doc": "From a model beyond the data it was fitted to, with Huber's (2000)\nband.",
+          "key": "EXTRAPOLATED"
+        }
+      ],
+      "source": "crates/ffi/src/time.rs"
+    },
+    {
+      "name": "TsDeltaTBand",
+      "doc": "Where a Delta T's uncertainty comes from, as it crosses the boundary\n(`DeltaTBand`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Unstated",
+          "value": 0,
+          "doc": "No uncertainty is stated: a custom value.",
+          "key": "UNSTATED"
+        },
+        {
+          "name": "Measured",
+          "value": 1,
+          "doc": "The IERS's measured series, good to milliseconds.",
+          "key": "MEASURED"
+        },
+        {
+          "name": "MorrisonStephenson2004",
+          "value": 2,
+          "doc": "Morrison and Stephenson's (2004) standard errors, from −500 to the\nIERS era.",
+          "key": "MORRISON_STEPHENSON_2004"
+        },
+        {
+          "name": "StephensonMorrisonHohenkerk2016",
+          "value": 3,
+          "doc": "The published σ of Stephenson, Morrison and Hohenkerk (2016).",
+          "key": "STEPHENSON_MORRISON_HOHENKERK_2016"
+        },
+        {
+          "name": "Huber2000",
+          "value": 4,
+          "doc": "Huber's (2000) random walk beyond the data.",
+          "key": "HUBER_2000"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -15703,7 +15754,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,\nin the `sky` section, at `sky_step_minutes`;\n`TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and\nvinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)\neach day's Gowri panchangam, in the `gowri` section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,\nin the `sky` section, at `sky_step_minutes`;\n`TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and\nvinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)\neach day's Gowri panchangam, in the `gowri` section;\n`TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from\nDelta T, in the `uncertainty` section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -28094,6 +28145,11 @@
               "name": "gowri",
               "scalar": "u32",
               "doc": "How many rows of `gowri` belong to this day."
+            },
+            {
+              "name": "uncertainty",
+              "scalar": "u32",
+              "doc": "How many rows of `uncertainty` belong to this day."
             }
           ]
         },
@@ -29808,6 +29864,45 @@
               "doc": "1 when it is one of the eight of the daylight, 0 for one of the night."
             }
           ]
+        },
+        {
+          "id": 43,
+          "name": "uncertainty",
+          "doc": "Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "delta_t_seconds",
+              "scalar": "f64",
+              "doc": "Delta T, TT less UT1, at the middle of the day's window, seconds."
+            },
+            {
+              "name": "band",
+              "scalar": "u8",
+              "doc": "Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020).",
+              "enum": "TsDeltaTBand"
+            },
+            {
+              "name": "stated",
+              "scalar": "u8",
+              "doc": "1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing."
+            },
+            {
+              "name": "limbs_seconds",
+              "scalar": "f64",
+              "doc": "The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own."
+            },
+            {
+              "name": "sunrise_seconds",
+              "scalar": "f64",
+              "doc": "The one-sigma band of the sunrise and sunset and every period divided from them, seconds."
+            },
+            {
+              "name": "moonrise_seconds",
+              "scalar": "f64",
+              "doc": "The one-sigma band of the moonrise and moonset, seconds."
+            }
+          ]
         }
       ]
     },
@@ -31072,7 +31167,7 @@
           },
           {
             "name": "delta_t_band",
-            "doc": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an instant of the answer.",
+            "doc": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `HUBER_2000` beyond the data, `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an instant of the answer (`docs/03-design/time-and-timezone.md` §3.5).",
             "ty": {
               "kind": "TEXT"
             },

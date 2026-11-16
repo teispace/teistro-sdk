@@ -344,6 +344,7 @@ final class AlmanacDaysRequest extends _Request {
     this.place,
     this.sky = false,
     this.skyStepMinutes,
+    this.uncertainty = false,
     this.utcOffsetSeconds,
     this.years = false,
     this.zone,
@@ -389,6 +390,9 @@ final class AlmanacDaysRequest extends _Request {
   /// The sky's step, minutes; ten when left out.
   final int? skyStepMinutes;
 
+  /// Each day's times' ± band from Delta T (SR-104).
+  final bool uncertainty;
+
   final int? utcOffsetSeconds;
 
   final bool years;
@@ -416,13 +420,14 @@ final class AlmanacDaysRequest extends _Request {
     if (place case final placeValue?) 'place': placeValue._wire,
     'sky': sky,
     if (skyStepMinutes case final skyStepMinutesValue?) 'skyStepMinutes': skyStepMinutesValue,
+    'uncertainty': uncertainty,
     if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
     if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, uncertainty, utcOffsetSeconds, years, zone];
 }
 
 /// The query as a binding writes it.

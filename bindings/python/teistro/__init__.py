@@ -76,6 +76,7 @@ from ._ffi import (
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
     PANCHANGA_GOWRI,
+    PANCHANGA_UNCERTAINTY,
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_MARKERS,
@@ -1031,6 +1032,7 @@ from .catalogue import (
     Astronomy,
     Chosen,
     DayState,
+    DeltaTBand,
     DeltaTSource,
     Detail,
     DistanceUnit,
@@ -1152,6 +1154,7 @@ __all__ = [
     "Longitude",
     "ChoghadiyaPeriod",
     "GowriPeriod",
+    "TimesUncertainty",
     "HeldYoga",
     "Hora",
     "Interval",
@@ -2220,6 +2223,7 @@ __all__ = [
     "Astronomy",
     "Chosen",
     "DayState",
+    "DeltaTBand",
     "DeltaTSource",
     "DistanceUnit",
     "Dst",
@@ -4029,6 +4033,7 @@ class AlmanacArea(_Area):
         homa_ahuti: bool = False,
         markers: bool = False,
         gowri: bool = False,
+        uncertainty: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -4057,6 +4062,8 @@ class AlmanacArea(_Area):
         not otherwise make, so only on asking. `markers=True` gives each
         day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`,
         and `gowri=True` its Gowri panchangam, as `AlmanacDay.gowri`.
+        `uncertainty=True` gives each day its times' ± band from Delta T,
+        as `AlmanacDay.uncertainty` (SR-104).
         `days=False` leaves the days out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
@@ -4077,6 +4084,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_GOWRI if gowri else 0)
+            | (PANCHANGA_UNCERTAINTY if uncertainty else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -4098,6 +4106,7 @@ class AlmanacArea(_Area):
         homa_ahuti: bool = False,
         markers: bool = False,
         gowri: bool = False,
+        uncertainty: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -4122,6 +4131,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_GOWRI if gowri else 0)
+            | (PANCHANGA_UNCERTAINTY if uncertainty else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -23026,6 +23036,30 @@ class KaalaPeriod:
 
 
 @dataclass(frozen=True)
+class TimesUncertainty:
+    """A day's times' ± band from Delta T (SR-104): the Delta T the day
+    was reckoned under and the one-sigma band, in seconds, each kind of
+    time takes on from its uncertainty."""
+
+    delta_t_seconds: float
+    """Delta T, TT less UT1, at the middle of the day's window, seconds."""
+
+    band: DeltaTBand
+    """Where its uncertainty comes from."""
+
+    limbs_seconds: Optional[float]
+    """A limb's end, a sankranti or a lunation: Delta T's whole band;
+    `None` when Delta T states none."""
+
+    sunrise_seconds: Optional[float]
+    """The sunrise and sunset and every period divided from them: a 365th
+    of it."""
+
+    moonrise_seconds: Optional[float]
+    """The moonrise and moonset: a 26th of it."""
+
+
+@dataclass(frozen=True)
 class GowriPeriod:
     """One Gowri of the Gowri panchangam, of the daylight or of the night."""
 
@@ -23452,6 +23486,28 @@ class AlmanacDay:
         )
 
     @property
+    def uncertainty(self) -> Optional[TimesUncertainty]:
+        """The day's times' ± band from Delta T, when `uncertainty=True`
+        asked for it (SR-104, `03-design/time-and-timezone.md` §3.5): a
+        limb's end takes on Delta T's whole uncertainty, a sunrise a 365th
+        of it and a moonrise a 26th. `None` when not asked for.
+        """
+        columns = self.batch.decoded.uncertainty
+
+        def band(i: int) -> TimesUncertainty:
+            stated = bool(columns.stated[i])
+            return TimesUncertainty(
+                delta_t_seconds=columns.delta_t_seconds[i],
+                band=DeltaTBand(columns.band[i]),
+                limbs_seconds=columns.limbs_seconds[i] if stated else None,
+                sunrise_seconds=columns.sunrise_seconds[i] if stated else None,
+                moonrise_seconds=columns.moonrise_seconds[i] if stated else None,
+            )
+
+        rows = self._rows("uncertainty", band)
+        return rows[0] if rows else None
+
+    @property
     def gowri(self) -> list[GowriPeriod]:
         """The Gowri panchangam, when `gowri=True` asked for it
         (`03-design/gowri-panchangam.md`): eight Gowri of the daylight and
@@ -23591,6 +23647,7 @@ class Almanac:
             "named_panchaka",
             "markers",
             "gowri",
+            "uncertainty",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

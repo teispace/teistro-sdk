@@ -96,10 +96,9 @@ Delta T, per spike 3: a table of the measured values to the present
 model on either side (Stephenson, Morrison and Hohenkerk 2016 with its
 long-term parabola), the Espenak and Meeus fit only as a selectable
 model for reproducing older software; a provider's native Delta T is an
-override under `PREFER_NATIVE`. The value and the model are stamped;
-beyond the modelled era the stamp carries `uncertainty_seconds`, and a
-result whose instant is uncertain by more than a minute carries
-`time_uncertainty` in the envelope so a consumer can say so.
+override under `PREFER_NATIVE`. The value, its uncertainty and the
+band the uncertainty comes from are stamped (§3.5), and a day asked for it
+carries the band its times take on from Delta T.
 
 ### 3.2 Civil time and zones
 
@@ -295,6 +294,58 @@ its own record writes `zone` where it wrote `utcOffsetSeconds`; one whose
 hash a reckoning inside it wrote (a festival range, a search) has the zone
 sealed over that hash. Asked by a bare offset, every one of these answers,
 its input hash included, is byte for byte what it was.
+
+### 3.5 Delta T on an answer, and the band it puts on a time (SR-104, C2020)
+
+**What the provenance states.** `provenance.time` names the Delta T model
+always, and the value used, its one-sigma uncertainty, the band that
+uncertainty comes from and who answered it (`delta_t_seconds`,
+`uncertainty_seconds`, `delta_t_band`, `delta_t_by`), read at the answer's
+representative instant: a chart's birth, an almanac's first day's noon
+(where §3.4 reads its clock), a positions grid's first instant. One instant
+stands for the answer because Delta T moves by under a millisecond a day;
+a range of years states its first day's, and a consumer wanting each day's
+asks for the band below.
+
+**Where the uncertainty comes from** (`DeltaTBand`):
+
+| Band | Where | σ |
+| --- | --- | --- |
+| `MEASURED` | inside the IERS series (1956 to the table's last row) | the series' own, milliseconds |
+| `MORRISON_STEPHENSON_2004` | −500 to the IERS era, the models' data | their Table 1, interpolated; 1800–1956 tapered from 1 s to 0.05 s |
+| `HUBER_2000` | beyond the data: after the table's last row, after 2005 for `ESPENAK_MEEUS_2006`, before −500 (source `EXTRAPOLATED`) | `365.25 N √(N Q / 3 · (1 + N / M)) / 1000` s, `Q = 0.058 ms²/yr`, `M = 2500` yr, `N` years from the last value known; never below that value's own σ |
+| `STEPHENSON_MORRISON_HOHENKERK_2016` | an engine stating the 2016 paper's σ | the engine's |
+| `UNSTATED` | a custom value, or an engine stating none | none |
+
+Huber's walk is Espenak and Meeus's band for the centuries outside the
+record; calibrated at 2005 it reproduces their Table 3 (+2500 ±612 s,
++3000 ±1885 s) to the second, and at −500 their −1000 ±622 s and −4000
+±16291 s. The default model is anchored at the IERS table's last row, so
+its walk starts there: ±5.8 s in 2050 and ±32 s in 2100. That is the
+walk's own band; the spread between published extrapolations in 2100 is
+about three of it (C2020).
+
+**The band on a time.** A limb's end (tithi, nakshatra, yoga, karana), a
+sankranti and a lunation are fixed in TT: the Sun and the Moon reach a
+longitude at one TT instant, and its civil time is that instant less Delta
+T, so `|∂t/∂ΔT| = 1` and the time carries Delta T's whole σ. A rise is fixed
+by the Earth's turning, in UT; Delta T reaches it only through where the
+body has moved by the TT instant the sky is read at, so
+`|∂t/∂ΔT| = n / (ω − n)` with `n` the body's mean motion and `ω` the
+Earth's sidereal rotation: 1/365.2 for the Sun, 1/26.4 for the Moon. This
+is the addendum's finding read the other way: against another library's
+Delta T every limb moves by the same −95 s in 2100 and the sunrise does
+not.
+
+`AlmanacRequest::with_uncertainty` (`"uncertainty": true` in the JSON days
+request, `TS_PANCHANGA_UNCERTAINTY` (512) at the boundary, `uncertainty`
+in every binding's almanac call) gives each day `uncertainty`: Delta T at
+the middle of the day's window, its band, and `limbs_seconds`,
+`sunrise_seconds` and `moonrise_seconds`, the one-sigma band of each kind
+of time (`TimesUncertainty`, the boundary's `uncertainty` section). Every
+period divided from the sunrise (kaalas, choghadiya, horas, muhurtas)
+takes the sunrise's band. A day not asked carries nothing and hashes as
+before.
 
 ## 4. Algorithms
 

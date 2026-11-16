@@ -46,8 +46,8 @@ use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
     TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_GOWRI, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS,
-    TS_PANCHANGA_MARKERS, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS,
-    TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_MARKERS, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_UNCERTAINTY,
+    TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -6275,6 +6275,21 @@ fn a_panchanga_request_carries_lagnas_and_leaves_out_days_by_their_bits() {
         gowri.count("gowri"),
         Some(16),
         "eight by day and eight by night"
+    );
+    // SR-104: one band a day, Delta T measured in 2025, so a limb's band
+    // is milliseconds and a sunrise's a 365th of it.
+    assert_eq!(plain.count("uncertainty"), Some(0));
+    let banded = asked(TS_PANCHANGA_UNCERTAINTY);
+    let banded = Reader::parse(&banded, &schema).unwrap();
+    assert_eq!(banded.count("uncertainty"), Some(1));
+    let float = |column| banded.column("uncertainty", column).unwrap()[0].as_f64();
+    assert!((float("delta_t_seconds") - 69.2).abs() < 0.2);
+    assert!(float("limbs_seconds") > 0.0 && float("limbs_seconds") < 0.01);
+    assert!(float("sunrise_seconds") * 300.0 < float("limbs_seconds"));
+    assert_eq!(
+        banded.column("uncertainty", "band").unwrap()[0],
+        ScalarValue::Uint(1),
+        "MEASURED"
     );
     assert_eq!(plain.count("days"), Some(1));
     assert_eq!(without.count("days"), Some(0));

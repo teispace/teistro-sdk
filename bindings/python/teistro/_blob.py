@@ -8216,6 +8216,9 @@ class PanchangaCounts:
     gowri: memoryview[int]
     """How many rows of `gowri` belong to this day."""
 
+    uncertainty: memoryview[int]
+    """How many rows of `uncertainty` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9316,6 +9319,36 @@ class PanchangaGowri:
 
 
 @dataclass(frozen=True)
+class PanchangaUncertainty:
+    """The `uncertainty` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+    """
+
+    delta_t_seconds: memoryview[float]
+    """Delta T, TT less UT1, at the middle of the day's window, seconds."""
+
+    band: memoryview[int]
+    """Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020)."""
+
+    stated: memoryview[int]
+    """1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing."""
+
+    limbs_seconds: memoryview[float]
+    """The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own."""
+
+    sunrise_seconds: memoryview[float]
+    """The one-sigma band of the sunrise and sunset and every period divided from them, seconds."""
+
+    moonrise_seconds: memoryview[float]
+    """The one-sigma band of the moonrise and moonset, seconds."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -9463,6 +9496,9 @@ class Panchanga:
     gowri: PanchangaGowri
     """The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none."""
 
+    uncertainty: PanchangaUncertainty
+    """Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9514,6 +9550,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_sky = blob.section(40, "sky")
     at_markers = blob.section(41, "markers")
     at_gowri = blob.section(42, "gowri")
+    at_uncertainty = blob.section(43, "uncertainty")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9627,6 +9664,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("I"),
             markers=blob.column(at_counts, 27, 4, at_counts.count).cast("I"),
             gowri=blob.column(at_counts, 28, 4, at_counts.count).cast("I"),
+            uncertainty=blob.column(
+                at_counts, 29, 4, at_counts.count
+            ).cast("I"),
             length=at_counts.count,
         ),
         day=Day(
@@ -10396,6 +10436,27 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             to=blob.column(at_gowri, 2, 8, at_gowri.count).cast("d"),
             daytime=blob.column(at_gowri, 3, 1, at_gowri.count).cast("B"),
             length=at_gowri.count,
+        ),
+        uncertainty=PanchangaUncertainty(
+            delta_t_seconds=blob.column(
+                at_uncertainty, 0, 8, at_uncertainty.count
+            ).cast("d"),
+            band=blob.column(
+                at_uncertainty, 1, 1, at_uncertainty.count
+            ).cast("B"),
+            stated=blob.column(
+                at_uncertainty, 2, 1, at_uncertainty.count
+            ).cast("B"),
+            limbs_seconds=blob.column(
+                at_uncertainty, 3, 8, at_uncertainty.count
+            ).cast("d"),
+            sunrise_seconds=blob.column(
+                at_uncertainty, 4, 8, at_uncertainty.count
+            ).cast("d"),
+            moonrise_seconds=blob.column(
+                at_uncertainty, 5, 8, at_uncertainty.count
+            ).cast("d"),
+            length=at_uncertainty.count,
         ),
     )
 

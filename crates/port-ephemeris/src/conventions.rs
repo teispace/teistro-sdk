@@ -200,21 +200,31 @@ pub enum DeltaTBand {
     Unstated,
     /// The IERS's measured series, good to milliseconds.
     Measured,
-    /// Morrison and Stephenson's (2004) parabola, `0.8 t²` seconds with
-    /// `t` in centuries from 1820, the band the SDK's model and an engine's
-    /// outside the table take.
+    /// Morrison and Stephenson's (2004) standard errors, from −500 to the
+    /// IERS era (their Table 1; `0.8 t²` seconds with `t` in centuries
+    /// from 1820 where only the parabola stands): the band the SDK's model
+    /// takes over the span its data covers.
+    #[serde(rename = "MORRISON_STEPHENSON_2004")]
     MorrisonStephenson2004,
     /// The published σ of Stephenson, Morrison and Hohenkerk (2016).
+    #[serde(rename = "STEPHENSON_MORRISON_HOHENKERK_2016")]
     StephensonMorrisonHohenkerk2016,
+    /// Huber's (2000) random walk in the length of day, beyond the data:
+    /// `σ = 365.25 N √(N Q / 3 · (1 + N / M)) / 1000` seconds with `N`
+    /// years from the last value known, `Q = 0.058 ms²/yr` and `M = 2500`
+    /// years (Espenak and Meeus 2006, "Uncertainty in Delta T", Table 3).
+    #[serde(rename = "HUBER_2000")]
+    Huber2000,
 }
 
 impl DeltaTBand {
     /// Every band, in id order.
-    pub const ALL: [DeltaTBand; 4] = [
+    pub const ALL: [DeltaTBand; 5] = [
         DeltaTBand::Unstated,
         DeltaTBand::Measured,
         DeltaTBand::MorrisonStephenson2004,
         DeltaTBand::StephensonMorrisonHohenkerk2016,
+        DeltaTBand::Huber2000,
     ];
 
     /// The key stamped in provenance.
@@ -231,6 +241,7 @@ impl DeltaTBand {
             DeltaTBand::Measured => "MEASURED",
             DeltaTBand::MorrisonStephenson2004 => "MORRISON_STEPHENSON_2004",
             DeltaTBand::StephensonMorrisonHohenkerk2016 => "STEPHENSON_MORRISON_HOHENKERK_2016",
+            DeltaTBand::Huber2000 => "HUBER_2000",
         }
     }
 
@@ -249,6 +260,7 @@ impl DeltaTBand {
             DeltaTBand::Measured => 1,
             DeltaTBand::MorrisonStephenson2004 => 2,
             DeltaTBand::StephensonMorrisonHohenkerk2016 => 3,
+            DeltaTBand::Huber2000 => 4,
         }
     }
 
@@ -260,7 +272,7 @@ impl DeltaTBand {
     /// for band in DeltaTBand::ALL {
     ///     assert_eq!(DeltaTBand::from_id(band.id()), Some(band));
     /// }
-    /// assert_eq!(DeltaTBand::from_id(4), None);
+    /// assert_eq!(DeltaTBand::from_id(5), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u8) -> Option<DeltaTBand> {
@@ -269,6 +281,7 @@ impl DeltaTBand {
             1 => Some(DeltaTBand::Measured),
             2 => Some(DeltaTBand::MorrisonStephenson2004),
             3 => Some(DeltaTBand::StephensonMorrisonHohenkerk2016),
+            4 => Some(DeltaTBand::Huber2000),
             _ => None,
         }
     }
@@ -665,5 +678,16 @@ mod tests {
             DeltaTModel::Custom { seconds: 2.0 }.to_string(),
             "CUSTOM(2 s)"
         );
+    }
+
+    #[test]
+    fn a_bands_serde_spelling_is_its_key() {
+        // A year stays its own word, as the provenance's key spells it.
+        for band in DeltaTBand::ALL {
+            assert_eq!(
+                serde_json::to_value(band).unwrap(),
+                serde_json::Value::from(band.key())
+            );
+        }
     }
 }

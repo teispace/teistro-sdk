@@ -233,6 +233,16 @@ extern "C" {
 #define TS_PANCHANGA_GOWRI ((uint32_t)256)
 
 /**
+ * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's times' ± band from Delta T, in the
+ * `uncertainty` section: the Delta T the day was reckoned under, its
+ * band, and the one-sigma band of the limbs' ends, the sunrise and the
+ * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+ * that does not set it pays nothing.
+ */
+#define TS_PANCHANGA_UNCERTAINTY ((uint32_t)512)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -7881,7 +7891,40 @@ typedef enum ts_delta_t_source {
      * port.
      */
     TS_DELTA_T_SOURCE_PROVIDER = 4,
+    /**
+     * From a model beyond the data it was fitted to, with Huber's (2000)
+     * band.
+     */
+    TS_DELTA_T_SOURCE_EXTRAPOLATED = 5,
 } ts_delta_t_source;
+
+/**
+ * Where a Delta T's uncertainty comes from, as it crosses the boundary
+ * (`DeltaTBand`).
+ */
+typedef enum ts_delta_t_band {
+    /**
+     * No uncertainty is stated: a custom value.
+     */
+    TS_DELTA_T_BAND_UNSTATED = 0,
+    /**
+     * The IERS's measured series, good to milliseconds.
+     */
+    TS_DELTA_T_BAND_MEASURED = 1,
+    /**
+     * Morrison and Stephenson's (2004) standard errors, from −500 to the
+     * IERS era.
+     */
+    TS_DELTA_T_BAND_MORRISON_STEPHENSON_2004 = 2,
+    /**
+     * The published σ of Stephenson, Morrison and Hohenkerk (2016).
+     */
+    TS_DELTA_T_BAND_STEPHENSON_MORRISON_HOHENKERK_2016 = 3,
+    /**
+     * Huber's (2000) random walk beyond the data.
+     */
+    TS_DELTA_T_BAND_HUBER_2000 = 4,
+} ts_delta_t_band;
 
 /**
  * Which lunar-month convention a day's month leads with.
@@ -10321,7 +10364,9 @@ struct ts_panchanga_request {
      * in the `sky` section, at `sky_step_minutes`;
      * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
      * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-     * each day's Gowri panchangam, in the `gowri` section.
+     * each day's Gowri panchangam, in the `gowri` section;
+     * `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+     * Delta T, in the `uncertainty` section.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.

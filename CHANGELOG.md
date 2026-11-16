@@ -12,6 +12,37 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Delta T's band on a time, and which settings read the height (SR-104, SR-108).**
+**Numbers:** no computed time, position or day moves, and no day hash, golden or
+conformance fixture. What moves is what is *said* of them: Delta T's stated
+uncertainty outside the IERS table follows Huber (2000), as Espenak and Meeus apply
+it (C2020), where it was an unsourced formula: `TABLE_THEN_MODEL` states ±5.8 s for
+2050 (was ±14.5 s) and ±32 s for 2100 (was ±119 s), and before −500 ±622 s at −1000
+(was ±630 s) and ±1900 s at −1500 (was ±1230 s); `ESPENAK_MEEUS_2006` states Huber's
+walk from 2005 (+2500 ±612 s, was ±0.5 s). Those instants' Delta T source reads
+`EXTRAPOLATED` (was `MODEL`; `TsDeltaTSource` 5) and their band `HUBER_2000`. The
+`observer.height` convention of an answer on a resolved place reads `1337 m, not read`
+under settings that read no height (every shipped profile), so such an answer's
+provenance, and a receipt digesting it, moves.
+- **Delta T's band:** `DeltaTBand::Huber2000` (`HUBER_2000`, id 4) and
+  `DeltaTSource::Extrapolated`; `huber_2000_sigma(years)`. The bands' serde spelling
+  is now their key (`MORRISON_STEPHENSON_2004`, not `MORRISON_STEPHENSON2004`), and
+  the boundary's new `TsDeltaTBand` carries it (an enum member's IDL key may be
+  stated, `api: key=...`).
+- **A day's times with a ± band:** `AlmanacRequest::with_uncertainty`,
+  `"uncertainty": true` in the JSON days request, `TS_PANCHANGA_UNCERTAINTY` (512)
+  and `uncertainty` in the Node, wasm, Python, Dart and Java almanac calls give each
+  day `uncertainty` (`TimesUncertainty`, the `uncertainty` section, 43): Delta T at
+  the day's window's middle, its band, and the one-sigma band of the limbs' ends,
+  sankrantis and lunations (Delta T's whole σ: they are fixed in TT), of the sunrise
+  and every period divided from it (a 365th of it) and of the moonrise (a 26th);
+  `Almanac::uncertainty` in Rust (`03-design/time-and-timezone.md` §3.5).
+- **The height, said as read or not:** under `CENTRE_REFRACTION` and every other
+  named sunrise the height moves nothing from 0 to 8,848 m; only the dip, an
+  `ATMOSPHERIC` sunrise's standard pressure and a topocentric centre read it
+  (`03-design/geo-port.md` §6a). The `observer.height` convention says which, or that
+  none did.
+
 **Festivals in an adhika or a kshaya year (SR-93).**
 **Numbers:** a festival answer over a year with a kshaya lunation now keeps the
 second month's festivals on their tithis in it, where it dropped them: over BS 2085

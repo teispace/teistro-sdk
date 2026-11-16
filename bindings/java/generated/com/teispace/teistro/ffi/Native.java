@@ -249,6 +249,16 @@ public final class Native {
      */
     public static final int TS_PANCHANGA_GOWRI = 256;
 
+    /**
+     * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+     * request's `sections` for each day's times' ± band from Delta T, in the
+     * `uncertainty` section: the Delta T the day was reckoned under, its
+     * band, and the one-sigma band of the limbs' ends, the sunrise and the
+     * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+     * that does not set it pays nothing.
+     */
+    public static final int TS_PANCHANGA_UNCERTAINTY = 512;
+
     /** The ABI these declarations were generated from; a library that answers otherwise is refused. */
     public static final int GENERATED_ABI_VERSION = 3;
 
@@ -4112,7 +4122,9 @@ public final class Native {
          * in the `sky` section, at `sky_step_minutes`;
          * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
          * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-         * each day's Gowri panchangam, in the `gowri` section.
+         * each day's Gowri panchangam, in the `gowri` section;
+         * `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+         * Delta T, in the `uncertainty` section.
          * Zero for the days alone, which is what every
          * caller compiled against an earlier header passes, since this was a
          * reserved field it wrote zero to.

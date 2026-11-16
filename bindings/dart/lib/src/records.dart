@@ -394,7 +394,7 @@ final class TimeStamp {
   /// The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4).
   final ClockReading? clock;
 
-  /// Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an instant of the answer.
+  /// Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `HUBER_2000` beyond the data, `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an instant of the answer (`docs/03-design/time-and-timezone.md` §3.5).
   final String? deltaTBand;
 
   /// Who gave Delta T: `SDK` from its own model, `NATIVE` from the ephemeris engine that owns the model asked.

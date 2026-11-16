@@ -1053,9 +1053,12 @@ fn chart_records() -> [Record; 4] {
                         .compose(&found.instants, &found.request, &found.records)?;
                 let mut provenance = composed.founded.provenance.clone();
                 // Where a resolved place's height came from (SR-90).
-                provenance
-                    .applied_conventions
-                    .extend(found.height().cloned());
+                provenance.applied_conventions.extend(
+                    found
+                        .height()
+                        .cloned()
+                        .map(|height| crate::asked::height_as_read(height, context.settings())),
+                );
                 Ok(Answered {
                     value: written(&composed)?,
                     provenance: Some(provenance),
@@ -2165,11 +2168,12 @@ fn days(context: &Context, json: &str) -> Result<Answered, Error> {
         &asked.beside,
     )?;
     // Where a resolved place's height came from (SR-90).
-    answer
-        .days
-        .provenance
-        .applied_conventions
-        .extend(asked.height.clone());
+    answer.days.provenance.applied_conventions.extend(
+        asked
+            .height
+            .clone()
+            .map(|height| crate::asked::height_as_read(height, context.settings())),
+    );
     let value = written(&crate::days_request::DaysWritten {
         days: &answer.days.value,
         day_hashes: &answer.day_hashes,
