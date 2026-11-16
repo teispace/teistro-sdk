@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 110 entry points over 30 structs and 187 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 111 entry points over 30 structs and 187 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 
@@ -67,6 +67,7 @@ ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 | [`ts_calendar_from_fixed`](calendar/ts_calendar_from_fixed) | The date a fixed day falls on in a calendar. |
 | [`ts_calendar_to_fixed`](calendar/ts_calendar_to_fixed) | The fixed day of a date, validated: a date the calendar does not have is `INVALID_ARG` with the `NONEXISTENT_DATE` detail. |
 | [`ts_calendar_convert`](calendar/ts_calendar_convert) | Converts a date into another calendar. |
+| [`ts_calendar_in_era`](calendar/ts_calendar_in_era) | A date viewed in a named era: its own calendar's reading, with the year that era gives it in `era` and `era_year`. |
 | [`ts_calendar_month_length`](calendar/ts_calendar_month_length) | The length of a month in a calendar. |
 | [`ts_calendar_is_leap`](calendar/ts_calendar_is_leap) | Whether a year is a leap year in a calendar: `1` or `0`. |
 | [`ts_calendar_weekday`](calendar/ts_calendar_weekday) | The weekday of a date as its ISO number: Monday is `1`, Sunday `7`. |
