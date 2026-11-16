@@ -277,7 +277,7 @@ pub struct Scheme {
     /// variant, or a consumer's own rows (`CUSTOM`). Left out of a written
     /// scheme when it is `PARASHARA`, so a chart computed by the shipped
     /// rows writes, and hashes, as it always has.
-    #[serde(skip_serializing_if = "VargaVariant::is_parashara")]
+    #[serde(default, skip_serializing_if = "VargaVariant::is_parashara")]
     pub variant: VargaVariant,
     /// What the chart is called: D9's nine, D150's hundred and fifty.
     pub divisions: u16,
