@@ -29,23 +29,22 @@ reader would guess from the names.
 | `kaalas` | 3 to 3 | 3 to 3 | **yes** |
 | `muhurtas.daylight` | 15 to 15 | 15 to 15 | **yes** |
 | `muhurtas.night` | 15 to 15 | 15 to 15 | **yes** |
-| `limbs.karana` | 2 to 4 | 3 to 122 | no |
-| `limbs.nakshatra` | 1 to 3 | 2 to 60 | no |
-| `limbs.tithi` | 1 to 3 | 2 to 62 | no |
-| `limbs.yoga` | 1 to 3 | 2 to 65 | no |
-| `moon.rises` | 0 to 1 | 0 to 41 | no |
-| `moon.sets` | 0 to 1 | 0 to 41 | no |
-| `moon.signs` | 1 to 2 | 1 to 28 | no |
-| `omens.panchaka` | 0 to 3 | 0 to 10 | no |
-| `omens.yogas` | 0 to 2 | 0 to 1 | no |
-| `sun.signs` | 1 to 2 | 1 to 3 | no |
+| `limbs.karana` | 2 to 4 | 2 to 4 | no |
+| `limbs.nakshatra` | 1 to 3 | 1 to 3 | no |
+| `limbs.tithi` | 1 to 3 | 1 to 3 | no |
+| `limbs.yoga` | 1 to 3 | 2 to 3 | no |
+| `moon.rises` | 0 to 1 | 0 to 2 | no |
+| `moon.sets` | 0 to 1 | 0 to 2 | no |
+| `moon.signs` | 1 to 2 | 1 to 2 | no |
+| `omens.panchaka` | 0 to 3 | 0 to 2 | no |
+| `omens.yogas` | 0 to 2 | 0 to 2 | no |
+| `sun.signs` | 1 to 2 | 1 to 2 | no |
 
 Every list that is fixed is a **division of an arc**: twenty-four horas,
 fifteen muhurtas of the daylight and fifteen of the night, sixteen
 choghadiya, three inauspicious kaalas. Its count is a convention, so it
-does not move when the arc does — a polar day whose synthesised arc
-runs for a fortnight still has twenty-four horas, each of them fourteen
-hours long.
+does not move when the arc does — a polar day's synthesised arc still
+has twenty-four horas.
 
 Every list that is not fixed is a **crossing of a quantity inside the
 window**: a tithi boundary, a moonrise, the Moon entering a sign. Its
@@ -69,13 +68,13 @@ the widest day and every other day:
 | batch | ragged rows | rectangular rows | wasted |
 |---|---|---|---|
 | the 408 ordinary days | 35 470 | 39 576 | 10.4% |
-| all 450 days | 49 800 | 228 150 | **78.2%** |
+| all 450 days | 39 101 | 44 550 | **12.2%** |
 
 Ten per cent is arguable. Seventy-eight is not, and the second
 row is what a real caller gets: **one** polar day in a batch sets
 the stride for every other day in it. The list that costs the
-most is `limbs.karana`: a stride of 122 against a median day's handful, and
-50 484 empty rows across the batch.
+most is `omens.panchaka`: a stride of 3 against a median day's handful, and
+1192 empty rows across the batch.
 
 So the layout is **ragged**, and the same rule for every list rather
 than rectangular for the five divisions and ragged for the ten
@@ -93,7 +92,7 @@ whether a sentinel would be read as a value.
 |---|---|
 | `muhurtas.abhijit` | 450 of 450 days |
 | `muhurtas.brahma` | 450 of 450 days |
-| `sun.sankranti` | 39 of 450 days |
+| `sun.sankranti` | 14 of 450 days |
 
 A sankranti is rare and the other two are not, which is the shape of the
 problem rather than a surprise. None of the three can use a sentinel: an
@@ -129,7 +128,7 @@ hard question.
 | every per-day list has the same length on every day | falsified | 10 of 15 disagree; so a single stride cannot serve the blob |
 | the lists that are fixed are exactly the divisions of an arc | **holds** | 5 of 15 lists fixed, and all 5 are divisions |
 | a polar day changes only the crossings, not the divisions | **holds** | 24 horas and 15+15 muhurtas at 69.65°N, as at 27.7°N |
-| a crossing list stays small enough for a rectangular layout | falsified | `limbs.karana` reaches 122 on a polar day against 4 on an ordinary one |
+| a polar day's crossing lists are no longer than an ordinary day's | **holds** | `limbs.karana` reaches 4 on a polar day and 4 on an ordinary one (each polar date is a day of its own under `NEAREST_EVENT`, C1900) |
 | the default profile can found a day at any latitude | falsified | 1 of 1 disagree; a polar day under `day.polar_day_policy = UNDEFINED` is refused by name, which is `panchanga-day.md` §15's first row met in practice |
 
 **The blob's per-day lists are ragged, with an offset column each.** One
@@ -143,7 +142,7 @@ as a sentinel.
 that decides the layout, and until the scan's cap was sized from its
 span the SDK could not produce one at 69.65°N at all.
 
-What this pass does **not** decide, and the design page has to: whether
-a synthesised polar arc a fortnight long should carry sixty-two tithis
-at all, or whether an almanac that long is a different question from the
-one `Almanac::day` answers.
+What this pass once left to the design page, whether a synthesised polar
+arc a fortnight long should carry sixty-two tithis, C1900 decided: each
+polar date is a day of its own, 23 to 25 hours, so no almanac day is a
+different question from the one `Almanac::day` answers.
