@@ -9663,6 +9663,17 @@ void _engineTests() {
     // hands back.
     // Over the built-in sky, whose Moon has her real distance; read
     // before the context is disposed: [sunrise, dip, first moonrise].
+    // 5 January 2026; `gregorian` above is this test's converted date.
+    const fifth = CalendarDate(
+      calendar: Calendar.gregorian,
+      year: 2026,
+      eraYear: 0,
+      month: 1,
+      day: 5,
+      resolution: Resolution.defined,
+      computedMonth: 0,
+      computedDay: 0,
+    );
     List<double> almanacDay(Map<String, Object?> settings) {
       final each = teistro.context(
         profile: 'nepali-drik',
@@ -9672,8 +9683,8 @@ void _engineTests() {
       try {
         final one = each.almanac
             .of(
-              from: gregorian(2026, 1, 5),
-              to: gregorian(2026, 1, 5),
+              from: fifth,
+              to: fifth,
               place: place,
               utcOffsetSeconds: 20700,
             )

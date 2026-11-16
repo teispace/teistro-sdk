@@ -1935,18 +1935,18 @@ class AnEngine(WithLibrary):
                 rise = next(event.instant for event in one.moon_events if event.rise)
                 return (one.day.sunrise, one.day.dip_deg, one.day.convention, rise)
 
-        own = almanac_day({})
-        centre = almanac_day({"day": {"moonrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}})
-        self.assertEqual(own[0], centre[0])
-        later = (centre[3] - own[3]) * 86400.0
+        level = almanac_day({})
+        centred = almanac_day({"day": {"moonrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}})
+        self.assertEqual(level[0], centred[0])
+        later = (centred[3] - level[3]) * 86400.0
         self.assertTrue(55.0 < later < 110.0, later)
-        self.assertEqual(own[1], 0.0)
-        deck = almanac_day(
+        self.assertEqual(level[1], 0.0)
+        dipped = almanac_day(
             {"day": {"sunrise": {"kind": "COMPOSED", "disc": "CENTRE", "refraction": "STANDARD", "height_m": 30}}}
         )
-        self.assertEqual(deck[2], Sunrise.CENTRE_REFRACTION)
-        self.assertAlmostEqual(deck[1], 1.76 * 30**0.5 / 60.0, places=12)
-        self.assertLess(deck[0], own[0])
+        self.assertEqual(dipped[2], Sunrise.CENTRE_REFRACTION)
+        self.assertAlmostEqual(dipped[1], 1.76 * 30**0.5 / 60.0, places=12)
+        self.assertLess(dipped[0], level[0])
         with self.assertRaises(TeistroError) as refused:
             almanac_day(
                 {"day": {"moonrise": {"kind": "COMPOSED", "disc": "UPPER_LIMB", "refraction": "NONE", "height_m": 20000}}}
