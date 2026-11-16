@@ -100,8 +100,8 @@ fn epochs(capabilities: &Capabilities) -> Vec<f64> {
 /// (one registered and not yet cited) has nothing to be held to, so it
 /// is listed and not asked. A provider that declares the override and
 /// answers no model fails.
-pub(crate) fn check_delta_t<P: EphemerisProvider + ?Sized>(
-    provider: &P,
+pub(crate) fn check_delta_t(
+    provider: &dyn EphemerisProvider,
     capabilities: &Capabilities,
     bounds: &Bounds,
 ) -> Check {
@@ -196,8 +196,8 @@ pub(crate) fn check_delta_t<P: EphemerisProvider + ?Sized>(
 /// the standard models, for every listed member the catalogue reckons,
 /// at 1900, 2000 and 2050. A classical text's member is its own
 /// definition, which [`super::check_ayanamsha`] holds to the text.
-pub(crate) fn check_ayanamsha_values<P: EphemerisProvider + ?Sized>(
-    provider: &P,
+pub(crate) fn check_ayanamsha_values(
+    provider: &dyn EphemerisProvider,
     capabilities: &Capabilities,
     bounds: &Bounds,
 ) -> Check {
@@ -270,8 +270,8 @@ pub(crate) fn check_ayanamsha_values<P: EphemerisProvider + ?Sized>(
 /// in the same frame: the Sun's sign ingresses over a year, in the first
 /// listed ayanamsha's zodiac on the mean basis (an engine's sidereal
 /// positions are on the mean basis, the port's sidereal frame's).
-pub(crate) fn check_sidereal_crossings<P: EphemerisProvider + ?Sized>(
-    provider: &P,
+pub(crate) fn check_sidereal_crossings(
+    provider: &dyn EphemerisProvider,
     capabilities: &Capabilities,
     jds: &[f64],
     bounds: &Bounds,
@@ -290,15 +290,16 @@ pub(crate) fn check_sidereal_crossings<P: EphemerisProvider + ?Sized>(
         zodiac: Zodiac::Sidereal { ayanamsha: member },
         ..Frame::CANONICAL
     };
-    let Some(from) = jds
+    let Some((from, first)) = jds
         .first()
-        .and_then(|jd| JulianDay::<Ut1>::try_new(*jd).ok())
+        .copied()
+        .and_then(|jd| JulianDay::<Ut1>::try_new(jd).ok().map(|from| (from, jd)))
     else {
         return Check::skipped(NAME, "no instant to start from");
     };
-    let Ok(to) = from.plus_days(366.0) else {
-        return Check::skipped(NAME, "the window runs off the calendar");
-    };
+    // A finite day plus a year is finite (at the largest double it rounds
+    // back onto itself), so the window's end cannot fail.
+    let to = JulianDay::<Ut1>::literal(first + 366.0);
     let quantity = Quantity::Longitude(Body::Sun);
     let request = CrossingRequest {
         quantity,
@@ -375,8 +376,8 @@ const KATHMANDU: (f64, f64, f64) = (27.7172, 85.324, 1400.0);
 /// A provider's own topocentric positions of the Sun and the Moon against
 /// the SDK's correction of its geocentric ones, arcseconds, asked on TT so
 /// no Delta T enters either side.
-pub(crate) fn check_topocentric<P: EphemerisProvider + ?Sized>(
-    provider: &P,
+pub(crate) fn check_topocentric(
+    provider: &dyn EphemerisProvider,
     capabilities: &Capabilities,
     jds: &[f64],
     bounds: &Bounds,
@@ -459,6 +460,17 @@ where
     P: EphemerisProvider + ?Sized,
     R: EphemerisProvider + ?Sized,
 {
+    // `&P` is a provider for any `P`, so both cross as trait objects and the
+    // comparison is compiled once.
+    compare(&provider, &reference, bounds)
+}
+
+/// [`check_reference`]'s body, for two trait objects.
+fn compare(
+    provider: &dyn EphemerisProvider,
+    reference: &dyn EphemerisProvider,
+    bounds: &Bounds,
+) -> Check {
     const NAME: &str = "positions_reference";
     let ours = provider.capabilities();
     let theirs = reference.capabilities();
@@ -482,10 +494,7 @@ where
             .positions(&request)
             .map(|done| done.columns)
     };
-    let (native, other) = match (
-        completed(&Forward(provider)),
-        completed(&Forward(reference)),
-    ) {
+    let (native, other) = match (completed(provider), completed(reference)) {
         (Ok(native), Ok(other)) => (native, other),
         (Err(error), _) => return Check::fail(NAME, format!("the provider failed: {error}")),
         (_, Err(error)) => return Check::fail(NAME, format!("the reference failed: {error}")),
@@ -504,22 +513,6 @@ where
             theirs.identity.data_version
         ),
     )
-}
-
-/// A provider as a trait object, for a provider that is not `Sized`.
-struct Forward<'a, P: EphemerisProvider + ?Sized>(&'a P);
-
-impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Forward<'_, P> {
-    fn capabilities(&self) -> Capabilities {
-        self.0.capabilities()
-    }
-
-    fn positions(
-        &self,
-        request: &PositionRequest<'_>,
-    ) -> Result<teistro_port_ephemeris::PositionColumns, ProviderError> {
-        self.0.positions(request)
-    }
 }
 
 #[cfg(test)]
@@ -553,6 +546,11 @@ mod tests {
         AyanamshaFails,
         /// The true basis refused, the mean one answered.
         MeanOnly,
+        /// Both bases refused.
+        AyanamshaRefused,
+        /// Coverage of two days in the first century, which no instant
+        /// the kit asks at falls in.
+        Ancient,
         /// A topocentric question answered from the centre of the Earth.
         Geocentric,
         /// Positions fail.
@@ -619,6 +617,11 @@ mod tests {
                 } else {
                     plain.bodies.clone()
                 },
+                jd_range: if self.0 == Fault::Ancient {
+                    (1_721_424.5, 1_721_426.5)
+                } else {
+                    plain.jd_range
+                },
                 ..plain
             }
         }
@@ -679,6 +682,7 @@ mod tests {
         ) -> Result<f64, ProviderError> {
             match (self.0, basis) {
                 (Fault::AyanamshaFails, _) => Err(ProviderError::invalid("no table")),
+                (Fault::AyanamshaRefused, _) => Err(ProviderError::unsupported("any basis")),
                 (Fault::MeanOnly, AyanamshaBasis::True) => {
                     Err(ProviderError::unsupported("the true basis"))
                 }
@@ -797,7 +801,10 @@ mod tests {
             jd_range: (2_430_000.5, 2_440_000.5),
             ..declared.clone()
         };
-        skipped(check_delta_t(&probe, &narrow, bounds), "the coverage misses");
+        skipped(
+            check_delta_t(&probe, &narrow, bounds),
+            "the coverage misses",
+        );
         // A classical text's ayanamsha is its own definition.
         let classical = Capabilities {
             astronomy: Astronomy::Classical,
@@ -823,6 +830,12 @@ mod tests {
         // A provider offering no body shares none with its reference.
         skipped(
             check_reference(&Probe(Fault::Bodiless), &TestProvider::new(), bounds),
+            "no body or instant",
+        );
+        // A reference covering none of the provider's instants shares
+        // bodies but no instant.
+        skipped(
+            check_reference(&probe, &Probe(Fault::Ancient), bounds),
             "no body or instant",
         );
     }
@@ -852,6 +865,14 @@ mod tests {
             !failed.passed && failed.detail.contains("declared, but failed"),
             "{}",
             failed.detail
+        );
+        // A refused mean basis is a failure: only the true one may be left
+        // to the catalogue.
+        let refused = of(Fault::AyanamshaRefused);
+        assert!(
+            !refused.passed && refused.detail.contains("declared, but failed"),
+            "{}",
+            refused.detail
         );
     }
 
