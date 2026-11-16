@@ -308,7 +308,13 @@ final class AlmanacReads {
                 o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana),
                 published(o),
                 o.get("sait") == null ? null : sait(Reads.object(o, "sait")),
-                o.get("moonrise") == null ? null : moonrise(Reads.object(o, "moonrise")));
+                o.get("moonrise") == null ? null : moonrise(Reads.object(o, "moonrise")),
+                o.get("malamasa") == null ? null : malamasa(Reads.object(o, "malamasa")));
+    }
+
+    /** The month rule an observance carries, as a festival answer writes it. */
+    private static Malamasa malamasa(Map<?, ?> m) {
+        return new Malamasa(MalamasaClause.read(m.get("clause")), Reads.string(m, "source"));
     }
 
     /** An observance's moonrise as a festival answer writes it. */

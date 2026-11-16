@@ -264,7 +264,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -551,6 +551,13 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         Tithi::ShuklaPratipada,
         Fit::Share(MADHYAHNA),
         "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: म्हपूजा",
+    ),
+    (
+        "NEPAL_SAMBAT_NEW_YEAR",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        Fit::Share(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; in a doubled Kartika the year begins on the adhika month's first day, Dharmasindhu p. 31 (चैत्रस्य मलमासत्वे वत्सरारम्भनिमित्तकं ... मलमासप्रतिपद्येव कुर्यात्), as the Nepal Sambat calendar begins it, while Mha puja keeps the nija month (C2041)",
     ),
     (
         "HARIBODHINI_EKADASHI",
@@ -1910,7 +1917,7 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 20] = [
+const SAME_DAY: [(&str, &str, &str); 19] = [
     (
         "FAGU_PURNIMA",
         "HOLIKA",
@@ -1970,11 +1977,6 @@ const SAME_DAY: [(&str, &str, &str); 20] = [
         "LAXMI_PRASAD_DEVKOTA_JAYANTI",
         "LAKSHMI_PUJA",
         "kept in Nepal, though the national panchanga prints it in neither VS 2082 nor 2083 (C613): the day of LAKSHMI_PUJA; the poet's birthday, kept on Lakshmi puja's day",
-    ),
-    (
-        "NEPAL_SAMBAT_NEW_YEAR",
-        "MHA_PUJA",
-        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: the day of MHA_PUJA; Kachhala's first day, which the print opens on Mha puja's day",
     ),
     (
         "BHISHMA_PANCHAKA_ARAMBHA",
@@ -2040,15 +2042,17 @@ impl FestivalRule {
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FestivalRule> {
         // The rules a doubled Jyeshtha keeps in its adhika month (C606),
-        // and the one the print names only there (C607); a monthly rule
-        // is kept in an adhika month too.
+        // the year a doubled Kartika begins there (C2041), and the one the
+        // print names only there (C607); a monthly rule is kept in an
+        // adhika month too.
         fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
             match key {
                 "DASHAHARA_SNANA_ARAMBHA"
                 | "GANGA_DASHAHARA"
                 | "GANGA_PUJA"
                 | "RAMESHWAR_PUJA"
-                | "GURU_PADMASAMBHAVA_JAYANTI" => InAdhika::First,
+                | "GURU_PADMASAMBHAVA_JAYANTI"
+                | "NEPAL_SAMBAT_NEW_YEAR" => InAdhika::First,
                 "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
                 _ if month.is_none() => InAdhika::Also,
                 _ => InAdhika::Nija,
@@ -2123,8 +2127,8 @@ impl FollowingRule {
     /// use teistro_panchanga::festival::FollowingRule;
     ///
     /// let rules = FollowingRule::nepal_panchanga();
-    /// let new_year = rules.iter().find(|rule| rule.key == "NEPAL_SAMBAT_NEW_YEAR").ok_or("shipped")?;
-    /// assert_eq!((new_year.after.as_str(), new_year.days), ("MHA_PUJA", 0));
+    /// let yugadi = rules.iter().find(|rule| rule.key == "KALI_YUGADI").ok_or("shipped")?;
+    /// assert_eq!((yugadi.after.as_str(), yugadi.days), ("TRAYODASHI_SHRADDHA", 0));
     /// # Ok::<(), &str>(())
     /// ```
     #[must_use]

@@ -745,6 +745,36 @@ void main() {
     ctx.dispose();
   });
 
+  // In 1983 the lunation from 14 January is Pausha and Magha both:
+  // Shivaratri keeps its tithi in it and names the clause and the texts
+  // that placed it (SR-93, `03-design/festival-malamasa.md`).
+  test('a kshaya lunation keeps both months\' festivals and says why', () {
+    final sky = teistro.nepalOfficial();
+    final answer =
+        sky.almanac
+            .of(
+              from: gregorian(1983, 2, 9),
+              to: gregorian(1983, 2, 13),
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              festivals: const FestivalRequest(
+                rules: FestivalPack.nepalPanchanga,
+              ),
+            )
+            .festivals!;
+    final shivaratri = answer.observances.firstWhere(
+      (o) => o.rule == 'SHIVARATRI',
+    );
+    expect([shivaratri.day.month, shivaratri.day.day], [2, 11]);
+    expect(shivaratri.malamasa?.clause, MalamasaClause.kshayaSecond);
+    expect(shivaratri.malamasa?.source, contains('Dharmasindhu'));
+    sky.dispose();
+  });
+
   test('the next sankranti and a pack\'s festival are found', () {
     final ctx = teistro.context(
       profile: 'nepali-committee',

@@ -658,6 +658,24 @@ public final class BindingTest {
             }
         });
 
+        // A kshaya lunation (festival-malamasa.md, SR-93): in 1983 the
+        // lunation from 14 January is Pausha and Magha both, and
+        // Shivaratri keeps its tithi in it, naming the clause and its texts.
+        tests.put("a kshaya lunation keeps both months' festivals and says why", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context official = teistro.context(ContextOptions.builder().nepalOfficial().build())) {
+                var panchanga = new com.teispace.teistro.request.FestivalRequest(
+                        com.teispace.teistro.request.FestivalRules.NEPAL_PANCHANGA);
+                FestivalAnswer answer = official.almanac().festivals(Civil.date(Calendar.GREGORIAN, 1983, 2, 9),
+                        Civil.date(Calendar.GREGORIAN, 1983, 2, 13), kathmandu, 20_700, panchanga);
+                FestivalObservance shivaratri = answer.observances().stream()
+                        .filter(o -> o.rule().equals("SHIVARATRI")).findFirst().orElseThrow();
+                same(List.of(2, 11), List.of(shivaratri.day().month(), shivaratri.day().day()), "on 11 February");
+                same(MalamasaClause.KSHAYA_SECOND, shivaratri.malamasa().clause(), "under the second name");
+                check(shivaratri.malamasa().source().contains("Dharmasindhu"), "the texts that placed it");
+            }
+        });
+
         // Anniversaries over a span (anniversary-span.md): a barkhi and an
         // event, each day naming the rule that chose it, a span too long
         // refused on years.

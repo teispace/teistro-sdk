@@ -569,6 +569,7 @@ void putFestivals(String prefix, FestivalAnswer answer) {
         number(observance.tithi.from),
         number(earlier.held),
         number(later.held),
+        observance.malamasa?.clause.key ?? '-',
       ].join(' '),
     );
   }
@@ -3383,6 +3384,18 @@ void main() {
                 .festivals!;
     putFestivals('festivals-$name', festivals);
   }
+  // A month the test provider's 2023 doubles: a monthly rule kept in its
+  // adhika month says which month rule placed it (SR-93).
+  putFestivals(
+    'festivals-malamasa',
+    geo.almanac.festivals(
+      from: Calendar.gregorian.date(2023, 8, 20),
+      to: Calendar.gregorian.date(2023, 9, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    ),
+  );
 
   // ── The lunar years ─────────────────────────────────────────────────
   // 2024-03-20..04-20 holds a Chaitra Shukla Pratipada: two years, their
