@@ -62,18 +62,31 @@ mod local;
 
 pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
 
-/// The Sun's radius, km (IAU 2015 nominal): the one radius the sunrise's
-/// limb reckons by too ([`crate::rise_set::SUN_RADIUS_KM`]). The eclipse
-/// module kept the older 696 000 km until the two were made one.
+/// The Sun's radius an eclipse is reckoned by, km: Auwers' (1891) solar
+/// semidiameter of 959.63″ at one astronomical unit, the value NASA's
+/// eclipse canons (Espenak and Meeus) and their Besselian elements use, so
+/// the contacts, kinds and phase durations the catalogue prints are the
+/// ones this module is held to (`eclipses-measured.md`).
+///
+/// It is not the sunrise's limb: that is the photosphere's IAU 2015
+/// nominal radius ([`crate::rise_set::SUN_RADIUS_KM`], 695 700 km). The
+/// two are different conventions for different questions, and reckoning
+/// eclipses by the nominal radius flips a hybrid eclipse's kind and moves a
+/// lunar eclipse's phases by over a minute against the catalogue.
 ///
 /// ```
 /// use teistro_astro::eclipse::SUN_RADIUS_KM;
-/// use teistro_astro::rise_set::EARTH_EQUATORIAL_RADIUS_KM;
+/// use teistro_astro::rise_set::{AU_KM, EARTH_EQUATORIAL_RADIUS_KM};
 ///
+/// // Auwers' 959.63″ at one astronomical unit, to the kilometre's tens.
+/// let auwers_km = 959.63 / 206_264.806 * AU_KM;
+/// assert!((SUN_RADIUS_KM - auwers_km).abs() < 15.0);
 /// // The Sun is some 109 Earths across.
 /// assert!((SUN_RADIUS_KM / EARTH_EQUATORIAL_RADIUS_KM - 109.1).abs() < 0.1);
+/// // Not the sunrise's nominal photosphere.
+/// assert!(SUN_RADIUS_KM > teistro_astro::rise_set::SUN_RADIUS_KM);
 /// ```
-pub use crate::rise_set::SUN_RADIUS_KM;
+pub const SUN_RADIUS_KM: f64 = 696_000.0;
 
 /// The Moon's radius in Earth radii for a lunar eclipse and the penumbra
 /// of a solar one (IAU 1982).
