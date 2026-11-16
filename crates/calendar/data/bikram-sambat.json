@@ -2,7 +2,53 @@
   "calendar": "BIKRAM_SAMBAT",
   "authority": "Panchanga Nirnayak Samiti, Government of Nepal (the calendar-determining committee)",
   "edition": "official-1970-2095/1",
-  "provenance": "the baseline engine's copy of the government's published month lengths, verified there against an independent almanac year by year (rank 2 until the source memo docs/calendars/bikram-sambat.md cites the committee's own publication)",
+  "provenance": "the baseline engine's table, its rows checked year by year (2026-08-27) against an online almanac published in Nepal and rewritten from it where they differed; the committee's own print confirms BS 2082 and 2083 (fixtures/official/npns-2082-2083.json). The committee was constituted in 2077 BS, so the rows before it are the almanac's back catalogue (rank 3), not a government print; docs/calendars/bikram-sambat.md, 'The four disputed rows'",
+  "disputed_rows": [
+    {
+      "year": 1977,
+      "month": 7,
+      "sankranti": "Tula",
+      "table_start": "1920-10-17",
+      "other_start": "1920-10-16",
+      "table_source": "the online almanac (rank 3); the baseline's row since its first table",
+      "other_sources": "bikram-sambat 1.8.1 (npm, Medic) and nepali-datetime (PyPI), rank 4; the SDK's engine",
+      "margin": "the text's sankranti 23:59:29 on 16 Oct at +05:30, 0.5 min before midnight; 00:25 on 17 Oct in Kathmandu's apparent time",
+      "decision": "kept, crux C1850"
+    },
+    {
+      "year": 1977,
+      "month": 10,
+      "sankranti": "Makara",
+      "table_start": "1921-01-14",
+      "other_start": "1921-01-13",
+      "table_source": "the online almanac (rank 3); the baseline's row since its first table",
+      "other_sources": "bikram-sambat 1.8.1 (npm, Medic) and nepali-datetime (PyPI), rank 4; the SDK's engine",
+      "margin": "the text's sankranti 16:51:12 on 13 Jan at +05:30, 7.9 min before the text's sunset (16:59:06)",
+      "decision": "kept, crux C1850"
+    },
+    {
+      "year": 1981,
+      "month": 12,
+      "sankranti": "Meena",
+      "table_start": "1925-03-13",
+      "other_start": "1925-03-14",
+      "table_source": "the online almanac (rank 3); the baseline's row from 2026-08-27, the other row before it",
+      "other_sources": "bikram-sambat 1.8.1 (npm, Medic) and nepali-datetime (PyPI), rank 4; the SDK's engine",
+      "margin": "the text's sankranti 00:07:54 on 14 Mar at +05:30, 7.9 min after midnight; after midnight under every clock tried",
+      "decision": "kept, crux C1850"
+    },
+    {
+      "year": 1998,
+      "month": 6,
+      "sankranti": "Kanya",
+      "table_start": "1941-09-17",
+      "other_start": "1941-09-16",
+      "table_source": "the online almanac (rank 3); the baseline's row from 2026-08-27, the other row before it",
+      "other_sources": "bikram-sambat 1.8.1 (npm, Medic) and nepali-datetime (PyPI), rank 4; the SDK's engine",
+      "margin": "the text's sankranti 23:47:55 on 16 Sep at +05:30, 12.1 min before midnight; 00:04 on 17 Sep in Kathmandu's apparent time",
+      "decision": "kept, crux C1850"
+    }
+  ],
   "anchor": {
     "year": 1970,
     "month": 1,

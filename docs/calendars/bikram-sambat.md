@@ -315,10 +315,88 @@ sankrantis.
 5. Inside the official span the table wins and a disagreement is
    reported as `Divergent`, never hidden.
 
+## The four disputed rows (SR-107)
+
+A consumer's comparison of the table with three other sources over BS
+1970 to 2100 (1572 month starts) found four that differ, each by one
+day; in each the table stands alone against the others. Researched
+2026-11-16, crux C1850.
+
+**Where the table's rows come from.** The rows of
+`crates/calendar/data/bikram-sambat.json` are the baseline engine's
+table. That table was checked year by year against an online
+almanac published in Nepal on 2026-08-27 and ten rows were
+rewritten from it, 1981 and 1998 among them. Its 1977 row is the
+baseline's first row and already matched. The committee was constituted
+in 2077 BS, so no row before 2077 is a committee print: those rows are
+the almanac's back catalogue (rank 3), and its source for the 1920s is
+not stated. The committee's own print confirms 2082 and 2083 (R2).
+
+**The other sources.** Two open-source converter tables, `bikram-sambat`
+1.8.1 (npm, Medic) and `nepali-datetime` (the Python Package Index),
+rank 4, with no source stated. The baseline's own rows for 1981 and 1998
+before 2026-08-27 also agreed with them. The fourth voice is the SDK's
+engine, which is a computation, not a source.
+
+| row | the table (kept) | the others | the text's sankranti, Nepal's clock of the time (+05:30) | margin to the rule's boundary | in Kathmandu's apparent time |
+|---|---|---|---|---|---|
+| Kartik 1977 (Tula) | 17 Oct 1920, Sunday | 16 Oct, Saturday | 23:59:29 on 16 Oct | 0.5 min before midnight | 00:25 on 17 Oct: the table's day |
+| Magh 1977 (Makara, before sunset) | 14 Jan 1921, Friday | 13 Jan, Thursday | 16:51:12 on 13 Jan | 7.9 min before the text's sunset (16:59:06) | the clock does not matter: the rule reads sunset |
+| Chaitra 1981 (Meena) | 13 Mar 1925, Friday | 14 Mar, Saturday | 00:07:54 on 14 Mar | 7.9 min after midnight | 00:10 on 14 Mar: the others' day |
+| Ashwin 1998 (Kanya) | 17 Sep 1941, Wednesday | 16 Sep, Tuesday | 23:47:55 on 16 Sep | 12.1 min before midnight | 00:04 on 17 Sep: the table's day |
+
+All four lie within 13 minutes of the boundary, inside the tolerance of
+the residual (above). The clock matters at this size. The engine reads
+tzdb's +05:30 for 1920 to 1986, but a panchanga maker of 1920 to 1941
+reckoned the night in Kathmandu's own time. Under local apparent time
+(local mean time +05:41:16 plus the equation of time), Kartik 1977 and
+Ashwin 1998 fall on the table's day, and so does Mangsir 1989, a residual
+in which Medic's table sides with the table and `nepali-datetime` with the
+engine. Over the 430 midnight-ruled boundaries of 1970 to
+2012, no single clock reproduces every row:
+
+| clock | rows matched | rows missed |
+|---|---:|---|
+| tzdb +05:30 (shipped) | 426/430 | Kartik 1977, Chaitra 1981, Mangsir 1989, Ashwin 1998 |
+| local mean time | 426/430 | Jestha 1977, Chaitra 1981, Falgun 1988, Ashwin 1998 |
+| local apparent time | 427/430 | Jestha 1977, Chaitra 1981, Kartik 2004 |
+
+Local apparent time would move Jestha 1977 and Kartik 2004, which every
+source agrees on. So the computation does not settle the four rows
+either way, and the shipped frame stays as it is.
+
+**Not found.** No patro printed for 1977, 1981 or 1998 BS is online. The
+Gorkhapatra was a weekly of those years, and an issue's masthead carries
+the day of the month and the weekday. Its 1958 to 2028 BS issues are
+being microfilmed and digitised by the corporation and the National
+Archives, but they are not online. The 21 volumes of the Regmi Research
+Series (Cornell eCommons, the OCR text, searched for every dated reference)
+cite no date in those four months.
+
+**What settles a row.** Any document carrying a Bikram Sambat date and a
+weekday in one of those months settles that row, because the two
+readings differ by a day throughout the month. For example, a weekly
+Gorkhapatra issue or an order of Monday 18 October 1920 is dated Kartik 2
+under the table and Kartik 3 under the others. Monday 17 January 1921 is Magh 4
+against Magh 5, Monday 16 March 1925 is Chaitra 4 against Chaitra 3, and
+Monday 22 September 1941 is Ashwin 6 against Ashwin 7.
+
+**Decision.** All four rows are kept. The table's reading is the
+best-ranked source found: a published almanac (rank 3) against two
+converter tables with no stated source (rank 4). No reading has rank 1
+or 2, so C1850 stays open. Every date in those months still reports
+both labels (`Divergent`), the table's and the engine's, so a consumer
+that follows the converters can read the engine's label.
+`crates/calendar/tests/disputed_rows.rs` pins each row, the engine's
+other day and the margin, and holds the data file's `disputed_rows`
+record to the same values.
+
 ## Open items
 
 - R3: a third independent source (an independent printed almanac, or
   the committee's panchangas for earlier years, which are not online).
+- C1850: a printed patro or a dated document with a weekday for Kartik and
+  Magh 1977, Chaitra 1981 and Ashwin 1998 (SR-107, the four disputed rows).
 - The verse the committee applies for the punya-kala, and the name of
   the bija set behind its Moon (C28, C38).
 - C29: the Dharmasindhu's verse for the ayana sankrantis' punya-kala,

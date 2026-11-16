@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The four disputed Bikram Sambat rows, sourced (SR-107).**
+**Numbers:** none. No month length, date or hash moves. The four rows are kept, and only the
+data file's provenance, its new `disputed_rows` record, the docs and a test change.
+- The table's rows for Kartik and Magh 1977, Chaitra 1981 and Ashwin 1998 (17 Oct 1920,
+  14 Jan 1921, 13 Mar 1925, 17 Sep 1941) are traced to an online almanac published in Nepal (rank 3). No
+  committee print exists for those years. Two converter tables (rank 4) and the SDK's engine
+  give the day before, before, after and before. The text's sankranti lies 0.5 to 12.1
+  minutes from the boundary, and Kathmandu's apparent time puts two of the four on the table's
+  day. The best-ranked reading is kept, and C1850 stays open for a print
+  (`calendars/bikram-sambat.md`, "The four disputed rows").
+- `bikram-sambat.json`'s provenance no longer calls the pre-committee rows a government print.
+  `crates/calendar/tests/disputed_rows.rs` pins the four rows, the engine's other day and each margin.
+
 **A fortnight's short name and a rashi's Indian name in every pack.**
 **Numbers:** none; two record forms are added and no existing form changes.
 - `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:
