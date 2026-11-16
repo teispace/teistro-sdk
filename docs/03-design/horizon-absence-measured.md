@@ -61,7 +61,7 @@ below check that it covers what was seen.
 | of them absent | 274 |
 | absences the bound proves | 216 |
 | searches the solver had to scan | 5 |
-| cells an event that exists costs | 8044 |
+| cells an event that exists costs | 8045 |
 | cells the absences cost | 40186 |
 | cells the bound would save | 31428 |
 
@@ -135,8 +135,8 @@ loop makes next, once with the walk alone and once with the proof:
 | of them absent, by the walk | 1491 |
 | absences the proof proves | 1377 |
 | searches where the two answers differ | **0** |
-| cells the walk spends | 117529 |
-| cells with the proof | 45882 |
+| cells the walk spends | 117522 |
+| cells with the proof | 45877 |
 
 **No answer differs**, which is the row that must hold: the proof only
 ever replaces a walk that would have found nothing. It proves 92.4% of
