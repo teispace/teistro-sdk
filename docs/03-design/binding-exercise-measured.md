@@ -22,16 +22,16 @@ is therefore one nothing touches.
 |---|---:|---:|---:|
 | Node | 97 | 93 | 4 |
 | Dart | 79 | 75 | 4 |
-| Rust | 218 | 210 | 8 |
+| Rust | 219 | 210 | 9 |
 | Python | 235 | 228 | 7 |
 
-**23 members nothing names**, of 629 members the four surfaces declare.
+**24 members nothing names**, of 630 members the four surfaces declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
 - **Node**: `changes`, `expected`, `loadZones`, `zoneDatabase`
 - **Dart**: `callJson`, `expected`, `loadZones`, `zoneDatabase`
-- **Rust**: `dates`, `days_omitted`, `in_words`, `lookup`, `named_dossier`, `tibetan_year_in_full`, `with_product`, `with_visible`
+- **Rust**: `dates`, `days_omitted`, `holiday_sets`, `in_words`, `lookup`, `named_dossier`, `tibetan_year_in_full`, `with_product`, `with_visible`
 - **Python**: `call_json`, `changes`, `gowri`, `load_zones`, `manifest_json`, `markers`, `zone_database`
 
 | proposed rule | verdict | measured |
