@@ -303,6 +303,26 @@ class AContext(WithLibrary):
         with self.assertRaises(TypeError):
             self.ctx.with_settings("frame")  # type: ignore[arg-type]
 
+    def test_a_varga_scheme_the_settings_choose_places_the_chart(self) -> None:
+        """Kashinatha's hora (Narasimha Rao 2003) chosen for the D2 puts
+        each graha by its table, and a consumer's broken row is refused
+        with its field in the message (`03-design/varga-schemes.md`)."""
+        kashinatha = [(7, 0), (1, 6), (5, 2), (3, 4), (4, 3), (2, 5), (6, 1), (0, 7), (11, 8), (9, 10), (10, 9), (8, 11)]
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.ctx.with_settings({"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}) as ctx:
+            (hora,) = ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700, vargas=[Varga.D2]).vargas
+            self.assertEqual(hora.varga, Varga.D2)
+            for placed in hora.grahas:
+                self.assertEqual(placed.at.sign, Rashi(kashinatha[int(placed.at.rashi)][placed.at.part]))
+        broken = {
+            "kind": "CUSTOM",
+            "classifier": "ALL",
+            "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}],
+        }
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.with_settings({"vargas": {"schemes": {"D9": broken}}})
+        self.assertIn("vargas.schemes.D9.groups[0].map.signs", refused.exception.message)
+
     def test_a_derived_context_outlives_its_parent(self) -> None:
         parent = self.teistro.context(profile=PROFILE, test_provider=True)
         derived = parent.with_settings({"frame": {"node": "MEAN"}})

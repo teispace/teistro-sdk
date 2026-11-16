@@ -189,6 +189,32 @@ public final class BindingTest {
             tropical.close();
         });
 
+        tests.put("a varga scheme the settings choose places the chart, and a broken row is refused by its field", () -> {
+            // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+            // each sign's two halves, as sign indices.
+            int[][] kashinatha = {{7, 0}, {1, 6}, {5, 2}, {3, 4}, {4, 3}, {2, 5}, {6, 1}, {0, 7}, {11, 8}, {9, 10},
+                {10, 9}, {8, 11}};
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro);
+                    Context hora = sky.withSettings(Map.of("vargas", Map.of("schemes",
+                            Map.of("D2", Map.of("kind", "NAMED", "which", "KASHINATHA")))))) {
+                VargaChart d2 = hora.chart()
+                        .found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
+                        .vargas().get(0);
+                same(Varga.D2, d2.varga(), "the chart asked");
+                for (PlacedInVarga placed : d2.grahas()) {
+                    VargaPlacement at = placed.at();
+                    same(Rashi.values()[kashinatha[at.rashi().ordinal()][at.part()]], at.sign(), placed.graha().name());
+                }
+                Map<String, Object> broken = Map.of("kind", "CUSTOM", "classifier", "ALL", "groups",
+                        List.of(Map.of("spans", Map.of("spans", "EQUAL"), "map",
+                                Map.of("map", "LISTED", "signs", List.of(0)))));
+                TeistroException refused = refusal(
+                        () -> sky.withSettings(Map.of("vargas", Map.of("schemes", Map.of("D9", broken)))).close());
+                check(refused.getMessage().contains("vargas.schemes.D9.groups[0].map.signs"), refused.getMessage());
+            }
+        });
+
         tests.put("a context derived over a provider written in Java outlives its parent", () -> {
             Line line = new Line(null);
             Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").provider(line).build());

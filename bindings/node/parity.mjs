@@ -2708,6 +2708,25 @@ for (const [path, member] of [
 }
 shape.dispose();
 
+// A varga scheme the settings choose (`03-design/varga-schemes.md`):
+// Kashinatha's hora for the D2, and a consumer's broken row refused with
+// its field in the message.
+{
+  const kashinatha = { D2: { kind: 'NAMED', which: 'KASHINATHA' } };
+  const hora = new Context({ testProvider: true, settings: { vargas: { schemes: kashinatha } } });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const [d2] = hora.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vargas: ['D2'] }).vargas;
+  d2.grahas.forEach((placed, j) => put(`varga-scheme-kashinatha-graha-${j}`, `${placed.graha} ${placed.at.sign}`));
+  hora.dispose();
+  const broken = { kind: 'CUSTOM', classifier: 'ALL', groups: [{ spans: { spans: 'EQUAL' }, map: { map: 'LISTED', signs: [0] } }] };
+  try {
+    new Context({ testProvider: true, settings: { vargas: { schemes: { D9: broken } } } }).dispose();
+    put('varga-scheme-refused', 'false');
+  } catch (error) {
+    put('varga-scheme-refused', `${error.message.includes('vargas.schemes.D9.groups[0].map.signs')}`);
+  }
+}
+
 for (const key of [...report.keys()].sort()) {
   process.stdout.write(`${key}\t${report.get(key)}\n`);
 }

@@ -22,9 +22,9 @@ use super::knobs::{
     PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
     PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
-    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart,
+    StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn,
+    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,

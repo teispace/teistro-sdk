@@ -3541,6 +3541,26 @@ def main() -> None:
     ):
         put(f"surface.{path}", "missing" if member is None else "present")
 
+    # A varga scheme the settings choose (`03-design/varga-schemes.md`):
+    # Kashinatha's hora for the D2, and a consumer's broken row refused with
+    # its field in the message.
+    kashinatha = {"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}
+    with teistro.context(test_provider=True, settings=kashinatha) as hora:
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        (d2,) = hora.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700, vargas=[Varga.D2]).vargas
+        for j, placed in enumerate(d2.grahas):
+            put(f"varga-scheme-kashinatha-graha-{j}", f"{placed.graha.full_key} {placed.at.sign.full_key}")
+    broken = {
+        "kind": "CUSTOM",
+        "classifier": "ALL",
+        "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}],
+    }
+    try:
+        teistro.context(test_provider=True, settings={"vargas": {"schemes": {"D9": broken}}}).close()
+        put("varga-scheme-refused", False)
+    except TeistroError as error:
+        put("varga-scheme-refused", "vargas.schemes.D9.groups[0].map.signs" in error.message)
+
     for key in sorted(report):
         sys.stdout.write(f"{key}\t{report[key]}\n")
     ctx.close()

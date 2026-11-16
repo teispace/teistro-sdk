@@ -478,28 +478,25 @@ const fn row(
 /// Pisces; Leo and Cancer are taken as a pair. One list a sign, the first
 /// half's sign first.
 const KASHINATHA_HORA: [Group; 12] = [
-    listed(&[7, 0]),   // Aries, Mars's: Scorpio by day, Aries by night.
-    listed(&[1, 6]),   // Taurus, Venus's: Moon half first.
-    listed(&[5, 2]),   // Gemini, Mercury's.
-    listed(&[3, 4]),   // Cancer, the Moon's: Cancer, then Leo.
-    listed(&[4, 3]),   // Leo, the Sun's.
-    listed(&[2, 5]),   // Virgo, Mercury's.
-    listed(&[6, 1]),   // Libra, Venus's.
-    listed(&[0, 7]),   // Scorpio, Mars's.
-    listed(&[11, 8]),  // Sagittarius, Jupiter's.
-    listed(&[9, 10]),  // Capricorn, Saturn's.
-    listed(&[10, 9]),  // Aquarius, Saturn's.
-    listed(&[8, 11]),  // Pisces, Jupiter's.
+    listed(&[7, 0]),  // Aries, Mars's: Scorpio by day, Aries by night.
+    listed(&[1, 6]),  // Taurus, Venus's: Moon half first.
+    listed(&[5, 2]),  // Gemini, Mercury's.
+    listed(&[3, 4]),  // Cancer, the Moon's: Cancer, then Leo.
+    listed(&[4, 3]),  // Leo, the Sun's.
+    listed(&[2, 5]),  // Virgo, Mercury's.
+    listed(&[6, 1]),  // Libra, Venus's.
+    listed(&[0, 7]),  // Scorpio, Mars's.
+    listed(&[11, 8]), // Sagittarius, Jupiter's.
+    listed(&[9, 10]), // Capricorn, Saturn's.
+    listed(&[10, 9]), // Aquarius, Saturn's.
+    listed(&[8, 11]), // Pisces, Jupiter's.
 ];
 
 /// The Uma-Shambhu hora (Narasimha Rao, *Parasara's Hora Chart Decoded*,
 /// 2012): the twenty-four halves of the zodiac counted twice round from
 /// Aries, an even sign's two halves in reverse. Odd signs step on from
 /// `2·rashi`; even signs from `2·rashi + 1` back by one.
-const UMA_SHAMBHU_HORA: [Group; 2] = [
-    step(SignBase::Cyclic, 1, 0),
-    step(SignBase::Cyclic, 11, 1),
-];
+const UMA_SHAMBHU_HORA: [Group; 2] = [step(SignBase::Cyclic, 1, 0), step(SignBase::Cyclic, 11, 1)];
 
 /// Somanatha's drekkana (Somanatha's *Kalpalata* on Krishna Mishra's
 /// *Phalaratnamala*, as Iranganti Rangacharya gives it): the odd signs'
@@ -524,10 +521,8 @@ const SOMANATHA_DREKKANA: [Group; 12] = [
 /// Krishna Mishra's navamsha (Narasimha Rao 2012): an odd sign's nine as
 /// Parashara's, an even sign's in reverse, from the ninth back to the
 /// first.
-const KRISHNA_MISHRA_NAVAMSHA: [Group; 2] = [
-    step(SignBase::Cyclic, 1, 0),
-    step(SignBase::Cyclic, 11, 8),
-];
+const KRISHNA_MISHRA_NAVAMSHA: [Group; 2] =
+    [step(SignBase::Cyclic, 1, 0), step(SignBase::Cyclic, 11, 8)];
 
 /// A named variant's row.
 const fn variant(
@@ -557,14 +552,62 @@ const fn variant(
 /// assert!(VARIANTS.iter().all(|row| row.variant != VargaVariant::Parashara));
 /// ```
 pub const VARIANTS: [Scheme; 8] = [
-    variant(Varga::D2, 2, VargaVariant::Parivritti, Classifier::All, &CONTINUOUS),
-    variant(Varga::D2, 2, VargaVariant::Kashinatha, Classifier::Sign, &KASHINATHA_HORA),
-    variant(Varga::D2, 2, VargaVariant::UmaShambhu, Classifier::Parity, &UMA_SHAMBHU_HORA),
-    variant(Varga::D3, 3, VargaVariant::Parivritti, Classifier::All, &CONTINUOUS),
-    variant(Varga::D3, 3, VargaVariant::Somanatha, Classifier::Sign, &SOMANATHA_DREKKANA),
-    variant(Varga::D4, 4, VargaVariant::Parivritti, Classifier::All, &CONTINUOUS),
-    variant(Varga::D5, 5, VargaVariant::Parivritti, Classifier::All, &CONTINUOUS),
-    variant(Varga::D9, 9, VargaVariant::KrishnaMishra, Classifier::Parity, &KRISHNA_MISHRA_NAVAMSHA),
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::Kashinatha,
+        Classifier::Sign,
+        &KASHINATHA_HORA,
+    ),
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::UmaShambhu,
+        Classifier::Parity,
+        &UMA_SHAMBHU_HORA,
+    ),
+    variant(
+        Varga::D3,
+        3,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D3,
+        3,
+        VargaVariant::Somanatha,
+        Classifier::Sign,
+        &SOMANATHA_DREKKANA,
+    ),
+    variant(
+        Varga::D4,
+        4,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D5,
+        5,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D9,
+        9,
+        VargaVariant::KrishnaMishra,
+        Classifier::Parity,
+        &KRISHNA_MISHRA_NAVAMSHA,
+    ),
 ];
 
 /// The twenty-one divisional charts the SDK ships, in catalogue order.
@@ -656,7 +699,11 @@ impl Scheme {
             .copied()
             .find(|row| row.varga == Some(varga) && row.variant == which)
             .ok_or_else(|| {
-                Error::internal(format!("{} serves {} and has no row", which.key(), varga.key()))
+                Error::internal(format!(
+                    "{} serves {} and has no row",
+                    which.key(),
+                    varga.key()
+                ))
             })
     }
 

@@ -157,6 +157,26 @@ test('withSettings derives a context under a patch and leaves its parent as it w
   mean.dispose();
 });
 
+test('a varga scheme the settings choose places the chart, and a broken row is refused by its field', () => {
+  // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+  // each sign's two halves, as sign indices.
+  const kashinatha = [[7, 0], [1, 6], [5, 2], [3, 4], [4, 3], [2, 5], [6, 1], [0, 7], [11, 8], [9, 10], [10, 9], [8, 11]];
+  const signs = Object.values(catalogue.Rashi);
+  const ctx = context({ settings: { vargas: { schemes: { D2: { kind: 'NAMED', which: 'KASHINATHA' } } } } });
+  const at = { instant: 2451545, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const [hora] = ctx.chart.found({ ...at, vargas: ['D2'] }).vargas;
+  assert.equal(hora.varga, 'varga.D2');
+  for (const { at: placed } of hora.grahas) {
+    assert.equal(placed.sign, signs[kashinatha[signs.indexOf(placed.rashi)][placed.part]]);
+  }
+  ctx.dispose();
+  const broken = { kind: 'CUSTOM', classifier: 'ALL', groups: [{ spans: { spans: 'EQUAL' }, map: { map: 'LISTED', signs: [0] } }] };
+  assert.throws(
+    () => context({ settings: { vargas: { schemes: { D9: broken } } } }),
+    (error) => error instanceof TeistroError && /vargas\.schemes\.D9\.groups\[0\]\.map\.signs/u.test(error.message),
+  );
+});
+
 test('a context derived over an ephemeris written in JavaScript outlives its parent', () => {
   const { calls, provider } = jsProvider();
   const ctx = new Context({ provider, profile: 'nepali-drik' });

@@ -30,10 +30,10 @@ use serde::{Deserialize, Serialize};
 use crate::catalogue::{
     Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, Source, Varga,
 };
-pub use crate::varga_rows::VargaChoice;
 use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
+pub use crate::varga_rows::VargaChoice;
 pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
@@ -48,9 +48,9 @@ pub use knobs::{
     PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
     PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
-    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, VargaVariant, Varjyam,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart,
+    StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn,
+    UnknownTime, VargaVariant, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 pub use snapshot::SettingsSnapshot;
@@ -1788,6 +1788,24 @@ fn basis_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
     }
 }
 
+/// Every varga scheme the settings choose, checked as a chart would check
+/// it, the first fault of each named by its field (`varga-schemes.md`).
+fn scheme_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    for (varga, choice) in &s.vargas.schemes {
+        if let Err(refused) = choice.check(*varga) {
+            out.push(Diagnostic::error(
+                "varga-scheme",
+                format!(
+                    "{} (field `{}`)",
+                    refused.message,
+                    refused.field().unwrap_or("vargas.schemes")
+                ),
+                &["vargas.schemes"],
+            ));
+        }
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -1848,19 +1866,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         ));
     }
     basis_coherence(s, &mut out);
-    for (varga, choice) in &s.vargas.schemes {
-        if let Err(refused) = choice.check(*varga) {
-            out.push(Diagnostic::error(
-                "varga-scheme",
-                format!(
-                    "{} (field `{}`)",
-                    refused.message,
-                    refused.field().unwrap_or("vargas.schemes")
-                ),
-                &["vargas.schemes"],
-            ));
-        }
-    }
+    scheme_coherence(s, &mut out);
     // The text's sunrise is the centre on the geometric horizon, in local
     // mean time; asked for another convention, the provider declines and
     // the SDK solves it over the text's Sun, which is neither the text's

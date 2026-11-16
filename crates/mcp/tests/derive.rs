@@ -164,3 +164,73 @@ fn a_full_cache_lets_go_of_the_scope_used_longest_ago() {
         "every scope derives from one base"
     );
 }
+
+/// A varga scheme a call's settings choose reaches its answer: Kashinatha's
+/// hora (Narasimha Rao 2003) places each graha by its table, and a
+/// consumer's broken row is refused with its field in the message
+/// (`03-design/varga-schemes.md`).
+#[test]
+fn a_varga_scheme_the_settings_choose_places_the_chart() {
+    const KASHINATHA: [[usize; 2]; 12] = [
+        [7, 0],
+        [1, 6],
+        [5, 2],
+        [3, 4],
+        [4, 3],
+        [2, 5],
+        [6, 1],
+        [0, 7],
+        [11, 8],
+        [9, 10],
+        [10, 9],
+        [8, 11],
+    ];
+    let (mut server, _) = counted();
+    let mut request = chart_request();
+    request["vargas"] = json!(["D2"]);
+    let answered = call(
+        &mut server,
+        "chart.found",
+        &json!({"request": request, "detail": "full",
+                "settings": {"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}}),
+    );
+    assert_eq!(answered["isError"], false, "{answered}");
+    let sign = |key: &Value| {
+        teistro::catalogue::Rashi::ALL
+            .iter()
+            .position(|rashi| key.as_str().is_some_and(|key| key.ends_with(rashi.key())))
+            .unwrap()
+    };
+    let mut placed = 0;
+    for chart in answered["structuredContent"]["value"]["charts"]
+        .as_array()
+        .unwrap()
+    {
+        let hora = &chart["vargas"][0];
+        for graha in hora["grahas"].as_array().unwrap() {
+            let at = &graha["at"];
+            let part = usize::try_from(at["part"].as_u64().unwrap()).unwrap();
+            assert_eq!(
+                sign(&at["sign"]),
+                KASHINATHA[sign(&at["rashi"])][part],
+                "{at}"
+            );
+            placed += 1;
+        }
+    }
+    assert!(placed > 0, "{answered}");
+    let refused = call(
+        &mut server,
+        "chart.found",
+        &json!({"request": request, "settings": {"vargas": {"schemes": {"D9": {
+            "kind": "CUSTOM", "classifier": "ALL",
+            "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}]}}}}}),
+    );
+    assert_eq!(refused["isError"], true, "{refused}");
+    assert!(
+        refused
+            .to_string()
+            .contains("vargas.schemes.D9.groups[0].map.signs"),
+        "{refused}"
+    );
+}

@@ -1493,6 +1493,30 @@ public final class ParityRunner {
                 kerala = shipped.chart().layout(ChartLayout.SOUTH_INDIAN);
             }
             kerala.put("key", "ACME_KERALA");
+            // A varga scheme the settings choose (`03-design/varga-schemes.md`):
+            // Kashinatha's hora for the D2, and a consumer's broken row refused
+            // with its field in the message.
+            try (Context hora = teistro.context(ContextOptions.builder().testProvider(true)
+                    .settingsJson("{\"vargas\":{\"schemes\":{\"D2\":{\"kind\":\"NAMED\",\"which\":\"KASHINATHA\"}}}}")
+                    .build())) {
+                Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                VargaChart d2 = hora.chart()
+                        .found(2_451_545.0, place, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
+                        .vargas().get(0);
+                for (int j = 0; j < d2.grahas().size(); j++) {
+                    PlacedInVarga placed = d2.grahas().get(j);
+                    put("varga-scheme-kashinatha-graha-" + j,
+                            placed.graha().fullKey() + " " + placed.at().sign().fullKey());
+                }
+            }
+            String broken = "{\"vargas\":{\"schemes\":{\"D9\":{\"kind\":\"CUSTOM\",\"classifier\":\"ALL\","
+                    + "\"groups\":[{\"spans\":{\"spans\":\"EQUAL\"},\"map\":{\"map\":\"LISTED\",\"signs\":[0]}}]}}}}";
+            try {
+                teistro.context(ContextOptions.builder().testProvider(true).settingsJson(broken).build()).close();
+                put("varga-scheme-refused", false);
+            } catch (TeistroException error) {
+                put("varga-scheme-refused", error.getMessage().contains("vargas.schemes.D9.groups[0].map.signs"));
+            }
             // A dasha system of the consumer's own, the same definition every
             // runner registers (`03-design/dasha-kernels.md`).
             String parityDasha = "{\"kernel\":\"UDU\",\"key\":\"ACME_PARITY\",\"sources\":[\"the parity scenario\"],"
