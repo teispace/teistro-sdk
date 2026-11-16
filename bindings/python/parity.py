@@ -3360,10 +3360,14 @@ def main() -> None:
         band = marked_day.uncertainty
         assert band is not None
         put(
-            "uncertainty",
-            f"{band.band.key} {number(band.delta_t_seconds)} {number_or_dash(band.limbs_seconds)} "
-            f"{number_or_dash(band.sunrise_seconds)} {number_or_dash(band.moonrise_seconds)}",
+            "uncertainty.band",
+            band.band.key,
         )
+        # Each number its own line, so it is compared as a number.
+        put("uncertainty.delta-t", number(band.delta_t_seconds))
+        put("uncertainty.limbs", number_or_dash(band.limbs_seconds))
+        put("uncertainty.sunrise", number_or_dash(band.sunrise_seconds))
+        put("uncertainty.moonrise", number_or_dash(band.moonrise_seconds))
 
     # Ashwini's navatara chakra, every row `star:tara:round:special`
     # (`03-design/navatara-chakra.md`).

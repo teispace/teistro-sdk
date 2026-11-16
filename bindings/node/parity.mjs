@@ -2487,9 +2487,14 @@ geo.dispose();
   put('gowri', day.gowri.map((part) => part.gowri).join(' '));
   const band = day.uncertainty;
   put(
-    'uncertainty',
-    `${band.band} ${number(band.deltaTSeconds)} ${numberOrDash(band.limbsSeconds)} ${numberOrDash(band.sunriseSeconds)} ${numberOrDash(band.moonriseSeconds)}`,
+    'uncertainty.band',
+    band.band,
   );
+  // Each number its own line, so it is compared as a number.
+  put('uncertainty.delta-t', number(band.deltaTSeconds));
+  put('uncertainty.limbs', numberOrDash(band.limbsSeconds));
+  put('uncertainty.sunrise', numberOrDash(band.sunriseSeconds));
+  put('uncertainty.moonrise', numberOrDash(band.moonriseSeconds));
   sky.dispose();
 }
 

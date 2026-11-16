@@ -780,26 +780,8 @@ impl<'a> AlmanacArea<'a> {
         #[cfg(not(feature = "muhurta"))]
         let days = self.unsealed(from, to, place, offset)?;
         let mut days = days;
-        if request.lagnas && request.days == Days::Handed {
-            self.with_lagnas(&mut days.value, place, offset)?;
-        }
-        if request.homa_ahuti && request.days == Days::Handed {
-            self.with_almanac(from.calendar, offset, |almanac| {
-                almanac.homa_ahuti(&mut days.value, place)
-            })?;
-        }
-        if request.markers && request.days == Days::Handed {
-            days.value.iter_mut().for_each(Panchanga::mark);
-        }
-        if request.gowri && request.days == Days::Handed {
-            for day in &mut days.value {
-                day.divide_gowri()?;
-            }
-        }
-        if request.uncertainty && request.days == Days::Handed {
-            self.with_almanac(from.calendar, offset, |almanac| {
-                almanac.uncertainty(&mut days.value)
-            })?;
+        if request.days == Days::Handed {
+            self.with_day_sections(&mut days.value, from.calendar, place, offset, request)?;
         }
         let festivals = request
             .festivals
@@ -955,6 +937,37 @@ impl<'a> AlmanacArea<'a> {
     /// and the part `inside` the arc, as a limb's span is (C681). A sign
     /// whose edge the search did not reach in a day (inside a polar
     /// circle) is bounded by the arc there.
+    /// The sections a request adds to each day handed back: the lagnas,
+    /// the homa ahuti, the markers, the Gowri periods and the times' band
+    /// from Delta T.
+    fn with_day_sections(
+        self,
+        days: &mut [Panchanga],
+        calendar: Calendar,
+        place: &Place,
+        offset: UtcOffset,
+        request: &AlmanacRequest,
+    ) -> Result<(), Error> {
+        if request.lagnas {
+            self.with_lagnas(days, place, offset)?;
+        }
+        if request.homa_ahuti {
+            self.with_almanac(calendar, offset, |almanac| almanac.homa_ahuti(days, place))?;
+        }
+        if request.markers {
+            days.iter_mut().for_each(Panchanga::mark);
+        }
+        if request.gowri {
+            for day in days.iter_mut() {
+                day.divide_gowri()?;
+            }
+        }
+        if request.uncertainty {
+            self.with_almanac(calendar, offset, |almanac| almanac.uncertainty(days))?;
+        }
+        Ok(())
+    }
+
     fn with_lagnas(
         self,
         days: &mut [Panchanga],
