@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 369 879 | 118 286 | 32.0% |
-| the value | 347 369 | 114 730 | 33.0% |
-| the provenance | 21 901 | 2657 | 12.1% |
+| the envelope | 370 074 | 118 272 | 32.0% |
+| the value | 347 578 | 114 730 | 33.0% |
+| the provenance | 21 887 | 2643 | 12.1% |
 
 19 of the 58 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -57,16 +57,16 @@ value.
 | `almanac.deathTime` | 878 | 312 | 35.5% | the whole value |
 | `almanac.digest` | 3585 | 181 | 5.0% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2642 | 880 | 33.3% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
-| `almanac.festivalPack` | 3311 | 1644 | 49.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
-| `almanac.festival_calendar` | 6613 | 5919 | 89.5% | the whole value |
+| `almanac.festivalPack` | 3520 | 1644 | 46.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
+| `almanac.festival_calendar` | 6608 | 5914 | 89.5% | the whole value |
 | `almanac.firstYear` | 12 441 | 4196 | 33.7% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
 | `almanac.household` | 1446 | 309 | 21.4% | `observers.key`, `observers.pureAt`, `observers.periods.key`, `observers.periods.kind`, `observers.periods.relation`, `observers.periods.start`, `observers.periods.end`, `observers.periods.length`, `observers.periods.days` |
 | `almanac.navatara` | 1221 | 1221 | 100.0% | the whole value |
-| `almanac.next` | 1595 | 491 | 30.8% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
+| `almanac.next` | 1596 | 487 | 30.5% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
 | `almanac.observance` | 35 977 | 18 135 | 50.4% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
 | `almanac.pakshi` | 14 021 | 2729 | 19.5% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
 | `almanac.people` | 3819 | 1746 | 45.7% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 831 | 128 | 15.4% | the whole value |
+| `almanac.publishedReasons` | 821 | 123 | 15.0% | the whole value |
 | `almanac.sankalpa` | 1390 | 821 | 59.1% | the whole value |
 | `almanac.sankalpaWords` | 1851 | 1287 | 69.5% | the whole value |
 | `almanac.sentences` | 3699 | 1012 | 27.4% | `sentences.text`, `locale`, `withheld`, `draft` |
@@ -118,7 +118,7 @@ names it.
 - `almanac.days`: `dayHashes`, `days.choghadiya`, `days.clock`, `days.ghati_reckoning`, `days.gowri`, `days.homa_ahuti`, `days.horas`, `days.lagnas`, `days.markers`, `days.muhurtas`, `days.named_panchaka`, `days.punya_kala`, `days.shiva_vasa`, `days.window`, `eclipses.provenance`, `festivals.provenance`, `muhurta.provenance`, `nepalSambat.provenance`, `sky.provenance`, `visible.provenance`, `years.provenance`.
 - `almanac.digest`: `base64`.
 - `almanac.elect`: `windows.fails.at`, `windows.fails.by`, `windows.fails.choghadiya`, `windows.fails.count`, `windows.fails.grade`, `windows.fails.grahas`, `windows.fails.holds`, `windows.fails.house`, `windows.fails.kaala`, `windows.fails.karana`, `windows.fails.lord`, `windows.fails.masa`, `windows.fails.nakshatra`, `windows.fails.navamsa`, `windows.fails.pada`, `windows.fails.panchaka`, `windows.fails.reading`, `windows.fails.row`, `windows.fails.second`, `windows.fails.sign`, `windows.fails.tithi`, `windows.fails.twelfth`, `windows.fails.vara`, `windows.fails.with`, `windows.fails.yoga`, `windows.holds.at`, `windows.holds.by`, `windows.holds.choghadiya`, `windows.holds.count`, `windows.holds.grahas`, `windows.holds.holds`, `windows.holds.house`, `windows.holds.kaala`, `windows.holds.karana`, `windows.holds.lord`, `windows.holds.masa`, `windows.holds.nakshatra`, `windows.holds.navamsa`, `windows.holds.pada`, `windows.holds.panchaka`, `windows.holds.reading`, `windows.holds.row`, `windows.holds.second`, `windows.holds.sign`, `windows.holds.tithi`, `windows.holds.twelfth`, `windows.holds.vara`, `windows.holds.with`, `windows.holds.yoga`, `windows.score`.
-- `almanac.festivalPack`: `rules.source`, `rules.unsourced`.
+- `almanac.festivalPack`: `holidays`, `rules.significance`, `rules.source`, `rules.unsourced`.
 - `almanac.firstYear`: `dayOneBy`, `rites.bars`, `rites.clause`, `rites.drawnTo`, `rites.observance.adhika`, `rites.observance.barred`, `rites.observance.case`, `rites.observance.choice`, `rites.observance.decidedBy`, `rites.observance.extents`, `rites.observance.marginSeconds`, `rites.observance.month`, `rites.observance.moonrise`, `rites.observance.parana`, `rites.observance.published`, `rites.observance.rule`, `rites.observance.sait`, `rites.observance.tithi`.
 - `almanac.household`: `observers.periods.clause`, `observers.periods.dayOne`, `observers.periods.dayOneBy`, `observers.periods.lastDay`, `observers.periods.overlap`, `observers.periods.ritesFrom`, `observers.periods.sex`, `observers.periods.table`.
 - `almanac.next`: `festivals.added`, `festivals.anniversaries`, `festivals.applied`, `festivals.dated`, `festivals.observances.adhika`, `festivals.observances.barred`, `festivals.observances.case`, `festivals.observances.decidedBy`, `festivals.observances.extents`, `festivals.observances.marginSeconds`, `festivals.observances.moonrise`, `festivals.observances.parana`, `festivals.observances.published`, `festivals.observances.sait`, `festivals.unplaced`, `limitDays`.
@@ -149,7 +149,7 @@ marked.
 - `almanac.deathTime`: `death` 88 (kept), `cremation` 86 (kept), `table` 10 (kept), `rites` 7 (kept).
 - `almanac.digest`: `base64` 2690, `seal` 45 (kept), `format` 6 (kept), `size` 6 (kept), `days` 5 (kept).
 - `almanac.elect`: `windows` 1467 (kept), `unjudged` 122 (kept), `ranking` 9 (kept), `windowsBlackedOut` 9 (kept), `closed` 7 (kept), `daysJudged` 7 (kept), `daysCut` 6 (kept).
-- `almanac.festivalPack`: `rules` 3290 (kept), `pack` 11 (kept).
+- `almanac.festivalPack`: `rules` 3499 (kept), `pack` 11 (kept).
 - `almanac.festival_calendar`: .
 - `almanac.firstYear`: `rites` 11 398 (kept), `origin` 87 (kept), `eleventhDay` 84 (kept), `sapindana` 84 (kept), `dayOne` 83 (kept), `dayOneBy` 15, `key` 9 (kept).
 - `almanac.household`: `observers` 767 (kept).
