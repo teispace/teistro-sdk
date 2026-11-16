@@ -26,8 +26,8 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 369 948 | 118 141 | 31.9% |
-| the value | 347 268 | 114 586 | 33.0% |
+| the envelope | 369 953 | 118 141 | 31.9% |
+| the value | 347 273 | 114 586 | 33.0% |
 | the provenance | 22 078 | 2663 | 12.1% |
 
 19 of the 57 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
@@ -53,7 +53,7 @@ value.
 | `almanac.ashauchRite` | 106 | 106 | 100.0% | the whole value |
 | `almanac.cells` | 14 110 | 13 528 | 95.9% | the whole value |
 | `almanac.changes` | 845 | 253 | 29.9% | the whole value |
-| `almanac.days` | 153 178 | 12 572 | 8.2% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state`, `visible.value` |
+| `almanac.days` | 153 183 | 12 572 | 8.2% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state`, `visible.value` |
 | `almanac.deathTime` | 882 | 311 | 35.3% | the whole value |
 | `almanac.digest` | 3588 | 184 | 5.1% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2646 | 879 | 33.2% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
@@ -144,7 +144,7 @@ marked.
 - `almanac.ashauch`: `dayOne` 83, `lastDay` 83, `clause` 64, `dayOneBy` 15, `length` 15 (kept), `end` 11 (kept), `start` 11 (kept), `table` 10, `key` 9 (kept), `relation` 9 (kept), `kind` 8 (kept), `days` 5 (kept).
 - `almanac.cells`: `cells` 13 408 (kept).
 - `almanac.changes`: `points` 101 (kept), `window` 32 (kept).
-- `almanac.days`: `sky` 96 776 (kept), `muhurta` 33 898 (kept), `days` 16 034 (kept), `years` 2477 (kept), `festivals` 1324 (kept), `nepalSambat` 982 (kept), `eclipses` 709 (kept), `dayHashes` 123.
+- `almanac.days`: `sky` 96 776 (kept), `muhurta` 33 903 (kept), `days` 16 034 (kept), `years` 2477 (kept), `festivals` 1324 (kept), `nepalSambat` 982 (kept), `eclipses` 709 (kept), `dayHashes` 123.
 - `almanac.deathTime`: `death` 88 (kept), `cremation` 86 (kept), `table` 10 (kept), `rites` 7 (kept).
 - `almanac.digest`: `base64` 2678, `seal` 45 (kept), `format` 6 (kept), `size` 6 (kept), `days` 5 (kept).
 - `almanac.elect`: `windows` 1467 (kept), `unjudged` 122 (kept), `ranking` 9 (kept), `windowsBlackedOut` 9 (kept), `closed` 7 (kept), `daysJudged` 7 (kept), `daysCut` 6 (kept).
