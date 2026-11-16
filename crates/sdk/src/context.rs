@@ -10,13 +10,14 @@ use teistro_astro::completion::{Completed, Completion};
 use teistro_core::envelope::{Envelope, Hash, PackStamp, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
-    DEFAULT_PROFILE, Diagnostic, Profile, Resolved, Settings, SettingsPatch, Severity, Siddhanta,
+    DEFAULT_PROFILE, Diagnostic, Profile, Resolved, Settings, SettingsDiff, SettingsExplained,
+    SettingsPatch, SettingsQuery, Severity, Siddhanta,
 };
 #[cfg(feature = "chart")]
 use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
-use teistro_intl::Intl;
 use teistro_intl::locales::Locales;
+use teistro_intl::{Intl, Params};
 #[cfg(feature = "chart")]
 use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
@@ -308,6 +309,9 @@ impl Context {
     ///
     /// The settings are held to their hash and checked for coherence as a
     /// build checks them, and to the ephemeris as a build holds them.
+    /// Settings equal to this context's own keep this context's account of
+    /// where each knob came from ([`Context::explain_settings`]); any
+    /// others are a document's.
     ///
     /// ```
     /// use teistro::Context;
@@ -335,7 +339,15 @@ impl Context {
         snapshot: &teistro_core::settings::SettingsSnapshot,
         locale: Option<&str>,
     ) -> Result<Context, Error> {
-        self.with_resolved(snapshot.resolved()?, locale)
+        let mut resolved = snapshot.resolved()?;
+        // This context's own settings handed back keep the layers that set
+        // them here, so a receipt of `settings.explain` re-answers as it
+        // was answered; other settings are a document's.
+        let own = &self.core.settings;
+        if resolved.settings == own.settings && resolved.profile == own.profile {
+            resolved.origins = own.origins.clone();
+        }
+        self.with_resolved(resolved, locale)
     }
 
     /// **This context with a settings patch laid over its own settings**:
@@ -371,10 +383,10 @@ impl Context {
         patch: &SettingsPatch,
         locale: Option<&str>,
     ) -> Result<Context, Error> {
-        let resolved = self
-            .settings()
-            .clone()
-            .derived(patch, self.core.settings.profile.clone())?;
+        // The parent's resolution laid under the patch, so the derived
+        // context's explanation keeps every layer and names the request
+        // for the knobs the patch sets (`settings.explain`).
+        let resolved = self.core.settings.derived(patch)?;
         self.with_resolved(resolved, locale)
     }
 
@@ -589,6 +601,75 @@ impl Context {
     #[must_use]
     pub fn resolved(&self) -> &Resolved {
         &self.core.settings
+    }
+
+    /// **Why each knob has its value** (`settings.explain`,
+    /// `03-design/settings-and-profiles.md` §3.5): the knobs `asked`
+    /// names, every one when it names none, each with its value, the
+    /// layer that set it (the root, the shipped profile, the context's
+    /// patch or a per-call patch), the source that profile cites for it,
+    /// what it moves and its effect note in this context's locale.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::settings::{Layer, SettingsQuery};
+    ///
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
+    /// let explained = sdk.explain_settings(&SettingsQuery::default())?;
+    /// // A shipped profile cites every knob.
+    /// assert!(explained.knobs.iter().all(|knob| knob.citation.is_some()));
+    /// let node = sdk.with_patch_json(r#"{"frame": {"node": "MEAN"}}"#, None)?;
+    /// let asked = SettingsQuery::from_json(r#"{"knobs": ["frame.node"]}"#)?;
+    /// let explained = node.explain_settings(&asked)?;
+    /// assert_eq!(explained.knobs[0].layer, Layer::Request);
+    /// assert!(explained.knobs[0].effect.contains("Rahu"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` at `knobs[i]` for an entry that names no group or
+    /// knob.
+    pub fn explain_settings(&self, asked: &SettingsQuery) -> Result<SettingsExplained, Error> {
+        let intl = self.locale_engine();
+        self.core
+            .settings
+            .explained(asked, &|key| intl.render(key, &Params::new()).text)
+    }
+
+    /// **Where two contexts' settings part** (`settings.diff`): each knob
+    /// `asked` names, every one when it names none, on which this
+    /// context's settings and `other`'s differ, both values beside what
+    /// the knob moves and its effect note in this context's locale.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::settings::{Moves, SettingsQuery};
+    ///
+    /// let committee = Context::builder().profile("nepali-committee").build()?;
+    /// let drik = Context::builder().profile("nepali-drik").build()?;
+    /// let diff = committee.diff_settings(&drik, &SettingsQuery::default())?;
+    /// let siddhanta = diff.knobs.iter().find(|knob| knob.knob == "frame.siddhanta").expect("they part on it");
+    /// assert_eq!(siddhanta.moves, Moves::Sky);
+    /// assert!(committee.diff_settings(&committee, &SettingsQuery::default())?.knobs.is_empty());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` at `knobs[i]` for an entry that names no group or
+    /// knob.
+    pub fn diff_settings(
+        &self,
+        other: &Context,
+        asked: &SettingsQuery,
+    ) -> Result<SettingsDiff, Error> {
+        let intl = self.locale_engine();
+        self.core
+            .settings
+            .diff(&other.core.settings, asked, &|key| {
+                intl.render(key, &Params::new()).text
+            })
     }
 
     /// The locale engine itself, for a render.

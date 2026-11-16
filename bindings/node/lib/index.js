@@ -6832,6 +6832,21 @@ function mundaneMoment(value) {
   };
 }
 
+/**
+ * A settings query as its JSON: `{ knobs }`, groups or knobs by name;
+ * the library names an unknown one (`knobs[0]`).
+ */
+function settingsQuery(query, method) {
+  if (query === null || typeof query !== 'object' || Array.isArray(query)) {
+    throw new TypeError(`${method}: expected a query, e.g. { knobs: ['frame', 'day.sunrise'] }`);
+  }
+  const { knobs } = query;
+  if (knobs !== undefined && (!Array.isArray(knobs) || !knobs.every((knob) => typeof knob === 'string'))) {
+    throw new TypeError(`${method}: knobs is a list of groups or knobs, e.g. ['frame.ayanamsha']`);
+  }
+  return JSON.stringify(knobs === undefined ? {} : { knobs });
+}
+
 function deepFreeze(value) {
   if (value !== null && typeof value === 'object') {
     for (const inner of Object.values(value)) deepFreeze(inner);
@@ -9630,6 +9645,53 @@ export class Context {
         dashaSystems: this.#dashaSystems,
       },
     });
+  }
+
+  /**
+   * **Why each knob has its value** (`settings.explain`): each knob with
+   * its value, the layer that set it (`ROOT`, `PROFILE`, `CONTEXT` for
+   * `options.settings`, `REQUEST` for a `withSettings` patch), the source
+   * the root or the profile cites for it, what a difference in it moves
+   * (`SKY`, `SUNRISE`, `RULE`, `TIME`, `FORM`) and its effect note in
+   * this context's locale.
+   *
+   * ```js
+   * const { knobs } = ctx.explainSettings({ knobs: ['frame', 'day.sunrise'] });
+   * knobs[0].citation; // { text, reference }
+   * ```
+   *
+   * @param {{ knobs?: readonly string[] }} [query] groups (`frame`) or
+   *   knobs (`frame.ayanamsha`); every knob when left out
+   * @returns {object} `{ profile, settingsHash, knobs }`
+   */
+  explainSettings(query = {}) {
+    const asked = settingsQuery(query, 'explainSettings');
+    return deepFreeze(JSON.parse(this.#call(() => this.#inner.explainSettings(asked))));
+  }
+
+  /**
+   * **Where two contexts' settings part** (`settings.diff`): each knob on
+   * which this context's settings and `other`'s differ, both values
+   * beside what it moves and its effect note in this context's locale;
+   * none when the two hash alike.
+   *
+   * ```js
+   * const committee = new Context({ profile: 'nepali-committee' });
+   * const drik = new Context({ profile: 'nepali-drik' });
+   * committee.diffSettings(drik).knobs.map((knob) => knob.knob); // ['frame.ayanamsha', …]
+   * ```
+   *
+   * @param {Context} other the context compared with
+   * @param {{ knobs?: readonly string[] }} [query] as `explainSettings` reads it
+   * @returns {object} `{ profile, otherProfile, settingsHash, otherSettingsHash, knobs }`
+   */
+  diffSettings(other, query = {}) {
+    const theirs = natives.get(other);
+    if (theirs === undefined) {
+      throw new TypeError('diffSettings: expected the Context to compare with, then an optional query');
+    }
+    const asked = settingsQuery(query, 'diffSettings');
+    return deepFreeze(JSON.parse(this.#call(() => this.#inner.diffSettings(theirs(), asked))));
   }
 
   /**

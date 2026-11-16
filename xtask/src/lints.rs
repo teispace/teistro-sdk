@@ -394,6 +394,27 @@ const SETTINGS_LAYER: [&str; 3] = [
     "settings/knobs.rs",
 ];
 
+/// The prefix of a knob's effect note's message key
+/// (`sdk.settings.effect.calendars.eras`), which names every knob in the
+/// generated message surfaces without reading one.
+const EFFECT_KEYS: &str = "sdk.settings.effect.";
+
+/// `text` with every effect note's key taken out, so a key does not
+/// count as a reader of the knob it names.
+fn without_effect_keys(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some((before, after)) = rest.split_once(EFFECT_KEYS) {
+        out.push_str(before);
+        let end = after
+            .find(|c: char| !(c.is_ascii_alphanumeric() || c == '.' || c == '_'))
+            .unwrap_or(after.len());
+        rest = after.get(end..).unwrap_or_default();
+    }
+    out.push_str(rest);
+    out
+}
+
 /// Every settings knob has a reader outside the settings layer.
 ///
 /// A knob that ships, resolves and is read by nobody is a bug whether or
@@ -425,7 +446,9 @@ fn knob_readers(root: &Path, outcome: &mut Outcome) {
                 continue;
             }
             if let Ok(text) = std::fs::read_to_string(&path) {
-                haystacks.push(text.split_whitespace().collect());
+                haystacks.push(without_effect_keys(
+                    &text.split_whitespace().collect::<String>(),
+                ));
             }
         }
     }
@@ -3597,7 +3620,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 25] = [
+const JAVA_UNTYPED: [(&str, &str); 28] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -3648,7 +3671,16 @@ const JAVA_UNTYPED: [(&str, &str); 25] = [
         "SankalpaWords.SankalpaWords(params)",
         "an answer's slots, handed back to `intl.render` as they came",
     ),
+    ("SettingsDiff.Knob(otherValue)", KNOB_VALUE),
+    ("SettingsDiff.Knob(value)", KNOB_VALUE),
+    ("SettingsExplained.Knob(value)", KNOB_VALUE),
 ];
+
+/// A settings knob's value in an explanation or a comparison: any of the
+/// 115 knobs' types, as the canonical settings document writes it
+/// (`settings-and-profiles.md` §3.5).
+const KNOB_VALUE: &str =
+    "any knob's value, as the canonical settings document writes it and the SDK answered it";
 
 /// A catalogue member or a key registered at run time, as the caller has it.
 const MEMBER_OR_KEY: &str =

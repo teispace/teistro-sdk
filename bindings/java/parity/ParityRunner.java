@@ -1675,6 +1675,32 @@ public final class ParityRunner {
             put("sky-pose-moon", onScreen.apply(skyScreen.grahas().get(skyMoonAt)));
             put("sky-pose-ascendant", onScreen.apply(skyPose.value().ascendant().orElseThrow().getValue()));
 
+            // ── The settings explained and compared ───────────────────────
+            // nepali-drik with the node patched per call, every knob
+            // explained, and the knobs on which the committee's profile and
+            // nepali-drik part (03-design/settings-and-profiles.md §3.5).
+            try (Context drik = teistro.context(ContextOptions.builder().profile("nepali-drik").build());
+                    Context committee = teistro.context(ContextOptions.builder()
+                            .profile("nepali-committee").build())) {
+                SettingsExplained explained;
+                try (Context mean = drik.withSettings(Map.of("frame", Map.of("node", "MEAN")))) {
+                    explained = mean.explainSettings();
+                }
+                SettingsExplained.Knob settingsNode = explained.knobs().stream()
+                        .filter(one -> one.knob().equals("frame.node")).findFirst().orElseThrow();
+                SettingsExplained.Knob settingsCentre = explained.knobs().stream()
+                        .filter(one -> one.knob().equals("frame.centre")).findFirst().orElseThrow();
+                long cited = explained.knobs().stream().filter(one -> one.citation() != null).count();
+                put("settings-explain", explained.knobs().size() + " " + cited + " " + settingsNode.layer() + " "
+                        + settingsCentre.layer() + " "
+                        + (settingsCentre.profile() == null ? "-" : settingsCentre.profile()));
+                put("settings-explain-hash", explained.settingsHash());
+                put("settings-explain-effect", settingsNode.effect());
+                SettingsDiff parted = committee.diffSettings(drik);
+                put("settings-diff", String.join(",", parted.knobs().stream()
+                        .map(one -> one.knob() + ":" + one.moves()).toList()));
+            }
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.

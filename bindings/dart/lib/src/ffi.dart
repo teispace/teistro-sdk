@@ -1966,6 +1966,10 @@ typedef TsContextSettingsJsonNative = ffi.Int32 Function(ffi.Pointer<Context>, f
 typedef TsContextSettingsJsonDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsContextSettingsHashNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<HashStruct>);
 typedef TsContextSettingsHashDart = int Function(ffi.Pointer<Context>, ffi.Pointer<HashStruct>);
+typedef TsContextExplainSettingsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsContextExplainSettingsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsContextDiffSettingsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsContextDiffSettingsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsKeyParseNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint32>);
 typedef TsKeyParseDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint32>);
 typedef TsKeyNameNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Uint32, ffi.Pointer<StrStruct>);
@@ -2176,6 +2180,8 @@ final class TeistroLibrary {
         ts_context_profile = library.lookupFunction<TsContextProfileNative, TsContextProfileDart>('ts_context_profile'),
         ts_context_settings_json = library.lookupFunction<TsContextSettingsJsonNative, TsContextSettingsJsonDart>('ts_context_settings_json'),
         ts_context_settings_hash = library.lookupFunction<TsContextSettingsHashNative, TsContextSettingsHashDart>('ts_context_settings_hash'),
+        ts_context_explain_settings = library.lookupFunction<TsContextExplainSettingsNative, TsContextExplainSettingsDart>('ts_context_explain_settings'),
+        ts_context_diff_settings = library.lookupFunction<TsContextDiffSettingsNative, TsContextDiffSettingsDart>('ts_context_diff_settings'),
         ts_key_parse = library.lookupFunction<TsKeyParseNative, TsKeyParseDart>('ts_key_parse'),
         ts_key_name = library.lookupFunction<TsKeyNameNative, TsKeyNameDart>('ts_key_name'),
         ts_frame_canonical = library.lookupFunction<TsFrameCanonicalNative, TsFrameCanonicalDart>('ts_frame_canonical'),
@@ -2377,6 +2383,38 @@ final class TeistroLibrary {
   /// The SHA-256 of the canonical settings document: the `settings_hash`
   /// every result's provenance carries.
   final TsContextSettingsHashDart ts_context_settings_hash;
+
+  /// **Why each knob has its value** (`settings.explain`,
+  /// `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+  /// `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+  /// profile, citation, moves, effect}`. `layer` is the one that set it:
+  /// `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+  /// `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+  /// (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+  /// whole from a recorded document); `citation` is `{text, reference}`, the
+  /// source the root or the profile gives, null where a patch set the knob;
+  /// `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+  /// `TIME` or `FORM`); and `effect` is its one-line note in the context's
+  /// locale.
+  ///
+  /// `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+  /// (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+  /// the document's order. A key it does not read, or an entry that names
+  /// no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+  final TsContextExplainSettingsDart ts_context_explain_settings;
+
+  /// **Where two contexts' settings part** (`settings.diff`), as canonical
+  /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+  /// each knob on which `context`'s settings and `other`'s differ as
+  /// `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+  /// `ts_context_explain_settings` gives them, the note in `context`'s
+  /// locale; no knobs when the two hash alike. `SKY` is what a calendar
+  /// comparison calls a model difference, `RULE` a rule difference.
+  ///
+  /// `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+  /// it, every knob when left out. A null `other` is `INVALID_ARG` naming
+  /// `other`.
+  final TsContextDiffSettingsDart ts_context_diff_settings;
 
   /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
   /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
@@ -6641,6 +6679,57 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_context_settings_hash(_handle, outHash);
         if (status != 0) _fail(status);
         return Hash.read(outHash);
+    });
+  }
+
+  /// **Why each knob has its value** (`settings.explain`,
+  /// `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+  /// `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+  /// profile, citation, moves, effect}`. `layer` is the one that set it:
+  /// `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+  /// `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+  /// (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+  /// whole from a recorded document); `citation` is `{text, reference}`, the
+  /// source the root or the profile gives, null where a patch set the knob;
+  /// `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+  /// `TIME` or `FORM`); and `effect` is its one-line note in the context's
+  /// locale.
+  ///
+  /// `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+  /// (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+  /// the document's order. A key it does not read, or an entry that names
+  /// no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+  String explainSettings(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_context_explain_settings(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// **Where two contexts' settings part** (`settings.diff`), as canonical
+  /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+  /// each knob on which `context`'s settings and `other`'s differ as
+  /// `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+  /// `ts_context_explain_settings` gives them, the note in `context`'s
+  /// locale; no knobs when the two hash alike. `SKY` is what a calendar
+  /// comparison calls a model difference, `RULE` a rule difference.
+  ///
+  /// `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+  /// it, every knob when left out. A null `other` is `INVALID_ARG` naming
+  /// `other`.
+  String diffSettings(TeistroContext other, String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        other._alive();
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_context_diff_settings(_handle, other._handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

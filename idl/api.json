@@ -15720,6 +15720,121 @@
       "source": "crates/ffi/src/context.rs"
     },
     {
+      "name": "ts_context_explain_settings",
+      "doc": "**Why each knob has its value** (`settings.explain`,\n`03-design/settings-and-profiles.md` §3.5), as canonical JSON:\n`{profile, settingsHash, knobs}`, each knob `{knob, value, layer,\nprofile, citation, moves, effect}`. `layer` is the one that set it:\n`ROOT`, `PROFILE` (its shipped profile or the base it extends, named in\n`profile`), `CONTEXT` (the patch the context was built with), `REQUEST`\n(a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read\nwhole from a recorded document); `citation` is `{text, reference}`, the\nsource the root or the profile gives, null where a patch set the knob;\n`moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,\n`TIME` or `FORM`); and `effect` is its one-line note in the context's\nlocale.\n\n`request_json` is `{\"knobs\"}`, groups (`frame`) or knobs\n(`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps\nthe document's order. A key it does not read, or an entry that names\nno group or knob, is `INVALID_ARG` naming it (`knobs[0]`).",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
+      "name": "ts_context_diff_settings",
+      "doc": "**Where two contexts' settings part** (`settings.diff`), as canonical\nJSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,\neach knob on which `context`'s settings and `other`'s differ as\n`{knob, value, otherValue, moves, effect}`, `moves` and `effect` as\n`ts_context_explain_settings` gives them, the note in `context`'s\nlocale; no knobs when the two hash alike. `SKY` is what a calendar\ncomparison calls a model difference, `RULE` a rule difference.\n\n`request_json` is `{\"knobs\"}` as `ts_context_explain_settings` reads\nit, every knob when left out. A null `other` is `INVALID_ARG` naming\n`other`.",
+      "safety": "`context` and `other` must be live handles; `request_json`\nNUL-terminated; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "other",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "ts_key_parse",
       "doc": "Resolves a full key (`graha.SUN`, an alias, a former key, or a member the\ncontext registered, `chart_layout.ACME_KERALA`) to its packed id. An\nunknown key is `UNSUPPORTED` with the nearest known key as the hint in\nthe context's last error.",
       "safety": "`context` must be a live handle; `key` a NUL-terminated string; `out_id`\nvalid for a write.",

@@ -164,6 +164,75 @@ void main() {
     );
   });
 
+  test('explainSettings names each knob\'s layer and source, and '
+      'diffSettings where two contexts part', () {
+    // The context's own patch is its layer, a per-call patch the request's.
+    final ctx = context(
+      settings: {
+        'frame': {'node': 'TRUE'},
+      },
+    );
+    final derived = ctx.withSettings({
+      'day': {'ghati_reckoning': 'PROPORTIONAL'},
+    });
+    final explained = derived.explainSettings();
+    KnobExplained knob(String name) =>
+        explained.knobs.firstWhere((one) => one.knob == name);
+    expect(explained.settingsHash, derived.settingsHash);
+    expect(
+      [
+        'frame.node',
+        'day.ghati_reckoning',
+        'frame.centre',
+        'output.precision',
+      ].map((name) => knob(name).layer).toList(),
+      ['CONTEXT', 'REQUEST', 'PROFILE', 'ROOT'],
+    );
+    expect(knob('frame.node').citation, isNull);
+    expect(knob('frame.centre').profile, 'nepali-drik');
+    expect(knob('frame.siddhanta').moves, 'SKY');
+    expect(knob('frame.node').effect, contains('राहु'));
+    // A shipped profile cites every knob; a selection keeps the order.
+    final shipped = context();
+    expect(
+      shipped.explainSettings().knobs.every((one) => one.citation != null),
+      isTrue,
+    );
+    expect(
+      shipped
+          .explainSettings(knobs: ['day.sunrise', 'frame'])
+          .knobs
+          .take(2)
+          .map((one) => one.knob),
+      ['frame.zodiac', 'frame.ayanamsha'],
+    );
+    expect(
+      () => shipped.explainSettings(knobs: ['frame.nod']),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'knobs[0]'),
+      ),
+    );
+
+    final committee = context(
+      profile: 'nepali-committee',
+      locale: null,
+      testProvider: false,
+    );
+    final drik = context(locale: null, testProvider: false);
+    final diff = committee.diffSettings(drik);
+    expect(diff.otherProfile, 'nepali-drik');
+    expect(diff.knobs.map((one) => one.knob), [
+      'frame.ayanamsha',
+      'frame.centre',
+      'frame.siddhanta',
+      'panchanga.lagna_table',
+    ]);
+    expect(committee.diffSettings(committee).knobs, isEmpty);
+    for (final one in [ctx, derived, shipped, committee, drik]) {
+      one.dispose();
+    }
+  });
+
   test('withSettings derives a context under a patch and leaves its parent '
       'as it was', () {
     final ctx = context();

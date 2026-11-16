@@ -3925,6 +3925,37 @@ void main() {
   );
   put('sky-pose-ascendant', placement(skyPose.value.ascendant()!.$2));
 
+  // ── The settings explained and compared ──────────────────────────────
+  // `nepali-drik` with the node patched per call, every knob explained, and
+  // the knobs on which the committee's profile and `nepali-drik` part
+  // (`03-design/settings-and-profiles.md` §3.5).
+  final drik = teistro.context(profile: 'nepali-drik');
+  final mean = drik.withSettings({
+    'frame': {'node': 'MEAN'},
+  });
+  final explained = mean.explainSettings();
+  mean.dispose();
+  KnobExplained knob(String name) =>
+      explained.knobs.firstWhere((one) => one.knob == name);
+  final settingsNode = knob('frame.node');
+  final settingsCentre = knob('frame.centre');
+  final cited = explained.knobs.where((one) => one.citation != null).length;
+  put(
+    'settings-explain',
+    '${explained.knobs.length} $cited ${settingsNode.layer} '
+        '${settingsCentre.layer} ${settingsCentre.profile ?? '-'}',
+  );
+  put('settings-explain-hash', explained.settingsHash);
+  put('settings-explain-effect', settingsNode.effect);
+  final committee = teistro.context(profile: 'nepali-committee');
+  final parted = committee.diffSettings(drik);
+  committee.dispose();
+  drik.dispose();
+  put(
+    'settings-diff',
+    parted.knobs.map((one) => '${one.knob}:${one.moves}').join(','),
+  );
+
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test
   // provider cannot complete: a total lunar eclipse seen whole and a

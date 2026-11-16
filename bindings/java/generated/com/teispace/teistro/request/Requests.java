@@ -61,6 +61,8 @@ public final class Requests {
             Map.entry("naming.syllables", NamingSyllablesRequest::of),
             Map.entry("numerology.profile", NumerologyRequest::of),
             Map.entry("research.study", ResearchRequest::of),
+            Map.entry("settings.diff", SettingsDiffQuery::of),
+            Map.entry("settings.explain", SettingsQuery::of),
             Map.entry("time.civil", CivilAsked::of),
             Map.entry("time.convert", ScaleRequest::of),
             Map.entry("time.resolve", ResolveAsked::of),
@@ -220,6 +222,12 @@ public final class Requests {
 
     /** {@code research.study}, whose request is {@link ResearchRequest}. */
     public static final RecordOf<ResearchRequest> RESEARCH_STUDY = new RecordOf<>("research.study");
+
+    /** {@code settings.diff}, whose request is {@link SettingsDiffQuery}. */
+    public static final RecordOf<SettingsDiffQuery> SETTINGS_DIFF = new RecordOf<>("settings.diff");
+
+    /** {@code settings.explain}, whose request is {@link SettingsQuery}. */
+    public static final RecordOf<SettingsQuery> SETTINGS_EXPLAIN = new RecordOf<>("settings.explain");
 
     /** {@code time.civil}, whose request is {@link CivilAsked}. */
     public static final RecordOf<CivilAsked> TIME_CIVIL = new RecordOf<>("time.civil");

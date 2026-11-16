@@ -185,7 +185,7 @@ import type {
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
 // Each record entry point's request by its name, for `Context.record`.
-import type { RecordName, RecordRequests } from './requests.js';
+import type { RecordName, RecordRequests, SettingsDiffQuery, SettingsQuery } from './requests.js';
 import type { Detail } from './catalogue.js';
 
 /**
@@ -10141,6 +10141,59 @@ export declare class ResearchArea {
   ): ResearchTested;
 }
 
+/** The layer that set a knob. */
+export type SettingsLayer = 'ROOT' | 'PROFILE' | 'CONTEXT' | 'REQUEST' | 'DOCUMENT';
+
+/** What a difference in a knob moves: the sky, sunrise, a rule's reading, a civil time, or only the answer's form. */
+export type SettingsMoves = 'SKY' | 'SUNRISE' | 'RULE' | 'TIME' | 'FORM';
+
+/** A source cited for a knob's value. */
+export interface KnobSource {
+  readonly text: string;
+  readonly reference: string;
+}
+
+/** One knob explained. */
+export interface KnobExplained {
+  /** `group.knob`. */
+  readonly knob: string;
+  /** Its value, as the canonical settings document writes it. */
+  readonly value: unknown;
+  readonly layer: SettingsLayer;
+  /** The profile that set it, where a profile did. */
+  readonly profile: string | null;
+  /** The root's or the profile's citation; null where a patch set it. */
+  readonly citation: KnobSource | null;
+  readonly moves: SettingsMoves;
+  /** What it changes, in one line, in the context's locale. */
+  readonly effect: string;
+}
+
+/** Every knob asked, each with the layer that set it, why and what it changes. */
+export interface SettingsExplained {
+  readonly profile: string;
+  readonly settingsHash: string;
+  readonly knobs: readonly KnobExplained[];
+}
+
+/** One knob on which two contexts' settings differ. */
+export interface KnobDifference {
+  readonly knob: string;
+  readonly value: unknown;
+  readonly otherValue: unknown;
+  readonly moves: SettingsMoves;
+  readonly effect: string;
+}
+
+/** The knobs on which two contexts' settings differ. */
+export interface SettingsDiff {
+  readonly profile: string;
+  readonly otherProfile: string;
+  readonly settingsHash: string;
+  readonly otherSettingsHash: string;
+  readonly knobs: readonly KnobDifference[];
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -10203,6 +10256,20 @@ export declare class Context {
    * throws a `TeistroError` naming the knob under `settings`.
    */
   withSettings(patch: Readonly<Record<string, unknown>>, locale?: string): Context;
+  /**
+   * **Why each knob has its value** (`settings.explain`): its value, the
+   * layer that set it, the source the root or the profile cites for it,
+   * what a difference in it moves and its effect note in this context's
+   * locale. Every knob when `query.knobs` is left out; an unknown group or
+   * knob throws a `TeistroError` naming it (`knobs[0]`).
+   */
+  explainSettings(query?: SettingsQuery): SettingsExplained;
+  /**
+   * **Where two contexts' settings part** (`settings.diff`): each knob on
+   * which this context's settings and `other`'s differ, with what it
+   * moves and its effect note in this context's locale.
+   */
+  diffSettings(other: Context, query?: SettingsDiffQuery): SettingsDiff;
   /**
    * Any record entry point answered by its name, its request typed by the
    * name (`RecordRequests`, generated), as the agent server answers it:

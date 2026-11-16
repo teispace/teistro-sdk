@@ -1318,5 +1318,15 @@
         "aspectRatio": 0.5625
       }
     }
+  },
+  {
+    "record": "settings.explain",
+    "request": {
+      "knobs": ["frame", "day.sunrise"]
+    }
+  },
+  {
+    "record": "settings.diff",
+    "request": {}
   }
 ]

@@ -2443,6 +2443,42 @@ final class ResearchRequest extends _Request {
   List<Object?> get _fields => [births, control, dasha, depth, design, holds, referents, rules, shuffle, strata, study, subjects, test, uncertaintyStepMinutes];
 }
 
+/// What `settings.diff` reads: the knobs to compare, as [`SettingsQuery`] names them; a record of its own so that each record has its own request type (a comparison may come to read more).
+final class SettingsDiffQuery extends _Request {
+  const SettingsDiffQuery({
+    this.knobs,
+  });
+
+  /// Groups (`frame`) or knobs (`frame.ayanamsha`) to compare, in any order; the answer keeps document order. Every knob when left out.
+  final List<String>? knobs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (knobs case final knobsValue?) 'knobs': knobsValue,
+  };
+
+  @override
+  List<Object?> get _fields => [knobs];
+}
+
+/// The knobs an explanation or a comparison is asked about: each a group (`frame`) or a knob (`frame.ayanamsha`); every knob when left out.
+final class SettingsQuery extends _Request {
+  const SettingsQuery({
+    this.knobs,
+  });
+
+  /// Groups (`frame`) or knobs (`frame.ayanamsha`), in any order; the answer keeps document order. Every knob when left out.
+  final List<String>? knobs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (knobs case final knobsValue?) 'knobs': knobsValue,
+  };
+
+  @override
+  List<Object?> get _fields => [knobs];
+}
+
 /// A civil request as a binding writes it.
 final class CivilAsked extends _Request {
   const CivilAsked({
@@ -16101,6 +16137,12 @@ abstract final class Records {
   /// `research.study`, whose request is [ResearchRequest].
   static const researchStudy = RecordOf<ResearchRequest>._('research.study');
 
+  /// `settings.diff`, whose request is [SettingsDiffQuery].
+  static const settingsDiff = RecordOf<SettingsDiffQuery>._('settings.diff');
+
+  /// `settings.explain`, whose request is [SettingsQuery].
+  static const settingsExplain = RecordOf<SettingsQuery>._('settings.explain');
+
   /// `time.civil`, whose request is [CivilAsked].
   static const timeCivil = RecordOf<CivilAsked>._('time.civil');
 
@@ -16172,6 +16214,8 @@ abstract final class Records {
     namingSyllables,
     numerologyProfile,
     researchStudy,
+    settingsDiff,
+    settingsExplain,
     timeCivil,
     timeConvert,
     timeResolve,

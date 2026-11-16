@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 19 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 57 records
+## Over 59 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 362 845 | 113 711 | 31.3% |
-| the value | 342 169 | 110 172 | 32.2% |
+| the envelope | 364 556 | 115 422 | 31.7% |
+| the value | 343 866 | 111 869 | 32.5% |
 | the provenance | 20 074 | 2647 | 13.2% |
 
-19 of the 57 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+19 of the 59 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 250 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -97,6 +97,8 @@ value.
 | `naming.syllables` | 1323 | 1323 | 100.0% | the whole value |
 | `numerology.profile` | 889 | 889 | 100.0% | the whole value |
 | `research.study` | 1412 | 850 | 60.2% | the whole value |
+| `settings.diff` | 147 | 147 | 100.0% | the whole value |
+| `settings.explain` | 1564 | 1564 | 100.0% | the whole value |
 | `time.civil` | 263 | 263 | 100.0% | the whole value |
 | `time.convert` | 104 | 104 | 100.0% | the whole value |
 | `time.resolve` | 210 | 210 | 100.0% | the whole value |
@@ -177,5 +179,6 @@ marked.
 - `naming.syllables`: `initials` 463 (kept), `devanagari` 130 (kept), `rashi` 130 (kept), `nakshatra` 129 (kept), `varga` 104 (kept), `iast` 99 (kept), `cell` 65 (kept), `pada` 65 (kept).
 - `numerology.profile`: `chaldeanName` 348 (kept), `pythagoreanName` 348 (kept), `pythagoreanBirth` 114 (kept), `chaldeanBirth` 60 (kept), `baseline` 6 (kept).
 - `research.study`: `rows` 733 (kept).
+- `settings.explain`: `knobs` 1491 (kept), `settingsHash` 48 (kept), `profile` 14 (kept).
 - `verify.claims`: `claims` 297 (kept).
 - `verify.issue`: `receipt` 3162 (kept), `answer` 147 (kept).

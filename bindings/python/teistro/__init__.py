@@ -151,6 +151,8 @@ from ._requests import (
     AddSign as AddSign,
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
+    SettingsDiffQuery as SettingsDiffQuery,
+    SettingsQuery as SettingsQuery,
     HorizonSample as HorizonSample,
     ChangeKind as ChangeKind,
     AnniversariesRequest as AnniversariesRequest,
@@ -1093,6 +1095,13 @@ __all__ = [
     "NEPAL_OFFICIAL_PROFILE",
     "on_internal_error",
     "NepalOfficial",
+    "SettingsQuery",
+    "SettingsDiffQuery",
+    "KnobSource",
+    "KnobExplained",
+    "SettingsExplained",
+    "KnobDifference",
+    "SettingsDiff",
     "Plugin",
     "nepal_official",
     "Air",
@@ -2422,6 +2431,69 @@ adapter's descriptor."""
 
 NEPAL_OFFICIAL_PROFILE = "nepali-committee"
 """The profile `nepal_official` opens: the Nepali committee's."""
+
+
+class KnobSource(TypedDict):
+    """A source cited for a knob's value."""
+
+    text: str
+    reference: str
+
+
+class KnobExplained(TypedDict):
+    """One knob explained (`Context.explain_settings`)."""
+
+    knob: str
+    """``group.knob``."""
+    value: Any
+    """Its value, as the canonical settings document writes it."""
+    layer: str
+    """``ROOT``, ``PROFILE``, ``CONTEXT``, ``REQUEST`` or ``DOCUMENT``."""
+    profile: Optional[str]
+    """The profile that set it, where a profile did."""
+    citation: Optional[KnobSource]
+    """The root's or the profile's citation; None where a patch set it."""
+    moves: str
+    """``SKY``, ``SUNRISE``, ``RULE``, ``TIME`` or ``FORM``."""
+    effect: str
+    """What it changes, in one line, in the context's locale."""
+
+
+class SettingsExplained(TypedDict):
+    """Every knob asked, each with the layer that set it, why and what it changes."""
+
+    profile: str
+    settingsHash: str
+    knobs: List[KnobExplained]
+
+
+class KnobDifference(TypedDict):
+    """One knob on which two contexts' settings differ."""
+
+    knob: str
+    value: Any
+    otherValue: Any
+    moves: str
+    effect: str
+
+
+class SettingsDiff(TypedDict):
+    """The knobs on which two contexts' settings differ (`Context.diff_settings`)."""
+
+    profile: str
+    otherProfile: str
+    settingsHash: str
+    otherSettingsHash: str
+    knobs: List[KnobDifference]
+
+
+def _settings_query(knobs: Optional[Sequence[str]], method: str) -> str:
+    """A settings query as its JSON; the library names an unknown knob."""
+    if knobs is None:
+        return "{}"
+    if isinstance(knobs, str) or not all(isinstance(knob, str) for knob in knobs):
+        raise TypeError(f"{method}: knobs is a list of groups or knobs, e.g. ['frame.ayanamsha']")
+    return json.dumps({"knobs": list(knobs)}, separators=(",", ":"))
 
 
 class NepalOfficial(TypedDict):
@@ -6167,6 +6239,42 @@ class Context(RecordCalls):
         return Context(
             self.teistro, inner, host, self._layouts, self._dasha_systems
         )
+
+    def explain_settings(self, knobs: Optional[Sequence[str]] = None) -> SettingsExplained:
+        """**Why each knob has its value** (``settings.explain``): each knob
+        with its value, the layer that set it (``ROOT``, ``PROFILE``,
+        ``CONTEXT`` for the context's ``settings``, ``REQUEST`` for a
+        `with_settings` patch), the source the root or the profile cites
+        for it, what a difference in it moves (``SKY``, ``SUNRISE``,
+        ``RULE``, ``TIME``, ``FORM``) and its effect note in this context's
+        locale. ``knobs`` names groups (``frame``) or knobs
+        (``frame.ayanamsha``), every knob when left out; an unknown one
+        raises `TeistroError` naming it (``knobs[0]``)::
+
+            explained = ctx.explain_settings(["frame", "day.sunrise"])
+            explained["knobs"][0]["citation"]  # {"text": ..., "reference": ...}
+        """
+        asked = _settings_query(knobs, "explain_settings")
+        return cast(SettingsExplained, json.loads(self.inner.explain_settings(asked)))
+
+    def diff_settings(
+        self, other: Context, knobs: Optional[Sequence[str]] = None
+    ) -> SettingsDiff:
+        """**Where two contexts' settings part** (``settings.diff``): each
+        knob ``knobs`` names, every one when left out, on which this
+        context's settings and ``other``'s differ, both values beside what
+        it moves and its effect note in this context's locale::
+
+            committee = Context(profile="nepali-committee")
+            drik = Context(profile="nepali-drik")
+            [knob["knob"] for knob in committee.diff_settings(drik)["knobs"]]
+        """
+        if not isinstance(other, Context):
+            raise TeistroError(
+                Status.INVALID_ARG, "diff_settings compares this context with another Context", field="other"
+            )
+        asked = _settings_query(knobs, "diff_settings")
+        return cast(SettingsDiff, json.loads(self.inner.diff_settings(other.inner, asked)))
 
     def close(self) -> None:
         """Frees the context, and then whatever its provider held once no

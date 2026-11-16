@@ -89,7 +89,7 @@ export type YearOfficeKey = 'year_office.RAJA' | 'year_office.MANTRI' | 'year_of
 export type YogaKey = 'yoga.VISHKAMBHA' | 'yoga.PRITI' | 'yoga.AYUSHMAN' | 'yoga.SAUBHAGYA' | 'yoga.SHOBHANA' | 'yoga.ATIGANDA' | 'yoga.SUKARMA' | 'yoga.DHRITI' | 'yoga.SHOOLA' | 'yoga.GANDA' | 'yoga.VRIDDHI' | 'yoga.DHRUVA' | 'yoga.VYAGHATA' | 'yoga.HARSHANA' | 'yoga.VAJRA' | 'yoga.SIDDHI' | 'yoga.VYATIPATA' | 'yoga.VARIYANA' | 'yoga.PARIGHA' | 'yoga.SHIVA' | 'yoga.SIDDHA' | 'yoga.SADHYA' | 'yoga.SHUBHA' | 'yoga.SHUKLA' | 'yoga.BRAHMA' | 'yoga.INDRA' | 'yoga.VAIDHRITI';
 export type YoniKey = 'yoni.HORSE' | 'yoni.ELEPHANT' | 'yoni.GOAT' | 'yoni.SERPENT' | 'yoni.DOG' | 'yoni.CAT' | 'yoni.RAT' | 'yoni.COW' | 'yoni.BUFFALO' | 'yoni.TIGER' | 'yoni.DEER' | 'yoni.MONKEY' | 'yoni.MONGOOSE' | 'yoni.LION';
 export type EntityKey = AgniVasaKey | AshubhaYogaKey | AuspiciousnessKey | AvasthaBaladiKey | AvasthaCheshtaKey | AvasthaDeeptadiKey | AvasthaJagradadiKey | AvasthaLajjitadiKey | AvasthaSayanadiKey | AyanaKey | AyanamshaKey | AyanamshaCategoryKey | BalaSchemeKey | BhadraVasaKey | BlackoutKindKey | BodyClassKey | CalendarKey | CharaKarakaKey | ChartFrameKey | ChartKindKey | ChartLayoutKey | ChoghadiyaKey | DashaFamilyKey | DashaSystemKey | DayMarkerKey | DegeneracyKey | DeityKey | DignityKey | DirectionKey | EraKey | FastKindKey | FestivalKey | FestivalKindKey | GanaKey | GenderKey | GowriKey | GrahaKey | GunaKey | HouseSystemKey | KaalaKey | KaranaKey | KootaKey | LunarEclipseKindKey | MasaKey | ModalityKey | MuhurtaNatureKey | MuhurtaYogaKey | MundaneKindKey | NadiKey | NakshatraKey | NatureKey | PakshaKey | PanchakaKey | ParityKey | PayaKey | PointKey | PointFamilyKey | RashiKey | RelationshipKey | RisingKey | RituKey | RulerDayRuleKey | RulerTextKey | SamvatsaraKey | SexKey | ShivaVasaKey | SolarEclipseKindKey | StarKey | StarClassKey | StateKey | TatwaKey | TibetanAnimalKey | TibetanElementKey | TithiKey | TithiClassKey | TraditionKey | TridoshaKey | VaiseshikamsaKey | VaraKey | VargaKey | VarnaKey | VastuYoniKey | VyayaKindKey | YearOfficeKey | YogaKey | YoniKey;
-export type MessageKey = 'sdk.amount.words' | 'sdk.amount.only' | 'sdk.amount.INR.major' | 'sdk.amount.INR.minor' | 'sdk.amount.NPR.major' | 'sdk.amount.NPR.minor' | 'sdk.aspect.cast' | 'sdk.aspect.mutual' | 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.lunarMonth' | 'sdk.calendar.nepalSambatMonth' | 'sdk.calendar.nepalSambatHalf' | 'sdk.calendar.nepalSambatDate' | 'sdk.calendar.parana' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.monthYear' | 'sdk.calendar.GREGORIAN.monthYearRange' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.monthYear' | 'sdk.calendar.JULIAN.monthYearRange' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.monthYear' | 'sdk.calendar.MIXED.monthYearRange' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.monthYear' | 'sdk.calendar.BIKRAM_SAMBAT.monthYearRange' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.INDIAN_NATIONAL.monthName' | 'sdk.calendar.INDIAN_NATIONAL.monthShort' | 'sdk.calendar.INDIAN_NATIONAL.monthYear' | 'sdk.calendar.INDIAN_NATIONAL.monthYearRange' | 'sdk.calendar.INDIAN_NATIONAL.date.numeric' | 'sdk.calendar.INDIAN_NATIONAL.date.long' | 'sdk.calendar.INDIAN_NATIONAL.date.full' | 'sdk.calendar.HIJRI_TABULAR.monthName' | 'sdk.calendar.HIJRI_TABULAR.monthShort' | 'sdk.calendar.HIJRI_TABULAR.monthYear' | 'sdk.calendar.HIJRI_TABULAR.monthYearRange' | 'sdk.calendar.HIJRI_TABULAR.date.numeric' | 'sdk.calendar.HIJRI_TABULAR.date.long' | 'sdk.calendar.HIJRI_TABULAR.date.full' | 'sdk.calendar.TIBETAN_PHUGPA.monthName' | 'sdk.calendar.TIBETAN_PHUGPA.monthShort' | 'sdk.calendar.TIBETAN_PHUGPA.monthYear' | 'sdk.calendar.TIBETAN_PHUGPA.monthYearRange' | 'sdk.calendar.TIBETAN_PHUGPA.date.numeric' | 'sdk.calendar.TIBETAN_PHUGPA.date.long' | 'sdk.calendar.TIBETAN_PHUGPA.date.full' | 'sdk.calendar.BANGLADESHI.monthName' | 'sdk.calendar.BANGLADESHI.monthShort' | 'sdk.calendar.BANGLADESHI.monthYear' | 'sdk.calendar.BANGLADESHI.monthYearRange' | 'sdk.calendar.BANGLADESHI.date.numeric' | 'sdk.calendar.BANGLADESHI.date.long' | 'sdk.calendar.BANGLADESHI.date.full' | 'sdk.calendar.ASSAM_SOLAR.monthName' | 'sdk.calendar.ASSAM_SOLAR.monthShort' | 'sdk.calendar.ASSAM_SOLAR.monthYear' | 'sdk.calendar.ASSAM_SOLAR.monthYearRange' | 'sdk.calendar.ASSAM_SOLAR.date.numeric' | 'sdk.calendar.ASSAM_SOLAR.date.long' | 'sdk.calendar.ASSAM_SOLAR.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.time.numeric12' | 'sdk.calendar.time.long12' | 'sdk.calendar.datetime.join' | 'sdk.calendar.datetime.inZone' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.calendar.duration.daysHours' | 'sdk.calendar.duration.hoursMinutes' | 'sdk.calendar.duration.hoursMinutesSeconds' | 'sdk.calendar.dayPeriod.am' | 'sdk.calendar.dayPeriod.pm' | 'sdk.calendar.dayPeriod.morning' | 'sdk.calendar.dayPeriod.afternoon' | 'sdk.calendar.dayPeriod.evening' | 'sdk.calendar.dayPeriod.night' | 'sdk.condition.dignity' | 'sdk.condition.navamsha' | 'sdk.condition.vargottama' | 'sdk.condition.retrograde' | 'sdk.condition.combust' | 'sdk.condition.friendship' | 'sdk.condition.age' | 'sdk.condition.wakefulness' | 'sdk.condition.brightness' | 'sdk.condition.lajjitadi' | 'sdk.condition.undecided' | 'sdk.day.vara' | 'sdk.day.tithi' | 'sdk.day.nakshatra' | 'sdk.day.yoga' | 'sdk.day.karana' | 'sdk.day.sun' | 'sdk.day.sunUp' | 'sdk.day.sunDown' | 'sdk.day.sunSign' | 'sdk.day.sankranti' | 'sdk.day.moonSign' | 'sdk.day.moonrise' | 'sdk.day.moonset' | 'sdk.day.month' | 'sdk.day.ritu' | 'sdk.day.ayana' | 'sdk.day.kaala' | 'sdk.day.abhijit' | 'sdk.karaka.ofSeven' | 'sdk.karaka.ofEight' | 'sdk.matching.band' | 'sdk.matching.graded' | 'sdk.naming.pada' | 'sdk.naming.by' | 'sdk.naming.syllables' | 'sdk.naming.counted' | 'sdk.naming.clause' | 'sdk.naming.holds' | 'sdk.naming.source' | 'sdk.phala.grahaInBhava' | 'sdk.phala.lagnaRashi' | 'sdk.phala.tithi' | 'sdk.phala.vara' | 'sdk.phala.nakshatra' | 'sdk.phala.yoga' | 'sdk.phala.namakarana' | 'sdk.phala.gana' | 'sdk.phala.nadi' | 'sdk.phala.yoni' | 'sdk.phala.varna' | 'sdk.phala.tatwa' | 'sdk.phala.dashaLord' | 'sdk.phala.dashaActivation' | 'sdk.phala.avasthaBaladi' | 'sdk.phala.avasthaJagradadi' | 'sdk.phala.avasthaDeeptadi' | 'sdk.phala.avasthaLajjitadi' | 'sdk.phala.dignity' | 'sdk.phala.state' | 'sdk.phala.sadeSati' | 'sdk.rashifal.saturn' | 'sdk.rashifal.ingress' | 'sdk.rashifal.station' | 'sdk.reading.effect' | 'sdk.reading.says' | 'sdk.reading.timing' | 'sdk.reading.lifeSpan' | 'sdk.reading.lifeClass' | 'sdk.reading.participants' | 'sdk.reading.status' | 'sdk.reading.severity' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.bhavaInRashi' | 'sdk.reason.chalitShift' | 'sdk.reason.grahaInRashi' | 'sdk.reason.pointInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.pointAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.meets' | 'sdk.reason.strength.rank' | 'sdk.reason.dasha.phase' | 'sdk.reason.dasha.place' | 'sdk.reason.dasha.points' | 'sdk.reason.dasha.favour' | 'sdk.reason.panchanga.tithi' | 'sdk.reason.panchanga.vara' | 'sdk.reason.panchanga.nakshatra' | 'sdk.reason.panchanga.pada' | 'sdk.reason.panchanga.yoga' | 'sdk.reason.panchanga.karana' | 'sdk.reason.panchanga.byDay' | 'sdk.reason.bhavaBala' | 'sdk.reason.vimshopaka' | 'sdk.reason.ashtakavarga' | 'sdk.reason.sarvashtakavarga' | 'sdk.reason.gochar.from' | 'sdk.reason.gochar.transit' | 'sdk.reason.gochar.vedha' | 'sdk.reason.gochar.fruition' | 'sdk.reason.gochar.ashtakavarga' | 'sdk.rite.ashauchKind' | 'sdk.rite.ashauchLength' | 'sdk.rite.ashauchDays' | 'sdk.rite.relation' | 'sdk.rite.clause' | 'sdk.rite.rite' | 'sdk.rite.riteVerdict' | 'sdk.rite.riteBeginning' | 'sdk.rite.kinKeeps' | 'sdk.rite.firstYearRite' | 'sdk.rite.riteForm' | 'sdk.rite.sapindanaAt' | 'sdk.rite.anniversaryKind' | 'sdk.sankalpa.himavatkhande' | 'sdk.sankalpa.himavatkhandePlace' | 'sdk.sankalpa.himavatkhandeMonth' | 'sdk.sankalpa.himavatkhandePitris' | 'sdk.sankalpa.himavatkhandeVara';
+export type MessageKey = 'sdk.amount.words' | 'sdk.amount.only' | 'sdk.amount.INR.major' | 'sdk.amount.INR.minor' | 'sdk.amount.NPR.major' | 'sdk.amount.NPR.minor' | 'sdk.aspect.cast' | 'sdk.aspect.mutual' | 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.lunarMonth' | 'sdk.calendar.nepalSambatMonth' | 'sdk.calendar.nepalSambatHalf' | 'sdk.calendar.nepalSambatDate' | 'sdk.calendar.parana' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.monthYear' | 'sdk.calendar.GREGORIAN.monthYearRange' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.monthYear' | 'sdk.calendar.JULIAN.monthYearRange' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.monthYear' | 'sdk.calendar.MIXED.monthYearRange' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.monthYear' | 'sdk.calendar.BIKRAM_SAMBAT.monthYearRange' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.INDIAN_NATIONAL.monthName' | 'sdk.calendar.INDIAN_NATIONAL.monthShort' | 'sdk.calendar.INDIAN_NATIONAL.monthYear' | 'sdk.calendar.INDIAN_NATIONAL.monthYearRange' | 'sdk.calendar.INDIAN_NATIONAL.date.numeric' | 'sdk.calendar.INDIAN_NATIONAL.date.long' | 'sdk.calendar.INDIAN_NATIONAL.date.full' | 'sdk.calendar.HIJRI_TABULAR.monthName' | 'sdk.calendar.HIJRI_TABULAR.monthShort' | 'sdk.calendar.HIJRI_TABULAR.monthYear' | 'sdk.calendar.HIJRI_TABULAR.monthYearRange' | 'sdk.calendar.HIJRI_TABULAR.date.numeric' | 'sdk.calendar.HIJRI_TABULAR.date.long' | 'sdk.calendar.HIJRI_TABULAR.date.full' | 'sdk.calendar.TIBETAN_PHUGPA.monthName' | 'sdk.calendar.TIBETAN_PHUGPA.monthShort' | 'sdk.calendar.TIBETAN_PHUGPA.monthYear' | 'sdk.calendar.TIBETAN_PHUGPA.monthYearRange' | 'sdk.calendar.TIBETAN_PHUGPA.date.numeric' | 'sdk.calendar.TIBETAN_PHUGPA.date.long' | 'sdk.calendar.TIBETAN_PHUGPA.date.full' | 'sdk.calendar.BANGLADESHI.monthName' | 'sdk.calendar.BANGLADESHI.monthShort' | 'sdk.calendar.BANGLADESHI.monthYear' | 'sdk.calendar.BANGLADESHI.monthYearRange' | 'sdk.calendar.BANGLADESHI.date.numeric' | 'sdk.calendar.BANGLADESHI.date.long' | 'sdk.calendar.BANGLADESHI.date.full' | 'sdk.calendar.ASSAM_SOLAR.monthName' | 'sdk.calendar.ASSAM_SOLAR.monthShort' | 'sdk.calendar.ASSAM_SOLAR.monthYear' | 'sdk.calendar.ASSAM_SOLAR.monthYearRange' | 'sdk.calendar.ASSAM_SOLAR.date.numeric' | 'sdk.calendar.ASSAM_SOLAR.date.long' | 'sdk.calendar.ASSAM_SOLAR.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.time.numeric12' | 'sdk.calendar.time.long12' | 'sdk.calendar.datetime.join' | 'sdk.calendar.datetime.inZone' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.calendar.duration.daysHours' | 'sdk.calendar.duration.hoursMinutes' | 'sdk.calendar.duration.hoursMinutesSeconds' | 'sdk.calendar.dayPeriod.am' | 'sdk.calendar.dayPeriod.pm' | 'sdk.calendar.dayPeriod.morning' | 'sdk.calendar.dayPeriod.afternoon' | 'sdk.calendar.dayPeriod.evening' | 'sdk.calendar.dayPeriod.night' | 'sdk.condition.dignity' | 'sdk.condition.navamsha' | 'sdk.condition.vargottama' | 'sdk.condition.retrograde' | 'sdk.condition.combust' | 'sdk.condition.friendship' | 'sdk.condition.age' | 'sdk.condition.wakefulness' | 'sdk.condition.brightness' | 'sdk.condition.lajjitadi' | 'sdk.condition.undecided' | 'sdk.day.vara' | 'sdk.day.tithi' | 'sdk.day.nakshatra' | 'sdk.day.yoga' | 'sdk.day.karana' | 'sdk.day.sun' | 'sdk.day.sunUp' | 'sdk.day.sunDown' | 'sdk.day.sunSign' | 'sdk.day.sankranti' | 'sdk.day.moonSign' | 'sdk.day.moonrise' | 'sdk.day.moonset' | 'sdk.day.month' | 'sdk.day.ritu' | 'sdk.day.ayana' | 'sdk.day.kaala' | 'sdk.day.abhijit' | 'sdk.karaka.ofSeven' | 'sdk.karaka.ofEight' | 'sdk.matching.band' | 'sdk.matching.graded' | 'sdk.naming.pada' | 'sdk.naming.by' | 'sdk.naming.syllables' | 'sdk.naming.counted' | 'sdk.naming.clause' | 'sdk.naming.holds' | 'sdk.naming.source' | 'sdk.phala.grahaInBhava' | 'sdk.phala.lagnaRashi' | 'sdk.phala.tithi' | 'sdk.phala.vara' | 'sdk.phala.nakshatra' | 'sdk.phala.yoga' | 'sdk.phala.namakarana' | 'sdk.phala.gana' | 'sdk.phala.nadi' | 'sdk.phala.yoni' | 'sdk.phala.varna' | 'sdk.phala.tatwa' | 'sdk.phala.dashaLord' | 'sdk.phala.dashaActivation' | 'sdk.phala.avasthaBaladi' | 'sdk.phala.avasthaJagradadi' | 'sdk.phala.avasthaDeeptadi' | 'sdk.phala.avasthaLajjitadi' | 'sdk.phala.dignity' | 'sdk.phala.state' | 'sdk.phala.sadeSati' | 'sdk.rashifal.saturn' | 'sdk.rashifal.ingress' | 'sdk.rashifal.station' | 'sdk.reading.effect' | 'sdk.reading.says' | 'sdk.reading.timing' | 'sdk.reading.lifeSpan' | 'sdk.reading.lifeClass' | 'sdk.reading.participants' | 'sdk.reading.status' | 'sdk.reading.severity' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.bhavaInRashi' | 'sdk.reason.chalitShift' | 'sdk.reason.grahaInRashi' | 'sdk.reason.pointInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.pointAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.meets' | 'sdk.reason.strength.rank' | 'sdk.reason.dasha.phase' | 'sdk.reason.dasha.place' | 'sdk.reason.dasha.points' | 'sdk.reason.dasha.favour' | 'sdk.reason.panchanga.tithi' | 'sdk.reason.panchanga.vara' | 'sdk.reason.panchanga.nakshatra' | 'sdk.reason.panchanga.pada' | 'sdk.reason.panchanga.yoga' | 'sdk.reason.panchanga.karana' | 'sdk.reason.panchanga.byDay' | 'sdk.reason.bhavaBala' | 'sdk.reason.vimshopaka' | 'sdk.reason.ashtakavarga' | 'sdk.reason.sarvashtakavarga' | 'sdk.reason.gochar.from' | 'sdk.reason.gochar.transit' | 'sdk.reason.gochar.vedha' | 'sdk.reason.gochar.fruition' | 'sdk.reason.gochar.ashtakavarga' | 'sdk.rite.ashauchKind' | 'sdk.rite.ashauchLength' | 'sdk.rite.ashauchDays' | 'sdk.rite.relation' | 'sdk.rite.clause' | 'sdk.rite.rite' | 'sdk.rite.riteVerdict' | 'sdk.rite.riteBeginning' | 'sdk.rite.kinKeeps' | 'sdk.rite.firstYearRite' | 'sdk.rite.riteForm' | 'sdk.rite.sapindanaAt' | 'sdk.rite.anniversaryKind' | 'sdk.sankalpa.himavatkhande' | 'sdk.sankalpa.himavatkhandePlace' | 'sdk.sankalpa.himavatkhandeMonth' | 'sdk.sankalpa.himavatkhandePitris' | 'sdk.sankalpa.himavatkhandeVara' | 'sdk.settings.effect.frame.zodiac' | 'sdk.settings.effect.frame.ayanamsha' | 'sdk.settings.effect.frame.ayanamshaBasis' | 'sdk.settings.effect.frame.node' | 'sdk.settings.effect.frame.centre' | 'sdk.settings.effect.frame.positions' | 'sdk.settings.effect.frame.siddhanta' | 'sdk.settings.effect.frame.nakshatraScheme' | 'sdk.settings.effect.houses.placementSystem' | 'sdk.settings.effect.houses.chalitSystem' | 'sdk.settings.effect.houses.moduleOverrides' | 'sdk.settings.effect.houses.polarPolicy' | 'sdk.settings.effect.day.sunrise' | 'sdk.settings.effect.day.dayBoundary' | 'sdk.settings.effect.day.polarDayPolicy' | 'sdk.settings.effect.day.ghatiReckoning' | 'sdk.settings.effect.day.horaReckoning' | 'sdk.settings.effect.panchanga.centre' | 'sdk.settings.effect.panchanga.moonEvents' | 'sdk.settings.effect.panchanga.muhurtaTables' | 'sdk.settings.effect.panchanga.panchakaStart' | 'sdk.settings.effect.panchanga.panchakaName' | 'sdk.settings.effect.panchanga.shivaVasa' | 'sdk.settings.effect.panchanga.varjyam' | 'sdk.settings.effect.panchanga.amritKalam' | 'sdk.settings.effect.panchanga.lagnaTable' | 'sdk.settings.effect.panchanga.durmuhurta' | 'sdk.settings.effect.panchanga.punyaKala' | 'sdk.settings.effect.panchanga.ritu' | 'sdk.settings.effect.panchanga.solarMonthStart' | 'sdk.settings.effect.panchanga.eclipseShadow' | 'sdk.settings.effect.panchanga.eclipseHorizon' | 'sdk.settings.effect.panchanga.eclipseVedha' | 'sdk.settings.effect.time.dstGap' | 'sdk.settings.effect.time.dstOverlap' | 'sdk.settings.effect.time.unknownTime' | 'sdk.settings.effect.time.deltaT' | 'sdk.settings.effect.dasha.balance' | 'sdk.settings.effect.dasha.yearLength' | 'sdk.settings.effect.dasha.depth' | 'sdk.settings.effect.dasha.seedOverflow' | 'sdk.settings.effect.dasha.ashtottariGrouping' | 'sdk.settings.effect.dasha.birthPeriod' | 'sdk.settings.effect.dasha.afterCycle' | 'sdk.settings.effect.dasha.kalachakraMembership' | 'sdk.settings.effect.dasha.kalachakraBalance' | 'sdk.settings.effect.dasha.kalachakraAfterNinth' | 'sdk.settings.effect.dasha.shantaSign' | 'sdk.settings.effect.dasha.dualLord' | 'sdk.settings.effect.dasha.rashiStart' | 'sdk.settings.effect.dasha.releasingSharedSign' | 'sdk.settings.effect.dasha.firdariaNodes' | 'sdk.settings.effect.dasha.decennialDivision' | 'sdk.settings.effect.dasha.karakaDivision' | 'sdk.settings.effect.dasha.strongestGraha' | 'sdk.settings.effect.dasha.ayurdayaPlace' | 'sdk.settings.effect.dasha.naisargikaDivision' | 'sdk.settings.effect.dasha.ayurdayaSpan' | 'sdk.settings.effect.dasha.ayurdayaReadings' | 'sdk.settings.effect.jaimini.charaKarakas' | 'sdk.settings.effect.jaimini.eightKarakaOrder' | 'sdk.settings.effect.jaimini.nodeCoLordship' | 'sdk.settings.effect.jaimini.brahma' | 'sdk.settings.effect.jaimini.grahaArudhaException' | 'sdk.settings.effect.gochar.nodeVedha' | 'sdk.settings.effect.gochar.nodeObstruction' | 'sdk.settings.effect.gochar.ashtakavargaGoodFrom' | 'sdk.settings.effect.gochar.transitCentre' | 'sdk.settings.effect.kp.rulingCount' | 'sdk.settings.effect.kp.dayLordDay' | 'sdk.settings.effect.kp.nodeRulers' | 'sdk.settings.effect.kp.retrogradeRejection' | 'sdk.settings.effect.aspect.nodeAspects' | 'sdk.settings.effect.aspect.drishtiTable' | 'sdk.settings.effect.state.combustionOrbs' | 'sdk.settings.effect.state.sayanadiGhatis' | 'sdk.settings.effect.state.sayanadiNodes' | 'sdk.settings.effect.state.pushkaraBhaga' | 'sdk.settings.effect.state.maranaSaturn' | 'sdk.settings.effect.state.maranaVenus' | 'sdk.settings.effect.strength.balaScheme' | 'sdk.settings.effect.strength.ekadhipatya' | 'sdk.settings.effect.strength.shodhana' | 'sdk.settings.effect.strength.moonBinduFromJupiter' | 'sdk.settings.effect.strength.vimshopaka' | 'sdk.settings.effect.strength.saptavargaja' | 'sdk.settings.effect.strength.nathonnatha' | 'sdk.settings.effect.strength.preDawnNight' | 'sdk.settings.effect.strength.sunAyana' | 'sdk.settings.effect.strength.moonPaksha' | 'sdk.settings.effect.strength.luminaryCheshta' | 'sdk.settings.effect.strength.kranti' | 'sdk.settings.effect.strength.kaalaLords' | 'sdk.settings.effect.strength.dig' | 'sdk.settings.effect.strength.drik' | 'sdk.settings.effect.strength.naisargika' | 'sdk.settings.effect.strength.requiredRupas' | 'sdk.settings.effect.strength.drekkana' | 'sdk.settings.effect.strength.benefics' | 'sdk.settings.effect.strength.cheshta' | 'sdk.settings.effect.strength.yuddha' | 'sdk.settings.effect.strength.ishtaKashta' | 'sdk.settings.effect.strength.bhavaDivision' | 'sdk.settings.effect.strength.bhavaDig' | 'sdk.settings.effect.strength.bhavaDrishti' | 'sdk.settings.effect.strength.bhavaSpecialRules' | 'sdk.settings.effect.vargas.unattestedDn' | 'sdk.settings.effect.calendars.civilCalendar' | 'sdk.settings.effect.calendars.lunarMonth' | 'sdk.settings.effect.calendars.samvatsara' | 'sdk.settings.effect.calendars.eras' | 'sdk.settings.effect.provider.overrides' | 'sdk.settings.effect.provider.tier' | 'sdk.settings.effect.provider.cacheCells' | 'sdk.settings.effect.output.precision';
 
 export interface DateValue { readonly calendar: string; readonly year: number; readonly month: number; readonly day: number; }
 export interface TimeValue { readonly hour: number; readonly minute: number; readonly second: number; }
@@ -2237,6 +2237,157 @@ export interface Messages {
       readonly himavatkhandePitris: (p: { father: string; gotra: string; grandfather: string; greatGrandfather: string; hasPitris: string; purpose: string }) => string;
       readonly himavatkhandePlace: (p: { hasKshetra: string; hasRiver: string; kshetra: string; river: string }) => string;
       readonly himavatkhandeVara: (p: { vara: VaraKey; varaKey: string }) => string;
+    };
+    readonly settings: {
+      readonly effect: {
+        readonly aspect: {
+          readonly drishtiTable: () => string;
+          readonly nodeAspects: () => string;
+        };
+        readonly calendars: {
+          readonly civilCalendar: () => string;
+          readonly eras: () => string;
+          readonly lunarMonth: () => string;
+          readonly samvatsara: () => string;
+        };
+        readonly dasha: {
+          readonly afterCycle: () => string;
+          readonly ashtottariGrouping: () => string;
+          readonly ayurdayaPlace: () => string;
+          readonly ayurdayaReadings: () => string;
+          readonly ayurdayaSpan: () => string;
+          readonly balance: () => string;
+          readonly birthPeriod: () => string;
+          readonly decennialDivision: () => string;
+          readonly depth: () => string;
+          readonly dualLord: () => string;
+          readonly firdariaNodes: () => string;
+          readonly kalachakraAfterNinth: () => string;
+          readonly kalachakraBalance: () => string;
+          readonly kalachakraMembership: () => string;
+          readonly karakaDivision: () => string;
+          readonly naisargikaDivision: () => string;
+          readonly rashiStart: () => string;
+          readonly releasingSharedSign: () => string;
+          readonly seedOverflow: () => string;
+          readonly shantaSign: () => string;
+          readonly strongestGraha: () => string;
+          readonly yearLength: () => string;
+        };
+        readonly day: {
+          readonly dayBoundary: () => string;
+          readonly ghatiReckoning: () => string;
+          readonly horaReckoning: () => string;
+          readonly polarDayPolicy: () => string;
+          readonly sunrise: () => string;
+        };
+        readonly frame: {
+          readonly ayanamsha: () => string;
+          readonly ayanamshaBasis: () => string;
+          readonly centre: () => string;
+          readonly nakshatraScheme: () => string;
+          readonly node: () => string;
+          readonly positions: () => string;
+          readonly siddhanta: () => string;
+          readonly zodiac: () => string;
+        };
+        readonly gochar: {
+          readonly ashtakavargaGoodFrom: () => string;
+          readonly nodeObstruction: () => string;
+          readonly nodeVedha: () => string;
+          readonly transitCentre: () => string;
+        };
+        readonly houses: {
+          readonly chalitSystem: () => string;
+          readonly moduleOverrides: () => string;
+          readonly placementSystem: () => string;
+          readonly polarPolicy: () => string;
+        };
+        readonly jaimini: {
+          readonly brahma: () => string;
+          readonly charaKarakas: () => string;
+          readonly eightKarakaOrder: () => string;
+          readonly grahaArudhaException: () => string;
+          readonly nodeCoLordship: () => string;
+        };
+        readonly kp: {
+          readonly dayLordDay: () => string;
+          readonly nodeRulers: () => string;
+          readonly retrogradeRejection: () => string;
+          readonly rulingCount: () => string;
+        };
+        readonly output: {
+          readonly precision: () => string;
+        };
+        readonly panchanga: {
+          readonly amritKalam: () => string;
+          readonly centre: () => string;
+          readonly durmuhurta: () => string;
+          readonly eclipseHorizon: () => string;
+          readonly eclipseShadow: () => string;
+          readonly eclipseVedha: () => string;
+          readonly lagnaTable: () => string;
+          readonly moonEvents: () => string;
+          readonly muhurtaTables: () => string;
+          readonly panchakaName: () => string;
+          readonly panchakaStart: () => string;
+          readonly punyaKala: () => string;
+          readonly ritu: () => string;
+          readonly shivaVasa: () => string;
+          readonly solarMonthStart: () => string;
+          readonly varjyam: () => string;
+        };
+        readonly provider: {
+          readonly cacheCells: () => string;
+          readonly overrides: () => string;
+          readonly tier: () => string;
+        };
+        readonly state: {
+          readonly combustionOrbs: () => string;
+          readonly maranaSaturn: () => string;
+          readonly maranaVenus: () => string;
+          readonly pushkaraBhaga: () => string;
+          readonly sayanadiGhatis: () => string;
+          readonly sayanadiNodes: () => string;
+        };
+        readonly strength: {
+          readonly balaScheme: () => string;
+          readonly benefics: () => string;
+          readonly bhavaDig: () => string;
+          readonly bhavaDivision: () => string;
+          readonly bhavaDrishti: () => string;
+          readonly bhavaSpecialRules: () => string;
+          readonly cheshta: () => string;
+          readonly dig: () => string;
+          readonly drekkana: () => string;
+          readonly drik: () => string;
+          readonly ekadhipatya: () => string;
+          readonly ishtaKashta: () => string;
+          readonly kaalaLords: () => string;
+          readonly kranti: () => string;
+          readonly luminaryCheshta: () => string;
+          readonly moonBinduFromJupiter: () => string;
+          readonly moonPaksha: () => string;
+          readonly naisargika: () => string;
+          readonly nathonnatha: () => string;
+          readonly preDawnNight: () => string;
+          readonly requiredRupas: () => string;
+          readonly saptavargaja: () => string;
+          readonly shodhana: () => string;
+          readonly sunAyana: () => string;
+          readonly vimshopaka: () => string;
+          readonly yuddha: () => string;
+        };
+        readonly time: {
+          readonly deltaT: () => string;
+          readonly dstGap: () => string;
+          readonly dstOverlap: () => string;
+          readonly unknownTime: () => string;
+        };
+        readonly vargas: {
+          readonly unattestedDn: () => string;
+        };
+      };
     };
   };
 }

@@ -266,6 +266,43 @@ class AContext(WithLibrary):
             self.assertEqual(ctx.profile, "nepali-drik")
             self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
 
+    def test_explain_settings_names_each_layer_and_diff_settings_where_two_part(self) -> None:
+        # The context's own patch is its layer, a per-call patch the request's.
+        with self.teistro.context(
+            profile=PROFILE, locale=LOCALE, test_provider=True, settings={"frame": {"node": "TRUE"}}
+        ) as ctx, ctx.with_settings({"day": {"ghati_reckoning": "PROPORTIONAL"}}) as derived:
+            explained = derived.explain_settings()
+            knob = {one["knob"]: one for one in explained["knobs"]}
+            self.assertEqual(explained["settingsHash"], derived.settings_hash)
+            self.assertEqual(
+                [knob[name]["layer"] for name in ("frame.node", "day.ghati_reckoning", "frame.centre", "output.precision")],
+                ["CONTEXT", "REQUEST", "PROFILE", "ROOT"],
+            )
+            self.assertIsNone(knob["frame.node"]["citation"])
+            self.assertEqual(knob["frame.centre"]["profile"], "nepali-drik")
+            self.assertEqual(knob["frame.siddhanta"]["moves"], "SKY")
+            self.assertIn("राहु", knob["frame.node"]["effect"])
+        # A shipped profile cites every knob, and a selection keeps the document's order.
+        self.assertTrue(all(one["citation"] is not None for one in self.ctx.explain_settings()["knobs"]))
+        chosen = self.ctx.explain_settings(["day.sunrise", "frame"])["knobs"]
+        self.assertEqual([one["knob"] for one in chosen[:2]], ["frame.zodiac", "frame.ayanamsha"])
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.explain_settings(["frame.nod"])
+        self.assertEqual(refused.exception.field, "knobs[0]")
+        with self.assertRaises(TypeError):
+            self.ctx.explain_settings("frame")
+
+        with self.teistro.context(profile="nepali-committee") as committee, self.teistro.context(
+            profile="nepali-drik"
+        ) as drik:
+            diff = committee.diff_settings(drik)
+            self.assertEqual(diff["otherProfile"], "nepali-drik")
+            self.assertEqual(
+                [one["knob"] for one in diff["knobs"]],
+                ["frame.ayanamsha", "frame.centre", "frame.siddhanta", "panchanga.lagna_table"],
+            )
+            self.assertEqual(committee.diff_settings(committee)["knobs"], [])
+
     def test_with_settings_derives_a_context_and_leaves_its_parent_as_it_was(self) -> None:
         place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
 

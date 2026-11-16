@@ -932,6 +932,7 @@ pub fn records() -> Vec<Record> {
     all.extend(almanac_lookup_records());
     all.extend(sankalpa_records());
     all.extend(time_records());
+    all.extend(settings_records());
     all.extend(geo_records());
     all.extend(engine_records());
     all.push(verify_record());
@@ -2050,6 +2051,43 @@ fn time_records() -> [Record; 6] {
             schemas: schemas!(crate::time_request::BetweenAsked => crate::DateSpan),
         },
     ]
+}
+
+/// The settings records: why each knob has its value, and where two
+/// contexts' settings part (`03-design/settings-and-profiles.md` §3.5).
+fn settings_records() -> [Record; 2] {
+    [
+        Record {
+            name: "settings.explain",
+            boundary: "ts_context_explain_settings",
+            title: "Why each settings knob has its value: the layer that set it, its source and its effect",
+            reads: None,
+            run: |context, json| {
+                let asked = teistro_core::settings::SettingsQuery::from_json(json)?;
+                Answered::plain(&context.explain_settings(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(teistro_core::settings::SettingsQuery => teistro_core::settings::SettingsExplained),
+        },
+        Record {
+            name: "settings.diff",
+            boundary: "ts_context_diff_settings",
+            title: "The settings knobs on which two contexts differ, and what each moves",
+            reads: None,
+            run: |context, json| settings_diff(context, context, json),
+            compares: Some(settings_diff),
+            brief: Brief::Whole,
+            schemas: schemas!(teistro_core::settings::SettingsDiffQuery => teistro_core::settings::SettingsDiff),
+        },
+    ]
+}
+
+/// `settings.diff`: the knobs on which `context`'s settings and
+/// `other`'s part.
+fn settings_diff(context: &Context, other: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = teistro_core::settings::SettingsDiffQuery::from_json(json)?.query();
+    Answered::plain(&context.diff_settings(other, &asked)?)
 }
 
 /// The record entry point called `name`, if this build carries it.

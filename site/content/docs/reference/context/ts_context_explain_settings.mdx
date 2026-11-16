@@ -1,0 +1,38 @@
+---
+title: ts_context_explain_settings
+description: "**Why each knob has its value** (`settings.explain`, `03-design/settings-and-profiles.md` §3.5), as canonical JSON: `{profile, settingsHash, knobs}`, each knob `{knob, value, layer, profile, citation, moves, effect}`."
+---
+
+**Why each knob has its value** (`settings.explain`, `03-design/settings-and-profiles.md` §3.5), as canonical JSON: `{profile, settingsHash, knobs}`, each knob `{knob, value, layer, profile, citation, moves, effect}`. `layer` is the one that set it: `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in `profile`), `CONTEXT` (the patch the context was built with), `REQUEST` (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read whole from a recorded document); `citation` is `{text, reference}`, the source the root or the profile gives, null where a patch set the knob; `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`, `TIME` or `FORM`); and `effect` is its one-line note in the context's locale.
+
+`request_json` is `{"knobs"}`, groups (`frame`) or knobs (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps the document's order. A key it does not read, or an entry that names no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_explain_settings(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `(root).explain_settings` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/context.rs`.
