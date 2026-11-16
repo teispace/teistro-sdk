@@ -852,6 +852,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.next", "present"),
         ("almanac.sentences", "present"),
         ("almanac.anniversaries", "present"),
+        ("almanac.occurrences", "present"),
         ("almanac.festivalPack", "present"),
         ("almanac.of", "present"),
         ("almanac.pakshi", "present"),

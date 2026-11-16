@@ -1478,6 +1478,52 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>Every day a rule or a kind of day falls on, year by year</b> over a span of years in one
+     * call ({@code 03-design/rule-years.md}). The span's days are founded once and the target
+     * reckoned once. Each year lists the days its dates hold: none (a lunar rule's day slipped into
+     * the year before, an adhika-only fast in a year with no adhika month), one, or several (a lunar
+     * rule meeting a solar year twice, a kind). {@code years} is 1 to 50, counted in {@code calendar}.
+     *
+     * <pre>{@code
+     * OccurrencesRequest asked = OccurrencesRequest.of(Map.of("fromYear", 2080, "years", 8,
+     *         "calendar", "BIKRAM_SAMBAT", "latitudeDeg", 27.7172, "longitudeDeg", 85.324,
+     *         "utcOffsetSeconds", 20_700, "rule", "VIJAYA_DASHAMI",
+     *         "festivals", Map.of("rules", "NEPAL_PANCHANGA")));
+     * Occurrences span = sdk.almanac().occurrences(asked);
+     * System.out.println(span.years().get(0).days().get(0).day());
+     * }</pre>
+     *
+     * @param request the span in {@code calendar}, the place, and a {@code kind}, a {@code rule} or a
+     *     {@code group}
+     * @return each year of the span with the days the target falls on
+     * @throws TeistroException {@code OUT_OF_RANGE} naming {@code occurrences.years},
+     *     {@code INVALID_ARG} naming what is looked for
+     */
+    public Occurrences occurrences(com.teispace.teistro.request.OccurrencesRequest request) {
+        String json = Json.write(request);
+        Map<?, ?> envelope = Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacOccurrences(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        Object provenance = envelope.get("provenance");
+        return new Occurrences(
+                Reads.each(value, "keys", Reads::string),
+                Reads.each(value, "years", raw -> {
+                    Map<?, ?> year = Reads.object(raw);
+                    Map<String, Object> section = new java.util.LinkedHashMap<>();
+                    section.put("value", year.get("festivals"));
+                    section.put("provenance", provenance);
+                    return new OccurrenceYear(
+                            Reads.integer(year, "year"),
+                            Reads.serdeDate(Reads.field(year, "first")),
+                            Reads.serdeDate(Reads.field(year, "last")),
+                            Reads.each(year, "days", d -> new OccurrenceDay(
+                                    Reads.serdeDate(Reads.field(Reads.object(d), "day")),
+                                    Reads.each(Reads.object(d), "keys", Reads::string))),
+                            AlmanacReads.festivalsAnswer(Json.write(section)));
+                }),
+                Provenance.of(provenance));
+    }
+
+    /**
      * <b>The next day a rule or a kind of day falls on</b> after an instant at a place, with no year
      * asked ({@code 03-design/next-occurrence.md}). The civil day holding the instant counts. Give a
      * {@code kind}, {@code EKADASHI}, {@code PURNIMA}, {@code AMAVASYA} or {@code SANKRANTI}, read by

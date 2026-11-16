@@ -1903,6 +1903,38 @@ class AnEngine(WithLibrary):
                 sky.almanac.anniversaries(asked(101))
             self.assertEqual(long_span.exception.field, "anniversaries.years")
 
+    def test_a_rules_days_are_answered_year_by_year(self) -> None:
+        """Pausha's bright Ekadashi at Kathmandu falls twice in 2025 and on
+        no day of 2026, each year listing what its dates hold, and a span
+        too long is refused on `years` (`03-design/rule-years.md`)."""
+
+        def asked(years: int) -> Any:
+            return {
+                "fromYear": 2025,
+                "years": years,
+                "latitudeDeg": 27.7172,
+                "longitudeDeg": 85.324,
+                "altitudeM": 1400.0,
+                "utcOffsetSeconds": 20700,
+                "rule": "PAUSHA_PUTRADA_EKADASHI",
+                "festivals": {"rules": "NEPAL_PANCHANGA"},
+            }
+
+        with self.teistro.context(**nepal_official()) as sky:
+            span = sky.almanac.occurrences(asked(2))
+            self.assertEqual(span.keys, ("PAUSHA_PUTRADA_EKADASHI",))
+            self.assertEqual(tuple(year.year for year in span.years), (2025, 2026))
+            self.assertEqual(
+                tuple((d.day.month, d.day.day, d.keys) for d in span.years[0].days),
+                ((1, 10, ("PAUSHA_PUTRADA_EKADASHI",)), (12, 30, ("PAUSHA_PUTRADA_EKADASHI",))),
+            )
+            self.assertEqual(span.years[1].days, ())
+            self.assertEqual((span.years[0].first.month, span.years[0].first.day), (1, 1))
+            self.assertTrue(any(c.knob == "festival.years" for c in span.provenance.applied_conventions))
+            with self.assertRaises(TeistroError) as long_span:
+                sky.almanac.occurrences(asked(51))
+            self.assertEqual(long_span.exception.field, "occurrences.years")
+
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast
         the festival answer gives, Vijaya Dashami on 2 October, every line

@@ -1648,7 +1648,7 @@ void theFeed;
 
 // A date adds by a span and a rule from the catalogue; a difference is a
 // span; the next occurrence names a kind or a rule.
-import type { DateSpan, NextOccurrence } from '../lib/index.js';
+import type { DateSpan, NextOccurrence, OccurrenceDay, OccurrenceYear, Occurrences } from '../lib/index.js';
 import { Era, Overflow } from '../lib/catalogue.js';
 function theArithmetic(ctx: Context): string {
   const on: CalendarDate = ctx.calendar.add(someDate, { months: 1 }, Overflow.Carry);
@@ -1680,6 +1680,22 @@ function theArithmetic(ctx: Context): string {
   void kept.anniversaries[0]?.dayRule.clause;
   // @ts-expect-error a span names how many years
   ctx.almanac.anniversaries({ fromYear: 2026, latitudeDeg: 0, longitudeDeg: 0, utcOffsetSeconds: 0, anniversaries: [] });
+  const span: Occurrences = ctx.almanac.occurrences({
+    fromYear: 2080,
+    years: 8,
+    calendar: 'BIKRAM_SAMBAT',
+    latitudeDeg: 27.7172,
+    longitudeDeg: 85.324,
+    utcOffsetSeconds: 20700,
+    rule: 'VIJAYA_DASHAMI',
+    festivals: { rules: 'NEPAL_PANCHANGA' },
+  });
+  const firstDay: OccurrenceDay | undefined = span.years[0]?.days[0];
+  void firstDay?.keys[0];
+  const yearOf: OccurrenceYear | undefined = span.years[0];
+  void yearOf?.festivals.observances[0]?.rule;
+  // @ts-expect-error a span names how many years
+  ctx.almanac.occurrences({ fromYear: 2026, latitudeDeg: 0, longitudeDeg: 0, utcOffsetSeconds: 0, kind: 'PURNIMA' });
   // @ts-expect-error a kind is one of four
   ctx.almanac.next({ after: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, kind: 'HOLI' });
   return `${age.years} ${yele.eraYear} ${next.keys.join()} ${next.day.day} ${next.searchedDays}`;

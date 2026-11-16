@@ -149,46 +149,7 @@ impl NextRequest {
 
 impl NextAsked {
     fn request(self) -> Result<NextRequest, Error> {
-        let target = match (self.kind, self.rule, self.group) {
-            (Some(kind), None, None) => NextTarget::Kind(kind),
-            (None, Some(rule), None) => NextTarget::Rule(rule),
-            (None, None, Some(group)) => NextTarget::Group(group),
-            (None, None, None) => {
-                return Err(Error::invalid_arg(
-                    "a search names what it looks for: a `kind`, a `rule` or a `group`",
-                )
-                .with_field("kind"));
-            }
-            (_, Some(_), _) => {
-                return Err(Error::invalid_arg(
-                    "a search looks for one of a `kind`, a `rule` and a `group`",
-                )
-                .with_field("rule"));
-            }
-            (Some(_), None, Some(_)) => {
-                return Err(Error::invalid_arg(
-                    "a search looks for one of a `kind`, a `rule` and a `group`",
-                )
-                .with_field("group"));
-            }
-        };
-        let festivals = match (&target, self.festivals) {
-            (NextTarget::Kind(_), None) => None,
-            (NextTarget::Kind(_), Some(_)) => {
-                return Err(Error::invalid_arg(
-                    "a kind is read by the SDK's own rules; to search a request's rules, name one as `rule`",
-                )
-                .with_field("festivals"));
-            }
-            (_, Some(festivals)) => Some(FestivalRequest::from_json(&festivals.to_string())?),
-            (_, None) => {
-                return Err(Error::invalid_arg(
-                    "a `rule` or a `group` is a key of `festivals`, which is left out",
-                )
-                .with_field("festivals")
-                .with_hint("name a pack, as `{\"rules\": \"NEPAL_PANCHANGA\"}`"));
-            }
-        };
+        let (target, festivals) = target_of(self.kind, self.rule, self.group, self.festivals)?;
         Ok(NextRequest {
             after: instant(self.after, "after")?,
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
@@ -199,6 +160,127 @@ impl NextAsked {
             limit_days: limit_days(self.limit_days)?,
         })
     }
+}
+
+/// What a search looks for, read from a request's `kind`, `rule`, `group`
+/// and `festivals`: a kind alone, or a rule or a group with the festivals
+/// it is a key of. What [`NextRequest`] and an occurrences request read
+/// alike, so both refuse alike.
+///
+/// # Errors
+///
+/// `INVALID_ARG` for none or two of `kind`, `rule` and `group`, named by
+/// the one given second (`rule`, else `group`) or `kind` when none is;
+/// `festivals` with a kind, or a rule or group without them, named
+/// `festivals`; and what [`FestivalRequest::from_json`] refuses.
+pub(super) fn target_of(
+    kind: Option<NextKind>,
+    rule: Option<String>,
+    group: Option<String>,
+    festivals: Option<Value>,
+) -> Result<(NextTarget, Option<FestivalRequest>), Error> {
+    let target = match (kind, rule, group) {
+        (Some(kind), None, None) => NextTarget::Kind(kind),
+        (None, Some(rule), None) => NextTarget::Rule(rule),
+        (None, None, Some(group)) => NextTarget::Group(group),
+        (None, None, None) => {
+            return Err(Error::invalid_arg(
+                "a search names what it looks for: a `kind`, a `rule` or a `group`",
+            )
+            .with_field("kind"));
+        }
+        (_, Some(_), _) => {
+            return Err(Error::invalid_arg(
+                "a search looks for one of a `kind`, a `rule` and a `group`",
+            )
+            .with_field("rule"));
+        }
+        (Some(_), None, Some(_)) => {
+            return Err(Error::invalid_arg(
+                "a search looks for one of a `kind`, a `rule` and a `group`",
+            )
+            .with_field("group"));
+        }
+    };
+    let festivals = match (&target, festivals) {
+        (NextTarget::Kind(_), None) => None,
+        (NextTarget::Kind(_), Some(_)) => {
+            return Err(Error::invalid_arg(
+                "a kind is read by the SDK's own rules; to search a request's rules, name one as `rule`",
+            )
+            .with_field("festivals"));
+        }
+        (_, Some(festivals)) => Some(FestivalRequest::from_json(&festivals.to_string())?),
+        (_, None) => {
+            return Err(Error::invalid_arg(
+                "a `rule` or a `group` is a key of `festivals`, which is left out",
+            )
+            .with_field("festivals")
+            .with_hint("name a pack, as `{\"rules\": \"NEPAL_PANCHANGA\"}`"));
+        }
+    };
+    Ok((target, festivals))
+}
+
+/// The festival request a target is reckoned over, cut to what it needs,
+/// and the keys it looks for: a kind's own rules; a rule, the request
+/// narrowed to it ([`FestivalRequest::narrowed_to`]); or a group's
+/// members, the request narrowed to the group
+/// ([`FestivalRequest::narrowed_to_group`]); checked.
+///
+/// # Errors
+///
+/// `INVALID_ARG` for a rule or a group with no festivals, named
+/// `festivals`; a rule no list of them has, named `rule`; a group they do
+/// not hold, named `group`; and what [`FestivalRequest::check`] refuses.
+pub(super) fn reckoned_for(
+    target: &NextTarget,
+    festivals: Option<&FestivalRequest>,
+) -> Result<(FestivalRequest, Vec<String>), Error> {
+    let (reckoned, keys) = match target {
+        NextTarget::Kind(kind) => {
+            let read = kind.rules();
+            let keys: Vec<String> = read
+                .rules
+                .iter()
+                .map(|r| r.key.clone())
+                .chain(read.ekadashis.iter().map(|r| r.key.clone()))
+                .chain(read.dated.iter().map(|r| r.key.clone()))
+                .collect();
+            (FestivalRequest::of_kind(read), keys)
+        }
+        NextTarget::Rule(key) => {
+            let asked = festivals.ok_or_else(|| {
+                Error::invalid_arg("a `rule` is a key of `festivals`, which is left out")
+                    .with_field("festivals")
+            })?;
+            let narrowed = asked.narrowed_to(key).ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "`{key}` is no rule of the festival request and no day its published sets add"
+                ))
+                .with_field("rule")
+            })?;
+            (narrowed, vec![key.clone()])
+        }
+        NextTarget::Group(key) => {
+            let asked = festivals.ok_or_else(|| {
+                Error::invalid_arg("a `group` is a key of `festivals`, which is left out")
+                    .with_field("festivals")
+            })?;
+            let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
+                Error::invalid_arg(format!("`{key}` is no group of the festival request"))
+                    .with_field("group")
+            })?;
+            let members = narrowed
+                .groups()
+                .iter()
+                .flat_map(|group| group.members.clone())
+                .collect();
+            (narrowed, members)
+        }
+    };
+    reckoned.check()?;
+    Ok((reckoned, keys))
 }
 
 /// The next day the target falls on, and what the festival reckoning
@@ -270,8 +352,51 @@ impl NextOccurrence {
 }
 
 /// Whether a published set withdrew the day.
-fn withdrawn(published: Option<&teistro_panchanga::festival::Published>) -> bool {
+pub(super) fn withdrawn(published: Option<&teistro_panchanga::festival::Published>) -> bool {
     published.is_some_and(|p| p.status == PublishedStatus::Withdrawn)
+}
+
+/// Each day `keys` fall on in a reckoning, with the key: the observances,
+/// Ekadashi fasts, dated days, anniversaries and added days, in that order,
+/// a day a published set withdrew left out.
+pub(super) fn kept_days<'f>(
+    found: &'f Observances,
+    keys: &'f [String],
+) -> impl Iterator<Item = (&'f CalendarDate, &'f str)> + 'f {
+    let wanted = move |key: &str| keys.iter().any(|k| k == key);
+    found
+        .observances
+        .iter()
+        .filter(move |o| wanted(&o.rule) && !withdrawn(o.published.as_ref()))
+        .map(|o| (&o.day, o.rule.as_str()))
+        .chain(
+            found
+                .ekadashis
+                .iter()
+                .filter(move |f| wanted(&f.rule) && !withdrawn(f.published.as_ref()))
+                .map(|f| (&f.day, f.rule.as_str())),
+        )
+        .chain(
+            found
+                .dated
+                .iter()
+                .filter(move |d| wanted(&d.rule) && !withdrawn(d.published.as_ref()))
+                .map(|d| (&d.day, d.rule.as_str())),
+        )
+        .chain(
+            found
+                .anniversaries
+                .iter()
+                .filter(move |a| wanted(&a.key) && !withdrawn(a.observance.published.as_ref()))
+                .map(|a| (&a.observance.day, a.key.as_str())),
+        )
+        .chain(
+            found
+                .added
+                .iter()
+                .filter(move |a| wanted(&a.key))
+                .map(|a| (&a.day, a.key.as_str())),
+        )
 }
 
 /// The earliest day `keys` fall on in a reckoning, and the keys there.
@@ -280,42 +405,8 @@ fn earliest(
     keys: &[String],
     calendar: &dyn teistro_calendar::CalendarSystem,
 ) -> Result<Option<(FixedDay, CalendarDate)>, Error> {
-    let wanted = |key: &str| keys.iter().any(|k| k == key);
-    let days = found
-        .observances
-        .iter()
-        .filter(|o| wanted(&o.rule) && !withdrawn(o.published.as_ref()))
-        .map(|o| &o.day)
-        .chain(
-            found
-                .ekadashis
-                .iter()
-                .filter(|f| wanted(&f.rule) && !withdrawn(f.published.as_ref()))
-                .map(|f| &f.day),
-        )
-        .chain(
-            found
-                .dated
-                .iter()
-                .filter(|d| wanted(&d.rule) && !withdrawn(d.published.as_ref()))
-                .map(|d| &d.day),
-        )
-        .chain(
-            found
-                .anniversaries
-                .iter()
-                .filter(|a| wanted(&a.key) && !withdrawn(a.observance.published.as_ref()))
-                .map(|a| &a.observance.day),
-        )
-        .chain(
-            found
-                .added
-                .iter()
-                .filter(|a| wanted(&a.key))
-                .map(|a| &a.day),
-        );
     let mut best: Option<(FixedDay, CalendarDate)> = None;
-    for day in days {
+    for (day, _) in kept_days(found, keys) {
         let fixed = calendar.fixed_of(day)?;
         if best.as_ref().is_none_or(|(held, _)| fixed < *held) {
             best = Some((fixed, day.clone()));
@@ -359,54 +450,6 @@ fn on_the_day(
         .cloned()
         .collect();
     (found, held)
-}
-
-/// The festival request a next search reckons, cut to what its target
-/// needs, and the keys it looks for: a kind's rules, a rule, or a group's
-/// members.
-fn searched_for(request: &NextRequest) -> Result<(FestivalRequest, Vec<String>), Error> {
-    Ok(match &request.target {
-        NextTarget::Kind(kind) => {
-            let read = kind.rules();
-            let keys: Vec<String> = read
-                .rules
-                .iter()
-                .map(|r| r.key.clone())
-                .chain(read.ekadashis.iter().map(|r| r.key.clone()))
-                .chain(read.dated.iter().map(|r| r.key.clone()))
-                .collect();
-            (FestivalRequest::of_kind(read), keys)
-        }
-        NextTarget::Rule(key) => {
-            let asked = request.festivals.as_ref().ok_or_else(|| {
-                Error::invalid_arg("a `rule` is a key of `festivals`, which is left out")
-                    .with_field("festivals")
-            })?;
-            let narrowed = asked.narrowed_to(key).ok_or_else(|| {
-                Error::invalid_arg(format!(
-                    "`{key}` is no rule of the festival request and no day its published sets add"
-                ))
-                .with_field("rule")
-            })?;
-            (narrowed, vec![key.clone()])
-        }
-        NextTarget::Group(key) => {
-            let asked = request.festivals.as_ref().ok_or_else(|| {
-                Error::invalid_arg("a `group` is a key of `festivals`, which is left out")
-                    .with_field("festivals")
-            })?;
-            let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
-                Error::invalid_arg(format!("`{key}` is no group of the festival request"))
-                    .with_field("group")
-            })?;
-            let members = narrowed
-                .groups()
-                .iter()
-                .flat_map(|group| group.members.clone())
-                .collect();
-            (narrowed, members)
-        }
-    })
 }
 
 /// A span's reckoning cut to the group's member `keys`, its unjudged and
@@ -486,8 +529,7 @@ impl AlmanacArea<'_> {
         request: &NextRequest,
         offset: UtcOffset,
     ) -> Result<Envelope<NextOccurrence>, Error> {
-        let (festivals, keys) = searched_for(request)?;
-        festivals.check()?;
+        let (festivals, keys) = reckoned_for(&request.target, request.festivals.as_ref())?;
         let calendar = system_of(request.calendar)?;
         let local = request.after.get() + f64::from(offset.seconds()) / 86_400.0;
         let (start, _) = FixedDay::from_local_jd(local);

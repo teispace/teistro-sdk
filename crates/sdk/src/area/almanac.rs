@@ -96,6 +96,7 @@ mod feed;
 mod muhurta;
 mod next;
 pub(crate) mod observance;
+mod occurrences;
 mod pack;
 #[cfg(all(feature = "chart", feature = "muhurta"))]
 pub(crate) mod people;
@@ -132,6 +133,11 @@ pub use feed::{
 #[cfg(feature = "schema")]
 pub(crate) use next::NextAsked;
 pub use next::{NextOccurrence, NextRequest, NextTarget};
+#[cfg(feature = "schema")]
+pub(crate) use occurrences::OccurrencesAsked;
+pub use occurrences::{
+    MOST_OCCURRENCE_YEARS, OccurrenceDay, OccurrenceYear, Occurrences, OccurrencesRequest,
+};
 #[cfg(feature = "schema")]
 pub(crate) use pack::PackAsked;
 pub use pack::{PackForm, PackListing, PackRequest, PackRow};
@@ -704,38 +710,9 @@ impl<'a> AlmanacArea<'a> {
         request: &FestivalRequest,
         days: Envelope<Vec<FestivalDay>>,
     ) -> Result<Envelope<Observances>, Error> {
-        // A rule kept in a doubled month's adhika alone reads the lunation
-        // beside its own (C606): the one before, under amanta, which ends
-        // at most a lunar month and a day before the occurrence's day, or,
-        // for a purnimanta dark fortnight, the one after. Only a request
-        // with such a rule pays for the month.
-        const LUNATION: i64 = 31;
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
-        // Two days each side, which the rules' own pairs need, and as many
-        // again as a rule counts from another's day: before, so a day
-        // counted into the range finds the observance it counts from;
-        // after, so an observance in the range always reaches its count
-        // rather than leaving the counted one unjudged.
-        let widen = 2 + i64::from(request.reach());
-        let firsts = || {
-            request
-                .rules()
-                .iter()
-                .filter(|rule| rule.in_adhika == InAdhika::First)
-        };
-        let back = widen
-            + if firsts().next().is_some() || !request.anniversaries().is_empty() {
-                LUNATION
-            } else {
-                0
-            };
-        let ahead = widen
-            + if firsts().any(|rule| rule.convention == LunarMonth::Purnimanta) {
-                LUNATION
-            } else {
-                0
-            };
+        let (back, ahead) = widening(request);
         let (before, after) = (
             calendar.date_of(first.plus_days(-back))?,
             (
@@ -751,10 +728,6 @@ impl<'a> AlmanacArea<'a> {
                 almanac.festival_days(&after.0, &after.1, place)?.value,
             ))
         })?;
-        let (start, end) = (
-            days.value.first().map(|day| day.sunrise.get()),
-            days.value.last().map(|day| day.next_sunrise.get()),
-        );
         let Envelope {
             value: range,
             mut provenance,
@@ -762,55 +735,13 @@ impl<'a> AlmanacArea<'a> {
         // The observances read none of a day's printed conventions, so
         // their answer names none, whichever path founded the days.
         without_printed(&mut provenance);
-        let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
-        let (before, after) = self.beside_doubled(
-            (from.calendar, calendar),
-            offset,
-            place,
-            &mut viewed,
-            (before, after.1),
+        let viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
+        let (found, (before, after)) = self.reckoned_over(
+            (from.calendar, first, last),
+            (place, offset),
+            request,
+            (viewed, (before, after.1)),
         )?;
-        self.searched(from.calendar, offset, place, request, &mut viewed)?;
-        let karmakala = observances(request.rules(), &viewed)?;
-        let counted = following(request.following(), &karmakala.observances, &viewed)?;
-        let mut found = karmakala
-            .merged(counted)
-            .merged(ekadashis(request.ekadashis(), &viewed)?)
-            .merged(dated(request.dated(), &viewed, request.hijri_offset())?)
-            .merged(self.kept_anniversaries(
-                from.calendar,
-                offset,
-                place,
-                (request.anniversaries(), "festivals.anniversaries"),
-                &viewed,
-            )?);
-        // Laid over before the trim, so a day published across the
-        // range's edge moves in or out with its occurrence.
-        apply_published(
-            &mut found,
-            request.published(),
-            from.calendar,
-            (first, last),
-        )?;
-        // Before the trim, so a span reaching past the range is whole.
-        if !request.groups().is_empty() {
-            found.groups = self.grouped(
-                request,
-                &found,
-                (from.calendar, place, offset),
-                (first, last),
-                (first.plus_days(-back), last.plus_days(ahead)),
-            )?;
-        }
-        trim(&mut found, calendar, (first, last), (start, end));
-        // The readings the context's observer leaves out, chosen on the
-        // answer as `only` is, so every rule is still reckoned
-        // (`03-design/festival-traditions.md` §4).
-        let left = request.left_by(self.context.resolved().settings.festivals.observer);
-        found.keep(|key| request.keeps(key) && !left.contains(key));
-        // On the days as published, after the trim, so only the range's
-        // observances pay for a founded day.
-        self.with_saits(&mut found, request, from.calendar, (place, offset))?;
         provenance.input_hash = content_hash(&FestivalInput {
             from: from.to_string(),
             to: to.to_string(),
@@ -824,6 +755,85 @@ impl<'a> AlmanacArea<'a> {
             .applied_conventions
             .push(widened_days(&before, &after));
         Ok(Envelope::sealing(found, provenance))
+    }
+
+    /// The observances from `first` to `last` in `calendar`, reckoned over
+    /// `viewed`, the days founded from `founded.0` to `founded.1`
+    /// ([`widening`]'s days before `first` and after `last`): what
+    /// [`AlmanacArea::reckoning`] answers a range with and what a span of
+    /// years is read from (`03-design/rule-years.md`), so a year read from
+    /// a span is the year's own reckoning. The days reach into an adhika
+    /// lunation beside either edge ([`AlmanacArea::beside_doubled`]); the
+    /// groups' spans are read before the trim, so a span reaching past the
+    /// range is whole; and the readings the context's observer leaves out
+    /// are dropped after it. Answers the observances and the days founded,
+    /// as widened.
+    pub(crate) fn reckoned_over(
+        self,
+        (calendar, first, last): (Calendar, FixedDay, FixedDay),
+        (place, offset): (&Place, UtcOffset),
+        request: &FestivalRequest,
+        (mut viewed, founded): (Vec<FestivalDay>, (CalendarDate, CalendarDate)),
+    ) -> Result<(Observances, (CalendarDate, CalendarDate)), Error> {
+        let system = system_of(calendar)?;
+        let inside = |date: &CalendarDate| {
+            system
+                .fixed_of(date)
+                .is_ok_and(|day| first.days_until(day) >= 0 && day.days_until(last) >= 0)
+        };
+        let (start, end) = (
+            viewed
+                .iter()
+                .find(|day| inside(&day.date))
+                .map(|day| day.sunrise.get()),
+            viewed
+                .iter()
+                .rev()
+                .find(|day| inside(&day.date))
+                .map(|day| day.next_sunrise.get()),
+        );
+        // The groups judge a span by the days the widening founded, not
+        // by an adhika lunation laid beside them.
+        let seen = (system.fixed_of(&founded.0)?, system.fixed_of(&founded.1)?);
+        let founded =
+            self.beside_doubled((calendar, system), offset, place, &mut viewed, founded)?;
+        self.searched(calendar, offset, place, request, &mut viewed)?;
+        let karmakala = observances(request.rules(), &viewed)?;
+        let counted = following(request.following(), &karmakala.observances, &viewed)?;
+        let mut found = karmakala
+            .merged(counted)
+            .merged(ekadashis(request.ekadashis(), &viewed)?)
+            .merged(dated(request.dated(), &viewed, request.hijri_offset())?)
+            .merged(self.kept_anniversaries(
+                calendar,
+                offset,
+                place,
+                (request.anniversaries(), "festivals.anniversaries"),
+                &viewed,
+            )?);
+        // Laid over before the trim, so a day published across the
+        // range's edge moves in or out with its occurrence.
+        apply_published(&mut found, request.published(), calendar, (first, last))?;
+        // Before the trim, so a span reaching past the range is whole.
+        if !request.groups().is_empty() {
+            found.groups = self.grouped(
+                request,
+                &found,
+                (calendar, place, offset),
+                (first, last),
+                seen,
+            )?;
+        }
+        trim(&mut found, system, (first, last), (start, end));
+        // The readings the context's observer leaves out, chosen on the
+        // answer as `only` is, so every rule is still reckoned
+        // (`03-design/festival-traditions.md` §4).
+        let left = request.left_by(self.context.resolved().settings.festivals.observer);
+        found.keep(|key| request.keeps(key) && !left.contains(key));
+        // On the days as published, after the trim, so only the range's
+        // observances pay for a founded day.
+        self.with_saits(&mut found, request, calendar, (place, offset))?;
+        Ok((found, founded))
     }
 
     /// Widens `viewed` into the lunation beside its first day's, or its
@@ -2204,6 +2214,40 @@ fn trim(
         start.is_some_and(|start| unjudged.tithi.to.get() > start)
             && end.is_some_and(|end| unjudged.tithi.from.get() < end)
     });
+}
+
+/// The days a festival range founds before its first day and after its
+/// last, as `(back, ahead)`: two each side, which the rules' own pairs
+/// need, and as many again as a rule counts from another's day — before,
+/// so a day counted into the range finds the observance it counts from;
+/// after, so an observance in the range always reaches its count rather
+/// than leaving the counted one unjudged. A rule kept in a doubled month's
+/// adhika alone reads the lunation beside its own (C606): the one before,
+/// under amanta, which ends at most a lunar month and a day before the
+/// occurrence's day, or, for a purnimanta dark fortnight, the one after.
+/// Only a request with such a rule pays for the month.
+pub(crate) fn widening(request: &FestivalRequest) -> (i64, i64) {
+    const LUNATION: i64 = 31;
+    let widen = 2 + i64::from(request.reach());
+    let firsts = || {
+        request
+            .rules()
+            .iter()
+            .filter(|rule| rule.in_adhika == InAdhika::First)
+    };
+    let back = widen
+        + if firsts().next().is_some() || !request.anniversaries().is_empty() {
+            LUNATION
+        } else {
+            0
+        };
+    let ahead = widen
+        + if firsts().any(|rule| rule.convention == LunarMonth::Purnimanta) {
+            LUNATION
+        } else {
+            0
+        };
+    (back, ahead)
 }
 
 /// The convention naming the days a range was widened to.

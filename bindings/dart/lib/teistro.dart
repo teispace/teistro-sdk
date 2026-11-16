@@ -2858,6 +2858,51 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **Every day a rule or a kind of day falls on, year by year** over a
+  /// span of years in one call (`03-design/rule-years.md`). The span's days
+  /// are founded once and the target reckoned once. Each year lists the
+  /// days its dates hold: none (a lunar rule's day slipped into the year
+  /// before, an adhika-only fast in a year with no adhika month), one, or
+  /// several (a lunar rule meeting a solar year twice, a kind). The request
+  /// is the generated [OccurrencesRequest]: `years` is 1 to 50, counted in
+  /// its `calendar`, and a `kind`, or a `rule` or a `group` of
+  /// `festivals`, as [next] reads them.
+  ///
+  /// ```dart
+  /// final span = sdk.almanac.occurrences(
+  ///   const OccurrencesRequest(
+  ///     fromYear: 2080,
+  ///     years: 8,
+  ///     calendar: Calendar.bikramSambat,
+  ///     latitudeDeg: 27.7172,
+  ///     longitudeDeg: 85.324,
+  ///     utcOffsetSeconds: 20700,
+  ///     rule: 'VIJAYA_DASHAMI',
+  ///     festivals: FestivalRequest(rules: FestivalPack.nepalPanchanga),
+  ///   ),
+  /// );
+  /// print(span.years.first.days.first.day);
+  /// ```
+  Occurrences occurrences(OccurrencesRequest request) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.almanacOccurrences(jsonEncode(request)),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    final provenance = envelope['provenance']! as Map<String, Object?>;
+    return Occurrences(
+      keys: List.unmodifiable((value['keys']! as List<Object?>).cast<String>()),
+      years: List.unmodifiable([
+        for (final raw in value['years']! as List<Object?>)
+          _occurrenceYear(raw! as Map<String, Object?>, provenance),
+      ]),
+      provenance: Provenance.fromJson(provenance),
+    );
+  }
+
   NextOccurrence next({
     required double after,
     required Observer place,
@@ -3306,6 +3351,92 @@ final class NextOccurrence {
   /// a kind.
   final GroupSpan? group;
 }
+
+/// Every day a rule or a kind of day falls on, year by year, as
+/// [AlmanacArea.occurrences] answers it (`03-design/rule-years.md`).
+final class Occurrences {
+  const Occurrences({
+    required this.keys,
+    required this.years,
+    required this.provenance,
+  });
+
+  /// The keys looked for: the rule's, each of a kind's rules, or each of a
+  /// group's members.
+  final List<String> keys;
+
+  /// Each year of the span, in order.
+  final List<OccurrenceYear> years;
+
+  /// What computed it.
+  final Provenance provenance;
+}
+
+/// One year of an [Occurrences] answer: the days its dates hold, none, one
+/// or several, never a pick among them.
+final class OccurrenceYear {
+  const OccurrenceYear({
+    required this.year,
+    required this.first,
+    required this.last,
+    required this.days,
+    required this.festivals,
+  });
+
+  /// The year, in the request's calendar.
+  final int year;
+
+  /// Its first day: month 1, day 1.
+  final CalendarDate first;
+
+  /// Its last day: the day before the next year's first.
+  final CalendarDate last;
+
+  /// Each day the target falls on, in order.
+  final List<OccurrenceDay> days;
+
+  /// The reckoning's entries for the keys in the year, a withdrawn day
+  /// marked so, with the provenance.
+  final FestivalAnswer festivals;
+}
+
+/// A day of an [OccurrenceYear] and the keys that fall on it.
+final class OccurrenceDay {
+  const OccurrenceDay({required this.day, required this.keys});
+
+  /// The day, in the request's calendar.
+  final CalendarDate day;
+
+  /// The keys looked for that fall on it, in the order they were looked
+  /// for.
+  final List<String> keys;
+}
+
+/// One year of an `almanac.occurrences` answer, its festivals sealed with
+/// the answer's provenance.
+OccurrenceYear _occurrenceYear(
+  Map<String, Object?> year,
+  Map<String, Object?> provenance,
+) => OccurrenceYear(
+  year: year['year']! as int,
+  first: _serdeDate(year['first']! as Map<String, Object?>),
+  last: _serdeDate(year['last']! as Map<String, Object?>),
+  days: List.unmodifiable([
+    for (final raw in year['days']! as List<Object?>)
+      OccurrenceDay(
+        day: _serdeDate(
+          (raw! as Map<String, Object?>)['day']! as Map<String, Object?>,
+        ),
+        keys: List.unmodifiable(
+          ((raw as Map<String, Object?>)['keys']! as List<Object?>)
+              .cast<String>(),
+        ),
+      ),
+  ]),
+  festivals: _festivalAnswer(
+    jsonEncode({'value': year['festivals'], 'provenance': provenance}),
+  ),
+);
 
 /// `sdk.matching` — what matches without a chart: two names, star to star
 /// (`03-design/matching.md`, C291 to C296). A match of two births is asked

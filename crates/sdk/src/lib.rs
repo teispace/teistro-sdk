@@ -75,7 +75,8 @@ pub use area::{
 };
 pub use area::{
     AnniversariesRequest, CellsRequest, ChangesRequest, DayCells, DayClock, MOST_ANNIVERSARIES,
-    MOST_YEARS, NextOccurrence, NextRequest, NextTarget,
+    MOST_OCCURRENCE_YEARS, MOST_YEARS, NextOccurrence, NextRequest, NextTarget, OccurrenceDay,
+    OccurrenceYear, Occurrences, OccurrencesRequest,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};

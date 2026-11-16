@@ -1340,5 +1340,21 @@
   {
     "record": "settings.diff",
     "request": {}
+  },
+  {
+    "record": "almanac.occurrences",
+    "request": {
+      "fromYear": 2080,
+      "years": 3,
+      "calendar": "BIKRAM_SAMBAT",
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "rule": "VIJAYA_DASHAMI",
+      "festivals": {
+        "rules": "NEPAL_PANCHANGA"
+      }
+    }
   }
 ]

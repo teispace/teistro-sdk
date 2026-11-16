@@ -5363,6 +5363,42 @@ test('the festivals observer keeps one tradition\'s ekadashi', () => {
 });
 
 /**
+ * A rule's days year by year (`03-design/rule-years.md`): Pausha's bright
+ * Ekadashi falls twice in 2025 and on no day of 2026, each year listing
+ * what its dates hold, and a span too long refused on `years`.
+ */
+test('a rule\'s days are answered year by year', () => {
+  const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const asked = {
+    fromYear: 2025,
+    years: 2,
+    latitudeDeg: 27.7172,
+    longitudeDeg: 85.324,
+    altitudeM: 1400,
+    utcOffsetSeconds: 20700,
+    rule: 'PAUSHA_PUTRADA_EKADASHI',
+    festivals: { rules: 'NEPAL_PANCHANGA' },
+  };
+  const span = ctx.almanac.occurrences(asked);
+  assert.ok(Object.isFrozen(span));
+  assert.deepEqual(span.keys, ['PAUSHA_PUTRADA_EKADASHI']);
+  assert.deepEqual(span.years.map((y) => y.year), [2025, 2026]);
+  assert.deepEqual(
+    span.years[0].days.map((d) => [d.day.month, d.day.day, d.keys.join()]),
+    [[1, 10, 'PAUSHA_PUTRADA_EKADASHI'], [12, 30, 'PAUSHA_PUTRADA_EKADASHI']],
+  );
+  assert.deepEqual(span.years[1].days, []);
+  assert.equal(span.years[0].first.calendar, 'calendar.GREGORIAN');
+  assert.equal(span.years[0].festivals.ekadashis.length + span.years[0].festivals.observances.length, 2);
+  assert.ok(span.provenance.appliedConventions.some((c) => c.knob === 'festival.years'));
+  assert.throws(
+    () => ctx.almanac.occurrences({ ...asked, years: 51 }),
+    (e) => e instanceof TeistroError && e.field === 'occurrences.years',
+  );
+  ctx.dispose();
+});
+
+/**
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,

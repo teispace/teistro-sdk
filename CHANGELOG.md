@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A rule's days, year by year (SR-126).**
+**Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
+rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each
+year of a span, 1 to 50 years counted in the request's calendar, in one call. Each year
+carries its first and last days, a list of days with the keys on each, and the
+reckoning's entries for the keys in it. A year lists what its dates hold, so none, one
+or several, never a pick: Pausha's bright Ekadashi falls on 10 January and 30 December
+2025 at Kathmandu and on no day of 2026, and Padmini Ekadashi falls only in the adhika
+years VS 2080 and 2083 (C2120, C2121). A withdrawn day is left out of the year's days
+and kept in its festivals (C2122). The span's days are founded once and the target
+reckoned once, and each year equals a festival call over that year alone (C2126); a
+festival range now reckons through the same cut (`reckoned_over`), its answers
+unchanged. One call costs about what eight yearly calls do: founding the days is nearly all of
+the cost, and the founding is shared, not avoided (`rule-years.md` §5). `years` past 50 is `OUT_OF_RANGE` on `occurrences.years` (C2125). Rust
+(`AlmanacArea::occurrences`), C (`ts_almanac_occurrences`), Node, Python, Dart, Java,
+wasm and the MCP tool `almanac.occurrences` carry it, each with a test, and the parity
+runners list it. Design in `03-design/rule-years.md`, cruxes C2120 to C2126.
 **Festival traditions as a setting (SR-116).**
 **Numbers:** no computed number or day moves under any shipped profile: every profile
 keeps `festivals.observer` at `EVERY`, the answer before this setting (C2147). Every

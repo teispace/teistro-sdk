@@ -879,6 +879,31 @@ public final class BindingTest {
             }
         });
 
+        // A rule's days year by year (rule-years.md): Pausha's bright
+        // Ekadashi falls twice in 2025 and on no day of 2026, and a span
+        // too long is refused on years.
+        tests.put("a rule's days are answered year by year", () -> {
+            java.util.function.IntFunction<com.teispace.teistro.request.OccurrencesRequest> asked = years ->
+                    com.teispace.teistro.request.OccurrencesRequest.of(Map.of("fromYear", 2025, "years", years,
+                            "latitudeDeg", 27.7172, "longitudeDeg", 85.324, "altitudeM", 1400.0,
+                            "utcOffsetSeconds", 20_700, "rule", "PAUSHA_PUTRADA_EKADASHI",
+                            "festivals", Map.of("rules", "NEPAL_PANCHANGA")));
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                    .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                Occurrences span = committee.almanac().occurrences(asked.apply(2));
+                same(List.of("PAUSHA_PUTRADA_EKADASHI"), span.keys(), "the key looked for");
+                same(2, span.years().size(), "two years");
+                List<OccurrenceDay> twice = span.years().get(0).days();
+                same(2, twice.size(), "twice in 2025");
+                same(10, twice.get(0).day().day(), "10 January");
+                same(30, twice.get(1).day().day(), "30 December");
+                same(List.of("PAUSHA_PUTRADA_EKADASHI"), twice.get(1).keys(), "the day's keys");
+                same(0, span.years().get(1).days().size(), "none in 2026");
+                same(2026, span.years().get(1).year(), "the second year");
+                same("occurrences.years", refusal(() -> committee.almanac().occurrences(asked.apply(51))).field(), "a span too long");
+            }
+        });
+
         // The shared validator corpus (docs/03-design/validator-corpus.md):
         // what idl/validators.json lists as valid makes a quantity and what
         // it lists as invalid is refused, as the Rust newtypes and every

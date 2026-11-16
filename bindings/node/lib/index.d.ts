@@ -335,6 +335,7 @@ import type {
   YogaRules,
   ChangeKind,
   AnniversariesRequest,
+  OccurrencesRequest,
   ChangesRequest,
   DeathTimeTable,
   Household,
@@ -8579,6 +8580,20 @@ export declare class AlmanacArea {
    * });
    */
   anniversaries(request: AnniversariesRequest): FestivalAnswer;
+
+  /**
+   * Every day a rule or a kind of day falls on, year by year over 1 to 50
+   * years in one call (`03-design/rule-years.md`): each year lists the days
+   * its dates hold, none, one or several, never a pick among them.
+   *
+   * @example
+   * const span = sdk.almanac.occurrences({
+   *   fromYear: 2080, years: 8, calendar: 'BIKRAM_SAMBAT',
+   *   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   rule: 'VIJAYA_DASHAMI', festivals: { rules: 'NEPAL_PANCHANGA' },
+   * });
+   */
+  occurrences(request: OccurrencesRequest): Occurrences;
   /**
    * **A day in sentences** (`03-design/day-in-sentences.md`): one date's facts
    * as short sentences from templates, every value from the day's answer. A
@@ -8971,6 +8986,38 @@ export interface NextOccurrence {
   readonly group: GroupSpan | null;
   /** What computed it. */
   readonly provenance: Provenance;
+}
+
+/** Every day a target falls on, year by year, as `almanac.occurrences` answers it. */
+export interface Occurrences {
+  /** The keys looked for: the rule's, each of a kind's rules, or each of a group's members. */
+  readonly keys: readonly string[];
+  /** Each year of the span, in order. */
+  readonly years: readonly OccurrenceYear[];
+  /** What computed it. */
+  readonly provenance: Provenance;
+}
+
+/** One year of an `almanac.occurrences` answer. */
+export interface OccurrenceYear {
+  /** The year, in the request's calendar. */
+  readonly year: number;
+  /** Its first day: month 1, day 1. */
+  readonly first: CalendarDate;
+  /** Its last day: the day before the next year's first. */
+  readonly last: CalendarDate;
+  /** Each day the target falls on, in order: none, one or several. */
+  readonly days: readonly OccurrenceDay[];
+  /** The reckoning's entries for the keys in the year, a withdrawn day marked so. */
+  readonly festivals: FestivalAnswer;
+}
+
+/** A day of an `OccurrenceYear` and the keys that fall on it. */
+export interface OccurrenceDay {
+  /** The day. */
+  readonly day: CalendarDate;
+  /** The keys looked for that fall on it, in the order they were looked for. */
+  readonly keys: readonly string[];
 }
 
 /** A feed of a range's observances, as `almanac.festivalCalendar` writes it. */
