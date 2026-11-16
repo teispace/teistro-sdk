@@ -1507,14 +1507,14 @@ public final class ParityRunner {
             try (Context hora = teistro.context(ContextOptions.builder().testProvider(true)
                     .settingsJson("{\"vargas\":{\"schemes\":{\"D2\":{\"kind\":\"NAMED\",\"which\":\"KASHINATHA\"}}}}")
                     .build())) {
-                Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Observer horaPlace = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 VargaChart d2 = hora.chart()
-                        .found(2_451_545.0, place, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
+                        .found(2_451_545.0, horaPlace, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
                         .vargas().get(0);
                 for (int j = 0; j < d2.grahas().size(); j++) {
-                    PlacedInVarga placed = d2.grahas().get(j);
+                    PlacedInVarga inHora = d2.grahas().get(j);
                     put("varga-scheme-kashinatha-graha-" + j,
-                            placed.graha().fullKey() + " " + placed.at().sign().fullKey());
+                            inHora.graha().fullKey() + " " + inHora.at().sign().fullKey());
                 }
             }
             String broken = "{\"vargas\":{\"schemes\":{\"D9\":{\"kind\":\"CUSTOM\",\"classifier\":\"ALL\","
