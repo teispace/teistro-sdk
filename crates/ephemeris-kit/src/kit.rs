@@ -502,18 +502,18 @@ pub fn run<P: EphemerisProvider + ?Sized>(provider: &P, bounds: &Bounds) -> Repo
     checks.push(check_out_of_range(provider, &capabilities, &bodies, frame));
     checks.push(check_unsupported_body(provider, &capabilities, &jds, frame));
     checks.push(check_obliquity(provider, &capabilities, &jds, bounds));
-    checks.push(conventions::check_delta_t(provider, &capabilities, bounds));
+    checks.push(conventions::check_delta_t(&provider, &capabilities, bounds));
     checks.push(check_ayanamsha(provider, &capabilities, bounds));
     checks.push(check_ayanamsha_basis(provider, &capabilities, bounds));
     checks.push(check_dut1(provider, &capabilities, &jds, bounds));
     checks.extend(event_checks(provider, &capabilities, &jds, bounds));
     checks.push(conventions::check_ayanamsha_values(
-        provider,
+        &provider,
         &capabilities,
         bounds,
     ));
     checks.push(conventions::check_topocentric(
-        provider,
+        &provider,
         &capabilities,
         &jds,
         bounds,
@@ -585,7 +585,7 @@ fn event_checks<P: EphemerisProvider + ?Sized>(
         ));
     }
     checks.push(conventions::check_sidereal_crossings(
-        provider,
+        &provider,
         capabilities,
         jds,
         bounds,
