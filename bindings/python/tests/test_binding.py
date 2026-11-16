@@ -1709,6 +1709,30 @@ class AnEngine(WithLibrary):
                 )
             self.assertEqual(short.exception.field, "limitDays")
 
+    def test_a_kshaya_lunation_keeps_both_months_festivals_and_says_why(self) -> None:
+        """In 1983 the lunation from 14 January is Pausha and Magha both:
+        Shivaratri keeps its tithi in it and names the clause and the texts
+        that placed it (SR-93, `03-design/festival-malamasa.md`)."""
+        from teistro import Malamasa, date
+        from teistro.catalogue import Calendar
+
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(**nepal_official()) as sky:
+            answer = sky.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 1983, 2, 9),
+                to_date=date(Calendar.GREGORIAN, 1983, 2, 13),
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                festivals={"rules": "NEPAL_PANCHANGA"},
+            ).festivals
+            assert answer is not None
+            shivaratri = next(o for o in answer.observances if o.rule == "SHIVARATRI")
+            self.assertEqual((shivaratri.day.month, shivaratri.day.day), (2, 11))
+            assert shivaratri.malamasa is not None
+            self.assertIsInstance(shivaratri.malamasa, Malamasa)
+            self.assertEqual(shivaratri.malamasa.clause, "KSHAYA_SECOND")
+            self.assertIn("Dharmasindhu", shivaratri.malamasa.source)
+
     def test_anniversaries_over_a_span_name_the_rule_of_each_day(self) -> None:
         """A barkhi and an event over two years at Kathmandu, each day naming
         the rule that chose it, and a span too long refused on `years`

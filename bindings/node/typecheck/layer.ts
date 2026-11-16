@@ -184,6 +184,7 @@ import type {
   DatedObservance,
   DatedRule,
   FestivalAnswer,
+  MalamasaClause,
   FestivalPack,
   FestivalPackListing,
   FestivalRequest,
@@ -2679,7 +2680,11 @@ function theFestivals(almanac: Almanac): string {
     const [earlier, later] = o.extents;
     const month: Masa = o.month;
     const adhika: boolean = o.adhika;
-    return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
+    // The month rule a year with an adhika or a kshaya month placed it by.
+    const clause: MalamasaClause | undefined = o.malamasa?.clause;
+    // @ts-expect-error a clause is one of the four the texts give
+    const unknownClause: MalamasaClause = 'KSHAYA';
+    return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from} ${clause} ${o.malamasa?.source} ${unknownClause}`;
   });
   const parana = (p: Parana | undefined): string => {
     if (p === undefined) return '-';

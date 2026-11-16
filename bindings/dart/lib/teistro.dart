@@ -18480,6 +18480,7 @@ final class FestivalObservance extends _Value {
     this.published,
     this.sait,
     this.moonrise,
+    this.malamasa,
   });
 
   /// The rule's key.
@@ -18531,6 +18532,11 @@ final class FestivalObservance extends _Value {
   /// null for a rule that reads none.
   final FestivalMoonrise? moonrise;
 
+  /// The month rule that placed the day in a year with an adhika or a
+  /// kshaya month (SR-93, `03-design/festival-malamasa.md`); null in an
+  /// ordinary month.
+  final Malamasa? malamasa;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -18549,7 +18555,47 @@ final class FestivalObservance extends _Value {
     published,
     sait,
     moonrise,
+    malamasa,
   ];
+}
+
+/// Which month rule placed an observance (SR-93).
+enum MalamasaClause implements _Keyed {
+  /// The year doubles the rule's month and keeps it in the nija month,
+  /// after the adhika one, as every festival with another time is.
+  nija('NIJA'),
+
+  /// Kept in the adhika month, by the rule's own `inAdhika`, which its
+  /// source cites.
+  adhika('ADHIKA'),
+
+  /// In a kshaya lunation, under the first of the two names it joins.
+  kshayaFirst('KSHAYA_FIRST'),
+
+  /// In a kshaya lunation, under the second of its two names, whose
+  /// festivals are kept in it on their tithis.
+  kshayaSecond('KSHAYA_SECOND');
+
+  const MalamasaClause(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The month rule an observance was placed by, and where the texts say it
+/// (SR-93).
+final class Malamasa extends _Value {
+  const Malamasa({required this.clause, required this.source});
+
+  /// Which clause.
+  final MalamasaClause clause;
+
+  /// Where the texts say it.
+  final String source;
+
+  @override
+  List<Object?> get _fields => [clause, source];
 }
 
 /// The moonrise an observance was kept or broken at (SR-60): the instant
@@ -20188,7 +20234,17 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         null => null,
         final moonrise => _festivalMoonrise(_festivalAt(moonrise)),
       },
+      malamasa: switch (raw['malamasa']) {
+        null => null,
+        final malamasa => _malamasa(_festivalAt(malamasa)),
+      },
     );
+
+/// The month rule an observance carries, as a festival answer writes it.
+Malamasa _malamasa(Map<String, Object?> raw) => Malamasa(
+  clause: _keyed(MalamasaClause.values, raw['clause']),
+  source: raw['source']! as String,
+);
 
 /// A moonrise as a festival answer writes it.
 FestivalMoonrise _festivalMoonrise(Map<String, Object?> raw) {

@@ -6601,6 +6601,19 @@ export interface FestivalObservance {
   readonly sait?: FestivalSait;
   /** The moonrise the vrata was kept or is broken at, and where (SR-60); absent for a rule that reads none. */
   readonly moonrise?: FestivalMoonrise;
+  /** The month rule that placed the day in a year with an adhika or a kshaya month (SR-93, `03-design/festival-malamasa.md`); absent in an ordinary month. */
+  readonly malamasa?: Malamasa;
+}
+
+/** Which month rule placed an observance (SR-93): kept in the nija month of a doubled name, in the adhika month by the rule's own `inAdhika`, or in a kshaya lunation under its first or its second name. */
+export type MalamasaClause = 'NIJA' | 'ADHIKA' | 'KSHAYA_FIRST' | 'KSHAYA_SECOND';
+
+/** The month rule an observance was placed by, and where the texts say it (SR-93). */
+export interface Malamasa {
+  /** Which clause. */
+  readonly clause: MalamasaClause;
+  /** Where the texts say it. */
+  readonly source: string;
 }
 
 /** The moonrise an observance was kept or broken at: the instant moves with the place, so the place it was found for is beside it. */
