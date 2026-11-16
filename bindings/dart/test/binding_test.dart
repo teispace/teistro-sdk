@@ -9682,12 +9682,7 @@ void _engineTests() {
       );
       try {
         final one = each.almanac
-            .of(
-              from: fifth,
-              to: fifth,
-              place: place,
-              utcOffsetSeconds: 20700,
-            )
+            .of(from: fifth, to: fifth, place: place, utcOffsetSeconds: 20700)
             .at(0);
         return [
           one.day.sunrise,
