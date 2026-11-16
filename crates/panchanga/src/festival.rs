@@ -27,7 +27,7 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_time::local_day::{DayState, LocalDay};
 
 use crate::Panchanga;
-use crate::month::{self, LunarMonth};
+use crate::month::LunarMonth;
 use crate::span::Span;
 
 mod anniversary;
@@ -52,6 +52,7 @@ mod india_uttar_pradesh;
 mod india_west_bengal;
 mod jain;
 mod mahalaya;
+mod malamasa;
 mod meta;
 mod mithila;
 mod nepal_panchanga;
@@ -75,6 +76,7 @@ pub use ekadashi::{
 };
 pub use following::{FollowingRule, following};
 pub use in_month::InMonth;
+pub use malamasa::{Malamasa, MalamasaClause};
 pub use meta::{FastEnd, FastStart, FestivalMeta, MetaFilter, VrataFast};
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,
@@ -2660,6 +2662,12 @@ pub struct Observance {
     /// day carries the other's. Left out when false.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub barred: bool,
+    /// The month rule that placed it, in a year whose month is doubled or
+    /// joined (SR-93): kept in the nija month of a doubled name, in the
+    /// adhika by the rule's own `inAdhika`, or in a kshaya lunation under
+    /// either of its names; left out in an ordinary month.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub malamasa: Option<Malamasa>,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -3355,7 +3363,7 @@ pub(crate) fn observances_over(
             bar.check_among(&rule.key, rules)?;
         }
     }
-    let mut kept: Vec<(&FestivalRule, Interval, Result<LunarMonth, String>)> = Vec::new();
+    let mut kept: Vec<(&FestivalRule, Interval, Result<malamasa::Placed, String>)> = Vec::new();
     for rule in rules {
         match rule.occurs {
             Occurs::Tithi { .. } | Occurs::DayOfPaksha { .. } => {
@@ -3397,9 +3405,14 @@ pub(crate) fn observances_over(
         };
         for (rule, whole, month) in pass {
             let judged = match month {
-                Ok(month) => {
+                Ok((month, clause)) => {
                     let judged = judge(rule, whole, month, days, &rites)?;
-                    barred::keep(rule, judged, whole, month, tithis, days, &rites)?
+                    barred::keep(rule, judged, whole, month, tithis, days, &rites)?.map(|kept| {
+                        kept.map(|observance| Observance {
+                            malamasa: clause.map(Malamasa::of),
+                            ..observance
+                        })
+                    })
                 }
                 Err(why) => Err(why),
             };
@@ -3500,7 +3513,8 @@ fn running_at_middle(span: Interval, tithis: &[Span<Tithi>]) -> Option<&Span<Tit
     tithis.iter().find(|tithi| tithi.whole.contains(middle))
 }
 
-/// The month the occurrence falls in, when it is one the rule keeps.
+/// The month the occurrence falls in, when it is one the rule keeps, with
+/// the month rule that placed it ([`malamasa::place`]).
 ///
 /// The month is read at a sunrise inside it: the first at or after the
 /// tithi begins, except for the new moon, which ends its month, and so
@@ -3512,7 +3526,7 @@ fn month_of(
     rule: &FestivalRule,
     occurrence: &Span<Tithi>,
     days: &[FestivalDay],
-) -> Option<Result<LunarMonth, String>> {
+) -> Option<Result<malamasa::Placed, String>> {
     // The days run in order, so each is found without walking them, which
     // a batch over a decade would otherwise pay for every occurrence.
     let at = if occurrence.member == Tithi::Amavasya {
@@ -3521,48 +3535,7 @@ fn month_of(
     } else {
         days.partition_point(|day| day.sunrise.get() < occurrence.whole.from.get())
     };
-    let day = days.get(at)?;
-    let month = month::of(
-        day.month.amanta,
-        occurrence.member,
-        rule.convention,
-        day.month.kind,
-    );
-    let name = month.under(rule.convention);
-    if rule.month.is_some_and(|wanted| name != wanted) {
-        return None;
-    }
-    let adhika = month.kind == MonthKind::Adhika;
-    match rule.in_adhika {
-        InAdhika::Also => Some(Ok(month)),
-        InAdhika::Nija => (!adhika).then_some(Ok(month)),
-        InAdhika::Only | InAdhika::First if adhika => Some(Ok(month)),
-        InAdhika::Only => None,
-        InAdhika::First => match doubled(days, at, name) {
-            Some(true) => None,
-            Some(false) => Some(Ok(month)),
-            None => Some(Err(format!(
-                "the days do not reach the month next to this {}, which says whether it is doubled",
-                name.key()
-            ))),
-        },
-    }
-}
-
-/// Whether the year doubles the month a nija day's occurrence is named,
-/// read from the lunation beside the day's own: an adhika month is new
-/// moon to new moon under both conventions, so it comes just before the
-/// amanta nija month of its name, and so just after the dark fortnight a
-/// purnimanta almanac names after it. `None` when the days stop first.
-fn doubled(days: &[FestivalDay], at: usize, name: Masa) -> Option<bool> {
-    let own = &days.get(at)?.month;
-    let other = |day: &&FestivalDay| day.month.amanta != own.amanta || day.month.kind != own.kind;
-    let beside = if own.amanta == name {
-        days.get(..at)?.iter().rev().find(other)
-    } else {
-        days.get(at..)?.iter().find(other)
-    }?;
-    Some(beside.month.amanta == name && beside.month.kind == MonthKind::Adhika)
+    malamasa::place(rule, occurrence.member, days, at)
 }
 
 /// The two days an occurrence is judged between (C172): the sunrise day
@@ -3728,6 +3701,7 @@ fn judge(
         published: None,
         sait: None,
         barred: false,
+        malamasa: None,
     })))
 }
 

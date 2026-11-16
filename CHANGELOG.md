@@ -12,6 +12,31 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festivals in an adhika or a kshaya year (SR-93).**
+**Numbers:** a festival answer over a year with a kshaya lunation now keeps the
+second month's festivals on their tithis in it, where it dropped them: over BS 2085
+(2028-08 to 2029-04) at Kathmandu under `nepal_official`, eleven Pausha observances
+return (Tol Lhosar, Seto Machhindranath snan, Pausha putrada ekadashi, Musyaduli,
+Changunarayan kalash jatra, Magh snan and Swasthani vrata begun on the kshaya full moon
+of 31 December, Kashi bada Ganesh utsav, Shattila ekadashi, Lai charhe, Aryaghat
+Madhav Narayan mela), and the year's differences from `nepali-drik` fall from 85 to 74,
+none a dropped festival. `NEPAL_SAMBAT_NEW_YEAR` is a lunar rule of its own, Kartika's
+bright first at midday, `inAdhika: FIRST` (*Dharmasindhu* p. 31, C2041), where it was
+the Mha puja's day: in an ordinary year the same day, in BS 2085 the adhika Kartika's
+first, 18 October 2028, a month before the Mha puja. An observance a month rule placed
+gains `malamasa`, so an answer touching an adhika or a kshaya month changes its hash;
+an answer in ordinary months keeps its bytes. A range beside an adhika month founds
+that lunation too, and says so in `festival.days`.
+- Every observance a month rule placed carries `malamasa: {clause, source}`: `NIJA` (a
+  doubled month's festival kept in the nija month), `ADHIKA` (kept in the adhika month
+  by the rule's own `inAdhika`), `KSHAYA_FIRST` or `KSHAYA_SECOND` (a kshaya lunation
+  under its first or second name), with the texts it is read from: *Dharmasindhu*
+  pp. 3, 4, 31, 38 and *Nirnayasindhu* p. 28 (`03-design/festival-malamasa.md`).
+- Rust `teistro::festival::{Malamasa, MalamasaClause}`, the C boundary's JSON, Node,
+  Python, Dart and Java `Malamasa` and `MalamasaClause`, wasm and MCP through the
+  schema; the parity runners print the clause on every observance line.
+- Cruxes C2040 to C2045.
+
 **A fortnight's short name and a rashi's Indian name in every pack.**
 **Numbers:** none; two record forms are added and no existing form changes.
 - `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:

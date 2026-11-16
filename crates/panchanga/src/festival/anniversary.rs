@@ -19,8 +19,6 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::LunarMonth as Convention;
 
-use crate::month;
-
 use super::{
     Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, InAdhika, Observance,
     Observances, Predicate, Reckoned, Which, Window, by_share, case, observances_over,
@@ -513,8 +511,6 @@ enum Year {
     Later,
     /// The first, kept in the adhika when its month is doubled.
     First,
-    /// A kshaya year's joined lunation, under its first name.
-    Kshaya,
     /// The samsarpa before a kshaya month, beside the nija month.
     Samsarpa,
 }
@@ -589,15 +585,11 @@ impl Anniversary {
         }
     }
 
-    /// The year rules, each with the year it answers for; a kshaya year's
-    /// only when the days hold a kshaya lunation, and the samsarpa's only
-    /// when they hold a samsarpa.
-    fn rules(
-        &self,
-        origin: &OriginFound,
-        kshaya: bool,
-        samsarpa: bool,
-    ) -> Vec<(Year, FestivalRule)> {
+    /// The year rules, each with the year it answers for; the samsarpa's
+    /// only when the days hold a samsarpa. A kshaya year's joined lunation
+    /// answers to both its names for every rule (`MalamasaClause`), so it
+    /// needs no rule of its own.
+    fn rules(&self, origin: &OriginFound, samsarpa: bool) -> Vec<(Year, FestivalRule)> {
         let nija = self.kept_as(origin).keeps_the_nija();
         let later = if origin.kind == MonthKind::Adhika && !nija {
             InAdhika::First
@@ -613,12 +605,6 @@ impl Anniversary {
             rules.push((
                 Year::First,
                 self.rule(origin, origin.month, InAdhika::First),
-            ));
-        }
-        if kshaya {
-            rules.push((
-                Year::Kshaya,
-                self.rule(origin, month::previous(origin.month), InAdhika::Nija),
             ));
         }
         if samsarpa && !nija && later == InAdhika::Nija && self.in_samsarpa == InSamsarpa::Also {
@@ -737,7 +723,6 @@ pub fn anniversaries(
     // Found once: every person reads the same occurrences, so a batch costs
     // each only its own (`03-design/anniversary-span.md` §4).
     let reckoned = Reckoned::new(days);
-    let any_kshaya = days.iter().any(|day| day.month.kind == MonthKind::Kshaya);
     let in_samsarpa = |day: &FestivalDay| {
         samsarpas
             .iter()
@@ -746,7 +731,7 @@ pub fn anniversaries(
     for (anniversary, origin) in asked {
         anniversary.check()?;
         let kind = anniversary.kept_as(origin);
-        let rules = anniversary.rules(origin, any_kshaya, !samsarpas.is_empty());
+        let rules = anniversary.rules(origin, !samsarpas.is_empty());
         let has_first = rules.iter().any(|(year, _)| *year == Year::First);
         for (year, rule) in rules {
             let found = observances_over(core::slice::from_ref(&rule), &reckoned)?;
@@ -761,12 +746,10 @@ pub fn anniversaries(
                 };
                 let first = count == Some(1);
                 let month_by = match year {
-                    Year::Kshaya if !kshaya => continue,
                     Year::First if !first => continue,
                     Year::Later if first && has_first => continue,
                     // The first year's is in the adhika already.
                     Year::Samsarpa if !samsarpa || (first && has_first) => continue,
-                    Year::Kshaya => MonthClause::KshayaJoined,
                     Year::Samsarpa => MonthClause::Samsarpa,
                     _ if observance.adhika && year == Year::First => MonthClause::FirstYearAdhika,
                     _ if observance.adhika => MonthClause::AdhikaOrigin,

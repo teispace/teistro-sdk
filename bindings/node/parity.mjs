@@ -1942,19 +1942,22 @@ const publishedSet = {
     { action: 'SET', rule: 'HOLIKA', day: day2024(10, 25), source: 'p. 4' },
   ],
 };
-for (const [name, rules, published, hijriOffset] of [
+for (const [name, rules, published, hijriOffset, span] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
   ['dated', ['NEPAL', ...ownDated]],
   ['hijri', [ownHijri], undefined, 1],
   ['published', 'DHARMASINDHU', [publishedSet]],
+  // A month the test provider's 2023 doubles: a monthly rule kept in its
+  // adhika month says which month rule placed it (SR-93).
+  ['malamasa', 'DHARMASINDHU', undefined, undefined, [gregorian(2023, 8, 20), gregorian(2023, 9, 10)]],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
   // almanac's: the two answer alike, so the report cannot tell.
   const asked = {
-    from: gregorian(2024, 10, 10),
-    to: gregorian(2024, 11, 3),
+    from: span ? span[0] : gregorian(2024, 10, 10),
+    to: span ? span[1] : gregorian(2024, 11, 3),
     place,
     utcOffsetSeconds: 20700,
     festivals: {
@@ -1990,6 +1993,7 @@ for (const [name, rules, published, hijriOffset] of [
         number(observance.tithi.from),
         number(earlier.held),
         number(later.held),
+        observance.malamasa?.clause ?? '-',
       ].join(' '),
     );
   });

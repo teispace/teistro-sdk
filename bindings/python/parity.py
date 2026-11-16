@@ -707,6 +707,7 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                     number(observance.tithi.from_jd),
                     number(earlier.held),
                     number(later.held),
+                    observance.malamasa.clause if observance.malamasa is not None else "-",
                 )
             ),
         )
@@ -3067,6 +3068,16 @@ def main() -> None:
                 assert asked is not None
                 festivals = asked
             put_festivals(f"festivals-{name}", festivals)
+        # A month the test provider's 2023 doubles: a monthly rule kept in
+        # its adhika month says which month rule placed it (SR-93).
+        doubled = geo.almanac.festivals(
+            from_date=date(Calendar.GREGORIAN, 2023, 8, 20),
+            to_date=date(Calendar.GREGORIAN, 2023, 9, 10),
+            place=place,
+            utc_offset_seconds=20700,
+            festivals={"rules": "DHARMASINDHU"},
+        )
+        put_festivals("festivals-malamasa", doubled)
 
         # The lunar years over 2024-03-20..04-20, which holds a Chaitra
         # Shukla Pratipada: two years, their bounds and their Jovian years.
