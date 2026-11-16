@@ -5249,6 +5249,47 @@ test('the next sankranti and a pack\'s festival are found', () => {
 });
 
 /**
+ * Festival groups (`03-design/festival-groups.md`, SR-125): BS 2083's
+ * Tihar, 7 to 11 November 2026, holds Kartik 23 as a gap however short
+ * the range, and `almanac.next` finds Dashain's span.
+ */
+test('a festival group spans its members and marks a gap day', () => {
+  const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const festivals = ctx.almanac.festivals({
+    from: date(Calendar.Gregorian, 2026, 11, 9),
+    to: date(Calendar.Gregorian, 2026, 11, 9),
+    place,
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'NEPAL_PANCHANGA' },
+  });
+  const [tihar] = festivals.groups;
+  assert.equal(tihar.group, 'TIHAR');
+  assert.equal(tihar.main, 'LAKSHMI_PUJA');
+  assert.deepEqual(
+    tihar.days.map((d) => `${d.day.day}:${d.gap ? '-' : d.members.join('+')}`),
+    ['7:KAG_TIHAR', '8:KUKUR_TIHAR+LAKSHMI_PUJA', '9:-', '10:GOVARDHAN_PUJA+MHA_PUJA', '11:YAMA_DWITIYA'],
+  );
+  assert.deepEqual([tihar.first.day, tihar.last.day], [7, 11]);
+  assert.ok(tihar.members.every((m) => m.day !== null));
+  const dashain = ctx.almanac.next({
+    after: 2461041.76,
+    place,
+    utcOffsetSeconds: 20700,
+    group: 'DASHAIN',
+    festivals: { rules: 'NEPAL_PANCHANGA' },
+  });
+  assert.deepEqual([dashain.day.month, dashain.day.day], [10, 11]);
+  assert.deepEqual([dashain.group.last.month, dashain.group.last.day], [10, 25]);
+  assert.equal(dashain.keys.length, 6);
+  assert.throws(
+    () => ctx.almanac.next({ after: 2461041.76, place, utcOffsetSeconds: 20700, group: 'HOLI', festivals: { rules: 'NEPAL_PANCHANGA' } }),
+    (e) => e instanceof TeistroError && e.field === 'group',
+  );
+  ctx.dispose();
+});
+
+/**
  * Anniversaries over a span of years (`03-design/anniversary-span.md`): a
  * barkhi and an event, each year's day naming the rule that chose it, and
  * a span too long refused on `years`.

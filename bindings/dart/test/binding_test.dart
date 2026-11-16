@@ -969,6 +969,61 @@ void main() {
     ctx.dispose();
   });
 
+  test('a festival group spans its members and marks a gap day', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const panchanga = FestivalRequest(rules: FestivalPack.nepalPanchanga);
+    // Kartik 23, 2083 (9 November 2026) alone: Tihar's gap day, its span
+    // whole all the same.
+    final answer = ctx.almanac.festivals(
+      from: Calendar.gregorian.date(2026, 11, 9),
+      to: Calendar.gregorian.date(2026, 11, 9),
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: panchanga,
+    );
+    final tihar = answer.groups.singleWhere((s) => s.group == 'TIHAR');
+    expect(tihar.main, 'LAKSHMI_PUJA');
+    expect([tihar.first.day, tihar.last.day], [7, 11]);
+    expect(
+      tihar.days.map((d) => '${d.day.day}:${d.gap ? '-' : d.members.join('+')}'),
+      [
+        '7:KAG_TIHAR',
+        '8:KUKUR_TIHAR+LAKSHMI_PUJA',
+        '9:-',
+        '10:GOVARDHAN_PUJA+MHA_PUJA',
+        '11:YAMA_DWITIYA',
+      ],
+    );
+    final dashain = ctx.almanac.next(
+      after: 2461041.76,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      group: 'DASHAIN',
+      festivals: panchanga,
+    );
+    expect([dashain.day.month, dashain.day.day], [10, 11]);
+    expect([dashain.group!.last.month, dashain.group!.last.day], [10, 25]);
+    expect(
+      () => ctx.almanac.next(
+        after: 2461041.76,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        group: 'HOLI',
+        festivals: panchanga,
+      ),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'group')),
+    );
+    ctx.dispose();
+  });
+
   test('a Nepali birth time resolves with the metadata a stored chart '
       'keeps', () {
     final ctx = context();

@@ -6862,6 +6862,10 @@ const PUBLISHED_SET: &str = r#"{"format":"teistro.published/1","publisher":"a pa
 /// A rule kept on the tenth of Rabi II by the tabular Hijri calendar,
 /// asked with the calendar moved a day toward a sighting: 14 October 2024
 /// by the table, 13 October moved.
+/// Two festival groups over Dharmasindhu's pack: the Navaratra, whose
+/// span crosses the range's first day, and Deepavali's three days
+/// (`03-design/festival-groups.md`).
+const OWN_GROUPS: &str = r#"[{"key":"NAVARATRA","members":["NAVARATRA_ARAMBHA","MAHA_NAVAMI","VIJAYA_DASHAMI"],"main":"VIJAYA_DASHAMI","source":"a test"},{"key":"DEEPAVALI","members":["LAKSHMI_PUJA","BALI_PRATIPADA","YAMA_DWITIYA"],"main":"LAKSHMI_PUJA","source":"a test"}]"#;
 const OWN_HIJRI: &str = r#"{"key":"RABI_II_TENTH","source":"the tenth of Rabi II","civilDate":{"calendar":"calendar.HIJRI_TABULAR","month":4,"day":10}}"#;
 const OWN_DATED: &str = r#"{"key":"KARTIK_FIRST","source":"the first of Kartik","civilDate":{"calendar":"calendar.BIKRAM_SAMBAT","month":7,"day":1}},{"key":"LAST_SUNDAY","source":"October's last Sunday","civilWeekday":{"calendar":"calendar.GREGORIAN","month":10,"weekday":"vara.RAVIVARA","nth":-1}}"#;
 
@@ -6970,6 +6974,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
             "published",
             format!(r#""DHARMASINDHU","published":[{PUBLISHED_SET}]"#),
         ),
+        ("grouped", format!(r#""DHARMASINDHU","groups":{OWN_GROUPS}"#)),
     ] {
         let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
             .expect("a festival request");
@@ -7081,6 +7086,40 @@ fn put_festivals(report: &mut Report, name: &str, answer: &teistro::festival::Ob
         );
     }
     put_published(report, &key, answer);
+    put_groups(report, &key, answer);
+}
+
+/// A festival answer's group spans, printed only where there are some, so
+/// an answer asked without groups prints as it did: each span's group,
+/// main member and bounds, its members' days and its days, a gap as `-`.
+fn put_groups(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    answer: &teistro::festival::Observances,
+) {
+    let on = |day: &CalendarDate| format!("{}-{}", day.month, day.day);
+    for (k, span) in answer.groups.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-group-{k}")),
+            format!("{} {} {} {}", span.group, span.main, on(&span.first), on(&span.last)),
+        );
+        let members: Vec<String> = span
+            .members
+            .iter()
+            .map(|m| format!("{}:{}", m.rule, m.day.as_ref().map_or_else(|| "-".to_owned(), on)))
+            .collect();
+        put(report, &key(&format!("-group-{k}-members")), members.join(" "));
+        let days: Vec<String> = span
+            .days
+            .iter()
+            .map(|d| {
+                let held = if d.gap { "-".to_owned() } else { d.members.join("+") };
+                format!("{}:{held}", on(&d.day))
+            })
+            .collect();
+        put(report, &key(&format!("-group-{k}-days")), days.join(" "));
+    }
 }
 
 /// The lunar years a panchanga request carries, as the report prints them.

@@ -746,6 +746,34 @@ public final class BindingTest {
             }
         });
 
+        // Festival groups (festival-groups.md): Kartik 23, 2083 alone
+        // answers Tihar's whole span with its gap day, the next Dashain
+        // from 1 January 2026 runs 11 to 25 October, and a key no group of
+        // the request has is refused on group.
+        tests.put("a festival group spans its members and marks a gap day", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                    .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                var panchanga = new com.teispace.teistro.request.FestivalRequest(
+                        com.teispace.teistro.request.FestivalRules.NEPAL_PANCHANGA);
+                CalendarDate ninth = Civil.date(Calendar.GREGORIAN, 2026, 11, 9);
+                FestivalAnswer answer = committee.almanac().festivals(ninth, ninth, kathmandu, 20_700, panchanga);
+                GroupSpan tihar = answer.groups().stream().filter(s -> s.group().equals("TIHAR")).findFirst()
+                        .orElseThrow();
+                same("LAKSHMI_PUJA", tihar.main(), "Lakshmi puja its main day");
+                same(List.of("7:KAG_TIHAR", "8:KUKUR_TIHAR+LAKSHMI_PUJA", "9:-", "10:GOVARDHAN_PUJA+MHA_PUJA",
+                        "11:YAMA_DWITIYA"), tihar.days().stream()
+                        .map(d -> d.day().day() + ":" + (d.gap() ? "-" : String.join("+", d.members())))
+                        .toList(), "the five days and the gap");
+                NextOccurrence dashain = committee.almanac().nextGroup(2_461_041.76, kathmandu, 20_700, "DASHAIN",
+                        panchanga, null, null);
+                same(List.of(10, 11, 10, 25), List.of(dashain.day().month(), dashain.day().day(),
+                        dashain.group().last().month(), dashain.group().last().day()), "Dashain's span");
+                same("group", refusal(() -> committee.almanac().nextGroup(2_461_041.76, kathmandu, 20_700, "HOLI",
+                        panchanga, null, null)).field(), "a group the request has not");
+            }
+        });
+
         // A kshaya lunation (festival-malamasa.md, SR-93): in 1983 the
         // lunation from 14 January is Pausha and Magha both, and
         // Shivaratri keeps its tithi in it, naming the clause and its texts.

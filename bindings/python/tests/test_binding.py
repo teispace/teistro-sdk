@@ -1766,6 +1766,51 @@ class AnEngine(WithLibrary):
                 )
             self.assertEqual(short.exception.field, "limitDays")
 
+    def test_a_festival_group_spans_its_members_and_marks_a_gap_day(self) -> None:
+        """BS 2083's Tihar, 7 to 11 November 2026, asked of Kartik 23 alone:
+        the span is whole and the 9th, which no member falls on, is a gap;
+        and the next Dashain from 1 January 2026 is its span of 11 to 25
+        October (`03-design/festival-groups.md`, SR-125)."""
+        from teistro import date
+        from teistro.catalogue import Calendar
+
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(**nepal_official()) as sky:
+            answer = sky.almanac.festivals(
+                from_date=date(Calendar.GREGORIAN, 2026, 11, 9),
+                to_date=date(Calendar.GREGORIAN, 2026, 11, 9),
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                festivals={"rules": "NEPAL_PANCHANGA"},
+            )
+            (tihar,) = answer.groups
+            self.assertEqual((tihar.group, tihar.main), ("TIHAR", "LAKSHMI_PUJA"))
+            self.assertEqual(
+                [f"{d.day.day}:{'-' if d.gap else '+'.join(d.members)}" for d in tihar.days],
+                ["7:KAG_TIHAR", "8:KUKUR_TIHAR+LAKSHMI_PUJA", "9:-", "10:GOVARDHAN_PUJA+MHA_PUJA", "11:YAMA_DWITIYA"],
+            )
+            self.assertTrue(all(m.day is not None for m in tihar.members))
+            dashain = sky.almanac.next(
+                after=2461041.76,
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                group="DASHAIN",
+                festivals={"rules": "NEPAL_PANCHANGA"},
+            )
+            assert dashain.group is not None
+            self.assertEqual((dashain.day.month, dashain.day.day), (10, 11))
+            self.assertEqual((dashain.group.last.month, dashain.group.last.day), (10, 25))
+            self.assertEqual(len(dashain.keys), 6)
+            with self.assertRaises(TeistroError) as unknown:
+                sky.almanac.next(
+                    after=2461041.76,
+                    place=kathmandu,
+                    utc_offset_seconds=20700,
+                    group="HOLI",
+                    festivals={"rules": "NEPAL_PANCHANGA"},
+                )
+            self.assertEqual(unknown.exception.field, "group")
+
     def test_a_kshaya_lunation_keeps_both_months_festivals_and_says_why(self) -> None:
         """In 1983 the lunation from 14 January is Pausha and Magha both:
         Shivaratri keeps its tithi in it and names the clause and the texts

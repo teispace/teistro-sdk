@@ -24,13 +24,16 @@ import com.teispace.teistro.record.Provenance;
  * @param added the days published sets added; empty when none
  * @param unplaced the published entries in range no occurrence took
  * @param applied the published sets laid over the answer, in order
+ * @param groups each festival group's spans that reach the range, in the order of their first days
+ *     ({@code 03-design/festival-groups.md}); empty when the request names no group
  * @param provenance what computed it: the widened days among the applied
  *     conventions as {@code festival.days}, and the hash of the value
  */
 public record FestivalAnswer(
         List<FestivalObservance> observances, List<EkadashiFast> ekadashis, List<FestivalUnjudged> unjudged,
         List<DatedObservance> dated, List<AnniversaryDay> anniversaries, List<Published.Added> added,
-        List<Published.Unplaced> unplaced, List<Published.Applied> applied, Provenance provenance) {
+        List<Published.Unplaced> unplaced, List<Published.Applied> applied, List<GroupSpan> groups,
+        Provenance provenance) {
     /** Keeps the lists unmodifiable. */
     public FestivalAnswer {
         observances = List.copyOf(observances);
@@ -41,6 +44,28 @@ public record FestivalAnswer(
         added = List.copyOf(added);
         unplaced = List.copyOf(unplaced);
         applied = List.copyOf(applied);
+        groups = List.copyOf(groups);
+    }
+
+    /**
+     * An answer with no festival groups, as one was written before groups were.
+     *
+     * @param observances each rule's day
+     * @param ekadashis each Ekadashi rule's fasts
+     * @param unjudged the occurrences no day could be given to
+     * @param dated each dated rule's days
+     * @param anniversaries each anniversary's days
+     * @param added the days published sets added
+     * @param unplaced the published entries in range no occurrence took
+     * @param applied the published sets laid over the answer
+     * @param provenance what computed it
+     */
+    public FestivalAnswer(List<FestivalObservance> observances, List<EkadashiFast> ekadashis,
+            List<FestivalUnjudged> unjudged, List<DatedObservance> dated, List<AnniversaryDay> anniversaries,
+            List<Published.Added> added, List<Published.Unplaced> unplaced, List<Published.Applied> applied,
+            Provenance provenance) {
+        this(observances, ekadashis, unjudged, dated, anniversaries, added, unplaced, applied, List.of(),
+                provenance);
     }
 
     /**
@@ -57,7 +82,8 @@ public record FestivalAnswer(
     public FestivalAnswer(List<FestivalObservance> observances, List<EkadashiFast> ekadashis,
             List<FestivalUnjudged> unjudged, List<DatedObservance> dated, List<AnniversaryDay> anniversaries,
             Provenance provenance) {
-        this(observances, ekadashis, unjudged, dated, anniversaries, List.of(), List.of(), List.of(), provenance);
+        this(observances, ekadashis, unjudged, dated, anniversaries, List.of(), List.of(), List.of(), List.of(),
+                provenance);
     }
 
     /**
@@ -72,6 +98,7 @@ public record FestivalAnswer(
      */
     public FestivalAnswer(List<FestivalObservance> observances, List<EkadashiFast> ekadashis,
             List<FestivalUnjudged> unjudged, List<DatedObservance> dated, Provenance provenance) {
-        this(observances, ekadashis, unjudged, dated, List.of(), List.of(), List.of(), List.of(), provenance);
+        this(observances, ekadashis, unjudged, dated, List.of(), List.of(), List.of(), List.of(), List.of(),
+                provenance);
     }
 }

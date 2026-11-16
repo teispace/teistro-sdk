@@ -469,6 +469,32 @@ fn the_next_day_of_a_kind_or_a_rule_is_found() {
     }
 }
 
+/// **The next span of a festival group** (`03-design/festival-groups.md`
+/// §5): the answer's day is the span's first, and the span lists every day
+/// from its first to its last, its main member among them.
+#[test]
+fn the_next_span_of_a_group_is_found() {
+    let ctx = test_ctx();
+    let request = asking(&serde_json::json!({
+        "group": "TIHAR", "festivals": { "rules": "NEPAL_PANCHANGA" }
+    }));
+    let (status, answer) = json_call(&ctx, ts_almanac_next, &request);
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let value = &answer.unwrap()["value"];
+    let span = &value["group"];
+    assert_eq!(span["group"], "TIHAR");
+    assert_eq!(span["main"], "LAKSHMI_PUJA");
+    assert_eq!(value["day"], span["first"]);
+    let days = span["days"].as_array().unwrap();
+    assert_eq!(days.first().unwrap()["day"], span["first"]);
+    assert_eq!(days.last().unwrap()["day"], span["last"]);
+    assert!(
+        days.iter()
+            .any(|d| d["members"].as_array().unwrap().iter().any(|m| m == "LAKSHMI_PUJA")),
+        "{span}"
+    );
+}
+
 /// **Each refusal of the next-occurrence request**: what it looks for,
 /// said wrongly each way, and a limit out of range.
 #[test]
@@ -506,6 +532,21 @@ fn a_next_request_is_refused_as_its_contract_says() {
             serde_json::json!({ "kind": "PURNIMA", "unknown": 1 }),
             Status::InvalidArg,
             "next",
+        ),
+        (
+            serde_json::json!({ "group": "TIHAR" }),
+            Status::InvalidArg,
+            "festivals",
+        ),
+        (
+            serde_json::json!({ "group": "TIHAR", "kind": "PURNIMA" }),
+            Status::InvalidArg,
+            "group",
+        ),
+        (
+            serde_json::json!({ "group": "HOLI", "festivals": pack }),
+            Status::InvalidArg,
+            "group",
         ),
     ] {
         let got = json_call(&ctx, ts_almanac_next, &asking(&extra));

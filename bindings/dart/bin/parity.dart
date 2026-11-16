@@ -634,6 +634,26 @@ void putFestivals(String prefix, FestivalAnswer answer) {
   for (final (k, a) in answer.applied.indexed) {
     put('$prefix-applied-$k', '${a.id} ${a.version} ${a.hash}');
   }
+  // Each group's span, printed only where there are some.
+  String on(CalendarDate day) => '${day.month}-${day.day}';
+  for (final (k, span) in answer.groups.indexed) {
+    put(
+      '$prefix-group-$k',
+      '${span.group} ${span.main} ${on(span.first)} ${on(span.last)}',
+    );
+    put(
+      '$prefix-group-$k-members',
+      span.members
+          .map((m) => '${m.rule}:${m.day == null ? '-' : on(m.day!)}')
+          .join(' '),
+    );
+    put(
+      '$prefix-group-$k-days',
+      span.days
+          .map((d) => '${on(d.day)}:${d.gap ? '-' : d.members.join('+')}')
+          .join(' '),
+    );
+  }
 }
 
 /// A muhurta answer's counts, hash and every window, as every runner
@@ -3345,14 +3365,37 @@ void main() {
       },
     ],
   };
-  for (final (name, rules, published, hijriOffset)
-      in <(String, Object, List<Map<String, Object?>>, int?)>[
-        ('shipped', FestivalPack.dharmasindhu, const [], null),
-        ('amended', [FestivalPack.dharmasindhu, ownRule], const [], null),
-        ('nepal', [FestivalPack.nepal, ownFollowing], const [], null),
-        ('dated', [FestivalPack.nepal, ...ownDated], const [], null),
-        ('hijri', [ownHijri], const [], 1),
-        ('published', FestivalPack.dharmasindhu, [publishedSet], null),
+  // Two festival groups over Dharmasindhu's pack: the Navaratra, whose span
+  // holds gap days, and the Deepavali.
+  const ownGroups = <Map<String, Object?>>[
+    {
+      'key': 'NAVARATRA',
+      'members': ['NAVARATRA_ARAMBHA', 'MAHA_NAVAMI', 'VIJAYA_DASHAMI'],
+      'main': 'VIJAYA_DASHAMI',
+      'source': 'a test',
+    },
+    {
+      'key': 'DEEPAVALI',
+      'members': ['LAKSHMI_PUJA', 'BALI_PRATIPADA', 'YAMA_DWITIYA'],
+      'main': 'LAKSHMI_PUJA',
+      'source': 'a test',
+    },
+  ];
+  for (final (name, rules, published, hijriOffset, groups)
+      in <(
+        String,
+        Object,
+        List<Map<String, Object?>>,
+        int?,
+        List<Map<String, Object?>>,
+      )>[
+        ('shipped', FestivalPack.dharmasindhu, const [], null, const []),
+        ('amended', [FestivalPack.dharmasindhu, ownRule], const [], null, const []),
+        ('nepal', [FestivalPack.nepal, ownFollowing], const [], null, const []),
+        ('dated', [FestivalPack.nepal, ...ownDated], const [], null, const []),
+        ('hijri', [ownHijri], const [], 1, const []),
+        ('published', FestivalPack.dharmasindhu, [publishedSet], null, const []),
+        ('grouped', FestivalPack.dharmasindhu, const [], null, ownGroups),
       ]) {
     // The shipped pack is asked of the lean call, the others of the
     // almanac's: the two answer alike, so the report cannot tell.
@@ -3379,6 +3422,7 @@ void main() {
                     rules: rules,
                     published: published,
                     hijriOffset: hijriOffset,
+                    groups: groups,
                   ),
                 )
                 .festivals!;

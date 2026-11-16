@@ -12,7 +12,9 @@ use teistro_core::envelope::{Convention, Envelope, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
-use teistro_panchanga::festival::{NextKind, Observances, PublishedStatus, limit_days, windows};
+use teistro_panchanga::festival::{
+    GroupSpan, NextKind, Observances, PublishedStatus, limit_days, windows,
+};
 use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
@@ -36,6 +38,9 @@ pub enum NextTarget {
     Rule(String),
     /// A kind of day ([`NextKind::rules`]).
     Kind(NextKind),
+    /// The group of this key in the request's festivals: its next span
+    /// (`03-design/festival-groups.md` §5).
+    Group(String),
 }
 
 /// A next-occurrence search: the instant after which, the place and the
@@ -99,13 +104,17 @@ pub(crate) struct NextAsked {
     zone: Option<ZoneSpec>,
     #[serde(default)]
     calendar: Option<Calendar>,
-    /// A kind of day; or `rule`, not both.
+    /// A kind of day; or `rule` or `group`, one of the three.
     #[serde(default)]
     kind: Option<NextKind>,
-    /// A rule's key in `festivals`; or `kind`, not both.
+    /// A rule's key in `festivals`; or `kind` or `group`, one of the three.
     #[serde(default)]
     rule: Option<String>,
-    /// The festivals, as a festival request, with `rule`.
+    /// A festival group's key in `festivals`: its next span; or `kind` or
+    /// `rule`, one of the three.
+    #[serde(default)]
+    group: Option<String>,
+    /// The festivals, as a festival request, with `rule` or `group`.
     #[serde(default)]
     #[cfg_attr(
         feature = "schema",
@@ -140,36 +149,44 @@ impl NextRequest {
 
 impl NextAsked {
     fn request(self) -> Result<NextRequest, Error> {
-        let (target, festivals) = match (self.kind, self.rule, self.festivals) {
-            (Some(kind), None, None) => (NextTarget::Kind(kind), None),
-            (None, Some(rule), Some(festivals)) => (
-                NextTarget::Rule(rule),
-                Some(FestivalRequest::from_json(&festivals.to_string())?),
-            ),
-            (Some(_), Some(_), _) => {
+        let target = match (self.kind, self.rule, self.group) {
+            (Some(kind), None, None) => NextTarget::Kind(kind),
+            (None, Some(rule), None) => NextTarget::Rule(rule),
+            (None, None, Some(group)) => NextTarget::Group(group),
+            (None, None, None) => {
                 return Err(Error::invalid_arg(
-                    "a search looks for a `kind` or a `rule`, not both",
+                    "a search names what it looks for: a `kind`, a `rule` or a `group`",
+                )
+                .with_field("kind"));
+            }
+            (_, Some(_), _) => {
+                return Err(Error::invalid_arg(
+                    "a search looks for one of a `kind`, a `rule` and a `group`",
                 )
                 .with_field("rule"));
             }
             (Some(_), None, Some(_)) => {
                 return Err(Error::invalid_arg(
+                    "a search looks for one of a `kind`, a `rule` and a `group`",
+                )
+                .with_field("group"));
+            }
+        };
+        let festivals = match (&target, self.festivals) {
+            (NextTarget::Kind(_), None) => None,
+            (NextTarget::Kind(_), Some(_)) => {
+                return Err(Error::invalid_arg(
                     "a kind is read by the SDK's own rules; to search a request's rules, name one as `rule`",
                 )
                 .with_field("festivals"));
             }
-            (None, Some(_), None) => {
+            (_, Some(festivals)) => Some(FestivalRequest::from_json(&festivals.to_string())?),
+            (_, None) => {
                 return Err(Error::invalid_arg(
-                    "a `rule` is a key of `festivals`, which is left out",
+                    "a `rule` or a `group` is a key of `festivals`, which is left out",
                 )
                 .with_field("festivals")
                 .with_hint("name a pack, as `{\"rules\": \"NEPAL_PANCHANGA\"}`"));
-            }
-            (None, None, _) => {
-                return Err(Error::invalid_arg(
-                    "a search names what it looks for: a `kind` or a `rule`",
-                )
-                .with_field("kind"));
             }
         };
         Ok(NextRequest {
@@ -207,15 +224,28 @@ pub struct NextOccurrence {
     /// The days reckoned until it was found, the window holding it
     /// whole.
     pub searched_days: u32,
+    /// For a group, its span: `day` is its first day, `keys` the members
+    /// that fall in it and `festivals` their entries over the span; left
+    /// out for a rule or a kind.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub group: Option<GroupSpan>,
 }
 
 impl NextOccurrence {
     /// Where the answer names catalogue members outside its festivals.
-    const MEMBERS: [(&'static str, Kind); 4] = [
+    const MEMBERS: [(&'static str, Kind); 12] = [
         ("day.calendar", Kind::Calendar),
         ("day.era.era", Kind::Era),
         ("from.calendar", Kind::Calendar),
         ("from.era.era", Kind::Era),
+        ("group.first.calendar", Kind::Calendar),
+        ("group.first.era.era", Kind::Era),
+        ("group.last.calendar", Kind::Calendar),
+        ("group.last.era.era", Kind::Era),
+        ("group.members.day.calendar", Kind::Calendar),
+        ("group.members.day.era.era", Kind::Era),
+        ("group.days.day.calendar", Kind::Calendar),
+        ("group.days.day.era.era", Kind::Era),
     ];
 
     /// The answer as JSON, every catalogue member written as its full key:
@@ -331,6 +361,37 @@ fn on_the_day(
     (found, held)
 }
 
+/// A span's reckoning cut to the group's member `keys`, its unjudged and
+/// unplaced entries and its groups left out, and the members that fall in
+/// it, in the group's order.
+fn in_the_span(mut found: Observances, keys: &[String]) -> (Observances, Vec<String>) {
+    let wanted = |key: &str| keys.iter().any(|k| k == key);
+    found.keep(wanted);
+    found
+        .observances
+        .retain(|o| !withdrawn(o.published.as_ref()));
+    found.ekadashis.retain(|f| !withdrawn(f.published.as_ref()));
+    found.dated.retain(|d| !withdrawn(d.published.as_ref()));
+    found
+        .anniversaries
+        .retain(|a| !withdrawn(a.observance.published.as_ref()));
+    found.unjudged.clear();
+    found.unplaced.clear();
+    found.groups.clear();
+    let held = keys
+        .iter()
+        .filter(|key| {
+            found.observances.iter().any(|o| &o.rule == *key)
+                || found.ekadashis.iter().any(|f| &f.rule == *key)
+                || found.dated.iter().any(|d| &d.rule == *key)
+                || found.anniversaries.iter().any(|a| &a.key == *key)
+                || found.added.iter().any(|a| &a.key == *key)
+        })
+        .cloned()
+        .collect();
+    (found, held)
+}
+
 impl AlmanacArea<'_> {
     /// The next day `request`'s target falls on, from the civil day holding
     /// its instant on its clock, within its look-ahead limit
@@ -402,6 +463,24 @@ impl AlmanacArea<'_> {
                 })?;
                 (narrowed, vec![key.clone()])
             }
+            NextTarget::Group(key) => {
+                let asked = request.festivals.as_ref().ok_or_else(|| {
+                    Error::invalid_arg("a `group` is a key of `festivals`, which is left out")
+                        .with_field("festivals")
+                })?;
+                let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
+                    Error::invalid_arg(format!(
+                        "`{key}` is no group of the festival request"
+                    ))
+                    .with_field("group")
+                })?;
+                let members = narrowed
+                    .groups()
+                    .iter()
+                    .flat_map(|group| group.members.clone())
+                    .collect();
+                (narrowed, members)
+            }
         };
         festivals.check()?;
         let calendar = system_of(request.calendar)?;
@@ -417,10 +496,28 @@ impl AlmanacArea<'_> {
                 mut provenance,
             } = self.festivals(&from, &to, &request.place, offset, &festivals)?;
             searched += days;
-            let Some((_, day)) = earliest(&value, &keys, calendar)? else {
-                continue;
+            let (found, held, day, group) = if let NextTarget::Group(key) = &request.target {
+                let Some(span) = value.groups.into_iter().find(|span| {
+                    span.group == *key
+                        && calendar
+                            .fixed_of(&span.last)
+                            .is_ok_and(|last| last >= start)
+                }) else {
+                    continue;
+                };
+                // The span's own reckoning, so its entries are whole
+                // whichever windows it crossed.
+                let whole = self.festivals(&span.first, &span.last, &request.place, offset, &festivals)?;
+                provenance = whole.provenance;
+                let (found, held) = in_the_span(whole.value, &keys);
+                (found, held, span.first.clone(), Some(span))
+            } else {
+                let Some((_, day)) = earliest(&value, &keys, calendar)? else {
+                    continue;
+                };
+                let (found, held) = on_the_day(value, &keys, &day);
+                (found, held, day, None)
             };
-            let (found, held) = on_the_day(value, &keys, &day);
             // What the provenance hashes: the request, not the window that
             // held the day.
             let mut input = serde_json::json!({
@@ -448,6 +545,7 @@ impl AlmanacArea<'_> {
                     from: first,
                     limit_days: request.limit_days,
                     searched_days: searched,
+                    group,
                 },
                 provenance,
             ));

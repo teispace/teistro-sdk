@@ -16,11 +16,27 @@ import java.util.List;
  * @param from the first day searched: the civil day holding the instant
  * @param limitDays the look-ahead limit, in days
  * @param searchedDays the days reckoned until it was found
+ * @param group for a group, its span, {@code day} being its first day; null for a rule or a kind
  */
 public record NextOccurrence(CalendarDate day, List<String> keys, FestivalAnswer festivals, CalendarDate from,
-        int limitDays, int searchedDays) {
+        int limitDays, int searchedDays, GroupSpan group) {
     /** Copies the keys. */
     public NextOccurrence {
         keys = List.copyOf(keys);
+    }
+
+    /**
+     * A rule's or a kind's next day, with no group's span.
+     *
+     * @param day the day
+     * @param keys the keys of the rules that fall on it
+     * @param festivals the festival reckoning's entries for those keys on that day
+     * @param from the first day searched
+     * @param limitDays the look-ahead limit, in days
+     * @param searchedDays the days reckoned until it was found
+     */
+    public NextOccurrence(CalendarDate day, List<String> keys, FestivalAnswer festivals, CalendarDate from,
+            int limitDays, int searchedDays) {
+        this(day, keys, festivals, from, limitDays, searchedDays, null);
     }
 }

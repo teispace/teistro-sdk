@@ -32,9 +32,9 @@ use teistro_panchanga::death_time::{DeathTime, DeathTimeTable};
 #[cfg(feature = "signed-packs")]
 use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
-    Anniversary, AnniversaryKind, DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika,
-    InSamsarpa, Observances, Origin, anniversaries, apply_published, dated, ekadashis, following,
-    observances,
+    Anniversary, AnniversaryKind, DatedRule, EkadashiRule, FestivalDay, FestivalGroup,
+    FestivalRule, GroupSpan, InAdhika, InSamsarpa, Observances, Origin, anniversaries,
+    apply_published, dated, ekadashis, following, group_spans, observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -602,6 +602,87 @@ impl<'a> AlmanacArea<'a> {
         anniversaries(&asked, viewed, &samsarpas)
     }
 
+    /// The spans of `request`'s groups that reach the range `first` to
+    /// `last`, from the answer `found` over the days `seen`
+    /// (`03-design/festival-groups.md` §4). A member whose main day may
+    /// lie past the days seen, or a span missing a member near their
+    /// edge, is reckoned for over [`FestivalGroup::MOST_REACH_DAYS`] more
+    /// on that side, the request cut to the groups' members; twice at
+    /// most, which reaches every member of a main day found the first
+    /// time.
+    fn grouped(
+        self,
+        request: &FestivalRequest,
+        found: &Observances,
+        (calendar_id, place, offset): (Calendar, &Place, UtcOffset),
+        (first, last): (FixedDay, FixedDay),
+        (mut seen_first, mut seen_last): (FixedDay, FixedDay),
+    ) -> Result<Vec<GroupSpan>, Error> {
+        const REACH: i64 = FestivalGroup::MOST_REACH_DAYS;
+        let calendar = system_of(calendar_id)?;
+        let members: Vec<&str> = request
+            .groups()
+            .iter()
+            .flat_map(|group| group.members.iter().map(String::as_str))
+            .collect();
+        let narrowed = request.narrowed_by(&members, Vec::new());
+        let mut seen = found.clone();
+        for _ in 0..2 {
+            let (spans, loose) = group_spans(request.groups(), &seen, calendar)?;
+            let (mut before, mut after) = (false, false);
+            let mut near = |from: FixedDay, to: FixedDay| {
+                before |= seen_first.days_until(from) < REACH;
+                after |= to.days_until(seen_last) < REACH;
+            };
+            for day in loose {
+                near(day, day);
+            }
+            for span in spans.iter().filter(|span| !span.is_whole()) {
+                near(calendar.fixed_of(&span.first)?, calendar.fixed_of(&span.last)?);
+            }
+            if !before && !after {
+                break;
+            }
+            // From the range's own edge: the days seen past it judge only
+            // the occurrences their own widening reaches.
+            for (wanted, from, to) in [
+                (before, seen_first.plus_days(-REACH), first.plus_days(-1)),
+                (after, last.plus_days(1), seen_last.plus_days(REACH)),
+            ] {
+                if wanted {
+                    let more = self.festivals(
+                        &calendar.date_of(from)?,
+                        &calendar.date_of(to)?,
+                        place,
+                        offset,
+                        &narrowed,
+                    )?;
+                    seen = seen.merged(more.value);
+                }
+            }
+            if before {
+                seen_first = seen_first.plus_days(-REACH);
+            }
+            if after {
+                seen_last = seen_last.plus_days(REACH);
+            }
+        }
+        let (mut spans, _) = group_spans(request.groups(), &seen, calendar)?;
+        let mut reaches = Vec::with_capacity(spans.len());
+        for span in &spans {
+            let (from, to) = (calendar.fixed_of(&span.first)?, calendar.fixed_of(&span.last)?);
+            let kept = request
+                .groups()
+                .iter()
+                .find(|group| group.key == span.group)
+                .is_some_and(|group| request.keeps_group(group));
+            reaches.push(kept && from <= last && to >= first);
+        }
+        let mut reach = reaches.into_iter();
+        spans.retain(|_| reach.next().unwrap_or(false));
+        Ok(spans)
+    }
+
     /// The observances over the range's own `days`, stamped with their
     /// provenance. The widening is founded as runs of its own on each
     /// side, so the range's run is exactly the one [`AlmanacArea::of_each`]
@@ -705,6 +786,16 @@ impl<'a> AlmanacArea<'a> {
             from.calendar,
             (first, last),
         )?;
+        // Before the trim, so a span reaching past the range is whole.
+        if !request.groups().is_empty() {
+            found.groups = self.grouped(
+                request,
+                &found,
+                (from.calendar, place, offset),
+                (first, last),
+                (first.plus_days(-back), last.plus_days(ahead)),
+            )?;
+        }
         trim(&mut found, calendar, (first, last), (start, end));
         found.keep(|key| request.keeps(key));
         // On the days as published, after the trim, so only the range's

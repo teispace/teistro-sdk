@@ -11,8 +11,9 @@ use serde_json::Value;
 use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, Dated, DatedRule, EkadashiRule, FestivalMeta, FestivalRule, FollowingRule,
-    KindRules, MetaFilter, MetaPatch, PublishedEntry, PublishedSet, SaitRule, Significance, region,
+    Anniversary, Barred, Dated, DatedRule, EkadashiRule, FestivalGroup, FestivalMeta, FestivalRule,
+    FollowingRule, KindRules, MetaFilter, MetaPatch, PublishedEntry, PublishedSet, SaitRule,
+    Significance, VrataParana, region,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -468,6 +469,42 @@ impl FestivalPack {
         }
     }
 
+    /// Its festival groups, each a festival kept over several of its
+    /// rules' days (`03-design/festival-groups.md`).
+    ///
+    /// ```
+    /// use teistro::FestivalPack;
+    ///
+    /// let keys: Vec<String> = FestivalPack::NepalPanchanga.groups().into_iter().map(|g| g.key).collect();
+    /// assert_eq!(keys, ["DASHAIN", "TIHAR"]);
+    /// assert!(FestivalPack::Dharmasindhu.groups().is_empty());
+    /// ```
+    #[must_use]
+    pub fn groups(self) -> Vec<FestivalGroup> {
+        match self {
+            FestivalPack::NepalPanchanga => FestivalGroup::nepal_panchanga(),
+            FestivalPack::IndiaBihar => FestivalGroup::india_bihar(),
+            FestivalPack::IndiaUttarPradesh => FestivalGroup::india_uttar_pradesh(),
+            FestivalPack::IndiaWestBengal => FestivalGroup::india_west_bengal(),
+            FestivalPack::IndiaAssam => FestivalGroup::india_assam(),
+            FestivalPack::IndiaOdisha => FestivalGroup::india_odisha(),
+            FestivalPack::Dharmasindhu
+            | FestivalPack::Nepal
+            | FestivalPack::PitriPaksha
+            | FestivalPack::Gaudiya
+            | FestivalPack::IndiaCentral
+            | FestivalPack::Jain
+            | FestivalPack::Mithila
+            | FestivalPack::IndiaMaharashtra
+            | FestivalPack::IndiaKerala
+            | FestivalPack::IndiaTamilNadu
+            | FestivalPack::IndiaKarnataka
+            | FestivalPack::IndiaTelangana
+            | FestivalPack::IndiaGujarat
+            | FestivalPack::IndiaAndhraPradesh => Vec::new(),
+        }
+    }
+
     /// The published sets it lays over its rules' answer.
     #[must_use]
     pub fn published(self) -> Vec<PublishedSet> {
@@ -550,6 +587,10 @@ pub struct FestivalRequest {
     /// (`03-design/published-overrides.md` §7).
     #[serde(rename = "hijriOffset", skip_serializing_if = "no_offset")]
     hijri_offset: HijriOffset,
+    /// The festival groups whose spans the answer gives; left out when
+    /// none, as `dated` is (`03-design/festival-groups.md`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    groups: Vec<FestivalGroup>,
     /// How a day's observances are listed; left out when by significance,
     /// so a request that does not ask hashes as it did.
     #[serde(skip_serializing_if = "DayOrder::is_significance")]
@@ -661,6 +702,7 @@ impl FestivalRequest {
             saits: Vec::new(),
             only: None,
             hijri_offset: HijriOffset::NONE,
+            groups: Vec::new(),
             order: DayOrder::Significance,
         }
     }
@@ -996,6 +1038,63 @@ impl FestivalRequest {
         &self.saits
     }
 
+    /// The same request with a festival group added, or put in place of
+    /// the one with its key (`03-design/festival-groups.md`): a consumer
+    /// regroups a pack's rules, or groups its own, as data.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::festival::FestivalGroup;
+    ///
+    /// // Dashain to the Vijaya Dashami, without the full moon.
+    /// let mut ten_days = FestivalPack::NepalPanchanga.groups().remove(0);
+    /// ten_days.members.retain(|member| member != "KOJAGRAT_PURNIMA");
+    /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga).with_group(ten_days.clone());
+    /// assert_eq!(asked.groups().len(), 2);
+    /// assert_eq!(asked.groups()[0], ten_days);
+    /// asked.check()?;
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_group(mut self, group: FestivalGroup) -> FestivalRequest {
+        match self.groups.iter_mut().find(|held| held.key == group.key) {
+            Some(held) => *held = group,
+            None => self.groups.push(group),
+        }
+        self
+    }
+
+    /// The festival groups, in order.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    ///
+    /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    /// assert_eq!(asked.groups()[1].key, "TIHAR");
+    /// ```
+    #[must_use]
+    pub fn groups(&self) -> &[FestivalGroup] {
+        &self.groups
+    }
+
+    /// Whether the answer keeps a group's spans: when it keeps any of its
+    /// members.
+    ///
+    /// ```
+    /// use teistro::FestivalRequest;
+    ///
+    /// let newar = FestivalRequest::from_json(
+    ///     r#"{"rules": "NEPAL_PANCHANGA", "only": {"communities": ["NEWAR"]}}"#,
+    /// )?;
+    /// let kept: Vec<&str> = newar.groups().iter().filter(|g| newar.keeps_group(g)).map(|g| g.key.as_str()).collect();
+    /// assert_eq!(kept, ["TIHAR"]);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn keeps_group(&self, group: &FestivalGroup) -> bool {
+        group.members.iter().any(|member| self.keeps(member))
+    }
+
     /// The published sets, in the order they are laid over the answer.
     #[must_use]
     pub fn published(&self) -> &[PublishedSet] {
@@ -1023,6 +1122,10 @@ impl FestivalRequest {
             .saits()
             .into_iter()
             .fold(request, FestivalRequest::with_sait);
+        let request = pack
+            .groups()
+            .into_iter()
+            .fold(request, FestivalRequest::with_group);
         pack.published()
             .into_iter()
             .fold(request, FestivalRequest::with_published)
@@ -1074,26 +1177,82 @@ impl FestivalRequest {
     /// ```
     #[must_use]
     pub fn narrowed_to(&self, key: &str) -> Option<FestivalRequest> {
-        let after = self
-            .following
-            .iter()
-            .find(|rule| rule.key == key)
-            .map(|rule| rule.after.as_str());
-        let kept = |held: &str| held == key || after == Some(held);
+        self.carries(key)
+            .then(|| self.narrowed_by(&[key], Vec::new()))
+    }
+
+    /// The request cut to what finding a group's spans needs: each
+    /// member's rules as [`FestivalRequest::narrowed_to`] keeps them, and
+    /// the group itself. `None` when the request has no group of that key.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    ///
+    /// let nepal = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    /// let tihar = nepal.narrowed_to_group("TIHAR").expect("in the pack");
+    /// assert_eq!(tihar.groups().len(), 1);
+    /// assert_eq!(tihar.rules().len() + tihar.following().len() + tihar.dated().len(), 6);
+    /// tihar.check()?;
+    /// assert!(nepal.narrowed_to_group("NO_SUCH_GROUP").is_none());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn narrowed_to_group(&self, key: &str) -> Option<FestivalRequest> {
+        let group = self.groups.iter().find(|group| group.key == key)?;
+        let members: Vec<&str> = group.members.iter().map(String::as_str).collect();
+        Some(self.narrowed_by(&members, vec![group.clone()]))
+    }
+
+    /// Whether a rule of the request, or a day a published set adds, has
+    /// this key.
+    fn carries(&self, key: &str) -> bool {
         let added = |set: &PublishedSet| {
             set.entries.iter().any(
                 |entry| matches!(entry, PublishedEntry::Add { key: added, .. } if added == key),
             )
         };
-        let carried = self.rules.iter().any(|r| r.key == key)
+        self.rules.iter().any(|r| r.key == key)
             || self.ekadashis.iter().any(|r| r.key == key)
             || self.following.iter().any(|r| r.key == key)
             || self.dated.iter().any(|r| r.key == key)
             || self.anniversaries.iter().any(|r| r.key == key)
-            || self.published.iter().any(added);
-        if !carried {
-            return None;
+            || self.published.iter().any(added)
+    }
+
+    /// The request cut to `keys`' rules, the karmakala rules they count
+    /// from, their saits and published entries, with `groups`.
+    pub(crate) fn narrowed_by(&self, keys: &[&str], groups: Vec<FestivalGroup>) -> FestivalRequest {
+        let mut wanted: Vec<&str> = keys.to_vec();
+        wanted.extend(
+            self.following
+                .iter()
+                .filter(|rule| keys.contains(&rule.key.as_str()))
+                .map(|rule| rule.after.as_str()),
+        );
+        // The rules a kept karmakala rule reads another's day from: the
+        // rite its parana follows and the rule it is barred with, and so
+        // on, until none is added.
+        let mut at = 0;
+        while let Some(&key) = wanted.get(at) {
+            at += 1;
+            let Some(rule) = self.rules.iter().find(|rule| rule.key == key) else {
+                continue;
+            };
+            let rites = rule.parana.iter().filter_map(|reading| match reading {
+                VrataParana::AfterRite { rite, .. } => Some(rite.as_str()),
+                _ => None,
+            });
+            let barred = rule.barred.iter().filter_map(|barred| match barred {
+                Barred::With { rule, .. } => Some(rule.as_str()),
+                _ => None,
+            });
+            for other in rites.chain(barred).collect::<Vec<_>>() {
+                if !wanted.contains(&other) {
+                    wanted.push(other);
+                }
+            }
         }
+        let kept = |held: &str| wanted.contains(&held);
         let published = self
             .published
             .iter()
@@ -1114,7 +1273,8 @@ impl FestivalRequest {
                 })
             })
             .collect();
-        Some(FestivalRequest {
+        FestivalRequest {
+            groups,
             only: self.only.clone(),
             hijri_offset: self.hijri_offset,
             order: self.order,
@@ -1155,7 +1315,7 @@ impl FestivalRequest {
                 .filter(|s| kept(&s.rule))
                 .cloned()
                 .collect(),
-        })
+        }
     }
 
     /// The karmakala rules, in order.
@@ -1273,6 +1433,7 @@ impl FestivalRequest {
                 .with_field(format!("{at}.rule")));
             }
         }
+        self.check_groups()?;
         for (index, rule) in self.following.iter().enumerate() {
             if !self.rules.iter().any(|held| held.key == rule.after) {
                 return Err(Error::invalid_arg(format!(
@@ -1283,6 +1444,43 @@ impl FestivalRequest {
             }
         }
         Ok(())
+    }
+
+    /// Each group read as [`FestivalGroup::check`] reads it, its key once
+    /// and each member a key the request carries.
+    fn check_groups(&self) -> Result<(), Error> {
+        for (index, group) in self.groups.iter().enumerate() {
+            let at = format!("groups[{index}]");
+            group.check().map_err(|why| why.under(&at))?;
+            if self
+                .groups
+                .iter()
+                .take(index)
+                .any(|held| held.key == group.key)
+            {
+                return Err(Error::invalid_arg(format!(
+                    "the group `{}` is given twice; a span is named by its group's key",
+                    group.key
+                ))
+                .with_field(format!("{at}.key")));
+            }
+            self.check_members(group).map_err(|why| why.under(&at))?;
+        }
+        Ok(())
+    }
+
+    /// Refuses a group member no rule of the request has, naming it
+    /// under `members`.
+    fn check_members(&self, group: &FestivalGroup) -> Result<(), Error> {
+        match group.members.iter().position(|member| !self.carries(member)) {
+            Some(at) => Err(Error::invalid_arg(format!(
+                "{}: `{}` is no rule of the request; a group gathers the days of rules the request reckons",
+                group.key,
+                group.members.get(at).map_or("", String::as_str)
+            ))
+            .with_field(format!("members[{at}]"))),
+            None => Ok(()),
+        }
     }
 
     /// Each set read as [`PublishedSet::check`] reads it, each `SET` and
@@ -1407,6 +1605,15 @@ impl FestivalRequest {
             let field = format!("{FESTIVALS}.published[{index}]");
             let set: PublishedSet = teistro_core::strict::read_value(set, &field)?;
             request = request.with_published(set);
+        }
+        for (index, group) in asked.groups.iter().enumerate() {
+            let field = format!("{FESTIVALS}.groups[{index}]");
+            let group: FestivalGroup = teistro_core::strict::read_value(group, &field)?;
+            group
+                .check()
+                .and_then(|()| request.check_members(&group))
+                .map_err(|why| why.under(&field))?;
+            request = request.with_group(group);
         }
         if let Some(only) = asked.only {
             request = request.keeping(only);
@@ -1549,6 +1756,12 @@ pub(crate) struct Asked {
     /// How a day's observances are listed: `SIGNIFICANCE` when left out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     order: Option<DayOrder>,
+    /// Festival groups, each put in place of a pack's group of its key or
+    /// added after them: a festival kept over several rules' days, whose
+    /// spans the answer gives (`03-design/festival-groups.md`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[cfg_attr(feature = "schema", schemars(with = "Vec<FestivalGroup>"))]
+    groups: Vec<Value>,
 }
 
 /// The schema of [`Asked::rules`]: a pack's name, or a list of

@@ -2868,6 +2868,7 @@ final class AlmanacArea extends _Area {
     FestivalRequest? festivals,
     Calendar? calendar,
     int? limitDays,
+    String? group,
   }) {
     final asked = jsonEncode(<String, Object?>{
       'after': after,
@@ -2878,6 +2879,7 @@ final class AlmanacArea extends _Area {
       if (calendar != null) 'calendar': calendar.key,
       if (kind != null) 'kind': kind,
       if (rule != null) 'rule': rule,
+      if (group != null) 'group': group,
       if (festivals != null) 'festivals': jsonDecode(festivals._json),
       if (limitDays != null) 'limitDays': limitDays,
     });
@@ -2897,6 +2899,10 @@ final class AlmanacArea extends _Area {
       from: _serdeDate(value['from']! as Map<String, Object?>),
       limitDays: value['limitDays']! as int,
       searchedDays: value['searchedDays']! as int,
+      group: switch (value['group']) {
+        null => null,
+        final Object span => _groupSpan(span),
+      },
     );
   }
 
@@ -3274,6 +3280,7 @@ final class NextOccurrence {
     required this.from,
     required this.limitDays,
     required this.searchedDays,
+    this.group,
   });
 
   /// The day, in the request's calendar.
@@ -3294,6 +3301,10 @@ final class NextOccurrence {
 
   /// The days reckoned until it was found.
   final int searchedDays;
+
+  /// For a `group`, its span: [day] is its first day; null for a rule or
+  /// a kind.
+  final GroupSpan? group;
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star
@@ -18506,6 +18517,7 @@ final class FestivalRequest extends _Facade {
     this.hijriOffset,
     this.meta = const {},
     this.order,
+    this.groups = const [],
   });
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
@@ -18564,6 +18576,18 @@ final class FestivalRequest extends _Facade {
   /// How a day's observances are listed in a cell; by significance when
   /// null (`03-design/festival-metadata.md` §7).
   final DayOrder? order;
+  /// Festival groups, each spelt as its JSON (`03-design/festival-groups.md`):
+  /// `key`, `members` (rule keys of the request, in order), `main` (one of
+  /// them) and `source`. Each is put in place of a pack's group of its key,
+  /// or added after them; the answer gives each group's spans.
+  ///
+  /// ```dart
+  /// const FestivalRequest(rules: FestivalPack.nepalPanchanga, groups: [
+  ///   {'key': 'DASHAIN', 'members': ['NAVARATRA_ARAMBHA', 'VIJAYA_DASHAMI'],
+  ///    'main': 'VIJAYA_DASHAMI', 'source': 'our grouping'},
+  /// ]);
+  /// ```
+  final List<Map<String, Object?>> groups;
 
   /// Its JSON, as the SDK reads it.
   @override
@@ -18584,6 +18608,7 @@ final class FestivalRequest extends _Facade {
         for (final MapEntry(:key, :value) in meta.entries) key: _written(value),
       },
     if (order case final listed?) 'order': listed.key,
+    if (groups.isNotEmpty) 'groups': [for (final group in groups) _written(group)],
   };
 
   String get _json => jsonEncode(_wire);
@@ -19691,6 +19716,7 @@ final class FestivalAnswer {
     this.added = const [],
     this.unplaced = const [],
     this.applied = const [],
+    this.groups = const [],
     required this.provenance,
   });
 
@@ -19717,9 +19743,71 @@ final class FestivalAnswer {
   /// The published sets laid over the answer, in order.
   final List<PublishedApplied> applied;
 
+  /// Each festival group's spans that reach the range, in the order of
+  /// their first days (`03-design/festival-groups.md`); empty when the
+  /// request names no group.
+  final List<GroupSpan> groups;
+
   /// What computed it: the widened days among the applied conventions as
   /// `festival.days`, and the hash of the value.
   final Provenance provenance;
+}
+
+/// A festival group's occurrence (`03-design/festival-groups.md`, SR-125):
+/// the days from its first member's to its last, each member's day, and
+/// every day between, a day no member falls on marked [GroupDay.gap].
+final class GroupSpan {
+  const GroupSpan({
+    required this.group,
+    required this.main,
+    required this.first,
+    required this.last,
+    required this.members,
+    required this.days,
+  });
+
+  /// The group's key, as `TIHAR`.
+  final String group;
+
+  /// The main member's key, as `LAKSHMI_PUJA`.
+  final String main;
+
+  /// The span's first day.
+  final CalendarDate first;
+
+  /// The span's last day, inclusive.
+  final CalendarDate last;
+
+  /// Each member and its day, in the group's order.
+  final List<GroupMember> members;
+
+  /// Every day from [first] to [last], in order.
+  final List<GroupDay> days;
+}
+
+/// One member of a group's span, in the group's order.
+final class GroupMember {
+  const GroupMember({required this.rule, this.day});
+
+  /// The member rule's key.
+  final String rule;
+
+  /// Its day in this span; null when it falls on none.
+  final CalendarDate? day;
+}
+
+/// One day of a group's span.
+final class GroupDay {
+  const GroupDay({required this.day, required this.members, required this.gap});
+
+  /// The day.
+  final CalendarDate day;
+
+  /// The members that fall on it, in the group's order; empty on a gap.
+  final List<String> members;
+
+  /// Whether no member falls on it: a day of the span all the same.
+  final bool gap;
 }
 
 /// The instant one reckoning's member gives way to the other's, under one
@@ -20660,7 +20748,42 @@ FestivalAnswer _festivalAnswer(String json) {
           hash: raw['hash']! as String,
         ),
     ]),
+    groups: List.unmodifiable([
+      for (final raw in _festivalEach(value['groups'] ?? const <Object?>[]))
+        _groupSpan(raw),
+    ]),
     provenance: Provenance.fromJson(_festivalAt(envelope['provenance'])),
+  );
+}
+
+/// A festival group's span as a festival answer writes it.
+GroupSpan _groupSpan(Object? json) {
+  final raw = _festivalAt(json);
+  return GroupSpan(
+    group: raw['group']! as String,
+    main: raw['main']! as String,
+    first: _serdeDate(_festivalAt(raw['first'])),
+    last: _serdeDate(_festivalAt(raw['last'])),
+    members: List.unmodifiable([
+      for (final member in _festivalEach(raw['members']))
+        GroupMember(
+          rule: member['rule']! as String,
+          day: switch (member['day']) {
+            null => null,
+            final Object day => _serdeDate(_festivalAt(day)),
+          },
+        ),
+    ]),
+    days: List.unmodifiable([
+      for (final day in _festivalEach(raw['days']))
+        GroupDay(
+          day: _serdeDate(_festivalAt(day['day'])),
+          members: List.unmodifiable(
+            (day['members']! as List<Object?>).cast<String>(),
+          ),
+          gap: day['gap']! as bool,
+        ),
+    ]),
   );
 }
 

@@ -1949,7 +1949,13 @@ const publishedSet = {
     { action: 'SET', rule: 'HOLIKA', day: day2024(10, 25), source: 'p. 4' },
   ],
 };
-for (const [name, rules, published, hijriOffset, span] of [
+// Two festival groups over Dharmasindhu's pack: the Navaratra, whose span
+// crosses the range's first day, and Deepavali's three days.
+const ownGroups = [
+  { key: 'NAVARATRA', members: ['NAVARATRA_ARAMBHA', 'MAHA_NAVAMI', 'VIJAYA_DASHAMI'], main: 'VIJAYA_DASHAMI', source: 'a test' },
+  { key: 'DEEPAVALI', members: ['LAKSHMI_PUJA', 'BALI_PRATIPADA', 'YAMA_DWITIYA'], main: 'LAKSHMI_PUJA', source: 'a test' },
+];
+for (const [name, rules, published, hijriOffset, span, groups] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
@@ -1959,6 +1965,7 @@ for (const [name, rules, published, hijriOffset, span] of [
   // A month the test provider's 2023 doubles: a monthly rule kept in its
   // adhika month says which month rule placed it (SR-93).
   ['malamasa', 'DHARMASINDHU', undefined, undefined, [gregorian(2023, 8, 20), gregorian(2023, 9, 10)]],
+  ['grouped', 'DHARMASINDHU', undefined, undefined, undefined, ownGroups],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
   // almanac's: the two answer alike, so the report cannot tell.
@@ -1971,6 +1978,7 @@ for (const [name, rules, published, hijriOffset, span] of [
       rules,
       ...(published ? { published } : {}),
       ...(hijriOffset ? { hijriOffset } : {}),
+      ...(groups ? { groups } : {}),
     },
   };
   const festivals =
@@ -2050,6 +2058,13 @@ for (const [name, rules, published, hijriOffset, span] of [
   });
   festivals.applied.forEach((a, k) => {
     put(key(`-applied-${k}`), `${a.id} ${a.version} ${a.hash}`);
+  });
+  // Each group's span, printed only where there are some.
+  const on = (d) => `${d.month}-${d.day}`;
+  festivals.groups.forEach((span, k) => {
+    put(key(`-group-${k}`), `${span.group} ${span.main} ${on(span.first)} ${on(span.last)}`);
+    put(key(`-group-${k}-members`), span.members.map((m) => `${m.rule}:${m.day ? on(m.day) : '-'}`).join(' '));
+    put(key(`-group-${k}-days`), span.days.map((d) => `${on(d.day)}:${d.gap ? '-' : d.members.join('+')}`).join(' '));
   });
 }
 

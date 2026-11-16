@@ -743,6 +743,19 @@ public final class ParityRunner {
             Published.Applied a = answer.applied().get(k);
             put(prefix + "-applied-" + k, a.id() + " " + a.version() + " " + a.hash());
         }
+        // Each group's span, printed only where there are some.
+        java.util.function.Function<CalendarDate, String> on = day -> day.month() + "-" + day.day();
+        for (int k = 0; k < answer.groups().size(); k += 1) {
+            GroupSpan span = answer.groups().get(k);
+            put(prefix + "-group-" + k, span.group() + " " + span.main() + " " + on.apply(span.first()) + " "
+                    + on.apply(span.last()));
+            put(prefix + "-group-" + k + "-members", span.members().stream()
+                    .map(m -> m.rule() + ":" + (m.day() == null ? "-" : on.apply(m.day())))
+                    .collect(java.util.stream.Collectors.joining(" ")));
+            put(prefix + "-group-" + k + "-days", span.days().stream()
+                    .map(d -> on.apply(d.day()) + ":" + (d.gap() ? "-" : String.join("+", d.members())))
+                    .collect(java.util.stream.Collectors.joining(" ")));
+        }
     }
 
     /** An Ashta Koota as every runner prints it, under {@code prefix}. */
@@ -3261,6 +3274,13 @@ public final class ParityRunner {
                                 "names", map("en-Latn", "Mine"), "source", "p. 3"),
                         map("action", "SET", "rule", "HOLIKA", "day", day2024.apply(10, 25), "source", "p. 4")));
         packs.put("published", map("rules", "DHARMASINDHU", "published", List.<Object>of(publishedSet)));
+        // Two festival groups over Dharmasindhu's pack: the Navaratra, whose
+        // span holds gap days, and the Deepavali.
+        packs.put("grouped", map("rules", "DHARMASINDHU", "groups", List.<Object>of(
+                map("key", "NAVARATRA", "members", List.of("NAVARATRA_ARAMBHA", "MAHA_NAVAMI", "VIJAYA_DASHAMI"),
+                        "main", "VIJAYA_DASHAMI", "source", "a test"),
+                map("key", "DEEPAVALI", "members", List.of("LAKSHMI_PUJA", "BALI_PRATIPADA", "YAMA_DWITIYA"),
+                        "main", "LAKSHMI_PUJA", "source", "a test"))));
         // The shipped pack is asked of the lean call, the others of the
         // almanac's: the two answer alike, so the report cannot tell.
         for (Map.Entry<String, Map<String, Object>> pack : packs.entrySet()) {
