@@ -91,16 +91,15 @@ pub const EARTH_EQUATORIAL_RADIUS_KM: f64 = 6_378.137;
 /// assert!((jupiter.semidiameter_deg * 3600.0 - 69_911.0 / (5.0 * AU_KM) * 206_264.8).abs() < 0.01);
 /// ```
 pub const AU_KM: f64 = 149_597_870.7;
-/// The Sun's nominal radius, kilometres (IAU 2015 Resolution B3): the one
-/// solar radius the SDK reckons by, for a sunrise's limb and an eclipse's
-/// disc alike. The eclipse module once kept the older 696 000 km.
+/// The Sun's nominal radius, kilometres (IAU 2015 Resolution B3): the
+/// photosphere a sunrise's limb is reckoned by. An eclipse is reckoned by
+/// the canons' own radius instead ([`crate::eclipse::SUN_RADIUS_KM`]).
 ///
 /// ```
 /// use teistro_astro::rise_set::{SUN_RADIUS_KM, radius_km};
 /// use teistro_port_ephemeris::Body;
 ///
 /// assert_eq!(radius_km(Body::Sun), SUN_RADIUS_KM);
-/// assert_eq!(teistro_astro::eclipse::SUN_RADIUS_KM, SUN_RADIUS_KM);
 /// ```
 pub const SUN_RADIUS_KM: f64 = 695_700.0;
 /// The Moon's mean radius, kilometres (Archinal et al. 2018).
