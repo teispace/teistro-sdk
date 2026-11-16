@@ -1432,6 +1432,63 @@ fn a_hijri_offset_past_two_days_is_refused_by_name() {
     assert!(teistro::HijriOffset::new(3).is_err());
 }
 
+/// Every day `NEPAL_PANCHANGA` keeps over VS 2083 (14 April 2026 to 13
+/// April 2027) at Kathmandu is named in Devanagari in every Devanagari
+/// locale, read through the façade as a reader is (SR-128): a Hindi
+/// reader once saw 171 of them in English, the base locale Hindi falls
+/// back to. `check-intl` holds the sources to the same rule for every
+/// shipped pack (`03-design/entity-names.md` §4h).
+#[test]
+fn every_day_of_a_nepali_year_is_named_in_devanagari() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let kept = sdk
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 4, 14),
+            &CalendarDate::defined(Calendar::Gregorian, 2027, 4, 13),
+            &kathmandu,
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap()
+        .value;
+    let rules: std::collections::BTreeSet<String> = kept
+        .observances
+        .iter()
+        .map(|kept| kept.rule.clone())
+        .chain(kept.ekadashis.iter().map(|kept| kept.rule.clone()))
+        .chain(kept.dated.iter().map(|kept| kept.rule.clone()))
+        .chain(
+            kept.anniversaries
+                .iter()
+                .map(|kept| kept.observance.rule.clone()),
+        )
+        .collect();
+    assert!(rules.len() > 300, "{} rules kept", rules.len());
+    let devanagari = |name: &str| name.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+    for locale in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        let reader = Context::builder()
+            .locale(locale)
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .unwrap();
+        let latin: Vec<String> = rules
+            .iter()
+            .filter_map(|rule| {
+                let entity = reader.intl().entity(&format!("festival.{rule}")).unwrap();
+                let name = entity.form("name").unwrap().to_owned();
+                (!devanagari(&name)).then(|| format!("{rule}: {name}"))
+            })
+            .collect();
+        assert!(latin.is_empty(), "{locale} names in Latin: {latin:?}");
+    }
+}
+
 /// An observance as the SR-93 tests read it: its rule, its Gregorian day,
 /// and the month clause that placed it.
 type Placed = (String, (i32, u8, u8), Option<MalamasaClause>);

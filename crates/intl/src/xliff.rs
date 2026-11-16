@@ -488,24 +488,26 @@ mod tests {
     ///
     /// [`what_was_exported_imports_back_unchanged`] walks `ne-Deva-NP`,
     /// which is complete: every target is full and the empty-target path
-    /// is never taken. `hi-Deva-IN` names about three entities in five of
-    /// the base's, so its export holds hundreds of **empty targets** — and
-    /// an import that wrote them would replace a locale's records with
-    /// blanks, which is the shape of the bug `load_pack` already had
-    /// once (`03-design/state-readings.md`). This is that path at full
-    /// size rather than in a four-unit miniature.
+    /// is never taken. `sa-Deva` leaves its eras, mundane kinds and
+    /// untranslated messages to do, so its export holds a hundred **empty
+    /// targets** — and an import that wrote them would replace a locale's
+    /// records with blanks, which is the shape of the bug `load_pack`
+    /// already had once (`03-design/state-readings.md`). This is that path
+    /// at full size rather than in a four-unit miniature. (It walked
+    /// `hi-Deva-IN` until Hindi named its festivals and text terms,
+    /// SR-128.)
     #[test]
     fn a_locale_with_everything_left_to_do_round_trips_untouched() {
         let tree = tree();
-        let exported = export(&tree, "hi-Deva-IN").unwrap_or_else(|e| panic!("{e}"));
+        let exported = export(&tree, "sa-Deva").unwrap_or_else(|e| panic!("{e}"));
         assert!(
-            exported.untranslated > 100,
+            exported.untranslated > 50,
             "the locale to translate should have work in it: {} of {}",
             exported.untranslated,
             exported.units
         );
         let imported = import(&tree, &exported.text).unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(imported.locale, "hi-Deva-IN");
+        assert_eq!(imported.locale, "sa-Deva");
         assert_eq!(imported.empty, exported.untranslated);
         assert!(imported.unknown.is_empty(), "{:?}", imported.unknown);
 
@@ -514,7 +516,7 @@ mod tests {
         // reached yet, never an instruction to blank one.
         let locale = tree
             .locales
-            .get("hi-Deva-IN")
+            .get("sa-Deva")
             .unwrap_or_else(|| panic!("locale"));
         let applied = apply(&imported, locale);
         for (name, namespace) in &locale.namespaces {
