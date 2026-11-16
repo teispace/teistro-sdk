@@ -3410,6 +3410,18 @@ def main() -> None:
             f"eclipses-lunar-{k}-here",
             " ".join([eclipse_moment(m) for m in (lunar_view.p1, lunar_view.u1, lunar_view.u2, lunar_view.greatest, lunar_view.u3, lunar_view.u4, lunar_view.p4)] + [eclipse_seen(lunar_view.seen), eclipse_seen(lunar_view.umbral_seen)]),
         )
+        lunar_largest = lunar_view.seen_maximum
+        put(
+            f"eclipses-lunar-{k}-seen-maximum",
+            " ".join(
+                (
+                    lunar_largest.why,
+                    eclipse_moment(lunar_largest.moment),
+                    number_or_dash(lunar_largest.umbral_magnitude),
+                    number_or_dash(lunar_largest.penumbral_magnitude),
+                )
+            ),
+        )
         put(f"eclipses-lunar-{k}-vedha", eclipse_seen(lunar_eclipse.vedha))
     for k, solar_eclipse in enumerate(eclipses.value.solar):
         solar_found, solar_view = solar_eclipse.eclipse, solar_eclipse.here
@@ -3434,6 +3446,20 @@ def main() -> None:
                 [solar_view.kind.full_key, number(solar_view.magnitude), number(solar_view.obscuration)]
                 + [eclipse_moment(m) for m in (solar_view.first, solar_view.second, solar_view.third, solar_view.fourth, solar_view.maximum)]
                 + [eclipse_seen(solar_view.seen)]
+            ),
+        )
+        solar_largest = None if solar_view is None else solar_view.seen_maximum
+        put(
+            f"eclipses-solar-{k}-seen-maximum",
+            "-"
+            if solar_largest is None
+            else " ".join(
+                (
+                    solar_largest.why,
+                    eclipse_moment(solar_largest.moment),
+                    number_or_dash(solar_largest.magnitude),
+                    number_or_dash(solar_largest.obscuration),
+                )
             ),
         )
         put(f"eclipses-solar-{k}-vedha", eclipse_seen(solar_eclipse.vedha))

@@ -481,6 +481,32 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
     assert_eq!(keys, ["days", "dayHashes"]);
 }
 
+/// SR-106 through the tool: an eclipse greatest below the horizon answers
+/// the largest phase the place sees beside the geometric one, and why.
+#[test]
+fn a_days_request_answers_the_largest_phase_of_an_eclipse_seen() {
+    let mut server = Server::new(Engine::Builtin);
+    let request = json!({"first": {"year": 2022, "month": 10, "day": 25},
+        "last": {"year": 2022, "month": 10, "day": 25},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "eclipses": true});
+    let result = call(
+        &mut server,
+        "almanac.days",
+        &json!({"request": request, "detail": "full"}),
+    );
+    let here = &result["structuredContent"]["value"]["eclipses"]["value"]["solar"][0]["here"];
+    assert!(
+        here["maximum"]["altitudeDeg"].as_f64().unwrap() < -5.0,
+        "{here}"
+    );
+    let largest = &here["seenMaximum"];
+    assert_eq!(largest["why"], json!("SETTING"));
+    assert_eq!(largest["moment"]["at"], here["seen"]["to"]);
+    let magnitude = largest["magnitude"].as_f64().unwrap();
+    assert!((magnitude - 0.376).abs() < 0.002, "{magnitude}");
+}
+
 #[test]
 fn a_civil_time_resolves_and_reads_back_on_the_same_clock() {
     let mut server = Server::new(Engine::None);

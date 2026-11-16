@@ -14,7 +14,9 @@ package com.teispace.teistro;
  * @param seen the stretch seen; may be null
  * @param umbralSeen the stretch of the umbral phase seen, the part the eye
  *     sees; may be null (always for a penumbral eclipse)
+ * @param seenMaximum the largest phase the place sees
  */
 public record LunarEclipseView(
         EclipseMoment p1, EclipseMoment u1, EclipseMoment u2, EclipseMoment greatest, EclipseMoment u3,
-        EclipseMoment u4, EclipseMoment p4, EclipseSeen seen, EclipseSeen umbralSeen) {}
+        EclipseMoment u4, EclipseMoment p4, EclipseSeen seen, EclipseSeen umbralSeen,
+        LunarSeenMaximum seenMaximum) {}

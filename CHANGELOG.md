@@ -12,6 +12,25 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The largest phase of a local eclipse seen (SR-106).**
+**Numbers:** every eclipse section's content hash moves, since each solar and lunar view gains
+`seenMaximum`; no existing field's value changes.
+- A place's view of a solar eclipse carries `seenMaximum`: `{why, moment, magnitude,
+  obscuration}`, the largest phase the place sees. A lunar view's is `{why, moment,
+  umbralMagnitude, penumbralMagnitude}`. `magnitude` and `maximum` stay geometric.
+- `why` is `MAXIMUM` when the body is up at the maximum, `RISING` or `SETTING` when the
+  largest phase seen is where it rises after the maximum or sets before it,
+  `RISING_PAST_LIMIT` or `SETTING_PAST_LIMIT` against a custom altitude, and `NOT_SEEN`, its
+  moment and magnitudes null (crux C1980).
+- The edge is `panchanga.eclipse_horizon`, the convention rise and set use. Kathmandu on
+  2022-10-25 is greatest at 0.490 with the Sun 5.7° down; under the default horizon it sees
+  0.376 at sunset, and on NASA's eclipse explorer's line (the upper limb on the geometric
+  horizon) 0.352 against NASA's 0.356.
+- A body that sets and rises again inside one eclipse is read spell by spell for this field.
+- Rust (`teistro::eclipse::{SeenAt, SolarSeenMaximum, LunarSeenMaximum}`), the C boundary's
+  `eclipses` section, Node and wasm, Python, Dart, Java and the MCP server's `almanac.days`,
+  each with a test and parity lines.
+
 **A fortnight's short name and a rashi's Indian name in every pack.**
 **Numbers:** none; two record forms are added and no existing form changes.
 - `paksha.SHUKLA` and `paksha.KRISHNA` carry `short`, the word a tithi's name begins with:
