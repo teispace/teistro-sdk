@@ -951,7 +951,8 @@ test('every catalogue enum has a complete id table', () => {
   // `gochar_verdict`'s three, each with its member of `TsKind`, the last in
   // place of `TsGocharVerdict`'s three.
   // 1592 since `TsDeltaTSource` gained `EXTRAPOLATED`.
-  assert.equal(entries, 1592, 'every member of every enum is in a table');
+  // 1597 since Delta T's band, `TsDeltaTBand`, five.
+  assert.equal(entries, 1597, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

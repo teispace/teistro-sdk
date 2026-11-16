@@ -43,7 +43,15 @@ pub fn sunrise_share() -> f64 {
     SUN_MEAN_MOTION_DEG_PER_DAY / (EARTH_ROTATION_DEG_PER_DAY - SUN_MEAN_MOTION_DEG_PER_DAY)
 }
 
-/// [`sunrise_share`] for the Moon.
+/// [`sunrise_share`] for the Moon: the Moon moves about thirteen times as
+/// fast, so its rise takes on that much more of a change in Delta T.
+///
+/// ```
+/// use teistro_panchanga::uncertainty::{moonrise_share, sunrise_share};
+///
+/// assert!(moonrise_share() > 13.0 * sunrise_share());
+/// assert!(moonrise_share() < 0.04);
+/// ```
 #[must_use]
 pub fn moonrise_share() -> f64 {
     MOON_MEAN_MOTION_DEG_PER_DAY / (EARTH_ROTATION_DEG_PER_DAY - MOON_MEAN_MOTION_DEG_PER_DAY)
@@ -92,6 +100,20 @@ pub struct TimesUncertainty {
 
 impl TimesUncertainty {
     /// The bands a Delta T gives a day's times.
+    ///
+    /// ```
+    /// use teistro_astro::delta_t::{DeltaTModel, delta_t};
+    /// use teistro_core::quantity::{JulianDay, Ut1};
+    /// use teistro_panchanga::uncertainty::{TimesUncertainty, sunrise_share};
+    ///
+    /// // 2050, beyond the measured table: about six seconds.
+    /// let applied = delta_t(JulianDay::<Ut1>::literal(2_469_807.5), DeltaTModel::TableThenModel)?;
+    /// let band = TimesUncertainty::of(&applied);
+    /// let limbs = band.limbs_seconds.ok_or("stated")?;
+    /// assert!(limbs > 4.0 && limbs < 8.0);
+    /// assert_eq!(band.sunrise_seconds, Some(limbs * sunrise_share()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn of(delta_t: &DeltaT) -> TimesUncertainty {
         let sigma = delta_t.uncertainty_seconds;
@@ -136,7 +158,7 @@ mod tests {
             (None, None, None)
         );
         let json = serde_json::to_value(band).unwrap();
-        assert_eq!(json["band"], "UNSTATED");
+        assert_eq!(json.get("band").unwrap(), "UNSTATED");
     }
 
     #[test]
