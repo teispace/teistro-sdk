@@ -36,6 +36,7 @@ mod dated;
 mod ekadashi;
 mod following;
 mod gaudiya;
+mod group;
 mod holiday;
 mod in_month;
 mod india_andhra_pradesh;
@@ -76,6 +77,7 @@ pub use ekadashi::{
     ekadashis,
 };
 pub use following::{FollowingRule, following};
+pub use group::{FestivalGroup, GroupDay, GroupMember, GroupSpan, group_spans};
 pub use holiday::{Holiday, HolidayNotice, HolidaySet, nepal_gazette_scope};
 pub use in_month::InMonth;
 pub use malamasa::{Malamasa, MalamasaClause};
@@ -2877,6 +2879,11 @@ pub struct Observances {
     /// none, so an answer asked without them is the one it was.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub applied: Vec<published::AppliedSet>,
+    /// Each festival group's spans that reach the range, in the order of
+    /// their first days (`03-design/festival-groups.md`); left out when
+    /// none, so an answer whose request names no group is the one it was.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<GroupSpan>,
 }
 
 impl Observances {
@@ -2987,7 +2994,7 @@ impl Observances {
     ///
     /// assert_eq!(Observances::MEMBERS[0], ("observances", "month", Kind::Masa));
     /// ```
-    pub const MEMBERS: [(&'static str, &'static str, Kind); 45] = [
+    pub const MEMBERS: [(&'static str, &'static str, Kind); 53] = [
         ("observances", "month", Kind::Masa),
         ("observances", "day.calendar", Kind::Calendar),
         ("observances", "day.era.era", Kind::Era),
@@ -3037,6 +3044,14 @@ impl Observances {
         ("added", "day.era.era", Kind::Era),
         ("unplaced", "day.calendar", Kind::Calendar),
         ("unplaced", "day.era.era", Kind::Era),
+        ("groups", "first.calendar", Kind::Calendar),
+        ("groups", "first.era.era", Kind::Era),
+        ("groups", "last.calendar", Kind::Calendar),
+        ("groups", "last.era.era", Kind::Era),
+        ("groups", "members.day.calendar", Kind::Calendar),
+        ("groups", "members.day.era.era", Kind::Era),
+        ("groups", "days.day.calendar", Kind::Calendar),
+        ("groups", "days.day.era.era", Kind::Era),
     ];
 
     /// Both answers as one, the occurrences no day was given to in the
@@ -3129,6 +3144,7 @@ impl Observances {
         self.added.extend(other.added);
         self.unplaced.extend(other.unplaced);
         self.applied.extend(other.applied);
+        self.groups.extend(other.groups);
         self.anniversaries.sort_by(|a, b| {
             a.observance
                 .tithi

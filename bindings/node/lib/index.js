@@ -6791,8 +6791,27 @@ function festivalsFrom(json) {
     })),
     unplaced: (value.unplaced ?? []).map((entry) => ({ ...entry, day: dateFrom(entry.day) })),
     applied: value.applied ?? [],
+    groups: (value.groups ?? []).map(groupSpanFrom),
     provenance: decodeProvenance(provenance),
   });
+}
+
+/**
+ * A festival group's span as a festival answer writes it
+ * (`03-design/festival-groups.md`), its dates in the shape every other
+ * date here has and a member with no day in it holding `null`.
+ *
+ * @param {object} span
+ * @returns {object}
+ */
+function groupSpanFrom(span) {
+  return {
+    ...span,
+    first: dateFrom(span.first),
+    last: dateFrom(span.last),
+    members: span.members.map((member) => ({ rule: member.rule, day: member.day ? dateFrom(member.day) : null })),
+    days: span.days.map((day) => ({ ...day, day: dateFrom(day.day) })),
+  };
 }
 
 /**
@@ -9171,11 +9190,12 @@ export class AlmanacArea extends Area {
    * @param {object} request.place `{ latitude, longitude, altitude }`
    * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {string} [request.calendar] the answer's days' calendar; Gregorian when left out
-   * @param {string} [request.kind] a kind of day, or else `rule`
-   * @param {string} [request.rule] a key of `festivals`, or else `kind`
-   * @param {object} [request.festivals] a festivals request record, with `rule`
+   * @param {string} [request.kind] a kind of day, or else `rule` or `group`
+   * @param {string} [request.rule] a rule's key in `festivals`, or else `kind` or `group`
+   * @param {string} [request.group] a festival group's key in `festivals`: its next span, the one under way counting
+   * @param {object} [request.festivals] a festivals request record, with `rule` or `group`
    * @param {number} [request.limitDays] how many days ahead to look, 1 to 3660
-   * @returns {object} `{ day, keys, festivals, from, limitDays, searchedDays, provenance }`
+   * @returns {object} `{ day, keys, festivals, from, limitDays, searchedDays, group, provenance }`
    */
   next(request) {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
@@ -9203,6 +9223,7 @@ export class AlmanacArea extends Area {
       from: dateFrom(value.from),
       limitDays: value.limitDays,
       searchedDays: value.searchedDays,
+      group: value.group ? groupSpanFrom(value.group) : null,
       provenance: found.provenance,
     });
   }

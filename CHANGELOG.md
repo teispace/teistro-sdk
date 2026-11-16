@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festival groups (SR-125).**
+**Numbers:** no day moves. The festival answers of `NEPAL_PANCHANGA`, `INDIA_BIHAR`,
+`INDIA_UTTAR_PRADESH`, `INDIA_WEST_BENGAL`, `INDIA_ASSAM` and `INDIA_ODISHA` gain
+`groups`, so their value hashes move, and so do the input hashes of requests naming
+those packs, which now carry the packs' groups. Every other pack's answer and hash is
+unchanged. A festival kept over several days is now data in the pack: a group's key,
+its member rules in order, its main day and its source (`03-design/festival-groups.md`,
+cruxes C2100 to C2111). The answer's `groups` gives each span that reaches the range,
+with its first and last days, each member's day, and every day between, a day no member
+falls on marked `gap`. A range that cuts a span still answers it whole: 9 November 2026
+alone answers Tihar from the 7th to the 11th, the 9th a gap. Nepal carries Dashain (to
+Kojagrat Purnima) and Tihar; Bihar the Durga Puja, Navaratri and Chhath (Kharna to the
+morning arghya); West Bengal, Assam and Odisha the Durga Puja; Uttar Pradesh Deepawali.
+A request's own group replaces a pack's of its key. `almanac.next` takes a `group` and
+answers its next span, one under way counting. A rule's next day now keeps the rite its
+parana follows and the rule that bars it, which the narrowed request used to drop and
+refuse. Rust, C (the JSON of `ts_almanac_next` and the festival answer), Node, wasm,
+Python, Dart (`group:`), Java (`nextGroup`) and MCP read it; the parity runners print a
+grouped case.
+
 **A classical sky's Moon stands at her true distance (SR-127).**
 **Numbers:** under a classical sky (the Surya Siddhanta's, which `nepal_official` and
 `nepali-committee` open) the Moon's lit fraction, the Sun's and Moon's apparent

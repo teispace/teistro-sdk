@@ -764,6 +764,21 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
     for k, applied in enumerate(answer.applied):
         put(f"{prefix}-applied-{k}", f"{applied.id} {applied.version} {applied.hash}")
 
+    # Each group's span, printed only where there are some.
+    def on(day: CalendarDate) -> str:
+        return f"{day.month}-{day.day}"
+
+    for k, span in enumerate(answer.groups):
+        put(f"{prefix}-group-{k}", f"{span.group} {span.main} {on(span.first)} {on(span.last)}")
+        put(
+            f"{prefix}-group-{k}-members",
+            " ".join(f"{m.rule}:{'-' if m.day is None else on(m.day)}" for m in span.members),
+        )
+        put(
+            f"{prefix}-group-{k}-days",
+            " ".join(f"{on(d.day)}:{'-' if d.gap else '+'.join(d.members)}" for d in span.days),
+        )
+
 
 def put_ashta(prefix: str, matched: AshtaKoota) -> None:
     """An Ashta Koota as every runner prints it, under `prefix`."""
@@ -3055,6 +3070,28 @@ def main() -> None:
             ("dated", {"rules": ["NEPAL", *own_dated]}),
             ("hijri", {"rules": [own_hijri], "hijriOffset": 1}),
             ("published", {"rules": "DHARMASINDHU", "published": [PUBLISHED_SET]}),
+            # Two festival groups: the Navaratra, whose span crosses the
+            # range's first day, and Deepavali's three days.
+            (
+                "grouped",
+                {
+                    "rules": "DHARMASINDHU",
+                    "groups": [
+                        {
+                            "key": "NAVARATRA",
+                            "members": ["NAVARATRA_ARAMBHA", "MAHA_NAVAMI", "VIJAYA_DASHAMI"],
+                            "main": "VIJAYA_DASHAMI",
+                            "source": "a test",
+                        },
+                        {
+                            "key": "DEEPAVALI",
+                            "members": ["LAKSHMI_PUJA", "BALI_PRATIPADA", "YAMA_DWITIYA"],
+                            "main": "LAKSHMI_PUJA",
+                            "source": "a test",
+                        },
+                    ],
+                },
+            ),
         )
         # The shipped pack is asked of the lean call, the others of the
         # almanac's: the two answer alike, so the report cannot tell.

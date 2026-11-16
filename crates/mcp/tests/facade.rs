@@ -218,6 +218,43 @@ fn a_tool_answers_as_the_facade_does() {
     }
 }
 
+/// **A festival group's next span** (`03-design/festival-groups.md` §5):
+/// `almanac.next` asked for a group answers its span as the façade does,
+/// brief and in full, and a key no group of the request has is refused by
+/// its field.
+#[test]
+fn the_next_span_of_a_group_answers_as_the_facade_does() {
+    let mut server = Server::new(Engine::Builtin).with_geo(geo());
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .geo(geo())
+        .build()
+        .unwrap();
+    let request = json!({"after": 2_461_041.76, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "altitudeM": 1400, "utcOffsetSeconds": 20700, "group": "TIHAR",
+        "festivals": {"rules": "NEPAL_PANCHANGA"}});
+    for detail in ["brief", "full"] {
+        let result = call(
+            &mut server,
+            "almanac.next",
+            &json!({"request": request, "detail": detail}),
+        );
+        let detail = AnswerDetail::from_name(detail).unwrap();
+        answers_as_the_facade("almanac.next", &result, &context, &request, detail);
+    }
+    let full = call(
+        &mut server,
+        "almanac.next",
+        &json!({"request": request, "detail": "full"}),
+    );
+    assert_eq!(full["structuredContent"]["value"]["group"]["group"], "TIHAR", "{full}");
+    let mut unknown = request.clone();
+    unknown["group"] = json!("HOLI");
+    let refused = call(&mut server, "almanac.next", &json!({"request": unknown}));
+    assert_eq!(refused["isError"], true, "{refused}");
+    assert!(refused.to_string().contains("group"), "{refused}");
+}
+
 /// A detail no record answers is refused, named under `arguments.detail`;
 /// a server set to answer in full answers so when a call names none.
 #[test]

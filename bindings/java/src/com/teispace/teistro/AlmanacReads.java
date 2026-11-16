@@ -129,7 +129,32 @@ final class AlmanacReads {
                                     Reads.string(a, "publisher"), Reads.string(a, "hash"));
                         })
                         : java.util.List.of(),
+                // Left out of the answer when the request names no group.
+                value.containsKey("groups")
+                        ? Reads.each(value, "groups", AlmanacReads::groupSpan)
+                        : java.util.List.of(),
                 provenance(envelope));
+    }
+
+    /** A festival group's span, as a festival answer writes it. */
+    static GroupSpan groupSpan(Object raw) {
+        Map<?, ?> g = Reads.object(raw);
+        return new GroupSpan(
+                Reads.string(g, "group"),
+                Reads.string(g, "main"),
+                Reads.serdeDate(Reads.field(g, "first")),
+                Reads.serdeDate(Reads.field(g, "last")),
+                Reads.each(g, "members", m -> {
+                    Map<?, ?> member = Reads.object(m);
+                    Object day = member.get("day");
+                    return new GroupSpan.Member(Reads.string(member, "rule"),
+                            day == null ? null : Reads.serdeDate(day));
+                }),
+                Reads.each(g, "days", d -> {
+                    Map<?, ?> day = Reads.object(d);
+                    return new GroupSpan.Day(Reads.serdeDate(Reads.field(day, "day")),
+                            Reads.each(day, "members", Reads::string), Reads.flag(day, "gap"));
+                }));
     }
 
     /** What a published entry did to a day, or null when none touched it. */

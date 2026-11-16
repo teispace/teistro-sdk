@@ -1625,6 +1625,9 @@ __all__ = [
     "AnniversaryDayRule",
     "AnniversaryOrigin",
     "FestivalAnswer",
+    "GroupSpan",
+    "GroupMember",
+    "GroupDay",
     "FestivalSait",
     "FestivalMoonrise",
     "Malamasa",
@@ -4859,13 +4862,15 @@ class AlmanacArea(_Area):
         festivals: Optional[FestivalRequest] = None,
         calendar: Optional[Calendar] = None,
         limit_days: Optional[int] = None,
+        group: Optional[str] = None,
     ) -> "NextOccurrence":
         """**The next day a rule or a kind of day falls on** after an
         instant at a place, with no year asked
         (`03-design/next-occurrence.md`). The civil day holding `after`, a
         UTC Julian day, counts. `kind` is `EKADASHI`, `PURNIMA`, `AMAVASYA`
-        or `SANKRANTI`, read by rules the SDK states; `rule` is a key of
-        `festivals`. The search looks `limit_days` ahead, 400 when left out
+        or `SANKRANTI`, read by rules the SDK states; `rule` is a rule's key
+        in `festivals`; `group` a festival group's, whose next span is found,
+        one under way counting (`03-design/festival-groups.md`). The search looks `limit_days` ahead, 400 when left out
         and at most 3660; nothing within it raises `LIMIT` on `limitDays`.
 
         The clock is `utc_offset_seconds` or a `zone`, never both; a zone
@@ -4888,6 +4893,8 @@ class AlmanacArea(_Area):
             asked["kind"] = kind
         if rule is not None:
             asked["rule"] = rule
+        if group is not None:
+            asked["group"] = group
         record = _festivals_json(festivals)
         if record is not None:
             asked["festivals"] = json.loads(record)
@@ -4903,6 +4910,7 @@ class AlmanacArea(_Area):
             from_date=_serde_date(value["from"]),
             limit_days=int(value["limitDays"]),
             searched_days=int(value["searchedDays"]),
+            group=_group_span(value["group"]) if value.get("group") is not None else None,
         )
 
     def anniversaries(self, request: AnniversariesRequest) -> "FestivalAnswer":
@@ -11419,6 +11427,65 @@ class FestivalAnswer:
     applied: Tuple[PublishedApplied, ...] = ()
     """The published sets laid over the answer, in order."""
 
+    groups: Tuple["GroupSpan", ...] = ()
+    """Each festival group's spans that reach the range, in the order of
+    their first days (`03-design/festival-groups.md`); empty when the
+    request names no group."""
+
+
+@dataclass(frozen=True)
+class GroupMember:
+    """One member of a group's span, in the group's order."""
+
+    rule: str
+    """The member rule's key."""
+
+    day: Optional[CalendarDate]
+    """Its day in this span; None when it falls on none."""
+
+
+@dataclass(frozen=True)
+class GroupDay:
+    """One day of a group's span."""
+
+    day: CalendarDate
+    """The day."""
+
+    members: Tuple[str, ...]
+    """The members that fall on it, in the group's order; empty on a gap."""
+
+    gap: bool
+    """Whether no member falls on it: a day of the span all the same."""
+
+
+@dataclass(frozen=True)
+class GroupSpan:
+    """A festival group's occurrence (`03-design/festival-groups.md`,
+    SR-125): the days from its first member's to its last, each member's
+    day, and every day between.
+
+    >>> # tihar = ctx.almanac.festivals(..., festivals={"rules": "NEPAL_PANCHANGA"}).groups[0]
+    >>> # [d.gap for d in tihar.days]
+    """
+
+    group: str
+    """The group's key, as ``TIHAR``."""
+
+    main: str
+    """The main member's key, as ``LAKSHMI_PUJA``."""
+
+    first: CalendarDate
+    """The span's first day."""
+
+    last: CalendarDate
+    """The span's last day, inclusive."""
+
+    members: Tuple[GroupMember, ...]
+    """Each member and its day, in the group's order."""
+
+    days: Tuple[GroupDay, ...]
+    """Every day from `first` to `last`, in order."""
+
 
 @dataclass(frozen=True)
 class ChangePoint:
@@ -11578,6 +11645,10 @@ class NextOccurrence:
 
     searched_days: int
     """The days reckoned until it was found."""
+
+    group: Optional[GroupSpan] = None
+    """For a `group`, its span: `day` is its first day; None for a rule
+    or a kind."""
 
 
 @dataclass(frozen=True)
@@ -19023,6 +19094,24 @@ def _festivals_answer(text: str) -> FestivalAnswer:
         applied=tuple(
             PublishedApplied(id=a["id"], version=int(a["version"]), publisher=a["publisher"], hash=a["hash"])
             for a in value.get("applied", ())
+        ),
+        groups=tuple(_group_span(g) for g in value.get("groups", ())),
+    )
+
+
+def _group_span(raw: Mapping[str, Any]) -> GroupSpan:
+    """A festival group's span as a festival answer writes it."""
+    return GroupSpan(
+        group=raw["group"],
+        main=raw["main"],
+        first=_serde_date(raw["first"]),
+        last=_serde_date(raw["last"]),
+        members=tuple(
+            GroupMember(rule=m["rule"], day=_serde_date(m["day"]) if m.get("day") is not None else None)
+            for m in raw["members"]
+        ),
+        days=tuple(
+            GroupDay(day=_serde_date(d["day"]), members=tuple(d["members"]), gap=bool(d["gap"])) for d in raw["days"]
         ),
     )
 

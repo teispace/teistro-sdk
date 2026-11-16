@@ -1502,7 +1502,57 @@ public final class AlmanacArea {
      */
     public NextOccurrence next(double after, Observer place, int utcOffsetSeconds, String kind, String rule,
             com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
-        return next(after, place, clock(utcOffsetSeconds), kind, rule, festivals, calendar, limitDays);
+        return next(after, place, clock(utcOffsetSeconds), kind, rule, null, festivals, calendar, limitDays);
+    }
+
+    /**
+     * <b>The next span of a festival group</b> after an instant at a place
+     * ({@code 03-design/festival-groups.md} §5): the first span of {@code group} whose last day is on or
+     * after the civil day holding the instant, so a span under way counts. The answer's day is the span's
+     * first, its {@code group} the span, and its festivals the members' entries over the span.
+     *
+     * <pre>{@code
+     * NextOccurrence tihar = sdk.almanac().nextGroup(2461353.76, kathmandu, 20_700, "TIHAR",
+     *         FestivalRequest.of(Map.of("rules", "NEPAL_PANCHANGA")), null, null);
+     * GroupSpan span = tihar.group();
+     * }</pre>
+     *
+     * @param after the instant, a UTC Julian day
+     * @param place where the days are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param group a group's key in {@code festivals}
+     * @param festivals the festival rules carrying the group
+     * @param calendar the calendar the days are written in, null for Gregorian
+     * @param limitDays how many days to look ahead, null for 400
+     * @return the span found
+     * @throws TeistroException {@code INVALID} naming {@code group} for a key the request has no group of
+     */
+    public NextOccurrence nextGroup(double after, Observer place, int utcOffsetSeconds, String group,
+            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+        return next(after, place, clock(utcOffsetSeconds), null, null, group, festivals, calendar, limitDays);
+    }
+
+    /**
+     * {@link #nextGroup(double, Observer, int, String, com.teispace.teistro.request.FestivalRequest,
+     * Calendar, Integer)} on a zone's clock: each day read at the offset the zone had then.
+     *
+     * <pre>{@code
+     * NextOccurrence tihar = sdk.almanac().nextGroup(2461353.76, kathmandu, Civil.ianaZone("Asia/Kathmandu"),
+     *         "TIHAR", FestivalRequest.of(Map.of("rules", "NEPAL_PANCHANGA")), null, null);
+     * }</pre>
+     *
+     * @param after the instant, a UTC Julian day
+     * @param place where the days are reckoned
+     * @param zone the zone each day is read on
+     * @param group a group's key in {@code festivals}
+     * @param festivals the festival rules carrying the group
+     * @param calendar the calendar the days are written in, null for Gregorian
+     * @param limitDays how many days to look ahead, null for 400
+     * @return the span found
+     */
+    public NextOccurrence nextGroup(double after, Observer place, ZoneSpec zone, String group,
+            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+        return next(after, place, clock(zone), null, null, group, festivals, calendar, limitDays);
     }
 
     /**
@@ -1526,11 +1576,12 @@ public final class AlmanacArea {
      */
     public NextOccurrence next(double after, Observer place, ZoneSpec zone, String kind, String rule,
             com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
-        return next(after, place, clock(zone), kind, rule, festivals, calendar, limitDays);
+        return next(after, place, clock(zone), kind, rule, null, festivals, calendar, limitDays);
     }
 
     private NextOccurrence next(double after, Observer place, Map<String, Object> clock, String kind, String rule,
-            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+            String group, com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar,
+            Integer limitDays) {
         if (place == null) {
             throw Reads.invalid("place is an Observer", "place");
         }
@@ -1548,6 +1599,9 @@ public final class AlmanacArea {
         }
         if (rule != null) {
             asked.put("rule", rule);
+        }
+        if (group != null) {
+            asked.put("group", group);
         }
         if (festivals != null) {
             asked.put("festivals", festivals);
@@ -1567,7 +1621,8 @@ public final class AlmanacArea {
                 AlmanacReads.festivalsAnswer(Json.write(section)),
                 Reads.serdeDate(Reads.field(value, "from")),
                 Reads.integer(value, "limitDays"),
-                Reads.integer(value, "searchedDays"));
+                Reads.integer(value, "searchedDays"),
+                value.get("group") == null ? null : AlmanacReads.groupSpan(value.get("group")));
     }
 
     /**

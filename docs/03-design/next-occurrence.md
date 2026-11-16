@@ -19,6 +19,7 @@ choose a range or search one.
 | place and clock | `latitudeDeg`, `longitudeDeg`, `altitudeM` and `utcOffsetSeconds`, as every almanac request takes them |
 | `calendar` | the calendar the answer's days are written in, Gregorian by default |
 | `kind` or `rule` | one of the two. A **kind** is `EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, read by the rules in §2. A **rule** is a key of `festivals`, a festival request: a shipped pack's festival (a catalogue festival), a rule the caller writes, an anniversary, or a day a published set adds. |
+| `group` | in place of a kind or a rule: a festival group's key in `festivals`. The answer is the group's next span, one under way counting, its `day` the span's first and `group` the span (`festival-groups.md` §5, SR-125) |
 | `limitDays` | how far ahead to look, the first day included: 400 by default, 1 to 3,660 (§3) |
 
 The answer is `{day, keys, festivals, from, limitDays, searchedDays}`.

@@ -6226,6 +6226,24 @@ export interface FestivalRequest {
    * (`03-design/published-overrides.md` §7).
    */
   readonly hijriOffset?: -2 | -1 | 0 | 1 | 2 | null;
+  /**
+   * Festival groups, each put in place of a pack's group of its key or
+   * added after them: a festival kept over several rules' days, whose
+   * spans the answer gives (`03-design/festival-groups.md`).
+   */
+  readonly groups?: readonly FestivalGroup[];
+}
+
+/** A festival kept over several rules' days, as a request names it. */
+export interface FestivalGroup {
+  /** The group's key, as `'TIHAR'`. */
+  readonly key: string;
+  /** The member rules' keys, in the festival's order; each a rule of the request. */
+  readonly members: readonly string[];
+  /** The member whose day the group is reckoned around; one of `members`. */
+  readonly main: string;
+  /** The source that says which rules make the festival. */
+  readonly source: string;
 }
 
 /** One change a published day was tried under, or the reason it differs. */
@@ -7037,8 +7055,36 @@ export interface FestivalAnswer {
   readonly unplaced: readonly { readonly set: string; readonly entry: number; readonly rule: string; readonly day: CalendarDate }[];
   /** The published sets laid over the answer, in order, each with the SHA-256 of its canonical JSON. */
   readonly applied: readonly { readonly id: string; readonly version: number; readonly publisher: string; readonly hash: string }[];
+  /** Each festival group's spans that reach the range, in the order of their first days; empty when the request names no group. */
+  readonly groups: readonly GroupSpan[];
   /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */
   readonly provenance: Provenance;
+}
+
+/**
+ * A festival group's occurrence (`03-design/festival-groups.md`): the days
+ * from its first member's to its last, each member's day, and every day
+ * between, a day no member falls on marked `gap`.
+ */
+export interface GroupSpan {
+  /** The group's key, as `'TIHAR'`. */
+  readonly group: string;
+  /** The main member's key, as `'LAKSHMI_PUJA'`. */
+  readonly main: string;
+  /** The span's first day. */
+  readonly first: CalendarDate;
+  /** The span's last day, inclusive. */
+  readonly last: CalendarDate;
+  /** Each member and its day, in the group's order; `null` when it falls on none in this span. */
+  readonly members: readonly { readonly rule: string; readonly day: CalendarDate | null }[];
+  /** Every day from `first` to `last`, with the members on it. */
+  readonly days: readonly {
+    readonly day: CalendarDate;
+    /** The members that fall on it, in the group's order; empty on a gap. */
+    readonly members: readonly string[];
+    /** Whether no member falls on it: a day of the span all the same. */
+    readonly gap: boolean;
+  }[];
 }
 
 /** A set of rules the SDK ships. */
@@ -8518,8 +8564,9 @@ export declare class AlmanacArea {
 
   /**
    * The next day a rule or a kind of day falls on after an instant at a
-   * place, with no year asked; the instant's own civil day counts. Looks
-   * `limitDays` ahead, 400 when left out.
+   * place, with no year asked, or a festival group's next span (one under
+   * way counts); the instant's own civil day counts. Looks `limitDays`
+   * ahead, 400 when left out.
    *
    * @example
    * const next = sdk.almanac.next({
@@ -8818,11 +8865,13 @@ export interface NextRequest {
   readonly zone?: ZoneSpec;
   /** The calendar the answer's days are written in; Gregorian when left out. */
   readonly calendar?: Calendar;
-  /** A kind of day; or `rule`, not both. */
+  /** A kind of day; or `rule` or `group`, one of the three. */
   readonly kind?: 'EKADASHI' | 'PURNIMA' | 'AMAVASYA' | 'SANKRANTI';
-  /** A key of `festivals`; or `kind`, not both. */
+  /** A rule's key in `festivals`; or `kind` or `group`, one of the three. */
   readonly rule?: string;
-  /** The festivals a `rule` is looked for in. */
+  /** A festival group's key in `festivals`, as `'DASHAIN'`: its next span, one under way counting; or `kind` or `rule`. */
+  readonly group?: string;
+  /** The festivals a `rule` or a `group` is looked for in. */
   readonly festivals?: FestivalRequest;
   /** How many days ahead to look, 1 to 3660; 400 when left out. */
   readonly limitDays?: number;
@@ -8929,6 +8978,8 @@ export interface NextOccurrence {
   readonly limitDays: number;
   /** The days reckoned until it was found. */
   readonly searchedDays: number;
+  /** For a `group`, its span: `day` is its first day; `null` for a rule or a kind. */
+  readonly group: GroupSpan | null;
   /** What computed it. */
   readonly provenance: Provenance;
 }
