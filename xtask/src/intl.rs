@@ -4,7 +4,7 @@
 //! memory, failing on any validation error or any difference, so the
 //! checked-in surface can never drift from the sources.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use teistro_core::catalogue::{Kind, key_of};
@@ -15,7 +15,9 @@ use teistro_intl::generate::{
     Model, RustPaths, dart, dart_surface, every_message_test, java, javascript, python, rust,
     typescript_declarations,
 };
-use teistro_intl::source::{Completeness, Tree};
+use teistro_intl::source::{
+    BASE_LOCALE, Completeness, ENTITY_NAMESPACE, Entry, LocaleSource, Tree,
+};
 use teistro_intl::validate;
 
 use crate::generated::{Output, check, write};
@@ -267,6 +269,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     let unnamed = unnamed_members(&tree, &catalogue_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
     let festivals = every_festival_is_named(&tree);
+    let scripts = names_in_their_script(&tree, LATIN_FALLBACK);
     let keywords = dart_parses(&written);
     let declared = every_key_type_is_declared(&written);
     let stray = no_former_sources(root);
@@ -274,6 +277,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
         failures != 0
             || naming != 0
             || festivals != 0
+            || scripts != 0
             || keywords != 0
             || declared != 0
             || stray != 0,
@@ -295,15 +299,22 @@ fn no_former_sources(root: &Path) -> usize {
 }
 
 /// That every rule key a shipped festival pack answers with is named in
-/// every strict locale's `festival` group: an observance carries its rule's
-/// key, and a reader shows the name. A pack's rules are not a catalogue
-/// kind, so [`unnamed_members`] does not see them; six fitted rules once
-/// shipped with no name in any locale and every gate green.
+/// every strict locale's `festival` group, and in every locale written in
+/// a script other than Latin: an observance carries its rule's key, and a
+/// reader shows the name. A pack's rules are not a catalogue kind, so
+/// [`unnamed_members`] does not see them; six fitted rules once shipped
+/// with no name in any locale and every gate green. A Devanagari locale
+/// at `base` completeness falls back to English, so a Hindi reader once
+/// saw 171 of Nepal's 336 days of VS 2083 in Latin letters (SR-128): a
+/// festival has no name a reader of another script can be handed instead
+/// (`03-design/entity-names.md` §4g).
 fn every_festival_is_named(tree: &Tree) -> usize {
     let strict: Vec<_> = tree
         .locales
         .iter()
-        .filter(|(_, locale)| locale.meta.completeness == Completeness::Strict)
+        .filter(|(_, locale)| {
+            locale.meta.completeness == Completeness::Strict || !is_latin(&locale.tag)
+        })
         .collect();
     let keys: BTreeSet<String> = teistro::FestivalPack::ALL
         .into_iter()
@@ -327,9 +338,207 @@ fn every_festival_is_named(tree: &Tree) -> usize {
     }
     if failures == 0 {
         println!(
-            "ok    every rule key of every shipped festival pack ({}) is named in every strict locale",
+            "ok    every rule key of every shipped festival pack ({}) is named in every strict or non-Latin locale",
             keys.len()
         );
+    }
+    failures
+}
+
+/// The catalogue kinds a locale written in a script other than Latin
+/// still answers in Latin letters, because it names fewer of their members
+/// than the base locale and falls back to it for the rest: the locale, then
+/// each kind with the number of its members that fall back
+/// (`03-design/entity-names.md` §4g, C2081).
+///
+/// Hindi and Sanskrit are at `base` completeness, and these are the kinds
+/// §4g of that page leaves for want of a settled name: the eras, whose
+/// Hindi forms change every Hindi date, Hindi's festival kinds, and
+/// Sanskrit's traditions and mundane charts. The list fails both ways, as
+/// [`UNNAMED`] does: a member that falls back and is not counted here
+/// fails, and so does a count that is now too high, so the list can only
+/// shrink. `festival` may never stand here (C2080).
+pub(crate) const LATIN_FALLBACK: &[(&str, &[(&str, usize)])] = &[
+    ("hi-Deva-IN", &[("era", 10), ("festival_kind", 4)]),
+    (
+        "sa-Deva",
+        &[
+            ("era", 11),
+            ("festival_kind", 4),
+            ("mundane_kind", 13),
+            ("tradition", 7),
+        ],
+    ),
+];
+
+/// Whether a locale's tag names the Latin script (`en-Latn`, `sa-Latn`).
+fn is_latin(tag: &str) -> bool {
+    script_of(tag) == "Latn"
+}
+
+/// The script subtag of a locale tag, which loading requires
+/// (`language-Script[-REGION]`).
+fn script_of(tag: &str) -> &str {
+    tag.split('-').nth(1).unwrap_or_default()
+}
+
+/// Whether a character is a letter of a script, for the scripts the SDK's
+/// locales are written in. A script with no test here is refused by
+/// [`names_in_their_script`] rather than passed unread.
+fn letter_of(script: &str) -> Option<fn(char) -> bool> {
+    fn devanagari(c: char) -> bool {
+        // The Devanagari block and Devanagari Extended.
+        matches!(c, '\u{0900}'..='\u{097F}' | '\u{A8E0}'..='\u{A8FF}')
+    }
+    match script {
+        "Deva" => Some(devanagari),
+        _ => None,
+    }
+}
+
+/// Whether a value has a Latin letter, plain or accented.
+fn has_latin_letter(value: &str) -> bool {
+    value.chars().any(|c| {
+        c.is_ascii_alphabetic()
+            || (matches!(c, '\u{00C0}'..='\u{024F}' | '\u{1E00}'..='\u{1EFF}') && c.is_alphabetic())
+    })
+}
+
+/// That a locale written in a script other than Latin names things in its
+/// own script (SR-128, C2080–C2081). Two checks, for every such locale:
+///
+/// 1. **No record of its own is Latin.** Every form but `iast`, which is
+///    the romanisation in every locale, holds a letter of the locale's
+///    script if it holds a Latin one: `J2000 युगादि` passes, a Hindi record
+///    copied from English does not.
+/// 2. **No member falls back to a Latin name** but those [`LATIN_FALLBACK`]
+///    counts: every member the base locale names is resolved along the
+///    locale's fallback chain, and one answered by a Latin-script locale is
+///    counted by kind and held to the list, both ways.
+///
+/// The number of findings.
+fn names_in_their_script(tree: &Tree, allowed: &[(&str, &[(&str, usize)])]) -> usize {
+    let Some(base) = tree.base() else {
+        println!("FAIL  no base locale {BASE_LOCALE}: nothing to read the scripts against");
+        return 1;
+    };
+    let base_members: Vec<&str> = base
+        .namespaces
+        .get(ENTITY_NAMESPACE)
+        .into_iter()
+        .flat_map(|namespace| namespace.entries.iter())
+        .filter(|(_, entry)| matches!(entry, Entry::Entity(_)))
+        .map(|(key, _)| key.as_str())
+        .collect();
+    let mut failures = 0;
+    for (tag, locale) in tree.locales.iter().filter(|(tag, _)| !is_latin(tag)) {
+        let script = script_of(tag);
+        let Some(letter) = letter_of(script) else {
+            println!(
+                "FAIL  {tag}: no letter test for the script `{script}`; add one to xtask/src/intl.rs so its names can be read"
+            );
+            failures += 1;
+            continue;
+        };
+        failures += own_records_in_script(locale, letter);
+        let chain: Vec<&LocaleSource> = std::iter::once(locale)
+            .chain(
+                locale
+                    .meta
+                    .fallback
+                    .iter()
+                    .filter_map(|fallback| tree.locales.get(fallback)),
+            )
+            .collect();
+        let mut fallen: BTreeMap<&str, usize> = BTreeMap::new();
+        for member in &base_members {
+            let answered_by = chain
+                .iter()
+                .find(|source| source.entity(member).is_some())
+                .map(|source| source.tag.as_str());
+            if answered_by.is_some_and(is_latin) {
+                let kind = member.split('.').next().unwrap_or(member);
+                *fallen.entry(kind).or_default() += 1;
+            }
+        }
+        let listed: BTreeMap<&str, usize> = allowed
+            .iter()
+            .filter(|(listed_tag, _)| listed_tag == tag)
+            .flat_map(|(_, kinds)| kinds.iter().copied())
+            .collect();
+        failures += held_to_the_list(tag, &fallen, &listed);
+    }
+    for (tag, _) in allowed {
+        if !tree.locales.contains_key(*tag) || is_latin(tag) {
+            println!("FAIL  {tag}: listed in LATIN_FALLBACK, and not a locale in another script");
+            failures += 1;
+        }
+    }
+    if failures == 0 {
+        let counted: usize = allowed
+            .iter()
+            .flat_map(|(_, kinds)| kinds.iter().map(|(_, count)| count))
+            .sum();
+        println!(
+            "ok    every non-Latin locale names in its own script; {counted} members of the kinds LATIN_FALLBACK lists still fall back to Latin"
+        );
+    }
+    failures
+}
+
+/// Check 1 of [`names_in_their_script`]: the number of a locale's own
+/// forms written in Latin letters alone.
+fn own_records_in_script(locale: &LocaleSource, letter: fn(char) -> bool) -> usize {
+    let mut failures = 0;
+    for namespace in locale.namespaces.values() {
+        for (key, entry) in &namespace.entries {
+            let Entry::Entity(entity) = entry else {
+                continue;
+            };
+            for (form, value) in entity.forms.iter().filter(|(form, _)| *form != "iast") {
+                if has_latin_letter(value) && !value.chars().any(letter) {
+                    println!(
+                        "FAIL  {}.{key} `{form}` is {value:?}: a Latin name in a locale written in {}",
+                        locale.tag,
+                        script_of(&locale.tag)
+                    );
+                    failures += 1;
+                }
+            }
+        }
+    }
+    failures
+}
+
+/// Check 2 of [`names_in_their_script`]: the kinds that fall back to a
+/// Latin name, held to their counts both ways.
+fn held_to_the_list(
+    tag: &str,
+    fallen: &BTreeMap<&str, usize>,
+    listed: &BTreeMap<&str, usize>,
+) -> usize {
+    let mut failures = 0;
+    if listed.contains_key("festival") {
+        println!(
+            "FAIL  {tag}: festival is listed in LATIN_FALLBACK; a festival is named in every non-Latin locale, never excused"
+        );
+        failures += 1;
+    }
+    let kinds: BTreeSet<&str> = fallen.keys().chain(listed.keys()).copied().collect();
+    for kind in kinds {
+        let found = fallen.get(kind).copied().unwrap_or(0);
+        let allowed = listed.get(kind).copied().unwrap_or(0);
+        if found > allowed {
+            println!(
+                "FAIL  {tag}: {found} {kind} members fall back to a Latin name, {allowed} listed; name them in {tag} from a vetted source"
+            );
+            failures += 1;
+        } else if found < allowed {
+            println!(
+                "FAIL  {tag}: {found} {kind} members fall back to a Latin name, {allowed} listed; lower LATIN_FALLBACK to {found}"
+            );
+            failures += 1;
+        }
     }
     failures
 }
@@ -554,4 +763,87 @@ fn named_or_listed(
         );
     }
     failures
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use teistro_intl::source::{ENTITY_NAMESPACE, Entry, Tree};
+
+    use super::{LATIN_FALLBACK, SOURCES, names_in_their_script};
+
+    fn tree() -> Tree {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("xtask lives one level below the repository root")
+            .join(SOURCES);
+        Tree::load(&root).expect("the i18n/ sources load")
+    }
+
+    #[test]
+    fn the_shipped_locales_name_in_their_script() {
+        assert_eq!(names_in_their_script(&tree(), LATIN_FALLBACK), 0);
+    }
+
+    #[test]
+    fn a_festival_falling_back_to_english_fails() {
+        // Hindi loses one festival's record: English answers, in Latin.
+        let mut tree = tree();
+        let hindi = tree.locales.get_mut("hi-Deva-IN").expect("Hindi");
+        let festivals = hindi
+            .namespaces
+            .get_mut(ENTITY_NAMESPACE)
+            .expect("Hindi's entities");
+        assert!(
+            festivals
+                .entries
+                .remove("festival.MATA_TIRTHA_AUNSI")
+                .is_some()
+        );
+        assert_eq!(names_in_their_script(&tree, LATIN_FALLBACK), 1);
+    }
+
+    /// The tree with Hindi's Holi given these forms.
+    fn holi(forms: &[(&str, &str)]) -> Tree {
+        let mut tree = tree();
+        let hindi = tree.locales.get_mut("hi-Deva-IN").expect("Hindi");
+        let Some(Entry::Entity(record)) = hindi
+            .namespaces
+            .get_mut(ENTITY_NAMESPACE)
+            .and_then(|entities| entities.entries.get_mut("festival.HOLI"))
+        else {
+            panic!("Hindi names Holi");
+        };
+        for (form, value) in forms {
+            record.forms.insert((*form).to_owned(), (*value).to_owned());
+        }
+        tree
+    }
+
+    #[test]
+    fn a_latin_record_in_a_devanagari_locale_fails() {
+        assert_eq!(
+            names_in_their_script(&holi(&[("name", "Holi")]), LATIN_FALLBACK),
+            1
+        );
+        // The romanisation is Latin in every locale, and a name mixing
+        // scripts holds Devanagari; both pass.
+        let passing = holi(&[("iast", "Holī"), ("prose", "Holi होली")]);
+        assert_eq!(names_in_their_script(&passing, LATIN_FALLBACK), 0);
+    }
+
+    #[test]
+    fn the_list_fails_both_ways_and_never_excuses_a_festival() {
+        let tree = tree();
+        // Nothing listed: every kind that still falls back fails.
+        let kinds: usize = LATIN_FALLBACK.iter().map(|(_, kinds)| kinds.len()).sum();
+        assert_eq!(names_in_their_script(&tree, &[]), kinds);
+        // A count too high fails as well as one too low, and so does
+        // listing the festivals at all.
+        let mut hindi: Vec<(&str, usize)> = LATIN_FALLBACK[0].1.to_vec();
+        hindi[0].1 += 1;
+        hindi.push(("festival", 0));
+        let listed: Vec<(&str, &[(&str, usize)])> = vec![("hi-Deva-IN", &hindi), LATIN_FALLBACK[1]];
+        assert_eq!(names_in_their_script(&tree, &listed), 2);
+    }
 }
