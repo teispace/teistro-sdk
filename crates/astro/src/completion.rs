@@ -1820,7 +1820,7 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
         let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, self.apparent_frame())
             .without_speeds();
         let done = self.positions(&request)?;
-        apparent_cell(&done, 0, body, ut1)
+        apparent_cell(&done, 0, body, ut1, self.capabilities.distance_unit)
     }
 
     fn apparent_many(
@@ -1840,7 +1840,13 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
         let done = self.positions(&request)?;
         out.reserve(ut1.len());
         for (row, at) in ut1.iter().enumerate() {
-            out.push(apparent_cell(&done, row, body, *at)?);
+            out.push(apparent_cell(
+                &done,
+                row,
+                body,
+                *at,
+                self.capabilities.distance_unit,
+            )?);
         }
         Ok(())
     }
@@ -1885,11 +1891,19 @@ impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
 
 /// One row of a completed grid as an equatorial position, or the
 /// provider's refusal for that cell.
+///
+/// The distance is in astronomical units whatever the provider counts
+/// in: a classical astronomy's distance is a ratio to the body's mean
+/// (`DistanceUnit::MeanDistances`), and read as astronomical units it put
+/// the Moon as far off as the Sun, so her phase came out of two parallel
+/// vectors and her parallax was lost (SR-127). It is scaled by the body's
+/// mean distance ([`crate::rise_set::mean_distance_au`]).
 pub(crate) fn apparent_cell(
     done: &Completed,
     row: usize,
     body: Body,
     ut1: JulianDay<Ut1>,
+    unit: DistanceUnit,
 ) -> Result<Apparent, Error> {
     let cell = done
         .columns
@@ -1909,8 +1923,33 @@ pub(crate) fn apparent_cell(
     Ok(Apparent {
         ra_deg: cell.lon,
         dec_deg: cell.lat,
-        distance_au: cell.dist,
+        distance_au: distance_in_au(body, cell.dist, unit),
     })
+}
+
+/// A provider's distance in astronomical units: unchanged when it counts
+/// in them, its ratio times the body's mean distance when it counts in
+/// mean distances, and unchanged for a body with no mean distance, which
+/// no classical astronomy offers at a distance.
+///
+/// ```
+/// use teistro_astro::completion::distance_in_au;
+/// use teistro_astro::rise_set::AU_KM;
+/// use teistro_port_ephemeris::{Body, DistanceUnit};
+///
+/// assert_eq!(distance_in_au(Body::Moon, 0.0025, DistanceUnit::AstronomicalUnits), 0.0025);
+/// // A Moon at her mean distance is 384 400 km off, not one au.
+/// let moon = distance_in_au(Body::Moon, 1.0, DistanceUnit::MeanDistances);
+/// assert!((moon * AU_KM - 384_400.0).abs() < 1e-6);
+/// ```
+#[must_use]
+pub fn distance_in_au(body: Body, dist: f64, unit: DistanceUnit) -> f64 {
+    match unit {
+        DistanceUnit::AstronomicalUnits => dist,
+        DistanceUnit::MeanDistances => {
+            crate::rise_set::mean_distance_au(body).map_or(dist, |mean| dist * mean)
+        }
+    }
 }
 
 /// A cell's rate as a rectangular velocity in the equatorial frame,
