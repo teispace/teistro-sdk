@@ -694,7 +694,8 @@ public final class ParityRunner {
                     observance.choice(),
                     number(observance.tithi().fromJd()),
                     number(earlier.held()),
-                    number(later.held())));
+                    number(later.held()),
+                    observance.malamasa() == null ? "-" : observance.malamasa().clause().key()));
         }
         for (int k = 0; k < answer.ekadashis().size(); k += 1) {
             EkadashiFast fast = answer.ekadashis().get(k);
@@ -3194,6 +3195,10 @@ public final class ParityRunner {
                             null, FestivalRequest.of(pack.getValue()), false, false, false).festivals().orElseThrow();
             putFestivals("festivals-" + pack.getKey(), festivals);
         }
+        // A month the test provider's 2023 doubles: a monthly rule kept in
+        // its adhika month says which month rule placed it (SR-93).
+        putFestivals("festivals-malamasa", geo.almanac().festivals(date(2023, 8, 20), date(2023, 9, 10), place,
+                20700, FestivalRequest.of(map("rules", "DHARMASINDHU"))));
 
         // The lunar years over 2024-03-20..04-20, which holds a Chaitra Shukla
         // Pratipada: two years, their bounds and their Jovian years.

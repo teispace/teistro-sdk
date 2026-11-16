@@ -6955,83 +6955,109 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
             .festivals(&from, &to, place, offset, &asked)
             .expect("the test provider")
             .value;
-        let key = |what: &str| format!("festivals-{name}{what}");
-        put(
-            report,
-            &key("-counts"),
-            format!("{} {}", answer.observances.len(), answer.unjudged.len()),
-        );
-        // The boundary seals the full-keyed value, so the hash every
-        // binding reads is of that.
-        let written = answer.in_full().expect("a written answer");
-        put(
-            report,
-            &key("-hash"),
-            teistro_core::envelope::content_hash(&written).to_string(),
-        );
-        for (k, observance) in answer.observances.iter().enumerate() {
-            let by = match &observance.decided_by {
-                teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
-                teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
-                teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
-            };
-            let [earlier, later] = &observance.extents;
-            put(
-                report,
-                &key(&format!("-{k}")),
-                format!(
-                    "{} {} {} {}-{} {} {by} {} {} {} {}",
-                    observance.rule,
-                    observance.month.full_key(),
-                    observance.adhika,
-                    observance.day.month,
-                    observance.day.day,
-                    tag(&observance.case),
-                    tag(&observance.choice),
-                    number(observance.tithi.from.get()),
-                    number(earlier.held),
-                    number(later.held),
-                ),
-            );
-        }
-        for (k, fast) in answer.ekadashis.iter().enumerate() {
-            put(
-                report,
-                &key(&format!("-ekadashi-{k}")),
-                format!(
-                    "{} {} {} {} {}-{} {} {} {} {} {} {}",
-                    fast.rule,
-                    fast.tithi.full_key(),
-                    fast.month.full_key(),
-                    fast.adhika,
-                    fast.day.month,
-                    fast.day.day,
-                    fast.pierced_at.as_ref().map_or_else(|| "-".to_owned(), tag),
-                    fast.pierced,
-                    tag(&fast.excess),
-                    tag(&fast.choice),
-                    number(fast.tithis[1].from.get()),
-                    parana(fast.parana.as_ref()),
-                ),
-            );
-        }
-        for (k, kept) in answer.dated.iter().enumerate() {
-            put(
-                report,
-                &key(&format!("-dated-{k}")),
-                format!(
-                    "{} {}-{} {} {}-{}",
-                    kept.rule,
-                    kept.day.month,
-                    kept.day.day,
-                    kept.on.calendar.full_key(),
-                    kept.on.month,
-                    kept.on.day,
-                ),
-            );
-        }
-        put_published(report, &key, &answer);
+        put_festivals(report, name, &answer);
     }
+    // A month the test provider's 2023 doubles: a monthly rule kept in its
+    // adhika month says which month rule placed it (SR-93).
+    let asked = teistro::FestivalRequest::from_json(r#"{"rules":"DHARMASINDHU"}"#)
+        .expect("a festival request");
+    let answer = geo
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2023, 8, 20),
+            &CalendarDate::defined(Calendar::Gregorian, 2023, 9, 10),
+            place,
+            offset,
+            &asked,
+        )
+        .expect("the test provider")
+        .value;
+    put_festivals(report, "malamasa", &answer);
+}
+
+/// A festival answer's counts, hash, every observance, Ekadashi fast and
+/// dated day, and what published sets did, as every runner prints them.
+fn put_festivals(report: &mut Report, name: &str, answer: &teistro::festival::Observances) {
+    let key = |what: &str| format!("festivals-{name}{what}");
+    put(
+        report,
+        &key("-counts"),
+        format!("{} {}", answer.observances.len(), answer.unjudged.len()),
+    );
+    // The boundary seals the full-keyed value, so the hash every
+    // binding reads is of that.
+    let written = answer.in_full().expect("a written answer");
+    put(
+        report,
+        &key("-hash"),
+        teistro_core::envelope::content_hash(&written).to_string(),
+    );
+    for (k, observance) in answer.observances.iter().enumerate() {
+        let by = match &observance.decided_by {
+            teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
+            teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
+            teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
+        };
+        let [earlier, later] = &observance.extents;
+        put(
+            report,
+            &key(&format!("-{k}")),
+            format!(
+                "{} {} {} {}-{} {} {by} {} {} {} {} {}",
+                observance.rule,
+                observance.month.full_key(),
+                observance.adhika,
+                observance.day.month,
+                observance.day.day,
+                tag(&observance.case),
+                tag(&observance.choice),
+                number(observance.tithi.from.get()),
+                number(earlier.held),
+                number(later.held),
+                observance
+                    .malamasa
+                    .as_ref()
+                    .map_or("-", |placed| placed.clause.key()),
+            ),
+        );
+    }
+    for (k, fast) in answer.ekadashis.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-ekadashi-{k}")),
+            format!(
+                "{} {} {} {} {}-{} {} {} {} {} {} {}",
+                fast.rule,
+                fast.tithi.full_key(),
+                fast.month.full_key(),
+                fast.adhika,
+                fast.day.month,
+                fast.day.day,
+                fast.pierced_at.as_ref().map_or_else(|| "-".to_owned(), tag),
+                fast.pierced,
+                tag(&fast.excess),
+                tag(&fast.choice),
+                number(fast.tithis[1].from.get()),
+                parana(fast.parana.as_ref()),
+            ),
+        );
+    }
+    for (k, kept) in answer.dated.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-dated-{k}")),
+            format!(
+                "{} {}-{} {} {}-{}",
+                kept.rule,
+                kept.day.month,
+                kept.day.day,
+                kept.on.calendar.full_key(),
+                kept.on.month,
+                kept.on.day,
+            ),
+        );
+    }
+    put_published(report, &key, answer);
 }
 
 /// The lunar years a panchanga request carries, as the report prints them.

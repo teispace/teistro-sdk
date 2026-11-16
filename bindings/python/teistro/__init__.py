@@ -1591,6 +1591,8 @@ __all__ = [
     "FestivalAnswer",
     "FestivalSait",
     "FestivalMoonrise",
+    "Malamasa",
+    "MalamasaClause",
     "FestivalSaitCandidate",
     "Published",
     "PublishedAdded",
@@ -10757,6 +10759,29 @@ class FestivalObservance:
     """The day's moonrise and its place, for a rule whose rite is at
     moonrise or whose fast is broken then (SR-60); None otherwise."""
 
+    malamasa: Optional["Malamasa"] = None
+    """The month rule that placed the day in a year with an adhika or a
+    kshaya month (SR-93, `03-design/festival-malamasa.md`); None in an
+    ordinary month."""
+
+
+MalamasaClause = Literal["NIJA", "ADHIKA", "KSHAYA_FIRST", "KSHAYA_SECOND"]
+"""Which month rule placed an observance (SR-93): kept in the nija month
+of a doubled name, in the adhika month by the rule's own ``inAdhika``, or
+in a kshaya lunation under its first or its second name."""
+
+
+@dataclass(frozen=True)
+class Malamasa:
+    """The month rule an observance was placed by, and where the texts say
+    it (SR-93)."""
+
+    clause: MalamasaClause
+    """Which clause."""
+
+    source: str
+    """Where the texts say it."""
+
 
 @dataclass(frozen=True)
 class FestivalMoonrise:
@@ -18531,7 +18556,13 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         published=_published(raw),
         sait=_sait(raw["sait"]) if raw.get("sait") is not None else None,
         moonrise=_festival_moonrise(raw["moonrise"]) if raw.get("moonrise") is not None else None,
+        malamasa=_malamasa(raw["malamasa"]) if raw.get("malamasa") is not None else None,
     )
+
+
+def _malamasa(raw: Mapping[str, Any]) -> Malamasa:
+    """The month rule an observance carries, as a festival answer writes it."""
+    return Malamasa(clause=raw["clause"], source=raw["source"])
 
 
 def _festival_moonrise(raw: Mapping[str, Any]) -> FestivalMoonrise:

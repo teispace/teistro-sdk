@@ -5032,6 +5032,30 @@ test('a day is said in sentences and a locale without templates is refused', () 
  * from 1 January 2026 in the first window, Vijaya Dashami within the
  * default limit, and a search too short refused on `limitDays`.
  */
+/**
+ * In 1983 the lunation from 14 January is Pausha and Magha both: Shivaratri
+ * keeps its tithi in it and names the clause and the texts that placed it
+ * (SR-93, `03-design/festival-malamasa.md`).
+ */
+test('a kshaya lunation keeps both months\' festivals and says why', () => {
+  const ctx = new Context(nepalOfficial());
+  try {
+    const answer = ctx.almanac.of({
+      from: date('calendar.GREGORIAN', 1983, 2, 9),
+      to: date('calendar.GREGORIAN', 1983, 2, 13),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+      festivals: { rules: 'NEPAL_PANCHANGA' },
+    }).festivals;
+    const shivaratri = answer.observances.find((o) => o.rule === 'SHIVARATRI');
+    assert.deepEqual([shivaratri.day.month, shivaratri.day.day], [2, 11]);
+    assert.equal(shivaratri.malamasa.clause, 'KSHAYA_SECOND');
+    assert.ok(shivaratri.malamasa.source.includes('Dharmasindhu'));
+  } finally {
+    ctx.dispose();
+  }
+});
+
 test('the next sankranti and a pack\'s festival are found', () => {
   const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
   const asked = {
