@@ -2321,6 +2321,24 @@ fn custom_ayanamsha_coherence(ayanamsha: AyanamshaChoice, out: &mut Vec<Diagnost
     }
 }
 
+/// Every varga scheme the settings choose, checked as a chart would check
+/// it, the first fault of each named by its field (`varga-schemes.md`).
+fn scheme_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    for (varga, choice) in &s.vargas.schemes {
+        if let Err(refused) = choice.check(*varga) {
+            out.push(Diagnostic::error(
+                "varga-scheme",
+                format!(
+                    "{} (field `{}`)",
+                    refused.message,
+                    refused.field().unwrap_or("vargas.schemes")
+                ),
+                &["vargas.schemes"],
+            ));
+        }
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     custom_ayanamsha_coherence(s.frame.ayanamsha, &mut out);
@@ -2371,19 +2389,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         ));
     }
     basis_coherence(s, &mut out);
-    for (varga, choice) in &s.vargas.schemes {
-        if let Err(refused) = choice.check(*varga) {
-            out.push(Diagnostic::error(
-                "varga-scheme",
-                format!(
-                    "{} (field `{}`)",
-                    refused.message,
-                    refused.field().unwrap_or("vargas.schemes")
-                ),
-                &["vargas.schemes"],
-            ));
-        }
-    }
+    scheme_coherence(s, &mut out);
     // The text's sunrise is the centre on the geometric horizon, in local
     // mean time; asked for another convention, the provider declines and
     // the SDK solves it over the text's Sun, which is neither the text's

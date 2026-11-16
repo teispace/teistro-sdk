@@ -9,8 +9,9 @@
 //! carries only when the request asked for it.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::catalogue::{Graha, Rashi, Varga};
 use teistro_core::error::Error;
+use teistro_core::settings::Settings;
 use teistro_prashna::{
     GRAHAS, Placed, Prashna, PrashnaRules, PrashnaSky, Question, SHADVARGA, read,
 };
@@ -18,7 +19,7 @@ use teistro_serial::Document;
 use teistro_state::state;
 
 use crate::ChartArea;
-use crate::rules_bridge::{navamsha_of, varga_sign};
+use crate::rules_bridge::varga_sign;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -116,7 +117,8 @@ impl ChartArea<'_> {
             )
             .with_field("shadbala")
         })?;
-        let states = state(foundation, self.context().settings())?;
+        let settings = self.context().settings();
+        let states = state(foundation, settings)?;
         let mut grahas = [Placed {
             longitude_deg: 0.0,
             navamsha: teistro_core::catalogue::Rashi::Aries,
@@ -130,7 +132,7 @@ impl ChartArea<'_> {
             let held = states.iter().find(|one| one.graha == graha);
             *slot = Placed {
                 longitude_deg: at.longitude_deg,
-                navamsha: navamsha_of(at.longitude_deg)?,
+                navamsha: varga_sign(Varga::D9, at.longitude_deg, settings)?,
                 retrograde: held.is_some_and(|one| one.motion.retrograde),
                 combust: held.is_some_and(|one| one.combustion.is_combust()),
             };
@@ -148,7 +150,7 @@ impl ChartArea<'_> {
         }
         Ok(PrashnaSky {
             lagna_deg: foundation.lagna_deg,
-            lagna_vargas: lagna_vargas(foundation.lagna_deg)?,
+            lagna_vargas: lagna_vargas(foundation.lagna_deg, settings)?,
             grahas,
             strength,
         })
@@ -169,12 +171,12 @@ impl ChartArea<'_> {
     }
 }
 
-/// The lagna's sign in each of the [`SHADVARGA`], under the SDK's classical
-/// scheme for each, as the grahas' navāṁśas are read.
-fn lagna_vargas(lagna_deg: f64) -> Result<[Rashi; 6], Error> {
+/// The lagna's sign in each of the [`SHADVARGA`], under the scheme the
+/// settings choose for each, as the grahas' navāṁśas are read.
+fn lagna_vargas(lagna_deg: f64, settings: &Settings) -> Result<[Rashi; 6], Error> {
     let mut signs = [Rashi::Aries; 6];
     for (slot, varga) in signs.iter_mut().zip(SHADVARGA) {
-        *slot = varga_sign(varga, lagna_deg)?;
+        *slot = varga_sign(varga, lagna_deg, settings)?;
     }
     Ok(signs)
 }

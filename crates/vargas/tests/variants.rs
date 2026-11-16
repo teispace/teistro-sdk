@@ -13,6 +13,7 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::indexing_slicing,
+    clippy::panic,
     reason = "tests fail by panicking and index their own tables"
 )]
 
@@ -97,9 +98,13 @@ fn the_uma_shambhu_hora_reverses_an_even_signs_halves() {
     // what the article's reading is for.
     for rashi in Rashi::ALL {
         let signs = row(&hora, rashi);
-        let sun_half = if rashi as u8 % 2 == 0 { 0 } else { 1 };
+        let sun_half = usize::from(rashi as u8 % 2 != 0);
         assert_eq!(signs[sun_half] as u8 % 2, 0, "{rashi:?}'s Sun half is odd");
-        assert_eq!(signs[1 - sun_half] as u8 % 2, 1, "{rashi:?}'s Moon half is even");
+        assert_eq!(
+            signs[1 - sun_half] as u8 % 2,
+            1,
+            "{rashi:?}'s Moon half is even"
+        );
     }
 }
 
@@ -114,7 +119,11 @@ fn the_parivritti_drekkana_is_the_tabulated_one() {
     ];
     let drekkana = named(Varga::D3, VargaVariant::Parivritti);
     for rashi in Rashi::ALL {
-        assert_eq!(row(&drekkana, rashi), expected[rashi as usize % 4], "{rashi:?}");
+        assert_eq!(
+            row(&drekkana, rashi),
+            expected[rashi as usize % 4],
+            "{rashi:?}"
+        );
     }
 }
 
@@ -127,8 +136,16 @@ fn somanathas_drekkana_runs_on_from_aries_and_back_from_pisces() {
     assert_eq!(row(&drekkana, Cancer), [Sagittarius, Scorpio, Libra]);
     // And the rule itself: the odd signs' eighteen drekkanas run on round
     // the zodiac one and a half times, the even signs' back.
-    let odd: Vec<Rashi> = Rashi::ALL.iter().step_by(2).flat_map(|r| row(&drekkana, *r)).collect();
-    let even: Vec<Rashi> = Rashi::ALL[1..].iter().step_by(2).flat_map(|r| row(&drekkana, *r)).collect();
+    let odd: Vec<Rashi> = Rashi::ALL
+        .iter()
+        .step_by(2)
+        .flat_map(|r| row(&drekkana, *r))
+        .collect();
+    let even: Vec<Rashi> = Rashi::ALL[1..]
+        .iter()
+        .step_by(2)
+        .flat_map(|r| row(&drekkana, *r))
+        .collect();
     for (index, (on, back)) in odd.iter().zip(&even).enumerate() {
         let index = u16::try_from(index).unwrap();
         assert_eq!(*on, Rashi::from_id(index % 12).unwrap());
@@ -142,7 +159,9 @@ fn krishna_mishras_navamsha_reverses_an_even_sign() {
     // Narasimha Rao 2012: Taurus's nine run Vi, Le, Cn, Ge, Ta, Ar, Pi, Aq, Cp.
     assert_eq!(
         row(&navamsha, Taurus),
-        [Virgo, Leo, Cancer, Gemini, Taurus, Aries, Pisces, Aquarius, Capricorn]
+        [
+            Virgo, Leo, Cancer, Gemini, Taurus, Aries, Pisces, Aquarius, Capricorn
+        ]
     );
     // An odd sign's are Parashara's.
     assert_eq!(row(&navamsha, Leo), row(&Scheme::of(Varga::D9), Leo));
@@ -163,7 +182,10 @@ fn a_cyclic_variant_covers_the_signs_evenly() {
             }
         }
         let each = usize::from(scheme.divisions);
-        assert!(seen.iter().all(|count| *count == each), "{varga:?} {seen:?}");
+        assert!(
+            seen.iter().all(|count| *count == each),
+            "{varga:?} {seen:?}"
+        );
     }
 }
 
@@ -176,7 +198,11 @@ fn every_variant_has_a_row_and_every_row_a_variant() {
                 .chain(SCHEMES.iter())
                 .filter(|row| row.varga == Some(varga) && row.variant == *which)
                 .count();
-            assert_eq!(rows, usize::from(which.serves(varga)), "{varga:?} {which:?}");
+            assert_eq!(
+                rows,
+                usize::from(which.serves(varga)),
+                "{varga:?} {which:?}"
+            );
         }
     }
     for scheme in VARIANTS {
@@ -188,7 +214,12 @@ fn every_variant_has_a_row_and_every_row_a_variant() {
             .check(scheme.divisions, "rows")
             .unwrap_or_else(|error| panic!("{varga:?} {:?}: {error}", scheme.variant));
         // And differs from the chart's Parashara row somewhere.
-        assert_ne!(table(&scheme), table(&Scheme::of(varga)), "{varga:?} {:?}", scheme.variant);
+        assert_ne!(
+            table(&scheme),
+            table(&Scheme::of(varga)),
+            "{varga:?} {:?}",
+            scheme.variant
+        );
     }
 }
 
@@ -259,9 +290,18 @@ fn a_chosen_scheme_moves_a_founded_chart_and_nothing_else() {
         let shipped_at = shipped.graha(placement.graha).unwrap();
         // The same body in the same part of the same sign, sent elsewhere
         // only by the rule.
-        assert_eq!((placement.at.rashi, placement.at.part), (shipped_at.rashi, shipped_at.part));
-        assert_eq!(placement.at.sign, table(&somanatha)[placement.at.rashi as usize][usize::from(placement.at.part)]);
+        assert_eq!(
+            (placement.at.rashi, placement.at.part),
+            (shipped_at.rashi, shipped_at.part)
+        );
+        assert_eq!(
+            placement.at.sign,
+            table(&somanatha)[placement.at.rashi as usize][usize::from(placement.at.part)]
+        );
     }
     // Another chart is untouched.
-    assert_eq!(Scheme::chosen(Varga::D9, &settings).unwrap(), Scheme::of(Varga::D9));
+    assert_eq!(
+        Scheme::chosen(Varga::D9, &settings).unwrap(),
+        Scheme::of(Varga::D9)
+    );
 }

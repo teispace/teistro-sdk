@@ -29,7 +29,7 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Degrees;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
-use teistro_core::settings::{EightKarakaOrder, SevenKarakaOrder, Settings};
+use teistro_core::settings::{EightKarakaOrder, Settings, SevenKarakaOrder};
 use teistro_dasha::{Chain, Period, Timeline};
 use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
@@ -339,7 +339,7 @@ impl RuleInputs {
     /// A navamsha scheme the settings cannot give
     /// (`teistro_vargas::Scheme::chosen`).
     pub fn under(mut self, settings: &Settings) -> Result<RuleInputs, Error> {
-        self.chart = under_settings(self.chart, settings)?;
+        self.chart = under_settings(&self.chart, settings)?;
         Ok(self)
     }
 
@@ -365,15 +365,15 @@ pub(crate) fn ruled(
     states: &[GrahaState],
     settings: &Settings,
 ) -> Result<RuleChart, Error> {
-    under_settings(rule_chart(foundation, states, None, None)?, settings)
+    under_settings(&rule_chart(foundation, states, None, None)?, settings)
 }
 
 /// A rule chart as the settings read it: its chara karakas named by
 /// `jaimini.seven_karaka_order` and `jaimini.eight_karaka_order`, and each
 /// body's navamsha under the D9 `vargas.schemes` chooses.
-fn under_settings(chart: RuleChart, settings: &Settings) -> Result<RuleChart, Error> {
+fn under_settings(chart: &RuleChart, settings: &Settings) -> Result<RuleChart, Error> {
     let (seven, eight) = karaka_orders(settings);
-    let mut chart = chart.with_karaka_orders(seven, eight);
+    let mut chart = (*chart).with_karaka_orders(seven, eight);
     if settings.vargas.schemes.contains_key(&Varga::D9) {
         let navamsha = Scheme::chosen(Varga::D9, settings)?;
         for placement in &mut chart.placements {
@@ -501,7 +501,8 @@ pub fn rule_periods(chain: &Chain) -> impl Iterator<Item = Running> + '_ {
 }
 
 /// The divisional charts of a rule chart, each body's sign in each division
-/// under the SDK's classical scheme for it, for an evaluator's
+/// under the scheme the settings choose for it (`vargas.schemes`, BPHS
+/// ch. 6 where they choose none), for an evaluator's
 /// [`with_vargas`](teistro_rules::Evaluator::with_vargas).
 ///
 /// # Errors
@@ -510,13 +511,14 @@ pub fn rule_periods(chain: &Chain) -> impl Iterator<Item = Running> + '_ {
 pub fn rule_vargas(
     chart: &RuleChart,
     vargas: impl IntoIterator<Item = Varga>,
+    settings: &Settings,
 ) -> Result<Vec<VargaSigns>, Error> {
     vargas
         .into_iter()
         .map(|varga| {
             let mut signs = [Rashi::Aries; 10];
             for (slot, body) in signs.iter_mut().zip(Body::ALL) {
-                *slot = varga_sign(varga, chart.placement(body).longitude)?;
+                *slot = varga_sign(varga, chart.placement(body).longitude, settings)?;
             }
             Ok(VargaSigns { varga, signs })
         })
@@ -594,15 +596,23 @@ fn rashi_of(longitude: f64) -> Result<Rashi, Error> {
         .ok_or_else(|| Error::internal("a longitude under 360 fell outside the twelve signs"))
 }
 
-/// The navamsha sign of a sidereal longitude, under the catalogue's scheme.
-pub(crate) fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
-    varga_sign(Varga::D9, longitude)
+/// The navamsha sign of a sidereal longitude, under BPHS ch. 6's scheme:
+/// what [`rule_chart`] places before the settings are laid over it.
+fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
+    Ok(sign(&Scheme::of(Varga::D9), canonical(longitude)?))
 }
 
-/// The sign of a sidereal longitude in a division, under the SDK's classical
-/// scheme for it.
-pub(crate) fn varga_sign(varga: Varga, longitude: f64) -> Result<Rashi, Error> {
-    Ok(sign(&Scheme::of(varga), canonical(longitude)?))
+/// The sign of a sidereal longitude in a division, under the scheme the
+/// settings choose for it (`vargas.schemes`).
+pub(crate) fn varga_sign(
+    varga: Varga,
+    longitude: f64,
+    settings: &Settings,
+) -> Result<Rashi, Error> {
+    Ok(sign(
+        &Scheme::chosen(varga, settings)?,
+        canonical(longitude)?,
+    ))
 }
 
 /// A sidereal longitude on the canonical angle, refused when it is not a

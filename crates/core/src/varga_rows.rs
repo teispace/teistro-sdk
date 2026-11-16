@@ -169,7 +169,11 @@ impl SignBase {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "spans", rename_all = "SCREAMING_SNAKE_CASE", deny_unknown_fields)]
+#[serde(
+    tag = "spans",
+    rename_all = "SCREAMING_SNAKE_CASE",
+    deny_unknown_fields
+)]
 pub enum RowSpans {
     /// The chart's divisions, each of `30/N` degrees.
     Equal,
@@ -295,7 +299,9 @@ impl Rows {
         if divisions == 0 || divisions > MOST_DIVISIONS {
             return Err(Error::new(
                 Status::OutOfRange,
-                format!("a divisional chart divides a sign 1 to {MOST_DIVISIONS} times, not {divisions}"),
+                format!(
+                    "a divisional chart divides a sign 1 to {MOST_DIVISIONS} times, not {divisions}"
+                ),
             )
             .with_field(format!("{field}.divisions")));
         }
@@ -410,7 +416,12 @@ impl VargaChoice {
     /// `INVALID_ARG` naming the field, as above.
     pub fn check(&self, varga: Varga) -> Result<(), Error> {
         let field = format!("vargas.schemes.{}", varga.key());
-        if varga == Varga::D1 && *self != (VargaChoice::Named { which: crate::settings::VargaVariant::Parashara }) {
+        if varga == Varga::D1
+            && *self
+                != (VargaChoice::Named {
+                    which: crate::settings::VargaVariant::Parashara,
+                })
+        {
             return Err(Error::invalid_arg(
                 "D1 is the rashi chart itself, the sign a body stands in, and takes no scheme",
             )
@@ -447,7 +458,11 @@ impl VargaChoice {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "tests fail by panicking and index what they found"
+    )]
 
     use super::{Classifier, RowGroup, RowMap, RowSpans, Rows, SignBase};
 
@@ -471,7 +486,10 @@ mod tests {
         let cases = [
             (rows(vec![good.clone()]), 2, "r.groups"),
             (
-                rows(vec![good.clone(), equal(RowMap::Listed { signs: vec![4, 12] })]),
+                rows(vec![
+                    good.clone(),
+                    equal(RowMap::Listed { signs: vec![4, 12] }),
+                ]),
                 2,
                 "r.groups[1].map.signs[1]",
             ),
@@ -527,16 +545,43 @@ mod tests {
         let resolved = settings.clone().validated(ProfileId::new("mine")).unwrap();
         // The document the settings write reads back as the same settings.
         let written = serde_json::to_string(&resolved.settings).unwrap();
-        assert_eq!(serde_json::from_str::<crate::settings::Settings>(&written).unwrap(), resolved.settings);
-        assert!(written.contains(r#""D2":{"kind":"NAMED","which":"KASHINATHA"}"#), "{written}");
+        assert_eq!(
+            serde_json::from_str::<crate::settings::Settings>(&written).unwrap(),
+            resolved.settings
+        );
+        assert!(
+            written.contains(r#""D2":{"kind":"NAMED","which":"KASHINATHA"}"#),
+            "{written}"
+        );
 
         for (varga, choice, field) in [
-            (Varga::D9, VargaChoice::Named { which: VargaVariant::Somanatha }, "vargas.schemes.D9.which"),
-            (Varga::D1, VargaChoice::Named { which: VargaVariant::Kashinatha }, "vargas.schemes.D1"),
-            (Varga::D2, VargaChoice::Named { which: VargaVariant::Custom }, "vargas.schemes.D2.which"),
             (
                 Varga::D9,
-                VargaChoice::Custom { classifier: Classifier::Parity, groups: vec![] },
+                VargaChoice::Named {
+                    which: VargaVariant::Somanatha,
+                },
+                "vargas.schemes.D9.which",
+            ),
+            (
+                Varga::D1,
+                VargaChoice::Named {
+                    which: VargaVariant::Kashinatha,
+                },
+                "vargas.schemes.D1",
+            ),
+            (
+                Varga::D2,
+                VargaChoice::Named {
+                    which: VargaVariant::Custom,
+                },
+                "vargas.schemes.D2.which",
+            ),
+            (
+                Varga::D9,
+                VargaChoice::Custom {
+                    classifier: Classifier::Parity,
+                    groups: vec![],
+                },
                 "vargas.schemes.D9.groups",
             ),
         ] {

@@ -82,8 +82,9 @@ every shipped profile. The v1 inventory:
 | dasha | `ayurdaya_place` | enum | `SHARE` (the default: one body per share the verse names, the two trikonas one place and the fourth and eighth another), `HOUSE` (one per house); which of several in one place takes a share of an ayurdaya dasha's antardashas (BPHS ch. 51 v. 14, crux C741) |
 | dasha | `naisargika_division` | enum | `SHARES` (the default: BPHS ch. 51 vv. 13 to 16's shares among the seven, by their signs and shadbala), `PROPORTIONAL` (vv. 1 and 2), `EQUAL` (vv. 3 and 4); how the Naisargika dasha divides a period, which ch. 43 vv. 16 and 17 leave unstated (crux C743) |
 | dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
-| jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
+| jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT`, `EIGHT_ON_A_TIE` (BPHS ch. 32 v. 2: eight when two of the seven are equal to the arc-second; crux C2062) |
 | jaimini | `eight_karaka_order` | enum | `PARASHARA`, `PITRIKARAKA_LAST` (crux C101) |
+| jaimini | `seven_karaka_order` | enum | `JAIMINI` (the Jaimini Sutras 1.1.13 to 18, no Pitrikaraka), `MATRI_IS_PUTRA` (BPHS ch. 32 v. 16: the fifth rank the Pitrikaraka, the children read from the Matrikaraka; crux C2061) |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | jaimini | `brahma` | enum | `VERSES`, `TRANSLATORS_NOTE`: the rule the Brahma graha is found by (BPHS ch. 46 vv. 170 to 173, or the translator's note; C128) |
 | gochar | `node_vedha` | enum | `LIKE_THE_SUN`, `NONE`: whether the nodes take the Sun's vedha pairs in transit (Phaladeepika ch. 26 v. 2 makes them "like the Sun"; C136) |
@@ -129,6 +130,7 @@ every shipped profile. The v1 inventory:
 | strength | `bhava_drishti` | enum | `QUARTER_OF_DIG` (the default, v. 29, the corpus's engine), `SPHUTA` (Sripati; crux C74) |
 | strength | `bhava_special_rules` | enum | `BPHS` (the default, vv. 30 and 31), `NONE` (Sripati, the corpus's engine; crux C75) |
 | varga | `unattested_dn` | enum | `CYCLIC`, or a named scheme |
+| varga | `schemes` | map | per varga: `{"kind": "NAMED", "which": …}` (`PARASHARA`, `PARIVRITTI`, `KASHINATHA`, `UMA_SHAMBHU`, `SOMANATHA`, `KRISHNA_MISHRA`, each where its source serves) or `{"kind": "CUSTOM", "classifier": …, "groups": […]}`, a consumer's rows; a varga left out is BPHS ch. 6's (`varga-schemes.md`, cruxes C2060, C2063 to C2068) |
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |
 | calendar | `samvatsara` | enum | `BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA` |

@@ -55,7 +55,10 @@ impl Axis {
     /// # Errors
     ///
     /// As [`Scheme::chosen`].
-    pub fn chosen(varga: Varga, settings: &teistro_core::settings::Settings) -> Result<Axis, Error> {
+    pub fn chosen(
+        varga: Varga,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<Axis, Error> {
         let scheme = Scheme::chosen(varga, settings)?;
         Ok(Axis {
             grahas: scheme,

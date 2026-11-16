@@ -159,7 +159,13 @@ pub fn draw_chosen(
     counts_from: ChartFrame,
     settings: &teistro_core::settings::Settings,
 ) -> Result<Drawing, Error> {
-    draw_axis(layout, foundation, varga, Axis::chosen(varga, settings)?, counts_from)
+    draw_axis(
+        layout,
+        foundation,
+        varga,
+        Axis::chosen(varga, settings)?,
+        counts_from,
+    )
 }
 
 /// A drawing of `varga` with its signs placed by `axis`.

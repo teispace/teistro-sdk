@@ -144,6 +144,7 @@ fn a_chart_the_sdk_computed_reads_as_a_rule_chart() {
     let divisions = rule_vargas(
         &chart,
         [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30],
+        &teistro::settings::root(),
     )
     .expect("the divisions");
     for body in Body::ALL {

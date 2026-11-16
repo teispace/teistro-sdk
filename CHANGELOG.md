@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Varga schemes and karaka namings a consumer chooses (SR-114, SR-115).**
+**Numbers:** every settings hash moves, the settings gaining `jaimini.seven_karaka_order`
+and `vargas.schemes`, which the canonical document writes; no computed value moves under
+any shipped profile, and a document whose charts use BPHS ch. 6's schemes writes the
+same bytes (a scheme names its `variant` only when it is not `PARASHARA`).
+- `vargas.schemes` chooses a scheme per varga: a named variant with its source (the
+  parivritti D2, D3, D4 and D5; Kashinatha's and the Uma-Shambhu hora; Somanatha's
+  drekkana; Krishna Mishra's navamsha), or a consumer's own rows, checked as the shipped
+  ones are and refused with the field named (`vargas.schemes.D9.groups[0].map.signs`).
+  Every chart read under a context reads it: varga sections, drawings, change hits, the
+  navamsa lagna, the rules' navamsha and `rule_vargas` (which now takes the settings), the
+  karakamsha, the ishta devata and the prashna sky (`03-design/varga-schemes.md`, cruxes
+  C2060, C2063 to C2068).
+- `jaimini.seven_karaka_order`: `JAIMINI` (the default) or `MATRI_IS_PUTRA`, BPHS ch. 32
+  v. 16's naming, the Putrakaraka read from the Matrikaraka's graha (C2061).
+  `jaimini.chara_karakas` gains `EIGHT_ON_A_TIE`, BPHS ch. 32 v. 2 (C2062).
+- Rust: `Scheme::named`, `Scheme::from_rows`, `Scheme::chosen`, `Scheme::rows`,
+  `Axis::chosen`, `geometry::draw_chosen`, `RuleChart::holder`, `RuleChart::seven_tie`,
+  `SevenKarakas`; `RuleInputs::under` returns a `Result`.
+
 **Why each settings knob has its value, and where two settings part (SR-110).**
 **Numbers:** none; no computed value and no settings hash moves. `Resolved` gains
 `origins`, which resolution records and the hash does not read.

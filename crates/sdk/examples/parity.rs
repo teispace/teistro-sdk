@@ -8720,6 +8720,47 @@ fn listed(items: impl Iterator<Item = String>) -> String {
     }
 }
 
+/// A varga scheme the settings choose (`03-design/varga-schemes.md`):
+/// Kashinatha's hora for the D2, and a consumer's broken row refused with
+/// its field in the message.
+fn a_varga_scheme(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let hora = Context::builder()
+        .ephemeris([Ephemeris::Test])
+        .settings_json(r#"{"vargas":{"schemes":{"D2":{"kind":"NAMED","which":"KASHINATHA"}}}}"#)
+        .build()
+        .expect("a named hora");
+    let read = hora
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_451_545.0),
+            &ChartRequest::at(*place, offset).with_vargas([Varga::D2]),
+        )
+        .expect("the hora chart")
+        .value;
+    if let Some(d2) = read.vargas.first() {
+        for (j, placed) in d2.grahas.iter().enumerate() {
+            put(
+                report,
+                &format!("varga-scheme-kashinatha-graha-{j}"),
+                format!("{} {}", placed.graha.full_key(), placed.at.sign.full_key()),
+            );
+        }
+    }
+    let broken = r#"{"vargas":{"schemes":{"D9":{"kind":"CUSTOM","classifier":"ALL",
+        "groups":[{"spans":{"spans":"EQUAL"},"map":{"map":"LISTED","signs":[0]}}]}}}}"#;
+    let refused = Context::builder()
+        .ephemeris([Ephemeris::Test])
+        .settings_json(broken)
+        .build()
+        .err()
+        .is_some_and(|error| {
+            error
+                .to_string()
+                .contains("vargas.schemes.D9.groups[0].map.signs")
+        });
+    put(report, "varga-scheme-refused", refused.to_string());
+}
+
 /// The settings explained and compared (`03-design/settings-and-profiles.md`
 /// §3.5): `nepali-drik` with the node patched per call, every knob
 /// explained — how many, how many cited, the node's layer, the centre's
@@ -8847,6 +8888,7 @@ fn main() {
     aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
+    a_varga_scheme(&mut report, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");
