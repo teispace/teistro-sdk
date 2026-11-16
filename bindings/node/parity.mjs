@@ -2591,6 +2591,11 @@ for (const [line, system, owner] of [
       `eclipses-lunar-${k}-here`,
       [here.p1, here.u1, here.u2, here.greatest, here.u3, here.u4, here.p4].map(moment).concat(seen(here.seen), seen(here.umbralSeen)).join(' '),
     );
+    const largest = here.seenMaximum;
+    put(
+      `eclipses-lunar-${k}-seen-maximum`,
+      [largest.why, moment(largest.moment), maybe(largest.umbralMagnitude), maybe(largest.penumbralMagnitude)].join(' '),
+    );
     put(`eclipses-lunar-${k}-vedha`, seen(vedha));
   });
   eclipses.value.solar.forEach(({ eclipse, here, vedha }, k) => {
@@ -2605,6 +2610,13 @@ for (const [line, system, owner] of [
         : [here.kind, number(here.magnitude), number(here.obscuration)]
             .concat([here.first, here.second, here.third, here.fourth, here.maximum].map(moment), seen(here.seen))
             .join(' '),
+    );
+    const largest = here?.seenMaximum;
+    put(
+      `eclipses-solar-${k}-seen-maximum`,
+      largest === undefined
+        ? '-'
+        : [largest.why, moment(largest.moment), maybe(largest.magnitude), maybe(largest.obscuration)].join(' '),
     );
     put(`eclipses-solar-${k}-vedha`, seen(vedha));
   });

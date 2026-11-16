@@ -22775,6 +22775,100 @@ enum EclipseShadowRule {
   );
 }
 
+/// Where the largest phase a place sees falls, and so why it is or is not
+/// the eclipse's maximum there.
+enum SeenAt {
+  /// The body is up at the maximum, so the maximum is seen.
+  maximum('MAXIMUM'),
+
+  /// The body rises after the maximum: the eclipse rises in progress, and
+  /// its largest phase seen is at sunrise or moonrise.
+  rising('RISING'),
+
+  /// The body sets before the maximum: the largest phase seen is at
+  /// sunset or moonset.
+  setting('SETTING'),
+
+  /// As [rising], against a custom altitude limit rather than a horizon.
+  risingPastLimit('RISING_PAST_LIMIT'),
+
+  /// As [setting], against a custom altitude limit.
+  settingPastLimit('SETTING_PAST_LIMIT'),
+
+  /// The body is never up while the eclipse lasts: nothing is seen.
+  notSeen('NOT_SEEN');
+
+  const SeenAt(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static SeenAt _byKey(Object? key) => values.firstWhere(
+    (why) => why.key == key,
+    orElse: () => throw StateError('a seen maximum $key'),
+  );
+}
+
+/// The largest phase of a solar eclipse the place sees: the maximum when
+/// the Sun is up at it, else where it rises or sets. [moment] and the
+/// magnitudes are `null` exactly when nothing is seen.
+final class SolarSeenMaximum extends _Value {
+  const SolarSeenMaximum({
+    required this.why,
+    required this.moment,
+    required this.magnitude,
+    required this.obscuration,
+  });
+
+  /// Where it falls.
+  final SeenAt why;
+
+  /// When, with the Sun's topocentric geometric altitude.
+  final EclipseMoment? moment;
+
+  /// The magnitude then.
+  final double? magnitude;
+
+  /// The obscuration then.
+  final double? obscuration;
+
+  @override
+  List<Object?> get _fields => [why, moment, magnitude, obscuration];
+}
+
+/// The largest phase of a lunar eclipse the place sees: the greatest
+/// eclipse when the Moon is up at it, else where it rises or sets.
+/// [moment] and the magnitudes are `null` exactly when nothing is seen.
+final class LunarSeenMaximum extends _Value {
+  const LunarSeenMaximum({
+    required this.why,
+    required this.moment,
+    required this.umbralMagnitude,
+    required this.penumbralMagnitude,
+  });
+
+  /// Where it falls.
+  final SeenAt why;
+
+  /// When, with the Moon's topocentric geometric altitude.
+  final EclipseMoment? moment;
+
+  /// The umbral magnitude then, negative while the Moon is clear of the
+  /// umbra.
+  final double? umbralMagnitude;
+
+  /// The penumbral magnitude then.
+  final double? penumbralMagnitude;
+
+  @override
+  List<Object?> get _fields => [
+    why,
+    moment,
+    umbralMagnitude,
+    penumbralMagnitude,
+  ];
+}
+
 /// One moment of an eclipse at the place: when, and the body's topocentric
 /// geometric altitude there.
 final class EclipseMoment extends _Value {
@@ -22923,6 +23017,7 @@ final class LunarEclipseView extends _Value {
     required this.p4,
     required this.seen,
     required this.umbralSeen,
+    required this.seenMaximum,
   });
 
   final EclipseMoment p1;
@@ -22938,6 +23033,9 @@ final class LunarEclipseView extends _Value {
   /// `null` (always for a penumbral eclipse).
   final EclipseSeen? umbralSeen;
 
+  /// The largest phase the place sees.
+  final LunarSeenMaximum seenMaximum;
+
   @override
   List<Object?> get _fields => [
     p1,
@@ -22949,6 +23047,7 @@ final class LunarEclipseView extends _Value {
     p4,
     seen,
     umbralSeen,
+    seenMaximum,
   ];
 }
 
@@ -22965,11 +23064,14 @@ final class SolarEclipseView extends _Value {
     required this.fourth,
     required this.maximum,
     required this.seen,
+    required this.seenMaximum,
   });
 
   /// What the place sees at its maximum: never [SolarEclipseKind.hybrid].
   final SolarEclipseKind kind;
 
+  /// The fraction of the Sun's diameter covered at the maximum, even below
+  /// the horizon.
   final double magnitude;
 
   /// The fraction of the Sun's disc covered at the maximum.
@@ -22982,6 +23084,9 @@ final class SolarEclipseView extends _Value {
   final EclipseMoment maximum;
   final EclipseSeen? seen;
 
+  /// The largest phase the place sees.
+  final SolarSeenMaximum seenMaximum;
+
   @override
   List<Object?> get _fields => [
     kind,
@@ -22993,6 +23098,7 @@ final class SolarEclipseView extends _Value {
     fourth,
     maximum,
     seen,
+    seenMaximum,
   ];
 }
 
@@ -23117,6 +23223,15 @@ Eclipses _eclipses(String json) {
         p4: moment(h['p4']),
         seen: seen(h['seen']),
         umbralSeen: seen(h['umbralSeen']),
+        seenMaximum: () {
+          final m = at(h['seenMaximum']);
+          return LunarSeenMaximum(
+            why: SeenAt._byKey(m['why']),
+            moment: reached(m['moment']),
+            umbralMagnitude: reachedJd(m['umbralMagnitude']),
+            penumbralMagnitude: reachedJd(m['penumbralMagnitude']),
+          );
+        }(),
       ),
       vedha: seen(raw['vedha']),
     );
@@ -23152,6 +23267,15 @@ Eclipses _eclipses(String json) {
                 fourth: moment(h['fourth']),
                 maximum: moment(h['maximum']),
                 seen: seen(h['seen']),
+                seenMaximum: () {
+                  final m = at(h['seenMaximum']);
+                  return SolarSeenMaximum(
+                    why: SeenAt._byKey(m['why']),
+                    moment: reached(m['moment']),
+                    magnitude: reachedJd(m['magnitude']),
+                    obscuration: reachedJd(m['obscuration']),
+                  );
+                }(),
               ),
       vedha: seen(raw['vedha']),
     );

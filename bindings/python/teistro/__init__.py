@@ -1764,6 +1764,9 @@ __all__ = [
     "EclipsePoint",
     "EclipseMoment",
     "EclipseSeen",
+    "SeenAt",
+    "SolarSeenMaximum",
+    "LunarSeenMaximum",
     "LunarEclipseView",
     "SolarEclipseView",
     "LunarYear",
@@ -12847,6 +12850,42 @@ class EclipseSeen:
     """A UT1 Julian day."""
 
 
+SeenAt = Literal["MAXIMUM", "RISING", "SETTING", "RISING_PAST_LIMIT", "SETTING_PAST_LIMIT", "NOT_SEEN"]
+"""Where the largest phase a place sees falls: at the maximum, where the
+body rises after it or sets before it (the `_PAST_LIMIT` pair against a
+custom altitude), or nowhere."""
+
+
+@dataclass(frozen=True)
+class SolarSeenMaximum:
+    """The largest phase of a solar eclipse the place sees: the maximum
+    when the Sun is up at it, else where it rises or sets. `moment` and
+    the magnitudes are `None` exactly when nothing is seen."""
+
+    why: SeenAt
+    moment: Optional[EclipseMoment]
+    """When, with the Sun's topocentric geometric altitude."""
+
+    magnitude: Optional[float]
+    obscuration: Optional[float]
+
+
+@dataclass(frozen=True)
+class LunarSeenMaximum:
+    """The largest phase of a lunar eclipse the place sees: the greatest
+    eclipse when the Moon is up at it, else where it rises or sets.
+    `moment` and the magnitudes are `None` exactly when nothing is seen."""
+
+    why: SeenAt
+    moment: Optional[EclipseMoment]
+    """When, with the Moon's topocentric geometric altitude."""
+
+    umbral_magnitude: Optional[float]
+    """Negative while the Moon is clear of the umbra."""
+
+    penumbral_magnitude: Optional[float]
+
+
 @dataclass(frozen=True)
 class LunarContacts:
     """A lunar eclipse's contacts with the penumbra and umbra, UT1 Julian
@@ -12921,6 +12960,9 @@ class LunarEclipseView:
     """The stretch of the umbral phase seen, the part the eye sees, or
     `None` (always for a penumbral eclipse)."""
 
+    seen_maximum: LunarSeenMaximum
+    """The largest phase the place sees."""
+
 
 @dataclass(frozen=True)
 class SolarEclipseView:
@@ -12932,6 +12974,9 @@ class SolarEclipseView:
     """What the place sees at its maximum: never `HYBRID`."""
 
     magnitude: float
+    """The fraction of the Sun's diameter covered at the maximum, even
+    below the horizon."""
+
     obscuration: float
     """The fraction of the Sun's disc covered at the maximum."""
 
@@ -12941,6 +12986,8 @@ class SolarEclipseView:
     fourth: EclipseMoment
     maximum: EclipseMoment
     seen: Optional[EclipseSeen]
+    seen_maximum: SolarSeenMaximum
+    """The largest phase the place sees."""
 
 
 @dataclass(frozen=True)
@@ -19488,6 +19535,12 @@ def _eclipses_answer(text: str) -> Eclipses:
                 p4=moment(h["p4"]),
                 seen=seen(h["seen"]),
                 umbral_seen=seen(h["umbralSeen"]),
+                seen_maximum=LunarSeenMaximum(
+                    why=h["seenMaximum"]["why"],
+                    moment=reached(h["seenMaximum"]["moment"]),
+                    umbral_magnitude=h["seenMaximum"]["umbralMagnitude"],
+                    penumbral_magnitude=h["seenMaximum"]["penumbralMagnitude"],
+                ),
             ),
             vedha=seen(raw["vedha"]),
         )
@@ -19514,6 +19567,12 @@ def _eclipses_answer(text: str) -> Eclipses:
                 fourth=moment(h["fourth"]),
                 maximum=moment(h["maximum"]),
                 seen=seen(h["seen"]),
+                seen_maximum=SolarSeenMaximum(
+                    why=h["seenMaximum"]["why"],
+                    moment=reached(h["seenMaximum"]["moment"]),
+                    magnitude=h["seenMaximum"]["magnitude"],
+                    obscuration=h["seenMaximum"]["obscuration"],
+                ),
             ),
             vedha=seen(raw["vedha"]),
         )

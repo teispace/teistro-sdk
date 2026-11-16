@@ -6202,6 +6202,18 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
     );
     assert!(envelope["value"]["lunar"][0]["eclipse"]["umbralMagnitude"].is_number());
     assert!(envelope["value"]["lunar"][0]["here"]["p1"]["altitudeDeg"].is_number());
+    // The largest phase seen crosses with its reason as a key, its moment
+    // null exactly when nothing is seen.
+    let largest = &envelope["value"]["lunar"][0]["here"]["seenMaximum"];
+    let why = largest["why"].as_str().unwrap();
+    assert!(
+        teistro::eclipse::SeenAt::ALL
+            .iter()
+            .any(|member| member.key() == why),
+        "{why}"
+    );
+    assert_eq!(largest["moment"].is_null(), why == "NOT_SEEN");
+    assert_eq!(largest["umbralMagnitude"].is_null(), why == "NOT_SEEN");
 
     let sdk = teistro::Context::builder()
         .ephemeris([teistro::Ephemeris::Builtin])

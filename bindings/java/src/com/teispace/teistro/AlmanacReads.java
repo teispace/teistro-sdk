@@ -838,6 +838,16 @@ final class AlmanacReads {
         return new EclipseSeen(Reads.number(s, "from"), Reads.number(s, "to"));
     }
 
+    private static SolarSeenMaximum solarSeenMaximum(Map<?, ?> m) {
+        return new SolarSeenMaximum(SeenAt.read(Reads.field(m, "why")), reached(m, "moment"),
+                Reads.optionalNumber(m, "magnitude"), Reads.optionalNumber(m, "obscuration"));
+    }
+
+    private static LunarSeenMaximum lunarSeenMaximum(Map<?, ?> m) {
+        return new LunarSeenMaximum(SeenAt.read(Reads.field(m, "why")), reached(m, "moment"),
+                Reads.optionalNumber(m, "umbralMagnitude"), Reads.optionalNumber(m, "penumbralMagnitude"));
+    }
+
     /** The {@code eclipses} section: the envelope's eclipses, with the provenance beside them. */
     static Eclipses eclipsesAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
@@ -872,7 +882,8 @@ final class AlmanacReads {
                         reached(h, "u4"),
                         moment(Reads.field(h, "p4")),
                         seen(h, "seen"),
-                        seen(h, "umbralSeen")),
+                        seen(h, "umbralSeen"),
+                        lunarSeenMaximum(Reads.object(h, "seenMaximum"))),
                 seen(both, "vedha"));
     }
 
@@ -893,7 +904,8 @@ final class AlmanacReads {
                     reached(h, "third"),
                     moment(Reads.field(h, "fourth")),
                     moment(Reads.field(h, "maximum")),
-                    seen(h, "seen"));
+                    seen(h, "seen"),
+                    solarSeenMaximum(Reads.object(h, "seenMaximum")));
         }
         return new SolarEclipseHere(
                 new SolarEclipse(

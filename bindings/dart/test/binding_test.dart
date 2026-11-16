@@ -4229,6 +4229,23 @@ void _engineTests() {
       answer.provenance.appliedConventions.map((c) => c.knob),
       contains('eclipse.window'),
     );
+    // Seen whole, the greatest eclipse is the largest phase seen; unseen,
+    // nothing is, which is a state and not a zero.
+    final largest = lunar.here.seenMaximum;
+    expect(largest.why, SeenAt.maximum);
+    expect(largest.moment, lunar.here.greatest);
+    expect(largest.umbralMagnitude, lunar.eclipse.umbralMagnitude);
+    if (solar.here != null) {
+      expect(
+        solar.here!.seenMaximum,
+        const SolarSeenMaximum(
+          why: SeenAt.notSeen,
+          moment: null,
+          magnitude: null,
+          obscuration: null,
+        ),
+      );
+    }
 
     final (chauvenet, _) = asked({
       'panchanga': {'eclipse_shadow': 'CHAUVENET'},
@@ -4243,6 +4260,46 @@ void _engineTests() {
       chauvenet.provenance.settingsHash,
       isNot(answer.provenance.settingsHash),
     );
+  });
+
+  // October and November 2022 at Kathmandu (SR-106): the partial solar
+  // eclipse of 25 October is greatest 5.7° below the horizon, so its
+  // largest phase seen is at sunset; the total lunar eclipse of 8 November
+  // rises in totality, so its largest phase seen is at moonrise.
+  test('an eclipse below the horizon at its maximum answers the largest '
+      'phase seen', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final found =
+        ctx.almanac
+            .of(
+              from: gregorian(2022, 10, 20),
+              to: gregorian(2022, 11, 10),
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              eclipses: true,
+            )
+            .eclipses!;
+    ctx.dispose();
+    final solar = found.value.solar.first.here!;
+    expect(solar.maximum.altitudeDeg, lessThan(-5));
+    expect(solar.magnitude, closeTo(0.49, 0.001));
+    final sunset = solar.seenMaximum;
+    expect(sunset.why, SeenAt.setting);
+    expect(sunset.moment!.at, solar.seen!.to);
+    expect(sunset.magnitude!, closeTo(0.376, 0.002));
+    expect(sunset.obscuration!, lessThan(solar.obscuration));
+    final lunar = found.value.lunar.first;
+    final risen = lunar.here.seenMaximum;
+    expect(risen.why, SeenAt.rising);
+    expect(risen.moment!.at, lunar.here.seen!.from);
+    expect(risen.umbralMagnitude!, greaterThan(1));
+    expect(risen.umbralMagnitude!, lessThan(lunar.eclipse.umbralMagnitude));
   });
 
   // Each day's Nepal Sambat date beside the days
