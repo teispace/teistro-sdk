@@ -7244,7 +7244,6 @@
         }
       },
       "required": [
-        "variant",
         "divisions",
         "classifier",
         "groups"
