@@ -700,7 +700,13 @@ impl<P: EphemerisProvider + ?Sized> ShadowSource for Completion<'_, P> {
         let bodies = [body];
         let request =
             PositionRequest::new(&jds, TimeScale::Ut1, &bodies, seen.frame()).without_speeds();
-        apparent_cell(&self.positions(&request)?, 0, body, ut1)
+        apparent_cell(
+            &self.positions(&request)?,
+            0,
+            body,
+            ut1,
+            self.capabilities().distance_unit,
+        )
     }
 
     fn describe(&self) -> String {

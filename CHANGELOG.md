@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A classical sky's Moon stands at her true distance (SR-127).**
+**Numbers:** under a classical sky (the Surya Siddhanta's, which `nepal_official` and
+`nepali-committee` open) the Moon's lit fraction, the Sun's and Moon's apparent
+distance, and anything reckoned from them move; a modern sky moves nothing. Over
+November 2026 at Kathmandu the lit fraction read 75% on the 4th, 65% on the 8th and
+83% on the 16th where the Moon was 27%, 2% and 36% lit; it now parts from the modern
+sky's by at most 2.6%, which is the text's own Moon (no evection or variation).
+- **Fixed:** a provider that gives distances in mean distances
+  (`DistanceUnit::MeanDistances`) had them read as astronomical units, putting the Moon
+  as far off as the Sun. `completion::distance_in_au` converts by each body's mean
+  distance (`rise_set::mean_distance_au`: Simon et al. 1994; the Moon's 384,400 km),
+  for every reader of an apparent place: the day sky, the sky view and the rise and
+  set disc. Light time and the phenomena already refused such a provider, and a
+  sidereal classical frame never reaches the topocentric step.
+
 **The Kirat Yele Sambat (SR-96).**
 **Numbers:** no computed number moves. Every settings hash moves, `calendars` gaining
 the knob `kirat_yele`; a stored settings snapshot taken before it no longer reads
