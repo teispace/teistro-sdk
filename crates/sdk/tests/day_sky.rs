@@ -275,6 +275,73 @@ fn a_full_moon_is_lit_and_a_new_one_dark() {
     assert!(new.illuminated_fraction < 0.03, "{new:?}");
 }
 
+/// The Moon's lit fraction at every three-hour sample of a month at Kathmandu.
+fn lit_by_sample(sdk: &Context) -> BTreeMap<i64, f64> {
+    let request = AlmanacRequest::new().with_sky(SkyStep::of_minutes(180).unwrap());
+    let answer = sdk
+        .almanac()
+        .asked(
+            &date(2026, 11, 1),
+            &date(2026, 11, 30),
+            &kathmandu(),
+            nepal(),
+            &request,
+        )
+        .unwrap();
+    let mut lit = BTreeMap::new();
+    for sky in answer.sky.unwrap().value {
+        for point in sky
+            .moon
+            .track
+            .iter()
+            .filter(|p| p.kind == SkyPointKind::Sample)
+        {
+            #[expect(clippy::cast_possible_truncation, reason = "a minute's count of days")]
+            let minute = (point.at.get() * 1440.0).round() as i64;
+            lit.insert(minute, point.moon.unwrap().illuminated_fraction);
+        }
+    }
+    lit
+}
+
+/// SR-127: a classical sky counts the Moon's distance in mean distances,
+/// and read as astronomical units it put her as far off as the Sun, so her
+/// phase was reckoned from two parallel lines and came out flat: 75% lit
+/// on 4 November 2026 where she was a quarter lit. Every three hours of a
+/// lunation, the official reckoning's Surya Siddhanta sky (the path a
+/// consumer's default builds) now lights her as the modern one does,
+/// within what its own Moon's place allows: the text's Moon has no
+/// evection or variation, so she stands up to about 3° from the modern
+/// one and, near a quarter, each degree moves the lit fraction by 0.9%.
+/// Over November 2026 the two part by at most 2.6% (they parted by 48%,
+/// 75% lit for 27%, before).
+#[test]
+fn the_moon_is_lit_by_her_true_distance_under_a_classical_sky() {
+    let official = Context::builder()
+        .nepal_official([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let modern = lit_by_sample(&context());
+    let classical = lit_by_sample(&official);
+    assert!(modern.len() >= 220, "{}", modern.len());
+    let mut worst = (0.0_f64, 0_i64);
+    for (minute, want) in &modern {
+        let got = classical[minute];
+        if (got - want).abs() > worst.0 {
+            worst = ((got - want).abs(), *minute);
+        }
+    }
+    // The consumer's days at Kathmandu: lit 27% on the 4th, 2% on the 8th,
+    // 36% on the 16th, 74% on the 20th and 97% on the 26th.
+    for day in [4.0_f64, 8.0, 16.0, 20.0, 26.0] {
+        #[expect(clippy::cast_possible_truncation, reason = "a minute's count of days")]
+        let minute = ((2_461_345.5 + day - 1.0) * 1440.0).round() as i64;
+        let (at, want) = modern.range(minute..).next().unwrap();
+        assert!((classical[at] - want).abs() < 0.03, "{day}: {} for {want}", classical[at]);
+    }
+    assert!(worst.0 < 0.03, "{worst:?}");
+}
+
 #[test]
 fn a_polar_day_says_so_and_keeps_its_noon() {
     let sdk = context();

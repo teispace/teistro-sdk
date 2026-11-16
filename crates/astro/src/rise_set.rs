@@ -314,6 +314,40 @@ pub fn radius_km(body: Body) -> f64 {
     }
 }
 
+/// A body's mean distance from the Earth, astronomical units: what a
+/// classical astronomy's distance (`DistanceUnit::MeanDistances`, a ratio
+/// to the body's mean) is a multiple of.
+///
+/// The Sun's is the Earth's orbit's semi-major axis and the Moon's the
+/// mean of her orbit, 384 400 km (Simon et al. 1994; the *Explanatory
+/// Supplement*, 3rd ed., table 8.1). A star planet's ratio is the
+/// hypotenuse over the deferent's radius (*Surya Siddhanta* II.39 to 45),
+/// and the deferent is the mean Sun's orbit for Mercury and Venus and the
+/// planet's own for Mars, Jupiter and Saturn, so its mean distance is one
+/// astronomical unit or the planet's semi-major axis. `None` for a body a
+/// classical astronomy does not place at a distance.
+///
+/// ```
+/// use teistro_astro::rise_set::{AU_KM, mean_distance_au};
+/// use teistro_port_ephemeris::Body;
+///
+/// assert!((mean_distance_au(Body::Moon).unwrap() * AU_KM - 384_400.0).abs() < 1e-6);
+/// assert!((mean_distance_au(Body::Jupiter).unwrap() - 5.2026).abs() < 1e-4);
+/// assert_eq!(mean_distance_au(Body::MeanNode), None);
+/// ```
+#[must_use]
+pub fn mean_distance_au(body: Body) -> Option<f64> {
+    const EARTH_ORBIT_AU: f64 = 1.000_001_018;
+    match body {
+        Body::Sun | Body::Mercury | Body::Venus => Some(EARTH_ORBIT_AU),
+        Body::Moon => Some(384_400.0 / AU_KM),
+        Body::Mars => Some(1.523_679_34),
+        Body::Jupiter => Some(5.202_603_19),
+        Body::Saturn => Some(9.554_909_6),
+        _ => None,
+    }
+}
+
 /// The apparent size and the horizontal parallax of a body at a distance,
 /// degrees.
 ///
