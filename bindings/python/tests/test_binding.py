@@ -1720,6 +1720,57 @@ class AnEngine(WithLibrary):
                 ctx.almanac.sky_pose(place=kathmandu, at=2461345.25, pose=wide)
             self.assertEqual(refused.exception.field, "skyPose.pose.horizontalFovDeg")
 
+    def test_an_almanac_reads_the_panchangas_own_longitudes(self) -> None:
+        """The Sun's and the Moon's sidereal longitudes as the day's limbs
+        read them (`03-design/panchanga-reach.md` §3): one answer for each
+        instant in its order, the elongation and the sum consistent with
+        the two, the limbs read off them, and no instant refused by name."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.limb_angles(place=kathmandu, instants=[2461345.25, 2461360.5])
+            self.assertEqual([one.at for one in found.value], [2461345.25, 2461360.5])
+            first = found.value[0]
+            self.assertAlmostEqual(first.elongation_deg, (first.moon_deg - first.sun_deg) % 360, places=9)
+            self.assertAlmostEqual(first.yoga_deg, (first.moon_deg + first.sun_deg) % 360, places=9)
+            self.assertEqual(first.tithi(), Tithi.KRISHNA_SAPTAMI)
+            self.assertEqual(first.nakshatra(), Nakshatra.PUNARVASU)
+            self.assertEqual(found.value[1].tithi(), Tithi.SHUKLA_SAPTAMI)
+            with self.assertRaises(TeistroError) as none:
+                ctx.almanac.limb_angles(place=kathmandu, instants=[])
+            self.assertEqual(none.exception.field, "limbAngles.instants")
+
+    def test_an_almanac_reads_the_seasons_blackouts(self) -> None:
+        """Chaturmas, the malmas and Kharmas over 2026 by `nepali-drik`
+        (`03-design/panchanga-reach.md` §2): five stretches in order, the
+        malmas in May and June, and asta refused by name since it is the
+        muhurta search's own."""
+        from teistro import BlackoutKind
+
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.blackouts(
+                from_date=date(Calendar.GREGORIAN, 2026, 1, 1),
+                to_date=date(Calendar.GREGORIAN, 2026, 12, 31),
+                utc_offset_seconds=20700,
+                kinds=[BlackoutKind.CHATURMAS, BlackoutKind.ADHIKA_MASA, BlackoutKind.KHARMAS],
+            )
+            self.assertEqual(
+                [one.kind for one in found.value],
+                [
+                    BlackoutKind.KHARMAS,
+                    BlackoutKind.KHARMAS,
+                    BlackoutKind.ADHIKA_MASA,
+                    BlackoutKind.CHATURMAS,
+                    BlackoutKind.KHARMAS,
+                ],
+            )
+            malmas = found.value[2].at
+            self.assertTrue(2461177 < malmas.from_jd < malmas.to_jd < 2461207)
+            with self.assertRaises(TeistroError) as asta:
+                ctx.almanac.blackouts(
+                    from_date=date(Calendar.GREGORIAN, 2026, 1, 1), utc_offset_seconds=20700, kinds=[BlackoutKind.GURU_ASTA]
+                )
+            self.assertEqual(asta.exception.field, "blackouts.kinds")
+
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the
         *Dharmasindhu*'s sixteen shraddhas each with its place, the first

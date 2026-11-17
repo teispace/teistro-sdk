@@ -2439,6 +2439,96 @@ void _engineTests() {
     );
   });
 
+  // The panchanga's own longitudes (`03-design/panchanga-reach.md` §3):
+  // one answer for each instant in its order, the elongation and the sum
+  // consistent with the two, the limbs read off them, and no instant
+  // refused by name.
+  test('an almanac reads the panchanga\'s own longitudes', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final found = sky.almanac.limbAngles(
+      place: kathmandu,
+      instants: const [2461345.25, 2461360.5],
+    );
+    expect(found.provenance.contentHash, isNotEmpty);
+    expect([for (final one in found.value) one.at], [2461345.25, 2461360.5]);
+    final first = found.value.first;
+    expect(
+      first.elongationDeg,
+      closeTo((first.moonDeg - first.sunDeg) % 360, 1e-9),
+    );
+    expect(first.yogaDeg, closeTo((first.moonDeg + first.sunDeg) % 360, 1e-9));
+    expect(first.tithi, Tithi.krishnaSaptami);
+    expect(first.nakshatra, Nakshatra.punarvasu);
+    expect(found.value[1].tithi, Tithi.shuklaSaptami);
+    expect(
+      () => sky.almanac.limbAngles(place: kathmandu, instants: const []),
+      throwsA(
+        isA<TeistroException>().having(
+          (error) => error.field,
+          'field',
+          'limbAngles.instants',
+        ),
+      ),
+    );
+  });
+
+  // Chaturmas, the malmas and Kharmas over 2026 by `nepali-drik`
+  // (`03-design/panchanga-reach.md` §2): five stretches in order, the
+  // malmas in May and June, and asta refused by name.
+  test('an almanac reads the season\'s blackouts', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final found = sky.almanac.blackouts(
+      from: Calendar.gregorian.date(2026, 1, 1),
+      to: Calendar.gregorian.date(2026, 12, 31),
+      utcOffsetSeconds: 20700,
+      kinds: const [
+        BlackoutKind.chaturmas,
+        BlackoutKind.adhikaMasa,
+        BlackoutKind.kharmas,
+      ],
+    );
+    expect(
+      [for (final one in found.value) one.kind],
+      [
+        BlackoutKind.kharmas,
+        BlackoutKind.kharmas,
+        BlackoutKind.adhikaMasa,
+        BlackoutKind.chaturmas,
+        BlackoutKind.kharmas,
+      ],
+    );
+    final malmas = found.value[2].at;
+    expect(malmas.from, greaterThan(2461177));
+    expect(malmas.to, lessThan(2461207));
+    expect(
+      () => sky.almanac.blackouts(
+        from: Calendar.gregorian.date(2026, 1, 1),
+        utcOffsetSeconds: 20700,
+        kinds: const [BlackoutKind.guruAsta],
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (error) => error.field,
+          'field',
+          'blackouts.kinds',
+        ),
+      ),
+    );
+  });
+
   // The same sky through a camera pointed at the Moon
   // (`03-design/sky-pose.md`): the sky is the sky view's, the Moon is the
   // picture's centre whatever the roll, and a field of 180 degrees is

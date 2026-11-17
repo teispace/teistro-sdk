@@ -1086,6 +1086,102 @@ public final class AlmanacArea {
         return AlmanacReads.skyPoseAnswer(context.locked((lib, raw) -> Calls.almanacSkyPose(lib, raw, json)));
     }
 
+    /**
+     * <b>The Sun's and the Moon's sidereal longitudes as the panchanga reads them</b>
+     * ({@code 03-design/panchanga-reach.md} §3): at each instant, a UTC Julian day, in its order, the two
+     * longitudes, the elongation (the tithi's and the karana's angle) and the yoga's sum, each in degrees from 0 to
+     * 360. They are read in the sky the day's limbs are found in, every knob of the profile honoured, so at a
+     * limb's end the day's search found the angle sits on the limb's grid. One to 4096 instants; the place
+     * matters when the panchanga is topocentric.
+     *
+     * <pre>{@code
+     * LimbAnglesAnswer angles = sdk.almanac().limbAngles(kathmandu, List.of(2_461_345.25));
+     * Tithi tithi = angles.value().get(0).tithi(); // KRISHNA_SAPTAMI
+     * }</pre>
+     *
+     * @param place where the Moon is seen from, when the panchanga is topocentric
+     * @param instants the instants, UTC Julian days
+     * @return one reading for each instant, sealed
+     */
+    public LimbAnglesAnswer limbAngles(Observer place, List<Double> instants) {
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        if (instants == null) {
+            throw Reads.invalid("instants is a list of UTC Julian days", "instants");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("instants", instants);
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        String json = Json.write(asked);
+        return AlmanacReads.limbAnglesAnswer(context.locked((lib, raw) -> Calls.almanacLimbAngles(lib, raw, json)));
+    }
+
+    /**
+     * <b>The blackouts the Sun and the Moon make over a range of civil days</b> by the context's profile
+     * ({@code 03-design/panchanga-reach.md} §2): Chaturmas, an adhika month (Nepal's malmas), a samsarpa, a kshaya
+     * month, Kharmas, Pitru paksha, the ghatis about each sankranti and Holashtaka, each clipped to the range from
+     * the first day's local midnight to the midnight after the last, in order of their start. The rule is the
+     * muhurta search's own season, in every build. {@code kinds} keeps those asked, every one when null; asta and
+     * an eclipse's star are refused as {@code blackouts.kinds}.
+     *
+     * <pre>{@code
+     * BlackoutsAnswer year = sdk.almanac().blackouts(Civil.date(Calendar.GREGORIAN, 2026, 1, 1),
+     *         Civil.date(Calendar.GREGORIAN, 2026, 12, 31), 20_700, List.of(BlackoutKind.ADHIKA_MASA));
+     * double malmasBegins = year.value().get(0).at().fromJd();
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, in the first's calendar, both ends included
+     * @param utcOffsetSeconds the offset the days' midnights are read at, east positive
+     * @param kinds the kinds wanted, or null for every one the Sun and the Moon make
+     * @return the blackouts, sealed
+     */
+    public BlackoutsAnswer blackouts(CalendarDate from, CalendarDate to, int utcOffsetSeconds,
+            List<BlackoutKind> kinds) {
+        return blackouts(from, to, clock(utcOffsetSeconds), kinds);
+    }
+
+    /**
+     * {@link #blackouts(CalendarDate, CalendarDate, int, List)} on a zone's clock, read at its offset on the first
+     * day ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * <pre>{@code
+     * BlackoutsAnswer year = sdk.almanac().blackouts(first, last, Civil.ianaZone("Asia/Kathmandu"), null);
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, in the first's calendar, both ends included
+     * @param zone the zone the days are read on
+     * @param kinds the kinds wanted, or null for every one the Sun and the Moon make
+     * @return the blackouts, sealed
+     */
+    public BlackoutsAnswer blackouts(CalendarDate from, CalendarDate to, ZoneSpec zone, List<BlackoutKind> kinds) {
+        return blackouts(from, to, clock(zone), kinds);
+    }
+
+    private BlackoutsAnswer blackouts(CalendarDate from, CalendarDate to, Map<String, Object> clock,
+            List<BlackoutKind> kinds) {
+        if (from == null || to == null) {
+            throw Reads.invalid("from and to are CalendarDates", from == null ? "from" : "to");
+        }
+        if (to.calendar() != from.calendar()) {
+            throw Reads.invalid("the range's last day is written in its first day's calendar", "blackouts.last");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", from.calendar().key());
+        asked.put("first", Map.of("year", from.year(), "month", from.month(), "day", from.day()));
+        asked.put("last", Map.of("year", to.year(), "month", to.month(), "day", to.day()));
+        asked.putAll(clock);
+        if (kinds != null) {
+            asked.put("kinds", kinds.stream().map(BlackoutKind::key).toList());
+        }
+        String json = Json.write(asked);
+        return AlmanacReads.blackoutsAnswer(context.locked((lib, raw) -> Calls.almanacBlackouts(lib, raw, json)));
+    }
+
     /** The sky view's request as {@link #skyView} and {@link #skyPose} write it. */
     private static Map<String, Object> skyAsked(double at, Observer place, List<Graha> grahas, List<Star> stars,
             Double eclipticStepDeg, Double horizonStepDeg, Double pressureHpa, Double temperatureC) {

@@ -3384,6 +3384,37 @@ def main() -> None:
     assert rising is not None
     put("sky-pose-ascendant", placement(rising[1]))
 
+    # ── The panchanga's own longitudes ────────────────────────────────
+    # Two instants in Kathmandu over the built-in sky
+    # (`03-design/panchanga-reach.md` §3): the hash, then each instant's
+    # Sun, Moon, elongation and yoga sum, and its tithi, nakshatra and yoga.
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
+        limb_angles = builtin.almanac.limb_angles(place=place, instants=[2461345.25, 2461360.5])
+    put("limb-angles-hash", limb_angles.provenance.content_hash)
+    put("limb-angles-count", str(len(limb_angles.value)))
+    for n, angles in enumerate(limb_angles.value):
+        put(
+            f"limb-angles-{n}",
+            f"{number(angles.sun_deg)} {number(angles.moon_deg)} {number(angles.elongation_deg)} "
+            f"{number(angles.yoga_deg)} {angles.tithi().key} {angles.nakshatra().key} {angles.yoga().key}",
+        )
+
+    # ── The season's blackouts ────────────────────────────────────────
+    # Chaturmas, the malmas and Kharmas over 2026 by `nepali-drik`, days
+    # read at +05:45 (`03-design/panchanga-reach.md` §2): the hash, then
+    # each blackout's kind and bounds.
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
+        season = builtin.almanac.blackouts(
+            from_date=date(Calendar.GREGORIAN, 2026, 1, 1),
+            to_date=date(Calendar.GREGORIAN, 2026, 12, 31),
+            utc_offset_seconds=20700,
+            kinds=["CHATURMAS", "ADHIKA_MASA", "KHARMAS"],
+        )
+    put("blackouts-hash", season.provenance.content_hash)
+    put("blackouts-count", str(len(season.value)))
+    for n, closed in enumerate(season.value):
+        put(f"blackouts-{n}", f"{closed.kind.key} {number(closed.at.from_jd)} {number(closed.at.to_jd)}")
+
     # ── The settings explained and compared ───────────────────────────
     # `nepali-drik` with the node patched per call, every knob explained,
     # and the knobs on which the committee's profile and `nepali-drik`

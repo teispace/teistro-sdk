@@ -41,7 +41,8 @@ use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
     ts_almanac_festival_calendar, ts_almanac_first_year, ts_almanac_published_reasons,
-    ts_almanac_sankalpa, ts_almanac_sky_pose, ts_almanac_sky_view, ts_panchanga_days,
+    ts_almanac_blackouts, ts_almanac_limb_angles, ts_almanac_sankalpa, ts_almanac_sky_pose,
+    ts_almanac_sky_view, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
@@ -241,6 +242,8 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_almanac_sky_pose",
     "ts_context_explain_settings",
     "ts_context_diff_settings",
+    "ts_almanac_limb_angles",
+    "ts_almanac_blackouts",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -583,6 +586,16 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         r#"{"knobs":["frame","day.sunrise"]}"#,
     ),
     ("ts_context_diff_settings", Seed::Answered, r#"{"knobs":["frame"]}"#),
+    (
+        "ts_almanac_limb_angles",
+        Seed::Answered,
+        r#"{"instants":[2461345.25,2461360.5],"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400}"#,
+    ),
+    (
+        "ts_almanac_blackouts",
+        Seed::Answered,
+        r#"{"first":{"year":2026,"month":5,"day":1},"last":{"year":2026,"month":7,"day":31},"calendar":"calendar.GREGORIAN","utcOffsetSeconds":20700,"kinds":["ADHIKA_MASA","blackout_kind.SANKRANTI"]}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -760,6 +773,8 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_sky_pose" => string_call(ts_almanac_sky_pose, text),
         "ts_context_explain_settings" => string_call(ts_context_explain_settings, text),
         "ts_context_diff_settings" => paired_call(ts_context_diff_settings, text),
+        "ts_almanac_limb_angles" => string_call(ts_almanac_limb_angles, text),
+        "ts_almanac_blackouts" => string_call(ts_almanac_blackouts, text),
         _ => Status::Ok,
     }
 }

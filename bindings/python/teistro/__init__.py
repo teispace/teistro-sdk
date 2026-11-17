@@ -206,6 +206,8 @@ from ._requests import (
     DeathTimeQuery as DeathTimeQuery,
     SkyViewRequest as SkyViewRequest,
     AlmanacSkyPoseRequest as AlmanacSkyPoseRequest,
+    LimbAnglesRequest as LimbAnglesRequest,
+    BlackoutsRequest as BlackoutsRequest,
     DevicePose as DevicePose,
     HouseholdQuery as HouseholdQuery,
     KinAsked as KinAsked,
@@ -1722,6 +1724,8 @@ __all__ = [
     "DeathTimeQuery",
     "SkyViewRequest",
     "AlmanacSkyPoseRequest",
+    "LimbAnglesRequest",
+    "BlackoutsRequest",
     "DevicePose",
     "HorizonSample",
     "HouseholdQuery",
@@ -1775,6 +1779,10 @@ __all__ = [
     "SkyScreen",
     "SkyPose",
     "SkyPoseAnswer",
+    "LimbAngles",
+    "LimbAnglesAnswer",
+    "Blackout",
+    "BlackoutsAnswer",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -4766,6 +4774,71 @@ class AlmanacArea(_Area):
         asked["pose"] = dict(pose)
         answered = self._context._through_provider(lambda: self._context.inner.almanac_sky_pose(json.dumps(asked)))
         return _sky_pose_answer(answered)
+
+    def limb_angles(self, *, place: Observer, instants: Sequence[float]) -> "LimbAnglesAnswer":
+        """**The Sun's and the Moon's sidereal longitudes as the panchanga
+        reads them** (`03-design/panchanga-reach.md` §3): at each instant,
+        a UTC Julian day, in its order, the two longitudes, the elongation
+        (the tithi's and the karana's angle) and the yoga's sum, each in
+        degrees from 0 to 360. They are read in the sky the day's limbs are
+        found in, every knob of the profile honoured, so at a limb's end the
+        day's search found the angle sits on the limb's grid. One to 4096
+        instants; the place matters when the panchanga is topocentric.
+
+        >>> # angles = ctx.almanac.limb_angles(place=kathmandu, instants=[2461345.25])
+        >>> # angles.value[0].tithi()  # Tithi.KRISHNA_SAPTAMI
+        """
+        asked: Dict[str, Any] = {
+            "instants": list(instants),
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+        }
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_limb_angles(json.dumps(asked)))
+        return _limb_angles_answer(answered)
+
+    def blackouts(
+        self,
+        *,
+        from_date: CalendarDate,
+        to_date: Optional[CalendarDate] = None,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
+        kinds: Optional[Sequence[Union[BlackoutKind, str]]] = None,
+    ) -> "BlackoutsAnswer":
+        """**The blackouts the Sun and the Moon make over a range of civil
+        days** by the context's profile (`03-design/panchanga-reach.md`
+        §2): Chaturmas, an adhika month (Nepal's malmas), a samsarpa, a
+        kshaya month, Kharmas, Pitru paksha, the ghatis about each
+        sankranti and Holashtaka, each clipped to the range from the first
+        day's local midnight to the midnight after the last, in order of
+        their start. The rule is the muhurta search's own season, in every
+        build. `kinds` keeps those asked, every one when left out; asta and
+        an eclipse's star are refused as `blackouts.kinds`. `to_date` is
+        `from_date` when left out and is written in its calendar.
+
+        The clock is `utc_offset_seconds` or a `zone`, never both.
+
+        >>> # year = ctx.almanac.blackouts(from_date=date(Calendar.GREGORIAN, 2026, 1, 1),
+        >>> #     to_date=date(Calendar.GREGORIAN, 2026, 12, 31), utc_offset_seconds=20700,
+        >>> #     kinds=[BlackoutKind.ADHIKA_MASA])
+        >>> # year.value[0].at.from_jd  # the malmas begins
+        """
+        if to_date is not None and to_date.calendar != from_date.calendar:
+            raise TeistroError(
+                Status.INVALID_ARG, "the range's last day is written in its first day's calendar", field="blackouts.last"
+            )
+        asked: Dict[str, Any] = {
+            "calendar": from_date.calendar.key,
+            "first": {"year": from_date.year, "month": from_date.month, "day": from_date.day},
+            **_clock_fields(utc_offset_seconds, zone),
+        }
+        if to_date is not None:
+            asked["last"] = {"year": to_date.year, "month": to_date.month, "day": to_date.day}
+        if kinds is not None:
+            asked["kinds"] = [_member_key(kind) for kind in kinds]
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_blackouts(json.dumps(asked)))
+        return _blackouts_answer(answered)
 
     def first_year(
         self,
@@ -12982,6 +13055,77 @@ class SkyPoseAnswer:
 
 
 @dataclass(frozen=True)
+class LimbAngles:
+    """The Sun's and the Moon's sidereal longitudes at an instant as the
+    panchanga reads them (`03-design/panchanga-reach.md` §3)."""
+
+    at: float
+    """The instant, a UTC Julian day."""
+
+    sun_deg: float
+    """The Sun's sidereal longitude."""
+
+    moon_deg: float
+    """The Moon's."""
+
+    elongation_deg: float
+    """The Moon less the Sun: the tithi's and the karana's angle."""
+
+    yoga_deg: float
+    """The Moon plus the Sun: the yoga's sum."""
+
+    def tithi(self) -> Tithi:
+        """The tithi running, read off the elongation."""
+        return Tithi(_limb_index(self.elongation_deg, 30))
+
+    def nakshatra(self) -> Nakshatra:
+        """The Moon's nakshatra, read off her longitude."""
+        return Nakshatra(_limb_index(self.moon_deg, 27))
+
+    def yoga(self) -> Yoga:
+        """The yoga running, read off the sum."""
+        return Yoga(_limb_index(self.yoga_deg, 27))
+
+
+@dataclass(frozen=True)
+class LimbAnglesAnswer:
+    """What `almanac.limb_angles` answers: one `LimbAngles` for each
+    instant asked, in its order.
+
+    >>> # angles = ctx.almanac.limb_angles(place=kathmandu, instants=[2461345.25])
+    >>> # angles.value[0].moon_deg
+    """
+
+    value: Tuple[LimbAngles, ...]
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class Blackout:
+    """A stretch the Sun and the Moon close to a rite
+    (`03-design/panchanga-reach.md` §2)."""
+
+    kind: BlackoutKind
+    at: Interval
+    """When it holds, clipped to the range asked."""
+
+
+@dataclass(frozen=True)
+class BlackoutsAnswer:
+    """What `almanac.blackouts` answers, in order of each blackout's start.
+
+    >>> # year = ctx.almanac.blackouts(from_date=date(Calendar.GREGORIAN, 2026, 1, 1), utc_offset_seconds=20700)
+    >>> # [one.kind for one in year.value]
+    """
+
+    value: Tuple[Blackout, ...]
+    provenance: Provenance
+    """What computed it, the range's bounds and the zodiac's instant among
+    the applied conventions, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
 class DeathTimeAnswer:
     """What `almanac.death_time` answers.
 
@@ -19770,6 +19914,40 @@ def _sky_pose_answer(text: str) -> "SkyPoseAnswer":
                 horizon=placements("horizon"),
             ),
         ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _limb_index(degrees: float, count: int) -> int:
+    """The id of the member of a limb of `count` equal arcs whose arc
+    holds an angle: as the SDK reads it, the last one for an angle a
+    rounding puts at 360."""
+    return min(int(degrees // (360.0 / count)), count - 1)
+
+
+def _limb_angles_answer(text: str) -> "LimbAnglesAnswer":
+    """`ts_almanac_limb_angles`'s answer, with the provenance beside it."""
+    envelope = json.loads(text)
+    return LimbAnglesAnswer(
+        value=tuple(
+            LimbAngles(
+                at=one["at"],
+                sun_deg=one["sunDeg"],
+                moon_deg=one["moonDeg"],
+                elongation_deg=one["elongationDeg"],
+                yoga_deg=one["yogaDeg"],
+            )
+            for one in envelope["value"]
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _blackouts_answer(text: str) -> "BlackoutsAnswer":
+    """`ts_almanac_blackouts`'s answer, each kind resolved."""
+    envelope = json.loads(text)
+    return BlackoutsAnswer(
+        value=tuple(Blackout(kind=_member(BlackoutKind, one["kind"]), at=_interval(one["at"])) for one in envelope["value"]),
         provenance=decode_provenance(envelope["provenance"]),
     )
 

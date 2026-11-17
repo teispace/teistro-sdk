@@ -3479,6 +3479,51 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac reads the panchanga's own longitudes", () -> {
+            // The Sun's and the Moon's sidereal longitudes as the day's limbs
+            // read them (03-design/panchanga-reach.md §3): one answer for each
+            // instant in its order, the elongation and the sum consistent with
+            // the two, the limbs read off them, and no instant refused by name.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                LimbAnglesAnswer found = sky.almanac().limbAngles(kathmandu, List.of(2_461_345.25, 2_461_360.5));
+                check(!found.provenance().contentHash().isEmpty(), "the angles are sealed");
+                same(List.of(2_461_345.25, 2_461_360.5), found.value().stream().map(LimbAngles::at).toList(),
+                        "one answer for each instant, in its order");
+                LimbAngles first = found.value().get(0);
+                double apart = ((first.moonDeg() - first.sunDeg()) % 360 + 360) % 360;
+                check(Math.abs(first.elongationDeg() - apart) < 1e-9, "the elongation is the Moon less the Sun");
+                check(Math.abs(first.yogaDeg() - (first.moonDeg() + first.sunDeg()) % 360) < 1e-9,
+                        "the sum is the Moon plus the Sun");
+                same(Tithi.KRISHNA_SAPTAMI, first.tithi(), "the tithi off the elongation");
+                same(Nakshatra.PUNARVASU, first.nakshatra(), "the nakshatra off the Moon");
+                same(Tithi.SHUKLA_SAPTAMI, found.value().get(1).tithi(), "the second instant's tithi");
+                TeistroException none = refusal(() -> sky.almanac().limbAngles(kathmandu, List.of()));
+                same("limbAngles.instants", none.field(), "no instant");
+            }
+        });
+
+        tests.put("an almanac reads the season's blackouts", () -> {
+            // Chaturmas, the malmas and Kharmas over 2026 by nepali-drik
+            // (03-design/panchanga-reach.md §2): five stretches in order, the
+            // malmas in May and June, and asta refused by name.
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                CalendarDate first = Civil.date(Calendar.GREGORIAN, 2026, 1, 1);
+                BlackoutsAnswer found = sky.almanac().blackouts(first, Civil.date(Calendar.GREGORIAN, 2026, 12, 31),
+                        20_700, List.of(BlackoutKind.CHATURMAS, BlackoutKind.ADHIKA_MASA, BlackoutKind.KHARMAS));
+                same(List.of(BlackoutKind.KHARMAS, BlackoutKind.KHARMAS, BlackoutKind.ADHIKA_MASA,
+                        BlackoutKind.CHATURMAS, BlackoutKind.KHARMAS),
+                        found.value().stream().map(Blackout::kind).toList(), "five stretches in order");
+                Interval malmas = found.value().get(2).at();
+                check(2_461_177 < malmas.fromJd() && malmas.toJd() < 2_461_207, "the malmas in May and June");
+                TeistroException asta = refusal(() -> sky.almanac().blackouts(first, first, 20_700,
+                        List.of(BlackoutKind.GURU_ASTA)));
+                same("blackouts.kinds", asta.field(), "asta is the muhurta search's");
+            }
+        });
+
         tests.put("an almanac places the sky in a camera picture", () -> {
             // The same sky through a camera (03-design/sky-pose.md): the sky
             // is the sky view's, one placement for each of its points, the

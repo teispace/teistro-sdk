@@ -261,6 +261,14 @@ final List<Surface> requests = [
     Param('rite', Named('AshauchRiteAsked')),
     Param('table', Named('AshauchRiteTable')),
   ], fields: (v) => [v.rite, v.table]),
+  Built<BlackoutsRequest>('BlackoutsRequest', BlackoutsRequest.new, [
+    Param('calendar', Named('Calendar')),
+    Param('first', Named('DayAsked')),
+    Param('kinds', ListOf(Named('BlackoutKind'), (items) => List<BlackoutKind>.from(items))),
+    Param('last', Named('DayAsked')),
+    Param('utcOffsetSeconds', Scalar('int')),
+    Param('zone', Scalar('Object')),
+  ], fields: (v) => [v.calendar, v.first, v.kinds, v.last, v.utcOffsetSeconds, v.zone]),
   Built<CellsRequest>('CellsRequest', CellsRequest.new, [
     Param('altitudeM', Scalar('double')),
     Param('calendar', Named('Calendar')),
@@ -381,6 +389,12 @@ final List<Surface> requests = [
     Param('utcOffsetSeconds', Scalar('int')),
     Param('zone', Scalar('Object')),
   ], fields: (v) => [v.altitudeM, v.household, v.latitudeDeg, v.longitudeDeg, v.table, v.tradition, v.utcOffsetSeconds, v.zone]),
+  Built<LimbAnglesRequest>('LimbAnglesRequest', LimbAnglesRequest.new, [
+    Param('altitudeM', Scalar('double')),
+    Param('instants', ListOf(Scalar('double'), (items) => List<double>.from(items))),
+    Param('latitudeDeg', Scalar('double')),
+    Param('longitudeDeg', Scalar('double')),
+  ], fields: (v) => [v.altitudeM, v.instants, v.latitudeDeg, v.longitudeDeg]),
   Built<NavataraRequest>('NavataraRequest', NavataraRequest.new, [
     Param('birth', Named('Nakshatra')),
   ], fields: (v) => [v.birth]),
