@@ -18,6 +18,9 @@ include!(concat!(env!("OUT_DIR"), "/boundary_docs.rs"));
 /// The tool answering the profiles and the settings patch's schema.
 pub(crate) const DESCRIBE: &str = "settings.describe";
 
+/// The tool answering what a context answers over (SR-136, C2250).
+pub(crate) const COVERAGE: &str = "coverage.describe";
+
 /// What an engine operation's tool is called: this, then its name.
 pub(crate) const ENGINE_PREFIX: &str = "engine.";
 
@@ -51,6 +54,7 @@ pub(crate) fn list(
         .map(|record| (record.name.to_owned(), record_tool(record, detail)))
         .collect();
     tools.push((DESCRIBE.to_owned(), describe_tool()));
+    tools.push((COVERAGE.to_owned(), coverage_tool()));
     tools.push((schemas::DESCRIBE.to_owned(), schemas::describe_tool()));
     tools.extend(operations.iter().map(|operation| {
         let tool = engine_tool(operation);
@@ -260,6 +264,46 @@ fn describe_tool() -> Value {
         "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false },
         "annotations": annotations(title),
     })
+}
+
+fn coverage_tool() -> Value {
+    let title = "The dates every call answers";
+    json!({
+        "name": COVERAGE,
+        "title": title,
+        "description": "What a context answers over: the first and last instants (Julian \
+                        days, UT1) and Gregorian dates its ephemeris covers under the profile, \
+                        the Bikram Sambat years the shipped table holds and those the \
+                        government published, and each holiday set's years. Every date from \
+                        `ephemeris.first` to `ephemeris.last` is answered; a lunar month, year \
+                        or span the coverage cuts says so in its `clipped`. Reads only the \
+                        scope: `profile`, `settings`, `locale`.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "profile": { "type": "string" },
+                "settings": { "type": "object" },
+                "locale": { "type": "string" },
+            },
+            "additionalProperties": false,
+        },
+        "annotations": annotations(title),
+    })
+}
+
+/// `coverage.describe`'s answer, in `context`, for `arguments` past its
+/// scope (which it refuses: it reads nothing else).
+pub(crate) fn coverage(
+    context: &teistro::Context,
+    rest: &Map<String, Value>,
+) -> Result<Value, Error> {
+    if let Some(key) = rest.keys().next() {
+        return Err(
+            Error::invalid_arg(format!("`{COVERAGE}` reads only its scope"))
+                .with_field(format!("arguments.{key}")),
+        );
+    }
+    written(&context.coverage()?)
 }
 
 /// `settings.describe`'s answer.

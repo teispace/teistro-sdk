@@ -25,12 +25,14 @@ use teistro_core::catalogue::{
     AgniVasa, AshubhaYoga, BhadraVasa, DayMarker, Direction, Graha, Nakshatra, Panchaka, Rashi,
     Ritu, ShivaVasa, Tithi, Vara,
 };
+use teistro_core::coverage::{Clipped, Coverage};
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::{
-    Centre, GhatiReckoning, MoonEvents, PanchakaName, Resolved, RituReckoning, Settings,
+    Centre, GhatiReckoning, MoonEvents, PanchakaName, Resolved, RituReckoning, SamvatsaraCount,
+    Settings,
 };
 use teistro_core::time::{ClockReading, LocalClock, ZoneSource};
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, Models};
@@ -38,6 +40,7 @@ use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
 use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
+    within_coverage,
 };
 
 use crate::ashauch::{
@@ -1412,6 +1415,17 @@ fn days_in(
     Ok(count)
 }
 
+/// A day's night, sunset to the next sunrise; empty on a day cut at the
+/// coverage's end (`LocalDay::clipped`, SR-136), whose next sunrise is not
+/// known, so that every division of the night (choghadiya, muhurtas,
+/// Gowri) is left out rather than divided over a night cut short.
+fn night_of(day: &LocalDay) -> Result<Interval, Error> {
+    if day.clipped.is_some_and(Clipped::end) {
+        return Interval::new(day.sunset, day.sunset);
+    }
+    Interval::new(day.sunset, day.next_sunrise)
+}
+
 /// The most days one range may hold.
 ///
 /// A year and a day: an application asking for more is asking for a
@@ -1773,6 +1787,115 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
         self.run(from, to, place, Moon::Unread, Self::festival_value)
+    }
+
+    /// The instants this almanac answers, UT1 (SR-136, C2248): its
+    /// ephemeris's coverage, as the profile completes it, and its solar
+    /// model's.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::Gregorian;
+    /// # use teistro_core::catalogue::Ayanamsha;
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// // The analytic test sky states a span of its own.
+    /// let coverage = almanac.coverage();
+    /// assert!(coverage.is_bounded() && coverage.contains(2_461_000.5));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn coverage(&self) -> Coverage {
+        self.completion()
+            .coverage()
+            .intersect(self.model.coverage())
+    }
+
+    /// The first and the last civil day this almanac answers at a place
+    /// (SR-136, C2248): the days whose sunrise the ephemeris's coverage
+    /// holds, each `None` when that end is open. A range read around a
+    /// date — a festival's widening, a lunation beside — is cut to these,
+    /// so that a day near an end of the coverage is answered from the
+    /// days it has rather than refused for the ones it has not.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::Gregorian;
+    /// # use teistro_core::catalogue::Ayanamsha;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// // The analytic test sky's span, cut to the days whose sunrise it holds.
+    /// let (first, last) = almanac.answered(&kathmandu)?;
+    /// assert!(first.zip(last).is_some_and(|(first, last)| first < last));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A refusal of the day at an edge other than its coverage's.
+    pub fn answered(&self, place: &Place) -> Result<(Option<FixedDay>, Option<FixedDay>), Error> {
+        let coverage = self.coverage();
+        let policy = self.settings().day.polar_day_policy;
+        // Whether a date's day is answered: refused for its coverage alone
+        // when its sunrise is outside it.
+        let answers = |day: FixedDay| -> Result<bool, Error> {
+            let date = self.calendar.date_of(day)?;
+            match local_day(self.model, self.calendar, self.clock, place, &date, policy) {
+                Ok(_) => Ok(true),
+                Err(error) if error.status == Status::OutOfRange => Ok(false),
+                Err(error) => Err(error),
+            }
+        };
+        let date_at = |jd: f64| -> Result<FixedDay, Error> {
+            Ok(teistro_calendar::solar::rule::local_day(self.clock, JulianDay::try_new(jd)?).0)
+        };
+        let first = if coverage.from.is_finite() {
+            let day = date_at(coverage.from)?;
+            Some(if answers(day)? { day } else { day.plus_days(1) })
+        } else {
+            None
+        };
+        let last = if coverage.to.is_finite() {
+            let day = date_at(coverage.to)?;
+            Some(if answers(day)? {
+                day
+            } else {
+                day.plus_days(-1)
+            })
+        } else {
+            None
+        };
+        Ok((first, last))
     }
 
     /// As [`Almanac::festival_days`], up to [`MOST_SPAN_DAYS`]: one run of
@@ -2237,7 +2360,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
         }
-        limb::sun_nakshatra_at(&longitudes, at, zodiac)
+        limb::sun_nakshatra_near(&longitudes, at, zodiac)
     }
 
     /// Gives each day its times' ± band from Delta T
@@ -3367,71 +3490,34 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let end = local_midnight(self.clock, last.plus_days(1))?;
         let completion = self.completion();
         let count = self.settings().calendars.samvatsara;
-        // The opening at or before the range's first instant, then the
-        // one before it too when the range starts ahead of that year's
-        // first sunrise.
-        let mut opened = self.opening(&completion, place, start)?;
-        let mut began = self.pratipada(place, opened)?;
-        if began.get() > start.get() {
-            opened = self.opening(&completion, place, next_by(opened, -1.0))?;
-            began = self.pratipada(place, opened)?;
-        }
-        // Each year's opening and first sunrise, and the next year's
-        // after the last: a year's name can wait on the next one's.
-        let mut run = vec![(opened, began)];
-        while let Some(&(last, first_sunrise)) = run.last() {
-            if first_sunrise.get() >= end.get() && run.len() > 1 {
-                break;
-            }
-            // A lunar year is at most 385 days, so the opening before
-            // 390 days on is the next one.
-            let next = self.opening(&completion, place, next_by(last, 390.0))?;
-            run.push((next, self.pratipada(place, next)?));
-        }
-        let text = &teistro_calendar::samvatsara::Parameters::TEXT;
-        let mut running = run
-            .iter()
-            .map(|&(_, sunrise)| JovianYear::at(text, sunrise).map(|year| year.count))
-            .collect::<Result<Vec<i64>, Error>>()?;
-        // The years before the first, as many as the naming reads.
-        let mut earliest = opened;
-        let mut before = 0;
-        while (before..running.len()).any(|index| name_counts(&running, index, count).is_none()) {
-            if before == MOST_YEARS_BACK {
-                return Err(Error::new(
-                    Status::NotConverged,
-                    format!(
-                        "the samvatsara at {began} was not settled by {MOST_YEARS_BACK} years before it"
-                    ),
-                ));
-            }
-            earliest = self.opening(&completion, place, next_by(earliest, -1.0))?;
-            let sunrise = self.pratipada(place, earliest)?;
-            running.insert(0, JovianYear::at(text, sunrise)?.count);
-            before += 1;
-        }
-        let named = |index: usize| {
-            name_counts(&running, before + index, count).ok_or_else(|| {
-                Error::internal("a lunar year's name was checked settled and is not")
-            })
-        };
+        let run = self.year_run(&completion, place, (start, end))?;
+        let names = self.year_names(&completion, place, &run, count)?;
         let mut years = Vec::with_capacity(run.len().saturating_sub(1));
         for (index, pair) in run.windows(2).enumerate() {
-            let &[(opened, began), (_, ended)] = pair else {
+            let (&[year, next], Some(&names)) = (pair, names.get(index)) else {
                 continue;
             };
-            let mut year = LunarYear::of(
-                count,
-                opened,
-                began,
-                ended,
-                (named(index)?, named(index + 1)?),
-            )?;
-            if rulers {
-                year.rulers = self.rulers(&completion, place, opened)?;
-            }
+            let (began, ended) = (year.began(), next.began());
+            let year = match year {
+                YearOpening::Found { opened, .. } => {
+                    let mut found = LunarYear::of(count, opened, began, ended, names)?;
+                    if rulers {
+                        found.rulers = self.rulers(&completion, place, opened)?;
+                    }
+                    found.with_clipped(Clipped::of(false, matches!(next, YearOpening::Cut { .. })))
+                }
+                // Numbered as the year before the next one's: an opening
+                // a lunar year earlier falls in the Gregorian year before.
+                YearOpening::Cut { at, .. } => {
+                    let numbered = JulianDay::try_new(next.opened().get() - YEAR_LEAST_DAYS)?;
+                    let mut cut = LunarYear::of(count, numbered, began, ended, names)?;
+                    cut.opened = at;
+                    cut.with_clipped(Some(Clipped::Start))
+                }
+            };
             years.push(year);
         }
+        let opened = run.first().map_or(start, |year| year.opened());
         let frame = self.at_instant(&completion, opened)?.0;
         let mut provenance = self.provenance(
             content_hash(&RangeInput {
@@ -3452,20 +3538,150 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Envelope::new(years, provenance))
     }
 
+    /// The openings of the years a range reads (SR-136, C2249): the one
+    /// at or before the range's first instant, then the one before it too
+    /// when the range starts ahead of that year's first sunrise, and each
+    /// next up to the one after the last, whose first sunrise ends it. A
+    /// year that opened before the ephemeris's coverage is cut at its
+    /// first instant, the next year's opening bounding where its first
+    /// sunrise was; a year the coverage ends in is cut at its last.
+    fn year_run(
+        &self,
+        completion: &Completion<'_, P>,
+        place: &Place,
+        (start, end): (JulianDay<Utc>, JulianDay<Utc>),
+    ) -> Result<Vec<YearOpening>, Error> {
+        let coverage = self.coverage();
+        let found = |opened| self.year_found(place, opened);
+        let mut run = if let Some(opened) = self.opening(completion, place, start)? {
+            let year = found(opened)?;
+            if year.began().get() > start.get() {
+                match self.opening(completion, place, next_by(opened, -1.0))? {
+                    Some(before) => vec![found(before)?, year],
+                    None => vec![YearOpening::first_held(coverage, opened)?, year],
+                }
+            } else {
+                vec![year]
+            }
+        } else {
+            // The first opening the coverage holds is after the range's
+            // start, within a year of it.
+            let mut next = self
+                .opening(completion, place, next_by(start, 390.0))?
+                .ok_or_else(|| Error::internal("no year opened in the year after a day"))?;
+            while let Some(earlier) = self.opening(completion, place, next_by(next, -1.0))? {
+                if earlier.get() <= start.get() {
+                    break;
+                }
+                next = earlier;
+            }
+            vec![YearOpening::first_held(coverage, next)?, found(next)?]
+        };
+        while let Some(&year) = run.last() {
+            let (YearOpening::Found { opened: last, .. }, false) =
+                (year, year.began().get() >= end.get() && run.len() > 1)
+            else {
+                break;
+            };
+            // A lunar year is at most 385 days, so the opening before
+            // 390 days on is the next one.
+            let probe = next_by(last, 390.0).get().min(coverage.to);
+            match self.opening(completion, place, JulianDay::try_new(probe)?)? {
+                Some(next) if next.get() > last.get() => run.push(found(next)?),
+                _ => run.push(YearOpening::Cut {
+                    at: JulianDay::try_new(coverage.to)?,
+                    began: YearOpening::after(last.get()),
+                }),
+            }
+        }
+        Ok(run)
+    }
+
+    /// A year found from its opening.
+    fn year_found(&self, place: &Place, opened: JulianDay<Utc>) -> Result<YearOpening, Error> {
+        Ok(YearOpening::Found {
+            opened,
+            began: self.pratipada(place, opened)?,
+        })
+    }
+
+    /// The Jovian counts naming each year of a run and the next
+    /// ([`name_counts`]), reading the years before the first as far as the
+    /// naming needs; those before the coverage by where their first
+    /// sunrise can be.
+    fn year_names(
+        &self,
+        completion: &Completion<'_, P>,
+        place: &Place,
+        run: &[YearOpening],
+        count: SamvatsaraCount,
+    ) -> Result<Vec<(i64, i64)>, Error> {
+        let coverage = self.coverage();
+        let text = &teistro_calendar::samvatsara::Parameters::TEXT;
+        let mut running = run
+            .iter()
+            .map(|year| year.running(text))
+            .collect::<Result<Vec<i64>, Error>>()?;
+        let mut earliest = run
+            .first()
+            .copied()
+            .ok_or_else(|| Error::internal("no year"))?;
+        let mut before = 0;
+        while (before..running.len()).any(|index| name_counts(&running, index, count).is_none()) {
+            if before == MOST_YEARS_BACK {
+                return Err(Error::new(
+                    Status::NotConverged,
+                    format!(
+                        "the samvatsara at {} was not settled by {MOST_YEARS_BACK} years before it",
+                        earliest.began()
+                    ),
+                ));
+            }
+            earliest = match earliest {
+                YearOpening::Found { opened, .. } => {
+                    match self.opening(completion, place, next_by(opened, -1.0))? {
+                        Some(opened) => self.year_found(place, opened)?,
+                        None => YearOpening::first_held(coverage, opened)?,
+                    }
+                }
+                YearOpening::Cut { at, began } => YearOpening::Cut {
+                    at,
+                    began: YearOpening::earlier(began),
+                },
+            };
+            running.insert(0, earliest.running(text)?);
+            before += 1;
+        }
+        let named = |index: usize| {
+            name_counts(&running, before + index, count).ok_or_else(|| {
+                Error::internal("a lunar year's name was checked settled and is not")
+            })
+        };
+        (0..run.len().saturating_sub(1))
+            .map(|index| Ok((named(index)?, named(index + 1)?)))
+            .collect()
+    }
+
     /// The new moon that opened the first Chaitra at or before an
-    /// instant, in this almanac's sky.
+    /// instant, in this almanac's sky, or `None` when it opened before
+    /// the ephemeris's coverage.
     fn opening(
         &self,
         completion: &Completion<'_, P>,
         place: &Place,
         at: JulianDay<Utc>,
-    ) -> Result<JulianDay<Utc>, Error> {
+    ) -> Result<Option<JulianDay<Utc>>, Error> {
+        // Before the ephemeris's coverage nothing opened that it holds
+        // (SR-136, C2249).
+        if at.get() < completion.coverage().from {
+            return Ok(None);
+        }
         let (frame, zodiac) = self.at_instant(completion, at)?;
         let mut longitudes = completion.longitudes(frame);
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(*place);
         }
-        crate::year::chaitra_opening(&longitudes, zodiac, at)
+        crate::year::chaitra_opening_within(&longitudes, zodiac, at)
     }
 
     /// The office-bearers of the year a new moon opened
@@ -3673,7 +3889,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let (day, found_moon) = self.local_day_of(&date, fixed, place, memo)?;
         let window = self.window(&day)?;
         let daylight = Interval::new(day.sunrise, day.sunset)?;
-        let night = Interval::new(day.sunset, day.next_sunrise)?;
+        let night = night_of(&day)?;
         let completion = self.completion();
         // One ayanamsha evaluation for the day; everything below reads
         // it rather than asking again at the same instant.
@@ -3912,25 +4128,39 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 known
             }
             known => {
-                let span = limb::lunar_month_span(longitudes, window, zodiac)?;
+                // A lunation the coverage cuts is named and kinded from
+                // the edge (SR-136, C2246), and has no margin: the new moon
+                // it would be read at is outside what was computed.
+                let cut = limb::lunar_month_cut(longitudes, window, zodiac)?;
+                let span = cut.span;
                 let found = Lunation {
                     span,
                     frame,
-                    amanta: limb::masa_at(longitudes, span.from, zodiac)?,
-                    kind: teistro_calendar::lunisolar::kind_of(self.model, span.from, span.to)?,
-                    margin: self.month_margin(span, known)?,
+                    amanta: limb::masa_opening(longitudes, &cut, zodiac)?,
+                    kind: teistro_calendar::lunisolar::kind_within(
+                        self.model, span.from, span.to, cut.before, cut.after,
+                    )?,
+                    margin: match cut.clipped {
+                        None => Some(self.month_margin(span, known)?),
+                        Some(_) => None,
+                    },
+                    clipped: cut.clipped,
                 };
                 memo.lunation = Some(found);
                 found
             }
         };
-        Ok(month::of(
+        let month = month::of(
             lunation.amanta,
             at_sunrise,
             self.settings().calendars.lunar_month,
             lunation.kind,
         )
-        .with_margin(lunation.margin))
+        .with_clipped(lunation.clipped);
+        Ok(match lunation.margin {
+            Some(margin) => month.with_margin(margin),
+            None => month,
+        })
     }
 
     /// A lunation's decision margin (SR-92, C1902), on this almanac's
@@ -3946,7 +4176,9 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ) -> Result<teistro_calendar::lunisolar::MonthMargin, Error> {
         use teistro_calendar::lunisolar::{MonthMargin, new_moon_margin};
         let opening = match before {
-            Some(last) if last.margin.closing.new_moon == span.from => last.margin.closing,
+            Some(Lunation {
+                margin: Some(last), ..
+            }) if last.closing.new_moon == span.from => last.closing,
             _ => new_moon_margin(self.model, span.from)?,
         };
         Ok(MonthMargin::of(
@@ -4044,17 +4276,19 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         for (step, pair) in lights.windows(2).enumerate() {
             let fixed = first.plus_days(i64::try_from(step).unwrap_or(0));
             let day = match pair {
-                [Ok(today), Ok(tomorrow)] => self.calendar.date_of(fixed).and_then(|date| {
-                    local_day_lit(
-                        self.model,
-                        self.clock,
-                        place,
-                        (&date, fixed),
-                        settings.day.polar_day_policy,
-                        (*today, *tomorrow),
-                    )
+                [Ok(today), tomorrow] => within_coverage(tomorrow.clone()).and_then(|tomorrow| {
+                    self.calendar.date_of(fixed).and_then(|date| {
+                        local_day_lit(
+                            self.model,
+                            self.clock,
+                            place,
+                            (&date, fixed),
+                            settings.day.polar_day_policy,
+                            (*today, tomorrow),
+                        )
+                    })
                 }),
-                [Err(error), _] | [_, Err(error)] => Err(error.clone()),
+                [Err(error), _] => Err(error.clone()),
                 _ => Err(Error::internal("a pair of day lights came apart")),
             };
             days.push((fixed, day));
@@ -4157,7 +4391,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         // A range's later day of the same panchaka reads the one found.
         if let Some((whole, name)) = *held {
             if whole.contains(first.whole.from) {
-                return Ok(name.and_then(|name| Span::new(name, whole, window)));
+                let cut = Clipped::of(false, whole.to.get() >= longitudes.coverage().to);
+                return Ok(name
+                    .and_then(|name| Span::new(name, whole, window))
+                    .map(|span| span.with_clipped(cut)));
             }
         }
         let around = |within: Interval| {
@@ -4166,6 +4403,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 limb::signs_known(longitudes, Body::Moon, inside, zodiac, None, known)
             })
         };
+        // A panchaka that began before the ephemeris's coverage has no
+        // first instant, so no vara to be named by, and is left unnamed;
+        // one that ends after it is named and cut at its last instant
+        // (SR-136, C2247).
+        let coverage = longitudes.coverage();
         let from = if first.member == Panchaka::Mrityu {
             first.whole.from
         } else {
@@ -4173,23 +4415,33 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 next_by(first.whole.from, -stars_days(first.member as u8)),
                 first.whole.from,
             )?;
-            around(before)?
+            let found = around(before)?
                 .iter()
                 .rev()
                 .find(|span| span.member == Panchaka::Mrityu)
-                .map(|span| span.whole.from)
-                .ok_or_else(|| Error::internal("a panchaka with no first star before it"))?
+                .map(|span| span.whole.from);
+            match found {
+                Some(from) => from,
+                None if before.from.get() < coverage.from => return Ok(None),
+                None => return Err(Error::internal("a panchaka with no first star before it")),
+            }
         };
-        let to = if last.member == Panchaka::Roga {
-            last.whole.to
+        let (to, clipped) = if last.member == Panchaka::Roga {
+            (last.whole.to, last.clipped.filter(|cut| cut.end()))
         } else {
             let left = Panchaka::Roga as u8 - last.member as u8;
             let after = Interval::new(last.whole.to, next_by(last.whole.to, stars_days(left)))?;
-            around(after)?
+            let found = around(after)?
                 .iter()
                 .find(|span| span.member == Panchaka::Roga)
-                .map(|span| span.whole.to)
-                .ok_or_else(|| Error::internal("a panchaka with no last star after it"))?
+                .map(|span| span.whole.to);
+            match found {
+                Some(to) => (to, None),
+                None if after.to.get() > coverage.to => {
+                    (JulianDay::try_new(coverage.to)?, Some(Clipped::End))
+                }
+                None => return Err(Error::internal("a panchaka with no last star after it")),
+            }
         };
         // The vara of the day that holds the first instant: the day being
         // answered's when it opens there, and otherwise its civil date's or
@@ -4204,7 +4456,9 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let whole = Interval::new(from, to)?;
         let name = omen::panchaka_by_vara(vara);
         *held = Some((whole, name));
-        Ok(name.and_then(|name| Span::new(name, whole, window)))
+        Ok(name
+            .and_then(|name| Span::new(name, whole, window))
+            .map(|span| span.with_clipped(clipped)))
     }
 
     /// The vara of the day, sunrise to sunrise, an instant falls in.
@@ -4498,7 +4752,114 @@ struct Lunation {
     frame: Frame,
     amanta: teistro_core::catalogue::Masa,
     kind: MonthKind,
-    margin: teistro_calendar::lunisolar::MonthMargin,
+    /// `None` on a lunation the coverage cut.
+    margin: Option<teistro_calendar::lunisolar::MonthMargin>,
+    clipped: Option<Clipped>,
+}
+
+/// One lunar year's opening in a run of them: found, or cut by the
+/// ephemeris's coverage (SR-136, C2249), with the earliest and latest its
+/// first sunrise can be, from the opening beside it and the length of a
+/// lunar year.
+#[derive(Clone, Copy, Debug)]
+enum YearOpening {
+    /// Its new moon and first sunrise.
+    Found {
+        opened: JulianDay<Utc>,
+        began: JulianDay<Utc>,
+    },
+    /// The edge of the coverage it stands at, and the bounds of its first
+    /// sunrise outside it.
+    Cut {
+        at: JulianDay<Utc>,
+        began: (f64, f64),
+    },
+}
+
+/// The fewest days from one Chaitra's new moon to the next: twelve of the
+/// shortest lunations.
+const YEAR_LEAST_DAYS: f64 = 12.0 * 29.2;
+
+/// The most: thirteen of the longest.
+const YEAR_MOST_DAYS: f64 = 13.0 * 29.9;
+
+/// The most days from a new moon to the sunrise after the next one's,
+/// which opens the pratipada.
+const PRATIPADA_DAYS: f64 = 2.0;
+
+impl YearOpening {
+    /// The first sunrise, or for a cut year the edge.
+    fn began(self) -> JulianDay<Utc> {
+        match self {
+            YearOpening::Found { began, .. } => began,
+            YearOpening::Cut { at, .. } => at,
+        }
+    }
+
+    /// The opening new moon, or for a cut year the edge.
+    fn opened(self) -> JulianDay<Utc> {
+        match self {
+            YearOpening::Found { opened, .. } => opened,
+            YearOpening::Cut { at, .. } => at,
+        }
+    }
+
+    /// A year opened before the coverage, cut at its first instant, the
+    /// next year's opening bounding where its first sunrise was.
+    fn first_held(coverage: Coverage, next: JulianDay<Utc>) -> Result<YearOpening, Error> {
+        Ok(YearOpening::Cut {
+            at: JulianDay::try_new(coverage.from)?,
+            began: YearOpening::before(next.get()),
+        })
+    }
+
+    /// Where the first sunrise of the year before an opening can be.
+    fn before(next: f64) -> (f64, f64) {
+        (
+            next - YEAR_MOST_DAYS,
+            next - YEAR_LEAST_DAYS + PRATIPADA_DAYS,
+        )
+    }
+
+    /// Where the first sunrise of the year after an opening can be.
+    fn after(last: f64) -> (f64, f64) {
+        (
+            last + YEAR_LEAST_DAYS,
+            last + YEAR_MOST_DAYS + PRATIPADA_DAYS,
+        )
+    }
+
+    /// Where the first sunrise of the year before a cut one can be.
+    fn earlier((lo, hi): (f64, f64)) -> (f64, f64) {
+        (lo - YEAR_MOST_DAYS, hi - YEAR_LEAST_DAYS)
+    }
+
+    /// The Jovian count running at the first sunrise: for a cut year, the
+    /// one running over all its first sunrise can be.
+    fn running(self, text: &teistro_calendar::samvatsara::Parameters) -> Result<i64, Error> {
+        match self {
+            YearOpening::Found { began, .. } => Ok(JovianYear::at(text, began)?.count),
+            YearOpening::Cut {
+                began: (lo, hi), ..
+            } => {
+                let at = |jd: f64| -> Result<i64, Error> {
+                    Ok(JovianYear::at(text, JulianDay::try_new(jd)?)?.count)
+                };
+                let (early, late) = (at(lo)?, at(hi)?);
+                if early == late {
+                    Ok(early)
+                } else {
+                    Err(Error::new(
+                        Status::OutOfRange,
+                        format!(
+                            "a lunar year's name rests on a first sunrise outside the ephemeris's coverage, between JD {lo} and JD {hi}, which a Jovian year changes within"
+                        ),
+                    )
+                    .with_field("date"))
+                }
+            }
+        }
+    }
 }
 
 /// The most lunar years before a range the samvatsara's naming may read:

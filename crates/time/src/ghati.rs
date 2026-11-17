@@ -357,6 +357,7 @@ mod tests {
             state: DayState::Normal,
             convention: teistro_core::settings::Sunrise::CentreNoRefraction.into(),
             model: String::from("test"),
+            clipped: None,
         }
     }
 

@@ -45,6 +45,14 @@ fn frame() -> Frame {
     }
 }
 
+/// As [`ask`], with the instants in UT, the scale the span is declared in.
+fn ask_ut(jds: &[f64], bodies: &[Body]) -> teistro_port_ephemeris::PositionColumns {
+    let request = PositionRequest::new(jds, TimeScale::Ut1, bodies, frame());
+    Builtin::new()
+        .positions(&request)
+        .unwrap_or_else(|error| panic!("the provider refused its own frame: {error}"))
+}
+
 fn ask(jds: &[f64], bodies: &[Body]) -> teistro_port_ephemeris::PositionColumns {
     let provider = Builtin::new();
     let request = PositionRequest::new(jds, TimeScale::Tt, bodies, frame());
@@ -231,6 +239,67 @@ fn plutos_fit_covers_the_range_the_provider_declares() {
             "outside the span nothing has measured, the answer is a status"
         );
     }
+}
+
+/// The span is the six hundred civil years whole, midnight to midnight
+/// UT, and not the noon the fits happened to open on (SR-136, C2240): a
+/// span opening at noon left 1800-01-01 and 2399-12-31 half answered.
+#[test]
+fn the_span_is_the_civil_days_1800_to_2399_whole() {
+    let (from, to) = Builtin::new().capabilities().jd_range;
+    assert_eq!((from, to), (2_378_496.5, 2_597_641.5));
+    let edges = [from, from + 0.25, to - 0.25, to];
+    let columns = ask_ut(&edges, &Builtin::new().capabilities().bodies);
+    assert!(
+        columns.all_ok(),
+        "every body answers at both midnights: {:?}",
+        columns.status
+    );
+}
+
+/// Pluto's fit is carried a day past its span to reach the civil span's
+/// first midnight, and the carry is **measured** (C2241): each interior
+/// block is carried a day before its own start, where its neighbour's
+/// fit answers, and the two must agree within the tier's published
+/// bound. The difference holds the carry's error and the neighbour's fit
+/// error together, so it bounds the carry from above.
+#[test]
+fn plutos_carry_a_day_past_its_fit_is_within_the_tiers_bound() {
+    use teistro_ephemeris_builtin::pluto::{PLUTO, PLUTO_WORST_ARCSEC};
+    use teistro_ephemeris_builtin::provider::PLUTO_REACH_DAYS;
+    let mut worst: f64 = 0.0;
+    for index in 1..PLUTO.intervals() {
+        #[expect(
+            clippy::cast_precision_loss,
+            reason = "a block index is hundreds at most"
+        )]
+        let opens = (index as f64).mul_add(PLUTO.interval_days, PLUTO.start_jd);
+        let at = opens - PLUTO_REACH_DAYS;
+        let (carried, _) = PLUTO.block_at(index, at).expect("a block");
+        let (fitted, _) = PLUTO.block_at(index - 1, at).expect("its neighbour");
+        let apart = carried
+            .iter()
+            .zip(fitted)
+            .map(|(a, b)| (a - b).powi(2))
+            .sum::<f64>()
+            .sqrt();
+        let distance = fitted.iter().map(|a| a.powi(2)).sum::<f64>().sqrt();
+        // Heliocentric angle; Pluto is never nearer the Earth than 28 au
+        // of its 29 to 50 from the Sun, so the geocentric angle is at
+        // most a few per cent larger, which the bound's margin holds.
+        worst = worst.max((apart / distance).to_degrees() * 3_600.0);
+    }
+    assert!(
+        worst <= PLUTO_WORST_ARCSEC,
+        "a day's carry moves Pluto {worst}″, past the tier's {PLUTO_WORST_ARCSEC}″"
+    );
+    // And the carry stops at its reach.
+    let (first, _) = PLUTO.span();
+    assert!(
+        PLUTO
+            .at_within(first - PLUTO_REACH_DAYS * 1.5, PLUTO_REACH_DAYS)
+            .is_none()
+    );
 }
 
 #[test]

@@ -63,6 +63,7 @@ pub mod angle;
 pub mod boundary;
 pub mod catalogue;
 pub mod chebyshev;
+pub mod coverage;
 pub mod envelope;
 pub mod error;
 pub mod house;

@@ -450,6 +450,7 @@ mod tests {
             whole: Interval::literal(a, b),
             inside: Interval::literal(from.get(), to.get()),
             margin_minutes: None,
+            clipped: None,
         };
         let open = from.get();
         let close = to.get();

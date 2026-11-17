@@ -8,6 +8,7 @@
 //! facts, so this carries both.
 
 use serde::{Deserialize, Serialize};
+use teistro_core::coverage::Clipped;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
 
@@ -49,6 +50,14 @@ pub struct Span<T> {
     /// day's sunrises, and then left out of the day's document.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub margin_minutes: Option<f64>,
+    /// Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242):
+    /// the member began before the first instant the ephemeris answers
+    /// (`START`), outlasts the last (`END`), or both, and that end of
+    /// `whole` is the coverage's edge rather than the member's own. The
+    /// member is the one the covered part names. Absent on a span the
+    /// coverage did not cut, and then left out of the day's document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clipped: Option<Clipped>,
 }
 
 impl<T> Span<T> {
@@ -76,6 +85,7 @@ impl<T> Span<T> {
             whole,
             inside,
             margin_minutes: None,
+            clipped: None,
         })
     }
 
@@ -213,6 +223,7 @@ impl<T> Span<T> {
             whole: self.whole,
             inside: self.inside,
             margin_minutes: self.margin_minutes,
+            clipped: self.clipped,
         }
     }
 
@@ -254,10 +265,38 @@ impl<T> Span<T> {
     /// assert_eq!(marked.margin_minutes, Some(tithi.margin_from(day.from, day.to)));
     /// # Ok::<(), &str>(())
     /// ```
+    ///
+    /// A span whose end the coverage cut has no end of its own to measure,
+    /// so it keeps no margin.
     #[must_use]
     pub fn with_margin(self, sunrise: JulianDay<Utc>, next_sunrise: JulianDay<Utc>) -> Self {
+        if self.clipped.is_some_and(Clipped::end) {
+            return self;
+        }
         Span {
             margin_minutes: Some(self.margin_from(sunrise, next_sunrise)),
+            ..self
+        }
+    }
+
+    /// The span marked with the ends the coverage cut, joined with any it
+    /// already carries ([`Span::clipped`]).
+    ///
+    /// ```
+    /// use teistro_core::coverage::Clipped;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_panchanga::span::Span;
+    ///
+    /// let day = Interval::literal(100.25, 101.25);
+    /// let tithi = Span::new("Tritiya", Interval::literal(100.0, 100.6), day).ok_or("it meets the day")?;
+    /// assert_eq!(tithi.with_clipped(Some(Clipped::Start)).clipped, Some(Clipped::Start));
+    /// assert_eq!(tithi.with_clipped(None).clipped, None);
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn with_clipped(self, clipped: Option<Clipped>) -> Self {
+        Span {
+            clipped: Clipped::join(self.clipped, clipped),
             ..self
         }
     }

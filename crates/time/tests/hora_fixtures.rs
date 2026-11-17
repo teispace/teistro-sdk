@@ -69,6 +69,7 @@ fn charts() -> Vec<(String, LocalDay, JulianDay<Utc>, Graha)> {
             state: DayState::Normal,
             convention: Sunrise::UpperLimbRefraction.into(),
             model: String::from("the baseline's fixture"),
+            clipped: None,
         };
         let birth = JulianDay::try_new(foundation["jd_ut"].as_f64().unwrap()).unwrap();
         let lord: Graha = foundation["hora_lord"].as_str().unwrap().parse().unwrap();

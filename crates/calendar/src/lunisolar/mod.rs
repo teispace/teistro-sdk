@@ -268,11 +268,27 @@ fn sign_at(sun: &dyn SolarModel, jd: f64) -> Result<u8, Error> {
 fn sankrantis_in(sun: &dyn SolarModel, from: f64, to: f64) -> Result<Vec<u8>, Error> {
     let mut found = Vec::new();
     let mut at = from;
+    let last = sun.coverage().to;
     // A solar month is 30.44 days and a lunar one 29.53, so two entries
     // is the most that fit; a third would be the model answering
     // nonsense, and the loop stops rather than running away on it.
     while found.len() <= 2 {
-        let next = (sign_at(sun, at)? + 1) % 12;
+        let sign = sign_at(sun, at)?;
+        if at + SANKRANTI_REACH_DAYS > last {
+            // The search ahead could step past the last instant the model
+            // answers (SR-136, C2246): the Sun runs forwards and less than
+            // a sign in a month, so the signs it entered by the span's end
+            // are the ones between the sign it stands in now and the one
+            // it stands in then, read at the two instants alone.
+            let end = sign_at(sun, to.min(last))?;
+            let mut next = sign;
+            while next != end && found.len() <= 2 {
+                next = (next + 1) % 12;
+                found.push(next);
+            }
+            break;
+        }
+        let next = (sign + 1) % 12;
         let sankranti = find_sankranti(sun, next, JulianDay::try_new(at).map_err(Error::from)?)?;
         let instant = sankranti.instant.get();
         if instant >= to {
@@ -283,6 +299,130 @@ fn sankrantis_in(sun: &dyn SolarModel, from: f64, to: f64) -> Result<Vec<u8>, Er
         at = instant + TOLERANCE_DAYS;
     }
     Ok(found)
+}
+
+/// How far ahead the search for the next sankranti may read, days: the
+/// Sun at his slowest takes 31.6 days over a sign, and the bracketing
+/// step oversteps by a day at most.
+const SANKRANTI_REACH_DAYS: f64 = 34.0;
+
+/// How far a lunar month the coverage cut runs past its edge (SR-136,
+/// C2246): the new moon the coverage does not hold lies between `least`
+/// and `most` days beyond it, which the Moon's age at the edge and her
+/// least and greatest rates bound.
+///
+/// ```
+/// use teistro_calendar::lunisolar::Beyond;
+///
+/// // The Sun 14° short of a sign, 20 to 26 days from the new moon: he
+/// // crosses it (14° < 0.95 × 20) and not the one after (44° > 1.03 × 26).
+/// assert_eq!(Beyond { least: 20.0, most: 26.0 }.sankrantis(14.0), Some(1));
+/// // 2° short and up to 3 days: he may or may not.
+/// assert_eq!(Beyond { least: 1.0, most: 3.0 }.sankrantis(2.0), None);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Beyond {
+    /// The fewest days the month can run past the edge.
+    pub least: f64,
+    /// The most.
+    pub most: f64,
+}
+
+impl Beyond {
+    /// The same reach, from an edge `days` further in.
+    #[must_use]
+    pub fn and(self, days: f64) -> Beyond {
+        Beyond {
+            least: self.least + days,
+            most: self.most + days,
+        }
+    }
+
+    /// How many sign boundaries the Sun passes in the stretch past the
+    /// edge, the first `distance_deg` from where he stands there, when
+    /// his least and greatest rates settle it; `None` when they do not.
+    #[must_use]
+    pub fn sankrantis(self, distance_deg: f64) -> Option<usize> {
+        let sun = teistro_port_ephemeris::Body::Sun;
+        let slowest = teistro_astro::events::least_rate(sun)?;
+        let fastest = teistro_astro::events::greatest_rate(sun);
+        let (surely, at_most) = (slowest * self.least, fastest * self.most);
+        let passed = |reach: f64| {
+            (0..3)
+                .take_while(|k| distance_deg + 30.0 * f64::from(*k) <= reach)
+                .count()
+        };
+        let certain = passed(surely);
+        (certain == passed(at_most)).then_some(certain)
+    }
+}
+
+/// [`kind_of`] for a month the coverage may have cut: the sankrantis
+/// counted inside the span, and those past an open end counted from the
+/// Sun at the edge when his rates settle them (SR-136, C2246). A span
+/// that reaches past the model's own coverage is cut there the same way.
+///
+/// ```
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_calendar::lunisolar::{kind_of, kind_within, month_at};
+/// use teistro_core::quantity::{JulianDay, Utc};
+///
+/// // Uncut, it is the month's own kind.
+/// let text = SuryaSiddhanta::text();
+/// let month = month_at(&text, &text, JulianDay::<Utc>::literal(2_432_412.5))?;
+/// assert_eq!(kind_within(&text, month.from, month.to, None, None)?, kind_of(&text, month.from, month.to)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`kind_of`], and `OUT_OF_RANGE` on `date` when a sankranti may or
+/// may not fall in a stretch the coverage does not hold, so that the
+/// kind cannot be known from inside it.
+pub fn kind_within(
+    sun: &dyn SolarModel,
+    from: JulianDay<Utc>,
+    to: JulianDay<Utc>,
+    before: Option<Beyond>,
+    after: Option<Beyond>,
+) -> Result<MonthKind, Error> {
+    let coverage = sun.coverage();
+    let past = |reach: Option<Beyond>, days: f64| match reach {
+        _ if days <= 0.0 => reach,
+        Some(reach) => Some(reach.and(days)),
+        None => Some(Beyond {
+            least: days,
+            most: days,
+        }),
+    };
+    let (start, end) = (from.get().max(coverage.from), to.get().min(coverage.to));
+    let before = past(before, start - from.get());
+    let after = past(after, to.get() - end);
+    let mut count = sankrantis_in(sun, start, end)?.len();
+    let outside = |count: Option<usize>, side: &str| {
+        count.ok_or_else(|| {
+            Error::new(Status::OutOfRange, format!(
+                "the lunar month from {from} to {to} may hold a sankranti {side} the ephemeris's coverage, so its kind is not known"
+            ))
+            .with_field("date")
+        })
+    };
+    if let Some(reach) = before {
+        let into = sun.sidereal_sun_deg(start)?.rem_euclid(30.0);
+        count += outside(reach.sankrantis(into), "before")?;
+    }
+    if let Some(reach) = after {
+        let short = 30.0 - sun.sidereal_sun_deg(end)?.rem_euclid(30.0);
+        count += outside(reach.sankrantis(short), "after")?;
+    }
+    MonthKind::of(count).ok_or_else(|| {
+        Error::new(
+            Status::Internal,
+            format!(
+                "the lunar month from {from} to {to} holds {count} sankrantis, and a month cannot hold more than two"
+            ),
+        )
+    })
 }
 
 /// What kind of month a span is, from the sankrantis inside it.

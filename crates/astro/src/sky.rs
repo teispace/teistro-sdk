@@ -4,6 +4,7 @@
 //! body that the rise and set solver reads.
 
 use teistro_core::angle::{difference_deg, normalise_deg};
+use teistro_core::coverage::Coverage;
 use teistro_core::error::Error;
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Longitude, Place, Tt, Ut1};
@@ -666,9 +667,34 @@ pub trait ApparentPositions: Send + Sync {
         let _ = request;
         None
     }
+
+    /// The instants the source answers, UT1 (SR-136, C2242): a horizon
+    /// search is cut to them rather than reading past an end.
+    /// Unbounded unless the source says otherwise.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    ///
+    /// use teistro_astro::sky::ApparentPositions;
+    ///
+    /// assert_eq!(ApparentPositions::coverage(&sky), sky.coverage());
+    /// ```
+    fn coverage(&self) -> Coverage {
+        Coverage::UNBOUNDED
+    }
 }
 
 impl<S: ApparentPositions + ?Sized> ApparentPositions for &S {
+    fn coverage(&self) -> Coverage {
+        (**self).coverage()
+    }
+
     fn native_horizon_event(
         &self,
         request: &HorizonRequest,

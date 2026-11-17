@@ -29,6 +29,7 @@ use core::fmt;
 
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
+use teistro_core::coverage::Coverage;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::OverridePolicy;
@@ -329,6 +330,28 @@ pub trait Longitudes: Send + Sync {
     /// ```
     fn describe(&self) -> String;
 
+    /// The instants the source answers, on UT1 (SR-136): every search
+    /// over it is cut to them ([`Search::between`]), so a search around a
+    /// date near an end reads only what the ephemeris holds. Every instant
+    /// for a source that states none.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Frame, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// use teistro_astro::events::Longitudes;
+    ///
+    /// // A completion's longitudes answer what the completion does.
+    /// assert_eq!(sky.longitudes(Frame::CANONICAL).coverage(), sky.coverage());
+    /// ```
+    fn coverage(&self) -> Coverage {
+        Coverage::UNBOUNDED
+    }
+
     /// The crossings of a quantity over a lattice inside a window from the
     /// provider's own search, when the source is a provider's sky whose
     /// policy lets it answer one (the crossings override, boundary audit
@@ -406,6 +429,10 @@ impl<S: Longitudes + ?Sized> Longitudes for &S {
 
     fn describe(&self) -> String {
         (**self).describe()
+    }
+
+    fn coverage(&self) -> Coverage {
+        (**self).coverage()
     }
 
     fn native_crossings(
@@ -637,6 +664,10 @@ impl<P: EphemerisProvider + ?Sized> Longitudes for FrameLongitudes<'_, P> {
             self.completion.capabilities().identity.name,
             self.frame
         )
+    }
+
+    fn coverage(&self) -> Coverage {
+        self.completion.coverage()
     }
 
     fn native_crossings(
@@ -892,6 +923,9 @@ const NEAR_LINE_DEG: f64 = 1e-6;
 struct Scan<'a, 's, S: Longitudes + ?Sized> {
     search: &'a Search<'s, S>,
     step: f64,
+    /// What the source answers: a grid sample outside it is read at the
+    /// edge it passed (SR-136, C2242).
+    coverage: Coverage,
     /// The lower index of the last cell refined; cells are refined once,
     /// in time order.
     done: i64,
@@ -921,6 +955,14 @@ struct Pending {
 }
 
 impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
+    /// The instant of a sample of the fine grid, held to the coverage: a
+    /// window cut at an edge of what the source answers keeps its whole
+    /// cells inside, and only the cell the edge falls in is shortened to
+    /// end there, so every cell inside is the grid's own to the bit.
+    fn instant(&self, index: i64) -> f64 {
+        grid_instant(index, self.step).clamp(self.coverage.from, self.coverage.to)
+    }
+
     /// Refine every pending crossing, a round at a time: each round asks
     /// for the next instant of every refinement still going as one grid,
     /// where refining them one by one asked once per instant. Each
@@ -1014,12 +1056,15 @@ impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
     /// The quantity at several samples of the fine grid, as one grid.
     fn read(&mut self, indices: impl Iterator<Item = i64>) -> Result<Vec<Sample>, Error> {
         let indices: Vec<i64> = indices.collect();
-        self.instants.clear();
-        self.instants.extend(
+        // The scratch is lent out while it is filled, so it is reused.
+        let mut instants = core::mem::take(&mut self.instants);
+        instants.clear();
+        instants.extend(
             indices
                 .iter()
-                .map(|index| JulianDay::literal(grid_instant(*index, self.step))),
+                .map(|index| JulianDay::literal(self.instant(*index))),
         );
+        self.instants = instants;
         if self.instants.is_empty() {
             return Ok(Vec::new());
         }
@@ -1232,10 +1277,11 @@ impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
         }
         self.done = lo.index;
         let search = self.search;
-        let (t_lo, t_hi) = (
-            grid_instant(lo.index, self.step),
-            grid_instant(hi.index, self.step),
-        );
+        let (t_lo, t_hi) = (self.instant(lo.index), self.instant(hi.index));
+        // A cell wholly past an edge of the coverage is no cell.
+        if t_hi <= t_lo {
+            return Ok(());
+        }
         let (unwrapped_lo, unwrapped_hi) = (
             lo.raw,
             hi.raw + turn_deg(hi.raw - lo.raw, search.quantity.wraps()),
@@ -2166,6 +2212,19 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     ) -> Result<Vec<Vec<Event>>, Error> {
         self.check()?;
         check_window("search", from, to)?;
+        // Cut to what the source answers (SR-136, C2242): a search around a
+        // date near an end of the coverage reads only inside it, and a
+        // window wholly outside finds nothing rather than a refusal.
+        let Some((start, end, _)) = self.source.coverage().clip(from.get(), to.get()) else {
+            return Ok(vec![Vec::new(); self.lattices.len()]);
+        };
+        if end <= start {
+            return Ok(vec![Vec::new(); self.lattices.len()]);
+        }
+        let (from, to) = (
+            JulianDay::<Ut1>::literal(start),
+            JulianDay::<Ut1>::literal(end),
+        );
         // A provider's own search answers when its sky offers one, lattice
         // by lattice; the scan answers every lattice otherwise, so a
         // search is never half the engine's and half the SDK's.
@@ -2221,9 +2280,11 @@ impl Search<'_, dyn Longitudes + '_> {
         // than a fine scan would.
         let first = grid_index(from.get(), step);
         let last = end_index(to.get(), step, first);
+        let coverage = self.source.coverage();
         let mut scan = Scan {
             search: self,
             step,
+            coverage,
             done: first - 1,
             instants: Vec::new(),
             values: Vec::new(),
@@ -2251,7 +2312,7 @@ impl Search<'_, dyn Longitudes + '_> {
             instants.clear();
             while indices.len() < self.chunk {
                 indices.push(index);
-                instants.push(JulianDay::literal(grid_instant(index, step)));
+                instants.push(JulianDay::literal(scan.instant(index)));
                 if index >= last {
                     done = true;
                     break;

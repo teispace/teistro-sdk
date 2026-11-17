@@ -15,7 +15,7 @@ use teistro_panchanga::festival::{NextKind, Observances};
 use teistro_time::ZoneSpec;
 
 use super::next::{kept_days, reckoned_for, target_of};
-use super::{AlmanacArea, NextTarget, widening, without_printed};
+use super::{AlmanacArea, NextTarget, answered_run, widening, without_printed};
 use crate::DayClock;
 use crate::area::system_of;
 use crate::asked::place_of;
@@ -445,10 +445,13 @@ impl AlmanacArea<'_> {
             return Err(Error::internal("a checked span holds no year"));
         };
         let (back, ahead) = widening(&festivals);
-        let (from, to) = (
-            system.date_of(first.plus_days(-back))?,
-            system.date_of(last.plus_days(ahead))?,
-        );
+        // The widening is cut to the days the ephemeris answers, as a
+        // festival call's is (SR-136, C2248): a span at an end of the
+        // coverage is reckoned from the days there are.
+        let answered = self.with_almanac(calendar, offset, |almanac| almanac.answered(place))?;
+        let (low, high) = answered_run(answered, first.plus_days(-back), last.plus_days(ahead))
+            .unwrap_or((first, last));
+        let (from, to) = (system.date_of(low)?, system.date_of(high)?);
         let Envelope {
             value: viewed,
             mut provenance,
@@ -467,7 +470,7 @@ impl AlmanacArea<'_> {
         }
         let (found, (from, to)) = self.reckoned_over(
             (calendar, first, last),
-            (place, offset),
+            (place, offset, answered),
             &festivals,
             (viewed, (from, to)),
         )?;

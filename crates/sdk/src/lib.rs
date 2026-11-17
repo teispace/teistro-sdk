@@ -48,6 +48,7 @@ mod asked;
 #[cfg(feature = "western")]
 mod composites;
 mod context;
+mod coverage;
 mod days_request;
 mod dossier_names;
 mod engine_request;
@@ -96,6 +97,10 @@ pub use area::{
     DigestRequest, DigestSpan, digest_schema,
 };
 pub use area::{DaySentence, DaySentences, SentencesRequest};
+// What a context answers over, as data, and the mark a span, month, year
+// or sky carries where the ephemeris's coverage cut it (SR-136).
+pub use coverage::{BikramSambatSpan, Coverage, EphemerisSpan, HolidayYears};
+pub use teistro_core::coverage::Clipped;
 // The geo port: a place's zone, ground height and admin codes, resolved
 // only when a caller asks (`03-design/geo-port.md`, SR-87), and the place
 // catalogue: a search, a reverse, a place's names and a unit's places

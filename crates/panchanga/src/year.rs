@@ -20,6 +20,7 @@ use teistro_astro::events::{Longitudes, Search};
 use teistro_calendar::samvatsara::{JovianYear, Parameters};
 use teistro_calendar::vira_nirvana::{self, Epoch};
 use teistro_core::catalogue::{Kind, Masa, Samvatsara, write_in_full};
+use teistro_core::coverage::Clipped;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
 use teistro_core::settings::SamvatsaraCount;
@@ -122,6 +123,16 @@ pub struct LunarYear {
     /// made by [`LunarYear::of`] alone, which has no sky to read them in,
     /// and on a sankalpa's, which does not ask.
     pub rulers: Vec<YearRuler>,
+    /// Which ends of the year the ephemeris's coverage cut (SR-136,
+    /// C2249). A year cut at its start opened before the first instant the
+    /// ephemeris answers: `opened` and `began` are that instant, its
+    /// numbers are the next year's less one, its name is read from where
+    /// its first sunrise can have been, and it carries no office-bearers.
+    /// A year cut at its end runs past the last instant: `ended` is that
+    /// instant, and an office whose ingress falls after it is left out.
+    /// Absent on every year both of whose ends were found.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clipped: Option<Clipped>,
 }
 
 /// The Kali years elapsed when the Shaka era began (Shaka 0), so that
@@ -225,6 +236,7 @@ impl LunarYear {
             jovian,
             lupta,
             rulers: Vec::new(),
+            clipped: None,
         })
     }
 
@@ -269,6 +281,12 @@ impl LunarYear {
     #[must_use]
     pub fn contains(&self, instant: JulianDay<Utc>) -> bool {
         self.began.get() <= instant.get() && instant.get() < self.ended.get()
+    }
+
+    /// The year with the mark of the ends the coverage cut.
+    #[must_use]
+    pub fn with_clipped(self, clipped: Option<Clipped>) -> Self {
+        LunarYear { clipped, ..self }
     }
 
     /// Where a year names catalogue members, and of which kind: a dotted
@@ -456,20 +474,59 @@ pub fn chaitra_opening<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
     at: JulianDay<Utc>,
 ) -> Result<JulianDay<Utc>, Error> {
+    chaitra_opening_within(tropical, zodiac, at)?.ok_or_else(|| {
+        Error::new(
+            Status::OutOfRange,
+            format!("the lunar year holding {at} opened before the ephemeris's coverage"),
+        )
+        .with_field("date")
+    })
+}
+
+/// [`chaitra_opening`], or `None` when the year opened before the first
+/// instant the ephemeris answers (SR-136, C2249): the search back to
+/// Chaitra reaches the coverage's start without finding it.
+///
+/// # Errors
+///
+/// As [`chaitra_opening`], and `OUT_OF_RANGE` on `date` for a Chaitra
+/// whose month before, which says whether it is the nija one after an
+/// adhika Chaitra, opened before the coverage.
+pub fn chaitra_opening_within<S: Longitudes + ?Sized>(
+    tropical: &S,
+    zodiac: Zodiac,
+    at: JulianDay<Utc>,
+) -> Result<Option<JulianDay<Utc>>, Error> {
     let window = teistro_core::interval::Interval::new(at, at)?;
-    let month = limb::lunar_month_span(tropical, window, zodiac)?;
+    let month = limb::lunar_month_cut(tropical, window, zodiac)?;
+    if month.before.is_some() {
+        return Ok(None);
+    }
+    let month = month.span;
     let masa = limb::masa_at(tropical, month.from, zodiac)?;
     let back = f64::from(months_after_chaitra(masa));
-    let mut guess = new_moon_near(tropical, zodiac, month.from.get() - back * SYNODIC_DAYS)?;
+    let Some(mut guess) = new_moon_near(tropical, zodiac, month.from.get() - back * SYNODIC_DAYS)?
+    else {
+        return Ok(None);
+    };
     for _ in 0..MOST_STEPS {
         let after = months_after_chaitra(limb::masa_at(tropical, guess, zodiac)?);
         let step = match after {
             0 => {
-                let before = new_moon_near(tropical, zodiac, guess.get() - SYNODIC_DAYS)?;
+                let Some(before) = new_moon_near(tropical, zodiac, guess.get() - SYNODIC_DAYS)?
+                else {
+                    return Err(Error::new(
+                        Status::OutOfRange,
+                        format!(
+                            "the Chaitra opened at {guess} follows a month before the ephemeris's coverage, which would say whether it is the nija one"
+                        ),
+                    )
+                    .with_field("date"));
+                };
                 if limb::masa_at(tropical, before, zodiac)? == Masa::Chaitra {
-                    return Ok(before);
+                    return Ok(Some(before));
                 }
-                return Ok(guess);
+                return Ok(Some(guess));
             }
             // Later than Chaitra: an adhika month between put the
             // estimate late.
@@ -477,7 +534,10 @@ pub fn chaitra_opening<S: Longitudes + ?Sized>(
             // Earlier: a kshaya month between put it early.
             _ => SYNODIC_DAYS,
         };
-        guess = new_moon_near(tropical, zodiac, guess.get() + step)?;
+        let Some(next) = new_moon_near(tropical, zodiac, guess.get() + step)? else {
+            return Ok(None);
+        };
+        guess = next;
     }
     Err(Error::new(
         Status::NotConverged,
@@ -492,28 +552,32 @@ fn months_after_chaitra(masa: Masa) -> u8 {
     u8::try_from(after).unwrap_or(0)
 }
 
-/// The new moon within half a month of an estimate.
+/// The new moon within half a month of an estimate, or `None` when the
+/// half month reaches past the ephemeris's coverage and the part it holds
+/// has none.
 fn new_moon_near<S: Longitudes + ?Sized>(
     tropical: &S,
     zodiac: Zodiac,
     estimate: f64,
-) -> Result<JulianDay<Utc>, Error> {
+) -> Result<Option<JulianDay<Utc>>, Error> {
     let source = Sidereal::over(tropical, zodiac);
+    let (from, to) = (estimate - NEAR_DAYS, estimate + NEAR_DAYS);
     let found = Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0)).between(
-        JulianDay::<Ut1>::literal(estimate - NEAR_DAYS),
-        JulianDay::<Ut1>::literal(estimate + NEAR_DAYS),
+        JulianDay::<Ut1>::literal(from),
+        JulianDay::<Ut1>::literal(to),
     )?;
     let nearest = found
         .iter()
         .map(|event| event.instant.get())
-        .min_by(|a, b| (a - estimate).abs().total_cmp(&(b - estimate).abs()))
-        .ok_or_else(|| {
-            Error::new(
-                Status::NotConverged,
-                format!("no new moon within {NEAR_DAYS} days of {estimate}"),
-            )
-        })?;
-    JulianDay::try_new(nearest).map_err(Error::from)
+        .min_by(|a, b| (a - estimate).abs().total_cmp(&(b - estimate).abs()));
+    match nearest {
+        Some(nearest) => Ok(Some(JulianDay::try_new(nearest).map_err(Error::from)?)),
+        None if !(source.coverage().contains(from) && source.coverage().contains(to)) => Ok(None),
+        None => Err(Error::new(
+            Status::NotConverged,
+            format!("no new moon within {NEAR_DAYS} days of {estimate}"),
+        )),
+    }
 }
 
 #[cfg(test)]

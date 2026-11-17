@@ -15,7 +15,8 @@ use teistro_astro::scale::tt_from_ut1;
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::Ayanamsha;
-use teistro_core::error::Error;
+use teistro_core::coverage::Coverage;
+use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::{
     AyanamshaBasis, AyanamshaChoice, HorizonModel, OverridePolicy, SunriseConvention,
@@ -290,11 +291,23 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
         local_midnight: JulianDay<Ut1>,
         place: &Place,
     ) -> Result<Option<DayLight>, Error> {
+        self.defined_day_from(local_midnight, 1.0, place)
+    }
+
+    /// [`DrikSun::defined_day`] with the sunrise sought from `from` for
+    /// `window_days`: the day's own window, or its part inside the
+    /// coverage.
+    fn defined_day_from(
+        &self,
+        from: JulianDay<Ut1>,
+        window_days: f64,
+        place: &Place,
+    ) -> Result<Option<DayLight>, Error> {
         if !self.provider_defines_sunrise()? {
             return Ok(None);
         }
         let native_only = self.completion.policy() == OverridePolicy::NativeOnly;
-        let ask = |kind: HorizonEventKind, from: JulianDay<Ut1>| match self
+        let ask = |kind: HorizonEventKind, from: JulianDay<Ut1>, window_days: f64| match self
             .completion
             .provider()
             .horizon_event(&HorizonRequest {
@@ -302,7 +315,7 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
                 kind,
                 place: *place,
                 from,
-                window_days: 1.0,
+                window_days,
                 horizon: self.horizon,
                 conventions: self.completion.conventions(),
             }) {
@@ -313,16 +326,70 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
             }
             Err(error) => Err(Error::from(error)),
         };
-        let Some(sunrise) = ask(HorizonEventKind::Rise, local_midnight)? else {
+        let Some(sunrise) = ask(HorizonEventKind::Rise, from, window_days)? else {
             return Ok(None);
         };
-        let Some(sunset) = ask(HorizonEventKind::Set, sunrise)? else {
+        let Some(sunset) = ask(HorizonEventKind::Set, sunrise, 1.0)? else {
             return Ok(None);
         };
         Ok(Some(DayLight::Arc(DayArc {
             sunrise: sunrise.relabel(),
             sunset: sunset.relabel(),
         })))
+    }
+}
+
+impl<P: EphemerisProvider + ?Sized> DrikSun<'_, P> {
+    /// The light of a day whose local midnight is before the coverage
+    /// opens at `opens` (SR-136, C2244): its sunrise sought from the
+    /// coverage's first instant to the day's end. Found there, it is the
+    /// day's own, since a sunrise in the uncovered hours before would be
+    /// followed by the next only a day later; not found there, the day's
+    /// sunrise lies before the coverage and the day is refused
+    /// `OUT_OF_RANGE` on `date`, which happens east of about 97°E on
+    /// 1800-01-01, where the Sun rises before 00:00 UT.
+    fn day_light_from(
+        &self,
+        local_midnight: JulianDay<Ut1>,
+        opens: f64,
+        place: &Place,
+    ) -> Result<DayLight, Error> {
+        let ends = local_midnight.get() + 1.0;
+        let before = || {
+            Error::new(
+                Status::OutOfRange,
+                format!(
+                    "the day from JD {} has its sunrise before the ephemeris's coverage, \
+                     which opens at JD {opens}",
+                    local_midnight.get()
+                ),
+            )
+            .with_field("date")
+        };
+        if opens >= ends {
+            return Err(before());
+        }
+        let from = JulianDay::<Ut1>::try_new(opens)?;
+        let light = match self.defined_day_from(from, ends - opens, place)? {
+            Some(light) => light,
+            None => light_of(&self.solver(place).day(from)?),
+        };
+        match light {
+            DayLight::Arc(arc) if arc.sunrise.get() < ends => Ok(light),
+            _ => Err(before()),
+        }
+    }
+
+    /// Whether any of a run's days reads past an end of the coverage: its
+    /// midnight before the first instant, or its next day's after the
+    /// last.
+    fn near_an_end(&self, days: &[FixedDay], place: &Place) -> bool {
+        let coverage = self.completion.coverage();
+        days.iter().any(|day| {
+            local_mean_midnight(*day, place).map_or(true, |midnight| {
+                !(coverage.contains(midnight.get()) && coverage.contains(midnight.get() + 2.0))
+            })
+        })
     }
 }
 
@@ -390,16 +457,25 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
         // A civil day at a place is its local-mean-time day, as for the
         // classical model, so the two answer the same question.
         let local_midnight = local_mean_midnight(day, place)?;
+        let opens = self.completion.coverage().from;
+        if local_midnight.get() < opens {
+            return self.day_light_from(local_midnight, opens, place);
+        }
         if let Some(light) = self.defined_day(local_midnight, place)? {
             return Ok(light);
         }
         Ok(light_of(&self.solver(place).day(local_midnight)?))
     }
 
+    fn coverage(&self) -> Coverage {
+        self.completion.coverage()
+    }
+
     fn day_lights(&self, days: &[FixedDay], place: &Place) -> Vec<Result<DayLight, Error>> {
         // A provider that defines the sunrise answers each day itself, so
-        // there is no search to share.
-        if !matches!(self.provider_defines_sunrise(), Ok(false)) {
+        // there is no search to share; nor is there for a run reaching an
+        // end of the coverage, whose days near it are cut one by one.
+        if !matches!(self.provider_defines_sunrise(), Ok(false)) || self.near_an_end(days, place) {
             return days.iter().map(|day| self.day_light(*day, place)).collect();
         }
         let solver = self.solver(place);

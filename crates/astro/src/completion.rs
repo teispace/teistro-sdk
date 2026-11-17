@@ -20,6 +20,7 @@ use teistro_core::math;
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::Ayanamsha;
+use teistro_core::coverage::Coverage;
 use teistro_core::envelope::TimeStamp;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
@@ -345,6 +346,8 @@ pub struct Completion<'p, P: EphemerisProvider + ?Sized> {
     /// Whether the provider implements the Delta T model asked, once it
     /// has been asked.
     native_delta_t: OnceLock<bool>,
+    /// [`Completion::coverage`], reckoned once.
+    coverage: OnceLock<Coverage>,
 }
 
 impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
@@ -377,6 +380,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             ayanamsha_basis: Basis::True,
             derived_speeds: false,
             native_delta_t: OnceLock::new(),
+            coverage: OnceLock::new(),
         }
     }
 
@@ -800,6 +804,62 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
                 );
                 Ok((ut1, tt))
             }
+        }
+    }
+
+    /// The instants this completion answers, on UT1 (SR-136, C2243): the
+    /// provider's declared range ([`Capabilities::coverage`]) where the
+    /// completion asks it on UT1 (a classical astronomy, or an engine
+    /// owning its Delta T), and that range carried from TT to UT1 where the
+    /// completion carries every instant to TT itself, so an instant
+    /// inside is never refused for the minutes of Delta T between the
+    /// scales. Each end is moved a millisecond inward, under the
+    /// rounding of the carry.
+    ///
+    /// ```
+    /// # use teistro_astro::completion::Completion;
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_core::settings::OverridePolicy;
+    /// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+    ///
+    /// let provider = TestProvider::new();
+    /// let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// let (from, to) = TestProvider::JD_RANGE;
+    /// // UT1 runs behind TT: by hours at year 0, by an hour at 3000.
+    /// let coverage = sky.coverage();
+    /// assert!(from - coverage.from > 0.1 && (0.04..0.06).contains(&(to - coverage.to)));
+    /// ```
+    #[must_use]
+    pub fn coverage(&self) -> Coverage {
+        *self.coverage.get_or_init(|| self.carried_coverage())
+    }
+
+    /// [`Completion::coverage`], reckoned.
+    fn carried_coverage(&self) -> Coverage {
+        // A millisecond: some twenty-five steps of a Julian day's last
+        // bit, so the carried end rounds inside the declared one.
+        const INWARD_DAYS: f64 = 1.0e-3 / 86_400.0;
+        let declared = self.capabilities.coverage();
+        if !declared.is_bounded() || self.capabilities.astronomy == Astronomy::Classical {
+            return declared;
+        }
+        let native =
+            |jd: f64| jd.is_finite() && matches!(self.delta_t_by(jd), Ok(Implementation::Native));
+        if native(declared.from) || native(declared.to) {
+            return declared;
+        }
+        let carried = |tt: f64, inward: f64| -> f64 {
+            if !tt.is_finite() {
+                return tt;
+            }
+            JulianDay::<Tt>::try_new(tt)
+                .ok()
+                .and_then(|at| ut1_from_tt(at, self.conventions.delta_t).ok())
+                .map_or(tt, |(ut1, _)| ut1.get() + inward)
+        };
+        Coverage {
+            from: carried(declared.from, INWARD_DAYS),
+            to: carried(declared.to, -INWARD_DAYS),
         }
     }
 
@@ -1814,6 +1874,10 @@ impl<P: EphemerisProvider + ?Sized> Completion<'_, P> {
 }
 
 impl<P: EphemerisProvider + ?Sized> ApparentPositions for Completion<'_, P> {
+    fn coverage(&self) -> Coverage {
+        Completion::coverage(self)
+    }
+
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
         let jds = [ut1.get()];
         let bodies = [body];
