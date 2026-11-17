@@ -10515,6 +10515,69 @@ void _engineTests() {
   /// The annual charts cross: a request's `varsha` answers each chart's
   /// returns in year order, ragged per chart, and the instant founds as a
   /// chart of its own.
+  test('the place catalogue answers from a geo table', () {
+    var dir = Directory.current.absolute;
+    while (!File('${dir.path}/crates/sdk/tests/geo-table.json').existsSync()) {
+      if (dir.parent.path == dir.path) throw StateError('no geo-table.json');
+      dir = dir.parent;
+    }
+    final table =
+        File('${dir.path}/crates/sdk/tests/geo-table.json').readAsStringSync();
+    final bare = context();
+    expect(
+      () => bare.geo.search(const PlaceSearch(query: 'x')),
+      throwsA(
+        isA<TeistroException>()
+            .having((e) => e.status, 'status', Status.capability)
+            .having((e) => e.field, 'field', 'geo'),
+      ),
+    );
+    final ctx = context();
+    ctx.geo.load(table);
+    final found = ctx.geo.search(
+      const PlaceSearch(query: 'काठमाडौं', lang: 'en'),
+    );
+    final first =
+        (found.first! as Map<String, Object?>)['place']!
+            as Map<String, Object?>;
+    expect(
+      [first['id'], first['name'], first['label'], first['kind']],
+      ['np-ktm', 'Kathmandu', 'Kathmandu, Bagmati, Nepal', 'SETTLEMENT'],
+    );
+    final nearby = ctx.geo.reverse(
+      const PlaceReverse(
+        latitudeDeg: 27.7172,
+        longitudeDeg: 85.324,
+        limit: 1,
+        lang: 'ne',
+      ),
+    );
+    final near = (nearby['near']! as List<Object?>).first! as Map;
+    expect((near['place']! as Map)['name'], 'काठमाडौं');
+    expect(((nearby['admin']! as List<Object?>)[1]! as Map)['code'], 'NP-P3');
+    final names = ctx.geo.names(
+      const PlaceNamesRequest(id: 'np-ktm', langs: ['ne', 'sa']),
+    );
+    final best = names['best']! as List<Object?>;
+    expect(((best[0]! as Map)['name']! as Map)['text'], 'काठमाडौं');
+    expect((best[1]! as Map)['asked'], 'sa');
+    final listed = ctx.geo.list(const PlaceListing(within: 'NP-P3'));
+    expect(
+      listed.map((place) => (place! as Map)['id']),
+      ['np-ktm', 'np-ltp'],
+    );
+    expect(
+      ((listed[1]! as Map)['population']! as Map)['kind'],
+      'MODELLED',
+    );
+    expect(
+      () => ctx.geo.search(const PlaceSearch(query: '')),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'query'),
+      ),
+    );
+  });
+
   test('a place resolved through a geo table, and a chart on it that '
       'replays without one', () {
     // The SDK's test table, the same the Rust suite loads.

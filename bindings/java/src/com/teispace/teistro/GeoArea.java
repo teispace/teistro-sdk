@@ -1,8 +1,14 @@
 package com.teispace.teistro;
 
 import com.teispace.teistro.request.GeoSource;
+import com.teispace.teistro.request.PlaceListing;
+import com.teispace.teistro.request.PlaceNamesRequest;
 import com.teispace.teistro.request.PlaceRequest;
+import com.teispace.teistro.request.PlaceReverse;
+import com.teispace.teistro.request.PlaceSearch;
 import com.teispace.teistro.request.ResolvedPlace;
+import java.util.List;
+import java.util.Map;
 
 /**
  * {@code sky.geo()}: a place's IANA zone, ground height and ISO 3166 admin
@@ -48,5 +54,68 @@ public final class GeoArea {
     public ResolvedPlace resolve(PlaceRequest request) {
         String json = Json.write(request);
         return ResolvedPlace.of(Json.read(context.locked((lib, raw) -> Calls.geoResolve(lib, raw, json))));
+    }
+
+    /**
+     * The places matching a name in any script the provider's data holds,
+     * best first, as the provider ranks them: {@code "Name, Parent"} puts
+     * the named parent's places first, and a {@code focus} prefers places
+     * near it. Each is {@code {place, score}}, the place
+     * {@code {id, name, nameLang, label, kind, level, code, latitudeDeg,
+     * longitudeDeg, population, parents}}.
+     *
+     * @param request the query, with its focus, limit and language
+     * @return the places found, best first
+     * @throws TeistroException with {@link Status#CAPABILITY} on {@code geo}
+     *     for a context with no provider, {@link Status#INVALID_ARG} on a
+     *     malformed request
+     */
+    public List<?> search(PlaceSearch request) {
+        String json = Json.write(request);
+        return JsonRead.list(Json.read(context.locked((lib, raw) -> Calls.geoSearch(lib, raw, json))));
+    }
+
+    /**
+     * The named places nearest a point, nearest first, and the admin units
+     * holding it, coarse to fine: {@code {near, admin}}. A level the data
+     * holds no outline for is absent, never a refusal.
+     *
+     * @param request the point, with its limit and language
+     * @return the places near and the admin units
+     * @throws TeistroException with {@link Status#CAPABILITY} on {@code geo}
+     *     for a context with no provider
+     */
+    public Map<String, Object> reverse(PlaceReverse request) {
+        String json = Json.write(request);
+        return JsonRead.object(Json.read(context.locked((lib, raw) -> Calls.geoReverse(lib, raw, json))));
+    }
+
+    /**
+     * A place's names, each with its language, script, type and origin,
+     * and the one chosen for each language asked: {@code {id, best, all}}.
+     *
+     * @param request the place's id and the languages asked
+     * @return the names
+     * @throws TeistroException with {@link Status#CAPABILITY} on {@code geo}
+     *     for a context with no provider
+     */
+    public Map<String, Object> names(PlaceNamesRequest request) {
+        String json = Json.write(request);
+        return JsonRead.object(Json.read(context.locked((lib, raw) -> Calls.geoNames(lib, raw, json))));
+    }
+
+    /**
+     * The places of a unit (its id or ISO 3166 code), by admin level and
+     * kind, ranked by population, each with {@code {people, kind}},
+     * {@code kind} {@code COUNTED} or {@code MODELLED}.
+     *
+     * @param request the unit, level, kinds, depth and limit
+     * @return the places, most people first
+     * @throws TeistroException with {@link Status#CAPABILITY} on {@code geo}
+     *     for a context with no provider
+     */
+    public List<?> list(PlaceListing request) {
+        String json = Json.write(request);
+        return JsonRead.list(Json.read(context.locked((lib, raw) -> Calls.geoList(lib, raw, json))));
     }
 }

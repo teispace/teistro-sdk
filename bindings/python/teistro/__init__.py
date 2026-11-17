@@ -474,6 +474,10 @@ from ._requests import (
     GeoSource as GeoSource,
     GroundHeight as GroundHeight,
     ResolvedPlace as ResolvedPlace,
+    PlaceSearch as PlaceSearch,
+    PlaceReverse as PlaceReverse,
+    PlaceNamesRequest as PlaceNamesRequest,
+    PlaceListing as PlaceListing,
     GradedRule as GradedRule,
     GrahaClass as GrahaClass,
     GulikaAt as GulikaAt,
@@ -3516,6 +3520,37 @@ class GeoArea(_Area):
         >>> # place["zone"]  # 'Asia/Kathmandu'
         """
         return cast(ResolvedPlace, json.loads(self._context.inner.geo_resolve(json.dumps(request))))
+
+    def search(self, request: PlaceSearch) -> List[Dict[str, Any]]:
+        """The places matching a name in any script the provider's data
+        holds, best first, as the provider ranks them
+        (`03-design/geo-port.md` §12): `"Name, Parent"` puts the named
+        parent's places first, and a `focus` prefers places near it. Each
+        is `{place, score}`, the place `{id, name, nameLang, label, kind,
+        level, code, latitudeDeg, longitudeDeg, population, parents}`.
+        `CAPABILITY` on `geo` with no provider.
+
+        >>> # sdk.geo.search({"query": "काठमाडौं", "lang": "en"})[0]["place"]["name"]
+        >>> # 'Kathmandu'
+        """
+        return cast(List[Dict[str, Any]], json.loads(self._context.inner.geo_search(json.dumps(request))))
+
+    def reverse(self, request: PlaceReverse) -> Dict[str, Any]:
+        """The named places nearest a point, nearest first, and the admin
+        units holding it, coarse to fine: `{near, admin}`. A level the data
+        holds no outline for is absent, never a refusal."""
+        return cast(Dict[str, Any], json.loads(self._context.inner.geo_reverse(json.dumps(request))))
+
+    def names(self, request: PlaceNamesRequest) -> Dict[str, Any]:
+        """A place's names, each with its language, script, type and origin,
+        and the one chosen for each language asked: `{id, best, all}`."""
+        return cast(Dict[str, Any], json.loads(self._context.inner.geo_names(json.dumps(request))))
+
+    def list(self, request: PlaceListing) -> List[Dict[str, Any]]:
+        """The places of a unit (its id or ISO 3166 code), by admin level
+        and kind, ranked by population, each with `{people, kind}`, `kind`
+        `COUNTED` or `MODELLED`."""
+        return cast(List[Dict[str, Any]], json.loads(self._context.inner.geo_list(json.dumps(request))))
 
 
 class FrameArea(_Area):

@@ -570,6 +570,34 @@ public final class BindingTest {
                 ReceiptCheck replayed = bare.verify().receipt(issued.receipt());
                 same("HELD", replayed.verdict(), "replayed without the provider: " + replayed.reason());
             }
+            try (Context bare = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build());
+                    Context placed = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build())) {
+                // The place catalogue over the same table.
+                String table = java.nio.file.Files.readString(java.nio.file.Path.of("crates/sdk/tests/geo-table.json"));
+                TeistroException unprovided = refusal(() -> bare.geo().search(
+                        com.teispace.teistro.request.PlaceSearch.of(Json.read("{\"query\": \"x\"}"))));
+                same(Status.CAPABILITY, unprovided.status(), "no catalogue without a provider");
+                placed.geo().load(table);
+                List<?> found = placed.geo().search(
+                        com.teispace.teistro.request.PlaceSearch.of(Json.read("{\"query\": \"काठमाडौं\", \"lang\": \"en\"}")));
+                Map<?, ?> first = Reads.object(Reads.object(found.get(0)), "place");
+                same("np-ktm", first.get("id"), "the same place in another script");
+                same("Kathmandu, Bagmati, Nepal", first.get("label"), "labelled to its parents");
+                Map<String, Object> nearby = placed.geo().reverse(com.teispace.teistro.request.PlaceReverse.of(Json.read(
+                        "{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"limit\": 1, \"lang\": \"ne\"}")));
+                same("NP-P3", Reads.object(((List<?>) nearby.get("admin")).get(1)).get("code"), "the province holding it");
+                Map<String, Object> names = placed.geo().names(com.teispace.teistro.request.PlaceNamesRequest.of(
+                        Json.read("{\"id\": \"np-ktm\", \"langs\": [\"ne\", \"sa\"]}")));
+                same("काठमाडौं", Reads.object(Reads.object(((List<?>) names.get("best")).get(0)).get("name")).get("text"),
+                        "its Nepali name");
+                List<?> listed = placed.geo().list(
+                        com.teispace.teistro.request.PlaceListing.of(Json.read("{\"within\": \"NP-P3\"}")));
+                same(2, listed.size(), "the province's places");
+                same("MODELLED", Reads.object(Reads.object(listed.get(1)).get("population")).get("kind"), "counted or modelled");
+                TeistroException empty = refusal(() -> placed.geo().search(
+                        com.teispace.teistro.request.PlaceSearch.of(Json.read("{\"query\": \"\"}"))));
+                same("query", empty.field(), "an empty query is refused on its field");
+            }
             try (Context modern = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build());
                     Context official = teistro.context(ContextOptions.builder().profile("nepali-committee")
                             .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
