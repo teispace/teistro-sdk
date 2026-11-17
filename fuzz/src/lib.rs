@@ -1666,7 +1666,7 @@ mod tests {
             // An engine's own operations are an adapter's, so the
             // built-in ephemeris refuses them; a place is resolved only
             // through a geo table loaded first, and a fresh server has none.
-            let answered = !tool.starts_with("engine.") && tool != "geo.resolve";
+            let answered = !tool.starts_with("engine.") && !tool.starts_with("geo.");
             (format!("tool-{tool}"), answered, message(100 + id, call))
         });
         protocol.chain(tools).collect()

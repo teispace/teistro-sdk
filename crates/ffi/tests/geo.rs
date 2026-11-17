@@ -14,7 +14,9 @@ use std::ffi::CString;
 
 use teistro_core::Status;
 use teistro_ffi::context::TsEphemeris;
-use teistro_ffi::geo::{ts_geo_load, ts_geo_resolve};
+use teistro_ffi::geo::{
+    ts_geo_list, ts_geo_load, ts_geo_names, ts_geo_resolve, ts_geo_reverse, ts_geo_search,
+};
 use teistro_ffi::string::TsString;
 
 mod common;
@@ -132,4 +134,97 @@ fn a_request_is_read_strictly_and_a_point_held_to_its_range() {
         resolve(&ctx, r#"{"latitudeDeg": 27.7}"#).0,
         Status::InvalidArg
     );
+}
+
+/// An entry point of the place catalogue.
+type Catalogue = unsafe extern "C" fn(
+    *const teistro_ffi::context::TsContext,
+    *const core::ffi::c_char,
+    *mut TsString,
+) -> Status;
+
+/// Asks `entry` with `request`, answering the status and, when it is `Ok`,
+/// the answer.
+fn ask(ctx: &Ctx, entry: Catalogue, request: &str) -> (Status, Option<serde_json::Value>) {
+    let request = CString::new(request).unwrap();
+    let mut out = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a writable slot.
+    let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut out) };
+    let answer = (status == Status::Ok).then(|| serde_json::from_str(&owned(out)).unwrap());
+    (status, answer)
+}
+
+#[test]
+fn the_place_catalogue_answers_from_the_loaded_table() {
+    let ctx = context();
+    // No provider, no catalogue.
+    assert_eq!(
+        ask(&ctx, ts_geo_search, r#"{"query": "x"}"#).0,
+        Status::Capability
+    );
+    assert_eq!(load(&ctx, TABLE).0, Status::Ok);
+
+    let found = ask(&ctx, ts_geo_search, r#"{"query": "काठमाडौं", "lang": "en"}"#)
+        .1
+        .unwrap();
+    assert_eq!(found[0]["place"]["id"], "np-ktm");
+    assert_eq!(found[0]["place"]["name"], "Kathmandu");
+    assert_eq!(found[0]["place"]["label"], "Kathmandu, Bagmati, Nepal");
+    assert_eq!(found[0]["place"]["kind"], "SETTLEMENT");
+
+    let nearby = ask(
+        &ctx,
+        ts_geo_reverse,
+        r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "limit": 1, "lang": "ne"}"#,
+    )
+    .1
+    .unwrap();
+    assert_eq!(nearby["near"][0]["place"]["name"], "काठमाडौं");
+    assert_eq!(nearby["admin"][1]["code"], "NP-P3");
+
+    let names = ask(
+        &ctx,
+        ts_geo_names,
+        r#"{"id": "np-ktm", "langs": ["ne", "sa"]}"#,
+    )
+    .1
+    .unwrap();
+    assert_eq!(names["best"][0]["name"]["text"], "काठमाडौं");
+    // Sanskrit has no name tagged; the table offers its Devanagari one.
+    assert_eq!(names["best"][1]["asked"], "sa");
+
+    let listed = ask(
+        &ctx,
+        ts_geo_list,
+        r#"{"within": "NP", "depth": null, "kinds": ["SETTLEMENT"]}"#,
+    )
+    .1
+    .unwrap();
+    let ids: Vec<_> = listed
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|place| place["id"].clone())
+        .collect();
+    assert_eq!(ids, ["np-ktm", "np-ltp", "np-pkr"]);
+    assert_eq!(listed[1]["population"]["kind"], "MODELLED");
+
+    // Each refusal is named by its field.
+    for (entry, request, field) in [
+        (ts_geo_search as Catalogue, r#"{"query": ""}"#, "query"),
+        (ts_geo_search, r#"{"query": "x", "limit": 0}"#, "limit"),
+        (ts_geo_search, r#"{"query": "x", "lang": "?"}"#, "lang"),
+        (
+            ts_geo_reverse,
+            r#"{"latitudeDeg": 0.0, "longitudeDeg": 200.0}"#,
+            "longitudeDeg",
+        ),
+        (ts_geo_names, r#"{"id": "np", "langs": ["1"]}"#, "langs[0]"),
+        (ts_geo_list, r#"{"within": "NP", "limit": 5000}"#, "limit"),
+        (ts_geo_list, r#"{"within": "NP", "parent": "x"}"#, "geo"),
+    ] {
+        assert_eq!(ask(&ctx, entry, request).0, Status::InvalidArg, "{request}");
+        let (_, _, refused_field, _, _) = ctx.last_error();
+        assert!(refused_field.unwrap().starts_with(field), "{request}");
+    }
 }

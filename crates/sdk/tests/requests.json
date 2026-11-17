@@ -205,6 +205,38 @@
     }
   },
   {
+    "record": "geo.search",
+    "request": {
+      "query": "काठमाडौं",
+      "limit": 3,
+      "lang": "en"
+    }
+  },
+  {
+    "record": "geo.reverse",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "limit": 2,
+      "lang": "ne"
+    }
+  },
+  {
+    "record": "geo.names",
+    "request": {
+      "id": "np-ktm",
+      "langs": ["ne", "en", "hi", "sa"]
+    }
+  },
+  {
+    "record": "geo.list",
+    "request": {
+      "within": "NP-P3",
+      "depth": null,
+      "limit": 10
+    }
+  },
+  {
     "record": "time.civil",
     "request": {
       "instant": 2447986.4583333335,

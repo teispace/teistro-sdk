@@ -12,18 +12,41 @@
       "north": 30.5,
       "east": 88.2,
       "zone": "Asia/Kathmandu",
-      "admin": [{"level": 0, "code": "NP", "name": "Nepal"}]
+      "admin": [
+        {
+          "level": 0,
+          "code": "NP",
+          "name": "Nepal"
+        }
+      ]
     },
     {
       "south": 27.6,
       "west": 85.2,
       "north": 27.8,
       "east": 85.5,
-      "height": {"metres": 1337, "source": "the test table", "resolutionM": 30, "datum": "EGM2008"},
+      "height": {
+        "metres": 1337,
+        "source": "the test table",
+        "resolutionM": 30,
+        "datum": "EGM2008"
+      },
       "admin": [
-        {"level": 0, "code": "NP", "name": "Nepal"},
-        {"level": 1, "code": "NP-P3", "name": "Bagmati"},
-        {"level": 2, "code": null, "name": "Kathmandu"}
+        {
+          "level": 0,
+          "code": "NP",
+          "name": "Nepal"
+        },
+        {
+          "level": 1,
+          "code": "NP-P3",
+          "name": "Bagmati"
+        },
+        {
+          "level": 2,
+          "code": null,
+          "name": "Kathmandu"
+        }
       ]
     },
     {
@@ -32,6 +55,118 @@
       "north": 20.0,
       "east": 90.0,
       "zone": "Asia/Kolkata"
+    }
+  ],
+  "places": [
+    {
+      "id": "np",
+      "names": [
+        {
+          "text": "Nepal"
+        },
+        {
+          "text": "नेपाल",
+          "lang": "ne",
+          "script": "Deva"
+        }
+      ],
+      "kind": "COUNTRY",
+      "level": 0,
+      "code": "NP",
+      "latitudeDeg": 28.0,
+      "longitudeDeg": 84.0,
+      "population": {
+        "people": 29164578,
+        "kind": "COUNTED"
+      }
+    },
+    {
+      "id": "np-p3",
+      "names": [
+        {
+          "text": "Bagmati"
+        },
+        {
+          "text": "बागमती",
+          "lang": "ne",
+          "script": "Deva"
+        }
+      ],
+      "kind": "ADMIN",
+      "level": 1,
+      "code": "NP-P3",
+      "latitudeDeg": 27.65,
+      "longitudeDeg": 85.39,
+      "parent": "np",
+      "population": {
+        "people": 6116866,
+        "kind": "COUNTED"
+      }
+    },
+    {
+      "id": "np-ktm",
+      "names": [
+        {
+          "text": "Kathmandu",
+          "lang": "en",
+          "script": "Latn"
+        },
+        {
+          "text": "काठमाडौं",
+          "lang": "ne",
+          "script": "Deva"
+        }
+      ],
+      "kind": "SETTLEMENT",
+      "latitudeDeg": 27.7083,
+      "longitudeDeg": 85.3206,
+      "parent": "np-p3",
+      "population": {
+        "people": 975000,
+        "kind": "COUNTED"
+      }
+    },
+    {
+      "id": "np-ltp",
+      "names": [
+        {
+          "text": "Lalitpur",
+          "lang": "en",
+          "script": "Latn"
+        },
+        {
+          "text": "ललितपुर",
+          "lang": "ne",
+          "script": "Deva"
+        }
+      ],
+      "kind": "SETTLEMENT",
+      "latitudeDeg": 27.6766,
+      "longitudeDeg": 85.3166,
+      "parent": "np-p3",
+      "population": {
+        "people": 294098,
+        "kind": "MODELLED"
+      }
+    },
+    {
+      "id": "np-pkr",
+      "names": [
+        {
+          "text": "Pokhara",
+          "lang": "en",
+          "script": "Latn"
+        },
+        {
+          "text": "पोखरा",
+          "lang": "ne",
+          "script": "Deva"
+        }
+      ],
+      "kind": "SETTLEMENT",
+      "latitudeDeg": 28.2107,
+      "longitudeDeg": 83.9863,
+      "parent": "np"
     }
   ]
 }
