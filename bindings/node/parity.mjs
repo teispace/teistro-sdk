@@ -13,6 +13,9 @@ import {
   Body,
   Calendar,
   Context,
+  Nakshatra,
+  Tithi,
+  Yoga,
   Era,
   ianaZone,
   Scale,
@@ -2586,6 +2589,46 @@ put(
     `${one.inView} ${one.x === null ? 'null' : number(one.x)} ${one.y === null ? 'null' : number(one.y)} ${number(one.offAxisDeg)}`;
   put('sky-pose-moon', placed(grahas[value.sky.grahas.findIndex((one) => one.graha === 'graha.MOON')]));
   put('sky-pose-ascendant', placed(ecliptic[value.sky.ecliptic.findIndex((point) => point.kind === 'ASCENDANT')]));
+}
+
+// ── The panchanga's own longitudes ─────────────────────────────────────
+// Two instants in Kathmandu over the built-in sky
+// (`03-design/panchanga-reach.md` §3): the hash, then each instant's Sun,
+// Moon, elongation and yoga sum, and its tithi, nakshatra and yoga.
+{
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const { value, provenance } = sky.almanac.limbAngles({ place, instants: [2461345.25, 2461360.5] });
+  sky.dispose();
+  const bare = (members, degrees, count) => Object.values(members)[Math.min(Math.floor(degrees / (360 / count)), count - 1)].split('.')[1];
+  put('limb-angles-hash', provenance.contentHash);
+  put('limb-angles-count', String(value.length));
+  value.forEach((one, n) => {
+    put(
+      `limb-angles-${n}`,
+      `${number(one.sunDeg)} ${number(one.moonDeg)} ${number(one.elongationDeg)} ${number(one.yogaDeg)} ` +
+        `${bare(Tithi, one.elongationDeg, 30)} ${bare(Nakshatra, one.moonDeg, 27)} ${bare(Yoga, one.yogaDeg, 27)}`,
+    );
+  });
+}
+
+// ── The season's blackouts ─────────────────────────────────────────────
+// Chaturmas, the malmas and Kharmas over 2026 by `nepali-drik`, days read
+// at +05:45 (`03-design/panchanga-reach.md` §2): the hash, then each
+// blackout's kind and bounds.
+{
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const { value, provenance } = sky.almanac.blackouts({
+    from: gregorian(2026, 1, 1),
+    to: gregorian(2026, 12, 31),
+    utcOffsetSeconds: 20700,
+    kinds: ['CHATURMAS', 'ADHIKA_MASA', 'KHARMAS'],
+  });
+  sky.dispose();
+  put('blackouts-hash', provenance.contentHash);
+  put('blackouts-count', String(value.length));
+  value.forEach((one, n) => {
+    put(`blackouts-${n}`, `${one.kind.split('.')[1]} ${number(one.at.from)} ${number(one.at.to)}`);
+  });
 }
 
 // ── The settings explained and compared ────────────────────────────────

@@ -1315,6 +1315,10 @@ const KEPT_TWINS: &[(&str, &str)] = &[
         "PakshiSpan",
         "an answer's span of instants, documented as a pakshi activity's; it shares `from` and `to` with the request's `Interval` and nothing else",
     ),
+    (
+        "Blackout",
+        "an answer's blackout, a `blackout_kind` and its span; it shares the keys `kind` and `at` with the request's `VrataParanaAfterWindow` (a literal kind and a window) and nothing else",
+    ),
 ];
 
 /// How a binding declares one kind of shape a request also has.

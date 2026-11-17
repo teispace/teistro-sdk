@@ -4447,6 +4447,8 @@ public final class Native {
         "ts_almanac_cells",
         "ts_almanac_sky_view",
         "ts_almanac_sky_pose",
+        "ts_almanac_limb_angles",
+        "ts_almanac_blackouts",
         "ts_naam_milan",
         "ts_matching_band",
         "ts_chart_relocated",
@@ -5663,6 +5665,56 @@ public final class Native {
     public final MethodHandle ts_almanac_sky_pose;
 
     /**
+     * The Sun's and the Moon's sidereal longitudes at instants as the
+     * panchanga's limbs read them (SR-137, `03-design/panchanga-reach.md`
+     * §3), answered with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is a list, one `{at, sunDeg, moonDeg, elongationDeg, yogaDeg}`
+     * for each instant asked and in its order: the two sidereal longitudes,
+     * the Moon less the Sun (the tithi's and the karana's angle) and the
+     * Moon plus the Sun (the yoga's), each in degrees from 0 to 360, read in
+     * the sky every almanac day's limbs are found in. Every knob of the
+     * profile is honoured as the limbs honour it: the ayanamsha and its
+     * basis, a custom ayanamsha, the panchanga's centre, true or apparent
+     * positions and a provider that defines its own zodiac; so at a limb's
+     * end the day's search found, the angle sits on the limb's grid to the
+     * search's tolerance.
+     *
+     * `request_json` is `{"instants", "latitudeDeg", "longitudeDeg",
+     * "altitudeM"}`: one to 4096 UTC Julian days and the place, whose Moon a
+     * topocentric panchanga reads; `altitudeM` is 0 when left out. No
+     * instants, too many, an instant that is not finite or a place out of
+     * range is `INVALID_ARG`, named under `limbAngles`; a context without an
+     * ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_limb_angles;
+
+    /**
+     * The blackouts the Sun and the Moon make over a range of civil days by
+     * the context's profile (SR-138, `03-design/panchanga-reach.md` §2),
+     * answered with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is a list of `{kind, at}` in order of their start: `kind` a
+     * `blackout_kind` key (`CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`,
+     * `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or
+     * `HOLASHTAKA`), and `at` `{from, to}`, the UTC Julian days it holds
+     * over, clipped to the range from the first day's local midnight to the
+     * midnight after the last. The rule is the muhurta search's own season,
+     * read in the profile's chart zodiac at the range's middle, geocentric,
+     * and is in every build.
+     *
+     * `request_json` is `{"first", "last", "calendar", "utcOffsetSeconds",
+     * "zone", "kinds"}`: `first` and `last` (the first when left out) as
+     * `{year, month, day}` in `calendar` (Gregorian when left out), the
+     * offset or the zone the midnights are read on (one of them), and the
+     * kinds wanted, every one when left out. A kind the Sun and the Moon do
+     * not make (asta, an eclipse's star or vedha), both or neither clock
+     * field, or a range the wrong way round is `INVALID_ARG`, named under
+     * `blackouts`; a context without an ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_blackouts;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -6369,6 +6421,8 @@ public final class Native {
         ts_almanac_cells = linker.downcallHandle(symbols.find("ts_almanac_cells").orElseThrow(() -> missing("ts_almanac_cells")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sky_view = linker.downcallHandle(symbols.find("ts_almanac_sky_view").orElseThrow(() -> missing("ts_almanac_sky_view")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sky_pose = linker.downcallHandle(symbols.find("ts_almanac_sky_pose").orElseThrow(() -> missing("ts_almanac_sky_pose")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_limb_angles = linker.downcallHandle(symbols.find("ts_almanac_limb_angles").orElseThrow(() -> missing("ts_almanac_limb_angles")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_blackouts = linker.downcallHandle(symbols.find("ts_almanac_blackouts").orElseThrow(() -> missing("ts_almanac_blackouts")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_matching_band = linker.downcallHandle(symbols.find("ts_matching_band").orElseThrow(() -> missing("ts_matching_band")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_relocated = linker.downcallHandle(symbols.find("ts_chart_relocated").orElseThrow(() -> missing("ts_chart_relocated")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

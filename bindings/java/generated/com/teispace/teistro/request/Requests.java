@@ -15,6 +15,7 @@ public final class Requests {
             Map.entry("almanac.ashauch", AshauchQuery::of),
             Map.entry("almanac.ashauchKin", KinQuery::of),
             Map.entry("almanac.ashauchRite", RiteQuery::of),
+            Map.entry("almanac.blackouts", BlackoutsRequest::of),
             Map.entry("almanac.cells", CellsRequest::of),
             Map.entry("almanac.changes", ChangesRequest::of),
             Map.entry("almanac.days", AlmanacDaysRequest::of),
@@ -25,6 +26,7 @@ public final class Requests {
             Map.entry("almanac.festival_calendar", FestivalCalendarRequest::of),
             Map.entry("almanac.firstYear", FirstYearQuery::of),
             Map.entry("almanac.household", HouseholdQuery::of),
+            Map.entry("almanac.limbAngles", LimbAnglesRequest::of),
             Map.entry("almanac.navatara", NavataraRequest::of),
             Map.entry("almanac.next", NextRequest::of),
             Map.entry("almanac.observance", ObservanceRequest::of),
@@ -91,6 +93,9 @@ public final class Requests {
     /** {@code almanac.ashauchRite}, whose request is {@link RiteQuery}. */
     public static final RecordOf<RiteQuery> ALMANAC_ASHAUCH_RITE = new RecordOf<>("almanac.ashauchRite");
 
+    /** {@code almanac.blackouts}, whose request is {@link BlackoutsRequest}. */
+    public static final RecordOf<BlackoutsRequest> ALMANAC_BLACKOUTS = new RecordOf<>("almanac.blackouts");
+
     /** {@code almanac.cells}, whose request is {@link CellsRequest}. */
     public static final RecordOf<CellsRequest> ALMANAC_CELLS = new RecordOf<>("almanac.cells");
 
@@ -120,6 +125,9 @@ public final class Requests {
 
     /** {@code almanac.household}, whose request is {@link HouseholdQuery}. */
     public static final RecordOf<HouseholdQuery> ALMANAC_HOUSEHOLD = new RecordOf<>("almanac.household");
+
+    /** {@code almanac.limbAngles}, whose request is {@link LimbAnglesRequest}. */
+    public static final RecordOf<LimbAnglesRequest> ALMANAC_LIMB_ANGLES = new RecordOf<>("almanac.limbAngles");
 
     /** {@code almanac.navatara}, whose request is {@link NavataraRequest}. */
     public static final RecordOf<NavataraRequest> ALMANAC_NAVATARA = new RecordOf<>("almanac.navatara");

@@ -216,6 +216,49 @@ final class RiteQuery extends _Request {
 }
 
 /// The request as a binding writes it.
+final class BlackoutsRequest extends _Request {
+  const BlackoutsRequest({
+    this.calendar,
+    required this.first,
+    this.kinds = const [],
+    this.last,
+    this.utcOffsetSeconds,
+    this.zone,
+  });
+
+  /// The calendar the days are written in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The range's first day.
+  final DayAsked first;
+
+  /// The kinds wanted, each one the Sun and the Moon make: `CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or `HOLASHTAKA`; every one when left out.
+  final List<BlackoutKind> kinds;
+
+  /// The last day; the first when left out.
+  final DayAsked? last;
+
+  /// The offset from UTC the days' midnights are read at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone the days are read on, at its offset on the first day; or `utcOffsetSeconds`, not both.
+  final Object? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'first': first._wire,
+    'kinds': [for (final e0 in kinds) e0.key],
+    if (last case final lastValue?) 'last': lastValue._wire,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, first, kinds, last, utcOffsetSeconds, zone];
+}
+
+/// The request as a binding writes it.
 final class CellsRequest extends _Request {
   const CellsRequest({
     this.altitudeM = 0.0,
@@ -806,6 +849,39 @@ final class HouseholdQuery extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, household, latitudeDeg, longitudeDeg, table, tradition, utcOffsetSeconds, zone];
+}
+
+/// The request as a binding writes it.
+final class LimbAnglesRequest extends _Request {
+  const LimbAnglesRequest({
+    this.altitudeM = 0.0,
+    required this.instants,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instants, UTC Julian days: one to 4096.
+  final List<double> instants;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'instants': instants,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, instants, latitudeDeg, longitudeDeg];
 }
 
 /// A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request.
@@ -16516,6 +16592,9 @@ abstract final class Records {
   /// `almanac.ashauchRite`, whose request is [RiteQuery].
   static const almanacAshauchRite = RecordOf<RiteQuery>._('almanac.ashauchRite');
 
+  /// `almanac.blackouts`, whose request is [BlackoutsRequest].
+  static const almanacBlackouts = RecordOf<BlackoutsRequest>._('almanac.blackouts');
+
   /// `almanac.cells`, whose request is [CellsRequest].
   static const almanacCells = RecordOf<CellsRequest>._('almanac.cells');
 
@@ -16545,6 +16624,9 @@ abstract final class Records {
 
   /// `almanac.household`, whose request is [HouseholdQuery].
   static const almanacHousehold = RecordOf<HouseholdQuery>._('almanac.household');
+
+  /// `almanac.limbAngles`, whose request is [LimbAnglesRequest].
+  static const almanacLimbAngles = RecordOf<LimbAnglesRequest>._('almanac.limbAngles');
 
   /// `almanac.navatara`, whose request is [NavataraRequest].
   static const almanacNavatara = RecordOf<NavataraRequest>._('almanac.navatara');
@@ -16703,6 +16785,7 @@ abstract final class Records {
     almanacAshauch,
     almanacAshauchKin,
     almanacAshauchRite,
+    almanacBlackouts,
     almanacCells,
     almanacChanges,
     almanacDays,
@@ -16713,6 +16796,7 @@ abstract final class Records {
     almanacFestivalCalendar,
     almanacFirstYear,
     almanacHousehold,
+    almanacLimbAngles,
     almanacNavatara,
     almanacNext,
     almanacObservance,

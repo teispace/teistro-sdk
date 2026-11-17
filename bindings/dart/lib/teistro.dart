@@ -2527,6 +2527,74 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The Sun's and the Moon's sidereal longitudes as the panchanga reads
+  /// them** (`03-design/panchanga-reach.md` §3): at each of [instants], a
+  /// UTC Julian day, in its order, the two longitudes, the elongation (the
+  /// tithi's and the karana's angle) and the yoga's sum, each in degrees
+  /// from 0 to 360. They are read in the sky the day's limbs are found in,
+  /// every knob of the profile honoured, so at a limb's end the day's
+  /// search found the angle sits on the limb's grid. One to 4096 instants;
+  /// the [place] matters when the panchanga is topocentric.
+  ///
+  /// ```dart
+  /// final angles = sdk.almanac.limbAngles(place: kathmandu, instants: [2461345.25]);
+  /// final tithi = angles.value.first.tithi; // Tithi.krishnaSaptami
+  /// ```
+  LimbAnglesAnswer limbAngles({
+    required Observer place,
+    required List<double> instants,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'instants': instants,
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+    });
+    return _limbAngles(
+      _context._guarded(() => _context._inner.almanacLimbAngles(asked)),
+    );
+  }
+
+  /// **The blackouts the Sun and the Moon make over a range of civil
+  /// days** by the context's profile (`03-design/panchanga-reach.md` §2):
+  /// Chaturmas, an adhika month (Nepal's malmas), a samsarpa, a kshaya
+  /// month, Kharmas, Pitru paksha, the ghatis about each sankranti and
+  /// Holashtaka, each clipped to the range from [from]'s local midnight to
+  /// the midnight after [to] ([from] when null), in order of their start.
+  /// The rule is the muhurta search's own season, in every build. [kinds]
+  /// keeps those asked, every one when null; asta and an eclipse's star
+  /// are refused as `blackouts.kinds`.
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both.
+  ///
+  /// ```dart
+  /// final year = sdk.almanac.blackouts(
+  ///   from: Calendar.gregorian.date(2026, 1, 1),
+  ///   to: Calendar.gregorian.date(2026, 12, 31),
+  ///   utcOffsetSeconds: 20700,
+  ///   kinds: [BlackoutKind.adhikaMasa],
+  /// );
+  /// final malmasBegins = year.value.first.at.from;
+  /// ```
+  BlackoutsAnswer blackouts({
+    required CalendarDate from,
+    CalendarDate? to,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
+    List<BlackoutKind>? kinds,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': from.calendar.key,
+      'first': _dayParts(from),
+      if (to != null) 'last': _dayParts(to),
+      ..._clockFields(utcOffsetSeconds, zone),
+      if (kinds != null) 'kinds': [for (final kind in kinds) kind.key],
+    });
+    return _blackouts(
+      _context._guarded(() => _context._inner.almanacBlackouts(asked)),
+    );
+  }
+
   /// **A death's first year** at a place (`03-design/shraddha.md` §3.3):
   /// the *Dharmasindhu*'s sixteen shraddhas, the first abdika and the
   /// sapindana, each on its day. Every day is the festival evaluator's, and
@@ -23068,6 +23136,133 @@ SkyPoseAnswer _skyPose(String json) {
         horizon: placed('horizon'),
       ),
     ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// The Sun's and the Moon's sidereal longitudes at an instant as the
+/// panchanga reads them (`03-design/panchanga-reach.md` §3).
+final class LimbAngles extends _Value {
+  const LimbAngles({
+    required this.at,
+    required this.sunDeg,
+    required this.moonDeg,
+    required this.elongationDeg,
+    required this.yogaDeg,
+  });
+
+  /// The instant, a UTC Julian day.
+  final double at;
+
+  /// The Sun's sidereal longitude, degrees.
+  final double sunDeg;
+
+  /// The Moon's, degrees.
+  final double moonDeg;
+
+  /// The Moon less the Sun: the tithi's and the karana's angle.
+  final double elongationDeg;
+
+  /// The Moon plus the Sun: the yoga's sum.
+  final double yogaDeg;
+
+  /// The tithi running, read off the elongation.
+  Tithi get tithi => Tithi.byId(_limbIndex(elongationDeg, 30));
+
+  /// The Moon's nakshatra, read off her longitude.
+  Nakshatra get nakshatra => Nakshatra.byId(_limbIndex(moonDeg, 27));
+
+  /// The yoga running, read off the sum.
+  Yoga get yoga => Yoga.byId(_limbIndex(yogaDeg, 27));
+
+  @override
+  List<Object?> get _fields => [at, sunDeg, moonDeg, elongationDeg, yogaDeg];
+}
+
+/// The index of the arc of a limb of [count] equal arcs that holds
+/// [degrees]: as the SDK reads it, the last one for an angle a rounding
+/// puts at 360.
+int _limbIndex(double degrees, int count) {
+  final index = (degrees / (360 / count)).floor();
+  return index < count ? index : count - 1;
+}
+
+/// What `almanac.limbAngles` answers.
+final class LimbAnglesAnswer {
+  const LimbAnglesAnswer({required this.value, required this.provenance});
+
+  /// One for each instant asked, in its order.
+  final List<LimbAngles> value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_limb_angles`'s answer, with the provenance beside it.
+LimbAnglesAnswer _limbAngles(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  return LimbAnglesAnswer(
+    value: List.unmodifiable([
+      for (final one
+          in (envelope['value']! as List<Object?>).cast<Map<String, Object?>>())
+        LimbAngles(
+          at: _real(one['at']),
+          sunDeg: _real(one['sunDeg']),
+          moonDeg: _real(one['moonDeg']),
+          elongationDeg: _real(one['elongationDeg']),
+          yogaDeg: _real(one['yogaDeg']),
+        ),
+    ]),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// A stretch the Sun and the Moon close to a rite
+/// (`03-design/panchanga-reach.md` §2).
+final class Blackout extends _Value {
+  const Blackout({required this.kind, required this.at});
+
+  /// Which blackout.
+  final BlackoutKind kind;
+
+  /// When it holds, clipped to the range asked.
+  final Interval at;
+
+  @override
+  List<Object?> get _fields => [kind, at.from, at.to];
+}
+
+/// What `almanac.blackouts` answers.
+final class BlackoutsAnswer {
+  const BlackoutsAnswer({required this.value, required this.provenance});
+
+  /// In order of their start.
+  final List<Blackout> value;
+
+  /// What computed it, the range's bounds and the zodiac's instant among
+  /// the applied conventions, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_blackouts`'s answer, each kind resolved.
+BlackoutsAnswer _blackouts(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  return BlackoutsAnswer(
+    value: List.unmodifiable([
+      for (final one
+          in (envelope['value']! as List<Object?>).cast<Map<String, Object?>>())
+        Blackout(
+          kind: _key(one['kind'], BlackoutKind.byKey, BlackoutKind.unknown),
+          at: Interval(
+            from: _real((one['at']! as Map<String, Object?>)['from']),
+            to: _real((one['at']! as Map<String, Object?>)['to']),
+          ),
+        ),
+    ]),
     provenance: Provenance.fromJson(
       envelope['provenance']! as Map<String, Object?>,
     ),

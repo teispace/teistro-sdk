@@ -6703,6 +6703,66 @@ test('an almanac draws the sky at a place and an instant', () => {
 });
 
 /**
+ * The panchanga's own longitudes (`03-design/panchanga-reach.md` §3): one
+ * answer for each instant in its order, the elongation and the sum
+ * consistent with the two longitudes, and no instant refused by name.
+ */
+test('an almanac reads the panchanga\'s own longitudes', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { value, provenance } = ctx.almanac.limbAngles({ place, instants: [2461345.25, 2461360.5] });
+  assert.equal(typeof provenance.contentHash, 'string');
+  assert.deepEqual(value.map((one) => one.at), [2461345.25, 2461360.5]);
+  const [first] = value;
+  assert.ok(Math.abs(first.elongationDeg - ((first.moonDeg - first.sunDeg + 360) % 360)) < 1e-9);
+  assert.ok(Math.abs(first.yogaDeg - ((first.moonDeg + first.sunDeg) % 360)) < 1e-9);
+  assert.equal(Math.floor(first.elongationDeg / 12), 21); // Krishna Saptami
+  assert.ok(Object.isFrozen(first));
+  assert.throws(
+    () => ctx.almanac.limbAngles({ place, instants: [] }),
+    (error) => error.field === 'limbAngles.instants',
+  );
+  ctx.dispose();
+});
+
+/**
+ * Chaturmas, the malmas and Kharmas over 2026 by `nepali-drik`
+ * (`03-design/panchanga-reach.md` §2): five stretches in order, the malmas
+ * in May and June, and asta refused by name.
+ */
+test('an almanac reads the season\'s blackouts', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const { value } = ctx.almanac.blackouts({
+    from: date(Calendar.Gregorian, 2026, 1, 1),
+    to: date(Calendar.Gregorian, 2026, 12, 31),
+    utcOffsetSeconds: 20700,
+    kinds: [catalogue.BlackoutKind.Chaturmas, catalogue.BlackoutKind.AdhikaMasa, catalogue.BlackoutKind.Kharmas],
+  });
+  assert.deepEqual(
+    value.map((one) => one.kind),
+    [
+      'blackout_kind.KHARMAS',
+      'blackout_kind.KHARMAS',
+      'blackout_kind.ADHIKA_MASA',
+      'blackout_kind.CHATURMAS',
+      'blackout_kind.KHARMAS',
+    ],
+  );
+  const malmas = value[2].at;
+  assert.ok(2461177 < malmas.from && malmas.from < malmas.to && malmas.to < 2461207);
+  assert.throws(
+    () =>
+      ctx.almanac.blackouts({
+        from: date(Calendar.Gregorian, 2026, 1, 1),
+        utcOffsetSeconds: 20700,
+        kinds: [catalogue.BlackoutKind.GuruAsta],
+      }),
+    (error) => error.field === 'blackouts.kinds',
+  );
+  ctx.dispose();
+});
+
+/**
  * The same sky through a camera (`03-design/sky-pose.md`): the sky is the
  * sky view's, one placement for each of its points, the Moon in the middle
  * of a camera pointed at it, and a field of a half-sky refused by name.

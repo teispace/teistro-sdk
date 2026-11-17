@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"almanac.limbAngles","arguments":{"request":{"instants":[2461345.25,2461345.5],"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":162}

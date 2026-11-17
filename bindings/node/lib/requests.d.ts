@@ -143,6 +143,36 @@ export interface RiteQuery {
 /**
  * The request as a binding writes it.
  */
+export interface BlackoutsRequest {
+  /**
+   * The calendar the days are written in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The range's first day.
+   */
+  readonly first: DayAsked;
+  /**
+   * The kinds wanted, each one the Sun and the Moon make: `CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or `HOLASHTAKA`; every one when left out.
+   */
+  readonly kinds?: readonly Member<catalogue.BlackoutKind>[];
+  /**
+   * The last day; the first when left out.
+   */
+  readonly last?: DayAsked | null;
+  /**
+   * The offset from UTC the days' midnights are read at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone the days are read on, at its offset on the first day; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface CellsRequest {
   readonly altitudeM?: number;
   /**
@@ -487,6 +517,28 @@ export interface HouseholdQuery {
    * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
    */
   readonly zone?: ZoneSpec | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
+export interface LimbAnglesRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instants, UTC Julian days: one to 4096.
+   */
+  readonly instants: readonly number[];
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
 }
 
 /**
@@ -2032,6 +2084,15 @@ export interface AshauchRiteTable {
 }
 
 /**
+ * A civil day as a request names it.
+ */
+export interface DayAsked {
+  readonly day: number;
+  readonly month: number;
+  readonly year: number;
+}
+
+/**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
@@ -2063,15 +2124,6 @@ export interface FestivalRequest {
    * The rules: a pack's name, or a list of names and rules spelt out.
    */
   readonly rules: FestivalRules;
-}
-
-/**
- * A civil day as a request names it.
- */
-export interface DayAsked {
-  readonly day: number;
-  readonly month: number;
-  readonly year: number;
 }
 
 /**
@@ -11085,6 +11137,7 @@ export interface RecordRequests {
   readonly 'almanac.ashauch': AshauchQuery;
   readonly 'almanac.ashauchKin': KinQuery;
   readonly 'almanac.ashauchRite': RiteQuery;
+  readonly 'almanac.blackouts': BlackoutsRequest;
   readonly 'almanac.cells': CellsRequest;
   readonly 'almanac.changes': ChangesRequest;
   readonly 'almanac.days': AlmanacDaysRequest;
@@ -11095,6 +11148,7 @@ export interface RecordRequests {
   readonly 'almanac.festival_calendar': FestivalCalendarRequest;
   readonly 'almanac.firstYear': FirstYearQuery;
   readonly 'almanac.household': HouseholdQuery;
+  readonly 'almanac.limbAngles': LimbAnglesRequest;
   readonly 'almanac.navatara': NavataraRequest;
   readonly 'almanac.next': NextRequest;
   readonly 'almanac.observance': ObservanceRequest;

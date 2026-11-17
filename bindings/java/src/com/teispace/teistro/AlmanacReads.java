@@ -699,6 +699,27 @@ final class AlmanacReads {
                         placements.apply("horizon"))), provenance(envelope));
     }
 
+    /** {@code ts_almanac_limb_angles}'s answer, with the provenance beside it. */
+    static LimbAnglesAnswer limbAnglesAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new LimbAnglesAnswer(Reads.each(envelope, "value", raw -> {
+            Map<?, ?> r = Reads.object(raw);
+            return new LimbAngles(Reads.number(r, "at"), Reads.number(r, "sunDeg"), Reads.number(r, "moonDeg"),
+                    Reads.number(r, "elongationDeg"), Reads.number(r, "yogaDeg"));
+        }), provenance(envelope));
+    }
+
+    /** {@code ts_almanac_blackouts}'s answer, each kind resolved, with the provenance beside it. */
+    static BlackoutsAnswer blackoutsAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new BlackoutsAnswer(Reads.each(envelope, "value", raw -> {
+            Map<?, ?> r = Reads.object(raw);
+            Map<?, ?> at = Reads.object(r, "at");
+            return new Blackout(member(r, "kind", "BlackoutKind", BlackoutKind::byKey),
+                    new Interval(Reads.number(at, "from"), Reads.number(at, "to")));
+        }), provenance(envelope));
+    }
+
     /** A sky view's value, its members resolved. */
     private static SkyView skyView(Map<?, ?> v) {
         Map<?, ?> air = Reads.object(v, "atmosphere");

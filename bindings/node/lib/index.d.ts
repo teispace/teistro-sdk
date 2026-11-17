@@ -8518,6 +8518,36 @@ export declare class AlmanacArea {
    * value.sky.stars.filter((star, n) => value.screen.stars[n].inView);
    */
   skyPose(query: SkyPoseAsked): SkyPoseAnswer;
+
+  /**
+   * **The Sun's and the Moon's sidereal longitudes as the panchanga reads
+   * them** (`03-design/panchanga-reach.md` §3), one for each instant in
+   * its order, read in the sky the day's limbs are found in.
+   *
+   * @example
+   * const { value } = sdk.almanac.limbAngles({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   instants: [2461345.25],
+   * });
+   * Math.floor(value[0].elongationDeg / 12); // the tithi's index, 0 to 29
+   */
+  limbAngles(query: LimbAnglesAsked): LimbAnglesAnswer;
+
+  /**
+   * **The blackouts the Sun and the Moon make over a range of civil
+   * days** by the context's profile (`03-design/panchanga-reach.md` §2),
+   * in order of their start, each clipped to the range.
+   *
+   * @example
+   * const { value } = sdk.almanac.blackouts({
+   *   from: date(Calendar.Gregorian, 2026, 1, 1),
+   *   to: date(Calendar.Gregorian, 2026, 12, 31),
+   *   utcOffsetSeconds: 20700,
+   *   kinds: [BlackoutKind.AdhikaMasa],
+   * });
+   * value[0].at.from; // the malmas begins
+   */
+  blackouts(query: BlackoutsAsked): BlackoutsAnswer;
   /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first
@@ -9522,6 +9552,65 @@ export interface HorizonPoint {
 export interface SkyViewAnswer {
   readonly value: SkyView;
   /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The query `almanac.limbAngles` reads. */
+export interface LimbAnglesAsked {
+  /** Where, in degrees and metres: a topocentric panchanga reads the Moon from it. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The instants, UTC Julian days: one to 4096. */
+  readonly instants: readonly number[];
+}
+
+/** The Sun's and the Moon's sidereal longitudes at an instant as the panchanga reads them. */
+export interface LimbAngles {
+  /** The instant, a UTC Julian day. */
+  readonly at: number;
+  /** The Sun's sidereal longitude, degrees. */
+  readonly sunDeg: number;
+  /** The Moon's, degrees. */
+  readonly moonDeg: number;
+  /** The Moon less the Sun: the tithi's and the karana's angle. */
+  readonly elongationDeg: number;
+  /** The Moon plus the Sun: the yoga's sum. */
+  readonly yogaDeg: number;
+}
+
+/** What `almanac.limbAngles` answers. */
+export interface LimbAnglesAnswer {
+  /** One for each instant asked, in its order. */
+  readonly value: readonly LimbAngles[];
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The query `almanac.blackouts` reads. */
+export interface BlackoutsAsked {
+  /** The first day. */
+  readonly from: CalendarDate;
+  /** The last day, in the first's calendar, both ends included; `from` when left out. */
+  readonly to?: CalendarDate;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /** The zone the days are read on, at its offset on the first day; or `utcOffsetSeconds`, not both. */
+  readonly zone?: ZoneSpec;
+  /** The kinds wanted, each one the Sun and the Moon make; every one when left out. */
+  readonly kinds?: readonly BlackoutKind[];
+}
+
+/** A stretch the Sun and the Moon close to a rite. */
+export interface Blackout {
+  readonly kind: BlackoutKind;
+  /** When it holds, UTC Julian days, clipped to the range asked. */
+  readonly at: { readonly from: number; readonly to: number };
+}
+
+/** What `almanac.blackouts` answers. */
+export interface BlackoutsAnswer {
+  /** In order of their start. */
+  readonly value: readonly Blackout[];
+  /** What computed it, the range's bounds and the zodiac's instant among the applied conventions, and the hash of `value`. */
   readonly provenance: Provenance;
 }
 

@@ -8802,6 +8802,84 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **The Sun's and the Moon's sidereal longitudes as the panchanga reads
+   * them** (`03-design/panchanga-reach.md` §3): one
+   * `{ at, sunDeg, moonDeg, elongationDeg, yogaDeg }` for each instant, a
+   * UTC Julian day, in its order; the elongation is the tithi's and the
+   * karana's angle and the sum the yoga's, each in degrees from 0 to 360.
+   * They are read in the sky the day's limbs are found in, every knob of
+   * the profile honoured, so at a limb's end the day's search found the
+   * angle sits on the limb's grid. One to 4096 instants; the place
+   * matters when the panchanga is topocentric.
+   *
+   * @example
+   * const { value } = sdk.almanac.limbAngles({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   instants: [2461345.25],
+   * });
+   * Math.floor(value[0].elongationDeg / 12); // the tithi's index, 0 to 29
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number[]} query.instants the instants, UTC Julian days
+   * @returns {{ value: object[], provenance: object }}
+   */
+  limbAngles(query) {
+    const asked = skyAsked('limbAngles', query, '{ place, instants }');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacLimbAngles(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **The blackouts the Sun and the Moon make over a range of civil
+   * days** by the context's profile (`03-design/panchanga-reach.md` §2):
+   * one `{ kind, at: { from, to } }` for each of Chaturmas, an adhika
+   * month (Nepal's malmas), a samsarpa, a kshaya month, Kharmas, Pitru
+   * paksha, the ghatis about each sankranti and Holashtaka, clipped to the
+   * range from the first day's local midnight to the midnight after the
+   * last, in order of their start. The rule is the muhurta search's own
+   * season, in every build. `kinds` keeps those asked, every one when left
+   * out; asta and an eclipse's star are refused as `blackouts.kinds`.
+   *
+   * @example
+   * const { value } = sdk.almanac.blackouts({
+   *   from: date(Calendar.Gregorian, 2026, 1, 1),
+   *   to: date(Calendar.Gregorian, 2026, 12, 31),
+   *   utcOffsetSeconds: 20700,
+   *   kinds: [BlackoutKind.AdhikaMasa],
+   * });
+   * value[0].at.from; // the malmas begins
+   *
+   * @param {object} query
+   * @param {object} query.from the first day, as `date(...)` builds one
+   * @param {object} [query.to] the last day, in the first's calendar; `from` when left out
+   * @param {number} [query.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `query.zone`
+   * @param {string[]} [query.kinds] `blackout_kind` keys; every kind the Sun and the Moon make when left out
+   * @returns {{ value: object[], provenance: object }}
+   */
+  blackouts(query) {
+    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+      throw new TypeError('blackouts: expected a query, e.g. { from, to, utcOffsetSeconds }');
+    }
+    const day = (given, what) => ({
+      year: finite(given?.year, `${what}.year`),
+      month: finite(given?.month, `${what}.month`),
+      day: finite(given?.day, `${what}.day`),
+    });
+    const { from: given, to, utcOffsetSeconds, zone, ...rest } = query;
+    const from = given ?? {};
+    const asked = { ...rest, first: day(from, 'from'), ...clockOf(utcOffsetSeconds, zone) };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (to !== undefined && to !== null) asked.last = day(to, 'to');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacBlackouts(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas (pp. 329–331), the sapindana
    * and the first abdika, each on its day. `origin` is the death's lunar

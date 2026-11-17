@@ -1742,6 +1742,40 @@ public final class ParityRunner {
             put("sky-pose-moon", onScreen.apply(skyScreen.grahas().get(skyMoonAt)));
             put("sky-pose-ascendant", onScreen.apply(skyPose.value().ascendant().orElseThrow().getValue()));
 
+            // ── The panchanga's own longitudes ────────────────────────────
+            // Two instants in Kathmandu over the built-in sky
+            // (03-design/panchanga-reach.md §3): the hash, then each
+            // instant's Sun, Moon, elongation and yoga sum, and its tithi,
+            // nakshatra and yoga.
+            LimbAnglesAnswer limbAngles;
+            BlackoutsAnswer season;
+            try (Context builtin = teistro.context(ContextOptions.builder()
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
+                limbAngles = builtin.almanac().limbAngles(place, List.of(2_461_345.25, 2_461_360.5));
+                season = builtin.almanac().blackouts(date(2026, 1, 1), date(2026, 12, 31), 20_700,
+                        List.of(BlackoutKind.CHATURMAS, BlackoutKind.ADHIKA_MASA, BlackoutKind.KHARMAS));
+            }
+            put("limb-angles-hash", limbAngles.provenance().contentHash());
+            put("limb-angles-count", Integer.toString(limbAngles.value().size()));
+            for (int n = 0; n < limbAngles.value().size(); n++) {
+                LimbAngles angles = limbAngles.value().get(n);
+                put("limb-angles-" + n, String.join(" ", number(angles.sunDeg()), number(angles.moonDeg()),
+                        number(angles.elongationDeg()), number(angles.yogaDeg()), angles.tithi().key(),
+                        angles.nakshatra().key(), angles.yoga().key()));
+            }
+
+            // ── The season's blackouts ────────────────────────────────────
+            // Chaturmas, the malmas and Kharmas over 2026 by nepali-drik,
+            // days read at +05:45 (03-design/panchanga-reach.md §2): the
+            // hash, then each blackout's kind and bounds.
+            put("blackouts-hash", season.provenance().contentHash());
+            put("blackouts-count", Integer.toString(season.value().size()));
+            for (int n = 0; n < season.value().size(); n++) {
+                Blackout closed = season.value().get(n);
+                put("blackouts-" + n, String.join(" ", closed.kind().key(), number(closed.at().fromJd()),
+                        number(closed.at().toJd())));
+            }
+
             // ── The settings explained and compared ───────────────────────
             // nepali-drik with the node patched per call, every knob
             // explained, and the knobs on which the committee's profile and
