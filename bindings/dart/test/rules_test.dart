@@ -90,6 +90,16 @@ final List<Surface> _facades = [
       ),
     ),
     const Param('order', Named('DayOrder')),
+    Param(
+      'groups',
+      ListOf(
+        MapOf(
+          const Scalar('Object'),
+          (entries) => Map<String, Object?>.from(entries),
+        ),
+        (items) => List<Map<String, Object?>>.from(items),
+      ),
+    ),
   ]),
   Built<FestivalWindow>('FestivalWindow', FestivalWindow.new, const [
     Param('window', Scalar('String')),
