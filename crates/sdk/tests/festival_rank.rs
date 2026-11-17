@@ -20,9 +20,10 @@ use teistro::{
 /// Each cell's festivals from Kartik 5 to 23, 2083 (22 October to 9
 /// November 2026), by Gregorian day of the month.
 fn kartik(festivals: FestivalRequest) -> Vec<(u8, Vec<String>)> {
+    // The official reckoning as a consumer builds it: the Surya Siddhanta
+    // with a modern ephemeris for the sunrise and the star planets.
     let sdk = Context::builder()
-        .profile("nepali-committee")
-        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .nepal_official([Ephemeris::Builtin])
         .build()
         .unwrap();
     let request = CellsRequest {
