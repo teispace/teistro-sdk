@@ -1046,6 +1046,15 @@ fn jaimini() -> Jaimini {
     }
 }
 
+/// Every reading a request carries, as before the knob: Nepal's committee
+/// prints both observers' Ekadashi where they part (C688), and no shipped
+/// profile is a sect's (`03-design/festival-traditions.md` §6, C2147).
+const fn festivals() -> Festivals {
+    Festivals {
+        observer: Observer::Every,
+    }
+}
+
 /// The civil calendar, the lunar month and the year's names: the
 /// Surya Siddhanta's Jovian count (I.55), read as Nepal's committee reads
 /// it (C180, C184; `03-design/samvatsara-measured.md`).
@@ -1247,13 +1256,7 @@ pub fn root() -> Settings {
             schemes: BTreeMap::new(),
         },
         calendars: calendars(),
-        // Every reading a request carries, as before the knob: Nepal's
-        // committee prints both observers' Ekadashi where they part
-        // (C688), and no shipped profile is a sect's
-        // (`03-design/festival-traditions.md` §6, C2147).
-        festivals: Festivals {
-            observer: Observer::Every,
-        },
+        festivals: festivals(),
         provider: Provider {
             overrides: OverridePolicy::PreferNative,
             tier: Tier::Standard,
