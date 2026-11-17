@@ -12,6 +12,33 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The vedha, the blackouts and the limbs' longitudes without the muhurta family (SR-132, SR-137, SR-138).**
+**Numbers:** no computed value moves under any shipped profile or in a build with the
+muhurta family: the season and the vedha moved into `teistro-panchanga` unchanged, and
+every muhurta test, its pinned windows among them, passes as it stood. A build without
+the family now answers each seen eclipse's `vedha` (the sutak, under
+`panchanga.eclipse_vedha`) where it answered `null`, so that build's eclipse answers and
+their hashes move. A context whose `panchanga.centre` is `TOPOCENTRIC`, which no shipped
+profile sets, now answers its days where every day was refused. At every limb end the
+search found over November 2026 and March 1900, under `nepali-drik` and
+`nepali-committee`, the new angles sit on the limb's grid within 4.0e-9° (the consumer's
+own road stood up to about 20″ off).
+- **Added:** `almanac.limbAngles` (`ts_almanac_limb_angles`, `AlmanacArea::limb_angles`):
+  the Sun's and the Moon's sidereal longitudes at one to 4096 instants as the panchanga
+  reads them, with the elongation and the yoga's sum, read through the limb search's own
+  quantities and sky, so every knob is honoured (`03-design/panchanga-reach.md` §3).
+- **Added:** `almanac.blackouts` (`ts_almanac_blackouts`, `AlmanacArea::blackouts`): the
+  blackouts the Sun and the Moon make over a range of civil days (Chaturmas, an adhika
+  month, a samsarpa, a kshaya month, Kharmas, Pitru paksha, the sankranti ghatis,
+  Holashtaka), by the muhurta search's own rule and sky, in every build; asta, the
+  eclipse's star and the vedha are refused by name (§2).
+- **Changed:** `almanac.eclipses` answers each seen eclipse's vedha in every build (§1).
+  `teistro-muhurta::season` re-exports what moved, so its paths are unchanged.
+- **Fixed:** the Moon's signs under a topocentric panchanga centre are read geocentric,
+  as the season reads them (§4).
+- Every binding (Python, Node, Dart, Java, wasm) and the MCP server carry both calls,
+  each with a test and a parity line.
+
 **Every date of the coverage answered, and the range as data (SR-136).**
 **Numbers:** the first date answered is now 1800-01-01 and the last 2399-12-31, at
 Kathmandu and New York under the Nepal official and drik profiles over the built-in
