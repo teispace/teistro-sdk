@@ -11170,6 +11170,12 @@ class FestivalObservance:
     kshaya month (SR-93, `03-design/festival-malamasa.md`); None in an
     ordinary month."""
 
+    begins_after_sunrise: bool = False
+    """Whether the occurrence begins after the day's sunrise, so the tithi
+    the sunrise holds changes to it during the day: the day a printed
+    calendar marks with a `*` (SR-145); False for a day counted to one of
+    its own or moved by a published entry."""
+
 
 MalamasaClause = Literal["NIJA", "ADHIKA", "KSHAYA_FIRST", "KSHAYA_SECOND"]
 """Which month rule placed an observance (SR-93): kept in the nija month
@@ -19206,6 +19212,7 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         sait=_sait(raw["sait"]) if raw.get("sait") is not None else None,
         moonrise=_festival_moonrise(raw["moonrise"]) if raw.get("moonrise") is not None else None,
         malamasa=_malamasa(raw["malamasa"]) if raw.get("malamasa") is not None else None,
+        begins_after_sunrise=bool(raw.get("beginsAfterSunrise", False)),
     )
 
 

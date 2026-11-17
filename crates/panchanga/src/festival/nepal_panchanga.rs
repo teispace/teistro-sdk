@@ -93,6 +93,10 @@ pub(super) enum Fit {
     /// past its moonrise, the earlier otherwise: the Mahalakshmi vrata's
     /// close (*Nirnayasindhu* pp. 300–301).
     LaterPastMoonrise(u8),
+    /// At sunrise: the later day when the tithi lasts this many ghatis
+    /// past its sunrise, the earlier otherwise: the Bali pratipada's
+    /// cows' worship (*Dharmasindhu* p. 78).
+    LaterPastSunrise(u8),
 }
 
 impl Fit {
@@ -152,6 +156,21 @@ impl Fit {
                 Earlier,
                 format!(
                     "moonrise: the later day when the tithi lasts {ghatis} ghatis past its moonrise, the earlier otherwise"
+                ),
+            ),
+            Fit::LaterPastSunrise(ghatis) => (
+                Window::Sunrise,
+                vec![Guard::new(
+                    [Predicate::Lasts {
+                        day: Which::Later,
+                        from: Edge::Sunrise,
+                        ghatis,
+                    }],
+                    Later,
+                )],
+                Earlier,
+                format!(
+                    "sunrise: the later day when the tithi lasts {ghatis} ghatis past its sunrise, the earlier otherwise"
                 ),
             ),
             Fit::EarlierAlone(window) => (
@@ -264,7 +283,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -411,6 +430,13 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
         Tithi::ShuklaDwadashi,
         Fit::Share(PURVAHNA),
         "Nepal's national panchanga, VS 2082 p. 11: वामनद्वादशी; VS 2083 p. 13: वामनजयन्ती",
+    ),
+    (
+        "PRAUSHTHAPADI_SHRADDHA",
+        Masa::Bhadrapada,
+        Tithi::Purnima,
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11: प्रौष्ठपदीश्राद्ध; VS 2083 p. 13: प्रौष्ठपदी श्राद्ध: the full moon's shraddha, read at aparahna as the fortnight's shraddhas are (C2302)",
     ),
     (
         "PRATIPADA_SHRADDHA",
@@ -795,7 +821,14 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
 /// The rules a text gives, which the committee's print follows in both
 /// editions: key, month (amanta, the nija month), tithi, the decision,
 /// and the text with the page it was read from.
-const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 8] = [
+const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 9] = [
+    (
+        "GAI_PUJA",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        Fit::LaterPastSunrise(18),
+        "Dharmasindhu p. 78: the Bali puja and the cows' play (गोक्रीडा) on the later day when Kartika's bright 1st holds nine muhurtas past its sunrise, since the Moon is not seen then, and less, on the 1st the new moon pierces, nine muhurtas being 18 ghatis; Nepal's national panchanga, VS 2082 p. 15: गाईपूजा on the 1st's later day, VS 2083 p. 16: गाईपूजा on the new moon's day the 1st begins on, and VS 2076 p. 14: गाईगोरुपूजा on the earlier day (C2301)",
+    ),
     (
         "NARASIMHA_JAYANTI",
         Masa::Vaishakha,
@@ -1917,7 +1950,42 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 19] = [
+const SAME_DAY: [(&str, &str, &str); 26] = [
+    (
+        "KALARATRI",
+        "MAHA_ASHTAMI",
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: कालरात्रि, in the Mahashtami's row: the day of MAHA_ASHTAMI (C2304)",
+    ),
+    (
+        "AKASHDEEPADAN_ARAMBHA",
+        "KARTIK_SNAN_BEGINS",
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: आकाशदीपदानारम्भ, in the row of कार्तिकस्नान आरम्भ: the day of KARTIK_SNAN_BEGINS (C2304)",
+    ),
+    (
+        "YAMADEEPADAN",
+        "DHANTERAS",
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: यमदीपदान, in the row of धनत्रयोदशी and धन्तेरस, and VS 2076 p. 14 the same: the day of DHANTERAS (C2304)",
+    ),
+    (
+        "SUKHRATRI",
+        "LAKSHMI_PUJA",
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: सुखरात्रि, in the row of लक्ष्मीपूजा, and VS 2076 p. 14 the same: the day of LAKSHMI_PUJA (C2304)",
+    ),
+    (
+        "GORU_PUJA",
+        "MHA_PUJA",
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: गोरुपूजा, in the row of म्हपूजा, and VS 2076 p. 14: (म्हपूजा), गाईगोरुपूजा, one row: the day of MHA_PUJA (C2301)",
+    ),
+    (
+        "KIJA_PUJA",
+        "YAMA_DWITIYA",
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: (किजापूजा), the Newar name, in the row of यमद्वितीया and भाइटीका, and VS 2076 p. 15 the same: the day of YAMA_DWITIYA (C2304)",
+    ),
+    (
+        "SORHA_SHRADDHA_SAMAPTI",
+        "AMAVASYA_SHRADDHA",
+        "Nepal's national panchanga, VS 2083 p. 14: सोह्रश्राद्ध समाप्ति, in the row of औंसीश्राद्ध; VS 2082 p. 12 names no close: the day of AMAVASYA_SHRADDHA (C2304)",
+    ),
     (
         "FAGU_PURNIMA",
         "HOLIKA",
@@ -2015,13 +2083,34 @@ const SAME_DAY: [(&str, &str, &str); 19] = [
     ),
 ];
 
-/// The days printed the day after another rule's day: key, the rule, and
-/// where.
-const DAY_AFTER: [(&str, &str, &str); 1] = [(
-    "KOKA_KAUSHIKI_SANGAM_MELA",
-    "DHANYA_PURNIMA",
-    "Nepal's national panchanga, VS 2082 p. 18: कोशिकोका सङ्गममा मेला; VS 2083 p. 20: कोशीकोका सङ्गममा मेला: the day after DHANYA_PURNIMA, as a patro printed in Nepal gives it on all 13 of its verified days from 2013 to 2025 (C690)",
-)];
+/// The days counted from another rule's day: key, the rule, the days
+/// after it (before it when negative), and where.
+const COUNTED: [(&str, &str, i8, &str); 4] = [
+    (
+        "KOKA_KAUSHIKI_SANGAM_MELA",
+        "DHANYA_PURNIMA",
+        1,
+        "Nepal's national panchanga, VS 2082 p. 18: कोशिकोका सङ्गममा मेला; VS 2083 p. 20: कोशीकोका सङ्गममा मेला: the day after DHANYA_PURNIMA, as a patro printed in Nepal gives it on all 13 of its verified days from 2013 to 2025 (C690)",
+    ),
+    (
+        "CHHATH_NAHAY_KHAY",
+        "CHHATH",
+        -2,
+        "Chhath's first day, the bath and the one meal (नहाय खाय), Kartika's bright 4th, two days before the evening arghya: the four days' order as Bihar keeps it, reported by Organiser (2024-11-08) and kept by every almanac read; the national panchanga prints no day before छठपर्व in VS 2082 or 2083 (C2306)",
+    ),
+    (
+        "CHHATH_KHARNA",
+        "CHHATH",
+        -1,
+        "Bihar's notification, Schedule-2: Kharna, the day before Chhath's evening arghya in every year listed; the national panchanga prints no day before छठपर्व in VS 2082 or 2083 (C2106, C2306)",
+    ),
+    (
+        "CHHATH_SECOND_DAY",
+        "CHHATH",
+        1,
+        "Bihar's notification, Schedule-2: Chhath's second day, the morning arghya, the day after the evening's in every year listed; the national panchanga prints no day after छठपर्व in VS 2082 or 2083 (C2106, C2306)",
+    ),
+];
 
 impl FestivalRule {
     /// The days Nepal's national panchanga prints beyond [`FestivalRule::nepal`],
@@ -2120,8 +2209,10 @@ impl FestivalRule {
 
 impl FollowingRule {
     /// The days Nepal's national panchanga prints on another rule's day, or
-    /// the day after it, beyond [`FollowingRule::nepal`]: each counts from a
-    /// rule of [`FestivalRule::nepal`] or [`FestivalRule::nepal_panchanga`].
+    /// a count of days from it, beyond [`FollowingRule::nepal`]: each counts
+    /// from a rule of [`FestivalRule::nepal`] or
+    /// [`FestivalRule::nepal_panchanga`]. Chhath's other three days are
+    /// counted from its evening arghya (C2306).
     ///
     /// ```
     /// use teistro_panchanga::festival::FollowingRule;
@@ -2136,11 +2227,11 @@ impl FollowingRule {
         let same_day = SAME_DAY
             .iter()
             .map(|&(key, after, source)| (key, after, 0, source));
-        let day_after = DAY_AFTER
+        let counted = COUNTED
             .iter()
-            .map(|&(key, after, source)| (key, after, 1, source));
+            .map(|&(key, after, days, source)| (key, after, days, source));
         same_day
-            .chain(day_after)
+            .chain(counted)
             .map(|(key, after, days, source)| FollowingRule {
                 key: key.to_owned(),
                 source: source.to_owned(),

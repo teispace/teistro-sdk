@@ -4373,6 +4373,10 @@ export interface MetaPatch {
    */
   readonly kind?: Member<catalogue.FestivalKind> | null;
   /**
+   * In place of what its regions call it.
+   */
+  readonly names?: readonly FestivalNames[] | null;
+  /**
    * In place of whether it is an office's choice.
    */
   readonly optional?: boolean | null;
@@ -6067,6 +6071,32 @@ export interface VrataFast {
    * When it begins; unset when the clause does not say.
    */
   readonly start?: FastStart | null;
+}
+
+/**
+ * What one region calls a festival (`03-design/nepal-festival-names.md` §3): the name it leads with, the others it gives the day, and the day's order. Each name is a key of the locales' `festival` names, as a rule's own key is, so every locale writes it.
+ */
+export interface FestivalNames {
+  /**
+   * Its other names there, as name keys, in the order a source gives them; the rule's own key among them when another leads.
+   */
+  readonly aliases?: readonly string[];
+  /**
+   * The name it leads with there, as a name key (`BHAI_TIKA`); unset when it is the rule's own key.
+   */
+  readonly lead?: string | null;
+  /**
+   * Where it stands among the observances of its tier on its day, lower first; unset for one that keeps its rule's place.
+   */
+  readonly rank?: number | null;
+  /**
+   * The region, a key of [`FestivalMeta::regions`]' kind (`NP`).
+   */
+  readonly region: string;
+  /**
+   * Where the names and the rank are said.
+   */
+  readonly source: string;
 }
 
 /**
@@ -8575,6 +8605,10 @@ export interface FestivalMeta {
    * Its kind; unset when no source classes it.
    */
   readonly kind?: Member<catalogue.FestivalKind> | null;
+  /**
+   * What a region calls it, one entry a region: its primary name there, its other names and where it stands among a day's observances (`03-design/nepal-festival-names.md`, SR-145); empty when no source in hand names it beyond its key. Like `variant`, a statement of the rule's, which [`FestivalMeta::unsourced`] does not name.
+   */
+  readonly names?: readonly FestivalNames[];
   /**
    * Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it.
    */

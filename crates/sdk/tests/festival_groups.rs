@@ -2,7 +2,8 @@
 //! SR-125): BS 2083's Tihar with its gap day, Dashain in a year that
 //! doubles a tithi and one that loses one, a range that cuts a span, a
 //! consumer's own grouping, the meta filter, the next span, and every
-//! refusal by its field.
+//! refusal by its field; Nepal's Chhath, Teej and sixteen shraddhas
+//! (SR-145), and the day a tithi begins after sunrise.
 
 #![allow(
     clippy::unwrap_used,
@@ -11,7 +12,7 @@
 )]
 
 use teistro::catalogue::Calendar;
-use teistro::festival::GroupSpan;
+use teistro::festival::{FestivalNames, GroupSpan, MetaPatch, Observance};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
     CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, NextRequest, UtcOffset,
@@ -88,12 +89,14 @@ fn every_pack_checks_with_its_groups_each_member_a_rule_of_the_pack() {
 }
 
 #[test]
-fn bs_2083_tihar_holds_kartik_23_as_a_gap_however_short_the_range() {
+fn bs_2083_tihar_holds_the_cows_worship_on_kartik_23_however_short_the_range() {
     // Kartik 21 to 25, 2083 are 7 to 11 November 2026. The new moon holds
     // the 8th's evening and the 9th's sunrise, so Lakshmi puja falls on
-    // the 8th with the dogs' day, and no member falls on the 9th.
-    let whole =
-        "7:KAG_TIHAR 8:KUKUR_TIHAR+LAKSHMI_PUJA 9:- 10:GOVARDHAN_PUJA+MHA_PUJA 11:YAMA_DWITIYA";
+    // the 8th with the dogs' day; the 1st begins on the 9th and lasts too
+    // little past the 10th's sunrise, so the cows' worship is the 9th's
+    // (Dharmasindhu p. 78, C2301), as the committee prints it.
+    let whole = "7:KAG_TIHAR 8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI 9:GAI_PUJA \
+                 10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR 11:YAMA_DWITIYA+KIJA_PUJA";
     for (from, to) in [
         (day(2026, 1, 1), day(2026, 12, 31)),
         (day(2026, 11, 9), day(2026, 11, 9)),
@@ -107,8 +110,8 @@ fn bs_2083_tihar_holds_kartik_23_as_a_gap_however_short_the_range() {
         assert_eq!((tihar[0].first.day, tihar[0].last.day), (7, 11));
         assert_eq!(tihar[0].main_day().map(ymd), Some((2026, 11, 8)));
         assert!(tihar[0].is_whole());
-        let gap = &tihar[0].days[2];
-        assert!(gap.gap && gap.members.is_empty() && ymd(&gap.day) == (2026, 11, 9));
+        let cows = &tihar[0].days[2];
+        assert!(!cows.gap && cows.members == ["GAI_PUJA"] && ymd(&cows.day) == (2026, 11, 9));
     }
 }
 
@@ -127,7 +130,10 @@ fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
         .iter()
         .map(|d| format!("{}:{}", d.day.day, d.members.join("+")))
         .collect();
-    assert_eq!(around, ["18:MAHA_ASHTAMI", "19:", "20:MAHA_NAVAMI"]);
+    assert_eq!(
+        around,
+        ["18:MAHA_ASHTAMI+KALARATRI", "19:", "20:MAHA_NAVAMI"]
+    );
     assert!(dashain.days[8].gap);
     // 2024: the 8th holds no sunrise, so the Mahashtami and the Mahanavami
     // share 11 October and the span is a day shorter.
@@ -142,8 +148,12 @@ fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
         .iter()
         .find(|d| ymd(&d.day) == (2024, 10, 11))
         .unwrap();
-    assert_eq!(eleventh.members, ["MAHA_ASHTAMI", "MAHA_NAVAMI"]);
-    assert_eq!(dashain.days.iter().filter(|d| d.gap).count(), 14 - 5);
+    assert_eq!(
+        eleventh.members,
+        ["MAHA_ASHTAMI", "KALARATRI", "MAHA_NAVAMI"]
+    );
+    // Bilva nimantran on a day of its own fills one more.
+    assert_eq!(dashain.days.iter().filter(|d| d.gap).count(), 14 - 6);
 }
 
 #[test]
@@ -153,13 +163,13 @@ fn a_request_regroups_by_key_and_a_filter_keeps_a_group_by_its_members() {
         "members": ["NAVARATRA_ARAMBHA", "VIJAYA_DASHAMI"], "main": "VIJAYA_DASHAMI",
         "source": "the consumer's grouping"}]}"#;
     let asked = FestivalRequest::from_json(text).unwrap();
-    assert_eq!(asked.groups().len(), 2);
+    assert_eq!(asked.groups().len(), 5);
     let found = spans(&day(2026, 10, 1), &day(2026, 11, 30), &asked);
     let dashain = found.iter().find(|s| s.group == "DASHAIN").unwrap();
     assert_eq!(ymd(&dashain.last), (2026, 10, 21));
     assert_eq!(
         found.iter().map(|s| s.group.as_str()).collect::<Vec<_>>(),
-        ["DASHAIN", "TIHAR"]
+        ["SORHA_SHRADDHA", "DASHAIN", "TIHAR", "CHHATH"]
     );
     // The Newar filter keeps Tihar, whose Mha puja is the Newars'.
     let newar = r#"{"rules": "NEPAL_PANCHANGA", "only": {"communities": ["NEWAR"]}}"#;
@@ -248,8 +258,8 @@ fn the_next_span_of_a_group_counts_one_under_way() {
         (ymd(&found.day), ymd(&span.last)),
         ((2026, 10, 11), (2026, 10, 25))
     );
-    assert_eq!(found.keys.len(), 6);
-    assert_eq!(found.festivals.observances.len(), 6);
+    assert_eq!(found.keys.len(), 8);
+    assert_eq!(found.festivals.observances.len(), 8);
     // Noon of 9 November 2026, Tihar's gap day: Tihar under way.
     let under_way = sdk
         .almanac()
@@ -268,4 +278,107 @@ fn the_next_span_of_a_group_counts_one_under_way() {
     )
     .unwrap_err();
     assert_eq!(both.field(), Some("next.group"));
+}
+
+/// The observances a request's reckoning gives over a range at Kathmandu.
+fn observances(from: &CalendarDate, to: &CalendarDate) -> Vec<Observance> {
+    committee()
+        .almanac()
+        .festivals(
+            from,
+            to,
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &nepal(),
+        )
+        .unwrap()
+        .value
+        .observances
+}
+
+#[test]
+fn bs_2083_names_every_day_of_chhath_teej_and_the_sixteen_shraddhas() {
+    let found = spans(&day(2026, 8, 1), &day(2026, 11, 30), &nepal());
+    let span = |key: &str| found.iter().find(|s| s.group == key).unwrap();
+    // Chhath: the evening arghya on Kartika's bright 6th, Nahay-Khay and
+    // Kharna the two days before, the morning arghya the day after (C2306).
+    assert_eq!(
+        written(span("CHHATH")),
+        "13:CHHATH_NAHAY_KHAY 14:CHHATH_KHARNA 15:CHHATH 16:CHHATH_SECOND_DAY"
+    );
+    // Teej: the feast, the fast and the Rishi panchami, as VS 2083 p. 13
+    // prints them (C2307).
+    assert_eq!(
+        written(span("TEEJ")),
+        "13:DAR_KHANE_DIN 14:HARITALIKA 15:RISHI_PANCHAMI"
+    );
+    // The shraddhas from the full moon's (26 September) to the new moon's
+    // (10 October), the Magha shraddha among them (C2302).
+    let shraddhas = span("SORHA_SHRADDHA");
+    assert_eq!(
+        (ymd(&shraddhas.first), ymd(&shraddhas.last)),
+        ((2026, 9, 26), (2026, 10, 10))
+    );
+    assert_eq!(shraddhas.days[0].members, ["PRAUSHTHAPADI_SHRADDHA"]);
+    assert!(
+        shraddhas
+            .days
+            .iter()
+            .any(|d| d.members.contains(&"MAGHA_SHRADDHA".to_owned()))
+    );
+    let last = shraddhas.days.last().unwrap();
+    assert_eq!(
+        last.members,
+        ["AMAVASYA_SHRADDHA", "SORHA_SHRADDHA_SAMAPTI"]
+    );
+}
+
+#[test]
+fn a_day_whose_tithi_begins_after_sunrise_says_so() {
+    // 9 November 2026: the new moon holds the sunrise and the 1st begins
+    // before noon, so the cows' worship is kept on a day whose tithi
+    // changes during it (the print's *), and Lakshmi puja's day the 8th
+    // is the 14th's at sunrise too.
+    let found = observances(&day(2026, 11, 7), &day(2026, 11, 11));
+    let of = |key: &str| found.iter().find(|o| o.rule == key).unwrap();
+    assert!(of("GAI_PUJA").begins_after_sunrise);
+    assert!(of("LAKSHMI_PUJA").begins_after_sunrise);
+    // Its sunrise holds Kag Tihar's 13th: no mark.
+    assert!(!of("KAG_TIHAR").begins_after_sunrise);
+    // A day counted on another's keeps its mark; one counted to a day of
+    // its own does not.
+    assert!(of("SUKHRATRI").begins_after_sunrise);
+    let wire = serde_json::to_value(of("KAG_TIHAR")).unwrap();
+    assert!(wire.get("beginsAfterSunrise").is_none());
+}
+
+#[test]
+fn nepal_s_names_lead_with_its_own_and_a_request_checks_them() {
+    let pack = nepal();
+    let names = &pack.meta_of("YAMA_DWITIYA").unwrap().names;
+    assert_eq!(names[0].lead.as_deref(), Some("BHAI_TIKA"));
+    let ghatasthapana = &pack.meta_of("NAVARATRA_ARAMBHA").unwrap().names;
+    assert_eq!(ghatasthapana[0].lead.as_deref(), Some("GHATASTHAPANA"));
+    // A name that is no key is refused by its field.
+    let bad = nepal().with_meta(
+        "LAKSHMI_PUJA",
+        &MetaPatch {
+            names: Some(vec![FestivalNames {
+                region: "NP".to_owned(),
+                lead: Some("लक्ष्मीपूजा".to_owned()),
+                aliases: Vec::new(),
+                rank: None,
+                source: "a test".to_owned(),
+            }]),
+            ..MetaPatch::default()
+        },
+    );
+    let refused = bad.check().unwrap_err();
+    assert!(
+        refused
+            .field()
+            .is_some_and(|at| at.contains("meta.names[0]")),
+        "{:?}",
+        refused.field()
+    );
 }

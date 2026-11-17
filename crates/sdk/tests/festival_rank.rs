@@ -71,22 +71,31 @@ fn kartik_2083_comes_out_as_the_print_sets_it() {
     ));
     // Kartik 7: Khanchi's sarai, kept there, before the UN day.
     assert_eq!(on(&cells, 24)[0], "KHANCHI_SARAI_PARVA");
-    // Kartik 9: Kartik snan begins, then Argha's sarai and Katin punhi.
+    // Kartik 9: Kartik snan begins with the sky lamps (both open a
+    // stretch), then Argha's sarai and Katin punhi.
     assert_eq!(
         on(&cells, 26),
-        ["KARTIK_SNAN_BEGINS", "ARGHA_SARAI_PARVA", "KATIN_PUNHI"]
+        [
+            "KARTIK_SNAN_BEGINS",
+            "AKASHDEEPADAN_ARAMBHA",
+            "ARGHA_SARAI_PARVA",
+            "KATIN_PUNHI"
+        ]
     );
     // Kartik 19: Rama ekadashi before Govatsa dwadashi.
     assert_eq!(on(&cells, 5)[0], "RAMA_EKADASHI");
     assert!(before(&on(&cells, 5), "RAMA_EKADASHI", "GOVATSA_DWADASHI"));
-    // Kartik 22: Kukur Tihar, inside the notice's Tihar holiday, and
-    // Lakshmi Puja, both national, in the print's order.
+    // Kartik 22: Lakshmi Puja and Kukur Tihar, both national inside the
+    // notice's Tihar holiday, Lakshmi Puja first by Nepal's names'
+    // rank, the maintainer's order over the print's (SR-145, C2303).
     assert_eq!(
         on(&cells, 8)[..3],
-        ["KUKUR_TIHAR", "LAKSHMI_PUJA", "NARAK_CHATURDASHI"]
+        ["LAKSHMI_PUJA", "KUKUR_TIHAR", "NARAK_CHATURDASHI"]
     );
-    // Kartik 23: Somabare aunsi first.
-    assert_eq!(on(&cells, 9)[0], "SOMAVATI_AMAVASYA");
+    // Kartik 23: the cows' worship, a national day of the notice's Tihar
+    // holiday, before Somabare aunsi.
+    assert_eq!(on(&cells, 9)[0], "GAI_PUJA");
+    assert!(before(&on(&cells, 9), "GAI_PUJA", "SOMAVATI_AMAVASYA"));
 }
 
 #[test]
@@ -95,7 +104,12 @@ fn the_rule_order_is_the_answer_s_own() {
         kartik(FestivalRequest::from(FestivalPack::NepalPanchanga).with_order(DayOrder::RuleOrder));
     assert_eq!(
         on(&cells, 26),
-        ["ARGHA_SARAI_PARVA", "KARTIK_SNAN_BEGINS", "KATIN_PUNHI"]
+        [
+            "ARGHA_SARAI_PARVA",
+            "KARTIK_SNAN_BEGINS",
+            "KATIN_PUNHI",
+            "AKASHDEEPADAN_ARAMBHA"
+        ]
     );
 }
 
@@ -118,6 +132,9 @@ fn a_request_sets_its_own_tier_and_keeps_a_least_one() {
         ..MetaFilter::default()
     });
     let kept = kartik(least);
-    assert_eq!(on(&kept, 26), ["KARTIK_SNAN_BEGINS"]);
-    assert_eq!(on(&kept, 8), ["KUKUR_TIHAR", "LAKSHMI_PUJA"]);
+    assert_eq!(
+        on(&kept, 26),
+        ["KARTIK_SNAN_BEGINS", "AKASHDEEPADAN_ARAMBHA"]
+    );
+    assert_eq!(on(&kept, 8), ["LAKSHMI_PUJA", "KUKUR_TIHAR"]);
 }

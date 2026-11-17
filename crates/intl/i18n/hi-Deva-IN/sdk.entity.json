@@ -5557,6 +5557,104 @@
     "BHOTO_JATRA": {
       "name": "भोटो जात्रा",
       "prose": "भोटो जात्रा"
+    },
+    "GAI_PUJA": {
+      "name": "गाय पूजा",
+      "prose": "गाय पूजा",
+      "iast": "Gopūjā"
+    },
+    "GORU_PUJA": {
+      "name": "बैल पूजा",
+      "prose": "बैल पूजा",
+      "iast": "Vṛṣabhapūjā"
+    },
+    "PRAUSHTHAPADI_SHRADDHA": {
+      "name": "प्रौष्ठपदी श्राद्ध",
+      "prose": "प्रौष्ठपदी श्राद्ध",
+      "iast": "Prauṣṭhapadī Śrāddha"
+    },
+    "KALARATRI": {
+      "name": "कालरात्रि",
+      "prose": "कालरात्रि",
+      "iast": "Kālarātri"
+    },
+    "SUKHRATRI": {
+      "name": "सुखरात्रि",
+      "prose": "सुखरात्रि",
+      "iast": "Sukharātri"
+    },
+    "KIJA_PUJA": {
+      "name": "किजा पूजा",
+      "prose": "किजा पूजा"
+    },
+    "AKASHDEEPADAN_ARAMBHA": {
+      "name": "आकाशदीपदान आरंभ",
+      "prose": "आकाशदीपदान आरंभ",
+      "iast": "Ākāśadīpadāna Ārambha"
+    },
+    "YAMADEEPADAN": {
+      "name": "यमदीपदान",
+      "prose": "यमदीपदान",
+      "iast": "Yamadīpadāna"
+    },
+    "SORHA_SHRADDHA_SAMAPTI": {
+      "name": "सोलह श्राद्ध समाप्ति",
+      "prose": "सोलह श्राद्ध समाप्ति",
+      "iast": "Ṣoḍaśa Śrāddha Samāpti"
+    },
+    "CHHATH_NAHAY_KHAY": {
+      "name": "नहाय खाय",
+      "prose": "नहाय खाय"
+    },
+    "BHAI_TIKA": {
+      "name": "भाई टीका",
+      "prose": "भाई टीका"
+    },
+    "GHATASTHAPANA": {
+      "name": "घटस्थापना",
+      "prose": "घटस्थापना",
+      "iast": "Ghaṭasthāpanā"
+    },
+    "DEEPAMALIKA": {
+      "name": "दीपमालिका",
+      "prose": "दीपमालिका",
+      "iast": "Dīpamālikā"
+    },
+    "KAKABALI": {
+      "name": "काकबलि",
+      "prose": "काकबलि",
+      "iast": "Kākabali"
+    },
+    "DASHAIN_TIKA": {
+      "name": "दशैं टीका",
+      "prose": "दशैं टीका"
+    },
+    "PITRI_VISARJAN": {
+      "name": "पितृ विसर्जन",
+      "prose": "पितृ विसर्जन",
+      "iast": "Pitṛvisarjana"
+    },
+    "TEEJ": {
+      "name": "तीज",
+      "prose": "तीज"
+    },
+    "SANDHYA_ARGHYA": {
+      "name": "संध्या अर्घ्य",
+      "prose": "संध्या अर्घ्य",
+      "iast": "Sandhyā Arghya"
+    },
+    "DALA_PUJA": {
+      "name": "डाला पूजा",
+      "prose": "डाला पूजा"
+    },
+    "USHA_ARGHYA": {
+      "name": "उषा अर्घ्य",
+      "prose": "उषा अर्घ्य",
+      "iast": "Uṣā Arghya"
+    },
+    "CHHATH_SAMAPAN": {
+      "name": "छठ समापन",
+      "prose": "छठ समापन"
     }
   },
   "era": {

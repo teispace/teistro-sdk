@@ -19066,6 +19066,7 @@ final class FestivalObservance extends _Value {
     this.sait,
     this.moonrise,
     this.malamasa,
+    this.beginsAfterSunrise = false,
   });
 
   /// The rule's key.
@@ -19122,6 +19123,12 @@ final class FestivalObservance extends _Value {
   /// ordinary month.
   final Malamasa? malamasa;
 
+  /// Whether the occurrence begins after the day's sunrise, so the tithi
+  /// the sunrise holds changes to it during the day: the day a printed
+  /// calendar marks with a `*` (SR-145); false for a day counted to one of
+  /// its own or moved by a published entry.
+  final bool beginsAfterSunrise;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -19141,6 +19148,7 @@ final class FestivalObservance extends _Value {
     sait,
     moonrise,
     malamasa,
+    beginsAfterSunrise,
   ];
 }
 
@@ -20886,6 +20894,7 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         null => null,
         final malamasa => _malamasa(_festivalAt(malamasa)),
       },
+      beginsAfterSunrise: raw['beginsAfterSunrise'] == true,
     );
 
 /// The month rule an observance carries, as a festival answer writes it.

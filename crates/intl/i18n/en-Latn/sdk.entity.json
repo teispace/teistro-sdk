@@ -5996,6 +5996,104 @@
     "BHOTO_JATRA": {
       "name": "Bhoto Jatra",
       "prose": "Bhoto Jatra"
+    },
+    "GAI_PUJA": {
+      "name": "Gai Puja",
+      "prose": "Gai Puja",
+      "iast": "Gopūjā"
+    },
+    "GORU_PUJA": {
+      "name": "Goru Puja",
+      "prose": "Goru Puja",
+      "iast": "Vṛṣabhapūjā"
+    },
+    "PRAUSHTHAPADI_SHRADDHA": {
+      "name": "Praushthapadi Shraddha",
+      "prose": "Praushthapadi Shraddha",
+      "iast": "Prauṣṭhapadī Śrāddha"
+    },
+    "KALARATRI": {
+      "name": "Kalaratri",
+      "prose": "Kalaratri",
+      "iast": "Kālarātri"
+    },
+    "SUKHRATRI": {
+      "name": "Sukhratri",
+      "prose": "Sukhratri",
+      "iast": "Sukharātri"
+    },
+    "KIJA_PUJA": {
+      "name": "Kija Puja",
+      "prose": "Kija Puja"
+    },
+    "AKASHDEEPADAN_ARAMBHA": {
+      "name": "Akashdeepadan Begins",
+      "prose": "Akashdeepadan Begins",
+      "iast": "Ākāśadīpadāna Ārambha"
+    },
+    "YAMADEEPADAN": {
+      "name": "Yamadeepadan",
+      "prose": "Yamadeepadan",
+      "iast": "Yamadīpadāna"
+    },
+    "SORHA_SHRADDHA_SAMAPTI": {
+      "name": "Sorha Shraddha Ends",
+      "prose": "Sorha Shraddha Ends",
+      "iast": "Ṣoḍaśa Śrāddha Samāpti"
+    },
+    "CHHATH_NAHAY_KHAY": {
+      "name": "Nahay Khay",
+      "prose": "Nahay Khay"
+    },
+    "BHAI_TIKA": {
+      "name": "Bhai Tika",
+      "prose": "Bhai Tika"
+    },
+    "GHATASTHAPANA": {
+      "name": "Ghatasthapana",
+      "prose": "Ghatasthapana",
+      "iast": "Ghaṭasthāpanā"
+    },
+    "DEEPAMALIKA": {
+      "name": "Deepamalika",
+      "prose": "Deepamalika",
+      "iast": "Dīpamālikā"
+    },
+    "KAKABALI": {
+      "name": "Kakabali",
+      "prose": "Kakabali",
+      "iast": "Kākabali"
+    },
+    "DASHAIN_TIKA": {
+      "name": "Dashain Tika",
+      "prose": "Dashain Tika"
+    },
+    "PITRI_VISARJAN": {
+      "name": "Pitri Visarjan",
+      "prose": "Pitri Visarjan",
+      "iast": "Pitṛvisarjana"
+    },
+    "TEEJ": {
+      "name": "Teej",
+      "prose": "Teej"
+    },
+    "SANDHYA_ARGHYA": {
+      "name": "Sandhya Arghya",
+      "prose": "Sandhya Arghya",
+      "iast": "Sandhyā Arghya"
+    },
+    "DALA_PUJA": {
+      "name": "Dala Puja",
+      "prose": "Dala Puja"
+    },
+    "USHA_ARGHYA": {
+      "name": "Usha Arghya",
+      "prose": "Usha Arghya",
+      "iast": "Uṣā Arghya"
+    },
+    "CHHATH_SAMAPAN": {
+      "name": "Chhath Ends",
+      "prose": "Chhath Ends"
     }
   },
   "agni_vasa": {

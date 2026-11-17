@@ -175,6 +175,7 @@ pub(super) fn gazetted(
         // A government's day is one day a festival, whoever's reading it
         // is (`03-design/festival-traditions.md` §1).
         variant: None,
+        names: Vec::new(),
     }
 }
 

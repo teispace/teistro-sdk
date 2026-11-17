@@ -6234,6 +6234,7 @@ final class MetaPatch extends _Request {
     this.communities,
     this.fast,
     this.kind,
+    this.names,
     this.optional,
     this.regions,
     this.significance,
@@ -6248,6 +6249,9 @@ final class MetaPatch extends _Request {
 
   /// In place of its kind.
   final FestivalKind? kind;
+
+  /// In place of what its regions call it.
+  final List<FestivalNames>? names;
 
   /// In place of whether it is an office's choice.
   final bool? optional;
@@ -6266,6 +6270,7 @@ final class MetaPatch extends _Request {
     if (communities case final communitiesValue?) 'communities': communitiesValue,
     if (fast case final fastValue?) 'fast': [for (final e0 in fastValue) e0._wire],
     if (kind case final kindValue?) 'kind': kindValue.key,
+    if (names case final namesValue?) 'names': [for (final e0 in namesValue) e0._wire],
     if (optional case final optionalValue?) 'optional': optionalValue,
     if (regions case final regionsValue?) 'regions': regionsValue,
     if (significance case final significanceValue?) 'significance': significanceValue.key,
@@ -6273,7 +6278,7 @@ final class MetaPatch extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition];
+  List<Object?> get _fields => [communities, fast, kind, names, optional, regions, significance, tradition];
 }
 
 /// What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
@@ -8852,6 +8857,44 @@ final class VrataFast extends _Request {
 
   @override
   List<Object?> get _fields => [end, ifUnable, kind, source, start];
+}
+
+/// What one region calls a festival (`03-design/nepal-festival-names.md` §3): the name it leads with, the others it gives the day, and the day's order. Each name is a key of the locales' `festival` names, as a rule's own key is, so every locale writes it.
+final class FestivalNames extends _Request {
+  const FestivalNames({
+    this.aliases,
+    this.lead,
+    this.rank,
+    required this.region,
+    required this.source,
+  });
+
+  /// Its other names there, as name keys, in the order a source gives them; the rule's own key among them when another leads.
+  final List<String>? aliases;
+
+  /// The name it leads with there, as a name key (`BHAI_TIKA`); unset when it is the rule's own key.
+  final String? lead;
+
+  /// Where it stands among the observances of its tier on its day, lower first; unset for one that keeps its rule's place.
+  final int? rank;
+
+  /// The region, a key of [`FestivalMeta::regions`]' kind (`NP`).
+  final String region;
+
+  /// Where the names and the rank are said.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (aliases case final aliasesValue?) 'aliases': aliasesValue,
+    if (lead case final leadValue?) 'lead': leadValue,
+    if (rank case final rankValue?) 'rank': rankValue,
+    'region': region,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [aliases, lead, rank, region, source];
 }
 
 /// How much a festival weighs beside the others kept on its day (`03-design/festival-metadata.md` §7), first to last: a day's observances are listed in this order.
@@ -12771,6 +12814,7 @@ final class FestivalMeta extends _Request {
     this.communities,
     this.fast,
     this.kind,
+    this.names,
     this.optional,
     this.regions,
     this.significance,
@@ -12786,6 +12830,9 @@ final class FestivalMeta extends _Request {
 
   /// Its kind; unset when no source classes it.
   final FestivalKind? kind;
+
+  /// What a region calls it, one entry a region: its primary name there, its other names and where it stands among a day's observances (`03-design/nepal-festival-names.md`, SR-145); empty when no source in hand names it beyond its key. Like `variant`, a statement of the rule's, which [`FestivalMeta::unsourced`] does not name.
+  final List<FestivalNames>? names;
 
   /// Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it.
   final bool? optional;
@@ -12807,6 +12854,7 @@ final class FestivalMeta extends _Request {
     if (communities case final communitiesValue?) 'communities': communitiesValue,
     if (fast case final fastValue?) 'fast': [for (final e0 in fastValue) e0._wire],
     if (kind case final kindValue?) 'kind': kindValue.key,
+    if (names case final namesValue?) 'names': [for (final e0 in namesValue) e0._wire],
     if (optional case final optionalValue?) 'optional': optionalValue,
     if (regions case final regionsValue?) 'regions': regionsValue,
     if (significance case final significanceValue?) 'significance': significanceValue._wire,
@@ -12815,7 +12863,7 @@ final class FestivalMeta extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition, variant];
+  List<Object?> get _fields => [communities, fast, kind, names, optional, regions, significance, tradition, variant];
 }
 
 /// What may still move a published day.

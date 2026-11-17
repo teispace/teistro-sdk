@@ -77,6 +77,126 @@ pub struct FestivalMeta {
     /// name it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub variant: Option<Variant>,
+    /// What a region calls it, one entry a region: its primary name there,
+    /// its other names and where it stands among a day's observances
+    /// (`03-design/nepal-festival-names.md`, SR-145); empty when no
+    /// source in hand names it beyond its key. Like `variant`, a statement
+    /// of the rule's, which [`FestivalMeta::unsourced`] does not name.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub names: Vec<FestivalNames>,
+}
+
+/// What one region calls a festival (`03-design/nepal-festival-names.md`
+/// §3): the name it leads with, the others it gives the day, and the
+/// day's order. Each name is a key of the locales' `festival` names, as a
+/// rule's own key is, so every locale writes it.
+///
+/// ```
+/// use teistro_panchanga::festival::FestivalMeta;
+///
+/// // Nepal leads with Bhai Tika and keeps the text's name beside it.
+/// let names = FestivalMeta::nepal("YAMA_DWITIYA").names;
+/// assert_eq!(names[0].region, "NP");
+/// assert_eq!(names[0].lead.as_deref(), Some("BHAI_TIKA"));
+/// assert_eq!(names[0].aliases, ["YAMA_DWITIYA"]);
+/// // On Kartik's new moon Lakshmi puja leads Kukur Tihar.
+/// let lakshmi = FestivalMeta::nepal("LAKSHMI_PUJA").rank();
+/// assert!(lakshmi < FestivalMeta::nepal("KUKUR_TIHAR").rank());
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct FestivalNames {
+    /// The region, a key of [`FestivalMeta::regions`]' kind (`NP`).
+    pub region: String,
+    /// The name it leads with there, as a name key (`BHAI_TIKA`); unset
+    /// when it is the rule's own key.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lead: Option<String>,
+    /// Its other names there, as name keys, in the order a source gives
+    /// them; the rule's own key among them when another leads.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub aliases: Vec<String>,
+    /// Where it stands among the observances of its tier on its day,
+    /// lower first; unset for one that keeps its rule's place.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rank: Option<u16>,
+    /// Where the names and the rank are said.
+    pub source: String,
+}
+
+impl FestivalNames {
+    /// Whether the entry can be read: a region, a source, and every name
+    /// a key, none twice.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming the field.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalNames;
+    ///
+    /// let names = FestivalNames {
+    ///     region: "NP".to_owned(),
+    ///     lead: Some("BHAI_TIKA".to_owned()),
+    ///     aliases: vec!["BHAI_TIKA".to_owned()],
+    ///     rank: None,
+    ///     source: "a print".to_owned(),
+    /// };
+    /// assert!(names.check().is_err());
+    /// ```
+    pub fn check(&self) -> Result<(), Error> {
+        if self.region.is_empty() {
+            return Err(Error::invalid_arg("a region's names name the region")
+                .with_field("names.region")
+                .with_hint("NP"));
+        }
+        if self.source.is_empty() {
+            return Err(Error::invalid_arg(
+                "a region's names say where they are given, as a rule's source does",
+            )
+            .with_field("names.source"));
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for name in self.lead.iter().chain(&self.aliases) {
+            let key = !name.is_empty()
+                && name
+                    .bytes()
+                    .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_');
+            if !key {
+                return Err(Error::invalid_arg(format!(
+                    "`{name}` is no name key; a name is a key of the locales' festival names, as a rule's is"
+                ))
+                .with_field("names.aliases")
+                .with_hint("BHAI_TIKA"));
+            }
+            if !seen.insert(name) {
+                return Err(Error::invalid_arg(format!(
+                    "`{name}` is named twice in one region's names"
+                ))
+                .with_field("names.aliases"));
+            }
+        }
+        Ok(())
+    }
+
+    /// The names `key` ships with: Nepal's ([`NAMES`]), one entry, or
+    /// none.
+    fn shipped(key: &str) -> Vec<FestivalNames> {
+        NAMES
+            .binary_search_by_key(&key, |row| row.0)
+            .ok()
+            .and_then(|at| NAMES.get(at))
+            .map(|&(_, lead, aliases, rank, source)| FestivalNames {
+                region: "NP".to_owned(),
+                lead: lead.map(str::to_owned),
+                aliases: aliases.iter().map(|&alias| alias.to_owned()).collect(),
+                rank,
+                source: source.to_owned(),
+            })
+            .into_iter()
+            .collect()
+    }
 }
 
 /// One tradition's reading of a festival the texts read in more than one
@@ -286,6 +406,9 @@ pub struct MetaPatch {
     /// In place of its tier.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub significance: Option<Significance>,
+    /// In place of what its regions call it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub names: Option<Vec<FestivalNames>>,
 }
 
 /// A tier a row is marked with, and where it is said.
@@ -434,6 +557,7 @@ impl Group {
             fast: Vec::new(),
             significance: None,
             variant: None,
+            names: Vec::new(),
         }
     }
 }
@@ -490,6 +614,37 @@ impl FestivalMeta {
             .with_gazette(key)
             .with_mark(key)
             .with_variant(key)
+            .with_names(key)
+    }
+
+    /// These values with what Nepal calls `key` ([`NAMES`]): its primary
+    /// name, its others and its place on its day.
+    #[must_use]
+    pub fn with_names(self, key: &str) -> FestivalMeta {
+        FestivalMeta {
+            names: FestivalNames::shipped(key),
+            ..self
+        }
+    }
+
+    /// Its place among a day's observances of its tier, lower first: the
+    /// rank of the names given for its first region, or `u16::MAX` for one
+    /// that keeps its rule's place (§7 of the page, SR-145).
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalMeta;
+    ///
+    /// assert_eq!(FestivalMeta::default().rank(), u16::MAX);
+    /// assert_eq!(FestivalMeta::nepal("LAKSHMI_PUJA").rank(), 1);
+    /// ```
+    #[must_use]
+    pub fn rank(&self) -> u16 {
+        let region = self.regions.first();
+        self.names
+            .iter()
+            .find(|names| Some(&names.region) == region)
+            .and_then(|names| names.rank)
+            .unwrap_or(u16::MAX)
     }
 
     /// [`FestivalMeta::nepal`] before [`MARKS`]: its group's values, its
@@ -627,6 +782,8 @@ impl FestivalMeta {
             // Whose reading a rule is belongs to the rule, not to a
             // caller's view of it (`03-design/festival-traditions.md` §3).
             variant: self.variant,
+            // A region's names are a caller's to give (SR-145).
+            names: patch.names.clone().unwrap_or(self.names),
         }
     }
 
@@ -1027,59 +1184,123 @@ const GAURA_PURNIMA: [Reading; 1] = [reading(
     "a published Gaudiya calendar (VaisnavaCalendar.Info, from GCal 11): \"fast till moonrise\" (C1123)",
 )];
 
-/// Where Nepal's national panchanga prints a key among the others on its
-/// day, first to last (§7 of the page): the order a day's observances of
-/// one tier keep. `None` for a key it does not print, which keeps its
-/// rule's place.
-///
-/// ```
-/// use teistro_panchanga::festival::printed_order;
-///
-/// assert_eq!(printed_order("NO_SUCH_DAY"), None);
-/// ```
-#[must_use]
-pub fn printed_order(key: &str) -> Option<u16> {
-    PRINTED_ORDER
-        .binary_search_by_key(&key, |&(held, _)| held)
-        .ok()
-        .and_then(|at| PRINTED_ORDER.get(at))
-        .map(|&(_, place)| place)
-}
+/// The committee's order of a day's observances, read off its rows.
+const PRINTED: &str = "Nepal's national panchanga (the committee's VS 2083 print) prints it at this place among the day's observances of its tier";
 
-/// [`printed_order`]'s table, sorted by key: the places the committee's
-/// VS 2083 print gives keys of one tier on the days they meet, read off
-/// its rows. A sankranti leads its day; on Baisakh 18 Chandi Purnima,
-/// Buddha Jayanti, Labour Day, then Ubhauli; the pradosha vrata before
-/// the day's shraddhas and Dhanteras; on Kartik 24 the moonrise, Mha puja,
-/// then Nepal Sambat's new year; on Kartik 22 Kukur Tihar, then Lakshmi
-/// Puja; Kartik snan's end before the chaturmas
-/// vrata's, and the Swasthani vrata's start before Magh snan's. A place
-/// orders only keys of one day; a key not here follows those that are.
-const PRINTED_ORDER: [(&str, u16); 24] = [
-    ("BUDDHA_JAYANTI", 2),
-    ("CHANDI_PURNIMA", 1),
-    ("CHANDRODAYA", 1),
-    ("DHANU_SANKRANTI", 0),
-    ("INTERNATIONAL_LABOUR_DAY", 3),
-    ("KANYA_SANKRANTI", 0),
-    ("KARKATA_SANKRANTI", 0),
-    ("KARTIK_SNAN_ENDS", 1),
-    ("KUKUR_TIHAR", 1),
-    ("KUMBHA_SANKRANTI", 0),
-    ("LAKSHMI_PUJA", 2),
-    ("MAKARA_SANKRANTI", 0),
-    ("MESHA_SANKRANTI", 0),
-    ("MHA_PUJA", 2),
-    ("MINA_SANKRANTI", 0),
-    ("MITHUNA_SANKRANTI", 0),
-    ("NEPAL_SAMBAT_NEW_YEAR", 3),
-    ("PRADOSHA_VRATA", 1),
-    ("SIMHA_SANKRANTI", 0),
-    ("SWASTHANI_VRAT_BEGINS", 1),
-    ("TULA_SANKRANTI", 0),
-    ("UBHAULI", 4),
-    ("VRISHABHA_SANKRANTI", 0),
-    ("VRISHCHIKA_SANKRANTI", 0),
+/// [`FestivalNames::shipped`]'s table, sorted by key for the binary
+/// search: the key, the name Nepal leads with when it is not the key's
+/// own, its other names, its place among a day's observances of one tier
+/// (`03-design/nepal-festival-names.md` §3, §4), and where they are said.
+/// A sankranti leads its day; on Baisakh 18 Chandi Purnima, Buddha
+/// Jayanti, Labour Day, then Ubhauli; the pradosha vrata before the day's
+/// shraddhas and Dhanteras; on Kartik 22 Lakshmi puja, then Kukur Tihar,
+/// the maintainer's order over the print's (C2303); on Kartik 24 the
+/// moonrise, Goru puja, Govardhan puja, Mha puja, then Nepal Sambat's new
+/// year; Kartik snan's end before the chaturmas vrata's, and the
+/// Swasthani vrata's start before Magh snan's. A place orders only keys of
+/// one day; a key with none follows those that have one.
+type Names = (
+    &'static str,
+    Option<&'static str>,
+    &'static [&'static str],
+    Option<u16>,
+    &'static str,
+);
+const NAMES: [Names; 34] = [
+    (
+        "AMAVASYA_SHRADDHA",
+        None,
+        &["PITRI_VISARJAN"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: औंसीश्राद्ध, पितृविसर्जन, one row",
+    ),
+    ("BUDDHA_JAYANTI", None, &[], Some(2), PRINTED),
+    ("CHANDI_PURNIMA", None, &[], Some(1), PRINTED),
+    ("CHANDRODAYA", None, &[], Some(1), PRINTED),
+    (
+        "CHHATH",
+        None,
+        &["SANDHYA_ARGHYA", "DALA_PUJA"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: छठपर्व, डालापूजा, one row; Bihar's notification, Schedule-2: the day of the evening arghya (C2106)",
+    ),
+    (
+        "CHHATH_SECOND_DAY",
+        Some("USHA_ARGHYA"),
+        &["CHHATH_SAMAPAN", "CHHATH_SECOND_DAY"],
+        None,
+        "Bihar's notification, Schedule-2: the morning arghya, the day after the evening's, with which Chhath ends; the national panchanga prints no day after छठपर्व in VS 2082 or 2083 (C2306)",
+    ),
+    ("DHANU_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("GORU_PUJA", None, &[], Some(1), PRINTED),
+    ("GOVARDHAN_PUJA", None, &[], Some(2), PRINTED),
+    (
+        "HARITALIKA",
+        None,
+        &["TEEJ"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: हरितालिकाव्रत (तीज)",
+    ),
+    ("INTERNATIONAL_LABOUR_DAY", None, &[], Some(3), PRINTED),
+    (
+        "KAG_TIHAR",
+        None,
+        &["KAKABALI"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: काकबली, कागतिहार, one row",
+    ),
+    ("KANYA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("KARKATA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("KARTIK_SNAN_ENDS", None, &[], Some(1), PRINTED),
+    (
+        "KUKUR_TIHAR",
+        None,
+        &[],
+        Some(2),
+        "the maintainer's order for SR-145: Lakshmi puja leads Kartik's new moon in Nepal, and Kukur Tihar follows it, where the committee's VS 2083 print p. 16 sets Kukur Tihar first (C2303)",
+    ),
+    ("KUMBHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    (
+        "LAKSHMI_PUJA",
+        None,
+        &["DEEPAMALIKA"],
+        Some(1),
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: लक्ष्मीपूजा, दीपमालिका, one row; the maintainer's order for SR-145: it leads Kartik's new moon, where the print sets Kukur Tihar first (C2303)",
+    ),
+    ("MAKARA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("MESHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("MHA_PUJA", None, &[], Some(3), PRINTED),
+    ("MINA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("MITHUNA_SANKRANTI", None, &[], Some(0), PRINTED),
+    (
+        "NAVARATRA_ARAMBHA",
+        Some("GHATASTHAPANA"),
+        &["NAVARATRA_ARAMBHA"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: घटस्थापना first, then नवरात्रारम्भ; the Ministry of Home Affairs' VS 2083 notice, 2.1 (ङ): घटस्थापना",
+    ),
+    ("NEPAL_SAMBAT_NEW_YEAR", None, &[], Some(4), PRINTED),
+    ("PRADOSHA_VRATA", None, &[], Some(1), PRINTED),
+    ("SIMHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("SWASTHANI_VRAT_BEGINS", None, &[], Some(1), PRINTED),
+    ("TULA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("UBHAULI", None, &[], Some(4), PRINTED),
+    (
+        "VIJAYA_DASHAMI",
+        None,
+        &["DASHAIN_TIKA"],
+        None,
+        "Nepal's national panchanga, VS 2083 p. 15: विजयादशमी, दशैंको टीका, one row",
+    ),
+    ("VRISHABHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("VRISHCHIKA_SANKRANTI", None, &[], Some(0), PRINTED),
+    (
+        "YAMA_DWITIYA",
+        Some("BHAI_TIKA"),
+        &["YAMA_DWITIYA"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 15: यमद्वितीया, भाइटीका; VS 2083 p. 17: भाइटीका first, then यमद्वितीया; the Ministry of Home Affairs' VS 2083 notice, 2.1 (छ): भाइटिका",
+    ),
 ];
 
 /// Why a key gazetted in its group is not `NATIONAL` in Nepal's packs.
@@ -1099,8 +1320,9 @@ const PLACE: &str = "Nepal's national panchanga (the committee's VS 2083 print) 
 /// search (§7 of the page): what no field of its meta says. A key a
 /// gazetted clause gives a holiday takes the clause's tier instead
 /// ([`FestivalMeta::with_gazette`]), and is not here.
-const MARKS: [(&str, Significance, &str); 85] = [
+const MARKS: [(&str, Significance, &str); 87] = [
     ("ADUKHA_NAVAMI", Significance::Major, BOLD),
+    ("AKASHDEEPADAN_ARAMBHA", Significance::Period, SPAN),
     ("AKSHAYA_TRITIYA", Significance::Major, BOLD),
     ("AMAVASYA_SHRADDHA", Significance::Major, BOLD),
     ("ANANTA_CHATURDASHI", Significance::Major, BOLD),
@@ -1176,6 +1398,7 @@ const MARKS: [(&str, Significance, &str); 85] = [
     ("SIMHA_SANKRANTI", Significance::Major, BOLD),
     ("SITA_NAVAMI", Significance::Major, BOLD),
     ("SORHA_SHRADDHA_ARAMBHA", Significance::Period, SPAN),
+    ("SORHA_SHRADDHA_SAMAPTI", Significance::Period, SPAN),
     ("SWASTHANI_VRAT_BEGINS", Significance::Period, SPAN),
     ("SWASTHANI_VRAT_ENDS", Significance::Period, SPAN),
     ("TRAYODASHI_SHRADDHA", Significance::Major, BOLD),
@@ -1241,7 +1464,7 @@ const FASTS: [(&str, &[Reading]); 42] = [
 
 /// The groups of [`NEPAL_KEYS`], whose rows name them by index: each one set
 /// of sourced values, in the order the table reads.
-const NEPAL_GROUPS: [Group; 22] = [
+const NEPAL_GROUPS: [Group; 23] = [
     Group {
         kind: Some(FestivalKind::Gazetted),
         tradition: Some(Tradition::Buddhist),
@@ -1374,14 +1597,23 @@ const NEPAL_GROUPS: [Group; 22] = [
         communities: &[],
         regions: &["NP", "NP-P3"],
     },
+    // 22: Chhath's days beside the gazetted one, kept by the communities
+    // the gazetted day is granted to (C2306).
+    Group {
+        kind: Some(FestivalKind::ReligiousCultural),
+        tradition: Some(Tradition::Hindu),
+        communities: &["MAITHIL", "BHOJPURI"],
+        regions: &["NP"],
+    },
 ];
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 489] = [
+const NEPAL_KEYS: [(&str, u8); 501] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
+    ("AKASHDEEPADAN_ARAMBHA", 15),
     ("AKHILBALI_PURTI", 15),
     ("AKSHAYA_TRITIYA", 15),
     ("AMALAKI_EKADASHI", 15),
@@ -1453,6 +1685,9 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("CHATURTHI_SHRADDHA", 19),
     ("CHHANDA_DIWAS", 16),
     ("CHHATH", 7),
+    ("CHHATH_KHARNA", 22),
+    ("CHHATH_NAHAY_KHAY", 22),
+    ("CHHATH_SECOND_DAY", 22),
     ("CHIR_SWAYEGU", 17),
     ("CHONAM_PARVA", 15),
     ("CHRISTMAS", 2),
@@ -1494,6 +1729,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("FULKHARKA_GANGAJAMUNA_MELA", 15),
     ("GAIDU_PUJA", 15),
     ("GAI_JATRA", 9),
+    ("GAI_PUJA", 2),
     ("GANESHA_CHATURTHI", 15),
     ("GANGA_DASHAHARA", 19),
     ("GANGA_PUJA", 15),
@@ -1512,6 +1748,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("GLOBAL_HANDWASHING_DAY", 16),
     ("GOPASHTAMI", 15),
     ("GORAKHNATH_JAYANTI", 15),
+    ("GORU_PUJA", 2),
     ("GOSAIKUNDA_SNANA_ARAMBHA", 15),
     ("GOSAIKUNDA_SNANA_SAMAPTI", 15),
     ("GOVARDHAN_PUJA", 2),
@@ -1605,6 +1842,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("JYA_PUNHI", 17),
     ("KABIR_JAYANTI", 15),
     ("KAG_TIHAR", 2),
+    ("KALARATRI", 15),
     ("KALI_YUGADI", 15),
     ("KALKI_JAYANTI", 15),
     ("KAMADA_EKADASHI", 15),
@@ -1622,6 +1860,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("KHADGA_JATRA", 17),
     ("KHANCHI_SARAI_PARVA", 15),
     ("KHEER_KHANE_DIN", 15),
+    ("KIJA_PUJA", 17),
     ("KIRAT_SAMAJ_SUDHAR_DIWAS", 16),
     ("KIRTIPUR_BAGH_BHAIRAV_JATRA", 17),
     ("KIRTIPUR_INDRAYANI_JATRA", 17),
@@ -1724,6 +1963,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("PI_DAY", 16),
     ("PRADOSHA_VRATA", 15),
     ("PRATIPADA_SHRADDHA", 19),
+    ("PRAUSHTHAPADI_SHRADDHA", 19),
     ("PRITHVI_JAYANTI", 2),
     ("PUNCHALI_BHUJA", 15),
     ("PURNIMA_VRATA", 19),
@@ -1775,6 +2015,8 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("SOMAVATI_AMAVASYA", 19),
     ("SONAM_LHOSAR", 11),
     ("SORHA_SHRADDHA_ARAMBHA", 15),
+    ("SORHA_SHRADDHA_SAMAPTI", 15),
+    ("SUKHRATRI", 15),
     ("SURYA_PUJA", 15),
     ("SURYA_SHASHTHI", 15),
     ("SWASTHANI_VRAT_BEGINS", 15),
@@ -1877,6 +2119,7 @@ const NEPAL_KEYS: [(&str, u8); 489] = [
     ("WORLD_WATER_DAY", 16),
     ("WORLD_WETLANDS_DAY", 16),
     ("YALA_PANCHADAN", 17),
+    ("YAMADEEPADAN", 15),
     ("YAMAPANCHAKA_ARAMBHA", 15),
     ("YAMA_DWITIYA", 1),
     ("YOGINI_EKADASHI", 15),
@@ -1946,7 +2189,7 @@ mod tests {
                 .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
         );
         assert!(
-            PRINTED_ORDER
+            NAMES
                 .windows(2)
                 .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
         );
@@ -1963,11 +2206,14 @@ mod tests {
                 "{key}: a gazetted holiday takes the clause's tier"
             );
         }
-        for &(key, _) in &PRINTED_ORDER {
+        for &(key, ..) in &NAMES {
             assert!(
                 NEPAL_KEYS.binary_search_by_key(&key, |row| row.0).is_ok(),
                 "{key} is not a Nepal key"
             );
+            for names in FestivalMeta::nepal(key).names {
+                names.check().unwrap();
+            }
         }
     }
 

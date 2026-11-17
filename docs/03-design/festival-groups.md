@@ -63,11 +63,14 @@ stay as they are, so nothing that reads them moves.
 
 ## 2. Nepal
 
-`NEPAL_PANCHANGA` carries two groups.
+`NEPAL_PANCHANGA` carries five groups: the sixteen shraddhas, Dashain,
+Tihar, Chhath and Teej. SR-145 named every day of each
+(`nepal-festival-names.md` §2); this section gives Dashain and Tihar as
+they were built, and that page the rest.
 
 **Dashain** (`DASHAIN`, main `VIJAYA_DASHAMI`): Ghatasthapana
-(`NAVARATRA_ARAMBHA`), Phulpati, the Mahashtami, the Mahanavami, Vijaya
-Dashami and Kojagrat Purnima. *Dharmasindhu* gives the Navaratra from
+(`NAVARATRA_ARAMBHA`), Bilva nimantran, Phulpati, the Mahashtami and
+Kalaratri, the Mahanavami, Vijaya Dashami and Kojagrat Purnima. *Dharmasindhu* gives the Navaratra from
 Ashvina's bright 1st (p. 65), the Mahanavami (p. 69), the visarjana and
 the Vijaya Dashami (pp. 70–71) and the Kojagara on the full moon
 (p. 74). The national panchanga prints each in VS 2082 (p. 13) and
@@ -83,8 +86,9 @@ The festival as Nepal keeps it runs to the full moon. A consumer that
 ends Dashain at the holiday or the Tika regroups it (§1). Measured spans
 run 13 to 15 days.
 
-**Tihar** (`TIHAR`, main `LAKSHMI_PUJA`): Kag Tihar, Kukur Tihar,
-Lakshmi puja, Govardhan puja, Mha puja and Bhai Tika (`YAMA_DWITIYA`).
+**Tihar** (`TIHAR`, main `LAKSHMI_PUJA`): Kag Tihar, Lakshmi puja, Kukur
+Tihar, Narak chaturdashi and Sukhratri, Gai puja, Goru and Govardhan puja,
+Mha puja and Hali Tihar, Bhai Tika (`YAMA_DWITIYA`) and Kija puja.
 *Dharmasindhu* gives Lakshmi's worship on the new moon (p. 77), the Bali
 and Govardhan puja (p. 78) and the Yama dwitiya (p. 79). Nepal keeps
 these days, Ashvina's dark 13th to Kartika's bright 2nd, as the
@@ -93,25 +97,22 @@ and VS 2083 (pp. 16–17). The notice gives "तिहार" from Lakshmi puja 
 the day after Bhai Tika. Dhanteras falls outside the five days, and Mha
 puja is the Newar member (C2102, C2103).
 
-**BS 2083's gap.** Kartik 21 to 25, 2083 are 7 to 11 November 2026. The
-new moon holds the 8th's evening and the 9th's sunrise. So Lakshmi puja
-falls on the 8th, with the dogs' day, and Govardhan puja on the 10th:
+**BS 2083's Kartik 23.** Kartik 21 to 25, 2083 are 7 to 11 November
+2026. The new moon holds the 8th's evening and the 9th's sunrise. So
+Lakshmi puja falls on the 8th, with the dogs' day, and Govardhan puja on
+the 10th. The 9th was a gap of the span until SR-145 (C2111): the
+committee prints the cows' worship there, and *Dharmasindhu* p. 78's rule
+for the Bali pratipada's cows' play gives it, the 1st lasting too little
+past the 10th's sunrise (C2301, which supersedes C1661):
 
 ```
-7:KAG_TIHAR 8:KUKUR_TIHAR+LAKSHMI_PUJA 9:- 10:GOVARDHAN_PUJA+MHA_PUJA 11:YAMA_DWITIYA
+7:KAG_TIHAR 8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI 9:GAI_PUJA
+10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR 11:YAMA_DWITIYA+KIJA_PUJA
 ```
 
-The committee prints the cows' worship on Kartik 23 (the 9th). The pack
-holds no Gai Tihar rule: *Dharmasindhu* puts the cows with the
-Govardhan puja, and that day misses five of the consumer's seven
-verified days (C1661, dropped). So the 9th is a gap of the span, and it
-is one by the pack's rules, not a hole in the festival (C2111). A
-consumer that keeps the cows' day writes the rule and adds it to the
-group.
-
-**Chhath** is not a Nepal group. The panchanga prints one day, छठपर्व,
-with no Kharna and no Nahay-Khay, and the pack's `CHHATH` is that one
-day (C2110).
+**Chhath** is a Nepal group since SR-145: the panchanga prints one day,
+छठपर्व, and the other three are counted from it as Bihar's notification
+and every almanac read keep them (C2306, which supersedes C2110).
 
 ## 3. India
 
@@ -210,5 +211,7 @@ check compares every binding.
 - Groups for the India packs not listed in §3, each from the state's
   notice.
 - Nahay-Khay as a rule of Bihar's pack, which would make it Chhath's
-  first member.
+  first member there as it is in Nepal's (C2306).
+- Dashain's 2nd to 4th and 11th to 14th, which no Nepal source names
+  (C2305).
 - How Nepal keeps Tihar in an adhika Kartika (C2107).

@@ -345,6 +345,7 @@ __all__ = [
     "RiteBeginning",
     "RiteVerdict",
     "VrataFast",
+    "FestivalNames",
     "Significance",
     "PublishedEntry",
     "PublishedEntrySet",
@@ -4273,6 +4274,9 @@ class MetaPatch(TypedDict, total=False):
     kind: Optional[Union[_catalogue.FestivalKind, str]]
     """In place of its kind."""
 
+    names: Optional[Sequence[FestivalNames]]
+    """In place of what its regions call it."""
+
     optional: Optional[bool]
     """In place of whether it is an office's choice."""
 
@@ -5686,6 +5690,25 @@ class VrataFast(TypedDict, total=False):
 
     start: Optional[FastStart]
     """When it begins; unset when the clause does not say."""
+
+
+class FestivalNames(TypedDict, total=False):
+    """What one region calls a festival (`03-design/nepal-festival-names.md` §3): the name it leads with, the others it gives the day, and the day's order. Each name is a key of the locales' `festival` names, as a rule's own key is, so every locale writes it."""
+
+    aliases: Sequence[str]
+    """Its other names there, as name keys, in the order a source gives them; the rule's own key among them when another leads."""
+
+    lead: Optional[str]
+    """The name it leads with there, as a name key (`BHAI_TIKA`); unset when it is the rule's own key."""
+
+    rank: Optional[int]
+    """Where it stands among the observances of its tier on its day, lower first; unset for one that keeps its rule's place."""
+
+    region: Required[str]
+    """The region, a key of `FestivalMeta::regions`' kind (`NP`)."""
+
+    source: Required[str]
+    """Where the names and the rank are said."""
 
 
 Significance: TypeAlias = Literal['NATIONAL', 'MAJOR', 'PERIOD', 'REGIONAL', 'MINOR']
@@ -8805,6 +8828,9 @@ class FestivalMeta(TypedDict, total=False):
 
     kind: Optional[Union[_catalogue.FestivalKind, str]]
     """Its kind; unset when no source classes it."""
+
+    names: Sequence[FestivalNames]
+    """What a region calls it, one entry a region: its primary name there, its other names and where it stands among a day's observances (`03-design/nepal-festival-names.md`, SR-145); empty when no source in hand names it beyond its key. Like `variant`, a statement of the rule's, which `FestivalMeta::unsourced` does not name."""
 
     optional: bool
     """Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it."""

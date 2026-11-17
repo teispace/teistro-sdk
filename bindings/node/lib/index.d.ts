@@ -6643,6 +6643,8 @@ export interface FestivalObservance {
   readonly moonrise?: FestivalMoonrise;
   /** The month rule that placed the day in a year with an adhika or a kshaya month (SR-93, `03-design/festival-malamasa.md`); absent in an ordinary month. */
   readonly malamasa?: Malamasa;
+  /** Whether the occurrence begins after the day's sunrise, so the tithi the sunrise holds changes to it during the day: the day a printed calendar marks with a `*` (SR-145); absent when false, and for a day counted to one of its own or moved by a published entry. */
+  readonly beginsAfterSunrise?: boolean;
 }
 
 /** Which month rule placed an observance (SR-93): kept in the nija month of a doubled name, in the adhika month by the rule's own `inAdhika`, or in a kshaya lunation under its first or its second name. */

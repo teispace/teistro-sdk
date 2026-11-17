@@ -36,12 +36,16 @@ import java.util.List;
  * @param malamasa the month rule that placed the day in a year with an
  *     adhika or a kshaya month (SR-93,
  *     {@code 03-design/festival-malamasa.md}); null in an ordinary month
+ * @param beginsAfterSunrise whether the occurrence begins after the day's
+ *     sunrise, so the tithi the sunrise holds changes to it during the day:
+ *     the day a printed calendar marks with a {@code *} (SR-145); false for
+ *     a day counted to one of its own or moved by a published entry
  */
 public record FestivalObservance(
         String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
         List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
         double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait,
-        FestivalMoonrise moonrise, Malamasa malamasa) {
+        FestivalMoonrise moonrise, Malamasa malamasa, boolean beginsAfterSunrise) {
     /** Keeps the pair and the readings unmodifiable. */
     public FestivalObservance {
         extents = List.copyOf(extents);
@@ -148,5 +152,34 @@ public record FestivalObservance(
             FestivalMoonrise moonrise) {
         this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana,
                 published, sait, moonrise, null);
+    }
+
+    /**
+     * An observance with no mark of a tithi begun after sunrise, as one was
+     * written before SR-145.
+     *
+     * @param rule as the record's
+     * @param day as the record's
+     * @param tithi as the record's
+     * @param month as the record's
+     * @param adhika as the record's
+     * @param caseHeld as the record's
+     * @param extents as the record's
+     * @param decidedBy as the record's
+     * @param choice as the record's
+     * @param marginSeconds as the record's
+     * @param parana as the record's
+     * @param published as the record's
+     * @param sait as the record's
+     * @param moonrise as the record's
+     * @param malamasa as the record's
+     */
+    public FestivalObservance(
+            String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
+            List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
+            double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait,
+            FestivalMoonrise moonrise, Malamasa malamasa) {
+        this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana,
+                published, sait, moonrise, malamasa, false);
     }
 }

@@ -299,13 +299,15 @@ holds every `NATIONAL` key to a nationwide clause. Then `MARKS`
   Khanchi and Argha, in Arghakhanchi.
 
 **A day's order.** A day's observances (`DayCell.festivals`) are sorted by
-tier, then by where the print sets each among the day's others
-(`printed_order`, 24 keys: a sankranti leads its day; Chandi Purnima,
-Buddha Jayanti, Labour Day, then Ubhauli; Kukur Tihar, then Lakshmi Puja;
-the pradosha vrata before Dhanteras and the shraddhas; the moonrise, Mha
-puja, then Nepal Sambat; Kartik snan's end before the chaturmas'; the
-Swasthani vrata before Magh snan, every tie the print and the rule order
-part on over VS 2083), then by the rule's place in its pack: the lunar rules,
+tier, then by the rank Nepal's names give each among the day's others
+(`FestivalMeta::rank`, the `rank` of the rule's first region's entry in
+`names`, `nepal-festival-names.md` §4; 26 keys: a sankranti leads its day;
+Chandi Purnima, Buddha Jayanti, Labour Day, then Ubhauli; Lakshmi Puja,
+then Kukur Tihar, the maintainer's order over the print's (C2303); the
+pradosha vrata before Dhanteras and the shraddhas; the moonrise, Goru and
+Govardhan puja, Mha puja, then Nepal Sambat; Kartik snan's end before the
+chaturmas'; the Swasthani vrata before Magh snan, every tie the print and
+the rule order part on over VS 2083), then by the rule's place in its pack: the lunar rules,
 the Ekadashis, the counted, the dated, the anniversaries and the published
 days, each in the pack's order. The sort is stable and costs a key per
 observance. A request's `order` is `SIGNIFICANCE`, the default, or

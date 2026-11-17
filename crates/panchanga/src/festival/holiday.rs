@@ -375,12 +375,15 @@ const NEPAL_2083: [Row; 45] = [
         last: Some((7, 26)),
         // Tihar's days the pack groups with its gazetted festivals: Kag
         // Tihar (Kartik 21, before the span), Kukur Tihar (Kartik 22, with
-        // Lakshmi Puja) and Govardhan puja (Kartik 24). Mha puja is a
-        // Newar festival in the pack's grouping, not one of these.
+        // Lakshmi Puja), the cows' worship (Kartik 23), and Govardhan and
+        // the oxen's worship (Kartik 24). Mha puja is a Newar festival in
+        // the pack's grouping, not one of these.
         days_of: &[
             ("KAG_TIHAR", (7, 21)),
             ("KUKUR_TIHAR", (7, 22)),
+            ("GAI_PUJA", (7, 23)),
             ("GOVARDHAN_PUJA", (7, 24)),
+            ("GORU_PUJA", (7, 24)),
         ],
         ne: "तिहार बिदा (लक्ष्मीपूजा देखि भाइटिकाको भोलिपल्टसम्म)",
         en: "The Tihar holiday (from Lakshmi Puja to the day after Bhai Tika)",

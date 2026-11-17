@@ -82,8 +82,8 @@ pub use holiday::{Holiday, HolidayNotice, HolidaySet, nepal_gazette_scope};
 pub use in_month::InMonth;
 pub use malamasa::{Malamasa, MalamasaClause};
 pub use meta::{
-    FastEnd, FastStart, FestivalMeta, MetaFilter, MetaPatch, Significance, SignificanceMark,
-    Variant, VrataFast, printed_order,
+    FastEnd, FastStart, FestivalMeta, FestivalNames, MetaFilter, MetaPatch, Significance,
+    SignificanceMark, Variant, VrataFast,
 };
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,
@@ -2675,6 +2675,14 @@ pub struct Observance {
     /// either of its names; left out in an ordinary month.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub malamasa: Option<Malamasa>,
+    /// Whether the occurrence begins after the day's sunrise, so the
+    /// tithi the sunrise holds changes to it during the day: the day a
+    /// printed calendar marks with a `*` (SR-145,
+    /// `03-design/nepal-festival-names.md` §5). False for a day counted
+    /// from another rule's on a day of its own, and for a day a published
+    /// entry moved. Left out when false.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub begins_after_sunrise: bool,
 }
 
 /// An occurrence a rule could not judge, and why.
@@ -3747,10 +3755,18 @@ fn judge(
         sait: None,
         barred: false,
         malamasa: None,
+        begins_after_sunrise: begins_after_sunrise(tithi, kept),
     })))
 }
 
 const SECONDS_PER_DAY: f64 = 86_400.0;
+
+/// Whether `tithi` begins inside `day`, after its sunrise and before the
+/// next: the day's sunrise holds the tithi before it ([`Observance::begins_after_sunrise`]).
+fn begins_after_sunrise(tithi: Interval, day: &FestivalDay) -> bool {
+    let from = tithi.from.get();
+    day.sunrise.get() < from && from < day.next_sunrise.get()
+}
 
 /// How long the tithi held a day's window, in days; at an instant, 1
 /// when it held it and 0 when not, so that [`Predicate::Greater`] reads

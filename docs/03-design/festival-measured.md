@@ -861,11 +861,28 @@ measures the fit and not a text (C600).
 | 2083 | NALASWANE_CHARHE | 9 Oct | p. 14: Ⓑ नलास्वनेचह्रेपूजा, continuing the dark 14th's row | 9 Oct | 9 Oct |
 | 2082 | DISHI_CHARHE | 18 Dec | p. 18: (दिशीचह्रेपूजा) | 18 Dec | 18 Dec |
 | 2083 | DISHI_CHARHE | 6 Jan | p. 20: (दिशीचह्रेपूजा) | 6 Jan | 6 Jan |
+| 2082 | PRAUSHTHAPADI_SHRADDHA | 7 Sep | p. 11: प्रौष्ठपदीश्राद्ध | 7 Sep | 7 Sep |
+| 2083 | PRAUSHTHAPADI_SHRADDHA | 26 Sep | p. 13: प्रौष्ठपदी श्राद्ध | 26 Sep | 26 Sep |
+| 2083 | SORHA_SHRADDHA_SAMAPTI | 10 Oct | p. 14: सोह्रश्राद्ध समाप्ति | 10 Oct | 10 Oct |
+| 2082 | KALARATRI | 30 Sep | p. 13: कालरात्रि | 30 Sep | 30 Sep |
+| 2083 | KALARATRI | 18 Oct | p. 15: कालरात्रि | 18 Oct | 19 Oct ✗ |
+| 2082 | AKASHDEEPADAN_ARAMBHA | 7 Oct | p. 13: आकाशदीपदानारम्भ | 7 Oct | 7 Oct |
+| 2083 | AKASHDEEPADAN_ARAMBHA | 26 Oct | p. 15: आकाशदीपदानारम्भ | 26 Oct | 26 Oct |
+| 2082 | YAMADEEPADAN | 18 Oct | p. 14: यमदीपदान | 18 Oct | 18 Oct |
+| 2083 | YAMADEEPADAN | 6 Nov | p. 16: यमदीपदान | 6 Nov | 6 Nov |
+| 2082 | SUKHRATRI | 20 Oct | p. 14: सुखरात्रि | 20 Oct | 21 Oct ✗ |
+| 2083 | SUKHRATRI | 8 Nov | p. 16: सुखरात्रि | 8 Nov | 8 Nov |
+| 2082 | GAI_PUJA | 22 Oct | p. 15: गाईपूजा | 22 Oct | 22 Oct |
+| 2083 | GAI_PUJA | 9 Nov | p. 16: गाईपूजा | 9 Nov | 10 Nov ✗ |
+| 2082 | GORU_PUJA | 22 Oct | p. 15: गोरुपूजा | 22 Oct | 22 Oct |
+| 2083 | GORU_PUJA | 10 Nov | p. 17: गोरुपूजा | 10 Nov | 10 Nov |
+| 2082 | KIJA_PUJA | 23 Oct | p. 15: (किजापूजा) | 23 Oct | 23 Oct |
+| 2083 | KIJA_PUJA | 11 Nov | p. 17: (किजापूजा) | 11 Nov | 11 Nov |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 617 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 60 of 617 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 634 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 63 of 634 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
@@ -888,11 +905,11 @@ gives is the publisher's own.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 609 disagree |
-| every entry is placed on its rule's occurrence | falsified | 8 of 617 disagree |
-| the committee's sky gives every day the set moved | falsified | 3 of 52 disagree; the others' reasons are below |
+| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 626 disagree |
+| every entry is placed on its rule's occurrence | falsified | 8 of 634 disagree |
+| the committee's sky gives every day the set moved | falsified | 3 of 55 disagree; the others' reasons are below |
 
-Of the 52 days the set moved, the committee's sky gives 49, and no change tried 3.
+Of the 55 days the set moved, the committee's sky gives 52, and no change tried 3.
 
 The publisher's own days, which no change tried gives:
 

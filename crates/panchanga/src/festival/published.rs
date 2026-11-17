@@ -392,6 +392,9 @@ struct Occurrence<'a> {
     fast_parana: Option<&'a mut Option<Parana>>,
     /// A vrata's paranas, which a moved observance cannot keep either.
     vrata_parana: Option<&'a mut Vec<VrataParanaTime>>,
+    /// Whether its tithi begins after the day's sunrise, which a moved
+    /// day does not say.
+    begins_after_sunrise: Option<&'a mut bool>,
 }
 
 /// Lays `sets` over an answer for the days `from` to `to` inclusive, in
@@ -563,6 +566,9 @@ fn place(
         if let Some(paranas) = occurrence.vrata_parana {
             paranas.clear();
         }
+        if let Some(mark) = occurrence.begins_after_sunrise {
+            *mark = false;
+        }
         *occurrence.day = date;
     } else {
         *occurrence.day = own;
@@ -579,6 +585,7 @@ fn occurrences(answer: &mut Observances) -> Vec<Occurrence<'_>> {
         published: &mut o.published,
         fast_parana: None,
         vrata_parana: Some(&mut o.parana),
+        begins_after_sunrise: Some(&mut o.begins_after_sunrise),
     });
     let fasts = answer.ekadashis.iter_mut().map(|f| Occurrence {
         rule: &f.rule,
@@ -587,6 +594,7 @@ fn occurrences(answer: &mut Observances) -> Vec<Occurrence<'_>> {
         published: &mut f.published,
         fast_parana: Some(&mut f.parana),
         vrata_parana: None,
+        begins_after_sunrise: None,
     });
     let dated = answer.dated.iter_mut().map(|d| Occurrence {
         rule: &d.rule,
@@ -595,6 +603,7 @@ fn occurrences(answer: &mut Observances) -> Vec<Occurrence<'_>> {
         published: &mut d.published,
         fast_parana: None,
         vrata_parana: None,
+        begins_after_sunrise: None,
     });
     observances.chain(fasts).chain(dated).collect()
 }
