@@ -12,6 +12,30 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every date of the coverage answered, and the range as data (SR-136).**
+**Numbers:** the first date answered is now 1800-01-01 and the last 2399-12-31, at
+Kathmandu and New York under the Nepal official and drik profiles over the built-in
+ephemeris. Before, the almanac of 1 January 1800 at Kathmandu, any lunar year
+of 1800 to 1803, and festivals from 1800 to early 1801 and from November 2399 were
+refused `OUT_OF_RANGE` or `NOT_CONVERGED`. Nothing inside the coverage moves:
+a search cut at an edge keeps its anchored scan grid, so every answer away from the
+edges is the same to the bit. The built-in ephemeris's declared span opens and closes
+at midnight (2378496.5 to 2597641.5 TT) rather than noon, and Pluto is read a day
+past the start of his fit (1.573″, 0.392″ and 0.00205″ off in the compact, standard
+and full tiers, each inside its tier's bound).
+- **Added:** `Context::coverage()` (`ts_context_coverage`, `coverage()` on every
+  binding's context, the MCP tool `coverage.describe`): the first and last instants
+  and Gregorian dates the configured ephemeris answers under the profile, the Bikram
+  Sambat table's years and those the government published, and each holiday set's
+  years (`03-design/coverage-edges.md`, C2250).
+- **Added:** `clipped` (`START`, `END`, `BOTH`) on a span, a lunar month, a lunar
+  year, a day sky and a local day the coverage cuts, left out of the wire when absent.
+  A month or year that began before the coverage, or outlasts it, is answered and cut
+  at the edge rather than refused `OUT_OF_RANGE` (C2242 to C2249).
+- **Changed:** a festival range near an edge reads only the days the almanac answers
+  at the place. A sunrise before the coverage's first instant (east of about 97° E on
+  1 January 1800) is the one day still refused (C2244).
+
 **Years, months and weeks in every language, English as Nepal writes it, and the
 SDK's sources embedded (SR-131, SR-134, SR-135, SR-139, SR-140).**
 **Numbers:** no computed value moves. Every locale's `sdk.calendar` gains five
