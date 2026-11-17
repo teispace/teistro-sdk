@@ -361,6 +361,54 @@ fn on_the_day(
     (found, held)
 }
 
+/// The festival request a next search reckons, cut to what its target
+/// needs, and the keys it looks for: a kind's rules, a rule, or a group's
+/// members.
+fn searched_for(request: &NextRequest) -> Result<(FestivalRequest, Vec<String>), Error> {
+    Ok(match &request.target {
+        NextTarget::Kind(kind) => {
+            let read = kind.rules();
+            let keys: Vec<String> = read
+                .rules
+                .iter()
+                .map(|r| r.key.clone())
+                .chain(read.ekadashis.iter().map(|r| r.key.clone()))
+                .chain(read.dated.iter().map(|r| r.key.clone()))
+                .collect();
+            (FestivalRequest::of_kind(read), keys)
+        }
+        NextTarget::Rule(key) => {
+            let asked = request.festivals.as_ref().ok_or_else(|| {
+                Error::invalid_arg("a `rule` is a key of `festivals`, which is left out")
+                    .with_field("festivals")
+            })?;
+            let narrowed = asked.narrowed_to(key).ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "`{key}` is no rule of the festival request and no day its published sets add"
+                ))
+                .with_field("rule")
+            })?;
+            (narrowed, vec![key.clone()])
+        }
+        NextTarget::Group(key) => {
+            let asked = request.festivals.as_ref().ok_or_else(|| {
+                Error::invalid_arg("a `group` is a key of `festivals`, which is left out")
+                    .with_field("festivals")
+            })?;
+            let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
+                Error::invalid_arg(format!("`{key}` is no group of the festival request"))
+                    .with_field("group")
+            })?;
+            let members = narrowed
+                .groups()
+                .iter()
+                .flat_map(|group| group.members.clone())
+                .collect();
+            (narrowed, members)
+        }
+    })
+}
+
 /// A span's reckoning cut to the group's member `keys`, its unjudged and
 /// unplaced entries and its groups left out, and the members that fall in
 /// it, in the group's order.
@@ -438,48 +486,7 @@ impl AlmanacArea<'_> {
         request: &NextRequest,
         offset: UtcOffset,
     ) -> Result<Envelope<NextOccurrence>, Error> {
-        let (festivals, keys) = match &request.target {
-            NextTarget::Kind(kind) => {
-                let read = kind.rules();
-                let keys: Vec<String> = read
-                    .rules
-                    .iter()
-                    .map(|r| r.key.clone())
-                    .chain(read.ekadashis.iter().map(|r| r.key.clone()))
-                    .chain(read.dated.iter().map(|r| r.key.clone()))
-                    .collect();
-                (FestivalRequest::of_kind(read), keys)
-            }
-            NextTarget::Rule(key) => {
-                let asked = request.festivals.as_ref().ok_or_else(|| {
-                    Error::invalid_arg("a `rule` is a key of `festivals`, which is left out")
-                        .with_field("festivals")
-                })?;
-                let narrowed = asked.narrowed_to(key).ok_or_else(|| {
-                    Error::invalid_arg(format!(
-                        "`{key}` is no rule of the festival request and no day its published sets add"
-                    ))
-                    .with_field("rule")
-                })?;
-                (narrowed, vec![key.clone()])
-            }
-            NextTarget::Group(key) => {
-                let asked = request.festivals.as_ref().ok_or_else(|| {
-                    Error::invalid_arg("a `group` is a key of `festivals`, which is left out")
-                        .with_field("festivals")
-                })?;
-                let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
-                    Error::invalid_arg(format!("`{key}` is no group of the festival request"))
-                        .with_field("group")
-                })?;
-                let members = narrowed
-                    .groups()
-                    .iter()
-                    .flat_map(|group| group.members.clone())
-                    .collect();
-                (narrowed, members)
-            }
-        };
+        let (festivals, keys) = searched_for(request)?;
         festivals.check()?;
         let calendar = system_of(request.calendar)?;
         let local = request.after.get() + f64::from(offset.seconds()) / 86_400.0;
