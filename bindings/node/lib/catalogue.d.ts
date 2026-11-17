@@ -323,6 +323,10 @@ export type Kind =
   | 'vastu_yoni'
   | 'vyaya_kind'
   | 'chart_frame'
+  | 'life_area'
+  | 'colour'
+  | 'gochar_verdict'
+  | 'score_band'
   | 'holiday_scope';
 
 /** Every Kind by name; the values are the strings the union accepts. */
@@ -667,6 +671,22 @@ export declare const Kind: {
    * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
    */
   readonly ChartFrame: 'chart_frame';
+  /**
+   * The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.
+   */
+  readonly LifeArea: 'life_area';
+  /**
+   * A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).
+   */
+  readonly Colour: 'colour';
+  /**
+   * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).
+   */
+  readonly GocharVerdict: 'gochar_verdict';
+  /**
+   * A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).
+   */
+  readonly ScoreBand: 'score_band';
   /**
    * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
    */
@@ -6787,6 +6807,166 @@ export declare const ChartFrame: {
 export declare const ChartFrameById: ReadonlyMap<number, ChartFrame>;
 
 /**
+ * The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. Members are the catalogue's ids; the full key id is `(TS_KIND_LIFE_AREA << 16) | member`.
+ */
+export type LifeArea =
+  | 'life_area.OVERALL'
+  | 'life_area.CAREER'
+  | 'life_area.FINANCE'
+  | 'life_area.HEALTH'
+  | 'life_area.RELATIONSHIPS'
+  | 'life_area.FAMILY'
+  | 'life_area.EDUCATION'
+  | 'life_area.SPIRITUALITY'
+  | 'unknown';
+
+/** Every LifeArea by name; the values are the strings the union accepts. */
+export declare const LifeArea: {
+  /**
+   * The whole, which every transit also feeds
+   */
+  readonly Overall: 'life_area.OVERALL';
+  /**
+   * Work: the 3rd, 6th, 10th and 11th houses
+   */
+  readonly Career: 'life_area.CAREER';
+  /**
+   * Money: the 2nd and 11th houses
+   */
+  readonly Finance: 'life_area.FINANCE';
+  /**
+   * The body: the 1st, 6th, 8th and 12th houses
+   */
+  readonly Health: 'life_area.HEALTH';
+  /**
+   * Partners: the 5th and 7th houses
+   */
+  readonly Relationships: 'life_area.RELATIONSHIPS';
+  /**
+   * Kin: the 2nd and 4th houses
+   */
+  readonly Family: 'life_area.FAMILY';
+  /**
+   * Learning: the 3rd, 5th and 9th houses
+   */
+  readonly Education: 'life_area.EDUCATION';
+  /**
+   * The inner life: the 8th, 9th and 12th houses
+   */
+  readonly Spirituality: 'life_area.SPIRITUALITY';
+};
+
+/**
+ * Every LifeArea by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const LifeAreaById: ReadonlyMap<number, LifeArea>;
+
+/**
+ * A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). Members are the catalogue's ids; the full key id is `(TS_KIND_COLOUR << 16) | member`.
+ */
+export type Colour =
+  | 'colour.RED'
+  | 'colour.WHITE'
+  | 'colour.GREEN'
+  | 'colour.ORANGE'
+  | 'colour.YELLOW'
+  | 'colour.BLUE'
+  | 'unknown';
+
+/** Every Colour by name; the values are the strings the union accepts. */
+export declare const Colour: {
+  /**
+   * Mars's
+   */
+  readonly Red: 'colour.RED';
+  /**
+   * Venus's and the Moon's
+   */
+  readonly White: 'colour.WHITE';
+  /**
+   * Mercury's
+   */
+  readonly Green: 'colour.GREEN';
+  /**
+   * The Sun's
+   */
+  readonly Orange: 'colour.ORANGE';
+  /**
+   * Jupiter's
+   */
+  readonly Yellow: 'colour.YELLOW';
+  /**
+   * Saturn's
+   */
+  readonly Blue: 'colour.BLUE';
+};
+
+/**
+ * Every Colour by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ColourById: ReadonlyMap<number, Colour>;
+
+/**
+ * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT << 16) | member`.
+ */
+export type GocharVerdict = 'gochar_verdict.GOOD' | 'gochar_verdict.OBSTRUCTED' | 'gochar_verdict.NOT_GOOD' | 'unknown';
+
+/** Every GocharVerdict by name; the values are the strings the union accepts. */
+export declare const GocharVerdict: {
+  /**
+   * In a good house, and nothing stands in its vedha house
+   */
+  readonly Good: 'gochar_verdict.GOOD';
+  /**
+   * In a good house, and another graha stands in its vedha house
+   */
+  readonly Obstructed: 'gochar_verdict.OBSTRUCTED';
+  /**
+   * Not in a house v. 2 names good
+   */
+  readonly NotGood: 'gochar_verdict.NOT_GOOD';
+};
+
+/**
+ * Every GocharVerdict by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GocharVerdictById: ReadonlyMap<number, GocharVerdict>;
+
+/**
+ * A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_SCORE_BAND << 16) | member`.
+ */
+export type ScoreBand = 'score_band.EXCELLENT' | 'score_band.GOOD' | 'score_band.MIXED' | 'score_band.CARE' | 'unknown';
+
+/** Every ScoreBand by name; the values are the strings the union accepts. */
+export declare const ScoreBand: {
+  /**
+   * At or above the first threshold, 75 by default
+   */
+  readonly Excellent: 'score_band.EXCELLENT';
+  /**
+   * At or above the second, 50 by default, and below the first
+   */
+  readonly Good: 'score_band.GOOD';
+  /**
+   * At or above the third, 30 by default, and below the second
+   */
+  readonly Mixed: 'score_band.MIXED';
+  /**
+   * Below the third: a day for care
+   */
+  readonly Care: 'score_band.CARE';
+};
+
+/**
+ * Every ScoreBand by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ScoreBandById: ReadonlyMap<number, ScoreBand>;
+
+/**
  * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
  */
 export type HolidayScope =
@@ -8893,33 +9073,6 @@ export declare const NodeObstruction: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const NodeObstructionById: ReadonlyMap<number, NodeObstruction>;
-
-/**
- * What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
- */
-export type GocharVerdict = 'GOOD' | 'OBSTRUCTED' | 'NOT_GOOD';
-
-/** Every GocharVerdict by name; the values are the strings the union accepts. */
-export declare const GocharVerdict: {
-  /**
-   * In a good house, and nothing stands in its vedha house.
-   */
-  readonly Good: 'GOOD';
-  /**
-   * In a good house, and another graha stands in its vedha house.
-   */
-  readonly Obstructed: 'OBSTRUCTED';
-  /**
-   * Not in a house v. 2 names good.
-   */
-  readonly NotGood: 'NOT_GOOD';
-};
-
-/**
- * Every GocharVerdict by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export declare const GocharVerdictById: ReadonlyMap<number, GocharVerdict>;
 
 /**
  * Where in a sign a graha's transit bears fruit (v. 25).

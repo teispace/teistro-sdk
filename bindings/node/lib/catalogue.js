@@ -322,6 +322,10 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   VastuYoni: 'vastu_yoni',
   VyayaKind: 'vyaya_kind',
   ChartFrame: 'chart_frame',
+  LifeArea: 'life_area',
+  Colour: 'colour',
+  GocharVerdict: 'gochar_verdict',
+  ScoreBand: 'score_band',
   HolidayScope: 'holiday_scope',
 });
 
@@ -415,6 +419,10 @@ export const KindById = /* @__PURE__ */ new Map([
   [160, 'vastu_yoni'],
   [161, 'vyaya_kind'],
   [162, 'chart_frame'],
+  [163, 'life_area'],
+  [164, 'colour'],
+  [165, 'gochar_verdict'],
+  [166, 'score_band'],
   [167, 'holiday_scope'],
 ]);
 
@@ -3321,6 +3329,92 @@ export const ChartFrameById = /* @__PURE__ */ new Map([
   [3, 'chart_frame.BHAVA'],
 ]);
 
+/** Every LifeArea by name. */
+export const LifeArea = /* @__PURE__ */ Object.freeze({
+  Overall: 'life_area.OVERALL',
+  Career: 'life_area.CAREER',
+  Finance: 'life_area.FINANCE',
+  Health: 'life_area.HEALTH',
+  Relationships: 'life_area.RELATIONSHIPS',
+  Family: 'life_area.FAMILY',
+  Education: 'life_area.EDUCATION',
+  Spirituality: 'life_area.SPIRITUALITY',
+});
+
+/**
+ * Every LifeArea by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const LifeAreaById = /* @__PURE__ */ new Map([
+  [0, 'life_area.OVERALL'],
+  [1, 'life_area.CAREER'],
+  [2, 'life_area.FINANCE'],
+  [3, 'life_area.HEALTH'],
+  [4, 'life_area.RELATIONSHIPS'],
+  [5, 'life_area.FAMILY'],
+  [6, 'life_area.EDUCATION'],
+  [7, 'life_area.SPIRITUALITY'],
+]);
+
+/** Every Colour by name. */
+export const Colour = /* @__PURE__ */ Object.freeze({
+  Red: 'colour.RED',
+  White: 'colour.WHITE',
+  Green: 'colour.GREEN',
+  Orange: 'colour.ORANGE',
+  Yellow: 'colour.YELLOW',
+  Blue: 'colour.BLUE',
+});
+
+/**
+ * Every Colour by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ColourById = /* @__PURE__ */ new Map([
+  [0, 'colour.RED'],
+  [1, 'colour.WHITE'],
+  [2, 'colour.GREEN'],
+  [3, 'colour.ORANGE'],
+  [4, 'colour.YELLOW'],
+  [5, 'colour.BLUE'],
+]);
+
+/** Every GocharVerdict by name. */
+export const GocharVerdict = /* @__PURE__ */ Object.freeze({
+  Good: 'gochar_verdict.GOOD',
+  Obstructed: 'gochar_verdict.OBSTRUCTED',
+  NotGood: 'gochar_verdict.NOT_GOOD',
+});
+
+/**
+ * Every GocharVerdict by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GocharVerdictById = /* @__PURE__ */ new Map([
+  [0, 'gochar_verdict.GOOD'],
+  [1, 'gochar_verdict.OBSTRUCTED'],
+  [2, 'gochar_verdict.NOT_GOOD'],
+]);
+
+/** Every ScoreBand by name. */
+export const ScoreBand = /* @__PURE__ */ Object.freeze({
+  Excellent: 'score_band.EXCELLENT',
+  Good: 'score_band.GOOD',
+  Mixed: 'score_band.MIXED',
+  Care: 'score_band.CARE',
+});
+
+/**
+ * Every ScoreBand by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ScoreBandById = /* @__PURE__ */ new Map([
+  [0, 'score_band.EXCELLENT'],
+  [1, 'score_band.GOOD'],
+  [2, 'score_band.MIXED'],
+  [3, 'score_band.CARE'],
+]);
+
 /** Every HolidayScope by name. */
 export const HolidayScope = /* @__PURE__ */ Object.freeze({
   National: 'holiday_scope.NATIONAL',
@@ -4472,23 +4566,6 @@ export const NodeObstructionById = /* @__PURE__ */ new Map([
   [0, 'NOT_EACH_OTHER'],
   [1, 'EACH_OTHER_TOO'],
   [2, 'NONE'],
-]);
-
-/** Every GocharVerdict by name. */
-export const GocharVerdict = /* @__PURE__ */ Object.freeze({
-  Good: 'GOOD',
-  Obstructed: 'OBSTRUCTED',
-  NotGood: 'NOT_GOOD',
-});
-
-/**
- * Every GocharVerdict by the id the boundary carries, so a column of ids or a
- * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
- */
-export const GocharVerdictById = /* @__PURE__ */ new Map([
-  [0, 'GOOD'],
-  [1, 'OBSTRUCTED'],
-  [2, 'NOT_GOOD'],
 ]);
 
 /** Every Fruition by name. */

@@ -87,6 +87,10 @@ mod mundane_kind;
 mod vastu_yoni;
 mod vyaya_kind;
 mod chart_frame;
+mod life_area;
+mod colour;
+mod gochar_verdict;
+mod score_band;
 mod holiday_scope;
 
 pub use kinds::Kind;
@@ -175,6 +179,10 @@ pub use mundane_kind::*;
 pub use vastu_yoni::*;
 pub use vyaya_kind::*;
 pub use chart_frame::*;
+pub use life_area::*;
+pub use colour::*;
+pub use gochar_verdict::*;
+pub use score_band::*;
 pub use holiday_scope::*;
 
 use crate::key::KeyId;
@@ -277,6 +285,10 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::VastuYoni => VastuYoni::from_key(key).map(VastuYoni::key_id),
         Kind::VyayaKind => VyayaKind::from_key(key).map(VyayaKind::key_id),
         Kind::ChartFrame => ChartFrame::from_key(key).map(ChartFrame::key_id),
+        Kind::LifeArea => LifeArea::from_key(key).map(LifeArea::key_id),
+        Kind::Colour => Colour::from_key(key).map(Colour::key_id),
+        Kind::GocharVerdict => GocharVerdict::from_key(key).map(GocharVerdict::key_id),
+        Kind::ScoreBand => ScoreBand::from_key(key).map(ScoreBand::key_id),
         Kind::HolidayScope => HolidayScope::from_key(key).map(HolidayScope::key_id),
         _ => None,
     }
@@ -377,6 +389,10 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::VastuYoni => VastuYoni::from_id(id.id()).map(VastuYoni::key),
         Kind::VyayaKind => VyayaKind::from_id(id.id()).map(VyayaKind::key),
         Kind::ChartFrame => ChartFrame::from_id(id.id()).map(ChartFrame::key),
+        Kind::LifeArea => LifeArea::from_id(id.id()).map(LifeArea::key),
+        Kind::Colour => Colour::from_id(id.id()).map(Colour::key),
+        Kind::GocharVerdict => GocharVerdict::from_id(id.id()).map(GocharVerdict::key),
+        Kind::ScoreBand => ScoreBand::from_id(id.id()).map(ScoreBand::key),
         Kind::HolidayScope => HolidayScope::from_id(id.id()).map(HolidayScope::key),
         _ => None,
     }

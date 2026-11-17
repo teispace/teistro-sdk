@@ -360,6 +360,14 @@ enum Kind {
   vyayaKind(161, 'vyaya_kind'),
   /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
   chartFrame(162, 'chart_frame'),
+  /// The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.
+  lifeArea(163, 'life_area'),
+  /// A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).
+  colour(164, 'colour'),
+  /// What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).
+  gocharVerdict(165, 'gochar_verdict'),
+  /// A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).
+  scoreBand(166, 'score_band'),
   /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
   holidayScope(167, 'holiday_scope');
 
@@ -5503,6 +5511,196 @@ enum ChartFrame implements KeyOf<ChartFrame> {
   }
 }
 
+/// The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. Members are the catalogue's ids; the full key id is `(TS_KIND_LIFE_AREA << 16) | member`.
+enum LifeArea implements KeyOf<LifeArea> {
+  /// The whole, which every transit also feeds
+  overall(0, 'OVERALL'),
+  /// Work: the 3rd, 6th, 10th and 11th houses
+  career(1, 'CAREER'),
+  /// Money: the 2nd and 11th houses
+  finance(2, 'FINANCE'),
+  /// The body: the 1st, 6th, 8th and 12th houses
+  health(3, 'HEALTH'),
+  /// Partners: the 5th and 7th houses
+  relationships(4, 'RELATIONSHIPS'),
+  /// Kin: the 2nd and 4th houses
+  family(5, 'FAMILY'),
+  /// Learning: the 3rd, 5th and 9th houses
+  education(6, 'EDUCATION'),
+  /// The inner life: the 8th, 9th and 12th houses
+  spirituality(7, 'SPIRITUALITY'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const LifeArea(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'life_area.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<LifeArea> registered(String key) => Registered._('life_area.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static LifeArea byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => LifeArea.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static LifeArea? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). Members are the catalogue's ids; the full key id is `(TS_KIND_COLOUR << 16) | member`.
+enum Colour implements KeyOf<Colour> {
+  /// Mars's
+  red(0, 'RED'),
+  /// Venus's and the Moon's
+  white(1, 'WHITE'),
+  /// Mercury's
+  green(2, 'GREEN'),
+  /// The Sun's
+  orange(3, 'ORANGE'),
+  /// Jupiter's
+  yellow(4, 'YELLOW'),
+  /// Saturn's
+  blue(5, 'BLUE'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Colour(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'colour.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Colour> registered(String key) => Registered._('colour.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Colour byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Colour.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Colour? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT << 16) | member`.
+enum GocharVerdict implements KeyOf<GocharVerdict> {
+  /// In a good house, and nothing stands in its vedha house
+  good(0, 'GOOD'),
+  /// In a good house, and another graha stands in its vedha house
+  obstructed(1, 'OBSTRUCTED'),
+  /// Not in a house v. 2 names good
+  notGood(2, 'NOT_GOOD'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const GocharVerdict(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'gochar_verdict.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<GocharVerdict> registered(String key) => Registered._('gochar_verdict.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static GocharVerdict byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => GocharVerdict.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static GocharVerdict? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_SCORE_BAND << 16) | member`.
+enum ScoreBand implements KeyOf<ScoreBand> {
+  /// At or above the first threshold, 75 by default
+  excellent(0, 'EXCELLENT'),
+  /// At or above the second, 50 by default, and below the first
+  good(1, 'GOOD'),
+  /// At or above the third, 30 by default, and below the second
+  mixed(2, 'MIXED'),
+  /// Below the third: a day for care
+  care(3, 'CARE'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const ScoreBand(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'score_band.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<ScoreBand> registered(String key) => Registered._('score_band.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static ScoreBand byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => ScoreBand.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ScoreBand? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
 enum HolidayScope implements KeyOf<HolidayScope> {
   /// A holiday across the country for everyone: the notice's festivals (2.1), days (6.1) and birth anniversaries (7.1) kept nationwide
@@ -7880,42 +8078,6 @@ enum NodeObstruction {
 
   /// The member with a key, or `null` for one this build does not know.
   static NodeObstruction? byKey(String key) {
-    final wanted = key.contains('.') ? key.split('.').last : key;
-    for (final member in values) {
-      if (member.key == wanted) return member;
-    }
-    return null;
-  }
-}
-
-/// What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
-enum GocharVerdict {
-  /// In a good house, and nothing stands in its vedha house.
-  good(0, 'GOOD'),
-  /// In a good house, and another graha stands in its vedha house.
-  obstructed(1, 'OBSTRUCTED'),
-  /// Not in a house v. 2 names good.
-  notGood(2, 'NOT_GOOD');
-
-  const GocharVerdict(this.id, this.key);
-
-  /// The id the C boundary carries.
-  final int id;
-
-  /// The key every pack, fixture and serialised result spells it with.
-  final String key;
-
-  /// The member with an id.
-  ///
-  /// Throws [ArgumentError] for an id this build does not know, because
-  /// a value outside a closed set is a fault, not a state.
-  static GocharVerdict byId(int id) => values.firstWhere(
-        (member) => member.id == id,
-        orElse: () => throw ArgumentError.value(id, 'id', 'not a GocharVerdict'),
-      );
-
-  /// The member with a key, or `null` for one this build does not know.
-  static GocharVerdict? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

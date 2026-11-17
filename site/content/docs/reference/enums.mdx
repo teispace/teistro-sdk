@@ -96,6 +96,10 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_VASTU_YONI` | 160 | The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. |
 | `TS_KIND_VYAYA_KIND` | 161 | The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). |
 | `TS_KIND_CHART_FRAME` | 162 | What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. |
+| `TS_KIND_LIFE_AREA` | 163 | The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. |
+| `TS_KIND_COLOUR` | 164 | A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). |
+| `TS_KIND_GOCHAR_VERDICT` | 165 | What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). |
+| `TS_KIND_SCORE_BAND` | 166 | A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). |
 | `TS_KIND_HOLIDAY_SCOPE` | 167 | Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. |
 
 ## ts_graha
@@ -1677,6 +1681,55 @@ What a drawn chart counts its houses from: the lagna, the Moon or the Sun as hou
 | `TS_CHART_FRAME_SUN` | 2 | The Sun's sign as house 1, the grahas in their signs: the surya kundali |
 | `TS_CHART_FRAME_BHAVA` | 3 | The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in |
 
+## ts_life_area
+
+The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. Members are the catalogue's ids; the full key id is `(TS_KIND_LIFE_AREA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_LIFE_AREA_OVERALL` | 0 | The whole, which every transit also feeds |
+| `TS_LIFE_AREA_CAREER` | 1 | Work: the 3rd, 6th, 10th and 11th houses |
+| `TS_LIFE_AREA_FINANCE` | 2 | Money: the 2nd and 11th houses |
+| `TS_LIFE_AREA_HEALTH` | 3 | The body: the 1st, 6th, 8th and 12th houses |
+| `TS_LIFE_AREA_RELATIONSHIPS` | 4 | Partners: the 5th and 7th houses |
+| `TS_LIFE_AREA_FAMILY` | 5 | Kin: the 2nd and 4th houses |
+| `TS_LIFE_AREA_EDUCATION` | 6 | Learning: the 3rd, 5th and 9th houses |
+| `TS_LIFE_AREA_SPIRITUALITY` | 7 | The inner life: the 8th, 9th and 12th houses |
+
+## ts_colour
+
+A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). Members are the catalogue's ids; the full key id is `(TS_KIND_COLOUR << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_COLOUR_RED` | 0 | Mars's |
+| `TS_COLOUR_WHITE` | 1 | Venus's and the Moon's |
+| `TS_COLOUR_GREEN` | 2 | Mercury's |
+| `TS_COLOUR_ORANGE` | 3 | The Sun's |
+| `TS_COLOUR_YELLOW` | 4 | Jupiter's |
+| `TS_COLOUR_BLUE` | 5 | Saturn's |
+
+## ts_gochar_verdict
+
+What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GOCHAR_VERDICT_GOOD` | 0 | In a good house, and nothing stands in its vedha house |
+| `TS_GOCHAR_VERDICT_OBSTRUCTED` | 1 | In a good house, and another graha stands in its vedha house |
+| `TS_GOCHAR_VERDICT_NOT_GOOD` | 2 | Not in a house v. 2 names good |
+
+## ts_score_band
+
+A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_SCORE_BAND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SCORE_BAND_EXCELLENT` | 0 | At or above the first threshold, 75 by default |
+| `TS_SCORE_BAND_GOOD` | 1 | At or above the second, 50 by default, and below the first |
+| `TS_SCORE_BAND_MIXED` | 2 | At or above the third, 30 by default, and below the second |
+| `TS_SCORE_BAND_CARE` | 3 | Below the third: a day for care |
+
 ## ts_holiday_scope
 
 Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
@@ -2353,16 +2406,6 @@ Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction` (C13
 | `TS_NODE_OBSTRUCTION_NOT_EACH_OTHER` | 0 | The seven, and not each other. |
 | `TS_NODE_OBSTRUCTION_EACH_OTHER_TOO` | 1 | Every graha, each other too: the verses read literally. |
 | `TS_NODE_OBSTRUCTION_NONE` | 2 | Nobody: only the seven obstruct. |
-
-## ts_gochar_verdict
-
-What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
-
-| member | value | what it is |
-|---|---|---|
-| `TS_GOCHAR_VERDICT_GOOD` | 0 | In a good house, and nothing stands in its vedha house. |
-| `TS_GOCHAR_VERDICT_OBSTRUCTED` | 1 | In a good house, and another graha stands in its vedha house. |
-| `TS_GOCHAR_VERDICT_NOT_GOOD` | 2 | Not in a house v. 2 names good. |
 
 ## ts_fruition
 

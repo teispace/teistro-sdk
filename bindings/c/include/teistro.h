@@ -577,6 +577,22 @@ typedef enum ts_kind {
      */
     TS_KIND_CHART_FRAME = 162,
     /**
+     * The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.
+     */
+    TS_KIND_LIFE_AREA = 163,
+    /**
+     * A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).
+     */
+    TS_KIND_COLOUR = 164,
+    /**
+     * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).
+     */
+    TS_KIND_GOCHAR_VERDICT = 165,
+    /**
+     * A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).
+     */
+    TS_KIND_SCORE_BAND = 166,
+    /**
      * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
      */
     TS_KIND_HOLIDAY_SCOPE = 167,
@@ -5199,6 +5215,122 @@ typedef enum ts_chart_frame {
 } ts_chart_frame;
 
 /**
+ * The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. Members are the catalogue's ids; the full key id is `(TS_KIND_LIFE_AREA << 16) | member`.
+ */
+typedef enum ts_life_area {
+    /**
+     * The whole, which every transit also feeds
+     */
+    TS_LIFE_AREA_OVERALL = 0,
+    /**
+     * Work: the 3rd, 6th, 10th and 11th houses
+     */
+    TS_LIFE_AREA_CAREER = 1,
+    /**
+     * Money: the 2nd and 11th houses
+     */
+    TS_LIFE_AREA_FINANCE = 2,
+    /**
+     * The body: the 1st, 6th, 8th and 12th houses
+     */
+    TS_LIFE_AREA_HEALTH = 3,
+    /**
+     * Partners: the 5th and 7th houses
+     */
+    TS_LIFE_AREA_RELATIONSHIPS = 4,
+    /**
+     * Kin: the 2nd and 4th houses
+     */
+    TS_LIFE_AREA_FAMILY = 5,
+    /**
+     * Learning: the 3rd, 5th and 9th houses
+     */
+    TS_LIFE_AREA_EDUCATION = 6,
+    /**
+     * The inner life: the 8th, 9th and 12th houses
+     */
+    TS_LIFE_AREA_SPIRITUALITY = 7,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_LIFE_AREA_UNKNOWN = -1,
+} ts_life_area;
+
+/**
+ * A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). Members are the catalogue's ids; the full key id is `(TS_KIND_COLOUR << 16) | member`.
+ */
+typedef enum ts_colour {
+    /**
+     * Mars's
+     */
+    TS_COLOUR_RED = 0,
+    /**
+     * Venus's and the Moon's
+     */
+    TS_COLOUR_WHITE = 1,
+    /**
+     * Mercury's
+     */
+    TS_COLOUR_GREEN = 2,
+    /**
+     * The Sun's
+     */
+    TS_COLOUR_ORANGE = 3,
+    /**
+     * Jupiter's
+     */
+    TS_COLOUR_YELLOW = 4,
+    /**
+     * Saturn's
+     */
+    TS_COLOUR_BLUE = 5,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_COLOUR_UNKNOWN = -1,
+} ts_colour;
+
+/**
+ * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT << 16) | member`.
+ */
+typedef enum ts_gochar_verdict {
+    /**
+     * In a good house, and nothing stands in its vedha house
+     */
+    TS_GOCHAR_VERDICT_GOOD = 0,
+    /**
+     * In a good house, and another graha stands in its vedha house
+     */
+    TS_GOCHAR_VERDICT_OBSTRUCTED = 1,
+    /**
+     * Not in a house v. 2 names good
+     */
+    TS_GOCHAR_VERDICT_NOT_GOOD = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_GOCHAR_VERDICT_UNKNOWN = -1,
+} ts_gochar_verdict;
+
+/**
+ * A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_SCORE_BAND << 16) | member`.
+ */
+typedef enum ts_score_band {
+    /**
+     * At or above the first threshold, 75 by default
+     */
+    TS_SCORE_BAND_EXCELLENT = 0,
+    /**
+     * At or above the second, 50 by default, and below the first
+     */
+    TS_SCORE_BAND_GOOD = 1,
+    /**
+     * At or above the third, 30 by default, and below the second
+     */
+    TS_SCORE_BAND_MIXED = 2,
+    /**
+     * Below the third: a day for care
+     */
+    TS_SCORE_BAND_CARE = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_SCORE_BAND_UNKNOWN = -1,
+} ts_score_band;
+
+/**
  * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`.
  */
 typedef enum ts_holiday_scope {
@@ -6665,24 +6797,6 @@ typedef enum ts_node_obstruction {
      */
     TS_NODE_OBSTRUCTION_NONE = 2,
 } ts_node_obstruction;
-
-/**
- * What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
- */
-typedef enum ts_gochar_verdict {
-    /**
-     * In a good house, and nothing stands in its vedha house.
-     */
-    TS_GOCHAR_VERDICT_GOOD = 0,
-    /**
-     * In a good house, and another graha stands in its vedha house.
-     */
-    TS_GOCHAR_VERDICT_OBSTRUCTED = 1,
-    /**
-     * Not in a house v. 2 names good.
-     */
-    TS_GOCHAR_VERDICT_NOT_GOOD = 2,
-} ts_gochar_verdict;
 
 /**
  * Where in a sign a graha's transit bears fruit (v. 25).
