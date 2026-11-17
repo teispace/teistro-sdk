@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 345 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 356 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -613,7 +613,9 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::aspect::NodeAspects, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::CivilCalendar, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::Eras, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::KiratYele, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::LunarMonth, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::MarginalMonthMinutes, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::Samvatsara, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AfterCycle, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::dasha::AshtottariGrouping, true);
@@ -640,14 +642,18 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::DayBoundary, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::GhatiReckoning, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::HoraReckoning, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Horizon, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Sunrise, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Ayanamsha, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::AyanamshaBasis, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Centre, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::FrameBias, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::NakshatraScheme, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Node, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Nutation, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Positions, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Precession, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Siddhanta, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Zodiac, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::gochar::AshtakavargaGoodFrom, true);
@@ -663,6 +669,7 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::EightKarakaOrder, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::GrahaArudhaException, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::NodeCoLordship, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::jaimini::SevenKarakaOrder, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::DayLordDay, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::NodeRulers, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::kp::RetrogradeRejection, true);
@@ -687,6 +694,7 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::CacheCells, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::Overrides, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::provider::Tier, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::rashifal::ScoreBands, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::CombustionOrbs, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::MaranaSaturn, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::state::MaranaVenus, true);
@@ -722,6 +730,9 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DeltaT, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DstGap, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::DstOverlap, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::Dut1, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::SiderealTime, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::UnknownTime, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::Schemes, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn, true);
 }

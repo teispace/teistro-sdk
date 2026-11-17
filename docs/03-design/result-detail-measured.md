@@ -26,8 +26,8 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 372 629 | 120 467 | 32.3% |
-| the value | 349 959 | 116 921 | 33.4% |
+| the envelope | 372 710 | 120 548 | 32.3% |
+| the value | 350 040 | 117 002 | 33.4% |
 | the provenance | 22 047 | 2633 | 11.9% |
 
 19 of the 60 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
@@ -99,7 +99,7 @@ value.
 | `numerology.profile` | 889 | 889 | 100.0% | the whole value |
 | `research.study` | 1476 | 850 | 57.6% | the whole value |
 | `settings.diff` | 135 | 135 | 100.0% | the whole value |
-| `settings.explain` | 1975 | 1975 | 100.0% | the whole value |
+| `settings.explain` | 2056 | 2056 | 100.0% | the whole value |
 | `time.civil` | 263 | 263 | 100.0% | the whole value |
 | `time.convert` | 104 | 104 | 100.0% | the whole value |
 | `time.resolve` | 210 | 210 | 100.0% | the whole value |
@@ -180,6 +180,6 @@ marked.
 - `naming.syllables`: `initials` 463 (kept), `devanagari` 130 (kept), `rashi` 130 (kept), `nakshatra` 129 (kept), `varga` 104 (kept), `iast` 99 (kept), `cell` 65 (kept), `pada` 65 (kept).
 - `numerology.profile`: `chaldeanName` 348 (kept), `pythagoreanName` 348 (kept), `pythagoreanBirth` 114 (kept), `chaldeanBirth` 60 (kept), `baseline` 6 (kept).
 - `research.study`: `rows` 733 (kept).
-- `settings.explain`: `knobs` 1908 (kept), `settingsHash` 42 (kept), `profile` 14 (kept).
+- `settings.explain`: `knobs` 1989 (kept), `settingsHash` 42 (kept), `profile` 14 (kept).
 - `verify.claims`: `claims` 297 (kept).
 - `verify.issue`: `receipt` 3373 (kept), `answer` 147 (kept).

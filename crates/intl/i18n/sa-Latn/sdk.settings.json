@@ -8,7 +8,10 @@
       "centre": "Candraṃ prāyaḥ ekam aṃśaṃ yāvat grahān vikalābhiḥ ca cālayati: tithyantaṃ horādvayaṃ yāvat",
       "positions": "Dṛśyavāstavasthānayoḥ madhye sūryaṃ prāyaḥ 21″ budhaṃ ca adhikatamaṃ prāyaḥ 1′ cālayati",
       "siddhanta": "Ākāśam eva parivartayati: granthasya grahāḥ ādhunikebhyaḥ aṃśaiḥ dūre, aṅgāntaṃ ca horābhiḥ calati",
-      "nakshatraScheme": "Nakṣatrāṇi saptaviṃśateḥ samabhāgebhyaḥ abhijitsahiteṣu aṣṭāviṃśatiṣu parivartayati"
+      "nakshatraScheme": "Nakṣatrāṇi saptaviṃśateḥ samabhāgebhyaḥ abhijitsahiteṣu aṣṭāviṃśatiṣu parivartayati",
+      "precession": "Yugāntareṣu nītāṃ pratyekaṃ sthitiṃ yuge nirdiṣṭaṃ pratyekam ayanāṃśaṃ ca pratirūpayoḥ antareṇa cālayati: adyatanāt katipayaśatābdīṣu vikalātaḥ nyūnam, prācīnakāle adhikam",
+      "nutation": "Pratyekaṃ dṛśyasthitiṃ śreṇyoḥ antareṇa cālayati: IAU 2000B IAU 2000A ityanayoḥ madhye vikalāsahasrāṃśāt nyūnam",
+      "frameBias": "Pratyekaṃ sthitiṃ vicalanayoḥ antareṇa cālayati, adhikatamaṃ vicalanamātraṃ, prāyaḥ 0.02″"
     },
     "houses": {
       "placementSystem": "Pratyekaḥ grahaḥ kasmin bhāve tiṣṭhati, bhāvasandhayaḥ ca, iti parivartayati",
@@ -21,7 +24,8 @@
       "dayBoundary": "Dinaṃ kutra ārabhate, ataḥ kṣaṇaḥ kasmin dine patati, iti cālayati",
       "polarDayPolicy": "Sūryodayarahitaṃ dinaṃ kim iti parivartayati: anirdiṣṭam, samīpodayāt astāt vā, ardharātrāt vā",
       "ghatiReckoning": "Ghaṭīṃ caturviṃśatinimeṣebhyaḥ vāstavikāhorātrasya ṣaṣṭitamabhāge parivartayati",
-      "horaReckoning": "Horāḥ dinasya rātreḥ ca dvādaśānupātikabhāgebhyaḥ samahorāsu parivartayati"
+      "horaReckoning": "Horāḥ dinasya rātreḥ ca dvādaśānupātikabhāgebhyaḥ samahorāsu parivartayati",
+      "horizon": "Pratyekam udayam astaṃ ca kṣitijayoḥ antareṇa cālayati: natiḥ unnataṃ kṣitijaṃ vā nimeṣaiḥ, vakrībhavanasūtraṃ bimbaṃ vā vipalaiḥ"
     },
     "panchanga": {
       "centre": "Dinasya candraṃ prāyaḥ ekam aṃśaṃ yāvat, aṅgāntaṃ horādvayaṃ yāvat ca cālayati",
@@ -45,7 +49,9 @@
       "dstGap": "Ghaṭikābhiḥ laṅghitasya nāgarikakālasya uttaraṃ parivartayati: niṣedhaḥ horānantarakālaḥ vā",
       "dstOverlap": "Ghaṭikāsu dviḥ dṛṣṭaḥ nāgarikakālaḥ horāntarayoḥ dvayoḥ kṣaṇayoḥ kataraḥ iti parivartayati",
       "unknownTime": "Kālarahitasya janmanaḥ uttaraṃ parivartayati: niṣedhaḥ, madhyāhnaḥ, sūryodayaḥ ardharātraḥ vā",
-      "deltaT": "Pārthivakāle pratyekaṃ kṣaṇaṃ pratirūpayoḥ antareṇa cālayati: adya vipalāni, prācīnakāle nimeṣāḥ horāḥ vā"
+      "deltaT": "Pārthivakāle pratyekaṃ kṣaṇaṃ pratirūpayoḥ antareṇa cālayati: adya vipalāni, prācīnakāle nimeṣāḥ horāḥ vā",
+      "dut1": "UT1 kāle pratyekaṃ kṣaṇaṃ 0.9 vipalaparyantaṃ cālayati, tena saha sūryodayaṃ pratyekasya aṅgasya antaṃ ca tāvat",
+      "siderealTime": "Nākṣatrakāle pratirūpayoḥ antareṇa lagnaṃ bhāvasandhīn ca cālayati: vikalāyāḥ aṃśam"
     },
     "dasha": {
       "balance": "Prathamadaśāyāḥ śeṣaṃ tataḥ paraṃ pratyekaṃ dināṅkaṃ ca parivartayati",
@@ -76,7 +82,8 @@
       "eightKarakaOrder": "Aṣṭasu gaṇiteṣu pratyekaḥ kramaḥ kaṃ kārakaṃ vahati iti parivartayati",
       "nodeCoLordship": "Ṣaṣṭhāṣṭamadvādaśānāṃ keṣu svāmiṣu brahmagrahaḥ cīyate iti parivartayati",
       "brahma": "Yena niyamena brahmagrahaḥ labhyate taṃ parivartayati",
-      "grahaArudhaException": "Grahasya ārūḍhaṃ bhāvārūḍhavat calati na vā iti parivartayati"
+      "grahaArudhaException": "Grahasya ārūḍhaṃ bhāvārūḍhavat calati na vā iti parivartayati",
+      "sevenKarakaOrder": "Saptasu gaṇiteṣu pratyekaḥ kramaḥ kaṃ kārakaṃ nāmnā vadati iti cālayati; kramaḥ svayaṃ na calati"
     },
     "gochar": {
       "nodeVedha": "Pātayoḥ gocaraḥ sūryasya iva vedhaṃ prāpnoti na vā iti parivartayati",
@@ -131,13 +138,16 @@
       "bhavaSpecialRules": "Bhāvabalaṃ viśeṣaniyamān yojayati na vā iti parivartayati"
     },
     "vargas": {
-      "unattestedDn": "Granthena apramāṇitaṃ vargacakraṃ kathaṃ vibhajyate iti parivartayati"
+      "unattestedDn": "Granthena apramāṇitaṃ vargacakraṃ kathaṃ vibhajyate iti parivartayati",
+      "schemes": "Nirdiṣṭe varge grahaḥ kāṃ rāśiṃ gacchati iti tasyāḥ paddhateḥ svavibhāgena cālayati; anyaḥ ko'pi vargaḥ na calati"
     },
     "calendars": {
       "civilCalendar": "Anurodhasya dināṅkāḥ kasmin pañcāṅge paṭhyante iti parivartayati",
       "lunarMonth": "Kṛṣṇapakṣasya māsanāma parivartayati: amāntaḥ pūrṇimāntaḥ vā māsaḥ",
       "samvatsara": "Ṣaṣṭivarṣacakre varṣasya nāma parivartayati",
-      "eras": "Dināṅkaḥ keṣāṃ saṃvatāṃ varṣāṇi vahati iti parivartayati"
+      "eras": "Dināṅkaḥ keṣāṃ saṃvatāṃ varṣāṇi vahati iti parivartayati",
+      "marginalMonthMinutes": "Ke māsāḥ sīmāntāḥ iti cihnitāḥ, tat teṣāṃ nirṇāyakakṣaṇasya sīmāyāḥ sāmīpyena cālayati; na kāpi dināṅkaḥ calati",
+      "kiratYele": "Pratyekena dināṅkena dhṛtaṃ kirātayelesaṃvadvarṣaṃ gaṇanayoḥ madhye 1281 varṣaiḥ cālayati"
     },
     "provider": {
       "overrides": "Yatra pañcāṅgayantraṃ svakāryānvayanaṃ dadāti tatra kasya uttaraṃ pravartate iti parivartayati: antyāṅkeṣu saṅkhyāḥ",
@@ -146,6 +156,9 @@
     },
     "output": {
       "precision": "Uttaraṃ kati aṅkaparyantaṃ vartulitam iti parivartayati, yad gaṇayati tat kadāpi na"
+    },
+    "rashifal": {
+      "scoreBands": "Ādhārāṅkasya samagraṃ kasyāṃ śreṇyāṃ patati iti cālayati; aṅkaḥ svayaṃ na calati"
     }
   }
 }

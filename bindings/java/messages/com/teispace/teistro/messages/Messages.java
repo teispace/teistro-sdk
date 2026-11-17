@@ -24140,12 +24140,30 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.calendars.kiratYele`
+                     *
+                     * @return the text
+                     */
+                    public String kiratYele() {
+                        return r.render("sdk.settings.effect.calendars.kiratYele", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.calendars.lunarMonth`
                      *
                      * @return the text
                      */
                     public String lunarMonth() {
                         return r.render("sdk.settings.effect.calendars.lunarMonth", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.marginalMonthMinutes`
+                     *
+                     * @return the text
+                     */
+                    public String marginalMonthMinutes() {
+                        return r.render("sdk.settings.effect.calendars.marginalMonthMinutes", Map.of());
                     }
 
                     /**
@@ -24421,6 +24439,15 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.day.horizon`
+                     *
+                     * @return the text
+                     */
+                    public String horizon() {
+                        return r.render("sdk.settings.effect.day.horizon", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.day.polarDayPolicy`
                      *
                      * @return the text
@@ -24485,6 +24512,15 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.frame.frameBias`
+                     *
+                     * @return the text
+                     */
+                    public String frameBias() {
+                        return r.render("sdk.settings.effect.frame.frameBias", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.frame.nakshatraScheme`
                      *
                      * @return the text
@@ -24503,12 +24539,30 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.frame.nutation`
+                     *
+                     * @return the text
+                     */
+                    public String nutation() {
+                        return r.render("sdk.settings.effect.frame.nutation", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.frame.positions`
                      *
                      * @return the text
                      */
                     public String positions() {
                         return r.render("sdk.settings.effect.frame.positions", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.frame.precession`
+                     *
+                     * @return the text
+                     */
+                    public String precession() {
+                        return r.render("sdk.settings.effect.frame.precession", Map.of());
                     }
 
                     /**
@@ -24701,6 +24755,15 @@ public final class Messages {
                      */
                     public String nodeCoLordship() {
                         return r.render("sdk.settings.effect.jaimini.nodeCoLordship", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.jaimini.sevenKarakaOrder`
+                     *
+                     * @return the text
+                     */
+                    public String sevenKarakaOrder() {
+                        return r.render("sdk.settings.effect.jaimini.sevenKarakaOrder", Map.of());
                     }
                 }
 
@@ -24993,6 +25056,34 @@ public final class Messages {
                      */
                     public String tier() {
                         return r.render("sdk.settings.effect.provider.tier", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `rashifal`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectRashifal rashifal() {
+                    return new SdkSettingsEffectRashifal(r);
+                }
+
+                /** The messages under `SdkSettingsEffectRashifal`, each rendered by its own key. */
+                public static final class SdkSettingsEffectRashifal {
+                    private final Renderer r;
+
+                    SdkSettingsEffectRashifal(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.rashifal.scoreBands`
+                     *
+                     * @return the text
+                     */
+                    public String scoreBands() {
+                        return r.render("sdk.settings.effect.rashifal.scoreBands", Map.of());
                     }
                 }
 
@@ -25368,6 +25459,24 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.time.dut1`
+                     *
+                     * @return the text
+                     */
+                    public String dut1() {
+                        return r.render("sdk.settings.effect.time.dut1", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.time.siderealTime`
+                     *
+                     * @return the text
+                     */
+                    public String siderealTime() {
+                        return r.render("sdk.settings.effect.time.siderealTime", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.time.unknownTime`
                      *
                      * @return the text
@@ -25393,6 +25502,15 @@ public final class Messages {
 
                     SdkSettingsEffectVargas(Renderer r) {
                         this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.vargas.schemes`
+                     *
+                     * @return the text
+                     */
+                    public String schemes() {
+                        return r.render("sdk.settings.effect.vargas.schemes", Map.of());
                     }
 
                     /**

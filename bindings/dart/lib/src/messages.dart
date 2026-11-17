@@ -5620,7 +5620,9 @@ final class MessagesSdkSettingsEffectCalendars {
 
   String civilCalendar() => _r.render('sdk.settings.effect.calendars.civilCalendar');
   String eras() => _r.render('sdk.settings.effect.calendars.eras');
+  String kiratYele() => _r.render('sdk.settings.effect.calendars.kiratYele');
   String lunarMonth() => _r.render('sdk.settings.effect.calendars.lunarMonth');
+  String marginalMonthMinutes() => _r.render('sdk.settings.effect.calendars.marginalMonthMinutes');
   String samvatsara() => _r.render('sdk.settings.effect.calendars.samvatsara');
 }
 
@@ -5661,6 +5663,7 @@ final class MessagesSdkSettingsEffectDay {
   String dayBoundary() => _r.render('sdk.settings.effect.day.dayBoundary');
   String ghatiReckoning() => _r.render('sdk.settings.effect.day.ghatiReckoning');
   String horaReckoning() => _r.render('sdk.settings.effect.day.horaReckoning');
+  String horizon() => _r.render('sdk.settings.effect.day.horizon');
   String polarDayPolicy() => _r.render('sdk.settings.effect.day.polarDayPolicy');
   String sunrise() => _r.render('sdk.settings.effect.day.sunrise');
 }
@@ -5673,9 +5676,12 @@ final class MessagesSdkSettingsEffectFrame {
   String ayanamsha() => _r.render('sdk.settings.effect.frame.ayanamsha');
   String ayanamshaBasis() => _r.render('sdk.settings.effect.frame.ayanamshaBasis');
   String centre() => _r.render('sdk.settings.effect.frame.centre');
+  String frameBias() => _r.render('sdk.settings.effect.frame.frameBias');
   String nakshatraScheme() => _r.render('sdk.settings.effect.frame.nakshatraScheme');
   String node() => _r.render('sdk.settings.effect.frame.node');
+  String nutation() => _r.render('sdk.settings.effect.frame.nutation');
   String positions() => _r.render('sdk.settings.effect.frame.positions');
+  String precession() => _r.render('sdk.settings.effect.frame.precession');
   String siddhanta() => _r.render('sdk.settings.effect.frame.siddhanta');
   String zodiac() => _r.render('sdk.settings.effect.frame.zodiac');
 }
@@ -5712,6 +5718,7 @@ final class MessagesSdkSettingsEffectJaimini {
   String eightKarakaOrder() => _r.render('sdk.settings.effect.jaimini.eightKarakaOrder');
   String grahaArudhaException() => _r.render('sdk.settings.effect.jaimini.grahaArudhaException');
   String nodeCoLordship() => _r.render('sdk.settings.effect.jaimini.nodeCoLordship');
+  String sevenKarakaOrder() => _r.render('sdk.settings.effect.jaimini.sevenKarakaOrder');
 }
 
 final class MessagesSdkSettingsEffectKp {
@@ -5764,6 +5771,14 @@ final class MessagesSdkSettingsEffectProvider {
   String cacheCells() => _r.render('sdk.settings.effect.provider.cacheCells');
   String overrides() => _r.render('sdk.settings.effect.provider.overrides');
   String tier() => _r.render('sdk.settings.effect.provider.tier');
+}
+
+final class MessagesSdkSettingsEffectRashifal {
+  const MessagesSdkSettingsEffectRashifal(this._r);
+
+  final Renderer _r;
+
+  String scoreBands() => _r.render('sdk.settings.effect.rashifal.scoreBands');
 }
 
 final class MessagesSdkSettingsEffectState {
@@ -5820,6 +5835,8 @@ final class MessagesSdkSettingsEffectTime {
   String deltaT() => _r.render('sdk.settings.effect.time.deltaT');
   String dstGap() => _r.render('sdk.settings.effect.time.dstGap');
   String dstOverlap() => _r.render('sdk.settings.effect.time.dstOverlap');
+  String dut1() => _r.render('sdk.settings.effect.time.dut1');
+  String siderealTime() => _r.render('sdk.settings.effect.time.siderealTime');
   String unknownTime() => _r.render('sdk.settings.effect.time.unknownTime');
 }
 
@@ -5828,6 +5845,7 @@ final class MessagesSdkSettingsEffectVargas {
 
   final Renderer _r;
 
+  String schemes() => _r.render('sdk.settings.effect.vargas.schemes');
   String unattestedDn() => _r.render('sdk.settings.effect.vargas.unattestedDn');
 }
 
@@ -5848,6 +5866,7 @@ final class MessagesSdkSettingsEffect {
   MessagesSdkSettingsEffectOutput get output => MessagesSdkSettingsEffectOutput(_r);
   MessagesSdkSettingsEffectPanchanga get panchanga => MessagesSdkSettingsEffectPanchanga(_r);
   MessagesSdkSettingsEffectProvider get provider => MessagesSdkSettingsEffectProvider(_r);
+  MessagesSdkSettingsEffectRashifal get rashifal => MessagesSdkSettingsEffectRashifal(_r);
   MessagesSdkSettingsEffectState get state => MessagesSdkSettingsEffectState(_r);
   MessagesSdkSettingsEffectStrength get strength => MessagesSdkSettingsEffectStrength(_r);
   MessagesSdkSettingsEffectTime get time => MessagesSdkSettingsEffectTime(_r);
