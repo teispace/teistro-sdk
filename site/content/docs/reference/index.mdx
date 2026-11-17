@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 111 entry points over 30 structs and 191 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 113 entry points over 30 structs and 192 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 
@@ -44,6 +44,8 @@ ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 | [`ts_context_profile`](context/ts_context_profile) | The id of the profile the context's settings came from, lent until the next call on the context. |
 | [`ts_context_settings_json`](context/ts_context_settings_json) | The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`. |
 | [`ts_context_settings_hash`](context/ts_context_settings_hash) | The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries. |
+| [`ts_context_explain_settings`](context/ts_context_explain_settings) | **Why each knob has its value** (`settings.explain`, `03-design/settings-and-profiles.md` §3.5), as canonical JSON: `{profile, settingsHash, knobs}`, each knob `{knob, value, layer, profile, citation, moves, effect}`. |
+| [`ts_context_diff_settings`](context/ts_context_diff_settings) | **Where two contexts' settings part** (`settings.diff`), as canonical JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`, each knob on which `context`'s settings and `other`'s differ as `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as `ts_context_explain_settings` gives them, the note in `context`'s locale; no knobs when the two hash alike. |
 
 ### Key
 
