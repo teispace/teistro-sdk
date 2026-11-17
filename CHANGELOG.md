@@ -12,6 +12,54 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The place catalogue in the geo port, teigeodata 1.1.0 over its store, and the sea's zone (SR-141, SR-142, SR-129, SR-143, SR-144).**
+**Numbers:** no chart, day or stored resolution moves: a resolution on land
+reads as before, and `nautical` is written only when true. A teigeodata
+resolution now stamps `version: "1.1.0"` and the packs as
+`np.places.2026.11.0 + world.baseline.2026.11.0`; a point at sea with the
+world baseline installed answers `Etc/GMT±n` (`Etc/GMT+2` mid-Atlantic,
+`Etc/GMT-6` in the Bay of Bengal) where it answered no zone. Over
+`data-2026.11.15`'s main packs, `काठमाडौं`, `Kathmandu` and `Kathamandu` find
+the same three places in the same order (the settlement, the district and the
+metropolitan city, scores 143, 136, 134 for the first two spellings and 108,
+101, 99 for the misspelling); `Kathmandu, Bagmati` adds 1,000 to each.
+27.7172, 85.324 reverses to Kholagaal 109 m away, inside, under Nepal,
+Bagmati, Kathmandu district and Kathmandu metropolitan city (the release
+holds no ward outlines). What the adapter adds, as built (stripped) and
+gzipped: lookup-only 115,952 / 63,842 bytes natively and 157,001 / 45,893 on
+wasm32; with search 347,616 / 181,663 and 393,386 / 154,992.
+- **New:** `GeoProvider::search`, `reverse`, `names` and `list`, each
+  defaulted to answer nothing, with the records `geo.search`, `geo.reverse`,
+  `geo.names` and `geo.list` (`ts_geo_search`, `ts_geo_reverse`,
+  `ts_geo_names`, `ts_geo_list`), `sdk.geo().search(..)` and the rest, the
+  same four on every binding's `geo` area and as MCP tools. A search finds a
+  place in any script the data holds, ranked as the provider ranks it, with a
+  `focus` and `"Name, Parent"`; a reverse answers the nearest named places and
+  the units holding the point; a place's names come with language, script,
+  type and origin, chosen per language with a fallback to its script; a
+  listing answers a unit's places by level and kind, ranked by population,
+  each `COUNTED` or `MODELLED` (`03-design/geo-port.md` §12).
+- **New:** a level the data holds no outline for is fewer answers, never a
+  refusal, in resolve, reverse, listings and parents, so teigeodata's TG-26
+  app pack (Nepal to the ward, nothing abroad) answers abroad from the
+  world's levels 0 and 1 or not at all (C2209).
+- **New:** `GeoProvider::at_sea`, `false` by default, and
+  `ResolvedPlace::nautical`: at sea `resolve` answers the nautical zone
+  `nautical_zone` reckons from the longitude, marked so. The teigeodata
+  adapter says so only with the world baseline installed; its zone rules
+  answer `Etc/GMT-12` to `Etc/GMT+12` as fixed offsets (C2216, C2217).
+- **New:** `GeoTable` takes an optional `places` list, which the four
+  methods answer from; the SDK's test table carries five.
+- **Changed:** `GeoProvider::source` answers `GeoSource` owned (C2200).
+- **Changed:** the teigeodata adapter moves to teigeodata v1.1.0 and the data
+  release `data-2026.11.15` (pack format 1.0, which v0.3 refuses).
+  `TeigeodataGeo::from_shared` takes the `Shared` engine teigeodata's store
+  fills, so packs added or replaced later answer without a new context; an
+  empty store answers nothing, `dataVersion: "none"`. Features `mmap`,
+  `search`, `terrain` and `zone-rules`; lookup-only (`terrain,zone-rules`)
+  and lookup with search build for `wasm32-unknown-unknown`, checked by
+  verify's `geo-adapter` job.
+
 **A festival asked alone carries the rules its day is read from (tithipatra-core#168).**
 **Numbers:** none move. `FestivalRequest::narrowed_to` and `narrowed_to_group` carry every
 rule a festival's day is read from: the karmakala rule it counts from, the rite its parana
