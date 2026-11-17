@@ -41,7 +41,9 @@ use teistro_ffi::day::{
     TsSunrise,
 };
 use teistro_ffi::panchanga::{TsLunarMonth, TsMonthKind, TsSunrises, TsYogaCause};
-use teistro_ffi::time::{TsChosen, TsDeltaTSource, TsDst, TsZoneEra, TsZoneSource, TsZoneWarning};
+use teistro_ffi::time::{
+    TsChosen, TsDeltaTBand, TsDeltaTSource, TsDst, TsZoneEra, TsZoneSource, TsZoneWarning,
+};
 use teistro_ffi::{SDK_VERSION, schemas};
 use teistro_idl::model::{Api, EnumDef};
 use teistro_idl::sdk::describe;
@@ -571,6 +573,11 @@ fn time_and_calendar(api: &Api) -> Vec<&'static str> {
             api,
             "TsDeltaTSource",
             |s: &teistro_astro::delta_t::DeltaTSource| id(TsDeltaTSource::from(*s) as u8),
+        ),
+        unit(
+            api,
+            "TsDeltaTBand",
+            |b: &teistro_port_ephemeris::DeltaTBand| id(TsDeltaTBand::from(*b) as u8),
         ),
         unit(api, "TsLunarMonth", |m: &settings::LunarMonth| {
             TsLunarMonth::of(*m).and_then(|m| id(m as u8))

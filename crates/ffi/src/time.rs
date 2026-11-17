@@ -254,6 +254,50 @@ pub enum TsDeltaTSource {
     /// The ephemeris engine's, under the model asked, answered through the
     /// port.
     Provider = 4,
+    /// From a model beyond the data it was fitted to, with Huber's (2000)
+    /// band.
+    Extrapolated = 5,
+}
+
+/// Where a Delta T's uncertainty comes from, as it crosses the boundary
+/// (`DeltaTBand`).
+///
+/// ```
+/// use teistro_ffi::time::TsDeltaTBand;
+///
+/// // A member crosses the boundary as its number, `DeltaTBand::id`.
+/// assert_eq!((TsDeltaTBand::Measured as u8, TsDeltaTBand::Huber2000 as u8), (1, 4));
+/// ```
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDeltaTBand {
+    /// No uncertainty is stated: a custom value.
+    Unstated = 0,
+    /// The IERS's measured series, good to milliseconds.
+    Measured = 1,
+    /// Morrison and Stephenson's (2004) standard errors, from −500 to the
+    /// IERS era.
+    /// `api: key=MORRISON_STEPHENSON_2004`
+    MorrisonStephenson2004 = 2,
+    /// The published σ of Stephenson, Morrison and Hohenkerk (2016).
+    /// `api: key=STEPHENSON_MORRISON_HOHENKERK_2016`
+    StephensonMorrisonHohenkerk2016 = 3,
+    /// Huber's (2000) random walk beyond the data.
+    /// `api: key=HUBER_2000`
+    Huber2000 = 4,
+}
+
+impl From<teistro_port_ephemeris::DeltaTBand> for TsDeltaTBand {
+    fn from(band: teistro_port_ephemeris::DeltaTBand) -> TsDeltaTBand {
+        use teistro_port_ephemeris::DeltaTBand as Band;
+        match band {
+            Band::Unstated => TsDeltaTBand::Unstated,
+            Band::Measured => TsDeltaTBand::Measured,
+            Band::MorrisonStephenson2004 => TsDeltaTBand::MorrisonStephenson2004,
+            Band::StephensonMorrisonHohenkerk2016 => TsDeltaTBand::StephensonMorrisonHohenkerk2016,
+            Band::Huber2000 => TsDeltaTBand::Huber2000,
+        }
+    }
 }
 
 impl From<DeltaTSource> for TsDeltaTSource {
@@ -264,6 +308,7 @@ impl From<DeltaTSource> for TsDeltaTSource {
             DeltaTSource::LeapSeconds => TsDeltaTSource::LeapSeconds,
             DeltaTSource::Custom => TsDeltaTSource::Custom,
             DeltaTSource::Provider => TsDeltaTSource::Provider,
+            DeltaTSource::Extrapolated => TsDeltaTSource::Extrapolated,
         }
     }
 }

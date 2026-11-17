@@ -164,6 +164,75 @@ void main() {
     );
   });
 
+  test('explainSettings names each knob\'s layer and source, and '
+      'diffSettings where two contexts part', () {
+    // The context's own patch is its layer, a per-call patch the request's.
+    final ctx = context(
+      settings: {
+        'frame': {'node': 'TRUE'},
+      },
+    );
+    final derived = ctx.withSettings({
+      'day': {'ghati_reckoning': 'PROPORTIONAL'},
+    });
+    final explained = derived.explainSettings();
+    KnobExplained knob(String name) =>
+        explained.knobs.firstWhere((one) => one.knob == name);
+    expect(explained.settingsHash, derived.settingsHash);
+    expect(
+      [
+        'frame.node',
+        'day.ghati_reckoning',
+        'frame.centre',
+        'output.precision',
+      ].map((name) => knob(name).layer).toList(),
+      ['CONTEXT', 'REQUEST', 'PROFILE', 'ROOT'],
+    );
+    expect(knob('frame.node').citation, isNull);
+    expect(knob('frame.centre').profile, 'nepali-drik');
+    expect(knob('frame.siddhanta').moves, 'SKY');
+    expect(knob('frame.node').effect, contains('राहु'));
+    // A shipped profile cites every knob; a selection keeps the order.
+    final shipped = context();
+    expect(
+      shipped.explainSettings().knobs.every((one) => one.citation != null),
+      isTrue,
+    );
+    expect(
+      shipped
+          .explainSettings(knobs: ['day.sunrise', 'frame'])
+          .knobs
+          .take(2)
+          .map((one) => one.knob),
+      ['frame.zodiac', 'frame.ayanamsha'],
+    );
+    expect(
+      () => shipped.explainSettings(knobs: ['frame.nod']),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'knobs[0]'),
+      ),
+    );
+
+    final committee = context(
+      profile: 'nepali-committee',
+      locale: null,
+      testProvider: false,
+    );
+    final drik = context(locale: null, testProvider: false);
+    final diff = committee.diffSettings(drik);
+    expect(diff.otherProfile, 'nepali-drik');
+    expect(diff.knobs.map((one) => one.knob), [
+      'frame.ayanamsha',
+      'frame.centre',
+      'frame.siddhanta',
+      'panchanga.lagna_table',
+    ]);
+    expect(committee.diffSettings(committee).knobs, isEmpty);
+    for (final one in [ctx, derived, shipped, committee, drik]) {
+      one.dispose();
+    }
+  });
+
   test('withSettings derives a context under a patch and leaves its parent '
       'as it was', () {
     final ctx = context();
@@ -234,6 +303,85 @@ void main() {
     expect(zodiac(tropical), 'TROPICAL');
     tropical.dispose();
     mean.dispose();
+  });
+
+  test('a varga scheme the settings choose places the chart, and a broken '
+      'row is refused by its field', () {
+    // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+    // each sign's two halves, as sign indices.
+    const kashinatha = [
+      [7, 0],
+      [1, 6],
+      [5, 2],
+      [3, 4],
+      [4, 3],
+      [2, 5],
+      [6, 1],
+      [0, 7],
+      [11, 8],
+      [9, 10],
+      [10, 9],
+      [8, 11],
+    ];
+    final ctx = context(
+      settings: {
+        'vargas': {
+          'schemes': {
+            'D2': {'kind': 'NAMED', 'which': 'KASHINATHA'},
+          },
+        },
+      },
+    );
+    final hora =
+        ctx.chart
+            .found(
+              instant: 2451545,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              vargas: const [Varga.d2],
+            )
+            .vargas
+            .single;
+    expect(hora.varga, Varga.d2);
+    for (final placed in hora.grahas) {
+      final at = placed.at;
+      expect(at.sign, Rashi.values[kashinatha[at.rashi.index][at.part]]);
+    }
+    ctx.dispose();
+    expect(
+      () => context(
+        settings: {
+          'vargas': {
+            'schemes': {
+              'D9': {
+                'kind': 'CUSTOM',
+                'classifier': 'ALL',
+                'groups': [
+                  {
+                    'spans': {'spans': 'EQUAL'},
+                    'map': {
+                      'map': 'LISTED',
+                      'signs': [0],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.message,
+          'message',
+          contains('vargas.schemes.D9.groups[0].map.signs'),
+        ),
+      ),
+    );
   });
 
   test('a pack loads at runtime and lays its record over the one standing', () {
@@ -743,6 +891,36 @@ void main() {
       ),
     );
     ctx.dispose();
+  });
+
+  // In 1983 the lunation from 14 January is Pausha and Magha both:
+  // Shivaratri keeps its tithi in it and names the clause and the texts
+  // that placed it (SR-93, `03-design/festival-malamasa.md`).
+  test('a kshaya lunation keeps both months\' festivals and says why', () {
+    final sky = teistro.nepalOfficial();
+    final answer =
+        sky.almanac
+            .of(
+              from: gregorian(1983, 2, 9),
+              to: gregorian(1983, 2, 13),
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              festivals: const FestivalRequest(
+                rules: FestivalPack.nepalPanchanga,
+              ),
+            )
+            .festivals!;
+    final shivaratri = answer.observances.firstWhere(
+      (o) => o.rule == 'SHIVARATRI',
+    );
+    expect([shivaratri.day.month, shivaratri.day.day], [2, 11]);
+    expect(shivaratri.malamasa?.clause, MalamasaClause.kshayaSecond);
+    expect(shivaratri.malamasa?.source, contains('Dharmasindhu'));
+    sky.dispose();
   });
 
   test('the next sankranti and a pack\'s festival are found', () {
@@ -4229,6 +4407,23 @@ void _engineTests() {
       answer.provenance.appliedConventions.map((c) => c.knob),
       contains('eclipse.window'),
     );
+    // Seen whole, the greatest eclipse is the largest phase seen; unseen,
+    // nothing is, which is a state and not a zero.
+    final largest = lunar.here.seenMaximum;
+    expect(largest.why, SeenAt.maximum);
+    expect(largest.moment, lunar.here.greatest);
+    expect(largest.umbralMagnitude, lunar.eclipse.umbralMagnitude);
+    if (solar.here != null) {
+      expect(
+        solar.here!.seenMaximum,
+        const SolarSeenMaximum(
+          why: SeenAt.notSeen,
+          moment: null,
+          magnitude: null,
+          obscuration: null,
+        ),
+      );
+    }
 
     final (chauvenet, _) = asked({
       'panchanga': {'eclipse_shadow': 'CHAUVENET'},
@@ -4243,6 +4438,81 @@ void _engineTests() {
       chauvenet.provenance.settingsHash,
       isNot(answer.provenance.settingsHash),
     );
+  });
+
+  // October and November 2022 at Kathmandu (SR-106): the partial solar
+  // eclipse of 25 October is greatest 5.7° below the horizon, so its
+  // largest phase seen is at sunset; the total lunar eclipse of 8 November
+  // rises in totality, so its largest phase seen is at moonrise.
+  test('an eclipse below the horizon at its maximum answers the largest '
+      'phase seen', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final found =
+        ctx.almanac
+            .of(
+              from: gregorian(2022, 10, 20),
+              to: gregorian(2022, 11, 10),
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              eclipses: true,
+            )
+            .eclipses!;
+    ctx.dispose();
+    final solar = found.value.solar.first.here!;
+    expect(solar.maximum.altitudeDeg, lessThan(-5));
+    expect(solar.magnitude, closeTo(0.49, 0.001));
+    final sunset = solar.seenMaximum;
+    expect(sunset.why, SeenAt.setting);
+    expect(sunset.moment!.at, solar.seen!.to);
+    expect(sunset.magnitude!, closeTo(0.376, 0.002));
+    expect(sunset.obscuration!, lessThan(solar.obscuration));
+    final lunar = found.value.lunar.first;
+    final risen = lunar.here.seenMaximum;
+    expect(risen.why, SeenAt.rising);
+    expect(risen.moment!.at, lunar.here.seen!.from);
+    expect(risen.umbralMagnitude!, greaterThan(1));
+    expect(risen.umbralMagnitude!, lessThan(lunar.eclipse.umbralMagnitude));
+  });
+
+  // SR-104: asked, a day carries Delta T and the one-sigma band its limbs'
+  // ends (all of Delta T's) and its rises (a 365th for the Sun) take on;
+  // far beyond the IERS table the band is Huber's walk.
+  test('an almanac carries each day\'s band from Delta T when asked', () {
+    final ctx = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    AlmanacDay on(int year, {bool uncertainty = false}) => ctx.almanac
+        .of(
+          from: gregorian(year, 6, 1),
+          to: gregorian(year, 6, 1),
+          place: place,
+          utcOffsetSeconds: 20700,
+          uncertainty: uncertainty,
+        )
+        .at(0);
+    expect(on(2025).uncertainty, isNull);
+    final now = on(2025, uncertainty: true).uncertainty!;
+    expect(now.band, DeltaTBand.measured);
+    expect(now.deltaTSeconds, closeTo(69.2, 0.2));
+    expect(now.limbsSeconds!, lessThan(0.01));
+    final far = on(2100, uncertainty: true).uncertainty!;
+    expect(far.band, DeltaTBand.huber2000);
+    expect(far.limbsSeconds!, greaterThan(20));
+    expect(far.sunriseSeconds!, lessThan(far.limbsSeconds! / 300));
+    expect(far.moonriseSeconds!, greaterThan(far.sunriseSeconds!));
+    ctx.dispose();
   });
 
   // Each day's Nepal Sambat date beside the days

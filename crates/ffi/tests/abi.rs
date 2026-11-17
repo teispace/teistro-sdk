@@ -46,8 +46,8 @@ use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
     TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_GOWRI, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS,
-    TS_PANCHANGA_MARKERS, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS,
-    TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_MARKERS, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_UNCERTAINTY,
+    TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -92,6 +92,87 @@ fn date(calendar: Calendar, year: i32, month: u8, day: u8) -> TsCalendarDate {
 
 fn blank_date() -> TsCalendarDate {
     date(Calendar::Gregorian, 0, 0, 0)
+}
+
+/// A varga scheme the settings choose crosses the boundary: Kashinatha's hora
+/// (Narasimha Rao 2003) places each graha by its table in the
+/// `varga_grahas` section, and a consumer's broken row is refused with its
+/// field in the message (`03-design/varga-schemes.md`).
+#[test]
+fn a_varga_scheme_the_settings_choose_places_the_chart() {
+    const KASHINATHA: [[i64; 2]; 12] = [
+        [7, 0],
+        [1, 6],
+        [5, 2],
+        [3, 4],
+        [4, 3],
+        [2, 5],
+        [6, 1],
+        [0, 7],
+        [11, 8],
+        [9, 10],
+        [10, 9],
+        [8, 11],
+    ];
+    let ctx = Ctx::new(
+        TS_CONTEXT_TEST_PROVIDER,
+        None,
+        Some(r#"{"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}"#),
+        None,
+    )
+    .unwrap();
+    let instants = [2_451_545.0];
+    let vargas = [Varga::D2.id()];
+    let request = sized(
+        TsChartRequest {
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            vargas: vargas.as_ptr(),
+            varga_count: vargas.len(),
+            ..TsChartRequest::default()
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let column = |name: &str| -> Vec<i64> {
+        reader
+            .column("varga_grahas", name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_i64())
+            .collect()
+    };
+    let (rashi, part, sign) = (column("rashi"), column("part"), column("sign"));
+    assert_ne!(rashi.len(), 0);
+    for ((rashi, part), sign) in rashi.iter().zip(&part).zip(&sign) {
+        assert_eq!(*sign, KASHINATHA[*rashi as usize][*part as usize]);
+    }
+    let broken = r#"{"vargas": {"schemes": {"D9": {"kind": "CUSTOM", "classifier": "ALL",
+        "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}]}}}}"#;
+    let (status, message, ..) =
+        Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, Some(broken), None).unwrap_err();
+    assert_eq!(status, Status::InvalidArg);
+    assert!(
+        message.contains("vargas.schemes.D9.groups[0].map.signs"),
+        "{message}"
+    );
 }
 
 #[test]
@@ -6202,6 +6283,18 @@ fn a_panchanga_request_answers_the_eclipses_its_days_hold() {
     );
     assert!(envelope["value"]["lunar"][0]["eclipse"]["umbralMagnitude"].is_number());
     assert!(envelope["value"]["lunar"][0]["here"]["p1"]["altitudeDeg"].is_number());
+    // The largest phase seen crosses with its reason as a key, its moment
+    // null exactly when nothing is seen.
+    let largest = &envelope["value"]["lunar"][0]["here"]["seenMaximum"];
+    let why = largest["why"].as_str().unwrap();
+    assert!(
+        teistro::eclipse::SeenAt::ALL
+            .iter()
+            .any(|member| member.key() == why),
+        "{why}"
+    );
+    assert_eq!(largest["moment"].is_null(), why == "NOT_SEEN");
+    assert_eq!(largest["umbralMagnitude"].is_null(), why == "NOT_SEEN");
 
     let sdk = teistro::Context::builder()
         .ephemeris([teistro::Ephemeris::Builtin])
@@ -6263,6 +6356,21 @@ fn a_panchanga_request_carries_lagnas_and_leaves_out_days_by_their_bits() {
         gowri.count("gowri"),
         Some(16),
         "eight by day and eight by night"
+    );
+    // SR-104: one band a day, Delta T measured in 2025, so a limb's band
+    // is milliseconds and a sunrise's a 365th of it.
+    assert_eq!(plain.count("uncertainty"), Some(0));
+    let banded = asked(TS_PANCHANGA_UNCERTAINTY);
+    let banded = Reader::parse(&banded, &schema).unwrap();
+    assert_eq!(banded.count("uncertainty"), Some(1));
+    let float = |column| banded.column("uncertainty", column).unwrap()[0].as_f64();
+    assert!((float("delta_t_seconds") - 69.2).abs() < 0.2);
+    assert!(float("limbs_seconds") > 0.0 && float("limbs_seconds") < 0.01);
+    assert!(float("sunrise_seconds") * 300.0 < float("limbs_seconds"));
+    assert_eq!(
+        banded.column("uncertainty", "band").unwrap()[0],
+        ScalarValue::Uint(1),
+        "MEASURED"
     );
     assert_eq!(plain.count("days"), Some(1));
     assert_eq!(without.count("days"), Some(0));
@@ -11889,4 +11997,123 @@ fn a_people_digest_crosses_as_the_facade_reads_it() {
         Status::InvalidArg
     );
     assert_eq!(ctx.last_error().2.as_deref(), Some("people.people[1].name"));
+}
+
+/// The settings explained across the boundary: owned JSON, or the status.
+fn settings_json(
+    ctx: &Ctx,
+    other: Option<*const TsContext>,
+    request: &str,
+) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    let status = match other {
+        // SAFETY: two live contexts or a null other, a NUL-terminated
+        // request and a valid slot.
+        Some(other) => unsafe {
+            teistro_ffi::context::ts_context_diff_settings(
+                ctx.handle,
+                other,
+                request.as_ptr(),
+                &raw mut json,
+            )
+        },
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        None => unsafe {
+            teistro_ffi::context::ts_context_explain_settings(
+                ctx.handle,
+                request.as_ptr(),
+                &raw mut json,
+            )
+        },
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// Every shipped profile explained across the boundary cites every knob,
+/// as the façade explains it; the context's patch is its layer; the
+/// committee's profile and `nepali-drik` part on the knobs SR-110 names;
+/// and a null other and an unknown knob are refused by name
+/// (`03-design/settings-and-profiles.md` §3.5).
+#[test]
+fn the_settings_explain_and_compare_as_the_facade_answers() {
+    for profile in teistro_core::settings::SHIPPED_PROFILES {
+        let ctx = Ctx::new(0, Some(profile), None, None).unwrap();
+        let crossed: serde_json::Value =
+            serde_json::from_str(&settings_json(&ctx, None, "{}").unwrap()).unwrap();
+        let knobs = crossed["knobs"].as_array().unwrap();
+        assert_eq!(
+            knobs.len(),
+            teistro_core::settings::Settings::knobs().len(),
+            "{profile}"
+        );
+        assert!(
+            knobs
+                .iter()
+                .all(|knob| knob["citation"]["reference"].is_string()),
+            "{profile} leaves a knob uncited"
+        );
+        let facade = teistro::Context::builder()
+            .profile(profile)
+            .build()
+            .unwrap()
+            .explain_settings(&teistro_core::settings::SettingsQuery::default())
+            .unwrap();
+        // Through the boundary's own writer, which prints a whole float as
+        // an integer (`day.horizon.altitude_deg` is `0`, not `0.0`).
+        let facade: serde_json::Value =
+            serde_json::from_str(&teistro_core::envelope::canonical_json(&facade)).unwrap();
+        assert_eq!(crossed, facade, "{profile}");
+    }
+
+    let patched = Ctx::new(
+        0,
+        Some("nepali-drik"),
+        Some(r#"{"frame": {"node": "TRUE"}}"#),
+        None,
+    )
+    .unwrap();
+    let node: serde_json::Value = serde_json::from_str(
+        &settings_json(&patched, None, r#"{"knobs": ["frame.node"]}"#).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(node["knobs"][0]["layer"], "CONTEXT");
+    assert_eq!(node["knobs"][0]["citation"], serde_json::Value::Null);
+
+    let committee = Ctx::new(0, Some("nepali-committee"), None, None).unwrap();
+    let drik = Ctx::new(0, Some("nepali-drik"), None, None).unwrap();
+    let diff: serde_json::Value =
+        serde_json::from_str(&settings_json(&committee, Some(drik.handle), "{}").unwrap()).unwrap();
+    let parted: Vec<&str> = diff["knobs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|knob| knob["knob"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        parted,
+        [
+            "frame.ayanamsha",
+            "frame.centre",
+            "frame.siddhanta",
+            "panchanga.lagna_table"
+        ]
+    );
+
+    assert_eq!(
+        settings_json(&committee, Some(ptr::null()), "{}").unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(committee.last_error().2.as_deref(), Some("other"));
+    assert_eq!(
+        settings_json(&committee, None, r#"{"knobs": ["frame.nod"]}"#).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(committee.last_error().2.as_deref(), Some("knobs[0]"));
 }

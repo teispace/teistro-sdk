@@ -184,6 +184,7 @@ import type {
   DatedObservance,
   DatedRule,
   FestivalAnswer,
+  MalamasaClause,
   FestivalPack,
   FestivalPackListing,
   FestivalRequest,
@@ -296,8 +297,10 @@ import type {
   RashiDashaDefinition,
   RuleRequest,
   Scale,
+  SeenAt,
   SolarEclipseHere,
   SolarEclipseView,
+  SolarSeenMaximum,
   ShippedTheme,
   Theme,
   nepalOfficial,
@@ -309,6 +312,7 @@ import type {
   Ayanamsha,
   BhadraVasa,
   DayMarker,
+  DeltaTBand,
   Gowri,
   Panchaka,
   ShivaVasa,
@@ -788,6 +792,9 @@ function almanac(): string {
   const shunned: AshubhaYoga | undefined = day.ashubhaYogas[0]?.member;
   const bhadra: BhadraVasa | undefined = day.bhadraVasa[0]?.member;
   const gowri: Gowri | 'unknown' | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, gowri: true }).at(0).gowri[0]?.gowri;
+  const banded = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, uncertainty: true }).at(0).uncertainty;
+  const band: DeltaTBand | 'unknown' | undefined = banded?.band;
+  const limbs: number | null | undefined = banded?.limbsSeconds;
   const marked: DayMarker | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, markers: true }).at(0).markers[0]?.member;
   const shiva: ShivaVasa = day.shivaVasa[0]!.member;
   const named: Panchaka | undefined = day.namedPanchaka[0]?.member;
@@ -825,11 +832,19 @@ function eclipses(): string {
   const local: SolarEclipseView | null | undefined = solar?.here;
   const obscured: number | undefined = local?.obscuration;
   const where: number | undefined = solar?.eclipse.point.latitude;
+  const largest: SolarSeenMaximum | undefined = local?.seenMaximum;
+  const why: SeenAt | undefined = largest?.why;
+  const seenMagnitude: number | null | undefined = largest?.magnitude;
+  const risen: number | null | undefined = lunar?.here.seenMaximum.umbralMagnitude;
+  // @ts-expect-error a reason is one of six keys
+  const unknownWhy: SeenAt = 'HIDDEN';
+  // @ts-expect-error nothing seen leaves the moment null, so it needs a check
+  const seenAt: number = largest.moment.at;
   // @ts-expect-error a place's view of a solar eclipse is never hybrid
   const hybrid: SolarEclipseView['kind'] = 'solar_eclipse_kind.HYBRID';
   // @ts-expect-error an eclipse not asked for is null, so it needs a check
   const unchecked: number = asked.eclipses.value.lunar.length;
-  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked} ${bare}`;
+  return `${kind} ${totality} ${altitude} ${seenFrom} ${umbralTo} ${obscured} ${where} ${hybrid} ${unchecked} ${bare} ${why} ${seenMagnitude} ${risen} ${unknownWhy} ${seenAt}`;
 }
 
 void eclipses;
@@ -2669,7 +2684,11 @@ function theFestivals(almanac: Almanac): string {
     const [earlier, later] = o.extents;
     const month: Masa = o.month;
     const adhika: boolean = o.adhika;
-    return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from}`;
+    // The month rule a year with an adhika or a kshaya month placed it by.
+    const clause: MalamasaClause | undefined = o.malamasa?.clause;
+    // @ts-expect-error a clause is one of the four the texts give
+    const unknownClause: MalamasaClause = 'KSHAYA';
+    return `${o.rule} ${month} ${adhika} ${o.day.calendar} ${o.day.month}/${o.day.day} ${o.case} ${by} ${o.choice} ${earlier.held} ${later.window.from} ${clause} ${o.malamasa?.source} ${unknownClause}`;
   });
   const parana = (p: Parana | undefined): string => {
     if (p === undefined) return '-';

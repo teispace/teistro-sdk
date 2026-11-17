@@ -12,6 +12,185 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A classical sky's Moon stands at her true distance (SR-127).**
+**Numbers:** under a classical sky (the Surya Siddhanta's, which `nepal_official` and
+`nepali-committee` open) the Moon's lit fraction, the Sun's and Moon's apparent
+distance, and anything reckoned from them move; a modern sky moves nothing. Over
+November 2026 at Kathmandu the lit fraction read 75% on the 4th, 65% on the 8th and
+83% on the 16th where the Moon was 27%, 2% and 36% lit; it now parts from the modern
+sky's by at most 2.6%, which is the text's own Moon (no evection or variation).
+The Moon's parallax comes back with her distance: over the same month the classical
+first moonrise moves 4.6 minutes later and moonset 4.7 minutes earlier at the median,
+to within 6.9 and 4.1 minutes of the modern sky's (from 11.5 and 0.6); the pinned
+day digest, built with `nepal_official`, moves with them.
+- **Fixed:** a provider that gives distances in mean distances
+  (`DistanceUnit::MeanDistances`) had them read as astronomical units, putting the Moon
+  as far off as the Sun. `completion::distance_in_au` converts by each body's mean
+  distance (`rise_set::mean_distance_au`: Simon et al. 1994; the Moon's 384,400 km),
+  for every reader of an apparent place: the day sky, the sky view and the rise and
+  set disc. Light time and the phenomena already refused such a provider, and a
+  sidereal classical frame never reaches the topocentric step.
+
+**Every festival named in Hindi, and a gate on Latin names in Devanagari (SR-128).**
+**Numbers:** no computed value moves. Names move in Hindi, Sanskrit and `sa-Latn` (below), and
+so do the locale coverage counts. `hi-Deva-IN` names all 638
+festival keys, from 400, so the 238 it lacked (171 of the 336 days `NEPAL_PANCHANGA`
+keeps over VS 2083) read in Devanagari instead of falling back to English; the Hindi
+pack's festival records are reordered to the base locale's order. Every hash of the
+`hi-Deva-IN`, `sa-Deva` and `sa-Latn` packs and the bundles carrying them moves with
+their bytes; `en-Latn`'s and `ne-Deva-NP`'s do not.
+- **Changed:** `check-intl` requires every festival key of every shipped pack in every
+  locale written in a script other than Latin, as it did of the strict ones, and fails a
+  non-Latin locale's record whose form (but `iast`) is in Latin letters alone, or a member
+  falling back to a Latin-script locale beyond the counts `LATIN_FALLBACK` holds (14 in
+  Hindi, 35 in Sanskrit, none of them festivals; `03-design/entity-names.md` §4h,
+  C2080–C2085).
+- **Changed:** Hindi names 150 more members and Sanskrit 149 (the vargas, the
+  vaiseshikamshas, the avasthas, the vasas, the points, the dasha systems, the
+  blackouts, the eclipse kinds, gowri, the fasts, the paya, the doshas, the year's
+  rulers; Hindi's traditions; Sanskrit's vastu yonis and vyaya kinds), which read in
+  Devanagari instead of English; `sa-Latn` derives its 149 from them.
+- **Tests:** `every_day_of_a_nepali_year_is_named_in_devanagari` reads every day
+  `NEPAL_PANCHANGA` keeps over VS 2083 in Hindi, Nepali and Sanskrit through the façade.
+
+**Varga schemes and karaka namings a consumer chooses (SR-114, SR-115).**
+**Numbers:** every settings hash moves, the settings gaining `jaimini.seven_karaka_order`
+and `vargas.schemes`, which the canonical document writes; no computed value moves under
+any shipped profile, and a document whose charts use BPHS ch. 6's schemes writes the
+same bytes (a scheme names its `variant` only when it is not `PARASHARA`).
+- `vargas.schemes` chooses a scheme per varga: a named variant with its source (the
+  parivritti D2, D3, D4 and D5; Kashinatha's and the Uma-Shambhu hora; Somanatha's
+  drekkana; Krishna Mishra's navamsha), or a consumer's own rows, checked as the shipped
+  ones are and refused with the field named (`vargas.schemes.D9.groups[0].map.signs`).
+  Every chart read under a context reads it: varga sections, drawings, change hits, the
+  navamsa lagna, the rules' navamsha and `rule_vargas` (which now takes the settings), the
+  karakamsha, the ishta devata and the prashna sky (`03-design/varga-schemes.md`, cruxes
+  C2060, C2063 to C2068).
+- `jaimini.seven_karaka_order`: `JAIMINI` (the default) or `MATRI_IS_PUTRA`, BPHS ch. 32
+  v. 16's naming, the Putrakaraka read from the Matrikaraka's graha (C2061).
+  `jaimini.chara_karakas` gains `EIGHT_ON_A_TIE`, BPHS ch. 32 v. 2 (C2062).
+- Rust: `Scheme::named`, `Scheme::from_rows`, `Scheme::chosen`, `Scheme::rows`,
+  `Axis::chosen`, `geometry::draw_chosen`, `RuleChart::holder`, `RuleChart::seven_tie`,
+  `SevenKarakas`; `RuleInputs::under` returns a `Result`.
+
+**Why each settings knob has its value, and where two settings part (SR-110).**
+**Numbers:** none; no computed value and no settings hash moves. `Resolved` gains
+`origins`, which resolution records and the hash does not read.
+- `settings.explain` answers, for each knob, its value, the layer that set it (`ROOT`,
+  `PROFILE` with the profile's id, `CONTEXT` for the context's patch, `REQUEST` for a
+  per-call patch, `DOCUMENT` for settings read whole), the source that layer cites, what
+  a difference in it moves (`SKY`, `SUNRISE`, `RULE`, `TIME`, `FORM`) and a one-line
+  effect note in the context's locale. `settings.diff` answers the knobs on which two
+  contexts' settings differ, with the same note; SR-94 reads `SKY` as a model
+  difference and `RULE` as a rule's. Both take `{knobs}`, groups or knobs.
+- Rust `explain_settings` and `diff_settings` on `Context`; C `ts_context_explain_settings`
+  and `ts_context_diff_settings`; `explainSettings` and `diffSettings` in Node, wasm,
+  Dart and Java, `explain_settings` and `diff_settings` in Python; the MCP tools
+  `settings.explain` and `settings.diff` (`other` names the second scope). An MCP call's
+  `settings` is now resolved as a build resolves a patch, so its layer is `CONTEXT`.
+- `Context::with_settings` handed the context's own settings keeps the context's layers,
+  so a receipt of `settings.explain` holds; any other snapshot's knobs are `DOCUMENT`.
+- The locale packs' budgets are set again, about a tenth over the bundles with the
+  notes (`05-testing/pack-budgets.json`).
+- Provenance is the merge's own accounting, not a second resolver: a test holds every
+  knob of every shipped profile to an independent reading of its patch. The root cites
+  every knob, and every shipped profile cites every knob it sets; `kp-default`,
+  `western-tropical-default`, `nepali-drik`, `surya-siddhanta` and `tamil-vakya` gain
+  the citations they lacked. Their true node is the SDK's own choice (crux C1990).
+- The effect notes are `sdk.settings` messages in en-Latn, ne-Deva-NP, hi-Deva-IN and
+  sa-Deva, with sa-Latn derived. The frame notes were measured with the built-in
+  ephemeris over 1900 to 2100: the true node up to 1°58′ from the mean, apparent
+  places 21″ from true for the Sun and 61″ for Mercury, and the Moon from Kathmandu
+  up to 61′ from the geocentric Moon (`03-design/settings-and-profiles.md` §3.5).
+
+**Delta T's band on a time, and which settings read the height (SR-104, SR-108).**
+**Numbers:** no computed time, position or day moves, and no day hash, golden or
+conformance fixture. What moves is what is *said* of them: Delta T's stated
+uncertainty outside the IERS table follows Huber (2000), as Espenak and Meeus apply
+it (C2020), where it was an unsourced formula: `TABLE_THEN_MODEL` states ±5.8 s for
+2050 (was ±14.5 s) and ±32 s for 2100 (was ±119 s), and before −500 ±622 s at −1000
+(was ±630 s) and ±1900 s at −1500 (was ±1230 s); `ESPENAK_MEEUS_2006` states Huber's
+walk from 2005 (+2500 ±612 s, was ±0.5 s). Those instants' Delta T source reads
+`EXTRAPOLATED` (was `MODEL`; `TsDeltaTSource` 5) and their band `HUBER_2000`. The
+`observer.height` convention of an answer on a resolved place reads `1337 m, not read`
+under settings that read no height (every shipped profile), so such an answer's
+provenance, and a receipt digesting it, moves.
+- **Delta T's band:** `DeltaTBand::Huber2000` (`HUBER_2000`, id 4) and
+  `DeltaTSource::Extrapolated`; `huber_2000_sigma(years)`. The bands' serde spelling
+  is now their key (`MORRISON_STEPHENSON_2004`, not `MORRISON_STEPHENSON2004`), and
+  the boundary's new `TsDeltaTBand` carries it (an enum member's IDL key may be
+  stated, `api: key=...`).
+- **A day's times with a ± band:** `AlmanacRequest::with_uncertainty`,
+  `"uncertainty": true` in the JSON days request, `TS_PANCHANGA_UNCERTAINTY` (512)
+  and `uncertainty` in the Node, wasm, Python, Dart and Java almanac calls give each
+  day `uncertainty` (`TimesUncertainty`, the `uncertainty` section, 43): Delta T at
+  the day's window's middle, its band, and the one-sigma band of the limbs' ends,
+  sankrantis and lunations (Delta T's whole σ: they are fixed in TT), of the sunrise
+  and every period divided from it (a 365th of it) and of the moonrise (a 26th);
+  `Almanac::uncertainty` in Rust (`03-design/time-and-timezone.md` §3.5).
+- **The height, said as read or not:** under `CENTRE_REFRACTION` and every other
+  named sunrise the height moves nothing from 0 to 8,848 m; only the dip, an
+  `ATMOSPHERIC` sunrise's standard pressure and a topocentric centre read it
+  (`03-design/geo-port.md` §6a). The `observer.height` convention says which, or that
+  none did.
+
+**Festivals in an adhika or a kshaya year (SR-93).**
+**Numbers:** a festival answer over a year with a kshaya lunation now keeps the
+second month's festivals on their tithis in it, where it dropped them: over BS 2085
+(2028-08 to 2029-04) at Kathmandu under `nepal_official`, eleven Pausha observances
+return (Tol Lhosar, Seto Machhindranath snan, Pausha putrada ekadashi, Musyaduli,
+Changunarayan kalash jatra, Magh snan and Swasthani vrata begun on the kshaya full moon
+of 31 December, Kashi bada Ganesh utsav, Shattila ekadashi, Lai charhe, Aryaghat
+Madhav Narayan mela), and the year's differences from `nepali-drik` fall from 85 to 74,
+none a dropped festival. `NEPAL_SAMBAT_NEW_YEAR` is a lunar rule of its own, Kartika's
+bright first at midday, `inAdhika: FIRST` (*Dharmasindhu* p. 31, C2041), where it was
+the Mha puja's day: in an ordinary year the same day, in BS 2085 the adhika Kartika's
+first, 18 October 2028, a month before the Mha puja. An observance a month rule placed
+gains `malamasa`, so an answer touching an adhika or a kshaya month changes its hash;
+an answer in ordinary months keeps its bytes. A range beside an adhika month founds
+that lunation too, and says so in `festival.days`.
+- Every observance a month rule placed carries `malamasa: {clause, source}`: `NIJA` (a
+  doubled month's festival kept in the nija month), `ADHIKA` (kept in the adhika month
+  by the rule's own `inAdhika`), `KSHAYA_FIRST` or `KSHAYA_SECOND` (a kshaya lunation
+  under its first or second name), with the texts it is read from: *Dharmasindhu*
+  pp. 3, 4, 31, 38 and *Nirnayasindhu* p. 28 (`03-design/festival-malamasa.md`).
+- Rust `teistro::festival::{Malamasa, MalamasaClause}`, the C boundary's JSON, Node,
+  Python, Dart and Java `Malamasa` and `MalamasaClause`, wasm and MCP through the
+  schema; the parity runners print the clause on every observance line.
+- Cruxes C2040 to C2045.
+
+**The four disputed Bikram Sambat rows, sourced (SR-107).**
+**Numbers:** none. No month length, date or hash moves. The four rows are kept, and only the
+data file's provenance, its new `disputed_rows` record, the docs and a test change.
+- The table's rows for Kartik and Magh 1977, Chaitra 1981 and Ashwin 1998 (17 Oct 1920,
+  14 Jan 1921, 13 Mar 1925, 17 Sep 1941) are traced to an online almanac published in Nepal (rank 3). No
+  committee print exists for those years. Two converter tables (rank 4) and the SDK's engine
+  give the day before, before, after and before. The text's sankranti lies 0.5 to 12.1
+  minutes from the boundary, and Kathmandu's apparent time puts two of the four on the table's
+  day. The best-ranked reading is kept, and C1850 stays open for a print
+  (`calendars/bikram-sambat.md`, "The four disputed rows").
+- `bikram-sambat.json`'s provenance no longer calls the pre-committee rows a government print.
+  `crates/calendar/tests/disputed_rows.rs` pins the four rows, the engine's other day and each margin.
+
+**The largest phase of a local eclipse seen (SR-106).**
+**Numbers:** every eclipse section's content hash moves, since each solar and lunar view gains
+`seenMaximum`; no existing field's value changes.
+- A place's view of a solar eclipse carries `seenMaximum`: `{why, moment, magnitude,
+  obscuration}`, the largest phase the place sees. A lunar view's is `{why, moment,
+  umbralMagnitude, penumbralMagnitude}`. `magnitude` and `maximum` stay geometric.
+- `why` is `MAXIMUM` when the body is up at the maximum, `RISING` or `SETTING` when the
+  largest phase seen is where it rises after the maximum or sets before it,
+  `RISING_PAST_LIMIT` or `SETTING_PAST_LIMIT` against a custom altitude, and `NOT_SEEN`, its
+  moment and magnitudes null (crux C1980).
+- The edge is `panchanga.eclipse_horizon`, the convention rise and set use. Kathmandu on
+  2022-10-25 is greatest at 0.490 with the Sun 5.7° down; under the default horizon it sees
+  0.376 at sunset, and on NASA's eclipse explorer's line (the upper limb on the geometric
+  horizon) 0.352 against NASA's 0.356.
+- A body that sets and rises again inside one eclipse is read spell by spell for this field.
+- Rust (`teistro::eclipse::{SeenAt, SolarSeenMaximum, LunarSeenMaximum}`), the C boundary's
+  `eclipses` section, Node and wasm, Python, Dart, Java and the MCP server's `almanac.days`,
+  each with a test and parity lines.
+
 **The rashifal's words, and a band for its score (SR-124).**
 **Numbers:** no score, verdict or date moves. Every settings hash moves, the
 settings gaining `rashifal.score_bands`; no profile version moves, since no
@@ -198,13 +377,10 @@ tithi, karana, nakshatra, yoga, sankranti and sunrise of five years from 1900 to
 against DE440) reads the same on the true and the mean basis as before, and no
 golden, conformance fixture or measured page moves. A modern engine is now asked on
 TT under the context's `time.delta_t` rather than converting UT by its own Delta T,
-which is the fix for `nepali-drik` ignoring that setting. Eclipses move by the
-one solar radius (695,700 km for the eclipse module's 696,000 km): over the 454
-eclipses of 2000 to 2100 seen from Kathmandu no kind, greatest moment or verdict
-on whether the place sees one moves; a lunar penumbral contact moves at most 31.4 s,
-a total phase's 20.2 s, an umbral contact's 6.1 s, a solar local first or last
-contact 12.1 s, a sutak (`vedha`) bound 5.8 s, a magnitude at most 0.00047 and an
-obscuration 0.00075. The test provider's Sun at J2000.0 reads 278.5776° for
+which is the fix for `nepali-drik` ignoring that setting. Eclipses keep the canons'
+solar radius (696,000 km, Auwers' 959.63″ at 1 AU, against which every one of the
+454 eclipses of 2000 to 2100 is checked with NASA's catalogue) and do not move. The
+test provider's Sun at J2000.0 reads 278.5776° for
 278.5768°, asked on TT (below).
 - **Port:** every `PositionRequest`, `HorizonRequest`, `CrossingRequest` and
   `AnglesRequest` carries `Conventions` (the Delta T model and the precession,
@@ -236,8 +412,9 @@ obscuration 0.00075. The test provider's Sun at J2000.0 reads 278.5776° for
   IAU 2015 Resolution B3; the Moon 1,737.4 km), rising latitude `BODY`, dip `NONE`,
   altitude 0. Each is in the settings hash and the provenance; the standard
   refraction stays the almanac's stated 34′, named `STANDARD`.
-- **Changed:** one solar radius, 695,700 km; `eclipse::SUN_RADIUS_KM` (696,000 km)
-  is the rise-and-set constant now.
+- **Docs:** the two solar radii name what each is held to: `eclipse::SUN_RADIUS_KM`
+  (696,000 km) is the eclipse canons' and `rise_set::SUN_RADIUS_KM` (695,700 km) the
+  IAU 2015 photosphere a sunrise limb is reckoned by.
 - **Changed:** rise and set and crossings go through the completion's `choose`:
   under `prefer-native` a modern engine that declares `RISE_SET` or `CROSSINGS`
   answers, under any horizon model; a sidereal crossing and a terrain profile stay

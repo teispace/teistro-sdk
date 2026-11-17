@@ -22,8 +22,8 @@ use teistro_ffi::chart::{
     TsChartRequest, ts_chart_disagreements, ts_chart_found, ts_chart_layout_row,
 };
 use teistro_ffi::context::{
-    TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_new,
-    ts_error_free,
+    TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_diff_settings,
+    ts_context_explain_settings, ts_context_free, ts_context_new, ts_error_free,
 };
 use teistro_ffi::ephemeris::ts_ephemeris_call;
 use teistro_ffi::intl::{
@@ -239,6 +239,8 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_almanac_observance",
     "ts_almanac_people",
     "ts_almanac_sky_pose",
+    "ts_context_explain_settings",
+    "ts_context_diff_settings",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -575,6 +577,12 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"at":2461345.25,"grahas":["MOON"],"stars":["SPICA"],"eclipticStepDeg":30,"horizonStepDeg":45,"pose":{"azimuthDeg":120,"altitudeDeg":90,"rollDeg":-30,"horizontalFovDeg":65,"aspectRatio":0.5}}"#,
     ),
+    (
+        "ts_context_explain_settings",
+        Seed::Answered,
+        r#"{"knobs":["frame","day.sunrise"]}"#,
+    ),
+    ("ts_context_diff_settings", Seed::Answered, r#"{"knobs":["frame"]}"#),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -750,6 +758,8 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_observance" => paired_call(ts_almanac_observance, text),
         "ts_almanac_people" => string_call(ts_almanac_people, text),
         "ts_almanac_sky_pose" => string_call(ts_almanac_sky_pose, text),
+        "ts_context_explain_settings" => string_call(ts_context_explain_settings, text),
+        "ts_context_diff_settings" => paired_call(ts_context_diff_settings, text),
         _ => Status::Ok,
     }
 }

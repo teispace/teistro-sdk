@@ -114,6 +114,48 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('explainSettings names each knob\'s layer and source, and diffSettings where two contexts part', () => {
+  // The context's own patch is its layer, a per-call patch the request's.
+  const ctx = context({ settings: { frame: { node: 'TRUE' } } });
+  const derived = ctx.withSettings({ day: { ghati_reckoning: 'PROPORTIONAL' } });
+  const explained = derived.explainSettings();
+  const knob = (name) => explained.knobs.find((one) => one.knob === name);
+  assert.equal(explained.profile, 'nepali-drik');
+  assert.equal(explained.settingsHash, derived.settingsHash);
+  assert.deepEqual(
+    ['frame.node', 'day.ghati_reckoning', 'frame.centre', 'output.precision'].map((name) => knob(name).layer),
+    ['CONTEXT', 'REQUEST', 'PROFILE', 'ROOT'],
+  );
+  assert.equal(knob('frame.node').citation, null, 'a patch is the caller\'s choice');
+  assert.equal(knob('frame.centre').profile, 'nepali-drik');
+  assert.equal(typeof knob('frame.centre').citation.reference, 'string');
+  assert.equal(knob('frame.siddhanta').moves, 'SKY');
+  // The note in the context's locale, Nepali here.
+  assert.match(knob('frame.node').effect, /राहु/);
+  // A shipped profile cites every knob.
+  const shipped = context();
+  assert.ok(shipped.explainSettings().knobs.every((one) => one.citation !== null));
+  // A selection keeps the document's order; an unknown knob is named.
+  assert.deepEqual(
+    shipped.explainSettings({ knobs: ['day.sunrise', 'frame'] }).knobs.map((one) => one.knob).slice(0, 2),
+    ['frame.zodiac', 'frame.ayanamsha'],
+  );
+  assert.throws(() => shipped.explainSettings({ knobs: ['frame.nod'] }), (e) => e.field === 'knobs[0]');
+  assert.throws(() => shipped.explainSettings({ knobs: 'frame' }), TypeError);
+
+  const committee = new Context({ profile: 'nepali-committee' });
+  const drik = new Context({ profile: 'nepali-drik' });
+  const diff = committee.diffSettings(drik);
+  assert.equal(diff.otherProfile, 'nepali-drik');
+  assert.deepEqual(
+    diff.knobs.map((one) => one.knob),
+    ['frame.ayanamsha', 'frame.centre', 'frame.siddhanta', 'panchanga.lagna_table'],
+  );
+  assert.deepEqual(committee.diffSettings(committee).knobs, []);
+  assert.throws(() => committee.diffSettings({}), TypeError);
+  for (const one of [ctx, derived, shipped, committee, drik]) one.dispose();
+});
+
 test('withSettings derives a context under a patch and leaves its parent as it was', () => {
   const at = {
     instant: 2451545,
@@ -155,6 +197,26 @@ test('withSettings derives a context under a patch and leaves its parent as it w
   assert.equal(tropical.settings.frame.zodiac, 'TROPICAL');
   tropical.dispose();
   mean.dispose();
+});
+
+test('a varga scheme the settings choose places the chart, and a broken row is refused by its field', () => {
+  // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+  // each sign's two halves, as sign indices.
+  const kashinatha = [[7, 0], [1, 6], [5, 2], [3, 4], [4, 3], [2, 5], [6, 1], [0, 7], [11, 8], [9, 10], [10, 9], [8, 11]];
+  const signs = Object.values(catalogue.Rashi);
+  const ctx = context({ settings: { vargas: { schemes: { D2: { kind: 'NAMED', which: 'KASHINATHA' } } } } });
+  const at = { instant: 2451545, place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const [hora] = ctx.chart.found({ ...at, vargas: [Varga.D2] }).vargas;
+  assert.equal(hora.varga, 'varga.D2');
+  for (const { at: placed } of hora.grahas) {
+    assert.equal(placed.sign, signs[kashinatha[signs.indexOf(placed.rashi)][placed.part]]);
+  }
+  ctx.dispose();
+  const broken = { kind: 'CUSTOM', classifier: 'ALL', groups: [{ spans: { spans: 'EQUAL' }, map: { map: 'LISTED', signs: [0] } }] };
+  assert.throws(
+    () => context({ settings: { vargas: { schemes: { D9: broken } } } }),
+    (error) => error instanceof TeistroError && /vargas\.schemes\.D9\.groups\[0\]\.map\.signs/u.test(error.message),
+  );
 });
 
 test('a context derived over an ephemeris written in JavaScript outlives its parent', () => {
@@ -950,7 +1012,9 @@ test('every catalogue enum has a complete id table', () => {
   // `life_area`'s eight, `colour`'s six, `score_band`'s four and
   // `gochar_verdict`'s three, each with its member of `TsKind`, the last in
   // place of `TsGocharVerdict`'s three.
-  assert.equal(entries, 1591, 'every member of every enum is in a table');
+  // 1592 since `TsDeltaTSource` gained `EXTRAPOLATED`.
+  // 1597 since Delta T's band, `TsDeltaTBand`, five.
+  assert.equal(entries, 1597, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4924,11 +4988,48 @@ test('an almanac carries the eclipses it was asked for', () => {
   assert.ok(solar.here === null || solar.here.seen === null);
   assert.equal(solar.vedha, null);
   assert.ok(provenance.appliedConventions.some((c) => c.knob === 'eclipse.window'));
+  // Seen whole, the greatest eclipse is the largest phase seen; unseen,
+  // nothing is, which is a state and not a zero.
+  assert.equal(lunar.here.seenMaximum.why, 'MAXIMUM');
+  assert.deepEqual(lunar.here.seenMaximum.moment, lunar.here.greatest);
+  assert.equal(lunar.here.seenMaximum.umbralMagnitude, lunar.eclipse.umbralMagnitude);
+  if (solar.here !== null) {
+    assert.deepEqual(solar.here.seenMaximum, { why: 'NOT_SEEN', moment: null, magnitude: null, obscuration: null });
+  }
 
   const chauvenet = asked({ panchanga: { eclipse_shadow: 'CHAUVENET' } }).almanac.eclipses;
   assert.equal(chauvenet.value.lunar[0].eclipse.shadow, 'CHAUVENET');
   assert.ok(chauvenet.value.lunar[0].eclipse.umbralMagnitude > lunar.eclipse.umbralMagnitude);
   assert.notEqual(chauvenet.provenance.settingsHash, provenance.settingsHash);
+});
+
+test('an eclipse below the horizon at its maximum answers the largest phase seen', () => {
+  // October and November 2022 at Kathmandu: the partial solar eclipse of
+  // 25 October is greatest 5.7° below the horizon, so the largest phase
+  // seen is at sunset (SR-106); the total lunar eclipse of 8 November
+  // rises in totality, so its largest phase seen is at moonrise.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const { value } = ctx.almanac.of({
+    from: date(Calendar.Gregorian, 2022, 10, 20),
+    to: date(Calendar.Gregorian, 2022, 11, 10),
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    eclipses: true,
+  }).eclipses;
+  ctx.dispose();
+  const [solar] = value.solar;
+  assert.ok(solar.here.maximum.altitudeDeg < -5);
+  assert.ok(Math.abs(solar.here.magnitude - 0.49) < 0.001);
+  const set = solar.here.seenMaximum;
+  assert.equal(set.why, 'SETTING');
+  assert.equal(set.moment.at, solar.here.seen.to);
+  assert.ok(Math.abs(set.magnitude - 0.376) < 0.002, `${set.magnitude}`);
+  assert.ok(set.obscuration < solar.here.obscuration);
+  const [lunar] = value.lunar;
+  const rose = lunar.here.seenMaximum;
+  assert.equal(rose.why, 'RISING');
+  assert.equal(rose.moment.at, lunar.here.seen.from);
+  assert.ok(rose.umbralMagnitude > 1 && rose.umbralMagnitude < lunar.eclipse.umbralMagnitude);
 });
 
 /**
@@ -4937,6 +5038,30 @@ test('an almanac carries the eclipses it was asked for', () => {
  * day, the year turning at Kachhala's first day, and said as the
  * committee's page header prints it straight from the answer.
  */
+test('an almanac carries each day\'s band from Delta T when asked', () => {
+  // SR-104: a limb's end takes on Delta T's whole uncertainty, a sunrise a
+  // 365th of it; far beyond the IERS table the band is Huber's walk.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const on = (year) => ({
+    from: date(Calendar.Gregorian, year, 6, 1),
+    to: date(Calendar.Gregorian, year, 6, 1),
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(ctx.almanac.of(on(2025)).at(0).uncertainty, null);
+  const now = ctx.almanac.of({ ...on(2025), uncertainty: true }).at(0).uncertainty;
+  assert.equal(now.band, 'MEASURED');
+  assert.ok(Math.abs(now.deltaTSeconds - 69.2) < 0.2, String(now.deltaTSeconds));
+  assert.ok(now.limbsSeconds < 0.01);
+  const far = ctx.almanac.of({ ...on(2100), uncertainty: true }).at(0).uncertainty;
+  assert.equal(far.band, 'HUBER_2000');
+  assert.ok(far.limbsSeconds > 20, String(far.limbsSeconds));
+  assert.ok(far.sunriseSeconds < far.limbsSeconds / 300);
+  assert.ok(far.moonriseSeconds > far.sunriseSeconds && far.moonriseSeconds < far.limbsSeconds);
+  ctx.dispose();
+});
+
 test('an almanac carries each day\'s Nepal Sambat date', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const days = {
@@ -5076,6 +5201,30 @@ test('a day is said in sentences and a locale without templates is refused', () 
  * from 1 January 2026 in the first window, Vijaya Dashami within the
  * default limit, and a search too short refused on `limitDays`.
  */
+/**
+ * In 1983 the lunation from 14 January is Pausha and Magha both: Shivaratri
+ * keeps its tithi in it and names the clause and the texts that placed it
+ * (SR-93, `03-design/festival-malamasa.md`).
+ */
+test('a kshaya lunation keeps both months\' festivals and says why', () => {
+  const ctx = new Context(nepalOfficial());
+  try {
+    const answer = ctx.almanac.of({
+      from: date('calendar.GREGORIAN', 1983, 2, 9),
+      to: date('calendar.GREGORIAN', 1983, 2, 13),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+      festivals: { rules: 'NEPAL_PANCHANGA' },
+    }).festivals;
+    const shivaratri = answer.observances.find((o) => o.rule === 'SHIVARATRI');
+    assert.deepEqual([shivaratri.day.month, shivaratri.day.day], [2, 11]);
+    assert.equal(shivaratri.malamasa.clause, 'KSHAYA_SECOND');
+    assert.ok(shivaratri.malamasa.source.includes('Dharmasindhu'));
+  } finally {
+    ctx.dispose();
+  }
+});
+
 test('the next sankranti and a pack\'s festival are found', () => {
   const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
   const asked = {

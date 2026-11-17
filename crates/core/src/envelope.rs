@@ -684,8 +684,9 @@ pub struct TimeStamp {
     /// Where Delta T's uncertainty comes from (`MEASURED` inside the IERS
     /// table, `STEPHENSON_MORRISON_HOHENKERK_2016` or
     /// `MORRISON_STEPHENSON_2004` for a model's published band,
-    /// `UNSTATED`), when [`TimeStamp::delta_t_seconds`] was read at an
-    /// instant of the answer.
+    /// `HUBER_2000` beyond the data, `UNSTATED`), when
+    /// [`TimeStamp::delta_t_seconds`] was read at an instant of the answer
+    /// (`docs/03-design/time-and-timezone.md` §3.5).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub delta_t_band: Option<String>,
     /// Who gave Delta T: `SDK` from its own model, `NATIVE` from the

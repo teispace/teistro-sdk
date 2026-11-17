@@ -70,6 +70,8 @@ __all__ = [
     "NamingSyllablesRequest",
     "NumerologyRequest",
     "ResearchRequest",
+    "SettingsDiffQuery",
+    "SettingsQuery",
     "CivilAsked",
     "ScaleRequest",
     "ResolveAsked",
@@ -988,6 +990,9 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     skyStepMinutes: Optional[int]
     """The sky's step, minutes; ten when left out."""
+
+    uncertainty: bool
+    """Each day's times' ± band from Delta T (SR-104)."""
 
     utcOffsetSeconds: Optional[int]
 
@@ -2000,6 +2005,20 @@ class ResearchRequest(TypedDict, total=False):
     test: Any
 
     uncertaintyStepMinutes: Optional[float]
+
+
+class SettingsDiffQuery(TypedDict, total=False):
+    """What `settings.diff` reads: the knobs to compare, as `SettingsQuery` names them; a record of its own so that each record has its own request type (a comparison may come to read more)."""
+
+    knobs: Optional[Sequence[str]]
+    """Groups (`frame`) or knobs (`frame.ayanamsha`) to compare, in any order; the answer keeps document order. Every knob when left out."""
+
+
+class SettingsQuery(TypedDict, total=False):
+    """The knobs an explanation or a comparison is asked about: each a group (`frame`) or a knob (`frame.ayanamsha`); every knob when left out."""
+
+    knobs: Optional[Sequence[str]]
+    """Groups (`frame`) or knobs (`frame.ayanamsha`), in any order; the answer keeps document order. Every knob when left out."""
 
 
 class CivilAsked(TypedDict, total=False):
@@ -10830,7 +10849,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10992,6 +11011,12 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['research.study'], request: ResearchRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['settings.diff'], request: SettingsDiffQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['settings.explain'], request: SettingsQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['time.civil'], request: CivilAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

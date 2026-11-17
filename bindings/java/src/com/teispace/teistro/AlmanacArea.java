@@ -231,6 +231,39 @@ public final class AlmanacArea {
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
             boolean sky, int skyStepMinutes, boolean markers, boolean gowri) {
+        return of(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals, years, eclipses, nepalSambat, lagnas,
+                homaAhuti, sky, skyStepMinutes, markers, gowri, false);
+    }
+
+    /**
+     * {@link #of(CalendarDate, CalendarDate, Observer, int, com.teispace.teistro.request.MuhurtaRequest,
+     * com.teispace.teistro.request.FestivalRequest, boolean, boolean, boolean, boolean, boolean, boolean, int,
+     * boolean, boolean)} and, when {@code uncertainty} asks, each day's times' ± band from Delta T, as
+     * {@link AlmanacDay#uncertainty()} (SR-104, {@code 03-design/time-and-timezone.md} §3.5).
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param muhurta a muhurta search over the same days, or null
+     * @param festivals festival rules to reckon over the same days, or null
+     * @param years whether to answer the lunar years the days fall in
+     * @param eclipses whether to answer the eclipses of the days
+     * @param nepalSambat whether to answer each day's Nepal Sambat date
+     * @param lagnas whether to give each day its lagna table
+     * @param homaAhuti whether to give each day its homa ahuti
+     * @param sky whether to answer each day's sky
+     * @param skyStepMinutes the step of its paths, 1 to 240, zero for ten
+     * @param markers whether to give each day its markers
+     * @param gowri whether to give each day its Gowri panchangam
+     * @param uncertainty whether to give each day its times' band from Delta T
+     * @return the almanac
+     */
+    public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
+            boolean sky, int skyStepMinutes, boolean markers, boolean gowri, boolean uncertainty) {
         return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals,
                 (years ? Native.TS_PANCHANGA_YEARS : 0)
                         | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
@@ -239,7 +272,8 @@ public final class AlmanacArea {
                         | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0)
                         | (sky ? Native.TS_PANCHANGA_SKY : 0)
                         | (markers ? Native.TS_PANCHANGA_MARKERS : 0)
-                        | (gowri ? Native.TS_PANCHANGA_GOWRI : 0),
+                        | (gowri ? Native.TS_PANCHANGA_GOWRI : 0)
+                        | (uncertainty ? Native.TS_PANCHANGA_UNCERTAINTY : 0),
                 skyStepMinutes);
     }
 

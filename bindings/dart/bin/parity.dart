@@ -569,6 +569,7 @@ void putFestivals(String prefix, FestivalAnswer answer) {
         number(observance.tithi.from),
         number(earlier.held),
         number(later.held),
+        observance.malamasa?.clause.key ?? '-',
       ].join(' '),
     );
   }
@@ -3383,6 +3384,18 @@ void main() {
                 .festivals!;
     putFestivals('festivals-$name', festivals);
   }
+  // A month the test provider's 2023 doubles: a monthly rule kept in its
+  // adhika month says which month rule placed it (SR-93).
+  putFestivals(
+    'festivals-malamasa',
+    geo.almanac.festivals(
+      from: Calendar.gregorian.date(2023, 8, 20),
+      to: Calendar.gregorian.date(2023, 9, 10),
+      place: place,
+      utcOffsetSeconds: 20700,
+      festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+    ),
+  );
 
   // ── The lunar years ─────────────────────────────────────────────────
   // 2024-03-20..04-20 holds a Chaitra Shukla Pratipada: two years, their
@@ -3941,6 +3954,37 @@ void main() {
   );
   put('sky-pose-ascendant', placement(skyPose.value.ascendant()!.$2));
 
+  // ── The settings explained and compared ──────────────────────────────
+  // `nepali-drik` with the node patched per call, every knob explained, and
+  // the knobs on which the committee's profile and `nepali-drik` part
+  // (`03-design/settings-and-profiles.md` §3.5).
+  final drik = teistro.context(profile: 'nepali-drik');
+  final mean = drik.withSettings({
+    'frame': {'node': 'MEAN'},
+  });
+  final explained = mean.explainSettings();
+  mean.dispose();
+  KnobExplained knob(String name) =>
+      explained.knobs.firstWhere((one) => one.knob == name);
+  final settingsNode = knob('frame.node');
+  final settingsCentre = knob('frame.centre');
+  final cited = explained.knobs.where((one) => one.citation != null).length;
+  put(
+    'settings-explain',
+    '${explained.knobs.length} $cited ${settingsNode.layer} '
+        '${settingsCentre.layer} ${settingsCentre.profile ?? '-'}',
+  );
+  put('settings-explain-hash', explained.settingsHash);
+  put('settings-explain-effect', settingsNode.effect);
+  final committee = teistro.context(profile: 'nepali-committee');
+  final parted = committee.diffSettings(drik);
+  committee.dispose();
+  drik.dispose();
+  put(
+    'settings-diff',
+    parted.knobs.map((one) => '${one.knob}:${one.moves}').join(','),
+  );
+
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test
   // provider cannot complete: a total lunar eclipse seen whole and a
@@ -3992,6 +4036,7 @@ void main() {
         utcOffsetSeconds: 20700,
         markers: true,
         gowri: true,
+        uncertainty: true,
       )
       .at(0);
   put(
@@ -3999,6 +4044,13 @@ void main() {
     [for (final s in markedDay.markers) s.member.fullKey].join(' '),
   );
   put('gowri', [for (final p in markedDay.gowri) p.gowri.fullKey].join(' '));
+  final band = markedDay.uncertainty!;
+  put('uncertainty.band', band.band.key);
+  // Each number its own line, so it is compared as a number.
+  put('uncertainty.delta-t', number(band.deltaTSeconds));
+  put('uncertainty.limbs', numberOrDash(band.limbsSeconds));
+  put('uncertainty.sunrise', numberOrDash(band.sunriseSeconds));
+  put('uncertainty.moonrise', numberOrDash(band.moonriseSeconds));
   // Ashwini's navatara chakra, every row `star:tara:round:special`
   // (`03-design/navatara-chakra.md`).
   put(
@@ -4084,6 +4136,16 @@ void main() {
         seen(here.umbralSeen),
       ].join(' '),
     );
+    final lunarLargest = here.seenMaximum;
+    put(
+      'eclipses-lunar-$k-seen-maximum',
+      [
+        lunarLargest.why.key,
+        moment(lunarLargest.moment),
+        numberOrDash(lunarLargest.umbralMagnitude),
+        numberOrDash(lunarLargest.penumbralMagnitude),
+      ].join(' '),
+    );
     put('eclipses-lunar-$k-vedha', seen(vedha));
   }
   for (final (k, SolarEclipseHere(:eclipse, :here, :vedha))
@@ -4116,6 +4178,18 @@ void main() {
             ])
               moment(m),
             seen(here.seen),
+          ].join(' '),
+    );
+    final solarLargest = here?.seenMaximum;
+    put(
+      'eclipses-solar-$k-seen-maximum',
+      solarLargest == null
+          ? '-'
+          : [
+            solarLargest.why.key,
+            moment(solarLargest.moment),
+            numberOrDash(solarLargest.magnitude),
+            numberOrDash(solarLargest.obscuration),
           ].join(' '),
     );
     put('eclipses-solar-$k-vedha', seen(vedha));
@@ -4224,6 +4298,73 @@ void main() {
     ('(root).dispose', ctx.dispose),
   ]) {
     put('surface.${entry.$1}', entry.$2 == null ? 'missing' : 'present');
+  }
+
+  // A varga scheme the settings choose (`03-design/varga-schemes.md`):
+  // Kashinatha's hora for the D2, and a consumer's broken row refused with
+  // its field in the message.
+  final hora = teistro.context(
+    testProvider: true,
+    settings: {
+      'vargas': {
+        'schemes': {
+          'D2': {'kind': 'NAMED', 'which': 'KASHINATHA'},
+        },
+      },
+    },
+  );
+  final d2 =
+      hora.chart
+          .found(
+            instant: 2451545,
+            place: Observer(
+              latitudeDeg: Latitude(27.7172),
+              longitudeDeg: Longitude(85.324),
+              altitudeM: Altitude(1400),
+            ),
+            utcOffsetSeconds: 20700,
+            vargas: const [Varga.d2],
+          )
+          .vargas
+          .single;
+  for (final (j, placed) in d2.grahas.indexed) {
+    put(
+      'varga-scheme-kashinatha-graha-$j',
+      '${placed.graha.fullKey} ${placed.at.sign.fullKey}',
+    );
+  }
+  hora.dispose();
+  try {
+    teistro
+        .context(
+          testProvider: true,
+          settings: {
+            'vargas': {
+              'schemes': {
+                'D9': {
+                  'kind': 'CUSTOM',
+                  'classifier': 'ALL',
+                  'groups': [
+                    {
+                      'spans': {'spans': 'EQUAL'},
+                      'map': {
+                        'map': 'LISTED',
+                        'signs': [0],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        )
+        .dispose();
+    put('varga-scheme-refused', false);
+  } on TeistroException catch (error) {
+    put(
+      'varga-scheme-refused',
+      error.message.contains('vargas.schemes.D9.groups[0].map.signs'),
+    );
   }
 
   final keys = report.keys.toList()..sort();

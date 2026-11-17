@@ -1831,7 +1831,8 @@ final class AlmanacArea extends _Area {
   /// a day does not otherwise make, so only on asking. [markers] gives
   /// each day its ganda mula, gandanta and vinchudo, as
   /// [AlmanacDay.markers], and [gowri] its Gowri panchangam, as
-  /// [AlmanacDay.gowri]. [days] `false` leaves the days out and answers only what is asked beside them;
+  /// [AlmanacDay.gowri]. [uncertainty] gives each day its times' ± band
+  /// from Delta T, as [AlmanacDay.uncertainty] (SR-104). [days] `false` leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
   Almanac of({
@@ -1848,6 +1849,7 @@ final class AlmanacArea extends _Area {
     bool homaAhuti = false,
     bool markers = false,
     bool gowri = false,
+    bool uncertainty = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1866,6 +1868,7 @@ final class AlmanacArea extends _Area {
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
         (gowri ? panchangaGowri : 0) |
+        (uncertainty ? panchangaUncertainty : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -1890,6 +1893,7 @@ final class AlmanacArea extends _Area {
     bool homaAhuti = false,
     bool markers = false,
     bool gowri = false,
+    bool uncertainty = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1908,6 +1912,7 @@ final class AlmanacArea extends _Area {
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
         (gowri ? panchangaGowri : 0) |
+        (uncertainty ? panchangaUncertainty : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -4345,6 +4350,183 @@ final class Context {
       _dashaSystems,
     );
   }
+
+  /// **Why each knob has its value** (`settings.explain`): each knob with
+  /// its value, the layer that set it (`ROOT`, `PROFILE`, `CONTEXT` for the
+  /// context's `settings`, `REQUEST` for a [withSettings] patch), the
+  /// source the root or the profile cites for it, what a difference in it
+  /// moves (`SKY`, `SUNRISE`, `RULE`, `TIME`, `FORM`) and its effect note
+  /// in this context's locale. [knobs] names groups (`frame`) or knobs
+  /// (`frame.ayanamsha`), every knob when left out; an unknown one throws a
+  /// [TeistroException] naming it (`knobs[0]`).
+  ///
+  /// ```dart
+  /// final explained = ctx.explainSettings(knobs: ['frame', 'day.sunrise']);
+  /// explained.knobs.first.citation?.reference;
+  /// ```
+  SettingsExplained explainSettings({List<String>? knobs}) =>
+      SettingsExplained._of(
+        jsonDecode(_inner.explainSettings(_settingsQuery(knobs)))
+            as Map<String, Object?>,
+      );
+
+  /// **Where two contexts' settings part** (`settings.diff`): each knob
+  /// [knobs] names, every one when left out, on which this context's
+  /// settings and [other]'s differ, both values beside what it moves and
+  /// its effect note in this context's locale.
+  ///
+  /// ```dart
+  /// final diff = committee.diffSettings(drik);
+  /// diff.knobs.map((knob) => knob.knob); // frame.ayanamsha, …
+  /// ```
+  SettingsDiff diffSettings(Context other, {List<String>? knobs}) =>
+      SettingsDiff._of(
+        jsonDecode(_inner.diffSettings(other._inner, _settingsQuery(knobs)))
+            as Map<String, Object?>,
+      );
+}
+
+/// A settings query as its JSON; the library names an unknown knob.
+String _settingsQuery(List<String>? knobs) =>
+    knobs == null ? '{}' : jsonEncode({'knobs': knobs});
+
+/// A source cited for a knob's value.
+final class KnobSource {
+  const KnobSource({required this.text, required this.reference});
+
+  factory KnobSource._of(Map<String, Object?> json) => KnobSource(
+    text: json['text']! as String,
+    reference: json['reference']! as String,
+  );
+
+  final String text;
+  final String reference;
+}
+
+/// One knob explained ([Context.explainSettings]).
+final class KnobExplained {
+  const KnobExplained({
+    required this.knob,
+    required this.value,
+    required this.layer,
+    required this.profile,
+    required this.citation,
+    required this.moves,
+    required this.effect,
+  });
+
+  factory KnobExplained._of(Map<String, Object?> json) => KnobExplained(
+    knob: json['knob']! as String,
+    value: json['value'],
+    layer: json['layer']! as String,
+    profile: json['profile'] as String?,
+    citation:
+        json['citation'] == null
+            ? null
+            : KnobSource._of(json['citation']! as Map<String, Object?>),
+    moves: json['moves']! as String,
+    effect: json['effect']! as String,
+  );
+
+  /// `group.knob`.
+  final String knob;
+
+  /// Its value, as the canonical settings document writes it.
+  final Object? value;
+
+  /// `ROOT`, `PROFILE`, `CONTEXT`, `REQUEST` or `DOCUMENT`.
+  final String layer;
+
+  /// The profile that set it, where a profile did.
+  final String? profile;
+
+  /// The root's or the profile's citation; null where a patch set it.
+  final KnobSource? citation;
+
+  /// `SKY`, `SUNRISE`, `RULE`, `TIME` or `FORM`.
+  final String moves;
+
+  /// What it changes, in one line, in the context's locale.
+  final String effect;
+}
+
+/// Every knob asked, each with the layer that set it, why and what it
+/// changes.
+final class SettingsExplained {
+  const SettingsExplained({
+    required this.profile,
+    required this.settingsHash,
+    required this.knobs,
+  });
+
+  factory SettingsExplained._of(Map<String, Object?> json) => SettingsExplained(
+    profile: json['profile']! as String,
+    settingsHash: json['settingsHash']! as String,
+    knobs: List.unmodifiable(
+      (json['knobs']! as List<Object?>).map(
+        (knob) => KnobExplained._of(knob! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final String profile;
+  final String settingsHash;
+  final List<KnobExplained> knobs;
+}
+
+/// One knob on which two contexts' settings differ.
+final class KnobDifference {
+  const KnobDifference({
+    required this.knob,
+    required this.value,
+    required this.otherValue,
+    required this.moves,
+    required this.effect,
+  });
+
+  factory KnobDifference._of(Map<String, Object?> json) => KnobDifference(
+    knob: json['knob']! as String,
+    value: json['value'],
+    otherValue: json['otherValue'],
+    moves: json['moves']! as String,
+    effect: json['effect']! as String,
+  );
+
+  final String knob;
+  final Object? value;
+  final Object? otherValue;
+  final String moves;
+  final String effect;
+}
+
+/// The knobs on which two contexts' settings differ
+/// ([Context.diffSettings]).
+final class SettingsDiff {
+  const SettingsDiff({
+    required this.profile,
+    required this.otherProfile,
+    required this.settingsHash,
+    required this.otherSettingsHash,
+    required this.knobs,
+  });
+
+  factory SettingsDiff._of(Map<String, Object?> json) => SettingsDiff(
+    profile: json['profile']! as String,
+    otherProfile: json['otherProfile']! as String,
+    settingsHash: json['settingsHash']! as String,
+    otherSettingsHash: json['otherSettingsHash']! as String,
+    knobs: List.unmodifiable(
+      (json['knobs']! as List<Object?>).map(
+        (knob) => KnobDifference._of(knob! as Map<String, Object?>),
+      ),
+    ),
+  );
+
+  final String profile;
+  final String otherProfile;
+  final String settingsHash;
+  final String otherSettingsHash;
+  final List<KnobDifference> knobs;
 }
 
 /// What a library says about its own build: the SDK version, the ABI and
@@ -18480,6 +18662,7 @@ final class FestivalObservance extends _Value {
     this.published,
     this.sait,
     this.moonrise,
+    this.malamasa,
   });
 
   /// The rule's key.
@@ -18531,6 +18714,11 @@ final class FestivalObservance extends _Value {
   /// null for a rule that reads none.
   final FestivalMoonrise? moonrise;
 
+  /// The month rule that placed the day in a year with an adhika or a
+  /// kshaya month (SR-93, `03-design/festival-malamasa.md`); null in an
+  /// ordinary month.
+  final Malamasa? malamasa;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -18549,7 +18737,47 @@ final class FestivalObservance extends _Value {
     published,
     sait,
     moonrise,
+    malamasa,
   ];
+}
+
+/// Which month rule placed an observance (SR-93).
+enum MalamasaClause implements _Keyed {
+  /// The year doubles the rule's month and keeps it in the nija month,
+  /// after the adhika one, as every festival with another time is.
+  nija('NIJA'),
+
+  /// Kept in the adhika month, by the rule's own `inAdhika`, which its
+  /// source cites.
+  adhika('ADHIKA'),
+
+  /// In a kshaya lunation, under the first of the two names it joins.
+  kshayaFirst('KSHAYA_FIRST'),
+
+  /// In a kshaya lunation, under the second of its two names, whose
+  /// festivals are kept in it on their tithis.
+  kshayaSecond('KSHAYA_SECOND');
+
+  const MalamasaClause(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The month rule an observance was placed by, and where the texts say it
+/// (SR-93).
+final class Malamasa extends _Value {
+  const Malamasa({required this.clause, required this.source});
+
+  /// Which clause.
+  final MalamasaClause clause;
+
+  /// Where the texts say it.
+  final String source;
+
+  @override
+  List<Object?> get _fields => [clause, source];
 }
 
 /// The moonrise an observance was kept or broken at (SR-60): the instant
@@ -20188,7 +20416,17 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         null => null,
         final moonrise => _festivalMoonrise(_festivalAt(moonrise)),
       },
+      malamasa: switch (raw['malamasa']) {
+        null => null,
+        final malamasa => _malamasa(_festivalAt(malamasa)),
+      },
     );
+
+/// The month rule an observance carries, as a festival answer writes it.
+Malamasa _malamasa(Map<String, Object?> raw) => Malamasa(
+  clause: _keyed(MalamasaClause.values, raw['clause']),
+  source: raw['source']! as String,
+);
 
 /// A moonrise as a festival answer writes it.
 FestivalMoonrise _festivalMoonrise(Map<String, Object?> raw) {
@@ -22775,6 +23013,100 @@ enum EclipseShadowRule {
   );
 }
 
+/// Where the largest phase a place sees falls, and so why it is or is not
+/// the eclipse's maximum there.
+enum SeenAt {
+  /// The body is up at the maximum, so the maximum is seen.
+  maximum('MAXIMUM'),
+
+  /// The body rises after the maximum: the eclipse rises in progress, and
+  /// its largest phase seen is at sunrise or moonrise.
+  rising('RISING'),
+
+  /// The body sets before the maximum: the largest phase seen is at
+  /// sunset or moonset.
+  setting('SETTING'),
+
+  /// As [rising], against a custom altitude limit rather than a horizon.
+  risingPastLimit('RISING_PAST_LIMIT'),
+
+  /// As [setting], against a custom altitude limit.
+  settingPastLimit('SETTING_PAST_LIMIT'),
+
+  /// The body is never up while the eclipse lasts: nothing is seen.
+  notSeen('NOT_SEEN');
+
+  const SeenAt(this.key);
+
+  /// The key the boundary spells it with.
+  final String key;
+
+  static SeenAt _byKey(Object? key) => values.firstWhere(
+    (why) => why.key == key,
+    orElse: () => throw StateError('a seen maximum $key'),
+  );
+}
+
+/// The largest phase of a solar eclipse the place sees: the maximum when
+/// the Sun is up at it, else where it rises or sets. [moment] and the
+/// magnitudes are `null` exactly when nothing is seen.
+final class SolarSeenMaximum extends _Value {
+  const SolarSeenMaximum({
+    required this.why,
+    required this.moment,
+    required this.magnitude,
+    required this.obscuration,
+  });
+
+  /// Where it falls.
+  final SeenAt why;
+
+  /// When, with the Sun's topocentric geometric altitude.
+  final EclipseMoment? moment;
+
+  /// The magnitude then.
+  final double? magnitude;
+
+  /// The obscuration then.
+  final double? obscuration;
+
+  @override
+  List<Object?> get _fields => [why, moment, magnitude, obscuration];
+}
+
+/// The largest phase of a lunar eclipse the place sees: the greatest
+/// eclipse when the Moon is up at it, else where it rises or sets.
+/// [moment] and the magnitudes are `null` exactly when nothing is seen.
+final class LunarSeenMaximum extends _Value {
+  const LunarSeenMaximum({
+    required this.why,
+    required this.moment,
+    required this.umbralMagnitude,
+    required this.penumbralMagnitude,
+  });
+
+  /// Where it falls.
+  final SeenAt why;
+
+  /// When, with the Moon's topocentric geometric altitude.
+  final EclipseMoment? moment;
+
+  /// The umbral magnitude then, negative while the Moon is clear of the
+  /// umbra.
+  final double? umbralMagnitude;
+
+  /// The penumbral magnitude then.
+  final double? penumbralMagnitude;
+
+  @override
+  List<Object?> get _fields => [
+    why,
+    moment,
+    umbralMagnitude,
+    penumbralMagnitude,
+  ];
+}
+
 /// One moment of an eclipse at the place: when, and the body's topocentric
 /// geometric altitude there.
 final class EclipseMoment extends _Value {
@@ -22923,6 +23255,7 @@ final class LunarEclipseView extends _Value {
     required this.p4,
     required this.seen,
     required this.umbralSeen,
+    required this.seenMaximum,
   });
 
   final EclipseMoment p1;
@@ -22938,6 +23271,9 @@ final class LunarEclipseView extends _Value {
   /// `null` (always for a penumbral eclipse).
   final EclipseSeen? umbralSeen;
 
+  /// The largest phase the place sees.
+  final LunarSeenMaximum seenMaximum;
+
   @override
   List<Object?> get _fields => [
     p1,
@@ -22949,6 +23285,7 @@ final class LunarEclipseView extends _Value {
     p4,
     seen,
     umbralSeen,
+    seenMaximum,
   ];
 }
 
@@ -22965,11 +23302,14 @@ final class SolarEclipseView extends _Value {
     required this.fourth,
     required this.maximum,
     required this.seen,
+    required this.seenMaximum,
   });
 
   /// What the place sees at its maximum: never [SolarEclipseKind.hybrid].
   final SolarEclipseKind kind;
 
+  /// The fraction of the Sun's diameter covered at the maximum, even below
+  /// the horizon.
   final double magnitude;
 
   /// The fraction of the Sun's disc covered at the maximum.
@@ -22982,6 +23322,9 @@ final class SolarEclipseView extends _Value {
   final EclipseMoment maximum;
   final EclipseSeen? seen;
 
+  /// The largest phase the place sees.
+  final SolarSeenMaximum seenMaximum;
+
   @override
   List<Object?> get _fields => [
     kind,
@@ -22993,6 +23336,7 @@ final class SolarEclipseView extends _Value {
     fourth,
     maximum,
     seen,
+    seenMaximum,
   ];
 }
 
@@ -23117,6 +23461,15 @@ Eclipses _eclipses(String json) {
         p4: moment(h['p4']),
         seen: seen(h['seen']),
         umbralSeen: seen(h['umbralSeen']),
+        seenMaximum: () {
+          final m = at(h['seenMaximum']);
+          return LunarSeenMaximum(
+            why: SeenAt._byKey(m['why']),
+            moment: reached(m['moment']),
+            umbralMagnitude: reachedJd(m['umbralMagnitude']),
+            penumbralMagnitude: reachedJd(m['penumbralMagnitude']),
+          );
+        }(),
       ),
       vedha: seen(raw['vedha']),
     );
@@ -23152,6 +23505,15 @@ Eclipses _eclipses(String json) {
                 fourth: moment(h['fourth']),
                 maximum: moment(h['maximum']),
                 seen: seen(h['seen']),
+                seenMaximum: () {
+                  final m = at(h['seenMaximum']);
+                  return SolarSeenMaximum(
+                    why: SeenAt._byKey(m['why']),
+                    moment: reached(m['moment']),
+                    magnitude: reachedJd(m['magnitude']),
+                    obscuration: reachedJd(m['obscuration']),
+                  );
+                }(),
               ),
       vedha: seen(raw['vedha']),
     );
@@ -33959,6 +34321,36 @@ final class ChoghadiyaPeriod {
   final bool daytime;
 }
 
+/// A day's times' ± band from Delta T (SR-104): the Delta T the day was
+/// reckoned under and the one-sigma band, in seconds, each kind of time
+/// takes on from its uncertainty.
+final class TimesUncertainty {
+  const TimesUncertainty({
+    required this.deltaTSeconds,
+    required this.band,
+    required this.limbsSeconds,
+    required this.sunriseSeconds,
+    required this.moonriseSeconds,
+  });
+
+  /// Delta T, TT less UT1, at the middle of the day's window, seconds.
+  final double deltaTSeconds;
+
+  /// Where its uncertainty comes from.
+  final DeltaTBand band;
+
+  /// A limb's end, a sankranti or a lunation: Delta T's whole band; null
+  /// when Delta T states none.
+  final double? limbsSeconds;
+
+  /// The sunrise and sunset and every period divided from them: a 365th of
+  /// it.
+  final double? sunriseSeconds;
+
+  /// The moonrise and moonset: a 26th of it.
+  final double? moonriseSeconds;
+}
+
 /// One Gowri of the Gowri panchangam, of the daylight or of the night.
 final class GowriPeriod {
   const GowriPeriod({
@@ -34202,6 +34594,7 @@ final class Almanac {
       'namedPanchaka': counts.namedPanchaka,
       'markers': counts.markers,
       'gowri': counts.gowri,
+      'uncertainty': counts.uncertainty,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -34750,6 +35143,25 @@ final class AlmanacDay {
         daytime: c.daytime[i] == 1,
       ),
     );
+  }
+
+  /// The day's times' ± band from Delta T, when the request asked with
+  /// `uncertainty: true` (SR-104, `03-design/time-and-timezone.md` §3.5): a
+  /// limb's end takes on Delta T's whole uncertainty, a sunrise a 365th of
+  /// it and a moonrise a 26th. Null when not asked for.
+  TimesUncertainty? get uncertainty {
+    final c = batch.decoded.uncertainty;
+    final rows = _rows('uncertainty', (i) {
+      final stated = c.stated[i] == 1;
+      return TimesUncertainty(
+        deltaTSeconds: c.deltaTSeconds[i],
+        band: DeltaTBand.byId(c.band[i]),
+        limbsSeconds: stated ? c.limbsSeconds[i] : null,
+        sunriseSeconds: stated ? c.sunriseSeconds[i] : null,
+        moonriseSeconds: stated ? c.moonriseSeconds[i] : null,
+      );
+    });
+    return rows.isEmpty ? null : rows.first;
   }
 
   /// The twenty-four horas, from sunrise.

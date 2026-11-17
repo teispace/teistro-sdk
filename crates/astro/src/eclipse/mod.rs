@@ -60,7 +60,10 @@ use crate::solve::{Caps, SolveError, minimum, refine};
 
 mod local;
 
-pub use local::{EclipsesHere, LocalMoment, LunarHere, LunarView, SolarHere, SolarView, Visible};
+pub use local::{
+    EclipsesHere, LocalMoment, LunarHere, LunarSeenMaximum, LunarView, SeenAt, SolarHere,
+    SolarSeenMaximum, SolarView, Visible,
+};
 
 /// The Sun's radius an eclipse is reckoned by, km: Auwers' (1891) solar
 /// semidiameter of 959.63″ at one astronomical unit, the value NASA's
@@ -700,7 +703,13 @@ impl<P: EphemerisProvider + ?Sized> ShadowSource for Completion<'_, P> {
         let bodies = [body];
         let request =
             PositionRequest::new(&jds, TimeScale::Ut1, &bodies, seen.frame()).without_speeds();
-        apparent_cell(&self.positions(&request)?, 0, body, ut1)
+        apparent_cell(
+            &self.positions(&request)?,
+            0,
+            body,
+            ut1,
+            self.capabilities().distance_unit,
+        )
     }
 
     fn describe(&self) -> String {

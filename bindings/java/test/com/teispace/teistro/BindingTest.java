@@ -155,6 +155,43 @@ public final class BindingTest {
             }
         });
 
+        tests.put("explainSettings names each knob's layer and source, and diffSettings where two part", () -> {
+            // The context's own patch is its layer, a per-call patch the request's.
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .settingsJson("{\"frame\":{\"node\":\"TRUE\"}}").testProvider(true).build());
+                    Context derived = sky.withSettings(Map.of("day", Map.of("ghati_reckoning", "PROPORTIONAL")))) {
+                SettingsExplained explained = derived.explainSettings();
+                java.util.function.Function<String, SettingsExplained.Knob> knob = name -> explained.knobs().stream()
+                        .filter(one -> one.knob().equals(name)).findFirst().orElseThrow();
+                same(derived.settingsHash(), explained.settingsHash(), "the settings explained");
+                same(List.of("CONTEXT", "REQUEST", "PROFILE", "ROOT"),
+                        List.of("frame.node", "day.ghati_reckoning", "frame.centre", "output.precision").stream()
+                                .map(name -> knob.apply(name).layer()).toList(),
+                        "each layer");
+                check(knob.apply("frame.node").citation() == null, "a patch is the caller's choice");
+                same("nepali-drik", knob.apply("frame.centre").profile(), "the profile that set it");
+                same("SKY", knob.apply("frame.siddhanta").moves(), "what it moves");
+                check(knob.apply("frame.node").effect().contains("Rahu"), "the note in the context's locale");
+                check(sky.explainSettings().knobs().stream()
+                                .allMatch(one -> one.citation() != null || one.layer().equals("CONTEXT")),
+                        "a shipped profile cites every knob the caller did not set");
+                same(List.of("frame.zodiac", "frame.ayanamsha"),
+                        sky.explainSettings(List.of("day.sunrise", "frame")).knobs().stream().limit(2)
+                                .map(SettingsExplained.Knob::knob).toList(),
+                        "the document's order");
+                TeistroException refused = refusal(() -> sky.explainSettings(List.of("frame.nod")));
+                same("knobs[0]", refused.field(), "the knob refused");
+            }
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee").build());
+                    Context drik = teistro.context(ContextOptions.builder().profile("nepali-drik").build())) {
+                SettingsDiff diff = committee.diffSettings(drik);
+                same("nepali-drik", diff.otherProfile(), "the other profile");
+                same(List.of("frame.ayanamsha", "frame.centre", "frame.siddhanta", "panchanga.lagna_table"),
+                        diff.knobs().stream().map(SettingsDiff.Knob::knob).toList(), "the knobs they part on");
+                check(committee.diffSettings(committee).knobs().isEmpty(), "a context agrees with itself");
+            }
+        });
+
         tests.put("withSettings derives a context under a patch and leaves its parent as it was", () -> {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             java.util.function.ToDoubleFunction<Context> moon = sdk -> sdk.chart()
@@ -187,6 +224,32 @@ public final class BindingTest {
             sky.close();
             same("TROPICAL", zodiac.apply(tropical), "a derived context outlives its parent");
             tropical.close();
+        });
+
+        tests.put("a varga scheme the settings choose places the chart, and a broken row is refused by its field", () -> {
+            // Kashinatha's hora (Narasimha Rao 2003; `03-design/varga-schemes.md`):
+            // each sign's two halves, as sign indices.
+            int[][] kashinatha = {{7, 0}, {1, 6}, {5, 2}, {3, 4}, {4, 3}, {2, 5}, {6, 1}, {0, 7}, {11, 8}, {9, 10},
+                {10, 9}, {8, 11}};
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro);
+                    Context hora = sky.withSettings(Map.of("vargas", Map.of("schemes",
+                            Map.of("D2", Map.of("kind", "NAMED", "which", "KASHINATHA")))))) {
+                VargaChart d2 = hora.chart()
+                        .found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
+                        .vargas().get(0);
+                same(Varga.D2, d2.varga(), "the chart asked");
+                for (PlacedInVarga placed : d2.grahas()) {
+                    VargaPlacement at = placed.at();
+                    same(Rashi.values()[kashinatha[at.rashi().ordinal()][at.part()]], at.sign(), placed.graha().name());
+                }
+                Map<String, Object> broken = Map.of("kind", "CUSTOM", "classifier", "ALL", "groups",
+                        List.of(Map.of("spans", Map.of("spans", "EQUAL"), "map",
+                                Map.of("map", "LISTED", "signs", List.of(0)))));
+                TeistroException refused = refusal(
+                        () -> sky.withSettings(Map.of("vargas", Map.of("schemes", Map.of("D9", broken)))).close());
+                check(refused.getMessage().contains("vargas.schemes.D9.groups[0].map.signs"), refused.getMessage());
+            }
         });
 
         tests.put("a context derived over a provider written in Java outlives its parent", () -> {
@@ -315,6 +378,31 @@ public final class BindingTest {
                     sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().build());
                     sky.positions(new double[] {2_451_545.0, 2_451_546.0}, List.of(Body.SUN, Body.MOON));
                 });
+            }
+        });
+
+        tests.put("an almanac carries each day's band from Delta T when asked", () -> {
+            // SR-104: a limb's end takes on Delta T's whole uncertainty, a
+            // sunrise a 365th of it; far beyond the IERS table the band is
+            // Huber's walk.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro)) {
+                java.util.function.BiFunction<Integer, Boolean, AlmanacDay> on = (year, asked) -> {
+                    CalendarDate day = Civil.date(Calendar.GREGORIAN, year, 6, 1);
+                    return sky.almanac().of(day, day, kathmandu, 20_700, null, null, false, false, false, false,
+                            false, false, 0, false, false, asked).get(0);
+                };
+                check(on.apply(2025, false).uncertainty().isEmpty(), "not asked for");
+                TimesUncertainty now = on.apply(2025, true).uncertainty().orElseThrow();
+                same(DeltaTBand.MEASURED, now.band(), "measured in 2025");
+                check(Math.abs(now.deltaTSeconds() - 69.2) < 0.2, "Delta T " + now.deltaTSeconds());
+                check(now.limbsSeconds().orElseThrow() < 0.01, "milliseconds");
+                TimesUncertainty far = on.apply(2100, true).uncertainty().orElseThrow();
+                same(DeltaTBand.HUBER_2000, far.band(), "extrapolated in 2100");
+                double limbs = far.limbsSeconds().orElseThrow();
+                check(limbs > 20.0, "half a minute: " + limbs);
+                check(far.sunriseSeconds().orElseThrow() < limbs / 300, "a 365th for the sunrise");
+                check(far.moonriseSeconds().orElseThrow() > far.sunriseSeconds().orElseThrow(), "the Moon moves faster");
             }
         });
 
@@ -655,6 +743,24 @@ public final class BindingTest {
                 same("VIJAYA_DASHAMI", dashami.festivals().observances().get(0).rule(), "its observance");
                 same("limitDays", refusal(() -> committee.almanac().next(2_461_042.0, kathmandu, 20_700, null,
                         "VIJAYA_DASHAMI", panchanga, null, 20)).field(), "a search too short");
+            }
+        });
+
+        // A kshaya lunation (festival-malamasa.md, SR-93): in 1983 the
+        // lunation from 14 January is Pausha and Magha both, and
+        // Shivaratri keeps its tithi in it, naming the clause and its texts.
+        tests.put("a kshaya lunation keeps both months' festivals and says why", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context official = teistro.context(ContextOptions.builder().nepalOfficial().build())) {
+                var panchanga = new com.teispace.teistro.request.FestivalRequest(
+                        com.teispace.teistro.request.FestivalRules.NEPAL_PANCHANGA);
+                FestivalAnswer answer = official.almanac().festivals(Civil.date(Calendar.GREGORIAN, 1983, 2, 9),
+                        Civil.date(Calendar.GREGORIAN, 1983, 2, 13), kathmandu, 20_700, panchanga);
+                FestivalObservance shivaratri = answer.observances().stream()
+                        .filter(o -> o.rule().equals("SHIVARATRI")).findFirst().orElseThrow();
+                same(List.of(2, 11), List.of(shivaratri.day().month(), shivaratri.day().day()), "on 11 February");
+                same(MalamasaClause.KSHAYA_SECOND, shivaratri.malamasa().clause(), "under the second name");
+                check(shivaratri.malamasa().source().contains("Dharmasindhu"), "the texts that placed it");
             }
         });
 
@@ -1257,6 +1363,42 @@ public final class BindingTest {
                 check(lunar.vedha().from() < umbral.from(), "the sutak opens before the umbra is seen");
                 same(umbral.to(), lunar.vedha().to(), "and closes as it ends");
                 check(eclipses.value().solar().get(0).vedha() == null, "an unseen eclipse has none");
+                // Seen whole, the greatest eclipse is the largest phase seen; unseen, nothing is.
+                LunarSeenMaximum largest = lunar.here().seenMaximum();
+                same(SeenAt.MAXIMUM, largest.why(), "the greatest eclipse is seen");
+                same(lunar.here().greatest(), largest.moment(), "at its own moment");
+                same(lunar.eclipse().umbralMagnitude(), largest.umbralMagnitude(), "and magnitude");
+                SolarEclipseView unseen = eclipses.value().solar().get(0).here();
+                if (unseen != null) {
+                    same(new SolarSeenMaximum(SeenAt.NOT_SEEN, null, null, null), unseen.seenMaximum(),
+                            "nothing seen is a state, not a zero");
+                }
+            }
+        });
+        tests.put("an eclipse below the horizon at its maximum answers the largest phase seen", () -> {
+            // October and November 2022 at Kathmandu (SR-106): the partial solar eclipse of 25
+            // October is greatest 5.7 degrees below the horizon, so its largest phase seen is at
+            // sunset; the total lunar eclipse of 8 November rises in totality, so its largest
+            // phase seen is at moonrise.
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                Eclipses eclipses = sky.almanac().of(Civil.date(Calendar.GREGORIAN, 2022, 10, 20),
+                        Civil.date(Calendar.GREGORIAN, 2022, 11, 10), kathmandu, 20_700, null, null, false, true,
+                        false).eclipses().orElseThrow();
+                SolarEclipseView solar = eclipses.value().solar().get(0).here();
+                check(solar.maximum().altitudeDeg() < -5, "the maximum is below the horizon");
+                check(Math.abs(solar.magnitude() - 0.49) < 0.001, "at its geometric magnitude");
+                SolarSeenMaximum sunset = solar.seenMaximum();
+                same(SeenAt.SETTING, sunset.why(), "the largest phase seen is at sunset");
+                same(solar.seen().to(), sunset.moment().at(), "the last instant seen");
+                check(Math.abs(sunset.magnitude() - 0.376) < 0.002, "magnitude " + sunset.magnitude());
+                check(sunset.obscuration() < solar.obscuration(), "less than the maximum's");
+                LunarEclipseHere lunar = eclipses.value().lunar().get(0);
+                LunarSeenMaximum risen = lunar.here().seenMaximum();
+                same(SeenAt.RISING, risen.why(), "the largest phase seen is at moonrise");
+                same(lunar.here().seen().from(), risen.moment().at(), "the first instant seen");
+                check(1 < risen.umbralMagnitude() && risen.umbralMagnitude() < lunar.eclipse().umbralMagnitude(),
+                        "in totality, short of the greatest");
             }
         });
         tests.put("a chart carries its moment, the eclipse its place sees", () -> {

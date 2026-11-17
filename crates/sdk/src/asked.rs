@@ -9,6 +9,7 @@ use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::Convention;
 use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro_core::settings::{Centre, Dip, Settings, SunriseConvention};
 use teistro_core::time::UtcOffset;
 use teistro_port_geo::ResolvedPlace;
 use teistro_time::ZoneSpec;
@@ -194,6 +195,52 @@ fn height_from(place: &ResolvedPlace, altitude_m: Option<f64>) -> Convention {
         value: format!("{metres} m"),
         reason,
     }
+}
+
+/// What under `settings` reads the observer's height, each part named by
+/// its knob (`03-design/geo-port.md` §6a, SR-108): the horizon's dip, an
+/// `ATMOSPHERIC` sunrise whose pressure is left to the standard air at the
+/// height, and a topocentric centre, whose station stands at it. Empty
+/// when nothing does: the named conventions refract by the almanac's fixed
+/// 34′ and an ideal horizon has no dip, so `CENTRE_REFRACTION` and the
+/// other named sunrises move by nothing from sea level to 8,848 m.
+pub(crate) fn height_readers(settings: &Settings) -> Vec<&'static str> {
+    let mut readers = Vec::new();
+    if settings.day.horizon.dip != Dip::None {
+        readers.push("the horizon's dip (`day.horizon.dip`)");
+    }
+    if let SunriseConvention::Atmospheric { air, .. } = settings.day.sunrise
+        && air.pressure_hpa.is_none()
+    {
+        readers.push(
+            "the air's pressure, the standard atmosphere's at the height (`day.sunrise` ATMOSPHERIC)",
+        );
+    }
+    if settings.frame.centre == Centre::Topocentric {
+        readers.push("the topocentric positions (`frame.centre`)");
+    }
+    if settings.panchanga.centre == Centre::Topocentric {
+        readers.push("the topocentric limbs (`panchanga.centre`)");
+    }
+    readers
+}
+
+/// A resolved place's height convention saying whether the settings read
+/// the height at all, so a receipt never implies a height was used when it
+/// was not (SR-108): the value gains `, not read` and the reason says why,
+/// or the reason names what read it.
+pub(crate) fn height_as_read(mut height: Convention, settings: &Settings) -> Convention {
+    let readers = height_readers(settings);
+    if readers.is_empty() {
+        height.value.push_str(", not read");
+        height.reason.push_str(
+            "; read by nothing under these settings: the sunrise refracts by a fixed angle or none, the horizon has no dip and the places are geocentric, so the height moves no value (`geo-port.md` §6a)",
+        );
+    } else {
+        height.reason.push_str("; read by ");
+        height.reason.push_str(&readers.join(", "));
+    }
+    height
 }
 
 /// The field a request takes a resolved place in.

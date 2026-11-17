@@ -938,17 +938,58 @@ impl EightKarakas {
     }
 }
 
-/// The seven karakas from the most advanced down, where the Matri and Putra
-/// karakas are one (BPHS ch. 32 vv. 13 to 17).
-const SEVEN_KARAKAS: [CharaKaraka; 7] = [
-    CharaKaraka::Atmakaraka,
-    CharaKaraka::Amatyakaraka,
-    CharaKaraka::Bhratrikaraka,
-    CharaKaraka::Matrikaraka,
-    CharaKaraka::Putrakaraka,
-    CharaKaraka::Gnatikaraka,
-    CharaKaraka::Darakaraka,
-];
+/// Which karaka each rank carries when seven are counted (the settings'
+/// `jaimini.seven_karaka_order`, crux C2061): the ranking is the sky's, the
+/// names are this.
+///
+/// ```
+/// use teistro_rules::SevenKarakas;
+///
+/// assert_eq!(SevenKarakas::default(), SevenKarakas::Jaimini);
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum SevenKarakas {
+    /// The Jaimini Sutras 1.1.13 to 18: the Amatya, Bhratri, Matri, Putra,
+    /// Gnati and Dara karakas after the Atmakaraka, with no Pitrikaraka. The
+    /// recording engine's seven, which every chart of its corpus
+    /// reproduces.
+    #[default]
+    Jaimini,
+    /// BPHS ch. 32 v. 16 and the Jaimini Sutras 1.1.19's "some": the
+    /// Matrikaraka is the Putrakaraka too, so the verses' Pitrikaraka (vv. 13
+    /// to 15) holds the fifth rank.
+    MatriIsPutra,
+}
+
+impl SevenKarakas {
+    /// The karakas from the most advanced in its sign down.
+    const fn order(self) -> [CharaKaraka; 7] {
+        use CharaKaraka::{
+            Amatyakaraka, Atmakaraka, Bhratrikaraka, Darakaraka, Gnatikaraka, Matrikaraka,
+            Pitrikaraka, Putrakaraka,
+        };
+        match self {
+            SevenKarakas::Jaimini => [
+                Atmakaraka,
+                Amatyakaraka,
+                Bhratrikaraka,
+                Matrikaraka,
+                Putrakaraka,
+                Gnatikaraka,
+                Darakaraka,
+            ],
+            SevenKarakas::MatriIsPutra => [
+                Atmakaraka,
+                Amatyakaraka,
+                Bhratrikaraka,
+                Matrikaraka,
+                Pitrikaraka,
+                Gnatikaraka,
+                Darakaraka,
+            ],
+        }
+    }
+}
 
 /// The grahas the seven-karaka scheme ranks, the Sun to Saturn.
 const KARAKA_GRAHAS: [Graha; 7] = [
@@ -1003,7 +1044,47 @@ impl RuleChart {
     /// assert_eq!(karakas(Graha::Rahu), (None, Some(CharaKaraka::Amatyakaraka)));
     /// ```
     #[must_use]
-    pub fn with_chara_karakas(mut self, order: EightKarakas) -> RuleChart {
+    pub fn with_chara_karakas(self, order: EightKarakas) -> RuleChart {
+        self.with_karaka_orders(SevenKarakas::default(), order)
+    }
+
+    /// [`with_chara_karakas`](Self::with_chara_karakas) with the seven named
+    /// as `seven` names them too.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+    /// use teistro_rules::{Body, EightKarakas, House, Placement, RuleChart, SevenKarakas};
+    ///
+    /// let at = |longitude| Placement {
+    ///     longitude,
+    ///     sign: Rashi::Aries,
+    ///     house: House::try_new(1).unwrap(),
+    ///     dignity: Dignity::Neutral,
+    ///     retrograde: false,
+    ///     combust: false,
+    ///     karaka7: None,
+    ///     karaka8: None,
+    ///     navamsha: Rashi::Aries,
+    /// };
+    /// // The seven at 29°, 28° … 23° of their signs, the Sun furthest.
+    /// let mut placements = [at(0.5); 10];
+    /// for (rank, graha) in Graha::ALL[..7].iter().enumerate() {
+    ///     placements[Body::Graha(*graha).index()] = at(29.0 - rank as f64);
+    /// }
+    /// let chart = RuleChart { placements, panchanga: None, strengths: None }
+    ///     .with_karaka_orders(SevenKarakas::MatriIsPutra, EightKarakas::Parashara);
+    /// // Mercury is fourth: the Matrikaraka, and so the Putrakaraka too.
+    /// assert_eq!(chart.placement(Body::Graha(Graha::Mercury)).karaka7, Some(CharaKaraka::Matrikaraka));
+    /// assert_eq!(chart.holder(CharaKaraka::Putrakaraka, false), Some(Graha::Mercury));
+    /// // Jupiter, fifth, is the verses' Pitrikaraka.
+    /// assert_eq!(chart.holder(CharaKaraka::Pitrikaraka, false), Some(Graha::Jupiter));
+    /// ```
+    #[must_use]
+    pub fn with_karaka_orders(
+        mut self,
+        seven_order: SevenKarakas,
+        order: EightKarakas,
+    ) -> RuleChart {
         let seconds = |graha: Graha| self.karaka_seconds(graha);
         let seven = KARAKA_GRAHAS.map(|graha| (graha, seconds(graha)));
         let mut with_rahu = [(Graha::Rahu, seconds(Graha::Rahu)); 8];
@@ -1014,7 +1095,7 @@ impl RuleChart {
             placement.karaka7 = None;
             placement.karaka8 = None;
         }
-        for (graha, karaka) in ranked(&seven, &SEVEN_KARAKAS) {
+        for (graha, karaka) in ranked(&seven, &seven_order.order()) {
             if let Some(at) = self.placements.get_mut(Body::Graha(graha).index()) {
                 at.karaka7 = karaka;
             }
@@ -1025,6 +1106,99 @@ impl RuleChart {
             }
         }
         self
+    }
+
+    /// The graha holding `karaka` among seven, or `with_rahu` among eight,
+    /// if one does: none where a tie has left it unheld (BPHS ch. 32 v. 17).
+    ///
+    /// Among seven under [`SevenKarakas::MatriIsPutra`] the Matrikaraka is the
+    /// Putrakaraka too, and the chart says which naming it carries by a
+    /// Pitrikaraka among the seven, which only that naming holds: so a
+    /// Putrakaraka asked of it is the Matrikaraka's graha.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+    /// use teistro_rules::{Body, EightKarakas, House, Placement, RuleChart};
+    ///
+    /// let at = |longitude| Placement {
+    ///     longitude,
+    ///     sign: Rashi::Aries,
+    ///     house: House::try_new(1).unwrap(),
+    ///     dignity: Dignity::Neutral,
+    ///     retrograde: false,
+    ///     combust: false,
+    ///     karaka7: None,
+    ///     karaka8: None,
+    ///     navamsha: Rashi::Aries,
+    /// };
+    /// let mut placements = [at(10.0); 10];
+    /// placements[Body::Graha(Graha::Moon).index()] = at(25.0);
+    /// let chart = RuleChart { placements, panchanga: None, strengths: None }
+    ///     .with_chara_karakas(EightKarakas::Parashara);
+    /// assert_eq!(chart.holder(CharaKaraka::Atmakaraka, false), Some(Graha::Moon));
+    /// // Six equal grahas share one karaka, and the rest are lost.
+    /// assert_eq!(chart.holder(CharaKaraka::Darakaraka, false), None);
+    /// ```
+    #[must_use]
+    pub fn holder(&self, karaka: CharaKaraka, with_rahu: bool) -> Option<Graha> {
+        let held = |graha: &Graha, asked: CharaKaraka| {
+            let at = self.placement(Body::Graha(*graha));
+            (if with_rahu { at.karaka8 } else { at.karaka7 }) == Some(asked)
+        };
+        let grahas = || {
+            KARAKA_GRAHAS
+                .iter()
+                .chain(with_rahu.then_some(&Graha::Rahu))
+        };
+        grahas()
+            .find(|graha| held(graha, karaka))
+            .copied()
+            .or_else(|| {
+                let matri_is_putra = !with_rahu
+                    && karaka == CharaKaraka::Putrakaraka
+                    && grahas().any(|graha| held(graha, CharaKaraka::Pitrikaraka));
+                matri_is_putra
+                    .then(|| {
+                        grahas()
+                            .find(|graha| held(graha, CharaKaraka::Matrikaraka))
+                            .copied()
+                    })
+                    .flatten()
+            })
+    }
+
+    /// Whether two of the seven grahas stand equally far into their signs,
+    /// to the arc-second: what BPHS ch. 32 v. 2 counts eight for
+    /// (`jaimini.chara_karakas` `EIGHT_ON_A_TIE`, crux C2062), so that the
+    /// tie loses no karaka.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+    /// use teistro_rules::{Body, House, Placement, RuleChart};
+    ///
+    /// let at = |longitude| Placement {
+    ///     longitude,
+    ///     sign: Rashi::Aries,
+    ///     house: House::try_new(1).unwrap(),
+    ///     dignity: Dignity::Neutral,
+    ///     retrograde: false,
+    ///     combust: false,
+    ///     karaka7: None,
+    ///     karaka8: None,
+    ///     navamsha: Rashi::Aries,
+    /// };
+    /// let mut placements = [at(10.0); 10];
+    /// assert!(RuleChart { placements, panchanga: None, strengths: None }.seven_tie());
+    /// for (rank, graha) in Graha::ALL[..7].iter().enumerate() {
+    ///     placements[Body::Graha(*graha).index()] = at(29.0 - rank as f64);
+    /// }
+    /// assert!(!RuleChart { placements, panchanga: None, strengths: None }.seven_tie());
+    /// ```
+    #[must_use]
+    pub fn seven_tie(&self) -> bool {
+        let mut seconds = KARAKA_GRAHAS.map(|graha| self.karaka_seconds(graha));
+        seconds.sort_unstable();
+        seconds.windows(2).any(|pair| pair.first() == pair.get(1))
     }
 
     /// The grahas that hold the chara karakas, the Atmakaraka's first and
@@ -1812,6 +1986,45 @@ mod tests {
             ..strengths(1.0)
         };
         assert!(!silent.is_weak(Body::Lagna));
+    }
+
+    /// Only the Putrakaraka among seven falls back to the Matrikaraka's
+    /// graha: an unheld Darakaraka (the last two grahas tied) stays unheld
+    /// though the chart carries a Pitrikaraka.
+    #[test]
+    fn only_the_putrakaraka_falls_back_to_the_matrikaraka() {
+        let at = |longitude| Placement {
+            longitude,
+            sign: Rashi::Aries,
+            house: House::try_new(1).unwrap(),
+            dignity: Dignity::Neutral,
+            retrograde: false,
+            combust: false,
+            karaka7: None,
+            karaka8: None,
+            navamsha: Rashi::Aries,
+        };
+        // The Sun to Saturn at 29°, 28° … 24°, Saturn tied with Venus at 24°.
+        let mut placements = [at(0.5); 10];
+        let degrees = [29.0, 28.0, 27.0, 26.0, 25.0, 24.0, 24.0];
+        for (graha, degree) in KARAKA_GRAHAS.iter().zip(degrees) {
+            placements[Body::Graha(*graha).index()] = at(degree);
+        }
+        let chart = RuleChart {
+            placements,
+            panchanga: None,
+            strengths: None,
+        }
+        .with_karaka_orders(SevenKarakas::MatriIsPutra, EightKarakas::Parashara);
+        assert_eq!(
+            chart.holder(CharaKaraka::Pitrikaraka, false),
+            Some(Graha::Jupiter)
+        );
+        assert_eq!(chart.holder(CharaKaraka::Darakaraka, false), None);
+        assert_eq!(
+            chart.holder(CharaKaraka::Putrakaraka, false),
+            Some(Graha::Mercury)
+        );
     }
 
     /// A span with either part below nothing has no part.

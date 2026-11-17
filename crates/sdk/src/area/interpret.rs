@@ -59,7 +59,7 @@ impl<'a> InterpretArea<'a> {
     pub fn placements(self, document: &Document) -> Result<Plan, Error> {
         Ok(placements(
             &RuleInputs::of(document)?
-                .under(self.context.settings())
+                .under(self.context.settings())?
                 .chart,
         ))
     }
@@ -77,7 +77,7 @@ impl<'a> InterpretArea<'a> {
     pub fn positions(self, document: &Document) -> Result<Plan, Error> {
         Ok(positions(
             &RuleInputs::of(document)?
-                .under(self.context.settings())
+                .under(self.context.settings())?
                 .chart,
         ))
     }
@@ -98,7 +98,7 @@ impl<'a> InterpretArea<'a> {
         let engine = self.context.locale_engine();
         Ok(conditions(
             &RuleInputs::of(document)?
-                .under(self.context.settings())
+                .under(self.context.settings())?
                 .chart,
             &*engine,
         ))
@@ -120,7 +120,7 @@ impl<'a> InterpretArea<'a> {
     pub fn karakas(self, document: &Document) -> Result<Plan, Error> {
         Ok(karakas(
             &RuleInputs::of(document)?
-                .under(self.context.settings())
+                .under(self.context.settings())?
                 .chart,
         ))
     }
@@ -159,7 +159,7 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         // The states first, as every composer over `RuleInputs` refuses a
         // bare document for those.
-        let inputs = RuleInputs::of(document)?.under(self.context.settings());
+        let inputs = RuleInputs::of(document)?.under(self.context.settings())?;
         if document.panchanga.is_none() {
             return Err(Error::invalid_arg(
                 "the document carries no panchanga, whose limbs the phala composer says; ask \
@@ -323,7 +323,7 @@ impl<'a> InterpretArea<'a> {
             .with_field("ashtakavarga"));
         };
         let chart = RuleInputs::of(document)?
-            .under(self.context.settings())
+            .under(self.context.settings())?
             .chart;
         Ok(say_ashtakavarga(reading, &chart))
     }
@@ -336,7 +336,7 @@ impl<'a> InterpretArea<'a> {
     /// A document without its panchanga, naming the section to ask for.
     pub fn panchanga(self, document: &Document) -> Result<Plan, Error> {
         let chart = RuleInputs::of(document)?
-            .under(self.context.settings())
+            .under(self.context.settings())?
             .chart;
         if chart.panchanga.is_none() {
             return Err(Error::invalid_arg(

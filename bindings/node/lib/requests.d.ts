@@ -234,6 +234,10 @@ export interface AlmanacDaysRequest {
    * The sky's step, minutes; ten when left out.
    */
   readonly skyStepMinutes?: number | null;
+  /**
+   * Each day's times' ± band from Delta T (SR-104).
+   */
+  readonly uncertainty?: boolean;
   readonly utcOffsetSeconds?: number | null;
   readonly years?: boolean;
   /**
@@ -1408,6 +1412,26 @@ export interface ResearchRequest {
   readonly subjects?: readonly ResearchSubject[] | null;
   readonly test?: unknown;
   readonly uncertaintyStepMinutes?: number | null;
+}
+
+/**
+ * What `settings.diff` reads: the knobs to compare, as [`SettingsQuery`] names them; a record of its own so that each record has its own request type (a comparison may come to read more).
+ */
+export interface SettingsDiffQuery {
+  /**
+   * Groups (`frame`) or knobs (`frame.ayanamsha`) to compare, in any order; the answer keeps document order. Every knob when left out.
+   */
+  readonly knobs?: readonly string[] | null;
+}
+
+/**
+ * The knobs an explanation or a comparison is asked about: each a group (`frame`) or a knob (`frame.ayanamsha`); every knob when left out.
+ */
+export interface SettingsQuery {
+  /**
+   * Groups (`frame`) or knobs (`frame.ayanamsha`), in any order; the answer keeps document order. Every knob when left out.
+   */
+  readonly knobs?: readonly string[] | null;
 }
 
 /**
@@ -10882,6 +10906,8 @@ export interface RecordRequests {
   readonly 'naming.syllables': NamingSyllablesRequest;
   readonly 'numerology.profile': NumerologyRequest;
   readonly 'research.study': ResearchRequest;
+  readonly 'settings.diff': SettingsDiffQuery;
+  readonly 'settings.explain': SettingsQuery;
   readonly 'time.civil': CivilAsked;
   readonly 'time.convert': ScaleRequest;
   readonly 'time.resolve': ResolveAsked;

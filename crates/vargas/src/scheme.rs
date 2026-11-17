@@ -31,14 +31,14 @@ use serde::{Deserialize, Deserializer, Serialize};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Rashi, Varga};
 use teistro_core::error::{Error, Status};
-use teistro_core::settings::{Settings, UnattestedDn};
+use teistro_core::settings::{Settings, UnattestedDn, VargaChoice, VargaVariant};
+use teistro_core::varga_rows::{RowGroup, RowMap, RowSpans, Rows};
 
-/// The most parts a chart may divide the zodiac into.
-///
-/// Three hundred, which is past every attested chart and past the point
-/// where a part is smaller than the ephemeris's own uncertainty. A caller
-/// asking for more has a bug rather than a requirement, and the refusal
-/// names the limit.
+/// The most parts a chart may divide the zodiac into, the core's
+/// [`teistro_core::varga_rows::MOST_DIVISIONS`]: three hundred, past every
+/// attested chart and past the point where a part is smaller than the
+/// ephemeris's own uncertainty. A caller asking for more has a bug rather
+/// than a requirement, and the refusal names the limit.
 ///
 /// ```
 /// use teistro_vargas::{MOST_DIVISIONS, Scheme};
@@ -46,115 +46,15 @@ use teistro_core::settings::{Settings, UnattestedDn};
 /// assert!(Scheme::cyclic(MOST_DIVISIONS).is_ok());
 /// assert!(Scheme::cyclic(MOST_DIVISIONS + 1).is_err());
 /// ```
-pub const MOST_DIVISIONS: u16 = 300;
+pub use teistro_core::varga_rows::MOST_DIVISIONS;
+
+/// How a sign is sorted into groups, and the multiplier a stepping rule
+/// puts on the sign: the core's, since a consumer's own rows in the
+/// settings name them too.
+pub use teistro_core::varga_rows::{Classifier, SignBase};
 
 /// The signs of the zodiac.
 const SIGNS: u16 = 12;
-
-/// How a sign is sorted into groups, each with its own rule.
-///
-/// ```
-/// use teistro_core::catalogue::Rashi;
-/// use teistro_vargas::Classifier;
-///
-/// // Taurus is even, fixed and earthy.
-/// assert_eq!(Classifier::Parity.group_of(Rashi::Taurus), 1);
-/// assert_eq!(Classifier::Modality.group_of(Rashi::Taurus), 1);
-/// assert_eq!(Classifier::Element.group_of(Rashi::Taurus), 1);
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Classifier {
-    /// One group: every sign treated alike.
-    All,
-    /// Odd and even signs, counting Aries as odd.
-    Parity,
-    /// Movable, fixed and dual.
-    Modality,
-    /// Fire, earth, air and water.
-    Element,
-}
-
-impl Classifier {
-    /// How many groups it sorts the twelve signs into.
-    ///
-    /// ```
-    /// use teistro_vargas::Classifier;
-    ///
-    /// assert_eq!(Classifier::Element.groups(), 4);
-    /// ```
-    #[must_use]
-    pub const fn groups(self) -> u8 {
-        match self {
-            Classifier::All => 1,
-            Classifier::Parity => 2,
-            Classifier::Modality => 3,
-            Classifier::Element => 4,
-        }
-    }
-
-    /// Which group a sign belongs to.
-    ///
-    /// Every one of the four is the sign's index modulo the group count,
-    /// because the zodiac alternates parity, cycles the modalities in
-    /// threes and the elements in fours from Aries. That is arithmetic
-    /// rather than a coincidence, and it is why one classifier covers
-    /// all four.
-    ///
-    /// ```
-    /// use teistro_core::catalogue::Rashi;
-    /// use teistro_vargas::Classifier;
-    ///
-    /// // Sagittarius is dual: the third modality.
-    /// assert_eq!(Classifier::Modality.group_of(Rashi::Sagittarius), 2);
-    /// assert_eq!(Classifier::All.group_of(Rashi::Sagittarius), 0);
-    /// ```
-    #[must_use]
-    pub const fn group_of(self, sign: Rashi) -> usize {
-        (sign as u8 % self.groups()) as usize
-    }
-}
-
-/// The multiplier a stepping rule puts on the sign.
-///
-/// ```
-/// use teistro_vargas::SignBase;
-///
-/// assert_eq!(SignBase::Same.multiplier(9), 1);
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum SignBase {
-    /// Count from a fixed sign, which the offset names: `a = 0`.
-    Fixed,
-    /// Count from the sign the body already stands in: `a = 1`.
-    Same,
-    /// Count continuously round the zodiac, the parivritti form:
-    /// `a = divisions`.
-    Cyclic,
-}
-
-impl SignBase {
-    /// The multiplier for a chart of so many divisions.
-    ///
-    /// ```
-    /// use teistro_vargas::SignBase;
-    ///
-    /// assert_eq!(SignBase::Fixed.multiplier(9), 0);
-    /// // The navamsha counts on round the zodiac: nine parts a sign.
-    /// assert_eq!(SignBase::Cyclic.multiplier(9), 9);
-    /// ```
-    #[must_use]
-    pub const fn multiplier(self, divisions: u16) -> u32 {
-        match self {
-            SignBase::Fixed => 0,
-            SignBase::Same => 1,
-            SignBase::Cyclic => divisions as u32,
-        }
-    }
-}
 
 /// How a part of a sign becomes a sign.
 ///
@@ -266,20 +166,119 @@ impl Group {
     }
 }
 
+impl Group {
+    /// The group as owned rows.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_core::varga_rows::{RowMap, RowSpans};
+    /// use teistro_vargas::Scheme;
+    ///
+    /// let hora = Scheme::of(Varga::D2);
+    /// let rows = hora.group(Rashi::Aries).rows();
+    /// assert_eq!((rows.spans, rows.map), (RowSpans::Equal, RowMap::Listed { signs: vec![4, 3] }));
+    /// ```
+    #[must_use]
+    pub fn rows(&self) -> RowGroup {
+        RowGroup {
+            spans: match self.spans {
+                Spans::Equal => RowSpans::Equal,
+                Spans::Degrees { widths } => RowSpans::Degrees {
+                    widths: widths.to_vec(),
+                },
+            },
+            map: match self.map {
+                Map::Step { base, step, offset } => RowMap::Step { base, step, offset },
+                Map::Listed { signs } => RowMap::Listed {
+                    signs: signs.to_vec(),
+                },
+            },
+        }
+    }
+}
+
+/// The most distinct consumer rules a process keeps (see
+/// [`Scheme::from_rows`]): far past any consumer's set of charts, and a
+/// bound on what a caller generating rules in a loop can hold.
+///
+/// ```
+/// assert_eq!(teistro_vargas::scheme::MOST_RULES, 1024);
+/// ```
+pub const MOST_RULES: usize = 1024;
+
+/// The consumer rules kept so far, each with the `'static` groups it was
+/// made into.
+type Kept = Vec<(Rows, &'static [Group])>;
+
+/// The `'static` groups of checked rows: the ones made before for equal
+/// rows, or new ones kept for the life of the process.
+fn intern(rows: &Rows) -> Result<&'static [Group], Error> {
+    static KEPT: std::sync::OnceLock<std::sync::Mutex<Kept>> = std::sync::OnceLock::new();
+    let mut kept = KEPT
+        .get_or_init(|| std::sync::Mutex::new(Vec::new()))
+        .lock()
+        // A panic elsewhere while holding the lock leaves the list whole:
+        // it is only ever pushed to.
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    if let Some((_, groups)) = kept.iter().find(|(seen, _)| seen == rows) {
+        return Ok(groups);
+    }
+    if kept.len() >= MOST_RULES {
+        return Err(Error::new(
+            Status::Limit,
+            format!("a process keeps at most {MOST_RULES} distinct divisional rules"),
+        )
+        .with_field("vargas.schemes"));
+    }
+    let groups: Vec<Group> = rows
+        .groups
+        .iter()
+        .map(|group| Group {
+            spans: match &group.spans {
+                RowSpans::Equal => Spans::Equal,
+                RowSpans::Degrees { widths } => Spans::Degrees {
+                    widths: Box::leak(widths.clone().into_boxed_slice()),
+                },
+            },
+            map: match &group.map {
+                RowMap::Step { base, step, offset } => Map::Step {
+                    base: *base,
+                    step: *step,
+                    offset: *offset,
+                },
+                RowMap::Listed { signs } => Map::Listed {
+                    signs: Box::leak(signs.clone().into_boxed_slice()),
+                },
+            },
+        })
+        .collect();
+    let groups: &'static [Group] = Box::leak(groups.into_boxed_slice());
+    kept.push((rows.clone(), groups));
+    Ok(groups)
+}
+
 /// A divisional chart's rule.
 ///
 /// ```
 /// use teistro_core::catalogue::Varga;
+/// use teistro_core::settings::VargaVariant;
 /// use teistro_vargas::{Classifier, Scheme};
 ///
 /// let d7 = Scheme::of(Varga::D7);
 /// assert_eq!((d7.divisions, d7.classifier, d7.groups.len()), (7, Classifier::Parity, 2));
+/// assert_eq!(d7.variant, VargaVariant::Parashara);
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Scheme {
     /// The catalogued chart, or `None` for an arbitrary D-N.
     pub varga: Option<Varga>,
+    /// Which of the chart's schemes this is: BPHS ch. 6's, a named
+    /// variant, or a consumer's own rows (`CUSTOM`). Left out of a written
+    /// scheme when it is `PARASHARA`, so a chart computed by the shipped
+    /// rows writes, and hashes, as it always has.
+    #[serde(default, skip_serializing_if = "VargaVariant::is_parashara")]
+    pub variant: VargaVariant,
     /// What the chart is called: D9's nine, D150's hundred and fifty.
     pub divisions: u16,
     /// How its signs are sorted into groups.
@@ -290,47 +289,59 @@ pub struct Scheme {
 
 impl<'de> Deserialize<'de> for Scheme {
     /// Reads a scheme back from a document by its **identity**, and takes
-    /// the rule itself from this build.
+    /// a shipped rule itself from this build.
     ///
     /// The groups are written into a document so a reader can see the
     /// rule that was applied, and so the content hash moves when the rule
-    /// does. They are not read back: a group's map may name a
-    /// `&'static [u8]` of signs, and no document can produce one. That
-    /// costs nothing, because the hash is what catches a document written
-    /// under a different table — the groups are in the bytes it is taken
-    /// over.
+    /// does. A shipped rule's (`PARASHARA` or a named variant) are not
+    /// read back: the hash is what catches a document written under a
+    /// different table, the groups being in the bytes it is taken over. A
+    /// consumer's own rule (`CUSTOM`) has no row in this build, so its
+    /// groups are read, checked as the settings check them, and become the
+    /// rule: the chart reads back as the rows that computed it.
     ///
     /// What is read is checked. A catalogued chart's divisions and
-    /// classifier must be the ones this build's catalogue gives it, so a
+    /// classifier must be the ones this build's row gives it, so a
     /// document that names D9 and describes something else is refused by
     /// name rather than quietly read as D9.
     ///
     /// # Errors
     ///
-    /// A `varga` this build does not catalogue, a `divisions` or
-    /// `classifier` that disagrees with it, or an unattested D-N whose
-    /// divisions are outside [`MOST_DIVISIONS`].
+    /// A `varga` this build does not catalogue, a variant that is not one of
+    /// the chart's, a `divisions` or `classifier` that disagrees with its
+    /// row, rows that fail their check, or an unattested D-N whose divisions
+    /// are outside [`MOST_DIVISIONS`].
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Scheme, D::Error> {
         /// The fields a document carries, as it carries them.
         #[derive(Deserialize)]
         struct Written {
             varga: Option<Varga>,
+            #[serde(default)]
+            variant: VargaVariant,
             divisions: u16,
             classifier: Classifier,
-            /// Read and dropped; see the note above.
+            /// Read whole: a consumer's rows are the rule, and a shipped
+            /// rule's are dropped (see the note above).
             #[serde(default)]
-            groups: serde::de::IgnoredAny,
+            groups: Vec<RowGroup>,
         }
         let written = Written::deserialize(deserializer)?;
-        let _ = written.groups;
-        let rebuilt = match written.varga {
-            Some(varga) => Scheme::of(varga),
+        let rebuilt = match (written.varga, written.variant) {
+            (Some(varga), VargaVariant::Custom) => Scheme::from_rows(
+                varga,
+                &Rows {
+                    classifier: written.classifier,
+                    groups: written.groups,
+                },
+            ),
+            (Some(varga), variant) => Scheme::named(varga, variant),
             // The only convention this crate implements. A document does
             // not carry the one it was computed under — that is in the
             // envelope's `applied_conventions` — so a second convention
             // means reading it from there rather than assuming here.
-            None => Scheme::cyclic(written.divisions).map_err(serde::de::Error::custom)?,
-        };
+            (None, _) => Scheme::cyclic(written.divisions),
+        }
+        .map_err(serde::de::Error::custom)?;
         if rebuilt.divisions != written.divisions {
             return Err(serde::de::Error::custom(format!(
                 "the document says {:?} divides a sign {} times and this build says {}",
@@ -448,11 +459,156 @@ const fn row(
 ) -> Scheme {
     Scheme {
         varga: Some(varga),
+        variant: VargaVariant::Parashara,
         divisions,
         classifier,
         groups,
     }
 }
+
+// The named variants (`03-design/varga-schemes.md`, cruxes C2063 to C2066).
+// Each is rows for the one evaluator, and each is cited where the knob's
+// member is (`VargaVariant`).
+
+/// Kashinatha's hora (P.V.R. Narasimha Rao, *Personal Finances from Hora
+/// Chart*, 2003, after Kashinath Rath): a sign's Sun half — an odd sign's
+/// first, an even sign's second, as Parashara gives them — goes to the
+/// day-strong sign of the sign's lord, its Moon half to the night-strong
+/// one. The day-strong signs are Leo, Virgo, Libra, Scorpio, Aquarius and
+/// Pisces; Leo and Cancer are taken as a pair. One list a sign, the first
+/// half's sign first.
+const KASHINATHA_HORA: [Group; 12] = [
+    listed(&[7, 0]),  // Aries, Mars's: Scorpio by day, Aries by night.
+    listed(&[1, 6]),  // Taurus, Venus's: Moon half first.
+    listed(&[5, 2]),  // Gemini, Mercury's.
+    listed(&[3, 4]),  // Cancer, the Moon's: Cancer, then Leo.
+    listed(&[4, 3]),  // Leo, the Sun's.
+    listed(&[2, 5]),  // Virgo, Mercury's.
+    listed(&[6, 1]),  // Libra, Venus's.
+    listed(&[0, 7]),  // Scorpio, Mars's.
+    listed(&[11, 8]), // Sagittarius, Jupiter's.
+    listed(&[9, 10]), // Capricorn, Saturn's.
+    listed(&[10, 9]), // Aquarius, Saturn's.
+    listed(&[8, 11]), // Pisces, Jupiter's.
+];
+
+/// The Uma-Shambhu hora (Narasimha Rao, *Parasara's Hora Chart Decoded*,
+/// 2012): the twenty-four halves of the zodiac counted twice round from
+/// Aries, an even sign's two halves in reverse. Odd signs step on from
+/// `2·rashi`; even signs from `2·rashi + 1` back by one.
+const UMA_SHAMBHU_HORA: [Group; 2] = [step(SignBase::Cyclic, 1, 0), step(SignBase::Cyclic, 11, 1)];
+
+/// Somanatha's drekkana (Somanatha's *Kalpalata* on Krishna Mishra's
+/// *Phalaratnamala*, as Iranganti Rangacharya gives it): the odd signs'
+/// drekkanas counted on from Aries, three a sign, and the even signs' back
+/// from Pisces. Half the sign's number is no whole multiplier, so it is a
+/// rule a sign.
+const SOMANATHA_DREKKANA: [Group; 12] = [
+    step(SignBase::Fixed, 1, 0),   // Aries: Aries, Taurus, Gemini.
+    step(SignBase::Fixed, 11, 11), // Taurus: Pisces, Aquarius, Capricorn.
+    step(SignBase::Fixed, 1, 3),   // Gemini: Cancer on.
+    step(SignBase::Fixed, 11, 8),  // Cancer: Sagittarius back.
+    step(SignBase::Fixed, 1, 6),   // Leo: Libra on.
+    step(SignBase::Fixed, 11, 5),  // Virgo: Virgo back.
+    step(SignBase::Fixed, 1, 9),   // Libra: Capricorn on.
+    step(SignBase::Fixed, 11, 2),  // Scorpio: Gemini back.
+    step(SignBase::Fixed, 1, 0),   // Sagittarius: round again from Aries.
+    step(SignBase::Fixed, 11, 11), // Capricorn: from Pisces again.
+    step(SignBase::Fixed, 1, 3),   // Aquarius.
+    step(SignBase::Fixed, 11, 8),  // Pisces.
+];
+
+/// Krishna Mishra's navamsha (Narasimha Rao 2012): an odd sign's nine as
+/// Parashara's, an even sign's in reverse, from the ninth back to the
+/// first.
+const KRISHNA_MISHRA_NAVAMSHA: [Group; 2] =
+    [step(SignBase::Cyclic, 1, 0), step(SignBase::Cyclic, 11, 8)];
+
+/// A named variant's row.
+const fn variant(
+    varga: Varga,
+    divisions: u16,
+    variant: VargaVariant,
+    classifier: Classifier,
+    groups: &'static [Group],
+) -> Scheme {
+    Scheme {
+        varga: Some(varga),
+        variant,
+        divisions,
+        classifier,
+        groups,
+    }
+}
+
+/// The named variants the SDK ships beside [`SCHEMES`], each a row for the
+/// one evaluator; `VargaVariant::serves` names exactly these charts, which
+/// the crate's own test holds.
+///
+/// ```
+/// use teistro_core::settings::VargaVariant;
+/// use teistro_vargas::scheme::VARIANTS;
+///
+/// assert!(VARIANTS.iter().all(|row| row.variant != VargaVariant::Parashara));
+/// ```
+pub const VARIANTS: [Scheme; 8] = [
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::Kashinatha,
+        Classifier::Sign,
+        &KASHINATHA_HORA,
+    ),
+    variant(
+        Varga::D2,
+        2,
+        VargaVariant::UmaShambhu,
+        Classifier::Parity,
+        &UMA_SHAMBHU_HORA,
+    ),
+    variant(
+        Varga::D3,
+        3,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D3,
+        3,
+        VargaVariant::Somanatha,
+        Classifier::Sign,
+        &SOMANATHA_DREKKANA,
+    ),
+    variant(
+        Varga::D4,
+        4,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D5,
+        5,
+        VargaVariant::Parivritti,
+        Classifier::All,
+        &CONTINUOUS,
+    ),
+    variant(
+        Varga::D9,
+        9,
+        VargaVariant::KrishnaMishra,
+        Classifier::Parity,
+        &KRISHNA_MISHRA_NAVAMSHA,
+    ),
+];
 
 /// The twenty-one divisional charts the SDK ships, in catalogue order.
 ///
@@ -507,6 +663,148 @@ impl Scheme {
             .copied()
             .find(|scheme| scheme.varga == Some(varga))
             .unwrap_or(SCHEMES[0])
+    }
+
+    /// A catalogued chart under a named scheme: its BPHS ch. 6 row for
+    /// `PARASHARA`, or the named variant's row.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_core::error::Status;
+    /// use teistro_core::settings::VargaVariant;
+    /// use teistro_vargas::{Scheme, sign};
+    ///
+    /// // Narasimha Rao's worked example: Jupiter at 25°16′ Taurus is in
+    /// // Venus's day-strong sign, Libra, in Kashinatha's hora.
+    /// let hora = Scheme::named(Varga::D2, VargaVariant::Kashinatha)?;
+    /// let jupiter = teistro_core::angle::Nas::try_from_degrees(30.0 + 25.0 + 16.0 / 60.0)?;
+    /// assert_eq!(sign(&hora, jupiter), Rashi::Libra);
+    /// // A scheme that is not the chart's is refused by the field.
+    /// let refused = Scheme::named(Varga::D9, VargaVariant::Kashinatha).unwrap_err();
+    /// assert_eq!((refused.status, refused.field()), (Status::InvalidArg, Some("vargas.schemes.D9.which")));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for a scheme that is not one of the chart's, naming
+    /// `vargas.schemes.<chart>.which` and the chart's schemes.
+    pub fn named(varga: Varga, which: VargaVariant) -> Result<Scheme, Error> {
+        if which == VargaVariant::Parashara {
+            return Ok(Scheme::of(varga));
+        }
+        VargaChoice::Named { which }.check(varga)?;
+        VARIANTS
+            .iter()
+            .copied()
+            .find(|row| row.varga == Some(varga) && row.variant == which)
+            .ok_or_else(|| {
+                Error::internal(format!(
+                    "{} serves {} and has no row",
+                    which.key(),
+                    varga.key()
+                ))
+            })
+    }
+
+    /// A catalogued chart computed by a consumer's own rows, checked as the
+    /// settings check them ([`Rows::check`]): one group a classifier group,
+    /// spans filling a sign, one listed sign a part, every sign in 0 to 11.
+    ///
+    /// A scheme holds its rule as `'static` rows, as the shipped ones are,
+    /// so a consumer's rows are kept for the life of the process, **once per
+    /// distinct rule**: a context opened a thousand times over the same rows
+    /// keeps one copy. Past [`MOST_RULES`] distinct rules the call is
+    /// refused rather than growing without bound.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Rashi, Varga};
+    /// use teistro_core::varga_rows::{Classifier, RowGroup, RowMap, RowSpans, Rows, SignBase};
+    /// use teistro_vargas::{Scheme, sign};
+    ///
+    /// // A drekkana counted from the sign's opposite: a rule no text gives.
+    /// let rows = Rows {
+    ///     classifier: Classifier::All,
+    ///     groups: vec![RowGroup { spans: RowSpans::Equal, map: RowMap::Step { base: SignBase::Same, step: 4, offset: 6 } }],
+    /// };
+    /// let own = Scheme::from_rows(Varga::D3, &rows)?;
+    /// assert_eq!(sign(&own, teistro_core::angle::Nas::try_from_degrees(1.0)?), Rashi::Libra);
+    /// // The same rows are the same rule, kept once.
+    /// assert!(core::ptr::eq(own.groups, Scheme::from_rows(Varga::D3, &rows)?.groups));
+    /// assert_eq!(own.rows(), rows);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// The check's refusal, naming the field under `vargas.schemes.<chart>`;
+    /// `LIMIT` past [`MOST_RULES`] distinct rules.
+    pub fn from_rows(varga: Varga, rows: &Rows) -> Result<Scheme, Error> {
+        let divisions = varga.attributes().divisions;
+        rows.check(divisions, &format!("vargas.schemes.{}", varga.key()))?;
+        Ok(Scheme {
+            varga: Some(varga),
+            variant: VargaVariant::Custom,
+            divisions,
+            classifier: rows.classifier,
+            groups: intern(rows)?,
+        })
+    }
+
+    /// The scheme a chart is computed by under `settings`: the one
+    /// `vargas.schemes` names for it, or BPHS ch. 6's where it names none.
+    /// Every reader of a divisional chart under a context asks here, so a
+    /// choice reaches the chart document, its drawing, its sign changes,
+    /// the rules over it and the strengths alike.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_core::settings::{VargaChoice, VargaVariant};
+    /// use teistro_vargas::Scheme;
+    ///
+    /// let mut settings = teistro_chart::sample::resolved().settings;
+    /// assert_eq!(Scheme::chosen(Varga::D3, &settings)?, Scheme::of(Varga::D3));
+    /// settings.vargas.schemes.insert(Varga::D3, VargaChoice::Named { which: VargaVariant::Somanatha });
+    /// assert_eq!(Scheme::chosen(Varga::D3, &settings)?.variant, VargaVariant::Somanatha);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Scheme::named`] and [`Scheme::from_rows`]; resolved settings
+    /// have passed the same checks, so only settings built by hand fail.
+    pub fn chosen(varga: Varga, settings: &Settings) -> Result<Scheme, Error> {
+        match settings.vargas.schemes.get(&varga) {
+            None => Ok(Scheme::of(varga)),
+            Some(VargaChoice::Named { which }) => Scheme::named(varga, *which),
+            Some(VargaChoice::Custom { classifier, groups }) => Scheme::from_rows(
+                varga,
+                &Rows {
+                    classifier: *classifier,
+                    groups: groups.clone(),
+                },
+            ),
+        }
+    }
+
+    /// The rule as owned rows: what a consumer would write to compute this
+    /// chart as a `CUSTOM` scheme, and what [`Scheme::from_rows`] reads.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::Scheme;
+    ///
+    /// // Every shipped row is rows a consumer could have written.
+    /// let d30 = Scheme::of(Varga::D30);
+    /// assert_eq!(Scheme::from_rows(Varga::D30, &d30.rows())?.groups, d30.groups);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn rows(&self) -> Rows {
+        Rows {
+            classifier: self.classifier,
+            groups: self.groups.iter().map(Group::rows).collect(),
+        }
     }
 
     /// The rule of an arbitrary D-N under the convention the settings
@@ -608,6 +906,7 @@ impl Scheme {
         }
         Ok(Scheme {
             varga: None,
+            variant: VargaVariant::Parashara,
             divisions,
             classifier: Classifier::All,
             groups: &CONTINUOUS,

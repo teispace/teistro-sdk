@@ -76,6 +76,7 @@ from ._ffi import (
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
     PANCHANGA_GOWRI,
+    PANCHANGA_UNCERTAINTY,
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_MARKERS,
@@ -152,6 +153,8 @@ from ._requests import (
     AddSign as AddSign,
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
+    SettingsDiffQuery as SettingsDiffQuery,
+    SettingsQuery as SettingsQuery,
     HorizonSample as HorizonSample,
     ChangeKind as ChangeKind,
     AnniversariesRequest as AnniversariesRequest,
@@ -1031,6 +1034,7 @@ from .catalogue import (
     Astronomy,
     Chosen,
     DayState,
+    DeltaTBand,
     DeltaTSource,
     Detail,
     DistanceUnit,
@@ -1110,6 +1114,13 @@ __all__ = [
     "NEPAL_OFFICIAL_PROFILE",
     "on_internal_error",
     "NepalOfficial",
+    "SettingsQuery",
+    "SettingsDiffQuery",
+    "KnobSource",
+    "KnobExplained",
+    "SettingsExplained",
+    "KnobDifference",
+    "SettingsDiff",
     "Plugin",
     "nepal_official",
     "Air",
@@ -1152,6 +1163,7 @@ __all__ = [
     "Longitude",
     "ChoghadiyaPeriod",
     "GowriPeriod",
+    "TimesUncertainty",
     "HeldYoga",
     "Hora",
     "Interval",
@@ -1615,6 +1627,8 @@ __all__ = [
     "FestivalAnswer",
     "FestivalSait",
     "FestivalMoonrise",
+    "Malamasa",
+    "MalamasaClause",
     "FestivalSaitCandidate",
     "Published",
     "PublishedAdded",
@@ -1764,6 +1778,9 @@ __all__ = [
     "EclipsePoint",
     "EclipseMoment",
     "EclipseSeen",
+    "SeenAt",
+    "SolarSeenMaximum",
+    "LunarSeenMaximum",
     "LunarEclipseView",
     "SolarEclipseView",
     "LunarYear",
@@ -2215,6 +2232,7 @@ __all__ = [
     "Astronomy",
     "Chosen",
     "DayState",
+    "DeltaTBand",
     "DeltaTSource",
     "DistanceUnit",
     "Dst",
@@ -2450,6 +2468,69 @@ adapter's descriptor."""
 
 NEPAL_OFFICIAL_PROFILE = "nepali-committee"
 """The profile `nepal_official` opens: the Nepali committee's."""
+
+
+class KnobSource(TypedDict):
+    """A source cited for a knob's value."""
+
+    text: str
+    reference: str
+
+
+class KnobExplained(TypedDict):
+    """One knob explained (`Context.explain_settings`)."""
+
+    knob: str
+    """``group.knob``."""
+    value: Any
+    """Its value, as the canonical settings document writes it."""
+    layer: str
+    """``ROOT``, ``PROFILE``, ``CONTEXT``, ``REQUEST`` or ``DOCUMENT``."""
+    profile: Optional[str]
+    """The profile that set it, where a profile did."""
+    citation: Optional[KnobSource]
+    """The root's or the profile's citation; None where a patch set it."""
+    moves: str
+    """``SKY``, ``SUNRISE``, ``RULE``, ``TIME`` or ``FORM``."""
+    effect: str
+    """What it changes, in one line, in the context's locale."""
+
+
+class SettingsExplained(TypedDict):
+    """Every knob asked, each with the layer that set it, why and what it changes."""
+
+    profile: str
+    settingsHash: str
+    knobs: List[KnobExplained]
+
+
+class KnobDifference(TypedDict):
+    """One knob on which two contexts' settings differ."""
+
+    knob: str
+    value: Any
+    otherValue: Any
+    moves: str
+    effect: str
+
+
+class SettingsDiff(TypedDict):
+    """The knobs on which two contexts' settings differ (`Context.diff_settings`)."""
+
+    profile: str
+    otherProfile: str
+    settingsHash: str
+    otherSettingsHash: str
+    knobs: List[KnobDifference]
+
+
+def _settings_query(knobs: Optional[Sequence[str]], method: str) -> str:
+    """A settings query as its JSON; the library names an unknown knob."""
+    if knobs is None:
+        return "{}"
+    if isinstance(knobs, str) or not all(isinstance(knob, str) for knob in knobs):
+        raise TypeError(f"{method}: knobs is a list of groups or knobs, e.g. ['frame.ayanamsha']")
+    return json.dumps({"knobs": list(knobs)}, separators=(",", ":"))
 
 
 class NepalOfficial(TypedDict):
@@ -4024,6 +4105,7 @@ class AlmanacArea(_Area):
         homa_ahuti: bool = False,
         markers: bool = False,
         gowri: bool = False,
+        uncertainty: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -4052,6 +4134,8 @@ class AlmanacArea(_Area):
         not otherwise make, so only on asking. `markers=True` gives each
         day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`,
         and `gowri=True` its Gowri panchangam, as `AlmanacDay.gowri`.
+        `uncertainty=True` gives each day its times' ± band from Delta T,
+        as `AlmanacDay.uncertainty` (SR-104).
         `days=False` leaves the days out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
@@ -4072,6 +4156,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_GOWRI if gowri else 0)
+            | (PANCHANGA_UNCERTAINTY if uncertainty else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -4093,6 +4178,7 @@ class AlmanacArea(_Area):
         homa_ahuti: bool = False,
         markers: bool = False,
         gowri: bool = False,
+        uncertainty: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -4117,6 +4203,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_GOWRI if gowri else 0)
+            | (PANCHANGA_UNCERTAINTY if uncertainty else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -6210,6 +6297,42 @@ class Context(RecordCalls):
         return Context(
             self.teistro, inner, host, self._layouts, self._dasha_systems
         )
+
+    def explain_settings(self, knobs: Optional[Sequence[str]] = None) -> SettingsExplained:
+        """**Why each knob has its value** (``settings.explain``): each knob
+        with its value, the layer that set it (``ROOT``, ``PROFILE``,
+        ``CONTEXT`` for the context's ``settings``, ``REQUEST`` for a
+        `with_settings` patch), the source the root or the profile cites
+        for it, what a difference in it moves (``SKY``, ``SUNRISE``,
+        ``RULE``, ``TIME``, ``FORM``) and its effect note in this context's
+        locale. ``knobs`` names groups (``frame``) or knobs
+        (``frame.ayanamsha``), every knob when left out; an unknown one
+        raises `TeistroError` naming it (``knobs[0]``)::
+
+            explained = ctx.explain_settings(["frame", "day.sunrise"])
+            explained["knobs"][0]["citation"]  # {"text": ..., "reference": ...}
+        """
+        asked = _settings_query(knobs, "explain_settings")
+        return cast(SettingsExplained, json.loads(self.inner.explain_settings(asked)))
+
+    def diff_settings(
+        self, other: Context, knobs: Optional[Sequence[str]] = None
+    ) -> SettingsDiff:
+        """**Where two contexts' settings part** (``settings.diff``): each
+        knob ``knobs`` names, every one when left out, on which this
+        context's settings and ``other``'s differ, both values beside what
+        it moves and its effect note in this context's locale::
+
+            committee = Context(profile="nepali-committee")
+            drik = Context(profile="nepali-drik")
+            [knob["knob"] for knob in committee.diff_settings(drik)["knobs"]]
+        """
+        if not isinstance(other, Context):
+            raise TeistroError(
+                Status.INVALID_ARG, "diff_settings compares this context with another Context", field="other"
+            )
+        asked = _settings_query(knobs, "diff_settings")
+        return cast(SettingsDiff, json.loads(self.inner.diff_settings(other.inner, asked)))
 
     def close(self) -> None:
         """Frees the context, and then whatever its provider held once no
@@ -10813,6 +10936,29 @@ class FestivalObservance:
     """The day's moonrise and its place, for a rule whose rite is at
     moonrise or whose fast is broken then (SR-60); None otherwise."""
 
+    malamasa: Optional["Malamasa"] = None
+    """The month rule that placed the day in a year with an adhika or a
+    kshaya month (SR-93, `03-design/festival-malamasa.md`); None in an
+    ordinary month."""
+
+
+MalamasaClause = Literal["NIJA", "ADHIKA", "KSHAYA_FIRST", "KSHAYA_SECOND"]
+"""Which month rule placed an observance (SR-93): kept in the nija month
+of a doubled name, in the adhika month by the rule's own ``inAdhika``, or
+in a kshaya lunation under its first or its second name."""
+
+
+@dataclass(frozen=True)
+class Malamasa:
+    """The month rule an observance was placed by, and where the texts say
+    it (SR-93)."""
+
+    clause: MalamasaClause
+    """Which clause."""
+
+    source: str
+    """Where the texts say it."""
+
 
 @dataclass(frozen=True)
 class FestivalMoonrise:
@@ -12847,6 +12993,42 @@ class EclipseSeen:
     """A UT1 Julian day."""
 
 
+SeenAt = Literal["MAXIMUM", "RISING", "SETTING", "RISING_PAST_LIMIT", "SETTING_PAST_LIMIT", "NOT_SEEN"]
+"""Where the largest phase a place sees falls: at the maximum, where the
+body rises after it or sets before it (the `_PAST_LIMIT` pair against a
+custom altitude), or nowhere."""
+
+
+@dataclass(frozen=True)
+class SolarSeenMaximum:
+    """The largest phase of a solar eclipse the place sees: the maximum
+    when the Sun is up at it, else where it rises or sets. `moment` and
+    the magnitudes are `None` exactly when nothing is seen."""
+
+    why: SeenAt
+    moment: Optional[EclipseMoment]
+    """When, with the Sun's topocentric geometric altitude."""
+
+    magnitude: Optional[float]
+    obscuration: Optional[float]
+
+
+@dataclass(frozen=True)
+class LunarSeenMaximum:
+    """The largest phase of a lunar eclipse the place sees: the greatest
+    eclipse when the Moon is up at it, else where it rises or sets.
+    `moment` and the magnitudes are `None` exactly when nothing is seen."""
+
+    why: SeenAt
+    moment: Optional[EclipseMoment]
+    """When, with the Moon's topocentric geometric altitude."""
+
+    umbral_magnitude: Optional[float]
+    """Negative while the Moon is clear of the umbra."""
+
+    penumbral_magnitude: Optional[float]
+
+
 @dataclass(frozen=True)
 class LunarContacts:
     """A lunar eclipse's contacts with the penumbra and umbra, UT1 Julian
@@ -12921,6 +13103,9 @@ class LunarEclipseView:
     """The stretch of the umbral phase seen, the part the eye sees, or
     `None` (always for a penumbral eclipse)."""
 
+    seen_maximum: LunarSeenMaximum
+    """The largest phase the place sees."""
+
 
 @dataclass(frozen=True)
 class SolarEclipseView:
@@ -12932,6 +13117,9 @@ class SolarEclipseView:
     """What the place sees at its maximum: never `HYBRID`."""
 
     magnitude: float
+    """The fraction of the Sun's diameter covered at the maximum, even
+    below the horizon."""
+
     obscuration: float
     """The fraction of the Sun's disc covered at the maximum."""
 
@@ -12941,6 +13129,8 @@ class SolarEclipseView:
     fourth: EclipseMoment
     maximum: EclipseMoment
     seen: Optional[EclipseSeen]
+    seen_maximum: SolarSeenMaximum
+    """The largest phase the place sees."""
 
 
 @dataclass(frozen=True)
@@ -18597,7 +18787,13 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         published=_published(raw),
         sait=_sait(raw["sait"]) if raw.get("sait") is not None else None,
         moonrise=_festival_moonrise(raw["moonrise"]) if raw.get("moonrise") is not None else None,
+        malamasa=_malamasa(raw["malamasa"]) if raw.get("malamasa") is not None else None,
     )
+
+
+def _malamasa(raw: Mapping[str, Any]) -> Malamasa:
+    """The month rule an observance carries, as a festival answer writes it."""
+    return Malamasa(clause=raw["clause"], source=raw["source"])
 
 
 def _festival_moonrise(raw: Mapping[str, Any]) -> FestivalMoonrise:
@@ -19488,6 +19684,12 @@ def _eclipses_answer(text: str) -> Eclipses:
                 p4=moment(h["p4"]),
                 seen=seen(h["seen"]),
                 umbral_seen=seen(h["umbralSeen"]),
+                seen_maximum=LunarSeenMaximum(
+                    why=h["seenMaximum"]["why"],
+                    moment=reached(h["seenMaximum"]["moment"]),
+                    umbral_magnitude=h["seenMaximum"]["umbralMagnitude"],
+                    penumbral_magnitude=h["seenMaximum"]["penumbralMagnitude"],
+                ),
             ),
             vedha=seen(raw["vedha"]),
         )
@@ -19514,6 +19716,12 @@ def _eclipses_answer(text: str) -> Eclipses:
                 fourth=moment(h["fourth"]),
                 maximum=moment(h["maximum"]),
                 seen=seen(h["seen"]),
+                seen_maximum=SolarSeenMaximum(
+                    why=h["seenMaximum"]["why"],
+                    moment=reached(h["seenMaximum"]["moment"]),
+                    magnitude=h["seenMaximum"]["magnitude"],
+                    obscuration=h["seenMaximum"]["obscuration"],
+                ),
             ),
             vedha=seen(raw["vedha"]),
         )
@@ -22936,6 +23144,30 @@ class KaalaPeriod:
 
 
 @dataclass(frozen=True)
+class TimesUncertainty:
+    """A day's times' ± band from Delta T (SR-104): the Delta T the day
+    was reckoned under and the one-sigma band, in seconds, each kind of
+    time takes on from its uncertainty."""
+
+    delta_t_seconds: float
+    """Delta T, TT less UT1, at the middle of the day's window, seconds."""
+
+    band: DeltaTBand
+    """Where its uncertainty comes from."""
+
+    limbs_seconds: Optional[float]
+    """A limb's end, a sankranti or a lunation: Delta T's whole band;
+    `None` when Delta T states none."""
+
+    sunrise_seconds: Optional[float]
+    """The sunrise and sunset and every period divided from them: a 365th
+    of it."""
+
+    moonrise_seconds: Optional[float]
+    """The moonrise and moonset: a 26th of it."""
+
+
+@dataclass(frozen=True)
 class GowriPeriod:
     """One Gowri of the Gowri panchangam, of the daylight or of the night."""
 
@@ -23362,6 +23594,28 @@ class AlmanacDay:
         )
 
     @property
+    def uncertainty(self) -> Optional[TimesUncertainty]:
+        """The day's times' ± band from Delta T, when `uncertainty=True`
+        asked for it (SR-104, `03-design/time-and-timezone.md` §3.5): a
+        limb's end takes on Delta T's whole uncertainty, a sunrise a 365th
+        of it and a moonrise a 26th. `None` when not asked for.
+        """
+        columns = self.batch.decoded.uncertainty
+
+        def band(i: int) -> TimesUncertainty:
+            stated = bool(columns.stated[i])
+            return TimesUncertainty(
+                delta_t_seconds=columns.delta_t_seconds[i],
+                band=DeltaTBand(columns.band[i]),
+                limbs_seconds=columns.limbs_seconds[i] if stated else None,
+                sunrise_seconds=columns.sunrise_seconds[i] if stated else None,
+                moonrise_seconds=columns.moonrise_seconds[i] if stated else None,
+            )
+
+        rows = self._rows("uncertainty", band)
+        return rows[0] if rows else None
+
+    @property
     def gowri(self) -> list[GowriPeriod]:
         """The Gowri panchangam, when `gowri=True` asked for it
         (`03-design/gowri-panchangam.md`): eight Gowri of the daylight and
@@ -23501,6 +23755,7 @@ class Almanac:
             "named_panchaka",
             "markers",
             "gowri",
+            "uncertainty",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

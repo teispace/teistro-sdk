@@ -8216,6 +8216,9 @@ class PanchangaCounts:
     gowri: memoryview[int]
     """How many rows of `gowri` belong to this day."""
 
+    uncertainty: memoryview[int]
+    """How many rows of `uncertainty` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9316,6 +9319,36 @@ class PanchangaGowri:
 
 
 @dataclass(frozen=True)
+class PanchangaUncertainty:
+    """The `uncertainty` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+    """
+
+    delta_t_seconds: memoryview[float]
+    """Delta T, TT less UT1, at the middle of the day's window, seconds."""
+
+    band: memoryview[int]
+    """Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020)."""
+
+    stated: memoryview[int]
+    """1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing."""
+
+    limbs_seconds: memoryview[float]
+    """The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own."""
+
+    sunrise_seconds: memoryview[float]
+    """The one-sigma band of the sunrise and sunset and every period divided from them, seconds."""
+
+    moonrise_seconds: memoryview[float]
+    """The one-sigma band of the moonrise and moonset, seconds."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -9407,7 +9440,7 @@ class Panchanga:
     """UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, viraNirvana, opened, began, ended, jovian, lupta, rulers}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the Vira Nirvana year that opens at its Kartika Shukla Pratipada (the Vikrama plus 470), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; the Jovian year expunged in it, in full, or null; and its office-bearers (`03-design/year-rulers.md`), each `{office, event, texts, readings}`: the office in full (`year_office.RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`, `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI`), the new moon or the Sun's ingress that makes it in UTC Julian days, the texts that name it in full (`ruler_text.JYOTIRNIBANDHA`, `NARADA_SAMHITA`, `NAVANAYAKA`), and its weekday under each rule the texts give, each `{rule, vara, lord, day}`: the rule in full (`ruler_day_rule.SUNRISE`, `NEW_MOON`, `GARGA` for the raja, `DAYLIGHT`, `VARA` for the rest, the first the plainest), the weekday and its lord in full, and the sunrise that opened it. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them."""
 
     eclipses: str
-    """UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, and `umbralSeen` the stretch of the umbral phase seen, or null. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them."""
+    """UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen, seenMaximum}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, `umbralSeen` the stretch of the umbral phase seen, or null, and `seenMaximum` the largest phase seen, `{why, moment, umbralMagnitude, penumbralMagnitude}`. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen, seenMaximum}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path, the magnitude and obscuration the geometric maximum's even with the Sun below the horizon, and `seenMaximum` the largest phase seen, `{why, moment, magnitude, obscuration}`. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. A `seenMaximum`'s `why` is `MAXIMUM` when the body is up at the maximum, `RISING` or `SETTING` when it rises after the maximum or sets before it and the largest phase seen is at that edge, `RISING_PAST_LIMIT` or `SETTING_PAST_LIMIT` the same against a custom altitude, and `NOT_SEEN` when none of the eclipse is seen, its `moment` and magnitudes then null. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them."""
 
     nepal_sambat: str
     """UTF-8 JSON, canonical: each day's Nepal Sambat date when `sections` asked for `TS_PANCHANGA_NEPAL_SAMBAT`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §11). `value` is a list in the days' order, each `{year, month, kind, paksha}`: the year, which opens at Kachhala's first day (1146 from 2025-10-22); the month, 1 for Kachhala (amanta Kartika) to 12 for Kaula (amanta Ashwina), an adhika month keeping the number of the month it repeats; the month's kind (`NIJA`, `ADHIKA`, which is Anala, or `KSHAYA`); and the half as a full key, `paksha.SHUKLA` (thwa) or `paksha.KRISHNA` (ga). The provenance is the days' own. Empty when `sections` did not ask for them."""
@@ -9463,6 +9496,9 @@ class Panchanga:
     gowri: PanchangaGowri
     """The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none."""
 
+    uncertainty: PanchangaUncertainty
+    """Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9514,6 +9550,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_sky = blob.section(40, "sky")
     at_markers = blob.section(41, "markers")
     at_gowri = blob.section(42, "gowri")
+    at_uncertainty = blob.section(43, "uncertainty")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9627,6 +9664,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("I"),
             markers=blob.column(at_counts, 27, 4, at_counts.count).cast("I"),
             gowri=blob.column(at_counts, 28, 4, at_counts.count).cast("I"),
+            uncertainty=blob.column(
+                at_counts, 29, 4, at_counts.count
+            ).cast("I"),
             length=at_counts.count,
         ),
         day=Day(
@@ -10396,6 +10436,27 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             to=blob.column(at_gowri, 2, 8, at_gowri.count).cast("d"),
             daytime=blob.column(at_gowri, 3, 1, at_gowri.count).cast("B"),
             length=at_gowri.count,
+        ),
+        uncertainty=PanchangaUncertainty(
+            delta_t_seconds=blob.column(
+                at_uncertainty, 0, 8, at_uncertainty.count
+            ).cast("d"),
+            band=blob.column(
+                at_uncertainty, 1, 1, at_uncertainty.count
+            ).cast("B"),
+            stated=blob.column(
+                at_uncertainty, 2, 1, at_uncertainty.count
+            ).cast("B"),
+            limbs_seconds=blob.column(
+                at_uncertainty, 3, 8, at_uncertainty.count
+            ).cast("d"),
+            sunrise_seconds=blob.column(
+                at_uncertainty, 4, 8, at_uncertainty.count
+            ).cast("d"),
+            moonrise_seconds=blob.column(
+                at_uncertainty, 5, 8, at_uncertainty.count
+            ).cast("d"),
+            length=at_uncertainty.count,
         ),
     )
 

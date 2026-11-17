@@ -61,6 +61,7 @@ pub mod rulers;
 pub mod sankalpa;
 pub mod sky;
 pub mod span;
+pub mod uncertainty;
 pub mod year;
 
 pub use almanac::{Almanac, Panchanga};

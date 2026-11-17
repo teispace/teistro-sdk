@@ -570,6 +570,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("named_panchaka", "named_panchaka"),
             count("markers", "markers"),
             count("gowri", "gowri"),
+            count("uncertainty", "uncertainty"),
         ],
     )
 }
@@ -698,6 +699,50 @@ fn panchanga_gowri_section(id: u32) -> SectionSchema {
             ));
             fields
         },
+    )
+}
+
+/// The `uncertainty` section: each day's times' ± band from Delta T, when
+/// asked.
+#[must_use]
+fn panchanga_uncertainty_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "uncertainty",
+        "Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.",
+        vec![
+            ColumnDef::new(
+                "delta_t_seconds",
+                Scalar::F64,
+                "Delta T, TT less UT1, at the middle of the day's window, seconds.",
+            ),
+            ColumnDef::new(
+                "band",
+                Scalar::U8,
+                "Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020).",
+            )
+            .of_enum("TsDeltaTBand"),
+            ColumnDef::new(
+                "stated",
+                Scalar::U8,
+                "1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing.",
+            ),
+            ColumnDef::new(
+                "limbs_seconds",
+                Scalar::F64,
+                "The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own.",
+            ),
+            ColumnDef::new(
+                "sunrise_seconds",
+                Scalar::F64,
+                "The one-sigma band of the sunrise and sunset and every period divided from them, seconds.",
+            ),
+            ColumnDef::new(
+                "moonrise_seconds",
+                Scalar::F64,
+                "The one-sigma band of the moonrise and moonset, seconds.",
+            ),
+        ],
     )
 }
 
@@ -878,7 +923,7 @@ pub fn panchanga() -> BlobSchema {
             SectionSchema::bytes(
                 24,
                 "eclipses",
-                "UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, and `umbralSeen` the stretch of the umbral phase seen, or null. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them.",
+                "UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen, seenMaximum}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, `umbralSeen` the stretch of the umbral phase seen, or null, and `seenMaximum` the largest phase seen, `{why, moment, umbralMagnitude, penumbralMagnitude}`. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen, seenMaximum}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path, the magnitude and obscuration the geometric maximum's even with the Sun below the horizon, and `seenMaximum` the largest phase seen, `{why, moment, magnitude, obscuration}`. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. A `seenMaximum`'s `why` is `MAXIMUM` when the body is up at the maximum, `RISING` or `SETTING` when it rises after the maximum or sets before it and the largest phase seen is at that edge, `RISING_PAST_LIMIT` or `SETTING_PAST_LIMIT` the same against a custom altitude, and `NOT_SEEN` when none of the eclipse is seen, its `moment` and magnitudes then null. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them.",
             ),
             SectionSchema::bytes(
                 25,
@@ -906,6 +951,7 @@ pub fn panchanga() -> BlobSchema {
             ),
             span_section(41, "markers", "The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.", "The marker.", "DayMarker"),
             panchanga_gowri_section(42),
+            panchanga_uncertainty_section(43),
         ],
     }
 }

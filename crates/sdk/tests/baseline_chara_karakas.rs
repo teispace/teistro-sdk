@@ -228,6 +228,7 @@ fn the_eight_karakas_carry_the_recorded_names() {
         let ours = RuleInputs::of(&document)
             .unwrap()
             .under(sdk.settings())
+            .unwrap()
             .chart;
         assert!(
             carries(&ours),

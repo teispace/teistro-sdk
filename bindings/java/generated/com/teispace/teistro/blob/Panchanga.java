@@ -63,6 +63,7 @@ public final class Panchanga {
     private final String sky;
     private final Markers markers;
     private final Gowri gowri;
+    private final Uncertainty uncertainty;
 
     private Panchanga(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -114,6 +115,7 @@ public final class Panchanga {
         this.sky = blob.text(40, "sky");
         this.markers = new Markers(blob, 41, "markers");
         this.gowri = new Gowri(blob, 42, "gowri");
+        this.uncertainty = new Uncertainty(blob, 43, "uncertainty");
     }
 
     /**
@@ -384,7 +386,7 @@ public final class Panchanga {
     }
 
     /**
-     * UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, and `umbralSeen` the stretch of the umbral phase seen, or null. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them.
+     * UTF-8 JSON, canonical: the eclipses whose greatest moment falls between the first day's local midnight and the midnight after the last, when `sections` asked for `TS_PANCHANGA_ECLIPSES`, as the envelope `{value, provenance}` (`03-design/eclipses.md`). `value` is `{lunar, solar}`, each a list in order of `{eclipse, here, vedha}`, `vedha` the sutak `{from, to}` under `panchanga.eclipse_vedha`, from when food is given up to the eclipse's end as seen or the body's next rising, null where the place does not see it (`03-design/muhurta.md` §4.1.1). A lunar `eclipse` is `{greatest, kind, gamma, umbralMagnitude, penumbralMagnitude, contacts, shadow}`: the kind `PENUMBRAL`, `PARTIAL` or `TOTAL`, gamma in Earth radii, the contacts `{p1, u1, u2, u3, u4, p4}` with the umbral ones null where the eclipse lacks them, and the shadow rule it was read under (`DANJON`, `CHAUVENET`, from `panchanga.eclipse_shadow`); its `here` is `{p1, u1, u2, greatest, u3, u4, p4, seen, umbralSeen, seenMaximum}`, each moment `{at, altitudeDeg}` with the Moon's topocentric geometric altitude there, `umbralSeen` the stretch of the umbral phase seen, or null, and `seenMaximum` the largest phase seen, `{why, moment, umbralMagnitude, penumbralMagnitude}`. A solar `eclipse` is `{greatest, kind, gamma, magnitude, point}`: the kind `PARTIAL`, `ANNULAR`, `TOTAL` or `HYBRID`, and the point of greatest eclipse `{latitude, longitude}` in degrees; its `here` is null where the Moon's disc never touches the Sun's from the place, else `{kind, magnitude, obscuration, first, second, third, fourth, maximum, seen, seenMaximum}`, the place's own contacts with the Sun's altitude at each, the second and third null outside a central path, the magnitude and obscuration the geometric maximum's even with the Sun below the horizon, and `seenMaximum` the largest phase seen, `{why, moment, magnitude, obscuration}`. `seen` is `{from, to}`, the stretch of the eclipse the body stands above `panchanga.eclipse_horizon`'s horizon, or null where the place does not see it. A `seenMaximum`'s `why` is `MAXIMUM` when the body is up at the maximum, `RISING` or `SETTING` when it rises after the maximum or sets before it and the largest phase seen is at that edge, `RISING_PAST_LIMIT` or `SETTING_PAST_LIMIT` the same against a custom altitude, and `NOT_SEEN` when none of the eclipse is seen, its `moment` and magnitudes then null. Every instant is a UT1 Julian day, UTC to within a second. Empty when `sections` did not ask for them.
      *
      * @return the eclipses
      */
@@ -552,6 +554,15 @@ public final class Panchanga {
      */
     public Gowri gowri() {
         return gowri;
+    }
+
+    /**
+     * Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+     *
+     * @return the uncertainty
+     */
+    public Uncertainty uncertainty() {
+        return uncertainty;
     }
 
 
@@ -1010,6 +1021,7 @@ public final class Panchanga {
         private final int namedPanchakaAt;
         private final int markersAt;
         private final int gowriAt;
+        private final int uncertaintyAt;
 
         Counts(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1044,6 +1056,7 @@ public final class Panchanga {
             this.namedPanchakaAt = blob.column(at, 26, 4);
             this.markersAt = blob.column(at, 27, 4);
             this.gowriAt = blob.column(at, 28, 4);
+            this.uncertaintyAt = blob.column(at, 29, 4);
         }
 
         /**
@@ -1372,6 +1385,17 @@ public final class Panchanga {
          */
         public long gowri(int row) {
             return Integer.toUnsignedLong(bytes.getInt(gowriAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * How many rows of `uncertainty` belong to this day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long uncertainty(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(uncertaintyAt + Objects.checkIndex(row, length) * 4));
         }
     }
 
@@ -5444,6 +5468,111 @@ public final class Panchanga {
          */
         public int daytime(int row) {
             return Byte.toUnsignedInt(bytes.get(daytimeAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `uncertainty` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
+     */
+    public static final class Uncertainty {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int deltaTSecondsAt;
+        private final int bandAt;
+        private final int statedAt;
+        private final int limbsSecondsAt;
+        private final int sunriseSecondsAt;
+        private final int moonriseSecondsAt;
+
+        Uncertainty(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.deltaTSecondsAt = blob.column(at, 0, 8);
+            this.bandAt = blob.column(at, 1, 1);
+            this.statedAt = blob.column(at, 2, 1);
+            this.limbsSecondsAt = blob.column(at, 3, 8);
+            this.sunriseSecondsAt = blob.column(at, 4, 8);
+            this.moonriseSecondsAt = blob.column(at, 5, 8);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * Delta T, TT less UT1, at the middle of the day's window, seconds.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double deltaTSeconds(int row) {
+            return bytes.getDouble(deltaTSecondsAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where Delta T's uncertainty comes from: the IERS's measurement, Morrison and Stephenson's (2004) standard errors, or Huber's (2000) walk beyond the data (crux C2020).
+         *
+         * The id of a {@code DeltaTBand}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int band(int row) {
+            return Byte.toUnsignedInt(bytes.get(bandAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * 1 when Delta T states an uncertainty; 0 for a custom value or an engine that gives none, when the three bands are zero and mean nothing.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int stated(int row) {
+            return Byte.toUnsignedInt(bytes.get(statedAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * The one-sigma band of each limb's end, a sankranti and a lunation, seconds: Delta T's own.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double limbsSeconds(int row) {
+            return bytes.getDouble(limbsSecondsAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The one-sigma band of the sunrise and sunset and every period divided from them, seconds.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double sunriseSeconds(int row) {
+            return bytes.getDouble(sunriseSecondsAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The one-sigma band of the moonrise and moonset, seconds.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double moonriseSeconds(int row) {
+            return bytes.getDouble(moonriseSecondsAt + Objects.checkIndex(row, length) * 8);
         }
     }
 }

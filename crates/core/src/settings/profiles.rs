@@ -22,16 +22,16 @@ use super::knobs::{
     NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
     Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
-    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign,
-    ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha, SunAyana, Sunrise,
-    SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka,
-    YearLength, Yuddha, Zodiac,
+    SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, SevenKarakaOrder,
+    ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
+    SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn, UnknownTime,
+    Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
-    Houses, Jaimini, Kp, LagnaTable, Output, Panchanga, Precision, Provider, Rashifal, Resolved,
-    SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State, Strength, SuryaBija,
-    SuryaPlanets, Time, Vargas,
+    Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga, Precision, Provider,
+    Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State, Strength,
+    SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -170,6 +170,836 @@ pub const PROFILE_ALIASES: [(&str, &str); 1] = [("nepali-default", "nepali-drik"
 
 const BASELINE: Source = Source::new("baseline-engine", "persisted chart settings");
 
+/// The SDK's own decisions, where no text decides a convention.
+const fn decided(reference: &'static str) -> Source {
+    Source::new("teistro-sdk design", reference)
+}
+
+const BPHS: &str = "Brihat Parashara Hora Shastra";
+const SURYA: &str = "Surya Siddhanta (Burgess 1860)";
+const RAMAN: &str = "B.V. Raman, Graha and Bhava Balas";
+const KP_VI: &str = "K.S. Krishnamurti, KP Reader VI";
+
+/// **The root's citations**, one for every knob, beside the values in
+/// [`root`]: why each default is what it is (SR-110). An explanation of
+/// any shipped profile reads a knob the profile does not set from here,
+/// so `every_knob_of_the_root_is_cited` holds this list to
+/// [`Settings::knobs`] both ways.
+pub(crate) const ROOT_SOURCES: &[Citation] = &[
+    Citation::new(
+        "frame.zodiac",
+        Source::new(
+            SURYA,
+            "chs. I and II: longitudes counted from the start of Ashvini, a point among the stars; ADR-0024",
+        ),
+    ),
+    Citation::new(
+        "frame.ayanamsha",
+        Source::new(
+            "Calendar Reform Committee, Government of India (1955)",
+            "Report: Lahiri's ayanamsha, adopted for the Indian Astronomical Ephemeris and the Rashtriya Panchang",
+        ),
+    ),
+    Citation::new(
+        "frame.ayanamsha_basis",
+        Source::new(
+            "Indian Astronomical Ephemeris",
+            "the nirayana longitude is the apparent longitude less the true ayanamsha, the mean plus the nutation in longitude; the Rashtriya Panchang's 109 sankrantis of 2018 to 2027 meet it within 32 seconds; SR-100, C1750",
+        ),
+    ),
+    Citation::new(
+        "frame.node",
+        Source::new(
+            SURYA,
+            "ch. II corrects the planets by their equations and gives the node its mean place alone; the conformance corpus's engine reads the mean node too",
+        ),
+    ),
+    Citation::new(
+        "frame.centre",
+        Source::new(
+            "ADR-0024",
+            "the classical graha sphuta is computed from the Earth's centre, as every published table is; the lambana is an eclipse correction, not a natal one",
+        ),
+    ),
+    Citation::new(
+        "frame.positions",
+        Source::new(
+            "Indian Astronomical Ephemeris",
+            "apparent places, light time, aberration and deflection applied, as the ephemeris tabulates and a drik panchanga reads them",
+        ),
+    ),
+    Citation::new(
+        "frame.siddhanta",
+        Source::new(
+            "ADR-0029",
+            "modern astronomy unless the settings name a text's, which the provider then supplies; docs/03-design/classical-chart.md",
+        ),
+    ),
+    Citation::new(
+        "frame.nakshatra_scheme",
+        Source::new(
+            SURYA,
+            "II.64: a nakshatra is 800 minutes of arc, twenty-seven to the circle",
+        ),
+    ),
+    Citation::new(
+        "houses.placement_system",
+        Source::new(
+            BPHS,
+            "the rashi chakra: each sign from the lagna's is one bhava; docs/03-design/astro-house-systems.md",
+        ),
+    ),
+    Citation::new(
+        "houses.chalit_system",
+        Source::new(
+            BPHS,
+            "the Sripati bhava: the angles trisected, each madhya its bhava's middle; ADR-0024, docs/03-design/chart-bhava-chalit.md",
+        ),
+    ),
+    Citation::new(
+        "houses.module_overrides",
+        Source::new(
+            "K.S. Krishnamurti, KP Reader I",
+            "the cusps by Placidus's system, which KP reads its sub lords from; docs/03-design/kp.md",
+        ),
+    ),
+    Citation::new(
+        "houses.polar_policy",
+        decided(
+            "docs/03-design/astro-house-systems.md §4: a system with no solution inside the polar circle is refused, not replaced unasked",
+        ),
+    ),
+    Citation::new(
+        "day.sunrise",
+        Source::new(
+            "The Astronomical Almanac",
+            "sunrise as the upper limb on the horizon with 34 minutes of refraction, which Drik Panchang and the Swiss Ephemeris default to; docs/03-design/sunrise-convention.md",
+        ),
+    ),
+    Citation::new(
+        "day.day_boundary",
+        Source::new(
+            SURYA,
+            "ch. I: the civil (savana) day runs from sunrise to sunrise",
+        ),
+    ),
+    Citation::new(
+        "day.polar_day_policy",
+        Source::new(
+            "ADR-0024",
+            "the texts define no sunrise where the Sun does not rise, so such a day is reported undefined rather than synthesised",
+        ),
+    ),
+    Citation::new(
+        "day.ghati_reckoning",
+        Source::new(
+            SURYA,
+            "I.11 and 12: sixty nadis (ghatis) to the day, twenty-four minutes each",
+        ),
+    ),
+    Citation::new(
+        "day.hora_reckoning",
+        Source::new(
+            "baseline-engine",
+            "the fixtures' hora lords: the day and the night each in twelve proportional horas",
+        ),
+    ),
+    Citation::new(
+        "panchanga.centre",
+        decided(
+            "docs/03-design/panchanga-day.md §10: every published panchanga's limbs are geocentric; the corpus measures the difference at five classifications in 136",
+        ),
+    ),
+    Citation::new(
+        "panchanga.moon_events",
+        decided(
+            "docs/03-design/panchanga-day.md: the Moon's rise and set over the sunrise-to-sunrise window the limbs run over; registry entry 18",
+        ),
+    ),
+    Citation::new(
+        "panchanga.muhurta_tables",
+        Source::new(
+            "Muhurta Chintamani",
+            "the yogas read at the star and tithi of sunrise, as the almanacs print them; docs/03-design/day-markers.md §2",
+        ),
+    ),
+    Citation::new(
+        "panchanga.panchaka_start",
+        Source::new(
+            "Muhurta Chintamani",
+            "Nakshatra Prakarana v. 48: the Moon in Aquarius or Pisces; crux C158",
+        ),
+    ),
+    Citation::new(
+        "panchanga.panchaka_name",
+        decided(
+            "docs/03-design/printed-conventions.md: the almanacs' weekday name, flagged in every answer's applied conventions; crux C821",
+        ),
+    ),
+    Citation::new(
+        "panchanga.shiva_vasa",
+        Source::new(
+            "Meru Tantra",
+            "the table Surya Panchanga VS 2082 p. 60 prints, (2t + 5) mod 7 in every cell; crux C750",
+        ),
+    ),
+    Citation::new(
+        "panchanga.varjyam",
+        Source::new(
+            "Muhurta Chintamani",
+            "Vivaha Prakarana vv. 49 to 51, the vishaghati table; crux C165",
+        ),
+    ),
+    Citation::new(
+        "panchanga.amrit_kalam",
+        Source::new(
+            "B.V. Raman, Muhurtha",
+            "the printed table, which gives Drik Panchang's every window at Delhi over a week of June 2025 to the minute; crux C677",
+        ),
+    ),
+    Citation::new(
+        "panchanga.lagna_table",
+        decided(
+            "the ascendant a chart of the same context has; crux C680, docs/03-design/amrit-kalam-and-lagnas.md §2",
+        ),
+    ),
+    Citation::new(
+        "panchanga.durmuhurta",
+        Source::new(
+            "Muhurta Chintamani",
+            "Vivaha Prakarana vv. 50 to 52 (1906 ed., p. 89); crux C398",
+        ),
+    ),
+    Citation::new(
+        "panchanga.punya_kala",
+        Source::new(
+            "Dharmasindhu",
+            "pp. 2 and 3: the ghatis before and after each sankranti; crux C752",
+        ),
+    ),
+    Citation::new(
+        "panchanga.ritu",
+        Source::new(
+            SURYA,
+            "XIV.10: the seasons by two solar months each from Makara; Nepal's daily panchanga over 341 days; crux C178",
+        ),
+    ),
+    Citation::new(
+        "panchanga.solar_month_start",
+        Source::new(
+            "Dharmasindhu",
+            "the sankranti's punya kala places the solar month's first day; Sewell and Dikshit §28; crux C186",
+        ),
+    ),
+    Citation::new(
+        "panchanga.eclipse_shadow",
+        Source::new(
+            "Danjon (1951)",
+            "the Earth's shadow enlarged for its atmosphere, as NASA's eclipse catalogue and the French almanac compute it; docs/03-design/eclipses.md",
+        ),
+    ),
+    Citation::new(
+        "panchanga.eclipse_horizon",
+        Source::new(
+            "Dharmasindhu",
+            "an eclipse counts where the eye sees it: the upper limb lifted by refraction; docs/03-design/eclipses.md §5",
+        ),
+    ),
+    Citation::new(
+        "panchanga.eclipse_vedha",
+        Source::new(
+            "Dharmasindhu",
+            "p. 28: four praharas before a solar eclipse, three before a lunar one; crux C192",
+        ),
+    ),
+    Citation::new(
+        "time.dst_gap",
+        decided(
+            "docs/03-design/time-and-timezone.md §4: a civil time a zone's clocks skipped is refused with both offsets rather than moved unasked",
+        ),
+    ),
+    Citation::new(
+        "time.dst_overlap",
+        decided(
+            "docs/03-design/time-and-timezone.md §4: a civil time a zone's clocks show twice takes the earlier, as the baseline engine does",
+        ),
+    ),
+    Citation::new(
+        "time.unknown_time",
+        decided(
+            "docs/03-design/time-and-timezone.md §4: a birth without a time is refused, naming the fallbacks, rather than given one unasked",
+        ),
+    ),
+    Citation::new(
+        "time.delta_t",
+        Source::new(
+            "Espenak and Meeus (2006)",
+            "the observed table where it runs, their polynomials beyond it; docs/03-design/time-and-timezone.md",
+        ),
+    ),
+    Citation::new(
+        "dasha.balance",
+        Source::new(
+            BPHS,
+            "ch. 46: the first dasha's balance is the part of the birth nakshatra yet to run, by the Moon's longitude; the corpus's engine agrees",
+        ),
+    ),
+    Citation::new(
+        "dasha.year_length",
+        decided(
+            "crux C6: 365.25 days for the nakshatra dashas, as the corpus's engine runs them; 360 for the ayurdaya, releasing and decennial families, as their texts count years",
+        ),
+    ),
+    Citation::new(
+        "dasha.depth",
+        decided(
+            "three levels, the mahadasha to the pratyantardasha, the depth an almanac prints; any system goes to six on request",
+        ),
+    ),
+    Citation::new(
+        "dasha.seed_overflow",
+        decided(
+            "a conditional dasha seeded outside its cycle wraps to its start, as the corpus's engine does",
+        ),
+    ),
+    Citation::new(
+        "dasha.ashtottari_grouping",
+        Source::new(
+            BPHS,
+            "ch. 46 vv. 17 to 20: from Ardra in fours and threes alternately; crux C5",
+        ),
+    ),
+    Citation::new(
+        "dasha.birth_period",
+        Source::new(
+            "baseline-engine",
+            "the birth mahadasha's antardashas compressed into its balance on all 148 recorded answers; crux C48",
+        ),
+    ),
+    Citation::new(
+        "dasha.after_cycle",
+        Source::new(
+            "baseline-engine",
+            "no period past the ninth mahadasha on every recorded answer; crux C48",
+        ),
+    ),
+    Citation::new(
+        "dasha.kalachakra_membership",
+        Source::new(
+            "baseline-engine",
+            "the recording engine's pada tables, measured on every recorded answer; crux C54",
+        ),
+    ),
+    Citation::new(
+        "dasha.kalachakra_balance",
+        Source::new(
+            "baseline-engine",
+            "the unelapsed part of the pada of the first sign's years; crux C55",
+        ),
+    ),
+    Citation::new(
+        "dasha.kalachakra_after_ninth",
+        Source::new(
+            "baseline-engine",
+            "the nine signs reversed after the ninth; crux C56",
+        ),
+    ),
+    Citation::new(
+        "dasha.shanta_sign",
+        Source::new(
+            BPHS,
+            "ch. 47 vv. 5 and 6: a friend's or a great friend's sign; crux C79",
+        ),
+    ),
+    Citation::new(
+        "dasha.dual_lord",
+        Source::new(BPHS, "ch. 46 vv. 158 to 166; crux C51"),
+    ),
+    Citation::new(
+        "dasha.rashi_start",
+        Source::new(BPHS, "ch. 46 vv. 174 and 179 to 184; crux C53"),
+    ),
+    Citation::new(
+        "dasha.releasing_shared_sign",
+        Source::new(
+            "Vettius Valens, Anthologies",
+            "IV.4: activity from the sign immediately following a shared one; crux C223",
+        ),
+    ),
+    Citation::new(
+        "dasha.firdaria_nodes",
+        Source::new(
+            "al-Biruni, Book of Instruction",
+            "§438's table, with Abu Ma'shar: the Head and the Tail after the seven; crux C225",
+        ),
+    ),
+    Citation::new(
+        "dasha.decennial_division",
+        Source::new(
+            "Vettius Valens, Anthologies",
+            "VI.6's tables: in proportion to the minor years at every level; crux C228",
+        ),
+    ),
+    Citation::new(
+        "dasha.karaka_division",
+        Source::new(
+            BPHS,
+            "ch. 51 vv. 1 and 2: in proportion, from the period's own lord; crux C737",
+        ),
+    ),
+    Citation::new(
+        "dasha.strongest_graha",
+        Source::new(
+            BPHS,
+            "ch. 46 v. 208 names no measure; the shadbala total every shadbala chapter ranks by; crux C735",
+        ),
+    ),
+    Citation::new(
+        "dasha.ayurdaya_place",
+        Source::new(
+            BPHS,
+            "ch. 51 v. 14: one body per share the verse names; crux C741",
+        ),
+    ),
+    Citation::new(
+        "dasha.naisargika_division",
+        Source::new(
+            BPHS,
+            "ch. 51 vv. 13 to 16: shares among the seven by their signs and shadbala; crux C743",
+        ),
+    ),
+    Citation::new(
+        "dasha.ayurdaya_span",
+        Source::new(
+            BPHS,
+            "ch. 43 vv. 30 to 32: the span of the strongest of the lagna, the Sun and the Moon; crux C742",
+        ),
+    ),
+    Citation::new(
+        "dasha.ayurdaya_readings",
+        Source::new(BPHS, "ch. 43's reductions; crux C742"),
+    ),
+    Citation::new(
+        "jaimini.chara_karakas",
+        Source::new(
+            BPHS,
+            "ch. 32: seven karakas, the Sun to Saturn; the eight with Rahu is the knob's other value",
+        ),
+    ),
+    Citation::new(
+        "jaimini.eight_karaka_order",
+        Source::new(BPHS, "ch. 32 vv. 13 to 17, the verses' order; crux C101"),
+    ),
+    Citation::new(
+        "jaimini.node_co_lordship",
+        Source::new(
+            BPHS,
+            "ch. 46 v. 171 read with the chapter's own lordship; crux C126",
+        ),
+    ),
+    Citation::new(
+        "jaimini.brahma",
+        Source::new(
+            BPHS,
+            "ch. 46 vv. 170 to 173 as read; the translator's note is the other value; crux C128",
+        ),
+    ),
+    Citation::new(
+        "jaimini.graha_arudha_exception",
+        Source::new(
+            BPHS,
+            "ch. 29 vv. 6 and 7: the count, and no move; crux C132",
+        ),
+    ),
+    Citation::new(
+        "gochar.node_vedha",
+        Source::new(
+            "Phaladeepika",
+            "ch. 26 v. 2: the nodes like the Sun; crux C136",
+        ),
+    ),
+    Citation::new(
+        "gochar.node_obstruction",
+        Source::new(
+            "Phaladeepika",
+            "ch. 26 vv. 3 to 8: planets obstruct, and the nodes never each other; cruxes C137, C140",
+        ),
+    ),
+    Citation::new(
+        "gochar.ashtakavarga_good_from",
+        Source::new(
+            "Phaladeepika",
+            "ch. 23 v. 11: four bindus a fear, five wealth; crux C141",
+        ),
+    ),
+    Citation::new(
+        "gochar.transit_centre",
+        decided("each transit from the chart's own centre, so one chart reads one sky; crux C778"),
+    ),
+    Citation::new(
+        "kp.ruling_count",
+        Source::new(KP_VI, "these five planets; crux C150"),
+    ),
+    Citation::new(
+        "kp.day_lord_day",
+        Source::new(KP_VI, "the day from sunrise to the next sunrise; crux C151"),
+    ),
+    Citation::new(
+        "kp.node_rulers",
+        Source::new(
+            KP_VI,
+            "a node in a ruler's sign, or conjoined as the worked example takes Ketu; crux C152",
+        ),
+    ),
+    Citation::new(
+        "kp.retrograde_rejection",
+        Source::new(
+            KP_VI,
+            "rulers in a retrograde planet's constellation; crux C153",
+        ),
+    ),
+    Citation::new(
+        "aspect.node_aspects",
+        Source::new(
+            BPHS,
+            "ch. 26: special drishtis for Mars, Jupiter and Saturn, none for the nodes beyond the seventh",
+        ),
+    ),
+    Citation::new(
+        "aspect.drishti_table",
+        Source::new(BPHS, "ch. 26: the sphuta drishti by the angular distance"),
+    ),
+    Citation::new(
+        "state.combustion_orbs",
+        Source::new(
+            SURYA,
+            "IX.6 to 8: the degrees of time, with the inner orb the corpus brackets; docs/03-design/state-tables-measured.md §3",
+        ),
+    ),
+    Citation::new(
+        "state.sayanadi_ghatis",
+        Source::new(
+            BPHS,
+            "ch. 45 vv. 30 to 37: the ghatis of birth elapsed; crux C78",
+        ),
+    ),
+    Citation::new(
+        "state.sayanadi_nodes",
+        Source::new(
+            BPHS,
+            "ch. 45 v. 30 and ch. 3's order of the nine: Rahu 8, Ketu 9; crux C78",
+        ),
+    ),
+    Citation::new(
+        "state.pushkara_bhaga",
+        Source::new(
+            "Vidyamadhaviyam",
+            "ch. 1 v. 18 (Shama Sastry, Mysore 1923, pp. 80 and 81): one degree a triplicity, every graha; crux C767",
+        ),
+    ),
+    Citation::new(
+        "state.marana_saturn",
+        Source::new(
+            "Jataka Parijata",
+            "ch. 17 vv. 34 and 35 (Sastri, vol. II p. 982): janmaga, the lagna's sign; crux C768",
+        ),
+    ),
+    Citation::new(
+        "state.marana_venus",
+        Source::new(
+            "Jataka Parijata",
+            "ch. 17 vv. 34 and 35: the sixth sign; crux C768",
+        ),
+    ),
+    Citation::new(
+        "strength.bala_scheme",
+        Source::new(BPHS, "ch. 27: the six components of the Shadbala"),
+    ),
+    Citation::new(
+        "strength.ekadhipatya",
+        Source::new(BPHS, "ch. 68; crux C60"),
+    ),
+    Citation::new(
+        "strength.shodhana",
+        Source::new(
+            BPHS,
+            "chs. 67 to 69: each graha's own Ashtakavarga; crux C59",
+        ),
+    ),
+    Citation::new(
+        "strength.moon_bindu_from_jupiter",
+        Source::new(BPHS, "ch. 66 and Varahamihira: the 12th; crux C144"),
+    ),
+    Citation::new(
+        "strength.vimshopaka",
+        Source::new(BPHS, "ch. 7 vv. 21 to 27; crux C63"),
+    ),
+    Citation::new(
+        "strength.saptavargaja",
+        Source::new(
+            RAMAN,
+            "the compound relationship's figures, Example 56; crux C64",
+        ),
+    ),
+    Citation::new(
+        "strength.nathonnatha",
+        Source::new(RAMAN, "from midnight, as BPHS ch. 27 vv. 8 and 9; crux C65"),
+    ),
+    Citation::new(
+        "strength.pre_dawn_night",
+        Source::new(
+            RAMAN,
+            "a birth before sunrise in the night that began the evening before; crux C65",
+        ),
+    ),
+    Citation::new(
+        "strength.sun_ayana",
+        Source::new(
+            RAMAN,
+            "the Sun's Ayana bala doubled, as BPHS ch. 27 v. 17; crux C66",
+        ),
+    ),
+    Citation::new(
+        "strength.moon_paksha",
+        Source::new(RAMAN, "the Moon's Paksha bala doubled; crux C66"),
+    ),
+    Citation::new(
+        "strength.luminary_cheshta",
+        Source::new(
+            RAMAN,
+            "after Sripati: no Cheshta bala for the luminaries; crux C66",
+        ),
+    ),
+    Citation::new(
+        "strength.kranti",
+        Source::new(
+            RAMAN,
+            "after Sripati: the Hindu table of declinations, 24 degrees; crux C66",
+        ),
+    ),
+    Citation::new(
+        "strength.kaala_lords",
+        Source::new(
+            RAMAN,
+            "Arts. 58 to 62: the Abda and Masa lords from the ahargana, as BPHS ch. 27 v. 13; crux C67",
+        ),
+    ),
+    Citation::new(
+        "strength.dig",
+        Source::new(RAMAN, "the four angles, as BPHS ch. 27 v. 7; crux C68"),
+    ),
+    Citation::new(
+        "strength.drik",
+        Source::new(
+            RAMAN,
+            "after Sripati: a quarter of each drishti received; crux C69",
+        ),
+    ),
+    Citation::new(
+        "strength.naisargika",
+        Source::new(
+            RAMAN,
+            "the natural strengths exact, as BPHS ch. 27 v. 14; crux C71",
+        ),
+    ),
+    Citation::new(
+        "strength.required_rupas",
+        Source::new(
+            RAMAN,
+            "Art. 122, after Sripati: the Sun's five rupas; crux C71",
+        ),
+    ),
+    Citation::new(
+        "strength.drekkana",
+        Source::new(RAMAN, "after Sripati: male, neuter and female; crux C72"),
+    ),
+    Citation::new(
+        "strength.benefics",
+        Source::new(
+            RAMAN,
+            "the Moon by her phase and Mercury by his company; crux C69",
+        ),
+    ),
+    Citation::new(
+        "strength.cheshta",
+        Source::new(
+            RAMAN,
+            "Sripati's mean elements, the only ones a source gives; crux C70",
+        ),
+    ),
+    Citation::new(
+        "strength.yuddha",
+        Source::new(
+            RAMAN,
+            "after Sripati: grahas at war gain and lose the Yuddha bala; crux C70",
+        ),
+    ),
+    Citation::new(
+        "strength.ishta_kashta",
+        Source::new(RAMAN, "after Sripati: the square roots; crux C76"),
+    ),
+    Citation::new(
+        "strength.bhava_division",
+        Source::new(
+            RAMAN,
+            "Art. 29: the bhavas are the chalit's, from the angles; crux C73",
+        ),
+    ),
+    Citation::new(
+        "strength.bhava_dig",
+        Source::new(RAMAN, "after Sripati: the bhava's sign class; crux C73"),
+    ),
+    Citation::new(
+        "strength.bhava_drishti",
+        Source::new(
+            RAMAN,
+            "after Sripati: the sphuta drishti a bhava receives; crux C74",
+        ),
+    ),
+    Citation::new(
+        "strength.bhava_special_rules",
+        Source::new(
+            RAMAN,
+            "after Sripati: none of BPHS ch. 27 vv. 30 and 31's additions; crux C75",
+        ),
+    ),
+    Citation::new(
+        "vargas.unattested_dn",
+        decided(
+            "a varga no text attests is divided cyclically (parivritti), the rule the attested equal vargas follow; docs/03-design/varga-kernel.md",
+        ),
+    ),
+    Citation::new(
+        "calendars.civil_calendar",
+        Source::new(
+            "ADR-0024",
+            "no one country's practice in the default: the Gregorian calendar",
+        ),
+    ),
+    Citation::new(
+        "calendars.lunar_month",
+        Source::new(
+            "ADR-0024",
+            "the amanta month, the astrological one, from new moon to new moon",
+        ),
+    ),
+    Citation::new(
+        "calendars.samvatsara",
+        Source::new(
+            SURYA,
+            "I.55: the Jovian year by Jupiter's mean sign, read as Nepal's committee reads it; cruxes C180, C184",
+        ),
+    ),
+    Citation::new(
+        "calendars.eras",
+        Source::new(
+            "ADR-0024",
+            "the three pan-Indic eras, Vikrama, Shaka and Kali",
+        ),
+    ),
+    Citation::new(
+        "provider.overrides",
+        Source::new(
+            "ADR-0013",
+            "a provider's own implementation where it declares one, the SDK's elsewhere",
+        ),
+    ),
+    Citation::new(
+        "provider.tier",
+        Source::new("ADR-0028", "the built-in ephemeris's standard tier"),
+    ),
+    Citation::new(
+        "provider.cache_cells",
+        decided(
+            "docs/03-design/batch-and-parallelism-measured.md: what a fifty-day almanac range needs, measured",
+        ),
+    ),
+    Citation::new(
+        "output.precision",
+        Source::new(
+            "ADR-0011",
+            "nine decimals of a degree, eight of a day and three of a score: below every input's own precision",
+        ),
+    ),
+    Citation::new(
+        "frame.precession",
+        Source::new(
+            "Vondrák, Capitaine and Wallace (2011)",
+            "A&A 534, A22: valid over ±200 000 years, so at every catalogued epoch; crux C1752",
+        ),
+    ),
+    Citation::new(
+        "frame.nutation",
+        Source::new(
+            "McCarthy and Luzum (2003)",
+            "IAU 2000B, the SDK's own series; docs/03-design/astro-timescales-and-frames.md",
+        ),
+    ),
+    Citation::new(
+        "frame.frame_bias",
+        Source::new(
+            "IERS Conventions (2010)",
+            "§5.4.4: the IAU 2006 frame bias between the GCRS and the dynamical frame of J2000",
+        ),
+    ),
+    Citation::new(
+        "day.horizon",
+        Source::new(
+            "ADR-0024",
+            "what every almanac and the SDK have reckoned by: Bennett's refraction, the actual disc of the IAU 2015 radii, the body's own latitude, no dip and the ideal horizon; docs/03-design/horizon-atmosphere.md",
+        ),
+    ),
+    Citation::new(
+        "time.dut1",
+        Source::new(
+            "IERS Bulletin A",
+            "leap seconds keep UTC within 0.9 s of UT1, so UT1 is taken as UTC: what a civil clock reads and every almanac assumes",
+        ),
+    ),
+    Citation::new(
+        "time.sidereal_time",
+        Source::new(
+            "IERS Conventions (2010)",
+            "eq. 5.32: the Earth rotation angle with the IAU 2006 polynomial, the SDK's own",
+        ),
+    ),
+    Citation::new(
+        "vargas.schemes",
+        Source::new(
+            BPHS,
+            "ch. 6: Parashara's division for every chart no scheme is named for; docs/03-design/varga-schemes.md",
+        ),
+    ),
+    Citation::new(
+        "rashifal.score_bands",
+        Source::new(
+            "Tithipatra (SR-124)",
+            "75, 50 and 30, the consumer's bands, since no text bands a score; docs/03-design/rashifal.md, The score band",
+        ),
+    ),
+    Citation::new(
+        "jaimini.seven_karaka_order",
+        Source::new(
+            "Jaimini Sutras (B. Suryanarain Rao)",
+            "1.1.13 to 18: Atma, Amatya, Bhratri, Matri, Putra, Gnati and Dara, the ranks' names when seven are counted; crux C2061",
+        ),
+    ),
+    Citation::new(
+        "calendars.marginal_month_minutes",
+        Source::new(
+            "Nepal Panchanga Nirnayak Samiti",
+            "covers every month the committee and a drik almanac decided differently in AD 1900 to 2100, the widest by 6.3 hours",
+        ),
+    ),
+    Citation::new(
+        "calendars.kirat_yele",
+        Source::new(
+            "Kantipur, 15 January 2026",
+            "KIRATI, the count printed today: 5086 from Magh 1, 2082 BS; docs/calendars/bikram-sambat.md, Kirat Yele Sambat",
+        ),
+    ),
+];
+
 fn depth_all(depth: u8) -> BTreeMap<DashaSystem, Depth> {
     DashaSystem::ALL
         .iter()
@@ -201,6 +1031,9 @@ fn jaimini() -> Jaimini {
         // BPHS ch. 29 vv. 6 and 7 state the count and no move
         // (`03-design/graha-arudhas.md`).
         graha_arudha_exception: GrahaArudhaException::None,
+        // The Jaimini Sutras 1.1.13 to 18, the seven the recording engine
+        // names and its corpus reproduces (crux C2061).
+        seven_karaka_order: SevenKarakaOrder::Jaimini,
     }
 }
 
@@ -401,6 +1234,8 @@ pub fn root() -> Settings {
         strength: strength(),
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
+            // BPHS ch. 6 for every chart: no chart named here.
+            schemes: BTreeMap::new(),
         },
         calendars: calendars(),
         provider: Provider {
@@ -522,6 +1357,14 @@ fn nepali_drik() -> Profile {
                 ),
             ),
             Citation::new("calendars.civil_calendar", BASELINE),
+            Citation::new("calendars.eras", BASELINE),
+            Citation::new(
+                "day.sunrise",
+                Source::new(
+                    "Nepal Panchanga Nirnayak Vikas Samiti",
+                    "measured: Nepal's daily sunrise is a modern sunrise of the disc's centre with standard refraction, a median 0.4 minutes off over 333 days; docs/03-design/nepal-day-measured.md, C39",
+                ),
+            ),
             Citation::new(
                 "calendars.lunar_month",
                 Source::new(
@@ -721,6 +1564,12 @@ fn surya_siddhanta() -> Profile {
                 "frame.ayanamsha",
                 burgess("Burgess 1860, III.9 to 12: the libration of the equinoxes"),
             ),
+            Citation::new(
+                "day.sunrise",
+                burgess(
+                    "Burgess 1860, III.34 and 35: the centre of the Sun on the geometric horizon",
+                ),
+            ),
         ],
         mark: Mark::Traditional,
     }
@@ -796,12 +1645,20 @@ fn tamil_vakya() -> Profile {
         version: 2,
         base: Some(ProfileId::new("surya-siddhanta")),
         patch,
-        sources: vec![Citation::new(
-            "frame.siddhanta",
-            vakyakarana(
-                "Vakyakarana, ed. Kuppanna Sastri and Sarma (Madras, 1962): the Sun of I.4-5, the Moon of I.9-14 and the 248 candravakyas of Appendix II, the almanacs' manyadi from the introduction, p. xvi; measured against 127 printed ends of the Manonmani Vilasam suddha vakya panchangam, 1956, 1998 and 2015; docs/calendars/vakya.md",
+        sources: vec![
+            Citation::new(
+                "day.sunrise",
+                vakyakarana(
+                    "the almanac's nadis are counted from the modern upper-limb sunrise at Chennai, where it is printed; docs/calendars/vakya.md, cruxes C1207 and C1294",
+                ),
             ),
-        )],
+            Citation::new(
+                "frame.siddhanta",
+                vakyakarana(
+                    "Vakyakarana, ed. Kuppanna Sastri and Sarma (Madras, 1962): the Sun of I.4-5, the Moon of I.9-14 and the 248 candravakyas of Appendix II, the almanacs' manyadi from the introduction, p. xvi; measured against 127 printed ends of the Manonmani Vilasam suddha vakya panchangam, 1956, 1998 and 2015; docs/calendars/vakya.md",
+                ),
+            ),
+        ],
         mark: Mark::Traditional,
     }
 }
@@ -854,6 +1711,22 @@ fn kp_default() -> Profile {
                     "the readers: Placidus cusps as house starts",
                 ),
             ),
+            Citation::new(
+                "houses.chalit_system",
+                Source::new(
+                    "Krishnamurti",
+                    "the readers: the Placidus cusps are the bhavas, so the chalit is the placement",
+                ),
+            ),
+            Citation::new("houses.polar_policy", POLAR_PORPHYRY),
+            Citation::new("frame.node", TRUE_NODE),
+            Citation::new(
+                "dasha.year_length",
+                Source::new(
+                    "K.S. Krishnamurti, KP Reader IV",
+                    "Vimshottari's years of 365.25 days; releasing's, the decennials' and the ayurdaya dashas' 360, as the root counts them",
+                ),
+            ),
         ],
         mark: Mark::Traditional,
     }
@@ -879,10 +1752,46 @@ fn western_tropical_default() -> Profile {
         version: 4,
         base: None,
         patch,
-        sources: vec![Citation::new(
-            "frame.zodiac",
-            Source::new("convention", "Western practice"),
-        )],
+        sources: vec![
+            Citation::new(
+                "frame.zodiac",
+                Source::new("convention", "Western practice"),
+            ),
+            Citation::new("frame.node", TRUE_NODE),
+            Citation::new(
+                "houses.placement_system",
+                Source::new(
+                    "convention",
+                    "Western practice: Placidus, the system of the published tables of houses",
+                ),
+            ),
+            Citation::new(
+                "houses.chalit_system",
+                Source::new(
+                    "convention",
+                    "Western practice: no chalit apart from the placement",
+                ),
+            ),
+            Citation::new("houses.polar_policy", POLAR_PORPHYRY),
+            Citation::new(
+                "day.day_boundary",
+                Source::new(
+                    "convention",
+                    "Western practice: the civil day from midnight",
+                ),
+            ),
+            Citation::new(
+                "day.polar_day_policy",
+                Source::new(
+                    "teistro-sdk design",
+                    "a day from midnight reckons a polar day so too; nothing Western reads a sunrise to found a chart (docs/03-design/progressed-angles-measured.md, Tromso)",
+                ),
+            ),
+            Citation::new(
+                "calendars.eras",
+                Source::new("convention", "Western practice: no Indian era numbers"),
+            ),
+        ],
         mark: Mark::Traditional,
     }
 }
@@ -1141,7 +2050,10 @@ impl Profile {
     ///
     /// The coherence errors, every one.
     pub fn resolve(&self, patch: &SettingsPatch) -> Result<Resolved, Diagnostics> {
-        self.settings().patched(patch).validated(self.id.clone())
+        let (settings, mut origins) = self.settings_noted();
+        settings
+            .laid(patch, &mut origins, Layer::Context, None)
+            .validated_with(self.id.clone(), origins)
     }
 
     /// The profile's own settings, unvalidated: root, then the base, then
@@ -1156,17 +2068,77 @@ impl Profile {
     /// ```
     #[must_use]
     pub fn settings(&self) -> Settings {
+        self.settings_noted().0
+    }
+
+    /// [`Profile::settings`] with where each knob came from: the root's,
+    /// the base's or this profile's, each with the citation that layer
+    /// gives for it.
+    fn settings_noted(&self) -> (Settings, Origins) {
+        let mut origins = Origins::under(Layer::Root);
         let mut settings = root();
         if let Some(base) = self
             .base
             .as_ref()
             .and_then(|b| Profile::shipped(b.as_str()))
         {
-            settings = settings.patched(&base.patch);
+            settings = settings.laid(&base.patch, &mut origins, Layer::Profile, Some(&base));
         }
-        settings.patched(&self.patch)
+        let settings = settings.laid(&self.patch, &mut origins, Layer::Profile, Some(self));
+        (settings, origins)
+    }
+
+    /// The source this profile cites for `group.knob`, if it cites one.
+    ///
+    /// ```
+    /// use teistro_core::settings::Profile;
+    ///
+    /// let committee = Profile::shipped("nepali-committee").unwrap();
+    /// assert!(committee.cited("frame", "siddhanta").is_some());
+    /// assert!(committee.cited("frame", "node").is_none());
+    /// ```
+    #[must_use]
+    pub fn cited(&self, group: &str, knob: &str) -> Option<Source> {
+        cited_in(&self.sources, group, knob)
     }
 }
+
+/// The source `sources` give for `group.knob`.
+/// A citation for `*` covers every knob the profile cites no other
+/// source for (`conformance-baseline`'s, the recording engine's
+/// conventions).
+fn cited_in(sources: &[Citation], group: &str, knob: &str) -> Option<Source> {
+    let named = |cited: &&Citation| {
+        cited
+            .knob
+            .split_once('.')
+            .is_some_and(|(g, k)| g == group && k == knob)
+    };
+    sources
+        .iter()
+        .find(named)
+        .or_else(|| sources.iter().find(|cited| cited.knob == "*"))
+        .map(|cited| cited.source)
+}
+
+/// The root's citation for `group.knob` ([`ROOT_SOURCES`]).
+pub(crate) fn root_source(group: &str, knob: &str) -> Option<Source> {
+    cited_in(ROOT_SOURCES, group, knob)
+}
+
+/// Placidus and the quadrant systems have no cusps inside the polar
+/// circle; Porphyry divides the arcs there instead.
+const POLAR_PORPHYRY: Source = Source::new(
+    "baseline-engine",
+    "an undefined polar arc divided as Porphyry does, as its Tromso Placidus variant shows to 4e-8 degrees; docs/03-design/compat-shim.md",
+);
+
+/// The node a profile on modern tables reads: the readers and the Western
+/// texts it follows name none (crux C1990, open).
+const TRUE_NODE: Source = Source::new(
+    "teistro-sdk design",
+    "the osculating node of the modern ephemerides these profiles are read against; their sources name no node, so the choice is open (crux C1990) and MEAN is the knob's other value",
+);
 
 /// The refusal of a profile the SDK does not ship, out of line so
 /// [`Profile::named`] stays one branch.

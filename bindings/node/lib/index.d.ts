@@ -19,6 +19,7 @@ import type {
   BhadraVasa,
   DayMarker,
   Gowri,
+  DeltaTBand,
   ShivaVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -188,7 +189,7 @@ import type {
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
 // Each record entry point's request by its name, for `Context.record`.
-import type { RecordName, RecordRequests } from './requests.js';
+import type { RecordName, RecordRequests, SettingsDiffQuery, SettingsQuery } from './requests.js';
 import type { Detail } from './catalogue.js';
 
 /**
@@ -5793,6 +5794,24 @@ export interface KaalaPeriod extends Interval {
 }
 
 /** One choghadiya, of the daylight or of the night. */
+/**
+ * A day's times' ± band from Delta T (SR-104): the Delta T the day was
+ * reckoned under and the one-sigma band, in seconds, each kind of time
+ * takes on from its uncertainty.
+ */
+export interface TimesUncertainty {
+  /** Delta T, TT less UT1, at the middle of the day's window, seconds. */
+  readonly deltaTSeconds: number;
+  /** Where its uncertainty comes from. */
+  readonly band: DeltaTBand | 'unknown';
+  /** A limb's end, a sankranti or a lunation: Delta T's whole band; `null` when Delta T states none. */
+  readonly limbsSeconds: number | null;
+  /** The sunrise and sunset and every period divided from them: a 365th of it. */
+  readonly sunriseSeconds: number | null;
+  /** The moonrise and moonset: a 26th of it. */
+  readonly moonriseSeconds: number | null;
+}
+
 /** One Gowri of the Gowri panchangam, of the daylight or of the night. */
 export interface GowriPeriod extends Interval {
   /** Which Gowri. */
@@ -6115,6 +6134,11 @@ export declare class AlmanacDay {
    * night, each an eighth of its arc, a printed reading (crux C1052). Empty when not asked for.
    */
   readonly gowri: readonly GowriPeriod[];
+  /**
+   * The day's times' ± band from Delta T, when the request asked with `uncertainty: true` (SR-104): a limb's end
+   * takes on Delta T's whole uncertainty, a sunrise a 365th of it. `null` when not asked for.
+   */
+  readonly uncertainty: TimesUncertainty | null;
   /** The twenty-four horas, from sunrise. */
   readonly horas: readonly Hora[];
   /** The thirty muhurtas. */
@@ -6155,6 +6179,8 @@ export interface AlmanacRequest {
   readonly markers?: boolean;
   /** Whether to give each day its Gowri panchangam, as `AlmanacDay.gowri`; `false` by default, which costs nothing. */
   readonly gowri?: boolean;
+  /** Whether to give each day its times' ± band from Delta T, as `AlmanacDay.uncertainty`; `false` by default, which costs nothing. */
+  readonly uncertainty?: boolean;
   /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
   readonly sky?: boolean;
   /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
@@ -6601,6 +6627,19 @@ export interface FestivalObservance {
   readonly sait?: FestivalSait;
   /** The moonrise the vrata was kept or is broken at, and where (SR-60); absent for a rule that reads none. */
   readonly moonrise?: FestivalMoonrise;
+  /** The month rule that placed the day in a year with an adhika or a kshaya month (SR-93, `03-design/festival-malamasa.md`); absent in an ordinary month. */
+  readonly malamasa?: Malamasa;
+}
+
+/** Which month rule placed an observance (SR-93): kept in the nija month of a doubled name, in the adhika month by the rule's own `inAdhika`, or in a kshaya lunation under its first or its second name. */
+export type MalamasaClause = 'NIJA' | 'ADHIKA' | 'KSHAYA_FIRST' | 'KSHAYA_SECOND';
+
+/** The month rule an observance was placed by, and where the texts say it (SR-93). */
+export interface Malamasa {
+  /** Which clause. */
+  readonly clause: MalamasaClause;
+  /** Where the texts say it. */
+  readonly source: string;
 }
 
 /** The moonrise an observance was kept or broken at: the instant moves with the place, so the place it was found for is beside it. */
@@ -6750,13 +6789,50 @@ export interface LunarEclipseView {
   readonly seen: EclipseSeen | null;
   /** When the Moon is up during the umbral phase, the part the eye sees, or `null` (always for a penumbral eclipse). */
   readonly umbralSeen: EclipseSeen | null;
+  /** The largest phase the place sees: the greatest eclipse when the Moon is up at it, else where it rises or sets. */
+  readonly seenMaximum: LunarSeenMaximum;
+}
+
+/**
+ * Where the largest phase a place sees falls: at the maximum (`MAXIMUM`), where the body rises
+ * after it or sets before it (`RISING`, `SETTING`; `RISING_PAST_LIMIT`, `SETTING_PAST_LIMIT`
+ * against a custom altitude), or nowhere (`NOT_SEEN`).
+ */
+export type SeenAt =
+  | 'MAXIMUM'
+  | 'RISING'
+  | 'SETTING'
+  | 'RISING_PAST_LIMIT'
+  | 'SETTING_PAST_LIMIT'
+  | 'NOT_SEEN';
+
+/** The largest phase of a solar eclipse the place sees; `moment` and the magnitudes are `null` exactly when nothing is seen. */
+export interface SolarSeenMaximum {
+  readonly why: SeenAt;
+  /** When, with the Sun's topocentric geometric altitude. */
+  readonly moment: EclipseMoment | null;
+  /** The magnitude then. */
+  readonly magnitude: number | null;
+  /** The obscuration then. */
+  readonly obscuration: number | null;
+}
+
+/** The largest phase of a lunar eclipse the place sees; `moment` and the magnitudes are `null` exactly when nothing is seen. */
+export interface LunarSeenMaximum {
+  readonly why: SeenAt;
+  /** When, with the Moon's topocentric geometric altitude. */
+  readonly moment: EclipseMoment | null;
+  /** The umbral magnitude then, negative while the Moon is clear of the umbra. */
+  readonly umbralMagnitude: number | null;
+  /** The penumbral magnitude then. */
+  readonly penumbralMagnitude: number | null;
 }
 
 /** A solar eclipse at the place: its own contacts, maximum and magnitude. */
 export interface SolarEclipseView {
   /** What the place sees at its maximum: never hybrid. */
   readonly kind: Exclude<SolarEclipseKind, 'solar_eclipse_kind.HYBRID'>;
-  /** The fraction of the Sun's diameter covered; the ratio of the diameters in a central phase. */
+  /** The fraction of the Sun's diameter covered at the maximum, even below the horizon; the ratio of the diameters in a central phase. */
   readonly magnitude: number;
   /** The fraction of the Sun's disc covered. */
   readonly obscuration: number;
@@ -6769,6 +6845,8 @@ export interface SolarEclipseView {
   readonly maximum: EclipseMoment;
   /** When the Sun is up during the eclipse, or `null` where the place does not see it. */
   readonly seen: EclipseSeen | null;
+  /** The largest phase the place sees: the maximum when the Sun is up at it, else where it rises or sets. */
+  readonly seenMaximum: SolarSeenMaximum;
 }
 
 /**
@@ -8155,7 +8233,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'gowri' | 'sky' | 'skyStepMinutes' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'gowri' | 'uncertainty' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;
@@ -10197,6 +10275,59 @@ export declare class ResearchArea {
   ): ResearchTested;
 }
 
+/** The layer that set a knob. */
+export type SettingsLayer = 'ROOT' | 'PROFILE' | 'CONTEXT' | 'REQUEST' | 'DOCUMENT';
+
+/** What a difference in a knob moves: the sky, sunrise, a rule's reading, a civil time, or only the answer's form. */
+export type SettingsMoves = 'SKY' | 'SUNRISE' | 'RULE' | 'TIME' | 'FORM';
+
+/** A source cited for a knob's value. */
+export interface KnobSource {
+  readonly text: string;
+  readonly reference: string;
+}
+
+/** One knob explained. */
+export interface KnobExplained {
+  /** `group.knob`. */
+  readonly knob: string;
+  /** Its value, as the canonical settings document writes it. */
+  readonly value: unknown;
+  readonly layer: SettingsLayer;
+  /** The profile that set it, where a profile did. */
+  readonly profile: string | null;
+  /** The root's or the profile's citation; null where a patch set it. */
+  readonly citation: KnobSource | null;
+  readonly moves: SettingsMoves;
+  /** What it changes, in one line, in the context's locale. */
+  readonly effect: string;
+}
+
+/** Every knob asked, each with the layer that set it, why and what it changes. */
+export interface SettingsExplained {
+  readonly profile: string;
+  readonly settingsHash: string;
+  readonly knobs: readonly KnobExplained[];
+}
+
+/** One knob on which two contexts' settings differ. */
+export interface KnobDifference {
+  readonly knob: string;
+  readonly value: unknown;
+  readonly otherValue: unknown;
+  readonly moves: SettingsMoves;
+  readonly effect: string;
+}
+
+/** The knobs on which two contexts' settings differ. */
+export interface SettingsDiff {
+  readonly profile: string;
+  readonly otherProfile: string;
+  readonly settingsHash: string;
+  readonly otherSettingsHash: string;
+  readonly knobs: readonly KnobDifference[];
+}
+
 export declare class Context {
   constructor(options?: ContextInit);
   /**
@@ -10259,6 +10390,20 @@ export declare class Context {
    * throws a `TeistroError` naming the knob under `settings`.
    */
   withSettings(patch: Readonly<Record<string, unknown>>, locale?: string): Context;
+  /**
+   * **Why each knob has its value** (`settings.explain`): its value, the
+   * layer that set it, the source the root or the profile cites for it,
+   * what a difference in it moves and its effect note in this context's
+   * locale. Every knob when `query.knobs` is left out; an unknown group or
+   * knob throws a `TeistroError` naming it (`knobs[0]`).
+   */
+  explainSettings(query?: SettingsQuery): SettingsExplained;
+  /**
+   * **Where two contexts' settings part** (`settings.diff`): each knob on
+   * which this context's settings and `other`'s differ, with what it
+   * moves and its effect note in this context's locale.
+   */
+  diffSettings(other: Context, query?: SettingsDiffQuery): SettingsDiff;
   /**
    * Any record entry point answered by its name, its request typed by the
    * name (`RecordRequests`, generated), as the agent server answers it:

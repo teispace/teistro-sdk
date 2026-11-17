@@ -6,13 +6,12 @@ use teistro_astro::day_sky::{DaySky, SkyStep, day_sky};
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::terrain::{HorizonProfile, VisibleDay, visible_day};
 use teistro_calendar::CalendarDate;
-#[cfg(feature = "muhurta")]
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::FixedDay;
 use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
-use teistro_core::catalogue::Calendar;
+use teistro_core::catalogue::{Calendar, Masa};
 use teistro_core::envelope::{Convention, Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
@@ -677,6 +676,13 @@ impl<'a> AlmanacArea<'a> {
         // their answer names none, whichever path founded the days.
         without_printed(&mut provenance);
         let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
+        let (before, after) = self.beside_doubled(
+            (from.calendar, calendar),
+            offset,
+            place,
+            &mut viewed,
+            (before, after.1),
+        )?;
         self.searched(from.calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
@@ -699,23 +705,7 @@ impl<'a> AlmanacArea<'a> {
             from.calendar,
             (first, last),
         )?;
-        let inside = |date: &CalendarDate| {
-            calendar
-                .fixed_of(date)
-                .is_ok_and(|day| first.days_until(day) >= 0 && day.days_until(last) >= 0)
-        };
-        found
-            .observances
-            .retain(|observance| inside(&observance.day));
-        found.ekadashis.retain(|fast| inside(&fast.day));
-        found.dated.retain(|kept| inside(&kept.day));
-        found
-            .anniversaries
-            .retain(|kept| inside(&kept.observance.day));
-        found.unjudged.retain(|unjudged| {
-            start.is_some_and(|start| unjudged.tithi.to.get() > start)
-                && end.is_some_and(|end| unjudged.tithi.from.get() < end)
-        });
+        trim(&mut found, calendar, (first, last), (start, end));
         found.keep(|key| request.keeps(key));
         // On the days as published, after the trim, so only the range's
         // observances pay for a founded day.
@@ -731,8 +721,90 @@ impl<'a> AlmanacArea<'a> {
         hijri_convention(&mut provenance, request.hijri_offset());
         provenance
             .applied_conventions
-            .push(widened_days(&before, &after.1));
+            .push(widened_days(&before, &after));
         Ok(Envelope::sealing(found, provenance))
+    }
+
+    /// Widens `viewed` into the lunation beside its first day's, or its
+    /// last day's, when that lunation is an adhika month doubling the name
+    /// an occurrence there could take, so that an observance near either
+    /// edge says whether the year doubled its month (SR-93,
+    /// `03-design/festival-malamasa.md` §3) whatever range was asked. One
+    /// day of each lunation is founded to ask; the rest only when it is
+    /// adhika. Answers the days' new first and last dates.
+    ///
+    /// The lunation before begins at most a tithi's span per tithi before
+    /// the first day's sunrise tithi, at most 1.08 days each, so the day
+    /// `id + 5` before it lies in the lunation before and not the one
+    /// before that, which runs at least 29.2 days; the lunation after
+    /// likewise from the last day.
+    fn beside_doubled(
+        self,
+        (calendar, system): (Calendar, &dyn CalendarSystem),
+        offset: UtcOffset,
+        place: &Place,
+        viewed: &mut Vec<FestivalDay>,
+        (mut before, mut after): (CalendarDate, CalendarDate),
+    ) -> Result<(CalendarDate, CalendarDate), Error> {
+        const PAST_THE_TITHIS: i64 = 5;
+        let fixed = |day: &FestivalDay| system.fixed_of(&day.date);
+        let tithi = |day: &FestivalDay| {
+            day.tithi
+                .first()
+                .map_or(0, |span| i64::from(span.member.id()))
+        };
+        let one = |at: FixedDay| -> Result<Option<FestivalDay>, Error> {
+            let date = system.date_of(at)?;
+            self.with_almanac(calendar, offset, |almanac| {
+                Ok(almanac
+                    .festival_days(&date, &date, place)?
+                    .value
+                    .into_iter()
+                    .next())
+            })
+        };
+        let adhika_of = |day: &Option<FestivalDay>, name: Masa| {
+            day.as_ref()
+                .is_some_and(|day| day.month.kind == MonthKind::Adhika && day.month.amanta == name)
+        };
+        if let Some(first) = viewed
+            .first()
+            .filter(|day| day.month.kind != MonthKind::Adhika)
+        {
+            let start = fixed(first)?;
+            let probe = start.plus_days(-(tithi(first) + PAST_THE_TITHIS));
+            if adhika_of(&one(probe)?, first.month.amanta) {
+                before = system.date_of(probe)?;
+                let to = system.date_of(start.plus_days(-1))?;
+                let mut widened = self
+                    .with_almanac(calendar, offset, |almanac| {
+                        almanac.festival_days(&before, &to, place)
+                    })?
+                    .value;
+                widened.append(viewed);
+                *viewed = widened;
+            }
+        }
+        if let Some(last) = viewed
+            .last()
+            .filter(|day| day.month.kind != MonthKind::Adhika)
+        {
+            let end = fixed(last)?;
+            let probe = end.plus_days(29 - tithi(last) + PAST_THE_TITHIS);
+            let next =
+                Masa::from_id((last.month.amanta.id() + 1) % 12).unwrap_or(last.month.amanta);
+            if adhika_of(&one(probe)?, next) {
+                let from = system.date_of(end.plus_days(1))?;
+                after = system.date_of(probe)?;
+                viewed.extend(
+                    self.with_almanac(calendar, offset, |almanac| {
+                        almanac.festival_days(&from, &after, place)
+                    })?
+                    .value,
+                );
+            }
+        }
+        Ok((before, after))
     }
 
     /// Every day of a range with whatever `request` asks beside it — a
@@ -780,21 +852,8 @@ impl<'a> AlmanacArea<'a> {
         #[cfg(not(feature = "muhurta"))]
         let days = self.unsealed(from, to, place, offset)?;
         let mut days = days;
-        if request.lagnas && request.days == Days::Handed {
-            self.with_lagnas(&mut days.value, place, offset)?;
-        }
-        if request.homa_ahuti && request.days == Days::Handed {
-            self.with_almanac(from.calendar, offset, |almanac| {
-                almanac.homa_ahuti(&mut days.value, place)
-            })?;
-        }
-        if request.markers && request.days == Days::Handed {
-            days.value.iter_mut().for_each(Panchanga::mark);
-        }
-        if request.gowri && request.days == Days::Handed {
-            for day in &mut days.value {
-                day.divide_gowri()?;
-            }
+        if request.days == Days::Handed {
+            self.with_day_sections(&mut days.value, from.calendar, place, offset, request)?;
         }
         let festivals = request
             .festivals
@@ -950,6 +1009,37 @@ impl<'a> AlmanacArea<'a> {
     /// and the part `inside` the arc, as a limb's span is (C681). A sign
     /// whose edge the search did not reach in a day (inside a polar
     /// circle) is bounded by the arc there.
+    /// The sections a request adds to each day handed back: the lagnas,
+    /// the homa ahuti, the markers, the Gowri periods and the times' band
+    /// from Delta T.
+    fn with_day_sections(
+        self,
+        days: &mut [Panchanga],
+        calendar: Calendar,
+        place: &Place,
+        offset: UtcOffset,
+        request: &AlmanacRequest,
+    ) -> Result<(), Error> {
+        if request.lagnas {
+            self.with_lagnas(days, place, offset)?;
+        }
+        if request.homa_ahuti {
+            self.with_almanac(calendar, offset, |almanac| almanac.homa_ahuti(days, place))?;
+        }
+        if request.markers {
+            days.iter_mut().for_each(Panchanga::mark);
+        }
+        if request.gowri {
+            for day in days.iter_mut() {
+                day.divide_gowri()?;
+            }
+        }
+        if request.uncertainty {
+            self.with_almanac(calendar, offset, |almanac| almanac.uncertainty(days))?;
+        }
+        Ok(())
+    }
+
     fn with_lagnas(
         self,
         days: &mut [Panchanga],
@@ -1506,6 +1596,7 @@ pub struct AlmanacRequest {
     homa_ahuti: bool,
     markers: bool,
     gowri: bool,
+    uncertainty: bool,
     sky: Option<SkyStep>,
     visible: Option<HorizonProfile>,
     days: Days,
@@ -1631,6 +1722,26 @@ impl AlmanacRequest {
     #[must_use]
     pub fn with_gowri(mut self) -> AlmanacRequest {
         self.gowri = true;
+        self
+    }
+
+    /// With each day's times' ± band from Delta T
+    /// ([`Panchanga::uncertainty`](teistro_panchanga::Panchanga::uncertainty),
+    /// SR-104): the Delta T the day was reckoned under, where its
+    /// uncertainty comes from, and the one-sigma band the limbs' ends
+    /// (all of it) and the sunrise and moonrise (a 365th and a 26th part)
+    /// take on. Asked so that a day's answer grows only for a caller who
+    /// wants it.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_uncertainty().uncertainty());
+    /// assert!(!AlmanacRequest::new().uncertainty());
+    /// ```
+    #[must_use]
+    pub fn with_uncertainty(mut self) -> AlmanacRequest {
+        self.uncertainty = true;
         self
     }
 
@@ -1769,6 +1880,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn gowri(&self) -> bool {
         self.gowri
+    }
+
+    /// Whether the days' ± band from Delta T was asked.
+    #[must_use]
+    pub fn uncertainty(&self) -> bool {
+        self.uncertainty
     }
 
     /// The step of the days' sky, when it was asked.
@@ -1961,13 +2078,40 @@ struct FestivalInput<'r> {
     request: &'r FestivalRequest,
 }
 
+/// Keeps what falls inside the range asked, `first` to `last`, and the
+/// unjudged occurrences whose tithi overlaps its days, `start` to `end`.
+fn trim(
+    found: &mut Observances,
+    calendar: &dyn CalendarSystem,
+    (first, last): (FixedDay, FixedDay),
+    (start, end): (Option<f64>, Option<f64>),
+) {
+    let inside = |date: &CalendarDate| {
+        calendar
+            .fixed_of(date)
+            .is_ok_and(|day| first.days_until(day) >= 0 && day.days_until(last) >= 0)
+    };
+    found
+        .observances
+        .retain(|observance| inside(&observance.day));
+    found.ekadashis.retain(|fast| inside(&fast.day));
+    found.dated.retain(|kept| inside(&kept.day));
+    found
+        .anniversaries
+        .retain(|kept| inside(&kept.observance.day));
+    found.unjudged.retain(|unjudged| {
+        start.is_some_and(|start| unjudged.tithi.to.get() > start)
+            && end.is_some_and(|end| unjudged.tithi.from.get() < end)
+    });
+}
+
 /// The convention naming the days a range was widened to.
 fn widened_days(before: &CalendarDate, after: &CalendarDate) -> Convention {
     Convention {
         knob: String::from("festival.days"),
         value: format!("{before}..{after}"),
         reason: String::from(
-            "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
+            "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; a rule counted from another's day reaches as many days as it counts; and the days reach into the lunation beside the range's first or last when it is an adhika month, which says whether the year doubled an observance's month (SR-93)",
         ),
     }
 }

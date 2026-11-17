@@ -1949,19 +1949,22 @@ const publishedSet = {
     { action: 'SET', rule: 'HOLIKA', day: day2024(10, 25), source: 'p. 4' },
   ],
 };
-for (const [name, rules, published, hijriOffset] of [
+for (const [name, rules, published, hijriOffset, span] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
   ['dated', ['NEPAL', ...ownDated]],
   ['hijri', [ownHijri], undefined, 1],
   ['published', 'DHARMASINDHU', [publishedSet]],
+  // A month the test provider's 2023 doubles: a monthly rule kept in its
+  // adhika month says which month rule placed it (SR-93).
+  ['malamasa', 'DHARMASINDHU', undefined, undefined, [gregorian(2023, 8, 20), gregorian(2023, 9, 10)]],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
   // almanac's: the two answer alike, so the report cannot tell.
   const asked = {
-    from: gregorian(2024, 10, 10),
-    to: gregorian(2024, 11, 3),
+    from: span ? span[0] : gregorian(2024, 10, 10),
+    to: span ? span[1] : gregorian(2024, 11, 3),
     place,
     utcOffsetSeconds: 20700,
     festivals: {
@@ -1997,6 +2000,7 @@ for (const [name, rules, published, hijriOffset] of [
         number(observance.tithi.from),
         number(earlier.held),
         number(later.held),
+        observance.malamasa?.clause ?? '-',
       ].join(' '),
     );
   });
@@ -2489,9 +2493,19 @@ geo.dispose();
 // members only.
 {
   const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
-  const day = sky.almanac.of({ from: gregorian(2025, 6, 11), to: gregorian(2025, 6, 11), place, utcOffsetSeconds: 20700, markers: true, gowri: true }).at(0);
+  const day = sky.almanac.of({ from: gregorian(2025, 6, 11), to: gregorian(2025, 6, 11), place, utcOffsetSeconds: 20700, markers: true, gowri: true, uncertainty: true }).at(0);
   put('markers', day.markers.map((span) => span.member).join(' '));
   put('gowri', day.gowri.map((part) => part.gowri).join(' '));
+  const band = day.uncertainty;
+  put(
+    'uncertainty.band',
+    band.band,
+  );
+  // Each number its own line, so it is compared as a number.
+  put('uncertainty.delta-t', number(band.deltaTSeconds));
+  put('uncertainty.limbs', numberOrDash(band.limbsSeconds));
+  put('uncertainty.sunrise', numberOrDash(band.sunriseSeconds));
+  put('uncertainty.moonrise', numberOrDash(band.moonriseSeconds));
   sky.dispose();
 }
 
@@ -2539,6 +2553,28 @@ put(
     `${one.inView} ${one.x === null ? 'null' : number(one.x)} ${one.y === null ? 'null' : number(one.y)} ${number(one.offAxisDeg)}`;
   put('sky-pose-moon', placed(grahas[value.sky.grahas.findIndex((one) => one.graha === 'graha.MOON')]));
   put('sky-pose-ascendant', placed(ecliptic[value.sky.ecliptic.findIndex((point) => point.kind === 'ASCENDANT')]));
+}
+
+// ── The settings explained and compared ────────────────────────────────
+// `nepali-drik` with the node patched per call, every knob explained, and
+// the knobs on which the committee's profile and `nepali-drik` part
+// (`03-design/settings-and-profiles.md` §3.5).
+{
+  const drik = new Context({ profile: 'nepali-drik' });
+  const mean = drik.withSettings({ frame: { node: 'MEAN' } });
+  const explained = mean.explainSettings();
+  const knob = (name) => explained.knobs.find((one) => one.knob === name);
+  const [node, centre] = [knob('frame.node'), knob('frame.centre')];
+  const cited = explained.knobs.filter((one) => one.citation !== null).length;
+  put('settings-explain', `${explained.knobs.length} ${cited} ${node.layer} ${centre.layer} ${centre.profile ?? '-'}`);
+  put('settings-explain-hash', explained.settingsHash);
+  put('settings-explain-effect', node.effect);
+  const committee = new Context({ profile: 'nepali-committee' });
+  const diff = committee.diffSettings(drik);
+  put('settings-diff', diff.knobs.map((one) => `${one.knob}:${one.moves}`).join(','));
+  committee.dispose();
+  mean.dispose();
+  drik.dispose();
 }
 
 // ── Aayadi ─────────────────────────────────────────────────────────────
@@ -2591,6 +2627,11 @@ for (const [line, system, owner] of [
       `eclipses-lunar-${k}-here`,
       [here.p1, here.u1, here.u2, here.greatest, here.u3, here.u4, here.p4].map(moment).concat(seen(here.seen), seen(here.umbralSeen)).join(' '),
     );
+    const largest = here.seenMaximum;
+    put(
+      `eclipses-lunar-${k}-seen-maximum`,
+      [largest.why, moment(largest.moment), maybe(largest.umbralMagnitude), maybe(largest.penumbralMagnitude)].join(' '),
+    );
     put(`eclipses-lunar-${k}-vedha`, seen(vedha));
   });
   eclipses.value.solar.forEach(({ eclipse, here, vedha }, k) => {
@@ -2605,6 +2646,13 @@ for (const [line, system, owner] of [
         : [here.kind, number(here.magnitude), number(here.obscuration)]
             .concat([here.first, here.second, here.third, here.fourth, here.maximum].map(moment), seen(here.seen))
             .join(' '),
+    );
+    const largest = here?.seenMaximum;
+    put(
+      `eclipses-solar-${k}-seen-maximum`,
+      largest === undefined
+        ? '-'
+        : [largest.why, moment(largest.moment), maybe(largest.magnitude), maybe(largest.obscuration)].join(' '),
     );
     put(`eclipses-solar-${k}-vedha`, seen(vedha));
   });
@@ -2715,6 +2763,25 @@ for (const [path, member] of [
   put(`surface.${path}`, member === undefined || member === null ? 'missing' : 'present');
 }
 shape.dispose();
+
+// A varga scheme the settings choose (`03-design/varga-schemes.md`):
+// Kashinatha's hora for the D2, and a consumer's broken row refused with
+// its field in the message.
+{
+  const kashinatha = { D2: { kind: 'NAMED', which: 'KASHINATHA' } };
+  const hora = new Context({ testProvider: true, settings: { vargas: { schemes: kashinatha } } });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const [d2] = hora.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vargas: ['varga.D2'] }).vargas;
+  d2.grahas.forEach((placed, j) => put(`varga-scheme-kashinatha-graha-${j}`, `${placed.graha} ${placed.at.sign}`));
+  hora.dispose();
+  const broken = { kind: 'CUSTOM', classifier: 'ALL', groups: [{ spans: { spans: 'EQUAL' }, map: { map: 'LISTED', signs: [0] } }] };
+  try {
+    new Context({ testProvider: true, settings: { vargas: { schemes: { D9: broken } } } }).dispose();
+    put('varga-scheme-refused', 'false');
+  } catch (error) {
+    put('varga-scheme-refused', `${error.message.includes('vargas.schemes.D9.groups[0].map.signs')}`);
+  }
+}
 
 for (const key of [...report.keys()].sort()) {
   process.stdout.write(`${key}\t${report.get(key)}\n`);

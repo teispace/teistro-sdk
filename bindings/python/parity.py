@@ -708,6 +708,7 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                     number(observance.tithi.from_jd),
                     number(earlier.held),
                     number(later.held),
+                    observance.malamasa.clause if observance.malamasa is not None else "-",
                 )
             ),
         )
@@ -3077,6 +3078,16 @@ def main() -> None:
                 assert asked is not None
                 festivals = asked
             put_festivals(f"festivals-{name}", festivals)
+        # A month the test provider's 2023 doubles: a monthly rule kept in
+        # its adhika month says which month rule placed it (SR-93).
+        doubled = geo.almanac.festivals(
+            from_date=date(Calendar.GREGORIAN, 2023, 8, 20),
+            to_date=date(Calendar.GREGORIAN, 2023, 9, 10),
+            place=place,
+            utc_offset_seconds=20700,
+            festivals={"rules": "DHARMASINDHU"},
+        )
+        put_festivals("festivals-malamasa", doubled)
 
         # The lunar years over 2024-03-20..04-20, which holds a Chaitra
         # Shukla Pratipada: two years, their bounds and their Jovian years.
@@ -3318,6 +3329,27 @@ def main() -> None:
     assert rising is not None
     put("sky-pose-ascendant", placement(rising[1]))
 
+    # ── The settings explained and compared ───────────────────────────
+    # `nepali-drik` with the node patched per call, every knob explained,
+    # and the knobs on which the committee's profile and `nepali-drik`
+    # part (`03-design/settings-and-profiles.md` §3.5).
+    with teistro.context(profile="nepali-drik") as drik:
+        with drik.with_settings({"frame": {"node": "MEAN"}}) as mean:
+            explained = mean.explain_settings()
+        by_name = {one["knob"]: one for one in explained["knobs"]}
+        settings_node, settings_centre = by_name["frame.node"], by_name["frame.centre"]
+        cited = sum(1 for one in explained["knobs"] if one["citation"] is not None)
+        put(
+            "settings-explain",
+            f"{len(explained['knobs'])} {cited} {settings_node['layer']} {settings_centre['layer']} "
+            f"{settings_centre['profile'] or '-'}",
+        )
+        put("settings-explain-hash", explained["settingsHash"])
+        put("settings-explain-effect", settings_node["effect"])
+        with teistro.context(profile="nepali-committee") as committee:
+            parted = committee.diff_settings(drik)
+        put("settings-diff", ",".join(f"{one['knob']}:{one['moves']}" for one in parted["knobs"]))
+
     # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
     # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
@@ -3363,9 +3395,21 @@ def main() -> None:
             utc_offset_seconds=20700,
             markers=True,
             gowri=True,
+            uncertainty=True,
         ).at(0)
         put("markers", " ".join(s.member.full_key for s in marked_day.markers))
         put("gowri", " ".join(p.gowri.full_key for p in marked_day.gowri))
+        band = marked_day.uncertainty
+        assert band is not None
+        put(
+            "uncertainty.band",
+            band.band.key,
+        )
+        # Each number its own line, so it is compared as a number.
+        put("uncertainty.delta-t", number(band.delta_t_seconds))
+        put("uncertainty.limbs", number_or_dash(band.limbs_seconds))
+        put("uncertainty.sunrise", number_or_dash(band.sunrise_seconds))
+        put("uncertainty.moonrise", number_or_dash(band.moonrise_seconds))
 
     # Ashwini's navatara chakra, every row `star:tara:round:special`
     # (`03-design/navatara-chakra.md`).
@@ -3420,6 +3464,18 @@ def main() -> None:
             f"eclipses-lunar-{k}-here",
             " ".join([eclipse_moment(m) for m in (lunar_view.p1, lunar_view.u1, lunar_view.u2, lunar_view.greatest, lunar_view.u3, lunar_view.u4, lunar_view.p4)] + [eclipse_seen(lunar_view.seen), eclipse_seen(lunar_view.umbral_seen)]),
         )
+        lunar_largest = lunar_view.seen_maximum
+        put(
+            f"eclipses-lunar-{k}-seen-maximum",
+            " ".join(
+                (
+                    lunar_largest.why,
+                    eclipse_moment(lunar_largest.moment),
+                    number_or_dash(lunar_largest.umbral_magnitude),
+                    number_or_dash(lunar_largest.penumbral_magnitude),
+                )
+            ),
+        )
         put(f"eclipses-lunar-{k}-vedha", eclipse_seen(lunar_eclipse.vedha))
     for k, solar_eclipse in enumerate(eclipses.value.solar):
         solar_found, solar_view = solar_eclipse.eclipse, solar_eclipse.here
@@ -3444,6 +3500,20 @@ def main() -> None:
                 [solar_view.kind.full_key, number(solar_view.magnitude), number(solar_view.obscuration)]
                 + [eclipse_moment(m) for m in (solar_view.first, solar_view.second, solar_view.third, solar_view.fourth, solar_view.maximum)]
                 + [eclipse_seen(solar_view.seen)]
+            ),
+        )
+        solar_largest = None if solar_view is None else solar_view.seen_maximum
+        put(
+            f"eclipses-solar-{k}-seen-maximum",
+            "-"
+            if solar_largest is None
+            else " ".join(
+                (
+                    solar_largest.why,
+                    eclipse_moment(solar_largest.moment),
+                    number_or_dash(solar_largest.magnitude),
+                    number_or_dash(solar_largest.obscuration),
+                )
             ),
         )
         put(f"eclipses-solar-{k}-vedha", eclipse_seen(solar_eclipse.vedha))
@@ -3551,6 +3621,28 @@ def main() -> None:
         ("(root).dispose", ctx.close),
     ):
         put(f"surface.{path}", "missing" if member is None else "present")
+
+    # A varga scheme the settings choose (`03-design/varga-schemes.md`):
+    # Kashinatha's hora for the D2, and a consumer's broken row refused with
+    # its field in the message.
+    kashinatha = {"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}
+    with teistro.context(test_provider=True, settings=kashinatha) as hora:
+        hora_place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        (hora_chart,) = hora.chart.found(
+            instant=2451545.0, place=hora_place, utc_offset_seconds=20700, vargas=[Varga.D2]
+        ).vargas
+        for j, in_hora in enumerate(hora_chart.grahas):
+            put(f"varga-scheme-kashinatha-graha-{j}", f"{in_hora.graha.full_key} {in_hora.at.sign.full_key}")
+    broken = {
+        "kind": "CUSTOM",
+        "classifier": "ALL",
+        "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}],
+    }
+    try:
+        teistro.context(test_provider=True, settings={"vargas": {"schemes": {"D9": broken}}}).close()
+        put("varga-scheme-refused", False)
+    except TeistroError as error:
+        put("varga-scheme-refused", "vargas.schemes.D9.groups[0].map.signs" in error.message)
 
     for key in sorted(report):
         sys.stdout.write(f"{key}\t{report[key]}\n")

@@ -6978,83 +6978,109 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
             .festivals(&from, &to, place, offset, &asked)
             .expect("the test provider")
             .value;
-        let key = |what: &str| format!("festivals-{name}{what}");
-        put(
-            report,
-            &key("-counts"),
-            format!("{} {}", answer.observances.len(), answer.unjudged.len()),
-        );
-        // The boundary seals the full-keyed value, so the hash every
-        // binding reads is of that.
-        let written = answer.in_full().expect("a written answer");
-        put(
-            report,
-            &key("-hash"),
-            teistro_core::envelope::content_hash(&written).to_string(),
-        );
-        for (k, observance) in answer.observances.iter().enumerate() {
-            let by = match &observance.decided_by {
-                teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
-                teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
-                teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
-            };
-            let [earlier, later] = &observance.extents;
-            put(
-                report,
-                &key(&format!("-{k}")),
-                format!(
-                    "{} {} {} {}-{} {} {by} {} {} {} {}",
-                    observance.rule,
-                    observance.month.full_key(),
-                    observance.adhika,
-                    observance.day.month,
-                    observance.day.day,
-                    tag(&observance.case),
-                    tag(&observance.choice),
-                    number(observance.tithi.from.get()),
-                    number(earlier.held),
-                    number(later.held),
-                ),
-            );
-        }
-        for (k, fast) in answer.ekadashis.iter().enumerate() {
-            put(
-                report,
-                &key(&format!("-ekadashi-{k}")),
-                format!(
-                    "{} {} {} {} {}-{} {} {} {} {} {} {}",
-                    fast.rule,
-                    fast.tithi.full_key(),
-                    fast.month.full_key(),
-                    fast.adhika,
-                    fast.day.month,
-                    fast.day.day,
-                    fast.pierced_at.as_ref().map_or_else(|| "-".to_owned(), tag),
-                    fast.pierced,
-                    tag(&fast.excess),
-                    tag(&fast.choice),
-                    number(fast.tithis[1].from.get()),
-                    parana(fast.parana.as_ref()),
-                ),
-            );
-        }
-        for (k, kept) in answer.dated.iter().enumerate() {
-            put(
-                report,
-                &key(&format!("-dated-{k}")),
-                format!(
-                    "{} {}-{} {} {}-{}",
-                    kept.rule,
-                    kept.day.month,
-                    kept.day.day,
-                    kept.on.calendar.full_key(),
-                    kept.on.month,
-                    kept.on.day,
-                ),
-            );
-        }
-        put_published(report, &key, &answer);
+        put_festivals(report, name, &answer);
     }
+    // A month the test provider's 2023 doubles: a monthly rule kept in its
+    // adhika month says which month rule placed it (SR-93).
+    let asked = teistro::FestivalRequest::from_json(r#"{"rules":"DHARMASINDHU"}"#)
+        .expect("a festival request");
+    let answer = geo
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2023, 8, 20),
+            &CalendarDate::defined(Calendar::Gregorian, 2023, 9, 10),
+            place,
+            offset,
+            &asked,
+        )
+        .expect("the test provider")
+        .value;
+    put_festivals(report, "malamasa", &answer);
+}
+
+/// A festival answer's counts, hash, every observance, Ekadashi fast and
+/// dated day, and what published sets did, as every runner prints them.
+fn put_festivals(report: &mut Report, name: &str, answer: &teistro::festival::Observances) {
+    let key = |what: &str| format!("festivals-{name}{what}");
+    put(
+        report,
+        &key("-counts"),
+        format!("{} {}", answer.observances.len(), answer.unjudged.len()),
+    );
+    // The boundary seals the full-keyed value, so the hash every
+    // binding reads is of that.
+    let written = answer.in_full().expect("a written answer");
+    put(
+        report,
+        &key("-hash"),
+        teistro_core::envelope::content_hash(&written).to_string(),
+    );
+    for (k, observance) in answer.observances.iter().enumerate() {
+        let by = match &observance.decided_by {
+            teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
+            teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
+            teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
+        };
+        let [earlier, later] = &observance.extents;
+        put(
+            report,
+            &key(&format!("-{k}")),
+            format!(
+                "{} {} {} {}-{} {} {by} {} {} {} {} {}",
+                observance.rule,
+                observance.month.full_key(),
+                observance.adhika,
+                observance.day.month,
+                observance.day.day,
+                tag(&observance.case),
+                tag(&observance.choice),
+                number(observance.tithi.from.get()),
+                number(earlier.held),
+                number(later.held),
+                observance
+                    .malamasa
+                    .as_ref()
+                    .map_or("-", |placed| placed.clause.key()),
+            ),
+        );
+    }
+    for (k, fast) in answer.ekadashis.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-ekadashi-{k}")),
+            format!(
+                "{} {} {} {} {}-{} {} {} {} {} {} {}",
+                fast.rule,
+                fast.tithi.full_key(),
+                fast.month.full_key(),
+                fast.adhika,
+                fast.day.month,
+                fast.day.day,
+                fast.pierced_at.as_ref().map_or_else(|| "-".to_owned(), tag),
+                fast.pierced,
+                tag(&fast.excess),
+                tag(&fast.choice),
+                number(fast.tithis[1].from.get()),
+                parana(fast.parana.as_ref()),
+            ),
+        );
+    }
+    for (k, kept) in answer.dated.iter().enumerate() {
+        put(
+            report,
+            &key(&format!("-dated-{k}")),
+            format!(
+                "{} {}-{} {} {}-{}",
+                kept.rule,
+                kept.day.month,
+                kept.day.day,
+                kept.on.calendar.full_key(),
+                kept.on.month,
+                kept.on.day,
+            ),
+        );
+    }
+    put_published(report, &key, answer);
 }
 
 /// The lunar years a panchanga request carries, as the report prints them.
@@ -7716,7 +7742,10 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
             &date,
             place,
             offset,
-            &AlmanacRequest::new().with_markers().with_gowri(),
+            &AlmanacRequest::new()
+                .with_markers()
+                .with_gowri()
+                .with_uncertainty(),
         )
         .expect("the built-in sky's markers");
     let day = answer
@@ -7742,6 +7771,27 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
             .map(|part| part.gowri.full_key())
             .collect::<Vec<_>>()
             .join(" "),
+    );
+    // And its times' band from Delta T (SR-104): the band's key, Delta T,
+    // and the limbs', the sunrise's and the moonrise's one-sigma bands.
+    let band = day.uncertainty.expect("asked for");
+    put(report, "uncertainty.band", band.band.key().to_owned());
+    // Each number its own line, so it is compared as a number.
+    put(report, "uncertainty.delta-t", number(band.delta_t_seconds));
+    put(
+        report,
+        "uncertainty.limbs",
+        number_or_dash(band.limbs_seconds),
+    );
+    put(
+        report,
+        "uncertainty.sunrise",
+        number_or_dash(band.sunrise_seconds),
+    );
+    put(
+        report,
+        "uncertainty.moonrise",
+        number_or_dash(band.moonrise_seconds),
     );
 }
 
@@ -8026,6 +8076,18 @@ fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
         line.push(seen(here.seen.as_ref()));
         line.push(seen(here.umbral_seen.as_ref()));
         put(report, &format!("eclipses-lunar-{k}-here"), line.join(" "));
+        let largest = &here.seen_maximum;
+        put(
+            report,
+            &format!("eclipses-lunar-{k}-seen-maximum"),
+            format!(
+                "{} {} {} {}",
+                largest.why.key(),
+                moment(largest.moment.as_ref()),
+                number_or_dash(largest.umbral_magnitude),
+                number_or_dash(largest.penumbral_magnitude),
+            ),
+        );
         put(
             report,
             &format!("eclipses-lunar-{k}-vedha"),
@@ -8103,6 +8165,20 @@ fn solar_eclipses(report: &mut Report, solar: &[SolarHere]) {
             },
         );
         put(report, &format!("eclipses-solar-{k}-here"), line);
+        let largest = here.as_ref().map_or_else(
+            || "-".to_owned(),
+            |here| {
+                let largest = &here.seen_maximum;
+                format!(
+                    "{} {} {} {}",
+                    largest.why.key(),
+                    moment(largest.moment.as_ref()),
+                    number_or_dash(largest.magnitude),
+                    number_or_dash(largest.obscuration),
+                )
+            },
+        );
+        put(report, &format!("eclipses-solar-{k}-seen-maximum"), largest);
         put(
             report,
             &format!("eclipses-solar-{k}-vedha"),
@@ -8644,6 +8720,121 @@ fn listed(items: impl Iterator<Item = String>) -> String {
     }
 }
 
+/// A varga scheme the settings choose (`03-design/varga-schemes.md`):
+/// Kashinatha's hora for the D2, and a consumer's broken row refused with
+/// its field in the message.
+fn a_varga_scheme(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let hora = Context::builder()
+        .ephemeris([Ephemeris::Test])
+        .settings_json(r#"{"vargas":{"schemes":{"D2":{"kind":"NAMED","which":"KASHINATHA"}}}}"#)
+        .build()
+        .expect("a named hora");
+    let read = hora
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_451_545.0),
+            &ChartRequest::at(*place, offset).with_vargas([Varga::D2]),
+        )
+        .expect("the hora chart")
+        .value;
+    if let Some(d2) = read.vargas.first() {
+        for (j, placed) in d2.grahas.iter().enumerate() {
+            put(
+                report,
+                &format!("varga-scheme-kashinatha-graha-{j}"),
+                format!("{} {}", placed.graha.full_key(), placed.at.sign.full_key()),
+            );
+        }
+    }
+    let broken = r#"{"vargas":{"schemes":{"D9":{"kind":"CUSTOM","classifier":"ALL",
+        "groups":[{"spans":{"spans":"EQUAL"},"map":{"map":"LISTED","signs":[0]}}]}}}}"#;
+    let refused = Context::builder()
+        .ephemeris([Ephemeris::Test])
+        .settings_json(broken)
+        .build()
+        .err()
+        .is_some_and(|error| {
+            error
+                .to_string()
+                .contains("vargas.schemes.D9.groups[0].map.signs")
+        });
+    put(report, "varga-scheme-refused", refused.to_string());
+}
+
+/// The settings explained and compared (`03-design/settings-and-profiles.md`
+/// §3.5): `nepali-drik` with the node patched per call, every knob
+/// explained — how many, how many cited, the node's layer, the centre's
+/// layer and profile, the node's note — and the knobs on which the
+/// committee's profile and `nepali-drik` part, each `knob:MOVES`.
+fn settings(report: &mut Report) {
+    let drik = Context::builder()
+        .profile("nepali-drik")
+        .build()
+        .expect("a context with no ephemeris");
+    let mean = drik
+        .with_patch_json(r#"{"frame": {"node": "MEAN"}}"#, None)
+        .expect("a patch");
+    let explained = mean
+        .explain_settings(&teistro::settings::SettingsQuery::default())
+        .expect("every knob");
+    let knob = |name: &str| {
+        explained
+            .knobs
+            .iter()
+            .find(|knob| knob.knob == name)
+            .expect("a knob")
+    };
+    let layer = |layer: teistro::settings::Layer| {
+        serde_json::to_value(layer)
+            .ok()
+            .and_then(|value| value.as_str().map(str::to_owned))
+            .unwrap_or_default()
+    };
+    let (node, centre) = (knob("frame.node"), knob("frame.centre"));
+    let cited = explained
+        .knobs
+        .iter()
+        .filter(|knob| knob.citation.is_some())
+        .count();
+    put(
+        report,
+        "settings-explain",
+        format!(
+            "{} {} {} {} {}",
+            explained.knobs.len(),
+            cited,
+            layer(node.layer),
+            layer(centre.layer),
+            centre.profile.as_ref().map_or("-", |id| id.as_str())
+        ),
+    );
+    put(
+        report,
+        "settings-explain-hash",
+        explained.settings_hash.to_string(),
+    );
+    put(report, "settings-explain-effect", node.effect.clone());
+    let committee = Context::builder()
+        .profile("nepali-committee")
+        .build()
+        .expect("a context with no ephemeris");
+    let diff = committee
+        .diff_settings(&drik, &teistro::settings::SettingsQuery::default())
+        .expect("every knob");
+    let parted: Vec<String> = diff
+        .knobs
+        .iter()
+        .map(|knob| {
+            let moves = serde_json::to_value(knob.moves)
+                .ok()
+                .and_then(|value| value.as_str().map(str::to_owned))
+                .unwrap_or_default();
+            format!("{}:{moves}", knob.knob)
+        })
+        .collect();
+    put(report, "settings-diff", parted.join(","));
+}
+
 fn main() {
     let mut report = Report::new();
     // The **test** provider, as the other three runners use: the
@@ -8693,9 +8884,11 @@ fn main() {
     navatara(&mut report, &geo);
     sky_view(&mut report);
     sky_pose(&mut report);
+    settings(&mut report);
     aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
+    a_varga_scheme(&mut report, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

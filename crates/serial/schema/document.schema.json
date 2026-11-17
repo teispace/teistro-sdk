@@ -1874,6 +1874,11 @@
           "const": "ELEMENT",
           "description": "Fire, earth, air and water.",
           "type": "string"
+        },
+        {
+          "const": "SIGN",
+          "description": "Each sign its own group: a whole table, one list per sign, for a rule no arithmetic over the sign's number gives (Kashinatha's hora, Somanatha's drekkana).",
+          "type": "string"
         }
       ]
     },
@@ -2539,6 +2544,36 @@
             "policy"
           ],
           "type": "object"
+        }
+      ]
+    },
+    "DeltaTBand": {
+      "description": "Where a Delta T's uncertainty comes from.",
+      "oneOf": [
+        {
+          "const": "UNSTATED",
+          "description": "No uncertainty is stated: a custom value.",
+          "type": "string"
+        },
+        {
+          "const": "MEASURED",
+          "description": "The IERS's measured series, good to milliseconds.",
+          "type": "string"
+        },
+        {
+          "const": "MORRISON_STEPHENSON_2004",
+          "description": "Morrison and Stephenson's (2004) standard errors, from −500 to the IERS era (their Table 1; `0.8 t²` seconds with `t` in centuries from 1820 where only the parabola stands): the band the SDK's model takes over the span its data covers.",
+          "type": "string"
+        },
+        {
+          "const": "STEPHENSON_MORRISON_HOHENKERK_2016",
+          "description": "The published σ of Stephenson, Morrison and Hohenkerk (2016).",
+          "type": "string"
+        },
+        {
+          "const": "HUBER_2000",
+          "description": "Huber's (2000) random walk in the length of day, beyond the data: `σ = 365.25 N √(N Q / 3 · (1 + N / M)) / 1000` seconds with `N` years from the last value known, `Q = 0.058 ms²/yr` and `M = 2500` years (Espenak and Meeus 2006, \"Uncertainty in Delta T\", Table 3).",
+          "type": "string"
         }
       ]
     },
@@ -6007,6 +6042,17 @@
           "$ref": "#/$defs/SunDay",
           "description": "What the Sun did."
         },
+        "uncertainty": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimesUncertainty"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The day's times with a ± band from Delta T: the Delta T the day was reckoned under, its band, and how much of its uncertainty the limbs' ends and the rises take on (`crate::uncertainty::TimesUncertainty`, SR-104). **Left out unless asked for** (the façade's `AlmanacRequest::with_uncertainty`), and then out of the day's document, so a day not asked hashes as it did before."
+        },
         "window": {
           "$ref": "#/$defs/Interval",
           "description": "What the limb spans are clipped to: the arc under a sunrise boundary, the civil day under a midnight one."
@@ -7191,6 +7237,10 @@
             }
           ],
           "description": "The catalogued chart, or `None` for an arbitrary D-N."
+        },
+        "variant": {
+          "$ref": "#/$defs/VargaVariant",
+          "description": "Which of the chart's schemes this is: BPHS ch. 6's, a named variant, or a consumer's own rows (`CUSTOM`). Left out of a written scheme when it is `PARASHARA`, so a chart computed by the shipped rows writes, and hashes, as it always has."
         }
       },
       "required": [
@@ -8011,7 +8061,7 @@
           "description": "The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4)."
         },
         "delta_t_band": {
-          "description": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `UNSTATED`), when `TimeStamp::delta_t_seconds` was read at an instant of the answer.",
+          "description": "Where Delta T's uncertainty comes from (`MEASURED` inside the IERS table, `STEPHENSON_MORRISON_HOHENKERK_2016` or `MORRISON_STEPHENSON_2004` for a model's published band, `HUBER_2000` beyond the data, `UNSTATED`), when `TimeStamp::delta_t_seconds` was read at an instant of the answer (`docs/03-design/time-and-timezone.md` §3.5).",
           "type": [
             "string",
             "null"
@@ -8069,6 +8119,49 @@
         "delta_t_seconds",
         "leap_table",
         "tzdb_version"
+      ],
+      "type": "object"
+    },
+    "TimesUncertainty": {
+      "description": "A day's times with a ± band from Delta T: the Delta T the day was reckoned under, where its uncertainty comes from, and the one-sigma band each kind of time takes on from it. **Left out unless asked for** (the façade's `AlmanacRequest::with_uncertainty`).",
+      "properties": {
+        "band": {
+          "$ref": "#/$defs/DeltaTBand",
+          "description": "Where its uncertainty comes from."
+        },
+        "delta_t_seconds": {
+          "description": "Delta T at the day's window's middle, TT less UT1, seconds.",
+          "format": "double",
+          "type": "number"
+        },
+        "limbs_seconds": {
+          "description": "The one-sigma band of each limb's end (tithi, nakshatra, yoga, karana), of a sankranti and of a lunation, seconds: Delta T's own, since they are fixed in TT. `None` when Delta T states none (a custom value, or an engine's that gives none).",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "moonrise_seconds": {
+          "description": "The one-sigma band of the moonrise and moonset, seconds: `moonrise_share` of Delta T's.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sunrise_seconds": {
+          "description": "The one-sigma band of the sunrise and sunset, and of every period divided from them, seconds: `sunrise_share` of Delta T's.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "delta_t_seconds",
+        "band"
       ],
       "type": "object"
     },
@@ -8649,6 +8742,46 @@
         "sign"
       ],
       "type": "object"
+    },
+    "VargaVariant": {
+      "description": "A named scheme a catalogued divisional chart is computed by (`vargas.schemes`, `03-design/varga-schemes.md`, cruxes C2063 to C2066). `VargaVariant::serves` says which charts each names.",
+      "oneOf": [
+        {
+          "const": "PARASHARA",
+          "description": "BPHS ch. 6, the scheme every chart ships by: the twenty-one rows the conformance corpus reproduces.",
+          "type": "string"
+        },
+        {
+          "const": "PARIVRITTI",
+          "description": "The cyclic (parivritti) chart, counted on round the zodiac from Aries: the hora's parivritti-dwaya (P.V.R. Narasimha Rao, *Personal Finances from Hora Chart*, 2003), the drekkana's parivritti-traya (the Vriddha Karika, परिवृत्ति त्रयं तेषां मेषादेः क्रमशो भवेत्, as Iranganti Rangacharya reads it), and the cyclic chaturthamsha and panchamsha the same handout tabulates. D2, D3, D4 and D5.",
+          "type": "string"
+        },
+        {
+          "const": "KASHINATHA",
+          "description": "Kashinatha's hora: the Sun's half of a sign goes to the day-strong sign of its lord, the Moon's half to the night-strong one, Leo and Cancer a pair (Narasimha Rao 2003, after Kashinath Rath). D2.",
+          "type": "string"
+        },
+        {
+          "const": "UMA_SHAMBHU",
+          "description": "The Uma-Shambhu hora: two cycles from Aries, an even sign's two halves reversed (Narasimha Rao, *Parasara's Hora Chart Decoded*, 2012). D2.",
+          "type": "string"
+        },
+        {
+          "const": "SOMANATHA",
+          "description": "Somanatha's drekkana: odd signs counted on from Aries, even signs back from Pisces (Somanatha's *Kalpalata* on Krishna Mishra's *Phalaratnamala*, as Iranganti Rangacharya gives it). D3.",
+          "type": "string"
+        },
+        {
+          "const": "KRISHNA_MISHRA",
+          "description": "Krishna Mishra's navamsha: an even sign's nine navamshas in reverse (Narasimha Rao 2012). D9.",
+          "type": "string"
+        },
+        {
+          "const": "CUSTOM",
+          "description": "A consumer's own rows, which a written chart names; chosen by writing the rows (`{\"kind\": \"CUSTOM\", ...}`), never by this name.",
+          "type": "string"
+        }
+      ]
     },
     "Varna": {
       "anyOf": [

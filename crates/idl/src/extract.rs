@@ -383,7 +383,7 @@ fn collect_enum(e: &syn::ItemEnum, source: &Source, api: &mut Api) {
             next = value + 1;
             let name = v.ident.to_string();
             EnumValue {
-                key: screaming(&name),
+                key: flags.key.unwrap_or_else(|| screaming(&name)),
                 name,
                 value,
                 doc,
@@ -617,6 +617,10 @@ struct Flags {
     constant: bool,
     deprecated: bool,
     role: Option<String>,
+    /// An enum member's key where the Rust type it mirrors spells it with
+    /// a separated year (`api: key=MORRISON_STEPHENSON_2004`), which
+    /// `SCREAMING_SNAKE_CASE` of the variant's name would join.
+    key: Option<String>,
     /// The metadata of a function's parameters, by name, from the `api:`
     /// lines that open with `<parameter>:`.
     params: std::collections::BTreeMap<String, Meta>,
@@ -689,6 +693,7 @@ fn parse_meta(text: &str, meta: &mut Meta, flags: &mut Flags) {
             Some(("len", value)) => meta.len = Some(value.to_string()),
             Some(("present_if", value)) => meta.present_if = Some(value.to_string()),
             Some(("role", value)) => flags.role = Some(value.to_string()),
+            Some(("key", value)) => flags.key = Some(value.to_string()),
             None if pair == "nullable" => meta.nullable = true,
             None if pair == "flag" => meta.flag = true,
             None if pair == "constant" => flags.constant = true,

@@ -862,6 +862,7 @@ pub fn delta_t_source_from_str(value: &str) -> Result<u8> {
         "LEAP_SECONDS" => Ok(2),
         "CUSTOM" => Ok(3),
         "PROVIDER" => Ok(4),
+        "EXTRAPOLATED" => Ok(5),
         other => Err(Error::from_reason(format!(
             "`{other}` is not a DeltaTSource"
         ))),
@@ -877,6 +878,7 @@ pub fn delta_t_source_to_str(value: u8) -> String {
         2 => "LEAP_SECONDS",
         3 => "CUSTOM",
         4 => "PROVIDER",
+        5 => "EXTRAPOLATED",
         _ => "unknown",
     }
     .to_string()
@@ -3955,7 +3957,9 @@ pub struct PanchangaRequest {
     /// in the `sky` section, at `sky_step_minutes`;
     /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
     /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-    /// each day's Gowri panchangam, in the `gowri` section.
+    /// each day's Gowri panchangam, in the `gowri` section;
+    /// `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+    /// Delta T, in the `uncertainty` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -4459,6 +4463,77 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(to_js(&unsafe { Hash::write(&out_hash) })?)
+    }
+
+    /// **Why each knob has its value** (`settings.explain`,
+    /// `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+    /// `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+    /// profile, citation, moves, effect}`. `layer` is the one that set it:
+    /// `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+    /// `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+    /// (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+    /// whole from a recorded document); `citation` is `{text, reference}`, the
+    /// source the root or the profile gives, null where a patch set the knob;
+    /// `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+    /// `TIME` or `FORM`); and `effect` is its one-line note in the context's
+    /// locale.
+    ///
+    /// `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+    /// (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+    /// the document's order. A key it does not read, or an entry that names
+    /// no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+    #[wasm_bindgen(js_name = explainSettings)]
+    pub fn explain_settings(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::context::ts_context_explain_settings(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// **Where two contexts' settings part** (`settings.diff`), as canonical
+    /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+    /// each knob on which `context`'s settings and `other`'s differ as
+    /// `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+    /// `ts_context_explain_settings` gives them, the note in `context`'s
+    /// locale; no knobs when the two hash alike. `SKY` is what a calendar
+    /// comparison calls a model difference, `RULE` a rule difference.
+    ///
+    /// `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+    /// it, every knob when left out. A null `other` is `INVALID_ARG` naming
+    /// `other`.
+    #[wasm_bindgen(js_name = diffSettings)]
+    pub fn diff_settings(&self, other: &Context, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        other.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::context::ts_context_diff_settings(
+                self.handle,
+                other.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        let left = self.leave();
+        let other_left = other.leave();
+        left?;
+        other_left?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the

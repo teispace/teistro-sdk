@@ -481,6 +481,63 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
     assert_eq!(keys, ["days", "dayHashes"]);
 }
 
+/// SR-106 through the tool: an eclipse greatest below the horizon answers
+/// the largest phase the place sees beside the geometric one, and why.
+#[test]
+fn a_days_request_answers_the_largest_phase_of_an_eclipse_seen() {
+    let mut server = Server::new(Engine::Builtin);
+    let request = json!({"first": {"year": 2022, "month": 10, "day": 25},
+        "last": {"year": 2022, "month": 10, "day": 25},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "eclipses": true});
+    let result = call(
+        &mut server,
+        "almanac.days",
+        &json!({"request": request, "detail": "full"}),
+    );
+    let here = &result["structuredContent"]["value"]["eclipses"]["value"]["solar"][0]["here"];
+    assert!(
+        here["maximum"]["altitudeDeg"].as_f64().unwrap() < -5.0,
+        "{here}"
+    );
+    let largest = &here["seenMaximum"];
+    assert_eq!(largest["why"], json!("SETTING"));
+    assert_eq!(largest["moment"]["at"], here["seen"]["to"]);
+    let magnitude = largest["magnitude"].as_f64().unwrap();
+    assert!((magnitude - 0.376).abs() < 0.002, "{magnitude}");
+}
+
+#[test]
+fn a_days_request_states_delta_t_and_each_days_band_from_it() {
+    // SR-104: the provenance states the Delta T used and its uncertainty,
+    // and a day asked for its band carries it, a limb's end taking on the
+    // whole of Delta T's uncertainty.
+    let mut server = Server::new(Engine::Builtin);
+    let result = call(
+        &mut server,
+        "almanac.days",
+        &json!({"request": {"first": {"year": 2100, "month": 6, "day": 1},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+            "uncertainty": true}, "detail": "full"}),
+    );
+    let content = &result["structuredContent"];
+    let time = &content["provenance"]["time"];
+    assert!(time["delta_t_seconds"].as_f64().unwrap() > 70.0, "{time}");
+    assert_eq!(time["delta_t_band"], "HUBER_2000", "{time}");
+    let band = &content["value"]["days"][0]["uncertainty"];
+    assert_eq!(band["band"], "HUBER_2000", "{band}");
+    // The first day's noon and its window's middle are hours apart, so
+    // the two agree to far under a millisecond.
+    let (limbs, stamped) = (
+        band["limbs_seconds"].as_f64().unwrap(),
+        time["uncertainty_seconds"].as_f64().unwrap(),
+    );
+    assert!(
+        limbs > 20.0 && (limbs - stamped).abs() < 1e-3,
+        "{limbs} {stamped}"
+    );
+}
+
 #[test]
 fn a_civil_time_resolves_and_reads_back_on_the_same_clock() {
     let mut server = Server::new(Engine::None);

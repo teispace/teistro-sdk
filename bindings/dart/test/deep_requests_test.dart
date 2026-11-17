@@ -587,6 +587,7 @@ void main() {
         ),
         sky: true,
         skyStepMinutes: 1,
+        uncertainty: true,
         utcOffsetSeconds: 1,
         years: true,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
@@ -4346,6 +4347,26 @@ void main() {
         utcOffsetSeconds: 1,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
+    );
+  });
+
+  test('settings.diff: SettingsDiffQuery', () {
+    _holds(
+      'settings.diff',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: SettingsDiffQuery(knobs: ['x']).toJson(),
+    );
+  });
+
+  test('settings.explain: SettingsQuery', () {
+    _holds(
+      'settings.explain',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: SettingsQuery(knobs: ['frame']).toJson(),
     );
   });
 

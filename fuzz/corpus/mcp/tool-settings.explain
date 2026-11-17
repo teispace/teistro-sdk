@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"settings.explain","arguments":{"request":{"knobs":["frame","day.sunrise"]}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":160}

@@ -249,6 +249,16 @@ public final class Native {
      */
     public static final int TS_PANCHANGA_GOWRI = 256;
 
+    /**
+     * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+     * request's `sections` for each day's times' ± band from Delta T, in the
+     * `uncertainty` section: the Delta T the day was reckoned under, its
+     * band, and the one-sigma band of the limbs' ends, the sunrise and the
+     * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+     * that does not set it pays nothing.
+     */
+    public static final int TS_PANCHANGA_UNCERTAINTY = 512;
+
     /** The ABI these declarations were generated from; a library that answers otherwise is refused. */
     public static final int GENERATED_ABI_VERSION = 3;
 
@@ -4112,7 +4122,9 @@ public final class Native {
          * in the `sky` section, at `sky_step_minutes`;
          * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
          * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-         * each day's Gowri panchangam, in the `gowri` section.
+         * each day's Gowri panchangam, in the `gowri` section;
+         * `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+         * Delta T, in the `uncertainty` section.
          * Zero for the days alone, which is what every
          * caller compiled against an earlier header passes, since this was a
          * reserved field it wrote zero to.
@@ -4363,6 +4375,8 @@ public final class Native {
         "ts_context_profile",
         "ts_context_settings_json",
         "ts_context_settings_hash",
+        "ts_context_explain_settings",
+        "ts_context_diff_settings",
         "ts_key_parse",
         "ts_key_name",
         "ts_frame_canonical",
@@ -4595,6 +4609,42 @@ public final class Native {
      * every result's provenance carries.
      */
     public final MethodHandle ts_context_settings_hash;
+
+    /**
+     * **Why each knob has its value** (`settings.explain`,
+     * `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+     * `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+     * profile, citation, moves, effect}`. `layer` is the one that set it:
+     * `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+     * `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+     * (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+     * whole from a recorded document); `citation` is `{text, reference}`, the
+     * source the root or the profile gives, null where a patch set the knob;
+     * `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+     * `TIME` or `FORM`); and `effect` is its one-line note in the context's
+     * locale.
+     *
+     * `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+     * (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+     * the document's order. A key it does not read, or an entry that names
+     * no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+     */
+    public final MethodHandle ts_context_explain_settings;
+
+    /**
+     * **Where two contexts' settings part** (`settings.diff`), as canonical
+     * JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+     * each knob on which `context`'s settings and `other`'s differ as
+     * `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+     * `ts_context_explain_settings` gives them, the note in `context`'s
+     * locale; no knobs when the two hash alike. `SKY` is what a calendar
+     * comparison calls a model difference, `RULE` a rule difference.
+     *
+     * `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+     * it, every knob when left out. A null `other` is `INVALID_ARG` naming
+     * `other`.
+     */
+    public final MethodHandle ts_context_diff_settings;
 
     /**
      * Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
@@ -6141,6 +6191,8 @@ public final class Native {
         ts_context_profile = linker.downcallHandle(symbols.find("ts_context_profile").orElseThrow(() -> missing("ts_context_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_settings_json = linker.downcallHandle(symbols.find("ts_context_settings_json").orElseThrow(() -> missing("ts_context_settings_json")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_settings_hash = linker.downcallHandle(symbols.find("ts_context_settings_hash").orElseThrow(() -> missing("ts_context_settings_hash")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
+        ts_context_explain_settings = linker.downcallHandle(symbols.find("ts_context_explain_settings").orElseThrow(() -> missing("ts_context_explain_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_context_diff_settings = linker.downcallHandle(symbols.find("ts_context_diff_settings").orElseThrow(() -> missing("ts_context_diff_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_key_parse = linker.downcallHandle(symbols.find("ts_key_parse").orElseThrow(() -> missing("ts_key_parse")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_key_name = linker.downcallHandle(symbols.find("ts_key_name").orElseThrow(() -> missing("ts_key_name")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
         ts_frame_canonical = linker.downcallHandle(symbols.find("ts_frame_canonical").orElseThrow(() -> missing("ts_frame_canonical")), FunctionDescriptor.of(JAVA_INT, ADDRESS));

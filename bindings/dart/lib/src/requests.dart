@@ -344,6 +344,7 @@ final class AlmanacDaysRequest extends _Request {
     this.place,
     this.sky = false,
     this.skyStepMinutes,
+    this.uncertainty = false,
     this.utcOffsetSeconds,
     this.years = false,
     this.zone,
@@ -389,6 +390,9 @@ final class AlmanacDaysRequest extends _Request {
   /// The sky's step, minutes; ten when left out.
   final int? skyStepMinutes;
 
+  /// Each day's times' ± band from Delta T (SR-104).
+  final bool uncertainty;
+
   final int? utcOffsetSeconds;
 
   final bool years;
@@ -416,13 +420,14 @@ final class AlmanacDaysRequest extends _Request {
     if (place case final placeValue?) 'place': placeValue._wire,
     'sky': sky,
     if (skyStepMinutes case final skyStepMinutesValue?) 'skyStepMinutes': skyStepMinutesValue,
+    'uncertainty': uncertainty,
     if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
     if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, horizonProfile, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, place, sky, skyStepMinutes, uncertainty, utcOffsetSeconds, years, zone];
 }
 
 /// The query as a binding writes it.
@@ -2466,6 +2471,42 @@ final class ResearchRequest extends _Request {
 
   @override
   List<Object?> get _fields => [births, control, dasha, depth, design, holds, referents, rules, shuffle, strata, study, subjects, test, uncertaintyStepMinutes];
+}
+
+/// What `settings.diff` reads: the knobs to compare, as [`SettingsQuery`] names them; a record of its own so that each record has its own request type (a comparison may come to read more).
+final class SettingsDiffQuery extends _Request {
+  const SettingsDiffQuery({
+    this.knobs,
+  });
+
+  /// Groups (`frame`) or knobs (`frame.ayanamsha`) to compare, in any order; the answer keeps document order. Every knob when left out.
+  final List<String>? knobs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (knobs case final knobsValue?) 'knobs': knobsValue,
+  };
+
+  @override
+  List<Object?> get _fields => [knobs];
+}
+
+/// The knobs an explanation or a comparison is asked about: each a group (`frame`) or a knob (`frame.ayanamsha`); every knob when left out.
+final class SettingsQuery extends _Request {
+  const SettingsQuery({
+    this.knobs,
+  });
+
+  /// Groups (`frame`) or knobs (`frame.ayanamsha`), in any order; the answer keeps document order. Every knob when left out.
+  final List<String>? knobs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (knobs case final knobsValue?) 'knobs': knobsValue,
+  };
+
+  @override
+  List<Object?> get _fields => [knobs];
 }
 
 /// A civil request as a binding writes it.
@@ -16273,6 +16314,12 @@ abstract final class Records {
   /// `research.study`, whose request is [ResearchRequest].
   static const researchStudy = RecordOf<ResearchRequest>._('research.study');
 
+  /// `settings.diff`, whose request is [SettingsDiffQuery].
+  static const settingsDiff = RecordOf<SettingsDiffQuery>._('settings.diff');
+
+  /// `settings.explain`, whose request is [SettingsQuery].
+  static const settingsExplain = RecordOf<SettingsQuery>._('settings.explain');
+
   /// `time.civil`, whose request is [CivilAsked].
   static const timeCivil = RecordOf<CivilAsked>._('time.civil');
 
@@ -16345,6 +16392,8 @@ abstract final class Records {
     namingSyllables,
     numerologyProfile,
     researchStudy,
+    settingsDiff,
+    settingsExplain,
     timeCivil,
     timeConvert,
     timeResolve,

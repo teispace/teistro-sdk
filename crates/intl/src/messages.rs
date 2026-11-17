@@ -8623,5 +8623,3231 @@ pub mod sdk {
 
     }
 
+    /// The `settings` group.
+    pub mod settings {
+        /// The `effect` group.
+        pub mod effect {
+            /// The `aspect` group.
+            pub mod aspect {
+                /// The message `sdk.settings.effect.aspect.drishtiTable`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::aspect::DrishtiTable;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DrishtiTable;
+                /// assert_eq!(DrishtiTable::KEY, "sdk.settings.effect.aspect.drishtiTable");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DrishtiTable;
+
+                impl crate::TypedMessage for DrishtiTable {
+                    const KEY: &'static str = "sdk.settings.effect.aspect.drishtiTable";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.aspect.nodeAspects`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::aspect::NodeAspects;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NodeAspects;
+                /// assert_eq!(NodeAspects::KEY, "sdk.settings.effect.aspect.nodeAspects");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NodeAspects;
+
+                impl crate::TypedMessage for NodeAspects {
+                    const KEY: &'static str = "sdk.settings.effect.aspect.nodeAspects";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `calendars` group.
+            pub mod calendars {
+                /// The message `sdk.settings.effect.calendars.civilCalendar`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::CivilCalendar;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = CivilCalendar;
+                /// assert_eq!(CivilCalendar::KEY, "sdk.settings.effect.calendars.civilCalendar");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct CivilCalendar;
+
+                impl crate::TypedMessage for CivilCalendar {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.civilCalendar";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.eras`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::Eras;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Eras;
+                /// assert_eq!(Eras::KEY, "sdk.settings.effect.calendars.eras");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Eras;
+
+                impl crate::TypedMessage for Eras {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.eras";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.kiratYele`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::KiratYele;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KiratYele;
+                /// assert_eq!(KiratYele::KEY, "sdk.settings.effect.calendars.kiratYele");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KiratYele;
+
+                impl crate::TypedMessage for KiratYele {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.kiratYele";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.lunarMonth`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::LunarMonth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = LunarMonth;
+                /// assert_eq!(LunarMonth::KEY, "sdk.settings.effect.calendars.lunarMonth");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LunarMonth;
+
+                impl crate::TypedMessage for LunarMonth {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.lunarMonth";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.marginalMonthMinutes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::MarginalMonthMinutes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MarginalMonthMinutes;
+                /// assert_eq!(MarginalMonthMinutes::KEY, "sdk.settings.effect.calendars.marginalMonthMinutes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MarginalMonthMinutes;
+
+                impl crate::TypedMessage for MarginalMonthMinutes {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.marginalMonthMinutes";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.samvatsara`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::Samvatsara;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Samvatsara;
+                /// assert_eq!(Samvatsara::KEY, "sdk.settings.effect.calendars.samvatsara");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Samvatsara;
+
+                impl crate::TypedMessage for Samvatsara {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.samvatsara";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `dasha` group.
+            pub mod dasha {
+                /// The message `sdk.settings.effect.dasha.afterCycle`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::AfterCycle;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AfterCycle;
+                /// assert_eq!(AfterCycle::KEY, "sdk.settings.effect.dasha.afterCycle");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AfterCycle;
+
+                impl crate::TypedMessage for AfterCycle {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.afterCycle";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.ashtottariGrouping`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::AshtottariGrouping;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AshtottariGrouping;
+                /// assert_eq!(AshtottariGrouping::KEY, "sdk.settings.effect.dasha.ashtottariGrouping");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshtottariGrouping;
+
+                impl crate::TypedMessage for AshtottariGrouping {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.ashtottariGrouping";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.ayurdayaPlace`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaPlace;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AyurdayaPlace;
+                /// assert_eq!(AyurdayaPlace::KEY, "sdk.settings.effect.dasha.ayurdayaPlace");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AyurdayaPlace;
+
+                impl crate::TypedMessage for AyurdayaPlace {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.ayurdayaPlace";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.ayurdayaReadings`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaReadings;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AyurdayaReadings;
+                /// assert_eq!(AyurdayaReadings::KEY, "sdk.settings.effect.dasha.ayurdayaReadings");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AyurdayaReadings;
+
+                impl crate::TypedMessage for AyurdayaReadings {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.ayurdayaReadings";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.ayurdayaSpan`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaSpan;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AyurdayaSpan;
+                /// assert_eq!(AyurdayaSpan::KEY, "sdk.settings.effect.dasha.ayurdayaSpan");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AyurdayaSpan;
+
+                impl crate::TypedMessage for AyurdayaSpan {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.ayurdayaSpan";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.balance`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::Balance;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Balance;
+                /// assert_eq!(Balance::KEY, "sdk.settings.effect.dasha.balance");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Balance;
+
+                impl crate::TypedMessage for Balance {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.balance";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.birthPeriod`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::BirthPeriod;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BirthPeriod;
+                /// assert_eq!(BirthPeriod::KEY, "sdk.settings.effect.dasha.birthPeriod");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BirthPeriod;
+
+                impl crate::TypedMessage for BirthPeriod {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.birthPeriod";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.decennialDivision`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::DecennialDivision;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DecennialDivision;
+                /// assert_eq!(DecennialDivision::KEY, "sdk.settings.effect.dasha.decennialDivision");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DecennialDivision;
+
+                impl crate::TypedMessage for DecennialDivision {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.decennialDivision";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.depth`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::Depth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Depth;
+                /// assert_eq!(Depth::KEY, "sdk.settings.effect.dasha.depth");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Depth;
+
+                impl crate::TypedMessage for Depth {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.depth";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.dualLord`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::DualLord;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DualLord;
+                /// assert_eq!(DualLord::KEY, "sdk.settings.effect.dasha.dualLord");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DualLord;
+
+                impl crate::TypedMessage for DualLord {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.dualLord";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.firdariaNodes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::FirdariaNodes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = FirdariaNodes;
+                /// assert_eq!(FirdariaNodes::KEY, "sdk.settings.effect.dasha.firdariaNodes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct FirdariaNodes;
+
+                impl crate::TypedMessage for FirdariaNodes {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.firdariaNodes";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.kalachakraAfterNinth`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraAfterNinth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KalachakraAfterNinth;
+                /// assert_eq!(KalachakraAfterNinth::KEY, "sdk.settings.effect.dasha.kalachakraAfterNinth");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KalachakraAfterNinth;
+
+                impl crate::TypedMessage for KalachakraAfterNinth {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.kalachakraAfterNinth";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.kalachakraBalance`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraBalance;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KalachakraBalance;
+                /// assert_eq!(KalachakraBalance::KEY, "sdk.settings.effect.dasha.kalachakraBalance");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KalachakraBalance;
+
+                impl crate::TypedMessage for KalachakraBalance {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.kalachakraBalance";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.kalachakraMembership`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraMembership;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KalachakraMembership;
+                /// assert_eq!(KalachakraMembership::KEY, "sdk.settings.effect.dasha.kalachakraMembership");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KalachakraMembership;
+
+                impl crate::TypedMessage for KalachakraMembership {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.kalachakraMembership";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.karakaDivision`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::KarakaDivision;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KarakaDivision;
+                /// assert_eq!(KarakaDivision::KEY, "sdk.settings.effect.dasha.karakaDivision");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KarakaDivision;
+
+                impl crate::TypedMessage for KarakaDivision {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.karakaDivision";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.naisargikaDivision`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::NaisargikaDivision;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NaisargikaDivision;
+                /// assert_eq!(NaisargikaDivision::KEY, "sdk.settings.effect.dasha.naisargikaDivision");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NaisargikaDivision;
+
+                impl crate::TypedMessage for NaisargikaDivision {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.naisargikaDivision";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.rashiStart`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::RashiStart;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = RashiStart;
+                /// assert_eq!(RashiStart::KEY, "sdk.settings.effect.dasha.rashiStart");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct RashiStart;
+
+                impl crate::TypedMessage for RashiStart {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.rashiStart";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.releasingSharedSign`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::ReleasingSharedSign;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ReleasingSharedSign;
+                /// assert_eq!(ReleasingSharedSign::KEY, "sdk.settings.effect.dasha.releasingSharedSign");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ReleasingSharedSign;
+
+                impl crate::TypedMessage for ReleasingSharedSign {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.releasingSharedSign";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.seedOverflow`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::SeedOverflow;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SeedOverflow;
+                /// assert_eq!(SeedOverflow::KEY, "sdk.settings.effect.dasha.seedOverflow");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SeedOverflow;
+
+                impl crate::TypedMessage for SeedOverflow {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.seedOverflow";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.shantaSign`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::ShantaSign;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ShantaSign;
+                /// assert_eq!(ShantaSign::KEY, "sdk.settings.effect.dasha.shantaSign");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ShantaSign;
+
+                impl crate::TypedMessage for ShantaSign {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.shantaSign";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.strongestGraha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::StrongestGraha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = StrongestGraha;
+                /// assert_eq!(StrongestGraha::KEY, "sdk.settings.effect.dasha.strongestGraha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct StrongestGraha;
+
+                impl crate::TypedMessage for StrongestGraha {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.strongestGraha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.dasha.yearLength`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::dasha::YearLength;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = YearLength;
+                /// assert_eq!(YearLength::KEY, "sdk.settings.effect.dasha.yearLength");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct YearLength;
+
+                impl crate::TypedMessage for YearLength {
+                    const KEY: &'static str = "sdk.settings.effect.dasha.yearLength";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `day` group.
+            pub mod day {
+                /// The message `sdk.settings.effect.day.dayBoundary`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::DayBoundary;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DayBoundary;
+                /// assert_eq!(DayBoundary::KEY, "sdk.settings.effect.day.dayBoundary");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DayBoundary;
+
+                impl crate::TypedMessage for DayBoundary {
+                    const KEY: &'static str = "sdk.settings.effect.day.dayBoundary";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.day.ghatiReckoning`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::GhatiReckoning;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = GhatiReckoning;
+                /// assert_eq!(GhatiReckoning::KEY, "sdk.settings.effect.day.ghatiReckoning");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct GhatiReckoning;
+
+                impl crate::TypedMessage for GhatiReckoning {
+                    const KEY: &'static str = "sdk.settings.effect.day.ghatiReckoning";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.day.horaReckoning`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::HoraReckoning;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = HoraReckoning;
+                /// assert_eq!(HoraReckoning::KEY, "sdk.settings.effect.day.horaReckoning");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct HoraReckoning;
+
+                impl crate::TypedMessage for HoraReckoning {
+                    const KEY: &'static str = "sdk.settings.effect.day.horaReckoning";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.day.horizon`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::Horizon;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Horizon;
+                /// assert_eq!(Horizon::KEY, "sdk.settings.effect.day.horizon");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Horizon;
+
+                impl crate::TypedMessage for Horizon {
+                    const KEY: &'static str = "sdk.settings.effect.day.horizon";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.day.polarDayPolicy`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PolarDayPolicy;
+                /// assert_eq!(PolarDayPolicy::KEY, "sdk.settings.effect.day.polarDayPolicy");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PolarDayPolicy;
+
+                impl crate::TypedMessage for PolarDayPolicy {
+                    const KEY: &'static str = "sdk.settings.effect.day.polarDayPolicy";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.day.sunrise`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::Sunrise;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Sunrise;
+                /// assert_eq!(Sunrise::KEY, "sdk.settings.effect.day.sunrise");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Sunrise;
+
+                impl crate::TypedMessage for Sunrise {
+                    const KEY: &'static str = "sdk.settings.effect.day.sunrise";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `frame` group.
+            pub mod frame {
+                /// The message `sdk.settings.effect.frame.ayanamsha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Ayanamsha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Ayanamsha;
+                /// assert_eq!(Ayanamsha::KEY, "sdk.settings.effect.frame.ayanamsha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Ayanamsha;
+
+                impl crate::TypedMessage for Ayanamsha {
+                    const KEY: &'static str = "sdk.settings.effect.frame.ayanamsha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.ayanamshaBasis`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::AyanamshaBasis;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AyanamshaBasis;
+                /// assert_eq!(AyanamshaBasis::KEY, "sdk.settings.effect.frame.ayanamshaBasis");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AyanamshaBasis;
+
+                impl crate::TypedMessage for AyanamshaBasis {
+                    const KEY: &'static str = "sdk.settings.effect.frame.ayanamshaBasis";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.centre`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Centre;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Centre;
+                /// assert_eq!(Centre::KEY, "sdk.settings.effect.frame.centre");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Centre;
+
+                impl crate::TypedMessage for Centre {
+                    const KEY: &'static str = "sdk.settings.effect.frame.centre";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.frameBias`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::FrameBias;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = FrameBias;
+                /// assert_eq!(FrameBias::KEY, "sdk.settings.effect.frame.frameBias");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct FrameBias;
+
+                impl crate::TypedMessage for FrameBias {
+                    const KEY: &'static str = "sdk.settings.effect.frame.frameBias";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.nakshatraScheme`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::NakshatraScheme;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NakshatraScheme;
+                /// assert_eq!(NakshatraScheme::KEY, "sdk.settings.effect.frame.nakshatraScheme");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NakshatraScheme;
+
+                impl crate::TypedMessage for NakshatraScheme {
+                    const KEY: &'static str = "sdk.settings.effect.frame.nakshatraScheme";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.node`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Node;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Node;
+                /// assert_eq!(Node::KEY, "sdk.settings.effect.frame.node");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Node;
+
+                impl crate::TypedMessage for Node {
+                    const KEY: &'static str = "sdk.settings.effect.frame.node";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.nutation`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Nutation;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Nutation;
+                /// assert_eq!(Nutation::KEY, "sdk.settings.effect.frame.nutation");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nutation;
+
+                impl crate::TypedMessage for Nutation {
+                    const KEY: &'static str = "sdk.settings.effect.frame.nutation";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.positions`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Positions;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Positions;
+                /// assert_eq!(Positions::KEY, "sdk.settings.effect.frame.positions");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Positions;
+
+                impl crate::TypedMessage for Positions {
+                    const KEY: &'static str = "sdk.settings.effect.frame.positions";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.precession`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Precession;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Precession;
+                /// assert_eq!(Precession::KEY, "sdk.settings.effect.frame.precession");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Precession;
+
+                impl crate::TypedMessage for Precession {
+                    const KEY: &'static str = "sdk.settings.effect.frame.precession";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.siddhanta`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Siddhanta;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Siddhanta;
+                /// assert_eq!(Siddhanta::KEY, "sdk.settings.effect.frame.siddhanta");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Siddhanta;
+
+                impl crate::TypedMessage for Siddhanta {
+                    const KEY: &'static str = "sdk.settings.effect.frame.siddhanta";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.zodiac`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Zodiac;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Zodiac;
+                /// assert_eq!(Zodiac::KEY, "sdk.settings.effect.frame.zodiac");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Zodiac;
+
+                impl crate::TypedMessage for Zodiac {
+                    const KEY: &'static str = "sdk.settings.effect.frame.zodiac";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `gochar` group.
+            pub mod gochar {
+                /// The message `sdk.settings.effect.gochar.ashtakavargaGoodFrom`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::gochar::AshtakavargaGoodFrom;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AshtakavargaGoodFrom;
+                /// assert_eq!(AshtakavargaGoodFrom::KEY, "sdk.settings.effect.gochar.ashtakavargaGoodFrom");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshtakavargaGoodFrom;
+
+                impl crate::TypedMessage for AshtakavargaGoodFrom {
+                    const KEY: &'static str = "sdk.settings.effect.gochar.ashtakavargaGoodFrom";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.gochar.nodeObstruction`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::gochar::NodeObstruction;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NodeObstruction;
+                /// assert_eq!(NodeObstruction::KEY, "sdk.settings.effect.gochar.nodeObstruction");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NodeObstruction;
+
+                impl crate::TypedMessage for NodeObstruction {
+                    const KEY: &'static str = "sdk.settings.effect.gochar.nodeObstruction";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.gochar.nodeVedha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::gochar::NodeVedha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NodeVedha;
+                /// assert_eq!(NodeVedha::KEY, "sdk.settings.effect.gochar.nodeVedha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NodeVedha;
+
+                impl crate::TypedMessage for NodeVedha {
+                    const KEY: &'static str = "sdk.settings.effect.gochar.nodeVedha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.gochar.transitCentre`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::gochar::TransitCentre;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = TransitCentre;
+                /// assert_eq!(TransitCentre::KEY, "sdk.settings.effect.gochar.transitCentre");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct TransitCentre;
+
+                impl crate::TypedMessage for TransitCentre {
+                    const KEY: &'static str = "sdk.settings.effect.gochar.transitCentre";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `houses` group.
+            pub mod houses {
+                /// The message `sdk.settings.effect.houses.chalitSystem`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::houses::ChalitSystem;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ChalitSystem;
+                /// assert_eq!(ChalitSystem::KEY, "sdk.settings.effect.houses.chalitSystem");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ChalitSystem;
+
+                impl crate::TypedMessage for ChalitSystem {
+                    const KEY: &'static str = "sdk.settings.effect.houses.chalitSystem";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.houses.moduleOverrides`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::houses::ModuleOverrides;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ModuleOverrides;
+                /// assert_eq!(ModuleOverrides::KEY, "sdk.settings.effect.houses.moduleOverrides");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ModuleOverrides;
+
+                impl crate::TypedMessage for ModuleOverrides {
+                    const KEY: &'static str = "sdk.settings.effect.houses.moduleOverrides";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.houses.placementSystem`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::houses::PlacementSystem;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PlacementSystem;
+                /// assert_eq!(PlacementSystem::KEY, "sdk.settings.effect.houses.placementSystem");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PlacementSystem;
+
+                impl crate::TypedMessage for PlacementSystem {
+                    const KEY: &'static str = "sdk.settings.effect.houses.placementSystem";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.houses.polarPolicy`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::houses::PolarPolicy;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PolarPolicy;
+                /// assert_eq!(PolarPolicy::KEY, "sdk.settings.effect.houses.polarPolicy");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PolarPolicy;
+
+                impl crate::TypedMessage for PolarPolicy {
+                    const KEY: &'static str = "sdk.settings.effect.houses.polarPolicy";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `jaimini` group.
+            pub mod jaimini {
+                /// The message `sdk.settings.effect.jaimini.brahma`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::Brahma;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Brahma;
+                /// assert_eq!(Brahma::KEY, "sdk.settings.effect.jaimini.brahma");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Brahma;
+
+                impl crate::TypedMessage for Brahma {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.brahma";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.charaKarakas`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::CharaKarakas;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = CharaKarakas;
+                /// assert_eq!(CharaKarakas::KEY, "sdk.settings.effect.jaimini.charaKarakas");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct CharaKarakas;
+
+                impl crate::TypedMessage for CharaKarakas {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.charaKarakas";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.eightKarakaOrder`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::EightKarakaOrder;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = EightKarakaOrder;
+                /// assert_eq!(EightKarakaOrder::KEY, "sdk.settings.effect.jaimini.eightKarakaOrder");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct EightKarakaOrder;
+
+                impl crate::TypedMessage for EightKarakaOrder {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.eightKarakaOrder";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.grahaArudhaException`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::GrahaArudhaException;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = GrahaArudhaException;
+                /// assert_eq!(GrahaArudhaException::KEY, "sdk.settings.effect.jaimini.grahaArudhaException");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct GrahaArudhaException;
+
+                impl crate::TypedMessage for GrahaArudhaException {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.grahaArudhaException";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.nodeCoLordship`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::NodeCoLordship;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NodeCoLordship;
+                /// assert_eq!(NodeCoLordship::KEY, "sdk.settings.effect.jaimini.nodeCoLordship");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NodeCoLordship;
+
+                impl crate::TypedMessage for NodeCoLordship {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.nodeCoLordship";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.sevenKarakaOrder`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::SevenKarakaOrder;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SevenKarakaOrder;
+                /// assert_eq!(SevenKarakaOrder::KEY, "sdk.settings.effect.jaimini.sevenKarakaOrder");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SevenKarakaOrder;
+
+                impl crate::TypedMessage for SevenKarakaOrder {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.sevenKarakaOrder";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `kp` group.
+            pub mod kp {
+                /// The message `sdk.settings.effect.kp.dayLordDay`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::kp::DayLordDay;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DayLordDay;
+                /// assert_eq!(DayLordDay::KEY, "sdk.settings.effect.kp.dayLordDay");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DayLordDay;
+
+                impl crate::TypedMessage for DayLordDay {
+                    const KEY: &'static str = "sdk.settings.effect.kp.dayLordDay";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.kp.nodeRulers`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::kp::NodeRulers;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = NodeRulers;
+                /// assert_eq!(NodeRulers::KEY, "sdk.settings.effect.kp.nodeRulers");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NodeRulers;
+
+                impl crate::TypedMessage for NodeRulers {
+                    const KEY: &'static str = "sdk.settings.effect.kp.nodeRulers";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.kp.retrogradeRejection`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::kp::RetrogradeRejection;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = RetrogradeRejection;
+                /// assert_eq!(RetrogradeRejection::KEY, "sdk.settings.effect.kp.retrogradeRejection");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct RetrogradeRejection;
+
+                impl crate::TypedMessage for RetrogradeRejection {
+                    const KEY: &'static str = "sdk.settings.effect.kp.retrogradeRejection";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.kp.rulingCount`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::kp::RulingCount;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = RulingCount;
+                /// assert_eq!(RulingCount::KEY, "sdk.settings.effect.kp.rulingCount");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct RulingCount;
+
+                impl crate::TypedMessage for RulingCount {
+                    const KEY: &'static str = "sdk.settings.effect.kp.rulingCount";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `output` group.
+            pub mod output {
+                /// The message `sdk.settings.effect.output.precision`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::output::Precision;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Precision;
+                /// assert_eq!(Precision::KEY, "sdk.settings.effect.output.precision");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Precision;
+
+                impl crate::TypedMessage for Precision {
+                    const KEY: &'static str = "sdk.settings.effect.output.precision";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `panchanga` group.
+            pub mod panchanga {
+                /// The message `sdk.settings.effect.panchanga.amritKalam`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::AmritKalam;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = AmritKalam;
+                /// assert_eq!(AmritKalam::KEY, "sdk.settings.effect.panchanga.amritKalam");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AmritKalam;
+
+                impl crate::TypedMessage for AmritKalam {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.amritKalam";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.centre`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::Centre;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Centre;
+                /// assert_eq!(Centre::KEY, "sdk.settings.effect.panchanga.centre");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Centre;
+
+                impl crate::TypedMessage for Centre {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.centre";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.durmuhurta`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::Durmuhurta;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Durmuhurta;
+                /// assert_eq!(Durmuhurta::KEY, "sdk.settings.effect.panchanga.durmuhurta");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Durmuhurta;
+
+                impl crate::TypedMessage for Durmuhurta {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.durmuhurta";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.eclipseHorizon`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseHorizon;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = EclipseHorizon;
+                /// assert_eq!(EclipseHorizon::KEY, "sdk.settings.effect.panchanga.eclipseHorizon");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct EclipseHorizon;
+
+                impl crate::TypedMessage for EclipseHorizon {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.eclipseHorizon";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.eclipseShadow`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseShadow;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = EclipseShadow;
+                /// assert_eq!(EclipseShadow::KEY, "sdk.settings.effect.panchanga.eclipseShadow");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct EclipseShadow;
+
+                impl crate::TypedMessage for EclipseShadow {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.eclipseShadow";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.eclipseVedha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseVedha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = EclipseVedha;
+                /// assert_eq!(EclipseVedha::KEY, "sdk.settings.effect.panchanga.eclipseVedha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct EclipseVedha;
+
+                impl crate::TypedMessage for EclipseVedha {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.eclipseVedha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.lagnaTable`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::LagnaTable;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = LagnaTable;
+                /// assert_eq!(LagnaTable::KEY, "sdk.settings.effect.panchanga.lagnaTable");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LagnaTable;
+
+                impl crate::TypedMessage for LagnaTable {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.lagnaTable";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.moonEvents`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::MoonEvents;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MoonEvents;
+                /// assert_eq!(MoonEvents::KEY, "sdk.settings.effect.panchanga.moonEvents");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonEvents;
+
+                impl crate::TypedMessage for MoonEvents {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.moonEvents";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.muhurtaTables`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::MuhurtaTables;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MuhurtaTables;
+                /// assert_eq!(MuhurtaTables::KEY, "sdk.settings.effect.panchanga.muhurtaTables");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MuhurtaTables;
+
+                impl crate::TypedMessage for MuhurtaTables {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.muhurtaTables";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.panchakaName`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaName;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PanchakaName;
+                /// assert_eq!(PanchakaName::KEY, "sdk.settings.effect.panchanga.panchakaName");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PanchakaName;
+
+                impl crate::TypedMessage for PanchakaName {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.panchakaName";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.panchakaStart`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaStart;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PanchakaStart;
+                /// assert_eq!(PanchakaStart::KEY, "sdk.settings.effect.panchanga.panchakaStart");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PanchakaStart;
+
+                impl crate::TypedMessage for PanchakaStart {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.panchakaStart";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.punyaKala`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::PunyaKala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PunyaKala;
+                /// assert_eq!(PunyaKala::KEY, "sdk.settings.effect.panchanga.punyaKala");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PunyaKala;
+
+                impl crate::TypedMessage for PunyaKala {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.punyaKala";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.ritu`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::Ritu;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Ritu;
+                /// assert_eq!(Ritu::KEY, "sdk.settings.effect.panchanga.ritu");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Ritu;
+
+                impl crate::TypedMessage for Ritu {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.ritu";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.shivaVasa`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::ShivaVasa;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ShivaVasa;
+                /// assert_eq!(ShivaVasa::KEY, "sdk.settings.effect.panchanga.shivaVasa");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ShivaVasa;
+
+                impl crate::TypedMessage for ShivaVasa {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.shivaVasa";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.solarMonthStart`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::SolarMonthStart;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SolarMonthStart;
+                /// assert_eq!(SolarMonthStart::KEY, "sdk.settings.effect.panchanga.solarMonthStart");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SolarMonthStart;
+
+                impl crate::TypedMessage for SolarMonthStart {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.solarMonthStart";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.panchanga.varjyam`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::panchanga::Varjyam;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Varjyam;
+                /// assert_eq!(Varjyam::KEY, "sdk.settings.effect.panchanga.varjyam");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Varjyam;
+
+                impl crate::TypedMessage for Varjyam {
+                    const KEY: &'static str = "sdk.settings.effect.panchanga.varjyam";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `provider` group.
+            pub mod provider {
+                /// The message `sdk.settings.effect.provider.cacheCells`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::provider::CacheCells;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = CacheCells;
+                /// assert_eq!(CacheCells::KEY, "sdk.settings.effect.provider.cacheCells");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct CacheCells;
+
+                impl crate::TypedMessage for CacheCells {
+                    const KEY: &'static str = "sdk.settings.effect.provider.cacheCells";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.provider.overrides`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::provider::Overrides;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Overrides;
+                /// assert_eq!(Overrides::KEY, "sdk.settings.effect.provider.overrides");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Overrides;
+
+                impl crate::TypedMessage for Overrides {
+                    const KEY: &'static str = "sdk.settings.effect.provider.overrides";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.provider.tier`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::provider::Tier;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Tier;
+                /// assert_eq!(Tier::KEY, "sdk.settings.effect.provider.tier");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tier;
+
+                impl crate::TypedMessage for Tier {
+                    const KEY: &'static str = "sdk.settings.effect.provider.tier";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `rashifal` group.
+            pub mod rashifal {
+                /// The message `sdk.settings.effect.rashifal.scoreBands`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::rashifal::ScoreBands;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ScoreBands;
+                /// assert_eq!(ScoreBands::KEY, "sdk.settings.effect.rashifal.scoreBands");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ScoreBands;
+
+                impl crate::TypedMessage for ScoreBands {
+                    const KEY: &'static str = "sdk.settings.effect.rashifal.scoreBands";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `state` group.
+            pub mod state {
+                /// The message `sdk.settings.effect.state.combustionOrbs`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::CombustionOrbs;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = CombustionOrbs;
+                /// assert_eq!(CombustionOrbs::KEY, "sdk.settings.effect.state.combustionOrbs");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct CombustionOrbs;
+
+                impl crate::TypedMessage for CombustionOrbs {
+                    const KEY: &'static str = "sdk.settings.effect.state.combustionOrbs";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.state.maranaSaturn`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::MaranaSaturn;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MaranaSaturn;
+                /// assert_eq!(MaranaSaturn::KEY, "sdk.settings.effect.state.maranaSaturn");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MaranaSaturn;
+
+                impl crate::TypedMessage for MaranaSaturn {
+                    const KEY: &'static str = "sdk.settings.effect.state.maranaSaturn";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.state.maranaVenus`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::MaranaVenus;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MaranaVenus;
+                /// assert_eq!(MaranaVenus::KEY, "sdk.settings.effect.state.maranaVenus");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MaranaVenus;
+
+                impl crate::TypedMessage for MaranaVenus {
+                    const KEY: &'static str = "sdk.settings.effect.state.maranaVenus";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.state.pushkaraBhaga`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::PushkaraBhaga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PushkaraBhaga;
+                /// assert_eq!(PushkaraBhaga::KEY, "sdk.settings.effect.state.pushkaraBhaga");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PushkaraBhaga;
+
+                impl crate::TypedMessage for PushkaraBhaga {
+                    const KEY: &'static str = "sdk.settings.effect.state.pushkaraBhaga";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.state.sayanadiGhatis`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::SayanadiGhatis;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SayanadiGhatis;
+                /// assert_eq!(SayanadiGhatis::KEY, "sdk.settings.effect.state.sayanadiGhatis");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SayanadiGhatis;
+
+                impl crate::TypedMessage for SayanadiGhatis {
+                    const KEY: &'static str = "sdk.settings.effect.state.sayanadiGhatis";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.state.sayanadiNodes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::state::SayanadiNodes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SayanadiNodes;
+                /// assert_eq!(SayanadiNodes::KEY, "sdk.settings.effect.state.sayanadiNodes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SayanadiNodes;
+
+                impl crate::TypedMessage for SayanadiNodes {
+                    const KEY: &'static str = "sdk.settings.effect.state.sayanadiNodes";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `strength` group.
+            pub mod strength {
+                /// The message `sdk.settings.effect.strength.balaScheme`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::BalaScheme;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BalaScheme;
+                /// assert_eq!(BalaScheme::KEY, "sdk.settings.effect.strength.balaScheme");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BalaScheme;
+
+                impl crate::TypedMessage for BalaScheme {
+                    const KEY: &'static str = "sdk.settings.effect.strength.balaScheme";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.benefics`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Benefics;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Benefics;
+                /// assert_eq!(Benefics::KEY, "sdk.settings.effect.strength.benefics");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Benefics;
+
+                impl crate::TypedMessage for Benefics {
+                    const KEY: &'static str = "sdk.settings.effect.strength.benefics";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.bhavaDig`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDig;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BhavaDig;
+                /// assert_eq!(BhavaDig::KEY, "sdk.settings.effect.strength.bhavaDig");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BhavaDig;
+
+                impl crate::TypedMessage for BhavaDig {
+                    const KEY: &'static str = "sdk.settings.effect.strength.bhavaDig";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.bhavaDivision`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDivision;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BhavaDivision;
+                /// assert_eq!(BhavaDivision::KEY, "sdk.settings.effect.strength.bhavaDivision");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BhavaDivision;
+
+                impl crate::TypedMessage for BhavaDivision {
+                    const KEY: &'static str = "sdk.settings.effect.strength.bhavaDivision";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.bhavaDrishti`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDrishti;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BhavaDrishti;
+                /// assert_eq!(BhavaDrishti::KEY, "sdk.settings.effect.strength.bhavaDrishti");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BhavaDrishti;
+
+                impl crate::TypedMessage for BhavaDrishti {
+                    const KEY: &'static str = "sdk.settings.effect.strength.bhavaDrishti";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.bhavaSpecialRules`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaSpecialRules;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = BhavaSpecialRules;
+                /// assert_eq!(BhavaSpecialRules::KEY, "sdk.settings.effect.strength.bhavaSpecialRules");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BhavaSpecialRules;
+
+                impl crate::TypedMessage for BhavaSpecialRules {
+                    const KEY: &'static str = "sdk.settings.effect.strength.bhavaSpecialRules";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.cheshta`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Cheshta;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Cheshta;
+                /// assert_eq!(Cheshta::KEY, "sdk.settings.effect.strength.cheshta");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Cheshta;
+
+                impl crate::TypedMessage for Cheshta {
+                    const KEY: &'static str = "sdk.settings.effect.strength.cheshta";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.dig`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Dig;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Dig;
+                /// assert_eq!(Dig::KEY, "sdk.settings.effect.strength.dig");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Dig;
+
+                impl crate::TypedMessage for Dig {
+                    const KEY: &'static str = "sdk.settings.effect.strength.dig";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.drekkana`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Drekkana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Drekkana;
+                /// assert_eq!(Drekkana::KEY, "sdk.settings.effect.strength.drekkana");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Drekkana;
+
+                impl crate::TypedMessage for Drekkana {
+                    const KEY: &'static str = "sdk.settings.effect.strength.drekkana";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.drik`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Drik;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Drik;
+                /// assert_eq!(Drik::KEY, "sdk.settings.effect.strength.drik");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Drik;
+
+                impl crate::TypedMessage for Drik {
+                    const KEY: &'static str = "sdk.settings.effect.strength.drik";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.ekadhipatya`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Ekadhipatya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Ekadhipatya;
+                /// assert_eq!(Ekadhipatya::KEY, "sdk.settings.effect.strength.ekadhipatya");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Ekadhipatya;
+
+                impl crate::TypedMessage for Ekadhipatya {
+                    const KEY: &'static str = "sdk.settings.effect.strength.ekadhipatya";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.ishtaKashta`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::IshtaKashta;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = IshtaKashta;
+                /// assert_eq!(IshtaKashta::KEY, "sdk.settings.effect.strength.ishtaKashta");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct IshtaKashta;
+
+                impl crate::TypedMessage for IshtaKashta {
+                    const KEY: &'static str = "sdk.settings.effect.strength.ishtaKashta";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.kaalaLords`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::KaalaLords;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KaalaLords;
+                /// assert_eq!(KaalaLords::KEY, "sdk.settings.effect.strength.kaalaLords");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KaalaLords;
+
+                impl crate::TypedMessage for KaalaLords {
+                    const KEY: &'static str = "sdk.settings.effect.strength.kaalaLords";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.kranti`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Kranti;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Kranti;
+                /// assert_eq!(Kranti::KEY, "sdk.settings.effect.strength.kranti");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kranti;
+
+                impl crate::TypedMessage for Kranti {
+                    const KEY: &'static str = "sdk.settings.effect.strength.kranti";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.luminaryCheshta`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::LuminaryCheshta;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = LuminaryCheshta;
+                /// assert_eq!(LuminaryCheshta::KEY, "sdk.settings.effect.strength.luminaryCheshta");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LuminaryCheshta;
+
+                impl crate::TypedMessage for LuminaryCheshta {
+                    const KEY: &'static str = "sdk.settings.effect.strength.luminaryCheshta";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.moonBinduFromJupiter`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::MoonBinduFromJupiter;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MoonBinduFromJupiter;
+                /// assert_eq!(MoonBinduFromJupiter::KEY, "sdk.settings.effect.strength.moonBinduFromJupiter");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonBinduFromJupiter;
+
+                impl crate::TypedMessage for MoonBinduFromJupiter {
+                    const KEY: &'static str = "sdk.settings.effect.strength.moonBinduFromJupiter";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.moonPaksha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::MoonPaksha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MoonPaksha;
+                /// assert_eq!(MoonPaksha::KEY, "sdk.settings.effect.strength.moonPaksha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonPaksha;
+
+                impl crate::TypedMessage for MoonPaksha {
+                    const KEY: &'static str = "sdk.settings.effect.strength.moonPaksha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.naisargika`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Naisargika;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Naisargika;
+                /// assert_eq!(Naisargika::KEY, "sdk.settings.effect.strength.naisargika");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Naisargika;
+
+                impl crate::TypedMessage for Naisargika {
+                    const KEY: &'static str = "sdk.settings.effect.strength.naisargika";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.nathonnatha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Nathonnatha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Nathonnatha;
+                /// assert_eq!(Nathonnatha::KEY, "sdk.settings.effect.strength.nathonnatha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nathonnatha;
+
+                impl crate::TypedMessage for Nathonnatha {
+                    const KEY: &'static str = "sdk.settings.effect.strength.nathonnatha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.preDawnNight`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::PreDawnNight;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = PreDawnNight;
+                /// assert_eq!(PreDawnNight::KEY, "sdk.settings.effect.strength.preDawnNight");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PreDawnNight;
+
+                impl crate::TypedMessage for PreDawnNight {
+                    const KEY: &'static str = "sdk.settings.effect.strength.preDawnNight";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.requiredRupas`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::RequiredRupas;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = RequiredRupas;
+                /// assert_eq!(RequiredRupas::KEY, "sdk.settings.effect.strength.requiredRupas");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct RequiredRupas;
+
+                impl crate::TypedMessage for RequiredRupas {
+                    const KEY: &'static str = "sdk.settings.effect.strength.requiredRupas";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.saptavargaja`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Saptavargaja;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Saptavargaja;
+                /// assert_eq!(Saptavargaja::KEY, "sdk.settings.effect.strength.saptavargaja");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Saptavargaja;
+
+                impl crate::TypedMessage for Saptavargaja {
+                    const KEY: &'static str = "sdk.settings.effect.strength.saptavargaja";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.shodhana`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Shodhana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Shodhana;
+                /// assert_eq!(Shodhana::KEY, "sdk.settings.effect.strength.shodhana");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Shodhana;
+
+                impl crate::TypedMessage for Shodhana {
+                    const KEY: &'static str = "sdk.settings.effect.strength.shodhana";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.sunAyana`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::SunAyana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SunAyana;
+                /// assert_eq!(SunAyana::KEY, "sdk.settings.effect.strength.sunAyana");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SunAyana;
+
+                impl crate::TypedMessage for SunAyana {
+                    const KEY: &'static str = "sdk.settings.effect.strength.sunAyana";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.vimshopaka`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Vimshopaka;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Vimshopaka;
+                /// assert_eq!(Vimshopaka::KEY, "sdk.settings.effect.strength.vimshopaka");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Vimshopaka;
+
+                impl crate::TypedMessage for Vimshopaka {
+                    const KEY: &'static str = "sdk.settings.effect.strength.vimshopaka";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.strength.yuddha`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::strength::Yuddha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Yuddha;
+                /// assert_eq!(Yuddha::KEY, "sdk.settings.effect.strength.yuddha");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Yuddha;
+
+                impl crate::TypedMessage for Yuddha {
+                    const KEY: &'static str = "sdk.settings.effect.strength.yuddha";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `time` group.
+            pub mod time {
+                /// The message `sdk.settings.effect.time.deltaT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::DeltaT;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DeltaT;
+                /// assert_eq!(DeltaT::KEY, "sdk.settings.effect.time.deltaT");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DeltaT;
+
+                impl crate::TypedMessage for DeltaT {
+                    const KEY: &'static str = "sdk.settings.effect.time.deltaT";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.dstGap`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::DstGap;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DstGap;
+                /// assert_eq!(DstGap::KEY, "sdk.settings.effect.time.dstGap");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DstGap;
+
+                impl crate::TypedMessage for DstGap {
+                    const KEY: &'static str = "sdk.settings.effect.time.dstGap";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.dstOverlap`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::DstOverlap;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = DstOverlap;
+                /// assert_eq!(DstOverlap::KEY, "sdk.settings.effect.time.dstOverlap");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct DstOverlap;
+
+                impl crate::TypedMessage for DstOverlap {
+                    const KEY: &'static str = "sdk.settings.effect.time.dstOverlap";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.dut1`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::Dut1;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Dut1;
+                /// assert_eq!(Dut1::KEY, "sdk.settings.effect.time.dut1");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Dut1;
+
+                impl crate::TypedMessage for Dut1 {
+                    const KEY: &'static str = "sdk.settings.effect.time.dut1";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.siderealTime`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::SiderealTime;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SiderealTime;
+                /// assert_eq!(SiderealTime::KEY, "sdk.settings.effect.time.siderealTime");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SiderealTime;
+
+                impl crate::TypedMessage for SiderealTime {
+                    const KEY: &'static str = "sdk.settings.effect.time.siderealTime";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.unknownTime`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::UnknownTime;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = UnknownTime;
+                /// assert_eq!(UnknownTime::KEY, "sdk.settings.effect.time.unknownTime");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct UnknownTime;
+
+                impl crate::TypedMessage for UnknownTime {
+                    const KEY: &'static str = "sdk.settings.effect.time.unknownTime";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `vargas` group.
+            pub mod vargas {
+                /// The message `sdk.settings.effect.vargas.schemes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::vargas::Schemes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Schemes;
+                /// assert_eq!(Schemes::KEY, "sdk.settings.effect.vargas.schemes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Schemes;
+
+                impl crate::TypedMessage for Schemes {
+                    const KEY: &'static str = "sdk.settings.effect.vargas.schemes";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.vargas.unattestedDn`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = UnattestedDn;
+                /// assert_eq!(UnattestedDn::KEY, "sdk.settings.effect.vargas.unattestedDn");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct UnattestedDn;
+
+                impl crate::TypedMessage for UnattestedDn {
+                    const KEY: &'static str = "sdk.settings.effect.vargas.unattestedDn";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
 }
 

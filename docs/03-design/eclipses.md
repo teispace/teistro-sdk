@@ -302,6 +302,28 @@ is seen. Built as `Eclipses::solar_seen` and `Eclipses::lunar_seen`
   sees, and the observances count by it: *Dharmasindhu* holds an
   eclipse's time to last only as long as it can be seen
   ("चाक्षुषदर्शनयोग्य"). A penumbral eclipse has none.
+- **The largest phase seen** (`seen_maximum`, crux C1980). A view's
+  `magnitude` and `maximum` are geometric, even with the body below the
+  horizon: on 2022-10-25 Kathmandu's is 0.490 with the Sun 5.7° down.
+  The phase grows to the maximum and shrinks after it, so the largest
+  phase seen is the maximum when the body is up at it, and otherwise the
+  edge of the stretch seen nearest it. The stretches are found as `seen`
+  is, one per spell above the horizon, so a body that sets and rises
+  again inside one eclipse is read truly here: the larger of the setting
+  before the maximum and the rising after it. `why` says which:
+  `MAXIMUM`; `RISING` or `SETTING`, the eclipse rising in progress or
+  setting before its maximum; `RISING_PAST_LIMIT` or
+  `SETTING_PAST_LIMIT` when the convention is a custom altitude, which is
+  a limit rather than a horizon; and `NOT_SEEN`, a state with its moment
+  and magnitudes null, never a phase of zero. The edge is
+  `panchanga.eclipse_horizon`, the convention rise and set use; under
+  its default, the upper limb with refraction, Kathmandu sees 0.376 at
+  sunset. NASA's eclipse explorer draws its sunset 18′ lower on the
+  centre (the upper limb on the geometric horizon) and prints 0.356; the
+  built-in sky gives 0.352 on that line. A solar view's seen maximum
+  carries the magnitude and obscuration then; a lunar view's, the umbral
+  and penumbral magnitudes then, and the eclipse's own when the greatest
+  eclipse is seen.
 
 **Measured** (`eclipses-measured.md` §6): against the 214 cities of
 NASA's bulletins for 2009 July 22 and 2010 January 15, Kathmandu among
@@ -430,10 +452,16 @@ geometry's own in `crates/astro/src/eclipse/`):
 - a window with no eclipse;
 - the error for a backward window;
 - the next lunar eclipse after a known one.
+- the largest phase seen (C1980), each against NASA's eclipse explorer
+  on its own horizon line: Kathmandu 2022-10-25 at sunset, Washington
+  2021-06-10 rising in progress, Delhi 2019-12-26 with the maximum seen,
+  and Kathmandu 2022-11-08's lunar eclipse rising in totality.
 
 **Bindings:** each binding's suite reads September 2025 at Kathmandu: a
 total lunar eclipse seen whole, a partial solar one not seen, and the
-shadow knob moving the umbra. The parity gate prints every field of
+shadow knob moving the umbra; and October to November 2022 there, the
+solar eclipse's largest phase seen at sunset and the lunar eclipse's at
+moonrise. The MCP server's test reads the same through `almanac.days`. The parity gate prints every field of
 both eclipses in every runner. The wasm runner carries the built-in
 sky's compact tier, so its eclipse lines are held to the same *shape*,
 every kind, count and absent contact, and their numbers are its tier's

@@ -933,6 +933,7 @@ pub fn records() -> Vec<Record> {
     all.extend(sankalpa_records());
     all.extend(time_records());
     all.extend(calendar_records());
+    all.extend(settings_records());
     all.extend(geo_records());
     all.extend(engine_records());
     all.push(verify_record());
@@ -1053,9 +1054,12 @@ fn chart_records() -> [Record; 4] {
                         .compose(&found.instants, &found.request, &found.records)?;
                 let mut provenance = composed.founded.provenance.clone();
                 // Where a resolved place's height came from (SR-90).
-                provenance
-                    .applied_conventions
-                    .extend(found.height().cloned());
+                provenance.applied_conventions.extend(
+                    found
+                        .height()
+                        .cloned()
+                        .map(|height| crate::asked::height_as_read(height, context.settings())),
+                );
                 Ok(Answered {
                     value: written(&composed)?,
                     provenance: Some(provenance),
@@ -2076,6 +2080,43 @@ fn calendar_records() -> [Record; 4] {
     ]
 }
 
+/// The settings records: why each knob has its value, and where two
+/// contexts' settings part (`03-design/settings-and-profiles.md` §3.5).
+fn settings_records() -> [Record; 2] {
+    [
+        Record {
+            name: "settings.explain",
+            boundary: "ts_context_explain_settings",
+            title: "Why each settings knob has its value: the layer that set it, its source and its effect",
+            reads: None,
+            run: |context, json| {
+                let asked = teistro_core::settings::SettingsQuery::from_json(json)?;
+                Answered::plain(&context.explain_settings(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(teistro_core::settings::SettingsQuery => teistro_core::settings::SettingsExplained),
+        },
+        Record {
+            name: "settings.diff",
+            boundary: "ts_context_diff_settings",
+            title: "The settings knobs on which two contexts differ, and what each moves",
+            reads: None,
+            run: |context, json| settings_diff(context, context, json),
+            compares: Some(settings_diff),
+            brief: Brief::Whole,
+            schemas: schemas!(teistro_core::settings::SettingsDiffQuery => teistro_core::settings::SettingsDiff),
+        },
+    ]
+}
+
+/// `settings.diff`: the knobs on which `context`'s settings and
+/// `other`'s part.
+fn settings_diff(context: &Context, other: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = teistro_core::settings::SettingsDiffQuery::from_json(json)?.query();
+    Answered::plain(&context.diff_settings(other, &asked)?)
+}
+
 /// The record entry point called `name`, if this build carries it.
 ///
 /// ```
@@ -2165,11 +2206,12 @@ fn days(context: &Context, json: &str) -> Result<Answered, Error> {
         &asked.beside,
     )?;
     // Where a resolved place's height came from (SR-90).
-    answer
-        .days
-        .provenance
-        .applied_conventions
-        .extend(asked.height.clone());
+    answer.days.provenance.applied_conventions.extend(
+        asked
+            .height
+            .clone()
+            .map(|height| crate::asked::height_as_read(height, context.settings())),
+    );
     let value = written(&crate::days_request::DaysWritten {
         days: &answer.days.value,
         day_hashes: &answer.day_hashes,

@@ -9,8 +9,12 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
+use std::collections::BTreeSet;
+
 use teistro::catalogue::Calendar;
-use teistro::festival::{Edge, FestivalRule, FollowingRule, Guard, Predicate, Which};
+use teistro::festival::{
+    Edge, FestivalRule, FollowingRule, Guard, MalamasaClause, Predicate, Which,
+};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
@@ -1426,4 +1430,211 @@ fn a_hijri_offset_past_two_days_is_refused_by_name() {
         );
     }
     assert!(teistro::HijriOffset::new(3).is_err());
+}
+
+/// Every day `NEPAL_PANCHANGA` keeps over VS 2083 (14 April 2026 to 13
+/// April 2027) at Kathmandu is named in Devanagari in every Devanagari
+/// locale, read through the façade as a reader is (SR-128): a Hindi
+/// reader once saw 171 of them in English, the base locale Hindi falls
+/// back to. `check-intl` holds the sources to the same rule for every
+/// shipped pack (`03-design/entity-names.md` §4h).
+#[test]
+fn every_day_of_a_nepali_year_is_named_in_devanagari() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let kept = sdk
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 4, 14),
+            &CalendarDate::defined(Calendar::Gregorian, 2027, 4, 13),
+            &kathmandu,
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap()
+        .value;
+    let rules: std::collections::BTreeSet<String> = kept
+        .observances
+        .iter()
+        .map(|kept| kept.rule.clone())
+        .chain(kept.ekadashis.iter().map(|kept| kept.rule.clone()))
+        .chain(kept.dated.iter().map(|kept| kept.rule.clone()))
+        .chain(
+            kept.anniversaries
+                .iter()
+                .map(|kept| kept.observance.rule.clone()),
+        )
+        .collect();
+    assert!(rules.len() > 300, "{} rules kept", rules.len());
+    let devanagari = |name: &str| name.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+    for locale in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        let reader = Context::builder()
+            .locale(locale)
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .unwrap();
+        let latin: Vec<String> = rules
+            .iter()
+            .filter_map(|rule| {
+                let entity = reader.intl().entity(&format!("festival.{rule}")).unwrap();
+                let name = entity.form("name").unwrap().to_owned();
+                (!devanagari(&name)).then(|| format!("{rule}: {name}"))
+            })
+            .collect();
+        assert!(latin.is_empty(), "{locale} names in Latin: {latin:?}");
+    }
+}
+
+/// An observance as the SR-93 tests read it: its rule, its Gregorian day,
+/// and the month clause that placed it.
+type Placed = (String, (i32, u8, u8), Option<MalamasaClause>);
+
+/// The Nepal pack's observances over a Gregorian range at Kathmandu,
+/// each with the month clause that placed it (SR-93).
+fn nepal_observances(sdk: &Context, from: (i32, u8, u8), to: (i32, u8, u8)) -> Vec<Placed> {
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let answer = sdk
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, from.0, from.1, from.2),
+            &CalendarDate::defined(Calendar::Gregorian, to.0, to.1, to.2),
+            &kathmandu,
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap()
+        .value;
+    assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+    answer
+        .observances
+        .into_iter()
+        .map(|kept| {
+            if let Some(placed) = &kept.malamasa {
+                assert_eq!(placed.source, placed.clause.source());
+            }
+            (
+                kept.rule,
+                (kept.day.year, kept.day.month, kept.day.day),
+                kept.malamasa.map(|placed| placed.clause),
+            )
+        })
+        .collect()
+}
+
+/// Every rule a lunar year without a doubled or a joined month keeps, the
+/// year with one keeps too: none silently dropped (SR-93).
+fn keeps_every_rule_of(ordinary: &[Placed], other: &[Placed]) {
+    let kept = other
+        .iter()
+        .map(|row| row.0.as_str())
+        .collect::<BTreeSet<_>>();
+    let dropped = ordinary
+        .iter()
+        .map(|row| row.0.as_str())
+        .filter(|rule| !kept.contains(rule))
+        .collect::<BTreeSet<_>>();
+    assert!(dropped.is_empty(), "{dropped:?}");
+}
+
+fn clause_of(rows: &[Placed], rule: &str) -> Vec<((i32, u8, u8), Option<MalamasaClause>)> {
+    rows.iter()
+        .filter(|row| row.0 == rule)
+        .map(|row| (row.1, row.2))
+        .collect()
+}
+
+#[test]
+fn bs_2085_keeps_its_festivals_through_a_doubled_kartika_and_a_kshaya_pausha() {
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let year = nepal_observances(&sdk, (2028, 5, 15), (2029, 4, 20));
+    keeps_every_rule_of(&nepal_observances(&sdk, (2027, 6, 1), (2028, 3, 1)), &year);
+    // The year's beginning is kept on the adhika Kartika's first day
+    // (Dharmasindhu p. 31, crux C2041); the rest of Tihar waits for the
+    // nija month, as every festival with another time does (pp. 3-4).
+    assert_eq!(
+        clause_of(&year, "NEPAL_SAMBAT_NEW_YEAR"),
+        [((2028, 10, 18), Some(MalamasaClause::Adhika))]
+    );
+    assert_eq!(
+        clause_of(&year, "YAMA_DWITIYA"),
+        [((2028, 11, 18), Some(MalamasaClause::Nija))]
+    );
+    // The kshaya lunation is Margashirsha and Pausha both: Pausha's
+    // festivals are kept in it on their tithis, and the Magha bathing begins
+    // on its full moon (p. 4).
+    for (rule, day) in [
+        ("MAGH_SNAN_BEGINS", (2028, 12, 31)),
+        ("SWASTHANI_VRAT_BEGINS", (2028, 12, 31)),
+        ("PAUSHA_PUTRADA_EKADASHI", (2028, 12, 27)),
+        ("ARYAGHAT_MADHAV_NARAYAN_MELA", (2029, 1, 14)),
+    ] {
+        assert_eq!(
+            clause_of(&year, rule),
+            [(day, Some(MalamasaClause::KshayaSecond))],
+            "{rule}"
+        );
+    }
+    // A short range answers as the year does: the SDK reads the lunation
+    // beside it to learn whether a month is doubled.
+    let short = nepal_observances(&sdk, (2028, 11, 20), (2028, 12, 5));
+    assert_ne!(short, []);
+    for row in &short {
+        assert!(year.contains(row), "{row:?}");
+    }
+}
+
+#[test]
+fn a_kshaya_margashirsha_begins_the_magha_bathing_on_its_full_moon() {
+    // 1963-64: the lunation from 16 December holds both the Sun's entry into
+    // Dhanu and into Makara, so it is Margashirsha and Pausha (p. 3).
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let year = nepal_observances(&sdk, (1963, 5, 15), (1964, 4, 20));
+    keeps_every_rule_of(&nepal_observances(&sdk, (1962, 6, 1), (1963, 3, 1)), &year);
+    assert_eq!(
+        clause_of(&year, "GITA_JAYANTI"),
+        [((1963, 12, 26), Some(MalamasaClause::KshayaFirst))]
+    );
+    assert_eq!(
+        clause_of(&year, "MAGH_SNAN_BEGINS"),
+        [((1963, 12, 30), Some(MalamasaClause::KshayaSecond))]
+    );
+}
+
+#[test]
+fn a_kshaya_pausha_keeps_shivaratri_on_its_own_tithi() {
+    // 1983: the lunation from 14 January is Pausha and Magha; Magha's
+    // festivals keep their tithis in it, and the Magha bathing begins and
+    // ends on its one full moon, the month it spans being one lunation.
+    let sdk = Context::builder().nepal_official([]).build().unwrap();
+    let year = nepal_observances(&sdk, (1982, 5, 15), (1983, 4, 20));
+    keeps_every_rule_of(&nepal_observances(&sdk, (1981, 6, 1), (1982, 3, 1)), &year);
+    for (rule, day, clause) in [
+        (
+            "BASANTA_PANCHAMI",
+            (1983, 1, 19),
+            MalamasaClause::KshayaSecond,
+        ),
+        ("SHIVARATRI", (1983, 2, 11), MalamasaClause::KshayaSecond),
+        (
+            "MAGH_SNAN_BEGINS",
+            (1983, 1, 28),
+            MalamasaClause::KshayaFirst,
+        ),
+        (
+            "MAGH_SNAN_ENDS",
+            (1983, 1, 28),
+            MalamasaClause::KshayaSecond,
+        ),
+        ("HOLIKA", (1983, 3, 28), MalamasaClause::Nija),
+    ] {
+        assert_eq!(clause_of(&year, rule), [(day, Some(clause))], "{rule}");
+    }
 }

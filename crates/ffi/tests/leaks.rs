@@ -367,7 +367,7 @@ fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
 fn the_rites_and_the_comparisons_give_back_their_answers() {
     let ctx = builtin();
     let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
-    let rites: [(&str, JsonEntry, String); 9] = [
+    let rites: [(&str, JsonEntry, String); 10] = [
         (
             "a sankalpa",
             teistro_ffi::panchanga::ts_almanac_sankalpa,
@@ -421,6 +421,11 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             ),
         ),
         (
+            "the settings explained",
+            teistro_ffi::context::ts_context_explain_settings,
+            String::from(r#"{"knobs": ["frame", "day.sunrise"]}"#),
+        ),
+        (
             "a people digest",
             teistro_ffi::finders::ts_almanac_people,
             format!(
@@ -456,6 +461,10 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             assert_eq!(paired(&ctx, &other, entry, &days), Status::Ok);
         });
     }
+    let diff: PairedEntry = teistro_ffi::context::ts_context_diff_settings;
+    holds_nothing("two contexts' settings compared", || {
+        assert_eq!(paired(&ctx, &other, diff, "{}"), Status::Ok);
+    });
 }
 
 /// A signed pack, two names matched, the engine's own calls (which the

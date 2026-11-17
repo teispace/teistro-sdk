@@ -694,7 +694,8 @@ public final class ParityRunner {
                     observance.choice(),
                     number(observance.tithi().fromJd()),
                     number(earlier.held()),
-                    number(later.held())));
+                    number(later.held()),
+                    observance.malamasa() == null ? "-" : observance.malamasa().clause().key()));
         }
         for (int k = 0; k < answer.ekadashis().size(); k += 1) {
             EkadashiFast fast = answer.ekadashis().get(k);
@@ -1500,6 +1501,30 @@ public final class ParityRunner {
                 kerala = shipped.chart().layout(ChartLayout.SOUTH_INDIAN);
             }
             kerala.put("key", "ACME_KERALA");
+            // A varga scheme the settings choose (`03-design/varga-schemes.md`):
+            // Kashinatha's hora for the D2, and a consumer's broken row refused
+            // with its field in the message.
+            try (Context hora = teistro.context(ContextOptions.builder().testProvider(true)
+                    .settingsJson("{\"vargas\":{\"schemes\":{\"D2\":{\"kind\":\"NAMED\",\"which\":\"KASHINATHA\"}}}}")
+                    .build())) {
+                Observer horaPlace = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                VargaChart d2 = hora.chart()
+                        .found(2_451_545.0, horaPlace, 20_700, ChartOptions.builder().vargas(Varga.D2).build())
+                        .vargas().get(0);
+                for (int j = 0; j < d2.grahas().size(); j++) {
+                    PlacedInVarga inHora = d2.grahas().get(j);
+                    put("varga-scheme-kashinatha-graha-" + j,
+                            inHora.graha().fullKey() + " " + inHora.at().sign().fullKey());
+                }
+            }
+            String broken = "{\"vargas\":{\"schemes\":{\"D9\":{\"kind\":\"CUSTOM\",\"classifier\":\"ALL\","
+                    + "\"groups\":[{\"spans\":{\"spans\":\"EQUAL\"},\"map\":{\"map\":\"LISTED\",\"signs\":[0]}}]}}}}";
+            try {
+                teistro.context(ContextOptions.builder().testProvider(true).settingsJson(broken).build()).close();
+                put("varga-scheme-refused", false);
+            } catch (TeistroException error) {
+                put("varga-scheme-refused", error.getMessage().contains("vargas.schemes.D9.groups[0].map.signs"));
+            }
             // A dasha system of the consumer's own, the same definition every
             // runner registers (`03-design/dasha-kernels.md`).
             String parityDasha = "{\"kernel\":\"UDU\",\"key\":\"ACME_PARITY\",\"sources\":[\"the parity scenario\"],"
@@ -1620,7 +1645,7 @@ public final class ParityRunner {
             try (Context builtin = teistro.context(ContextOptions.builder()
                     .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 var markedDay = builtin.almanac().of(date(2025, 6, 11), date(2025, 6, 11), place, 20700,
-                        null, null, false, false, false, false, false, false, 0, true, true).at(0);
+                        null, null, false, false, false, false, false, false, 0, true, true, true).at(0);
                 var keys = new java.util.ArrayList<String>();
                 for (var span : markedDay.markers()) {
                     keys.add(span.member().fullKey());
@@ -1631,6 +1656,15 @@ public final class ParityRunner {
                     gowri.add(part.gowri().fullKey());
                 }
                 put("gowri", String.join(" ", gowri));
+                var band = markedDay.uncertainty().orElseThrow();
+                java.util.function.Function<java.util.Optional<Double>, String> sigma =
+                        value -> value.map(ParityRunner::number).orElse("-");
+                put("uncertainty.band", band.band().key());
+                // Each number its own line, so it is compared as a number.
+                put("uncertainty.delta-t", number(band.deltaTSeconds()));
+                put("uncertainty.limbs", sigma.apply(band.limbsSeconds()));
+                put("uncertainty.sunrise", sigma.apply(band.sunriseSeconds()));
+                put("uncertainty.moonrise", sigma.apply(band.moonriseSeconds()));
             }
 
             // ── The sky view ──────────────────────────────────────────────
@@ -1682,6 +1716,32 @@ public final class ParityRunner {
             put("sky-pose-moon", onScreen.apply(skyScreen.grahas().get(skyMoonAt)));
             put("sky-pose-ascendant", onScreen.apply(skyPose.value().ascendant().orElseThrow().getValue()));
 
+            // ── The settings explained and compared ───────────────────────
+            // nepali-drik with the node patched per call, every knob
+            // explained, and the knobs on which the committee's profile and
+            // nepali-drik part (03-design/settings-and-profiles.md §3.5).
+            try (Context drik = teistro.context(ContextOptions.builder().profile("nepali-drik").build());
+                    Context committee = teistro.context(ContextOptions.builder()
+                            .profile("nepali-committee").build())) {
+                SettingsExplained explained;
+                try (Context mean = drik.withSettings(Map.of("frame", Map.of("node", "MEAN")))) {
+                    explained = mean.explainSettings();
+                }
+                SettingsExplained.Knob settingsNode = explained.knobs().stream()
+                        .filter(one -> one.knob().equals("frame.node")).findFirst().orElseThrow();
+                SettingsExplained.Knob settingsCentre = explained.knobs().stream()
+                        .filter(one -> one.knob().equals("frame.centre")).findFirst().orElseThrow();
+                long cited = explained.knobs().stream().filter(one -> one.citation() != null).count();
+                put("settings-explain", explained.knobs().size() + " " + cited + " " + settingsNode.layer() + " "
+                        + settingsCentre.layer() + " "
+                        + (settingsCentre.profile() == null ? "-" : settingsCentre.profile()));
+                put("settings-explain-hash", explained.settingsHash());
+                put("settings-explain-effect", settingsNode.effect());
+                SettingsDiff parted = committee.diffSettings(drik);
+                put("settings-diff", String.join(",", parted.knobs().stream()
+                        .map(one -> one.knob() + ":" + one.moves()).toList()));
+            }
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.
@@ -1707,6 +1767,10 @@ public final class ParityRunner {
                         eclipseMoment(view.u1()), eclipseMoment(view.u2()), eclipseMoment(view.greatest()),
                         eclipseMoment(view.u3()), eclipseMoment(view.u4()), eclipseMoment(view.p4()),
                         eclipseSeen(view.seen()), eclipseSeen(view.umbralSeen())));
+                LunarSeenMaximum lunarLargest = view.seenMaximum();
+                put("eclipses-lunar-" + k + "-seen-maximum", String.join(" ", lunarLargest.why().key(),
+                        eclipseMoment(lunarLargest.moment()), bound(lunarLargest.umbralMagnitude()),
+                        bound(lunarLargest.penumbralMagnitude())));
                 put("eclipses-lunar-" + k + "-vedha", eclipseSeen(lunarEclipse.vedha()));
             }
             for (int k = 0; k < eclipses.value().solar().size(); k += 1) {
@@ -1722,6 +1786,10 @@ public final class ParityRunner {
                                 eclipseMoment(view.first()), eclipseMoment(view.second()),
                                 eclipseMoment(view.third()), eclipseMoment(view.fourth()),
                                 eclipseMoment(view.maximum()), eclipseSeen(view.seen())));
+                put("eclipses-solar-" + k + "-seen-maximum", view == null
+                        ? "-"
+                        : String.join(" ", view.seenMaximum().why().key(), eclipseMoment(view.seenMaximum().moment()),
+                                bound(view.seenMaximum().magnitude()), bound(view.seenMaximum().obscuration())));
                 put("eclipses-solar-" + k + "-vedha", eclipseSeen(solarEclipse.vedha()));
             }
 
@@ -3203,6 +3271,10 @@ public final class ParityRunner {
                             null, FestivalRequest.of(pack.getValue()), false, false, false).festivals().orElseThrow();
             putFestivals("festivals-" + pack.getKey(), festivals);
         }
+        // A month the test provider's 2023 doubles: a monthly rule kept in
+        // its adhika month says which month rule placed it (SR-93).
+        putFestivals("festivals-malamasa", geo.almanac().festivals(date(2023, 8, 20), date(2023, 9, 10), place,
+                20700, FestivalRequest.of(map("rules", "DHARMASINDHU"))));
 
         // The lunar years over 2024-03-20..04-20, which holds a Chaitra Shukla
         // Pratipada: two years, their bounds and their Jovian years.

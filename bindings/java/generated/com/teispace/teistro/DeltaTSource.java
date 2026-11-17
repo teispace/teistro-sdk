@@ -33,7 +33,13 @@ public enum DeltaTSource implements Member {
      * The ephemeris engine's, under the model asked, answered through the
      * port.
      */
-    PROVIDER(4, "PROVIDER");
+    PROVIDER(4, "PROVIDER"),
+
+    /**
+     * From a model beyond the data it was fitted to, with Huber's (2000)
+     * band.
+     */
+    EXTRAPOLATED(5, "EXTRAPOLATED");
 
     private static final DeltaTSource[] MEMBERS = values();
 

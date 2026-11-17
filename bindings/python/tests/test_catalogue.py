@@ -116,8 +116,9 @@ class TheCatalogue(unittest.TestCase):
         # 187 since a drawing's `ChartFrame`; 188 since a holiday's
         # `HolidayScope`; 191 since a rashifal's words became catalogue
         # kinds (SR-124), `LifeArea`, `Colour`, `ScoreBand` and
-        # `GocharVerdict`, the last in place of the boundary's own.
-        self.assertEqual(len(every_enum()), 191)
+        # `GocharVerdict`, the last in place of the boundary's own; 192
+        # since Delta T's `DeltaTBand`.
+        self.assertEqual(len(every_enum()), 192)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
             946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2 + 2 + 3 + 14 + 5 + 2 + 2 + 5 + 3 + 3 + 3 + 7 + 9 + 4 + 3 + 7 + 4 + 11 + 5 + 3 + 2 + 8 + 3 + 4 + 5 + 4 + 3 + 13 + 5 + 2 + 1 + 2 + 1 + 3
@@ -184,7 +185,11 @@ class TheCatalogue(unittest.TestCase):
             # `LifeArea`'s eight, `Colour`'s six, `ScoreBand`'s four and
             # `GocharVerdict`'s three, each with its UNKNOWN and its member
             # of `Kind`; the boundary's `GocharVerdict`, three, gone.
-            + 10 + 8 + 6 + 5 - 3,
+            + 10 + 8 + 6 + 5 - 3
+            # `DeltaTSource`'s `EXTRAPOLATED`.
+            + 1
+            # Delta T's uncertainty band, `DeltaTBand`.
+            + 5,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

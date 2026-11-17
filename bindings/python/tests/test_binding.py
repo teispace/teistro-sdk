@@ -16,6 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
     CellsRequest,
+    SolarSeenMaximum,
     DevicePose,
     Detail,
     SankalpaRequest,
@@ -267,6 +268,43 @@ class AContext(WithLibrary):
             self.assertEqual(ctx.profile, "nepali-drik")
             self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
 
+    def test_explain_settings_names_each_layer_and_diff_settings_where_two_part(self) -> None:
+        # The context's own patch is its layer, a per-call patch the request's.
+        with self.teistro.context(
+            profile=PROFILE, locale=LOCALE, test_provider=True, settings={"frame": {"node": "TRUE"}}
+        ) as ctx, ctx.with_settings({"day": {"ghati_reckoning": "PROPORTIONAL"}}) as derived:
+            explained = derived.explain_settings()
+            knob = {one["knob"]: one for one in explained["knobs"]}
+            self.assertEqual(explained["settingsHash"], derived.settings_hash)
+            self.assertEqual(
+                [knob[name]["layer"] for name in ("frame.node", "day.ghati_reckoning", "frame.centre", "output.precision")],
+                ["CONTEXT", "REQUEST", "PROFILE", "ROOT"],
+            )
+            self.assertIsNone(knob["frame.node"]["citation"])
+            self.assertEqual(knob["frame.centre"]["profile"], "nepali-drik")
+            self.assertEqual(knob["frame.siddhanta"]["moves"], "SKY")
+            self.assertIn("राहु", knob["frame.node"]["effect"])
+        # A shipped profile cites every knob, and a selection keeps the document's order.
+        self.assertTrue(all(one["citation"] is not None for one in self.ctx.explain_settings()["knobs"]))
+        chosen = self.ctx.explain_settings(["day.sunrise", "frame"])["knobs"]
+        self.assertEqual([one["knob"] for one in chosen[:2]], ["frame.zodiac", "frame.ayanamsha"])
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.explain_settings(["frame.nod"])
+        self.assertEqual(refused.exception.field, "knobs[0]")
+        with self.assertRaises(TypeError):
+            self.ctx.explain_settings("frame")
+
+        with self.teistro.context(profile="nepali-committee") as committee, self.teistro.context(
+            profile="nepali-drik"
+        ) as drik:
+            diff = committee.diff_settings(drik)
+            self.assertEqual(diff["otherProfile"], "nepali-drik")
+            self.assertEqual(
+                [one["knob"] for one in diff["knobs"]],
+                ["frame.ayanamsha", "frame.centre", "frame.siddhanta", "panchanga.lagna_table"],
+            )
+            self.assertEqual(committee.diff_settings(committee)["knobs"], [])
+
     def test_with_settings_derives_a_context_and_leaves_its_parent_as_it_was(self) -> None:
         place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
 
@@ -303,6 +341,26 @@ class AContext(WithLibrary):
         self.assertEqual(refused.exception.field, "settings.frame.nod")
         with self.assertRaises(TypeError):
             self.ctx.with_settings("frame")  # type: ignore[arg-type]
+
+    def test_a_varga_scheme_the_settings_choose_places_the_chart(self) -> None:
+        """Kashinatha's hora (Narasimha Rao 2003) chosen for the D2 puts
+        each graha by its table, and a consumer's broken row is refused
+        with its field in the message (`03-design/varga-schemes.md`)."""
+        kashinatha = [(7, 0), (1, 6), (5, 2), (3, 4), (4, 3), (2, 5), (6, 1), (0, 7), (11, 8), (9, 10), (10, 9), (8, 11)]
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.ctx.with_settings({"vargas": {"schemes": {"D2": {"kind": "NAMED", "which": "KASHINATHA"}}}}) as ctx:
+            (hora,) = ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700, vargas=[Varga.D2]).vargas
+            self.assertEqual(hora.varga, Varga.D2)
+            for placed in hora.grahas:
+                self.assertEqual(placed.at.sign, Rashi(kashinatha[int(placed.at.rashi)][placed.at.part]))
+        broken = {
+            "kind": "CUSTOM",
+            "classifier": "ALL",
+            "groups": [{"spans": {"spans": "EQUAL"}, "map": {"map": "LISTED", "signs": [0]}}],
+        }
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.with_settings({"vargas": {"schemes": {"D9": broken}}})
+        self.assertIn("vargas.schemes.D9.groups[0].map.signs", refused.exception.message)
 
     def test_a_derived_context_outlives_its_parent(self) -> None:
         parent = self.teistro.context(profile=PROFILE, test_provider=True)
@@ -1707,6 +1765,30 @@ class AnEngine(WithLibrary):
                     limit_days=20,
                 )
             self.assertEqual(short.exception.field, "limitDays")
+
+    def test_a_kshaya_lunation_keeps_both_months_festivals_and_says_why(self) -> None:
+        """In 1983 the lunation from 14 January is Pausha and Magha both:
+        Shivaratri keeps its tithi in it and names the clause and the texts
+        that placed it (SR-93, `03-design/festival-malamasa.md`)."""
+        from teistro import Malamasa, date
+        from teistro.catalogue import Calendar
+
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(**nepal_official()) as sky:
+            answer = sky.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 1983, 2, 9),
+                to_date=date(Calendar.GREGORIAN, 1983, 2, 13),
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                festivals={"rules": "NEPAL_PANCHANGA"},
+            ).festivals
+            assert answer is not None
+            shivaratri = next(o for o in answer.observances if o.rule == "SHIVARATRI")
+            self.assertEqual((shivaratri.day.month, shivaratri.day.day), (2, 11))
+            assert shivaratri.malamasa is not None
+            self.assertIsInstance(shivaratri.malamasa, Malamasa)
+            self.assertEqual(shivaratri.malamasa.clause, "KSHAYA_SECOND")
+            self.assertIn("Dharmasindhu", shivaratri.malamasa.source)
 
     def test_anniversaries_over_a_span_name_the_rule_of_each_day(self) -> None:
         """A barkhi and an event over two years at Kathmandu, each day naming
@@ -5521,6 +5603,14 @@ class AnEngine(WithLibrary):
         self.assertTrue(solar.here is None or solar.here.seen is None)
         self.assertIsNone(solar.vedha)
         self.assertIn("eclipse.window", [c.knob for c in answer.provenance.applied_conventions])
+        # Seen whole, the greatest eclipse is the largest phase seen; unseen,
+        # nothing is, which is a state and not a zero.
+        largest = lunar.here.seen_maximum
+        self.assertEqual(largest.why, "MAXIMUM")
+        self.assertEqual(largest.moment, lunar.here.greatest)
+        self.assertEqual(largest.umbral_magnitude, lunar.eclipse.umbral_magnitude)
+        if solar.here is not None:
+            self.assertEqual(solar.here.seen_maximum, SolarSeenMaximum("NOT_SEEN", None, None, None))
 
         chauvenet, _ = asked({"panchanga": {"eclipse_shadow": "CHAUVENET"}})
         self.assertEqual(chauvenet.value.lunar[0].eclipse.shadow, "CHAUVENET")
@@ -5528,6 +5618,79 @@ class AnEngine(WithLibrary):
             chauvenet.value.lunar[0].eclipse.umbral_magnitude, lunar.eclipse.umbral_magnitude
         )
         self.assertNotEqual(chauvenet.provenance.settings_hash, answer.provenance.settings_hash)
+
+    def test_an_eclipse_below_the_horizon_at_its_maximum_answers_the_largest_phase_seen(self) -> None:
+        """October and November 2022 at Kathmandu (SR-106): the partial
+        solar eclipse of 25 October is greatest 5.7° below the horizon, so
+        its largest phase seen is at sunset; the total lunar eclipse of 8
+        November rises in totality, so its largest phase seen is at
+        moonrise."""
+        from teistro import date
+        from teistro.catalogue import Calendar
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.of(
+                from_date=date(Calendar.GREGORIAN, 2022, 10, 20),
+                to_date=date(Calendar.GREGORIAN, 2022, 11, 10),
+                place=observer,
+                utc_offset_seconds=20700,
+                eclipses=True,
+            ).eclipses
+        assert found is not None
+        solar = found.value.solar[0].here
+        assert solar is not None and solar.seen is not None
+        self.assertLess(solar.maximum.altitude_deg, -5)
+        self.assertAlmostEqual(solar.magnitude, 0.49, delta=0.001)
+        sunset = solar.seen_maximum
+        assert sunset.moment is not None and sunset.magnitude is not None and sunset.obscuration is not None
+        self.assertEqual(sunset.why, "SETTING")
+        self.assertEqual(sunset.moment.at, solar.seen.to)
+        self.assertAlmostEqual(sunset.magnitude, 0.376, delta=0.002)
+        self.assertLess(sunset.obscuration, solar.obscuration)
+        lunar = found.value.lunar[0]
+        risen = lunar.here.seen_maximum
+        assert risen.moment is not None and risen.umbral_magnitude is not None and lunar.here.seen is not None
+        self.assertEqual(risen.why, "RISING")
+        self.assertEqual(risen.moment.at, lunar.here.seen.from_)
+        self.assertTrue(1 < risen.umbral_magnitude < lunar.eclipse.umbral_magnitude)
+
+    def test_an_almanac_carries_each_days_band_from_delta_t(self) -> None:
+        """SR-104: asked, a day carries Delta T and the one-sigma band its
+        limbs' ends (all of Delta T's) and its rises (a 365th for the Sun)
+        take on; far beyond the IERS table the band is Huber's walk."""
+        from teistro import date
+        from teistro.catalogue import Calendar, DeltaTBand
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def on(year: int) -> dict[str, Any]:
+            return {
+                "from_date": date(Calendar.GREGORIAN, year, 6, 1),
+                "to_date": date(Calendar.GREGORIAN, year, 6, 1),
+                "place": observer,
+                "utc_offset_seconds": 20700,
+            }
+
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.almanac.of(**on(2025)).at(0).uncertainty)
+            now = ctx.almanac.of(**on(2025), uncertainty=True).at(0).uncertainty
+            assert now is not None
+            self.assertEqual(now.band, DeltaTBand.MEASURED)
+            self.assertAlmostEqual(now.delta_t_seconds, 69.2, delta=0.2)
+            assert now.limbs_seconds is not None
+            self.assertLess(now.limbs_seconds, 0.01)
+            far = ctx.almanac.of(**on(2100), uncertainty=True).at(0).uncertainty
+            assert far is not None and far.limbs_seconds is not None
+            assert far.sunrise_seconds is not None and far.moonrise_seconds is not None
+            self.assertEqual(far.band, DeltaTBand.HUBER_2000)
+            self.assertGreater(far.limbs_seconds, 20.0)
+            self.assertLess(far.sunrise_seconds, far.limbs_seconds / 300)
+            self.assertLess(far.sunrise_seconds, far.moonrise_seconds)
 
     def test_an_almanac_carries_each_days_nepal_sambat_date(self) -> None:
         """Each day's Nepal Sambat date crosses beside the days

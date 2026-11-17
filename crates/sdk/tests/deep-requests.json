@@ -1401,6 +1401,7 @@
       },
       "sky": true,
       "skyStepMinutes": 1,
+      "uncertainty": true,
       "utcOffsetSeconds": 1,
       "years": true,
       "zone": {
@@ -6216,6 +6217,22 @@
         }
       ],
       "uncertaintyStepMinutes": 1.5
+    }
+  },
+  {
+    "record": "settings.diff",
+    "request": {
+      "knobs": [
+        "x"
+      ]
+    }
+  },
+  {
+    "record": "settings.explain",
+    "request": {
+      "knobs": [
+        "frame"
+      ]
     }
   },
   {

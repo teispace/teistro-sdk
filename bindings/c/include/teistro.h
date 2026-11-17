@@ -233,6 +233,16 @@ extern "C" {
 #define TS_PANCHANGA_GOWRI ((uint32_t)256)
 
 /**
+ * `TS_PANCHANGA_UNCERTAINTY`, the bit a caller sets in a panchanga
+ * request's `sections` for each day's times' ± band from Delta T, in the
+ * `uncertainty` section: the Delta T the day was reckoned under, its
+ * band, and the one-sigma band of the limbs' ends, the sunrise and the
+ * moonrise (SR-104, `03-design/time-and-timezone.md` §3.5). A request
+ * that does not set it pays nothing.
+ */
+#define TS_PANCHANGA_UNCERTAINTY ((uint32_t)512)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -7881,7 +7891,40 @@ typedef enum ts_delta_t_source {
      * port.
      */
     TS_DELTA_T_SOURCE_PROVIDER = 4,
+    /**
+     * From a model beyond the data it was fitted to, with Huber's (2000)
+     * band.
+     */
+    TS_DELTA_T_SOURCE_EXTRAPOLATED = 5,
 } ts_delta_t_source;
+
+/**
+ * Where a Delta T's uncertainty comes from, as it crosses the boundary
+ * (`DeltaTBand`).
+ */
+typedef enum ts_delta_t_band {
+    /**
+     * No uncertainty is stated: a custom value.
+     */
+    TS_DELTA_T_BAND_UNSTATED = 0,
+    /**
+     * The IERS's measured series, good to milliseconds.
+     */
+    TS_DELTA_T_BAND_MEASURED = 1,
+    /**
+     * Morrison and Stephenson's (2004) standard errors, from −500 to the
+     * IERS era.
+     */
+    TS_DELTA_T_BAND_MORRISON_STEPHENSON_2004 = 2,
+    /**
+     * The published σ of Stephenson, Morrison and Hohenkerk (2016).
+     */
+    TS_DELTA_T_BAND_STEPHENSON_MORRISON_HOHENKERK_2016 = 3,
+    /**
+     * Huber's (2000) random walk beyond the data.
+     */
+    TS_DELTA_T_BAND_HUBER_2000 = 4,
+} ts_delta_t_band;
 
 /**
  * Which lunar-month convention a day's month leads with.
@@ -10321,7 +10364,9 @@ struct ts_panchanga_request {
      * in the `sky` section, at `sky_step_minutes`;
      * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
      * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
-     * each day's Gowri panchangam, in the `gowri` section.
+     * each day's Gowri panchangam, in the `gowri` section;
+     * `TS_PANCHANGA_UNCERTAINTY` (512) each day's times' ± band from
+     * Delta T, in the `uncertainty` section.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.
@@ -10555,6 +10600,46 @@ ts_status ts_context_settings_json(const ts_context * context, ts_string * out_j
  * Safety: `context` must be a live handle; `out_hash` valid for a write.
  */
 ts_status ts_context_settings_hash(const ts_context * context, ts_hash * out_hash);
+
+/**
+ * **Why each knob has its value** (`settings.explain`,
+ * `03-design/settings-and-profiles.md` §3.5), as canonical JSON:
+ * `{profile, settingsHash, knobs}`, each knob `{knob, value, layer,
+ * profile, citation, moves, effect}`. `layer` is the one that set it:
+ * `ROOT`, `PROFILE` (its shipped profile or the base it extends, named in
+ * `profile`), `CONTEXT` (the patch the context was built with), `REQUEST`
+ * (a patch `ts_context_derive` laid over it) or `DOCUMENT` (settings read
+ * whole from a recorded document); `citation` is `{text, reference}`, the
+ * source the root or the profile gives, null where a patch set the knob;
+ * `moves` is what a difference in it moves (`SKY`, `SUNRISE`, `RULE`,
+ * `TIME` or `FORM`); and `effect` is its one-line note in the context's
+ * locale.
+ *
+ * `request_json` is `{"knobs"}`, groups (`frame`) or knobs
+ * (`frame.ayanamsha`), every knob when left out (`{}`); the answer keeps
+ * the document's order. A key it does not read, or an entry that names
+ * no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_context_explain_settings(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * **Where two contexts' settings part** (`settings.diff`), as canonical
+ * JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
+ * each knob on which `context`'s settings and `other`'s differ as
+ * `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as
+ * `ts_context_explain_settings` gives them, the note in `context`'s
+ * locale; no knobs when the two hash alike. `SKY` is what a calendar
+ * comparison calls a model difference, `RULE` a rule difference.
+ *
+ * `request_json` is `{"knobs"}` as `ts_context_explain_settings` reads
+ * it, every knob when left out. A null `other` is `INVALID_ARG` naming
+ * `other`.
+ * Safety: `context` and `other` must be live handles; `request_json`
+ * NUL-terminated; `out_json` valid for a write.
+ */
+ts_status ts_context_diff_settings(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
 
 /**
  * Resolves a full key (`graha.SUN`, an alias, a former key, or a member the

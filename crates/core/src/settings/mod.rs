@@ -18,6 +18,7 @@
 //! assert!(resolved.warnings.is_empty(), "{:?}", resolved.warnings);
 //! ```
 
+mod explain;
 pub mod knobs;
 mod profiles;
 pub mod recorded;
@@ -28,11 +29,16 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source,
+    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source, Varga,
 };
 use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
+pub use crate::varga_rows::VargaChoice;
+pub use explain::{
+    Knob, KnobDifference, KnobExplained, KnobSource, Layer, Moves, Origin, Origins, SettingsDiff,
+    SettingsDiffQuery, SettingsExplained, SettingsQuery,
+};
 pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
@@ -48,9 +54,10 @@ pub use knobs::{
     Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     RefractionFormula, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart,
-    StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier, TransitCentre, UnattestedDn,
-    UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime,
+    SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, SuryaTrig, Tier,
+    TransitCentre, UnattestedDn, UnknownTime, VargaVariant, Varjyam, Vimshopaka, YearLength,
+    Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 pub use snapshot::SettingsSnapshot;
@@ -981,8 +988,8 @@ pub const DEFAULT_MARGINAL_MONTH_MINUTES: u32 = 420;
 
 macro_rules! group {
     ($(#[$m:meta])* $name:ident, $patch:ident, $path:ident {
-        $(#[$ffm:meta])* $first:ident : $fty:ty
-        $(, $(#[$fm:meta])* $field:ident : $ty:ty )* $(,)?
+        $(#[$ffm:meta])* $first:ident : $fty:ty => $fmoves:ident
+        $(, $(#[$fm:meta])* $field:ident : $ty:ty => $moves:ident )* $(,)?
     }) => {
         $(#[$m])*
         ///
@@ -1011,14 +1018,26 @@ macro_rules! group {
             ///
             #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($patch), ", root};\n\nlet mut group = root().", stringify!($path), ";\n// An empty patch changes nothing; a set knob takes the patch's value.\ngroup.apply(&", stringify!($patch), "::default());\nassert_eq!(group, root().", stringify!($path), ");\nlet patch = ", stringify!($patch), " { ", stringify!($first), ": Some(group.", stringify!($first), ".clone()), ..Default::default() };\ngroup.apply(&patch);\nassert_eq!(Some(group.", stringify!($first), "), patch.", stringify!($first), ");\n```")]
             pub fn apply(&mut self, patch: &$patch) {
-                if let Some(value) = &patch.$first { self.$first = value.clone(); }
-                $( if let Some(value) = &patch.$field { self.$field = value.clone(); } )*
+                self.apply_noting(patch, &mut |_| {});
+            }
+
+            /// Applies every knob the patch sets, telling `note` the name of
+            /// each as it is set: the one merge, with the accounting
+            /// [`Origins`] keeps of it (SR-110), so where a knob came from is
+            /// what the merge did and not a second reading of the patch.
+            pub(crate) fn apply_noting(&mut self, patch: &$patch, note: &mut dyn FnMut(&'static str)) {
+                if let Some(value) = &patch.$first { self.$first = value.clone(); note(stringify!($first)); }
+                $( if let Some(value) = &patch.$field { self.$field = value.clone(); note(stringify!($field)); } )*
             }
 
             /// The knob names, in document order.
             ///
             #[doc = concat!("```\nuse teistro_core::settings::{", stringify!($name), ", Settings};\n\nassert_eq!(", stringify!($name), "::KNOBS[0], \"", stringify!($first), "\");\nassert!(Settings::knob_paths().contains(&(\"", stringify!($path), "\", \"", stringify!($first), "\")));\n```")]
             pub const KNOBS: &'static [&'static str] = &[ stringify!($first), $( stringify!($field) ),* ];
+
+            /// What a difference in each knob moves, in the order of
+            /// [`Self::KNOBS`], declared beside each knob.
+            pub const MOVES: &'static [Moves] = &[ Moves::$fmoves, $( Moves::$moves ),* ];
         }
 
         impl $patch {
@@ -1039,34 +1058,34 @@ group!(
     FramePatch,
     frame {
         /// Tropical or sidereal.
-        zodiac: Zodiac,
+        zodiac: Zodiac => Sky,
         /// Which ayanamsha, when sidereal.
-        ayanamsha: AyanamshaChoice,
+        ayanamsha: AyanamshaChoice => Sky,
         /// Mean or with nutation.
-        ayanamsha_basis: AyanamshaBasis,
+        ayanamsha_basis: AyanamshaBasis => Sky,
         /// Which node.
-        node: Node,
+        node: Node => Sky,
         /// Geocentric or topocentric.
-        centre: Centre,
+        centre: Centre => Sky,
         /// Apparent or true.
-        positions: Positions,
+        positions: Positions => Sky,
         /// Modern or classical astronomy: which the chart asks for. The
         /// context holds it to the provider it opens, refusing a modern
         /// engine under the Surya Siddhanta, since only the text defines
         /// the text's chart (`03-design/classical-chart.md`).
-        siddhanta: Siddhanta,
+        siddhanta: Siddhanta => Sky,
         /// Twenty-seven or twenty-eight nakshatras.
         /// lint: knob-has-a-reader — `panchanga` and `core::angle` both divide
         /// by twenty-seven today; the twenty-eighth (Abhijit) is unequal and
         /// wants its own measurement before either reads this.
-        nakshatra_scheme: NakshatraScheme,
+        nakshatra_scheme: NakshatraScheme => Rule,
         /// Which precession carries positions and epoch-defined ayanamshas
         /// between epochs; asked of the engine with every position.
-        precession: Precession,
+        precession: Precession => Sky,
         /// Which nutation series; asked of the engine with every position.
-        nutation: Nutation,
+        nutation: Nutation => Sky,
         /// Which frame bias; asked of the engine with every position.
-        frame_bias: FrameBias,
+        frame_bias: FrameBias => Sky,
     }
 );
 
@@ -1074,13 +1093,13 @@ group!(
     /// House systems and their policy.
     Houses, HousesPatch, houses {
         /// The system placements use.
-        placement_system: HouseSystem,
+        placement_system: HouseSystem => Rule,
         /// The Bhava-Chalit system.
-        chalit_system: HouseSystem,
+        chalit_system: HouseSystem => Rule,
         /// Per-module overrides (`kp` to Placidus).
-        module_overrides: BTreeMap<String, HouseSystem>,
+        module_overrides: BTreeMap<String, HouseSystem> => Rule,
         /// What to do where the system has no solution.
-        polar_policy: PolarPolicy,
+        polar_policy: PolarPolicy => Rule,
     }
 );
 
@@ -1090,19 +1109,19 @@ group!(
     DayPatch,
     day {
         /// The sunrise convention.
-        sunrise: SunriseConvention,
+        sunrise: SunriseConvention => Sunrise,
         /// When the day begins.
-        day_boundary: DayBoundary,
+        day_boundary: DayBoundary => Rule,
         /// A day without a sunrise.
-        polar_day_policy: PolarDayPolicy,
+        polar_day_policy: PolarDayPolicy => Rule,
         /// How ghatis are counted.
-        ghati_reckoning: GhatiReckoning,
+        ghati_reckoning: GhatiReckoning => Rule,
         /// How the planetary hours are counted.
-        hora_reckoning: HoraReckoning,
+        hora_reckoning: HoraReckoning => Rule,
         /// How every horizon is reckoned beyond the sunrise convention: the
         /// refraction formula, the disc's size and radii, the rising
         /// body's latitude, the dip and the horizon's altitude.
-        horizon: HorizonModel,
+        horizon: HorizonModel => Sunrise,
     }
 );
 
@@ -1120,51 +1139,51 @@ group!(
         /// Which centre the day's limbs are computed from. An almanac is
         /// geocentric wherever the chart is: the lunar parallax reaches a
         /// degree, which is two hours of tithi boundary.
-        centre: Centre,
+        centre: Centre => Sky,
         /// Which window the Moon's rise and set are found in.
-        moon_events: MoonEvents,
+        moon_events: MoonEvents => Rule,
         /// The muhurta yoga tables' key, as `aspect.drishti_table` is:
         /// `CLASSICAL`, read at the star and tithi of sunrise, or
         /// `MUHURTA_CHINTAMANI`, the text's full tables over every star of
         /// the day (`03-design/day-markers.md` §2).
-        muhurta_tables: String,
+        muhurta_tables: String => Rule,
         /// Where panchaka begins: Dhanishtha's third quarter or the
         /// whole of it (crux C158).
-        panchaka_start: PanchakaStart,
+        panchaka_start: PanchakaStart => Rule,
         /// What the panchaka is named: by the vara it begins on, a
         /// printed convention, or not at all (crux C821).
-        panchaka_name: PanchakaName,
+        panchaka_name: PanchakaName => Rule,
         /// Where Shiva dwells on each tithi: the almanacs' printed
         /// convention or none (crux C750).
-        shiva_vasa: ShivaVasaReading,
+        shiva_vasa: ShivaVasaReading => Rule,
         /// Which table places each nakshatra's varjyam (crux C165).
-        varjyam: Varjyam,
+        varjyam: Varjyam => Rule,
         /// Which reading places each nakshatra's amrita kalam (crux C677).
-        amrit_kalam: AmritKalam,
+        amrit_kalam: AmritKalam => Rule,
         /// Which ascendant the day's lagna table reads, when asked for
         /// (crux C680).
-        lagna_table: LagnaTable,
+        lagna_table: LagnaTable => Rule,
         /// Which muhurtas of each weekday are censured, the durmuhurtas
         /// (crux C398).
-        durmuhurta: DurmuhurtaTable,
+        durmuhurta: DurmuhurtaTable => Rule,
         /// How many ghatis around each sankranti are its punya kala
         /// (crux C752).
-        punya_kala: PunyaKalaTable,
+        punya_kala: PunyaKalaTable => Rule,
         /// Which season a day falls in: the sidereal solar months', the
         /// lunar month's or the tropical Sun's (crux C178).
-        ritu: RituReckoning,
+        ritu: RituReckoning => Rule,
         /// Which civil day a sidereal solar month begins on, which the
         /// solar season reads (crux C186).
-        solar_month_start: SolarMonthStart,
+        solar_month_start: SolarMonthStart => Rule,
         /// How much the Earth's shadow is enlarged for a lunar eclipse.
-        eclipse_shadow: EclipseShadow,
+        eclipse_shadow: EclipseShadow => Rule,
         /// The horizon an eclipsed body is seen above. The eye sees the
         /// upper limb, lifted by refraction, which is *Dharmasindhu*'s test
         /// for an eclipse that counts and the rising Nepal's committee
         /// times a vedha from (`03-design/eclipses.md` §5).
-        eclipse_horizon: SunriseConvention,
+        eclipse_horizon: SunriseConvention => Rule,
         /// How far before an eclipse its vedha opens (crux C192).
-        eclipse_vedha: EclipseVedha,
+        eclipse_vedha: EclipseVedha => Rule,
     }
 );
 
@@ -1174,17 +1193,17 @@ group!(
     TimePatch,
     time {
         /// A civil time in a DST gap.
-        dst_gap: DstGap,
+        dst_gap: DstGap => Time,
         /// A civil time in a DST overlap.
-        dst_overlap: DstOverlap,
+        dst_overlap: DstOverlap => Time,
         /// A birth without a time.
-        unknown_time: UnknownTime,
+        unknown_time: UnknownTime => Time,
         /// Which Delta T.
-        delta_t: DeltaT,
+        delta_t: DeltaT => Sky,
         /// UT1 less UTC: none, the IERS's, or a given value.
-        dut1: Dut1,
+        dut1: Dut1 => Time,
         /// Which sidereal time turns the Earth.
-        sidereal_time: SiderealTime,
+        sidereal_time: SiderealTime => Sky,
     }
 );
 
@@ -1192,62 +1211,62 @@ group!(
     /// Dasha computation.
     Dasha, DashaPatch, dasha {
         /// How the first period is balanced.
-        balance: Balance,
+        balance: Balance => Rule,
         /// The year length per system.
-        year_length: BTreeMap<DashaSystem, YearLength>,
+        year_length: BTreeMap<DashaSystem, YearLength> => Rule,
         /// The default depth per system.
-        depth: BTreeMap<DashaSystem, Depth>,
+        depth: BTreeMap<DashaSystem, Depth> => Rule,
         /// A seed outside a conditional cycle.
         /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.seed_overflow`.
-        seed_overflow: SeedOverflow,
+        seed_overflow: SeedOverflow => Rule,
         /// How Ashtottari's lords share the nakshatras (crux C5).
         /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.ashtottari_grouping`.
-        ashtottari_grouping: AshtottariGrouping,
+        ashtottari_grouping: AshtottariGrouping => Rule,
         /// How the birth period is divided among its sub-periods (crux C48).
         /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.birth_period`.
-        birth_period: BirthPeriod,
+        birth_period: BirthPeriod => Rule,
         /// What a dasha answers past the end of its cycle (crux C48).
-        after_cycle: AfterCycle,
+        after_cycle: AfterCycle => Rule,
         /// Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).
-        kalachakra_membership: KalachakraMembership,
+        kalachakra_membership: KalachakraMembership => Rule,
         /// How the Kalachakra balance at birth is taken (crux C55).
-        kalachakra_balance: KalachakraBalance,
+        kalachakra_balance: KalachakraBalance => Rule,
         /// What follows the ninth Kalachakra mahadasha (crux C56).
-        kalachakra_after_ninth: KalachakraAfterNinth,
+        kalachakra_after_ninth: KalachakraAfterNinth => Rule,
         /// Which friendly signs make a dasha favourable (crux C79).
-        shanta_sign: ShantaSign,
+        shanta_sign: ShantaSign => Rule,
         /// How a rashi dasha finds the stronger lord of a dual-lorded sign
         /// (crux C51).
-        dual_lord: DualLord,
+        dual_lord: DualLord => Rule,
         /// Where the rashi dashas that start from a stronger sign begin (crux
         /// C53).
-        rashi_start: RashiStart,
+        rashi_start: RashiStart => Rule,
         /// Where releasing from Daimon begins when Daimon shares Fortune's
         /// sign (crux C223).
-        releasing_shared_sign: ReleasingSharedSign,
+        releasing_shared_sign: ReleasingSharedSign => Rule,
         /// Where the nodes take their years in a night birth's firdaria
         /// (crux C225).
-        firdaria_nodes: FirdariaNodes,
+        firdaria_nodes: FirdariaNodes => Rule,
         /// How the decennials divide a period below the second level (crux
         /// C228).
-        decennial_division: DecennialDivision,
+        decennial_division: DecennialDivision => Rule,
         /// How the Karaka dasha divides a period among its sub-periods
         /// (crux C737).
-        karaka_division: GrahaDivision,
+        karaka_division: GrahaDivision => Rule,
         /// What makes a graha the strongest where a dasha begins from the
         /// strongest and names no measure (crux C735).
-        strongest_graha: StrongestGraha,
+        strongest_graha: StrongestGraha => Rule,
         /// Which of several bodies in one place takes the share in an
         /// ayurdaya dasha's antardashas (crux C741).
-        ayurdaya_place: AntardashaPlace,
+        ayurdaya_place: AntardashaPlace => Rule,
         /// How the Naisargika dasha divides a period among its sub-periods
         /// (crux C743).
-        naisargika_division: NaisargikaDivision,
+        naisargika_division: NaisargikaDivision => Rule,
         /// Which span's years an ayurdaya dasha runs (crux C742).
-        ayurdaya_span: AyurdayaSpan,
+        ayurdaya_span: AyurdayaSpan => Rule,
         /// Whose readings of the reductions give the ayurdaya dashas'
         /// years (crux C742).
-        ayurdaya_readings: AyurdayaReadings,
+        ayurdaya_readings: AyurdayaReadings => Rule,
     }
 );
 
@@ -1258,17 +1277,20 @@ group!(
     jaimini {
         /// Seven or eight chara karakas: which ranks the Atmakaraka the
         /// karakamsha is read from.
-        chara_karakas: CharaKarakas,
+        chara_karakas: CharaKarakas => Rule,
         /// Which karaka each rank carries when eight are counted (crux
         /// C101): the ranking is the sky's, the names are this.
-        eight_karaka_order: EightKarakaOrder,
+        eight_karaka_order: EightKarakaOrder => Rule,
         /// The nodes' co-lordship of Scorpio and Aquarius: which lords of
         /// the 6th, 8th and 12th the Brahma graha is chosen among (C126).
-        node_co_lordship: NodeCoLordship,
+        node_co_lordship: NodeCoLordship => Rule,
         /// Which rule finds the Brahma graha (crux C128).
-        brahma: BrahmaRule,
+        brahma: BrahmaRule => Rule,
         /// Whether a graha's arudha moves as a bhava's does (crux C132).
-        graha_arudha_exception: GrahaArudhaException,
+        graha_arudha_exception: GrahaArudhaException => Rule,
+        /// Which karaka each rank carries when seven are counted (crux
+        /// C2061): the ranking is the sky's, the names are this.
+        seven_karaka_order: SevenKarakaOrder => Rule,
     }
 );
 
@@ -1279,14 +1301,14 @@ group!(
     GocharPatch,
     gochar {
         /// The nodes' vedha (crux C136).
-        node_vedha: NodeVedha,
+        node_vedha: NodeVedha => Rule,
         /// Whether the nodes obstruct another graha's transit (crux C137).
-        node_obstruction: NodeObstruction,
+        node_obstruction: NodeObstruction => Rule,
         /// How many bindus in a graha's own Ashtakavarga make its transit
         /// good (crux C141; `03-design/gochar-ashtakavarga.md`).
-        ashtakavarga_good_from: AshtakavargaGoodFrom,
+        ashtakavarga_good_from: AshtakavargaGoodFrom => Rule,
         /// Where a transit is seen from (crux C778).
-        transit_centre: TransitCentre,
+        transit_centre: TransitCentre => Sky,
     }
 );
 
@@ -1298,7 +1320,7 @@ group!(
         /// The three descending thresholds a baseline score's overall is
         /// banded by: Tithipatra's 75, 50 and 30 (SR-124), since no text
         /// bands a score (`03-design/rashifal.md`, "The score band").
-        score_bands: ScoreBands,
+        score_bands: ScoreBands => Rule,
     }
 );
 
@@ -1308,13 +1330,13 @@ group!(
     KpPatch,
     kp {
         /// How many ruling planets are counted (crux C150).
-        ruling_count: RulingCount,
+        ruling_count: RulingCount => Rule,
         /// The day the ruling day lord belongs to (crux C151).
-        day_lord_day: DayLordDay,
+        day_lord_day: DayLordDay => Rule,
         /// When a node joins the ruling planets as an agent (crux C152).
-        node_rulers: NodeRulers,
+        node_rulers: NodeRulers => Rule,
         /// Which ruling planets a retrograde planet rejects (crux C153).
-        retrograde_rejection: RetrogradeRejection,
+        retrograde_rejection: RetrogradeRejection => Rule,
     }
 );
 
@@ -1324,9 +1346,9 @@ group!(
     AspectPatch,
     aspect {
         /// The nodes' aspects.
-        node_aspects: NodeAspects,
+        node_aspects: NodeAspects => Rule,
         /// The sphuta drishti table's key.
-        drishti_table: String,
+        drishti_table: String => Rule,
     }
 );
 
@@ -1336,17 +1358,17 @@ group!(
     StatePatch,
     state {
         /// The combustion orb table's key.
-        combustion_orbs: String,
+        combustion_orbs: String => Rule,
         /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
-        sayanadi_ghatis: SayanadiGhatis,
+        sayanadi_ghatis: SayanadiGhatis => Rule,
         /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas (crux C78).
-        sayanadi_nodes: SayanadiNodes,
+        sayanadi_nodes: SayanadiNodes => Rule,
         /// Which degrees of a sign are pushkara bhagas (crux C767).
-        pushkara_bhaga: PushkaraBhaga,
+        pushkara_bhaga: PushkaraBhaga => Rule,
         /// Where Saturn's marana karaka sthana is (crux C768).
-        marana_saturn: MaranaSaturn,
+        marana_saturn: MaranaSaturn => Rule,
         /// Where Venus's marana karaka sthana is (crux C768).
-        marana_venus: MaranaVenus,
+        marana_venus: MaranaVenus => Rule,
     }
 );
 
@@ -1356,59 +1378,59 @@ group!(
     StrengthPatch,
     strength {
         /// Which components the Shadbala counts: the six of BPHS ch. 27.
-        bala_scheme: BalaScheme,
+        bala_scheme: BalaScheme => Rule,
         /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
         /// beside an occupied one (crux C60).
-        ekadhipatya: Ekadhipatya,
+        ekadhipatya: Ekadhipatya => Rule,
         /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
-        shodhana: Shodhana,
+        shodhana: Shodhana => Rule,
         /// Where Jupiter gives the Moon a bindu in the Ashtakavarga (crux
         /// C144; `03-design/gochar-ashtakavarga.md`).
-        moon_bindu_from_jupiter: MoonBinduFromJupiter,
+        moon_bindu_from_jupiter: MoonBinduFromJupiter => Rule,
         /// How the Vimshopaka scores a graha in a varga (crux C63).
-        vimshopaka: Vimshopaka,
+        vimshopaka: Vimshopaka => Rule,
         /// How the Shadbala's Saptavargaja scores a varga (crux C64).
-        saptavargaja: Saptavargaja,
+        saptavargaja: Saptavargaja => Rule,
         /// How the Shadbala's Nathonnatha measures the hour (crux C65).
-        nathonnatha: Nathonnatha,
+        nathonnatha: Nathonnatha => Rule,
         /// Which night a birth before sunrise is measured in (crux C65).
-        pre_dawn_night: PreDawnNight,
+        pre_dawn_night: PreDawnNight => Rule,
         /// Where the Sun's Ayana bala is counted (crux C66).
-        sun_ayana: SunAyana,
+        sun_ayana: SunAyana => Rule,
         /// Whether the Moon's Paksha bala is doubled (crux C66).
-        moon_paksha: MoonPaksha,
+        moon_paksha: MoonPaksha => Rule,
         /// The Sun's and the Moon's Cheshta balas (crux C66).
-        luminary_cheshta: LuminaryCheshta,
+        luminary_cheshta: LuminaryCheshta => Rule,
         /// The declination the Ayana bala reads (crux C66).
-        kranti: Kranti,
+        kranti: Kranti => Rule,
         /// Whose weekdays the Abda and Masa lords are (crux C67).
-        kaala_lords: KaalaLords,
+        kaala_lords: KaalaLords => Rule,
         /// The kendras the Dig bala measures from (crux C68).
-        dig: DigKendras,
+        dig: DigKendras => Rule,
         /// How the Drik bala weighs the drishtis received (crux C69).
-        drik: Drik,
+        drik: Drik => Rule,
         /// The natural strengths (crux C71).
-        naisargika: Naisargika,
+        naisargika: Naisargika => Rule,
         /// The rupas a graha's Shadbala must reach (crux C71).
-        required_rupas: RequiredRupas,
+        required_rupas: RequiredRupas => Rule,
         /// Which decanate gives each gender its Drekkana bala (crux C72).
-        drekkana: Drekkana,
+        drekkana: Drekkana => Rule,
         /// Which grahas are benefics for Paksha and Drik (crux C69).
-        benefics: Benefics,
+        benefics: Benefics => Rule,
         /// The mean elements the Cheshta bala reads (crux C70).
-        cheshta: Cheshta,
+        cheshta: Cheshta => Rule,
         /// Whether grahas at war gain and lose the Yuddha bala (crux C70).
-        yuddha: Yuddha,
+        yuddha: Yuddha => Rule,
         /// How the Ishta and Kashta phalas are read (crux C76).
-        ishta_kashta: IshtaKashta,
+        ishta_kashta: IshtaKashta => Rule,
         /// Which division's bhavas the Bhava bala measures (crux C73).
-        bhava_division: BhavaBalaDivision,
+        bhava_division: BhavaBalaDivision => Rule,
         /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
-        bhava_dig: BhavaDig,
+        bhava_dig: BhavaDig => Rule,
         /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
-        bhava_drishti: BhavaDrishti,
+        bhava_drishti: BhavaDrishti => Rule,
         /// Whether the Bhava bala adds the special rules (crux C75).
-        bhava_special_rules: BhavaSpecialRules,
+        bhava_special_rules: BhavaSpecialRules => Rule,
     }
 );
 
@@ -1418,7 +1440,13 @@ group!(
     VargasPatch,
     vargas {
         /// The convention for an unattested D-N.
-        unattested_dn: UnattestedDn,
+        unattested_dn: UnattestedDn => Rule,
+        /// The scheme each catalogued chart is computed by, where it is not
+        /// `PARASHARA`: a named scheme of the texts or a consumer's own rows
+        /// (`03-design/varga-schemes.md`). A chart left out is BPHS ch. 6's.
+        /// Every reader of a chart under these settings asks
+        /// `teistro_vargas::Scheme::chosen`.
+        schemes: BTreeMap<Varga, VargaChoice> => Rule,
     }
 );
 
@@ -1430,15 +1458,15 @@ group!(
         /// Read by `ts_chart_found`, which is what the deferral this knob
         /// carried was waiting for: "a binding builds a chart from a
         /// settings document alone".
-        civil_calendar: Calendar,
+        civil_calendar: Calendar => Rule,
         /// The lunar month system.
-        lunar_month: LunarMonth,
+        lunar_month: LunarMonth => Rule,
         /// How the sixty-year cycle names a lunar year.
-        samvatsara: SamvatsaraCount,
+        samvatsara: SamvatsaraCount => Rule,
         /// The era numbers a date carries.
         /// lint: knob-has-a-reader — as `civil_calendar` above — `crates/calendar` renders the eras a
         /// caller asks for rather than the ones the settings name.
-        eras: BTreeSet<Era>,
+        eras: BTreeSet<Era> => Rule,
         /// How near a sankranti, in minutes of the Sun's motion, one of a
         /// lunar month's two new moons may fall before the month is
         /// called `marginal`: near enough that a reckoning with another
@@ -1449,7 +1477,7 @@ group!(
         /// no month marginal. [`DEFAULT_MARGINAL_MONTH_MINUTES`] covers
         /// every month Nepal's committee and a drik almanac decided
         /// differently in AD 1900–2100, the widest by 6.3 hours.
-        marginal_month_minutes: u32,
+        marginal_month_minutes: u32 => Rule,
         /// Where the Kirat Yele Sambat's year 1 stands, the year a
         /// Bikram Sambat date carries in `era.KIRAT_YELE`: `KIRATI`, the
         /// count printed today (5086 from Magh 1, 2082 BS; *Kantipur*,
@@ -1457,7 +1485,7 @@ group!(
         /// `YALAMBAR`, J. C. Regmi's count from Yalambar's accession
         /// (*Kirat Yele Samvat Abhilekh*, 2010), 1281 years fewer
         /// (`calendars/bikram-sambat.md` §Kirat Yele Sambat).
-        kirat_yele: KiratYeleEpoch,
+        kirat_yele: KiratYeleEpoch => Rule,
     }
 );
 
@@ -1467,11 +1495,11 @@ group!(
     ProviderPatch,
     provider {
         /// The override policy (ADR-0013).
-        overrides: OverridePolicy,
+        overrides: OverridePolicy => Sky,
         /// The built-in ephemeris tier.
         /// lint: knob-has-a-reader — Phase 3's built-in ephemeris, which is what has tiers to choose
         /// between; a provider a caller supplies declares its own.
-        tier: Tier,
+        tier: Tier => Sky,
         /// How many ephemeris cells a context remembers, so that a batch
         /// asks for each of them once.
         ///
@@ -1487,7 +1515,7 @@ group!(
         /// answered the same again.
         /// [`DEFAULT_CACHE_CELLS`] is what a fifty-day almanac range
         /// needs, measured (`03-design/batch-and-parallelism-measured.md`).
-        cache_cells: u32,
+        cache_cells: u32 => Form,
     }
 );
 
@@ -1497,7 +1525,7 @@ group!(
     OutputPatch,
     output {
         /// The rounding contract.
-        precision: Precision,
+        precision: Precision => Form,
     }
 );
 
@@ -1574,30 +1602,36 @@ impl Settings {
     /// ```
     #[must_use]
     pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
-        let groups: [(&str, &[&str]); 17] = [
-            ("frame", Frame::KNOBS),
-            ("houses", Houses::KNOBS),
-            ("day", Day::KNOBS),
-            ("panchanga", Panchanga::KNOBS),
-            ("time", Time::KNOBS),
-            ("dasha", Dasha::KNOBS),
-            ("jaimini", Jaimini::KNOBS),
-            ("gochar", Gochar::KNOBS),
-            ("rashifal", Rashifal::KNOBS),
-            ("kp", Kp::KNOBS),
-            ("aspect", Aspect::KNOBS),
-            ("state", State::KNOBS),
-            ("strength", Strength::KNOBS),
-            ("vargas", Vargas::KNOBS),
-            ("calendars", Calendars::KNOBS),
-            ("provider", Provider::KNOBS),
-            ("output", Output::KNOBS),
-        ];
-        groups
+        Settings::knobs()
             .into_iter()
-            .flat_map(|(group, knobs)| knobs.iter().map(move |knob| (group, *knob)))
+            .map(|knob| (knob.group, knob.name))
             .collect()
     }
+}
+
+/// Every group of the document with its knobs and what each moves, in
+/// document order: the one list [`Settings::knobs`] and
+/// [`Settings::knob_paths`] read.
+const fn groups() -> [(&'static str, &'static [&'static str], &'static [Moves]); 17] {
+    [
+        ("frame", Frame::KNOBS, Frame::MOVES),
+        ("houses", Houses::KNOBS, Houses::MOVES),
+        ("day", Day::KNOBS, Day::MOVES),
+        ("panchanga", Panchanga::KNOBS, Panchanga::MOVES),
+        ("time", Time::KNOBS, Time::MOVES),
+        ("dasha", Dasha::KNOBS, Dasha::MOVES),
+        ("jaimini", Jaimini::KNOBS, Jaimini::MOVES),
+        ("gochar", Gochar::KNOBS, Gochar::MOVES),
+        ("rashifal", Rashifal::KNOBS, Rashifal::MOVES),
+        ("kp", Kp::KNOBS, Kp::MOVES),
+        ("aspect", Aspect::KNOBS, Aspect::MOVES),
+        ("state", State::KNOBS, State::MOVES),
+        ("strength", Strength::KNOBS, Strength::MOVES),
+        ("vargas", Vargas::KNOBS, Vargas::MOVES),
+        ("calendars", Calendars::KNOBS, Calendars::MOVES),
+        ("provider", Provider::KNOBS, Provider::MOVES),
+        ("output", Output::KNOBS, Output::MOVES),
+    ]
 }
 
 /// A patch: every group's knobs optional.
@@ -1708,24 +1742,52 @@ impl Settings {
     /// assert_eq!(patched.houses, root().houses);
     /// ```
     #[must_use]
-    pub fn patched(mut self, patch: &SettingsPatch) -> Settings {
-        self.frame.apply(&patch.frame);
-        self.houses.apply(&patch.houses);
-        self.day.apply(&patch.day);
-        self.panchanga.apply(&patch.panchanga);
-        self.time.apply(&patch.time);
-        self.dasha.apply(&patch.dasha);
-        self.jaimini.apply(&patch.jaimini);
-        self.gochar.apply(&patch.gochar);
-        self.rashifal.apply(&patch.rashifal);
-        self.kp.apply(&patch.kp);
-        self.aspect.apply(&patch.aspect);
-        self.state.apply(&patch.state);
-        self.strength.apply(&patch.strength);
-        self.vargas.apply(&patch.vargas);
-        self.calendars.apply(&patch.calendars);
-        self.provider.apply(&patch.provider);
-        self.output.apply(&patch.output);
+    pub fn patched(self, patch: &SettingsPatch) -> Settings {
+        self.patched_noting(patch, &mut |_, _| {})
+    }
+
+    /// [`Settings::patched`], telling `note` each knob it sets as
+    /// `("group", "knob")`: the merge and its accounting in one pass
+    /// ([`Origins`]).
+    fn patched_noting(
+        mut self,
+        patch: &SettingsPatch,
+        note: &mut dyn FnMut(&'static str, &'static str),
+    ) -> Settings {
+        self.frame
+            .apply_noting(&patch.frame, &mut |knob| note("frame", knob));
+        self.houses
+            .apply_noting(&patch.houses, &mut |knob| note("houses", knob));
+        self.day
+            .apply_noting(&patch.day, &mut |knob| note("day", knob));
+        self.panchanga
+            .apply_noting(&patch.panchanga, &mut |knob| note("panchanga", knob));
+        self.time
+            .apply_noting(&patch.time, &mut |knob| note("time", knob));
+        self.dasha
+            .apply_noting(&patch.dasha, &mut |knob| note("dasha", knob));
+        self.jaimini
+            .apply_noting(&patch.jaimini, &mut |knob| note("jaimini", knob));
+        self.gochar
+            .apply_noting(&patch.gochar, &mut |knob| note("gochar", knob));
+        self.rashifal
+            .apply_noting(&patch.rashifal, &mut |knob| note("rashifal", knob));
+        self.kp
+            .apply_noting(&patch.kp, &mut |knob| note("kp", knob));
+        self.aspect
+            .apply_noting(&patch.aspect, &mut |knob| note("aspect", knob));
+        self.state
+            .apply_noting(&patch.state, &mut |knob| note("state", knob));
+        self.strength
+            .apply_noting(&patch.strength, &mut |knob| note("strength", knob));
+        self.vargas
+            .apply_noting(&patch.vargas, &mut |knob| note("vargas", knob));
+        self.calendars
+            .apply_noting(&patch.calendars, &mut |knob| note("calendars", knob));
+        self.provider
+            .apply_noting(&patch.provider, &mut |knob| note("provider", knob));
+        self.output
+            .apply_noting(&patch.output, &mut |knob| note("output", knob));
         self
     }
 
@@ -1754,8 +1816,12 @@ impl Settings {
     /// `INVALID_ARG` naming the first knob a coherence error names, under
     /// `settings`, with every error in the message.
     pub fn derived(self, patch: &SettingsPatch, profile: ProfileId) -> Result<Resolved, Error> {
-        self.patched(patch)
-            .validated(profile)
+        // A value handed in whole: its knobs are a document's, and what the
+        // patch sets the request's ([`Resolved::derived`] keeps a resolved
+        // value's layers instead).
+        let mut origins = Origins::under(Layer::Document);
+        self.laid(patch, &mut origins, Layer::Request, None)
+            .validated_with(profile, origins)
             .map_err(|diagnostics| Error::from(diagnostics).under("settings"))
     }
 
@@ -1842,6 +1908,16 @@ impl Settings {
     ///
     /// The diagnostics when any rule is an error.
     pub fn validated(self, profile: ProfileId) -> Result<Resolved, Diagnostics> {
+        self.validated_with(profile, Origins::under(Layer::Document))
+    }
+
+    /// [`Settings::validated`] with the accounting of where each knob came
+    /// from, which resolution kept as it laid the patches.
+    pub(crate) fn validated_with(
+        self,
+        profile: ProfileId,
+        origins: Origins,
+    ) -> Result<Resolved, Diagnostics> {
         let diagnostics = coherence(&self);
         if diagnostics.iter().any(|d| d.severity == Severity::Error) {
             return Err(Diagnostics { items: diagnostics });
@@ -1850,6 +1926,7 @@ impl Settings {
             settings: self,
             warnings: diagnostics,
             profile,
+            origins,
         })
     }
 }
@@ -2005,6 +2082,9 @@ pub struct Resolved {
     pub warnings: Vec<Diagnostic>,
     /// The profile it came from.
     pub profile: ProfileId,
+    /// Where each knob came from: the layer that set it and its citation
+    /// ([`Resolved::explained`]).
+    pub origins: Origins,
 }
 
 impl Resolved {
@@ -2241,6 +2321,24 @@ fn custom_ayanamsha_coherence(ayanamsha: AyanamshaChoice, out: &mut Vec<Diagnost
     }
 }
 
+/// Every varga scheme the settings choose, checked as a chart would check
+/// it, the first fault of each named by its field (`varga-schemes.md`).
+fn scheme_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    for (varga, choice) in &s.vargas.schemes {
+        if let Err(refused) = choice.check(*varga) {
+            out.push(Diagnostic::error(
+                "varga-scheme",
+                format!(
+                    "{} (field `{}`)",
+                    refused.message,
+                    refused.field().unwrap_or("vargas.schemes")
+                ),
+                &["vargas.schemes"],
+            ));
+        }
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     custom_ayanamsha_coherence(s.frame.ayanamsha, &mut out);
@@ -2291,6 +2389,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
         ));
     }
     basis_coherence(s, &mut out);
+    scheme_coherence(s, &mut out);
     // The text's sunrise is the centre on the geometric horizon, in local
     // mean time; asked for another convention, the provider declines and
     // the SDK solves it over the text's Sun, which is neither the text's

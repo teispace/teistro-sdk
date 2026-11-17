@@ -39,6 +39,33 @@ pub struct Axis {
 }
 
 impl Axis {
+    /// One chart for both, under the scheme the settings choose for it
+    /// (`vargas.schemes`, [`Scheme::chosen`]): what a reader of a chart
+    /// under a context asks for.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Varga;
+    /// use teistro_vargas::Axis;
+    ///
+    /// let settings = teistro_chart::sample::resolved().settings;
+    /// assert_eq!(Axis::chosen(Varga::D9, &settings)?, Axis::of(Varga::D9));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Scheme::chosen`].
+    pub fn chosen(
+        varga: Varga,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<Axis, Error> {
+        let scheme = Scheme::chosen(varga, settings)?;
+        Ok(Axis {
+            grahas: scheme,
+            lagna: scheme,
+        })
+    }
+
     /// One chart for both, which is what almost every caller wants.
     ///
     /// ```
