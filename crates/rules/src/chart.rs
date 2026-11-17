@@ -1988,6 +1988,45 @@ mod tests {
         assert!(!silent.is_weak(Body::Lagna));
     }
 
+    /// Only the Putrakaraka among seven falls back to the Matrikaraka's
+    /// graha: an unheld Darakaraka (the last two grahas tied) stays unheld
+    /// though the chart carries a Pitrikaraka.
+    #[test]
+    fn only_the_putrakaraka_falls_back_to_the_matrikaraka() {
+        let at = |longitude| Placement {
+            longitude,
+            sign: Rashi::Aries,
+            house: House::try_new(1).unwrap(),
+            dignity: Dignity::Neutral,
+            retrograde: false,
+            combust: false,
+            karaka7: None,
+            karaka8: None,
+            navamsha: Rashi::Aries,
+        };
+        // The Sun to Saturn at 29°, 28° … 24°, Saturn tied with Venus at 24°.
+        let mut placements = [at(0.5); 10];
+        let degrees = [29.0, 28.0, 27.0, 26.0, 25.0, 24.0, 24.0];
+        for (graha, degree) in KARAKA_GRAHAS.iter().zip(degrees) {
+            placements[Body::Graha(*graha).index()] = at(degree);
+        }
+        let chart = RuleChart {
+            placements,
+            panchanga: None,
+            strengths: None,
+        }
+        .with_karaka_orders(SevenKarakas::MatriIsPutra, EightKarakas::Parashara);
+        assert_eq!(
+            chart.holder(CharaKaraka::Pitrikaraka, false),
+            Some(Graha::Jupiter)
+        );
+        assert_eq!(chart.holder(CharaKaraka::Darakaraka, false), None);
+        assert_eq!(
+            chart.holder(CharaKaraka::Putrakaraka, false),
+            Some(Graha::Mercury)
+        );
+    }
+
     /// A span with either part below nothing has no part.
     #[test]
     fn a_span_with_a_negative_part_has_no_part() {
