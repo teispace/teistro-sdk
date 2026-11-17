@@ -2223,13 +2223,13 @@ fn score_bands_coherence(bands: ScoreBands, out: &mut Vec<Diagnostic>) {
     }
 }
 
-fn coherence(s: &Settings) -> Vec<Diagnostic> {
-    let mut out = Vec::new();
+/// A custom ayanamsha's epoch, value and rate are finite.
+fn custom_ayanamsha_coherence(ayanamsha: AyanamshaChoice, out: &mut Vec<Diagnostic>) {
     if let AyanamshaChoice::Custom {
         epoch_jd_tt,
         value_deg,
         rate_deg_per_year,
-    } = s.frame.ayanamsha
+    } = ayanamsha
     {
         if !(epoch_jd_tt.is_finite() && value_deg.is_finite() && rate_deg_per_year.is_finite()) {
             out.push(Diagnostic::error(
@@ -2239,6 +2239,11 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             ));
         }
     }
+}
+
+fn coherence(s: &Settings) -> Vec<Diagnostic> {
+    let mut out = Vec::new();
+    custom_ayanamsha_coherence(s.frame.ayanamsha, &mut out);
     sunrise_coherence(s.day.sunrise, &mut out);
     horizon_coherence(&s.day.horizon, &mut out);
     dut1_coherence(s.time.dut1, &mut out);
