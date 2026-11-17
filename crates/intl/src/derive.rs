@@ -594,8 +594,7 @@ mod tests {
              1428 until Bihar's nine, \
              1437 until the gazette's six unruled festivals and nine holiday scopes, \
              1452 until the rashifal's twenty-one words (SR-124), \
-             1473 until the text terms of 28 kinds (SR-128), \
-             1622 until the Kirat Yele era"
+             1473 until the text terms of 28 kinds (SR-128), 1622 until the Kirat Yele Sambat"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
