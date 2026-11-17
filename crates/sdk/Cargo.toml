@@ -752,3 +752,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "festival_rank"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "nepal_gazette"
+required-features = ["builtin-ephemeris"]
