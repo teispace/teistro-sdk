@@ -114,6 +114,18 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('coverage is the range as data (SR-136)', () => {
+  const coverage = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' }).coverage();
+  assert.equal(new Context({ profile: 'nepali-committee' }).coverage().ephemeris, undefined);
+  const { first, last, fromJd, toJd } = coverage.ephemeris;
+  assert.deepEqual([first.year, first.month, first.day], [1800, 1, 1]);
+  assert.deepEqual([last.year, last.month, last.day], [2399, 12, 31]);
+  assert.ok(fromJd < toJd);
+  assert.ok(coverage.bikramSambat.officialFirstYear <= 2083);
+  assert.deepEqual(coverage.holidays[0], { set: 'NEPAL_GAZETTE', years: [2083] });
+  assert.ok(Object.isFrozen(coverage));
+});
+
 test('explainSettings names each knob\'s layer and source, and diffSettings where two contexts part', () => {
   // The context's own patch is its layer, a per-call patch the request's.
   const ctx = context({ settings: { frame: { node: 'TRUE' } } });

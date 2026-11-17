@@ -268,6 +268,19 @@ class AContext(WithLibrary):
             self.assertEqual(ctx.profile, "nepali-drik")
             self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
 
+    def test_coverage_is_the_range_as_data(self) -> None:
+        # SR-136: the dates every call answers, read rather than hard-coded.
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            coverage = ctx.coverage()
+        with self.teistro.context(profile="nepali-committee") as bare:
+            self.assertNotIn("ephemeris", bare.coverage())
+        span = coverage["ephemeris"]
+        self.assertEqual((span["first"]["year"], span["first"]["month"], span["first"]["day"]), (1800, 1, 1))
+        self.assertEqual((span["last"]["year"], span["last"]["month"], span["last"]["day"]), (2399, 12, 31))
+        self.assertLess(span["fromJd"], span["toJd"])
+        self.assertLessEqual(coverage["bikramSambat"]["officialFirstYear"], 2083)
+        self.assertEqual(coverage["holidays"][0], {"set": "NEPAL_GAZETTE", "years": [2083]})
+
     def test_explain_settings_names_each_layer_and_diff_settings_where_two_part(self) -> None:
         # The context's own patch is its layer, a per-call patch the request's.
         with self.teistro.context(

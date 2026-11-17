@@ -6929,6 +6929,11 @@ function fastFrom(fast) {
  * @returns {object}
  */
 function monthMarginFrom(json) {
+  // A month the coverage cuts carries none: zeros, as the days blob writes it (SR-136).
+  if (json === undefined || json === null) {
+    const none = { newMoon: 0, degrees: 0, minutes: 0 };
+    return { opening: none, closing: { ...none }, marginal: false };
+  }
   const at = (side) => ({ newMoon: side.new_moon, degrees: side.degrees, minutes: side.minutes });
   return { opening: at(json.opening), closing: at(json.closing), marginal: json.marginal };
 }
@@ -9869,6 +9874,26 @@ export class Context {
   explainSettings(query = {}) {
     const asked = settingsQuery(query, 'explainSettings');
     return deepFreeze(JSON.parse(this.#call(() => this.#inner.explainSettings(asked))));
+  }
+
+  /**
+   * **What this context answers over** (SR-136): the first and last
+   * instants its ephemeris covers under its profile (Julian days on UT1)
+   * with their Gregorian dates, the Bikram Sambat years the shipped table
+   * holds and those the government published, and each holiday set's
+   * years. Every date from `ephemeris.first` to `ephemeris.last` is
+   * answered; a lunar month, year or span the coverage cuts says so in its
+   * `clipped`.
+   *
+   * ```js
+   * const { first, last } = ctx.coverage().ephemeris;
+   * [first.year, last.year]; // [1800, 2399]
+   * ```
+   *
+   * @returns {object} `{ ephemeris?, bikramSambat, holidays }`
+   */
+  coverage() {
+    return deepFreeze(JSON.parse(this.#call(() => this.#inner.coverage())));
   }
 
   /**

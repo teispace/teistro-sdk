@@ -1,0 +1,35 @@
+---
+title: ts_context_coverage
+description: "**What this context answers over** (SR-136, `03-design/coverage-edges.md` §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`."
+---
+
+**What this context answers over** (SR-136, `03-design/coverage-edges.md` §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`. `ephemeris` is `{fromJd, toJd, first, last}`: the first and last instants the configured ephemeris answers under the context's profile, Julian days on UT1, and the first and last Gregorian dates the span holds at least half of, on UT, as `{calendar, year, month, day}`; left out with no ephemeris. `bikramSambat` is `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the shipped table's years and those the government published; `holidays` each shipped holiday set as `{set, years}`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_context_coverage(const ts_context * context, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `(root).coverage` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/context.rs`.

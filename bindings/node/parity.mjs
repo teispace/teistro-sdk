@@ -2608,6 +2608,16 @@ put(
   committee.dispose();
   mean.dispose();
   drik.dispose();
+  // The range as data (SR-136).
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const { ephemeris: span, bikramSambat: bs, holidays } = sky.coverage();
+  const day = (date) => `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+  put(
+    'coverage',
+    `${day(span.first)} ${day(span.last)} ${bs.firstYear} ${bs.lastYear} ${bs.officialFirstYear} ${bs.officialLastYear} `
+      + holidays.map((one) => `${one.set}:${one.years.join('+')}`).join(','),
+  );
+  sky.dispose();
 }
 
 // ── Aayadi ─────────────────────────────────────────────────────────────

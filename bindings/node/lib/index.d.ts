@@ -6901,6 +6901,12 @@ export interface LunarYear {
   readonly lupta: Samvatsara | null;
   /** The year's office-bearers, the raja first, each read under every rule its texts give (`03-design/year-rulers.md`). */
   readonly rulers: readonly YearRuler[];
+  /**
+   * Which end of the year the ephemeris's coverage cut: `'START'` (it began
+   * before the coverage, numbered from the next year, with no office-bearers),
+   * `'END'` or `'BOTH'`; absent for a year the coverage holds whole (SR-136).
+   */
+  readonly clipped?: 'START' | 'END' | 'BOTH';
 }
 
 /** One office of the year and who holds it (`03-design/year-rulers.md`). */
@@ -10465,6 +10471,38 @@ export interface KnobExplained {
 }
 
 /** Every knob asked, each with the layer that set it, why and what it changes. */
+/** A Gregorian date, on UT, as `Context.coverage` writes it. */
+export interface CoverageDate {
+  readonly calendar: 'GREGORIAN';
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+}
+
+/** What a context answers over (`Context.coverage`, SR-136). */
+export interface Coverage {
+  /** The days the context's ephemeris covers; absent with no ephemeris. */
+  readonly ephemeris?: {
+    /** The first instant answered, a Julian day on UT1. */
+    readonly fromJd: number;
+    /** The last instant answered. */
+    readonly toJd: number;
+    /** The first Gregorian date, on UT, the span holds at least half of. */
+    readonly first: CoverageDate;
+    /** The last such date. */
+    readonly last: CoverageDate;
+  };
+  /** The Bikram Sambat years the shipped table holds, and those the government published. */
+  readonly bikramSambat: {
+    readonly firstYear: number;
+    readonly lastYear: number;
+    readonly officialFirstYear: number;
+    readonly officialLastYear: number;
+  };
+  /** Each shipped holiday set and the Bikram Sambat years it lists. */
+  readonly holidays: readonly { readonly set: string; readonly years: readonly number[] }[];
+}
+
 export interface SettingsExplained {
   readonly profile: string;
   readonly settingsHash: string;
@@ -10559,6 +10597,13 @@ export declare class Context {
    * knob throws a `TeistroError` naming it (`knobs[0]`).
    */
   explainSettings(query?: SettingsQuery): SettingsExplained;
+  /**
+   * **What this context answers over** (SR-136): the days its ephemeris
+   * covers under its profile, the Bikram Sambat table's years and each
+   * holiday set's. Every date from `ephemeris.first` to `ephemeris.last`
+   * is answered; a member the coverage cuts says so in its `clipped`.
+   */
+  coverage(): Coverage;
   /**
    * **Where two contexts' settings part** (`settings.diff`): each knob on
    * which this context's settings and `other`'s differ, with what it

@@ -473,6 +473,18 @@ public final class Context implements AutoCloseable {
     }
 
     /**
+     * <b>What this context answers over</b> (SR-136): the first and last
+     * instants its ephemeris covers under its profile, with their Gregorian
+     * dates, the Bikram Sambat years the shipped table holds and those the
+     * government published, and each holiday set's years.
+     *
+     * @return the range, as data
+     */
+    public Coverage coverage() {
+        return Coverage.read(locked(Calls::coverage));
+    }
+
+    /**
      * <b>Where two contexts' settings part</b> ({@code settings.diff}):
      * each knob on which this context's settings and {@code other}'s
      * differ, both values beside what it moves and its effect note in this

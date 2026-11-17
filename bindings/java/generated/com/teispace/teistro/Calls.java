@@ -161,6 +161,29 @@ final class Calls {
     }
 
     /**
+     * `ts_context_coverage`: **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+     * §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+     * `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+     * instants the configured ephemeris answers under the context's profile,
+     * Julian days on UT1, and the first and last Gregorian dates the span
+     * holds at least half of, on UT, as `{calendar, year, month, day}`; left
+     * out with no ephemeris. `bikramSambat` is
+     * `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+     * shipped table's years and those the government published; `holidays`
+     * each shipped holiday set as `{set, years}`.
+     */
+    static String coverage(Native lib, MemorySegment context) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_context_coverage.invokeExact(context, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_context_diff_settings`: **Where two contexts' settings part** (`settings.diff`), as canonical
      * JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
      * each knob on which `context`'s settings and `other`'s differ as

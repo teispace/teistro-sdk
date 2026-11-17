@@ -164,6 +164,28 @@ void main() {
     );
   });
 
+  test('coverage is the range as data (SR-136)', () {
+    final ctx = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final bare = teistro.context(profile: 'nepali-committee');
+    try {
+      expect(bare.coverage().ephemeris, isNull);
+      final coverage = ctx.coverage();
+      final span = coverage.ephemeris!;
+      expect(span.first, DateTime.utc(1800));
+      expect(span.last, DateTime.utc(2399, 12, 31));
+      expect(span.fromJd, lessThan(span.toJd));
+      expect(coverage.bikramSambat.officialFirstYear, lessThanOrEqualTo(2083));
+      expect(coverage.holidays.first.set, 'NEPAL_GAZETTE');
+      expect(coverage.holidays.first.years, [2083]);
+    } finally {
+      ctx.dispose();
+      bare.dispose();
+    }
+  });
+
   test('explainSettings names each knob\'s layer and source, and '
       'diffSettings where two contexts part', () {
     // The context's own patch is its layer, a per-call patch the request's.

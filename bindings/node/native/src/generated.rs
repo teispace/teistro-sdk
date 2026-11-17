@@ -4457,6 +4457,27 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+    /// §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+    /// `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+    /// instants the configured ephemeris answers under the context's profile,
+    /// Julian days on UT1, and the first and last Gregorian dates the span
+    /// holds at least half of, on UT, as `{calendar, year, month, day}`; left
+    /// out with no ephemeris. `bikramSambat` is
+    /// `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+    /// shipped table's years and those the government published; `holidays`
+    /// each shipped holiday set as `{set, years}`.
+    #[napi]
+    pub fn coverage(&self, env: Env) -> Result<String> {
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe { ffi::context::ts_context_coverage(self.handle, &raw mut out_json) };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// **Where two contexts' settings part** (`settings.diff`), as canonical
     /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
     /// each knob on which `context`'s settings and `other`'s differ as

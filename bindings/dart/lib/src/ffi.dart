@@ -2094,6 +2094,8 @@ typedef TsContextSettingsHashNative = ffi.Int32 Function(ffi.Pointer<Context>, f
 typedef TsContextSettingsHashDart = int Function(ffi.Pointer<Context>, ffi.Pointer<HashStruct>);
 typedef TsContextExplainSettingsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsContextExplainSettingsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsContextCoverageNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
+typedef TsContextCoverageDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
 typedef TsContextDiffSettingsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsContextDiffSettingsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsKeyParseNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint32>);
@@ -2319,6 +2321,7 @@ final class TeistroLibrary {
         ts_context_settings_json = library.lookupFunction<TsContextSettingsJsonNative, TsContextSettingsJsonDart>('ts_context_settings_json'),
         ts_context_settings_hash = library.lookupFunction<TsContextSettingsHashNative, TsContextSettingsHashDart>('ts_context_settings_hash'),
         ts_context_explain_settings = library.lookupFunction<TsContextExplainSettingsNative, TsContextExplainSettingsDart>('ts_context_explain_settings'),
+        ts_context_coverage = library.lookupFunction<TsContextCoverageNative, TsContextCoverageDart>('ts_context_coverage'),
         ts_context_diff_settings = library.lookupFunction<TsContextDiffSettingsNative, TsContextDiffSettingsDart>('ts_context_diff_settings'),
         ts_key_parse = library.lookupFunction<TsKeyParseNative, TsKeyParseDart>('ts_key_parse'),
         ts_key_name = library.lookupFunction<TsKeyNameNative, TsKeyNameDart>('ts_key_name'),
@@ -2546,6 +2549,18 @@ final class TeistroLibrary {
   /// the document's order. A key it does not read, or an entry that names
   /// no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
   final TsContextExplainSettingsDart ts_context_explain_settings;
+
+  /// **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+  /// §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+  /// `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+  /// instants the configured ephemeris answers under the context's profile,
+  /// Julian days on UT1, and the first and last Gregorian dates the span
+  /// holds at least half of, on UT, as `{calendar, year, month, day}`; left
+  /// out with no ephemeris. `bikramSambat` is
+  /// `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+  /// shipped table's years and those the government published; `holidays`
+  /// each shipped holiday set as `{set, years}`.
+  final TsContextCoverageDart ts_context_coverage;
 
   /// **Where two contexts' settings part** (`settings.diff`), as canonical
   /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
@@ -7120,6 +7135,26 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_context_explain_settings(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+  /// §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+  /// `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+  /// instants the configured ephemeris answers under the context's profile,
+  /// Julian days on UT1, and the first and last Gregorian dates the span
+  /// holds at least half of, on UT, as `{calendar, year, month, day}`; left
+  /// out with no ephemeris. `bikramSambat` is
+  /// `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+  /// shipped table's years and those the government published; `holidays`
+  /// each shipped holiday set as `{set, years}`.
+  String coverage() {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_context_coverage(_handle, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

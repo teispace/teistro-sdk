@@ -4052,6 +4052,27 @@ void main() {
     'settings-diff',
     parted.knobs.map((one) => '${one.knob}:${one.moves}').join(','),
   );
+  // The range as data (SR-136).
+  final rangeSky = teistro.context(
+    profile: 'nepali-drik',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  final range = rangeSky.coverage();
+  rangeSky.dispose();
+  String rangeDay(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+  final rangeTable = range.bikramSambat;
+  final rangeSets = range.holidays
+      .map((one) => '${one.set}:${one.years.join('+')}')
+      .join(',');
+  put(
+    'coverage',
+    '${rangeDay(range.ephemeris!.first)} '
+        '${rangeDay(range.ephemeris!.last)} ${rangeTable.firstYear} '
+        '${rangeTable.lastYear} ${rangeTable.officialFirstYear} '
+        '${rangeTable.officialLastYear} $rangeSets',
+  );
 
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test

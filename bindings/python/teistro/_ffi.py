@@ -4407,6 +4407,12 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_context_explain_settings.restype = ctypes.c_int32
+        self.ts_context_coverage: Any = library.ts_context_coverage
+        self.ts_context_coverage.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_context_coverage.restype = ctypes.c_int32
         self.ts_context_diff_settings: Any = library.ts_context_diff_settings
         self.ts_context_diff_settings.argtypes = [
             ctypes.POINTER(_Context),
@@ -5408,6 +5414,29 @@ class TeistroContext:
             if status != Status.OK:
                 self._raise(status)
             owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def coverage(self) -> str:
+        """**What this context answers over** (SR-136, `03-design/coverage-edges.md`
+        §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+        `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+        instants the configured ephemeris answers under the context's profile,
+        Julian days on UT1, and the first and last Gregorian dates the span
+        holds at least half of, on UT, as `{calendar, year, month, day}`; left
+        out with no ephemeris. `bikramSambat` is
+        `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+        shipped table's years and those the government published; `holidays`
+        each shipped holiday set as `{set, years}`.
+        """
+        with self._lock:
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_context_coverage(
+                self._raw,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
             json = _take_string(self._lib, _out_json)
             return json
 

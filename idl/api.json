@@ -16368,6 +16368,45 @@
       "source": "crates/ffi/src/context.rs"
     },
     {
+      "name": "ts_context_coverage",
+      "doc": "**What this context answers over** (SR-136, `03-design/coverage-edges.md`\n§5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.\n`ephemeris` is `{fromJd, toJd, first, last}`: the first and last\ninstants the configured ephemeris answers under the context's profile,\nJulian days on UT1, and the first and last Gregorian dates the span\nholds at least half of, on UT, as `{calendar, year, month, day}`; left\nout with no ephemeris. `bikramSambat` is\n`{firstYear, lastYear, officialFirstYear, officialLastYear}`, the\nshipped table's years and those the government published; `holidays`\neach shipped holiday set as `{set, years}`.",
+      "safety": "`context` must be a live handle; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/context.rs"
+    },
+    {
       "name": "ts_context_diff_settings",
       "doc": "**Where two contexts' settings part** (`settings.diff`), as canonical\nJSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,\neach knob on which `context`'s settings and `other`'s differ as\n`{knob, value, otherValue, moves, effect}`, `moves` and `effect` as\n`ts_context_explain_settings` gives them, the note in `context`'s\nlocale; no knobs when the two hash alike. `SKY` is what a calendar\ncomparison calls a model difference, `RULE` a rule difference.\n\n`request_json` is `{\"knobs\"}` as `ts_context_explain_settings` reads\nit, every knob when left out. A null `other` is `INVALID_ARG` naming\n`other`.",
       "safety": "`context` and `other` must be live handles; `request_json`\nNUL-terminated; `out_json` valid for a write.",

@@ -1767,6 +1767,18 @@ public final class ParityRunner {
                 put("settings-diff", String.join(",", parted.knobs().stream()
                         .map(one -> one.knob() + ":" + one.moves()).toList()));
             }
+            // The range as data (SR-136).
+            try (Context rangeSky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Coverage range = rangeSky.coverage();
+                Coverage.BikramSambat rangeTable = range.bikramSambat();
+                put("coverage", range.ephemeris().first() + " " + range.ephemeris().last() + " "
+                        + rangeTable.firstYear() + " " + rangeTable.lastYear() + " " + rangeTable.officialFirstYear() + " "
+                        + rangeTable.officialLastYear() + " " + String.join(",", range.holidays().stream()
+                                .map(one -> one.set() + ":" + String.join("+",
+                                        one.years().stream().map(String::valueOf).toList()))
+                                .toList()));
+            }
 
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar

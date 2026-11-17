@@ -1127,6 +1127,11 @@ __all__ = [
     "SettingsExplained",
     "KnobDifference",
     "SettingsDiff",
+    "Coverage",
+    "CoverageDate",
+    "EphemerisSpan",
+    "BikramSambatSpan",
+    "HolidayYears",
     "Plugin",
     "nepal_official",
     "Air",
@@ -2535,6 +2540,54 @@ class SettingsDiff(TypedDict):
     settingsHash: str
     otherSettingsHash: str
     knobs: List[KnobDifference]
+
+
+class CoverageDate(TypedDict):
+    """A Gregorian date, on UT, as `Context.coverage` writes it."""
+
+    calendar: str
+    year: int
+    month: int
+    day: int
+
+
+class EphemerisSpan(TypedDict):
+    """The instants and the civil days an ephemeris covers."""
+
+    fromJd: float
+    """The first instant answered, a Julian day on UT1."""
+    toJd: float
+    """The last instant answered."""
+    first: CoverageDate
+    """The first Gregorian date, on UT, the span holds at least half of."""
+    last: CoverageDate
+    """The last such date."""
+
+
+class BikramSambatSpan(TypedDict):
+    """The Bikram Sambat years the shipped table holds."""
+
+    firstYear: int
+    lastYear: int
+    officialFirstYear: int
+    """The first year the government's calendar committee published."""
+    officialLastYear: int
+
+
+class HolidayYears(TypedDict):
+    """A shipped holiday set and the Bikram Sambat years it lists."""
+
+    set: str
+    years: List[int]
+
+
+class Coverage(TypedDict, total=False):
+    """What a context answers over (`Context.coverage`)."""
+
+    ephemeris: EphemerisSpan
+    """Left out for a context with no ephemeris."""
+    bikramSambat: BikramSambatSpan
+    holidays: List[HolidayYears]
 
 
 def _settings_query(knobs: Optional[Sequence[str]], method: str) -> str:
@@ -6403,6 +6456,20 @@ class Context(RecordCalls):
         """
         asked = _settings_query(knobs, "explain_settings")
         return cast(SettingsExplained, json.loads(self.inner.explain_settings(asked)))
+
+    def coverage(self) -> Coverage:
+        """**What this context answers over** (SR-136): the first and last
+        instants its ephemeris covers under its profile (Julian days on UT1)
+        with their Gregorian dates, the Bikram Sambat years the shipped table
+        holds and those the government published, and each holiday set's
+        years. Every date from ``ephemeris["first"]`` to
+        ``ephemeris["last"]`` is answered; a lunar month, year or span the
+        coverage cuts says so in its ``clipped``::
+
+            span = ctx.coverage()["ephemeris"]
+            span["first"]["year"], span["last"]["year"]  # 1800, 2399
+        """
+        return cast(Coverage, json.loads(self.inner.coverage()))
 
     def diff_settings(
         self, other: Context, knobs: Optional[Sequence[str]] = None
@@ -12257,6 +12324,12 @@ class LunarYear:
     rulers: Tuple[YearRuler, ...]
     """The year's office-bearers, the raja first, each read under every
     rule its texts give (`03-design/year-rulers.md`)."""
+
+    clipped: Optional[Literal["START", "END", "BOTH"]] = None
+    """Which end of the year the ephemeris's coverage cut: ``START`` (it
+    began before the coverage, numbered from the next year, with no
+    office-bearers), ``END`` or ``BOTH``; None for a year the coverage
+    holds whole (SR-136)."""
 
 
 @dataclass(frozen=True)
@@ -19460,6 +19533,7 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
         jovian=tuple(jovian(j) for j in raw["jovian"]),
         lupta=None if lupta is None else _member(Samvatsara, lupta),
         rulers=tuple(ruler(r) for r in raw["rulers"]),
+        clipped=raw.get("clipped"),
     )
 
 
@@ -19468,10 +19542,19 @@ def _new_moon_margin(raw: Mapping[str, Any]) -> "NewMoonMargin":
     return NewMoonMargin(raw["new_moon"], raw["degrees"], raw["minutes"])
 
 
+_NO_MONTH_MARGIN: Mapping[str, Any] = {
+    "opening": {"new_moon": 0.0, "degrees": 0.0, "minutes": 0.0},
+    "closing": {"new_moon": 0.0, "degrees": 0.0, "minutes": 0.0},
+    "marginal": False,
+}
+"""The margin of a month that carries none, as the days blob writes it."""
+
+
 def _lunar_month(raw: Mapping[str, Any]) -> "Month":
     """A day's lunar month as the Rust types serialise it, members as this
-    binding's enums."""
-    margin = raw["margin"]
+    binding's enums; a month the coverage cuts carries no margin and reads
+    as zeros, as the days blob writes it (SR-136)."""
+    margin = raw.get("margin") or _NO_MONTH_MARGIN
     return Month(
         month=_member(Masa, raw["month"]),
         amanta=_member(Masa, raw["amanta"]),
