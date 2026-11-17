@@ -165,6 +165,58 @@ fn a_full_cache_lets_go_of_the_scope_used_longest_ago() {
     );
 }
 
+/// A custom ayanamsha a patch names (SR-112), a star held at a longitude
+/// or a value carried by a named precession, is a scope like any other:
+/// Spica held at 180° places the chart as True Chitra does, and a star the
+/// table does not hold is refused by the ayanamsha's knob.
+#[test]
+fn a_custom_ayanamsha_crosses_the_server() {
+    let (mut server, _) = counted();
+    let request = chart_request();
+    let offset = |server: &mut Server, ayanamsha: Value| {
+        let answered = call(
+            server,
+            "chart.found",
+            &json!({"request": request, "detail": "full", "settings": {"frame": {"zodiac": "SIDEREAL", "ayanamsha": ayanamsha}}}),
+        );
+        assert_eq!(answered["isError"], false, "{answered}");
+        answered["structuredContent"]["value"]["charts"][0]["foundation"]["zodiac"]["offset_deg"]
+            .as_f64()
+            .unwrap_or_else(|| panic!("{answered}"))
+    };
+    let held = offset(
+        &mut server,
+        json!({"kind": "ANCHORED", "star": "SPICA", "longitude_deg": 180.0}),
+    );
+    let member = offset(
+        &mut server,
+        json!({"kind": "CATALOGUED", "id": "TRUE_CHITRA"}),
+    );
+    assert!((held - member).abs() < 1e-9, "{held} {member}");
+    let precessed = offset(
+        &mut server,
+        json!({"kind": "PRECESSED", "epoch_jd_tt": 2_435_553.5, "value_deg": 23.250_182_778, "basis": "TRUE", "precession": "IAU_2006"}),
+    );
+    let lahiri = offset(&mut server, json!({"kind": "CATALOGUED", "id": "LAHIRI"}));
+    // The IAE's own number, carried by IAU 2006: Lahiri less the IAU 1976
+    // fit the catalogue corrects for and the two nutation series.
+    let apart = (precessed - lahiri) * 3600.0;
+    assert!((apart + 0.138).abs() < 0.01, "{apart}″");
+    let unknown = call(
+        &mut server,
+        "chart.found",
+        &json!({"request": request, "settings": {"frame": {"ayanamsha": {"kind": "ANCHORED", "star": "NOT_A_STAR", "longitude_deg": 180.0}}}}),
+    );
+    assert_eq!(unknown["isError"], true, "{unknown}");
+    assert!(
+        unknown["structuredContent"]["field"]
+            .as_str()
+            .unwrap()
+            .starts_with("settings.frame.ayanamsha"),
+        "{unknown}"
+    );
+}
+
 /// A varga scheme a call's settings choose reaches its answer: Kashinatha's
 /// hora (Narasimha Rao 2003) places each graha by its table, and a
 /// consumer's broken row is refused with its field in the message

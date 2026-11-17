@@ -233,8 +233,8 @@ fn main() -> Result<(), Error> {
             "ayanamsha      {:.6}° applied ({})",
             chart.zodiac.offset_deg,
             match choice {
-                AyanamshaChoice::Catalogued { id } => id.full_key(),
-                AyanamshaChoice::Custom { .. } => "custom",
+                AyanamshaChoice::Catalogued { id } => id.full_key().to_owned(),
+                custom => custom.describe(),
             },
         ),
     }

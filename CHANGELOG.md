@@ -12,6 +12,39 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Custom ayanamshas beyond a linear rate (SR-112).**
+**Numbers:** Lahiri's value at its epoch carried by IAU 2006 precession reproduces `LAHIRI`
+within 0.0012″ every 10 days from 1800 to 2200 (the bound is 0.01″), and to the bit when
+carried by the root's Vondrák 2011; through the façade the chart's zodiac stands 0.000045″
+and April 2026's Mesha sankranti 0.0006 s from `LAHIRI`'s. Spica held at 180° is
+`TRUE_CHITRA` to the bit in the chart and the sankranti, and the 11 longitude-anchored
+members restate to the bit (1e-9″ for the two-term ones). The IAE's own 23°15′00.658″,
+stated true and carried by IAU 2006, stands −0.138″ from `LAHIRI`: the catalogue's IAU 1976
+fitted correction (0.130″) and the two nutation series at the epoch (0.008″). No settings
+hash moves: no default changed. A custom zodiac's sankrantis and solar months move: they
+had been Lahiri's (913.6 s on April 2026's Mesha sankranti for a held Spica).
+- **New:** `frame.ayanamsha` (and a lagna table's `SPHERE` zodiac) takes
+  `{"kind": "PRECESSED", "epoch_jd_tt", "value_deg", "basis", "precession"}`: a value at an
+  epoch carried by the named model (`VONDRAK_2011`, `IAU_2006`, `IAU_1976`, `NEWCOMB`) by
+  the construction of the catalogue's epoch members and of the Swiss Ephemeris's
+  `SE_SIDM_USER`, stated `MEAN` or `TRUE` (with the epoch's IAU 2000B nutation) and
+  subtracted on `frame.ayanamsha_basis` (C2160, C2161).
+- **New:** `{"kind": "ANCHORED", "star", "longitude_deg"}`: a star of the table held at a
+  sidereal longitude, read by its apparent longitude of date (a galactic pole by its
+  geometric one), as True Chitra holds Spica; it needs no basis, the nutation moving the
+  star and the equinox alike (C2162).
+- **New:** `AyanamshaChoice::is_finite` and `describe`; `teistro_astro::ayanamsha::reading_of`;
+  `DrikSun::with_ayanamsha_choice` and `ayanamsha_choice`. Both forms cross every surface
+  in the settings document (Rust, C, Node, Python, Dart, Java, wasm, MCP), and a chart
+  under one reports a custom zodiac (`ayanamsha_kind` 2, `ayanamshaCustom`).
+- **Fixed:** the solar model put Lahiri in place of any custom ayanamsha, so the sankrantis,
+  solar months and the adhika test kept Lahiri's zodiac while the chart took the custom one
+  (C2164). It now asks the tropical Sun and subtracts the custom value.
+- **Changed:** `custom-ayanamsha-finite` checks every custom form, in the frame and in a
+  lagna table's zodiac (`panchanga.lagna_table`).
+- Design: `docs/03-design/astro-custom-ayanamsha.md`; Ketaki (C2165) and carrying a custom
+  form through the port to Teimeris's `TM_AYANAMSHA_USER` (C2166) stay open.
+
 **Festival groups (SR-125).**
 **Numbers:** no day moves. The festival answers of `NEPAL_PANCHANGA`, `INDIA_BIHAR`,
 `INDIA_UTTAR_PRADESH`, `INDIA_WEST_BENGAL`, `INDIA_ASSAM` and `INDIA_ODISHA` gain

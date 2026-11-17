@@ -15,6 +15,13 @@
 //! a correction for the precession model the constant was fitted with
 //! (Fagan and Bradley with Newcomb's, Lahiri with IAU 1976's).
 //!
+//! A consumer's own definition is one of three (SR-112,
+//! `docs/03-design/astro-custom-ayanamsha.md`): a value at an epoch moving
+//! at a linear rate; a value at an epoch carried by a precession model the
+//! definition names, by the same construction, stated on a basis of its
+//! own; or a star of the table held at a sidereal longitude, as True
+//! Chitra holds Spica.
+//!
 //! ```
 //! use teistro_astro::ayanamsha::{Basis, mean_deg, value_deg};
 //! use teistro_astro::delta_t::DeltaTModel;
@@ -31,7 +38,7 @@
 //! ```
 
 use teistro_core::angle::normalise_deg;
-use teistro_core::catalogue::{Ayanamsha, Star};
+use teistro_core::catalogue::{Ayanamsha, Star, StarClass};
 use teistro_core::error::{Error, Status};
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
@@ -482,6 +489,10 @@ fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
 /// has a reader somewhere, not that every computation the knob governs
 /// consults it.
 ///
+/// A precessed custom definition is carried by the precession model it
+/// names, never `model`, which carries the catalogue's members and places a
+/// held star.
+///
 /// ```
 /// # use teistro_astro::delta_t::DeltaTModel;
 /// # use teistro_astro::precession::PrecessionModel;
@@ -501,14 +512,19 @@ fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
 /// let custom = AyanamshaChoice::Custom { epoch_jd_tt: 2_451_545.0, value_deg: 23.0, rate_deg_per_year: 0.01 };
 /// let later = mean_deg(&custom, JulianDay::<Tt>::literal(2_451_545.0 + 36_525.0), model, delta_t)?;
 /// assert!((later - 24.0).abs() < 1e-9);
+/// // Spica held at 180° is True Chitra.
+/// use teistro_core::catalogue::Star;
+/// let spica = AyanamshaChoice::Anchored { star: Star::Spica, longitude_deg: 180.0 };
+/// assert_eq!(mean_deg(&spica, j2000, model, delta_t)?, mean_deg(&Ayanamsha::TrueChitra.into(), j2000, model, delta_t)?);
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 ///
 /// # Errors
 ///
 /// A member without a definition in this build (`UNSUPPORTED`), a custom
-/// definition that is not finite (`INVALID_ARG`), or an epoch the Delta T
-/// model cannot answer for.
+/// definition that is not finite (`INVALID_ARG`), a precession model this
+/// build does not carry a value by (`UNSUPPORTED`), or an epoch the Delta
+/// T model or the star table cannot answer for.
 pub fn mean_deg(
     choice: &AyanamshaChoice,
     at: JulianDay<Tt>,
@@ -539,16 +555,88 @@ pub fn mean_deg(
             value_deg,
             rate_deg_per_year,
         } => {
-            if !(epoch_jd_tt.is_finite() && value_deg.is_finite() && rate_deg_per_year.is_finite())
-            {
-                return Err(Error::invalid_arg(
-                    "a custom ayanamsha needs a finite epoch, value and rate",
-                )
-                .with_field("frame.ayanamsha"));
-            }
+            finite(choice)?;
             let years = (at.get() - epoch_jd_tt) / DJY;
             Ok(normalise_deg(value_deg + rate_deg_per_year * years))
         }
+        AyanamshaChoice::Precessed {
+            epoch_jd_tt,
+            value_deg,
+            basis,
+            precession,
+        } => {
+            finite(choice)?;
+            let carried_by = PrecessionModel::from_knob(*precession).ok_or_else(|| {
+                Error::new(
+                    Status::Unsupported,
+                    format!(
+                        "the {} precession is not one this build carries an ayanamsha by",
+                        precession.key()
+                    ),
+                )
+                .with_field("frame.ayanamsha")
+            })?;
+            let t0 = JulianDay::<Tt>::try_new(*epoch_jd_tt)?;
+            let epoch = Epoch {
+                jd: *epoch_jd_tt,
+                scale: EpochScale::Tt,
+                value_deg: value_deg - nutation_in_longitude_deg(*basis, t0),
+                fitted: Fitted::Current,
+            };
+            epoch_value_deg(&epoch, at, carried_by, delta_t_model)
+        }
+        AyanamshaChoice::Anchored {
+            star,
+            longitude_deg,
+        } => {
+            finite(choice)?;
+            anchored_value_deg(*star, [*longitude_deg, 0.0], reading_of(*star), at, model)
+        }
+    }
+}
+
+/// Refuses a custom definition with a number that is not finite.
+fn finite(choice: &AyanamshaChoice) -> Result<(), Error> {
+    if choice.is_finite() {
+        Ok(())
+    } else {
+        Err(Error::invalid_arg(
+            "a custom ayanamsha needs a finite epoch, value, rate and longitude",
+        )
+        .with_field("frame.ayanamsha"))
+    }
+}
+
+/// The nutation in longitude a value on a basis carries at an instant,
+/// degrees: IAU 2000B's on the true basis, none on the mean.
+fn nutation_in_longitude_deg(basis: Basis, at: JulianDay<Tt>) -> f64 {
+    match basis {
+        Basis::True => {
+            let (date1, date2) = at.split();
+            nut00b(date1, date2).dpsi * RAD2DEG
+        }
+        // The mean value, and a basis core adds before this crate learns it.
+        _ => 0.0,
+    }
+}
+
+/// How a custom anchor's place is read: a light source by its apparent
+/// longitude, as every catalogued star anchor is; a fixed direction (a
+/// galactic pole) by its geometric one, a construction of planes having
+/// no light to aberrate.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Reading, reading_of};
+/// use teistro_core::catalogue::Star;
+///
+/// assert_eq!(reading_of(Star::Spica), Reading::Longitude);
+/// assert_eq!(reading_of(Star::GalacticPole), Reading::GeometricLongitude);
+/// ```
+#[must_use]
+pub fn reading_of(star: Star) -> Reading {
+    match star.attributes().class {
+        StarClass::Direction => Reading::GeometricLongitude,
+        _ => Reading::Longitude,
     }
 }
 
@@ -589,10 +677,7 @@ pub fn value_deg(
 ) -> Result<f64, Error> {
     let mean = mean_deg(choice, at, model, delta_t_model)?;
     Ok(match basis {
-        Basis::True => {
-            let (date1, date2) = at.split();
-            normalise_deg(mean + nut00b(date1, date2).dpsi * RAD2DEG)
-        }
+        Basis::True => normalise_deg(mean + nutation_in_longitude_deg(basis, at)),
         // The mean value, and a basis core adds before this crate learns it.
         _ => mean,
     })

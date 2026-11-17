@@ -6026,9 +6026,10 @@ impl BatchOnce {
             Some(teistro_core::settings::AyanamshaChoice::Catalogued { id }) => {
                 (1, u64::from(id.id()))
             }
-            // A custom ayanamsha's coefficients are settings, and the
-            // settings hash pins them: a result carries what it applied.
-            Some(teistro_core::settings::AyanamshaChoice::Custom { .. }) => (2, 0),
+            // A custom ayanamsha's definition (a linear rate, a precessed
+            // value or a held star) is settings, and the settings hash
+            // pins it: a result carries what it applied.
+            Some(_) => (2, 0),
         };
         BatchOnce {
             readings: vec![

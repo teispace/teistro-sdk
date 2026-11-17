@@ -44,7 +44,6 @@ use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarSystem, shipped};
 use teistro_core::catalogue::{Ayanamsha, Calendar};
 use teistro_core::error::Error;
-use teistro_core::settings::AyanamshaChoice;
 use teistro_port_ephemeris::{EphemerisProvider, Models};
 
 use crate::context::Context;
@@ -66,25 +65,25 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
 /// basis, sunrise convention, override policy and Delta T model.
 ///
 /// One construction, because the chart founder, the almanac and the
-/// muhurta search each need it and must agree on it. A custom ayanamsha is
-/// a value rather than a catalogue member, and the model wants a member;
-/// Lahiri is what the boundary substitutes, so this substitutes the same.
+/// muhurta search each need it and must agree on it. A custom ayanamsha
+/// (a linear rate, a precessed value or a star held at a longitude) is
+/// the model's zodiac as a catalogued one is: the Sun is asked tropical
+/// and measured by the SDK's value of it (SR-112). Until SR-112 Lahiri
+/// stood in for every custom definition here, so the sankrantis and solar
+/// months kept Lahiri's zodiac while the chart took the custom one.
 pub(crate) fn drik_sun<'p>(
     context: &Context,
     provider: &'p (dyn EphemerisProvider + 'p),
 ) -> DrikSun<'p, dyn EphemerisProvider + 'p> {
     let settings = context.settings();
-    let ayanamsha = match settings.frame.ayanamsha {
-        AyanamshaChoice::Catalogued { id } => id,
-        AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
-    };
     DrikSun::new(
         provider,
-        ayanamsha,
+        Ayanamsha::Lahiri,
         settings.day.sunrise,
         settings.provider.overrides,
         context.delta_t(),
     )
+    .with_ayanamsha_choice(settings.frame.ayanamsha)
     // The settings' basis, as every other sidereal place the context
     // gives: without it the model's sankrantis, which the lunar month's
     // adhika test counts, kept the mean basis under every profile,

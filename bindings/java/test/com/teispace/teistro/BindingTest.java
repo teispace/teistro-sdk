@@ -366,6 +366,34 @@ public final class BindingTest {
             BytesInUse.givesBack(inUse.get(), () -> check(!context(teistro).profile().isEmpty(), "a profile"));
         });
 
+        // A custom ayanamsha a settings document names (SR-112): Spica held at
+        // 180° founds the chart where True Chitra does, and the chart says the
+        // zodiac is the settings' own; a value carried by a named precession
+        // is accepted too.
+        tests.put("a custom ayanamsha held by a star is the catalogued member it restates", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = context(teistro)) {
+                // The offset, and whether the zodiac is the settings' own, read
+                // while the derived context is open.
+                java.util.function.Function<Map<String, Object>, double[]> at = ayanamsha -> {
+                    try (Context custom = sky.withSettings(Map.of("frame", Map.of("ayanamsha", ayanamsha)))) {
+                        Chart chart = custom.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.none());
+                        check(chart.ayanamsha().isEmpty() == chart.ayanamshaCustom(), "a member or the settings' own");
+                        return new double[] {chart.ayanamshaOffsetDeg(), chart.ayanamshaCustom() ? 1 : 0};
+                    }
+                };
+                double[] held = at.apply(Map.of("kind", "ANCHORED", "star", "SPICA", "longitude_deg", 180.0));
+                double[] member = at.apply(Map.of("kind", "CATALOGUED", "id", "TRUE_CHITRA"));
+                same(List.of(1.0, 0.0), List.of(held[1], member[1]), "the held star is the settings' own zodiac");
+                check(Math.abs(held[0] - member[0]) < 1e-9, "True Chitra's offset");
+                double[] precessed = at.apply(Map.of("kind", "PRECESSED", "epoch_jd_tt", 2_435_553.5,
+                        "value_deg", 23.245560954594648, "basis", "MEAN", "precession", "IAU_2006"));
+                double[] lahiri = at.apply(Map.of("kind", "CATALOGUED", "id", "LAHIRI"));
+                same(1.0, precessed[1], "a precessed value is the settings' own");
+                check(Math.abs(precessed[0] - lahiri[0]) * 3600 < 0.01, "Lahiri to 0.01 arcseconds");
+            }
+        });
+
         tests.put("charts and positions give back their answers", () -> {
             if (inUse.isEmpty()) {
                 System.out.println("skip  the allocator's bytes in use cannot be read faithfully here");

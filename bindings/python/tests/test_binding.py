@@ -2154,6 +2154,36 @@ class AnEngine(WithLibrary):
             self.assertIsNone(western.ayanamsha)
             self.assertFalse(western.ayanamsha_custom)
 
+        # A custom ayanamsha a settings document names (SR-112): Spica held
+        # at 180° founds the chart where True Chitra does, and the chart says
+        # the zodiac is the settings' own; a value carried by a named
+        # precession is accepted too.
+        def under(ayanamsha: dict[str, object]) -> float:
+            with self.teistro.context(
+                profile=PROFILE,
+                settings={"frame": {"ayanamsha": ayanamsha}},
+                test_provider=True,
+            ) as custom:
+                found = custom.chart.found(
+                    instant=2451545.0, place=observer, utc_offset_seconds=20700
+                )
+                self.assertEqual(found.ayanamsha_custom, ayanamsha["kind"] != "CATALOGUED")
+                return found.ayanamsha_offset_deg
+
+        held = under({"kind": "ANCHORED", "star": "SPICA", "longitude_deg": 180.0})
+        self.assertAlmostEqual(held, under({"kind": "CATALOGUED", "id": "TRUE_CHITRA"}), delta=1e-9)
+        precessed = under(
+            {
+                "kind": "PRECESSED",
+                "epoch_jd_tt": 2435553.5,
+                "value_deg": 23.245560954594648,
+                "basis": "MEAN",
+                "precession": "IAU_2006",
+            }
+        )
+        lahiri = under({"kind": "CATALOGUED", "id": "LAHIRI"})
+        self.assertLess(abs(precessed - lahiri) * 3600, 0.01)
+
         # Both house readings are kept; the chalit is the other twelve,
         # each with its own centre and opening cusp.
         chalit = chart.chalit

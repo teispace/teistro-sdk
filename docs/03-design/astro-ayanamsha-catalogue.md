@@ -35,8 +35,9 @@ centre or a galactic pole read the star table's place of date
 ## 2. Inputs, settings and ports
 
 An instant in TT (a UT1 instant goes through the Delta T model first);
-the `frame.ayanamsha` knob (`AyanamshaChoice`: a catalogued member or a
-custom epoch, value and rate); the `frame.ayanamsha_basis` knob (`MEAN`,
+the `frame.ayanamsha` knob (`AyanamshaChoice`: a catalogued member, a
+custom epoch, value and rate, a value carried by a named precession, or
+a star held at a longitude, `astro-custom-ayanamsha.md`); the `frame.ayanamsha_basis` knob (`MEAN`,
 the value a sidereal longitude subtracts, or `TRUE`, with the nutation
 in longitude added); the precession model (`PrecessionModel`, Vondrák
 2011 by default) and the Delta T model for epochs stated in Universal
@@ -181,8 +182,11 @@ boundary audit's A1, B2 and A6).
 
 **A custom definition.** `AyanamshaChoice::Custom { epoch_jd_tt,
 value_deg, rate_deg_per_year }` is linear: the value plus the rate times
-the Julian years since the epoch. A custom value carried by precession
-instead is an `Epoch` definition through the Rust API.
+the Julian years since the epoch. `PRECESSED` carries a value at an epoch
+by a precession model it names, by the construction above, stated on a
+basis of its own; `ANCHORED` holds a star of the table at a sidereal
+longitude, read as the anchored members are (SR-112,
+`astro-custom-ayanamsha.md`).
 
 **The rate** (`speed_deg_per_day`). A central difference of the mean
 value over a day: the general precession, about 50.29″ a year.
@@ -284,9 +288,9 @@ None: the members are catalogue keys; their names are the locale packs'.
    ecliptic of J2000, J1900, B1950 or Mardyks's epoch are a completion
    step (the `equinox` step of `astro-timescales-and-frames.md`); until
    it exists the SDK gives these members' values on the ecliptic of date.
-3. **A precessed custom definition** is expressible in Rust as an
-   `Epoch`; whether the settings knob should carry one beside the linear
-   form waits for a consumer who needs it.
+3. **A precessed custom definition** is a settings form since SR-112
+   (`PRECESSED`), with a star held at a longitude (`ANCHORED`) beside it
+   (`astro-custom-ayanamsha.md`, C2160 to C2166).
 4. **Delta T at ancient epochs.** The Universal Time epochs differ from
    Teimeris's by the two Delta T models' disagreement in antiquity, a
    few seconds and 2.1e-4″ of ayanamsha; both are inside every stated
