@@ -14,6 +14,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
+use teistro_astro::events::FrameLongitudes;
 use teistro_astro::lockstep::Lockstep;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
@@ -54,7 +55,7 @@ use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, MoonriseAt, Origin, OriginFound, SunEntry,
 };
 use crate::first_year::{self, FirstYear, FirstYearSchedule};
-use crate::limb::{self, Limbs, RangeCrossings, Reach, Zodiac};
+use crate::limb::{self, LimbAngles, Limbs, RangeCrossings, Reach, Zodiac};
 use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
@@ -1306,6 +1307,24 @@ struct Input {
     altitude_m: f64,
 }
 
+/// What the angles' answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct AnglesInput {
+    jds_utc: Vec<f64>,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+}
+
+/// The most instants one call to [`Almanac::limb_angles`] reads: a day at a
+/// minute's step, and room besides.
+///
+/// ```
+/// assert_eq!(teistro_panchanga::almanac::MOST_ANGLE_INSTANTS, 4_096);
+/// ```
+pub const MOST_ANGLE_INSTANTS: usize = 4_096;
+
 /// What a sankalpa's answer is a function of.
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -2355,11 +2374,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         at: JulianDay<Utc>,
         place: &Place,
     ) -> Result<Nakshatra, Error> {
-        let (frame, zodiac) = self.at_instant(completion, at)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (_, zodiac, longitudes) = self.limb_sky(completion, at, place)?;
         limb::sun_nakshatra_near(&longitudes, at, zodiac)
     }
 
@@ -2463,11 +2478,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     pub fn homa_ahuti(&self, days: &mut [Panchanga], place: &Place) -> Result<(), Error> {
         let completion = self.completion();
         for day in days.iter_mut() {
-            let (frame, zodiac) = self.at_instant(&completion, day.window.from)?;
-            let mut longitudes = completion.longitudes(frame);
-            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-                longitudes = longitudes.with_observer(*place);
-            }
+            let (_, zodiac, longitudes) = self.limb_sky(&completion, day.window.from, place)?;
             let sun = limb::nakshatras_of(&longitudes, Body::Sun, day.window, zodiac)?;
             day.homa_ahuti = omen::homa_ahuti(&day.limbs.nakshatra, &sun, day.window);
         }
@@ -2532,11 +2543,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }) {
                 continue;
             }
-            let (frame, zodiac) = self.at_instant(&completion, day.sunrise)?;
-            let mut longitudes = completion.longitudes(frame);
-            if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-                longitudes = longitudes.with_observer(*place);
-            }
+            let (_, zodiac, longitudes) = self.limb_sky(&completion, day.sunrise, place)?;
             let lunation_at = |at: f64| {
                 let at = JulianDay::try_new(at)?;
                 limb::lunar_month_span(&longitudes, Interval::new(at, next_by(at, 1.0))?, zodiac)
@@ -2637,11 +2644,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                         arc
                     } else {
                         let at = JulianDay::<Utc>::literal(inside);
-                        let (frame, zodiac) = self.at_instant(&completion, at)?;
-                        let mut longitudes = completion.longitudes(frame);
-                        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-                            longitudes = longitudes.with_observer(*place);
-                        }
+                        let (_, zodiac, longitudes) = self.limb_sky(&completion, at, place)?;
                         let span = limb::moon_between(&longitudes, at, zodiac, (from_deg, to_deg))?;
                         let arc = MoonArc {
                             from_deg,
@@ -2907,6 +2910,93 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         })
     }
 
+    /// The Sun's and the Moon's sidereal longitudes at each instant as
+    /// this almanac's limbs read them, with the elongation and the yoga's
+    /// sum (SR-137, `03-design/panchanga-reach.md` §3): the profile's
+    /// ayanamsha and its basis, the panchanga's centre, the positions
+    /// (apparent or true), a custom ayanamsha, and a provider that defines
+    /// its own zodiac, each honoured because the sky is the one every day's
+    /// limbs are found in ([`Almanac::limb_sky`]), not a frame built beside
+    /// it. So a wheel drawn from these angles and a day's limbs never
+    /// disagree: at an instant the limb search found, the angle sits on the
+    /// limb's grid to the search's tolerance.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// let day = almanac.day(&CalendarDate::defined(Calendar::Gregorian, 2026, 11, 25), &kathmandu)?.value;
+    /// // The angles where the day's first tithi ends: on the twelve-degree grid.
+    /// let end = day.limbs.tithi[0].whole.to;
+    /// let angles = almanac.limb_angles(&[end], &kathmandu)?.value;
+    /// let off = angles[0].elongation_deg - (angles[0].elongation_deg / 12.0).round() * 12.0;
+    /// assert!(off.abs() < 1e-4);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for no instants or more than
+    /// [`MOST_ANGLE_INSTANTS`], and an instant the provider refuses.
+    pub fn limb_angles(
+        &self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+    ) -> Result<Envelope<Vec<LimbAngles>>, Error> {
+        let Some(first) = instants.first().copied() else {
+            return Err(
+                Error::invalid_arg("the angles are asked at one instant or more")
+                    .with_field("instants"),
+            );
+        };
+        if instants.len() > MOST_ANGLE_INSTANTS {
+            return Err(Error::invalid_arg(format!(
+                "the angles are asked at {} instants, more than the {MOST_ANGLE_INSTANTS} one call reads",
+                instants.len()
+            ))
+            .with_field("instants")
+            .with_hint("ask in several calls"));
+        }
+        let completion = self.completion();
+        // The frame and the search zodiac do not depend on the instant (the
+        // ayanamsha is read at each instant the source is asked), so one
+        // reading serves every instant, as one serves a whole day.
+        let (frame, zodiac, longitudes) = self.limb_sky(&completion, first, place)?;
+        let value = instants
+            .iter()
+            .map(|at| limb::angles_at(&longitudes, *at, zodiac))
+            .collect::<Result<Vec<_>, Error>>()?;
+        let provenance = self.provenance_at(
+            content_hash(&AnglesInput {
+                jds_utc: instants.iter().map(|at| at.get()).collect(),
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+            }),
+            frame,
+            Some(first),
+        );
+        Ok(Envelope::new(value, provenance))
+    }
+
     /// The time a sankalpa recites for a rite begun at `at`
     /// (`03-design/sankalpa.md`): the day's year, ayana, season and month
     /// as its sunrise holds them, and the tithi, nakshatra, yoga, karana
@@ -2975,11 +3065,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .next()
             .ok_or_else(|| Error::internal("a day's own range answered no lunar year"))?;
         let completion = self.completion();
-        let (instant_frame, zodiac) = self.at_instant(&completion, at)?;
-        let mut longitudes = completion.longitudes(instant_frame);
-        if instant_frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (_, zodiac, longitudes) = self.limb_sky(&completion, at, place)?;
         let sign = |body: Body, from: JulianDay<Utc>, zodiac: Zodiac| -> Result<Rashi, Error> {
             Self::signs(
                 &longitudes,
@@ -3676,11 +3762,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         if at.get() < completion.coverage().from {
             return Ok(None);
         }
-        let (frame, zodiac) = self.at_instant(completion, at)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (_, zodiac, longitudes) = self.limb_sky(completion, at, place)?;
         crate::year::chaitra_opening_within(&longitudes, zodiac, at)
     }
 
@@ -3694,11 +3776,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
         opened: JulianDay<Utc>,
     ) -> Result<Vec<YearRuler>, Error> {
-        let (frame, zodiac) = self.at_instant(completion, opened)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (_, zodiac, longitudes) = self.limb_sky(completion, opened, place)?;
         let year = rulers::events(&longitudes, zodiac, opened)?;
         year.offices
             .into_iter()
@@ -3766,11 +3844,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Interval::new(day.sunrise, day.sunset)?;
         Interval::new(day.sunset, day.next_sunrise)?;
         let completion = self.completion();
-        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (frame, zodiac, longitudes) = self.limb_sky(&completion, window.from, place)?;
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
         let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
             .with_margins(day.sunrise, day.next_sunrise);
@@ -3799,11 +3873,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Interval::new(day.sunrise, day.sunset)?;
         Interval::new(day.sunset, day.next_sunrise)?;
         let completion = self.completion();
-        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (frame, zodiac, longitudes) = self.limb_sky(&completion, window.from, place)?;
         let known = memo.crossings_for(
             Reach::Elongation,
             &longitudes,
@@ -3835,11 +3905,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let (day, _) = self.local_day_of(&date, fixed, place, memo)?;
         let window = self.window(&day)?;
         let completion = self.completion();
-        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (frame, zodiac, longitudes) = self.limb_sky(&completion, window.from, place)?;
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
         let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
             .with_margins(day.sunrise, day.next_sunrise);
@@ -3849,7 +3915,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .as_ref()
             .filter(|_| frame.centre != teistro_port_ephemeris::Centre::Topocentric);
         let moon_signs = limb::signs_known(
-            &completion.longitudes(frame),
+            &completion.longitudes(limb::geocentric(frame)),
             Body::Moon,
             window,
             zodiac,
@@ -3893,11 +3959,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let completion = self.completion();
         // One ayanamsha evaluation for the day; everything below reads
         // it rather than asking again at the same instant.
-        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
-        let mut longitudes = completion.longitudes(frame);
-        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
-            longitudes = longitudes.with_observer(*place);
-        }
+        let (frame, zodiac, longitudes) = self.limb_sky(&completion, window.from, place)?;
         let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
         let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?
             .with_margins(day.sunrise, day.next_sunrise);
@@ -4088,6 +4150,28 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok((frame, searched.zodiac))
     }
 
+    /// The sky a day's limbs are read in at `at`: the profile's frame at
+    /// the panchanga's centre, its search zodiac, and the longitudes over
+    /// that frame, seen from `place` when the centre is topocentric.
+    ///
+    /// Every limb, sign, month and year the almanac finds reads its sky
+    /// here, and so does [`Almanac::limb_angles`]: the one road from a profile
+    /// to the panchanga's longitudes, so a wheel drawn from the angles and
+    /// a day's limbs never disagree (SR-137).
+    fn limb_sky<'c>(
+        &self,
+        completion: &'c Completion<'c, P>,
+        at: JulianDay<Utc>,
+        place: &Place,
+    ) -> Result<(Frame, Zodiac, FrameLongitudes<'c, P>), Error> {
+        let (frame, zodiac) = self.at_instant(completion, at)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        Ok((frame, zodiac, longitudes))
+    }
+
     /// The lunar month: the amanta month the new moon's solar sign names,
     /// and the purnimanta one that follows from the tithi the day opens
     /// in.
@@ -4218,7 +4302,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             MoonEvents::CivilDay => (first_only(rises), first_only(sets)),
             _ => (rises, sets),
         };
-        let longitudes = completion.longitudes(frame);
+        // The Moon's signs are geocentric whatever the limbs' centre: a
+        // topocentric frame has no observer here, and its parallax would
+        // move a sign's ingress by up to an hour.
+        let longitudes = completion.longitudes(limb::geocentric(frame));
         Ok(MoonDay {
             rises,
             sets,

@@ -467,6 +467,35 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
     });
 }
 
+/// The limbs' angles and the season's blackouts
+/// (`03-design/panchanga-reach.md`): each answer and each refusal's record
+/// given back.
+#[test]
+fn the_panchangas_reach_gives_back_its_answers() {
+    let ctx = builtin();
+    let reach: [(&str, JsonEntry, &str); 2] = [
+        (
+            "the limbs' angles",
+            teistro_ffi::panchanga::ts_almanac_limb_angles,
+            r#"{"instants": [2461345.25, 2461360.5], "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337}"#,
+        ),
+        (
+            "the season's blackouts",
+            teistro_ffi::panchanga::ts_almanac_blackouts,
+            r#"{"first": {"year": 2026, "month": 5, "day": 1}, "last": {"year": 2026, "month": 6, "day": 30}, "utcOffsetSeconds": 20700}"#,
+        ),
+    ];
+    for (family, entry, request) in reach {
+        holds_nothing(family, || {
+            assert_eq!(json(&ctx, entry, request), Status::Ok);
+        });
+        holds_nothing(&format!("{family} refused, and its record"), || {
+            assert_ne!(json(&ctx, entry, "{\"unknown\": 1}"), Status::Ok);
+            drop(ctx.last_error());
+        });
+    }
+}
+
 /// A signed pack, two names matched, the engine's own calls (which the
 /// built-in refuses), a layout's row and a loaded pack: every answer and
 /// every refusal's record given back.

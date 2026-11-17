@@ -928,6 +928,7 @@ pub fn records() -> Vec<Record> {
     all.push(cells_record());
     all.push(sky_view_record());
     all.push(sky_pose_record());
+    all.extend(reach_records());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
     all.extend(almanac_words_records());
@@ -1723,6 +1724,40 @@ fn sky_pose_record() -> Record {
         ]),
         schemas: schemas!(fn crate::sky_view_request::pose_schema => crate::sky_pose::SkyPose, parts: []),
     }
+}
+
+/// What reaches past the muhurta family (`03-design/panchanga-reach.md`):
+/// the panchanga's own longitudes at instants, and the season's
+/// blackouts over a range.
+fn reach_records() -> [Record; 2] {
+    [
+        Record {
+            name: "almanac.limbAngles",
+            boundary: "ts_almanac_limb_angles",
+            title: "The Sun's and the Moon's sidereal longitudes at instants as the panchanga's limbs read them, with the elongation and the yoga's sum",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::LimbAnglesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().limb_angles_request(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::limb_angles_request::LimbAnglesAsked => Vec<crate::LimbAngles>),
+        },
+        Record {
+            name: "almanac.blackouts",
+            boundary: "ts_almanac_blackouts",
+            title: "The blackouts the Sun and the Moon make over a range of days (Chaturmas, an adhika month, Kharmas and the rest) by the profile",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::BlackoutsRequest::from_json(json)?;
+                Answered::sealed(context.almanac().blackouts_request(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::blackouts_request::BlackoutsAsked => Vec<crate::Blackout>),
+        },
+    ]
 }
 
 /// What a text claims of the time, checked against the sankalpa at an

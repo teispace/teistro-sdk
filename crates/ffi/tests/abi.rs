@@ -11885,6 +11885,87 @@ fn a_sky_pose_crosses_as_the_facade_answers_it() {
     assert_eq!(status, Status::InvalidArg);
 }
 
+/// The limbs' angles crossed: the façade's answer, and no instant refused
+/// by name (`03-design/panchanga-reach.md` §3).
+#[test]
+fn the_limbs_angles_cross_as_the_facade_answers_them() {
+    let asked = r#"{"instants": [2461345.25, 2461360.5], "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let request = CString::new(asked).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_limb_angles(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    assert_eq!(status, Status::Ok);
+    let crossed: serde_json::Value = serde_json::from_str(&owned(json)).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .limb_angles_request(&teistro::LimbAnglesRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"].as_array().map(Vec::len), Some(2));
+    let none = CString::new(r#"{"instants": [], "latitudeDeg": 0, "longitudeDeg": 0}"#).unwrap();
+    let mut refused = TsString::empty();
+    // SAFETY: as above.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_limb_angles(ctx.handle, none.as_ptr(), &raw mut refused)
+    };
+    // SAFETY: the empty descriptor a refusal leaves.
+    unsafe { ts_string_free(&raw mut refused) };
+    assert_eq!(status, Status::InvalidArg);
+}
+
+/// The season's blackouts crossed: the façade's answer with each kind in
+/// full, and asta refused (`03-design/panchanga-reach.md` §2).
+#[test]
+fn the_blackouts_cross_as_the_facade_answers_them() {
+    let asked = r#"{"first": {"year": 2026, "month": 1, "day": 1}, "last": {"year": 2026, "month": 12, "day": 31},
+        "utcOffsetSeconds": 20700, "kinds": ["CHATURMAS", "ADHIKA_MASA", "KHARMAS"]}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let request = CString::new(asked).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_blackouts(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    assert_eq!(status, Status::Ok);
+    let crossed: serde_json::Value = serde_json::from_str(&owned(json)).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .blackouts_request(&teistro::BlackoutsRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"][2]["kind"], "blackout_kind.ADHIKA_MASA");
+    let asta = CString::new(asked.replace("\"KHARMAS\"", "\"GURU_ASTA\"")).unwrap();
+    let mut refused = TsString::empty();
+    // SAFETY: as above.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_blackouts(ctx.handle, asta.as_ptr(), &raw mut refused)
+    };
+    // SAFETY: the empty descriptor a refusal leaves.
+    unsafe { ts_string_free(&raw mut refused) };
+    assert_eq!(status, Status::InvalidArg);
+}
+
 /// A finder's answer crossed: `entry` called on a context (and, for the
 /// observance finder, an other), the JSON owned.
 fn finder_json(

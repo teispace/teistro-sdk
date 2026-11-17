@@ -1,0 +1,40 @@
+---
+title: ts_almanac_limb_angles
+description: "The Sun's and the Moon's sidereal longitudes at instants as the panchanga's limbs read them (SR-137, `03-design/panchanga-reach.md` §3), answered with `{value, provenance}` as canonical JSON."
+---
+
+The Sun's and the Moon's sidereal longitudes at instants as the panchanga's limbs read them (SR-137, `03-design/panchanga-reach.md` §3), answered with `{value, provenance}` as canonical JSON.
+
+`value` is a list, one `{at, sunDeg, moonDeg, elongationDeg, yogaDeg}` for each instant asked and in its order: the two sidereal longitudes, the Moon less the Sun (the tithi's and the karana's angle) and the Moon plus the Sun (the yoga's), each in degrees from 0 to 360, read in the sky every almanac day's limbs are found in. Every knob of the profile is honoured as the limbs honour it: the ayanamsha and its basis, a custom ayanamsha, the panchanga's centre, true or apparent positions and a provider that defines its own zodiac; so at a limb's end the day's search found, the angle sits on the limb's grid to the search's tolerance.
+
+`request_json` is `{"instants", "latitudeDeg", "longitudeDeg", "altitudeM"}`: one to 4096 UTC Julian days and the place, whose Moon a topocentric panchanga reads; `altitudeM` is 0 when left out. No instants, too many, an instant that is not finite or a place out of range is `INVALID_ARG`, named under `limbAngles`; a context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_limb_angles(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.limb_angles` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

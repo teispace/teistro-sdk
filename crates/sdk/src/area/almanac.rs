@@ -16,14 +16,10 @@ use teistro_core::envelope::{Convention, Envelope, Hash, Provenance, content_has
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-#[cfg(feature = "muhurta")]
-use teistro_core::settings::EclipseVedha;
 use teistro_core::settings::LunarMonth;
 use teistro_core::time::{LocalClock, UtcOffset};
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
-#[cfg(feature = "muhurta")]
-use teistro_muhurta::season::{SeenEclipse, SeenKind, VEDHA_DAYS_AROUND, vedha_over_days};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::ashauch::{
     Ashauch, AshauchRequest, AshauchTable, Household, HouseholdAnswer,
@@ -41,6 +37,7 @@ use teistro_panchanga::nepal_sambat::NepalSambatDate;
 use teistro_panchanga::omen::PRINTED_CONVENTIONS;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 use teistro_panchanga::span::Span;
+use teistro_panchanga::vedha::with_vedhas;
 use teistro_panchanga::year::LunarYear;
 use teistro_time::DayState;
 
@@ -423,8 +420,6 @@ impl<'a> AlmanacArea<'a> {
         noon_of(system_of(date.calendar)?.fixed_of(date)?)
     }
 
-    /// Runs `work` over this context's almanac for a range written in
-    /// `from`'s calendar, on `offset`'s clock.
     /// Work over this context's almanac on the Gregorian calendar and
     /// UTC: what reads instants rather than days, as its coverage
     /// (`Context::coverage`).
@@ -435,7 +430,9 @@ impl<'a> AlmanacArea<'a> {
         self.with_almanac(Calendar::Gregorian, UtcOffset::UTC, work)
     }
 
-    fn with_almanac<T>(
+    /// Runs `work` over this context's almanac for a range written in
+    /// `from`'s calendar, on `offset`'s clock.
+    pub(crate) fn with_almanac<T>(
         self,
         calendar: Calendar,
         offset: UtcOffset,
@@ -1352,17 +1349,14 @@ impl<'a> AlmanacArea<'a> {
         let found = Eclipses::new(&sky, delta_t)
             .with_shadow(ShadowRule::of_setting(settings.panchanga.eclipse_shadow)?)
             .here_between(start.relabel(), end.relabel(), *place, &horizon)?;
-        // The sutak is the muhurta family's window, and a build without it
-        // answers each eclipse's `vedha` as `None`.
-        #[cfg(feature = "muhurta")]
-        let found = {
-            let mut found = found;
-            let vedha = settings.panchanga.eclipse_vedha;
-            self.with_almanac(from.calendar, offset, |almanac| {
-                with_vedhas(&mut found, (almanac, calendar, &offset), place, vedha)
-            })?;
-            found
-        };
+        // The sutak is the almanac's, so every build answers it (SR-132).
+        let mut found = found;
+        let vedha = settings.panchanga.eclipse_vedha;
+        self.with_almanac(from.calendar, offset, |almanac| {
+            with_vedhas(&mut found, vedha, calendar, &offset, |date| {
+                Ok(almanac.day(date, place)?.value)
+            })
+        })?;
         let mut provenance = self.context.stamped(
             content_hash(&EclipseInput {
                 from: from.to_string(),
@@ -2327,48 +2321,6 @@ fn hijri_convention(provenance: &mut Provenance, offset: HijriOffset) {
             ),
         });
     }
-}
-
-/// Each seen eclipse's vedha, read off the almanac's days around its first
-/// moment seen (`muhurta.md` §4.1.1): the window the muhurta search bars
-/// as `ECLIPSE_VEDHA`, here on the eclipse itself.
-#[cfg(feature = "muhurta")]
-fn with_vedhas(
-    found: &mut EclipsesHere,
-    (almanac, calendar, clock): (
-        &Almanac<'_, dyn EphemerisProvider + '_>,
-        &dyn CalendarSystem,
-        &UtcOffset,
-    ),
-    place: &Place,
-    rule: EclipseVedha,
-) -> Result<(), Error> {
-    for seen in SeenEclipse::all_of(found)? {
-        let first = JulianDay::<Utc>::literal(seen.seen.from.get());
-        let (fixed, _) = FixedDay::from_local_jd(clock.local_jd(first));
-        let days = (-VEDHA_DAYS_AROUND..=VEDHA_DAYS_AROUND)
-            .map(|n| {
-                let date = calendar.date_of(fixed.plus_days(n))?;
-                Ok(almanac.day(&date, place)?.value)
-            })
-            .collect::<Result<Vec<Panchanga>, Error>>()?;
-        let vedha = Some(vedha_over_days(&seen, &days, rule)?.at);
-        let greatest = |at: f64| at.to_bits() == seen.greatest.to_bits();
-        if seen.kind == SeenKind::Solar {
-            for solar in &mut found.solar {
-                if greatest(solar.eclipse.greatest.get()) {
-                    solar.vedha = vedha;
-                }
-            }
-        } else {
-            for lunar in &mut found.lunar {
-                if greatest(lunar.eclipse.greatest.get()) {
-                    lunar.vedha = vedha;
-                }
-            }
-        }
-    }
-    Ok(())
 }
 
 /// The noon of a day, in UTC: where a day's clock is read, away from any

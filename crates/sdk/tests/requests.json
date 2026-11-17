@@ -1374,6 +1374,33 @@
     "request": {}
   },
   {
+    "record": "almanac.limbAngles",
+    "request": {
+      "instants": [2461345.25, 2461345.5],
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400
+    }
+  },
+  {
+    "record": "almanac.blackouts",
+    "request": {
+      "first": {
+        "year": 2026,
+        "month": 5,
+        "day": 1
+      },
+      "last": {
+        "year": 2026,
+        "month": 12,
+        "day": 31
+      },
+      "calendar": "calendar.GREGORIAN",
+      "utcOffsetSeconds": 20700,
+      "kinds": ["CHATURMAS", "ADHIKA_MASA", "KHARMAS"]
+    }
+  },
+  {
     "record": "almanac.occurrences",
     "request": {
       "fromYear": 2080,

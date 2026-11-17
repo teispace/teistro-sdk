@@ -20213,6 +20213,108 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_limb_angles",
+      "doc": "The Sun's and the Moon's sidereal longitudes at instants as the\npanchanga's limbs read them (SR-137, `03-design/panchanga-reach.md`\n§3), answered with `{value, provenance}` as canonical JSON.\n\n`value` is a list, one `{at, sunDeg, moonDeg, elongationDeg, yogaDeg}`\nfor each instant asked and in its order: the two sidereal longitudes,\nthe Moon less the Sun (the tithi's and the karana's angle) and the\nMoon plus the Sun (the yoga's), each in degrees from 0 to 360, read in\nthe sky every almanac day's limbs are found in. Every knob of the\nprofile is honoured as the limbs honour it: the ayanamsha and its\nbasis, a custom ayanamsha, the panchanga's centre, true or apparent\npositions and a provider that defines its own zodiac; so at a limb's\nend the day's search found, the angle sits on the limb's grid to the\nsearch's tolerance.\n\n`request_json` is `{\"instants\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\"}`: one to 4096 UTC Julian days and the place, whose Moon a\ntopocentric panchanga reads; `altitudeM` is 0 when left out. No\ninstants, too many, an instant that is not finite or a place out of\nrange is `INVALID_ARG`, named under `limbAngles`; a context without an\nephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_blackouts",
+      "doc": "The blackouts the Sun and the Moon make over a range of civil days by\nthe context's profile (SR-138, `03-design/panchanga-reach.md` §2),\nanswered with `{value, provenance}` as canonical JSON.\n\n`value` is a list of `{kind, at}` in order of their start: `kind` a\n`blackout_kind` key (`CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`,\n`KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or\n`HOLASHTAKA`), and `at` `{from, to}`, the UTC Julian days it holds\nover, clipped to the range from the first day's local midnight to the\nmidnight after the last. The rule is the muhurta search's own season,\nread in the profile's chart zodiac at the range's middle, geocentric,\nand is in every build.\n\n`request_json` is `{\"first\", \"last\", \"calendar\", \"utcOffsetSeconds\",\n\"zone\", \"kinds\"}`: `first` and `last` (the first when left out) as\n`{year, month, day}` in `calendar` (Gregorian when left out), the\noffset or the zone the midnights are read on (one of them), and the\nkinds wanted, every one when left out. A kind the Sun and the Moon do\nnot make (asta, an eclipse's star or vedha), both or neither clock\nfield, or a range the wrong way round is `INVALID_ARG`, named under\n`blackouts`; a context without an ephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_naam_milan",
       "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or in the Latin scheme `rules.name.latin` declares, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, a `CASUAL` name read more than one\nway, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,\nnamed under `naam.bride` or `naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",

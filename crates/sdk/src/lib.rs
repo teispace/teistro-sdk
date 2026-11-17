@@ -125,6 +125,7 @@ mod antiscia;
 mod ashauch_request;
 #[cfg(feature = "chart")]
 mod band_request;
+mod blackouts_request;
 #[cfg(feature = "chart")]
 mod compose;
 #[cfg(feature = "western")]
@@ -145,6 +146,7 @@ mod ishta_devata;
 mod kp_request;
 #[cfg(feature = "lalkitab")]
 mod lalkitab_request;
+mod limb_angles_request;
 #[cfg(feature = "chart")]
 mod matching_chart;
 #[cfg(feature = "western")]
@@ -323,7 +325,17 @@ pub use teistro_astro::day_sky;
 pub use teistro_astro::terrain;
 // The sky at a place and an instant (`03-design/sky-view.md`).
 pub use crate::sky_view_request::{SkyPoseRequest, SkyViewRequest};
+// The panchanga's own sidereal longitudes at instants (SR-137,
+// `03-design/panchanga-reach.md` §3): what `sdk.almanac().limb_angles`
+// asks and answers with.
+pub use crate::limb_angles_request::LimbAnglesRequest;
+pub use teistro_panchanga::limb::LimbAngles;
+// The season the Sun and the Moon make, in every build (SR-138,
+// `03-design/panchanga-reach.md` §2): what `sdk.almanac().blackouts` asks
+// and answers with, the rule the muhurta search's season reads.
+pub use crate::blackouts_request::BlackoutsRequest;
 pub use teistro_astro::sky_view;
+pub use teistro_panchanga::season::{Blackout, SKY_KINDS};
 // A device's camera pointed at that sky (`03-design/sky-pose.md`).
 pub use teistro_astro::sky_pose;
 // What a reading answers with, and the sections it holds: the document

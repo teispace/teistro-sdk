@@ -39,6 +39,8 @@ schemars = { version = "1.2", optional = true }
 ed25519-dalek = { version = "3", default-features = false }
 # The limbs' sunrise margins as a property (SR-95).
 proptest = "1"
+# The season's and the vedha's examples read a real sky's dates.
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin" }
 teistro-test-allocator = { path = "../test-allocator" }
 
 [lints]
