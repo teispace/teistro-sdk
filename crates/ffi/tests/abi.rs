@@ -6564,7 +6564,7 @@ fn a_context_s_observer_keeps_one_tradition_s_ekadashi() {
     };
     let every = fasts(None);
     let vaishnava = fasts(Some(r#"{"festivals": {"observer": "VAISHNAVA"}}"#));
-    assert!(!vaishnava.is_empty());
+    assert_ne!(vaishnava, []);
     assert_eq!(
         vaishnava,
         every
@@ -6578,8 +6578,7 @@ fn a_context_s_observer_keeps_one_tradition_s_ekadashi() {
         Some(r#"{"festivals": {"observer": "SHAIVA"}}"#),
         None,
     )
-    .err()
-    .expect("no tradition");
+    .unwrap_err();
     assert_eq!(refused.2.as_deref(), Some("settings.festivals.observer"));
 }
 

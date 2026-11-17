@@ -272,6 +272,10 @@ name = "festival"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "festival_observer"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "samvatsara"
 required-features = ["builtin-ephemeris"]
 

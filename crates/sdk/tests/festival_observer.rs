@@ -19,7 +19,7 @@ fn context(observer: Option<&str>) -> Context {
     let builder = Context::builder().ephemeris([Ephemeris::Builtin]);
     match observer {
         Some(observer) => builder
-            .settings_json(&format!(r#"{{"festivals": {{"observer": "{observer}"}}}}"#))
+            .settings_json(format!(r#"{{"festivals": {{"observer": "{observer}"}}}}"#))
             .build()
             .unwrap(),
         None => builder.build().unwrap(),
