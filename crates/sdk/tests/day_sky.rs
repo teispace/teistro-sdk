@@ -530,6 +530,9 @@ fn the_classical_moon_rises_where_her_parallax_puts_her() {
         // minutes (November 2026: rises -6.9, sets -4.1).
         assert!(sorted.len() >= 25, "{kind} {}", sorted.len());
         assert!(sorted[sorted.len() / 2].abs() < 10.0, "{kind} {sorted:?}");
-        assert!(sorted.iter().all(|minutes| minutes.abs() < 30.0), "{kind} {sorted:?}");
+        assert!(
+            sorted.iter().all(|minutes| minutes.abs() < 30.0),
+            "{kind} {sorted:?}"
+        );
     }
 }
