@@ -18,8 +18,9 @@ import java.util.Objects;
  * @param regions Where it is kept, as open keys: an ISO 3166-1 country first (`NP`, `IN`), then its ISO 3166-2 state (`IN-TN`) or a part of it no ISO code names (`KATHMANDU_VALLEY`), as `super::region::REGIONS` lists them; empty when no source says. Null leaves the SDK's default.
  * @param significance The tier a source marks it with, or a caller sets; unset when the fields above derive it (`FestivalMeta::tier`, §7 of the page). Null leaves the SDK's default.
  * @param tradition Its religion; unset when no source places it. Null leaves the SDK's default.
+ * @param variant The festival it is one tradition's reading of, and whose, where the texts give the festival another reading too (`03-design/festival-traditions.md` §3, SR-116); unset for a rule that is no tradition's reading, such as a government's day. What `festivals.observer` chooses by. It is a statement of the rule's, not a blank a source left, so `FestivalMeta::unsourced` does not name it. Null leaves the SDK's default.
  */
-public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, SignificanceMark significance, com.teispace.teistro.Tradition tradition) implements RequestJson {
+public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, SignificanceMark significance, com.teispace.teistro.Tradition tradition, Variant variant) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -39,7 +40,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
      *
      */
     public FestivalMeta() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -61,6 +62,7 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         private List<String> regions;
         private SignificanceMark significance;
         private com.teispace.teistro.Tradition tradition;
+        private Variant variant;
 
         private Builder() {}
 
@@ -142,13 +144,24 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         }
 
         /**
+         * Sets {@code variant}.
+         *
+         * @param variant The festival it is one tradition's reading of, and whose, where the texts give the festival another reading too (`03-design/festival-traditions.md` §3, SR-116); unset for a rule that is no tradition's reading, such as a government's day. What `festivals.observer` chooses by. It is a statement of the rule's, not a blank a source left, so `FestivalMeta::unsourced` does not name it. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder variant(Variant variant) {
+            this.variant = variant;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalMeta build() {
-            return new FestivalMeta(communities, fast, kind, optional, regions, significance, tradition);
+            return new FestivalMeta(communities, fast, kind, optional, regions, significance, tradition, variant);
         }
     }
 
@@ -168,7 +181,8 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
             Read.orNull(json.get("optional"), present -> Read.bool(present, "FestivalMeta.optional")),
             Read.orNull(json.get("regions"), present -> Read.list(present, "FestivalMeta.regions", item0 -> Read.text(item0, "FestivalMeta.regions"))),
             Read.orNull(json.get("significance"), present -> SignificanceMark.of(present)),
-            Read.orNull(json.get("tradition"), present -> Read.member(present, "FestivalMeta.tradition", com.teispace.teistro.Tradition::byKey)));
+            Read.orNull(json.get("tradition"), present -> Read.member(present, "FestivalMeta.tradition", com.teispace.teistro.Tradition::byKey)),
+            Read.orNull(json.get("variant"), present -> Variant.of(present)));
     }
 
     @Override
@@ -194,6 +208,9 @@ public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.t
         }
         if (tradition != null) {
             json.put("tradition", tradition.fullKey());
+        }
+        if (variant != null) {
+            json.put("variant", variant.toJson());
         }
         return json;
     }

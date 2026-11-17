@@ -389,6 +389,7 @@ final List<Surface> requests = [
     Param('altitudeM', Scalar('double')),
     Param('calendar', Named('Calendar')),
     Param('festivals', Named('FestivalRequest')),
+    Param('group', Scalar('String')),
     Param('kind', Named('NextKind')),
     Param('latitudeDeg', Scalar('double')),
     Param('limitDays', Scalar('int')),
@@ -396,7 +397,7 @@ final List<Surface> requests = [
     Param('rule', Scalar('String')),
     Param('utcOffsetSeconds', Scalar('int')),
     Param('zone', Scalar('Object')),
-  ], fields: (v) => [v.after, v.altitudeM, v.calendar, v.festivals, v.kind, v.latitudeDeg, v.limitDays, v.longitudeDeg, v.rule, v.utcOffsetSeconds, v.zone]),
+  ], fields: (v) => [v.after, v.altitudeM, v.calendar, v.festivals, v.group, v.kind, v.latitudeDeg, v.limitDays, v.longitudeDeg, v.rule, v.utcOffsetSeconds, v.zone]),
   Built<ObservanceRequest>('ObservanceRequest', ObservanceRequest.new, [
     Param('altitudeM', Scalar('double')),
     Param('calendar', Named('Calendar')),
@@ -409,6 +410,20 @@ final List<Surface> requests = [
     Param('year', Scalar('int')),
     Param('zone', Scalar('Object')),
   ], fields: (v) => [v.altitudeM, v.calendar, v.first, v.last, v.latitudeDeg, v.longitudeDeg, v.traditions, v.utcOffsetSeconds, v.year, v.zone]),
+  Built<OccurrencesRequest>('OccurrencesRequest', OccurrencesRequest.new, [
+    Param('altitudeM', Scalar('double')),
+    Param('calendar', Named('Calendar')),
+    Param('festivals', Named('FestivalRequest')),
+    Param('fromYear', Scalar('int')),
+    Param('group', Scalar('String')),
+    Param('kind', Named('NextKind')),
+    Param('latitudeDeg', Scalar('double')),
+    Param('longitudeDeg', Scalar('double')),
+    Param('rule', Scalar('String')),
+    Param('utcOffsetSeconds', Scalar('int')),
+    Param('years', Scalar('int')),
+    Param('zone', Scalar('Object')),
+  ], fields: (v) => [v.altitudeM, v.calendar, v.festivals, v.fromYear, v.group, v.kind, v.latitudeDeg, v.longitudeDeg, v.rule, v.utcOffsetSeconds, v.years, v.zone]),
   Built<PakshiRequest>('PakshiRequest', PakshiRequest.new, [
     Param('altitudeM', Scalar('double')),
     Param('calendar', Named('Calendar')),
@@ -1270,6 +1285,12 @@ final List<Surface> requests = [
     Param('rite', Named('AshauchRite')),
     Param('verdict', Named('RiteVerdict')),
   ], fields: (v) => [v.beginning, v.begun, v.calamity, v.clause, v.kind, v.noOtherWay, v.rite, v.verdict]),
+  Built<FestivalGroup>('FestivalGroup', FestivalGroup.new, [
+    Param('key', Scalar('String')),
+    Param('main', Scalar('String')),
+    Param('members', ListOf(Scalar('String'), (items) => List<String>.from(items))),
+    Param('source', Scalar('String')),
+  ], fields: (v) => [v.key, v.main, v.members, v.source]),
   Built<MetaPatch>('MetaPatch', MetaPatch.new, [
     Param('communities', ListOf(Scalar('String'), (items) => List<String>.from(items))),
     Param('fast', ListOf(Named('VrataFast'), (items) => List<VrataFast>.from(items))),
@@ -2179,7 +2200,8 @@ final List<Surface> requests = [
     Param('regions', ListOf(Scalar('String'), (items) => List<String>.from(items))),
     Param('significance', Named('SignificanceMark')),
     Param('tradition', Named('Tradition')),
-  ], fields: (v) => [v.communities, v.fast, v.kind, v.optional, v.regions, v.significance, v.tradition]),
+    Param('variant', Named('Variant')),
+  ], fields: (v) => [v.communities, v.fast, v.kind, v.optional, v.regions, v.significance, v.tradition, v.variant]),
   KeySet<SubjectTo>('SubjectTo', SubjectTo.values, (m) => m.key),
   Built<SaitRule>('SaitRule', SaitRule.new, [
     Param('choose', Named('SaitChoice')),
@@ -2408,6 +2430,10 @@ final List<Surface> requests = [
     Param('source', Scalar('String')),
     Param('tier', Named('Significance')),
   ], fields: (v) => [v.source, v.tier]),
+  Built<Variant>('Variant', Variant.new, [
+    Param('festival', Scalar('String')),
+    Param('observer', Named('Observer')),
+  ], fields: (v) => [v.festival, v.observer]),
   KeySet<SaitChoice>('SaitChoice', SaitChoice.values, (m) => m.key),
   Built<SaitRising>('SaitRising', SaitRising.new, [
     Param('freeOf', ListOf(Named('Graha'), (items) => List<Graha>.from(items))),
@@ -2569,6 +2595,7 @@ final List<Surface> requests = [
   KeySet<EnemySign>('EnemySign', EnemySign.values, (m) => m.key),
   KeySet<OfficeOrder>('OfficeOrder', OfficeOrder.values, (m) => m.key),
   KeySet<SettingPart>('SettingPart', SettingPart.values, (m) => m.key),
+  KeySet<Observer>('Observer', Observer.values, (m) => m.key),
   KeySet<RisingOf>('RisingOf', RisingOf.values, (m) => m.key),
   Sealed('SaitAvoid'),
   Built<SaitAvoidTithiStart>('SaitAvoidTithiStart', SaitAvoidTithiStart.new, [

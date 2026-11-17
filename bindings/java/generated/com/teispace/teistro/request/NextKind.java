@@ -8,7 +8,7 @@ package com.teispace.teistro.request;
  */
 public enum NextKind implements RequestJson {
     /**
-     * An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules (`EkadashiRule::dharmasindhu`); the earlier when they part.
+     * An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules (`EkadashiRule::dharmasindhu`); the earlier when they part. Each rule says whose reading it is, so `festivals.observer` keeps one observer's (`03-design/festival-traditions.md` §4).
      */
     EKADASHI("EKADASHI"),
     /**

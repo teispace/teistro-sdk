@@ -11,6 +11,7 @@ import java.util.Objects;
 /**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  *
+ * @param groups Festival groups, each put in place of a pack's group of its key or added after them: a festival kept over several rules' days, whose spans the answer gives (`03-design/festival-groups.md`). Null leaves the SDK's default.
  * @param hijriOffset The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out. Null leaves the SDK's default.
  * @param meta What a caller lays over the meta of the rules of each key: each field given replaces the rule's, a tier among them. Null leaves the SDK's default.
  * @param only What the answer keeps, by the rules' `meta`; every rule when left out. Null leaves the SDK's default.
@@ -18,7 +19,7 @@ import java.util.Objects;
  * @param published The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence. Null leaves the SDK's default.
  * @param rules The rules: a pack's name, or a list of names and rules spelt out.
  */
-public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, MetaFilter only, DayOrder order, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
+public record FestivalRequest(List<FestivalGroup> groups, Integer hijriOffset, Map<String, MetaPatch> meta, MetaFilter only, DayOrder order, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -27,6 +28,7 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
      * @throws NullPointerException naming the required field that is missing
      */
     public FestivalRequest {
+        groups = groups == null ? null : List.copyOf(groups);
         if (hijriOffset != null) {
             Read.range(hijriOffset, "FestivalRequest.hijriOffset", -128L, 127L);
         }
@@ -42,7 +44,7 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
      * @param rules The rules: a pack's name, or a list of names and rules spelt out.
      */
     public FestivalRequest(FestivalRules rules) {
-        this(null, null, null, null, null, rules);
+        this(null, null, null, null, null, null, rules);
     }
 
     /**
@@ -57,6 +59,7 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
 
     /** Builds a {@link FestivalRequest} a field at a time. */
     public static final class Builder {
+        private List<FestivalGroup> groups;
         private Integer hijriOffset;
         private Map<String, MetaPatch> meta;
         private MetaFilter only;
@@ -65,6 +68,17 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
         private FestivalRules rules;
 
         private Builder() {}
+
+        /**
+         * Sets {@code groups}.
+         *
+         * @param groups Festival groups, each put in place of a pack's group of its key or added after them: a festival kept over several rules' days, whose spans the answer gives (`03-design/festival-groups.md`). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder groups(List<FestivalGroup> groups) {
+            this.groups = groups;
+            return this;
+        }
 
         /**
          * Sets {@code hijriOffset}.
@@ -139,7 +153,7 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRequest build() {
-            return new FestivalRequest(hijriOffset, meta, only, order, published, rules);
+            return new FestivalRequest(groups, hijriOffset, meta, only, order, published, rules);
         }
     }
 
@@ -153,6 +167,7 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
     public static FestivalRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "FestivalRequest");
         return new FestivalRequest(
+            Read.orNull(json.get("groups"), present -> Read.list(present, "FestivalRequest.groups", item0 -> FestivalGroup.of(item0))),
             Read.orNull(json.get("hijriOffset"), present -> Read.int32(present, "FestivalRequest.hijriOffset")),
             Read.orNull(json.get("meta"), present -> Read.map(present, "FestivalRequest.meta", value0 -> MetaPatch.of(value0))),
             Read.orNull(json.get("only"), present -> MetaFilter.of(present)),
@@ -164,6 +179,9 @@ public record FestivalRequest(Integer hijriOffset, Map<String, MetaPatch> meta, 
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (groups != null) {
+            json.put("groups", groups.stream().map(item0 -> item0.toJson()).toList());
+        }
         if (hijriOffset != null) {
             json.put("hijriOffset", hijriOffset);
         }

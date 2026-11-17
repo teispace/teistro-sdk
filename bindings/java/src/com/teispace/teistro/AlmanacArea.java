@@ -1520,7 +1520,7 @@ public final class AlmanacArea {
                                     Reads.each(Reads.object(d), "keys", Reads::string))),
                             AlmanacReads.festivalsAnswer(Json.write(section)));
                 }),
-                Provenance.of(provenance));
+                com.teispace.teistro.record.Provenance.of(provenance));
     }
 
     /**

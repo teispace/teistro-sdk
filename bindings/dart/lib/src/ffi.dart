@@ -2210,6 +2210,8 @@ typedef TsAlmanacDigestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsAlmanacDigestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacOccurrencesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacOccurrencesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSentencesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSentencesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAnniversariesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2367,6 +2369,7 @@ final class TeistroLibrary {
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
+        ts_almanac_occurrences = library.lookupFunction<TsAlmanacOccurrencesNative, TsAlmanacOccurrencesDart>('ts_almanac_occurrences'),
         ts_almanac_sentences = library.lookupFunction<TsAlmanacSentencesNative, TsAlmanacSentencesDart>('ts_almanac_sentences'),
         ts_almanac_anniversaries = library.lookupFunction<TsAlmanacAnniversariesNative, TsAlmanacAnniversariesDart>('ts_almanac_anniversaries'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
@@ -3207,6 +3210,29 @@ final class TeistroLibrary {
   /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
   /// a context without an ephemeris `CAPABILITY`.
   final TsAlmanacNextDart ts_almanac_next;
+
+  /// Every day a festival rule or a kind of day falls on, year by year
+  /// over a span of years (`03-design/rule-years.md`), as canonical JSON
+  /// `{value, provenance}`: `value` is `{keys, years}`, the keys looked for
+  /// and each year of the span in order as `{year, first, last, days,
+  /// festivals}`, its first and last days, each day the target falls on
+  /// with the keys there (none, one or several), and the festival
+  /// reckoning's entries for the keys in the year, every catalogue member a
+  /// full key. The span's days are founded once.
+  ///
+  /// `request_json` is `{"fromYear", "years", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "calendar",
+  /// "kind", "rule", "group", "festivals"}`: `years` 1 to 50, counted in
+  /// `calendar` (Gregorian when left out), which the days are written in
+  /// too; one of `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`),
+  /// `rule` or `group`, the last two keys of `festivals`, a festival
+  /// request. A key it does not read, none or two of `kind`, `rule` and
+  /// `group`, a rule or group the festivals lack, a place or offset out of
+  /// range or a festival request its reader refuses is `INVALID_ARG`, named
+  /// under `occurrences` (a missing rule as `rule`, a missing group as
+  /// `group`); `years` out of range `OUT_OF_RANGE`, naming
+  /// `occurrences.years`; a context without an ephemeris `CAPABILITY`.
+  final TsAlmanacOccurrencesDart ts_almanac_occurrences;
 
   /// One day's facts as short declarative sentences
   /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
@@ -8192,6 +8218,38 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_next(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every day a festival rule or a kind of day falls on, year by year
+  /// over a span of years (`03-design/rule-years.md`), as canonical JSON
+  /// `{value, provenance}`: `value` is `{keys, years}`, the keys looked for
+  /// and each year of the span in order as `{year, first, last, days,
+  /// festivals}`, its first and last days, each day the target falls on
+  /// with the keys there (none, one or several), and the festival
+  /// reckoning's entries for the keys in the year, every catalogue member a
+  /// full key. The span's days are founded once.
+  ///
+  /// `request_json` is `{"fromYear", "years", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "calendar",
+  /// "kind", "rule", "group", "festivals"}`: `years` 1 to 50, counted in
+  /// `calendar` (Gregorian when left out), which the days are written in
+  /// too; one of `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`),
+  /// `rule` or `group`, the last two keys of `festivals`, a festival
+  /// request. A key it does not read, none or two of `kind`, `rule` and
+  /// `group`, a rule or group the festivals lack, a place or offset out of
+  /// range or a festival request its reader refuses is `INVALID_ARG`, named
+  /// under `occurrences` (a missing rule as `rule`, a missing group as
+  /// `group`); `years` out of range `OUT_OF_RANGE`, naming
+  /// `occurrences.years`; a context without an ephemeris `CAPABILITY`.
+  String almanacOccurrences(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_occurrences(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

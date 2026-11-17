@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 593 of the examples' 608 members.
+/// The cases compare 641 of the examples' 656 members.
 library;
 
 import 'dart:convert';
@@ -227,6 +227,16 @@ void main() {
     );
   });
 
+  test('almanac.cells at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.cells',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
+    );
+  });
+
   test('almanac.cells at festivals.meta.x: MetaPatch', () {
     _holds(
       'almanac.cells',
@@ -303,6 +313,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -365,6 +376,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -425,6 +437,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -459,6 +472,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -524,6 +538,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -592,6 +607,16 @@ void main() {
         years: true,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
+    );
+  });
+
+  test('almanac.days at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.days',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
     );
   });
 
@@ -671,6 +696,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -733,6 +759,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -793,6 +820,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -827,6 +855,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -892,6 +921,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -1066,6 +1096,16 @@ void main() {
     );
   });
 
+  test('almanac.digest at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.digest',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
+    );
+  });
+
   test('almanac.digest at festivals.meta.x: MetaPatch', () {
     _holds(
       'almanac.digest',
@@ -1142,6 +1182,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -1204,6 +1245,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -1264,6 +1306,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -1298,6 +1341,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -1363,6 +1407,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -1554,6 +1599,16 @@ void main() {
     );
   });
 
+  test('almanac.festival_calendar at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
+    );
+  });
+
   test('almanac.festival_calendar at festivals.meta.x: MetaPatch', () {
     _holds(
       'almanac.festival_calendar',
@@ -1630,6 +1685,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -1692,6 +1748,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -1752,6 +1809,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -1786,6 +1844,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -1851,6 +1910,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -2024,6 +2084,7 @@ void main() {
         after: 1.5,
         altitudeM: 1.5,
         calendar: Calendar.julian,
+        group: 'x',
         kind: NextKind.purnima,
         latitudeDeg: 1.5,
         limitDays: 1,
@@ -2032,6 +2093,16 @@ void main() {
         utcOffsetSeconds: 1,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
+    );
+  });
+
+  test('almanac.next at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.next',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
     );
   });
 
@@ -2111,6 +2182,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -2173,6 +2245,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -2233,6 +2306,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -2267,6 +2341,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -2332,6 +2407,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -2362,6 +2438,16 @@ void main() {
       dropping: [],
       members: 0,
       written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.observance at traditions[0].festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.observance',
+      path: ['traditions', 0, 'festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
     );
   });
 
@@ -2441,6 +2527,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -2503,6 +2590,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -2563,6 +2651,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -2597,6 +2686,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -2662,6 +2752,354 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
+          ),
+          month: Masa.vaishakha,
+          nakshatra: Nakshatra.bharani,
+          otherwise: FestivalChoice.later,
+          paksha: Paksha.krishna,
+          parana: [VrataParanaTithiEnd(nakshatra: Nakshatra.bharani, yamas: 1)],
+          source: 'x',
+          tithi: Tithi.shuklaDvitiya,
+        )),
+      ]).toJson(),
+    );
+  });
+
+  test('almanac.occurrences: OccurrencesRequest', () {
+    _holds(
+      'almanac.occurrences',
+      path: [],
+      dropping: [['festivals']],
+      members: 1,
+      written: OccurrencesRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        fromYear: 1,
+        group: 'x',
+        kind: NextKind.purnima,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        rule: 'VIJAYA_DASHAMI',
+        utcOffsetSeconds: 1,
+        years: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
+      ).toJson(),
+    );
+  });
+
+  test('almanac.occurrences at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.occurrences',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
+    );
+  });
+
+  test('almanac.occurrences at festivals.meta.x: MetaPatch', () {
+    _holds(
+      'almanac.occurrences',
+      path: ['festivals', 'meta', 'x'],
+      dropping: [],
+      members: 3,
+      written: MetaPatch(
+        communities: ['x'],
+        fast: [
+          VrataFast(
+            end: FastEnd.night,
+            ifUnable: true,
+            kind: FastKind.ekabhakta,
+            source: 'x',
+            start: FastStart.morning,
+          ),
+        ],
+        kind: FestivalKind.religiousCultural,
+        optional: true,
+        regions: ['x'],
+        significance: Significance.major,
+        tradition: Tradition.buddhist,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.occurrences at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.occurrences',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        minSignificance: Significance.major,
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.occurrences at festivals.published[0]: PublishedSet', () {
+    _holds(
+      'almanac.occurrences',
+      path: ['festivals', 'published', 0],
+      dropping: [['entries', 0, 'window']],
+      members: 5,
+      written: PublishedSet(
+        entries: [
+          PublishedEntryAdd(
+            day: CalendarDay(
+              calendar: Calendar.julian,
+              day: 1,
+              era: EraNumber(era: Era.shaka, year: 1),
+              leap: Leap.day,
+              month: 1,
+              year: 1,
+            ),
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              significance: SignificanceMark(source: 'x', tier: Significance.major),
+              tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
+            ),
+            names: {'x': 'x'},
+            source: 'x',
+            subjectTo: SubjectTo.moonSighting,
+          ),
+        ],
+        format: 'x',
+        id: 'x',
+        publisher: 'x',
+        version: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.occurrences at festivals.rules: FestivalRules', () {
+    _holds(
+      'almanac.occurrences',
+      path: ['festivals', 'rules'],
+      dropping: [],
+      members: 37,
+      written: FestivalRulesValue([
+        FestivalRuleItemSaitRule(SaitRule(
+          choose: SaitChoice.latest,
+          rising: SaitRising(
+            freeOf: [Graha.moon],
+            modalities: [Modality.sthira],
+            of: RisingOf.lagna,
+          ),
+          rule: 'x',
+          source: 'x',
+          windows: [
+            SaitWindowRule(
+              avoid: [SaitAvoidNakshatra(nakshatra: Nakshatra.bharani, quarters: 1)],
+              within: SaitWindowDayMuhurta(from: 1, to: 1),
+            ),
+          ],
+        )),
+        FestivalRuleItemEkadashiRule(EkadashiRule(
+          key: 'x',
+          mahadvadashi: MahadvadashiRule(
+            joining: NakshatraJoining.outlastsTwelfth,
+            kinds: [MahadvadashiKind.vyanjuli],
+            sampurna: true,
+            trisprisha: TrisprishaAt.arunodaya,
+            vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
+            tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
+          ),
+          parana: ParanaRule(
+            at: [WindowDayMuhurta(from: 1, to: 1)],
+            bars: [
+              <String, Object?>{'month': 'masa.VAISHAKHA', 'nakshatra': 'nakshatra.BHARANI', 'portion': <String, Object?>{'parts': 1, 'which': 1}, 'tithi': 'tithi.SHUKLA_DVITIYA'},
+            ],
+            hariVasara: true,
+          ),
+          source: 'x',
+          table: EkadashiTable(
+            pierced: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+            pure: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+          ),
+          vedha: EkadashiVedha.sunrise,
+        )),
+        FestivalRuleItemAnniversary(Anniversary(
+          firstYearAdhika: FirstYearAdhika.nija,
+          inSamsarpa: InSamsarpa.nija,
+          janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+          key: 'x',
+          kind: AnniversaryKind.ekoddishta,
+          origin: OriginLunar(
+            adhika: true,
+            at: 1.5,
+            half: TithiHalf.second,
+            month: Masa.vaishakha,
+            tithi: Tithi.shuklaDvitiya,
+          ),
+          window: WindowDayMuhurta(from: 1, to: 1),
+        )),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
+            tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
+          ),
+          source: 'x',
+        )),
+        FestivalRuleItemDatedRule(DatedRule(
+          civilDate: DatedRuleCivilDate(
+            calendar: Calendar.julian,
+            day: 1,
+            month: 1,
+            skipped: SkippedDay.after,
+          ),
+          civilWeekday: DatedRuleCivilWeekday(
+            calendar: Calendar.julian,
+            month: 1,
+            nth: 1,
+            weekday: Vara.somavara,
+          ),
+          easter: DatedRuleEaster(computus: Computus.julian, days: 1),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
+            tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
+          ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
+          source: 'x',
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
+          tithiInMonth: DatedRuleTithiInMonth(
+            at: WindowDayMuhurta(from: 1, to: 1),
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            tithi: Tithi.shuklaDvitiya,
+            twice: FestivalWhich.later,
+          ),
+        )),
+        FestivalRuleItemFestivalRule(FestivalRule(
+          at: WindowDayMuhurta(from: 1, to: 1),
+          barred: BarredFrom(
+            calendar: Calendar.julian,
+            day: 1,
+            instead: Tithi.shuklaDvitiya,
+            month: 1,
+          ),
+          convention: LunarMonth.purnimanta,
+          dayOfPaksha: 1,
+          decide: [
+            Guard(
+              choose: FestivalChoice.later,
+              when: [
+                PredicateJoined(
+                  at: WindowDayMuhurta(from: 1, to: 1),
+                  day: FestivalWhich.later,
+                  nakshatra: Nakshatra.bharani,
+                  portion: Portion(parts: 1, which: 1),
+                ),
+              ],
+            ),
+          ],
+          inAdhika: InAdhikaValue(true),
+          inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            significance: SignificanceMark(source: 'x', tier: Significance.major),
+            tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
@@ -2733,6 +3171,16 @@ void main() {
         utcOffsetSeconds: 1,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
+    );
+  });
+
+  test('almanac.publishedReasons at festivals.groups[0]: FestivalGroup', () {
+    _holds(
+      'almanac.publishedReasons',
+      path: ['festivals', 'groups', 0],
+      dropping: [],
+      members: 0,
+      written: FestivalGroup(key: 'x', main: 'x', members: ['x'], source: 'x').toJson(),
     );
   });
 
@@ -2812,6 +3260,7 @@ void main() {
               regions: ['x'],
               significance: SignificanceMark(source: 'x', tier: Significance.major),
               tradition: Tradition.buddhist,
+              variant: Variant(festival: 'x', observer: Observer.smarta),
             ),
             names: {'x': 'x'},
             source: 'x',
@@ -2874,6 +3323,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -2934,6 +3384,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           source: 'x',
         )),
@@ -2968,6 +3419,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           nakshatraInMonth: DatedRuleNakshatraInMonth(
             calendar: Calendar.julian,
@@ -3033,6 +3485,7 @@ void main() {
             regions: ['x'],
             significance: SignificanceMark(source: 'x', tier: Significance.major),
             tradition: Tradition.buddhist,
+            variant: Variant(festival: 'x', observer: Observer.smarta),
           ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,

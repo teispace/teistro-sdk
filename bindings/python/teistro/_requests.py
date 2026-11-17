@@ -36,6 +36,7 @@ __all__ = [
     "NavataraRequest",
     "NextRequest",
     "ObservanceRequest",
+    "OccurrencesRequest",
     "PakshiRequest",
     "PeopleRequest",
     "PublishedReasonsRequest",
@@ -220,6 +221,7 @@ __all__ = [
     "AshauchKind",
     "AshauchRite",
     "AshauchRiteRow",
+    "FestivalGroup",
     "MetaPatch",
     "MetaFilter",
     "DayOrder",
@@ -680,6 +682,7 @@ __all__ = [
     "LifeClass",
     "SubDegree",
     "SignificanceMark",
+    "Variant",
     "SaitChoice",
     "SaitRising",
     "SaitWindowRule",
@@ -758,6 +761,7 @@ __all__ = [
     "EnemySign",
     "OfficeOrder",
     "SettingPart",
+    "Observer",
     "RisingOf",
     "SaitAvoid",
     "SaitAvoidTithiStart",
@@ -1215,10 +1219,13 @@ class NextRequest(TypedDict, total=False):
     calendar: Optional[Union[_catalogue.Calendar, str]]
 
     festivals: Optional[FestivalRequest]
-    """The festivals, as a festival request, with `rule`."""
+    """The festivals, as a festival request, with `rule` or `group`."""
+
+    group: Optional[str]
+    """A festival group's key in `festivals`: its next span; or `kind` or `rule`, one of the three."""
 
     kind: Optional[NextKind]
-    """A kind of day; or `rule`, not both."""
+    """A kind of day; or `rule` or `group`, one of the three."""
 
     latitudeDeg: Required[float]
 
@@ -1228,7 +1235,7 @@ class NextRequest(TypedDict, total=False):
     longitudeDeg: Required[float]
 
     rule: Optional[str]
-    """A rule's key in `festivals`; or `kind`, not both."""
+    """A rule's key in `festivals`; or `kind` or `group`, one of the three."""
 
     utcOffsetSeconds: Optional[int]
     """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
@@ -1266,6 +1273,43 @@ class ObservanceRequest(TypedDict, total=False):
 
     year: Optional[int]
     """A whole year of `calendar`, from its month 1, day 1; or `first`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
+
+
+class OccurrencesRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar the years are counted in and the days written in; Gregorian when left out."""
+
+    festivals: Optional[FestivalRequest]
+    """The festivals, as a festival request, with `rule` or `group`."""
+
+    fromYear: Required[int]
+    """The first year, in `calendar`: the span begins on its month 1, day 1."""
+
+    group: Optional[str]
+    """A festival group's key in `festivals`: its members' days, and each span reaching a year; or `kind` or `rule`, one of the three."""
+
+    kind: Optional[NextKind]
+    """A kind of day; or `rule` or `group`, one of the three."""
+
+    latitudeDeg: Required[float]
+
+    longitudeDeg: Required[float]
+
+    rule: Optional[str]
+    """A rule's key in `festivals`; or `kind` or `group`, one of the three."""
+
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    years: Required[int]
+    """1 to 50: the span ends the day before month 1 of the year after."""
 
     zone: Optional[ZoneSpec]
     """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
@@ -2383,6 +2427,9 @@ class AshauchRiteTable(TypedDict, total=False):
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
 
+    groups: Sequence[FestivalGroup]
+    """Festival groups, each put in place of a pack's group of its key or added after them: a festival kept over several rules' days, whose spans the answer gives (`03-design/festival-groups.md`)."""
+
     hijriOffset: Optional[int]
     """The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out."""
 
@@ -2617,7 +2664,7 @@ class Household(TypedDict, total=False):
 NextKind: TypeAlias = Literal['EKADASHI', 'PURNIMA', 'AMAVASYA', 'SANKRANTI']
 """A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
 
-`EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules (`EkadashiRule::dharmasindhu`); the earlier when they part.
+`EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules (`EkadashiRule::dharmasindhu`); the earlier when they part. Each rule says whose reading it is, so `festivals.observer` keeps one observer's (`03-design/festival-traditions.md` §4).
 `PURNIMA`: The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
 `AMAVASYA`: The same, for the new moon.
 `SANKRANTI`: The first day of a Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619), as Nepal's national panchanga prints the twelve sankrantis.
@@ -4196,6 +4243,22 @@ class AshauchRiteRow(TypedDict, total=False):
 
     verdict: Required[RiteVerdict]
     """The verdict."""
+
+
+class FestivalGroup(TypedDict, total=False):
+    """A festival kept over several days: its member rules, its main day, and the source that makes them one festival."""
+
+    key: Required[str]
+    """The group's key, `TIHAR`; a consumer's own names and descriptions hang on it."""
+
+    main: Required[str]
+    """The member whose day the group is reckoned around: one of `members`. A span is found for each of its days."""
+
+    members: Required[Sequence[str]]
+    """The member rules' keys, in the festival's order; each a key the request carries."""
+
+    source: Required[str]
+    """The source that says which rules make the festival."""
 
 
 class MetaPatch(TypedDict, total=False):
@@ -8755,6 +8818,9 @@ class FestivalMeta(TypedDict, total=False):
     tradition: Optional[Union[_catalogue.Tradition, str]]
     """Its religion; unset when no source places it."""
 
+    variant: Optional[Variant]
+    """The festival it is one tradition's reading of, and whose, where the texts give the festival another reading too (`03-design/festival-traditions.md` §3, SR-116); unset for a rule that is no tradition's reading, such as a government's day. What `festivals.observer` chooses by. It is a statement of the rule's, not a blank a source left, so `FestivalMeta::unsourced` does not name it."""
+
 
 SubjectTo: TypeAlias = Literal['MOON_SIGHTING']
 """What may still move a published day.
@@ -9632,6 +9698,16 @@ class SignificanceMark(TypedDict, total=False):
     """The tier."""
 
 
+class Variant(TypedDict, total=False):
+    """One tradition's reading of a festival the texts read in more than one way (`03-design/festival-traditions.md` §3, C2141)."""
+
+    festival: Required[str]
+    """The festival, as an open key every reading of it shares (`EKADASHI`, `JANMASHTAMI`)."""
+
+    observer: Required[Observer]
+    """Whose reading it is; never `EVERY`, which is no tradition."""
+
+
 SaitChoice: TypeAlias = Literal['EARLIEST', 'LATEST']
 """Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
 
@@ -10461,6 +10537,17 @@ SettingPart: TypeAlias = Literal['NAVAMSHA_SIGN', 'NAVAMSHA_ARC']
 """
 
 
+Observer: TypeAlias = Literal['EVERY', 'SMARTA', 'SMARTA_RENUNCIANT', 'VAISHNAVA', 'GAUDIYA']
+"""Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
+
+`EVERY`: Every reading the request carries.
+`SMARTA`: The Smarta householder's: *Dharmasindhu*'s Ekadashi with its vedha at sunrise (pp. 11–12), and its Janmashtami, Rama Navami and Nrisimha jayanti.
+`SMARTA_RENUNCIANT`: The Smarta renunciant's: *Dharmasindhu*'s renunciant column of the Ekadashi, and the householder's reading where none is the renunciant's (C2142).
+`VAISHNAVA`: The Vaishnava's: *Dharmasindhu*'s Ekadashi with its vedha at arunodaya, and *Hari Bhakti Vilasa*'s rule of a viddha tithi (15.358).
+`GAUDIYA`: The Gaudiya Vaishnava's: *Hari Bhakti Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's reading where none is the Gaudiya's (C2142).
+"""
+
+
 RisingOf: TypeAlias = Literal['NAVAMSA', 'LAGNA', 'NAVAMSA_OR_LAGNA']
 """Which rising sign a `SaitRising` reads.
 
@@ -10849,7 +10936,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10909,6 +10996,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['almanac.observance'], request: ObservanceRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.occurrences'], request: OccurrencesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['almanac.pakshi'], request: PakshiRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

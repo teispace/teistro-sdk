@@ -4434,6 +4434,7 @@ public final class Native {
         "ts_almanac_festival_calendar",
         "ts_almanac_digest",
         "ts_almanac_next",
+        "ts_almanac_occurrences",
         "ts_almanac_sentences",
         "ts_almanac_anniversaries",
         "ts_almanac_festival_pack",
@@ -5424,6 +5425,31 @@ public final class Native {
     public final MethodHandle ts_almanac_next;
 
     /**
+     * Every day a festival rule or a kind of day falls on, year by year
+     * over a span of years (`03-design/rule-years.md`), as canonical JSON
+     * `{value, provenance}`: `value` is `{keys, years}`, the keys looked for
+     * and each year of the span in order as `{year, first, last, days,
+     * festivals}`, its first and last days, each day the target falls on
+     * with the keys there (none, one or several), and the festival
+     * reckoning's entries for the keys in the year, every catalogue member a
+     * full key. The span's days are founded once.
+     *
+     * `request_json` is `{"fromYear", "years", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "calendar",
+     * "kind", "rule", "group", "festivals"}`: `years` 1 to 50, counted in
+     * `calendar` (Gregorian when left out), which the days are written in
+     * too; one of `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`),
+     * `rule` or `group`, the last two keys of `festivals`, a festival
+     * request. A key it does not read, none or two of `kind`, `rule` and
+     * `group`, a rule or group the festivals lack, a place or offset out of
+     * range or a festival request its reader refuses is `INVALID_ARG`, named
+     * under `occurrences` (a missing rule as `rule`, a missing group as
+     * `group`); `years` out of range `OUT_OF_RANGE`, naming
+     * `occurrences.years`; a context without an ephemeris `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_occurrences;
+
+    /**
      * One day's facts as short declarative sentences
      * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
      * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
@@ -6250,6 +6276,7 @@ public final class Native {
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_digest = linker.downcallHandle(symbols.find("ts_almanac_digest").orElseThrow(() -> missing("ts_almanac_digest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_occurrences = linker.downcallHandle(symbols.find("ts_almanac_occurrences").orElseThrow(() -> missing("ts_almanac_occurrences")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sentences = linker.downcallHandle(symbols.find("ts_almanac_sentences").orElseThrow(() -> missing("ts_almanac_sentences")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_anniversaries = linker.downcallHandle(symbols.find("ts_almanac_anniversaries").orElseThrow(() -> missing("ts_almanac_anniversaries")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
