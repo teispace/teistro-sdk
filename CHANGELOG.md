@@ -19,6 +19,10 @@ distance, and anything reckoned from them move; a modern sky moves nothing. Over
 November 2026 at Kathmandu the lit fraction read 75% on the 4th, 65% on the 8th and
 83% on the 16th where the Moon was 27%, 2% and 36% lit; it now parts from the modern
 sky's by at most 2.6%, which is the text's own Moon (no evection or variation).
+The Moon's parallax comes back with her distance: over the same month the classical
+first moonrise moves 4.6 minutes later and moonset 4.7 minutes earlier at the median,
+to within 6.9 and 4.1 minutes of the modern sky's (from 11.5 and 0.6); the pinned
+day digest, built with `nepal_official`, moves with them.
 - **Fixed:** a provider that gives distances in mean distances
   (`DistanceUnit::MeanDistances`) had them read as astronomical units, putting the Moon
   as far off as the Sun. `completion::distance_in_au` converts by each body's mean
