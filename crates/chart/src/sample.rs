@@ -27,7 +27,7 @@ use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::{Ayanamsha, ChartKind};
 use teistro_core::error::Error;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::settings::{AyanamshaChoice, DEFAULT_PROFILE, Profile, Resolved, SettingsPatch};
+use teistro_core::settings::{DEFAULT_PROFILE, Profile, Resolved, SettingsPatch};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::TestProvider;
 
@@ -123,17 +123,14 @@ impl Sample {
     pub fn new() -> Sample {
         let resolved = resolved();
         let settings = &resolved.settings;
-        let ayanamsha = match settings.frame.ayanamsha {
-            AyanamshaChoice::Catalogued { id } => id,
-            AyanamshaChoice::Custom { .. } => Ayanamsha::Lahiri,
-        };
         let sun = DrikSun::new(
             &PROVIDER,
-            ayanamsha,
+            Ayanamsha::Lahiri,
             settings.day.sunrise,
             settings.provider.overrides,
             DeltaTModel::default(),
-        );
+        )
+        .with_ayanamsha_choice(settings.frame.ayanamsha);
         Sample { resolved, sun }
     }
 

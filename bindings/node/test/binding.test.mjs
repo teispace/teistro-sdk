@@ -5834,6 +5834,38 @@ test('a chart names its ayanamsha, and a tropical one has none', () => {
 });
 
 /**
+ * A custom ayanamsha a settings document names (SR-112): Spica held at 180°
+ * founds the chart where True Chitra does, and the chart says the zodiac is
+ * the settings' own; a value carried by a named precession is accepted too.
+ */
+test('a custom ayanamsha held by a star is the catalogued member it restates', () => {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  // Each chart read while its context is open.
+  const at = (ayanamsha) => {
+    const ctx = context({ settings: { frame: { ayanamsha } } });
+    const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+    const read = {
+      ayanamsha: chart.ayanamsha,
+      ayanamshaCustom: chart.ayanamshaCustom,
+      ayanamshaOffsetDeg: chart.ayanamshaOffsetDeg,
+    };
+    ctx.dispose();
+    return read;
+  };
+  const held = at({ kind: 'ANCHORED', star: 'SPICA', longitude_deg: 180 });
+  const member = at({ kind: 'CATALOGUED', id: 'TRUE_CHITRA' });
+  assert.equal(held.ayanamsha, null);
+  assert.equal(held.ayanamshaCustom, true);
+  assert.ok(Math.abs(held.ayanamshaOffsetDeg - member.ayanamshaOffsetDeg) < 1e-9);
+  const precessed = at({
+    kind: 'PRECESSED', epoch_jd_tt: 2435553.5, value_deg: 23.245560954594648, basis: 'MEAN', precession: 'IAU_2006',
+  });
+  const lahiri = at({ kind: 'CATALOGUED', id: 'LAHIRI' });
+  assert.equal(precessed.ayanamshaCustom, true);
+  assert.ok(Math.abs(precessed.ayanamshaOffsetDeg - lahiri.ayanamshaOffsetDeg) * 3600 < 0.01);
+});
+
+/**
  * A chart's day and an almanac's are one record, and its date is the one
  * `calendar.convert` takes. Before, a chart's day named its weekday and
  * handed back every other id as a number, under the blob's own names.

@@ -29,7 +29,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source, Varga,
+    Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, ScoreBand, Source, Star,
+    Varga,
 };
 use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
@@ -72,17 +73,35 @@ pub use snapshot::SettingsSnapshot;
 /// ```
 pub const SCHEMA: u16 = 1;
 
-/// Which ayanamsha: a catalogued one, or a custom definition.
+/// Which ayanamsha: a catalogued one, or a custom definition
+/// (`03-design/astro-custom-ayanamsha.md`): a value at an epoch moving at
+/// a linear rate, a value at an epoch carried by a named precession model,
+/// or a star of the catalogue held at a sidereal longitude (SR-112).
 ///
 /// ```
-/// use teistro_core::catalogue::Ayanamsha;
-/// use teistro_core::settings::AyanamshaChoice;
+/// use teistro_core::catalogue::{Ayanamsha, Star};
+/// use teistro_core::settings::{AyanamshaBasis, AyanamshaChoice, Precession};
 ///
 /// let lahiri: AyanamshaChoice = Ayanamsha::Lahiri.into();
 /// assert_eq!(serde_json::to_value(lahiri).unwrap(), serde_json::json!({"kind": "CATALOGUED", "id": "LAHIRI"}));
 /// // A consumer's own: 23.85° at J2000, moving 50.29″ a year.
 /// let own = AyanamshaChoice::Custom { epoch_jd_tt: 2_451_545.0, value_deg: 23.85, rate_deg_per_year: 50.29 / 3600.0 };
 /// assert_eq!(serde_json::to_value(own).unwrap()["kind"], "CUSTOM");
+/// // The Indian Astronomical Ephemeris's 23°15′00.658″, a true value on
+/// // 21 March 1956, carried by IAU 2006 precession.
+/// let precessed = AyanamshaChoice::Precessed {
+///     epoch_jd_tt: 2_435_553.5,
+///     value_deg: 23.250_182_778,
+///     basis: AyanamshaBasis::True,
+///     precession: Precession::Iau2006,
+/// };
+/// assert_eq!(serde_json::to_value(precessed).unwrap()["kind"], "PRECESSED");
+/// // Spica held at 180°, True Chitra's form.
+/// let anchored = AyanamshaChoice::Anchored { star: Star::Spica, longitude_deg: 180.0 };
+/// assert_eq!(
+///     serde_json::to_value(anchored).unwrap(),
+///     serde_json::json!({"kind": "ANCHORED", "star": "SPICA", "longitude_deg": 180.0})
+/// );
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -102,6 +121,93 @@ pub enum AyanamshaChoice {
         /// The rate, degrees per Julian year.
         rate_deg_per_year: f64,
     },
+    /// A value at an epoch carried to any date by a named precession
+    /// model, as the Swiss Ephemeris's `SE_SIDM_USER` carries one: the
+    /// vernal point of the date carried back to the epoch and read on the
+    /// ecliptic of the epoch, the construction every catalogued epoch
+    /// definition takes (crux C2160).
+    Precessed {
+        /// The epoch, a Julian day in TT.
+        epoch_jd_tt: f64,
+        /// The value at the epoch, degrees.
+        value_deg: f64,
+        /// The basis the value at the epoch is stated on: `TRUE` when it
+        /// carries the epoch's nutation in longitude, as the Indian
+        /// Astronomical Ephemeris's Lahiri value does, `MEAN` when not.
+        /// The value is subtracted on `frame.ayanamsha_basis` whichever
+        /// it is stated on (crux C2161).
+        basis: AyanamshaBasis,
+        /// The precession model that carries the value, whatever model
+        /// `frame.precession` names for the rest of the sky.
+        precession: Precession,
+    },
+    /// A star of the catalogue held at a sidereal longitude, as True
+    /// Chitra holds Spica at 180°: the star's apparent longitude of date
+    /// (a fixed direction's geometric one) less the longitude it is held
+    /// at. The nutation in longitude moves the star and the equinox
+    /// alike, so the definition holds on either basis (crux C2162).
+    Anchored {
+        /// The star.
+        star: Star,
+        /// The sidereal longitude it is held at, degrees.
+        longitude_deg: f64,
+    },
+}
+
+impl AyanamshaChoice {
+    /// Whether every number of the definition is finite, the one thing
+    /// the settings can check without an ephemeris.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Ayanamsha, Star};
+    /// use teistro_core::settings::AyanamshaChoice;
+    ///
+    /// assert!(AyanamshaChoice::from(Ayanamsha::Lahiri).is_finite());
+    /// assert!(!AyanamshaChoice::Anchored { star: Star::Spica, longitude_deg: f64::NAN }.is_finite());
+    /// ```
+    #[must_use]
+    pub const fn is_finite(&self) -> bool {
+        match *self {
+            AyanamshaChoice::Catalogued { .. } => true,
+            AyanamshaChoice::Custom {
+                epoch_jd_tt,
+                value_deg,
+                rate_deg_per_year,
+            } => epoch_jd_tt.is_finite() && value_deg.is_finite() && rate_deg_per_year.is_finite(),
+            AyanamshaChoice::Precessed {
+                epoch_jd_tt,
+                value_deg,
+                ..
+            } => epoch_jd_tt.is_finite() && value_deg.is_finite(),
+            AyanamshaChoice::Anchored { longitude_deg, .. } => longitude_deg.is_finite(),
+        }
+    }
+
+    /// How a stamp names the definition: the catalogued member's key, or
+    /// the kind of custom definition.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Ayanamsha, Star};
+    /// use teistro_core::settings::AyanamshaChoice;
+    ///
+    /// assert_eq!(AyanamshaChoice::from(Ayanamsha::Lahiri).describe(), "LAHIRI");
+    /// let spica = AyanamshaChoice::Anchored { star: Star::Spica, longitude_deg: 180.0 };
+    /// assert_eq!(spica.describe(), "SPICA held at 180°");
+    /// ```
+    #[must_use]
+    pub fn describe(&self) -> String {
+        match self {
+            AyanamshaChoice::Catalogued { id } => id.key().to_owned(),
+            AyanamshaChoice::Custom { .. } => String::from("a custom ayanamsha"),
+            AyanamshaChoice::Precessed { precession, .. } => {
+                format!("a custom ayanamsha carried by {}", precession.key())
+            }
+            AyanamshaChoice::Anchored {
+                star,
+                longitude_deg,
+            } => format!("{} held at {longitude_deg}°", star.key()),
+        }
+    }
 }
 
 /// Which ascendant a day's lagna table reads (crux C680,
@@ -2303,19 +2409,23 @@ fn score_bands_coherence(bands: ScoreBands, out: &mut Vec<Diagnostic>) {
     }
 }
 
-/// A custom ayanamsha's epoch, value and rate are finite.
-fn custom_ayanamsha_coherence(ayanamsha: AyanamshaChoice, out: &mut Vec<Diagnostic>) {
-    if let AyanamshaChoice::Custom {
-        epoch_jd_tt,
-        value_deg,
-        rate_deg_per_year,
-    } = ayanamsha
-    {
-        if !(epoch_jd_tt.is_finite() && value_deg.is_finite() && rate_deg_per_year.is_finite()) {
+/// Every custom ayanamsha the settings name, the frame's and the lagna
+/// table's own, has finite numbers (SR-112): the one thing that can be
+/// checked without an ephemeris.
+fn ayanamsha_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    let lagna = match s.panchanga.lagna_table {
+        LagnaTable::Sphere { ayanamsha } => Some(ayanamsha),
+        LagnaTable::Chart => None,
+    };
+    for (choice, field) in [
+        (Some(s.frame.ayanamsha), "frame.ayanamsha"),
+        (lagna, "panchanga.lagna_table"),
+    ] {
+        if choice.is_some_and(|choice| !choice.is_finite()) {
             out.push(Diagnostic::error(
                 "custom-ayanamsha-finite",
-                "a custom ayanamsha needs a finite epoch, value and rate",
-                &["frame.ayanamsha"],
+                "a custom ayanamsha needs a finite epoch, value, rate and longitude",
+                &[field],
             ));
         }
     }
@@ -2341,7 +2451,7 @@ fn scheme_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
 
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
-    custom_ayanamsha_coherence(s.frame.ayanamsha, &mut out);
+    ayanamsha_coherence(s, &mut out);
     sunrise_coherence(s.day.sunrise, &mut out);
     horizon_coherence(&s.day.horizon, &mut out);
     dut1_coherence(s.time.dut1, &mut out);
@@ -2891,6 +3001,49 @@ mod tests {
             assert!(ayanamsha(epoch, value, rate).contains(&"custom-ayanamsha-finite"));
         }
         assert!(!ayanamsha(2_451_545.0, 23.0, 0.01).contains(&"custom-ayanamsha-finite"));
+        // The precessed and held-star forms (SR-112), in the frame and in
+        // the lagna table's own zodiac.
+        let choice = |choice: AyanamshaChoice| {
+            let mut frame = root();
+            frame.frame.ayanamsha = choice;
+            let mut lagna = root();
+            lagna.panchanga.lagna_table = LagnaTable::Sphere { ayanamsha: choice };
+            let fields = |settings: Settings| -> Vec<Vec<&'static str>> {
+                coherence(&settings)
+                    .into_iter()
+                    .filter(|d| d.rule == "custom-ayanamsha-finite")
+                    .map(|d| d.fields.clone())
+                    .collect()
+            };
+            (fields(frame), fields(lagna))
+        };
+        let precessed = |epoch_jd_tt, value_deg| AyanamshaChoice::Precessed {
+            epoch_jd_tt,
+            value_deg,
+            basis: AyanamshaBasis::True,
+            precession: Precession::Iau2006,
+        };
+        let held = |longitude_deg| AyanamshaChoice::Anchored {
+            star: Star::Spica,
+            longitude_deg,
+        };
+        for bad in [
+            precessed(f64::NAN, 23.0),
+            precessed(2_435_553.5, f64::INFINITY),
+            held(f64::NAN),
+        ] {
+            assert_eq!(
+                choice(bad),
+                (
+                    vec![vec!["frame.ayanamsha"]],
+                    vec![vec!["panchanga.lagna_table"]]
+                ),
+                "{bad:?}"
+            );
+        }
+        for good in [precessed(2_435_553.5, 23.25), held(180.0)] {
+            assert_eq!(choice(good), (vec![], vec![]), "{good:?}");
+        }
         let sunrise = |altitude_deg| {
             let mut settings = root();
             settings.day.sunrise = SunriseConvention::Custom { altitude_deg };

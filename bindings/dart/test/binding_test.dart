@@ -9909,6 +9909,56 @@ void _engineTests() {
     tropical.dispose();
   });
 
+  // A custom ayanamsha a settings document names (SR-112): Spica held at
+  // 180° founds the chart where True Chitra does, and the chart says the
+  // zodiac is the settings' own; a value carried by a named precession is
+  // accepted too.
+  test('a custom ayanamsha held by a star is the catalogued member it '
+      'restates', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    // The offset, and whether the zodiac is the settings' own, read while
+    // the context is open.
+    (double, bool) at(Map<String, Object> ayanamsha) {
+      final ctx = context(
+        settings: {
+          'frame': {'ayanamsha': ayanamsha},
+        },
+      );
+      final chart = ctx.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 20700,
+      );
+      expect(chart.ayanamsha == null, chart.ayanamshaCustom);
+      final read = (chart.ayanamshaOffsetDeg, chart.ayanamshaCustom);
+      ctx.dispose();
+      return read;
+    }
+
+    final held = at({
+      'kind': 'ANCHORED',
+      'star': 'SPICA',
+      'longitude_deg': 180.0,
+    });
+    final member = at({'kind': 'CATALOGUED', 'id': 'TRUE_CHITRA'});
+    expect((held.$2, member.$2), (true, false));
+    expect((held.$1 - member.$1).abs(), lessThan(1e-9));
+    final precessed = at({
+      'kind': 'PRECESSED',
+      'epoch_jd_tt': 2435553.5,
+      'value_deg': 23.245560954594648,
+      'basis': 'MEAN',
+      'precession': 'IAU_2006',
+    });
+    final lahiri = at({'kind': 'CATALOGUED', 'id': 'LAHIRI'});
+    expect(precessed.$2, isTrue);
+    expect((precessed.$1 - lahiri.$1).abs() * 3600, lessThan(0.01));
+  });
+
   // A chart's day and an almanac's are one record, and its date is the one
   // `calendar.convert` takes. Before, Dart flattened the weekday and the
   // sunrise onto the chart and left the rest out.

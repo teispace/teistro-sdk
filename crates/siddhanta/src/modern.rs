@@ -435,8 +435,5 @@ impl EphemerisProvider for ModernParts {
 
 /// An ayanamsha as a stamp names it.
 fn zodiac_name(choice: &AyanamshaChoice) -> String {
-    match choice {
-        AyanamshaChoice::Catalogued { id } => id.key().to_owned(),
-        AyanamshaChoice::Custom { .. } => "a custom ayanamsha".to_owned(),
-    }
+    choice.describe()
 }

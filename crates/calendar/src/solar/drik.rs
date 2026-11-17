@@ -8,13 +8,18 @@
 
 use core::sync::atomic::{AtomicBool, Ordering};
 
+use teistro_astro::ayanamsha;
 use teistro_astro::lockstep::Lockstep;
 use teistro_astro::rise_set::Solver;
+use teistro_astro::scale::tt_from_ut1;
 use teistro_astro::{Completion, DeltaTModel};
+use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{AyanamshaBasis, HorizonModel, OverridePolicy, SunriseConvention};
+use teistro_core::settings::{
+    AyanamshaBasis, AyanamshaChoice, HorizonModel, OverridePolicy, SunriseConvention,
+};
 use teistro_port_ephemeris::{
     Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Models, Overrides,
     PositionRequest, ProviderError, TimeScale, Zodiac,
@@ -46,6 +51,11 @@ use crate::solar::{DayArc, DayLight, SolarModel, local_mean_midnight};
 pub struct DrikSun<'p, P: EphemerisProvider + ?Sized> {
     completion: Completion<'p, P>,
     ayanamsha: Ayanamsha,
+    /// A custom definition the zodiac is measured by instead of the
+    /// catalogued member (SR-112): the port's frame names only catalogued
+    /// members, so the Sun is asked tropical and the SDK's value taken
+    /// from it.
+    custom: Option<AyanamshaChoice>,
     convention: SunriseConvention,
     horizon: Horizon,
     delta_t: DeltaTModel,
@@ -88,11 +98,47 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
         DrikSun {
             completion: Completion::new(provider, policy, delta_t),
             ayanamsha,
+            custom: None,
             convention,
             horizon: Horizon::from_convention(convention),
             delta_t,
             refused: AtomicBool::new(false),
         }
+    }
+
+    /// The model with the zodiac a settings document chooses: a catalogued
+    /// member takes the place of the one it was built with, and a custom
+    /// definition (a linear rate, a precessed value or a star held at a
+    /// longitude, SR-112) measures the Sun from the tropical one by the
+    /// SDK's value of it, on the model's basis and precession.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::{DrikSun, SolarModel};
+    /// use teistro_core::catalogue::{Ayanamsha, Star};
+    /// use teistro_core::settings::{AyanamshaChoice, OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let new = || DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// let chitra = new().with_ayanamsha_choice(Ayanamsha::TrueChitra.into());
+    /// let spica = new().with_ayanamsha_choice(AyanamshaChoice::Anchored { star: Star::Spica, longitude_deg: 180.0 });
+    /// assert_eq!(chitra.ayanamsha(), Ayanamsha::TrueChitra);
+    /// // Spica held at 180° is True Chitra, by the port's frame or by the SDK's value.
+    /// let (a, b) = (chitra.sidereal_sun_deg(2_451_545.0).unwrap(), spica.sidereal_sun_deg(2_451_545.0).unwrap());
+    /// assert!((a - b).abs() < 1e-9, "{a} {b}");
+    /// assert!(spica.describe().contains("SPICA held at 180°"));
+    /// ```
+    #[must_use]
+    pub fn with_ayanamsha_choice(mut self, choice: AyanamshaChoice) -> DrikSun<'p, P> {
+        match choice {
+            AyanamshaChoice::Catalogued { id } => {
+                self.ayanamsha = id;
+                self.custom = None;
+            }
+            custom => self.custom = Some(custom),
+        }
+        self
     }
 
     /// The model with the ayanamsha on another basis: [`AyanamshaBasis::True`]
@@ -170,7 +216,8 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
         &self.completion
     }
 
-    /// The ayanamsha.
+    /// The catalogued ayanamsha the port's frame names; a custom zodiac is
+    /// [`DrikSun::ayanamsha_choice`].
     ///
     /// ```
     /// use teistro_astro::DeltaTModel;
@@ -187,6 +234,27 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     #[must_use]
     pub const fn ayanamsha(&self) -> Ayanamsha {
         self.ayanamsha
+    }
+
+    /// The zodiac the model measures the Sun in: the catalogued member, or
+    /// the custom definition [`DrikSun::with_ayanamsha_choice`] gave it.
+    ///
+    /// ```
+    /// use teistro_astro::DeltaTModel;
+    /// use teistro_calendar::solar::DrikSun;
+    /// use teistro_core::catalogue::{Ayanamsha, Star};
+    /// use teistro_core::settings::{AyanamshaChoice, OverridePolicy, Sunrise};
+    /// use teistro_port_ephemeris::TestProvider;
+    ///
+    /// let provider = TestProvider::new();
+    /// let drik = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, DeltaTModel::TableThenModel);
+    /// assert_eq!(drik.ayanamsha_choice(), Ayanamsha::Lahiri.into());
+    /// let revati = AyanamshaChoice::Anchored { star: Star::Revati, longitude_deg: 359.5 };
+    /// assert_eq!(drik.with_ayanamsha_choice(revati).ayanamsha_choice(), revati);
+    /// ```
+    #[must_use]
+    pub fn ayanamsha_choice(&self) -> AyanamshaChoice {
+        self.custom.unwrap_or_else(|| self.ayanamsha.into())
     }
 
     /// Whether the provider **defines** the day's sunrise, which a
@@ -274,11 +342,15 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
         let jds = [jd_ut];
         let bodies = [Body::Sun];
+        let zodiac = match self.custom {
+            Some(_) => Zodiac::Tropical,
+            None => Zodiac::sidereal(self.ayanamsha),
+        };
         let request = PositionRequest::new(
             &jds,
             TimeScale::Ut1,
             &bodies,
-            Frame::CANONICAL.with_zodiac(Zodiac::sidereal(self.ayanamsha)),
+            Frame::CANONICAL.with_zodiac(zodiac),
         )
         .without_speeds();
         let done = self.completion.positions(&request)?;
@@ -296,7 +368,22 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
             )
             .with_field("jd"));
         }
-        Ok(cell.lon)
+        let Some(custom) = self.custom else {
+            return Ok(cell.lon);
+        };
+        // The custom zodiac, as the completion's own sidereal step takes a
+        // catalogued one: at the instant in TT from Delta T's owner, on
+        // the model's basis, under its precession.
+        let ut1 = JulianDay::<Ut1>::try_new(jd_ut)?;
+        let (delta_t, _) = self.completion.delta_t_at(ut1)?;
+        let offset = ayanamsha::value_deg(
+            &custom,
+            tt_from_ut1(ut1, &delta_t),
+            self.completion.ayanamsha_basis(),
+            self.completion.precession(),
+            self.delta_t,
+        )?;
+        Ok(normalise_deg(cell.lon - offset))
     }
 
     fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
@@ -332,7 +419,10 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
             "drik: {} through the port ({} overrides), ayanamsha {}{}, sunrise {}{}",
             self.completion.capabilities().identity,
             self.completion.policy().key(),
-            self.ayanamsha.key(),
+            self.custom.map_or_else(
+                || self.ayanamsha.key().to_owned(),
+                |custom| custom.describe()
+            ),
             if self.completion.ayanamsha_basis() == AyanamshaBasis::True {
                 " (true basis)"
             } else {
@@ -454,6 +544,74 @@ mod tests {
             .day_light(day, &kathmandu)
             .unwrap_err();
         assert_eq!(refused.status, Status::Unsupported, "{refused}");
+    }
+
+    /// A custom zodiac (SR-112) measures the Sun from the tropical one by
+    /// the SDK's value, so its sankranti is the catalogued member's when it
+    /// restates one; a catalogued choice puts the member back in the port's
+    /// frame.
+    #[test]
+    fn a_custom_zodiac_finds_the_catalogued_members_sankranti() {
+        use teistro_core::catalogue::Star;
+        use teistro_core::settings::{AyanamshaBasis, Precession};
+
+        let provider = TestProvider::new();
+        let new = || {
+            DrikSun::new(
+                &provider,
+                Ayanamsha::Lahiri,
+                Sunrise::UpperLimbRefraction.into(),
+                OverridePolicy::PreferNative,
+                DeltaTModel::TableThenModel,
+            )
+            .with_ayanamsha_basis(AyanamshaBasis::True)
+        };
+        let from = Gregorian
+            .to_fixed_ymd(2024, 3, 1)
+            .unwrap()
+            .jd_at_midnight()
+            .unwrap();
+        let chitra = new().with_ayanamsha_choice(Ayanamsha::TrueChitra.into());
+        let spica = new().with_ayanamsha_choice(AyanamshaChoice::Anchored {
+            star: Star::Spica,
+            longitude_deg: 180.0,
+        });
+        assert_eq!(chitra.ayanamsha_choice(), Ayanamsha::TrueChitra.into());
+        assert!(
+            spica.describe().contains("SPICA held at 180°"),
+            "{}",
+            spica.describe()
+        );
+        let (a, b) = (
+            find_sankranti(&chitra, 0, from).unwrap(),
+            find_sankranti(&spica, 0, from).unwrap(),
+        );
+        let seconds = (a.instant.get() - b.instant.get()).abs() * 86_400.0;
+        assert!(seconds < 0.01, "{seconds} s");
+        // A precessed Lahiri, stated where the catalogue stands at its epoch.
+        let lahiri = new();
+        let precessed = new().with_ayanamsha_choice(AyanamshaChoice::Precessed {
+            epoch_jd_tt: 2_451_545.0,
+            value_deg: teistro_astro::ayanamsha::mean_deg(
+                &Ayanamsha::Lahiri.into(),
+                teistro_core::quantity::JulianDay::literal(2_451_545.0),
+                teistro_astro::precession::PrecessionModel::default(),
+                DeltaTModel::TableThenModel,
+            )
+            .unwrap(),
+            basis: AyanamshaBasis::Mean,
+            precession: Precession::Iau2006,
+        });
+        let (a, b) = (
+            find_sankranti(&lahiri, 0, from).unwrap(),
+            find_sankranti(&precessed, 0, from).unwrap(),
+        );
+        let seconds = (a.instant.get() - b.instant.get()).abs() * 86_400.0;
+        assert!(seconds < 0.01, "{seconds} s");
+        // Back to a catalogued member.
+        let back = spica.with_ayanamsha_choice(Ayanamsha::Raman.into());
+        assert_eq!(back.ayanamsha_choice(), Ayanamsha::Raman.into());
+        assert!(back.describe().contains("RAMAN"));
     }
 
     #[test]
