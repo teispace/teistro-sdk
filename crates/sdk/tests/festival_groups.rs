@@ -41,7 +41,13 @@ fn day(year: i32, month: u8, day: u8) -> CalendarDate {
 fn spans(from: CalendarDate, to: CalendarDate, request: &FestivalRequest) -> Vec<GroupSpan> {
     committee()
         .almanac()
-        .festivals(&from, &to, &kathmandu(), UtcOffset::literal(5, 45, 0), request)
+        .festivals(
+            &from,
+            &to,
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            request,
+        )
         .unwrap()
         .value
         .groups
@@ -86,7 +92,8 @@ fn bs_2083_tihar_holds_kartik_23_as_a_gap_however_short_the_range() {
     // Kartik 21 to 25, 2083 are 7 to 11 November 2026. The new moon holds
     // the 8th's evening and the 9th's sunrise, so Lakshmi puja falls on
     // the 8th with the dogs' day, and no member falls on the 9th.
-    let whole = "7:KAG_TIHAR 8:KUKUR_TIHAR+LAKSHMI_PUJA 9:- 10:GOVARDHAN_PUJA+MHA_PUJA 11:YAMA_DWITIYA";
+    let whole =
+        "7:KAG_TIHAR 8:KUKUR_TIHAR+LAKSHMI_PUJA 9:- 10:GOVARDHAN_PUJA+MHA_PUJA 11:YAMA_DWITIYA";
     for (from, to) in [
         (day(2026, 1, 1), day(2026, 12, 31)),
         (day(2026, 11, 9), day(2026, 11, 9)),
@@ -111,7 +118,10 @@ fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
     // Mahashtami and the Mahanavami, a gap of the span.
     let doubled = spans(day(2026, 10, 20), day(2026, 10, 30), &nepal());
     let dashain = doubled.iter().find(|s| s.group == "DASHAIN").unwrap();
-    assert_eq!((ymd(&dashain.first), ymd(&dashain.last)), ((2026, 10, 11), (2026, 10, 25)));
+    assert_eq!(
+        (ymd(&dashain.first), ymd(&dashain.last)),
+        ((2026, 10, 11), (2026, 10, 25))
+    );
     assert_eq!(dashain.days.len(), 15);
     let around: Vec<String> = dashain.days[7..10]
         .iter()
@@ -123,8 +133,15 @@ fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
     // share 11 October and the span is a day shorter.
     let lost = spans(day(2024, 10, 1), day(2024, 10, 31), &nepal());
     let dashain = lost.iter().find(|s| s.group == "DASHAIN").unwrap();
-    assert_eq!((ymd(&dashain.first), ymd(&dashain.last)), ((2024, 10, 3), (2024, 10, 16)));
-    let eleventh = dashain.days.iter().find(|d| ymd(&d.day) == (2024, 10, 11)).unwrap();
+    assert_eq!(
+        (ymd(&dashain.first), ymd(&dashain.last)),
+        ((2024, 10, 3), (2024, 10, 16))
+    );
+    let eleventh = dashain
+        .days
+        .iter()
+        .find(|d| ymd(&d.day) == (2024, 10, 11))
+        .unwrap();
     assert_eq!(eleventh.members, ["MAHA_ASHTAMI", "MAHA_NAVAMI"]);
     assert_eq!(dashain.days.iter().filter(|d| d.gap).count(), 14 - 5);
 }
@@ -140,13 +157,27 @@ fn a_request_regroups_by_key_and_a_filter_keeps_a_group_by_its_members() {
     let found = spans(day(2026, 10, 1), day(2026, 11, 30), &asked);
     let dashain = found.iter().find(|s| s.group == "DASHAIN").unwrap();
     assert_eq!(ymd(&dashain.last), (2026, 10, 21));
-    assert_eq!(found.iter().map(|s| s.group.as_str()).collect::<Vec<_>>(), ["DASHAIN", "TIHAR"]);
+    assert_eq!(
+        found.iter().map(|s| s.group.as_str()).collect::<Vec<_>>(),
+        ["DASHAIN", "TIHAR"]
+    );
     // The Newar filter keeps Tihar, whose Mha puja is the Newars'.
     let newar = r#"{"rules": "NEPAL_PANCHANGA", "only": {"communities": ["NEWAR"]}}"#;
-    let found = spans(day(2026, 10, 1), day(2026, 11, 30), &FestivalRequest::from_json(newar).unwrap());
-    assert_eq!(found.iter().map(|s| s.group.as_str()).collect::<Vec<_>>(), ["TIHAR"]);
+    let found = spans(
+        day(2026, 10, 1),
+        day(2026, 11, 30),
+        &FestivalRequest::from_json(newar).unwrap(),
+    );
+    assert_eq!(
+        found.iter().map(|s| s.group.as_str()).collect::<Vec<_>>(),
+        ["TIHAR"]
+    );
     // A pack without groups answers none.
-    let plain = spans(day(2026, 10, 1), day(2026, 11, 30), &FestivalRequest::from(FestivalPack::Dharmasindhu));
+    let plain = spans(
+        day(2026, 10, 1),
+        day(2026, 11, 30),
+        &FestivalRequest::from(FestivalPack::Dharmasindhu),
+    );
     assert!(plain.is_empty());
 }
 
@@ -169,7 +200,10 @@ fn a_group_is_refused_by_its_field() {
             r#"{"key": "X", "members": ["VIJAYA_DASHAMI", "VIJAYA_DASHAMI"], "main": "VIJAYA_DASHAMI", "source": "s"}"#,
             "festivals.groups[0].members[1]",
         ),
-        (r#"{"key": "X", "members": ["VIJAYA_DASHAMI"]}"#, "festivals.groups[0]"),
+        (
+            r#"{"key": "X", "members": ["VIJAYA_DASHAMI"]}"#,
+            "festivals.groups[0]",
+        ),
     ] {
         let text = format!(r#"{{"rules": "NEPAL_PANCHANGA", "groups": [{group}]}}"#);
         let refused = FestivalRequest::from_json(&text).unwrap_err();
@@ -186,7 +220,10 @@ fn bihar_keeps_chhath_from_kharna_to_the_morning_arghya() {
     let bihar = FestivalRequest::from(FestivalPack::IndiaBihar);
     let found = spans(day(2026, 11, 1), day(2026, 11, 30), &bihar);
     let chhath = found.iter().find(|s| s.group == "CHHATH").unwrap();
-    assert_eq!(written(chhath), "14:CHHATH_KHARNA 15:CHHATH 16:CHHATH_SECOND_DAY");
+    assert_eq!(
+        written(chhath),
+        "14:CHHATH_KHARNA 15:CHHATH 16:CHHATH_SECOND_DAY"
+    );
 }
 
 fn next(after: f64, group: &str) -> NextRequest {
@@ -201,13 +238,24 @@ fn next(after: f64, group: &str) -> NextRequest {
 fn the_next_span_of_a_group_counts_one_under_way() {
     let sdk = committee();
     // Noon of 1 January 2026 at Kathmandu: the next Dashain.
-    let found = sdk.almanac().next(&next(2_461_041.76, "DASHAIN")).unwrap().value;
+    let found = sdk
+        .almanac()
+        .next(&next(2_461_041.76, "DASHAIN"))
+        .unwrap()
+        .value;
     let span = found.group.clone().unwrap();
-    assert_eq!((ymd(&found.day), ymd(&span.last)), ((2026, 10, 11), (2026, 10, 25)));
+    assert_eq!(
+        (ymd(&found.day), ymd(&span.last)),
+        ((2026, 10, 11), (2026, 10, 25))
+    );
     assert_eq!(found.keys.len(), 6);
     assert_eq!(found.festivals.observances.len(), 6);
     // Noon of 9 November 2026, Tihar's gap day: Tihar under way.
-    let under_way = sdk.almanac().next(&next(2_461_353.76, "TIHAR")).unwrap().value;
+    let under_way = sdk
+        .almanac()
+        .next(&next(2_461_353.76, "TIHAR"))
+        .unwrap()
+        .value;
     assert_eq!(ymd(&under_way.day), (2026, 11, 7));
     assert_eq!(ymd(&under_way.group.unwrap().days[2].day), (2026, 11, 9));
     // A key no group of the request has.

@@ -469,10 +469,8 @@ impl AlmanacArea<'_> {
                         .with_field("festivals")
                 })?;
                 let narrowed = asked.narrowed_to_group(key).ok_or_else(|| {
-                    Error::invalid_arg(format!(
-                        "`{key}` is no group of the festival request"
-                    ))
-                    .with_field("group")
+                    Error::invalid_arg(format!("`{key}` is no group of the festival request"))
+                        .with_field("group")
                 })?;
                 let members = narrowed
                     .groups()
@@ -507,7 +505,8 @@ impl AlmanacArea<'_> {
                 };
                 // The span's own reckoning, so its entries are whole
                 // whichever windows it crossed.
-                let whole = self.festivals(&span.first, &span.last, &request.place, offset, &festivals)?;
+                let whole =
+                    self.festivals(&span.first, &span.last, &request.place, offset, &festivals)?;
                 provenance = whole.provenance;
                 let (found, held) = in_the_span(whole.value, &keys);
                 (found, held, span.first.clone(), Some(span))

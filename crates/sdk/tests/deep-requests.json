@@ -271,6 +271,16 @@
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {
@@ -730,6 +740,16 @@
       "calendar": "calendar.JULIAN",
       "eclipses": true,
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {
@@ -1451,6 +1471,16 @@
       "calendar": "calendar.JULIAN",
       "days": 1,
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {
@@ -2156,6 +2186,16 @@
         }
       ],
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {
@@ -2809,6 +2849,16 @@
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {
@@ -3215,6 +3265,7 @@
           }
         ]
       },
+      "group": "x",
       "kind": "PURNIMA",
       "latitudeDeg": 1.5,
       "limitDays": 1,
@@ -3247,6 +3298,16 @@
       "traditions": [
         {
           "festivals": {
+            "groups": [
+              {
+                "key": "x",
+                "main": "x",
+                "members": [
+                  "x"
+                ],
+                "source": "x"
+              }
+            ],
             "hijriOffset": 1,
             "meta": {
               "x": {
@@ -3742,6 +3803,16 @@
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
       "festivals": {
+        "groups": [
+          {
+            "key": "x",
+            "main": "x",
+            "members": [
+              "x"
+            ],
+            "source": "x"
+          }
+        ],
         "hijriOffset": 1,
         "meta": {
           "x": {

@@ -318,7 +318,12 @@ impl FestivalGroup {
 }
 
 /// A group shipped in a pack: key, members, main day and source.
-type Shipped = (&'static str, &'static [&'static str], &'static str, &'static str);
+type Shipped = (
+    &'static str,
+    &'static [&'static str],
+    &'static str,
+    &'static str,
+);
 
 /// The groups as a pack's table writes them.
 fn shipped(table: &[Shipped]) -> Vec<FestivalGroup> {
@@ -403,7 +408,12 @@ impl FestivalGroup {
             DURGA_PUJA,
             (
                 "NAVARATRI",
-                &["NAVARATRA_ARAMBHA", "PHULPATI", "MAHA_ASHTAMI", "MAHA_NAVAMI"],
+                &[
+                    "NAVARATRA_ARAMBHA",
+                    "PHULPATI",
+                    "MAHA_ASHTAMI",
+                    "MAHA_NAVAMI",
+                ],
                 "MAHA_ASHTAMI",
                 "Dharmasindhu p. 65 (the Navaratra begun on Ashvina's bright 1st) and p. 69 (its 9th, joined to the 8th); Bihar's notification lists the Navaratra's first day and the Puja's Saptami and Ashtami (C2105)",
             ),
@@ -427,14 +437,17 @@ impl FestivalGroup {
     /// ```
     #[must_use]
     pub fn india_uttar_pradesh() -> Vec<FestivalGroup> {
-        shipped(&[
-            (
-                "DEEPAWALI",
-                &["NARAK_CHATURDASHI", "LAKSHMI_PUJA", "GOVARDHAN_PUJA", "YAMA_DWITIYA"],
+        shipped(&[(
+            "DEEPAWALI",
+            &[
+                "NARAK_CHATURDASHI",
                 "LAKSHMI_PUJA",
-                "Dharmasindhu p. 77 (Lakshmi's worship on the new moon), p. 78 (the Bali and Govardhan puja) and p. 79 (the Yama dwitiya); the state's lists give each with Narak Chaturdashi the day before Deepawali (C2102)",
-            ),
-        ])
+                "GOVARDHAN_PUJA",
+                "YAMA_DWITIYA",
+            ],
+            "LAKSHMI_PUJA",
+            "Dharmasindhu p. 77 (Lakshmi's worship on the new moon), p. 78 (the Bali and Govardhan puja) and p. 79 (the Yama dwitiya); the state's lists give each with Narak Chaturdashi the day before Deepawali (C2102)",
+        )])
     }
 
     /// West Bengal's Durga Puja, from its Shashthi (the bodhana) to its
@@ -496,7 +509,7 @@ fn standing(published: Option<&super::Published>) -> bool {
 
 /// Each rule's standing days in an answer, by key: the observances, the
 /// fasts, the dated days, the anniversaries and the days a set added.
-fn days_by_key<'a>(found: &'a Observances) -> Vec<(&'a str, &'a CalendarDate)> {
+fn days_by_key(found: &Observances) -> Vec<(&str, &CalendarDate)> {
     found
         .observances
         .iter()
@@ -635,7 +648,11 @@ pub fn group_spans(
             ));
         }
         for member in group.members.iter().filter(|member| **member != group.main) {
-            loose.extend(days_of(member).into_iter().filter(|day| !taken.contains(day)));
+            loose.extend(
+                days_of(member)
+                    .into_iter()
+                    .filter(|day| !taken.contains(day)),
+            );
         }
     }
     spans.sort_by_key(|&(first, order, _)| (first, order));

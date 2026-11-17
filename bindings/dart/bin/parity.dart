@@ -3381,22 +3381,23 @@ void main() {
       'source': 'a test',
     },
   ];
-  for (final (name, rules, published, hijriOffset, groups)
-      in <(
-        String,
-        Object,
-        List<Map<String, Object?>>,
-        int?,
-        List<Map<String, Object?>>,
-      )>[
-        ('shipped', FestivalPack.dharmasindhu, const [], null, const []),
-        ('amended', [FestivalPack.dharmasindhu, ownRule], const [], null, const []),
-        ('nepal', [FestivalPack.nepal, ownFollowing], const [], null, const []),
-        ('dated', [FestivalPack.nepal, ...ownDated], const [], null, const []),
-        ('hijri', [ownHijri], const [], 1, const []),
-        ('published', FestivalPack.dharmasindhu, [publishedSet], null, const []),
-        ('grouped', FestivalPack.dharmasindhu, const [], null, ownGroups),
-      ]) {
+  for (final (name, rules, published, hijriOffset, groups) in <
+    (
+      String,
+      Object,
+      List<Map<String, Object?>>,
+      int?,
+      List<Map<String, Object?>>,
+    )
+  >[
+    ('shipped', FestivalPack.dharmasindhu, const [], null, const []),
+    ('amended', [FestivalPack.dharmasindhu, ownRule], const [], null, const []),
+    ('nepal', [FestivalPack.nepal, ownFollowing], const [], null, const []),
+    ('dated', [FestivalPack.nepal, ...ownDated], const [], null, const []),
+    ('hijri', [ownHijri], const [], 1, const []),
+    ('published', FestivalPack.dharmasindhu, [publishedSet], null, const []),
+    ('grouped', FestivalPack.dharmasindhu, const [], null, ownGroups),
+  ]) {
     // The shipped pack is asked of the lean call, the others of the
     // almanac's: the two answer alike, so the report cannot tell.
     final festivals =

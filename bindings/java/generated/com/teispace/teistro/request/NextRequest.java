@@ -14,16 +14,17 @@ import java.util.Objects;
  * @param after The instant, a UTC Julian day.
  * @param altitudeM The {@code altitudeM} field. Null leaves the SDK's default.
  * @param calendar The {@code calendar} field. Null leaves the SDK's default.
- * @param festivals The festivals, as a festival request, with `rule`. Null leaves the SDK's default.
- * @param kind A kind of day; or `rule`, not both. Null leaves the SDK's default.
+ * @param festivals The festivals, as a festival request, with `rule` or `group`. Null leaves the SDK's default.
+ * @param group A festival group's key in `festivals`: its next span; or `kind` or `rule`, one of the three. Null leaves the SDK's default.
+ * @param kind A kind of day; or `rule` or `group`, one of the three. Null leaves the SDK's default.
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param limitDays 1 to 3660; 400 when left out. Null leaves the SDK's default.
  * @param longitudeDeg The {@code longitudeDeg} field.
- * @param rule A rule's key in `festivals`; or `kind`, not both. Null leaves the SDK's default.
+ * @param rule A rule's key in `festivals`; or `kind` or `group`, one of the three. Null leaves the SDK's default.
  * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
  * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record NextRequest(double after, Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, NextKind kind, double latitudeDeg, Long limitDays, double longitudeDeg, String rule, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
+public record NextRequest(double after, Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, String group, NextKind kind, double latitudeDeg, Long limitDays, double longitudeDeg, String rule, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -46,7 +47,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
      * @param longitudeDeg The {@code longitudeDeg} field.
      */
     public NextRequest(double after, double latitudeDeg, double longitudeDeg) {
-        this(after, null, null, null, null, latitudeDeg, null, longitudeDeg, null, null, null);
+        this(after, null, null, null, null, null, latitudeDeg, null, longitudeDeg, null, null, null);
     }
 
     /**
@@ -65,6 +66,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         private Double altitudeM;
         private com.teispace.teistro.Calendar calendar;
         private FestivalRequest festivals;
+        private String group;
         private NextKind kind;
         private Double latitudeDeg;
         private Long limitDays;
@@ -111,7 +113,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         /**
          * Sets {@code festivals}.
          *
-         * @param festivals The festivals, as a festival request, with `rule`. Null leaves the SDK's default.
+         * @param festivals The festivals, as a festival request, with `rule` or `group`. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder festivals(FestivalRequest festivals) {
@@ -120,9 +122,20 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         }
 
         /**
+         * Sets {@code group}.
+         *
+         * @param group A festival group's key in `festivals`: its next span; or `kind` or `rule`, one of the three. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder group(String group) {
+            this.group = group;
+            return this;
+        }
+
+        /**
          * Sets {@code kind}.
          *
-         * @param kind A kind of day; or `rule`, not both. Null leaves the SDK's default.
+         * @param kind A kind of day; or `rule` or `group`, one of the three. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder kind(NextKind kind) {
@@ -166,7 +179,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         /**
          * Sets {@code rule}.
          *
-         * @param rule A rule's key in `festivals`; or `kind`, not both. Null leaves the SDK's default.
+         * @param rule A rule's key in `festivals`; or `kind` or `group`, one of the three. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder rule(String rule) {
@@ -203,7 +216,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
          * @throws NullPointerException naming a required field left unset
          */
         public NextRequest build() {
-            return new NextRequest(Objects.requireNonNull(after, "`NextRequest.after` is required"), altitudeM, calendar, festivals, kind, Objects.requireNonNull(latitudeDeg, "`NextRequest.latitudeDeg` is required"), limitDays, Objects.requireNonNull(longitudeDeg, "`NextRequest.longitudeDeg` is required"), rule, utcOffsetSeconds, zone);
+            return new NextRequest(Objects.requireNonNull(after, "`NextRequest.after` is required"), altitudeM, calendar, festivals, group, kind, Objects.requireNonNull(latitudeDeg, "`NextRequest.latitudeDeg` is required"), limitDays, Objects.requireNonNull(longitudeDeg, "`NextRequest.longitudeDeg` is required"), rule, utcOffsetSeconds, zone);
         }
     }
 
@@ -221,6 +234,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
             Read.orNull(json.get("altitudeM"), present -> Read.number(present, "NextRequest.altitudeM")),
             Read.orNull(json.get("calendar"), present -> Read.member(present, "NextRequest.calendar", com.teispace.teistro.Calendar::byKey)),
             Read.orNull(json.get("festivals"), present -> FestivalRequest.of(present)),
+            Read.orNull(json.get("group"), present -> Read.text(present, "NextRequest.group")),
             Read.orNull(json.get("kind"), present -> Read.member(present, "NextRequest.kind", NextKind::byKey)),
             Read.number(Read.required(json.get("latitudeDeg"), "NextRequest.latitudeDeg"), "NextRequest.latitudeDeg"),
             Read.orNull(json.get("limitDays"), present -> Read.integer(present, "NextRequest.limitDays")),
@@ -242,6 +256,9 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         }
         if (festivals != null) {
             json.put("festivals", festivals.toJson());
+        }
+        if (group != null) {
+            json.put("group", group);
         }
         if (kind != null) {
             json.put("kind", kind.toJson());
