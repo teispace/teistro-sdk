@@ -12065,7 +12065,11 @@ fn the_settings_explain_and_compare_as_the_facade_answers() {
             .unwrap()
             .explain_settings(&teistro_core::settings::SettingsQuery::default())
             .unwrap();
-        assert_eq!(crossed, serde_json::to_value(&facade).unwrap(), "{profile}");
+        // Through the boundary's own writer, which prints a whole float as
+        // an integer (`day.horizon.altitude_deg` is `0`, not `0.0`).
+        let facade: serde_json::Value =
+            serde_json::from_str(&teistro_core::envelope::canonical_json(&facade)).unwrap();
+        assert_eq!(crossed, facade, "{profile}");
     }
 
     let patched = Ctx::new(
