@@ -2,68 +2,70 @@
 
 Status: `generated` by `cargo xtask costs --from FILE` from instructions counted under callgrind (`cargo xtask costs --measure FILE`, Linux); `check-costs` holds this page to [`costs.json`](costs.json), and the benchmarks workflow holds every pull request's count to it within 10%, or within 0.0100× the unit where that is more. Do not edit.
 
-Each entry point is a record, the name the C boundary, every binding and the agent server's tools share, answered on the example request of `crates/sdk/tests/requests.json` over the built-in ephemeris. The unit is a plain chart, `chart.found` at Kathmandu with nothing read of it but the chart. **First call** is the entry point's first answer on a fresh context, what a one-off call pays, the ephemeris's segments decoded for it included; **again** is the same request a second time on that context, what a consumer that keeps its context pays per call. Both are instructions above the context alone (6 130 173 to build it), so they are counts, not times: a relative cost is the same on a phone and a server where a time is not, and an entry point's figure says how its work compares, not how long it takes on any machine. The engine's records (`engine.*`) answer from the consumer's own engine and are not priced.
+Each entry point is a record, the name the C boundary, every binding and the agent server's tools share, answered on the example request of `crates/sdk/tests/requests.json` over the built-in ephemeris. The unit is a plain chart, `chart.found` at Kathmandu with nothing read of it but the chart. **First call** is the entry point's first answer on a fresh context, what a one-off call pays, the ephemeris's segments decoded for it included; **again** is the same request a second time on that context, what a consumer that keeps its context pays per call. Both are instructions above the context alone (6 670 460 to build it), so they are counts, not times: a relative cost is the same on a phone and a server where a time is not, and an entry point's figure says how its work compares, not how long it takes on any machine. The engine's records (`engine.*`) answer from the consumer's own engine and are not priced.
 
-Counted at `7395cdf24859`, `rustc 1.100.0 (0ef1bc386 2026-11-09)`, x86_64-linux.
+Counted at `09f150fb7a34`, `rustc 1.100.0 (0ef1bc386 2026-11-09)`, x86_64-linux.
 
 | entry point | first call | again | instructions, first call | instructions, again |
 |---|---:|---:|---:|---:|
-| `chart.found` (the unit) | 1.00× | 1.00× | 18 230 099 | 3 357 316 |
-| `chart.found` | 21.5× | 6.02× | 392 569 976 | 20 201 770 |
-| `chart.disagreements` | 3.14× | 10.6× | 57 212 144 | 35 703 227 |
-| `almanac.days` | 177× | 359× | 3 229 919 098 | 1 205 514 419 |
-| `matching.naam` | 0.0179× | 0.0950× | 325 673 | 318 899 |
-| `matching.band` | 1.13× | 0.0227× | 20 649 017 | 76 090 |
-| `naming.syllables` | 0.0237× | 0.121× | 432 626 | 405 593 |
-| `naming.read` | 0.0244× | 0.0889× | 444 294 | 298 479 |
-| `naming.check` | 0.0166× | 0.0816× | 302 464 | 274 059 |
-| `naming.of` | 0.00395× | 0.0150× | 72 008 | 50 294 |
-| `naming.suggest` | 0.0204× | 0.100× | 371 086 | 336 754 |
-| `time.resolve` | 0.00652× | 0.0309× | 118 929 | 103 809 |
-| `geo.resolve` | 0.0216× | 0.0191× | 394 340 | 64 045 |
-| `time.civil` | 0.00623× | 0.0218× | 113 542 | 73 102 |
-| `time.convert` | 0.00165× | 0.00850× | 30 095 | 28 537 |
-| `calendar.convert` | 0.00454× | 0.0141× | 82 762 | 47 245 |
-| `calendar.add` | 0.00552× | 0.0179× | 100 584 | 60 192 |
-| `calendar.between` | 0.00518× | 0.0163× | 94 509 | 54 572 |
-| `numerology.profile` | 0.0154× | 0.0812× | 281 196 | 272 567 |
-| `almanac.navatara` | 0.0149× | 0.0793× | 270 863 | 266 273 |
-| `almanac.aayadi` | 0.0115× | 0.0606× | 208 928 | 203 366 |
-| `intl.inWords` | 1.22× | 0.0419× | 22 266 873 | 140 552 |
-| `intl.time` | 1.13× | 0.0309× | 20 650 765 | 103 836 |
-| `intl.date` | 1.01× | 0.0488× | 18 453 604 | 163 933 |
-| `intl.lexicon` | 5.18× | 0.481× | 94 377 530 | 1 615 459 |
-| `intl.lookup` | 11.4× | 0.181× | 207 432 865 | 606 851 |
-| `intl.dates` | 2.94× | 0.0455× | 53 537 458 | 152 659 |
-| `verify.claims` | 85.1× | 85.0× | 1 551 574 571 | 285 250 053 |
-| `verify.issue` | 0.182× | 0.976× | 3 321 306 | 3 275 194 |
-| `verify.receipt` | 0.272× | 1.41× | 4 961 161 | 4 741 617 |
-| `almanac.digest` | 14.8× | 22.2× | 269 430 993 | 74 482 172 |
-| `almanac.festival_calendar` | 25.6× | 43.5× | 465 879 502 | 146 179 353 |
-| `almanac.changes` | 4.86× | 3.14× | 88 513 679 | 10 558 421 |
-| `almanac.cells` | 15.8× | 15.8× | 287 147 793 | 53 136 984 |
-| `almanac.anniversaries` | 1588× | 7943× | 28 954 172 278 | 26 667 793 516 |
-| `almanac.next` | 154× | 334× | 2 811 079 133 | 1 119 799 552 |
-| `almanac.sentences` | 12.1× | 5.80× | 221 281 209 | 19 479 918 |
-| `almanac.publishedReasons` | 24.0× | 44.7× | 438 193 193 | 150 172 132 |
-| `almanac.pakshi` | 10.6× | 9.36× | 194 020 349 | 31 417 825 |
-| `almanac.sankalpa` | 74.7× | 86.9× | 1 362 080 601 | 291 813 604 |
-| `almanac.sankalpaWords` | 74.8× | 84.5× | 1 362 740 540 | 283 543 634 |
-| `almanac.ashauch` | 27.9× | 34.8× | 507 733 039 | 116 967 131 |
-| `almanac.household` | 36.1× | 73.5× | 658 069 908 | 246 766 741 |
-| `almanac.ashauchKin` | 0.00551× | 0.0268× | 100 454 | 90 025 |
-| `almanac.ashauchRite` | 0.00347× | 0.0158× | 63 207 | 53 073 |
-| `almanac.deathTime` | 91.9× | 181× | 1 674 728 062 | 608 451 870 |
-| `almanac.festivalPack` | 0.106× | 0.566× | 1 924 121 | 1 899 047 |
-| `almanac.firstYear` | 157× | 321× | 2 858 983 613 | 1 077 682 555 |
-| `chart.rashifal` | 9.76× | 8.82× | 178 009 642 | 29 620 108 |
-| `research.study` | 3.03× | 2.93× | 55 219 985 | 9 822 235 |
-| `chart.mundane` | 2.70× | 0.899× | 49 244 586 | 3 018 316 |
-| `chart.relocated` | 1.05× | 0.856× | 19 183 840 | 2 872 414 |
-| `chart.astrocartography` | 1.12× | 1.21× | 20 370 726 | 4 063 429 |
-| `almanac.skyView` | 0.643× | 1.24× | 11 729 556 | 4 161 353 |
-| `almanac.elect` | 281× | 471× | 5 129 504 585 | 1 582 059 434 |
-| `almanac.observance` | 193× | 580× | 3 523 245 941 | 1 947 237 058 |
-| `almanac.people` | 12.9× | 13.9× | 235 039 275 | 46 501 288 |
-| `almanac.skyPose` | 0.737× | 1.75× | 13 430 340 | 5 862 144 |
-| `calendar.in_era` | 0.00493× | 0.0154× | 89 806 | 51 621 |
+| `chart.found` (the unit) | 1.00× | 1.00× | 18 236 227 | 3 367 567 |
+| `chart.found` | 21.5× | 5.99× | 392 544 582 | 20 184 920 |
+| `chart.disagreements` | 3.14× | 10.6× | 57 286 553 | 35 706 634 |
+| `almanac.days` | 178× | 364× | 3 252 670 931 | 1 226 569 177 |
+| `matching.naam` | 0.0179× | 0.0940× | 326 448 | 316 451 |
+| `matching.band` | 1.20× | 0.0223× | 21 921 246 | 75 058 |
+| `naming.syllables` | 0.0236× | 0.119× | 430 321 | 400 876 |
+| `naming.read` | 0.0245× | 0.0886× | 446 321 | 298 449 |
+| `naming.check` | 0.0166× | 0.0810× | 302 250 | 272 628 |
+| `naming.of` | 0.00402× | 0.0149× | 73 356 | 50 133 |
+| `naming.suggest` | 0.0204× | 0.0996× | 372 335 | 335 479 |
+| `time.resolve` | 0.00662× | 0.0305× | 120 786 | 102 587 |
+| `geo.resolve` | 0.0217× | 0.0187× | 395 110 | 62 816 |
+| `time.civil` | 0.00607× | 0.0217× | 110 644 | 72 970 |
+| `time.convert` | 0.00163× | 0.00839× | 29 724 | 28 240 |
+| `calendar.convert` | 0.00462× | 0.0141× | 84 249 | 47 584 |
+| `calendar.add` | 0.00546× | 0.0175× | 99 564 | 58 989 |
+| `calendar.between` | 0.00526× | 0.0163× | 95 942 | 54 763 |
+| `numerology.profile` | 0.0154× | 0.0793× | 281 722 | 267 060 |
+| `almanac.navatara` | 0.0147× | 0.0784× | 268 133 | 264 087 |
+| `almanac.aayadi` | 0.0114× | 0.0600× | 207 795 | 201 919 |
+| `intl.inWords` | 1.29× | 0.0417× | 23 542 090 | 140 489 |
+| `intl.time` | 1.20× | 0.0312× | 21 923 130 | 105 157 |
+| `intl.date` | 1.21× | 0.0484× | 22 050 382 | 163 105 |
+| `intl.lexicon` | 5.32× | 0.482× | 96 985 352 | 1 622 271 |
+| `intl.lookup` | 12.6× | 0.182× | 230 433 948 | 613 756 |
+| `intl.dates` | 3.35× | 0.0453× | 61 013 132 | 152 565 |
+| `verify.claims` | 86.3× | 84.7× | 1 574 633 302 | 285 295 990 |
+| `verify.issue` | 0.185× | 0.987× | 3 377 688 | 3 323 969 |
+| `verify.receipt` | 0.273× | 1.41× | 4 979 461 | 4 763 425 |
+| `almanac.digest` | 23.6× | 28.5× | 429 694 348 | 96 130 810 |
+| `almanac.festival_calendar` | 34.4× | 50.2× | 627 153 479 | 169 201 662 |
+| `almanac.changes` | 4.85× | 3.14× | 88 517 624 | 10 574 821 |
+| `almanac.cells` | 15.7× | 15.8× | 287 066 025 | 53 150 087 |
+| `almanac.anniversaries` | 1587× | 7918× | 28 946 168 675 | 26 663 596 681 |
+| `almanac.next` | 165× | 358× | 3 011 212 807 | 1 204 635 733 |
+| `almanac.sentences` | 12.2× | 5.78× | 222 547 316 | 19 479 163 |
+| `almanac.publishedReasons` | 32.1× | 51.6× | 584 492 590 | 173 635 794 |
+| `almanac.pakshi` | 10.6× | 9.33× | 193 981 132 | 31 427 200 |
+| `almanac.sankalpa` | 74.7× | 86.7× | 1 362 064 810 | 291 804 118 |
+| `almanac.sankalpaWords` | 74.8× | 84.2× | 1 364 929 553 | 283 585 080 |
+| `almanac.ashauch` | 27.8× | 34.7× | 507 640 113 | 116 911 252 |
+| `almanac.household` | 36.1× | 73.3× | 657 936 487 | 246 757 582 |
+| `almanac.ashauchKin` | 0.00549× | 0.0270× | 100 139 | 90 840 |
+| `almanac.ashauchRite` | 0.00344× | 0.0156× | 62 720 | 52 678 |
+| `almanac.deathTime` | 91.8× | 181× | 1 674 757 156 | 608 626 829 |
+| `almanac.festivalPack` | 0.108× | 0.582× | 1 977 251 | 1 960 180 |
+| `almanac.firstYear` | 157× | 320× | 2 858 224 309 | 1 078 579 830 |
+| `chart.rashifal` | 9.76× | 8.85× | 178 074 610 | 29 798 047 |
+| `research.study` | 3.03× | 2.93× | 55 277 823 | 9 854 471 |
+| `chart.mundane` | 2.70× | 0.902× | 49 254 811 | 3 036 422 |
+| `chart.relocated` | 1.05× | 0.857× | 19 189 874 | 2 886 855 |
+| `chart.astrocartography` | 1.12× | 1.21× | 20 389 517 | 4 075 855 |
+| `almanac.skyView` | 0.644× | 1.24× | 11 744 837 | 4 166 308 |
+| `almanac.elect` | 281× | 470× | 5 129 411 498 | 1 584 224 522 |
+| `almanac.observance` | 202× | 591× | 3 677 882 600 | 1 989 557 069 |
+| `almanac.people` | 12.9× | 13.8× | 235 142 769 | 46 600 518 |
+| `almanac.skyPose` | 0.738× | 1.75× | 13 454 035 | 5 880 429 |
+| `calendar.in_era` | 0.00498× | 0.0157× | 90 834 | 53 037 |
+| `settings.explain` | 0.647× | 0.400× | 11 795 415 | 1 346 674 |
+| `settings.diff` | 0.125× | 0.675× | 2 283 294 | 2 274 125 |
