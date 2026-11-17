@@ -20,7 +20,7 @@ use teistro_astro::eclipse::{
 use teistro_astro::{Completion, DeltaTModel, tt_of};
 use teistro_core::error::Status;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::OverridePolicy;
+use teistro_core::settings::{HorizonModel, OverridePolicy};
 use teistro_ephemeris_builtin::provider::Builtin;
 use teistro_port_ephemeris::{DiscPoint, Horizon, Refraction};
 
@@ -295,6 +295,7 @@ const NASA_HORIZON: Horizon = Horizon {
     disc: DiscPoint::UpperLimb,
     refraction: Refraction::None,
     altitude_deg: 0.0,
+    model: HorizonModel::STANDARD,
 };
 
 /// One eclipse at one place, as NASA's explorer prints its largest phase

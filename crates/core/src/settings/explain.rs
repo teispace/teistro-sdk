@@ -243,7 +243,7 @@ impl Settings {
 /// use teistro_core::settings::SettingsQuery;
 ///
 /// let asked = SettingsQuery::from_json(r#"{"knobs": ["frame", "day.sunrise"]}"#)?;
-/// assert_eq!(asked.selected()?.len(), 9);
+/// assert_eq!(asked.selected()?.len(), 12);
 /// let refused = SettingsQuery::from_json(r#"{"knobs": ["frame.nod"]}"#)?.selected().unwrap_err();
 /// assert_eq!(refused.field(), Some("knobs[0]"));
 /// # Ok::<(), teistro_core::Error>(())
@@ -300,7 +300,7 @@ impl SettingsQuery {
 /// use teistro_core::settings::SettingsDiffQuery;
 ///
 /// let asked = SettingsDiffQuery::from_json(r#"{"knobs": ["frame"]}"#)?;
-/// assert_eq!(asked.query().selected()?.len(), 8);
+/// assert_eq!(asked.query().selected()?.len(), 11);
 /// # Ok::<(), teistro_core::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
