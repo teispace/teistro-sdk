@@ -993,7 +993,9 @@ void main() {
     expect(tihar.main, 'LAKSHMI_PUJA');
     expect([tihar.first.day, tihar.last.day], [7, 11]);
     expect(
-      tihar.days.map((d) => '${d.day.day}:${d.gap ? '-' : d.members.join('+')}'),
+      tihar.days.map(
+        (d) => '${d.day.day}:${d.gap ? '-' : d.members.join('+')}',
+      ),
       [
         '7:KAG_TIHAR',
         '8:KUKUR_TIHAR+LAKSHMI_PUJA',

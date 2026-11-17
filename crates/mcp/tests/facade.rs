@@ -247,7 +247,10 @@ fn the_next_span_of_a_group_answers_as_the_facade_does() {
         "almanac.next",
         &json!({"request": request, "detail": "full"}),
     );
-    assert_eq!(full["structuredContent"]["value"]["group"]["group"], "TIHAR", "{full}");
+    assert_eq!(
+        full["structuredContent"]["value"]["group"]["group"], "TIHAR",
+        "{full}"
+    );
     let mut unknown = request.clone();
     unknown["group"] = json!("HOLI");
     let refused = call(&mut server, "almanac.next", &json!({"request": unknown}));

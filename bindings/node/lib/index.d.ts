@@ -306,6 +306,7 @@ import type {
   PrashnaRequest,
   PrashnaRules,
   ProgressionsRequest,
+  FestivalGroup,
   PublishedSet,
   PurifierRules,
   RectificationRequest,
@@ -6232,18 +6233,6 @@ export interface FestivalRequest {
    * spans the answer gives (`03-design/festival-groups.md`).
    */
   readonly groups?: readonly FestivalGroup[];
-}
-
-/** A festival kept over several rules' days, as a request names it. */
-export interface FestivalGroup {
-  /** The group's key, as `'TIHAR'`. */
-  readonly key: string;
-  /** The member rules' keys, in the festival's order; each a rule of the request. */
-  readonly members: readonly string[];
-  /** The member whose day the group is reckoned around; one of `members`. */
-  readonly main: string;
-  /** The source that says which rules make the festival. */
-  readonly source: string;
 }
 
 /** One change a published day was tried under, or the reason it differs. */

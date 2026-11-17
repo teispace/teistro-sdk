@@ -18608,7 +18608,8 @@ final class FestivalRequest extends _Facade {
         for (final MapEntry(:key, :value) in meta.entries) key: _written(value),
       },
     if (order case final listed?) 'order': listed.key,
-    if (groups.isNotEmpty) 'groups': [for (final group in groups) _written(group)],
+    if (groups.isNotEmpty)
+      'groups': [for (final group in groups) _written(group)],
   };
 
   String get _json => jsonEncode(_wire);

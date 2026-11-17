@@ -25,10 +25,11 @@ use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
     DayClause, DayPart, DayRule, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
-    FollowingRule, Guard, Half, InAdhika, InMonth, MonthClause, MoonArcs, Moonrise, MoonriseAt,
-    NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate, Published,
-    PublishedStatus, Sait, SaitCandidate, SunEntry, TithiShape, Unjudged, Unplaced, VrataEdge,
-    VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
+    FollowingRule, GroupDay, GroupMember, GroupSpan, Guard, Half, InAdhika, InMonth, MonthClause,
+    MoonArcs, Moonrise, MoonriseAt, NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred,
+    Predicate, Published, PublishedStatus, Sait, SaitCandidate, SunEntry, TithiShape, Unjudged,
+    Unplaced, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following,
+    observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -2132,7 +2133,7 @@ fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
 }
 
 /// The string paths of a festival answer that name no catalogue member.
-const NOT_MEMBERS: [&str; 69] = [
+const NOT_MEMBERS: [&str; 77] = [
     "observances.rule",
     "observances.decidedBy.rule",
     "observances.day.resolution.kind",
@@ -2202,6 +2203,14 @@ const NOT_MEMBERS: [&str; 69] = [
     "unplaced.rule",
     "unplaced.set",
     "unplaced.day.resolution.kind",
+    "groups.group",
+    "groups.main",
+    "groups.first.resolution.kind",
+    "groups.last.resolution.kind",
+    "groups.members.rule",
+    "groups.members.day.resolution.kind",
+    "groups.days.day.resolution.kind",
+    "groups.days.members",
 ];
 
 /// `Observances::MEMBERS` names every catalogue member an answer holds,
@@ -2348,6 +2357,10 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
     mark_published(&mut answer);
     // A sait, its candidate's lagna and navamsa named.
     answer.observances[0].sait = Some(elected());
+    // A group's span, a member on its one day.
+    answer
+        .groups
+        .push(one_day_span(answer.observances[0].day.clone()));
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
     let members: std::collections::BTreeSet<String> = Observances::MEMBERS
@@ -2362,6 +2375,25 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         found, listed,
         "a string path is unlisted, or a listed one is gone"
     );
+}
+
+/// A group's span of one day, its one member on it.
+fn one_day_span(on: teistro_calendar::CalendarDate) -> GroupSpan {
+    GroupSpan {
+        group: "JANMA".to_owned(),
+        main: "JANMASHTAMI".to_owned(),
+        first: on.clone(),
+        last: on.clone(),
+        members: vec![GroupMember {
+            rule: "JANMASHTAMI".to_owned(),
+            day: Some(on.clone()),
+        }],
+        days: vec![GroupDay {
+            day: on,
+            members: vec!["JANMASHTAMI".to_owned()],
+            gap: false,
+        }],
+    }
 }
 
 /// A rule of the `GAUDIYA` pack, by key.

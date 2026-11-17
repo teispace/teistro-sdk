@@ -6974,7 +6974,10 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
             "published",
             format!(r#""DHARMASINDHU","published":[{PUBLISHED_SET}]"#),
         ),
-        ("grouped", format!(r#""DHARMASINDHU","groups":{OWN_GROUPS}"#)),
+        (
+            "grouped",
+            format!(r#""DHARMASINDHU","groups":{OWN_GROUPS}"#),
+        ),
     ] {
         let asked = teistro::FestivalRequest::from_json(&format!(r#"{{"rules":{rules}}}"#))
             .expect("a festival request");
@@ -7102,19 +7105,39 @@ fn put_groups(
         put(
             report,
             &key(&format!("-group-{k}")),
-            format!("{} {} {} {}", span.group, span.main, on(&span.first), on(&span.last)),
+            format!(
+                "{} {} {} {}",
+                span.group,
+                span.main,
+                on(&span.first),
+                on(&span.last)
+            ),
         );
         let members: Vec<String> = span
             .members
             .iter()
-            .map(|m| format!("{}:{}", m.rule, m.day.as_ref().map_or_else(|| "-".to_owned(), on)))
+            .map(|m| {
+                format!(
+                    "{}:{}",
+                    m.rule,
+                    m.day.as_ref().map_or_else(|| "-".to_owned(), on)
+                )
+            })
             .collect();
-        put(report, &key(&format!("-group-{k}-members")), members.join(" "));
+        put(
+            report,
+            &key(&format!("-group-{k}-members")),
+            members.join(" "),
+        );
         let days: Vec<String> = span
             .days
             .iter()
             .map(|d| {
-                let held = if d.gap { "-".to_owned() } else { d.members.join("+") };
+                let held = if d.gap {
+                    "-".to_owned()
+                } else {
+                    d.members.join("+")
+                };
                 format!("{}:{held}", on(&d.day))
             })
             .collect();

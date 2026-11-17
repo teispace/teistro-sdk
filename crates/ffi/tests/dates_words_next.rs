@@ -489,8 +489,11 @@ fn the_next_span_of_a_group_is_found() {
     assert_eq!(days.first().unwrap()["day"], span["first"]);
     assert_eq!(days.last().unwrap()["day"], span["last"]);
     assert!(
-        days.iter()
-            .any(|d| d["members"].as_array().unwrap().iter().any(|m| m == "LAKSHMI_PUJA")),
+        days.iter().any(|d| d["members"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|m| m == "LAKSHMI_PUJA")),
         "{span}"
     );
 }

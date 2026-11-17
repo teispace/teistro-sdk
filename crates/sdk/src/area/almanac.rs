@@ -638,7 +638,10 @@ impl<'a> AlmanacArea<'a> {
                 near(day, day);
             }
             for span in spans.iter().filter(|span| !span.is_whole()) {
-                near(calendar.fixed_of(&span.first)?, calendar.fixed_of(&span.last)?);
+                near(
+                    calendar.fixed_of(&span.first)?,
+                    calendar.fixed_of(&span.last)?,
+                );
             }
             if !before && !after {
                 break;
@@ -670,7 +673,10 @@ impl<'a> AlmanacArea<'a> {
         let (mut spans, _) = group_spans(request.groups(), &seen, calendar)?;
         let mut reaches = Vec::with_capacity(spans.len());
         for span in &spans {
-            let (from, to) = (calendar.fixed_of(&span.first)?, calendar.fixed_of(&span.last)?);
+            let (from, to) = (
+                calendar.fixed_of(&span.first)?,
+                calendar.fixed_of(&span.last)?,
+            );
             let kept = request
                 .groups()
                 .iter()
