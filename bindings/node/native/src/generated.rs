@@ -128,6 +128,7 @@ pub fn ayanamsha_from_str(value: &str) -> Result<u16> {
         "ayanamsha.LAHIRI_VP285" => Ok(44),
         "ayanamsha.KRISHNAMURTI_VP291" => Ok(45),
         "ayanamsha.LAHIRI_ICRC" => Ok(46),
+        "ayanamsha.KETAKI" => Ok(47),
         other => Err(Error::from_reason(format!("`{other}` is not a Ayanamsha"))),
     }
 }
@@ -183,6 +184,7 @@ pub fn ayanamsha_to_str(value: u16) -> String {
         44 => "ayanamsha.LAHIRI_VP285",
         45 => "ayanamsha.KRISHNAMURTI_VP291",
         46 => "ayanamsha.LAHIRI_ICRC",
+        47 => "ayanamsha.KETAKI",
         _ => "unknown",
     }
     .to_string()
@@ -1775,8 +1777,8 @@ pub struct ContextOptions {
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
     /// `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-    /// `tamil-vakya`, `kp-default`, `western-tropical-default`,
-    /// `conformance-baseline`).
+    /// `tamil-vakya`, `ketaki`, `tilak-revati`, `kp-default`,
+    /// `western-tropical-default`, `conformance-baseline`).
     /// Example: `parashari-classical`. May be null.
     pub profile: Option<String>,
     /// A JSON settings patch over the profile: an object whose groups and

@@ -437,7 +437,9 @@ public final class Messages {
         /** `ayanamsha.KRISHNAMURTI_VP291`. */
         KRISHNAMURTI_VP291("ayanamsha.KRISHNAMURTI_VP291"),
         /** `ayanamsha.LAHIRI_ICRC`. */
-        LAHIRI_ICRC("ayanamsha.LAHIRI_ICRC");
+        LAHIRI_ICRC("ayanamsha.LAHIRI_ICRC"),
+        /** `ayanamsha.KETAKI`. */
+        KETAKI("ayanamsha.KETAKI");
 
         private final String value;
 
@@ -6953,6 +6955,15 @@ public final class Messages {
                  */
                 public EntityForms jnBhasin() {
                     return r.entity("ayanamsha.JN_BHASIN");
+                }
+
+                /**
+                 * The forms of `ayanamsha.KETAKI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ketaki() {
+                    return r.entity("ayanamsha.KETAKI");
                 }
 
                 /**

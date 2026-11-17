@@ -2233,8 +2233,8 @@ class ContextOptions:
     profile: Optional[str] = None
     """The shipped profile's id (`parashari-classical`, `nepali-drik`,
     `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-    `tamil-vakya`, `kp-default`, `western-tropical-default`,
-    `conformance-baseline`).
+    `tamil-vakya`, `ketaki`, `tilak-revati`, `kp-default`,
+    `western-tropical-default`, `conformance-baseline`).
     Example: parashari-classical. May be null.
     """
 

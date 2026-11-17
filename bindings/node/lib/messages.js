@@ -300,6 +300,7 @@ export function messages(r) {
           j1900: () => r.entity('ayanamsha.J1900'),
           j2000: () => r.entity('ayanamsha.J2000'),
           jnBhasin: () => r.entity('ayanamsha.JN_BHASIN'),
+          ketaki: () => r.entity('ayanamsha.KETAKI'),
           krishnamurti: () => r.entity('ayanamsha.KRISHNAMURTI'),
           krishnamurtiVp291: () => r.entity('ayanamsha.KRISHNAMURTI_VP291'),
           lahiri: () => r.entity('ayanamsha.LAHIRI'),

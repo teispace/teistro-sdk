@@ -7778,11 +7778,11 @@
     {
       "kind": "ayanamsha",
       "number": 23,
-      "version": 1,
-      "doc": "The catalogued ayanamshas; a custom one is a settings value, not a member.",
+      "version": 2,
+      "doc": "The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines.",
       "types": {},
       "attributes": {
-        "swiss_mode": "u8",
+        "swiss_mode": "option<u8>",
         "category": "key:ayanamsha_category"
       },
       "members": [
@@ -8909,6 +8909,34 @@
             {
               "text": "Swiss Ephemeris documentation",
               "ref": "sidereal modes"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KETAKI",
+          "id": 47,
+          "doc": "Ketaki (Ketkar's Chitrapaksha): 22°08′33″ at the Mesha sankranti of Shaka 1800 (JD 2407086.5, 12 April 1878), growing by (n/70)° − (n/50)′ a year, 50.228571″ a sidereal year of 365.256361 days and so 0.013952138° a Julian year (50.228571 × 365.25 / 365.256361 / 3600), linear and continuous; the origin opposite Chitra (Spica). Computed by the SDK; `CUSTOM` with the same three numbers is the same value to the bit (`03-design/ketaki.md` §4.1, crux C2180).",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "swiss_mode": null,
+            "category": "VEDIC_STANDARD"
+          },
+          "sources": [
+            {
+              "text": "V. B. Ketkar, Ketakī Grahagaṇitam (Poona, Shaka 1821 = 1899)",
+              "ref": "madhyama v. 3 (the origin opposite Chitra); spashta v. 6 and its example, p. 12 (the rule; Shaka 1815 gives 22°21′6″)"
+            },
+            {
+              "text": "V. B. Ketkar, Jyotirgaṇitam, 2nd ed. (Poona, 1937)",
+              "ref": "p. 7 (22°8′33.04″ at Mesha, Shaka 1800; the sidereal year 365 days 15 ghatis 22.9 palas); p. 346 (Spica on 1 January 1892, 22°20′2.9″)"
+            },
+            {
+              "text": "Report of the Calendar Reform Committee (New Delhi, 1955)",
+              "ref": "Annexure VI: sixteen Ketkar-method almanacs print 23°12′06″ to 23°12′10″ for Shaka 1876"
             }
           ],
           "mark": "V",

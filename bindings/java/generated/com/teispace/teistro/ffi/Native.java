@@ -1827,8 +1827,8 @@ public final class Native {
         /**
          * The offset of `profile`. The shipped profile's id (`parashari-classical`, `nepali-drik`,
          * `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-         * `tamil-vakya`, `kp-default`, `western-tropical-default`,
-         * `conformance-baseline`).
+         * `tamil-vakya`, `ketaki`, `tilak-revati`, `kp-default`,
+         * `western-tropical-default`, `conformance-baseline`).
          * Example: parashari-classical. May be null.
          */
         public static final long PROFILE_OFFSET = 8;

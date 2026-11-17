@@ -1343,6 +1343,7 @@ export const Ayanamsha = /* @__PURE__ */ Object.freeze({
   LahiriVp285: 'ayanamsha.LAHIRI_VP285',
   KrishnamurtiVp291: 'ayanamsha.KRISHNAMURTI_VP291',
   LahiriIcrc: 'ayanamsha.LAHIRI_ICRC',
+  Ketaki: 'ayanamsha.KETAKI',
 });
 
 /**
@@ -1397,6 +1398,7 @@ export const AyanamshaById = /* @__PURE__ */ new Map([
   [44, 'ayanamsha.LAHIRI_VP285'],
   [45, 'ayanamsha.KRISHNAMURTI_VP291'],
   [46, 'ayanamsha.LAHIRI_ICRC'],
+  [47, 'ayanamsha.KETAKI'],
 ]);
 
 /** Every HouseSystem by name. */

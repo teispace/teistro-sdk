@@ -170,6 +170,7 @@ class AyanamshaKey(enum.StrEnum):
     LAHIRI_VP285 = "ayanamsha.LAHIRI_VP285"
     KRISHNAMURTI_VP291 = "ayanamsha.KRISHNAMURTI_VP291"
     LAHIRI_ICRC = "ayanamsha.LAHIRI_ICRC"
+    KETAKI = "ayanamsha.KETAKI"
 
 
 class AyanamshaCategoryKey(enum.StrEnum):
@@ -12938,6 +12939,11 @@ class MessagesSdkEntityAyanamsha:
     def jn_bhasin(self) -> EntityForms:
         """The forms of `ayanamsha.JN_BHASIN` in the current locale."""
         return self._r.entity("ayanamsha.JN_BHASIN")
+
+    @property
+    def ketaki(self) -> EntityForms:
+        """The forms of `ayanamsha.KETAKI` in the current locale."""
+        return self._r.entity("ayanamsha.KETAKI")
 
     @property
     def krishnamurti(self) -> EntityForms:
