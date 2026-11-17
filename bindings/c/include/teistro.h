@@ -10966,6 +10966,75 @@ ts_status ts_geo_resolve(const ts_context * context, const char * request_json, 
 ts_status ts_geo_load(const ts_context * context, const char * table_json, ts_string * out_json);
 
 /**
+ * The places matching a name, best first, as the context's geo provider
+ * ranks them, answered as canonical JSON: a list of `{place, score}`, each
+ * place `{id, name, nameLang, label, kind, level, code, latitudeDeg,
+ * longitudeDeg, population, parents}`. `score` compares within one query.
+ *
+ * `request_json` is `{"query", "focus", "limit", "lang"}`: the text as
+ * typed in any script the provider's data holds (`"Name, Parent"` puts the
+ * named parent's places first), an optional focus `{latitudeDeg,
+ * longitudeDeg, scaleM}` preferring places near it, at most `limit`
+ * places (1 to 100, default 10), each named in the BCP 47 `lang`. An empty
+ * query, a limit out of range or a malformed tag is `INVALID_ARG` on its
+ * field; a context with no provider is `CAPABILITY` on `geo`; a provider
+ * built without search is `CAPABILITY` on `search`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_geo_search(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * The named places nearest a point and the admin units holding it, from
+ * the context's geo provider, answered as canonical JSON `{near, admin}`:
+ * `near` the nearest places, nearest first, each `{place, distanceM,
+ * bearingDeg, inside}`; `admin` the units holding the point coarse to
+ * fine, each a place as `ts_geo_search` answers one. A level the
+ * provider's data holds no outline for is absent, never a refusal.
+ *
+ * `request_json` is `{"latitudeDeg", "longitudeDeg", "limit", "lang"}`,
+ * `limit` 1 to 100 (default 5). A point out of range is `INVALID_ARG` on
+ * `latitudeDeg` or `longitudeDeg`; a context with no provider is
+ * `CAPABILITY` on `geo`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_geo_reverse(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * A place's names from the context's geo provider, answered as canonical
+ * JSON `{id, best, all}`: `all` every name, each `{text, lang, script,
+ * type, origin, machine}` (`origin` `REVIEWED` for a name a person
+ * corrected against a source), and `best` one `{asked, name}` per language
+ * asked, `name` null where the place has none in it.
+ *
+ * `request_json` is `{"id", "langs"}`: an id an answer gave, and BCP 47
+ * tags (`ne`, `en`, `hi`, `sa`). An empty id or a malformed tag is
+ * `INVALID_ARG` on `id` or `langs[i]`; an id the provider does not know
+ * answers no names.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_geo_names(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * The places of an admin unit from the context's geo provider, ranked by
+ * population (most first, a place with none after), answered as canonical
+ * JSON: a list of places as `ts_geo_search` answers them, each with
+ * `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`.
+ *
+ * `request_json` is `{"within", "level", "kinds", "depth", "limit",
+ * "lang"}`: the unit by its id or ISO 3166 code (`NP`, `NP-P3`), only
+ * units of `level`, only places of `kinds` (`COUNTRY`, `ADMIN`,
+ * `SETTLEMENT`, `LOCALITY`, `NATURAL`, `POSTAL_AREA`), at most `depth`
+ * levels down (default 1, null for any), at most `limit` (1 to 1,000,
+ * default 100). A unit the provider does not hold lists nothing.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_geo_list(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
  * namespace it brings is laid over what was loaded under the same keys —
  * a message replaces, and two entity records merge their forms, so a pack

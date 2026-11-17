@@ -1154,6 +1154,50 @@ export interface RelocationRequest {
 }
 
 /**
+ * The places of a unit: what `geo.list` reads.
+ */
+export interface PlaceListing {
+  /**
+   * How many levels below `within` to look: 1 its children, `null` any depth; 1 when left out.
+   */
+  readonly depth?: number | null;
+  /**
+   * Only places of these kinds; empty for every kind.
+   */
+  readonly kinds?: readonly PlaceKind[];
+  /**
+   * The language to name each place in, or `null`.
+   */
+  readonly lang?: string | null;
+  /**
+   * Only units of this admin level, or `null` for any place.
+   */
+  readonly level?: number | null;
+  /**
+   * The most places to answer, 1 to 1,000; 100 when left out.
+   */
+  readonly limit?: number;
+  /**
+   * The unit to list within: a place's id, or an ISO 3166 code (`NP`, `NP-P3`).
+   */
+  readonly within: string;
+}
+
+/**
+ * A place's names: what `geo.names` reads.
+ */
+export interface PlaceNamesRequest {
+  /**
+   * The place's id, as an answer gave it.
+   */
+  readonly id: string;
+  /**
+   * The languages to choose a name in (`ne`, `en`, `hi`, `sa`); empty for none.
+   */
+  readonly langs?: readonly string[];
+}
+
+/**
  * A place to resolve, as `geo.resolve` reads it.
  */
 export interface PlaceRequest {
@@ -1165,6 +1209,50 @@ export interface PlaceRequest {
    * The longitude, in degrees, east positive.
    */
   readonly longitudeDeg: number;
+}
+
+/**
+ * A point to its nearest places and its units: what `geo.reverse` reads.
+ */
+export interface PlaceReverse {
+  /**
+   * The language to name each place in, or `null`.
+   */
+  readonly lang?: string | null;
+  /**
+   * The latitude, in degrees.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The most nearby places to answer, 1 to 100; 5 when left out.
+   */
+  readonly limit?: number;
+  /**
+   * The longitude, in degrees.
+   */
+  readonly longitudeDeg: number;
+}
+
+/**
+ * A name to places: what `geo.search` reads.
+ */
+export interface PlaceSearch {
+  /**
+   * Prefer places near this point, or `null`.
+   */
+  readonly focus?: SearchFocus | null;
+  /**
+   * The language to name each place in (`ne`, `en-Latn`), or `null` for its canonical name.
+   */
+  readonly lang?: string | null;
+  /**
+   * The most places to answer, 1 to 100; 10 when left out.
+   */
+  readonly limit?: number;
+  /**
+   * The text as typed, in any script; after a comma it names a parent (`Kathmandu, Bagmati`).
+   */
+  readonly query: string;
 }
 
 /**
@@ -2053,11 +2141,15 @@ export interface ResolvedPlace {
    */
   readonly longitudeDeg: number;
   /**
+   * The zone is the nautical one (`Etc/GMT±n` from the longitude), not a land zone; written only when true, so a land answer reads as it always has.
+   */
+  readonly nautical?: boolean;
+  /**
    * Who answered, and from which data.
    */
   readonly source: GeoSource;
   /**
-   * The IANA zone holding the point, or `null` where the data has none.
+   * The IANA zone holding the point, or `null` where the data has none. At sea, where the provider knows no area holds the point, the nautical zone [`nautical_zone`] reckons from the longitude, with [`ResolvedPlace::nautical`] set (SR-144).
    */
   readonly zone?: string | null;
 }
@@ -3120,6 +3212,36 @@ export interface RelocationPlace {
    * Longitude, degrees, east positive.
    */
   readonly longitudeDeg: number;
+}
+
+/**
+ * What a place of the catalogue is.
+ *
+ * `COUNTRY`: A country, at admin level 0.
+ * `ADMIN`: An administrative unit below a country: a province, a district, a municipality, a ward.
+ * `SETTLEMENT`: A populated place: a city, a town, a village.
+ * `LOCALITY`: A named part of a settlement, or a locality with no people: a tole, a neighbourhood.
+ * `NATURAL`: A natural feature: a peak, a pass, a lake, a river.
+ * `POSTAL_AREA`: A postal area.
+ */
+export type PlaceKind = 'COUNTRY' | 'ADMIN' | 'SETTLEMENT' | 'LOCALITY' | 'NATURAL' | 'POSTAL_AREA';
+
+/**
+ * A search's focus: prefer places near this point.
+ */
+export interface SearchFocus {
+  /**
+   * The latitude, in degrees.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The longitude, in degrees.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The distance, in metres, at which the focus's gain halves; 50 km when left out.
+   */
+  readonly scaleM?: number;
 }
 
 /**
@@ -10995,7 +11117,11 @@ export interface RecordRequests {
   readonly 'chart.mundane': MundaneRequest;
   readonly 'chart.rashifal': BatchAsked;
   readonly 'chart.relocated': RelocationRequest;
+  readonly 'geo.list': PlaceListing;
+  readonly 'geo.names': PlaceNamesRequest;
   readonly 'geo.resolve': PlaceRequest;
+  readonly 'geo.reverse': PlaceReverse;
+  readonly 'geo.search': PlaceSearch;
   readonly 'intl.date': DateTextRequest;
   readonly 'intl.dates': DatesRequest;
   readonly 'intl.inWords': InWordsRequest;

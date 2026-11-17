@@ -1,0 +1,73 @@
+---
+title: ts_geo_names
+description: "A place's names from the context's geo provider, answered as canonical JSON `{id, best, all}`: `all` every name, each `{text, lang, script, type, origin, machine}` (`origin` `REVIEWED` for a name a person corrected against a source), and `best` one `{asked, name}` per language asked, `name` null where the place has none in it."
+---
+
+A place's names from the context's geo provider, answered as canonical JSON `{id, best, all}`: `all` every name, each `{text, lang, script, type, origin, machine}` (`origin` `REVIEWED` for a name a person corrected against a source), and `best` one `{asked, name}` per language asked, `name` null where the place has none in it.
+
+`request_json` is `{"id", "langs"}`: an id an answer gave, and BCP 47 tags (`ne`, `en`, `hi`, `sa`). An empty id or a malformed tag is `INVALID_ARG` on `id` or `langs[i]`; an id the provider does not know answers no names.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.geo.names
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.geo.names
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.geo.names
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.geo().names
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.geo().names
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_geo_names(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `geo.names` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/geo.rs`.

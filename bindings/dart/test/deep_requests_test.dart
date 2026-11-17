@@ -597,6 +597,7 @@ void main() {
           height: GroundHeight(datum: 'x', metres: 1.5, resolutionM: 1.5, source: 'x'),
           latitudeDeg: 1.5,
           longitudeDeg: 1.5,
+          nautical: true,
           source: GeoSource(dataVersion: 'x', name: 'x', tzdb: 'x', version: 'x'),
           zone: 'x',
         ),
@@ -3783,6 +3784,7 @@ void main() {
           height: GroundHeight(datum: 'x', metres: 1.5, resolutionM: 1.5, source: 'x'),
           latitudeDeg: 1.5,
           longitudeDeg: 1.5,
+          nautical: true,
           source: GeoSource(dataVersion: 'x', name: 'x', tzdb: 'x', version: 'x'),
           zone: 'x',
         ),
@@ -4476,6 +4478,33 @@ void main() {
     );
   });
 
+  test('geo.list: PlaceListing', () {
+    _holds(
+      'geo.list',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceListing(
+        depth: 1,
+        kinds: [PlaceKind.admin],
+        lang: 'x',
+        level: 1,
+        limit: 1,
+        within: 'NP-P3',
+      ).toJson(),
+    );
+  });
+
+  test('geo.names: PlaceNamesRequest', () {
+    _holds(
+      'geo.names',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceNamesRequest(id: 'np-ktm', langs: ['ne']).toJson(),
+    );
+  });
+
   test('geo.resolve: PlaceRequest', () {
     _holds(
       'geo.resolve',
@@ -4483,6 +4512,31 @@ void main() {
       dropping: [],
       members: 0,
       written: PlaceRequest(latitudeDeg: 1.5, longitudeDeg: 1.5).toJson(),
+    );
+  });
+
+  test('geo.reverse: PlaceReverse', () {
+    _holds(
+      'geo.reverse',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceReverse(lang: 'ne', latitudeDeg: 1.5, limit: 1, longitudeDeg: 1.5).toJson(),
+    );
+  });
+
+  test('geo.search: PlaceSearch', () {
+    _holds(
+      'geo.search',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceSearch(
+        focus: SearchFocus(latitudeDeg: 1.5, longitudeDeg: 1.5, scaleM: 1.5),
+        lang: 'en',
+        limit: 1,
+        query: 'काठमाडौं',
+      ).toJson(),
     );
   });
 

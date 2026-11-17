@@ -47,7 +47,11 @@ public final class Requests {
             Map.entry("chart.mundane", MundaneRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
             Map.entry("chart.relocated", RelocationRequest::of),
+            Map.entry("geo.list", PlaceListing::of),
+            Map.entry("geo.names", PlaceNamesRequest::of),
             Map.entry("geo.resolve", PlaceRequest::of),
+            Map.entry("geo.reverse", PlaceReverse::of),
+            Map.entry("geo.search", PlaceSearch::of),
             Map.entry("intl.date", DateTextRequest::of),
             Map.entry("intl.dates", DatesRequest::of),
             Map.entry("intl.inWords", InWordsRequest::of),
@@ -183,8 +187,20 @@ public final class Requests {
     /** {@code chart.relocated}, whose request is {@link RelocationRequest}. */
     public static final RecordOf<RelocationRequest> CHART_RELOCATED = new RecordOf<>("chart.relocated");
 
+    /** {@code geo.list}, whose request is {@link PlaceListing}. */
+    public static final RecordOf<PlaceListing> GEO_LIST = new RecordOf<>("geo.list");
+
+    /** {@code geo.names}, whose request is {@link PlaceNamesRequest}. */
+    public static final RecordOf<PlaceNamesRequest> GEO_NAMES = new RecordOf<>("geo.names");
+
     /** {@code geo.resolve}, whose request is {@link PlaceRequest}. */
     public static final RecordOf<PlaceRequest> GEO_RESOLVE = new RecordOf<>("geo.resolve");
+
+    /** {@code geo.reverse}, whose request is {@link PlaceReverse}. */
+    public static final RecordOf<PlaceReverse> GEO_REVERSE = new RecordOf<>("geo.reverse");
+
+    /** {@code geo.search}, whose request is {@link PlaceSearch}. */
+    public static final RecordOf<PlaceSearch> GEO_SEARCH = new RecordOf<>("geo.search");
 
     /** {@code intl.date}, whose request is {@link DateTextRequest}. */
     public static final RecordOf<DateTextRequest> INTL_DATE = new RecordOf<>("intl.date");

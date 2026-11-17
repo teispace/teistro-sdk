@@ -5154,6 +5154,110 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// The places matching a name, best first, as the context's geo provider
+    /// ranks them, answered as canonical JSON: a list of `{place, score}`, each
+    /// place `{id, name, nameLang, label, kind, level, code, latitudeDeg,
+    /// longitudeDeg, population, parents}`. `score` compares within one query.
+    ///
+    /// `request_json` is `{"query", "focus", "limit", "lang"}`: the text as
+    /// typed in any script the provider's data holds (`"Name, Parent"` puts the
+    /// named parent's places first), an optional focus `{latitudeDeg,
+    /// longitudeDeg, scaleM}` preferring places near it, at most `limit`
+    /// places (1 to 100, default 10), each named in the BCP 47 `lang`. An empty
+    /// query, a limit out of range or a malformed tag is `INVALID_ARG` on its
+    /// field; a context with no provider is `CAPABILITY` on `geo`; a provider
+    /// built without search is `CAPABILITY` on `search`.
+    #[wasm_bindgen(js_name = geoSearch)]
+    pub fn geo_search(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::geo::ts_geo_search(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// The named places nearest a point and the admin units holding it, from
+    /// the context's geo provider, answered as canonical JSON `{near, admin}`:
+    /// `near` the nearest places, nearest first, each `{place, distanceM,
+    /// bearingDeg, inside}`; `admin` the units holding the point coarse to
+    /// fine, each a place as `ts_geo_search` answers one. A level the
+    /// provider's data holds no outline for is absent, never a refusal.
+    ///
+    /// `request_json` is `{"latitudeDeg", "longitudeDeg", "limit", "lang"}`,
+    /// `limit` 1 to 100 (default 5). A point out of range is `INVALID_ARG` on
+    /// `latitudeDeg` or `longitudeDeg`; a context with no provider is
+    /// `CAPABILITY` on `geo`.
+    #[wasm_bindgen(js_name = geoReverse)]
+    pub fn geo_reverse(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::geo::ts_geo_reverse(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A place's names from the context's geo provider, answered as canonical
+    /// JSON `{id, best, all}`: `all` every name, each `{text, lang, script,
+    /// type, origin, machine}` (`origin` `REVIEWED` for a name a person
+    /// corrected against a source), and `best` one `{asked, name}` per language
+    /// asked, `name` null where the place has none in it.
+    ///
+    /// `request_json` is `{"id", "langs"}`: an id an answer gave, and BCP 47
+    /// tags (`ne`, `en`, `hi`, `sa`). An empty id or a malformed tag is
+    /// `INVALID_ARG` on `id` or `langs[i]`; an id the provider does not know
+    /// answers no names.
+    #[wasm_bindgen(js_name = geoNames)]
+    pub fn geo_names(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::geo::ts_geo_names(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// The places of an admin unit from the context's geo provider, ranked by
+    /// population (most first, a place with none after), answered as canonical
+    /// JSON: a list of places as `ts_geo_search` answers them, each with
+    /// `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`.
+    ///
+    /// `request_json` is `{"within", "level", "kinds", "depth", "limit",
+    /// "lang"}`: the unit by its id or ISO 3166 code (`NP`, `NP-P3`), only
+    /// units of `level`, only places of `kinds` (`COUNTRY`, `ADMIN`,
+    /// `SETTLEMENT`, `LOCALITY`, `NATURAL`, `POSTAL_AREA`), at most `depth`
+    /// levels down (default 1, null for any), at most `limit` (1 to 1,000,
+    /// default 100). A unit the provider does not hold lists nothing.
+    #[wasm_bindgen(js_name = geoList)]
+    pub fn geo_list(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status =
+            unsafe { ffi::geo::ts_geo_list(self.handle, request_json.as_ptr(), &raw mut out_json) };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
     /// namespace it brings is laid over what was loaded under the same keys —
     /// a message replaces, and two entity records merge their forms, so a pack

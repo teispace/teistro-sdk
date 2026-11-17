@@ -633,10 +633,34 @@ final List<Surface> requests = [
     Param('instant', Scalar('double')),
     Param('places', ListOf(Named('RelocationPlace'), (items) => List<RelocationPlace>.from(items))),
   ], fields: (v) => [v.houseSystem, v.instant, v.places]),
+  Built<PlaceListing>('PlaceListing', PlaceListing.new, [
+    Param('depth', Scalar('int')),
+    Param('kinds', ListOf(Named('PlaceKind'), (items) => List<PlaceKind>.from(items))),
+    Param('lang', Scalar('String')),
+    Param('level', Scalar('int')),
+    Param('limit', Scalar('int')),
+    Param('within', Scalar('String')),
+  ], fields: (v) => [v.depth, v.kinds, v.lang, v.level, v.limit, v.within]),
+  Built<PlaceNamesRequest>('PlaceNamesRequest', PlaceNamesRequest.new, [
+    Param('id', Scalar('String')),
+    Param('langs', ListOf(Scalar('String'), (items) => List<String>.from(items))),
+  ], fields: (v) => [v.id, v.langs]),
   Built<PlaceRequest>('PlaceRequest', PlaceRequest.new, [
     Param('latitudeDeg', Scalar('double')),
     Param('longitudeDeg', Scalar('double')),
   ], fields: (v) => [v.latitudeDeg, v.longitudeDeg]),
+  Built<PlaceReverse>('PlaceReverse', PlaceReverse.new, [
+    Param('lang', Scalar('String')),
+    Param('latitudeDeg', Scalar('double')),
+    Param('limit', Scalar('int')),
+    Param('longitudeDeg', Scalar('double')),
+  ], fields: (v) => [v.lang, v.latitudeDeg, v.limit, v.longitudeDeg]),
+  Built<PlaceSearch>('PlaceSearch', PlaceSearch.new, [
+    Param('focus', Named('SearchFocus')),
+    Param('lang', Scalar('String')),
+    Param('limit', Scalar('int')),
+    Param('query', Scalar('String')),
+  ], fields: (v) => [v.focus, v.lang, v.limit, v.query]),
   Built<DateTextRequest>('DateTextRequest', DateTextRequest.new, [
     Param('at', Named('CalendarDay')),
     Param('digits', Named('WordsDigits')),
@@ -863,9 +887,10 @@ final List<Surface> requests = [
     Param('height', Named('GroundHeight')),
     Param('latitudeDeg', Scalar('double')),
     Param('longitudeDeg', Scalar('double')),
+    Param('nautical', Scalar('bool')),
     Param('source', Named('GeoSource')),
     Param('zone', Scalar('String')),
-  ], fields: (v) => [v.admin, v.height, v.latitudeDeg, v.longitudeDeg, v.source, v.zone]),
+  ], fields: (v) => [v.admin, v.height, v.latitudeDeg, v.longitudeDeg, v.nautical, v.source, v.zone]),
   Built<DeathTimeTable>('DeathTimeTable', DeathTimeTable.new, [
     Param('dvipada', ListOf(Named('Nakshatra'), (items) => List<Nakshatra>.from(items))),
     Param('name', Scalar('String')),
@@ -1070,6 +1095,12 @@ final List<Surface> requests = [
     Param('latitudeDeg', Scalar('double')),
     Param('longitudeDeg', Scalar('double')),
   ], fields: (v) => [v.altitudeM, v.latitudeDeg, v.longitudeDeg]),
+  KeySet<PlaceKind>('PlaceKind', PlaceKind.values, (m) => m.key),
+  Built<SearchFocus>('SearchFocus', SearchFocus.new, [
+    Param('latitudeDeg', Scalar('double')),
+    Param('longitudeDeg', Scalar('double')),
+    Param('scaleM', Scalar('double')),
+  ], fields: (v) => [v.latitudeDeg, v.longitudeDeg, v.scaleM]),
   Built<CalendarDay>('CalendarDay', CalendarDay.new, [
     Param('calendar', Named('Calendar')),
     Param('day', Scalar('int')),
