@@ -5,11 +5,13 @@
 #![allow(
     clippy::unwrap_used,
     clippy::indexing_slicing,
-    reason = "tests fail by panicking"
+    clippy::print_stderr,
+    reason = "tests fail by panicking, and say SKIP where the runner shows it"
 )]
 
 mod common;
 
+use teigeodata_format::component::Component;
 use teistro_core::error::Status;
 use teistro_geo_teigeodata::{ENGINE_VERSION, NAME, TeigeodataGeo};
 use teistro_port_geo::{GeoPoint, GeoProvider, resolve};
@@ -33,15 +35,21 @@ fn kathmandu_resolves_to_its_zone_province_and_height() {
     assert!(codes.contains(&Some("NP-P3")), "{:?}", place.admin);
     assert!(place.admin.iter().all(|unit| unit.name.is_some()));
 
-    // The valley floor stands about 1,300 m above EGM2008.
-    let height = place.height.as_ref().unwrap();
-    assert!((1_200.0..1_450.0).contains(&height.metres), "{height:?}");
-    assert_eq!(height.datum, "EGM2008");
-    assert!(
-        height.resolution_m > 0.0 && height.resolution_m < 1_000.0,
-        "{height:?}"
-    );
-    assert_ne!(height.source, "");
+    // The valley floor stands about 1,300 m above EGM2008, where a pack
+    // carries a DEM; the app pack carries none and answers no height.
+    if common::holds(&geo, Component::Dem) {
+        let height = place.height.as_ref().unwrap();
+        assert!((1_200.0..1_450.0).contains(&height.metres), "{height:?}");
+        assert_eq!(height.datum, "EGM2008");
+        assert!(
+            height.resolution_m > 0.0 && height.resolution_m < 1_000.0,
+            "{height:?}"
+        );
+        assert_ne!(height.source, "");
+    } else {
+        assert_eq!(place.height, None);
+        eprintln!("SKIP  kathmandu height: no pack carries a DEM");
+    }
 
     // Who answered, and from which data.
     assert_eq!(place.source.name, NAME);
@@ -54,7 +62,11 @@ fn kathmandu_resolves_to_its_zone_province_and_height() {
     );
     let layers = geo.snapshot().layers().len();
     assert_eq!(place.source.data_version.split(" + ").count(), layers);
-    assert!(place.source.data_version.contains("np."));
+    assert!(
+        geo.snapshot()
+            .layers()
+            .all(|layer| place.source.data_version.contains(layer.address()))
+    );
 
     // Each question asked alone answers as the resolution did.
     let kathmandu = at(27.7172, 85.324);

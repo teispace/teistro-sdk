@@ -8,7 +8,7 @@ fills:
 
 | question | teigeodata | the port's answer |
 |---|---|---|
-| the zone | `Engine::tz_at`, the area's name | `Some("Asia/Kathmandu")`; at sea, with the world baseline installed, the nautical `Etc/GMT±n` marked `nautical` |
+| the zone | `Engine::tz_at`, the area's name; where no outline holds the point, the zone of the town it lies within | `Some("Asia/Kathmandu")`; at sea, where the world baseline outlines the land nearby, the nautical `Etc/GMT±n` marked `nautical` |
 | the height | `Engine::elevation_at` | `GroundHeight { metres, source: "NASADEM", resolutionM: 30.9, datum: "EGM2008" }` |
 | the admin units | `Engine::admin_at`, then `iso_code` and `name` on each | `[{level: 0, code: "NP", name: "Nepal"}, {level: 1, code: "NP-P3", ...}]` |
 | a search | `Engine::search_with`, teigeodata's own ranking | `काठमाडौं`, `Kathmandu` and `Kathamandu` find the same places, best first, each labelled `Name, Parent, Country` |
@@ -147,7 +147,10 @@ TEISTRO_TEIGEODATA_PACKS=/path/to/np-places-lite.tgd:/path/to/baseline-lite.tgd 
 ```
 
 `TEISTRO_TEIGEODATA_PACKS` names pack files, separated as a `PATH` is:
-Nepal's country pack first, then the world's baseline. Download them from
+Nepal's country pack first, then the world's baseline; or teigeodata's app
+pack alone (`world-np-app-lite.tgd` of `data-2026.11.17`, the world's
+places and Nepal's outlines in one layer, with no DEM and no populations),
+over which the height tests say `SKIP` and the listings order by name. Download them from
 the data release verify's `TEIGEODATA_DATA` names (`gh release download
 data-2026.11.15 -R teispace/teigeodata -p np-places-lite.tgd -p
 baseline-lite.tgd`) and check them against its `SHA256SUMS`. No pack is

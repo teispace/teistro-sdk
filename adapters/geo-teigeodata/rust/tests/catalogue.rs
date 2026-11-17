@@ -16,6 +16,7 @@ mod common;
 use std::sync::Arc;
 
 use teigeodata_engine::{Engine, Layer, LayerOptions, Shared};
+use teigeodata_format::component::Component;
 use teistro_core::error::Status;
 use teistro_geo_teigeodata::{NO_PACKS, TeigeodataGeo};
 use teistro_port_geo::{
@@ -56,16 +57,35 @@ fn reversed(
     reverse(geo, &asked).unwrap()
 }
 
-/// The packs `TEISTRO_TEIGEODATA_PACKS` names whose file name says they
-/// are (`baseline`) or are not (a country's) the world's baseline.
-fn packs_where(test: &str, baseline: bool) -> Option<Vec<std::path::PathBuf>> {
+/// What a pack is, by its file name: the world's baseline, teigeodata's
+/// app pack (the world and Nepal in one, `world-np-app-lite.tgd`), or a
+/// country's pack.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Pack {
+    Baseline,
+    App,
+    Country,
+}
+
+fn pack_of(path: &std::path::Path) -> Pack {
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("");
+    if name.contains("baseline") {
+        Pack::Baseline
+    } else if name.contains("-app") {
+        Pack::App
+    } else {
+        Pack::Country
+    }
+}
+
+/// The packs `TEISTRO_TEIGEODATA_PACKS` names of one kind.
+fn packs_of(test: &str, kind: Pack) -> Option<Vec<std::path::PathBuf>> {
     let packs: Vec<_> = common::packs(test)?
         .into_iter()
-        .filter(|pack| {
-            pack.file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.contains("baseline") == baseline)
-        })
+        .filter(|pack| pack_of(pack) == kind)
         .collect();
     if packs.is_empty() {
         eprintln!("SKIP  {test}: no pack of that kind is named");
@@ -257,7 +277,7 @@ fn a_point_abroad_is_named_from_the_worlds_coarse_units() {
 /// levels 0 and 1, and that is fewer answers, never a refusal (C2209).
 #[test]
 fn a_pack_with_no_outline_for_a_point_answers_fewer_units_not_a_refusal() {
-    let Some(country) = packs_where("no outline abroad", false) else {
+    let Some(country) = packs_of("no outline abroad", Pack::Country) else {
         return;
     };
     let nepal = TeigeodataGeo::open(&country).unwrap();
@@ -274,7 +294,7 @@ fn a_pack_with_no_outline_for_a_point_answers_fewer_units_not_a_refusal() {
     assert_eq!(list(&nepal, &listing).unwrap(), Vec::new());
 
     // Kathmandu against the world's baseline alone: its coarse units only.
-    let Some(world) = packs_where("coarse units only", true) else {
+    let Some(world) = packs_of("coarse units only", Pack::Baseline) else {
         return;
     };
     let coarse = TeigeodataGeo::open(&world).unwrap();
@@ -302,7 +322,7 @@ fn a_pack_with_no_outline_for_a_point_answers_fewer_units_not_a_refusal() {
 /// sea from land it lacks, so it answers no zone there (C2216).
 #[test]
 fn the_sea_answers_its_nautical_zone_and_a_country_pack_does_not_guess() {
-    let Some(world) = packs_where("nautical zone", true) else {
+    let Some(world) = packs_of("nautical zone", Pack::Baseline) else {
         return;
     };
     let coarse = TeigeodataGeo::open(&world).unwrap();
@@ -327,7 +347,7 @@ fn the_sea_answers_its_nautical_zone_and_a_country_pack_does_not_guess() {
         let place = teistro_port_geo::resolve(&coarse, at(lat, lon)).unwrap();
         assert_eq!((place.zone.as_deref(), place.nautical), (Some(zone), false));
     }
-    let Some(country) = packs_where("no world, no sea", false) else {
+    let Some(country) = packs_of("no world, no sea", Pack::Country) else {
         return;
     };
     let nepal = TeigeodataGeo::open(&country).unwrap();
@@ -336,6 +356,44 @@ fn the_sea_answers_its_nautical_zone_and_a_country_pack_does_not_guess() {
         let place = teistro_port_geo::resolve(&nepal, at(lat, lon)).unwrap();
         assert_eq!((place.zone, place.nautical), (None, false));
     }
+}
+
+/// teigeodata's app pack, alone as the apps ship it first: Nepal outlined
+/// to its local levels, the world's places without outlines. Abroad there
+/// is no unit and no sea, and a point within a settlement takes that
+/// settlement's zone (C2218, C2219).
+#[test]
+fn the_app_pack_outlines_nepal_alone_and_zones_a_town_abroad() {
+    let Some(app) = packs_of("app pack", Pack::App) else {
+        return;
+    };
+    let geo = TeigeodataGeo::open(&app).unwrap();
+    let at = |lat, lon| GeoPoint::try_from_degrees(lat, lon).unwrap();
+    // London: its own zone, from the settlement it lies within, no unit.
+    let london = teistro_port_geo::resolve(&geo, at(51.5074, -0.1278)).unwrap();
+    assert_eq!(
+        (london.zone.as_deref(), london.nautical),
+        (Some("Europe/London"), false)
+    );
+    assert_eq!(london.admin, Vec::new());
+    let nearby = reversed(&geo, 51.5074, -0.1278, None);
+    assert_eq!(nearby.admin, Vec::new());
+    assert_eq!(nearby.near[0].place.name, "London");
+    // Mid-Atlantic: the pack outlines no land there, so it cannot call
+    // it sea; no zone, no refusal.
+    for (lat, lon) in [(0.0, -30.0), (15.0, 88.0)] {
+        assert!(!geo.at_sea(at(lat, lon)).unwrap());
+        let place = teistro_port_geo::resolve(&geo, at(lat, lon)).unwrap();
+        assert_eq!((place.zone, place.nautical), (None, false));
+    }
+    // Nepal to its local level, as the main pack outlines it.
+    let kathmandu = teistro_port_geo::resolve(&geo, at(27.7172, 85.324)).unwrap();
+    assert_eq!(kathmandu.zone.as_deref(), Some("Asia/Kathmandu"));
+    let levels: Vec<_> = kathmandu.admin.iter().map(|unit| unit.level).collect();
+    assert_eq!(levels, [0, 1, 2, 3]);
+    // No DEM and no populations in this pack.
+    assert_eq!(kathmandu.height, None);
+    assert!(!common::holds(&geo, Component::Extra));
 }
 
 #[test]
@@ -425,7 +483,17 @@ fn a_units_places_are_listed_by_population() {
     );
     assert!(local.len() > 50, "{}", local.len());
     assert!(ranked(&local));
-    assert_eq!(local[0].name, "Kathmandu");
+    // With populations Kathmandu leads; without (the app pack carries
+    // none) every place ties and the canonical name orders them.
+    let counted = common::holds(&geo, Component::Extra);
+    let kathmandu = if counted {
+        assert_eq!(local[0].name, "Kathmandu");
+        &local[0]
+    } else {
+        assert!(local.iter().all(|unit| unit.population.is_none()));
+        assert!(local.windows(2).all(|pair| pair[0].name <= pair[1].name));
+        local.iter().find(|unit| unit.name == "Kathmandu").unwrap()
+    };
     let modelled = local
         .iter()
         .filter(|unit| {
@@ -435,17 +503,17 @@ fn a_units_places_are_listed_by_population() {
         .count();
     eprintln!("of which modelled: {modelled}");
     // Kathmandu district's children: its municipalities, and no deeper.
-    let district = &local[0].parents.last().unwrap().id;
+    let district = &kathmandu.parents.last().unwrap().id;
     let children = listed(&format!(
         r#"{{"within": "{district}", "kinds": ["ADMIN"]}}"#
     ));
     eprintln!("Kathmandu district's units: {}", children.len());
     assert!(children.iter().all(|unit| unit.level == Some(3)));
-    assert!(children.iter().any(|unit| unit.id == local[0].id));
+    assert!(children.iter().any(|unit| unit.id == kathmandu.id));
     // Settlements of a city, at any depth, capped by the limit.
     let settlements = listed(&format!(
         r#"{{"within": "{}", "kinds": ["SETTLEMENT"], "depth": null, "limit": 3}}"#,
-        local[0].id
+        kathmandu.id
     ));
     assert_eq!(settlements.len(), 3);
     assert!(
@@ -455,9 +523,10 @@ fn a_units_places_are_listed_by_population() {
     );
     // A unit no pack holds lists nothing.
     assert_eq!(listed(r#"{"within": "tgd:np/zzzzzz"}"#), Vec::new());
-    // No former unit is a unit now.
+    // No former unit is a unit now: the seven provinces, each counted
+    // where the packs carry populations.
     assert!(
-        provinces.iter().all(|unit| unit.population.is_some()),
+        !counted || provinces.iter().all(|unit| unit.population.is_some()),
         "{provinces:?}"
     );
     assert_eq!(provinces.len(), 7);

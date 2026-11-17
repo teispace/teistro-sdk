@@ -34,7 +34,6 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use teigeodata_core::{E7, Point};
 use teigeodata_engine::{Engine, Layer, LayerOptions, Place, Scratch, Shared};
-use teigeodata_format::component::Component;
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
     AdminUnit, FoundPlace, GeoPoint, GeoProvider, GeoSource, GroundHeight, NamedPlace,
@@ -61,9 +60,8 @@ pub const ENGINE_VERSION: &str = "1.1.0";
 /// over a store that has installed nothing yet (§13.2).
 pub const NO_PACKS: &str = "none";
 
-/// The address of teigeodata's world layer, its baseline: the one pack
-/// whose outlines cover every country, so the one that can tell the sea
-/// from land it lacks.
+/// The address of teigeodata's world layers, the baseline and the app
+/// pack: the only layers that name places the world over.
 pub const WORLD: &str = "world";
 
 /// The longest name, in bytes, the adapter reads for a zone or a place. A
@@ -351,8 +349,15 @@ impl GeoProvider for TeigeodataGeo {
     fn zone_at(&self, at: GeoPoint) -> Result<Option<String>, Error> {
         let point = grid(at, "zone")?;
         let engine = self.shared.load();
-        let Some(area) = engine.tz_at(point).map_err(|why| failed(&why, "zone"))? else {
-            return Ok(None);
+        let area = match engine.tz_at(point).map_err(|why| failed(&why, "zone"))? {
+            Some(area) => area,
+            // No area outline holds the point (teigeodata's app pack
+            // outlines Nepal alone): the zone of a settlement or locality
+            // the point lies within, by teigeodata's radii (C2218).
+            None => match catalogue::zone_within(&engine, &mut self.scratch(), at)? {
+                Some(area) => area,
+                None => return Ok(None),
+            },
         };
         name_of(&engine, &area, "zone")
     }
@@ -429,33 +434,38 @@ impl GeoProvider for TeigeodataGeo {
             .collect()
     }
 
-    /// At sea (SR-144): a world layer (teigeodata's baseline, address
-    /// [`WORLD`]) that answers zones from its admin outlines is installed,
-    /// and neither a zone nor an admin unit of any layer holds the point.
-    /// Without a world layer a pack knows only its own country, so a point
-    /// outside it is unknown land, never the sea (C2216).
+    /// At sea (SR-144): a world layer (address [`WORLD`]) is installed, no
+    /// zone and no admin unit holds the point, and the data does outline
+    /// the land nearest it: the nearest settlement (or locality, or unit)
+    /// lies inside a unit the packs hold. A country pack knows no world;
+    /// teigeodata's app pack is a world layer that outlines Nepal alone,
+    /// so abroad its nearest place lies in no unit either. Both cannot
+    /// tell the sea from land they lack, and say no (C2216, C2219).
     fn at_sea(&self, at: GeoPoint) -> Result<bool, Error> {
         let point = grid(at, "zone")?;
         let engine = self.shared.load();
-        let world = engine.layers().any(|layer| {
-            let held = layer.components();
-            layer.address() == WORLD
-                && held.contains(Component::Timezone)
-                && held.contains(Component::AdminIndex)
-        });
-        if !world
-            || engine
-                .tz_at(point)
-                .map_err(|why| failed(&why, "zone"))?
-                .is_some()
+        if !engine.layers().any(|layer| layer.address() == WORLD) {
+            return Ok(false);
+        }
+        if engine
+            .tz_at(point)
+            .map_err(|why| failed(&why, "zone"))?
+            .is_some()
         {
             return Ok(false);
         }
-        let mut places = Vec::new();
-        engine
-            .admin_at(point, &mut self.scratch(), &mut places)
-            .map_err(|why| failed(&why, "zone"))?;
-        Ok(places.is_empty())
+        let mut scratch = self.scratch();
+        let mut units = Vec::new();
+        if !catalogue::units_at(&engine, &mut scratch, point, &mut units)? || !units.is_empty() {
+            return Ok(false);
+        }
+        let Some(nearest) = catalogue::nearest_named(&engine, &mut scratch, at)? else {
+            return Ok(false);
+        };
+        Ok(
+            catalogue::units_at(&engine, &mut scratch, nearest.to_e7(), &mut units)?
+                && !units.is_empty(),
+        )
     }
 
     fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
