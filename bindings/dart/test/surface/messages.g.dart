@@ -283,6 +283,7 @@ final List<MessageSurface> messages = [
   MessageSurface('MessagesSdkSettingsEffectDay.horizon', (m) => m.sdk.settings.effect.day.horizon, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.polarDayPolicy', (m) => m.sdk.settings.effect.day.polarDayPolicy, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.sunrise', (m) => m.sdk.settings.effect.day.sunrise, const []),
+  MessageSurface('MessagesSdkSettingsEffectFestivals.observer', (m) => m.sdk.settings.effect.festivals.observer, const []),
   MessageSurface('MessagesSdkSettingsEffectFrame.ayanamsha', (m) => m.sdk.settings.effect.frame.ayanamsha, const []),
   MessageSurface('MessagesSdkSettingsEffectFrame.ayanamshaBasis', (m) => m.sdk.settings.effect.frame.ayanamshaBasis, const []),
   MessageSurface('MessagesSdkSettingsEffectFrame.centre', (m) => m.sdk.settings.effect.frame.centre, const []),

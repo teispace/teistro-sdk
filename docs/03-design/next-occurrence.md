@@ -39,7 +39,7 @@ Each kind is read by rules the SDK states, so no pack has to be named:
 
 | kind | rules | source |
 |---|---|---|
-| `EKADASHI` | *Dharmasindhu*'s Smarta and Vaishnava fasts (`EkadashiRule::dharmasindhu`). The earlier of the two when they part. | *Dharmasindhu* pp. 11–12 (`festival-rules.md` §8) |
+| `EKADASHI` | *Dharmasindhu*'s Smarta and Vaishnava fasts (`EkadashiRule::dharmasindhu`). The earlier of the two when they part; under `festivals.observer` the observer's own fast alone (`festival-traditions.md` §4). | *Dharmasindhu* pp. 11–12 (`festival-rules.md` §8) |
 | `PURNIMA` | the day whose sunrise holds the full moon, or the day an unrisen full moon falls in, every month, the adhika month too | the day a patro printed in Nepal names by its sunrise tithi (C197), C807 |
 | `AMAVASYA` | the same, for the new moon | as `PURNIMA` |
 | `SANKRANTI` | the first day of each Bikram Sambat month (`DatedRule::sankrantis`, the twelve that `NEPAL_PANCHANGA` prints) | Nepal's national panchanga, VS 2082, the punya convention (C619) |

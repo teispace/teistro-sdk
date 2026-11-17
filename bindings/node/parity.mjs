@@ -2067,6 +2067,24 @@ for (const [name, rules, published, hijriOffset, span, groups] of [
     put(key(`-group-${k}-days`), span.days.map((d) => `${on(d.day)}:${d.gap ? '-' : d.members.join('+')}`).join(' '));
   });
 }
+// `festivals.observer` (festival-traditions.md): the Vaishnava's Ekadashi
+// alone of Dharmasindhu's three, by the setting alone.
+{
+  const vaishnava = new Context({
+    profile: 'parashari-classical',
+    testProvider: true,
+    settings: { festivals: { observer: 'VAISHNAVA' } },
+  });
+  const { ekadashis } = vaishnava.almanac.festivals({
+    from: gregorian(2024, 10, 10),
+    to: gregorian(2024, 11, 3),
+    place,
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'DHARMASINDHU' },
+  });
+  put('festivals-observer', ekadashis.map((f) => `${f.rule} ${f.day.month}-${f.day.day}`).join(','));
+  vaishnava.dispose();
+}
 
 // ── The lunar years ────────────────────────────────────────────────────
 // 2024-03-20..04-20 holds a Chaitra Shukla Pratipada: two years, their

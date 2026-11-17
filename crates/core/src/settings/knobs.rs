@@ -1264,6 +1264,51 @@ knob!(
         Exact = "EXACT" }
 );
 knob!(
+    /// Whose reading of a festival an answer keeps, where a request
+    /// carries two or more (`03-design/festival-traditions.md`, SR-116,
+    /// C2140): the tradition a family follows, applied to every festival
+    /// that has readings. It chooses between readings and never hides a
+    /// festival, nor moves a day: a festival carried in one reading stands
+    /// whatever the observer (C2143).
+    #[derive(Default)]
+    Observer { /// Every reading the request carries.
+        #[default]
+        Every = "EVERY", /// The Smarta householder's: *Dharmasindhu*'s Ekadashi
+        /// with its vedha at sunrise (pp. 11–12), and its Janmashtami,
+        /// Rama Navami and Nrisimha jayanti.
+        Smarta = "SMARTA", /// The Smarta renunciant's: *Dharmasindhu*'s
+        /// renunciant column of the Ekadashi, and the householder's
+        /// reading where none is the renunciant's (C2142).
+        SmartaRenunciant = "SMARTA_RENUNCIANT", /// The Vaishnava's:
+        /// *Dharmasindhu*'s Ekadashi with its vedha at arunodaya, and
+        /// *Hari Bhakti Vilasa*'s rule of a viddha tithi (15.358).
+        Vaishnava = "VAISHNAVA", /// The Gaudiya Vaishnava's: *Hari Bhakti
+        /// Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's
+        /// reading where none is the Gaudiya's (C2142).
+        Gaudiya = "GAUDIYA" }
+);
+impl Observer {
+    /// The tradition whose reading this one keeps where a festival has
+    /// none of its own (`festival-traditions.md` §5, C2142): the
+    /// renunciant the householder's, the Gaudiya the Vaishnava's.
+    ///
+    /// ```
+    /// use teistro_core::settings::knobs::Observer;
+    ///
+    /// assert_eq!(Observer::Gaudiya.follows(), Some(Observer::Vaishnava));
+    /// assert_eq!(Observer::SmartaRenunciant.follows(), Some(Observer::Smarta));
+    /// assert_eq!(Observer::Vaishnava.follows(), None);
+    /// ```
+    #[must_use]
+    pub const fn follows(self) -> Option<Observer> {
+        match self {
+            Observer::SmartaRenunciant => Some(Observer::Smarta),
+            Observer::Gaudiya => Some(Observer::Vaishnava),
+            Observer::Every | Observer::Smarta | Observer::Vaishnava => None,
+        }
+    }
+}
+knob!(
     /// The provider override policy (ADR-0013).
     OverridePolicy { /// A declared native implementation is used.
         PreferNative = "PREFER_NATIVE", /// The SDK's own everywhere.

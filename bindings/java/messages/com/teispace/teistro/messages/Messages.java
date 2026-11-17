@@ -24479,6 +24479,34 @@ public final class Messages {
 
 
                 /**
+                 * The messages under `festivals`.
+                 *
+                 * @return the group
+                 */
+                public SdkSettingsEffectFestivals festivals() {
+                    return new SdkSettingsEffectFestivals(r);
+                }
+
+                /** The messages under `SdkSettingsEffectFestivals`, each rendered by its own key. */
+                public static final class SdkSettingsEffectFestivals {
+                    private final Renderer r;
+
+                    SdkSettingsEffectFestivals(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.settings.effect.festivals.observer`
+                     *
+                     * @return the text
+                     */
+                    public String observer() {
+                        return r.render("sdk.settings.effect.festivals.observer", Map.of());
+                    }
+                }
+
+
+                /**
                  * The messages under `frame`.
                  *
                  * @return the group

@@ -19,8 +19,8 @@ use super::knobs::{
     KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
     MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
-    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    NodeVedha, Nutation, Observer, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy,
+    PolarPolicy, Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
     SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, SevenKarakaOrder,
     ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
@@ -28,10 +28,10 @@ use super::knobs::{
     Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
-    Aspect, AyanamshaChoice, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar,
-    HorizonModel, Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga, Precision,
-    Provider, Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State,
-    Strength, SuryaBija, SuryaPlanets, Time, Vargas,
+    Aspect, AyanamshaChoice, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Festivals, Frame,
+    Gochar, HorizonModel, Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga,
+    Precision, Provider, Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta,
+    State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -1000,6 +1000,13 @@ pub(crate) const ROOT_SOURCES: &[Citation] = &[
             "KIRATI, the count printed today: 5086 from Magh 1, 2082 BS; docs/calendars/bikram-sambat.md, Kirat Yele Sambat",
         ),
     ),
+    Citation::new(
+        "festivals.observer",
+        Source::new(
+            "Nepal Panchanga Nirnayak Samiti",
+            "EVERY: the committee prints both the Smartas' and the Vaishnavas' Ekadashi where they part (VS 2082 p. 6, VS 2083 p. 8; crux C688), and no shipped profile is a sect's; docs/03-design/festival-traditions.md §6, crux C2147",
+        ),
+    ),
 ];
 
 fn depth_all(depth: u8) -> BTreeMap<DashaSystem, Depth> {
@@ -1240,6 +1247,13 @@ pub fn root() -> Settings {
             schemes: BTreeMap::new(),
         },
         calendars: calendars(),
+        // Every reading a request carries, as before the knob: Nepal's
+        // committee prints both observers' Ekadashi where they part
+        // (C688), and no shipped profile is a sect's
+        // (`03-design/festival-traditions.md` §6, C2147).
+        festivals: Festivals {
+            observer: Observer::Every,
+        },
         provider: Provider {
             overrides: OverridePolicy::PreferNative,
             tier: Tier::Standard,

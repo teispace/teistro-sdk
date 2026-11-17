@@ -356,3 +356,44 @@ fn a_calls_score_bands_band_its_rashifal() {
         "settings.rashifal.score_bands[1]"
     );
 }
+
+/// `festivals.observer` reaches every tool through its `settings`
+/// (`03-design/festival-traditions.md`, SR-116): the next Ekadashi from 20
+/// September 2023 at Delhi is the Smarta's 25th by default and the
+/// Vaishnava's 26th under the Vaishnava observer, by the patch alone; an
+/// observer no tradition is refused by its knob.
+#[test]
+fn the_festivals_observer_is_a_patch_like_any_knob() {
+    let (mut server, _) = counted();
+    // Midnight of 20 September 2023 at Delhi, in UTC.
+    let request = json!({"after": 2_460_207.270_833_333_5, "kind": "EKADASHI", "latitudeDeg": 28.6139,
+        "longitudeDeg": 77.209, "altitudeM": 216, "utcOffsetSeconds": 19800});
+    let next = |server: &mut Server, settings: Value| {
+        let reply = call(
+            server,
+            "almanac.next",
+            &json!({"request": request, "detail": "full", "settings": settings}),
+        );
+        assert_eq!(reply["isError"], false, "{reply}");
+        let value = &reply["structuredContent"]["value"];
+        (value["keys"].clone(), value["day"]["day"].clone())
+    };
+    assert_eq!(
+        next(&mut server, json!({})),
+        (json!(["EKADASHI_SMARTA"]), json!(25))
+    );
+    assert_eq!(
+        next(&mut server, json!({"festivals": {"observer": "VAISHNAVA"}})),
+        (json!(["EKADASHI_VAISHNAVA"]), json!(26))
+    );
+    let refused = call(
+        &mut server,
+        "almanac.next",
+        &json!({"request": request, "settings": {"festivals": {"observer": "SHAIVA"}}}),
+    );
+    assert_eq!(refused["isError"], true);
+    assert_eq!(
+        refused["structuredContent"]["field"],
+        "settings.festivals.observer"
+    );
+}

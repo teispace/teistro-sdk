@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festival traditions as a setting (SR-116).**
+**Numbers:** no computed number or day moves under any shipped profile: every profile
+keeps `festivals.observer` at `EVERY`, the answer before this setting (C2147). Every
+settings hash moves, the document gaining the group `festivals`; the request and input
+hash moves for the packs whose rules gained `meta.variant` (`DHARMASINDHU`, `NEPAL`,
+`NEPAL_PANCHANGA`, `GAUDIYA`) and for `almanac.next`'s `EKADASHI` kind.
+- **New:** the settings knob `festivals.observer` (`Observer`): `EVERY` (default),
+  `SMARTA`, `SMARTA_RENUNCIANT`, `VAISHNAVA` or `GAUDIYA`. Of each festival a request
+  reads two or more ways it keeps the observer's reading, the renunciant falling back
+  on the householder's and the Gaudiya on the Vaishnava's; a festival read one way
+  stands (`festival-traditions.md`, C2140–C2147). Under `SMARTA` *Dharmasindhu*'s S8 row
+  at Delhi gives the Ekadashi of 25 September 2023, under `VAISHNAVA` the 26th; under
+  `NEPAL` beside `GAUDIYA` it chooses Janmashtami, Rama Navami and Nrisimha Chaturdashi
+  too. `almanac.next`'s `EKADASHI` answers the observer's fast.
+- **New:** `FestivalMeta.variant` (`Variant { festival, observer }`) says which
+  festival a rule is a reading of and whose; the texts' rules carry it (ten keys, four
+  festivals), a government's list none, and a consumer's rule may; `EVERY` is refused at
+  `variant.observer`. `FestivalRequest::left_by` names the rules an observer leaves out.
+- The knob reaches C, Node, Python, Dart, Java, wasm and the MCP as any settings patch
+  does, each with a test, and every parity runner (`festivals-observer`).
 **Ketaki: Ketkar's Chitra-paksha zodiac and the `ketaki` and `tilak-revati` profiles (K1).**
 **Numbers:** the new catalogue member `KETAKI` is its `CUSTOM` restatement (epoch JD
 2407086.5 TT, 22.1425°, 0.013952138° a Julian year) to the bit at 200 instants over
@@ -24,7 +44,7 @@ stands 53.1″ to 65.9″ below mean `LAHIRI` and 1.45″ to 5.0″ below Spica'
 longitude less 180° (the SDK's star table), so its Mesha sankranti of April 2026 falls
 24.7 minutes before Lahiri's, and the Tilak panchang's (ζ Piscium at 0°) about four days
 before Ketaki's. Under `tilak-revati` at Pune the adhika month of Shaka 1848 is Jyeshtha and Ganesh Chaturthi of 2015 falls on 18 August, as the Tilak panchang printed (17 September under `ketaki`). No existing settings hash moves; the two new profiles hash
-`0ab6e4fd…a6b94bda` (`ketaki`) and `953264da…df172e3f` (`tilak-revati`).
+`7509867f…5b77da8a` (`ketaki`) and `1c20cc24…fa204a5a` (`tilak-revati`), as `festivals.observer` (SR-116) leaves them.
 - **New:** `Ayanamsha::Ketaki` (`KETAKI`, id 47, `VEDIC_STANDARD`), computed by the SDK under any
   engine: `teistro_astro::ayanamsha::Definition::Linear`, `Linear` and `KETAKI`, evaluated
   by the very expression `CUSTOM` takes (C2180, C2194). Named in every strict locale

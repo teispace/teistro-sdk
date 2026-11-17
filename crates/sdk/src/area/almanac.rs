@@ -803,7 +803,11 @@ impl<'a> AlmanacArea<'a> {
             )?;
         }
         trim(&mut found, calendar, (first, last), (start, end));
-        found.keep(|key| request.keeps(key));
+        // The readings the context's observer leaves out, chosen on the
+        // answer as `only` is, so every rule is still reckoned
+        // (`03-design/festival-traditions.md` §4).
+        let left = request.left_by(self.context.resolved().settings.festivals.observer);
+        found.keep(|key| request.keeps(key) && !left.contains(key));
         // On the days as published, after the trim, so only the range's
         // observances pay for a founded day.
         self.with_saits(&mut found, request, from.calendar, (place, offset))?;

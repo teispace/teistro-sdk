@@ -2379,6 +2379,11 @@ class MessagesSdkSettingsEffect:
         return MessagesSdkSettingsEffectDay(self._r)
 
     @property
+    def festivals(self) -> MessagesSdkSettingsEffectFestivals:
+        """The messages under `festivals`."""
+        return MessagesSdkSettingsEffectFestivals(self._r)
+
+    @property
     def frame(self) -> MessagesSdkSettingsEffectFrame:
         """The messages under `frame`."""
         return MessagesSdkSettingsEffectFrame(self._r)
@@ -2906,6 +2911,18 @@ class MessagesSdkSettingsEffectFrame:
     def zodiac(self) -> str:
         """`sdk.settings.effect.frame.zodiac`"""
         return self._r.render("sdk.settings.effect.frame.zodiac")
+
+
+class MessagesSdkSettingsEffectFestivals:
+    """The messages under `MessagesSdkSettingsEffectFestivals`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def observer(self) -> str:
+        """`sdk.settings.effect.festivals.observer`"""
+        return self._r.render("sdk.settings.effect.festivals.observer")
 
 
 class MessagesSdkSettingsEffectDay:

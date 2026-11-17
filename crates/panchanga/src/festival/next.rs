@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Tithi;
 use teistro_core::error::Error;
 
-use super::{Choice, Convention, DatedRule, EkadashiRule, FestivalRule, InAdhika, Window};
+use super::{Choice, Convention, DatedRule, EkadashiRule, FestivalRule, InAdhika, Variant, Window};
 use crate::almanac::MOST_DAYS;
 
 /// How far a search looks by default, in days: past the longest gap
@@ -40,7 +40,9 @@ pub const FIRST_WINDOW_DAYS: u32 = 32;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NextKind {
     /// An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules
-    /// ([`EkadashiRule::dharmasindhu`]); the earlier when they part.
+    /// ([`EkadashiRule::dharmasindhu`]); the earlier when they part. Each
+    /// rule says whose reading it is, so `festivals.observer` keeps one
+    /// observer's (`03-design/festival-traditions.md` §4).
     Ekadashi,
     /// The day whose sunrise holds the full moon, or the day an
     /// unrisen one falls in, every month (C197).
@@ -100,12 +102,19 @@ impl NextKind {
     /// assert!(purnima.rules[0].source.contains("C197"));
     /// assert_eq!(NextKind::Sankranti.rules().dated.len(), 12);
     /// assert_eq!(NextKind::Ekadashi.rules().ekadashis.len(), 3);
+    /// assert!(NextKind::Ekadashi.rules().ekadashis.iter().all(|rule| rule.meta.variant.is_some()));
     /// ```
     #[must_use]
     pub fn rules(self) -> KindRules {
         match self {
             NextKind::Ekadashi => KindRules {
-                ekadashis: EkadashiRule::dharmasindhu(),
+                ekadashis: EkadashiRule::dharmasindhu()
+                    .into_iter()
+                    .map(|mut rule| {
+                        rule.meta.variant = Variant::of(&rule.key);
+                        rule
+                    })
+                    .collect(),
                 ..KindRules::default()
             },
             NextKind::Purnima => KindRules {

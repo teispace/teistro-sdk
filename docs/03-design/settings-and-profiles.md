@@ -136,6 +136,7 @@ every shipped profile. The v1 inventory:
 | calendar | `samvatsara` | enum | `BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA` |
 | calendar | `kirat_yele` | enum | `KIRATI` (default), `YALAMBAR`: where the Kirat Yele Sambat's year 1 stands, read by `calendar.in_era` (`calendars/bikram-sambat.md` §Kirat Yele Sambat, SR-96) |
 | calendar | `eras` | set of `EraKey` | which era numbers a date carries |
+| festivals | `observer` | enum | `EVERY` (default), `SMARTA`, `SMARTA_RENUNCIANT`, `VAISHNAVA`, `GAUDIYA`: whose reading of a festival an answer keeps where a request carries two or more (the Ekadashi's observers, a Smarta pack's Janmashtami, Rama Navami or Nrisimha jayanti beside `GAUDIYA`'s); drops readings, never moves a day (`festival-traditions.md`, SR-116, C2140) |
 | provider | `overrides` | enum | `PREFER_NATIVE`, `SDK_ONLY`, `NATIVE_ONLY` (ADR-0013) |
 | provider | `tier` | enum | `COMPACT`, `STANDARD`, `FULL`, `REFERENCE` for the built-in ephemeris |
 | provider | `cache_cells` | u32 | how many ephemeris cells a context remembers so a batch asks for each once; nought is off, 65 536 by default, honoured only over a provider that declares `deterministic` (`batch-and-parallelism-measured.md`) |

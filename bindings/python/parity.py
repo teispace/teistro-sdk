@@ -3125,6 +3125,24 @@ def main() -> None:
             festivals={"rules": "DHARMASINDHU"},
         )
         put_festivals("festivals-malamasa", doubled)
+        # `festivals.observer` (festival-traditions.md): the Vaishnava's
+        # Ekadashi alone of Dharmasindhu's three, by the setting alone.
+        with teistro.context(
+            profile="parashari-classical",
+            test_provider=True,
+            settings={"festivals": {"observer": "VAISHNAVA"}},
+        ) as vaishnava:
+            kept = vaishnava.almanac.festivals(
+                from_date=date(Calendar.GREGORIAN, 2024, 10, 10),
+                to_date=date(Calendar.GREGORIAN, 2024, 11, 3),
+                place=place,
+                utc_offset_seconds=20700,
+                festivals={"rules": "DHARMASINDHU"},
+            )
+            put(
+                "festivals-observer",
+                ",".join(f"{f.rule} {f.day.month}-{f.day.day}" for f in kept.ekadashis),
+            )
 
         # The lunar years over 2024-03-20..04-20, which holds a Chaitra
         # Shukla Pratipada: two years, their bounds and their Jovian years.

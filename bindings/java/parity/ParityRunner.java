@@ -1557,6 +1557,19 @@ public final class ParityRunner {
                 putPakshi(geo);
                 putResearch(geo);
             }
+            // `festivals.observer` (festival-traditions.md): the Vaishnava's
+            // Ekadashi alone of Dharmasindhu's three, by the setting alone.
+            try (Context vaishnava = teistro.context(ContextOptions.builder()
+                    .profile("parashari-classical").testProvider(true)
+                    .settingsJson("{\"festivals\": {\"observer\": \"VAISHNAVA\"}}").build())) {
+                FestivalAnswer kept = vaishnava.almanac().festivals(date(2024, 10, 10), date(2024, 11, 3), place,
+                        20700, FestivalRequest.of(map("rules", "DHARMASINDHU")));
+                List<String> fasts = new ArrayList<>();
+                for (EkadashiFast fast : kept.ekadashis()) {
+                    fasts.add(fast.rule() + " " + fast.day().month() + "-" + fast.day().day());
+                }
+                put("festivals-observer", String.join(",", fasts));
+            }
 
             // ── The Black Moon Lilith ─────────────────────────────────────
             // The osculating apogee of two charts over the built-in sky, which

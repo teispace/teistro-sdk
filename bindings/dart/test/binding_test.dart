@@ -669,6 +669,61 @@ void main() {
     ctx.dispose();
   });
 
+  // `festivals.observer` (`03-design/festival-traditions.md`, SR-116): the
+  // text's S8 row on Bhadrapada's bright 11th of 2023 at Delhi gives the
+  // Smarta fast the 25th and the Vaishnava's the 26th; each observer keeps
+  // its own by the setting alone, and an observer no tradition is refused
+  // by its field.
+  test('the festivals observer keeps one tradition\'s ekadashi', () {
+    final delhi = Observer(
+      latitudeDeg: Latitude(28.6139),
+      longitudeDeg: Longitude(77.209),
+      altitudeM: Altitude(216),
+    );
+    List<String> fasts(String? observer) {
+      final sky = teistro.context(
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+        settings:
+            observer == null
+                ? null
+                : {
+                  'festivals': {'observer': observer},
+                },
+      );
+      final answer = sky.almanac.festivals(
+        from: gregorian(2023, 9, 20),
+        to: gregorian(2023, 9, 30),
+        place: delhi,
+        utcOffsetSeconds: 19800,
+        festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
+      );
+      sky.dispose();
+      return [for (final f in answer.ekadashis) '${f.rule} ${f.day.day}'];
+    }
+
+    expect(fasts(null), [
+      'EKADASHI_VAISHNAVA 26',
+      'EKADASHI_SMARTA 25',
+      'EKADASHI_SMARTA_RENUNCIANT 26',
+    ]);
+    expect(fasts('SMARTA'), ['EKADASHI_SMARTA 25']);
+    expect(fasts('VAISHNAVA'), ['EKADASHI_VAISHNAVA 26']);
+    expect(
+      () => context(
+        settings: {
+          'festivals': {'observer': 'SHAIVA'},
+        },
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'settings.festivals.observer',
+        ),
+      ),
+    );
+  });
+
   // The finders (A2-1): an election ranked, an observance paired across
   // two reckonings, and a day for many people.
   test('the finders rank, pair and digest', () {

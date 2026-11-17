@@ -3441,6 +3441,29 @@ void main() {
       festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu),
     ),
   );
+  // `festivals.observer` (festival-traditions.md): the Vaishnava's Ekadashi
+  // alone of Dharmasindhu's three, by the setting alone.
+  final vaishnava = teistro.context(
+    profile: 'parashari-classical',
+    testProvider: true,
+    settings: {
+      'festivals': {'observer': 'VAISHNAVA'},
+    },
+  );
+  final kept = vaishnava.almanac.festivals(
+    from: Calendar.gregorian.date(2024, 10, 10),
+    to: Calendar.gregorian.date(2024, 11, 3),
+    place: place,
+    utcOffsetSeconds: 20700,
+    festivals: FestivalRequest(rules: FestivalPack.dharmasindhu),
+  );
+  put(
+    'festivals-observer',
+    kept.ekadashis
+        .map((f) => '${f.rule} ${f.day.month}-${f.day.day}')
+        .join(','),
+  );
+  vaishnava.dispose();
 
   // ── The lunar years ─────────────────────────────────────────────────
   // 2024-03-20..04-20 holds a Chaitra Shukla Pratipada: two years, their
