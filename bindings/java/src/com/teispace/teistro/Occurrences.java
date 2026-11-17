@@ -2,6 +2,8 @@ package com.teispace.teistro;
 
 import java.util.List;
 
+import com.teispace.teistro.record.Provenance;
+
 /**
  * Every day a rule or a kind of day falls on, year by year, as {@link AlmanacArea#occurrences}
  * answers it ({@code 03-design/rule-years.md}).

@@ -510,11 +510,15 @@ export interface NextRequest {
   readonly altitudeM?: number;
   readonly calendar?: Member<catalogue.Calendar> | null;
   /**
-   * The festivals, as a festival request, with `rule`.
+   * The festivals, as a festival request, with `rule` or `group`.
    */
   readonly festivals?: FestivalRequest | null;
   /**
-   * A kind of day; or `rule`, not both.
+   * A festival group's key in `festivals`: its next span; or `kind` or `rule`, one of the three.
+   */
+  readonly group?: string | null;
+  /**
+   * A kind of day; or `rule` or `group`, one of the three.
    */
   readonly kind?: NextKind | null;
   readonly latitudeDeg: number;
@@ -524,7 +528,7 @@ export interface NextRequest {
   readonly limitDays?: number | null;
   readonly longitudeDeg: number;
   /**
-   * A rule's key in `festivals`; or `kind`, not both.
+   * A rule's key in `festivals`; or `kind` or `group`, one of the three.
    */
   readonly rule?: string | null;
   /**
@@ -577,6 +581,51 @@ export interface ObservanceRequest {
    * A whole year of `calendar`, from its month 1, day 1; or `first`, not both.
    */
   readonly year?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
+export interface OccurrencesRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar the years are counted in and the days written in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The festivals, as a festival request, with `rule` or `group`.
+   */
+  readonly festivals?: FestivalRequest | null;
+  /**
+   * The first year, in `calendar`: the span begins on its month 1, day 1.
+   */
+  readonly fromYear: number;
+  /**
+   * A festival group's key in `festivals`: its members' days, and each span reaching a year; or `kind` or `rule`, one of the three.
+   */
+  readonly group?: string | null;
+  /**
+   * A kind of day; or `rule` or `group`, one of the three.
+   */
+  readonly kind?: NextKind | null;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  /**
+   * A rule's key in `festivals`; or `kind` or `group`, one of the three.
+   */
+  readonly rule?: string | null;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * 1 to 50: the span ends the day before month 1 of the year after.
+   */
+  readonly years: number;
   /**
    * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
    */
@@ -1899,6 +1948,10 @@ export interface AshauchRiteTable {
  */
 export interface FestivalRequest {
   /**
+   * Festival groups, each put in place of a pack's group of its key or added after them: a festival kept over several rules' days, whose spans the answer gives (`03-design/festival-groups.md`).
+   */
+  readonly groups?: readonly FestivalGroup[];
+  /**
    * The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out.
    */
   readonly hijriOffset?: number | null;
@@ -2186,7 +2239,7 @@ export interface Household {
 /**
  * A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
  *
- * `EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part.
+ * `EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part. Each rule says whose reading it is, so `festivals.observer` keeps one observer's (`03-design/festival-traditions.md` §4).
  * `PURNIMA`: The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
  * `AMAVASYA`: The same, for the new moon.
  * `SANKRANTI`: The first day of a Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619), as Nepal's national panchanga prints the twelve sankrantis.
@@ -4105,6 +4158,28 @@ export interface AshauchRiteRow {
    * The verdict.
    */
   readonly verdict: RiteVerdict;
+}
+
+/**
+ * A festival kept over several days: its member rules, its main day, and the source that makes them one festival.
+ */
+export interface FestivalGroup {
+  /**
+   * The group's key, `TIHAR`; a consumer's own names and descriptions hang on it.
+   */
+  readonly key: string;
+  /**
+   * The member whose day the group is reckoned around: one of `members`. A span is found for each of its days.
+   */
+  readonly main: string;
+  /**
+   * The member rules' keys, in the festival's order; each a key the request carries.
+   */
+  readonly members: readonly string[];
+  /**
+   * The source that says which rules make the festival.
+   */
+  readonly source: string;
 }
 
 /**
@@ -8342,6 +8417,10 @@ export interface FestivalMeta {
    * Its religion; unset when no source places it.
    */
   readonly tradition?: Member<catalogue.Tradition> | null;
+  /**
+   * The festival it is one tradition's reading of, and whose, where the texts give the festival another reading too (`03-design/festival-traditions.md` §3, SR-116); unset for a rule that is no tradition's reading, such as a government's day. What `festivals.observer` chooses by. It is a statement of the rule's, not a blank a source left, so [`FestivalMeta::unsourced`] does not name it.
+   */
+  readonly variant?: Variant | null;
 }
 
 /**
@@ -9360,6 +9439,20 @@ export interface SignificanceMark {
    * The tier.
    */
   readonly tier: Significance;
+}
+
+/**
+ * One tradition's reading of a festival the texts read in more than one way (`03-design/festival-traditions.md` §3, C2141).
+ */
+export interface Variant {
+  /**
+   * The festival, as an open key every reading of it shares (`EKADASHI`, `JANMASHTAMI`).
+   */
+  readonly festival: string;
+  /**
+   * Whose reading it is; never `EVERY`, which is no tradition.
+   */
+  readonly observer: Observer;
 }
 
 /**
@@ -10411,6 +10504,17 @@ export type OfficeOrder = 'GLOSS' | 'HIGHEST' | 'LOWEST';
 export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
 
 /**
+ * Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
+ *
+ * `EVERY`: Every reading the request carries.
+ * `SMARTA`: The Smarta householder's: *Dharmasindhu*'s Ekadashi with its vedha at sunrise (pp. 11–12), and its Janmashtami, Rama Navami and Nrisimha jayanti.
+ * `SMARTA_RENUNCIANT`: The Smarta renunciant's: *Dharmasindhu*'s renunciant column of the Ekadashi, and the householder's reading where none is the renunciant's (C2142).
+ * `VAISHNAVA`: The Vaishnava's: *Dharmasindhu*'s Ekadashi with its vedha at arunodaya, and *Hari Bhakti Vilasa*'s rule of a viddha tithi (15.358).
+ * `GAUDIYA`: The Gaudiya Vaishnava's: *Hari Bhakti Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's reading where none is the Gaudiya's (C2142).
+ */
+export type Observer = 'EVERY' | 'SMARTA' | 'SMARTA_RENUNCIANT' | 'VAISHNAVA' | 'GAUDIYA';
+
+/**
  * Which rising sign a [`SaitRising`] reads.
  *
  * `NAVAMSA`: The navamsa's sign.
@@ -10872,6 +10976,7 @@ export interface RecordRequests {
   readonly 'almanac.navatara': NavataraRequest;
   readonly 'almanac.next': NextRequest;
   readonly 'almanac.observance': ObservanceRequest;
+  readonly 'almanac.occurrences': OccurrencesRequest;
   readonly 'almanac.pakshi': PakshiRequest;
   readonly 'almanac.people': PeopleRequest;
   readonly 'almanac.publishedReasons': PublishedReasonsRequest;

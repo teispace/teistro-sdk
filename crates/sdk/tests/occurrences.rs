@@ -68,7 +68,9 @@ fn alone(
         .value;
     found.keep(|key| keys.iter().any(|k| k == key));
     found.unplaced.retain(|u| keys.contains(&u.rule));
-    found.groups.retain(|span| Some(span.group.as_str()) == group);
+    found
+        .groups
+        .retain(|span| Some(span.group.as_str()) == group);
     found
 }
 

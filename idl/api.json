@@ -19562,6 +19562,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_occurrences",
+      "doc": "Every day a festival rule or a kind of day falls on, year by year\nover a span of years (`03-design/rule-years.md`), as canonical JSON\n`{value, provenance}`: `value` is `{keys, years}`, the keys looked for\nand each year of the span in order as `{year, first, last, days,\nfestivals}`, its first and last days, each day the target falls on\nwith the keys there (none, one or several), and the festival\nreckoning's entries for the keys in the year, every catalogue member a\nfull key. The span's days are founded once.\n\n`request_json` is `{\"fromYear\", \"years\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\" or \"zone\", \"calendar\",\n\"kind\", \"rule\", \"group\", \"festivals\"}`: `years` 1 to 50, counted in\n`calendar` (Gregorian when left out), which the days are written in\ntoo; one of `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`),\n`rule` or `group`, the last two keys of `festivals`, a festival\nrequest. A key it does not read, none or two of `kind`, `rule` and\n`group`, a rule or group the festivals lack, a place or offset out of\nrange or a festival request its reader refuses is `INVALID_ARG`, named\nunder `occurrences` (a missing rule as `rule`, a missing group as\n`group`); `years` out of range `OUT_OF_RANGE`, naming\n`occurrences.years`; a context without an ephemeris `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_almanac_sentences",
       "doc": "One day's facts as short declarative sentences\n(`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose\nvalue is `{locale, draft, sentences, withheld}`, each sentence `{key,\nparams, text}`, `draft` true while the locale's templates wait for a\nnative reviewer (Q42), and `withheld` the facts a polar day holds\nelsewhere.\n\n`request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,\naltitudeM?, utcOffsetSeconds or zone, locale?}`. A key it does not read, or a\nplace or offset out of range, is `INVALID_ARG`, named under\n`sentences`; a locale not loaded, or one without the templates, is\n`UNSUPPORTED` on `locale`; a context without an ephemeris is\n`CAPABILITY`; otherwise as the day.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",

@@ -30,8 +30,8 @@ use super::knobs::{
 use super::{
     Aspect, AyanamshaChoice, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Festivals, Frame,
     Gochar, HorizonModel, Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga,
-    Precision, Provider, Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta,
-    State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
+    Precision, Provider, Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch,
+    Siddhanta, State, Strength, SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 

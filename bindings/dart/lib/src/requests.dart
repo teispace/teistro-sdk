@@ -833,6 +833,7 @@ final class NextRequest extends _Request {
     this.altitudeM = 0.0,
     this.calendar,
     this.festivals,
+    this.group,
     this.kind,
     required this.latitudeDeg,
     this.limitDays,
@@ -849,10 +850,13 @@ final class NextRequest extends _Request {
 
   final Calendar? calendar;
 
-  /// The festivals, as a festival request, with `rule`.
+  /// The festivals, as a festival request, with `rule` or `group`.
   final FestivalRequest? festivals;
 
-  /// A kind of day; or `rule`, not both.
+  /// A festival group's key in `festivals`: its next span; or `kind` or `rule`, one of the three.
+  final String? group;
+
+  /// A kind of day; or `rule` or `group`, one of the three.
   final NextKind? kind;
 
   final double latitudeDeg;
@@ -862,7 +866,7 @@ final class NextRequest extends _Request {
 
   final double longitudeDeg;
 
-  /// A rule's key in `festivals`; or `kind`, not both.
+  /// A rule's key in `festivals`; or `kind` or `group`, one of the three.
   final String? rule;
 
   /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
@@ -877,6 +881,7 @@ final class NextRequest extends _Request {
     'altitudeM': altitudeM,
     if (calendar case final calendarValue?) 'calendar': calendarValue.key,
     if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
+    if (group case final groupValue?) 'group': groupValue,
     if (kind case final kindValue?) 'kind': kindValue.key,
     'latitudeDeg': latitudeDeg,
     if (limitDays case final limitDaysValue?) 'limitDays': limitDaysValue,
@@ -887,7 +892,7 @@ final class NextRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [after, altitudeM, calendar, festivals, kind, latitudeDeg, limitDays, longitudeDeg, rule, utcOffsetSeconds, zone];
+  List<Object?> get _fields => [after, altitudeM, calendar, festivals, group, kind, latitudeDeg, limitDays, longitudeDeg, rule, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -951,6 +956,76 @@ final class ObservanceRequest extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, traditions, utcOffsetSeconds, year, zone];
+}
+
+/// The request as a binding writes it.
+final class OccurrencesRequest extends _Request {
+  const OccurrencesRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.festivals,
+    required this.fromYear,
+    this.group,
+    this.kind,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.rule,
+    this.utcOffsetSeconds,
+    required this.years,
+    this.zone,
+  });
+
+  final double altitudeM;
+
+  /// The calendar the years are counted in and the days written in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The festivals, as a festival request, with `rule` or `group`.
+  final FestivalRequest? festivals;
+
+  /// The first year, in `calendar`: the span begins on its month 1, day 1.
+  final int fromYear;
+
+  /// A festival group's key in `festivals`: its members' days, and each span reaching a year; or `kind` or `rule`, one of the three.
+  final String? group;
+
+  /// A kind of day; or `rule` or `group`, one of the three.
+  final NextKind? kind;
+
+  final double latitudeDeg;
+
+  final double longitudeDeg;
+
+  /// A rule's key in `festivals`; or `kind` or `group`, one of the three.
+  final String? rule;
+
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// 1 to 50: the span ends the day before month 1 of the year after.
+  final int years;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
+    'fromYear': fromYear,
+    if (group case final groupValue?) 'group': groupValue,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (rule case final ruleValue?) 'rule': ruleValue,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    'years': years,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, festivals, fromYear, group, kind, latitudeDeg, longitudeDeg, rule, utcOffsetSeconds, years, zone];
 }
 
 /// The request as a binding writes it.
@@ -3485,7 +3560,7 @@ final class Household extends _Request {
 
 /// A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
 enum NextKind implements _Keyed {
-  /// An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part.
+  /// An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part. Each rule says whose reading it is, so `festivals.observer` keeps one observer's (`03-design/festival-traditions.md` §4).
   ekadashi('EKADASHI'),
   /// The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
   purnima('PURNIMA'),
@@ -5855,6 +5930,39 @@ final class AshauchRiteRow extends _Request {
 
   @override
   List<Object?> get _fields => [beginning, begun, calamity, clause, kind, noOtherWay, rite, verdict];
+}
+
+/// A festival kept over several days: its member rules, its main day, and the source that makes them one festival.
+final class FestivalGroup extends _Request {
+  const FestivalGroup({
+    required this.key,
+    required this.main,
+    required this.members,
+    required this.source,
+  });
+
+  /// The group's key, `TIHAR`; a consumer's own names and descriptions hang on it.
+  final String key;
+
+  /// The member whose day the group is reckoned around: one of `members`. A span is found for each of its days.
+  final String main;
+
+  /// The member rules' keys, in the festival's order; each a key the request carries.
+  final List<String> members;
+
+  /// The source that says which rules make the festival.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'key': key,
+    'main': main,
+    'members': members,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [key, main, members, source];
 }
 
 /// The fields of a [`FestivalMeta`] a caller lays over a rule's own (`03-design/festival-metadata.md` §7): each one given replaces the rule's, and each left out keeps it. A tier given is marked as the caller's own.
@@ -12404,6 +12512,7 @@ final class FestivalMeta extends _Request {
     this.regions,
     this.significance,
     this.tradition,
+    this.variant,
   });
 
   /// The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all.
@@ -12427,6 +12536,9 @@ final class FestivalMeta extends _Request {
   /// Its religion; unset when no source places it.
   final Tradition? tradition;
 
+  /// The festival it is one tradition's reading of, and whose, where the texts give the festival another reading too (`03-design/festival-traditions.md` §3, SR-116); unset for a rule that is no tradition's reading, such as a government's day. What `festivals.observer` chooses by. It is a statement of the rule's, not a blank a source left, so [`FestivalMeta::unsourced`] does not name it.
+  final Variant? variant;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (communities case final communitiesValue?) 'communities': communitiesValue,
@@ -12436,10 +12548,11 @@ final class FestivalMeta extends _Request {
     if (regions case final regionsValue?) 'regions': regionsValue,
     if (significance case final significanceValue?) 'significance': significanceValue._wire,
     if (tradition case final traditionValue?) 'tradition': traditionValue.key,
+    if (variant case final variantValue?) 'variant': variantValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition];
+  List<Object?> get _fields => [communities, fast, kind, optional, regions, significance, tradition, variant];
 }
 
 /// What may still move a published day.
@@ -14454,6 +14567,29 @@ final class SignificanceMark extends _Request {
   List<Object?> get _fields => [source, tier];
 }
 
+/// One tradition's reading of a festival the texts read in more than one way (`03-design/festival-traditions.md` §3, C2141).
+final class Variant extends _Request {
+  const Variant({
+    required this.festival,
+    required this.observer,
+  });
+
+  /// The festival, as an open key every reading of it shares (`EKADASHI`, `JANMASHTAMI`).
+  final String festival;
+
+  /// Whose reading it is; never `EVERY`, which is no tradition.
+  final Observer observer;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'festival': festival,
+    'observer': observer.key,
+  };
+
+  @override
+  List<Object?> get _fields => [festival, observer];
+}
+
 /// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
 enum SaitChoice implements _Keyed {
   /// The first.
@@ -15468,6 +15604,26 @@ enum SettingPart implements _Keyed {
   final String key;
 }
 
+/// Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
+enum Observer implements _Keyed {
+  /// Every reading the request carries.
+  every('EVERY'),
+  /// The Smarta householder's: *Dharmasindhu*'s Ekadashi with its vedha at sunrise (pp. 11–12), and its Janmashtami, Rama Navami and Nrisimha jayanti.
+  smarta('SMARTA'),
+  /// The Smarta renunciant's: *Dharmasindhu*'s renunciant column of the Ekadashi, and the householder's reading where none is the renunciant's (C2142).
+  smartaRenunciant('SMARTA_RENUNCIANT'),
+  /// The Vaishnava's: *Dharmasindhu*'s Ekadashi with its vedha at arunodaya, and *Hari Bhakti Vilasa*'s rule of a viddha tithi (15.358).
+  vaishnava('VAISHNAVA'),
+  /// The Gaudiya Vaishnava's: *Hari Bhakti Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's reading where none is the Gaudiya's (C2142).
+  gaudiya('GAUDIYA');
+
+  const Observer(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// Which rising sign a [`SaitRising`] reads.
 enum RisingOf implements _Keyed {
   /// The navamsa's sign.
@@ -16212,6 +16368,9 @@ abstract final class Records {
   /// `almanac.observance`, whose request is [ObservanceRequest].
   static const almanacObservance = RecordOf<ObservanceRequest>._('almanac.observance');
 
+  /// `almanac.occurrences`, whose request is [OccurrencesRequest].
+  static const almanacOccurrences = RecordOf<OccurrencesRequest>._('almanac.occurrences');
+
   /// `almanac.pakshi`, whose request is [PakshiRequest].
   static const almanacPakshi = RecordOf<PakshiRequest>._('almanac.pakshi');
 
@@ -16358,6 +16517,7 @@ abstract final class Records {
     almanacNavatara,
     almanacNext,
     almanacObservance,
+    almanacOccurrences,
     almanacPakshi,
     almanacPeople,
     almanacPublishedReasons,

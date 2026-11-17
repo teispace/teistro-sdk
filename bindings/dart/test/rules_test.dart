@@ -399,6 +399,7 @@ const Map<String, Type> _records = {
   'almanac.aayadi': AayadiRequest,
   'almanac.anniversaries': AnniversariesRequest,
   'almanac.next': NextRequest,
+  'almanac.occurrences': OccurrencesRequest,
   'almanac.sentences': SentencesRequest,
   'almanac.pakshi': PakshiRequest,
   'almanac.publishedReasons': PublishedReasonsRequest,

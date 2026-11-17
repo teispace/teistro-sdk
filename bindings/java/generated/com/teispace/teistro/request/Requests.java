@@ -28,6 +28,7 @@ public final class Requests {
             Map.entry("almanac.navatara", NavataraRequest::of),
             Map.entry("almanac.next", NextRequest::of),
             Map.entry("almanac.observance", ObservanceRequest::of),
+            Map.entry("almanac.occurrences", OccurrencesRequest::of),
             Map.entry("almanac.pakshi", PakshiRequest::of),
             Map.entry("almanac.people", PeopleRequest::of),
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),
@@ -124,6 +125,9 @@ public final class Requests {
 
     /** {@code almanac.observance}, whose request is {@link ObservanceRequest}. */
     public static final RecordOf<ObservanceRequest> ALMANAC_OBSERVANCE = new RecordOf<>("almanac.observance");
+
+    /** {@code almanac.occurrences}, whose request is {@link OccurrencesRequest}. */
+    public static final RecordOf<OccurrencesRequest> ALMANAC_OCCURRENCES = new RecordOf<>("almanac.occurrences");
 
     /** {@code almanac.pakshi}, whose request is {@link PakshiRequest}. */
     public static final RecordOf<PakshiRequest> ALMANAC_PAKSHI = new RecordOf<>("almanac.pakshi");

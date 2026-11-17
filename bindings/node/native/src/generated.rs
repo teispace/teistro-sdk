@@ -6058,6 +6058,46 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Every day a festival rule or a kind of day falls on, year by year
+    /// over a span of years (`03-design/rule-years.md`), as canonical JSON
+    /// `{value, provenance}`: `value` is `{keys, years}`, the keys looked for
+    /// and each year of the span in order as `{year, first, last, days,
+    /// festivals}`, its first and last days, each day the target falls on
+    /// with the keys there (none, one or several), and the festival
+    /// reckoning's entries for the keys in the year, every catalogue member a
+    /// full key. The span's days are founded once.
+    ///
+    /// `request_json` is `{"fromYear", "years", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "calendar",
+    /// "kind", "rule", "group", "festivals"}`: `years` 1 to 50, counted in
+    /// `calendar` (Gregorian when left out), which the days are written in
+    /// too; one of `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`),
+    /// `rule` or `group`, the last two keys of `festivals`, a festival
+    /// request. A key it does not read, none or two of `kind`, `rule` and
+    /// `group`, a rule or group the festivals lack, a place or offset out of
+    /// range or a festival request its reader refuses is `INVALID_ARG`, named
+    /// under `occurrences` (a missing rule as `rule`, a missing group as
+    /// `group`); `years` out of range `OUT_OF_RANGE`, naming
+    /// `occurrences.years`; a context without an ephemeris `CAPABILITY`.
+    #[napi]
+    pub fn almanac_occurrences(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_occurrences(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// One day's facts as short declarative sentences
     /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
     /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
