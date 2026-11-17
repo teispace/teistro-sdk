@@ -8,7 +8,10 @@
       "centre": "Moves the Moon by up to about a degree and the planets by seconds: two hours on a tithi's end",
       "positions": "Moves the Sun by about 21″ and Mercury by up to about 1′ between apparent and true places",
       "siddhanta": "Replaces the sky: the text's planets stand up to degrees from the modern ones, and a limb's end moves by up to hours",
-      "nakshatraScheme": "Changes the nakshatras from twenty-seven equal ones to twenty-eight with Abhijit"
+      "nakshatraScheme": "Changes the nakshatras from twenty-seven equal ones to twenty-eight with Abhijit",
+      "precession": "Moves every position carried between epochs, and every ayanamsha defined at an epoch, by the models' difference: a fraction of an arcsecond within a few centuries of today, more in antiquity",
+      "nutation": "Moves every apparent position by the series' difference: under a milliarcsecond between IAU 2000B and IAU 2000A",
+      "frameBias": "Moves every position by the biases' difference, at most the bias itself, about 0.02″"
     },
     "houses": {
       "placementSystem": "Changes which house each graha stands in, and the cusps",
@@ -21,7 +24,8 @@
       "dayBoundary": "Moves where the day begins, and so which day an instant falls on",
       "polarDayPolicy": "Changes what a day without a sunrise is: undefined, from the nearest rise or set, or from midnight",
       "ghatiReckoning": "Changes a ghati from 24 minutes to a sixtieth of the actual day and night",
-      "horaReckoning": "Changes the horas from twelve proportional parts of the day and of the night to equal hours"
+      "horaReckoning": "Changes the horas from twelve proportional parts of the day and of the night to equal hours",
+      "horizon": "Moves every rising and setting by the horizons' difference: a dip or a raised horizon by minutes, the refraction formula or the disc by seconds"
     },
     "panchanga": {
       "centre": "Moves the day's Moon by up to about a degree, and a limb's end by up to two hours",
@@ -45,7 +49,9 @@
       "dstGap": "Changes what a civil time the clocks skipped answers: a refusal or the time an hour later",
       "dstOverlap": "Changes which of two instants a civil time the clocks show twice means, an hour apart",
       "unknownTime": "Changes what a birth without a time answers: a refusal, or noon, sunrise or midnight",
-      "deltaT": "Moves every instant on Terrestrial Time by the difference between the models: seconds today, minutes or hours in antiquity"
+      "deltaT": "Moves every instant on Terrestrial Time by the difference between the models: seconds today, minutes or hours in antiquity",
+      "dut1": "Moves every instant on UT1 by up to 0.9 s, and with it sunrise and every limb's end by as much",
+      "siderealTime": "Moves the lagna and the cusps by the models' difference in sidereal time: a fraction of an arcsecond"
     },
     "dasha": {
       "balance": "Changes the first dasha's balance, and every date after it",
@@ -76,7 +82,8 @@
       "eightKarakaOrder": "Changes which karaka each rank carries when eight are ranked",
       "nodeCoLordship": "Changes which lords of the 6th, 8th and 12th the Brahma graha is chosen among",
       "brahma": "Changes the rule the Brahma graha is found by",
-      "grahaArudhaException": "Changes whether a graha's arudha moves as a bhava's does"
+      "grahaArudhaException": "Changes whether a graha's arudha moves as a bhava's does",
+      "sevenKarakaOrder": "Moves which karaka each rank names when seven are counted; the ranking itself does not move"
     },
     "gochar": {
       "nodeVedha": "Changes whether the nodes' transits can be obstructed as the Sun's are",
@@ -131,13 +138,16 @@
       "bhavaSpecialRules": "Changes whether the Bhava bala adds the special rules"
     },
     "vargas": {
-      "unattestedDn": "Changes how a divisional chart no text attests is divided"
+      "unattestedDn": "Changes how a divisional chart no text attests is divided",
+      "schemes": "Moves which sign a graha takes in the chart named, by the scheme's own division; no other chart moves"
     },
     "calendars": {
       "civilCalendar": "Changes the calendar a request's dates are read in",
       "lunarMonth": "Changes the name of the dark fortnight's month: a month from new moon or from full moon",
       "samvatsara": "Changes the name of a year in the sixty-year cycle",
-      "eras": "Changes which era years a date carries"
+      "eras": "Changes which era years a date carries",
+      "marginalMonthMinutes": "Moves which months are flagged marginal, by how near their deciding moment falls to the boundary; no date moves",
+      "kiratYele": "Moves the Kirat Yele Sambat year every date carries, by 1281 years between the two counts"
     },
     "provider": {
       "overrides": "Changes whose implementation answers where the ephemeris offers its own: numbers at the last digits",
@@ -146,6 +156,9 @@
     },
     "output": {
       "precision": "Changes the digits an answer is rounded to, never what it computes"
+    },
+    "rashifal": {
+      "scoreBands": "Moves which band a baseline score's overall falls in; the score itself does not move"
     }
   }
 }
