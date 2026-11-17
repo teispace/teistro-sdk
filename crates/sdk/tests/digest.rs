@@ -29,7 +29,7 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 /// when Nalaswane charhe (20 September) did (C1812), and again when the
 /// committee's reckoning took the true sine, moving the week's limb ends by
 /// up to a minute (C1950).
-const PINNED: &str = "8c20d6b4038a059fe2e4a96b1037ef61e311ebf4a5ffd9ed7044c8430155683f";
+const PINNED: &str = "08783c68f9edc58986ce9fb0a809a0b98c5566c2ef5dc52dd850d12c86677157";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
