@@ -39,7 +39,7 @@ use teistro_core::coverage::{Clipped, Coverage};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
-use teistro_port_ephemeris::{Body, Lattice, Quantity};
+use teistro_port_ephemeris::{Body, Centre, Frame, Lattice, Quantity};
 
 use crate::span::Span;
 
@@ -422,6 +422,178 @@ pub fn sun_nakshatra_near<S: Longitudes + ?Sized>(
     Ok(Nakshatra::of(
         Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
     ))
+
+/// `frame`, geocentric: what an almanac's season and a day's Moon signs
+/// read, whatever centre the limbs are found from.
+///
+/// ```
+/// use teistro_panchanga::limb::geocentric;
+/// use teistro_port_ephemeris::{Centre, Frame};
+///
+/// let topocentric = Frame { centre: Centre::Topocentric, ..Frame::CANONICAL };
+/// assert_eq!(geocentric(topocentric).centre, Centre::Geocentric);
+/// ```
+#[must_use]
+pub const fn geocentric(frame: Frame) -> Frame {
+    Frame {
+        centre: Centre::Geocentric,
+        ..frame
+    }
+}
+
+/// The Sun and the Moon as the limbs read them at an instant (SR-137):
+/// each body's sidereal longitude, and the two angles the limbs are cut
+/// from, each read by [`teistro_astro::events::value_of`] over the same
+/// shifted source and as the same quantity the limb search reads, so the
+/// angles at an instant a search found sit on the limb's grid to the
+/// search's tolerance.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_panchanga::limb::LimbAngles;
+///
+/// let angles = LimbAngles {
+///     at: JulianDay::literal(2_461_345.25),
+///     sun_deg: 220.0,
+///     moon_deg: 4.0,
+///     elongation_deg: 144.0,
+///     yoga_deg: 224.0,
+/// };
+/// // Shukla Trayodashi, the thirteenth tithi, and Vyatipata, the
+/// // seventeenth yoga.
+/// assert_eq!(angles.tithi(), teistro_core::catalogue::Tithi::ShuklaTrayodashi);
+/// assert_eq!(angles.yoga(), teistro_core::catalogue::Yoga::Vyatipata);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct LimbAngles {
+    /// The instant, a UTC Julian day, read as UT1 as every limb is.
+    pub at: JulianDay<Utc>,
+    /// The Sun's sidereal longitude, degrees from 0 to 360.
+    pub sun_deg: f64,
+    /// The Moon's sidereal longitude, degrees from 0 to 360: the
+    /// nakshatra's angle.
+    pub moon_deg: f64,
+    /// The Moon less the Sun, degrees from 0 to 360: the tithi's (twelve
+    /// degrees each) and the karana's (six) angle.
+    pub elongation_deg: f64,
+    /// The Moon plus the Sun, degrees from 0 to 360: the yoga's angle,
+    /// 13°20′ each.
+    pub yoga_deg: f64,
+}
+
+impl LimbAngles {
+    /// The tithi the elongation stands in, by the limbs' own integer path.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Tithi;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::limb::LimbAngles;
+    ///
+    /// let before_new_moon = LimbAngles {
+    ///     at: JulianDay::literal(0.0),
+    ///     sun_deg: 0.0,
+    ///     moon_deg: 359.9,
+    ///     elongation_deg: 359.9,
+    ///     yoga_deg: 359.9,
+    /// };
+    /// assert_eq!(before_new_moon.tithi(), Tithi::Amavasya);
+    /// ```
+    #[must_use]
+    pub fn tithi(&self) -> Tithi {
+        Tithi::of(index_of(self.elongation_deg, Limb::Tithi))
+    }
+
+    /// The nakshatra the Moon stands in.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Nakshatra;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::limb::LimbAngles;
+    ///
+    /// let at = LimbAngles { at: JulianDay::literal(0.0), sun_deg: 0.0, moon_deg: 13.4, elongation_deg: 13.4, yoga_deg: 13.4 };
+    /// assert_eq!(at.nakshatra(), Nakshatra::Bharani);
+    /// ```
+    #[must_use]
+    pub fn nakshatra(&self) -> Nakshatra {
+        Nakshatra::of(index_of(self.moon_deg, Limb::Nakshatra))
+    }
+
+    /// The yoga the sum stands in.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Yoga;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_panchanga::limb::LimbAngles;
+    ///
+    /// let at = LimbAngles { at: JulianDay::literal(0.0), sun_deg: 0.0, moon_deg: 0.0, elongation_deg: 0.0, yoga_deg: 13.4 };
+    /// assert_eq!(at.yoga(), Yoga::Priti);
+    /// ```
+    #[must_use]
+    pub fn yoga(&self) -> Yoga {
+        <Yoga as Member>::of(index_of(self.yoga_deg, Limb::Yoga))
+    }
+}
+
+/// The member of a limb an angle stands in, by the integer path; an angle
+/// that is not finite stands in none, read as the first.
+fn index_of(degrees: f64, limb: Limb) -> u32 {
+    Nas::try_from_degrees(degrees).map_or(0, |nas| nas.division_index(limb.divisions()))
+}
+
+/// [`LimbAngles`] at an instant, over a tropical source in a zodiac: the
+/// source the limbs shift, the quantities they read.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// use teistro_panchanga::limb::angles_at;
+///
+/// let angles = angles_at(&longitudes, JulianDay::literal(2_460_000.5), zodiac)?;
+/// // The elongation and the sum are the two longitudes', on the circle.
+/// let less = (angles.moon_deg - angles.sun_deg).rem_euclid(360.0);
+/// let plus = (angles.moon_deg + angles.sun_deg).rem_euclid(360.0);
+/// assert!((angles.elongation_deg - less).abs() < 1e-9);
+/// assert!((angles.yoga_deg - plus).abs() < 1e-9);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// The source's own refusal.
+pub fn angles_at<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+) -> Result<LimbAngles, Error> {
+    let source = Sidereal::over(tropical, zodiac);
+    let ut1 = JulianDay::<Ut1>::literal(at.get());
+    let read = |quantity: Quantity| value_of(quantity, &source, ut1);
+    Ok(LimbAngles {
+        at,
+        sun_deg: read(Quantity::Longitude(Body::Sun))?,
+        moon_deg: read(Limb::Nakshatra.quantity())?,
+        elongation_deg: read(Limb::Tithi.quantity())?,
+        yoga_deg: read(Limb::Yoga.quantity())?,
+    })
 }
 
 /// The Moon's stay between two sidereal longitudes around an instant: from

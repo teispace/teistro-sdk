@@ -2867,6 +2867,154 @@ pub unsafe extern "C" fn ts_almanac_sky_pose(
     })
 }
 
+/// The Sun's and the Moon's sidereal longitudes at instants as the
+/// panchanga's limbs read them (SR-137, `03-design/panchanga-reach.md`
+/// §3), answered with `{value, provenance}` as canonical JSON.
+///
+/// `value` is a list, one `{at, sunDeg, moonDeg, elongationDeg, yogaDeg}`
+/// for each instant asked and in its order: the two sidereal longitudes,
+/// the Moon less the Sun (the tithi's and the karana's angle) and the
+/// Moon plus the Sun (the yoga's), each in degrees from 0 to 360, read in
+/// the sky every almanac day's limbs are found in. Every knob of the
+/// profile is honoured as the limbs honour it: the ayanamsha and its
+/// basis, a custom ayanamsha, the panchanga's centre, true or apparent
+/// positions and a provider that defines its own zodiac; so at a limb's
+/// end the day's search found, the angle sits on the limb's grid to the
+/// search's tolerance.
+///
+/// `request_json` is `{"instants", "latitudeDeg", "longitudeDeg",
+/// "altitudeM"}`: one to 4096 UTC Julian days and the place, whose Moon a
+/// topocentric panchanga reads; `altitudeM` is 0 when left out. No
+/// instants, too many, an instant that is not finite or a place out of
+/// range is `INVALID_ARG`, named under `limbAngles`; a context without an
+/// ephemeris is `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_limb_angles;
+/// use teistro_ffi::string::TsString;
+///
+/// let request = c"{\"instants\": [2461345.25, 2461345.75], \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_limb_angles(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // One reading for each instant, the Moon less the Sun on the circle.
+/// let angles = answer["value"].as_array().ok_or("a list")?;
+/// assert_eq!(angles.len(), 2);
+/// let (sun, moon) = (angles[0]["sunDeg"].as_f64().ok_or("sun")?, angles[0]["moonDeg"].as_f64().ok_or("moon")?);
+/// let elongation = angles[0]["elongationDeg"].as_f64().ok_or("elongation")?;
+/// assert!((elongation - (moon - sun).rem_euclid(360.0)).abs() < 1e-9);
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_limb_angles(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::LimbAnglesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().limb_angles_request(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// The blackouts the Sun and the Moon make over a range of civil days by
+/// the context's profile (SR-138, `03-design/panchanga-reach.md` §2),
+/// answered with `{value, provenance}` as canonical JSON.
+///
+/// `value` is a list of `{kind, at}` in order of their start: `kind` a
+/// `blackout_kind` key (`CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`,
+/// `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or
+/// `HOLASHTAKA`), and `at` `{from, to}`, the UTC Julian days it holds
+/// over, clipped to the range from the first day's local midnight to the
+/// midnight after the last. The rule is the muhurta search's own season,
+/// read in the profile's chart zodiac at the range's middle, geocentric,
+/// and is in every build.
+///
+/// `request_json` is `{"first", "last", "calendar", "utcOffsetSeconds",
+/// "zone", "kinds"}`: `first` and `last` (the first when left out) as
+/// `{year, month, day}` in `calendar` (Gregorian when left out), the
+/// offset or the zone the midnights are read on (one of them), and the
+/// kinds wanted, every one when left out. A kind the Sun and the Moon do
+/// not make (asta, an eclipse's star or vedha), both or neither clock
+/// field, or a range the wrong way round is `INVALID_ARG`, named under
+/// `blackouts`; a context without an ephemeris is `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_blackouts;
+/// use teistro_ffi::string::TsString;
+///
+/// let request = c"{\"first\": {\"year\": 2026, \"month\": 7, \"day\": 1}, \"last\": {\"year\": 2026, \"month\": 12, \"day\": 31}, \"utcOffsetSeconds\": 20700, \"kinds\": [\"CHATURMAS\"]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_blackouts(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // 2026's Chaturmas, Ashadha's bright eleventh to Kartika's.
+/// assert_eq!(answer["value"][0]["kind"], "blackout_kind.CHATURMAS");
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_blackouts(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::BlackoutsRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().blackouts_request(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {

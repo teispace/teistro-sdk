@@ -16,7 +16,7 @@ use teistro_astro::events::{Longitudes, Search};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_astro::visibility::Heliacal;
-use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
+use teistro_calendar::{CalendarDate, CalendarSystem};
 use teistro_chart::foundation::{Founder, bodies_of};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::error::{Error, Status};
@@ -24,10 +24,13 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::{EclipseVedha, Settings};
 use teistro_core::time::LocalClock;
+use teistro_panchanga::limb::geocentric;
 use teistro_panchanga::limb::{Sidereal, Zodiac, signs_within};
+use teistro_panchanga::season::sky_blackouts;
+use teistro_panchanga::vedha::vedha_of;
 use teistro_panchanga::{Almanac, Panchanga};
 use teistro_port_ephemeris::{
-    Astronomy, Body, Centre, EphemerisProvider, Frame, Horizon, Lattice, Quantity,
+    Astronomy, Body, EphemerisProvider, Frame, Horizon, Lattice, Quantity,
 };
 use teistro_time::local_day::local_midnight;
 
@@ -35,8 +38,7 @@ use crate::activity::Unjudged;
 use crate::instant::Sky;
 use crate::search::{Season, Sources, same_day};
 use crate::season::{
-    Blackout, BlackoutKind, ECLIPSE_STAR_REACH_DAYS, SeenEclipse, VEDHA_DAYS_AROUND, asta_over,
-    blackouts, eclipse_stars, vedha_over_days,
+    Blackout, BlackoutKind, ECLIPSE_STAR_REACH_DAYS, SeenEclipse, asta_over, eclipse_stars,
 };
 
 /// How far beyond a range an eclipse's vedha can reach into it, days: it
@@ -474,12 +476,9 @@ impl<'a, P: EphemerisProvider + ?Sized> ProviderSources<'a, P> {
         })
     }
     fn vedha_of(&self, eclipse: &SeenEclipse) -> Result<Blackout, Error> {
-        let first = JulianDay::<Utc>::literal(eclipse.seen.from.get());
-        let (fixed, _) = FixedDay::from_local_jd(self.clock.local_jd(first));
-        let days = (-VEDHA_DAYS_AROUND..=VEDHA_DAYS_AROUND)
-            .map(|n| self.day(&self.calendar.date_of(fixed.plus_days(n))?))
-            .collect::<Result<Vec<Panchanga>, Error>>()?;
-        vedha_over_days(eclipse, &days, self.vedha)
+        vedha_of(eclipse, self.vedha, self.calendar, self.clock, |date| {
+            self.day(date)
+        })
     }
 
     /// The grahas' source: the chart's own frame, at the place.
@@ -517,14 +516,12 @@ impl<P: EphemerisProvider + ?Sized> Sources for ProviderSources<'_, P> {
 
     fn season(&self, range: Interval, kinds: &[BlackoutKind]) -> Result<Season, Error> {
         // An almanac's season is geocentric wherever it is read.
-        let geocentric = self.completion.longitudes(Frame {
-            centre: Centre::Geocentric,
-            ..self.frame
-        });
-        let mut found: Vec<Blackout> = blackouts(&geocentric, self.zodiac, range)?
-            .into_iter()
-            .filter(|b| kinds.contains(&b.kind))
-            .collect();
+        let geocentric = self.completion.longitudes(geocentric(self.frame));
+        let mut found: Vec<Blackout> =
+            sky_blackouts(self.completion, self.frame, self.zodiac, range)?
+                .into_iter()
+                .filter(|b| kinds.contains(&b.kind))
+                .collect();
         for (kind, body) in [
             (BlackoutKind::GuruAsta, Body::Jupiter),
             (BlackoutKind::ShukraAsta, Body::Venus),

@@ -8047,6 +8047,93 @@ fn sky_pose(report: &mut Report) {
     put(report, "sky-pose-ascendant", placed(rising));
 }
 
+/// The panchanga's own longitudes at two instants in Kathmandu over the
+/// built-in sky (`03-design/panchanga-reach.md` §3): the hash, then each
+/// instant's Sun, Moon, elongation and yoga sum, and its tithi, nakshatra
+/// and yoga keys.
+fn limb_angles(report: &mut Report) {
+    let sky = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let asked = teistro::LimbAnglesRequest::from_json(
+        r#"{"instants": [2461345.25, 2461360.5], "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400}"#,
+    )
+    .expect("a limb angles request");
+    let found = sky
+        .almanac()
+        .limb_angles_request(&asked)
+        .expect("the built-in sky reads the angles");
+    put(
+        report,
+        "limb-angles-hash",
+        found.provenance.content_hash.to_string(),
+    );
+    put_list(
+        report,
+        "limb-angles",
+        found.value.iter().map(|one| {
+            format!(
+                "{} {} {} {} {} {} {}",
+                number(one.sun_deg),
+                number(one.moon_deg),
+                number(one.elongation_deg),
+                number(one.yoga_deg),
+                one.tithi().key(),
+                one.nakshatra().key(),
+                one.yoga().key()
+            )
+        }),
+    );
+}
+
+/// The blackouts the Sun and the Moon make over 2026 by `nepali-drik`,
+/// days read at +05:45 (`03-design/panchanga-reach.md` §2): the hash, then
+/// each blackout's kind and its bounds.
+fn blackouts(report: &mut Report) {
+    let sky = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let asked = teistro::BlackoutsRequest::from_json(
+        r#"{"first": {"year": 2026, "month": 1, "day": 1}, "last": {"year": 2026, "month": 12, "day": 31},
+            "utcOffsetSeconds": 20700, "kinds": ["CHATURMAS", "ADHIKA_MASA", "KHARMAS"]}"#,
+    )
+    .expect("a blackouts request");
+    let written = sky
+        .almanac()
+        .blackouts_request(&asked)
+        .expect("the built-in sky reads the season");
+    put(
+        report,
+        "blackouts-hash",
+        written.provenance.content_hash.to_string(),
+    );
+    let found = sky
+        .almanac()
+        .blackouts(
+            &asked.first,
+            &asked.last,
+            UtcOffset::try_from_seconds(20700).expect("+05:45"),
+            &asked.kinds,
+        )
+        .expect("the built-in sky reads the season");
+    put_list(
+        report,
+        "blackouts",
+        found.value.iter().map(|one| {
+            format!(
+                "{} {} {}",
+                one.kind.key(),
+                number(one.at.from.get()),
+                number(one.at.to.get())
+            )
+        }),
+    );
+}
+
 /// The gloss's 29 by 7 hastas under *Muhurta Chintamani* for Anuradha's
 /// owner and under *Samarangana* for Bharani's: each quantity
 /// `QUANTITY:count`, then `vyaya:` its kind and `tara:` the owner's tara
@@ -9016,6 +9103,8 @@ fn main() {
     navatara(&mut report, &geo);
     sky_view(&mut report);
     sky_pose(&mut report);
+    limb_angles(&mut report);
+    blackouts(&mut report);
     settings(&mut report);
     aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);

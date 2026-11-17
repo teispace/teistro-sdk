@@ -2079,6 +2079,7 @@ dependencies = [
  "teistro-calendar",
  "teistro-chart",
  "teistro-core",
+ "teistro-ephemeris-builtin",
  "teistro-port-ephemeris",
  "teistro-test-allocator",
  "teistro-time",
