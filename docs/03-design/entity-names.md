@@ -888,5 +888,5 @@ than copied (प्रवेशात् पूर्वम् अमावा�
 - **Hindi and Sanskrit beyond the list.** §4e named the members no strict
   locale had. The kinds Hindi and Sanskrit still fall back to English for
   (`varga`, `tradition`, the BPHS points named in §4c) are a separate pass,
-  counted kind by kind in `LATIN_FALLBACK` (§4g), which fails when one is
+  counted kind by kind in `LATIN_FALLBACK` (§4h), which fails when one is
   named and its count is not lowered.
