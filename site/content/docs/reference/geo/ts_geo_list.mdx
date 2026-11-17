@@ -1,0 +1,73 @@
+---
+title: ts_geo_list
+description: "The places of an admin unit from the context's geo provider, ranked by population (most first, a place with none after), answered as canonical JSON: a list of places as `ts_geo_search` answers them, each with `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`."
+---
+
+The places of an admin unit from the context's geo provider, ranked by population (most first, a place with none after), answered as canonical JSON: a list of places as `ts_geo_search` answers them, each with `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`.
+
+`request_json` is `{"within", "level", "kinds", "depth", "limit", "lang"}`: the unit by its id or ISO 3166 code (`NP`, `NP-P3`), only units of `level`, only places of `kinds` (`COUNTRY`, `ADMIN`, `SETTLEMENT`, `LOCALITY`, `NATURAL`, `POSTAL_AREA`), at most `depth` levels down (default 1, null for any), at most `limit` (1 to 1,000, default 100). A unit the provider does not hold lists nothing.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.geo.list
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.geo.list
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.geo.list
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.geo().list
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.geo().list
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_geo_list(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `geo.list` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/geo.rs`.

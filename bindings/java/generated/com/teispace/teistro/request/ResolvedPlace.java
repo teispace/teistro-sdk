@@ -15,10 +15,11 @@ import java.util.Objects;
  * @param height The ground height there, or `null` where the data has none. Null leaves the SDK's default.
  * @param latitudeDeg The latitude asked, in degrees.
  * @param longitudeDeg The longitude asked, in degrees.
+ * @param nautical The zone is the nautical one (`Etc/GMT±n` from the longitude), not a land zone; written only when true, so a land answer reads as it always has. Null leaves the SDK's default.
  * @param source Who answered, and from which data.
- * @param zone The IANA zone holding the point, or `null` where the data has none. Null leaves the SDK's default.
+ * @param zone The IANA zone holding the point, or `null` where the data has none. At sea, where the provider knows no area holds the point, the nautical zone `nautical_zone` reckons from the longitude, with `ResolvedPlace::nautical` set (SR-144). Null leaves the SDK's default.
  */
-public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double latitudeDeg, double longitudeDeg, GeoSource source, String zone) implements RequestJson {
+public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double latitudeDeg, double longitudeDeg, Boolean nautical, GeoSource source, String zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,7 +43,7 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
      * @param source Who answered, and from which data.
      */
     public ResolvedPlace(List<AdminUnit> admin, double latitudeDeg, double longitudeDeg, GeoSource source) {
-        this(admin, null, latitudeDeg, longitudeDeg, source, null);
+        this(admin, null, latitudeDeg, longitudeDeg, null, source, null);
     }
 
     /**
@@ -61,6 +62,7 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
         private GroundHeight height;
         private Double latitudeDeg;
         private Double longitudeDeg;
+        private Boolean nautical;
         private GeoSource source;
         private String zone;
 
@@ -111,6 +113,17 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
         }
 
         /**
+         * Sets {@code nautical}.
+         *
+         * @param nautical The zone is the nautical one (`Etc/GMT±n` from the longitude), not a land zone; written only when true, so a land answer reads as it always has. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder nautical(boolean nautical) {
+            this.nautical = nautical;
+            return this;
+        }
+
+        /**
          * Sets {@code source}.
          *
          * @param source Who answered, and from which data.
@@ -124,7 +137,7 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
         /**
          * Sets {@code zone}.
          *
-         * @param zone The IANA zone holding the point, or `null` where the data has none. Null leaves the SDK's default.
+         * @param zone The IANA zone holding the point, or `null` where the data has none. At sea, where the provider knows no area holds the point, the nautical zone `nautical_zone` reckons from the longitude, with `ResolvedPlace::nautical` set (SR-144). Null leaves the SDK's default.
          * @return this builder
          */
         public Builder zone(String zone) {
@@ -139,7 +152,7 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
          * @throws NullPointerException naming a required field left unset
          */
         public ResolvedPlace build() {
-            return new ResolvedPlace(admin, height, Objects.requireNonNull(latitudeDeg, "`ResolvedPlace.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ResolvedPlace.longitudeDeg` is required"), source, zone);
+            return new ResolvedPlace(admin, height, Objects.requireNonNull(latitudeDeg, "`ResolvedPlace.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ResolvedPlace.longitudeDeg` is required"), nautical, source, zone);
         }
     }
 
@@ -157,6 +170,7 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
             Read.orNull(json.get("height"), present -> GroundHeight.of(present)),
             Read.number(Read.required(json.get("latitudeDeg"), "ResolvedPlace.latitudeDeg"), "ResolvedPlace.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "ResolvedPlace.longitudeDeg"), "ResolvedPlace.longitudeDeg"),
+            Read.orNull(json.get("nautical"), present -> Read.bool(present, "ResolvedPlace.nautical")),
             GeoSource.of(Read.required(json.get("source"), "ResolvedPlace.source")),
             Read.orNull(json.get("zone"), present -> Read.text(present, "ResolvedPlace.zone")));
     }
@@ -170,6 +184,9 @@ public record ResolvedPlace(List<AdminUnit> admin, GroundHeight height, double l
         }
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
+        if (nautical != null) {
+            json.put("nautical", nautical);
+        }
         json.put("source", source.toJson());
         if (zone != null) {
             json.put("zone", zone);

@@ -2034,6 +2034,72 @@ final class RelocationRequest extends _Request {
   List<Object?> get _fields => [houseSystem, instant, places];
 }
 
+/// The places of a unit: what `geo.list` reads.
+final class PlaceListing extends _Request {
+  const PlaceListing({
+    this.depth = 1,
+    this.kinds = const [],
+    this.lang,
+    this.level,
+    this.limit = 100,
+    required this.within,
+  });
+
+  /// How many levels below `within` to look: 1 its children, `null` any depth; 1 when left out.
+  final int depth;
+
+  /// Only places of these kinds; empty for every kind.
+  final List<PlaceKind> kinds;
+
+  /// The language to name each place in, or `null`.
+  final String? lang;
+
+  /// Only units of this admin level, or `null` for any place.
+  final int? level;
+
+  /// The most places to answer, 1 to 1,000; 100 when left out.
+  final int limit;
+
+  /// The unit to list within: a place's id, or an ISO 3166 code (`NP`, `NP-P3`).
+  final String within;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'depth': depth,
+    'kinds': [for (final e0 in kinds) e0.key],
+    if (lang case final langValue?) 'lang': langValue,
+    if (level case final levelValue?) 'level': levelValue,
+    'limit': limit,
+    'within': within,
+  };
+
+  @override
+  List<Object?> get _fields => [depth, kinds, lang, level, limit, within];
+}
+
+/// A place's names: what `geo.names` reads.
+final class PlaceNamesRequest extends _Request {
+  const PlaceNamesRequest({
+    required this.id,
+    this.langs = const [],
+  });
+
+  /// The place's id, as an answer gave it.
+  final String id;
+
+  /// The languages to choose a name in (`ne`, `en`, `hi`, `sa`); empty for none.
+  final List<String> langs;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'id': id,
+    'langs': langs,
+  };
+
+  @override
+  List<Object?> get _fields => [id, langs];
+}
+
 /// A place to resolve, as `geo.resolve` reads it.
 final class PlaceRequest extends _Request {
   const PlaceRequest({
@@ -2055,6 +2121,72 @@ final class PlaceRequest extends _Request {
 
   @override
   List<Object?> get _fields => [latitudeDeg, longitudeDeg];
+}
+
+/// A point to its nearest places and its units: what `geo.reverse` reads.
+final class PlaceReverse extends _Request {
+  const PlaceReverse({
+    this.lang,
+    required this.latitudeDeg,
+    this.limit = 5,
+    required this.longitudeDeg,
+  });
+
+  /// The language to name each place in, or `null`.
+  final String? lang;
+
+  /// The latitude, in degrees.
+  final double latitudeDeg;
+
+  /// The most nearby places to answer, 1 to 100; 5 when left out.
+  final int limit;
+
+  /// The longitude, in degrees.
+  final double longitudeDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (lang case final langValue?) 'lang': langValue,
+    'latitudeDeg': latitudeDeg,
+    'limit': limit,
+    'longitudeDeg': longitudeDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [lang, latitudeDeg, limit, longitudeDeg];
+}
+
+/// A name to places: what `geo.search` reads.
+final class PlaceSearch extends _Request {
+  const PlaceSearch({
+    this.focus,
+    this.lang,
+    this.limit = 10,
+    required this.query,
+  });
+
+  /// Prefer places near this point, or `null`.
+  final SearchFocus? focus;
+
+  /// The language to name each place in (`ne`, `en-Latn`), or `null` for its canonical name.
+  final String? lang;
+
+  /// The most places to answer, 1 to 100; 10 when left out.
+  final int limit;
+
+  /// The text as typed, in any script; after a comma it names a parent (`Kathmandu, Bagmati`).
+  final String query;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (focus case final focusValue?) 'focus': focusValue._wire,
+    if (lang case final langValue?) 'lang': langValue,
+    'limit': limit,
+    'query': query,
+  };
+
+  @override
+  List<Object?> get _fields => [focus, lang, limit, query];
 }
 
 /// What a caller asks to be written: a date in any calendar, and how.
@@ -3297,6 +3429,7 @@ final class ResolvedPlace extends _Request {
     this.height,
     required this.latitudeDeg,
     required this.longitudeDeg,
+    this.nautical,
     required this.source,
     this.zone,
   });
@@ -3313,10 +3446,13 @@ final class ResolvedPlace extends _Request {
   /// The longitude asked, in degrees.
   final double longitudeDeg;
 
+  /// The zone is the nautical one (`Etc/GMT±n` from the longitude), not a land zone; written only when true, so a land answer reads as it always has.
+  final bool? nautical;
+
   /// Who answered, and from which data.
   final GeoSource source;
 
-  /// The IANA zone holding the point, or `null` where the data has none.
+  /// The IANA zone holding the point, or `null` where the data has none. At sea, where the provider knows no area holds the point, the nautical zone [`nautical_zone`] reckons from the longitude, with [`ResolvedPlace::nautical`] set (SR-144).
   final String? zone;
 
   @override
@@ -3325,12 +3461,13 @@ final class ResolvedPlace extends _Request {
     if (height case final heightValue?) 'height': heightValue._wire,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
+    if (nautical case final nauticalValue?) 'nautical': nauticalValue,
     'source': source._wire,
     if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [admin, height, latitudeDeg, longitudeDeg, source, zone];
+  List<Object?> get _fields => [admin, height, latitudeDeg, longitudeDeg, nautical, source, zone];
 }
 
 /// A tradition's lists, every one data.
@@ -4431,6 +4568,56 @@ final class RelocationPlace extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg];
+}
+
+/// What a place of the catalogue is.
+enum PlaceKind implements _Keyed {
+  /// A country, at admin level 0.
+  country('COUNTRY'),
+  /// An administrative unit below a country: a province, a district, a municipality, a ward.
+  admin('ADMIN'),
+  /// A populated place: a city, a town, a village.
+  settlement('SETTLEMENT'),
+  /// A named part of a settlement, or a locality with no people: a tole, a neighbourhood.
+  locality('LOCALITY'),
+  /// A natural feature: a peak, a pass, a lake, a river.
+  natural('NATURAL'),
+  /// A postal area.
+  postalArea('POSTAL_AREA');
+
+  const PlaceKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A search's focus: prefer places near this point.
+final class SearchFocus extends _Request {
+  const SearchFocus({
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.scaleM = 50000.0,
+  });
+
+  /// The latitude, in degrees.
+  final double latitudeDeg;
+
+  /// The longitude, in degrees.
+  final double longitudeDeg;
+
+  /// The distance, in metres, at which the focus's gain halves; 50 km when left out.
+  final double scaleM;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'scaleM': scaleM,
+  };
+
+  @override
+  List<Object?> get _fields => [latitudeDeg, longitudeDeg, scaleM];
 }
 
 /// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
@@ -16425,8 +16612,20 @@ abstract final class Records {
   /// `chart.relocated`, whose request is [RelocationRequest].
   static const chartRelocated = RecordOf<RelocationRequest>._('chart.relocated');
 
+  /// `geo.list`, whose request is [PlaceListing].
+  static const geoList = RecordOf<PlaceListing>._('geo.list');
+
+  /// `geo.names`, whose request is [PlaceNamesRequest].
+  static const geoNames = RecordOf<PlaceNamesRequest>._('geo.names');
+
   /// `geo.resolve`, whose request is [PlaceRequest].
   static const geoResolve = RecordOf<PlaceRequest>._('geo.resolve');
+
+  /// `geo.reverse`, whose request is [PlaceReverse].
+  static const geoReverse = RecordOf<PlaceReverse>._('geo.reverse');
+
+  /// `geo.search`, whose request is [PlaceSearch].
+  static const geoSearch = RecordOf<PlaceSearch>._('geo.search');
 
   /// `intl.date`, whose request is [DateTextRequest].
   static const intlDate = RecordOf<DateTextRequest>._('intl.date');
@@ -16536,7 +16735,11 @@ abstract final class Records {
     chartMundane,
     chartRashifal,
     chartRelocated,
+    geoList,
+    geoNames,
     geoResolve,
+    geoReverse,
+    geoSearch,
     intlDate,
     intlDates,
     intlInWords,
