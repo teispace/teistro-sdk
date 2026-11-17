@@ -159,6 +159,34 @@ fn an_unknown_zone_is_refused_with_the_nearest_names() {
             .candidates("Etc/UTC", local(2026, 1, 1, 0, 0))
             .is_err()
     );
+
+    // The nautical zones a resolution at sea answers (SR-144) are known,
+    // each one fixed offset, its sign tzdb's.
+    for (zone, hours, abbreviation) in [
+        ("Etc/GMT-6", 6, "+06"),
+        ("Etc/GMT+2", -2, "-02"),
+        ("Etc/GMT", 0, "GMT"),
+        ("Etc/GMT-12", 12, "+12"),
+    ] {
+        assert!(zones.has_zone(zone), "{zone}");
+        let found = zones.offset_at(zone, instant(0)).unwrap();
+        assert_eq!(found.offset, UtcOffset::literal(hours, 0, 0), "{zone}");
+        assert_eq!(found.abbreviation, abbreviation);
+        assert!(!found.is_dst && !found.before_rules);
+        assert_eq!(
+            zones.candidates(zone, local(2026, 3, 8, 2, 30)).unwrap(),
+            LocalCandidates::Unambiguous {
+                offset: UtcOffset::literal(hours, 0, 0)
+            }
+        );
+        assert_eq!(
+            zones.current_offsets(zone).unwrap(),
+            vec![UtcOffset::literal(hours, 0, 0)]
+        );
+    }
+    for wrong in ["Etc/GMT-13", "Etc/GMT+06", "Etc/GMT-0", "Etc/GMT6"] {
+        assert!(!zones.has_zone(wrong), "{wrong}");
+    }
 }
 
 #[test]

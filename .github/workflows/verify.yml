@@ -714,7 +714,7 @@ jobs:
     env:
       # teigeodata's data release the tests read, built by the engine tag
       # the adapter pins (adapters/geo-teigeodata/rust/Cargo.toml).
-      TEIGEODATA_DATA: data-2026.11.14
+      TEIGEODATA_DATA: data-2026.11.15
     defaults:
       run:
         working-directory: adapters/geo-teigeodata/rust
@@ -723,6 +723,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: adapters/geo-teigeodata/rust
@@ -730,6 +731,15 @@ jobs:
         run: cargo fmt --check
       - name: Clippy, warnings denied
         run: cargo clippy --locked --all-targets -- -D warnings
+      # Each feature set a consumer builds (geo-port.md §13.3): lookup-only
+      # and lookup with search, natively and for the web, where packs come
+      # from bytes and nothing is mapped.
+      - name: Clippy on the feature sets, native and wasm32
+        run: |
+          for features in terrain,zone-rules terrain,zone-rules,search; do
+            cargo clippy --locked --lib --no-default-features --features "$features" -- -D warnings
+            cargo clippy --locked --lib --target wasm32-unknown-unknown --no-default-features --features "$features" -- -D warnings
+          done
       # Nepal's lite pack and the world's baseline (which carries every
       # zone's rules) from teigeodata's data release, so the tests that
       # read a real pack run here rather than print SKIP. The release is

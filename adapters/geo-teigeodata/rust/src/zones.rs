@@ -26,8 +26,11 @@ const SUGGESTIONS: usize = 3;
 /// whose rules hold it; the version is the tzdb release that pack's
 /// manifest states. Names are matched as tzdb spells them and, failing
 /// that, without regard to case, as the SDK's own zone packs match them.
-/// The packs hold `zone.tab`'s zones, not tzdb's links (`UTC`, `Etc/*`,
-/// `US/Eastern`): a link is an unknown zone here.
+/// The packs hold `zone.tab`'s zones, not tzdb's links (`UTC`,
+/// `US/Eastern`) nor its `Etc` zones: those are unknown here, save the
+/// nautical zones `Etc/GMT-12` to `Etc/GMT+12`, which a resolution at sea
+/// answers (SR-144) and which these rules answer themselves, each one fixed
+/// offset with tzdb's abbreviation (`+06` for `Etc/GMT-6`, `GMT`).
 #[derive(Debug)]
 pub struct TeigeodataZones {
     engine: Arc<Engine>,
@@ -59,6 +62,14 @@ impl TeigeodataZones {
         if names.is_empty() {
             return Ok(None);
         }
+        let mut names = names;
+        for hours in -12..=12 {
+            let name = nautical_name(hours);
+            if !names.contains(&name) {
+                names.push(name);
+            }
+        }
+        names.sort();
         let folded = names
             .iter()
             .enumerate()
@@ -73,6 +84,7 @@ impl TeigeodataZones {
     }
 
     /// `zone` as the rules spell it, or the refusal naming the nearest.
+    /// A nautical zone is spelt as tzdb spells it.
     fn spelled(&self, zone: &str) -> Result<&str, Error> {
         self.folded
             .get(&zone.to_ascii_lowercase())
@@ -99,6 +111,13 @@ impl TeigeodataZones {
             .collect()
     }
 
+    /// A nautical zone's fixed offset and abbreviation, where the packs'
+    /// rules do not hold the zone themselves.
+    fn fixed(&self, zone: &str) -> Option<(i32, String)> {
+        let held = self.engine.tz_rules_start(zone).ok().flatten().is_some();
+        if held { None } else { nautical(zone) }
+    }
+
     /// The first instant `zone`'s rules cover, in Unix seconds.
     fn rules_start(&self, zone: &str) -> Result<i64, Error> {
         self.engine
@@ -122,6 +141,38 @@ fn unix_seconds(instant: JulianDay<Utc>) -> Result<i64, Error> {
         Ok(_) if seconds.is_finite() => Ok(whole),
         _ => Err(out_of_range(&instant.to_string())),
     }
+}
+
+/// The nautical zone `hours` ahead of UTC, as tzdb names it: its sign
+/// inverted, `Etc/GMT` at zero.
+fn nautical_name(hours: i32) -> String {
+    match hours {
+        0 => String::from("Etc/GMT"),
+        east if east > 0 => format!("Etc/GMT-{east}"),
+        west => format!("Etc/GMT+{}", -west),
+    }
+}
+
+/// The offset of a nautical zone the packs do not hold, in seconds, and
+/// its abbreviation; `None` for any other name.
+fn nautical(zone: &str) -> Option<(i32, String)> {
+    let hours = match zone.strip_prefix("Etc/GMT")? {
+        "" => 0,
+        west if west.starts_with('+') => west.get(1..)?.parse::<i32>().ok()?,
+        east if east.starts_with('-') => -east.get(1..)?.parse::<i32>().ok()?,
+        _ => return None,
+    };
+    // Spelt exactly, as `nautical_name` writes it (no `+06`, no `-0`).
+    if !(-12..=12).contains(&hours) || nautical_name(-hours) != zone {
+        return None;
+    }
+    let ahead = -hours;
+    let abbreviation = match ahead {
+        0 => String::from("GMT"),
+        east if east > 0 => format!("+{east:02}"),
+        west => format!("-{:02}", -west),
+    };
+    Some((ahead * 3_600, abbreviation))
 }
 
 fn out_of_range(what: &str) -> Error {
@@ -159,6 +210,14 @@ impl TimeZoneProvider for TeigeodataZones {
     fn offset_at(&self, zone: &str, instant: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
         let zone = self.spelled(zone)?;
         let seconds = unix_seconds(instant)?;
+        if let Some((fixed, abbreviation)) = self.fixed(zone) {
+            return Ok(OffsetInfo {
+                offset: offset(fixed)?,
+                abbreviation,
+                is_dst: false,
+                before_rules: false,
+            });
+        }
         let found = self
             .engine
             .tz_offset_at(zone, seconds)
@@ -176,6 +235,11 @@ impl TimeZoneProvider for TeigeodataZones {
         let zone = self.spelled(zone)?;
         let civil =
             Civil::from_seconds(local.seconds).map_err(|_| out_of_range(&local.to_string()))?;
+        if let Some((fixed, _)) = self.fixed(zone) {
+            return Ok(LocalCandidates::Unambiguous {
+                offset: offset(fixed)?,
+            });
+        }
         let found = self
             .engine
             .tz_local_candidates(zone, civil)
@@ -202,6 +266,9 @@ impl TimeZoneProvider for TeigeodataZones {
     /// databases use, so the two agree on what "today's rules" are.
     fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
         let zone = self.spelled(zone)?;
+        if let Some((fixed, _)) = self.fixed(zone) {
+            return Ok(vec![offset(fixed)?]);
+        }
         let year: i32 = self
             .version
             .get(..4)
