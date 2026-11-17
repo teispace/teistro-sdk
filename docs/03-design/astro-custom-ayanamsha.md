@@ -146,9 +146,11 @@ point: the forms ride on every request that takes settings, so no cost record mo
 
 ## 9. Open questions
 
-1. **Ketaki** (C2165). The brief (§6) reports Ketkar's *Grahaganitam* ayanamsha as
-   Revati-based, not verified. `ANCHORED` with `REVATI` (ζ Piscium) expresses it once
-   a source gives the longitude. No rank-1 or rank-2 source was found on 2026-11-17.
+1. **Ketaki** (C2165), closed 2026-11-17. Ketkar's ayanamsha is Chitra-paksha and
+   linear, not Revati-based (`01-research/ketaki.md` §2): `CUSTOM` restates it exactly,
+   and the catalogue names it `KETAKI` (`03-design/ketaki.md` §4.1). The Revati origin
+   is the Tilak panchang's, shipped as the `tilak-revati` profile with `ANCHORED`
+   `REVATI` at 0° (C2183, C2184).
 2. **Through the port** (C2166). The port's `ayanamsha_deg` names catalogue members
    only, so a custom form is always the SDK's value, as every catalogued member is under
    `sdk-only`. Teimeris implements `TM_AYANAMSHA_USER` (an epoch and value under its

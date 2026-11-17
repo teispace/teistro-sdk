@@ -5,7 +5,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::catalogue::{
-    Ayanamsha, BalaScheme, Calendar, DashaFamily, DashaSystem, Era, HouseSystem, Mark, Source,
+    Ayanamsha, BalaScheme, Calendar, DashaFamily, DashaSystem, Era, HouseSystem, Mark, Source, Star,
 };
 
 use super::knobs::{
@@ -28,10 +28,10 @@ use super::knobs::{
     Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
-    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar, HorizonModel,
-    Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga, Precision, Provider,
-    Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State, Strength,
-    SuryaBija, SuryaPlanets, Time, Vargas,
+    Aspect, AyanamshaChoice, Calendars, Citation, Dasha, Day, Diagnostics, Dut1, Frame, Gochar,
+    HorizonModel, Houses, Jaimini, Kp, LagnaTable, Layer, Origins, Output, Panchanga, Precision,
+    Provider, Rashifal, Resolved, SCHEMA, ScoreBands, Settings, SettingsPatch, Siddhanta, State,
+    Strength, SuryaBija, SuryaPlanets, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -140,13 +140,15 @@ pub const DEFAULT_PROFILE: &str = "parashari-classical";
 ///     assert!(Profile::shipped(id).unwrap().resolve(&SettingsPatch::default()).is_ok(), "{id}");
 /// }
 /// ```
-pub const SHIPPED_PROFILES: [&str; 9] = [
+pub const SHIPPED_PROFILES: [&str; 11] = [
     "nepali-drik",
     "nepali-committee",
     "parashari-classical",
     "surya-siddhanta",
     "mithila-makaranda",
     "tamil-vakya",
+    "ketaki",
+    "tilak-revati",
     "kp-default",
     "western-tropical-default",
     "conformance-baseline",
@@ -1663,6 +1665,120 @@ fn tamil_vakya() -> Profile {
     }
 }
 
+/// Maharashtra's Ketaki almanacs as they compute today: a modern sky in
+/// Ketkar's Chitra-paksha zodiac, under his conventions
+/// (`03-design/ketaki.md` §3).
+///
+/// V. B. Ketkar's *Ketakī Grahagaṇitam* (1899) and *Jyotirgaṇitam* (1898)
+/// set the zodiac's origin opposite Chitra and give its value by a linear
+/// rule, the catalogue's `KETAKI` (C2180). The sixteen almanacs the
+/// Calendar Reform Committee found on his method in 1955 (Date's,
+/// Nirnaysagar, Chitrashala, Vaijayanti and others) computed from modern
+/// tables and printed that value within four arcseconds, so the modern
+/// layer is the engine's sky less `KETAKI`: no provider of its own, over
+/// any modern engine. Every other convention the texts state is already
+/// the root's: amanta months, a day from sunrise, Bhaskara's adhika and
+/// kshaya rule, the mean node, a geocentric chart, and the mean value
+/// subtracted on the true basis, which gives star-referred longitudes as
+/// Ketkar's mean tables did (C2181). Only the year's name is patched: the
+/// southern cycle the Deccan's almanacs count. The day starts at the
+/// root's upper-limb sunrise with refraction until a printed Ketaki
+/// sunrise is read (C2189). The 1899 karana itself is a later provider
+/// (`ketaki-grahaganita`, phase K4).
+fn ketaki() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.ayanamsha = Some(Ayanamsha::Ketaki.into());
+    patch.calendars.samvatsara = Some(SamvatsaraCount::Chandramana);
+    Profile {
+        id: ProfileId::new("ketaki"),
+        version: 1,
+        base: None,
+        patch,
+        sources: vec![
+            Citation::new(
+                "frame.ayanamsha",
+                Source::new(
+                    "V. B. Ketkar, Ketakī Grahagaṇitam (Poona, 1899); Jyotirgaṇitam, 2nd ed. (Poona, 1937)",
+                    "the origin opposite Chitra (KGG madhyama v. 3); 22°08′33″ at the Mesha sankranti of Shaka 1800 plus (n/70)° − (n/50)′ a year (KGG spashta v. 6, its example Shaka 1815 → 22°21′6″; JG1937 p. 7, 22°8′33.04″); the 1955 survey's sixteen Ketkar almanacs print 23°12′06″ to 23°12′10″ for Shaka 1876 (Report of the Calendar Reform Committee, Annexure VI); docs/01-research/ketaki.md §2, C2180",
+                ),
+            ),
+            Citation::new(
+                "frame.ayanamsha_basis",
+                Source::new(
+                    "V. B. Ketkar, Jyotirgaṇitam, 2nd ed. (Poona, 1937)",
+                    "p. 346: Spica's longitude on 1 January 1892, 22°20′2.9″ after 180°, is its geometric longitude on the mean equinox (22°20′03.4″), not its apparent one (22°19′46.1″): a mean value, which the root's true basis applies to apparent positions; docs/01-research/ketaki.md §2.2, C2181",
+                ),
+            ),
+            Citation::new(
+                "calendars.lunar_month",
+                Source::new(
+                    "V. B. Ketkar, Jyotirgaṇitam, 2nd ed. (Poona, 1937)",
+                    "ch. 1 p. 7: months from new moon to new moon, a month with no sankranti adhika and one with two kshaya (Bhaskara's rule); the root's amanta month and adhika rule",
+                ),
+            ),
+            Citation::new(
+                "calendars.eras",
+                Source::new(
+                    "V. B. Ketkar, Ketakī Grahagaṇitam (Poona, 1899)",
+                    "madhyama v. 1: the Shalivahana Shaka, elapsed, from Chaitra shukla 1, which the root's eras already count; whether today's heirs also print the Vikram year is C2186",
+                ),
+            ),
+            Citation::new(
+                "calendars.samvatsara",
+                Source::new(
+                    "the Maharashtra almanacs in Ketkar's tradition",
+                    "the sixty years named by the Shaka year in order, Chaitradi, the cycle of the Deccan's luni-solar almanacs; to confirm on a printed Ketaki page, C2186",
+                ),
+            ),
+            Citation::new(
+                "day.day_boundary",
+                Source::new(
+                    "V. B. Ketkar, Jyotirgaṇitam, 2nd ed. (Poona, 1937)",
+                    "ch. 1 pp. 7–8: the tithi, nakshatra and yoga current at sunrise are written for the day",
+                ),
+            ),
+        ],
+        mark: Mark::Traditional,
+    }
+}
+
+/// The Tilak panchang's zodiac: Ketaki's conventions with the origin at
+/// the yogatara of Revati, ζ Piscium, held at 0° (`03-design/ketaki.md` §3,
+/// C2183, C2184).
+///
+/// This is not Ketaki. Ketkar's first edition of *Jyotirgaṇitam* (1898)
+/// printed an 18° panchang type beside the 22° one: 18°10′25″ in Shaka
+/// 1800 is ζ Piscium's own tropical longitude then. His note of 1928
+/// dropped it (*Jyotirgaṇitam*, 1937, pp. (21)–(22)); the Sangli
+/// conference took the Revati yogatara as the origin with Tilak's
+/// consent, and the Tilak panchang of Pune and Nagpur follows it. The two
+/// origins stand 3°58′ apart, so the two schools' sankrantis fall about
+/// four days apart. The star is held as an anchored ayanamsha, which
+/// meets the Nagpur Tilak Panchang's 19°13′51″ for 1954 within 24″, until
+/// Daftari's *Karaṇakalpalatā*, the method it names, gives a rule
+/// (C2184).
+fn tilak_revati() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.ayanamsha = Some(AyanamshaChoice::Anchored {
+        star: Star::Revati,
+        longitude_deg: 0.0,
+    });
+    Profile {
+        id: ProfileId::new("tilak-revati"),
+        version: 1,
+        base: Some(ProfileId::new("ketaki")),
+        patch,
+        sources: vec![Citation::new(
+            "frame.ayanamsha",
+            Source::new(
+                "Mahārāṣṭrīya pañcāṅgaikya maṇḍaḷa, pratham adhiveśanācā vṛttānta (Pune, 1926); Report of the Calendar Reform Committee (New Delhi, 1955)",
+                "pp. 1–3, 8: the Sangli resolution takes the Revati yogatara as the zodiac's origin, and the Zeta (Tilak) panchang is one of the four parties; Annexure VI: the Nagpur Tilak Panchang prints 19°13′51″ for Shaka 1875–76, ζ Piscium at 0° within 24″; docs/01-research/ketaki.md §2.3, C2183, C2184",
+            ),
+        )],
+        mark: Mark::Traditional,
+    }
+}
+
 /// Every system's year: 365.25 days, but releasing's and the decennials'
 /// 360, the year Valens distributes in (*Anthologies* IV.9 and VI.5,
 /// `03-design/hellenistic-time-lords.md`, `hellenistic-decennials.md`), and
@@ -2004,6 +2120,8 @@ impl Profile {
             "surya-siddhanta" => Some(surya_siddhanta()),
             "mithila-makaranda" => Some(mithila_makaranda()),
             "tamil-vakya" => Some(tamil_vakya()),
+            "ketaki" => Some(ketaki()),
+            "tilak-revati" => Some(tilak_revati()),
             "kp-default" => Some(kp_default()),
             "western-tropical-default" => Some(western_tropical_default()),
             "conformance-baseline" => Some(conformance_baseline()),

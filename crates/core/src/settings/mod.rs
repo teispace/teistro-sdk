@@ -3403,6 +3403,76 @@ mod tests {
         );
     }
 
+    /// T6 of `03-design/ketaki.md` §9: the Ketaki profile and its Tilak
+    /// sibling resolve without a warning, round-trip, cite every knob the
+    /// plan's §3 names, and hash to the values pinned here, which move only
+    /// on purpose.
+    #[test]
+    fn the_ketaki_profiles_resolve_cite_and_hash_as_pinned() {
+        let resolve = |id: &str| {
+            shipped(id)
+                .resolve(&SettingsPatch::default())
+                .unwrap_or_else(|e| panic!("{id}: {e}"))
+        };
+        let ketaki = resolve("ketaki");
+        assert!(ketaki.warnings.is_empty(), "{:?}", ketaki.warnings);
+        let frame = &ketaki.settings.frame;
+        assert_eq!(frame.ayanamsha, Ayanamsha::Ketaki.into());
+        // The root's conventions stand: the texts' own.
+        let root = root();
+        assert_eq!(frame.ayanamsha_basis, root.frame.ayanamsha_basis);
+        assert_eq!((frame.node, frame.centre), (Node::Mean, Centre::Geocentric));
+        assert_eq!(ketaki.settings.calendars.lunar_month, LunarMonth::Amanta);
+        assert!(ketaki.settings.calendars.eras.contains(&Era::Shaka));
+        assert_eq!(
+            ketaki.settings.calendars.samvatsara,
+            SamvatsaraCount::Chandramana
+        );
+        assert_eq!(ketaki.settings.day.day_boundary, DayBoundary::Sunrise);
+        for knob in [
+            "frame.ayanamsha",
+            "frame.ayanamsha_basis",
+            "calendars.lunar_month",
+            "calendars.eras",
+            "calendars.samvatsara",
+            "day.day_boundary",
+        ] {
+            assert!(cites(&shipped("ketaki"), knob), "ketaki cites {knob}");
+        }
+        assert_eq!(shipped("ketaki").mark, Mark::Traditional);
+        let tilak = resolve("tilak-revati");
+        assert!(tilak.warnings.is_empty(), "{:?}", tilak.warnings);
+        assert_eq!(
+            tilak.settings.frame.ayanamsha,
+            AyanamshaChoice::Anchored {
+                star: crate::catalogue::Star::Revati,
+                longitude_deg: 0.0,
+            }
+        );
+        // Everything else is Ketaki's.
+        let mut as_ketaki = tilak.settings.clone();
+        as_ketaki.frame.ayanamsha = Ayanamsha::Ketaki.into();
+        assert_eq!(as_ketaki, ketaki.settings);
+        assert!(cites(&shipped("tilak-revati"), "frame.ayanamsha"));
+        for resolved in [&ketaki, &tilak] {
+            let json = resolved.settings.canonical_json();
+            let back = Settings::from_json(&json).unwrap_or_else(|e| panic!("{e}"));
+            assert_eq!(back.settings, resolved.settings);
+        }
+        assert_eq!(
+            [
+                ketaki.settings.hash().to_string(),
+                tilak.settings.hash().to_string()
+            ],
+            [KETAKI_HASH, TILAK_REVATI_HASH]
+        );
+    }
+
+    /// The pinned hashes of the two profiles (T6).
+    const KETAKI_HASH: &str = "0ab6e4fd00655cb03ac0a5fdf1c88951fcaa55095a36037604ddcf35a6b94bda";
+    const TILAK_REVATI_HASH: &str =
+        "953264da3fdcc6966d753006c48d63e3117a698b0e8fc6b152e9ecd5df172e3f";
+
     #[test]
     fn profiles_inherit_and_are_listed() {
         for id in SHIPPED_PROFILES {

@@ -163,8 +163,11 @@ above Ketaki. Ketaki's zero year, 22°08′33″ divided by 50.2286″, is 1587 
 which is **AD 291**. That is the year [IFC] (§162, §200) and [Mercier] (p. 4) name.
 
 **The effect of one arcminute.** The Sun moves about 59′ a day, so a sankranti under
-Ketaki falls about 24 minutes after Lahiri's. A nakshatra or yoga end, where the Moon
-moves 13° a day, falls 1.5 to 2 minutes later. Tithis do not move. An adhika masa turns
+Ketaki falls about 24 minutes before Lahiri's: the smaller ayanamsha makes every sidereal
+longitude about one minute greater, so the Sun reaches a sign's start sooner (measured
+through the SDK in phase K1: 24.7 minutes before Lahiri's Mesha sankranti of April 2026,
+`crates/sdk/tests/ketaki.rs`). A nakshatra or yoga end, where the Moon moves 13° a day,
+falls 1.5 to 2 minutes earlier. Tithis do not move. An adhika masa turns
 on a sankranti and a new moon falling within 24 minutes of each other. On a rough
 estimate (twelve sankrantis, a 48-minute window in a 29.5-day month), that happens in
 about one year in seventy. To measure (C2187).

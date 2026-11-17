@@ -400,7 +400,7 @@ pub fn house_system(name: &str) -> Option<HouseSystem> {
         .find(|system| system.key().to_ascii_lowercase().replace('_', "-") == name)
 }
 
-/// The 47 catalogued ayanamshas by the keys the application stores them
+/// The 47 Swiss-mode ayanamshas by the keys the application stores them
 /// under, in a chart's settings and a user's preferences
 /// (`03-design/compat-shim.md` §8), and one more: `suryasiddhanta`, an
 /// older spelling of `surya-siddhanta` its per-chart rows still hold. Each
@@ -490,7 +490,7 @@ pub fn ayanamsha(stored: &Stored) -> Result<Ayanamsha, &'static str> {
     match stored {
         Stored::Number(mode) => Ayanamsha::ALL
             .into_iter()
-            .find(|member| i64::from(member.attributes().swiss_mode) == *mode)
+            .find(|member| member.attributes().swiss_mode.map(i64::from) == Some(*mode))
             .ok_or("no catalogued ayanamsha has this `swiss_mode`"),
         Stored::Text(key) => AYANAMSHA_KEYS
             .iter()

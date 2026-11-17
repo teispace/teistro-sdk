@@ -2482,6 +2482,11 @@
     "LAHIRI_ICRC": {
       "name": "Lahiri ICRC",
       "prose": "Lahiri ICRC"
+    },
+    "KETAKI": {
+      "name": "Ketaki (Ketkar's Chitrapaksha)",
+      "prose": "Ketaki (Ketkar's Chitrapaksha)",
+      "iast": "Ketakī"
     }
   },
   "direction": {
