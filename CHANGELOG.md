@@ -163,6 +163,33 @@ VS 2083 and 2084 for want of the Durva ashtami's rule. Carried, that rule answer
 on their pages. A request's `only` takes `keys`, which keeps rules by key; the narrowing sets
 it. An anniversary now stands under a filter that asks nothing of the meta.
 
+**Nepal's festival names and every day of its multi-day festivals (SR-145, phase 1).**
+**Numbers:** no day of an existing rule moves. `NEPAL_PANCHANGA` gains 12 rules, each
+held to the committee's VS 2082 and 2083 print where it prints them (17 new rows in
+`festival-measured.md` §6, every one agreeing under the committee's sky): `GAI_PUJA`
+(*Dharmasindhu* p. 78's 18 ghatis past sunrise; 22 October 2025, 9 November 2026),
+`GORU_PUJA`, `PRAUSHTHAPADI_SHRADDHA` (aparahna), `KALARATRI`, `AKASHDEEPADAN_ARAMBHA`,
+`YAMADEEPADAN`, `SUKHRATRI`, `KIJA_PUJA`, `SORHA_SHRADDHA_SAMAPTI`, and Chhath's
+`CHHATH_NAHAY_KHAY`, `CHHATH_KHARNA` and `CHHATH_SECOND_DAY` counted from `CHHATH`
+(13 to 16 November 2026), which the print does not carry. Kartik 22's order moves:
+Lakshmi Puja before Kukur Tihar, the maintainer's over the print's (C2303); Kartik 23,
+2083 is no longer a gap of Tihar, and Gai puja, a day of the notice's Tihar holiday, is
+`NATIONAL` and leads it. The request hash of `NEPAL_PANCHANGA` and `NEPAL` moves, their
+rules gaining `meta.names`.
+- **New:** `FestivalMeta.names` (`FestivalNames { region, lead, aliases, rank, source }`):
+  what a region calls a festival, each name a key the five locales write; Nepal's lead
+  with भाइटीका (`BHAI_TIKA`) for `YAMA_DWITIYA`, घटस्थापना for `NAVARATRA_ARAMBHA`, and
+  nine rules carry other names. `rank` replaces `printed_order`, which is removed;
+  `FestivalMeta::rank` orders a day. A `meta` patch replaces the names, and a request
+  refuses a name that is no key at `…meta.names[n]`.
+- **New:** groups `SORHA_SHRADDHA`, `CHHATH` and `TEEJ` in `NEPAL_PANCHANGA`; `DASHAIN`
+  gains Bilva nimantran and Kalaratri, `TIHAR` Narak chaturdashi, Sukhratri, Gai, Goru,
+  Hali Tihar and Kija puja. Dashain's 2nd to 4th and 11th to 14th stay unnamed: no Nepal
+  source names them (C2305).
+- **New:** `Observance.beginsAfterSunrise`, a day whose tithi begins after its sunrise
+  (the consumer's `*`, C2308 open), carried by Node, Python, Dart and Java.
+- 21 festival names in all five locales. Design in `03-design/nepal-festival-names.md`,
+  cruxes C2300 to C2311; C1661, C2110 and C2111 superseded.
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each

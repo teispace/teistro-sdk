@@ -39,7 +39,7 @@ const SPANS: [(Day, Day); 8] = [
 
 /// What the committee printed for the fitted rules: the Vikram year, the
 /// rule, the Gregorian day, and the page and the words it prints.
-static PRINTED: [(i32, &str, Day, &str); 617] = [
+static PRINTED: [(i32, &str, Day, &str); 634] = [
     (
         2082,
         "VARUTHINI_EKADASHI",
@@ -1962,6 +1962,48 @@ static PRINTED: [(i32, &str, Day, &str); 617] = [
     ),
     (2082, "DISHI_CHARHE", (2025, 12, 18), "p. 18: (दिशीचह्रेपूजा)"),
     (2083, "DISHI_CHARHE", (2027, 1, 6), "p. 20: (दिशीचह्रेपूजा)"),
+    (
+        2082,
+        "PRAUSHTHAPADI_SHRADDHA",
+        (2025, 9, 7),
+        "p. 11: प्रौष्ठपदीश्राद्ध",
+    ),
+    (
+        2083,
+        "PRAUSHTHAPADI_SHRADDHA",
+        (2026, 9, 26),
+        "p. 13: प्रौष्ठपदी श्राद्ध",
+    ),
+    (
+        2083,
+        "SORHA_SHRADDHA_SAMAPTI",
+        (2026, 10, 10),
+        "p. 14: सोह्रश्राद्ध समाप्ति",
+    ),
+    (2082, "KALARATRI", (2025, 9, 30), "p. 13: कालरात्रि"),
+    (2083, "KALARATRI", (2026, 10, 18), "p. 15: कालरात्रि"),
+    (
+        2082,
+        "AKASHDEEPADAN_ARAMBHA",
+        (2025, 10, 7),
+        "p. 13: आकाशदीपदानारम्भ",
+    ),
+    (
+        2083,
+        "AKASHDEEPADAN_ARAMBHA",
+        (2026, 10, 26),
+        "p. 15: आकाशदीपदानारम्भ",
+    ),
+    (2082, "YAMADEEPADAN", (2025, 10, 18), "p. 14: यमदीपदान"),
+    (2083, "YAMADEEPADAN", (2026, 11, 6), "p. 16: यमदीपदान"),
+    (2082, "SUKHRATRI", (2025, 10, 20), "p. 14: सुखरात्रि"),
+    (2083, "SUKHRATRI", (2026, 11, 8), "p. 16: सुखरात्रि"),
+    (2082, "GAI_PUJA", (2025, 10, 22), "p. 15: गाईपूजा"),
+    (2083, "GAI_PUJA", (2026, 11, 9), "p. 16: गाईपूजा"),
+    (2082, "GORU_PUJA", (2025, 10, 22), "p. 15: गोरुपूजा"),
+    (2083, "GORU_PUJA", (2026, 11, 10), "p. 17: गोरुपूजा"),
+    (2082, "KIJA_PUJA", (2025, 10, 23), "p. 15: (किजापूजा)"),
+    (2083, "KIJA_PUJA", (2026, 11, 11), "p. 17: (किजापूजा)"),
 ];
 
 /// Why the pack over the committee's sky parts from the print, per (year,

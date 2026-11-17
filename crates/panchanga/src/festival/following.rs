@@ -159,6 +159,8 @@ pub fn following(
                     parana: Vec::new(),
                     moonrise: None,
                     sait: None,
+                    // A day of its own is not the tithi's day.
+                    begins_after_sunrise: rule.days == 0 && observance.begins_after_sunrise,
                     ..observance.clone()
                 }),
                 None => answer.unjudged.push(Unjudged {

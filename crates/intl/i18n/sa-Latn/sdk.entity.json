@@ -5557,6 +5557,104 @@
     "BHOTO_JATRA": {
       "name": "Bhoṭojātrā",
       "prose": "Bhoṭojātrā"
+    },
+    "GAI_PUJA": {
+      "name": "Gopūjā",
+      "prose": "Gopūjā",
+      "iast": "Gopūjā"
+    },
+    "GORU_PUJA": {
+      "name": "Vṛṣabhapūjā",
+      "prose": "Vṛṣabhapūjā",
+      "iast": "Vṛṣabhapūjā"
+    },
+    "PRAUSHTHAPADI_SHRADDHA": {
+      "name": "Prauṣṭhapadīśrāddha",
+      "prose": "Prauṣṭhapadīśrāddha",
+      "iast": "Prauṣṭhapadī Śrāddha"
+    },
+    "KALARATRI": {
+      "name": "Kālarātri",
+      "prose": "Kālarātri",
+      "iast": "Kālarātri"
+    },
+    "SUKHRATRI": {
+      "name": "Sukharātri",
+      "prose": "Sukharātri",
+      "iast": "Sukharātri"
+    },
+    "KIJA_PUJA": {
+      "name": "Kijāpūjā",
+      "prose": "Kijāpūjā"
+    },
+    "AKASHDEEPADAN_ARAMBHA": {
+      "name": "Ākāśadīpadānārambha",
+      "prose": "Ākāśadīpadānārambha",
+      "iast": "Ākāśadīpadāna Ārambha"
+    },
+    "YAMADEEPADAN": {
+      "name": "Yamadīpadāna",
+      "prose": "Yamadīpadāna",
+      "iast": "Yamadīpadāna"
+    },
+    "SORHA_SHRADDHA_SAMAPTI": {
+      "name": "Ṣoḍaśaśrāddhasamāpti",
+      "prose": "Ṣoḍaśaśrāddhasamāpti",
+      "iast": "Ṣoḍaśa Śrāddha Samāpti"
+    },
+    "CHHATH_NAHAY_KHAY": {
+      "name": "Nahāya Khāya",
+      "prose": "Nahāya Khāya"
+    },
+    "BHAI_TIKA": {
+      "name": "Bhrātṛdvitīyā",
+      "prose": "Bhrātṛdvitīyā"
+    },
+    "GHATASTHAPANA": {
+      "name": "Ghaṭasthāpanā",
+      "prose": "Ghaṭasthāpanā",
+      "iast": "Ghaṭasthāpanā"
+    },
+    "DEEPAMALIKA": {
+      "name": "Dīpamālikā",
+      "prose": "Dīpamālikā",
+      "iast": "Dīpamālikā"
+    },
+    "KAKABALI": {
+      "name": "Kākabali",
+      "prose": "Kākabali",
+      "iast": "Kākabali"
+    },
+    "DASHAIN_TIKA": {
+      "name": "Daśaiṃ Ṭīkā",
+      "prose": "Daśaiṃ Ṭīkā"
+    },
+    "PITRI_VISARJAN": {
+      "name": "Pitṛvisarjana",
+      "prose": "Pitṛvisarjana",
+      "iast": "Pitṛvisarjana"
+    },
+    "TEEJ": {
+      "name": "Tīja",
+      "prose": "Tīja"
+    },
+    "SANDHYA_ARGHYA": {
+      "name": "Sandhyārghya",
+      "prose": "Sandhyārghya",
+      "iast": "Sandhyā Arghya"
+    },
+    "DALA_PUJA": {
+      "name": "Ḍālāpūjā",
+      "prose": "Ḍālāpūjā"
+    },
+    "USHA_ARGHYA": {
+      "name": "Uṣārghya",
+      "prose": "Uṣārghya",
+      "iast": "Uṣā Arghya"
+    },
+    "CHHATH_SAMAPAN": {
+      "name": "Pratihāraṣaṣṭhīsamāpana",
+      "prose": "Pratihāraṣaṣṭhīsamāpana"
     }
   },
   "year_office": {

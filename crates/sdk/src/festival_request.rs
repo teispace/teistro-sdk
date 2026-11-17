@@ -772,7 +772,8 @@ impl FestivalRequest {
     }
 
     /// Where a key stands in a day's list by significance: its tier,
-    /// then its place in Nepal's national panchanga's print, then its
+    /// then its rank among its region's names ([`FestivalMeta::rank`]),
+    /// then its
     /// rule's place in the request (`03-design/festival-metadata.md` §7).
     /// A key no rule has (an anniversary's) is `MINOR`, after the rules.
     pub fn day_rank(&self) -> impl Fn(&str) -> (Significance, u16, usize) + '_ {
@@ -801,10 +802,10 @@ impl FestivalRequest {
             .map(|(at, &key)| (key, at))
             .collect();
         move |key: &str| {
+            let meta = self.meta_of(key);
             (
-                self.meta_of(key)
-                    .map_or(Significance::Minor, FestivalMeta::tier),
-                teistro_panchanga::festival::printed_order(key).unwrap_or(u16::MAX),
+                meta.map_or(Significance::Minor, FestivalMeta::tier),
+                meta.map_or(u16::MAX, FestivalMeta::rank),
                 placed.get(key).copied().unwrap_or(usize::MAX),
             )
         }
@@ -1462,6 +1463,11 @@ impl FestivalRequest {
                 variant
                     .check()
                     .map_err(|why| why.under(&format!("{at}.meta")))?;
+            }
+            for (index, names) in meta.names.iter().enumerate() {
+                names
+                    .check()
+                    .map_err(|why| why.under(&format!("{at}.meta.names[{index}]")))?;
             }
         }
         self.check_published()?;

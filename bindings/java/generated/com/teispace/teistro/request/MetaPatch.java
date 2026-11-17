@@ -14,12 +14,13 @@ import java.util.Objects;
  * @param communities In place of its communities. Null leaves the SDK's default.
  * @param fast In place of its fast's readings. Null leaves the SDK's default.
  * @param kind In place of its kind. Null leaves the SDK's default.
+ * @param names In place of what its regions call it. Null leaves the SDK's default.
  * @param optional In place of whether it is an office's choice. Null leaves the SDK's default.
  * @param regions In place of its regions. Null leaves the SDK's default.
  * @param significance In place of its tier. Null leaves the SDK's default.
  * @param tradition In place of its tradition. Null leaves the SDK's default.
  */
-public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, Significance significance, com.teispace.teistro.Tradition tradition) implements RequestJson {
+public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, List<FestivalNames> names, Boolean optional, List<String> regions, Significance significance, com.teispace.teistro.Tradition tradition) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -30,6 +31,7 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
     public MetaPatch {
         communities = communities == null ? null : List.copyOf(communities);
         fast = fast == null ? null : List.copyOf(fast);
+        names = names == null ? null : List.copyOf(names);
         regions = regions == null ? null : List.copyOf(regions);
     }
 
@@ -39,7 +41,7 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
      *
      */
     public MetaPatch() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -57,6 +59,7 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
         private List<String> communities;
         private List<VrataFast> fast;
         private com.teispace.teistro.FestivalKind kind;
+        private List<FestivalNames> names;
         private Boolean optional;
         private List<String> regions;
         private Significance significance;
@@ -94,6 +97,17 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
          */
         public Builder kind(com.teispace.teistro.FestivalKind kind) {
             this.kind = kind;
+            return this;
+        }
+
+        /**
+         * Sets {@code names}.
+         *
+         * @param names In place of what its regions call it. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder names(List<FestivalNames> names) {
+            this.names = names;
             return this;
         }
 
@@ -148,7 +162,7 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
          * @throws NullPointerException naming a required field left unset
          */
         public MetaPatch build() {
-            return new MetaPatch(communities, fast, kind, optional, regions, significance, tradition);
+            return new MetaPatch(communities, fast, kind, names, optional, regions, significance, tradition);
         }
     }
 
@@ -165,6 +179,7 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
             Read.orNull(json.get("communities"), present -> Read.list(present, "MetaPatch.communities", item0 -> Read.text(item0, "MetaPatch.communities"))),
             Read.orNull(json.get("fast"), present -> Read.list(present, "MetaPatch.fast", item0 -> VrataFast.of(item0))),
             Read.orNull(json.get("kind"), present -> Read.member(present, "MetaPatch.kind", com.teispace.teistro.FestivalKind::byKey)),
+            Read.orNull(json.get("names"), present -> Read.list(present, "MetaPatch.names", item0 -> FestivalNames.of(item0))),
             Read.orNull(json.get("optional"), present -> Read.bool(present, "MetaPatch.optional")),
             Read.orNull(json.get("regions"), present -> Read.list(present, "MetaPatch.regions", item0 -> Read.text(item0, "MetaPatch.regions"))),
             Read.orNull(json.get("significance"), present -> Read.member(present, "MetaPatch.significance", Significance::byKey)),
@@ -182,6 +197,9 @@ public record MetaPatch(List<String> communities, List<VrataFast> fast, com.teis
         }
         if (kind != null) {
             json.put("kind", kind.fullKey());
+        }
+        if (names != null) {
+            json.put("names", names.stream().map(item0 -> item0.toJson()).toList());
         }
         if (optional != null) {
             json.put("optional", optional);

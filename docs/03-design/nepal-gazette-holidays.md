@@ -98,7 +98,8 @@ first the notice's: a key a clause gives the whole country a holiday for is
 kept with offices open, give none. The Dashain and Tihar holidays are
 granted as those festivals' days, so a day of the festival the pack keys
 apart (in its gazetted grouping) counts when its VS 2083 day lies inside
-the span: Mahashtami, Mahanavami, Kukur Tihar and Govardhan puja do; Kag
+the span: Mahashtami, Mahanavami, Kukur Tihar, the cows' worship (Kartik
+23), and Govardhan and the oxen's worship (Kartik 24) do (C2301); Kag
 Tihar, the day before Tihar's span, does not; Mha puja is a Newar festival
 in the pack's grouping and is not counted (`HolidaySet::festival_days`,
 each day held to the pack's reckoning by the days test). A key the notice

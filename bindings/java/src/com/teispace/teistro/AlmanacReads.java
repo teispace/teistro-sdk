@@ -334,7 +334,8 @@ final class AlmanacReads {
                 published(o),
                 o.get("sait") == null ? null : sait(Reads.object(o, "sait")),
                 o.get("moonrise") == null ? null : moonrise(Reads.object(o, "moonrise")),
-                o.get("malamasa") == null ? null : malamasa(Reads.object(o, "malamasa")));
+                o.get("malamasa") == null ? null : malamasa(Reads.object(o, "malamasa")),
+                o.get("beginsAfterSunrise") != null && Reads.flag(o, "beginsAfterSunrise"));
     }
 
     /** The month rule an observance carries, as a festival answer writes it. */

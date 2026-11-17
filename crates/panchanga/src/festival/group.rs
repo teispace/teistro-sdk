@@ -343,14 +343,16 @@ const DASHAIN: Shipped = (
     "DASHAIN",
     &[
         "NAVARATRA_ARAMBHA",
+        "BILVA_NIMANTRAN",
         "PHULPATI",
         "MAHA_ASHTAMI",
+        "KALARATRI",
         "MAHA_NAVAMI",
         "VIJAYA_DASHAMI",
         "KOJAGRAT_PURNIMA",
     ],
     "VIJAYA_DASHAMI",
-    "Dharmasindhu p. 65 (the Navaratra begun on Ashvina's bright 1st), p. 69 (the Mahanavami), pp. 70-71 (the visarjana and the Vijaya Dashami) and p. 74 (the Kojagara on the full moon); the national panchanga, VS 2082 p. 13 and VS 2083 p. 15, prints each with the Saptami's फूलपाती and the Mahashtami; the Ministry of Home Affairs' VS 2083 notice gives Ghatasthapana and \"दशैं\" from Phulpati to the 12th; the tika is given from the Dashami to the full moon, where Dashain ends (C2101)",
+    "Dharmasindhu p. 65 (the Navaratra begun on Ashvina's bright 1st), p. 69 (the Mahanavami), pp. 70-71 (the visarjana and the Vijaya Dashami) and p. 74 (the Kojagara on the full moon); the national panchanga, VS 2082 p. 13 and VS 2083 p. 15, prints each with the 6th's बिल्वनिमन्त्रण, the Saptami's फूलपाती and the Mahashtami's कालरात्रि; the 2nd to the 4th and the 11th to the 14th it names by no rite of Dashain's, so the group holds no day for them (C2305); the Ministry of Home Affairs' VS 2083 notice gives Ghatasthapana and \"दशैं\" from Phulpati to the 12th; the tika is given from the Dashami to the full moon, where Dashain ends (C2101)",
 );
 
 /// Tihar, the yamapanchaka as Nepal keeps it.
@@ -358,14 +360,71 @@ const TIHAR: Shipped = (
     "TIHAR",
     &[
         "KAG_TIHAR",
-        "KUKUR_TIHAR",
         "LAKSHMI_PUJA",
+        "KUKUR_TIHAR",
+        "NARAK_CHATURDASHI",
+        "SUKHRATRI",
+        "GAI_PUJA",
+        "GORU_PUJA",
         "GOVARDHAN_PUJA",
         "MHA_PUJA",
+        "HALI_TIHAR",
         "YAMA_DWITIYA",
+        "KIJA_PUJA",
     ],
     "LAKSHMI_PUJA",
-    "Dharmasindhu p. 77 (Lakshmi's worship on the new moon), p. 78 (the Bali and Govardhan puja) and p. 79 (the Yama dwitiya), the days from Ashvina's dark 13th to Kartika's bright 2nd Nepal keeps as the yamapanchaka (C613); the national panchanga, VS 2082 pp. 14-15 and VS 2083 pp. 16-17, prints the crows' and dogs' days, Lakshmi puja, Govardhan and Mha puja and Bhai Tika; the Ministry of Home Affairs' VS 2083 notice gives \"तिहार\" from Lakshmi puja to the day after Bhai Tika; Mha puja is the Newar community's (its meta), Dhanteras outside the five (C2102, C2103)",
+    "Dharmasindhu p. 77 (Lakshmi's worship on the new moon), p. 78 (the Bali and Govardhan puja) and p. 79 (the Yama dwitiya), the days from Ashvina's dark 13th to Kartika's bright 2nd Nepal keeps as the yamapanchaka (C613); the national panchanga, VS 2082 pp. 14-15 and VS 2083 pp. 16-17, prints the crows' and dogs' days, Narak chaturdashi, Lakshmi puja and Sukhratri, the cows' worship (C2301), Govardhan, the oxen's worship, Mha puja and Hali Tihar, and Bhai Tika with the Newars' Kija puja; the Ministry of Home Affairs' VS 2083 notice gives \"तिहार\" from Lakshmi puja to the day after Bhai Tika; Mha puja is the Newar community's (its meta), Dhanteras outside the five (C2102, C2103)",
+);
+
+/// The sixteen shraddhas, from the full moon's to the new moon's, as
+/// Nepal's national panchanga prints them.
+const SORHA_SHRADDHA: Shipped = (
+    "SORHA_SHRADDHA",
+    &[
+        "PRAUSHTHAPADI_SHRADDHA",
+        "SORHA_SHRADDHA_ARAMBHA",
+        "PRATIPADA_SHRADDHA",
+        "DWITIYA_SHRADDHA",
+        "TRITIYA_SHRADDHA",
+        "CHATURTHI_SHRADDHA",
+        "PANCHAMI_SHRADDHA",
+        "SHASHTHI_SHRADDHA",
+        "SAPTAMI_SHRADDHA",
+        "ASHTAMI_SHRADDHA",
+        "NAVAMI_SHRADDHA",
+        "DASHAMI_SHRADDHA",
+        "EKADASHI_SHRADDHA",
+        "DWADASHI_SHRADDHA",
+        "TRAYODASHI_SHRADDHA",
+        "CHATURDASHI_SHRADDHA",
+        "MAGHA_SHRADDHA",
+        "AMAVASYA_SHRADDHA",
+        "SORHA_SHRADDHA_SAMAPTI",
+    ],
+    "AMAVASYA_SHRADDHA",
+    "the national panchanga, VS 2082 pp. 11-12 and VS 2083 pp. 13-14: प्रौष्ठपदी श्राद्ध on Bhadrapada's full moon, सोह्रश्राद्ध सुरु with the 1st's, a shraddha for each tithi of the dark half and मघाश्राद्ध on the day the Moon is in Magha, to औंसीश्राद्ध and पितृविसर्जन on the new moon, VS 2083 adding सोह्रश्राद्ध समाप्ति: sixteen with the full moon's (C2302)",
+);
+
+/// Chhath as Nepal keeps it, Nahay-Khay to the morning arghya.
+const CHHATH_NEPAL: Shipped = (
+    "CHHATH",
+    &[
+        "CHHATH_NAHAY_KHAY",
+        "CHHATH_KHARNA",
+        "CHHATH",
+        "CHHATH_SECOND_DAY",
+    ],
+    "CHHATH",
+    "the national panchanga, VS 2082 p. 15 and VS 2083 p. 17: छठपर्व on Kartika's bright 6th, the Ministry of Home Affairs' VS 2083 notice gives the day; Bihar's notification, Schedule-2, Kharna the day before and the morning arghya the day after, and Nahay-Khay the day before Kharna as the four days are kept (C2306, which supersedes C2110)",
+);
+
+/// Teej as Nepal keeps it: the feast the day before, the fast, and the
+/// Rishi panchami that closes it.
+const TEEJ: Shipped = (
+    "TEEJ",
+    &["DAR_KHANE_DIN", "HARITALIKA", "RISHI_PANCHAMI"],
+    "HARITALIKA",
+    "the national panchanga, VS 2082 p. 11 and VS 2083 p. 13: दरखाने दिन, हरितालिकाव्रत (तीज) and ऋषिपञ्चमीव्रत, the 2nd, 3rd and 5th of Bhadrapada's bright half; VS 2082's Ganesh chaturthi between the last two is a gap of the span (C2307)",
 );
 
 /// The Durga Puja as the eastern states' notices give it, from its
@@ -378,18 +437,19 @@ const DURGA_PUJA: Shipped = (
 );
 
 impl FestivalGroup {
-    /// The groups of Nepal's national panchanga: Dashain and Tihar
+    /// The groups of Nepal's national panchanga: the sixteen shraddhas,
+    /// Dashain, Tihar, Chhath and Teej, in the year's order
     /// (`festival-groups.md` §2).
     ///
     /// ```
     /// use teistro_panchanga::festival::FestivalGroup;
     ///
     /// let keys: Vec<String> = FestivalGroup::nepal_panchanga().into_iter().map(|g| g.key).collect();
-    /// assert_eq!(keys, ["DASHAIN", "TIHAR"]);
+    /// assert_eq!(keys, ["SORHA_SHRADDHA", "DASHAIN", "TIHAR", "CHHATH", "TEEJ"]);
     /// ```
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FestivalGroup> {
-        shipped(&[DASHAIN, TIHAR])
+        shipped(&[SORHA_SHRADDHA, DASHAIN, TIHAR, CHHATH_NEPAL, TEEJ])
     }
 
     /// Bihar's groups: the Durga Puja the notification names, the

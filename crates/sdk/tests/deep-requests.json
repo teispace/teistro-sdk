@@ -321,6 +321,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -376,6 +387,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -463,6 +485,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -556,6 +589,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -604,6 +648,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -701,6 +756,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -810,6 +876,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -865,6 +942,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -952,6 +1040,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1045,6 +1144,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1093,6 +1203,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1190,6 +1311,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1562,6 +1694,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -1617,6 +1760,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -1704,6 +1858,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1797,6 +1962,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1845,6 +2021,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -1942,6 +2129,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -2297,6 +2495,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -2352,6 +2561,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -2439,6 +2659,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -2532,6 +2763,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -2580,6 +2822,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -2677,6 +2930,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -2991,6 +3255,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -3046,6 +3321,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -3133,6 +3419,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -3226,6 +3523,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -3274,6 +3582,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -3371,6 +3690,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -3460,6 +3790,17 @@
                   }
                 ],
                 "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                "names": [
+                  {
+                    "aliases": [
+                      "x"
+                    ],
+                    "lead": "x",
+                    "rank": 1,
+                    "region": "x",
+                    "source": "x"
+                  }
+                ],
                 "optional": true,
                 "regions": [
                   "x"
@@ -3515,6 +3856,17 @@
                         }
                       ],
                       "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                      "names": [
+                        {
+                          "aliases": [
+                            "x"
+                          ],
+                          "lead": "x",
+                          "rank": 1,
+                          "region": "x",
+                          "source": "x"
+                        }
+                      ],
                       "optional": true,
                       "regions": [
                         "x"
@@ -3602,6 +3954,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -3695,6 +4058,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -3743,6 +4117,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -3840,6 +4225,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -3915,6 +4311,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -3970,6 +4377,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -4057,6 +4475,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4150,6 +4579,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4198,6 +4638,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4295,6 +4746,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4441,6 +4903,17 @@
               }
             ],
             "kind": "festival_kind.RELIGIOUS_CULTURAL",
+            "names": [
+              {
+                "aliases": [
+                  "x"
+                ],
+                "lead": "x",
+                "rank": 1,
+                "region": "x",
+                "source": "x"
+              }
+            ],
             "optional": true,
             "regions": [
               "x"
@@ -4496,6 +4969,17 @@
                     }
                   ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "names": [
+                    {
+                      "aliases": [
+                        "x"
+                      ],
+                      "lead": "x",
+                      "rank": 1,
+                      "region": "x",
+                      "source": "x"
+                    }
+                  ],
                   "optional": true,
                   "regions": [
                     "x"
@@ -4583,6 +5067,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4676,6 +5171,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4724,6 +5230,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
@@ -4821,6 +5338,17 @@
                 }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "names": [
+                {
+                  "aliases": [
+                    "x"
+                  ],
+                  "lead": "x",
+                  "rank": 1,
+                  "region": "x",
+                  "source": "x"
+                }
+              ],
               "optional": true,
               "regions": [
                 "x"
