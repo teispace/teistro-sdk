@@ -49,9 +49,10 @@ pub struct SeFiles {
 }
 
 impl SeFiles {
-    /// The ayanamshas the directory supports: every catalogued one whose
-    /// definition is a formula, and the star-anchored and galactic ones
-    /// only with the star catalogue.
+    /// The ayanamshas the directory supports: every catalogued one the
+    /// engines have a sidereal mode for whose definition is a formula, and
+    /// the star-anchored and galactic ones only with the star catalogue. A
+    /// member without a `swiss_mode` is the SDK's alone.
     ///
     /// ```
     /// use teistro_core::catalogue::Ayanamsha;
@@ -66,12 +67,15 @@ impl SeFiles {
     /// assert!(!offered.contains(&Ayanamsha::TrueChitra));
     /// let with_stars = SeFiles { star_catalogue: true, ..files };
     /// assert!(with_stars.ayanamshas().contains(&Ayanamsha::TrueChitra));
+    /// // Ketaki has no sidereal mode in the engines: the SDK computes it.
+    /// assert!(!with_stars.ayanamshas().contains(&Ayanamsha::Ketaki));
     /// ```
     #[must_use]
     pub fn ayanamshas(&self) -> Vec<Ayanamsha> {
         Ayanamsha::all()
             .iter()
             .copied()
+            .filter(|a| a.attributes().swiss_mode.is_some())
             .filter(|a| self.star_catalogue || !needs_star_catalogue(*a))
             .collect()
     }
@@ -457,7 +461,9 @@ mod tests {
             ..files
         };
         assert!(with_stars.ayanamshas().contains(&Ayanamsha::TrueChitra));
-        assert_eq!(with_stars.ayanamshas().len(), Ayanamsha::all().len());
+        // Every member the engines have a mode for: all but `KETAKI`.
+        assert_eq!(with_stars.ayanamshas().len(), Ayanamsha::all().len() - 1);
+        assert!(!with_stars.ayanamshas().contains(&Ayanamsha::Ketaki));
     }
 
     /// Files carried in an engine's binary give what the same files in a

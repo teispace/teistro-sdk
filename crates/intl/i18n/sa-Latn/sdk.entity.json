@@ -2394,6 +2394,11 @@
     "LAHIRI_ICRC": {
       "name": "Lāhirī ICRC",
       "prose": "Lāhirī ICRC"
+    },
+    "KETAKI": {
+      "name": "Ketakī (citrapakṣa)",
+      "prose": "Ketakī (citrapakṣa)",
+      "iast": "Ketakī"
     }
   },
   "direction": {

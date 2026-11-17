@@ -41,6 +41,17 @@ use teistro_port_ephemeris::{
 /// Hohenkerk 2016, with the IERS table where it reaches).
 const LIBRARY_DELTA_T: DeltaTModel = DeltaTModel::StephensonMorrisonHohenkerk2016;
 
+/// The library's sidereal mode for a member it offers: a member outside the
+/// declared list, or one the library has no mode for (`KETAKI`, which the
+/// SDK alone defines), is refused, and the SDK computes it.
+fn swiss_mode(capabilities: &Capabilities, ayanamsha: Ayanamsha) -> Result<u8, ProviderError> {
+    capabilities
+        .has_ayanamsha(ayanamsha)
+        .then_some(ayanamsha.attributes().swiss_mode)
+        .flatten()
+        .ok_or_else(|| ProviderError::unsupported(format!("the {} ayanamsha", ayanamsha.key())))
+}
+
 /// Refuses conventions the library does not compute under: its own models
 /// are its defaults (Vondrák 2011, IAU 2000B, IAU 2006 bias, IERS 2010
 /// sidereal time), the SDK's standard ones, and a UT instant is carried
@@ -179,10 +190,10 @@ impl Session<'_> {
     }
 
     #[allow(unsafe_code, reason = "a C entry point; see the safety comment")]
-    fn set_sid_mode(&self, ayanamsha: Ayanamsha) {
+    fn set_sid_mode(&self, mode: u8) {
         // SAFETY: three scalars into process-wide state, under the lock. The
         // library's mode number is the catalogue's attribute.
-        unsafe { ffi::swe_set_sid_mode(i32::from(ayanamsha.attributes().swiss_mode), 0.0, 0.0) };
+        unsafe { ffi::swe_set_sid_mode(i32::from(mode), 0.0, 0.0) };
     }
 
     #[allow(unsafe_code, reason = "a C entry point; see the safety comment")]
@@ -424,7 +435,7 @@ impl EphemerisProvider for SwephProvider {
             session.set_topo(observer);
         }
         if let Zodiac::Sidereal { ayanamsha } = request.frame.zodiac {
-            session.set_sid_mode(ayanamsha);
+            session.set_sid_mode(swiss_mode(&self.capabilities, ayanamsha)?);
         }
         for (jd_index, jd) in request.jds.iter().enumerate() {
             for (body_index, body) in numbers.iter().enumerate() {
@@ -491,14 +502,9 @@ impl EphemerisProvider for SwephProvider {
         conventions: Conventions,
     ) -> Result<f64, ProviderError> {
         stated(conventions, scale)?;
-        if !self.capabilities.has_ayanamsha(ayanamsha) {
-            return Err(ProviderError::unsupported(format!(
-                "the {} ayanamsha",
-                ayanamsha.key()
-            )));
-        }
+        let mode = swiss_mode(&self.capabilities, ayanamsha)?;
         let session = Session::take();
-        session.set_sid_mode(ayanamsha);
+        session.set_sid_mode(mode);
         // The basis asked: `NONUT` for the mean value; without it the
         // library adds its own nutation in longitude, the true value.
         let flags = match basis {

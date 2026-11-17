@@ -151,10 +151,63 @@ pub enum Definition {
         /// How the anchor's place is read.
         reading: Reading,
     },
+    /// A value at an epoch moving at a constant rate a Julian year: the
+    /// author's own rule, not the precession (Ketaki, whose text adds
+    /// 50.228571″ each sidereal year). It is evaluated exactly as the
+    /// `CUSTOM` settings form is, so the same three numbers give the same
+    /// value to the bit.
+    Linear(Linear),
     /// A member the catalogue registers that this build has no definition
     /// for: refused as unsourced, never approximated.
     Unsourced,
 }
+
+/// A linear definition: the value at an epoch in TT plus a rate times the
+/// Julian years since it.
+///
+/// ```
+/// use teistro_astro::ayanamsha::{Definition, definition};
+/// use teistro_core::catalogue::Ayanamsha;
+///
+/// // Ketaki: 22°08′33″ at the Mesha sankranti of Shaka 1800.
+/// let Definition::Linear(ketaki) = definition(Ayanamsha::Ketaki) else { unreachable!() };
+/// assert_eq!((ketaki.epoch_jd_tt, ketaki.value_deg), (2_407_086.5, 22.1425));
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Linear {
+    /// The epoch, a Julian day in TT.
+    pub epoch_jd_tt: f64,
+    /// The value at the epoch, degrees.
+    pub value_deg: f64,
+    /// The rate, degrees a Julian year of 365.25 days.
+    pub rate_deg_per_year: f64,
+}
+
+impl Linear {
+    /// The value at a TT instant, degrees: what `CUSTOM` computes from the
+    /// same numbers, by the same expression.
+    fn value_deg(self, at: JulianDay<Tt>) -> f64 {
+        let years = (at.get() - self.epoch_jd_tt) / DJY;
+        normalise_deg(self.value_deg + self.rate_deg_per_year * years)
+    }
+}
+
+/// Ketaki's rule (*Ketakī Grahagaṇitam*, 1899, spashta v. 6; *Jyotirgaṇitam*,
+/// 1937, p. 7; `03-design/ketaki.md` §4.1, crux C2180): 22°08′33″ at the
+/// Mesha sankranti of Shaka 1800, 12 April 1878 (JD 2407086.5; the text
+/// names the day, not the hour, and a day moves the value by 0.14″), plus
+/// (n/70)° − (n/50)′ for n years. That is 50.228571″ a sidereal year,
+/// which the text's own sidereal year of 365 days 15 ghatis 22.9 palas
+/// (365.256361 days) makes 50.228571 × 365.25 / 365.256361 = 50.22770″, or
+/// 0.013952138°, a Julian year. Linear and continuous: the karana keeps a
+/// year's value for the whole year, the almanacs on Ketkar's method print
+/// it to the second (C2180).
+pub const KETAKI: Linear = Linear {
+    epoch_jd_tt: 2_407_086.5,
+    // 22°08′33″, exactly as the text gives it.
+    value_deg: 22.1425,
+    rate_deg_per_year: 0.013_952_138,
+};
 
 /// How an anchored definition reads its anchor's place of date.
 ///
@@ -308,6 +361,7 @@ pub const fn definition(id: Ayanamsha) -> Definition {
         Ayanamsha::LahiriVp285 => tt(1_825_235.245_851_302_8, 0.0, Fitted::Current),
         Ayanamsha::KrishnamurtiVp291 => tt(1_827_424.752_255_678, 0.0, Fitted::Current),
         Ayanamsha::LahiriIcrc => tt(2_435_553.5, 23.25 - 0.004_642_07, Fitted::Newcomb),
+        Ayanamsha::Ketaki => Definition::Linear(KETAKI),
         // A member the catalogue adds before this crate learns it.
         _ => Definition::Unsourced,
     }
@@ -541,6 +595,7 @@ pub fn mean_deg(
                 held_deg,
                 reading,
             } => anchored_value_deg(anchor, held_deg, reading, at, model),
+            Definition::Linear(linear) => Ok(linear.value_deg(at)),
             Definition::Unsourced => Err(Error::new(
                 Status::Unsupported,
                 format!(
@@ -556,8 +611,12 @@ pub fn mean_deg(
             rate_deg_per_year,
         } => {
             finite(choice)?;
-            let years = (at.get() - epoch_jd_tt) / DJY;
-            Ok(normalise_deg(value_deg + rate_deg_per_year * years))
+            let linear = Linear {
+                epoch_jd_tt: *epoch_jd_tt,
+                value_deg: *value_deg,
+                rate_deg_per_year: *rate_deg_per_year,
+            };
+            Ok(linear.value_deg(at))
         }
         AyanamshaChoice::Precessed {
             epoch_jd_tt,

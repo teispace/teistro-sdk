@@ -12,6 +12,35 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Ketaki: Ketkar's Chitra-paksha zodiac and the `ketaki` and `tilak-revati` profiles (K1).**
+**Numbers:** the new catalogue member `KETAKI` is its `CUSTOM` restatement (epoch JD
+2407086.5 TT, 22.1425°, 0.013952138° a Julian year) to the bit at 200 instants over
+1800–2400 under every precession model and basis, and in a chart's every graha and a
+sankranti through the façade. Against the texts: Shaka 1815 +0.43″ from the *Ketakī
+Grahagaṇitam*'s 22°21′6″; Shaka 1800 −0.04″ from *Jyotirgaṇitam*'s 22°8′33.04″, 10 April 1884
+−1.84″ from its 22°13′36″ and 1 January 1892 −0.67″ from its 22°20′2.9″; Shaka 1876 gives
+23°12′10.37″ inside the 1955 survey's 23°12′06″–23°12′10″ (±1″). Over 1878–2100 Ketaki
+stands 53.1″ to 65.9″ below mean `LAHIRI` and 1.45″ to 5.0″ below Spica's mean geometric
+longitude less 180° (the SDK's star table), so its Mesha sankranti of April 2026 falls
+24.7 minutes before Lahiri's, and the Tilak panchang's (ζ Piscium at 0°) about four days
+before Ketaki's. No existing settings hash moves; the two new profiles hash
+`0ab6e4fd…a6b94bda` (`ketaki`) and `953264da…df172e3f` (`tilak-revati`).
+- **New:** `Ayanamsha::Ketaki` (`KETAKI`, id 47, `VEDIC_STANDARD`), computed by the SDK under any
+  engine: `teistro_astro::ayanamsha::Definition::Linear`, `Linear` and `KETAKI`, evaluated
+  by the very expression `CUSTOM` takes (C2180, C2194). Named in every strict locale
+  (केतकी, *Ketakī*, after the text's title). It reaches every binding and the MCP through
+  the generated catalogue.
+- **New:** the `ketaki` profile: `KETAKI` over the root, the year named by the southern
+  (Chandramana) cycle, every other convention the root's (amanta months, Bhaskara's adhika
+  rule, a sunrise day, the mean node, the mean value on the true basis; C2181, C2186), cited
+  to the two texts; and `tilak-revati`, the same with ζ Piscium held at 0° (C2183, C2184).
+  `SHIPPED_PROFILES` grows to 11.
+- **Changed:** the ayanamsha catalogue's `swiss_mode` attribute is optional (version 2):
+  `KETAKI` has none, so the Swiss Ephemeris adapter and `SeFiles::ayanamshas` no longer
+  offer it, and a sidereal frame in it is completed by the SDK. A stored `ayanamsaId`
+  number still names the member with that mode; `ketaki` is not one of the application's
+  keys.
+
 **Custom ayanamshas beyond a linear rate (SR-112).**
 **Numbers:** Lahiri's value at its epoch carried by IAU 2006 precession reproduces `LAHIRI`
 within 0.0012″ every 10 days from 1800 to 2200 (the bound is 0.01″), and to the bit when

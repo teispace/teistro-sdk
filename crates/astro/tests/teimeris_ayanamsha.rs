@@ -102,7 +102,9 @@ fn the_catalogue_reproduces_the_engines_mean_values() {
                 },
                 anchored_bound_arcsec(anchor, jd),
             ),
-            Definition::Unsourced => continue,
+            // A linear rule the engines have no mode for (Ketaki) is not in
+            // their table; `tests/ketaki.rs` holds it to its own texts.
+            Definition::Linear(_) | Definition::Unsourced => continue,
         };
         let theirs = row["mean_deg"].as_f64().unwrap();
         let ours = mean_deg(

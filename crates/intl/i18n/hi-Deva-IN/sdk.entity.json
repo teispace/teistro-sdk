@@ -2394,6 +2394,11 @@
     "LAHIRI_ICRC": {
       "name": "लाहिरी ICRC",
       "prose": "लाहिरी ICRC"
+    },
+    "KETAKI": {
+      "name": "केतकी (चित्रपक्ष)",
+      "prose": "केतकी (चित्रपक्ष)",
+      "iast": "Ketakī"
     }
   },
   "direction": {

@@ -312,7 +312,10 @@ fn the_legacy_ekadhipatya_methods_are_refused() {
 #[test]
 fn an_ayanamsha_number_is_the_member_whose_swiss_mode_it_is() {
     for member in Ayanamsha::ALL {
-        let mode = i64::from(member.attributes().swiss_mode);
+        // A member the SDK alone defines has no number to be stored under.
+        let Some(mode) = member.attributes().swiss_mode.map(i64::from) else {
+            continue;
+        };
         let translated = of("ayanamsaId", Stored::Number(mode)).unwrap();
         assert_eq!(
             translated.natal.settings.frame.ayanamsha,
@@ -332,7 +335,12 @@ fn an_ayanamsha_number_is_the_member_whose_swiss_mode_it_is() {
     assert_eq!(named(3), Some(Ayanamsha::Raman.into()));
     assert_eq!(named(5), Some(Ayanamsha::Krishnamurti.into()));
     assert_eq!(named(27), Some(Ayanamsha::TrueChitra.into()));
-    for unknown in [Stored::Number(47), Stored::Number(-1), text("1")] {
+    for unknown in [
+        Stored::Number(47),
+        Stored::Number(-1),
+        text("1"),
+        text("ketaki"),
+    ] {
         let refused = of("ayanamsaId", unknown.clone()).unwrap_err();
         assert_eq!(
             (refused.anchor, refused.decided),
@@ -353,9 +361,10 @@ fn an_ayanamsha_key_is_the_member_its_number_names() {
             .ayanamsha
     };
     // Every key translates as the number of the member it lists does, and
-    // the keys reach every member: 47 members, one with a second spelling.
+    // the keys reach every member the application knows: 47 members, one
+    // with a second spelling.
     for (key, member) in AYANAMSHA_KEYS {
-        let mode = i64::from(member.attributes().swiss_mode);
+        let mode = member.attributes().swiss_mode.map_or(-1, i64::from);
         assert_eq!(zodiac(text(key)), Some(member.into()), "{key}");
         assert_eq!(zodiac(text(key)), zodiac(Stored::Number(mode)), "{key}");
     }
@@ -364,7 +373,15 @@ fn an_ayanamsha_key_is_the_member_its_number_names() {
     assert_eq!(keys.len(), AYANAMSHA_KEYS.len());
     let reached: std::collections::BTreeSet<Ayanamsha> =
         AYANAMSHA_KEYS.iter().map(|(_, member)| *member).collect();
-    assert_eq!(reached, Ayanamsha::ALL.into_iter().collect());
+    // Every member the application can store: the ones with a Swiss
+    // Ephemeris mode, which `KETAKI` (the SDK's own) is not.
+    assert_eq!(
+        reached,
+        Ayanamsha::ALL
+            .into_iter()
+            .filter(|member| member.attributes().swiss_mode.is_some())
+            .collect()
+    );
     // Four keys are not the member's key lower-cased with hyphens, which is
     // why the keys are listed rather than derived.
     let ruled: Vec<&str> = AYANAMSHA_KEYS

@@ -210,7 +210,9 @@ fn the_documented_profiles_are_the_shipped_ones() {
         .split('`')
         .skip(1)
         .step_by(2)
-        .filter(|word| word.contains('-'))
+        // A profile id: lower-case words joined by hyphens (`ketaki` has
+        // none).
+        .filter(|word| word.chars().all(|c| c.is_ascii_lowercase() || c == '-'))
         .collect();
     let shipped: BTreeSet<&str> = teistro_core::settings::SHIPPED_PROFILES
         .iter()

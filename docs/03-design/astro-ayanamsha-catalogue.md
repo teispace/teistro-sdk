@@ -7,7 +7,8 @@ same day when the star table (`astro-star-table.md`) brought the twelve
 anchored members into computation. Derives from
 `01-research/platform/13-astronomy-layer.md` (the ayanamsha and star
 table rows and their conformance targets), `03-design/core-types-and-catalogue.md`
-(the forty-seven catalogued members and their categories),
+(the catalogued members and their categories: forty-seven of the Swiss
+Ephemeris's modes, and `KETAKI` from 2026-11-17, `03-design/ketaki.md`),
 `03-design/settings-and-profiles.md` (the `frame.ayanamsha` and
 `frame.ayanamsha_basis` knobs), `03-design/ephemeris-port-and-adapters.md`
 (the `AYANAMSHA` override and the completion's zodiac step) and
@@ -20,7 +21,7 @@ named per row, and Teimeris's recorded values are the oracle.
 ## 1. Purpose and scope
 
 A sidereal longitude is a tropical one less the ayanamsha, and there is
-no single ayanamsha: forty-seven are catalogued, each an author's
+no single ayanamsha: forty-eight are catalogued, each an author's
 answer to where the sidereal zodiac begins. This page settles how the
 SDK computes them itself, so that a sidereal chart needs no provider
 override and every provider gives the same sidereal longitudes: the
@@ -53,13 +54,14 @@ pub enum Definition {
     Epoch(Epoch),                                   // a value at an epoch carried by precession
     Frame(Epoch),                                   // J2000, J1900, B1950, Mardyks: a frame, whose value is the precession since
     Object { anchor: Star, held_deg: [f64; 2], reading: Reading },  // a star table member held at a sidereal longitude; Reading::{Longitude, RightAscension, GeometricLongitude}
+    Linear(Linear),                                 // a value at an epoch plus a rate a Julian year, the author's own rule (Ketaki); the `CUSTOM` form's expression
     Unsourced,                                      // a member this build has no definition for
 }
 pub struct Epoch { jd: f64, scale: EpochScale /* Tt | Ut */, value_deg: f64, fitted: Fitted /* Current | Iau1976 | Newcomb */ }
 pub use teistro_core::settings::AyanamshaBasis as Basis;   // Mean | True
 ```
 
-The forty-seven members and their definitions, degrees at the epoch, the
+The forty-eight members and their definitions, degrees at the epoch, the
 epoch as a Julian day in the scale the author stated it in (TT unless
 marked UT, where the SDK applies its Delta T of the epoch):
 
@@ -107,6 +109,7 @@ marked UT, where the SDK applies its Delta T of the epoch):
 | `LAHIRI_VP285` | 0° at JD 1825235.2458513028 (the vernal point of 285 CE) | | |
 | `KRISHNAMURTI_VP291` | 0° at JD 1827424.752255678 (291 CE) | | Krishnamurti and Senthilathiban |
 | `LAHIRI_ICRC` | 23.25° − 0.00464207° at JD 2435553.5 | Newcomb | the Indian Calendar Reform Committee's value |
+| `KETAKI` | linear: 22.1425° (22°08′33″) at JD 2407086.5 TT (the Mesha sankranti of Shaka 1800, 12 April 1878), plus 0.013952138° a Julian year (50.228571″ a sidereal year of 365.256361 days); no Swiss Ephemeris mode, so the SDK alone computes it (`03-design/ketaki.md` §4.1) | (none: not carried by precession) | V. B. Ketkar, *Ketakī Grahagaṇitam* (1899) spashta v. 6; *Jyotirgaṇitam* (1937) p. 7 |
 
 A `Frame` member's value is the general precession since its epoch;
 positions referred to the ecliptic of the epoch itself are a completion
