@@ -2,9 +2,10 @@
 //! answers the place catalogue's questions without a dataset
 //! (`docs/03-design/geo-port.md` §12.8).
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use teistro_core::error::Error;
+use teistro_core::math::{asin, atan2, cos, sin};
 
 use crate::catalogue::{
     ChosenName, FoundPlace, LangTag, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind,
@@ -100,12 +101,12 @@ fn distance_and_bearing(from: (f64, f64), to: (f64, f64)) -> (f64, f64) {
     let (lat1, lon1) = (from.0.to_radians(), from.1.to_radians());
     let (lat2, lon2) = (to.0.to_radians(), to.1.to_radians());
     let (dlat, dlon) = (lat2 - lat1, lon2 - lon1);
-    let haversine =
-        (dlat / 2.0).sin().powi(2) + lat1.cos() * lat2.cos() * (dlon / 2.0).sin().powi(2);
-    let distance = 2.0 * EARTH_RADIUS_M * haversine.sqrt().min(1.0).asin();
-    let east = dlon.sin() * lat2.cos();
-    let north = lat1.cos() * lat2.sin() - lat1.sin() * lat2.cos() * dlon.cos();
-    let bearing = east.atan2(north).to_degrees().rem_euclid(360.0);
+    let (half_dlat, half_dlon) = (sin(dlat / 2.0), sin(dlon / 2.0));
+    let haversine = half_dlat * half_dlat + cos(lat1) * cos(lat2) * half_dlon * half_dlon;
+    let distance = 2.0 * EARTH_RADIUS_M * asin(haversine.sqrt().min(1.0));
+    let east = sin(dlon) * cos(lat2);
+    let north = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dlon);
+    let bearing = atan2(east, north).to_degrees().rem_euclid(360.0);
     // `rem_euclid` can round a tiny negative angle up to exactly 360.
     (distance, if bearing >= 360.0 { 0.0 } else { bearing })
 }
@@ -204,7 +205,7 @@ static FALLBACK: TableName = TableName {
 /// A table's places by id, and the reading of each answer.
 struct Catalogue<'a> {
     places: &'a [TablePlace],
-    by_id: HashMap<&'a str, &'a TablePlace>,
+    by_id: BTreeMap<&'a str, &'a TablePlace>,
 }
 
 impl<'a> Catalogue<'a> {
@@ -287,7 +288,7 @@ fn people(place: &TablePlace) -> Option<u64> {
 /// A table's places checked: each well formed, ids unique, each parent a
 /// place of the table.
 pub(crate) fn check_places(places: &[TablePlace]) -> Result<(), Error> {
-    let mut seen = HashMap::new();
+    let mut seen = BTreeMap::new();
     for (at, place) in places.iter().enumerate() {
         let root = format!("geo.places[{at}]");
         place.check(&root)?;
