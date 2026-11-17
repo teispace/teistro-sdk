@@ -1734,6 +1734,39 @@ class AnEngine(WithLibrary):
                 sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, zone=zone)
             self.assertEqual(both.exception.field, "sentences.zone")
 
+    def test_the_festivals_observer_keeps_one_traditions_ekadashi(self) -> None:
+        """`festivals.observer` (`03-design/festival-traditions.md`, SR-116):
+        the text's S8 row on Bhadrapada's bright 11th of 2023 at Delhi gives
+        the Smarta fast the 25th and the Vaishnava's the 26th; each observer
+        keeps its own by the setting alone, the next Ekadashi included, and
+        an observer no tradition is refused by its field."""
+        delhi = Observer(latitude_deg=Latitude(28.6139), longitude_deg=Longitude(77.209), altitude_m=Altitude(216))
+
+        def fasts(observer: Optional[str]) -> List[str]:
+            settings = {"festivals": {"observer": observer}} if observer else None
+            with self.teistro.context(ephemeris=Ephemeris.BUILTIN, settings=settings) as sky:
+                answer = sky.almanac.festivals(
+                    from_date=date(Calendar.GREGORIAN, 2023, 9, 20),
+                    to_date=date(Calendar.GREGORIAN, 2023, 9, 30),
+                    place=delhi,
+                    utc_offset_seconds=19800,
+                    festivals={"rules": "DHARMASINDHU"},
+                )
+                return [f"{fast.rule} {fast.day.day}" for fast in answer.ekadashis]
+
+        self.assertEqual(fasts(None), ["EKADASHI_VAISHNAVA 26", "EKADASHI_SMARTA 25", "EKADASHI_SMARTA_RENUNCIANT 26"])
+        self.assertEqual(fasts("SMARTA"), ["EKADASHI_SMARTA 25"])
+        self.assertEqual(fasts("VAISHNAVA"), ["EKADASHI_VAISHNAVA 26"])
+        with self.teistro.context(
+            ephemeris=Ephemeris.BUILTIN, settings={"festivals": {"observer": "VAISHNAVA"}}
+        ) as sky:
+            # Midnight of 20 September 2023 at Delhi, in UTC.
+            found = sky.almanac.next(after=2460207.2708333335, place=delhi, utc_offset_seconds=19800, kind="EKADASHI")
+            self.assertEqual((found.keys, found.day.day), (("EKADASHI_VAISHNAVA",), 26))
+        with self.assertRaises(TeistroError) as refused:
+            self.teistro.context(settings={"festivals": {"observer": "SHAIVA"}})
+        self.assertEqual(refused.exception.field, "settings.festivals.observer")
+
     def test_the_next_sankranti_and_a_packs_festival_are_found(self) -> None:
         """From noon on 1 January 2026 at Kathmandu, Maghe sankranti on the
         15th, found in the first window, and Vijaya Dashami found within

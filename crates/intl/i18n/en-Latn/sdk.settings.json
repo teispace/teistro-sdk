@@ -149,6 +149,9 @@
       "marginalMonthMinutes": "Moves which months are flagged marginal, by how near their deciding moment falls to the boundary; no date moves",
       "kiratYele": "Moves the Kirat Yele Sambat year every date carries, by 1281 years between the two counts"
     },
+    "festivals": {
+      "observer": "Changes which of a festival's readings an answer keeps where a request carries two or more: the tradition's own; no day moves"
+    },
     "provider": {
       "overrides": "Changes whose implementation answers where the ephemeris offers its own: numbers at the last digits",
       "tier": "Changes the built-in ephemeris's accuracy: the Moon by about an arcsecond",

@@ -6,10 +6,13 @@
 //! this; the record a binding writes as `festivals` carries none of them,
 //! so the days and their observances cannot be asked of two places.
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use serde::Serialize;
 use serde_json::Value;
 use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
+use teistro_core::settings::knobs::Observer;
 use teistro_panchanga::festival::{
     Anniversary, Barred, Dated, DatedRule, EkadashiRule, FestivalGroup, FestivalMeta, FestivalRule,
     FollowingRule, KindRules, MetaFilter, MetaPatch, PublishedEntry, PublishedSet, SaitRule,
@@ -648,6 +651,7 @@ trait Keyed {
 /// A rule of a kind a pack holds, which carries its values; an
 /// anniversary, a family's own, does not.
 trait Stamped: Keyed {
+    fn meta(&self) -> &FestivalMeta;
     fn meta_mut(&mut self) -> &mut FestivalMeta;
 }
 
@@ -666,6 +670,10 @@ macro_rules! keyed {
         }
 
         impl Stamped for $rule {
+            fn meta(&self) -> &FestivalMeta {
+                &self.meta
+            }
+
             fn meta_mut(&mut self) -> &mut FestivalMeta {
                 &mut self.meta
             }
@@ -1419,6 +1427,13 @@ impl FestivalRequest {
                 }
             }
         }
+        for (at, _, meta) in self.metas() {
+            if let Some(variant) = &meta.variant {
+                variant
+                    .check()
+                    .map_err(|why| why.under(&format!("{at}.meta")))?;
+            }
+        }
         self.check_published()?;
         for (index, sait) in self.saits.iter().enumerate() {
             let at = format!("saits[{index}]");
@@ -1481,6 +1496,97 @@ impl FestivalRequest {
             .with_field(format!("members[{at}]"))),
             None => Ok(()),
         }
+    }
+
+    /// Each rule's key and values with where it is held (`rules[0]`,
+    /// `published[0].entries[1]`): of the four kinds that carry them, and
+    /// of the days a published set adds.
+    fn metas(&self) -> impl Iterator<Item = (String, &str, &FestivalMeta)> {
+        fn held<'a, T: Stamped + 'a>(
+            list: &'static str,
+            rules: &'a [T],
+        ) -> impl Iterator<Item = (String, &'a str, &'a FestivalMeta)> {
+            rules
+                .iter()
+                .enumerate()
+                .map(move |(index, rule)| (format!("{list}[{index}]"), rule.key(), rule.meta()))
+        }
+        let added = self.published.iter().enumerate().flat_map(|(at, set)| {
+            set.entries
+                .iter()
+                .enumerate()
+                .filter_map(move |(entry_at, entry)| match entry {
+                    PublishedEntry::Add { key, meta, .. } => Some((
+                        format!("published[{at}].entries[{entry_at}]"),
+                        key.as_str(),
+                        meta,
+                    )),
+                    _ => None,
+                })
+        });
+        held("rules", &self.rules)
+            .chain(held("ekadashis", &self.ekadashis))
+            .chain(held("following", &self.following))
+            .chain(held("dated", &self.dated))
+            .chain(added)
+    }
+
+    /// The keys of the readings an answer under `observer` leaves out
+    /// (`03-design/festival-traditions.md` §4, the setting
+    /// `festivals.observer`): of each festival the request carries two or
+    /// more readings of, every reading but the observer's, else every
+    /// reading but the one of the tradition it follows (C2142). A festival
+    /// carried in one reading, or in none of the observer's, keeps all
+    /// (C2143); `EVERY` leaves none out.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::settings::knobs::Observer;
+    ///
+    /// let asked = FestivalRequest::from(FestivalPack::Dharmasindhu);
+    /// assert!(asked.left_by(Observer::Every).is_empty());
+    /// let smarta = asked.left_by(Observer::Smarta);
+    /// assert_eq!(smarta.iter().map(String::as_str).collect::<Vec<_>>(), ["EKADASHI_SMARTA_RENUNCIANT", "EKADASHI_VAISHNAVA"]);
+    /// // The Gaudiya pack is not asked, so the Gaudiya keeps the Vaishnava's.
+    /// assert!(!asked.left_by(Observer::Gaudiya).contains("EKADASHI_VAISHNAVA"));
+    /// // Janmashtami is carried in one reading, the Smarta's, and stands.
+    /// assert!(!asked.left_by(Observer::Vaishnava).contains("JANMASHTAMI"));
+    ///
+    /// let both = FestivalRequest::from_json(r#"{"rules": ["NEPAL", "GAUDIYA"]}"#)?;
+    /// let vaishnava = both.left_by(Observer::Vaishnava);
+    /// assert!(vaishnava.contains("JANMASHTAMI") && !vaishnava.contains("JANMASHTAMI_VAISHNAVA"));
+    /// assert!(vaishnava.contains("EKADASHI_GAUDIYA"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn left_by(&self, observer: Observer) -> BTreeSet<String> {
+        let mut left = BTreeSet::new();
+        if observer == Observer::Every {
+            return left;
+        }
+        let mut readings: BTreeMap<&str, Vec<(&str, Observer)>> = BTreeMap::new();
+        for (_, key, meta) in self.metas() {
+            if let Some(variant) = &meta.variant {
+                readings
+                    .entry(variant.festival.as_str())
+                    .or_default()
+                    .push((key, variant.observer));
+            }
+        }
+        for held in readings.values().filter(|held| held.len() > 1) {
+            let whose = [Some(observer), observer.follows()]
+                .into_iter()
+                .flatten()
+                .find(|wanted| held.iter().any(|(_, by)| by == wanted));
+            if let Some(whose) = whose {
+                left.extend(
+                    held.iter()
+                        .filter(|(_, by)| *by != whose)
+                        .map(|(key, _)| (*key).to_owned()),
+                );
+            }
+        }
+        left
     }
 
     /// Each set read as [`PublishedSet::check`] reads it, each `SET` and

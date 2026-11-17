@@ -727,6 +727,37 @@ public final class BindingTest {
             }
         });
 
+        // festivals.observer (festival-traditions.md, SR-116): the text's S8
+        // row on Bhadrapada's bright 11th of 2023 at Delhi gives the Smarta
+        // fast the 25th and the Vaishnava's the 26th; each observer keeps its
+        // own by the setting alone, and an observer no tradition is refused by
+        // its field.
+        tests.put("the festivals observer keeps one tradition's ekadashi", () -> {
+            Observer delhi = new Observer(new Longitude(77.209), new Latitude(28.6139), new Altitude(216));
+            FestivalRequest dharmasindhu = FestivalRequest.of(Map.of("rules", "DHARMASINDHU"));
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                java.util.function.Function<Context, List<String>> fasts = (observed) -> {
+                    List<String> kept = new ArrayList<>();
+                    for (EkadashiFast fast : observed.almanac().festivals(Civil.date(Calendar.GREGORIAN, 2023, 9, 20),
+                            Civil.date(Calendar.GREGORIAN, 2023, 9, 30), delhi, 19_800, dharmasindhu).ekadashis()) {
+                        kept.add(fast.rule() + " " + fast.day().day());
+                    }
+                    return kept;
+                };
+                same(List.of("EKADASHI_VAISHNAVA 26", "EKADASHI_SMARTA 25", "EKADASHI_SMARTA_RENUNCIANT 26"),
+                        fasts.apply(sky), "every observer's");
+                try (Context smarta = sky.withSettings(Map.of("festivals", Map.of("observer", "SMARTA")))) {
+                    same(List.of("EKADASHI_SMARTA 25"), fasts.apply(smarta), "the Smarta's");
+                }
+                try (Context vaishnava = sky.withSettings(Map.of("festivals", Map.of("observer", "VAISHNAVA")))) {
+                    same(List.of("EKADASHI_VAISHNAVA 26"), fasts.apply(vaishnava), "the Vaishnava's");
+                }
+                same("settings.festivals.observer",
+                        refusal(() -> sky.withSettings(Map.of("festivals", Map.of("observer", "SHAIVA")))).field(),
+                        "no tradition");
+            }
+        });
+
         // A day in sentences (day-in-sentences.md): English and Nepali say
         // one day, and Hindi is refused on locale.
         tests.put("a day is said in sentences and Hindi is refused", () -> {

@@ -51,8 +51,8 @@ pub use knobs::{
     KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
     MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
-    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    NodeVedha, Nutation, Observer, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy,
+    PolarPolicy, Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     RefractionFormula, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
     SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime,
@@ -1596,6 +1596,24 @@ group!(
 );
 
 group!(
+    /// Festivals (`03-design/festival-traditions.md`).
+    Festivals,
+    FestivalsPatch,
+    festivals {
+        /// Whose reading of a festival an answer keeps where a request
+        /// carries two or more (SR-116, C2140): `EVERY`, the default, keeps
+        /// them all; `SMARTA`, `SMARTA_RENUNCIANT`, `VAISHNAVA` or `GAUDIYA`
+        /// keeps that tradition's, the renunciant falling back on the
+        /// householder's and the Gaudiya on the Vaishnava's (C2142). A
+        /// festival carried in one reading stands whatever it says (C2143),
+        /// so it only ever drops a reading: of *Dharmasindhu*'s three Ekadashi
+        /// observers, and of a Smarta pack's Janmashtami, Rama Navami or
+        /// Nrisimha jayanti beside the `GAUDIYA` pack's. No day moves.
+        observer: Observer => Rule,
+    }
+);
+
+group!(
     /// The provider.
     Provider,
     ProviderPatch,
@@ -1681,6 +1699,8 @@ pub struct Settings {
     pub vargas: Vargas,
     /// Calendars.
     pub calendars: Calendars,
+    /// Festivals.
+    pub festivals: Festivals,
     /// The provider.
     pub provider: Provider,
     /// Output.
@@ -1718,7 +1738,7 @@ impl Settings {
 /// Every group of the document with its knobs and what each moves, in
 /// document order: the one list [`Settings::knobs`] and
 /// [`Settings::knob_paths`] read.
-const fn groups() -> [(&'static str, &'static [&'static str], &'static [Moves]); 17] {
+const fn groups() -> [(&'static str, &'static [&'static str], &'static [Moves]); 18] {
     [
         ("frame", Frame::KNOBS, Frame::MOVES),
         ("houses", Houses::KNOBS, Houses::MOVES),
@@ -1735,6 +1755,7 @@ const fn groups() -> [(&'static str, &'static [&'static str], &'static [Moves]);
         ("strength", Strength::KNOBS, Strength::MOVES),
         ("vargas", Vargas::KNOBS, Vargas::MOVES),
         ("calendars", Calendars::KNOBS, Calendars::MOVES),
+        ("festivals", Festivals::KNOBS, Festivals::MOVES),
         ("provider", Provider::KNOBS, Provider::MOVES),
         ("output", Output::KNOBS, Output::MOVES),
     ]
@@ -1784,6 +1805,8 @@ pub struct SettingsPatch {
     pub vargas: VargasPatch,
     /// Calendars.
     pub calendars: CalendarsPatch,
+    /// Festivals.
+    pub festivals: FestivalsPatch,
     /// The provider.
     pub provider: ProviderPatch,
     /// Output.
@@ -1890,6 +1913,8 @@ impl Settings {
             .apply_noting(&patch.vargas, &mut |knob| note("vargas", knob));
         self.calendars
             .apply_noting(&patch.calendars, &mut |knob| note("calendars", knob));
+        self.festivals
+            .apply_noting(&patch.festivals, &mut |knob| note("festivals", knob));
         self.provider
             .apply_noting(&patch.provider, &mut |knob| note("provider", knob));
         self.output
@@ -3469,9 +3494,9 @@ mod tests {
     }
 
     /// The pinned hashes of the two profiles (T6).
-    const KETAKI_HASH: &str = "0ab6e4fd00655cb03ac0a5fdf1c88951fcaa55095a36037604ddcf35a6b94bda";
+    const KETAKI_HASH: &str = "7509867f056f27d85b0017dba7540583b5abd86b02fed0eed0daf2bf5b77da8a";
     const TILAK_REVATI_HASH: &str =
-        "953264da3fdcc6966d753006c48d63e3117a698b0e8fc6b152e9ecd5df172e3f";
+        "1c20cc241c031c73df99fe315b23848b588dfee19f6090f5c6476040fa204a5a";
 
     #[test]
     fn profiles_inherit_and_are_listed() {

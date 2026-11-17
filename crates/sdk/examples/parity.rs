@@ -7145,6 +7145,35 @@ fn put_groups(
     }
 }
 
+/// `festivals.observer` (`03-design/festival-traditions.md`): the
+/// Vaishnava's Ekadashi alone of *Dharmasindhu*'s three, over the
+/// festivals' range, by the setting alone.
+fn festival_observer(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let vaishnava = Context::builder()
+        .profile("parashari-classical")
+        .ephemeris([Ephemeris::Test])
+        .settings_json(r#"{"festivals": {"observer": "VAISHNAVA"}}"#)
+        .build()
+        .expect("a shipped profile and a knob");
+    let answer = vaishnava
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2024, 10, 10),
+            &CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3),
+            place,
+            offset,
+            &teistro::FestivalRequest::from(teistro::FestivalPack::Dharmasindhu),
+        )
+        .expect("the test provider")
+        .value;
+    let fasts: Vec<String> = answer
+        .ekadashis
+        .iter()
+        .map(|fast| format!("{} {}-{}", fast.rule, fast.day.month, fast.day.day))
+        .collect();
+    put(report, "festivals-observer", fasts.join(","));
+}
+
 /// The lunar years a panchanga request carries, as the report prints them.
 ///
 /// 2024-03-20..04-20 at the test provider holds a Chaitra Shukla
@@ -8935,6 +8964,7 @@ fn main() {
     the_pakshi(&mut report, &geo);
     the_research(&mut report, &geo);
     festivals(&mut report, &geo, &place, offset);
+    festival_observer(&mut report, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);
     day_sky(&mut report, &geo, &place, offset);

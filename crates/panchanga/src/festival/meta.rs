@@ -13,6 +13,8 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{FastKind, FestivalKind, HolidayScope, Tradition};
+use teistro_core::error::Error;
+use teistro_core::settings::knobs::Observer;
 
 /// What a rule's festival is, as far as a source says.
 ///
@@ -29,6 +31,8 @@ use teistro_core::catalogue::{FastKind, FestivalKind, HolidayScope, Tradition};
 /// // A rule of the consumer's own, with nothing sourced, says so of every field.
 /// assert_eq!(FestivalMeta::default().unsourced().len(), 5);
 /// assert_eq!(FestivalMeta::nepal("BUDDHA_JAYANTI").tradition, Some(Tradition::Buddhist));
+/// // Nepal keeps Dharmasindhu's Janmashtami: the Smarta's reading.
+/// assert_eq!(FestivalMeta::nepal("JANMASHTAMI").variant.map(|v| v.festival), Some("JANMASHTAMI".to_owned()));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -64,6 +68,135 @@ pub struct FestivalMeta {
     /// fields above derive it ([`FestivalMeta::tier`], §7 of the page).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub significance: Option<SignificanceMark>,
+    /// The festival it is one tradition's reading of, and whose, where
+    /// the texts give the festival another reading too
+    /// (`03-design/festival-traditions.md` §3, SR-116); unset for a rule
+    /// that is no tradition's reading, such as a government's day. What
+    /// `festivals.observer` chooses by. It is a statement of the rule's,
+    /// not a blank a source left, so [`FestivalMeta::unsourced`] does not
+    /// name it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variant: Option<Variant>,
+}
+
+/// One tradition's reading of a festival the texts read in more than one
+/// way (`03-design/festival-traditions.md` §3, C2141).
+///
+/// ```
+/// use teistro_core::settings::knobs::Observer;
+/// use teistro_panchanga::festival::{FestivalMeta, Variant};
+///
+/// let smarta = FestivalMeta::of_text("EKADASHI_SMARTA").variant;
+/// assert_eq!(smarta, Some(Variant { festival: "EKADASHI".to_owned(), observer: Observer::Smarta }));
+/// // A government's list is one day a festival, whoever's reading it is.
+/// assert_eq!(FestivalMeta::nepal("GAI_JATRA").variant, None);
+/// let written = serde_json::to_string(&smarta)?;
+/// assert_eq!(written, r#"{"festival":"EKADASHI","observer":"SMARTA"}"#);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Variant {
+    /// The festival, as an open key every reading of it shares
+    /// (`EKADASHI`, `JANMASHTAMI`).
+    pub festival: String,
+    /// Whose reading it is; never `EVERY`, which is no tradition.
+    pub observer: Observer,
+}
+
+impl Variant {
+    /// The shipped readings: the rule's key in its pack, the festival and
+    /// whose reading (`festival-traditions.md` §1), sorted by key for the
+    /// binary search.
+    const SHIPPED: [(&'static str, &'static str, Observer); 10] = [
+        // Hari Bhakti Vilasa 12-13: the Vaishnava's vedha and table, and the
+        // eight mahadvadashis (festival-rules.md §8.9).
+        ("EKADASHI_GAUDIYA", "EKADASHI", Observer::Gaudiya),
+        // Dharmasindhu pp. 11-12: the three observers' columns (§8.3).
+        ("EKADASHI_SMARTA", "EKADASHI", Observer::Smarta),
+        (
+            "EKADASHI_SMARTA_RENUNCIANT",
+            "EKADASHI",
+            Observer::SmartaRenunciant,
+        ),
+        ("EKADASHI_VAISHNAVA", "EKADASHI", Observer::Vaishnava),
+        // Dharmasindhu pp. 49-50 against Hari Bhakti Vilasa 15.358-374 (C175).
+        ("JANMASHTAMI", "JANMASHTAMI", Observer::Smarta),
+        ("JANMASHTAMI_VAISHNAVA", "JANMASHTAMI", Observer::Vaishnava),
+        // Dharmasindhu p. 37 against Hari Bhakti Vilasa 14.455-461.
+        (
+            "NARASIMHA_JAYANTI",
+            "NRISIMHA_CHATURDASHI",
+            Observer::Smarta,
+        ),
+        (
+            "NRISIMHA_CHATURDASHI",
+            "NRISIMHA_CHATURDASHI",
+            Observer::Vaishnava,
+        ),
+        // Dharmasindhu p. 33 against Hari Bhakti Vilasa 14.249-253.
+        ("RAMA_NAVAMI", "RAMA_NAVAMI", Observer::Smarta),
+        ("RAMA_NAVAMI_VAISHNAVA", "RAMA_NAVAMI", Observer::Vaishnava),
+    ];
+
+    /// The reading a text's rule of this key is, as the shipped packs
+    /// read it; `None` for a key that is no tradition's reading.
+    ///
+    /// ```
+    /// use teistro_core::settings::knobs::Observer;
+    /// use teistro_panchanga::festival::Variant;
+    ///
+    /// let vaishnava = Variant::of("JANMASHTAMI_VAISHNAVA").ok_or("shipped")?;
+    /// assert_eq!((vaishnava.festival.as_str(), vaishnava.observer), ("JANMASHTAMI", Observer::Vaishnava));
+    /// assert_eq!(Variant::of("NARASIMHA_JAYANTI").ok_or("shipped")?.festival, "NRISIMHA_CHATURDASHI");
+    /// assert!(Variant::of("HOLIKA").is_none());
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn of(key: &str) -> Option<Variant> {
+        Variant::SHIPPED
+            .binary_search_by_key(&key, |&(held, _, _)| held)
+            .ok()
+            .and_then(|at| Variant::SHIPPED.get(at))
+            .map(|&(_, festival, observer)| Variant {
+                festival: festival.to_owned(),
+                observer,
+            })
+    }
+
+    /// Refuses a reading no observer could choose: a festival with no key,
+    /// or `EVERY`, which is no tradition's, named under `variant`.
+    ///
+    /// ```
+    /// use teistro_core::settings::knobs::Observer;
+    /// use teistro_panchanga::festival::Variant;
+    ///
+    /// let every = Variant { festival: "EKADASHI".to_owned(), observer: Observer::Every };
+    /// assert_eq!(every.check().unwrap_err().field(), Some("variant.observer"));
+    /// let unnamed = Variant { festival: String::new(), observer: Observer::Smarta };
+    /// assert_eq!(unnamed.check().unwrap_err().field(), Some("variant.festival"));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on `variant.festival` or `variant.observer`.
+    pub fn check(&self) -> Result<(), Error> {
+        if self.festival.is_empty() {
+            return Err(Error::invalid_arg(
+                "a reading names the festival it is a reading of, as every reading of it does",
+            )
+            .with_field("variant.festival"));
+        }
+        if self.observer == Observer::Every {
+            return Err(Error::invalid_arg(
+                "`EVERY` is no tradition, so no rule is its reading; name the tradition whose it is",
+            )
+            .with_field("variant.observer")
+            .with_hint("SMARTA, SMARTA_RENUNCIANT, VAISHNAVA or GAUDIYA"));
+        }
+        Ok(())
+    }
 }
 
 /// How much a festival weighs beside the others kept on its day
@@ -288,6 +421,7 @@ impl Group {
             optional: false,
             fast: Vec::new(),
             significance: None,
+            variant: None,
         }
     }
 }
@@ -343,6 +477,7 @@ impl FestivalMeta {
             .with_fast(key)
             .with_gazette(key)
             .with_mark(key)
+            .with_variant(key)
     }
 
     /// [`FestivalMeta::nepal`] before [`MARKS`]: its group's values, its
@@ -367,10 +502,21 @@ impl FestivalMeta {
         }
     }
 
-    /// [`FestivalMeta::hindu_text`] with the fast the texts give `key`.
+    /// [`FestivalMeta::hindu_text`] with the fast the texts give `key`
+    /// and the tradition whose reading it is ([`Variant::of`]).
     #[must_use]
     pub fn of_text(key: &str) -> FestivalMeta {
-        FestivalMeta::hindu_text().with_fast(key)
+        FestivalMeta::hindu_text().with_fast(key).with_variant(key)
+    }
+
+    /// These values with the tradition whose reading the texts' rule of
+    /// `key` is ([`Variant::of`]).
+    #[must_use]
+    pub fn with_variant(self, key: &str) -> FestivalMeta {
+        FestivalMeta {
+            variant: Variant::of(key),
+            ..self
+        }
     }
 
     /// These values with the fast the texts give `key` ([`VrataFast::of`]).
@@ -466,6 +612,9 @@ impl FestivalMeta {
                     source: String::new(),
                 })
                 .or(self.significance),
+            // Whose reading a rule is belongs to the rule, not to a
+            // caller's view of it (`03-design/festival-traditions.md` §3).
+            variant: self.variant,
         }
     }
 
@@ -1690,6 +1839,40 @@ mod tests {
                 .iter()
                 .all(|row| usize::from(row.1) < NEPAL_GROUPS.len())
         );
+    }
+
+    /// Every shipped reading is sorted for its search, names a shipped
+    /// rule, and shares its festival with another tradition's reading:
+    /// a festival read one way only is no variant (C2141).
+    #[test]
+    fn every_reading_is_one_of_two_of_a_shipped_festival() {
+        use crate::festival::{EkadashiRule, FestivalRule};
+
+        assert!(
+            Variant::SHIPPED
+                .windows(2)
+                .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
+        );
+        let mut keys: Vec<String> = FestivalRule::dharmasindhu()
+            .into_iter()
+            .chain(FestivalRule::nepal_panchanga())
+            .chain(FestivalRule::hari_bhakti_vilasa())
+            .map(|rule| rule.key)
+            .collect();
+        keys.extend(EkadashiRule::dharmasindhu().into_iter().map(|r| r.key));
+        keys.push(EkadashiRule::hari_bhakti_vilasa().key);
+        for &(key, festival, observer) in &Variant::SHIPPED {
+            assert!(
+                keys.iter().any(|held| held == key),
+                "{key} is no shipped rule"
+            );
+            assert_ne!(observer, Observer::Every, "{key}");
+            let others = Variant::SHIPPED
+                .iter()
+                .filter(|row| row.1 == festival && row.2 != observer)
+                .count();
+            assert!(others > 0, "{key}: {festival} has no other reading");
+        }
     }
 
     #[test]

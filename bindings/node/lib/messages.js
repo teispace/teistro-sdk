@@ -2214,6 +2214,9 @@ export function messages(r) {
             polarDayPolicy: () => r.render('sdk.settings.effect.day.polarDayPolicy'),
             sunrise: () => r.render('sdk.settings.effect.day.sunrise'),
           },
+          festivals: {
+            observer: () => r.render('sdk.settings.effect.festivals.observer'),
+          },
           frame: {
             ayanamsha: () => r.render('sdk.settings.effect.frame.ayanamsha'),
             ayanamshaBasis: () => r.render('sdk.settings.effect.frame.ayanamshaBasis'),

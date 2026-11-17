@@ -533,6 +533,10 @@ cell that decided, and the day.
 - The façade founds two days before a range, not one, since a fast whose
   day is the range's first may have its 10th two sunrises back (§8.4).
 
+Which of the observers' fasts an answer keeps is the setting
+`festivals.observer` (`festival-traditions.md`, SR-116): every one by
+default, or one tradition's by the setting alone.
+
 ### 8.4 What is measured
 
 - **The twelve rows** as synthetic sixty-ghati days, each under each

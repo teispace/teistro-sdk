@@ -9543,6 +9543,35 @@ pub mod sdk {
 
             }
 
+            /// The `festivals` group.
+            pub mod festivals {
+                /// The message `sdk.settings.effect.festivals.observer`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::festivals::Observer;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Observer;
+                /// assert_eq!(Observer::KEY, "sdk.settings.effect.festivals.observer");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Observer;
+
+                impl crate::TypedMessage for Observer {
+                    const KEY: &'static str = "sdk.settings.effect.festivals.observer";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
             /// The `frame` group.
             pub mod frame {
                 /// The message `sdk.settings.effect.frame.ayanamsha`.

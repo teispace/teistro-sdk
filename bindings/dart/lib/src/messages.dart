@@ -5670,6 +5670,14 @@ final class MessagesSdkSettingsEffectDay {
   String sunrise() => _r.render('sdk.settings.effect.day.sunrise');
 }
 
+final class MessagesSdkSettingsEffectFestivals {
+  const MessagesSdkSettingsEffectFestivals(this._r);
+
+  final Renderer _r;
+
+  String observer() => _r.render('sdk.settings.effect.festivals.observer');
+}
+
 final class MessagesSdkSettingsEffectFrame {
   const MessagesSdkSettingsEffectFrame(this._r);
 
@@ -5860,6 +5868,7 @@ final class MessagesSdkSettingsEffect {
   MessagesSdkSettingsEffectCalendars get calendars => MessagesSdkSettingsEffectCalendars(_r);
   MessagesSdkSettingsEffectDasha get dasha => MessagesSdkSettingsEffectDasha(_r);
   MessagesSdkSettingsEffectDay get day => MessagesSdkSettingsEffectDay(_r);
+  MessagesSdkSettingsEffectFestivals get festivals => MessagesSdkSettingsEffectFestivals(_r);
   MessagesSdkSettingsEffectFrame get frame => MessagesSdkSettingsEffectFrame(_r);
   MessagesSdkSettingsEffectGochar get gochar => MessagesSdkSettingsEffectGochar(_r);
   MessagesSdkSettingsEffectHouses get houses => MessagesSdkSettingsEffectHouses(_r);

@@ -83,7 +83,7 @@ pub use in_month::InMonth;
 pub use malamasa::{Malamasa, MalamasaClause};
 pub use meta::{
     FastEnd, FastStart, FestivalMeta, MetaFilter, MetaPatch, Significance, SignificanceMark,
-    VrataFast, printed_order,
+    Variant, VrataFast, printed_order,
 };
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,

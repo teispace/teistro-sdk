@@ -6534,6 +6534,55 @@ fn a_panchanga_request_answers_each_days_nepal_sambat_date() {
     );
 }
 
+/// `festivals.observer` through the C ABI (`03-design/festival-traditions.md`,
+/// SR-116): a context opened with the Vaishnava observer answers the
+/// Vaishnava's Ekadashi alone of *Dharmasindhu*'s three, each on the day the
+/// default answer gives it; an observer no tradition is refused by its knob.
+#[test]
+fn a_context_s_observer_keeps_one_tradition_s_ekadashi() {
+    use teistro::festival::Observances;
+
+    let fasts = |settings: Option<&str>| {
+        let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, settings, None).unwrap();
+        let blob = panchanga_between(
+            &ctx,
+            ((10, 15), (11, 10)),
+            None,
+            Some(r#"{"rules":"DHARMASINDHU"}"#),
+        )
+        .unwrap();
+        let schema = schemas::panchanga();
+        let read = Reader::parse(&blob, &schema).unwrap();
+        let envelope: serde_json::Value =
+            serde_json::from_str(read.text("festivals").unwrap()).unwrap();
+        let answer: Observances = serde_json::from_value(envelope["value"].clone()).unwrap();
+        answer
+            .ekadashis
+            .into_iter()
+            .map(|fast| (fast.rule, fast.day.month, fast.day.day))
+            .collect::<Vec<_>>()
+    };
+    let every = fasts(None);
+    let vaishnava = fasts(Some(r#"{"festivals": {"observer": "VAISHNAVA"}}"#));
+    assert!(!vaishnava.is_empty());
+    assert_eq!(
+        vaishnava,
+        every
+            .into_iter()
+            .filter(|fast| fast.0 == "EKADASHI_VAISHNAVA")
+            .collect::<Vec<_>>()
+    );
+    let refused = Ctx::new(
+        0,
+        None,
+        Some(r#"{"festivals": {"observer": "SHAIVA"}}"#),
+        None,
+    )
+    .err()
+    .expect("no tradition");
+    assert_eq!(refused.2.as_deref(), Some("settings.festivals.observer"));
+}
+
 #[test]
 fn a_festivals_record_is_refused_by_the_key_that_is_wrong() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();

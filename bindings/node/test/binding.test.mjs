@@ -5327,6 +5327,42 @@ test('anniversaries over a span name the rule of each day', () => {
 });
 
 /**
+ * `festivals.observer` (`03-design/festival-traditions.md`, SR-116): of
+ * Dharmasindhu's three Ekadashi observers, each observer keeps its own fast
+ * and no other, on the day the default answer gives it, by the setting
+ * alone; the Gaudiya, with no Gaudiya reading asked, keeps the Vaishnava's;
+ * an observer no tradition is refused by its field. Asked of the test
+ * provider, so the wasm build's sky answers alike.
+ */
+test('the festivals observer keeps one tradition\'s ekadashi', () => {
+  const fasts = (observer) => {
+    const ctx = context(observer ? { settings: { festivals: { observer } } } : {});
+    const answer = ctx.almanac.festivals({
+      from: date(Calendar.Gregorian, 2026, 10, 15),
+      to: date(Calendar.Gregorian, 2026, 11, 10),
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+      festivals: { rules: 'DHARMASINDHU' },
+    });
+    ctx.dispose();
+    return answer.ekadashis.map((f) => `${f.rule} ${f.day.month}-${f.day.day}`);
+  };
+  const every = fasts();
+  const of = (rule) => every.filter((fast) => fast.startsWith(`${rule} `));
+  assert.equal(of('EKADASHI_SMARTA').length + of('EKADASHI_VAISHNAVA').length + of('EKADASHI_SMARTA_RENUNCIANT').length, every.length);
+  assert.ok(of('EKADASHI_SMARTA').length > 0);
+  assert.deepEqual(fasts('SMARTA'), of('EKADASHI_SMARTA'));
+  assert.deepEqual(fasts('SMARTA_RENUNCIANT'), of('EKADASHI_SMARTA_RENUNCIANT'));
+  assert.deepEqual(fasts('VAISHNAVA'), of('EKADASHI_VAISHNAVA'));
+  assert.deepEqual(fasts('GAUDIYA'), of('EKADASHI_VAISHNAVA'));
+  assert.deepEqual(fasts('EVERY'), every);
+  assert.throws(
+    () => context({ settings: { festivals: { observer: 'SHAIVA' } } }),
+    (e) => e instanceof TeistroError && e.field === 'settings.festivals.observer',
+  );
+});
+
+/**
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,
