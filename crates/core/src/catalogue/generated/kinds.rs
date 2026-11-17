@@ -194,11 +194,19 @@ pub enum Kind {
     VyayaKind = 161,
     /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
     ChartFrame = 162,
+    /// The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.
+    LifeArea = 163,
+    /// A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).
+    Colour = 164,
+    /// What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).
+    GocharVerdict = 165,
+    /// A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).
+    ScoreBand = 166,
     /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
     HolidayScope = 167,
 }
 
-const BY_NAME: [(&str, Kind); 90] = [
+const BY_NAME: [(&str, Kind); 94] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -221,6 +229,7 @@ const BY_NAME: [(&str, Kind); 90] = [
     ("chart_kind", Kind::ChartKind),
     ("chart_layout", Kind::ChartLayout),
     ("choghadiya", Kind::Choghadiya),
+    ("colour", Kind::Colour),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
     ("day_marker", Kind::DayMarker),
@@ -235,6 +244,7 @@ const BY_NAME: [(&str, Kind); 90] = [
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
     ("gochar_bhava", Kind::GocharBhava),
+    ("gochar_verdict", Kind::GocharVerdict),
     ("gowri", Kind::Gowri),
     ("graha", Kind::Graha),
     ("graha_bhava", Kind::GrahaBhava),
@@ -244,6 +254,7 @@ const BY_NAME: [(&str, Kind); 90] = [
     ("kaala", Kind::Kaala),
     ("karana", Kind::Karana),
     ("koota", Kind::Koota),
+    ("life_area", Kind::LifeArea),
     ("lunar_eclipse_kind", Kind::LunarEclipseKind),
     ("masa", Kind::Masa),
     ("modality", Kind::Modality),
@@ -267,6 +278,7 @@ const BY_NAME: [(&str, Kind); 90] = [
     ("ruler_day_rule", Kind::RulerDayRule),
     ("ruler_text", Kind::RulerText),
     ("samvatsara", Kind::Samvatsara),
+    ("score_band", Kind::ScoreBand),
     ("sex", Kind::Sex),
     ("shiva_vasa", Kind::ShivaVasa),
     ("solar_eclipse_kind", Kind::SolarEclipseKind),
@@ -293,7 +305,7 @@ const BY_NAME: [(&str, Kind); 90] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 90] = [
+    pub const ALL: [Kind; 94] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -383,6 +395,10 @@ impl Kind {
         Kind::VastuYoni,
         Kind::VyayaKind,
         Kind::ChartFrame,
+        Kind::LifeArea,
+        Kind::Colour,
+        Kind::GocharVerdict,
+        Kind::ScoreBand,
         Kind::HolidayScope,
     ];
 
@@ -485,6 +501,10 @@ impl Kind {
             Kind::VastuYoni => "vastu_yoni",
             Kind::VyayaKind => "vyaya_kind",
             Kind::ChartFrame => "chart_frame",
+            Kind::LifeArea => "life_area",
+            Kind::Colour => "colour",
+            Kind::GocharVerdict => "gochar_verdict",
+            Kind::ScoreBand => "score_band",
             Kind::HolidayScope => "holiday_scope",
         }
     }
@@ -601,6 +621,10 @@ impl Kind {
             Kind::VastuYoni => 8,
             Kind::VyayaKind => 3,
             Kind::ChartFrame => 4,
+            Kind::LifeArea => 8,
+            Kind::Colour => 6,
+            Kind::GocharVerdict => 3,
+            Kind::ScoreBand => 4,
             Kind::HolidayScope => 9,
         }
     }
@@ -718,6 +742,10 @@ impl Kind {
             160 => Some(Kind::VastuYoni),
             161 => Some(Kind::VyayaKind),
             162 => Some(Kind::ChartFrame),
+            163 => Some(Kind::LifeArea),
+            164 => Some(Kind::Colour),
+            165 => Some(Kind::GocharVerdict),
+            166 => Some(Kind::ScoreBand),
             167 => Some(Kind::HolidayScope),
             _ => None,
         }

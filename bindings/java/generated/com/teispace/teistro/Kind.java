@@ -435,6 +435,26 @@ public enum Kind implements Member {
     CHART_FRAME(162, "chart_frame"),
 
     /**
+     * The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score.
+     */
+    LIFE_AREA(163, "life_area"),
+
+    /**
+     * A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361).
+     */
+    COLOUR(164, "colour"),
+
+    /**
+     * What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`).
+     */
+    GOCHAR_VERDICT(165, "gochar_verdict"),
+
+    /**
+     * A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`).
+     */
+    SCORE_BAND(166, "score_band"),
+
+    /**
      * Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
      */
     HOLIDAY_SCOPE(167, "holiday_scope");

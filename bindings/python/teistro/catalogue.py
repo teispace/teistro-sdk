@@ -333,6 +333,18 @@ class Kind(Member):
     chart_frame = 162
     """What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in."""
 
+    life_area = 163
+    """The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score."""
+
+    colour = 164
+    """A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361)."""
+
+    gochar_verdict = 165
+    """What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`)."""
+
+    score_band = 166
+    """A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`)."""
+
     holiday_scope = 167
     """Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause."""
 
@@ -4054,6 +4066,105 @@ class ChartFrame(Catalogued):
     """
 
 
+class LifeArea(Catalogued):
+    """The eight life areas the baseline engine splits a rashifal's score into, in its order, each fed by the houses its table names (`03-design/rashifal.md`, C361); named so a reader can print an area's score. Members are the catalogue's ids; the full key id is `(TS_KIND_LIFE_AREA << 16) | member`."""
+
+    OVERALL = 0
+    """The whole, which every transit also feeds"""
+
+    CAREER = 1
+    """Work: the 3rd, 6th, 10th and 11th houses"""
+
+    FINANCE = 2
+    """Money: the 2nd and 11th houses"""
+
+    HEALTH = 3
+    """The body: the 1st, 6th, 8th and 12th houses"""
+
+    RELATIONSHIPS = 4
+    """Partners: the 5th and 7th houses"""
+
+    FAMILY = 5
+    """Kin: the 2nd and 4th houses"""
+
+    EDUCATION = 6
+    """Learning: the 3rd, 5th and 9th houses"""
+
+    SPIRITUALITY = 7
+    """The inner life: the 8th, 9th and 12th houses"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class Colour(Catalogued):
+    """A colour the baseline engine names lucky for a sign, looked up by the sign's lord (`03-design/rashifal.md`, C361). Members are the catalogue's ids; the full key id is `(TS_KIND_COLOUR << 16) | member`."""
+
+    RED = 0
+    """Mars's"""
+
+    WHITE = 1
+    """Venus's and the Moon's"""
+
+    GREEN = 2
+    """Mercury's"""
+
+    ORANGE = 3
+    """The Sun's"""
+
+    YELLOW = 4
+    """Jupiter's"""
+
+    BLUE = 5
+    """Saturn's"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class GocharVerdict(Catalogued):
+    """What a graha's transit comes to, counted from the natal Moon (Phaladeepika ch. 26 vv. 2 to 8; `03-design/gochar.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_GOCHAR_VERDICT << 16) | member`."""
+
+    GOOD = 0
+    """In a good house, and nothing stands in its vedha house"""
+
+    OBSTRUCTED = 1
+    """In a good house, and another graha stands in its vedha house"""
+
+    NOT_GOOD = 2
+    """Not in a house v. 2 names good"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class ScoreBand(Catalogued):
+    """A rashifal score's band: the overall score read against the three descending thresholds of `rashifal.score_bands`, 75, 50 and 30 by default. No text bands a score; the bands and their defaults are Tithipatra's design (`03-design/rashifal.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_SCORE_BAND << 16) | member`."""
+
+    EXCELLENT = 0
+    """At or above the first threshold, 75 by default"""
+
+    GOOD = 1
+    """At or above the second, 50 by default, and below the first"""
+
+    MIXED = 2
+    """At or above the third, 30 by default, and below the second"""
+
+    CARE = 3
+    """Below the third: a day for care"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class HolidayScope(Catalogued):
     """Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause. Members are the catalogue's ids; the full key id is `(TS_KIND_HOLIDAY_SCOPE << 16) | member`."""
 
@@ -5215,19 +5326,6 @@ class NodeObstruction(Member):
     """Nobody: only the seven obstruct."""
 
 
-class GocharVerdict(Member):
-    """What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8)."""
-
-    GOOD = 0
-    """In a good house, and nothing stands in its vedha house."""
-
-    OBSTRUCTED = 1
-    """In a good house, and another graha stands in its vedha house."""
-
-    NOT_GOOD = 2
-    """Not in a house v. 2 names good."""
-
-
 class Fruition(Member):
     """Where in a sign a graha's transit bears fruit (v. 25)."""
 
@@ -6381,6 +6479,10 @@ _KEYS: dict[str, dict[int, str]] = {
         160: "vastu_yoni",
         161: "vyaya_kind",
         162: "chart_frame",
+        163: "life_area",
+        164: "colour",
+        165: "gochar_verdict",
+        166: "score_band",
         167: "holiday_scope",
     },
     "Graha": {
@@ -7622,6 +7724,39 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "BHAVA",
         -1: "UNKNOWN",
     },
+    "LifeArea": {
+        0: "OVERALL",
+        1: "CAREER",
+        2: "FINANCE",
+        3: "HEALTH",
+        4: "RELATIONSHIPS",
+        5: "FAMILY",
+        6: "EDUCATION",
+        7: "SPIRITUALITY",
+        -1: "UNKNOWN",
+    },
+    "Colour": {
+        0: "RED",
+        1: "WHITE",
+        2: "GREEN",
+        3: "ORANGE",
+        4: "YELLOW",
+        5: "BLUE",
+        -1: "UNKNOWN",
+    },
+    "GocharVerdict": {
+        0: "GOOD",
+        1: "OBSTRUCTED",
+        2: "NOT_GOOD",
+        -1: "UNKNOWN",
+    },
+    "ScoreBand": {
+        0: "EXCELLENT",
+        1: "GOOD",
+        2: "MIXED",
+        3: "CARE",
+        -1: "UNKNOWN",
+    },
     "HolidayScope": {
         0: "NATIONAL",
         1: "CONCERNED",
@@ -7992,11 +8127,6 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "NOT_EACH_OTHER",
         1: "EACH_OTHER_TOO",
         2: "NONE",
-    },
-    "GocharVerdict": {
-        0: "GOOD",
-        1: "OBSTRUCTED",
-        2: "NOT_GOOD",
     },
     "Fruition": {
         0: "FIRST",
@@ -8414,5 +8544,9 @@ _KINDS: dict[str, str] = {
     "VastuYoni": "vastu_yoni",
     "VyayaKind": "vyaya_kind",
     "ChartFrame": "chart_frame",
+    "LifeArea": "life_area",
+    "Colour": "colour",
+    "GocharVerdict": "gochar_verdict",
+    "ScoreBand": "score_band",
     "HolidayScope": "holiday_scope",
 }
