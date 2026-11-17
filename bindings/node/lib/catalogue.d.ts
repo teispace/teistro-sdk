@@ -430,7 +430,7 @@ export declare const Kind: {
    */
   readonly State: 'state';
   /**
-   * The catalogued ayanamshas; a custom one is a settings value, not a member.
+   * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines.
    */
   readonly Ayanamsha: 'ayanamsha';
   /**
@@ -2564,7 +2564,7 @@ export declare const State: {
 export declare const StateById: ReadonlyMap<number, State>;
 
 /**
- * The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
+ * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
  */
 export type Ayanamsha =
   | 'ayanamsha.FAGAN_BRADLEY'
@@ -2614,6 +2614,7 @@ export type Ayanamsha =
   | 'ayanamsha.LAHIRI_VP285'
   | 'ayanamsha.KRISHNAMURTI_VP291'
   | 'ayanamsha.LAHIRI_ICRC'
+  | 'ayanamsha.KETAKI'
   | 'unknown';
 
 /** Every Ayanamsha by name; the values are the strings the union accepts. */
@@ -2806,6 +2807,10 @@ export declare const Ayanamsha: {
    * Lahiri Icrc
    */
   readonly LahiriIcrc: 'ayanamsha.LAHIRI_ICRC';
+  /**
+   * Ketaki (Ketkar's Chitrapaksha): 22°08′33″ at the Mesha sankranti of Shaka 1800 (JD 2407086.5, 12 April 1878), growing by (n/70)° − (n/50)′ a year, 50.228571″ a sidereal year of 365.256361 days and so 0.013952138° a Julian year (50.228571 × 365.25 / 365.256361 / 3600), linear and continuous; the origin opposite Chitra (Spica). Computed by the SDK; `CUSTOM` with the same three numbers is the same value to the bit (`03-design/ketaki.md` §4.1, crux C2180).
+   */
+  readonly Ketaki: 'ayanamsha.KETAKI';
 };
 
 /**

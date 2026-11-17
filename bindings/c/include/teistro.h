@@ -335,7 +335,7 @@ typedef enum ts_kind {
      */
     TS_KIND_STATE = 22,
     /**
-     * The catalogued ayanamshas; a custom one is a settings value, not a member.
+     * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines.
      */
     TS_KIND_AYANAMSHA = 23,
     /**
@@ -2017,7 +2017,7 @@ typedef enum ts_state {
 } ts_state;
 
 /**
- * The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
+ * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
  */
 typedef enum ts_ayanamsha {
     /**
@@ -2208,6 +2208,10 @@ typedef enum ts_ayanamsha {
      * Lahiri Icrc
      */
     TS_AYANAMSHA_LAHIRI_ICRC = 46,
+    /**
+     * Ketaki (Ketkar's Chitrapaksha): 22°08′33″ at the Mesha sankranti of Shaka 1800 (JD 2407086.5, 12 April 1878), growing by (n/70)° − (n/50)′ a year, 50.228571″ a sidereal year of 365.256361 days and so 0.013952138° a Julian year (50.228571 × 365.25 / 365.256361 / 3600), linear and continuous; the origin opposite Chitra (Spica). Computed by the SDK; `CUSTOM` with the same three numbers is the same value to the bit (`03-design/ketaki.md` §4.1, crux C2180).
+     */
+    TS_AYANAMSHA_KETAKI = 47,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_AYANAMSHA_UNKNOWN = -1,
 } ts_ayanamsha;
@@ -9015,8 +9019,8 @@ struct ts_context_options {
     /**
      * The shipped profile's id (`parashari-classical`, `nepali-drik`,
      * `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-     * `tamil-vakya`, `kp-default`, `western-tropical-default`,
-     * `conformance-baseline`).
+     * `tamil-vakya`, `ketaki`, `tilak-revati`, `kp-default`,
+     * `western-tropical-default`, `conformance-baseline`).
      * Example: parashari-classical. May be null.
      */
     const char * profile;

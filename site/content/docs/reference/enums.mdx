@@ -33,7 +33,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_RELATIONSHIP` | 20 | The five-fold compound relationship. |
 | `TS_KIND_AVASTHA_BALADI` | 21 | The five age states. |
 | `TS_KIND_STATE` | 22 | Conditions a body can be in. |
-| `TS_KIND_AYANAMSHA` | 23 | The catalogued ayanamshas; a custom one is a settings value, not a member. |
+| `TS_KIND_AYANAMSHA` | 23 | The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines. |
 | `TS_KIND_HOUSE_SYSTEM` | 24 | The house systems; the cusp arithmetic lives in the astro layer. |
 | `TS_KIND_VARGA` | 25 | The divisional charts the SDK ships; the kernel row of each lives in the vargas crate. |
 | `TS_KIND_DASHA_SYSTEM` | 26 | The dasha systems the catalogue names; each row of the kernel lives in the dasha crate, and only V rows are implemented. |
@@ -566,7 +566,7 @@ Conditions a body can be in. Members are the catalogue's ids; the full key id is
 
 ## ts_ayanamsha
 
-The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
+The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|
@@ -617,6 +617,7 @@ The catalogued ayanamshas; a custom one is a settings value, not a member. Membe
 | `TS_AYANAMSHA_LAHIRI_VP285` | 44 | Lahiri Vp285 |
 | `TS_AYANAMSHA_KRISHNAMURTI_VP291` | 45 | Krishnamurti Vp291 |
 | `TS_AYANAMSHA_LAHIRI_ICRC` | 46 | Lahiri Icrc |
+| `TS_AYANAMSHA_KETAKI` | 47 | Ketaki (Ketkar's Chitrapaksha): 22°08′33″ at the Mesha sankranti of Shaka 1800 (JD 2407086.5, 12 April 1878), growing by (n/70)° − (n/50)′ a year, 50.228571″ a sidereal year of 365.256361 days and so 0.013952138° a Julian year (50.228571 × 365.25 / 365.256361 / 3600), linear and continuous; the origin opposite Chitra (Spica). Computed by the SDK; `CUSTOM` with the same three numbers is the same value to the bit (`03-design/ketaki.md` §4.1, crux C2180). |
 
 ## ts_house_system
 

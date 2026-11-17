@@ -120,7 +120,7 @@ public enum Kind implements Member {
     STATE(22, "state"),
 
     /**
-     * The catalogued ayanamshas; a custom one is a settings value, not a member.
+     * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines.
      */
     AYANAMSHA(23, "ayanamsha"),
 

@@ -6,7 +6,7 @@ package com.teispace.teistro;
 import java.util.Optional;
 
 /**
- * The catalogued ayanamshas; a custom one is a settings value, not a member. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA &lt;&lt; 16) | member`.
+ * The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines. Members are the catalogue's ids; the full key id is `(TS_KIND_AYANAMSHA &lt;&lt; 16) | member`.
  */
 public enum Ayanamsha implements Catalogued {
     /**
@@ -243,6 +243,11 @@ public enum Ayanamsha implements Catalogued {
      * Lahiri Icrc
      */
     LAHIRI_ICRC(46, "LAHIRI_ICRC"),
+
+    /**
+     * Ketaki (Ketkar's Chitrapaksha): 22°08′33″ at the Mesha sankranti of Shaka 1800 (JD 2407086.5, 12 April 1878), growing by (n/70)° − (n/50)′ a year, 50.228571″ a sidereal year of 365.256361 days and so 0.013952138° a Julian year (50.228571 × 365.25 / 365.256361 / 3600), linear and continuous; the origin opposite Chitra (Spica). Computed by the SDK; `CUSTOM` with the same three numbers is the same value to the bit (`03-design/ketaki.md` §4.1, crux C2180).
+     */
+    KETAKI(47, "KETAKI"),
 
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");

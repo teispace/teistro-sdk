@@ -455,6 +455,7 @@ final List<EntitySurface> entities = [
   EntitySurface('MessagesSdkEntityAyanamsha.j1900', (m) => m.sdk.entity.ayanamsha.j1900),
   EntitySurface('MessagesSdkEntityAyanamsha.j2000', (m) => m.sdk.entity.ayanamsha.j2000),
   EntitySurface('MessagesSdkEntityAyanamsha.jnBhasin', (m) => m.sdk.entity.ayanamsha.jnBhasin),
+  EntitySurface('MessagesSdkEntityAyanamsha.ketaki', (m) => m.sdk.entity.ayanamsha.ketaki),
   EntitySurface('MessagesSdkEntityAyanamsha.krishnamurti', (m) => m.sdk.entity.ayanamsha.krishnamurti),
   EntitySurface('MessagesSdkEntityAyanamsha.krishnamurtiVp291', (m) => m.sdk.entity.ayanamsha.krishnamurtiVp291),
   EntitySurface('MessagesSdkEntityAyanamsha.lahiri', (m) => m.sdk.entity.ayanamsha.lahiri),

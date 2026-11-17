@@ -607,7 +607,8 @@
             "LAHIRI_1940",
             "LAHIRI_VP285",
             "KRISHNAMURTI_VP291",
-            "LAHIRI_ICRC"
+            "LAHIRI_ICRC",
+            "KETAKI"
           ],
           "type": "string"
         },
@@ -660,7 +661,8 @@
             "ayanamsha.LAHIRI_1940",
             "ayanamsha.LAHIRI_VP285",
             "ayanamsha.KRISHNAMURTI_VP291",
-            "ayanamsha.LAHIRI_ICRC"
+            "ayanamsha.LAHIRI_ICRC",
+            "ayanamsha.KETAKI"
           ],
           "type": "string",
           "writeOnly": true

@@ -185,7 +185,8 @@ enum AyanamshaKey {
   lahiri1940('ayanamsha.LAHIRI_1940'),
   lahiriVp285('ayanamsha.LAHIRI_VP285'),
   krishnamurtiVp291('ayanamsha.KRISHNAMURTI_VP291'),
-  lahiriIcrc('ayanamsha.LAHIRI_ICRC');
+  lahiriIcrc('ayanamsha.LAHIRI_ICRC'),
+  ketaki('ayanamsha.KETAKI');
 
   const AyanamshaKey(this.key);
 
@@ -3073,6 +3074,7 @@ final class MessagesSdkEntityAyanamsha {
   EntityForms get j1900 => _r.entity('ayanamsha.J1900');
   EntityForms get j2000 => _r.entity('ayanamsha.J2000');
   EntityForms get jnBhasin => _r.entity('ayanamsha.JN_BHASIN');
+  EntityForms get ketaki => _r.entity('ayanamsha.KETAKI');
   EntityForms get krishnamurti => _r.entity('ayanamsha.KRISHNAMURTI');
   EntityForms get krishnamurtiVp291 => _r.entity('ayanamsha.KRISHNAMURTI_VP291');
   EntityForms get lahiri => _r.entity('ayanamsha.LAHIRI');
