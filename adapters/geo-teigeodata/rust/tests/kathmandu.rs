@@ -46,13 +46,13 @@ fn kathmandu_resolves_to_its_zone_province_and_height() {
     // Who answered, and from which data.
     assert_eq!(place.source.name, NAME);
     assert_eq!(place.source.version, ENGINE_VERSION);
-    assert_eq!(&place.source, geo.source());
+    assert_eq!(place.source, geo.source());
     assert_eq!(
         place.source.tzdb.as_deref(),
-        geo.engine().tz_version(),
+        geo.snapshot().tz_version(),
         "the tzdb release is the one the packs' rules state"
     );
-    let layers = geo.engine().layers().len();
+    let layers = geo.snapshot().layers().len();
     assert_eq!(place.source.data_version.split(" + ").count(), layers);
     assert!(place.source.data_version.contains("np."));
 
@@ -68,14 +68,18 @@ fn a_point_no_pack_covers_answers_nothing() {
     let Some(geo) = common::provider("nowhere") else {
         return;
     };
-    // The middle of the Atlantic: no pack, no answer, and no refusal.
+    // The middle of the Atlantic: no area, no height, no unit, and no
+    // refusal; with the world's baseline installed, the nautical zone.
     let atlantic = at(0.0, -30.0);
     assert_eq!(geo.zone_at(atlantic).unwrap(), None);
     assert_eq!(geo.height_at(atlantic).unwrap(), None);
     assert_eq!(geo.admin_at(atlantic).unwrap(), Vec::new());
     let place = resolve(&geo, atlantic).unwrap();
-    assert!(place.zone.is_none() && place.height.is_none() && place.admin.is_empty());
-    assert_eq!(place.source, *geo.source());
+    assert!(place.height.is_none() && place.admin.is_empty());
+    let nautical = geo.at_sea(atlantic).unwrap();
+    assert_eq!(place.nautical, nautical);
+    assert_eq!(place.zone.as_deref(), nautical.then_some("Etc/GMT+2"));
+    assert_eq!(place.source, geo.source());
 }
 
 #[test]

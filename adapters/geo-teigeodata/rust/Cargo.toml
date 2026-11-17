@@ -26,27 +26,54 @@ engine-checkout = "../../../../../geodata"
 # reverse, and the SDK workspace builds without it.
 [workspace]
 
+[features]
+# The native set: packs opened as mapped files (`open`), the place
+# catalogue's search (`search`), terrain heights (`terrain`) and the zone
+# rules (`zone-rules`). Every set answers the zone, the admin units, the
+# names, the nearest places and the listings: they need no feature.
+default = ["mmap", "search", "terrain", "zone-rules"]
+# `TeigeodataGeo::open`: pack files mapped with `memmap2`. Native targets
+# only; the web reads packs into memory (`from_bytes`).
+mmap = ["teigeodata-engine/mmap"]
+# `GeoProvider::search`: a name to places, across scripts, ranked as
+# teigeodata ranks (exact, loose, prefix, fuzzy, substring, phonetic, a
+# named parent after a comma, a focus point). Without it a search is
+# refused as `CAPABILITY` on `search`; teigeodata's own `wasm-lookup`
+# leaves it out the same way.
+search = ["teigeodata-engine/search", "teigeodata-engine/substring"]
+# `GeoProvider::height_at` from a pack's DEM or its coarse grid. Without
+# it a point answers no height.
+terrain = ["teigeodata-engine/dem", "teigeodata-engine/dem-coarse"]
+# `GeoProvider::time_zones`: the packs' own zone rules. Without it the
+# provider hands over none.
+zone-rules = ["teigeodata-engine/tz-rules"]
+# The size probe's baseline (`examples/size.rs`): the same program over an
+# empty `GeoTable`, so the difference is what the adapter adds.
+probe-baseline = []
+
 [dependencies]
-# The engine at v0.3.1, with the components the port's three questions read
-# and no others: the timezone areas (`tz_at`), the admin outlines and ISO
-# codes (`admin_at`, `iso_code`), the names a zone and a unit are read by,
-# the terrain (`elevation_at`) from the fine DEM or, where only it is
-# installed, the coarse grid, and the zone rules, whose manifest names the
-# tzdb release (`tz_version`), lists (`tz_zones`) and dates (`tz_rules_start`).
-# A v0.1.0 reader refuses the packs v0.2.0 and later build.
-teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v0.3.1", default-features = false, features = [
-  "mmap",
+# The engine at v1.1.0, with what every feature set reads: the admin
+# hierarchy and its outlines (`admin`, `admin-index`), the names a place
+# is called by in each language and script (`names`), the timezone areas
+# (`timezone`, `timezone-index`), each place's population (`extra`), and
+# `Shared`, the engine teigeodata's store fills and refills while queries
+# run (`shared`). The features above add the rest. Packs of format 1
+# (teigeodata's data releases from `data-2026.11.15`) need a reader at
+# v1.0.0 or later; this one also reads the earlier formats.
+teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v1.1.0", default-features = false, features = [
   "admin",
   "admin-index",
   "names",
   "timezone",
   "timezone-index",
-  "dem",
-  "dem-coarse",
-  "tz-rules",
+  "extra",
+  "shared",
 ] }
 # The engine's grid point, from the same tag.
-teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v0.3.1" }
+teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v1.1.0" }
+# The pack format's place flags (`places::FLAG_FORMER`, a former unit),
+# which the engine reports and does not name; already in the engine's graph.
+teigeodata-format = { git = "https://github.com/teispace/teigeodata", tag = "v1.1.0", default-features = false }
 teistro-core = { path = "../../../crates/core" }
 teistro-port-geo = { path = "../../../crates/port-geo" }
 teistro-port-timezone = { path = "../../../crates/port-timezone" }
@@ -94,3 +121,31 @@ incremental = false
 
 [profile.dev.package."*"]
 debug = false
+
+# The size probe's profile (`examples/size.rs`, §13.3 of the design): as a
+# consumer ships, small and stripped, as teigeodata's own wasm profile is.
+[profile.size]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# The tests open pack files (`mmap`); a lookup-only build is checked by
+# building it (`docs/03-design/geo-port.md` §13.3), not by these.
+[[test]]
+name = "catalogue"
+required-features = ["mmap", "search", "zone-rules"]
+
+[[test]]
+name = "kathmandu"
+required-features = ["mmap", "zone-rules"]
+
+[[test]]
+name = "sdk"
+required-features = ["mmap"]
+
+[[test]]
+name = "zones"
+required-features = ["mmap", "zone-rules"]
