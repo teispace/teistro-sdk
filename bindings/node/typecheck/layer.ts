@@ -5,6 +5,10 @@
 
 import type {
   ResolvedPlace,
+  FoundPlace,
+  NearbyPlaces,
+  PlaceNames,
+  NamedPlace,
   GeoSource,
   DispositorChain,
   DispositorEnd,
@@ -3059,3 +3063,16 @@ function thePlace(ctx: Context): string {
   return `${source.dataVersion} ${place.zone} ${place.height?.metres} ${place.admin[0]?.code} ${String(chart)}`;
 }
 void thePlace;
+
+// The place catalogue: each answer typed, a listing's population with its
+// kind, and a request's misspelt field refused.
+function theCatalogue(ctx: Context): string {
+  const found: readonly FoundPlace[] = ctx.geo.search({ query: 'काठमाडौं', lang: 'en' });
+  const nearby: NearbyPlaces = ctx.geo.reverse({ latitudeDeg: 27.7172, longitudeDeg: 85.324 });
+  const names: PlaceNames = ctx.geo.names({ id: 'np-ktm', langs: ['ne'] });
+  const listed: readonly NamedPlace[] = ctx.geo.list({ within: 'NP', level: 1 });
+  // @ts-expect-error a search asks by `query`
+  ctx.geo.search({ text: 'Kathmandu' });
+  return `${found[0]?.place.label} ${nearby.admin[0]?.code} ${names.best[0]?.name?.text} ${listed[0]?.population?.kind}`;
+}
+void theCatalogue;

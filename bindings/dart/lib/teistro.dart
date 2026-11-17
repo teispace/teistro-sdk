@@ -1137,6 +1137,56 @@ final class GeoArea extends _Area {
         )
         as Map<String, Object?>,
   );
+
+  /// The places matching a name in any script the provider's data holds,
+  /// best first, as the provider ranks them: `"Name, Parent"` puts the
+  /// named parent's places first, and a `focus` prefers places near it.
+  /// Each is `{place, score}`, the place `{id, name, nameLang, label, kind,
+  /// level, code, latitudeDeg, longitudeDeg, population, parents}`.
+  /// [Status.capability] on `geo` with no provider.
+  ///
+  /// ```dart
+  /// final found = sdk.geo.search(const PlaceSearch(query: 'काठमाडौं'));
+  /// ```
+  List<Object?> search(PlaceSearch request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoSearch(jsonEncode(request)),
+            ),
+          )
+          as List<Object?>;
+
+  /// The named places nearest a point, nearest first, and the admin units
+  /// holding it, coarse to fine: `{near, admin}`. A level the data holds
+  /// no outline for is absent, never a refusal.
+  Map<String, Object?> reverse(PlaceReverse request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoReverse(jsonEncode(request)),
+            ),
+          )
+          as Map<String, Object?>;
+
+  /// A place's names, each with its language, script, type and origin, and
+  /// the one chosen for each language asked: `{id, best, all}`.
+  Map<String, Object?> names(PlaceNamesRequest request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoNames(jsonEncode(request)),
+            ),
+          )
+          as Map<String, Object?>;
+
+  /// The places of a unit (its id or ISO 3166 code), by admin level and
+  /// kind, ranked by population, each with `{people, kind}`, `kind`
+  /// `COUNTED` or `MODELLED`.
+  List<Object?> list(PlaceListing request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoList(jsonEncode(request)),
+            ),
+          )
+          as List<Object?>;
 }
 
 /// `ts_geo_load`'s answer, read into the generated record.
@@ -1155,6 +1205,7 @@ ResolvedPlace _resolvedPlace(Map<String, Object?> json) {
     latitudeDeg: (json['latitudeDeg']! as num).toDouble(),
     longitudeDeg: (json['longitudeDeg']! as num).toDouble(),
     zone: json['zone'] as String?,
+    nautical: json['nautical'] as bool? ?? false,
     height:
         height == null
             ? null

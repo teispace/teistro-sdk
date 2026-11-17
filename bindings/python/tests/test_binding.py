@@ -995,6 +995,37 @@ class TheLocaleEngine(WithLibrary):
         self.assertEqual(kept["source"]["dataVersion"], "2026.11.0")
         self.assertEqual(bare.verify.receipt(issued.receipt).verdict, "HELD")
 
+    def test_the_place_catalogue_answers_from_a_geo_table(self) -> None:
+        from pathlib import Path
+
+        table = (Path(__file__).resolve().parents[3] / "crates" / "sdk" / "tests" / "geo-table.json").read_text()
+        bare = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(bare.close)
+        with self.assertRaises(TeistroError) as refused:
+            bare.geo.search({"query": "x"})
+        self.assertEqual((refused.exception.status, refused.exception.field), (Status.CAPABILITY, "geo"))
+        sky = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        sky.geo.load(table)
+        found = sky.geo.search({"query": "काठमाडौं", "lang": "en"})
+        first = found[0]["place"]
+        self.assertEqual(
+            (first["id"], first["name"], first["label"], first["kind"]),
+            ("np-ktm", "Kathmandu", "Kathmandu, Bagmati, Nepal", "SETTLEMENT"),
+        )
+        nearby = sky.geo.reverse({"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "limit": 1, "lang": "ne"})
+        self.assertEqual(nearby["near"][0]["place"]["name"], "काठमाडौं")
+        self.assertEqual(nearby["admin"][1]["code"], "NP-P3")
+        names = sky.geo.names({"id": "np-ktm", "langs": ["ne", "sa"]})
+        self.assertEqual(names["best"][0]["name"]["text"], "काठमाडौं")
+        self.assertEqual(names["best"][1]["asked"], "sa")
+        listed = sky.geo.list({"within": "NP", "depth": None, "kinds": ["SETTLEMENT"]})
+        self.assertEqual([place["id"] for place in listed], ["np-ktm", "np-ltp", "np-pkr"])
+        self.assertEqual(listed[1]["population"]["kind"], "MODELLED")
+        with self.assertRaises(TeistroError) as empty:
+            sky.geo.search({"query": ""})
+        self.assertEqual((empty.exception.status, empty.exception.field), (Status.INVALID_ARG, "query"))
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

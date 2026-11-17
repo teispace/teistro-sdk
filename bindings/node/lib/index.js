@@ -3217,6 +3217,60 @@ export class GeoArea extends Area {
   resolve(request) {
     return deepFreeze(JSON.parse(run(this, (inner) => inner.geoResolve(JSON.stringify(request)))));
   }
+
+  /**
+   * The places matching a name in any script the provider's data holds,
+   * best first, as the provider ranks them (`03-design/geo-port.md` §12):
+   * `"Name, Parent"` puts the named parent's places first, and a `focus`
+   * prefers places near it. Each is `{place, score}`.
+   *
+   * @param {{ query: string, focus?: { latitudeDeg: number, longitudeDeg: number, scaleM?: number } | null, limit?: number, lang?: string | null }} request
+   * @returns {object[]} the places found, frozen
+   * @throws {TeistroError} `CAPABILITY` on `geo` with no provider;
+   *   `INVALID_ARG` on `query`, `limit`, `focus` or `lang`
+   */
+  search(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoSearch(JSON.stringify(request)))));
+  }
+
+  /**
+   * The named places nearest a point, nearest first, and the admin units
+   * holding it, coarse to fine: `{near, admin}`. A level the data holds no
+   * outline for is absent, never a refusal.
+   *
+   * @param {{ latitudeDeg: number, longitudeDeg: number, limit?: number, lang?: string | null }} request
+   * @returns {object} the places, frozen
+   * @throws {TeistroError} `CAPABILITY` on `geo` with no provider;
+   *   `INVALID_ARG` on a point out of range
+   */
+  reverse(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoReverse(JSON.stringify(request)))));
+  }
+
+  /**
+   * A place's names, each with its language, script, type and origin, and
+   * the one chosen for each language asked: `{id, best, all}`.
+   *
+   * @param {{ id: string, langs?: string[] }} request
+   * @returns {object} the names, frozen
+   * @throws {TeistroError} `INVALID_ARG` on `id` or `langs[i]`
+   */
+  names(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoNames(JSON.stringify(request)))));
+  }
+
+  /**
+   * The places of a unit (its id or ISO 3166 code), by admin level and
+   * kind, ranked by population, each with `{people, kind}`, `kind`
+   * `COUNTED` or `MODELLED`.
+   *
+   * @param {{ within: string, level?: number | null, kinds?: string[], depth?: number | null, limit?: number, lang?: string | null }} request
+   * @returns {object[]} the places, frozen
+   * @throws {TeistroError} `INVALID_ARG` on `within`, `depth` or `limit`
+   */
+  list(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoList(JSON.stringify(request)))));
+  }
 }
 
 /** `sdk.frame` — the coordinate conventions a request is expressed in. */

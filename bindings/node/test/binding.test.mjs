@@ -3773,6 +3773,38 @@ test('a place resolved through a geo table, and a chart on it that replays witho
   ctx.dispose();
 });
 
+test('the place catalogue: a search across scripts, a point named, a place\'s names, a unit\'s places', () => {
+  const root = process.env.TEISTRO_SDK_ROOT ?? fileURLToPath(new URL('../../..', import.meta.url));
+  const table = readFileSync(join(root, 'crates', 'sdk', 'tests', 'geo-table.json'), 'utf8');
+  const bare = context();
+  assert.throws(
+    () => bare.geo.search({ query: 'x' }),
+    (error) => error instanceof TeistroError && error.status === 'CAPABILITY' && error.field === 'geo',
+  );
+  bare.dispose();
+  const ctx = context();
+  ctx.geo.load(table);
+  const found = ctx.geo.search({ query: 'काठमाडौं', lang: 'en' });
+  assert.deepEqual(
+    [found[0].place.id, found[0].place.name, found[0].place.label, found[0].place.kind],
+    ['np-ktm', 'Kathmandu', 'Kathmandu, Bagmati, Nepal', 'SETTLEMENT'],
+  );
+  const nearby = ctx.geo.reverse({ latitudeDeg: 27.7172, longitudeDeg: 85.324, limit: 1, lang: 'ne' });
+  assert.equal(nearby.near[0].place.name, 'काठमाडौं');
+  assert.equal(nearby.admin[1].code, 'NP-P3');
+  const names = ctx.geo.names({ id: 'np-ktm', langs: ['ne', 'sa'] });
+  assert.equal(names.best[0].name.text, 'काठमाडौं');
+  assert.equal(names.best[1].asked, 'sa');
+  const listed = ctx.geo.list({ within: 'NP', depth: null, kinds: ['SETTLEMENT'] });
+  assert.deepEqual(listed.map((place) => place.id), ['np-ktm', 'np-ltp', 'np-pkr']);
+  assert.equal(listed[1].population.kind, 'MODELLED');
+  assert.throws(
+    () => ctx.geo.search({ query: '' }),
+    (error) => error instanceof TeistroError && error.status === 'INVALID_ARG' && error.field === 'query',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

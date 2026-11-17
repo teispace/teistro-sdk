@@ -244,6 +244,12 @@ import type {
   GeoSource,
   GroundHeight,
   ResolvedPlace,
+  PlaceSearch,
+  PlaceReverse,
+  PlaceNamesRequest,
+  PlaceListing,
+  PlaceKind,
+  Population,
   HarmonicRequest,
   HarshaRules,
   HitRequest,
@@ -8143,6 +8149,74 @@ export declare class GeoArea {
   load(table: GeoTable | string): GeoSource;
   /** A place resolved: zone, height, admin units and the provider's source. */
   resolve(request: PlaceRequest): ResolvedPlace;
+  /** The places matching a name in any script, best first. */
+  search(request: PlaceSearch): readonly FoundPlace[];
+  /** The named places nearest a point and the units holding it. */
+  reverse(request: PlaceReverse): NearbyPlaces;
+  /** A place's names, and the one chosen for each language asked. */
+  names(request: PlaceNamesRequest): PlaceNames;
+  /** The places of a unit, ranked by population. */
+  list(request: PlaceListing): readonly NamedPlace[];
+}
+
+/** A place of the geo provider's catalogue. */
+export interface NamedPlace {
+  readonly id: string;
+  readonly name: string;
+  readonly nameLang: string | null;
+  readonly label: string;
+  readonly kind: PlaceKind;
+  readonly level: number | null;
+  readonly code: string | null;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  readonly population: Population | null;
+  readonly parents: readonly ParentPlace[];
+}
+
+/** An admin unit above a place, coarse to fine. */
+export interface ParentPlace {
+  readonly id: string;
+  readonly name: string;
+  readonly level: number;
+  readonly code: string | null;
+}
+
+/** A place a search found, and its score within the query. */
+export interface FoundPlace {
+  readonly place: NamedPlace;
+  readonly score: number;
+}
+
+/** A place near a point, the distance and bearing from it to the point. */
+export interface NearPlace {
+  readonly place: NamedPlace;
+  readonly distanceM: number;
+  readonly bearingDeg: number;
+  readonly inside: boolean | null;
+}
+
+/** A point's nearest named places and the units holding it. */
+export interface NearbyPlaces {
+  readonly near: readonly NearPlace[];
+  readonly admin: readonly NamedPlace[];
+}
+
+/** One name of a place. */
+export interface PlaceName {
+  readonly text: string;
+  readonly lang: string | null;
+  readonly script: string | null;
+  readonly type: string | null;
+  readonly origin: string;
+  readonly machine: boolean;
+}
+
+/** A place's names, and the one chosen for each language asked. */
+export interface PlaceNames {
+  readonly id: string;
+  readonly best: readonly { readonly asked: string; readonly name: PlaceName | null }[];
+  readonly all: readonly PlaceName[];
 }
 
 /** A geo table `GeoArea.load` reads: boxes written coarse to fine. */
