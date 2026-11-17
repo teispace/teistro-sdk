@@ -102,7 +102,7 @@ pub struct LocaleReport {
 /// intl.set_override("en-Latn", "sdk.reason.appName", "Teistro Almanac")?;
 /// let report = intl.report();
 /// assert_eq!((report.current.as_str(), report.overrides), ("en-Latn", 1));
-/// assert_eq!(report.locales.len(), 5);
+/// assert_eq!(report.locales.len(), 6);
 /// assert!(report.loaded.is_empty());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```

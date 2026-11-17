@@ -511,3 +511,29 @@ fn the_tables_are_the_pinned_files() {
     }
     assert_eq!(SOURCES.len(), 4);
 }
+
+/// SR-140: English as Nepal writes it groups by lakhs and crores, so its
+/// words count in them too when a request leaves the grouping out, with
+/// the rupee's units from English, and its figure in Latin digits.
+#[test]
+fn nepals_english_counts_in_lakhs_and_crores() {
+    let intl = intl();
+    let words = asked(&intl, r#"{"number": 271700, "locale": "en-Latn-NP"}"#).unwrap();
+    assert_eq!(words.locale, "en-Latn-NP");
+    assert_eq!(words.text, "two lakh seventy-one thousand seven hundred");
+    assert_eq!(words.figure, "2,71,700");
+    let rupees = asked(
+        &intl,
+        r#"{"amount": {"currency": "NPR", "value": {"minor": 1234567800}, "only": true}, "locale": "en-Latn-NP"}"#,
+    )
+    .unwrap();
+    assert_eq!(rupees.figure, "1,23,45,678.00");
+    assert!(
+        rupees.text.starts_with("one crore twenty-three lakh"),
+        "{}",
+        rupees.text
+    );
+    // The base English keeps the thousands.
+    let international = asked(&intl, r#"{"number": 271700, "locale": "en-Latn"}"#).unwrap();
+    assert_eq!(international.figure, "271,700");
+}

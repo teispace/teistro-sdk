@@ -30,7 +30,7 @@ use teistro_ffi::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED};
 /// enough to damage byte by byte and built here rather than committed, so
 /// it is always the format this build reads.
 pub(crate) fn aspect_pack() -> Vec<u8> {
-    let tree = teistro_intl::source::Tree::load(&teistro_intl::sdk_root()).unwrap();
+    let tree = teistro_intl::source::Tree::sdk().unwrap();
     teistro_intl::pack::build(tree.locales.get("en-Latn").unwrap(), "sdk.aspect").unwrap()
 }
 

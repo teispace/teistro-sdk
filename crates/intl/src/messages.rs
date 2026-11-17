@@ -53,11 +53,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::amount::inr::Major;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Major { count: 2 };
             /// assert_eq!(Major::KEY, "sdk.amount.INR.major");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -83,11 +83,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::amount::inr::Minor;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Minor { count: 2 };
             /// assert_eq!(Minor::KEY, "sdk.amount.INR.minor");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -117,11 +117,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::amount::npr::Major;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Major { count: 2 };
             /// assert_eq!(Major::KEY, "sdk.amount.NPR.major");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -147,11 +147,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::amount::npr::Minor;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Minor { count: 2 };
             /// assert_eq!(Minor::KEY, "sdk.amount.NPR.minor");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -179,11 +179,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::amount::Only;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Only { amount: String::from("amount") };
         /// assert_eq!(Only::KEY, "sdk.amount.only");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -209,7 +209,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::amount::Words;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Words {
         ///     major_unit: String::from("majorUnit"),
@@ -219,7 +219,7 @@ pub mod sdk {
         ///     shape: String::from("shape"),
         /// };
         /// assert_eq!(Words::KEY, "sdk.amount.words");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -261,7 +261,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::aspect::Cast;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Cast {
         ///     from: teistro_core::catalogue::Graha::ALL[0],
@@ -269,7 +269,7 @@ pub mod sdk {
         ///     to: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(Cast::KEY, "sdk.aspect.cast");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -301,14 +301,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::aspect::Mutual;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Mutual {
         ///     first: teistro_core::catalogue::Graha::ALL[0],
         ///     second: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(Mutual::KEY, "sdk.aspect.mutual");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -345,7 +345,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -354,7 +354,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.ASSAM_SOLAR.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -389,11 +389,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.ASSAM_SOLAR.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -425,11 +425,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::assam_solar::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.ASSAM_SOLAR.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -463,11 +463,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.ASSAM_SOLAR.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -493,11 +493,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.ASSAM_SOLAR.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -523,11 +523,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.ASSAM_SOLAR.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -556,7 +556,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -566,7 +566,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.ASSAM_SOLAR.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -610,7 +610,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -619,7 +619,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.BANGLADESHI.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -654,11 +654,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.BANGLADESHI.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -690,11 +690,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bangladeshi::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.BANGLADESHI.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -728,11 +728,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.BANGLADESHI.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -758,11 +758,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.BANGLADESHI.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -788,11 +788,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.BANGLADESHI.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -821,7 +821,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -831,7 +831,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.BANGLADESHI.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -875,7 +875,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -884,7 +884,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -919,11 +919,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -955,11 +955,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::bikram_sambat::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.BIKRAM_SAMBAT.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -993,11 +993,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1023,11 +1023,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1053,11 +1053,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1086,7 +1086,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -1096,7 +1096,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1140,7 +1140,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::gregorian::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -1149,7 +1149,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.GREGORIAN.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1184,11 +1184,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::gregorian::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.GREGORIAN.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1220,11 +1220,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::gregorian::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.GREGORIAN.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1258,11 +1258,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::gregorian::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.GREGORIAN.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1288,11 +1288,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::gregorian::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.GREGORIAN.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1318,11 +1318,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::gregorian::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.GREGORIAN.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1351,7 +1351,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::gregorian::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -1361,7 +1361,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.GREGORIAN.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1405,7 +1405,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -1414,7 +1414,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.HIJRI_TABULAR.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1449,11 +1449,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.HIJRI_TABULAR.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1485,11 +1485,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::hijri_tabular::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.HIJRI_TABULAR.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1523,11 +1523,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.HIJRI_TABULAR.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1553,11 +1553,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.HIJRI_TABULAR.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1583,11 +1583,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.HIJRI_TABULAR.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1616,7 +1616,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -1626,7 +1626,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.HIJRI_TABULAR.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1670,7 +1670,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::indian_national::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -1679,7 +1679,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.INDIAN_NATIONAL.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1714,11 +1714,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::indian_national::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.INDIAN_NATIONAL.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1750,11 +1750,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::indian_national::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.INDIAN_NATIONAL.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1788,11 +1788,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::indian_national::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.INDIAN_NATIONAL.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1818,11 +1818,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::indian_national::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.INDIAN_NATIONAL.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1848,11 +1848,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::indian_national::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.INDIAN_NATIONAL.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1881,7 +1881,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::indian_national::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -1891,7 +1891,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.INDIAN_NATIONAL.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1935,11 +1935,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::iso_week::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Full::KEY, "sdk.calendar.ISO_WEEK.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -1971,11 +1971,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::iso_week::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.ISO_WEEK.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2007,11 +2007,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::iso_week::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.ISO_WEEK.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2051,7 +2051,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::julian::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -2060,7 +2060,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.JULIAN.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2095,11 +2095,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::julian::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.JULIAN.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2131,11 +2131,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::julian::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.JULIAN.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2169,11 +2169,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::julian::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.JULIAN.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2199,11 +2199,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::julian::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.JULIAN.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2229,11 +2229,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::julian::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.JULIAN.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2262,7 +2262,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::julian::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -2272,7 +2272,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.JULIAN.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2316,7 +2316,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::mixed::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -2325,7 +2325,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.MIXED.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2360,11 +2360,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::mixed::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
                 /// assert_eq!(Long::KEY, "sdk.calendar.MIXED.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2396,11 +2396,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::mixed::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.MIXED.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2434,11 +2434,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::mixed::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.MIXED.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2464,11 +2464,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::mixed::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.MIXED.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2494,11 +2494,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::mixed::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.MIXED.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2527,7 +2527,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::mixed::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -2537,7 +2537,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.MIXED.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2581,7 +2581,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Full;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Full {
                 ///     day: 2,
@@ -2591,7 +2591,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Full::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.full");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2629,7 +2629,7 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Long;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Long {
                 ///     day: 2,
@@ -2638,7 +2638,7 @@ pub mod sdk {
                 ///     year: 2,
                 /// };
                 /// assert_eq!(Long::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.long");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2673,11 +2673,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::date::Numeric;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Numeric { day: 2, leap: String::from("leap"), month: 2, year: 2 };
                 /// assert_eq!(Numeric::KEY, "sdk.calendar.TIBETAN_PHUGPA.date.numeric");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2714,11 +2714,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthName;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthName { leap: String::from("leap"), month: 2 };
             /// assert_eq!(MonthName::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthName");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2747,11 +2747,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthShort;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthShort { leap: String::from("leap"), month: 2 };
             /// assert_eq!(MonthShort::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthShort");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2780,11 +2780,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthYear;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
             /// assert_eq!(MonthYear::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthYear");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2813,7 +2813,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthYearRange;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = MonthYearRange {
             ///     greatest: String::from("greatest"),
@@ -2823,7 +2823,7 @@ pub mod sdk {
             ///     year: 2,
             /// };
             /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthYearRange");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2865,14 +2865,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::datetime::InZone;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = InZone {
             ///     at: teistro_core::quantity::JulianDay::J2000,
             ///     zone: String::from("+05:45"),
             /// };
             /// assert_eq!(InZone::KEY, "sdk.calendar.datetime.inZone");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2901,11 +2901,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::datetime::Join;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Join { date: String::from("date"), time: String::from("time") };
             /// assert_eq!(Join::KEY, "sdk.calendar.datetime.join");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2938,11 +2938,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Afternoon;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Afternoon;
             /// assert_eq!(Afternoon::KEY, "sdk.calendar.dayPeriod.afternoon");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2963,11 +2963,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Am;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Am;
             /// assert_eq!(Am::KEY, "sdk.calendar.dayPeriod.am");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -2988,11 +2988,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Evening;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Evening;
             /// assert_eq!(Evening::KEY, "sdk.calendar.dayPeriod.evening");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3013,11 +3013,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Morning;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Morning;
             /// assert_eq!(Morning::KEY, "sdk.calendar.dayPeriod.morning");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3038,11 +3038,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Night;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Night;
             /// assert_eq!(Night::KEY, "sdk.calendar.dayPeriod.night");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3063,11 +3063,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::day_period::Pm;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Pm;
             /// assert_eq!(Pm::KEY, "sdk.calendar.dayPeriod.pm");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3092,11 +3092,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::Day;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Day { n: 2.5 };
             /// assert_eq!(Day::KEY, "sdk.calendar.duration.day");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3122,11 +3122,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::DaysHours;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = DaysHours { seconds: 2.5 };
             /// assert_eq!(DaysHours::KEY, "sdk.calendar.duration.daysHours");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3152,11 +3152,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::Hour;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Hour { n: 2.5 };
             /// assert_eq!(Hour::KEY, "sdk.calendar.duration.hour");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3182,11 +3182,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::HoursMinutes;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = HoursMinutes { seconds: 2.5 };
             /// assert_eq!(HoursMinutes::KEY, "sdk.calendar.duration.hoursMinutes");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3212,11 +3212,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::HoursMinutesSeconds;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = HoursMinutesSeconds { seconds: 2.5 };
             /// assert_eq!(HoursMinutesSeconds::KEY, "sdk.calendar.duration.hoursMinutesSeconds");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3242,11 +3242,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::Minute;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Minute { n: 2.5 };
             /// assert_eq!(Minute::KEY, "sdk.calendar.duration.minute");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3267,16 +3267,46 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.duration.month`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Month;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Month { n: 2.5 };
+            /// assert_eq!(Month::KEY, "sdk.calendar.duration.month");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Month {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Month {
+                const KEY: &'static str = "sdk.calendar.duration.month";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
             /// The message `sdk.calendar.duration.second`.
             ///
             /// ```
             /// use teistro_intl::messages::sdk::calendar::duration::Second;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Second { n: 2.5 };
             /// assert_eq!(Second::KEY, "sdk.calendar.duration.second");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3297,6 +3327,132 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.duration.week`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Week;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Week { n: 2.5 };
+            /// assert_eq!(Week::KEY, "sdk.calendar.duration.week");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Week {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Week {
+                const KEY: &'static str = "sdk.calendar.duration.week";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.weeksDays`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::WeeksDays;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = WeeksDays { days: 2.5 };
+            /// assert_eq!(WeeksDays::KEY, "sdk.calendar.duration.weeksDays");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct WeeksDays {
+                /// The `days` parameter.
+                pub days: f64,
+            }
+
+            impl crate::TypedMessage for WeeksDays {
+                const KEY: &'static str = "sdk.calendar.duration.weeksDays";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("days", crate::Value::Num(self.days)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.year`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::Year;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Year { n: 2.5 };
+            /// assert_eq!(Year::KEY, "sdk.calendar.duration.year");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Year {
+                /// The `n` parameter.
+                pub n: f64,
+            }
+
+            impl crate::TypedMessage for Year {
+                const KEY: &'static str = "sdk.calendar.duration.year";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.yearsMonthsDays`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::YearsMonthsDays;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = YearsMonthsDays { days: 2.5, months: 2.5, years: 2.5 };
+            /// assert_eq!(YearsMonthsDays::KEY, "sdk.calendar.duration.yearsMonthsDays");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct YearsMonthsDays {
+                /// The `days` parameter.
+                pub days: f64,
+                /// The `months` parameter.
+                pub months: f64,
+                /// The `years` parameter.
+                pub years: f64,
+            }
+
+            impl crate::TypedMessage for YearsMonthsDays {
+                const KEY: &'static str = "sdk.calendar.duration.yearsMonthsDays";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("days", crate::Value::Num(self.days)),
+                        ("months", crate::Value::Num(self.months)),
+                        ("years", crate::Value::Num(self.years)),
+                    ])
+                }
+            }
+
         }
 
         /// The `ghati` group.
@@ -3306,11 +3462,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::ghati::Long;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Long { ghati: 2, pala: 2 };
             /// assert_eq!(Long::KEY, "sdk.calendar.ghati.long");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3339,11 +3495,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::ghati::Numeric;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Numeric { ghati: 2, pala: 2 };
             /// assert_eq!(Numeric::KEY, "sdk.calendar.ghati.numeric");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3374,14 +3530,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::LunarMonth;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = LunarMonth {
         ///     kind: String::from("kind"),
         ///     masa: teistro_core::catalogue::Masa::ALL[0],
         /// };
         /// assert_eq!(LunarMonth::KEY, "sdk.calendar.lunarMonth");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3410,7 +3566,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::NepalSambatDate;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = NepalSambatDate {
         ///     day: 2,
@@ -3420,7 +3576,7 @@ pub mod sdk {
         ///     year: 2,
         /// };
         /// assert_eq!(NepalSambatDate::KEY, "sdk.calendar.nepalSambatDate");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3458,11 +3614,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::NepalSambatHalf;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = NepalSambatHalf { paksha: String::from("paksha") };
         /// assert_eq!(NepalSambatHalf::KEY, "sdk.calendar.nepalSambatHalf");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3488,11 +3644,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::NepalSambatMonth;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = NepalSambatMonth { kind: String::from("kind"), month: 2 };
         /// assert_eq!(NepalSambatMonth::KEY, "sdk.calendar.nepalSambatMonth");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3521,11 +3677,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::Parana;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Parana { fast: String::from("fast") };
         /// assert_eq!(Parana::KEY, "sdk.calendar.parana");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3553,11 +3709,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::time::Long;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Long { hour: 2, minute: 2, second: 2 };
             /// assert_eq!(Long::KEY, "sdk.calendar.time.long");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3589,7 +3745,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::time::Long12;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Long12 {
             ///     day_period: String::from("dayPeriod"),
@@ -3599,7 +3755,7 @@ pub mod sdk {
             ///     second: 2,
             /// };
             /// assert_eq!(Long12::KEY, "sdk.calendar.time.long12");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3637,11 +3793,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::time::Numeric;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Numeric { hour: 2, minute: 2 };
             /// assert_eq!(Numeric::KEY, "sdk.calendar.time.numeric");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3670,7 +3826,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::calendar::time::Numeric12;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Numeric12 {
             ///     day_period: String::from("dayPeriod"),
@@ -3679,7 +3835,7 @@ pub mod sdk {
             ///     minute: 2,
             /// };
             /// assert_eq!(Numeric12::KEY, "sdk.calendar.time.numeric12");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3716,11 +3872,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::WeekdayName;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = WeekdayName { weekday: 2 };
         /// assert_eq!(WeekdayName::KEY, "sdk.calendar.weekdayName");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3746,11 +3902,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::calendar::WeekdayShort;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = WeekdayShort { weekday: 2 };
         /// assert_eq!(WeekdayShort::KEY, "sdk.calendar.weekdayShort");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -3780,14 +3936,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Age;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Age {
         ///     age: teistro_core::catalogue::AvasthaBaladi::ALL[0],
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(Age::KEY, "sdk.condition.age");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3816,14 +3972,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Brightness;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Brightness {
         ///     deeptadi: teistro_core::catalogue::AvasthaDeeptadi::ALL[0],
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(Brightness::KEY, "sdk.condition.brightness");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3852,11 +4008,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Combust;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Combust { graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(Combust::KEY, "sdk.condition.combust");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3882,14 +4038,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Dignity;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Dignity {
         ///     dignity: teistro_core::catalogue::Dignity::ALL[0],
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(Dignity::KEY, "sdk.condition.dignity");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3918,7 +4074,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Friendship;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Friendship {
         ///     compound: teistro_core::catalogue::Relationship::ALL[0],
@@ -3928,7 +4084,7 @@ pub mod sdk {
         ///     temporary: teistro_core::catalogue::Relationship::ALL[0],
         /// };
         /// assert_eq!(Friendship::KEY, "sdk.condition.friendship");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -3966,14 +4122,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Lajjitadi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Lajjitadi {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     states: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
         /// };
         /// assert_eq!(Lajjitadi::KEY, "sdk.condition.lajjitadi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4002,14 +4158,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Navamsha;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Navamsha {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(Navamsha::KEY, "sdk.condition.navamsha");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4038,11 +4194,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Retrograde;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Retrograde { graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(Retrograde::KEY, "sdk.condition.retrograde");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4068,7 +4224,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Undecided;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Undecided {
         ///     count: 2,
@@ -4076,7 +4232,7 @@ pub mod sdk {
         ///     states: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
         /// };
         /// assert_eq!(Undecided::KEY, "sdk.condition.undecided");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4108,11 +4264,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Vargottama;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Vargottama { graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(Vargottama::KEY, "sdk.condition.vargottama");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4138,14 +4294,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::condition::Wakefulness;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Wakefulness {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     wakefulness: teistro_core::catalogue::AvasthaJagradadi::ALL[0],
         /// };
         /// assert_eq!(Wakefulness::KEY, "sdk.condition.wakefulness");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4178,14 +4334,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Abhijit;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Abhijit {
         ///     from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         ///     to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Abhijit::KEY, "sdk.day.abhijit");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4214,11 +4370,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Ayana;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Ayana { ayana: teistro_core::catalogue::Ayana::ALL[0] };
         /// assert_eq!(Ayana::KEY, "sdk.day.ayana");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4244,7 +4400,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Kaala;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Kaala {
         ///     from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
@@ -4252,7 +4408,7 @@ pub mod sdk {
         ///     to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Kaala::KEY, "sdk.day.kaala");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4284,7 +4440,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Karana;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Karana {
         ///     ends: String::from("ends"),
@@ -4292,7 +4448,7 @@ pub mod sdk {
         ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Karana::KEY, "sdk.day.karana");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4324,14 +4480,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Month;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Month {
         ///     kind: String::from("kind"),
         ///     masa: teistro_core::catalogue::Masa::ALL[0],
         /// };
         /// assert_eq!(Month::KEY, "sdk.day.month");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4360,7 +4516,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::MoonSign;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = MoonSign {
         ///     ends: String::from("ends"),
@@ -4368,7 +4524,7 @@ pub mod sdk {
         ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(MoonSign::KEY, "sdk.day.moonSign");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4400,14 +4556,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Moonrise;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Moonrise {
         ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         ///     when: String::from("when"),
         /// };
         /// assert_eq!(Moonrise::KEY, "sdk.day.moonrise");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4436,14 +4592,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Moonset;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Moonset {
         ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         ///     when: String::from("when"),
         /// };
         /// assert_eq!(Moonset::KEY, "sdk.day.moonset");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4472,7 +4628,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Nakshatra;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Nakshatra {
         ///     ends: String::from("ends"),
@@ -4480,7 +4636,7 @@ pub mod sdk {
         ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Nakshatra::KEY, "sdk.day.nakshatra");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4512,11 +4668,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Ritu;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Ritu { ritu: teistro_core::catalogue::Ritu::ALL[0] };
         /// assert_eq!(Ritu::KEY, "sdk.day.ritu");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4542,7 +4698,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Sankranti;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Sankranti {
         ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
@@ -4550,7 +4706,7 @@ pub mod sdk {
         ///     when: String::from("when"),
         /// };
         /// assert_eq!(Sankranti::KEY, "sdk.day.sankranti");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4582,14 +4738,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Sun;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Sun {
         ///     rise: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         ///     set: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Sun::KEY, "sdk.day.sun");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4618,11 +4774,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::SunDown;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = SunDown;
         /// assert_eq!(SunDown::KEY, "sdk.day.sunDown");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4643,11 +4799,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::SunSign;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = SunSign { rashi: teistro_core::catalogue::Rashi::ALL[0] };
         /// assert_eq!(SunSign::KEY, "sdk.day.sunSign");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4673,11 +4829,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::SunUp;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = SunUp;
         /// assert_eq!(SunUp::KEY, "sdk.day.sunUp");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -4698,7 +4854,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Tithi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Tithi {
         ///     ends: String::from("ends"),
@@ -4707,7 +4863,7 @@ pub mod sdk {
         ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
         /// };
         /// assert_eq!(Tithi::KEY, "sdk.day.tithi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4742,11 +4898,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Vara;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
         /// assert_eq!(Vara::KEY, "sdk.day.vara");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -4772,7 +4928,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::day::Yoga;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Yoga {
         ///     ends: String::from("ends"),
@@ -4780,7 +4936,7 @@ pub mod sdk {
         ///     yoga: teistro_core::catalogue::Yoga::ALL[0],
         /// };
         /// assert_eq!(Yoga::KEY, "sdk.day.yoga");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5184,14 +5340,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::karaka::OfEight;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = OfEight {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     karaka: teistro_core::catalogue::CharaKaraka::ALL[0],
         /// };
         /// assert_eq!(OfEight::KEY, "sdk.karaka.ofEight");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5220,14 +5376,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::karaka::OfSeven;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = OfSeven {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     karaka: teistro_core::catalogue::CharaKaraka::ALL[0],
         /// };
         /// assert_eq!(OfSeven::KEY, "sdk.karaka.ofSeven");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5260,11 +5416,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::matching::Band;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Band { band: String::from("band") };
         /// assert_eq!(Band::KEY, "sdk.matching.band");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5290,11 +5446,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::matching::Graded;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Graded { band: String::from("band"), total: 2.5 };
         /// assert_eq!(Graded::KEY, "sdk.matching.graded");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5327,11 +5483,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::By;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = By { by: String::from("by") };
         /// assert_eq!(By::KEY, "sdk.naming.by");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5357,11 +5513,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Clause;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Clause { clause: String::from("clause") };
         /// assert_eq!(Clause::KEY, "sdk.naming.clause");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5387,11 +5543,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Counted;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Counted { counted: String::from("counted") };
         /// assert_eq!(Counted::KEY, "sdk.naming.counted");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5417,11 +5573,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Holds;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Holds { holds: String::from("holds") };
         /// assert_eq!(Holds::KEY, "sdk.naming.holds");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5447,7 +5603,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Pada;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Pada {
         ///     nakshatra: teistro_core::catalogue::Nakshatra::ALL[0],
@@ -5455,7 +5611,7 @@ pub mod sdk {
         ///     syllable: String::from("syllable"),
         /// };
         /// assert_eq!(Pada::KEY, "sdk.naming.pada");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5487,11 +5643,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Source;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Source { source: String::from("source") };
         /// assert_eq!(Source::KEY, "sdk.naming.source");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5517,11 +5673,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::naming::Syllables;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Syllables { count: 2 };
         /// assert_eq!(Syllables::KEY, "sdk.naming.syllables");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -5551,11 +5707,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::AvasthaBaladi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AvasthaBaladi { avastha: teistro_core::catalogue::AvasthaBaladi::ALL[0] };
         /// assert_eq!(AvasthaBaladi::KEY, "sdk.phala.avasthaBaladi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5581,11 +5737,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::AvasthaDeeptadi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AvasthaDeeptadi { avastha: teistro_core::catalogue::AvasthaDeeptadi::ALL[0] };
         /// assert_eq!(AvasthaDeeptadi::KEY, "sdk.phala.avasthaDeeptadi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5611,11 +5767,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::AvasthaJagradadi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AvasthaJagradadi { avastha: teistro_core::catalogue::AvasthaJagradadi::ALL[0] };
         /// assert_eq!(AvasthaJagradadi::KEY, "sdk.phala.avasthaJagradadi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5641,11 +5797,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::AvasthaLajjitadi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AvasthaLajjitadi { avastha: teistro_core::catalogue::AvasthaLajjitadi::ALL[0] };
         /// assert_eq!(AvasthaLajjitadi::KEY, "sdk.phala.avasthaLajjitadi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5671,11 +5827,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::DashaActivation;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = DashaActivation { graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(DashaActivation::KEY, "sdk.phala.dashaActivation");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5701,11 +5857,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::DashaLord;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = DashaLord { graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(DashaLord::KEY, "sdk.phala.dashaLord");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5731,11 +5887,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Dignity;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Dignity { dignity: teistro_core::catalogue::Dignity::ALL[0] };
         /// assert_eq!(Dignity::KEY, "sdk.phala.dignity");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5761,11 +5917,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Gana;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Gana { gana: teistro_core::catalogue::Gana::ALL[0] };
         /// assert_eq!(Gana::KEY, "sdk.phala.gana");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5791,7 +5947,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::GrahaInBhava;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = GrahaInBhava {
         ///     bhava: 2,
@@ -5799,7 +5955,7 @@ pub mod sdk {
         ///     phala: String::from("phala"),
         /// };
         /// assert_eq!(GrahaInBhava::KEY, "sdk.phala.grahaInBhava");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5831,11 +5987,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::LagnaRashi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = LagnaRashi { rashi: teistro_core::catalogue::Rashi::ALL[0] };
         /// assert_eq!(LagnaRashi::KEY, "sdk.phala.lagnaRashi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5861,11 +6017,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Nadi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Nadi { nadi: teistro_core::catalogue::Nadi::ALL[0] };
         /// assert_eq!(Nadi::KEY, "sdk.phala.nadi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5891,11 +6047,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Nakshatra;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
         /// assert_eq!(Nakshatra::KEY, "sdk.phala.nakshatra");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5921,11 +6077,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Namakarana;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Namakarana { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
         /// assert_eq!(Namakarana::KEY, "sdk.phala.namakarana");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5951,11 +6107,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::SadeSati;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = SadeSati { house: 2, phala: String::from("phala") };
         /// assert_eq!(SadeSati::KEY, "sdk.phala.sadeSati");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -5984,11 +6140,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::State;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = State { state: teistro_core::catalogue::State::ALL[0] };
         /// assert_eq!(State::KEY, "sdk.phala.state");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6014,11 +6170,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Tatwa;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Tatwa { tatwa: teistro_core::catalogue::Tatwa::ALL[0] };
         /// assert_eq!(Tatwa::KEY, "sdk.phala.tatwa");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6044,11 +6200,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Tithi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0] };
         /// assert_eq!(Tithi::KEY, "sdk.phala.tithi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6074,11 +6230,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Vara;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
         /// assert_eq!(Vara::KEY, "sdk.phala.vara");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6104,11 +6260,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Varna;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Varna { varna: teistro_core::catalogue::Varna::ALL[0] };
         /// assert_eq!(Varna::KEY, "sdk.phala.varna");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6134,11 +6290,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Yoga;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] };
         /// assert_eq!(Yoga::KEY, "sdk.phala.yoga");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6164,11 +6320,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::phala::Yoni;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Yoni { yoni: teistro_core::catalogue::Yoni::ALL[0] };
         /// assert_eq!(Yoni::KEY, "sdk.phala.yoni");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6198,7 +6354,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rashifal::Ingress;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Ingress {
         ///     good: String::from("good"),
@@ -6207,7 +6363,7 @@ pub mod sdk {
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(Ingress::KEY, "sdk.rashifal.ingress");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6242,11 +6398,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rashifal::Saturn;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Saturn { house: 2, phase: String::from("phase"), spell: String::from("spell") };
         /// assert_eq!(Saturn::KEY, "sdk.rashifal.saturn");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6278,7 +6434,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rashifal::Station;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Station {
         ///     good: String::from("good"),
@@ -6288,7 +6444,7 @@ pub mod sdk {
         ///     turns: String::from("turns"),
         /// };
         /// assert_eq!(Station::KEY, "sdk.rashifal.station");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6330,11 +6486,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Effect;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Effect { rule: String::from("rule"), text: String::from("text") };
         /// assert_eq!(Effect::KEY, "sdk.reading.effect");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6363,11 +6519,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::LifeClass;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = LifeClass { class: String::from("class"), rule: String::from("rule") };
         /// assert_eq!(LifeClass::KEY, "sdk.reading.lifeClass");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6396,11 +6552,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::LifeSpan;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = LifeSpan { count: 2, rule: String::from("rule"), unit: String::from("unit") };
         /// assert_eq!(LifeSpan::KEY, "sdk.reading.lifeSpan");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6432,7 +6588,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Participants;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Participants {
         ///     count: 2,
@@ -6440,7 +6596,7 @@ pub mod sdk {
         ///     rule: String::from("rule"),
         /// };
         /// assert_eq!(Participants::KEY, "sdk.reading.participants");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6472,11 +6628,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Says;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Says { reading: String::from("reading"), rule: String::from("rule") };
         /// assert_eq!(Says::KEY, "sdk.reading.says");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6505,11 +6661,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Severity;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Severity { rule: String::from("rule"), severity: 2 };
         /// assert_eq!(Severity::KEY, "sdk.reading.severity");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6538,11 +6694,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Status;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Status { rule: String::from("rule"), status: String::from("status") };
         /// assert_eq!(Status::KEY, "sdk.reading.status");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6571,11 +6727,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reading::Timing;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Timing { reading: String::from("reading"), rule: String::from("rule") };
         /// assert_eq!(Timing::KEY, "sdk.reading.timing");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6608,11 +6764,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::AppName;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AppName;
         /// assert_eq!(AppName::KEY, "sdk.reason.appName");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6633,7 +6789,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Ashtakavarga;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Ashtakavarga {
         ///     bindus: 2,
@@ -6641,7 +6797,7 @@ pub mod sdk {
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(Ashtakavarga::KEY, "sdk.reason.ashtakavarga");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6673,11 +6829,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::BhavaBala;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = BhavaBala { bhava: 2, virupas: 2.5 };
         /// assert_eq!(BhavaBala::KEY, "sdk.reason.bhavaBala");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6706,11 +6862,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::BhavaInRashi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = BhavaInRashi { bhava: 2, rashi: teistro_core::catalogue::Rashi::ALL[0] };
         /// assert_eq!(BhavaInRashi::KEY, "sdk.reason.bhavaInRashi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6739,7 +6895,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::ChalitShift;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = ChalitShift {
         ///     bhava: 2,
@@ -6747,7 +6903,7 @@ pub mod sdk {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         /// };
         /// assert_eq!(ChalitShift::KEY, "sdk.reason.chalitShift");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6779,11 +6935,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Conjunction;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Conjunction { count: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(Conjunction::KEY, "sdk.reason.conjunction");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6814,14 +6970,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::dasha::Favour;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Favour {
             ///     favour: String::from("favour"),
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
             /// };
             /// assert_eq!(Favour::KEY, "sdk.reason.dasha.favour");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6850,14 +7006,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::dasha::Phase;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Phase {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
             ///     phase: String::from("phase"),
             /// };
             /// assert_eq!(Phase::KEY, "sdk.reason.dasha.phase");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6886,14 +7042,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::dasha::Place;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Place {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
             ///     nature: String::from("nature"),
             /// };
             /// assert_eq!(Place::KEY, "sdk.reason.dasha.place");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6922,7 +7078,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::dasha::Points;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Points {
             ///     asubhanka: 2.5,
@@ -6930,7 +7086,7 @@ pub mod sdk {
             ///     subhanka: 2.5,
             /// };
             /// assert_eq!(Points::KEY, "sdk.reason.dasha.points");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -6964,11 +7120,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::ExactLongitude;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = ExactLongitude { longitude: 2.5 };
         /// assert_eq!(ExactLongitude::KEY, "sdk.reason.exactLongitude");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -6996,7 +7152,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::gochar::Ashtakavarga;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Ashtakavarga {
             ///     bindus: 2,
@@ -7004,7 +7160,7 @@ pub mod sdk {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
             /// };
             /// assert_eq!(Ashtakavarga::KEY, "sdk.reason.gochar.ashtakavarga");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7036,14 +7192,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::gochar::From;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = From {
             ///     from: String::from("from"),
             ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
             /// };
             /// assert_eq!(From::KEY, "sdk.reason.gochar.from");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7072,7 +7228,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::gochar::Fruition;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Fruition {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
@@ -7080,7 +7236,7 @@ pub mod sdk {
             ///     part: String::from("part"),
             /// };
             /// assert_eq!(Fruition::KEY, "sdk.reason.gochar.fruition");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7112,7 +7268,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::gochar::Transit;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Transit {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
@@ -7120,7 +7276,7 @@ pub mod sdk {
             ///     verdict: String::from("verdict"),
             /// };
             /// assert_eq!(Transit::KEY, "sdk.reason.gochar.transit");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7152,14 +7308,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::gochar::Vedha;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Vedha {
             ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
             ///     house: 2,
             /// };
             /// assert_eq!(Vedha::KEY, "sdk.reason.gochar.vedha");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7190,11 +7346,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::GrahaAt;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = GrahaAt { graha: teistro_core::catalogue::Graha::ALL[0], longitude: 2.5 };
         /// assert_eq!(GrahaAt::KEY, "sdk.reason.grahaAt");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7223,11 +7379,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::GrahaInBhava;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = GrahaInBhava { bhava: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(GrahaInBhava::KEY, "sdk.reason.grahaInBhava");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7256,14 +7412,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::GrahaInRashi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = GrahaInRashi {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(GrahaInRashi::KEY, "sdk.reason.grahaInRashi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7292,14 +7448,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Greeting;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Greeting {
         ///     gender: teistro_intl::messages::Gender::M,
         ///     name: String::from("name"),
         /// };
         /// assert_eq!(Greeting::KEY, "sdk.reason.greeting");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7328,11 +7484,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Lordship;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Lordship { bhava: 2, graha: teistro_core::catalogue::Graha::ALL[0] };
         /// assert_eq!(Lordship::KEY, "sdk.reason.lordship");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7361,14 +7517,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Occupants;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Occupants {
         ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(Occupants::KEY, "sdk.reason.occupants");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7399,11 +7555,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::ByDay;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = ByDay { by_day: String::from("byDay") };
             /// assert_eq!(ByDay::KEY, "sdk.reason.panchanga.byDay");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7429,11 +7585,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Karana;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Karana { karana: teistro_core::catalogue::Karana::ALL[0] };
             /// assert_eq!(Karana::KEY, "sdk.reason.panchanga.karana");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7459,11 +7615,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Nakshatra;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
             /// assert_eq!(Nakshatra::KEY, "sdk.reason.panchanga.nakshatra");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7489,11 +7645,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Pada;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Pada { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0], pada: 2 };
             /// assert_eq!(Pada::KEY, "sdk.reason.panchanga.pada");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7522,14 +7678,14 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Tithi;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Tithi {
             ///     paksha: teistro_core::catalogue::Paksha::ALL[0],
             ///     tithi: teistro_core::catalogue::Tithi::ALL[0],
             /// };
             /// assert_eq!(Tithi::KEY, "sdk.reason.panchanga.tithi");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7558,11 +7714,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Vara;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
             /// assert_eq!(Vara::KEY, "sdk.reason.panchanga.vara");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7588,11 +7744,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::panchanga::Yoga;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] };
             /// assert_eq!(Yoga::KEY, "sdk.reason.panchanga.yoga");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7620,11 +7776,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::PointAt;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = PointAt { longitude: 2.5, point: teistro_core::catalogue::Point::ALL[0] };
         /// assert_eq!(PointAt::KEY, "sdk.reason.pointAt");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7653,14 +7809,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::PointInRashi;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = PointInRashi {
         ///     point: teistro_core::catalogue::Point::ALL[0],
         ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
         /// };
         /// assert_eq!(PointInRashi::KEY, "sdk.reason.pointInRashi");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7689,11 +7845,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::RashiNature;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = RashiNature { rashi: teistro_core::catalogue::Rashi::ALL[0] };
         /// assert_eq!(RashiNature::KEY, "sdk.reason.rashiNature");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7719,11 +7875,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Sarvashtakavarga;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Sarvashtakavarga { bindus: 2, rashi: teistro_core::catalogue::Rashi::ALL[0] };
         /// assert_eq!(Sarvashtakavarga::KEY, "sdk.reason.sarvashtakavarga");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7754,7 +7910,7 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::strength::Meets;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Meets {
             ///     graha: teistro_core::catalogue::Graha::ALL[0],
@@ -7762,7 +7918,7 @@ pub mod sdk {
             ///     required: 2.5,
             /// };
             /// assert_eq!(Meets::KEY, "sdk.reason.strength.meets");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7794,11 +7950,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::strength::Rank;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Rank { rank: 2 };
             /// assert_eq!(Rank::KEY, "sdk.reason.strength.rank");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7824,11 +7980,11 @@ pub mod sdk {
             /// ```
             /// use teistro_intl::messages::sdk::reason::strength::Score;
             /// use teistro_intl::source::Tree;
-            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            /// use teistro_intl::{Intl, TypedMessage};
             ///
             /// let message = Score { graha: teistro_core::catalogue::Graha::ALL[0], score: 2.5 };
             /// assert_eq!(Score::KEY, "sdk.reason.strength.score");
-            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
             /// let rendered = intl.render_typed(&message);
             /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7859,7 +8015,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Vimshopaka;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Vimshopaka {
         ///     graha: teistro_core::catalogue::Graha::ALL[0],
@@ -7867,7 +8023,7 @@ pub mod sdk {
         ///     score: 2.5,
         /// };
         /// assert_eq!(Vimshopaka::KEY, "sdk.reason.vimshopaka");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -7899,11 +8055,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::reason::Welcome;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Welcome;
         /// assert_eq!(Welcome::KEY, "sdk.reason.welcome");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7928,11 +8084,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::AnniversaryKind;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AnniversaryKind { kind: String::from("kind") };
         /// assert_eq!(AnniversaryKind::KEY, "sdk.rite.anniversaryKind");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7958,11 +8114,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::AshauchDays;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AshauchDays { days: 2.5 };
         /// assert_eq!(AshauchDays::KEY, "sdk.rite.ashauchDays");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -7988,11 +8144,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::AshauchKind;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AshauchKind { kind: String::from("kind") };
         /// assert_eq!(AshauchKind::KEY, "sdk.rite.ashauchKind");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8018,11 +8174,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::AshauchLength;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = AshauchLength { length: String::from("length") };
         /// assert_eq!(AshauchLength::KEY, "sdk.rite.ashauchLength");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8048,11 +8204,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::Clause;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Clause { clause: String::from("clause") };
         /// assert_eq!(Clause::KEY, "sdk.rite.clause");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8078,11 +8234,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::FirstYearRite;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = FirstYearRite { rite: String::from("rite") };
         /// assert_eq!(FirstYearRite::KEY, "sdk.rite.firstYearRite");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8108,11 +8264,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::KinKeeps;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = KinKeeps { keeps: String::from("keeps") };
         /// assert_eq!(KinKeeps::KEY, "sdk.rite.kinKeeps");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8138,11 +8294,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::Relation;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Relation { relation: String::from("relation") };
         /// assert_eq!(Relation::KEY, "sdk.rite.relation");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8168,11 +8324,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::Rite;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Rite { rite: String::from("rite") };
         /// assert_eq!(Rite::KEY, "sdk.rite.rite");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8198,11 +8354,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::RiteBeginning;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = RiteBeginning { beginning: String::from("beginning") };
         /// assert_eq!(RiteBeginning::KEY, "sdk.rite.riteBeginning");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8228,11 +8384,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::RiteForm;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = RiteForm { form: String::from("form") };
         /// assert_eq!(RiteForm::KEY, "sdk.rite.riteForm");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8258,11 +8414,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::RiteVerdict;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = RiteVerdict { verdict: String::from("verdict") };
         /// assert_eq!(RiteVerdict::KEY, "sdk.rite.riteVerdict");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8288,11 +8444,11 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::rite::SapindanaAt;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = SapindanaAt { at: String::from("at") };
         /// assert_eq!(SapindanaAt::KEY, "sdk.rite.sapindanaAt");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8322,7 +8478,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::sankalpa::Himavatkhande;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = Himavatkhande {
         ///     adhika: String::from("adhika"),
@@ -8354,7 +8510,7 @@ pub mod sdk {
         ///     yoga: teistro_core::catalogue::Yoga::ALL[0],
         /// };
         /// assert_eq!(Himavatkhande::KEY, "sdk.sankalpa.himavatkhande");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -8458,14 +8614,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandeMonth;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = HimavatkhandeMonth {
         ///     adhika: String::from("adhika"),
         ///     masa: teistro_core::catalogue::Masa::ALL[0],
         /// };
         /// assert_eq!(HimavatkhandeMonth::KEY, "sdk.sankalpa.himavatkhandeMonth");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -8494,7 +8650,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandePitris;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = HimavatkhandePitris {
         ///     father: String::from("father"),
@@ -8505,7 +8661,7 @@ pub mod sdk {
         ///     purpose: String::from("purpose"),
         /// };
         /// assert_eq!(HimavatkhandePitris::KEY, "sdk.sankalpa.himavatkhandePitris");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8546,7 +8702,7 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandePlace;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = HimavatkhandePlace {
         ///     has_kshetra: String::from("hasKshetra"),
@@ -8555,7 +8711,7 @@ pub mod sdk {
         ///     river: String::from("river"),
         /// };
         /// assert_eq!(HimavatkhandePlace::KEY, "sdk.sankalpa.himavatkhandePlace");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8590,14 +8746,14 @@ pub mod sdk {
         /// ```
         /// use teistro_intl::messages::sdk::sankalpa::HimavatkhandeVara;
         /// use teistro_intl::source::Tree;
-        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        /// use teistro_intl::{Intl, TypedMessage};
         ///
         /// let message = HimavatkhandeVara {
         ///     vara: teistro_core::catalogue::Vara::ALL[0],
         ///     vara_key: String::from("varaKey"),
         /// };
         /// assert_eq!(HimavatkhandeVara::KEY, "sdk.sankalpa.himavatkhandeVara");
-        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         ///     .expect("plural rules for every locale");
         /// let rendered = intl.render_typed(&message);
         /// // An entity's record may be a pack's; without it the message says what is missing.
@@ -8634,11 +8790,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::aspect::DrishtiTable;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DrishtiTable;
                 /// assert_eq!(DrishtiTable::KEY, "sdk.settings.effect.aspect.drishtiTable");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8659,11 +8815,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::aspect::NodeAspects;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NodeAspects;
                 /// assert_eq!(NodeAspects::KEY, "sdk.settings.effect.aspect.nodeAspects");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8688,11 +8844,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::calendars::CivilCalendar;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = CivilCalendar;
                 /// assert_eq!(CivilCalendar::KEY, "sdk.settings.effect.calendars.civilCalendar");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8713,11 +8869,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::calendars::Eras;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Eras;
                 /// assert_eq!(Eras::KEY, "sdk.settings.effect.calendars.eras");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8763,11 +8919,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::calendars::LunarMonth;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = LunarMonth;
                 /// assert_eq!(LunarMonth::KEY, "sdk.settings.effect.calendars.lunarMonth");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8813,11 +8969,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::calendars::Samvatsara;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Samvatsara;
                 /// assert_eq!(Samvatsara::KEY, "sdk.settings.effect.calendars.samvatsara");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8842,11 +8998,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::AfterCycle;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AfterCycle;
                 /// assert_eq!(AfterCycle::KEY, "sdk.settings.effect.dasha.afterCycle");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8867,11 +9023,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::AshtottariGrouping;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AshtottariGrouping;
                 /// assert_eq!(AshtottariGrouping::KEY, "sdk.settings.effect.dasha.ashtottariGrouping");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8892,11 +9048,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaPlace;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AyurdayaPlace;
                 /// assert_eq!(AyurdayaPlace::KEY, "sdk.settings.effect.dasha.ayurdayaPlace");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8917,11 +9073,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaReadings;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AyurdayaReadings;
                 /// assert_eq!(AyurdayaReadings::KEY, "sdk.settings.effect.dasha.ayurdayaReadings");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8942,11 +9098,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::AyurdayaSpan;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AyurdayaSpan;
                 /// assert_eq!(AyurdayaSpan::KEY, "sdk.settings.effect.dasha.ayurdayaSpan");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8967,11 +9123,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::Balance;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Balance;
                 /// assert_eq!(Balance::KEY, "sdk.settings.effect.dasha.balance");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -8992,11 +9148,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::BirthPeriod;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BirthPeriod;
                 /// assert_eq!(BirthPeriod::KEY, "sdk.settings.effect.dasha.birthPeriod");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9017,11 +9173,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::DecennialDivision;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DecennialDivision;
                 /// assert_eq!(DecennialDivision::KEY, "sdk.settings.effect.dasha.decennialDivision");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9042,11 +9198,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::Depth;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Depth;
                 /// assert_eq!(Depth::KEY, "sdk.settings.effect.dasha.depth");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9067,11 +9223,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::DualLord;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DualLord;
                 /// assert_eq!(DualLord::KEY, "sdk.settings.effect.dasha.dualLord");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9092,11 +9248,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::FirdariaNodes;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = FirdariaNodes;
                 /// assert_eq!(FirdariaNodes::KEY, "sdk.settings.effect.dasha.firdariaNodes");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9117,11 +9273,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraAfterNinth;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = KalachakraAfterNinth;
                 /// assert_eq!(KalachakraAfterNinth::KEY, "sdk.settings.effect.dasha.kalachakraAfterNinth");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9142,11 +9298,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraBalance;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = KalachakraBalance;
                 /// assert_eq!(KalachakraBalance::KEY, "sdk.settings.effect.dasha.kalachakraBalance");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9167,11 +9323,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::KalachakraMembership;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = KalachakraMembership;
                 /// assert_eq!(KalachakraMembership::KEY, "sdk.settings.effect.dasha.kalachakraMembership");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9192,11 +9348,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::KarakaDivision;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = KarakaDivision;
                 /// assert_eq!(KarakaDivision::KEY, "sdk.settings.effect.dasha.karakaDivision");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9217,11 +9373,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::NaisargikaDivision;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NaisargikaDivision;
                 /// assert_eq!(NaisargikaDivision::KEY, "sdk.settings.effect.dasha.naisargikaDivision");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9242,11 +9398,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::RashiStart;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = RashiStart;
                 /// assert_eq!(RashiStart::KEY, "sdk.settings.effect.dasha.rashiStart");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9267,11 +9423,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::ReleasingSharedSign;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = ReleasingSharedSign;
                 /// assert_eq!(ReleasingSharedSign::KEY, "sdk.settings.effect.dasha.releasingSharedSign");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9292,11 +9448,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::SeedOverflow;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = SeedOverflow;
                 /// assert_eq!(SeedOverflow::KEY, "sdk.settings.effect.dasha.seedOverflow");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9317,11 +9473,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::ShantaSign;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = ShantaSign;
                 /// assert_eq!(ShantaSign::KEY, "sdk.settings.effect.dasha.shantaSign");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9342,11 +9498,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::StrongestGraha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = StrongestGraha;
                 /// assert_eq!(StrongestGraha::KEY, "sdk.settings.effect.dasha.strongestGraha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9367,11 +9523,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::dasha::YearLength;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = YearLength;
                 /// assert_eq!(YearLength::KEY, "sdk.settings.effect.dasha.yearLength");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9396,11 +9552,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::day::DayBoundary;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DayBoundary;
                 /// assert_eq!(DayBoundary::KEY, "sdk.settings.effect.day.dayBoundary");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9421,11 +9577,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::day::GhatiReckoning;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = GhatiReckoning;
                 /// assert_eq!(GhatiReckoning::KEY, "sdk.settings.effect.day.ghatiReckoning");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9446,11 +9602,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::day::HoraReckoning;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = HoraReckoning;
                 /// assert_eq!(HoraReckoning::KEY, "sdk.settings.effect.day.horaReckoning");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9496,11 +9652,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PolarDayPolicy;
                 /// assert_eq!(PolarDayPolicy::KEY, "sdk.settings.effect.day.polarDayPolicy");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9521,11 +9677,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::day::Sunrise;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Sunrise;
                 /// assert_eq!(Sunrise::KEY, "sdk.settings.effect.day.sunrise");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9579,11 +9735,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Ayanamsha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Ayanamsha;
                 /// assert_eq!(Ayanamsha::KEY, "sdk.settings.effect.frame.ayanamsha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9604,11 +9760,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::AyanamshaBasis;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AyanamshaBasis;
                 /// assert_eq!(AyanamshaBasis::KEY, "sdk.settings.effect.frame.ayanamshaBasis");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9629,11 +9785,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Centre;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Centre;
                 /// assert_eq!(Centre::KEY, "sdk.settings.effect.frame.centre");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9679,11 +9835,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::NakshatraScheme;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NakshatraScheme;
                 /// assert_eq!(NakshatraScheme::KEY, "sdk.settings.effect.frame.nakshatraScheme");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9704,11 +9860,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Node;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Node;
                 /// assert_eq!(Node::KEY, "sdk.settings.effect.frame.node");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9754,11 +9910,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Positions;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Positions;
                 /// assert_eq!(Positions::KEY, "sdk.settings.effect.frame.positions");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9804,11 +9960,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Siddhanta;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Siddhanta;
                 /// assert_eq!(Siddhanta::KEY, "sdk.settings.effect.frame.siddhanta");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9829,11 +9985,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::frame::Zodiac;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Zodiac;
                 /// assert_eq!(Zodiac::KEY, "sdk.settings.effect.frame.zodiac");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9858,11 +10014,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::gochar::AshtakavargaGoodFrom;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AshtakavargaGoodFrom;
                 /// assert_eq!(AshtakavargaGoodFrom::KEY, "sdk.settings.effect.gochar.ashtakavargaGoodFrom");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9883,11 +10039,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::gochar::NodeObstruction;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NodeObstruction;
                 /// assert_eq!(NodeObstruction::KEY, "sdk.settings.effect.gochar.nodeObstruction");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9908,11 +10064,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::gochar::NodeVedha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NodeVedha;
                 /// assert_eq!(NodeVedha::KEY, "sdk.settings.effect.gochar.nodeVedha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9933,11 +10089,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::gochar::TransitCentre;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = TransitCentre;
                 /// assert_eq!(TransitCentre::KEY, "sdk.settings.effect.gochar.transitCentre");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9962,11 +10118,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::houses::ChalitSystem;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = ChalitSystem;
                 /// assert_eq!(ChalitSystem::KEY, "sdk.settings.effect.houses.chalitSystem");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -9987,11 +10143,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::houses::ModuleOverrides;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = ModuleOverrides;
                 /// assert_eq!(ModuleOverrides::KEY, "sdk.settings.effect.houses.moduleOverrides");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10012,11 +10168,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::houses::PlacementSystem;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PlacementSystem;
                 /// assert_eq!(PlacementSystem::KEY, "sdk.settings.effect.houses.placementSystem");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10037,11 +10193,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::houses::PolarPolicy;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PolarPolicy;
                 /// assert_eq!(PolarPolicy::KEY, "sdk.settings.effect.houses.polarPolicy");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10066,11 +10222,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::jaimini::Brahma;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Brahma;
                 /// assert_eq!(Brahma::KEY, "sdk.settings.effect.jaimini.brahma");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10091,11 +10247,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::jaimini::CharaKarakas;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = CharaKarakas;
                 /// assert_eq!(CharaKarakas::KEY, "sdk.settings.effect.jaimini.charaKarakas");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10116,11 +10272,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::jaimini::EightKarakaOrder;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = EightKarakaOrder;
                 /// assert_eq!(EightKarakaOrder::KEY, "sdk.settings.effect.jaimini.eightKarakaOrder");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10141,11 +10297,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::jaimini::GrahaArudhaException;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = GrahaArudhaException;
                 /// assert_eq!(GrahaArudhaException::KEY, "sdk.settings.effect.jaimini.grahaArudhaException");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10166,11 +10322,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::jaimini::NodeCoLordship;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NodeCoLordship;
                 /// assert_eq!(NodeCoLordship::KEY, "sdk.settings.effect.jaimini.nodeCoLordship");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10220,11 +10376,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::kp::DayLordDay;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DayLordDay;
                 /// assert_eq!(DayLordDay::KEY, "sdk.settings.effect.kp.dayLordDay");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10245,11 +10401,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::kp::NodeRulers;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = NodeRulers;
                 /// assert_eq!(NodeRulers::KEY, "sdk.settings.effect.kp.nodeRulers");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10270,11 +10426,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::kp::RetrogradeRejection;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = RetrogradeRejection;
                 /// assert_eq!(RetrogradeRejection::KEY, "sdk.settings.effect.kp.retrogradeRejection");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10295,11 +10451,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::kp::RulingCount;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = RulingCount;
                 /// assert_eq!(RulingCount::KEY, "sdk.settings.effect.kp.rulingCount");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10324,11 +10480,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::output::Precision;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Precision;
                 /// assert_eq!(Precision::KEY, "sdk.settings.effect.output.precision");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10353,11 +10509,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::AmritKalam;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = AmritKalam;
                 /// assert_eq!(AmritKalam::KEY, "sdk.settings.effect.panchanga.amritKalam");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10378,11 +10534,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::Centre;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Centre;
                 /// assert_eq!(Centre::KEY, "sdk.settings.effect.panchanga.centre");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10403,11 +10559,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::Durmuhurta;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Durmuhurta;
                 /// assert_eq!(Durmuhurta::KEY, "sdk.settings.effect.panchanga.durmuhurta");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10428,11 +10584,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseHorizon;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = EclipseHorizon;
                 /// assert_eq!(EclipseHorizon::KEY, "sdk.settings.effect.panchanga.eclipseHorizon");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10453,11 +10609,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseShadow;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = EclipseShadow;
                 /// assert_eq!(EclipseShadow::KEY, "sdk.settings.effect.panchanga.eclipseShadow");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10478,11 +10634,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::EclipseVedha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = EclipseVedha;
                 /// assert_eq!(EclipseVedha::KEY, "sdk.settings.effect.panchanga.eclipseVedha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10503,11 +10659,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::LagnaTable;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = LagnaTable;
                 /// assert_eq!(LagnaTable::KEY, "sdk.settings.effect.panchanga.lagnaTable");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10528,11 +10684,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::MoonEvents;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MoonEvents;
                 /// assert_eq!(MoonEvents::KEY, "sdk.settings.effect.panchanga.moonEvents");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10553,11 +10709,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::MuhurtaTables;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MuhurtaTables;
                 /// assert_eq!(MuhurtaTables::KEY, "sdk.settings.effect.panchanga.muhurtaTables");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10578,11 +10734,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaName;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PanchakaName;
                 /// assert_eq!(PanchakaName::KEY, "sdk.settings.effect.panchanga.panchakaName");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10603,11 +10759,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::PanchakaStart;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PanchakaStart;
                 /// assert_eq!(PanchakaStart::KEY, "sdk.settings.effect.panchanga.panchakaStart");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10628,11 +10784,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::PunyaKala;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PunyaKala;
                 /// assert_eq!(PunyaKala::KEY, "sdk.settings.effect.panchanga.punyaKala");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10653,11 +10809,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::Ritu;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Ritu;
                 /// assert_eq!(Ritu::KEY, "sdk.settings.effect.panchanga.ritu");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10678,11 +10834,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::ShivaVasa;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = ShivaVasa;
                 /// assert_eq!(ShivaVasa::KEY, "sdk.settings.effect.panchanga.shivaVasa");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10703,11 +10859,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::SolarMonthStart;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = SolarMonthStart;
                 /// assert_eq!(SolarMonthStart::KEY, "sdk.settings.effect.panchanga.solarMonthStart");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10728,11 +10884,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::panchanga::Varjyam;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Varjyam;
                 /// assert_eq!(Varjyam::KEY, "sdk.settings.effect.panchanga.varjyam");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10757,11 +10913,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::provider::CacheCells;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = CacheCells;
                 /// assert_eq!(CacheCells::KEY, "sdk.settings.effect.provider.cacheCells");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10782,11 +10938,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::provider::Overrides;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Overrides;
                 /// assert_eq!(Overrides::KEY, "sdk.settings.effect.provider.overrides");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10807,11 +10963,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::provider::Tier;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Tier;
                 /// assert_eq!(Tier::KEY, "sdk.settings.effect.provider.tier");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10865,11 +11021,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::CombustionOrbs;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = CombustionOrbs;
                 /// assert_eq!(CombustionOrbs::KEY, "sdk.settings.effect.state.combustionOrbs");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10890,11 +11046,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::MaranaSaturn;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MaranaSaturn;
                 /// assert_eq!(MaranaSaturn::KEY, "sdk.settings.effect.state.maranaSaturn");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10915,11 +11071,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::MaranaVenus;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MaranaVenus;
                 /// assert_eq!(MaranaVenus::KEY, "sdk.settings.effect.state.maranaVenus");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10940,11 +11096,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::PushkaraBhaga;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PushkaraBhaga;
                 /// assert_eq!(PushkaraBhaga::KEY, "sdk.settings.effect.state.pushkaraBhaga");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10965,11 +11121,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::SayanadiGhatis;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = SayanadiGhatis;
                 /// assert_eq!(SayanadiGhatis::KEY, "sdk.settings.effect.state.sayanadiGhatis");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -10990,11 +11146,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::state::SayanadiNodes;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = SayanadiNodes;
                 /// assert_eq!(SayanadiNodes::KEY, "sdk.settings.effect.state.sayanadiNodes");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11019,11 +11175,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::BalaScheme;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BalaScheme;
                 /// assert_eq!(BalaScheme::KEY, "sdk.settings.effect.strength.balaScheme");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11044,11 +11200,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Benefics;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Benefics;
                 /// assert_eq!(Benefics::KEY, "sdk.settings.effect.strength.benefics");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11069,11 +11225,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDig;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BhavaDig;
                 /// assert_eq!(BhavaDig::KEY, "sdk.settings.effect.strength.bhavaDig");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11094,11 +11250,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDivision;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BhavaDivision;
                 /// assert_eq!(BhavaDivision::KEY, "sdk.settings.effect.strength.bhavaDivision");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11119,11 +11275,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaDrishti;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BhavaDrishti;
                 /// assert_eq!(BhavaDrishti::KEY, "sdk.settings.effect.strength.bhavaDrishti");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11144,11 +11300,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::BhavaSpecialRules;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = BhavaSpecialRules;
                 /// assert_eq!(BhavaSpecialRules::KEY, "sdk.settings.effect.strength.bhavaSpecialRules");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11169,11 +11325,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Cheshta;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Cheshta;
                 /// assert_eq!(Cheshta::KEY, "sdk.settings.effect.strength.cheshta");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11194,11 +11350,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Dig;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Dig;
                 /// assert_eq!(Dig::KEY, "sdk.settings.effect.strength.dig");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11219,11 +11375,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Drekkana;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Drekkana;
                 /// assert_eq!(Drekkana::KEY, "sdk.settings.effect.strength.drekkana");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11244,11 +11400,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Drik;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Drik;
                 /// assert_eq!(Drik::KEY, "sdk.settings.effect.strength.drik");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11269,11 +11425,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Ekadhipatya;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Ekadhipatya;
                 /// assert_eq!(Ekadhipatya::KEY, "sdk.settings.effect.strength.ekadhipatya");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11294,11 +11450,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::IshtaKashta;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = IshtaKashta;
                 /// assert_eq!(IshtaKashta::KEY, "sdk.settings.effect.strength.ishtaKashta");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11319,11 +11475,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::KaalaLords;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = KaalaLords;
                 /// assert_eq!(KaalaLords::KEY, "sdk.settings.effect.strength.kaalaLords");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11344,11 +11500,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Kranti;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Kranti;
                 /// assert_eq!(Kranti::KEY, "sdk.settings.effect.strength.kranti");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11369,11 +11525,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::LuminaryCheshta;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = LuminaryCheshta;
                 /// assert_eq!(LuminaryCheshta::KEY, "sdk.settings.effect.strength.luminaryCheshta");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11394,11 +11550,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::MoonBinduFromJupiter;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MoonBinduFromJupiter;
                 /// assert_eq!(MoonBinduFromJupiter::KEY, "sdk.settings.effect.strength.moonBinduFromJupiter");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11419,11 +11575,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::MoonPaksha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = MoonPaksha;
                 /// assert_eq!(MoonPaksha::KEY, "sdk.settings.effect.strength.moonPaksha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11444,11 +11600,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Naisargika;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Naisargika;
                 /// assert_eq!(Naisargika::KEY, "sdk.settings.effect.strength.naisargika");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11469,11 +11625,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Nathonnatha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Nathonnatha;
                 /// assert_eq!(Nathonnatha::KEY, "sdk.settings.effect.strength.nathonnatha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11494,11 +11650,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::PreDawnNight;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = PreDawnNight;
                 /// assert_eq!(PreDawnNight::KEY, "sdk.settings.effect.strength.preDawnNight");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11519,11 +11675,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::RequiredRupas;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = RequiredRupas;
                 /// assert_eq!(RequiredRupas::KEY, "sdk.settings.effect.strength.requiredRupas");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11544,11 +11700,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Saptavargaja;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Saptavargaja;
                 /// assert_eq!(Saptavargaja::KEY, "sdk.settings.effect.strength.saptavargaja");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11569,11 +11725,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Shodhana;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Shodhana;
                 /// assert_eq!(Shodhana::KEY, "sdk.settings.effect.strength.shodhana");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11594,11 +11750,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::SunAyana;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = SunAyana;
                 /// assert_eq!(SunAyana::KEY, "sdk.settings.effect.strength.sunAyana");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11619,11 +11775,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Vimshopaka;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Vimshopaka;
                 /// assert_eq!(Vimshopaka::KEY, "sdk.settings.effect.strength.vimshopaka");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11644,11 +11800,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::strength::Yuddha;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = Yuddha;
                 /// assert_eq!(Yuddha::KEY, "sdk.settings.effect.strength.yuddha");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11673,11 +11829,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::time::DeltaT;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DeltaT;
                 /// assert_eq!(DeltaT::KEY, "sdk.settings.effect.time.deltaT");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11698,11 +11854,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::time::DstGap;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DstGap;
                 /// assert_eq!(DstGap::KEY, "sdk.settings.effect.time.dstGap");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11723,11 +11879,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::time::DstOverlap;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = DstOverlap;
                 /// assert_eq!(DstOverlap::KEY, "sdk.settings.effect.time.dstOverlap");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11798,11 +11954,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::time::UnknownTime;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = UnknownTime;
                 /// assert_eq!(UnknownTime::KEY, "sdk.settings.effect.time.unknownTime");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
@@ -11852,11 +12008,11 @@ pub mod sdk {
                 /// ```
                 /// use teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn;
                 /// use teistro_intl::source::Tree;
-                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                /// use teistro_intl::{Intl, TypedMessage};
                 ///
                 /// let message = UnattestedDn;
                 /// assert_eq!(UnattestedDn::KEY, "sdk.settings.effect.vargas.unattestedDn");
-                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
                 ///     .expect("plural rules for every locale");
                 /// let rendered = intl.render_typed(&message);
                 /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);

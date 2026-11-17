@@ -147,7 +147,12 @@ export function messages(r) {
           hoursMinutes: (p) => r.render('sdk.calendar.duration.hoursMinutes', { seconds: p.seconds }),
           hoursMinutesSeconds: (p) => r.render('sdk.calendar.duration.hoursMinutesSeconds', { seconds: p.seconds }),
           minute: (p) => r.render('sdk.calendar.duration.minute', { n: p.n }),
+          month: (p) => r.render('sdk.calendar.duration.month', { n: p.n }),
           second: (p) => r.render('sdk.calendar.duration.second', { n: p.n }),
+          week: (p) => r.render('sdk.calendar.duration.week', { n: p.n }),
+          weeksDays: (p) => r.render('sdk.calendar.duration.weeksDays', { days: p.days }),
+          year: (p) => r.render('sdk.calendar.duration.year', { n: p.n }),
+          yearsMonthsDays: (p) => r.render('sdk.calendar.duration.yearsMonthsDays', { days: p.days, months: p.months, years: p.years }),
         },
         ghati: {
           long: (p) => r.render('sdk.calendar.ghati.long', { ghati: p.ghati, pala: p.pala }),

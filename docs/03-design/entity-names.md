@@ -219,6 +219,18 @@ not see, and no text read so far gives a Nepali word. Each record is
 eclipse kinds' English `prose` is lower case (`total`), because it
 qualifies a noun.
 
+**Hindi and Sanskrit (SR-131, SR-139; C2260, C2261).** The consumer read
+the eclipse kinds' `PARTIAL` and `TOTAL` in Sanskrit, and `CHATURMAS` and
+`ADHIKA_MASA` in Hindi and Sanskrit, falling back to English on the tag it
+builds from. Both are named once §4h's C2085 terms fold: Sanskrit
+खण्डग्रास and खग्रास as Nepali writes them, Hindi and Sanskrit मलमास,
+Hindi चातुर्मास and Sanskrit चातुर्मास्य. The dictionaries confirm the
+elements: Monier-Williams p. 371 *grāsa* "an eclipse" (the Sūrya
+Siddhānta's word), p. 792 *mala-māsa* "an intercalary month", p. 392
+*cāturmāsya*; McGregor p. 794 and Platts p. 1065 मलमास. No dictionary
+searched prints *khagrāsa* or *khaṇḍagrāsa* as a headword, so the
+compounds rest on the committee's usage, as above.
+
 ## 4c. The terms BPHS itself prints (2026-10-17)
 
 A test app drew `D9` and `KIMSHUKA` where a reader expected a word, so the

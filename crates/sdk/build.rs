@@ -2,10 +2,15 @@
 //! consumer needs no files to render the SDK's own messages (ADR-0010).
 //! `bundles.rs` lists them for `include_bytes!`.
 //!
-//! The sources are `teistro-intl`'s own files (`crates/intl/i18n`), found
-//! through [`teistro_intl::sdk_root`], so this script reads nothing
-//! outside the packages a consumer compiles: `cargo xtask check-packages`
-//! builds this crate from its `.crate` alone and fails if it reaches out.
+//! The sources are `teistro-intl`'s own files (`crates/intl/i18n`), as
+//! that crate embedded them when it was compiled
+//! ([`teistro_intl::source::Tree::sdk`]), so this script reads no
+//! directory at all: not one outside the packages a consumer compiles
+//! (`cargo xtask check-packages` builds this crate from its `.crate`
+//! alone), and not one a build reused across checkouts sharing a target
+//! directory remembers from a checkout since deleted (SR-135). The
+//! bundles change only when `teistro-intl` does, and cargo runs a build
+//! script again when one of its build dependencies is rebuilt.
 //!
 //! **The same thirty lines as `crates/ffi/build.rs`, knowingly**, and for
 //! as long as the order of work in `03-design/rust-consumer-surface.md`
@@ -32,10 +37,9 @@ use teistro_intl::pack::build_bundle;
 use teistro_intl::source::Tree;
 
 fn main() {
-    let root = teistro_intl::sdk_root();
-    println!("cargo:rerun-if-changed={}", root.display());
+    println!("cargo:rerun-if-changed=build.rs");
     let out = PathBuf::from(std::env::var_os("OUT_DIR").expect("cargo sets OUT_DIR"));
-    let tree = Tree::load(&root).unwrap_or_else(|e| panic!("the i18n/ sources load: {e}"));
+    let tree = Tree::sdk().unwrap_or_else(|e| panic!("the i18n/ sources load: {e}"));
     let mut entries = String::new();
     for (tag, locale) in &tree.locales {
         let bytes = build_bundle(locale).unwrap_or_else(|e| panic!("{tag}: {e}"));

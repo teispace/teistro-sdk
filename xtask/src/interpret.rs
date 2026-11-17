@@ -1976,7 +1976,7 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
     let quiet: Vec<String> = tree
         .locales
         .keys()
-        .filter(|tag| !strict.contains(tag))
+        .filter(|tag| !strict.contains(tag) && !is_regional_base(tag, &base))
         .map(|tag| format!("`{tag}`"))
         .collect();
     if !quiet.is_empty() {
@@ -1992,7 +1992,32 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
             quiet.join(", "),
         );
     }
+    let regional: Vec<String> = tree
+        .locales
+        .keys()
+        .filter(|tag| is_regional_base(tag, &base))
+        .map(|tag| format!("`{tag}`"))
+        .collect();
+    if !regional.is_empty() {
+        let _ = write!(
+            out,
+            "{} {} the base language as a region writes it (its digits and \
+             grouping), every word the base locale's, so there is nothing \
+             of {} own to sign off or translate.\n\n",
+            regional.join(", "),
+            if regional.len() == 1 { "is" } else { "are" },
+            if regional.len() == 1 { "its" } else { "their" },
+        );
+    }
     the_translation_job(out, tree, &base);
+}
+
+/// Whether a locale is the base locale's language for a region
+/// (`en-Latn-NP` beside `en-Latn`): its words are the base's, so it has
+/// nothing of its own to review or translate.
+fn is_regional_base(tag: &str, base: &str) -> bool {
+    let language = |t: &str| t.split('-').next().unwrap_or(t).to_owned();
+    tag != base && language(tag) == language(base)
 }
 
 /// What it would take to **make** an unreviewable locale reviewable,
@@ -2005,7 +2030,7 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
 fn the_translation_job(out: &mut String, tree: &Tree, base: &str) {
     let mut jobs: Vec<(String, usize, usize)> = Vec::new();
     for tag in tree.locales.keys() {
-        if *tag == base {
+        if *tag == base || is_regional_base(tag, base) {
             continue;
         }
         if let Ok(exported) = teistro_intl::xliff::export(tree, tag) {

@@ -6,7 +6,9 @@ every string the SDK renders and for the applications that adopt it.
 
 - **Sources** under `i18n/<locale>/`; the SDK's own are this crate's
   `i18n/`, shipped in its package so `teistro`'s build script compiles
-  them from the published crates alone (`sdk_root()`): `_meta.json` (direction, numbering
+  them from the published crates alone; the crate embeds them too, so a
+  program that only reads them takes `Tree::sdk()` and needs no directory
+  (`sdk_root()` is the directory, for tools that edit them): `_meta.json` (direction, numbering
   system, grouping, fallback chain, contexts, list patterns) and one JSON
   file per namespace; `en-Latn` is the base locale, the source of every
   key and parameter; `sdk.entity` holds entity records whose keys are the
@@ -37,9 +39,9 @@ every string the SDK renders and for the applications that adopt it.
 use teistro_core::catalogue::Graha;
 use teistro_intl::messages::sdk::reason::GrahaInBhava;
 use teistro_intl::source::Tree;
-use teistro_intl::{Intl, Value, params, sdk_root};
+use teistro_intl::{Intl, Value, params};
 
-let tree = Tree::load(&sdk_root()).expect("the SDK's sources");
+let tree = Tree::sdk().expect("the SDK's sources");
 let mut intl = Intl::from_tree(&tree).expect("plural rules for every locale");
 intl.set_locale("ne-Deva-NP").expect("a shipped locale");
 
