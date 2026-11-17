@@ -2176,7 +2176,9 @@ export function messages(r) {
           calendars: {
             civilCalendar: () => r.render('sdk.settings.effect.calendars.civilCalendar'),
             eras: () => r.render('sdk.settings.effect.calendars.eras'),
+            kiratYele: () => r.render('sdk.settings.effect.calendars.kiratYele'),
             lunarMonth: () => r.render('sdk.settings.effect.calendars.lunarMonth'),
+            marginalMonthMinutes: () => r.render('sdk.settings.effect.calendars.marginalMonthMinutes'),
             samvatsara: () => r.render('sdk.settings.effect.calendars.samvatsara'),
           },
           dasha: {
@@ -2207,6 +2209,7 @@ export function messages(r) {
             dayBoundary: () => r.render('sdk.settings.effect.day.dayBoundary'),
             ghatiReckoning: () => r.render('sdk.settings.effect.day.ghatiReckoning'),
             horaReckoning: () => r.render('sdk.settings.effect.day.horaReckoning'),
+            horizon: () => r.render('sdk.settings.effect.day.horizon'),
             polarDayPolicy: () => r.render('sdk.settings.effect.day.polarDayPolicy'),
             sunrise: () => r.render('sdk.settings.effect.day.sunrise'),
           },
@@ -2214,9 +2217,12 @@ export function messages(r) {
             ayanamsha: () => r.render('sdk.settings.effect.frame.ayanamsha'),
             ayanamshaBasis: () => r.render('sdk.settings.effect.frame.ayanamshaBasis'),
             centre: () => r.render('sdk.settings.effect.frame.centre'),
+            frameBias: () => r.render('sdk.settings.effect.frame.frameBias'),
             nakshatraScheme: () => r.render('sdk.settings.effect.frame.nakshatraScheme'),
             node: () => r.render('sdk.settings.effect.frame.node'),
+            nutation: () => r.render('sdk.settings.effect.frame.nutation'),
             positions: () => r.render('sdk.settings.effect.frame.positions'),
+            precession: () => r.render('sdk.settings.effect.frame.precession'),
             siddhanta: () => r.render('sdk.settings.effect.frame.siddhanta'),
             zodiac: () => r.render('sdk.settings.effect.frame.zodiac'),
           },
@@ -2238,6 +2244,7 @@ export function messages(r) {
             eightKarakaOrder: () => r.render('sdk.settings.effect.jaimini.eightKarakaOrder'),
             grahaArudhaException: () => r.render('sdk.settings.effect.jaimini.grahaArudhaException'),
             nodeCoLordship: () => r.render('sdk.settings.effect.jaimini.nodeCoLordship'),
+            sevenKarakaOrder: () => r.render('sdk.settings.effect.jaimini.sevenKarakaOrder'),
           },
           kp: {
             dayLordDay: () => r.render('sdk.settings.effect.kp.dayLordDay'),
@@ -2270,6 +2277,9 @@ export function messages(r) {
             cacheCells: () => r.render('sdk.settings.effect.provider.cacheCells'),
             overrides: () => r.render('sdk.settings.effect.provider.overrides'),
             tier: () => r.render('sdk.settings.effect.provider.tier'),
+          },
+          rashifal: {
+            scoreBands: () => r.render('sdk.settings.effect.rashifal.scoreBands'),
           },
           state: {
             combustionOrbs: () => r.render('sdk.settings.effect.state.combustionOrbs'),
@@ -2311,9 +2321,12 @@ export function messages(r) {
             deltaT: () => r.render('sdk.settings.effect.time.deltaT'),
             dstGap: () => r.render('sdk.settings.effect.time.dstGap'),
             dstOverlap: () => r.render('sdk.settings.effect.time.dstOverlap'),
+            dut1: () => r.render('sdk.settings.effect.time.dut1'),
+            siderealTime: () => r.render('sdk.settings.effect.time.siderealTime'),
             unknownTime: () => r.render('sdk.settings.effect.time.unknownTime'),
           },
           vargas: {
+            schemes: () => r.render('sdk.settings.effect.vargas.schemes'),
             unattestedDn: () => r.render('sdk.settings.effect.vargas.unattestedDn'),
           },
         },

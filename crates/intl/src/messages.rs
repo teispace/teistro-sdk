@@ -8733,6 +8733,31 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.calendars.kiratYele`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::KiratYele;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = KiratYele;
+                /// assert_eq!(KiratYele::KEY, "sdk.settings.effect.calendars.kiratYele");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KiratYele;
+
+                impl crate::TypedMessage for KiratYele {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.kiratYele";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.calendars.lunarMonth`.
                 ///
                 /// ```
@@ -8753,6 +8778,31 @@ pub mod sdk {
 
                 impl crate::TypedMessage for LunarMonth {
                     const KEY: &'static str = "sdk.settings.effect.calendars.lunarMonth";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.marginalMonthMinutes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::MarginalMonthMinutes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = MarginalMonthMinutes;
+                /// assert_eq!(MarginalMonthMinutes::KEY, "sdk.settings.effect.calendars.marginalMonthMinutes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MarginalMonthMinutes;
+
+                impl crate::TypedMessage for MarginalMonthMinutes {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.marginalMonthMinutes";
                     fn params(&self) -> crate::Params {
                         crate::Params::new()
                     }
@@ -9416,6 +9466,31 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.day.horizon`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::Horizon;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Horizon;
+                /// assert_eq!(Horizon::KEY, "sdk.settings.effect.day.horizon");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Horizon;
+
+                impl crate::TypedMessage for Horizon {
+                    const KEY: &'static str = "sdk.settings.effect.day.horizon";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.day.polarDayPolicy`.
                 ///
                 /// ```
@@ -9545,6 +9620,31 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.frame.frameBias`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::FrameBias;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = FrameBias;
+                /// assert_eq!(FrameBias::KEY, "sdk.settings.effect.frame.frameBias");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct FrameBias;
+
+                impl crate::TypedMessage for FrameBias {
+                    const KEY: &'static str = "sdk.settings.effect.frame.frameBias";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.frame.nakshatraScheme`.
                 ///
                 /// ```
@@ -9595,6 +9695,31 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.frame.nutation`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Nutation;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Nutation;
+                /// assert_eq!(Nutation::KEY, "sdk.settings.effect.frame.nutation");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nutation;
+
+                impl crate::TypedMessage for Nutation {
+                    const KEY: &'static str = "sdk.settings.effect.frame.nutation";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.frame.positions`.
                 ///
                 /// ```
@@ -9615,6 +9740,31 @@ pub mod sdk {
 
                 impl crate::TypedMessage for Positions {
                     const KEY: &'static str = "sdk.settings.effect.frame.positions";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.frame.precession`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::frame::Precession;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Precession;
+                /// assert_eq!(Precession::KEY, "sdk.settings.effect.frame.precession");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Precession;
+
+                impl crate::TypedMessage for Precession {
+                    const KEY: &'static str = "sdk.settings.effect.frame.precession";
                     fn params(&self) -> crate::Params {
                         crate::Params::new()
                     }
@@ -10002,6 +10152,31 @@ pub mod sdk {
 
                 impl crate::TypedMessage for NodeCoLordship {
                     const KEY: &'static str = "sdk.settings.effect.jaimini.nodeCoLordship";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.jaimini.sevenKarakaOrder`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::jaimini::SevenKarakaOrder;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SevenKarakaOrder;
+                /// assert_eq!(SevenKarakaOrder::KEY, "sdk.settings.effect.jaimini.sevenKarakaOrder");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SevenKarakaOrder;
+
+                impl crate::TypedMessage for SevenKarakaOrder {
+                    const KEY: &'static str = "sdk.settings.effect.jaimini.sevenKarakaOrder";
                     fn params(&self) -> crate::Params {
                         crate::Params::new()
                     }
@@ -10618,6 +10793,35 @@ pub mod sdk {
 
                 impl crate::TypedMessage for Tier {
                     const KEY: &'static str = "sdk.settings.effect.provider.tier";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `rashifal` group.
+            pub mod rashifal {
+                /// The message `sdk.settings.effect.rashifal.scoreBands`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::rashifal::ScoreBands;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = ScoreBands;
+                /// assert_eq!(ScoreBands::KEY, "sdk.settings.effect.rashifal.scoreBands");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ScoreBands;
+
+                impl crate::TypedMessage for ScoreBands {
+                    const KEY: &'static str = "sdk.settings.effect.rashifal.scoreBands";
                     fn params(&self) -> crate::Params {
                         crate::Params::new()
                     }
@@ -11510,6 +11714,56 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.time.dut1`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::Dut1;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Dut1;
+                /// assert_eq!(Dut1::KEY, "sdk.settings.effect.time.dut1");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Dut1;
+
+                impl crate::TypedMessage for Dut1 {
+                    const KEY: &'static str = "sdk.settings.effect.time.dut1";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.time.siderealTime`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::time::SiderealTime;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = SiderealTime;
+                /// assert_eq!(SiderealTime::KEY, "sdk.settings.effect.time.siderealTime");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SiderealTime;
+
+                impl crate::TypedMessage for SiderealTime {
+                    const KEY: &'static str = "sdk.settings.effect.time.siderealTime";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.time.unknownTime`.
                 ///
                 /// ```
@@ -11539,6 +11793,31 @@ pub mod sdk {
 
             /// The `vargas` group.
             pub mod vargas {
+                /// The message `sdk.settings.effect.vargas.schemes`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::vargas::Schemes;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+                ///
+                /// let message = Schemes;
+                /// assert_eq!(Schemes::KEY, "sdk.settings.effect.vargas.schemes");
+                /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Schemes;
+
+                impl crate::TypedMessage for Schemes {
+                    const KEY: &'static str = "sdk.settings.effect.vargas.schemes";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.vargas.unattestedDn`.
                 ///
                 /// ```

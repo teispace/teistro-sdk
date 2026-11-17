@@ -2418,6 +2418,11 @@ class MessagesSdkSettingsEffect:
         return MessagesSdkSettingsEffectProvider(self._r)
 
     @property
+    def rashifal(self) -> MessagesSdkSettingsEffectRashifal:
+        """The messages under `rashifal`."""
+        return MessagesSdkSettingsEffectRashifal(self._r)
+
+    @property
     def state(self) -> MessagesSdkSettingsEffectState:
         """The messages under `state`."""
         return MessagesSdkSettingsEffectState(self._r)
@@ -2445,6 +2450,10 @@ class MessagesSdkSettingsEffectVargas:
         self._r = renderer
 
 
+    def schemes(self) -> str:
+        """`sdk.settings.effect.vargas.schemes`"""
+        return self._r.render("sdk.settings.effect.vargas.schemes")
+
     def unattested_dn(self) -> str:
         """`sdk.settings.effect.vargas.unattestedDn`"""
         return self._r.render("sdk.settings.effect.vargas.unattestedDn")
@@ -2468,6 +2477,14 @@ class MessagesSdkSettingsEffectTime:
     def dst_overlap(self) -> str:
         """`sdk.settings.effect.time.dstOverlap`"""
         return self._r.render("sdk.settings.effect.time.dstOverlap")
+
+    def dut1(self) -> str:
+        """`sdk.settings.effect.time.dut1`"""
+        return self._r.render("sdk.settings.effect.time.dut1")
+
+    def sidereal_time(self) -> str:
+        """`sdk.settings.effect.time.siderealTime`"""
+        return self._r.render("sdk.settings.effect.time.siderealTime")
 
     def unknown_time(self) -> str:
         """`sdk.settings.effect.time.unknownTime`"""
@@ -2616,6 +2633,18 @@ class MessagesSdkSettingsEffectState:
     def sayanadi_nodes(self) -> str:
         """`sdk.settings.effect.state.sayanadiNodes`"""
         return self._r.render("sdk.settings.effect.state.sayanadiNodes")
+
+
+class MessagesSdkSettingsEffectRashifal:
+    """The messages under `MessagesSdkSettingsEffectRashifal`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def score_bands(self) -> str:
+        """`sdk.settings.effect.rashifal.scoreBands`"""
+        return self._r.render("sdk.settings.effect.rashifal.scoreBands")
 
 
 class MessagesSdkSettingsEffectProvider:
@@ -2773,6 +2802,10 @@ class MessagesSdkSettingsEffectJaimini:
         """`sdk.settings.effect.jaimini.nodeCoLordship`"""
         return self._r.render("sdk.settings.effect.jaimini.nodeCoLordship")
 
+    def seven_karaka_order(self) -> str:
+        """`sdk.settings.effect.jaimini.sevenKarakaOrder`"""
+        return self._r.render("sdk.settings.effect.jaimini.sevenKarakaOrder")
+
 
 class MessagesSdkSettingsEffectHouses:
     """The messages under `MessagesSdkSettingsEffectHouses`, each rendered by its own key."""
@@ -2841,6 +2874,10 @@ class MessagesSdkSettingsEffectFrame:
         """`sdk.settings.effect.frame.centre`"""
         return self._r.render("sdk.settings.effect.frame.centre")
 
+    def frame_bias(self) -> str:
+        """`sdk.settings.effect.frame.frameBias`"""
+        return self._r.render("sdk.settings.effect.frame.frameBias")
+
     def nakshatra_scheme(self) -> str:
         """`sdk.settings.effect.frame.nakshatraScheme`"""
         return self._r.render("sdk.settings.effect.frame.nakshatraScheme")
@@ -2849,9 +2886,17 @@ class MessagesSdkSettingsEffectFrame:
         """`sdk.settings.effect.frame.node`"""
         return self._r.render("sdk.settings.effect.frame.node")
 
+    def nutation(self) -> str:
+        """`sdk.settings.effect.frame.nutation`"""
+        return self._r.render("sdk.settings.effect.frame.nutation")
+
     def positions(self) -> str:
         """`sdk.settings.effect.frame.positions`"""
         return self._r.render("sdk.settings.effect.frame.positions")
+
+    def precession(self) -> str:
+        """`sdk.settings.effect.frame.precession`"""
+        return self._r.render("sdk.settings.effect.frame.precession")
 
     def siddhanta(self) -> str:
         """`sdk.settings.effect.frame.siddhanta`"""
@@ -2880,6 +2925,10 @@ class MessagesSdkSettingsEffectDay:
     def hora_reckoning(self) -> str:
         """`sdk.settings.effect.day.horaReckoning`"""
         return self._r.render("sdk.settings.effect.day.horaReckoning")
+
+    def horizon(self) -> str:
+        """`sdk.settings.effect.day.horizon`"""
+        return self._r.render("sdk.settings.effect.day.horizon")
 
     def polar_day_policy(self) -> str:
         """`sdk.settings.effect.day.polarDayPolicy`"""
@@ -3001,9 +3050,17 @@ class MessagesSdkSettingsEffectCalendars:
         """`sdk.settings.effect.calendars.eras`"""
         return self._r.render("sdk.settings.effect.calendars.eras")
 
+    def kirat_yele(self) -> str:
+        """`sdk.settings.effect.calendars.kiratYele`"""
+        return self._r.render("sdk.settings.effect.calendars.kiratYele")
+
     def lunar_month(self) -> str:
         """`sdk.settings.effect.calendars.lunarMonth`"""
         return self._r.render("sdk.settings.effect.calendars.lunarMonth")
+
+    def marginal_month_minutes(self) -> str:
+        """`sdk.settings.effect.calendars.marginalMonthMinutes`"""
+        return self._r.render("sdk.settings.effect.calendars.marginalMonthMinutes")
 
     def samvatsara(self) -> str:
         """`sdk.settings.effect.calendars.samvatsara`"""
