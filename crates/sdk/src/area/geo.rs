@@ -1,11 +1,16 @@
 //! `sdk.geo`: a place resolved through the geo port, its zone, ground
-//! height and admin codes (`03-design/geo-port.md`, SR-87).
+//! height and admin codes (`03-design/geo-port.md`, SR-87), and the place
+//! catalogue's questions: a search, a reverse, a place's names and a
+//! unit's places (§12, SR-141 and SR-129).
 
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::{Error, Status};
-use teistro_port_geo::{GeoPoint, GeoSource, GeoTable, ResolvedPlace, resolve};
+use teistro_port_geo::{
+    FoundPlace, GeoPoint, GeoProvider, GeoSource, GeoTable, NamedPlace, NearbyPlaces, PlaceListing,
+    PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, ResolvedPlace, resolve,
+};
 
 use crate::context::Context;
 
@@ -108,15 +113,124 @@ impl<'a> GeoArea<'a> {
     /// refusal; `PROVIDER` naming an answer that is not well formed.
     pub fn resolve(self, asked: &PlaceRequest) -> Result<ResolvedPlace, Error> {
         let point = GeoPoint::try_from_degrees(asked.latitude_deg, asked.longitude_deg)?;
-        let provider = self.context.geo_provider().ok_or_else(|| {
+        resolve(&*self.provider()?, point)
+    }
+
+    /// The places matching a name, best first, as the provider ranks them:
+    /// in any script the provider's data holds (`काठमाडौं`, `Kathmandu`),
+    /// `"Name, Parent"` putting the named parent's places first, a focus
+    /// point preferring places near it. Each place is named in `lang` and
+    /// carries its kind, admin level, ISO code, point, population and
+    /// parents (`03-design/geo-port.md` §12).
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceSearch};
+    ///
+    /// let table = GeoTable::from_json(include_str!("../../tests/geo-table.json"))?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let asked = PlaceSearch { query: "काठमाडौं".into(), focus: None, limit: 3, lang: Some("en".into()) };
+    /// let found = sdk.geo().search(&asked)?;
+    /// assert_eq!(found[0].place.name, "Kathmandu");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `CAPABILITY` on `geo` for a context with no provider; `INVALID_ARG`
+    /// on `query`, `limit`, `focus` or `lang`; the provider's own refusal
+    /// (`CAPABILITY` on `search` for a provider built without search);
+    /// `PROVIDER` naming an answer that is not well formed.
+    pub fn search(self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+        asked.checked()?;
+        teistro_port_geo::search(&*self.provider()?, asked)
+    }
+
+    /// The named places nearest a point, nearest first, and the admin units
+    /// holding it, coarse to fine: what names "my location", to the finest
+    /// unit the provider's data outlines (the ward in Nepal where it holds
+    /// them) or the nearest settlement it falls inside. A level the data
+    /// does not hold is absent, never a refusal.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceReverse};
+    ///
+    /// let table = GeoTable::from_json(include_str!("../../tests/geo-table.json"))?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let asked = PlaceReverse { latitude_deg: 27.7172, longitude_deg: 85.324, limit: 1, lang: None };
+    /// let nearby = sdk.geo().reverse(&asked)?;
+    /// assert_eq!(nearby.admin[0].code.as_deref(), Some("NP"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoArea::search`], the point refused on `latitudeDeg` or
+    /// `longitudeDeg`.
+    pub fn reverse(self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+        asked.checked()?;
+        teistro_port_geo::reverse(&*self.provider()?, asked)
+    }
+
+    /// A place's names, each with its language, script, type and origin
+    /// (a reviewed name says so), and the one chosen for each language
+    /// asked: a name tagged with it, else one in its script.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceNamesRequest};
+    ///
+    /// let table = GeoTable::from_json(include_str!("../../tests/geo-table.json"))?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let asked = PlaceNamesRequest { id: "np-ktm".into(), langs: vec!["ne".into(), "en".into()] };
+    /// let names = sdk.geo().names(&asked)?;
+    /// assert_eq!(names.best[0].name.as_ref().map(|name| name.text.as_str()), Some("काठमाडौं"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoArea::search`], on `id` or `langs[i]`.
+    pub fn names(self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+        asked.checked()?;
+        teistro_port_geo::names(&*self.provider()?, asked)
+    }
+
+    /// The places of a unit (named by its id or its ISO 3166 code),
+    /// filtered by admin level and kind, ranked by population, each with
+    /// its number of people and whether it was counted or modelled.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceListing};
+    ///
+    /// let table = GeoTable::from_json(include_str!("../../tests/geo-table.json"))?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let asked = PlaceListing::within("NP-P3").at_any_depth();
+    /// let places = sdk.geo().list(&asked)?;
+    /// assert_eq!(places[0].name, "Kathmandu");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoArea::search`], on `within`, `depth`, `limit` or `lang`.
+    pub fn list(self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+        asked.checked()?;
+        teistro_port_geo::list(&*self.provider()?, asked)
+    }
+
+    /// The context's provider, or `CAPABILITY` on `geo`.
+    fn provider(self) -> Result<Arc<dyn GeoProvider>, Error> {
+        self.context.geo_provider().ok_or_else(|| {
             Error::new(
                 Status::Capability,
-                "this context has no geo provider to resolve a place through",
+                "this context has no geo provider to ask",
             )
             .with_field("geo")
             .with_hint("load a geo table with `geo.load`, or build the context with a provider")
-        })?;
-        resolve(&*provider, point)
+        })
     }
 
     /// Installs a [`GeoTable`] read from its JSON as this context's geo

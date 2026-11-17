@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"geo.reverse","arguments":{"request":{"latitudeDeg":27.7172,"longitudeDeg":85.324,"limit":2,"lang":"ne"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":113}

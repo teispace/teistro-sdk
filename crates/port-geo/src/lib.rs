@@ -33,6 +33,17 @@ use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{Altitude, Latitude, Longitude};
 use teistro_port_timezone::TimeZoneProvider;
 
+mod catalogue;
+mod table;
+
+pub use catalogue::{
+    ChosenName, FOCUS_SCALE_M, FoundPlace, LangTag, MOST_FOUND, MOST_LISTED, NamedPlace, NearPlace,
+    NearbyPlaces, ParentPlace, PlaceKind, PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest,
+    PlaceReverse, PlaceSearch, Population, PopulationKind, SearchFocus, label, list, names,
+    reverse, search,
+};
+pub use table::{TableName, TablePlace};
+
 /// A point on the Earth a provider is asked about.
 ///
 /// ```
@@ -196,7 +207,15 @@ pub struct ResolvedPlace {
     /// The longitude asked, in degrees.
     pub longitude_deg: f64,
     /// The IANA zone holding the point, or `null` where the data has none.
+    /// At sea, where the provider knows no area holds the point, the
+    /// nautical zone [`nautical_zone`] reckons from the longitude, with
+    /// [`ResolvedPlace::nautical`] set (SR-144).
     pub zone: Option<String>,
+    /// The zone is the nautical one (`Etc/GMT±n` from the longitude), not
+    /// a land zone; written only when true, so a land answer reads as it
+    /// always has.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub nautical: bool,
     /// The ground height there, or `null` where the data has none.
     pub height: Option<GroundHeight>,
     /// The admin units holding the point, coarse to fine.
@@ -215,7 +234,7 @@ impl ResolvedPlace {
     /// use teistro_port_geo::{GeoSource, ResolvedPlace};
     ///
     /// let mut place = ResolvedPlace {
-    ///     latitude_deg: 27.7, longitude_deg: 85.3, zone: Some(String::new()), height: None, admin: vec![],
+    ///     latitude_deg: 27.7, longitude_deg: 85.3, zone: Some(String::new()), nautical: false, height: None, admin: vec![],
     ///     source: GeoSource { name: "t".into(), version: "1".into(), data_version: "1".into(), tzdb: None },
     /// };
     /// assert_eq!(place.checked(Status::InvalidArg).unwrap_err().field(), Some("zone"));
@@ -234,6 +253,19 @@ impl ResolvedPlace {
             admin: &self.admin,
         };
         answers.check("").map_err(|why| restated(why, status))?;
+        if self.nautical && self.zone.as_deref() != Some(nautical_zone(point).as_str()) {
+            return Err(restated(
+                refused(
+                    "",
+                    "nautical",
+                    format!(
+                        "a nautical place's zone is {} at this longitude",
+                        nautical_zone(point)
+                    ),
+                ),
+                status,
+            ));
+        }
         self.source
             .check("source")
             .map_err(|why| restated(why, status))?;
@@ -265,7 +297,7 @@ pub trait GeoProvider: Send + Sync {
     /// assert_eq!(table.source().tzdb.as_deref(), Some("2026c"));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
-    fn source(&self) -> &GeoSource;
+    fn source(&self) -> GeoSource;
 
     /// The IANA zone holding the point; `None` where the data has none.
     ///
@@ -322,6 +354,28 @@ pub trait GeoProvider: Send + Sync {
     /// As [`GeoProvider::zone_at`].
     fn admin_at(&self, at: GeoPoint) -> Result<Vec<AdminUnit>, Error>;
 
+    /// Whether the point is at sea: the provider's data covers the whole
+    /// world and no area of it holds the point. [`resolve`] then answers
+    /// the nautical zone, marked so (SR-144). `false` by default: a
+    /// provider that knows only part of the world cannot tell the sea from
+    /// land it lacks.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoPoint, GeoProvider, GeoTable};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// assert!(!table.at_sea(GeoPoint::try_from_degrees(0.0, -30.0)?)?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`].
+    fn at_sea(&self, at: GeoPoint) -> Result<bool, Error> {
+        let _ = at;
+        Ok(false)
+    }
+
     /// The zone rules of the tzdb release [`GeoProvider::zone_at`]'s names
     /// come from, when the provider carries them; `None` by default.
     ///
@@ -335,10 +389,91 @@ pub trait GeoProvider: Send + Sync {
     fn time_zones(&self) -> Option<Arc<dyn TimeZoneProvider>> {
         None
     }
+
+    /// The places matching a name, best first, as the provider ranks them
+    /// (§12.3); none by default. Asked through [`search`], which checks
+    /// the request and the answer.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoProvider, GeoTable, PlaceSearch};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// let asked = PlaceSearch { query: "Pokhara".into(), focus: None, limit: 5, lang: None };
+    /// assert!(table.search(&asked)?.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`], and `CAPABILITY` on `search` for a
+    /// provider built without its search.
+    fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+        let _ = asked;
+        Ok(Vec::new())
+    }
+
+    /// The named places nearest a point and the admin units holding it
+    /// (§12.5); none by default.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoProvider, GeoTable, PlaceReverse};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// let asked = PlaceReverse { latitude_deg: 27.7, longitude_deg: 85.3, limit: 5, lang: None };
+    /// assert!(table.reverse(&asked)?.near.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`].
+    fn reverse(&self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+        let _ = asked;
+        Ok(NearbyPlaces::default())
+    }
+
+    /// A place's names by language and script, and the one chosen for each
+    /// language asked (§12.4); none by default.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoProvider, GeoTable, PlaceNamesRequest};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// let names = table.names(&PlaceNamesRequest { id: "np/1".into(), langs: vec!["ne".into()] })?;
+    /// assert!(names.all.is_empty() && names.best[0].name.is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`].
+    fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+        Ok(PlaceNames::none(asked))
+    }
+
+    /// The places of a unit, ranked by population (§12.6); none by
+    /// default.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoProvider, GeoTable, PlaceListing};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// let asked: PlaceListing = serde_json::from_str(r#"{"within": "NP"}"#).map_err(|e| teistro_core::error::Error::invalid_arg(e.to_string()))?;
+    /// assert!(table.list(&asked)?.is_empty());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`].
+    fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+        let _ = asked;
+        Ok(Vec::new())
+    }
 }
 
 impl<P: GeoProvider + ?Sized> GeoProvider for &P {
-    fn source(&self) -> &GeoSource {
+    fn source(&self) -> GeoSource {
         (**self).source()
     }
 
@@ -354,14 +489,34 @@ impl<P: GeoProvider + ?Sized> GeoProvider for &P {
         (**self).admin_at(at)
     }
 
+    fn at_sea(&self, at: GeoPoint) -> Result<bool, Error> {
+        (**self).at_sea(at)
+    }
+
     fn time_zones(&self) -> Option<Arc<dyn TimeZoneProvider>> {
         (**self).time_zones()
+    }
+
+    fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+        (**self).search(asked)
+    }
+
+    fn reverse(&self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+        (**self).reverse(asked)
+    }
+
+    fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+        (**self).names(asked)
+    }
+
+    fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+        (**self).list(asked)
     }
 }
 
 /// A shared dataset answers as the dataset does.
 impl<P: GeoProvider + ?Sized> GeoProvider for Arc<P> {
-    fn source(&self) -> &GeoSource {
+    fn source(&self) -> GeoSource {
         (**self).source()
     }
 
@@ -377,8 +532,28 @@ impl<P: GeoProvider + ?Sized> GeoProvider for Arc<P> {
         (**self).admin_at(at)
     }
 
+    fn at_sea(&self, at: GeoPoint) -> Result<bool, Error> {
+        (**self).at_sea(at)
+    }
+
     fn time_zones(&self) -> Option<Arc<dyn TimeZoneProvider>> {
         (**self).time_zones()
+    }
+
+    fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+        (**self).search(asked)
+    }
+
+    fn reverse(&self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+        (**self).reverse(asked)
+    }
+
+    fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+        (**self).names(asked)
+    }
+
+    fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+        (**self).list(asked)
     }
 }
 
@@ -406,16 +581,52 @@ impl<P: GeoProvider + ?Sized> GeoProvider for Arc<P> {
 /// The provider's own refusal, or `PROVIDER` naming the answer that is not
 /// well formed (`zone`, `height.metres`, `admin[1].code`, `source.name`).
 pub fn resolve(provider: &dyn GeoProvider, at: GeoPoint) -> Result<ResolvedPlace, Error> {
+    let mut zone = provider.zone_at(at)?;
+    let nautical = zone.is_none() && provider.at_sea(at)?;
+    if nautical {
+        zone = Some(nautical_zone(at));
+    }
     let place = ResolvedPlace {
         latitude_deg: at.latitude.get(),
         longitude_deg: at.longitude.get(),
-        zone: provider.zone_at(at)?,
+        zone,
+        nautical,
         height: provider.height_at(at)?,
         admin: provider.admin_at(at)?,
-        source: provider.source().clone(),
+        source: provider.source(),
     };
     place.checked(Status::Provider)?;
     Ok(place)
+}
+
+/// The nautical zone at a point (SR-144): `n = round(longitude / 15)`,
+/// named as the tz database names it, its sign inverted (`Etc/GMT-6` is
+/// six hours ahead of UTC, east of Greenwich), `Etc/GMT` at `n = 0`.
+/// Halfway longitudes round away from Greenwich, and 180° is
+/// `Etc/GMT-12`, −180° `Etc/GMT+12`.
+///
+/// ```
+/// use teistro_port_geo::{GeoPoint, nautical_zone};
+///
+/// let at = |lat, lon| GeoPoint::try_from_degrees(lat, lon);
+/// assert_eq!(nautical_zone(at(15.0, 88.0)?), "Etc/GMT-6");
+/// assert_eq!(nautical_zone(at(0.0, -30.0)?), "Etc/GMT+2");
+/// assert_eq!(nautical_zone(at(0.0, 7.0)?), "Etc/GMT");
+/// assert_eq!(nautical_zone(at(0.0, -180.0)?), "Etc/GMT+12");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[must_use]
+pub fn nautical_zone(at: GeoPoint) -> String {
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "n lies in -12..=12, as the longitude lies in -180..=180"
+    )]
+    let n = (at.longitude.get() / 15.0).round() as i8;
+    match n {
+        0 => String::from("Etc/GMT"),
+        east if east > 0 => format!("Etc/GMT-{east}"),
+        west => format!("Etc/GMT+{}", -west),
+    }
 }
 
 /// `why` with `status` in place of its own.
@@ -696,6 +907,10 @@ pub struct GeoTable {
     pub source: GeoSource,
     /// The boxes, coarse to fine.
     pub areas: Vec<GeoBox>,
+    /// The places of its catalogue, which answer a search, a reverse, a
+    /// place's names and a listing (§12.8); none when left out.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub places: Vec<TablePlace>,
 }
 
 impl GeoTable {
@@ -720,6 +935,7 @@ impl GeoTable {
         for (at, area) in table.areas.iter().enumerate() {
             area.check(&format!("geo.areas[{at}]"))?;
         }
+        table::check_places(&table.places)?;
         Ok(table)
     }
 
@@ -734,8 +950,8 @@ impl GeoTable {
 }
 
 impl GeoProvider for GeoTable {
-    fn source(&self) -> &GeoSource {
-        &self.source
+    fn source(&self) -> GeoSource {
+        self.source.clone()
     }
 
     fn zone_at(&self, at: GeoPoint) -> Result<Option<String>, Error> {
@@ -752,6 +968,22 @@ impl GeoProvider for GeoTable {
                 (!area.admin.is_empty()).then(|| area.admin.clone())
             })
             .unwrap_or_default())
+    }
+
+    fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+        Ok(self.search_places(asked))
+    }
+
+    fn reverse(&self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+        Ok(self.reverse_places(asked))
+    }
+
+    fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+        Ok(self.place_names(asked))
+    }
+
+    fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+        Ok(self.list_places(asked))
     }
 }
 
@@ -929,11 +1161,12 @@ mod tests {
         height: Option<GroundHeight>,
         admin: Vec<AdminUnit>,
         fails: bool,
+        sea: bool,
     }
 
     impl GeoProvider for Plain {
-        fn source(&self) -> &GeoSource {
-            &self.source
+        fn source(&self) -> GeoSource {
+            self.source.clone()
         }
         fn zone_at(&self, _: GeoPoint) -> Result<Option<String>, Error> {
             if self.fails {
@@ -949,6 +1182,9 @@ mod tests {
         fn admin_at(&self, _: GeoPoint) -> Result<Vec<AdminUnit>, Error> {
             Ok(self.admin.clone())
         }
+        fn at_sea(&self, _: GeoPoint) -> Result<bool, Error> {
+            Ok(self.sea)
+        }
     }
 
     fn plain() -> Plain {
@@ -958,6 +1194,52 @@ mod tests {
             height: None,
             admin: Vec::new(),
             fails: false,
+            sea: false,
+        }
+    }
+
+    #[test]
+    fn the_sea_answers_its_nautical_zone_and_says_so() {
+        let mut provider = plain();
+        provider.zone = None;
+        // Not at sea: no zone is no zone, as before.
+        let land = resolve(&provider, at(15.0, 88.0)).unwrap();
+        assert_eq!((land.zone, land.nautical), (None, false));
+        provider.sea = true;
+        let bay = resolve(&provider, at(15.0, 88.0)).unwrap();
+        assert_eq!(
+            (bay.zone.as_deref(), bay.nautical),
+            (Some("Etc/GMT-6"), true)
+        );
+        let json = serde_json::to_value(&bay).unwrap();
+        assert_eq!(json["nautical"], true);
+        // A land zone is never replaced, and a land answer keeps its shape.
+        provider.zone = Some(String::from("Asia/Kolkata"));
+        let coast = resolve(&provider, at(15.0, 88.0)).unwrap();
+        assert!(!coast.nautical);
+        assert!(
+            serde_json::to_value(&coast)
+                .unwrap()
+                .get("nautical")
+                .is_none()
+        );
+        // A nautical mark on any other zone is refused.
+        let wrong = ResolvedPlace {
+            longitude_deg: 30.0,
+            ..bay
+        };
+        assert_eq!(
+            wrong.checked(Status::InvalidArg).unwrap_err().field(),
+            Some("nautical")
+        );
+        for (lon, zone) in [
+            (7.49, "Etc/GMT"),
+            (7.5, "Etc/GMT-1"),
+            (-7.5, "Etc/GMT+1"),
+            (172.4, "Etc/GMT-11"),
+            (180.0, "Etc/GMT-12"),
+        ] {
+            assert_eq!(nautical_zone(at(0.0, lon)), zone, "{lon}");
         }
     }
 

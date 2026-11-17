@@ -97,10 +97,15 @@ pub use area::{
 };
 pub use area::{DaySentence, DaySentences, SentencesRequest};
 // The geo port: a place's zone, ground height and admin codes, resolved
-// only when a caller asks (`03-design/geo-port.md`, SR-87).
+// only when a caller asks (`03-design/geo-port.md`, SR-87), and the place
+// catalogue: a search, a reverse, a place's names and a unit's places
+// (§12, SR-141 and SR-129).
 pub use area::{GeoArea, PlaceRequest};
 pub use teistro_port_geo::{
-    AdminUnit, GeoBox, GeoPoint, GeoProvider, GeoSource, GeoTable, GroundHeight, ResolvedPlace,
+    AdminUnit, ChosenName, FoundPlace, GeoBox, GeoPoint, GeoProvider, GeoSource, GeoTable,
+    GroundHeight, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind, PlaceListing,
+    PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, Population,
+    PopulationKind, ResolvedPlace, SearchFocus, TableName, TablePlace,
 };
 // The sankalpa said by a tradition's template (SR-29).
 pub use area::{

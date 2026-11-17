@@ -135,3 +135,214 @@ pub unsafe extern "C" fn ts_geo_load(
         unsafe { write_plain(out_json, "out_json", json) }
     })
 }
+
+/// Runs one of the place catalogue's questions: `request_json` read as
+/// `T` under `geo`, answered by `ask` as canonical JSON.
+///
+/// # Safety
+///
+/// As the entry point calling it: `context` a live handle, `request_json`
+/// NUL-terminated, `out_json` valid for a write.
+unsafe fn catalogue<T, A>(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+    ask: impl FnOnce(&teistro::Context, &T) -> Result<A, teistro_core::Error>,
+) -> Status
+where
+    T: serde::Serialize + serde::de::DeserializeOwned,
+    A: serde::Serialize,
+{
+    with_context(context, |ctx| {
+        // SAFETY: this function's contract, the entry point's.
+        let asked: T =
+            teistro_core::strict::read(unsafe { text(request_json, "request_json") }?, "geo")?;
+        let answer = ask(ctx.sdk(), &asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// The places matching a name, best first, as the context's geo provider
+/// ranks them, answered as canonical JSON: a list of `{place, score}`, each
+/// place `{id, name, nameLang, label, kind, level, code, latitudeDeg,
+/// longitudeDeg, population, parents}`. `score` compares within one query.
+///
+/// `request_json` is `{"query", "focus", "limit", "lang"}`: the text as
+/// typed in any script the provider's data holds (`"Name, Parent"` puts the
+/// named parent's places first), an optional focus `{latitudeDeg,
+/// longitudeDeg, scaleM}` preferring places near it, at most `limit`
+/// places (1 to 100, default 10), each named in the BCP 47 `lang`. An empty
+/// query, a limit out of range or a malformed tag is `INVALID_ARG` on its
+/// field; a context with no provider is `CAPABILITY` on `geo`; a provider
+/// built without search is `CAPABILITY` on `search`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::geo::ts_geo_search;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_geo_search(&raw const ctx, c"{\"query\": \"Kathmandu\"}".as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Capability);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_geo_search(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    // SAFETY: the entry point's contract is `catalogue`'s.
+    unsafe {
+        catalogue(context, request_json, out_json, |sdk, asked| {
+            sdk.geo().search(asked)
+        })
+    }
+}
+
+/// The named places nearest a point and the admin units holding it, from
+/// the context's geo provider, answered as canonical JSON `{near, admin}`:
+/// `near` the nearest places, nearest first, each `{place, distanceM,
+/// bearingDeg, inside}`; `admin` the units holding the point coarse to
+/// fine, each a place as `ts_geo_search` answers one. A level the
+/// provider's data holds no outline for is absent, never a refusal.
+///
+/// `request_json` is `{"latitudeDeg", "longitudeDeg", "limit", "lang"}`,
+/// `limit` 1 to 100 (default 5). A point out of range is `INVALID_ARG` on
+/// `latitudeDeg` or `longitudeDeg`; a context with no provider is
+/// `CAPABILITY` on `geo`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::geo::ts_geo_reverse;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe {
+///     ts_geo_reverse(&raw const ctx, c"{\"latitudeDeg\": 27.7, \"longitudeDeg\": 185.0}".as_ptr(), &raw mut out)
+/// };
+/// assert_eq!(status, Status::InvalidArg);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_geo_reverse(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    // SAFETY: the entry point's contract is `catalogue`'s.
+    unsafe {
+        catalogue(context, request_json, out_json, |sdk, asked| {
+            sdk.geo().reverse(asked)
+        })
+    }
+}
+
+/// A place's names from the context's geo provider, answered as canonical
+/// JSON `{id, best, all}`: `all` every name, each `{text, lang, script,
+/// type, origin, machine}` (`origin` `REVIEWED` for a name a person
+/// corrected against a source), and `best` one `{asked, name}` per language
+/// asked, `name` null where the place has none in it.
+///
+/// `request_json` is `{"id", "langs"}`: an id an answer gave, and BCP 47
+/// tags (`ne`, `en`, `hi`, `sa`). An empty id or a malformed tag is
+/// `INVALID_ARG` on `id` or `langs[i]`; an id the provider does not know
+/// answers no names.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::geo::ts_geo_names;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_geo_names(&raw const ctx, c"{\"id\": \"\"}".as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::InvalidArg);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_geo_names(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    // SAFETY: the entry point's contract is `catalogue`'s.
+    unsafe {
+        catalogue(context, request_json, out_json, |sdk, asked| {
+            sdk.geo().names(asked)
+        })
+    }
+}
+
+/// The places of an admin unit from the context's geo provider, ranked by
+/// population (most first, a place with none after), answered as canonical
+/// JSON: a list of places as `ts_geo_search` answers them, each with
+/// `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`.
+///
+/// `request_json` is `{"within", "level", "kinds", "depth", "limit",
+/// "lang"}`: the unit by its id or ISO 3166 code (`NP`, `NP-P3`), only
+/// units of `level`, only places of `kinds` (`COUNTRY`, `ADMIN`,
+/// `SETTLEMENT`, `LOCALITY`, `NATURAL`, `POSTAL_AREA`), at most `depth`
+/// levels down (default 1, null for any), at most `limit` (1 to 1,000,
+/// default 100). A unit the provider does not hold lists nothing.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::geo::ts_geo_list;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_geo_list(&raw const ctx, c"{\"within\": \"NP\", \"depth\": 0}".as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::InvalidArg);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_geo_list(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    // SAFETY: the entry point's contract is `catalogue`'s.
+    unsafe {
+        catalogue(context, request_json, out_json, |sdk, asked| {
+            sdk.geo().list(asked)
+        })
+    }
+}

@@ -1968,25 +1968,80 @@ fn engine_answer<T: serde::Serialize>(
     Answered::sealed(Envelope::sealing(value, provenance))
 }
 
-/// The geo port's record: a place resolved through the context's provider
-/// (`03-design/geo-port.md`).
-fn geo_records() -> [Record; 1] {
-    [Record {
-        name: "geo.resolve",
-        boundary: "ts_geo_resolve",
-        title: "A place's IANA zone, ground height and ISO 3166 admin codes, from the context's geo provider",
-        reads: None,
-        run: |context, json| {
-            Answered::plain(
-                &context
-                    .geo()
-                    .resolve(&crate::PlaceRequest::from_json(json)?)?,
-            )
+/// The geo port's records: a place resolved through the context's
+/// provider, and the place catalogue's questions (`03-design/geo-port.md`
+/// §5 and §12).
+fn geo_records() -> [Record; 5] {
+    [
+        Record {
+            name: "geo.resolve",
+            boundary: "ts_geo_resolve",
+            title: "A place's IANA zone, ground height and ISO 3166 admin codes, from the context's geo provider",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .geo()
+                        .resolve(&crate::PlaceRequest::from_json(json)?)?,
+                )
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceRequest => crate::ResolvedPlace),
         },
-        compares: None,
-        brief: Brief::Whole,
-        schemas: schemas!(crate::PlaceRequest => crate::ResolvedPlace),
-    }]
+        Record {
+            name: "geo.search",
+            boundary: "ts_geo_search",
+            title: "Places matching a name in any script, ranked as the context's geo provider ranks them",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceSearch = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().search(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceSearch => Vec<crate::FoundPlace>),
+        },
+        Record {
+            name: "geo.reverse",
+            boundary: "ts_geo_reverse",
+            title: "The named places nearest a point and the admin units holding it, from the context's geo provider",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceReverse = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().reverse(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceReverse => crate::NearbyPlaces),
+        },
+        Record {
+            name: "geo.names",
+            boundary: "ts_geo_names",
+            title: "A place's names by language and script, and the one chosen for each language asked",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceNamesRequest = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().names(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceNamesRequest => crate::PlaceNames),
+        },
+        Record {
+            name: "geo.list",
+            boundary: "ts_geo_list",
+            title: "The places of an admin unit, by level and kind, ranked by population counted or modelled",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceListing = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().list(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceListing => Vec<crate::NamedPlace>),
+        },
+    ]
 }
 
 /// The clock records: what `TimeArea` answers, each read from its own
