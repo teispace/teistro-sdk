@@ -360,15 +360,37 @@ impl Horizon {
         Horizon::from_convention(convention).with_model(settings.day.horizon)
     }
 
-    /// The horizon a named convention is.
+    /// The horizon a named convention is: its point of the disc, with the
+    /// standard refraction or without, on the ideal horizon.
     const fn named(which: Sunrise) -> Horizon {
-        match which {
-            Sunrise::UpperLimbRefraction => Horizon::UPPER_LIMB_REFRACTION,
-            Sunrise::LowerLimbRefraction => Horizon::LOWER_LIMB_REFRACTION,
-            Sunrise::CentreRefraction => Horizon::CENTRE_REFRACTION,
-            // The classical convention, and any named convention core
-            // adds before this crate learns it.
-            _ => Horizon::CENTRE_NO_REFRACTION,
+        let disc = match which {
+            Sunrise::UpperLimbRefraction | Sunrise::UpperLimbNoRefraction => DiscPoint::UpperLimb,
+            Sunrise::LowerLimbRefraction | Sunrise::LowerLimbNoRefraction => DiscPoint::LowerLimb,
+            // The centre, and any named convention core adds before this
+            // crate learns it.
+            _ => DiscPoint::Centre,
+        };
+        Horizon {
+            disc,
+            refraction: if which.refracts() {
+                Refraction::Standard
+            } else {
+                Refraction::None
+            },
+            ..Horizon::CENTRE_NO_REFRACTION
+        }
+    }
+
+    /// The named convention of a point of the disc, with the standard
+    /// refraction or without: each of the six pairs has one.
+    const fn named_of(disc: DiscPoint, refracts: bool) -> Sunrise {
+        match (disc, refracts) {
+            (DiscPoint::Centre, false) => Sunrise::CentreNoRefraction,
+            (DiscPoint::Centre, true) => Sunrise::CentreRefraction,
+            (DiscPoint::UpperLimb, true) => Sunrise::UpperLimbRefraction,
+            (DiscPoint::UpperLimb, false) => Sunrise::UpperLimbNoRefraction,
+            (DiscPoint::LowerLimb, true) => Sunrise::LowerLimbRefraction,
+            (DiscPoint::LowerLimb, false) => Sunrise::LowerLimbNoRefraction,
         }
     }
 
@@ -409,20 +431,24 @@ impl Horizon {
         }
     }
 
-    /// The settings convention this horizon is, when it is a named one or
-    /// a custom altitude of the centre without refraction; `None` for a
-    /// combination the settings cannot name.
+    /// The settings convention this horizon is: on the ideal horizon, the
+    /// named convention of its disc point and refraction (each of the six
+    /// pairs has one) or that convention's air; elsewhere a custom
+    /// altitude of the centre without refraction. `None` for a limb, or a
+    /// refracted centre, off the ideal horizon, which no convention names:
+    /// a horizon lowered by the dip or raised by hills is `day.horizon`'s
+    /// model, not the convention's.
     ///
     /// ```
     /// use teistro_core::settings::{Sunrise, SunriseConvention};
     /// use teistro_port_ephemeris::{DiscPoint, Horizon, HorizonEventKind, Refraction};
     ///
-    /// for which in [Sunrise::CentreNoRefraction, Sunrise::UpperLimbRefraction, Sunrise::CentreRefraction] {
-    ///     let convention: SunriseConvention = which.into();
+    /// for which in Sunrise::ALL {
+    ///     let convention: SunriseConvention = (*which).into();
     ///     assert_eq!(Horizon::from_convention(convention).convention(), Some(convention));
     /// }
-    /// // The lower limb without refraction is a horizon the settings cannot name.
-    /// let unnamed = Horizon { disc: DiscPoint::LowerLimb, ..Horizon::CENTRE_NO_REFRACTION };
+    /// // A limb below the ideal horizon is a horizon the settings cannot name.
+    /// let unnamed = Horizon { altitude_deg: -1.0, ..Horizon::UPPER_LIMB_REFRACTION };
     /// assert_eq!(unnamed.convention(), None);
     /// ```
     #[must_use]
@@ -432,32 +458,19 @@ impl Horizon {
         if self.model != HorizonModel::STANDARD {
             return self.with_model(HorizonModel::STANDARD).convention();
         }
-        if *self == Horizon::CENTRE_NO_REFRACTION {
-            Some(Sunrise::CentreNoRefraction.into())
-        } else if *self == Horizon::UPPER_LIMB_REFRACTION {
-            Some(Sunrise::UpperLimbRefraction.into())
-        } else if *self == Horizon::LOWER_LIMB_REFRACTION {
-            Some(Sunrise::LowerLimbRefraction.into())
-        } else if *self == Horizon::CENTRE_REFRACTION {
-            Some(Sunrise::CentreRefraction.into())
-        } else if self.disc == DiscPoint::Centre && self.refraction == Refraction::None {
-            Some(SunriseConvention::Custom {
-                altitude_deg: self.altitude_deg,
-            })
-        } else if let Refraction::Atmosphere(air) = self.refraction {
-            let standard = Horizon {
-                refraction: Refraction::Standard,
-                ..*self
-            };
-            standard.convention().and_then(|named| match named {
-                SunriseConvention::Named { which } => {
-                    Some(SunriseConvention::Atmospheric { which, air })
-                }
-                _ => None,
-            })
-        } else {
-            None
+        if self.altitude_deg == 0.0 {
+            let which = Horizon::named_of(self.disc, self.refraction != Refraction::None);
+            return Some(match self.refraction {
+                Refraction::Atmosphere(air) => SunriseConvention::Atmospheric { which, air },
+                Refraction::None | Refraction::Standard => which.into(),
+            });
         }
+        if self.disc == DiscPoint::Centre && self.refraction == Refraction::None {
+            return Some(SunriseConvention::Custom {
+                altitude_deg: self.altitude_deg,
+            });
+        }
+        None
     }
 
     /// The key stamped in provenance: disc, refraction and altitude, and
@@ -497,6 +510,66 @@ impl Horizon {
 impl fmt::Display for Horizon {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&self.key())
+    }
+}
+
+/// The horizons a day's Sun and Moon rise and set by: `day.sunrise`'s and
+/// `day.moonrise`'s conventions, each under the one horizon model
+/// (`day.horizon`) and read with its own body's semidiameter and parallax
+/// (SR-102). One horizon is both.
+///
+/// ```
+/// use teistro_core::settings::{Dip, HorizonModel, Sunrise, root};
+/// use teistro_port_ephemeris::{Body, Horizon, Horizons};
+///
+/// let mut settings = root();
+/// settings.day.sunrise = Sunrise::CentreRefraction.into();
+/// let horizons = Horizons::of(&settings);
+/// // Nepal's sunrise does not move the Moon off the almanacs' upper limb.
+/// assert_eq!(horizons.of_body(Body::Sun), Horizon::CENTRE_REFRACTION);
+/// assert_eq!(horizons.of_body(Body::Moon), Horizon::UPPER_LIMB_REFRACTION);
+/// // The model's dip is both bodies'.
+/// settings.day.horizon = HorizonModel { dip: Dip::Refracted, ..HorizonModel::STANDARD };
+/// let dipped = Horizons::of(&settings);
+/// assert_eq!((dipped.sun.model.dip, dipped.moon.model.dip), (Dip::Refracted, Dip::Refracted));
+/// assert_eq!(Horizons::from(Horizon::CENTRE_NO_REFRACTION).moon, Horizon::CENTRE_NO_REFRACTION);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Horizons {
+    /// The Sun's, and every body's but the Moon's.
+    pub sun: Horizon,
+    /// The Moon's.
+    pub moon: Horizon,
+}
+
+impl Horizons {
+    /// A context's two horizons: `day.sunrise` and `day.moonrise`, each
+    /// reckoned by `day.horizon`.
+    #[must_use]
+    pub const fn of(settings: &Settings) -> Horizons {
+        Horizons {
+            sun: Horizon::of(settings.day.sunrise, settings),
+            moon: Horizon::of(settings.day.moonrise, settings),
+        }
+    }
+
+    /// The horizon a body rises by: the Moon's for the Moon, the Sun's
+    /// for every other.
+    #[must_use]
+    pub const fn of_body(&self, body: Body) -> Horizon {
+        match body {
+            Body::Moon => self.moon,
+            _ => self.sun,
+        }
+    }
+}
+
+impl From<Horizon> for Horizons {
+    fn from(both: Horizon) -> Horizons {
+        Horizons {
+            sun: both,
+            moon: both,
+        }
     }
 }
 
@@ -617,6 +690,7 @@ mod tests {
         assert_eq!(Horizon::from_convention(custom).convention(), Some(custom));
         let unnamed = Horizon {
             disc: DiscPoint::LowerLimb,
+            altitude_deg: -0.5,
             ..Horizon::CENTRE_NO_REFRACTION
         };
         assert_eq!(unnamed.convention(), None);
@@ -636,6 +710,39 @@ mod tests {
         assert_eq!(
             Horizon::UPPER_LIMB_REFRACTION.to_string(),
             "UPPER_LIMB/STANDARD_REFRACTION/0"
+        );
+    }
+
+    #[test]
+    fn every_disc_and_refraction_pair_is_a_named_convention() {
+        // Each disc point and refraction on the ideal horizon is a named
+        // convention.
+        for disc in [
+            DiscPoint::Centre,
+            DiscPoint::UpperLimb,
+            DiscPoint::LowerLimb,
+        ] {
+            for refraction in [Refraction::None, Refraction::Standard] {
+                let level = Horizon {
+                    disc,
+                    refraction,
+                    ..Horizon::CENTRE_NO_REFRACTION
+                };
+                let Some(SunriseConvention::Named { which }) = level.convention() else {
+                    panic!("{level}")
+                };
+                assert_eq!(Horizon::from_convention(which.into()), level);
+            }
+        }
+        // Atmospheric air on a non-refracting limb never reaches here
+        // named; the limb's pair keeps its geometric horizon.
+        assert_eq!(
+            Horizon::from_convention(SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbNoRefraction,
+                air: Atmosphere::given(987.0, 4.5),
+            })
+            .refraction,
+            Refraction::None
         );
     }
 }

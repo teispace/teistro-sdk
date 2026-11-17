@@ -41,7 +41,7 @@ use teistro_core::coverage::{Clipped, Coverage};
 use teistro_core::error::{Error, Status};
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind};
+use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind, Horizons};
 
 use crate::delta_t::DeltaTModel;
 use crate::iau;
@@ -684,7 +684,8 @@ fn body_sky(
 }
 
 /// The sky of a window at a place: `from` to `to` in UT1, each body's path
-/// at `step` and its events under `horizon`.
+/// at `step` and its events under its horizon: the Sun's and the Moon's
+/// of `horizons`, or one horizon for both.
 ///
 /// ```
 /// # use teistro_astro::day_sky::{SkyState, SkyStep, day_sky};
@@ -713,11 +714,12 @@ fn body_sky(
 pub fn day_sky(
     source: &dyn ApparentPositions,
     place: Place,
-    horizon: Horizon,
+    horizons: impl Into<Horizons>,
     delta_t: DeltaTModel,
     (from, to): (JulianDay<Ut1>, JulianDay<Ut1>),
     step: SkyStep,
 ) -> Result<DaySky, Error> {
+    let horizons: Horizons = horizons.into();
     let days = to.get() - from.get();
     if !(days.is_finite() && days > 0.0) {
         return Err(Error::invalid_arg(format!(
@@ -789,8 +791,20 @@ pub fn day_sky(
         to,
         clipped,
         step_minutes: step.minutes(),
-        sun: body_sky(&reader, Body::Sun, horizon, (from, to), &samples)?,
-        moon: body_sky(&reader, Body::Moon, horizon, (from, to), &samples)?,
+        sun: body_sky(
+            &reader,
+            Body::Sun,
+            horizons.of_body(Body::Sun),
+            (from, to),
+            &samples,
+        )?,
+        moon: body_sky(
+            &reader,
+            Body::Moon,
+            horizons.of_body(Body::Moon),
+            (from, to),
+            &samples,
+        )?,
     })
 }
 

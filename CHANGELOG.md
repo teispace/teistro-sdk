@@ -308,6 +308,34 @@ parana follows and the rule that bars it, which the narrowed request used to dro
 refuse. Rust, C (the JSON of `ts_almanac_next` and the festival answer), Node, wasm,
 Python, Dart (`group:`), Java (`nextGroup`) and MCP read it; the parity runners print a
 grouped case.
+**The Moon rises by her own horizon; every disc and refraction pair named (SR-102, SR-113).**
+**Numbers:** every moonrise under `nepali-drik` and `nepali-committee` moves earlier, and
+every moonset later, by the time the Moon's semidiameter takes to cross the horizon: a
+median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The Moon rose by
+`day.sunrise`, the disc's centre in Nepal's profiles, and
+now rises by `day.moonrise`, the upper limb with refraction every almanac prints (USNO,
+the Explanatory Supplement §9.33; C2000). Under the root's profiles, `tamil-vakya` and
+`conformance-baseline` no moonrise moves (their sunrise already read the upper limb), nor
+under `surya-siddhanta` (the centre on the geometric horizon, as before); a caller who set
+`day.sunrise` to another convention sees the Moon keep the upper limb, and sets
+`day.moonrise` to the same value to keep the old answer. No sunrise moves.
+Every settings hash moves, because `day.moonrise` is a new knob of the canonical document;
+profile versions `nepali-drik` 8, `nepali-committee` 8, `surya-siddhanta` 4, `tamil-vakya` 3,
+`conformance-baseline` 15.
+- `day.moonrise` takes every form `day.sunrise` does and is reckoned by the same horizon
+  model, `day.horizon`, whose dip and horizon altitude lower both bodies' horizons alike;
+  the day sky and the visible (terrain) day read the Moon's by it too. `Sunrise` names all six pairs of disc point and refraction
+  (`UPPER_LIMB_NO_REFRACTION` and `LOWER_LIMB_NO_REFRACTION` are new, `TsSunrise` 4 and 5).
+  The Moon's every January 2026 rise and set at Kathmandu falls in timeanddate's printed
+  minute, and every one of five years' falls within 0.044 s of JPL's DE440
+  (`05-testing/limb-oracle.md` §4).
+- The dip and the horizon's altitude have one place, `day.horizon` (C2001;
+  `03-design/moonrise-convention.md` §4): no convention carries an observer's height of its
+  own. A horizon profile as a setting is left open.
+- The day's sunrise, its moonrise and the eclipse horizon are held to the same rules, each
+  refused at its own knob (`sunrise-altitude`, `sunrise-air`, `sunrise-air-refracts`).
+- `surya-siddhanta` warns (`siddhanta-text-moonrise-convention`) when the text's sunrise is
+  read with any moonrise but the text's.
 
 **A classical sky's Moon stands at her true distance (SR-127).**
 **Numbers:** under a classical sky (the Surya Siddhanta's, which `nepal_official` and

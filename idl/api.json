@@ -8210,7 +8210,7 @@
     },
     {
       "name": "TsSunrise",
-      "doc": "Which sunrise a day was reckoned from.\n\nThe named conventions only. A profile may ask for the centre of the\ndisc at a chosen altitude instead, which is a `Custom` convention;\na blob carries that as its altitude beside this, because a variant\nwith a payload cannot be an id (`03-design/chart-at-the-boundary.md`\n§8).",
+      "doc": "Which sunrise a day was reckoned from.\n\nThe named conventions only: each point of the disc, with standard\nrefraction or without. A profile may ask for the centre of the disc\nat a chosen altitude instead, which is a `Custom` convention, or for\nan observer's height, which is a `Composed` one; a blob carries that\naltitude or that dip beside this, because a variant with a payload\ncannot be an id (`03-design/chart-at-the-boundary.md` §8).",
       "repr": "u8",
       "values": [
         {
@@ -8236,6 +8236,18 @@
           "value": 3,
           "doc": "The centre of the disc with standard refraction.",
           "key": "CENTRE_REFRACTION"
+        },
+        {
+          "name": "UpperLimbNoRefraction",
+          "value": 4,
+          "doc": "The upper limb on the geometric horizon, without refraction.",
+          "key": "UPPER_LIMB_NO_REFRACTION"
+        },
+        {
+          "name": "LowerLimbNoRefraction",
+          "value": 5,
+          "doc": "The lower limb on the geometric horizon, without refraction.",
+          "key": "LOWER_LIMB_NO_REFRACTION"
         }
       ],
       "source": "crates/ffi/src/day.rs"
@@ -22627,13 +22639,13 @@
             {
               "name": "convention_kind",
               "scalar": "u8",
-              "doc": "Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.",
+              "doc": "Which sunrise convention the arc was reckoned by, the one an atmospheric convention gave its air to, or a composed convention's disc point and refraction; `0xFF` for a custom altitude.",
               "enum": "TsSunrise"
             },
             {
               "name": "convention_value",
               "scalar": "f64",
-              "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+              "doc": "The altitude in degrees when the convention is custom, the horizon's depression by the observer's height (negative) when it is composed with one; zero otherwise."
             },
             {
               "name": "air_pressure_hpa",
@@ -28766,13 +28778,13 @@
             {
               "name": "convention_kind",
               "scalar": "u8",
-              "doc": "Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.",
+              "doc": "Which sunrise convention the arc was reckoned by, the one an atmospheric convention gave its air to, or a composed convention's disc point and refraction; `0xFF` for a custom altitude.",
               "enum": "TsSunrise"
             },
             {
               "name": "convention_value",
               "scalar": "f64",
-              "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+              "doc": "The altitude in degrees when the convention is custom, the horizon's depression by the observer's height (negative) when it is composed with one; zero otherwise."
             },
             {
               "name": "air_pressure_hpa",

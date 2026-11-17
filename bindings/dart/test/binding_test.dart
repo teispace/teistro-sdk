@@ -10289,6 +10289,76 @@ void _engineTests() {
       ),
     );
 
+    // SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs'
+    // upper limb with refraction, not by the day's sunrise; the dip of
+    // `day.horizon` lowers both bodies' horizons.
+    // Over the built-in sky, whose Moon has her real distance; read
+    // before the context is disposed: [sunrise, first moonrise].
+    // 5 January 2026; `gregorian` above is this test's converted date.
+    const fifth = CalendarDate(
+      calendar: Calendar.gregorian,
+      year: 2026,
+      eraYear: 0,
+      month: 1,
+      day: 5,
+      resolution: Resolution.defined,
+      computedMonth: 0,
+      computedDay: 0,
+    );
+    List<double> almanacDay(Map<String, Object?> settings) {
+      final each = teistro.context(
+        profile: 'nepali-drik',
+        settings: settings,
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
+      try {
+        final one = each.almanac
+            .of(from: fifth, to: fifth, place: place, utcOffsetSeconds: 20700)
+            .at(0);
+        return [
+          one.day.sunrise,
+          one.moonEvents.firstWhere((event) => event.rise).instant,
+        ];
+      } finally {
+        each.dispose();
+      }
+    }
+
+    final ownDay = almanacDay({});
+    final centreDay = almanacDay({
+      'day': {
+        'moonrise': {'kind': 'NAMED', 'which': 'CENTRE_REFRACTION'},
+      },
+    });
+    expect(centreDay[0], ownDay[0]);
+    final moonLater = (centreDay[1] - ownDay[1]) * 86400.0;
+    expect(
+      moonLater > 55.0 && moonLater < 110.0,
+      isTrue,
+      reason: '$moonLater s',
+    );
+    final dipped = almanacDay({
+      'day': {
+        'horizon': {'dip': 'REFRACTED'},
+      },
+    });
+    expect(dipped[0] < ownDay[0], isTrue);
+    expect(dipped[1] < ownDay[1], isTrue);
+    expect(
+      () => almanacDay({
+        'day': {
+          'moonrise': {'kind': 'CUSTOM', 'altitude_deg': 91},
+        },
+      }),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          endsWith('day.moonrise'),
+        ),
+      ),
+    );
+
     // Tromsø at midsummer: civil midnight holds the instant and says so,
     // and so does the nearest event's synthesised day.
     final tromso = Observer(

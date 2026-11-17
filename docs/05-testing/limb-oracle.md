@@ -1,7 +1,8 @@
 # The limb oracle
 
-Status: `active`, 2026-11-14 (SR-105). The gate that holds every panchanga
-limb end, sankranti and sunrise the SDK computes to a recorded reference
+Status: `active`, 2026-11-14 (SR-105), the Moon's rises and sets added
+2026-11-16 (SR-102). The gate that holds every panchanga
+limb end, sankranti, sunrise and moonrise the SDK computes to a recorded reference
 sky, per limb and per century, and the measurement of the ayanamsha basis
 (SR-100) it was built to settle.
 
@@ -125,3 +126,30 @@ What the basis moved, over 2000 to 2100 at Kathmandu under `nepali-drik`
   and Vrischika 2011-11-16 23:49:43 against 23:43:33.
 - **Ten nakshatra and nineteen yoga days**, an end within a minute of
   sunrise that moved across it.
+
+## 4. Moonrises and moonsets (SR-102)
+
+`every_drik_profiles_moon_meets_the_oracle` holds every moonrise and
+moonset of the same five years at Kathmandu under `nepali-drik`,
+`parashari-classical` and `kp-default` to `oracle/moonrises.json`
+(schema `teistro/moon-oracle/1`, `record_limbs.py --moon`, recorded
+2026-11-16 over the same DE440 kernel). The reference is the almanacs'
+definition (USNO; the Explanatory Supplement §9.33): the Moon's
+geocentric centre at −34′ − SD + π, her semidiameter asin(1737.4 km / d)
+and her horizontal parallax asin(6378.137 km / d) taken at the instant,
+each event recorded with its ΔT and its sensitivity to it and moved onto
+the SDK's ΔT before comparing, as a sunrise is. The bound is 0.1 s, the
+sunrise's; SR-102 asked one second.
+
+| event | 1900s | 2000s | 2100 | bound |
+|---|---|---|---|---|
+| moonrise (705/706/352) | 0.030 | 0.025 | 0.028 | 0.1 |
+| moonset (704/706/353) | 0.044 | 0.024 | 0.026 | 0.1 |
+
+The medians are −0.003 s to 0.000 s, and the three profiles agree to the
+millisecond, since all three now read `UPPER_LIMB_REFRACTION` for the
+Moon. Under `TEISTRO_MOON_PATCH` set to the centre with refraction, the
+Moon `nepali-drik` read before SR-102, the median moonrise was 75.6 s to
+79.1 s late and the median moonset 75.7 s to 78.7 s early, the worst
+93.9 s (`03-design/moonrise-convention.md`).
+

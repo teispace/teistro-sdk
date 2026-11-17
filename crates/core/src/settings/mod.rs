@@ -257,6 +257,12 @@ impl From<Ayanamsha> for AyanamshaChoice {
 /// let dawn = SunriseConvention::Custom { altitude_deg: -6.0 };
 /// assert_eq!(serde_json::to_value(dawn).unwrap()["altitude_deg"], -6.0);
 /// ```
+///
+/// The same type is the moonrise's (`day.moonrise`) and the eclipse
+/// horizon's (`panchanga.eclipse_horizon`): one convention, read for each
+/// body with that body's own semidiameter and parallax, and every one
+/// reckoned by the one horizon model, `day.horizon`, which holds the dip
+/// and the horizon's altitude (`03-design/moonrise-convention.md`).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -1216,6 +1222,14 @@ group!(
     day {
         /// The sunrise convention.
         sunrise: SunriseConvention => Sunrise,
+        /// The moonrise convention: the Moon's rise and set, read with her
+        /// own semidiameter and horizontal parallax under the same horizon
+        /// model (`day.horizon`). The almanacs time the upper limb with 34
+        /// arcminutes of refraction (USNO, *Rise, Set, and Twilight
+        /// Definitions*; *Explanatory Supplement* §9.33), which is the
+        /// root's; a day's sunrise convention does not carry over (SR-102,
+        /// `03-design/moonrise-convention.md`).
+        moonrise: SunriseConvention => Sunrise,
         /// When the day begins.
         day_boundary: DayBoundary => Rule,
         /// A day without a sunrise.
@@ -2321,13 +2335,20 @@ fn horizon_coherence(model: &HorizonModel, out: &mut Vec<Diagnostic>) {
     }
 }
 
-fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
+/// The knobs that hold a horizon convention, each read by the same rules.
+const HORIZON_KNOBS: [&str; 3] = ["day.sunrise", "day.moonrise", "panchanga.eclipse_horizon"];
+
+/// What the settings refuse in a horizon convention, at the knob that
+/// holds it: a custom altitude that is not one, an air given to a
+/// convention that does not refract, and an air outside what the Earth's
+/// surface has seen.
+fn sunrise_coherence(convention: SunriseConvention, knob: &'static str, out: &mut Vec<Diagnostic>) {
     if let SunriseConvention::Custom { altitude_deg } = convention {
         if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
             out.push(Diagnostic::error(
                 "sunrise-altitude",
                 "a custom sunrise altitude is a finite number of degrees within -90 to 90",
-                &["day.sunrise"],
+                &[knob],
             ));
         }
     }
@@ -2339,7 +2360,7 @@ fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
                     "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION, LOWER_LIMB_REFRACTION or CENTRE_REFRACTION",
                     which.key()
                 ),
-                &["day.sunrise"],
+                &[knob],
             ));
         }
         if !air.is_valid() {
@@ -2352,9 +2373,46 @@ fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
                     AIR_TEMPERATURE_C.start(),
                     AIR_TEMPERATURE_C.end()
                 ),
-                &["day.sunrise"],
+                &[knob],
             ));
         }
+    }
+}
+
+/// What the settings warn of when the Surya Siddhanta's own sunrise is
+/// read beside a modern horizon: the text's sunrise and its moonrise are
+/// both the centre on the geometric horizon.
+fn text_horizon_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
+    let text = matches!(
+        s.frame.siddhanta,
+        Siddhanta::Surya {
+            sunrise: SuryaSunrise::Text,
+            ..
+        }
+    );
+    if !text {
+        return;
+    }
+    // The text's sunrise is the centre on the geometric horizon, in local
+    // mean time; asked for another convention, the provider declines and
+    // the SDK solves it over the text's Sun, which is neither the text's
+    // sunrise nor a modern one (`03-design/nepal-day-measured.md` §4).
+    if s.day.sunrise != SunriseConvention::from(Sunrise::CentreNoRefraction) {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-sunrise-convention",
+            "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
+            &["frame.siddhanta", "day.sunrise"],
+        ));
+    }
+    // The text's moonrise is the same horizon: Burgess's ch. X finds the
+    // Moon's rising from her ascensional difference, the centre on the
+    // geometric horizon (`03-design/moonrise-convention.md` §3).
+    if s.day.moonrise != SunriseConvention::from(Sunrise::CentreNoRefraction) {
+        out.push(Diagnostic::warning(
+            "siddhanta-text-moonrise-convention",
+            "the text's moonrise is the centre on the geometric horizon (Surya Siddhanta ch. X); another convention is solved over the text's Moon, which is neither the text's moonrise nor a modern one",
+            &["frame.siddhanta", "day.moonrise"],
+        ));
     }
 }
 
@@ -2477,7 +2535,13 @@ fn scheme_coherence(s: &Settings, out: &mut Vec<Diagnostic>) {
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     ayanamsha_coherence(s, &mut out);
-    sunrise_coherence(s.day.sunrise, &mut out);
+    for (knob, convention) in
+        HORIZON_KNOBS
+            .into_iter()
+            .zip([s.day.sunrise, s.day.moonrise, s.panchanga.eclipse_horizon])
+    {
+        sunrise_coherence(convention, knob, &mut out);
+    }
     horizon_coherence(&s.day.horizon, &mut out);
     dut1_coherence(s.time.dut1, &mut out);
     score_bands_coherence(s.rashifal.score_bands, &mut out);
@@ -2525,24 +2589,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
     }
     basis_coherence(s, &mut out);
     scheme_coherence(s, &mut out);
-    // The text's sunrise is the centre on the geometric horizon, in local
-    // mean time; asked for another convention, the provider declines and
-    // the SDK solves it over the text's Sun, which is neither the text's
-    // sunrise nor a modern one (`03-design/nepal-day-measured.md` §4).
-    if matches!(
-        s.frame.siddhanta,
-        Siddhanta::Surya {
-            sunrise: SuryaSunrise::Text,
-            ..
-        }
-    ) && s.day.sunrise != SunriseConvention::from(Sunrise::CentreNoRefraction)
-    {
-        out.push(Diagnostic::warning(
-            "siddhanta-text-sunrise-convention",
-            "the text's sunrise is the centre on the geometric horizon; another convention is solved over the text's Sun, which is neither the text's sunrise nor a modern one (set frame.siddhanta.sunrise to MODERN for a modern one)",
-            &["frame.siddhanta", "day.sunrise"],
-        ));
-    }
+    text_horizon_coherence(s, &mut out);
     let root = profiles::root();
     for (system, length) in &s.dasha.year_length {
         if root
@@ -2867,6 +2914,70 @@ mod tests {
     }
 
     #[test]
+    fn every_horizon_knob_is_held_to_the_same_rules() {
+        // SR-102: the moonrise and the eclipse horizon are refused at their
+        // own knob for what the sunrise is refused for; each named pair of
+        // disc point and refraction is accepted at each.
+        let root = shipped(DEFAULT_PROFILE);
+        for knob in HORIZON_KNOBS {
+            let at = |convention: SunriseConvention| {
+                let mut patch = SettingsPatch::default();
+                match knob {
+                    "day.sunrise" => patch.day.sunrise = Some(convention),
+                    "day.moonrise" => patch.day.moonrise = Some(convention),
+                    _ => patch.panchanga.eclipse_horizon = Some(convention),
+                }
+                root.resolve(&patch).map(|_| ()).map_err(|d| {
+                    d.errors()
+                        .map(|e| (e.rule, e.fields.join(",")))
+                        .collect::<Vec<_>>()
+                })
+            };
+            for which in Sunrise::ALL {
+                assert_eq!(at((*which).into()), Ok(()), "{knob} {which:?}");
+            }
+            assert_eq!(
+                at(SunriseConvention::Atmospheric {
+                    which: Sunrise::UpperLimbRefraction,
+                    air: Atmosphere::given(50.0, 15.0),
+                }),
+                Err(vec![("sunrise-air", String::from(knob))])
+            );
+            assert_eq!(
+                at(SunriseConvention::Atmospheric {
+                    which: Sunrise::UpperLimbNoRefraction,
+                    air: Atmosphere::STANDARD,
+                }),
+                Err(vec![("sunrise-air-refracts", String::from(knob))])
+            );
+            assert_eq!(
+                at(SunriseConvention::Custom { altitude_deg: 91.0 }),
+                Err(vec![("sunrise-altitude", String::from(knob))])
+            );
+        }
+        // The six named pairs: three refract, three do not.
+        assert_eq!(Sunrise::ALL.iter().filter(|w| w.refracts()).count(), 3);
+        assert_eq!(Sunrise::ALL.len(), 6);
+    }
+
+    #[test]
+    fn the_text_moonrise_is_the_centre_on_the_geometric_horizon() {
+        let text = shipped("surya-siddhanta");
+        let warned = |patch: &SettingsPatch| -> Vec<&'static str> {
+            text.resolve(patch)
+                .expect("a warning, not an error")
+                .warnings
+                .iter()
+                .map(|w| w.rule)
+                .collect()
+        };
+        assert!(!warned(&SettingsPatch::default()).contains(&"siddhanta-text-moonrise-convention"));
+        let mut patch = SettingsPatch::default();
+        patch.day.moonrise = Some(Sunrise::UpperLimbRefraction.into());
+        assert!(warned(&patch).contains(&"siddhanta-text-moonrise-convention"));
+    }
+
+    #[test]
     fn the_settings_refuse_an_air_that_cannot_be_applied() {
         let air = |which, air| SunriseConvention::Atmospheric { which, air };
         assert!(
@@ -3187,12 +3298,14 @@ mod tests {
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = resolved.warnings.iter().map(|d| d.rule).collect();
-        // nepali-drik's refracted sunrise is not the text's either.
+        // nepali-drik's refracted sunrise is not the text's either, nor
+        // its refracted moonrise.
         assert_eq!(
             rules,
             [
                 "siddhanta-topocentric",
                 "siddhanta-text-sunrise-convention",
+                "siddhanta-text-moonrise-convention",
                 "year-length-convention"
             ]
         );
@@ -3257,6 +3370,7 @@ mod tests {
         classical.frame.centre = Some(Centre::Geocentric);
         classical.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None));
         classical.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
+        classical.day.moonrise = Some(Sunrise::CentreNoRefraction.into());
         assert_eq!(rules(&classical), Vec::<&str>::new());
     }
 
@@ -3369,7 +3483,13 @@ mod tests {
             .resolve(&text)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = warned.warnings.iter().map(|d| d.rule).collect();
-        assert_eq!(rules, ["siddhanta-text-sunrise-convention"]);
+        assert_eq!(
+            rules,
+            [
+                "siddhanta-text-sunrise-convention",
+                "siddhanta-text-moonrise-convention"
+            ]
+        );
     }
 
     #[test]

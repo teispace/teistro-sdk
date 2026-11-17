@@ -2252,6 +2252,38 @@ class AnEngine(WithLibrary):
         with self.assertRaisesRegex(TeistroError, "does not refract"):
             refracted({"kind": "ATMOSPHERIC", "which": "CENTRE_NO_REFRACTION", "air": {}})
 
+        # SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs'
+        # upper limb with refraction, not by the day's sunrise; the dip of
+        # `day.horizon` lowers both bodies' horizons.
+        def almanac_day(settings: dict[str, Any]) -> tuple[float, Any, float]:
+            """(sunrise, convention, first moonrise) over the built-in sky,
+            whose Moon has her real distance, read before the context
+            closes."""
+            with self.teistro.context(
+                profile="nepali-drik", settings=settings, ephemeris=Ephemeris.BUILTIN
+            ) as each:
+                one = each.almanac.of(
+                    from_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                    to_date=date(Calendar.GREGORIAN, 2026, 1, 5),
+                    place=place,
+                    utc_offset_seconds=20700,
+                )[0]
+                rise = next(event.instant for event in one.moon_events if event.rise)
+                return (one.day.sunrise, one.day.convention, rise)
+
+        level = almanac_day({})
+        centred = almanac_day({"day": {"moonrise": {"kind": "NAMED", "which": "CENTRE_REFRACTION"}}})
+        self.assertEqual(level[0], centred[0])
+        later = (centred[2] - level[2]) * 86400.0
+        self.assertTrue(55.0 < later < 110.0, later)
+        dipped = almanac_day({"day": {"horizon": {"dip": "REFRACTED"}}})
+        self.assertEqual(dipped[1], Sunrise.CENTRE_REFRACTION)
+        self.assertLess(dipped[0], level[0])
+        self.assertLess(dipped[2], level[2])
+        with self.assertRaises(TeistroError) as refused:
+            almanac_day({"day": {"moonrise": {"kind": "CUSTOM", "altitude_deg": 91}}})
+        self.assertTrue(refused.exception.field.endswith("day.moonrise"), refused.exception.field)
+
         # Tromsø at midsummer: civil midnight holds the instant and says so,
         # and so does the nearest event's synthesised day.
         tromso = Observer(
