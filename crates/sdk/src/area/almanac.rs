@@ -41,7 +41,7 @@ use teistro_panchanga::vedha::with_vedhas;
 use teistro_panchanga::year::LunarYear;
 use teistro_time::DayState;
 
-use teistro_port_ephemeris::{EphemerisProvider, Horizon};
+use teistro_port_ephemeris::{EphemerisProvider, Horizon, Horizons};
 use teistro_time::ZoneSpec;
 use teistro_time::local_day::local_midnight;
 
@@ -1054,7 +1054,8 @@ impl<'a> AlmanacArea<'a> {
     /// Each day's visible sunrise, sunset, moonrise and moonset behind the
     /// terrain of `profile` (`03-design/terrain-horizon.md`, SR-91), beside
     /// the level horizon's, each searched from the day's local midnight
-    /// under the day's own sunrise convention. The days themselves are
+    /// under the day's own conventions: `day.sunrise` for the Sun,
+    /// `day.moonrise` for the Moon. The days themselves are
     /// unchanged: a panchanga day still opens at its astronomical sunrise.
     fn visible_of(
         self,
@@ -1067,7 +1068,7 @@ impl<'a> AlmanacArea<'a> {
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
         let source = self.context.completion_over(provider);
-        let horizon = Horizon::of(settings.day.sunrise, settings);
+        let horizons = Horizons::of(settings);
         let visible = days
             .value
             .iter()
@@ -1077,7 +1078,7 @@ impl<'a> AlmanacArea<'a> {
                 visible_day(
                     &source,
                     *place,
-                    horizon,
+                    horizons,
                     delta_t,
                     midnight.relabel(),
                     profile,
@@ -1097,7 +1098,8 @@ impl<'a> AlmanacArea<'a> {
 
     /// Each day's sky (`03-design/day-sky.md`), over its window, sealed
     /// under the days' provenance with the window's reading named. The
-    /// rises and sets are found under the horizon the day's own are.
+    /// rises and sets are found under the horizons the day's own are: the
+    /// Sun's under `day.sunrise`, the Moon's under `day.moonrise`.
     fn sky_of(
         self,
         days: &Envelope<Vec<Panchanga>>,
@@ -1109,7 +1111,7 @@ impl<'a> AlmanacArea<'a> {
         let settings = self.context.settings();
         let delta_t = self.context.delta_t();
         let source = self.context.completion_over(provider);
-        let horizon = Horizon::of(settings.day.sunrise, settings);
+        let horizons = Horizons::of(settings);
         let skies = days
             .value
             .iter()
@@ -1124,7 +1126,7 @@ impl<'a> AlmanacArea<'a> {
                 day_sky(
                     &source,
                     *place,
-                    horizon,
+                    horizons,
                     delta_t,
                     (window.from.relabel(), window.to.relabel()),
                     step,

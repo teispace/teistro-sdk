@@ -4069,6 +4069,49 @@ void main() {
     );
   }
 
+  // ── The moonrise convention ──────────────────────────────────────────
+  // Kathmandu on 5 January 2026 over the built-in sky under nepali-drik
+  // (SR-102, SR-113): the day opens at the disc's centre with refraction
+  // while the Moon rises by the upper limb; then the Moon asked for the
+  // centre too, and both under the horizon model's refracted dip.
+  for (final (name, moonSettings) in <(String, Map<String, Object?>)>[
+    ('own', {}),
+    (
+      'centre',
+      {
+        'day': {
+          'moonrise': {'kind': 'NAMED', 'which': 'CENTRE_REFRACTION'},
+        },
+      },
+    ),
+    (
+      'dipped',
+      {
+        'day': {
+          'horizon': {'dip': 'REFRACTED'},
+        },
+      },
+    ),
+  ]) {
+    final moonSky = teistro.context(
+      profile: 'nepali-drik',
+      settings: moonSettings,
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final moonDays = moonSky.almanac.of(
+      from: Calendar.gregorian.date(2026, 1, 5),
+      to: Calendar.gregorian.date(2026, 1, 5),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    final moonDay = moonDays.each.first;
+    final rises = moonDay.moonEvents.where((event) => event.rise);
+    put(
+      'moonrise-$name',
+      '${number(moonDay.day.sunrise)} ${number(rises.isEmpty ? 0 : rises.first.instant)}',
+    );
+    moonSky.dispose();
+  }
   // ── The settings explained and compared ──────────────────────────────
   // `nepali-drik` with the node patched per call, every knob explained, and
   // the knobs on which the committee's profile and `nepali-drik` part

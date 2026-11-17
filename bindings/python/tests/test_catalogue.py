@@ -189,7 +189,10 @@ class TheCatalogue(unittest.TestCase):
             # `DeltaTSource`'s `EXTRAPOLATED`.
             + 1
             # Delta T's uncertainty band, `DeltaTBand`.
-            + 5,
+            + 5
+            # `Sunrise`'s `UPPER_LIMB_NO_REFRACTION` and
+            # `LOWER_LIMB_NO_REFRACTION` (SR-113).
+            + 2,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

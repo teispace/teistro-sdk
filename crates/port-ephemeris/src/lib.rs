@@ -77,7 +77,7 @@ pub use counting::{CountingProvider, ProviderCalls};
 pub use crossing::{CrossingRequest, Direction, Event as CrossingEvent, Lattice, Quantity};
 pub use error::ProviderError;
 pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};
-pub use horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction};
+pub use horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Horizons, Refraction};
 pub use native::{Native, NativeFunction, NativeManifest, NativeParam, Role};
 pub use provider::{EphemerisProvider, PositionRequest, ask_positions, validate};
 pub use test_provider::TestProvider;

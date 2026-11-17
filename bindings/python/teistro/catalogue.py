@@ -4514,11 +4514,12 @@ class DayPart(Member):
 class Sunrise(Member):
     """Which sunrise a day was reckoned from.
 
-    The named conventions only. A profile may ask for the centre of the
-    disc at a chosen altitude instead, which is a `Custom` convention;
-    a blob carries that as its altitude beside this, because a variant
-    with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
-    §8).
+    The named conventions only: each point of the disc, with standard
+    refraction or without. A profile may ask for the centre of the disc
+    at a chosen altitude instead, which is a `Custom` convention, or for
+    an observer's height, which is a `Composed` one; a blob carries that
+    altitude or that dip beside this, because a variant with a payload
+    cannot be an id (`03-design/chart-at-the-boundary.md` §8).
     """
 
     CENTRE_NO_REFRACTION = 0
@@ -4532,6 +4533,12 @@ class Sunrise(Member):
 
     CENTRE_REFRACTION = 3
     """The centre of the disc with standard refraction."""
+
+    UPPER_LIMB_NO_REFRACTION = 4
+    """The upper limb on the geometric horizon, without refraction."""
+
+    LOWER_LIMB_NO_REFRACTION = 5
+    """The lower limb on the geometric horizon, without refraction."""
 
 
 class GhatiReckoning(Member):
@@ -7899,6 +7906,8 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "UPPER_LIMB_REFRACTION",
         2: "LOWER_LIMB_REFRACTION",
         3: "CENTRE_REFRACTION",
+        4: "UPPER_LIMB_NO_REFRACTION",
+        5: "LOWER_LIMB_NO_REFRACTION",
     },
     "GhatiReckoning": {
         0: "CIVIL",

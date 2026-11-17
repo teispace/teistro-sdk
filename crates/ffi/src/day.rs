@@ -37,11 +37,11 @@ impl From<DayPart> for TsDayPart {
 
 /// Which sunrise a day was reckoned from.
 ///
-/// The named conventions only. A profile may ask for the centre of the
-/// disc at a chosen altitude instead, which is a `Custom` convention;
-/// a blob carries that as its altitude beside this, because a variant
-/// with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
-/// §8).
+/// The named conventions only: each point of the disc, with standard
+/// refraction or without. A profile may ask for the centre of the disc
+/// at a chosen altitude instead, which is a `Custom` convention; a blob
+/// carries that as its altitude beside this, because a variant with a
+/// payload cannot be an id (`03-design/chart-at-the-boundary.md` §8).
 ///
 /// ```
 /// use teistro_ffi::day::TsSunrise;
@@ -60,6 +60,10 @@ pub enum TsSunrise {
     LowerLimbRefraction = 2,
     /// The centre of the disc with standard refraction.
     CentreRefraction = 3,
+    /// The upper limb on the geometric horizon, without refraction.
+    UpperLimbNoRefraction = 4,
+    /// The lower limb on the geometric horizon, without refraction.
+    LowerLimbNoRefraction = 5,
 }
 
 impl TsSunrise {
@@ -80,6 +84,8 @@ impl TsSunrise {
             Sunrise::UpperLimbRefraction => Some(TsSunrise::UpperLimbRefraction),
             Sunrise::LowerLimbRefraction => Some(TsSunrise::LowerLimbRefraction),
             Sunrise::CentreRefraction => Some(TsSunrise::CentreRefraction),
+            Sunrise::UpperLimbNoRefraction => Some(TsSunrise::UpperLimbNoRefraction),
+            Sunrise::LowerLimbNoRefraction => Some(TsSunrise::LowerLimbNoRefraction),
             _ => None,
         }
     }

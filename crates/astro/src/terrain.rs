@@ -39,7 +39,7 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_port_ephemeris::{Body, Horizon};
+use teistro_port_ephemeris::{Body, Horizons};
 
 use crate::day_sky::SkyState;
 use crate::delta_t::DeltaTModel;
@@ -401,8 +401,9 @@ pub struct VisibleDay {
 }
 
 /// The Sun's and the Moon's rise and set inside the day that begins at
-/// `midnight`, on the level horizon under `horizon` and behind the
-/// terrain of `profile` under the same convention's limb and air.
+/// `midnight`, on the level horizon under each body's horizon of
+/// `horizons` (one horizon for both) and behind the terrain of `profile`
+/// under the same convention's limb and air.
 ///
 /// ```
 /// use teistro_astro::terrain::{HorizonProfile, HorizonSample, visible_day};
@@ -432,12 +433,14 @@ pub struct VisibleDay {
 pub fn visible_day(
     source: &dyn ApparentPositions,
     place: Place,
-    horizon: Horizon,
+    horizons: impl Into<Horizons>,
     delta_t: DeltaTModel,
     midnight: JulianDay<Ut1>,
     profile: &HorizonProfile,
 ) -> Result<VisibleDay, Error> {
+    let horizons: Horizons = horizons.into();
     let body = |body: Body| -> Result<VisibleBody, Error> {
+        let horizon = horizons.of_body(body);
         let level = Solver::new(source, body, place, horizon, delta_t).day(midnight)?;
         let terrain = Solver::new(source, body, place, horizon, delta_t).with_terrain(profile);
         let seen = terrain.day(midnight)?;
@@ -490,7 +493,7 @@ mod tests {
 
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
     use teistro_core::settings::OverridePolicy;
-    use teistro_port_ephemeris::{HorizonEventKind, TestProvider};
+    use teistro_port_ephemeris::{Horizon, HorizonEventKind, TestProvider};
 
     use super::*;
     use crate::completion::Completion;

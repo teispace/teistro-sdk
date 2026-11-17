@@ -26,10 +26,11 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 /// the Total Elimination of Nuclear Weapons, three of the week's days (SR-01),
 /// and again when Social Service Day (22 September 2025) and World
 /// Pharmacists Day (25 September) joined them (C1800, C1803), and again
-/// when Nalaswane charhe (20 September) did (C1812), and again when the
+/// when Nalaswane charhe (20 September) did (C1812), again when the
 /// committee's reckoning took the true sine, moving the week's limb ends by
-/// up to a minute (C1950).
-const PINNED: &str = "08783c68f9edc58986ce9fb0a809a0b98c5566c2ef5dc52dd850d12c86677157";
+/// up to a minute (C1950), and again when each day's moonrise moved to the
+/// Moon's upper limb (SR-102).
+const PINNED: &str = "ff07e6c72b8edce9dbf02fd7a1a46590254be8a8538376c7cd839a1ec59a6e49";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;

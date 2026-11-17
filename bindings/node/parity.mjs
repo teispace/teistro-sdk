@@ -2683,6 +2683,29 @@ for (const [line, system, owner] of [
   );
 }
 
+// ── The moonrise convention ────────────────────────────────────────────
+// Kathmandu on 5 January 2026 over the built-in sky under nepali-drik
+// (SR-102, SR-113): the day opens at the disc's centre with refraction
+// while the Moon rises by the upper limb; then the Moon asked for the
+// centre too, and both under the horizon model's refracted dip.
+for (const [name, settings] of [
+  ['own', {}],
+  ['centre', { day: { moonrise: { kind: 'NAMED', which: 'CENTRE_REFRACTION' } } }],
+  ['dipped', { day: { horizon: { dip: 'REFRACTED' } } }],
+]) {
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN', settings });
+  const days = sky.almanac.of({
+    from: gregorian(2026, 1, 5),
+    to: gregorian(2026, 1, 5),
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  const [day] = days;
+  sky.dispose();
+  const rise = day.moonEvents.find((event) => event.kind === 'RISE');
+  put(`moonrise-${name}`, `${number(day.day.sunrise)} ${number(rise === undefined ? 0 : rise.instant)}`);
+}
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a

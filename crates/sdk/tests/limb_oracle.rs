@@ -302,3 +302,125 @@ fn every_drik_profile_meets_the_oracle() {
     }
     assert!(failures.is_empty(), "outside the bounds: {failures:?}");
 }
+
+/// A moonrise or moonset, the upper limb with standard refraction: the
+/// sunrise's bound, ten times tighter than the second SR-102 asks for
+/// (addendum 8), since the built-in Moon meets it by a factor of two.
+const MOONRISE_SECONDS: f64 = 0.1;
+
+/// The drik profiles whose Moon rises by the almanacs' upper limb with
+/// standard refraction (`day.moonrise`), each finding every rise and set
+/// in its days' windows: `nepali-drik`'s day opens at the disc's centre,
+/// which its Moon no longer follows (SR-102).
+const MOON_PROFILES: [&str; 3] = ["nepali-drik", "parashari-classical", "kp-default"];
+
+fn moon_oracle() -> Value {
+    serde_json::from_str(include_str!("oracle/moonrises.json")).unwrap()
+}
+
+/// Every moonrise and moonset of the reference the days' windows cover,
+/// each against the SDK's nearest of the same kind, seconds, with the
+/// reference moved onto the SDK's ΔT by its recorded rate.
+fn moon_errors(profile: &str, patch: Option<&str>) -> Measured {
+    let oracle = moon_oracle();
+    let place = &oracle["place"];
+    let mut builder = Context::builder()
+        .profile(profile)
+        .ephemeris([Ephemeris::Builtin]);
+    if let Some(patch) = patch {
+        builder = builder.settings_json(patch);
+    }
+    let delta_t = builder.build().unwrap().delta_t();
+    let mut measured = Measured::new();
+    for (year, recorded) in oracle["years"].as_object().unwrap() {
+        let year: i32 = year.parse().unwrap();
+        let days = year_of(profile, patch, year, place);
+        let span = (
+            days.first().unwrap().window.from.get(),
+            days.last().unwrap().window.to.get(),
+        );
+        for (what, ours) in [
+            (
+                "moonrise",
+                days.iter()
+                    .flat_map(|day| day.moon.rises.iter().map(|at| at.get()))
+                    .collect::<Vec<f64>>(),
+            ),
+            (
+                "moonset",
+                days.iter()
+                    .flat_map(|day| day.moon.sets.iter().map(|at| at.get()))
+                    .collect::<Vec<f64>>(),
+            ),
+        ] {
+            let mut ours = ours;
+            ours.sort_by(f64::total_cmp);
+            ours.dedup_by(|a, b| (*a - *b).abs() * SECONDS < 1e-3);
+            let reference: Vec<f64> = recorded[what]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| {
+                    let (at, its_delta_t, rate) = (
+                        row[0].as_f64().unwrap(),
+                        row[1].as_f64().unwrap(),
+                        row[2].as_f64().unwrap(),
+                    );
+                    let ours_delta_t = (tt_of(delta_t, at) - at) * SECONDS;
+                    at + rate * (ours_delta_t - its_delta_t) / SECONDS
+                })
+                .collect();
+            measured
+                .entry((what, century(year)))
+                .or_default()
+                .extend(errors(
+                    &reference,
+                    &ours,
+                    span,
+                    &format!("{profile} {year} {what}"),
+                ));
+        }
+    }
+    measured
+}
+
+/// SR-102: every moonrise and moonset of five years at Kathmandu under
+/// each drik profile, within a tenth of a second of DE440's under the almanacs'
+/// definition. With `TEISTRO_MOON_PATCH` set to a settings patch (such as
+/// `{"day":{"moonrise":{"kind":"NAMED","which":"CENTRE_REFRACTION"}}}`)
+/// the table is printed under it and nothing is asserted or recorded:
+/// how the design page's "before" was measured.
+#[test]
+fn every_drik_profiles_moon_meets_the_oracle() {
+    let patch = std::env::var("TEISTRO_MOON_PATCH").ok();
+    let mut failures = Vec::new();
+    for profile in MOON_PROFILES {
+        let measured = moon_errors(profile, patch.as_deref());
+        for ((what, century), errors) in &measured {
+            let (worst, median, count) = summary(errors);
+            println!(
+                "{profile:22} {what:9} {century:5} n={count:4} median={median:+8.3} s worst={worst:7.3} s (bound {MOONRISE_SECONDS} s){}",
+                patch
+                    .as_deref()
+                    .map_or(String::new(), |p| format!(" under {p}"))
+            );
+            if patch.is_some() {
+                continue;
+            }
+            if profile == MOON_PROFILES[0] {
+                accuracy::record(
+                    "limb_times",
+                    &format!("{what} {century}"),
+                    worst,
+                    " s",
+                    MOONRISE_SECONDS,
+                    count,
+                );
+            }
+            if worst > MOONRISE_SECONDS {
+                failures.push(format!("{profile} {what} {century}: {worst:.3} s"));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "outside the bounds: {failures:?}");
+}

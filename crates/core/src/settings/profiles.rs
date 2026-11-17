@@ -279,6 +279,13 @@ pub(crate) const ROOT_SOURCES: &[Citation] = &[
         ),
     ),
     Citation::new(
+        "day.moonrise",
+        Source::new(
+            "U.S. Naval Observatory, Rise, Set, and Twilight Definitions",
+            "moonrise as the Moon's upper limb on the horizon with 34 minutes of refraction, her semidiameter and horizontal parallax at her distance, as the Explanatory Supplement (§9.33) and Meeus (ch. 15) define it; docs/03-design/moonrise-convention.md, C2000",
+        ),
+    ),
+    Citation::new(
         "day.day_boundary",
         Source::new(
             SURYA,
@@ -1165,6 +1172,14 @@ pub fn root() -> Settings {
             // which the eclipse horizon already reads
             // (`03-design/sunrise-convention.md`).
             sunrise: Sunrise::UpperLimbRefraction.into(),
+            // The almanacs' moonrise: the Moon's upper limb on the horizon
+            // with 34 arcminutes of refraction, her semidiameter and
+            // horizontal parallax applied (USNO, *Rise, Set, and Twilight
+            // Definitions*; *Explanatory Supplement* §9.33; Meeus ch. 15's
+            // h₀ = 0.7275π − 34′). Its own knob, so a day that opens at
+            // another sunrise does not move its Moon (SR-102,
+            // `03-design/moonrise-convention.md`).
+            moonrise: Sunrise::UpperLimbRefraction.into(),
             day_boundary: DayBoundary::Sunrise,
             polar_day_policy: PolarDayPolicy::Undefined,
             ghati_reckoning: GhatiReckoning::Civil,
@@ -1356,7 +1371,9 @@ fn nepali_drik() -> Profile {
         // 4: an eclipse's vedha is the committee's fixed hours.
         // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
         // 7: the text's equations take the true sine (C1950).
-        version: 7,
+        // 8: the Moon rises by her own convention, the root's upper limb
+        //    with refraction, no longer the day's sunrise (SR-102).
+        version: 8,
         base: None,
         patch,
         sources: vec![
@@ -1403,6 +1420,13 @@ fn nepali_drik() -> Profile {
                 Source::new(
                     "Nepal Panchanga Nirnayak Vikas Samiti",
                     "no food from nine hours before a lunar eclipse's first seen moment and twelve before a solar one's: 2025-09-07, 2026-03-03 (the Moon rising eclipsed) and 2022-10-25 (the Sun setting eclipsed), as the press reported the committee; docs/03-design/muhurta.md §4.1.1",
+                ),
+            ),
+            Citation::new(
+                "day.moonrise",
+                Source::new(
+                    "Nepal Panchanga Nirnayak Vikas Samiti",
+                    "the root's upper limb with refraction, kept though the day's sunrise is the disc's centre: the committee timed the 2026-03-03 vedha from a moonrise at 18:03, which the upper limb with refraction gives (18:03.7) and the centre with refraction (18:05.0) does not; docs/03-design/moonrise-convention.md §5, C2000",
                 ),
             ),
         ],
@@ -1456,7 +1480,9 @@ fn nepali_committee() -> Profile {
         id: ProfileId::new("nepali-committee"),
         // 6: the ayanamsha basis became `TRUE`, the root's (SR-100).
         // 7: the text's equations take the true sine (C1950).
-        version: 7,
+        // 8: the Moon rises by `nepali-drik`'s convention, the upper limb
+        //    with refraction (SR-102).
+        version: 8,
         base: Some(ProfileId::new("nepali-drik")),
         patch,
         sources: vec![
@@ -1567,11 +1593,15 @@ fn surya_siddhanta() -> Profile {
     // The text's sunrise: the centre on the geometric horizon (III.34 to
     // 35), whatever the root's modern one is.
     patch.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
+    // And its moonrise: ch. X times the Moon's rising by her ascensional
+    // difference, the centre on the same geometric horizon.
+    patch.day.moonrise = Some(Sunrise::CentreNoRefraction.into());
     let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
     Profile {
         id: ProfileId::new("surya-siddhanta"),
         // 3: the ayanamsha basis became `TRUE`, the root's (SR-100).
-        version: 3,
+        // 4: the moonrise its own knob, the text's horizon as before (SR-102).
+        version: 4,
         base: Some(ProfileId::new("parashari-classical")),
         patch,
         sources: vec![
@@ -1587,6 +1617,12 @@ fn surya_siddhanta() -> Profile {
                 "day.sunrise",
                 burgess(
                     "Burgess 1860, III.34 and 35: the centre of the Sun on the geometric horizon",
+                ),
+            ),
+            Citation::new(
+                "day.moonrise",
+                burgess(
+                    "Burgess 1860, ch. X: the Moon's rising from her ascensional difference, the centre on the geometric horizon, as the Sun's in III.34 to 35",
                 ),
             ),
         ],
@@ -1657,11 +1693,15 @@ fn tamil_vakya() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.siddhanta = Some(Siddhanta::Vakya);
     patch.day.sunrise = Some(Sunrise::UpperLimbRefraction.into());
+    // The Moon by the same modern horizon, rather than the text's that
+    // `surya-siddhanta` gives it: the almanacs' (SR-102).
+    patch.day.moonrise = Some(Sunrise::UpperLimbRefraction.into());
     let vakyakarana = |what: &'static str| Source::new("Vakyakarana", what);
     Profile {
         id: ProfileId::new("tamil-vakya"),
         // 2: the ayanamsha basis became `TRUE`, the root's (SR-100).
-        version: 2,
+        // 3: the moonrise its own knob, the upper limb as before (SR-102).
+        version: 3,
         base: Some(ProfileId::new("surya-siddhanta")),
         patch,
         sources: vec![
@@ -1669,6 +1709,13 @@ fn tamil_vakya() -> Profile {
                 "day.sunrise",
                 vakyakarana(
                     "the almanac's nadis are counted from the modern upper-limb sunrise at Chennai, where it is printed; docs/calendars/vakya.md, cruxes C1207 and C1294",
+                ),
+            ),
+            Citation::new(
+                "day.moonrise",
+                Source::new(
+                    "U.S. Naval Observatory, Rise, Set, and Twilight Definitions",
+                    "the almanacs' upper limb with refraction, as at the root, in place of the text's centre that surya-siddhanta gives the Moon: no Tamil almanac's moonrise was measured; docs/03-design/moonrise-convention.md §5",
                 ),
             ),
             Citation::new(
@@ -1943,6 +1990,12 @@ pub(super) fn conformance_baseline() -> Profile {
     patch.houses.chalit_system = Some(HouseSystem::Vehlow);
     patch.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
     patch.day.sunrise = Some(Sunrise::UpperLimbRefraction.into());
+    // The engine's moonrise is the upper limb with 34′ of refraction
+    // whatever its sunrise mode (a fixed geometric altitude of the
+    // centre, +0.125°, from a mean parallax and semidiameter), so a
+    // snapshot's sunrise mode leaves it (`03-design/moonrise-convention.md`
+    // §5).
+    patch.day.moonrise = Some(Sunrise::UpperLimbRefraction.into());
     patch.time.dst_gap = Some(DstGap::Error);
     patch.time.dst_overlap = Some(DstOverlap::Earlier);
     patch.provider.overrides = Some(OverridePolicy::PreferNative);
@@ -2018,7 +2071,9 @@ pub(super) fn conformance_baseline() -> Profile {
         // (crux C101).
         // 14: a transit became the engine's, cast from the Earth's centre
         // (crux C778).
-        version: 14,
+        // 15: the moonrise its own knob, the engine's upper limb with
+        // refraction as before (SR-102).
+        version: 15,
         base: None,
         patch,
         sources: conformance_sources(),

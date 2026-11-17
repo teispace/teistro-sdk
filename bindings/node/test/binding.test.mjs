@@ -92,6 +92,39 @@ test('the addon and the types were generated for the same ABI', () => {
   assert.match(sdkVersion(), /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+)?)?$/u);
 });
 
+/**
+ * SR-102 and SR-113: the Moon rises by `day.moonrise`, the almanacs' upper
+ * limb with refraction, not by the day's sunrise; and the dip of
+ * `day.horizon` lowers both bodies' horizons.
+ */
+test('the moon rises by its own convention and the horizon model dips both', () => {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  // Over the built-in sky, whose Moon has her real distance; read before
+  // the context is disposed.
+  const of = (settings) => {
+    const each = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN', settings });
+    try {
+      const [one] = each.almanac.of({ from: gregorian(2026, 1, 5), to: gregorian(2026, 1, 5), place, utcOffsetSeconds: 20700 });
+      return { day: { ...one.day }, rise: one.moonEvents.find((event) => event.kind === 'RISE').instant };
+    } finally {
+      each.dispose();
+    }
+  };
+  const own = of({});
+  const centre = of({ day: { moonrise: { kind: 'NAMED', which: 'CENTRE_REFRACTION' } } });
+  assert.equal(own.day.sunrise, centre.day.sunrise, 'the day keeps its sunrise');
+  const later = (centre.rise - own.rise) * 86400;
+  assert.ok(later > 55 && later < 110, `${later} s`);
+  const dipped = of({ day: { horizon: { dip: 'REFRACTED' } } });
+  assert.equal(dipped.day.convention, 'CENTRE_REFRACTION');
+  assert.ok(dipped.day.sunrise < own.day.sunrise, 'the dipped horizon is cleared sooner');
+  assert.ok(dipped.rise < own.rise, 'and the Moon clears it sooner too');
+  assert.throws(
+    () => of({ day: { moonrise: { kind: 'CUSTOM', altitude_deg: 91 } } }),
+    (error) => /^(settings\.)?day\.moonrise$/u.test(error.field),
+  );
+});
+
 test('a context resolves its settings and reports them', () => {
   const ctx = context();
   assert.equal(ctx.profile, 'nepali-drik');
@@ -1026,7 +1059,9 @@ test('every catalogue enum has a complete id table', () => {
   // place of `TsGocharVerdict`'s three.
   // 1592 since `TsDeltaTSource` gained `EXTRAPOLATED`.
   // 1597 since Delta T's band, `TsDeltaTBand`, five.
-  assert.equal(entries, 1597, 'every member of every enum is in a table');
+  // 1599 since `TsSunrise` gained `UPPER_LIMB_NO_REFRACTION` and
+  // `LOWER_LIMB_NO_REFRACTION`.
+  assert.equal(entries, 1599, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
