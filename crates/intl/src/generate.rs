@@ -1698,7 +1698,7 @@ pub fn every_message_test(model: &Model) -> String {
          //! doctest, so the examples alone leave each `params` unmeasured.\n\n\
          #![allow(clippy::expect_used, reason = \"a test fails by panicking\")]\n\n\
          use teistro_intl::source::Tree;\n\
-         use teistro_intl::{{Intl, TypedMessage, sdk_root}};\n\n\
+         use teistro_intl::{{Intl, TypedMessage}};\n\n\
          /// Renders `message`; one naming no entity, whose text the SDK's\n\
          /// sources give, must render with no warning.\n\
          fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {{\n    \
@@ -1717,7 +1717,7 @@ pub fn every_message_test(model: &Model) -> String {
          #[rustfmt::skip]\n\
          #[expect(clippy::too_many_lines, reason = \"one line a message, {} messages\")]\n\
          fn every_typed_message_renders_from_the_sdk_sources() {{\n    \
-         let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect(\"the SDK's sources\"))\n        \
+         let intl = Intl::from_tree(&Tree::sdk().expect(\"the SDK's sources\"))\n        \
          .expect(\"plural rules for every locale\");\n",
         model.locale,
         built.len()
@@ -1859,12 +1859,11 @@ fn rust_example(message: &MessageModel, model: &Model, module: &str, pad: &str) 
         "```".to_string(),
         format!("use {path}::{name};"),
         "use teistro_intl::source::Tree;".to_string(),
-        "use teistro_intl::{Intl, TypedMessage, sdk_root};".to_string(),
+        "use teistro_intl::{Intl, TypedMessage};".to_string(),
         String::new(),
         format!("let message = {built};"),
         format!("assert_eq!({name}::KEY, \"{}\");", message.key),
-        "let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect(\"the SDK's sources\"))"
-            .to_string(),
+        "let intl = Intl::from_tree(&Tree::sdk().expect(\"the SDK's sources\"))".to_string(),
         "    .expect(\"plural rules for every locale\");".to_string(),
         "let rendered = intl.render_typed(&message);".to_string(),
         clean,

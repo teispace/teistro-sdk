@@ -5474,6 +5474,16 @@ public final class Messages {
                 }
 
                 /**
+                 * `sdk.calendar.duration.month`
+                 *
+                 * @param n `n`
+                 * @return the text
+                 */
+                public String month(double n) {
+                    return r.render("sdk.calendar.duration.month", Map.ofEntries(Map.entry("n", n)));
+                }
+
+                /**
                  * `sdk.calendar.duration.second`
                  *
                  * @param n `n`
@@ -5481,6 +5491,48 @@ public final class Messages {
                  */
                 public String second(double n) {
                     return r.render("sdk.calendar.duration.second", Map.ofEntries(Map.entry("n", n)));
+                }
+
+                /**
+                 * `sdk.calendar.duration.week`
+                 *
+                 * @param n `n`
+                 * @return the text
+                 */
+                public String week(double n) {
+                    return r.render("sdk.calendar.duration.week", Map.ofEntries(Map.entry("n", n)));
+                }
+
+                /**
+                 * `sdk.calendar.duration.weeksDays`
+                 *
+                 * @param days `days`
+                 * @return the text
+                 */
+                public String weeksDays(double days) {
+                    return r.render("sdk.calendar.duration.weeksDays", Map.ofEntries(Map.entry("days", days)));
+                }
+
+                /**
+                 * `sdk.calendar.duration.year`
+                 *
+                 * @param n `n`
+                 * @return the text
+                 */
+                public String year(double n) {
+                    return r.render("sdk.calendar.duration.year", Map.ofEntries(Map.entry("n", n)));
+                }
+
+                /**
+                 * `sdk.calendar.duration.yearsMonthsDays`
+                 *
+                 * @param days `days`
+                 * @param months `months`
+                 * @param years `years`
+                 * @return the text
+                 */
+                public String yearsMonthsDays(double days, double months, double years) {
+                    return r.render("sdk.calendar.duration.yearsMonthsDays", Map.ofEntries(Map.entry("days", days), Map.entry("months", months), Map.entry("years", years)));
                 }
             }
 

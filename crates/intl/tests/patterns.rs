@@ -36,11 +36,103 @@ fn a_duration_unit_it_does_not_know_is_reported() {
     );
     let (text, warnings) = rendered(
         &intl,
-        "{$v :duration unit=hour into=|week,minute|}",
+        "{$v :duration unit=hour into=|fortnight,minute|}",
         Value::Num(1.5),
     );
-    assert!(warns(&warnings, "`into=` names `week`"), "{warnings:?}");
+    assert!(
+        warns(&warnings, "`into=` names `fortnight`"),
+        "{warnings:?}"
+    );
     assert!(text.contains("90"), "the known unit alone: {text}");
+}
+
+/// A year and a month have no fixed length, so a length is never broken
+/// into them nor rounded to them: each is reported and left out, and the
+/// fixed units named still read.
+#[test]
+fn a_calendar_unit_is_not_a_length() {
+    let intl = english();
+    let (text, warnings) = rendered(
+        &intl,
+        "{$v :duration unit=day into=|year,week,day|}",
+        Value::Int(400),
+    );
+    assert!(
+        warns(&warnings, "`into=` names `year`, which has no fixed length"),
+        "{warnings:?}"
+    );
+    assert_eq!(text, "57 weeks and 1 day");
+    let (text, warnings) = rendered(
+        &intl,
+        "{$v :duration unit=hour into=|hour,minute| round=month}",
+        Value::Num(1.5),
+    );
+    assert!(
+        warns(&warnings, "`round=month` has no fixed length"),
+        "{warnings:?}"
+    );
+    assert_eq!(text, "1 hour and 30 minutes");
+    let (text, warnings) = rendered(&intl, "{$v :duration unit=month into=|day|}", Value::Int(3));
+    assert!(
+        warns(&warnings, "`unit=month` has no fixed length"),
+        "{warnings:?}"
+    );
+    assert_eq!(text, "3 months", "a count of the unit, as without `into=`");
+}
+
+/// A span given as counts: a calendar reckons an age or the span between
+/// two dates, and `:duration` names it, dropping a part that is zero.
+#[test]
+fn a_span_given_as_counts_names_each_unit_once() {
+    let intl = english();
+    let span = |years: i64, months: i64, days: i64| {
+        let message = "{:duration year=$years month=$months day=$days list=unit}";
+        let rendered = intl
+            .render_source(
+                message,
+                &params([
+                    ("years", Value::Int(years)),
+                    ("months", Value::Int(months)),
+                    ("days", Value::Int(days)),
+                ]),
+            )
+            .unwrap();
+        assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        rendered.text
+    };
+    assert_eq!(span(25, 3, 2), "25 years, 3 months, 2 days");
+    assert_eq!(span(1, 0, 1), "1 year, 1 day");
+    assert_eq!(span(0, 1, 0), "1 month");
+    assert_eq!(
+        span(0, 0, 0),
+        "0 days",
+        "nothing reads in the shortest unit"
+    );
+
+    // The options may come in any order, and a literal counts too.
+    let (text, warnings) = rendered(&intl, "{:duration day=$v week=2 year=1}", Value::Int(3));
+    assert!(warnings.is_empty(), "{warnings:?}");
+    assert_eq!(text, "1 year, 2 weeks and 3 days");
+
+    // What a span given as counts cannot read is reported.
+    let (text, warnings) = rendered(&intl, "{:duration unit=day}", Value::Int(3));
+    assert!(warns(&warnings, "`unit=` reads an operand"), "{warnings:?}");
+    assert!(warns(&warnings, "names none"), "{warnings:?}");
+    assert_eq!(text, "{:duration}");
+    let (_, warnings) = rendered(&intl, "{:duration year=many}", Value::Int(3));
+    assert!(
+        warns(&warnings, "`year=many` is not a number"),
+        "{warnings:?}"
+    );
+    let (text, warnings) = rendered(&intl, "{$v :duration unit=day year=2}", Value::Int(3));
+    assert!(
+        warns(
+            &warnings,
+            "`year=` counts a unit only when `:duration` has no operand"
+        ),
+        "{warnings:?}"
+    );
+    assert_eq!(text, "3 days");
 }
 
 #[test]
@@ -234,4 +326,39 @@ fn an_angle_is_written_to_the_precision_and_sign_asked() {
         let (text, _) = rendered(&intl, source, Value::Str("north".into()));
         assert!(!text.is_empty(), "{source}");
     }
+}
+
+/// SR-140: `en-NP` is English as Nepal writes it, `en-Latn-NP`: every word
+/// English's, from `en-Latn`, and a number grouped by lakhs and crores in
+/// Latin digits. `en` alone stays the base English, grouped by thousands.
+#[test]
+fn nepals_english_groups_by_lakhs_and_crores() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let mut intl = Intl::from_tree(&tree).unwrap();
+    assert_eq!(intl.set_locale("en-NP").unwrap(), "en-Latn-NP");
+    for (value, expected) in [
+        (Value::Int(271_700), "2,71,700"),
+        (Value::Int(10_000_000), "1,00,00,000"),
+        (Value::Int(999), "999"),
+        (Value::Num(-1_234_567.5), "-12,34,567.5"),
+    ] {
+        let rendered = intl
+            .render_source("{$v :number}", &params([("v", value)]))
+            .unwrap();
+        assert_eq!(rendered.text, expected);
+    }
+    let words = intl.render(
+        "sdk.calendar.duration.year",
+        &params([("n", Value::Int(2))]),
+    );
+    assert_eq!(words.text, "2 years");
+    assert_eq!(words.resolved_from.as_deref(), Some("en-Latn"));
+    assert!(words.warnings.is_empty(), "{:?}", words.warnings);
+    assert!(words.is_fallback, "answered along the declared chain");
+
+    assert_eq!(intl.set_locale("en").unwrap(), "en-Latn");
+    let rendered = intl
+        .render_source("{$v :number}", &params([("v", Value::Int(271_700))]))
+        .unwrap();
+    assert_eq!(rendered.text, "271,700");
 }

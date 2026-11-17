@@ -2785,8 +2785,18 @@ final class MessagesSdkCalendarDuration {
       _r.render('sdk.calendar.duration.hoursMinutesSeconds', {'seconds': seconds});
   String minute({required num n}) =>
       _r.render('sdk.calendar.duration.minute', {'n': n});
+  String month({required num n}) =>
+      _r.render('sdk.calendar.duration.month', {'n': n});
   String second({required num n}) =>
       _r.render('sdk.calendar.duration.second', {'n': n});
+  String week({required num n}) =>
+      _r.render('sdk.calendar.duration.week', {'n': n});
+  String weeksDays({required num days}) =>
+      _r.render('sdk.calendar.duration.weeksDays', {'days': days});
+  String year({required num n}) =>
+      _r.render('sdk.calendar.duration.year', {'n': n});
+  String yearsMonthsDays({required num days, required num months, required num years}) =>
+      _r.render('sdk.calendar.duration.yearsMonthsDays', {'days': days, 'months': months, 'years': years});
 }
 
 final class MessagesSdkCalendarGhati {

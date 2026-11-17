@@ -12,6 +12,43 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Years, months and weeks in every language, English as Nepal writes it, and the
+SDK's sources embedded (SR-131, SR-134, SR-135, SR-139, SR-140).**
+**Numbers:** no computed value moves. Every locale's `sdk.calendar` gains five
+messages and `sa-Latn`'s derived `sdk.entity` gains the Kirat Yele Sambat it had not
+been regenerated with, so every pack and bundle hash moves with its bytes; a new
+locale, `en-Latn-NP`, ships.
+- **Added:** `sdk.calendar.duration.year`, `.month` and `.week` in every locale, with
+  plural forms (CLDR 48's unit patterns in English, Hindi and Nepali; Sanskrit's three
+  numbers: `१ वर्षम्`, `२ वर्षे`, `५ वर्षाणि`), and `duration.yearsMonthsDays` over
+  `$years`, `$months`, `$days` ("25 years, 3 months, 2 days") and `duration.weeksDays`
+  over `$days` ("2 weeks, 3 days"); the typed accessors in every binding take them
+  (C2262–C2264).
+- **Added:** `:duration` counts years, months and weeks, and with no operand names a
+  span given as counts, an option per unit (`{:duration year=$years month=$months
+  day=$days}`), dropping a part that is zero. A week is seven days; a year and a month
+  have no fixed length, so `into=` and `round=` refuse them with a warning (C2263).
+  `teistro_intl::render::DURATION_UNITS` now holds seven units, longest first, and
+  `is_calendar_unit` says which two have no fixed length.
+- **Added:** `en-Latn-NP`, English as Nepal writes it: English's words (it falls back to
+  `en-Latn`), Latin digits and the lakh-and-crore grouping (`2,71,700`); amounts in
+  words count in lakhs in it. `en-NP` chooses it: a tag with no script is now looked up
+  with its language's likely script first, so `en` still chooses `en-Latn` beside it
+  (C2266, C2267).
+- **Added:** `teistro_intl::source::Tree::sdk()` reads the SDK's sources as
+  `teistro-intl` embedded them when it was compiled, through a listing `cargo xtask
+  gen intl` writes and `check-intl` holds, and `teistro`'s build script reads them
+  there. A build reused across checkouts that share a target directory kept the path of
+  one since deleted, and the build failed ("the i18n/ sources load"). A binary that does
+  not call it carries none of the text (C2268, C2269). `sdk_root()` stays, the
+  directory a tool that edits the sources reads.
+- **Checked:** the Sanskrit eclipse kinds `PARTIAL` and `TOTAL` and the Hindi and Sanskrit
+  blackouts `CHATURMAS` and `ADHIKA_MASA`, which a tag without SR-128 reads in English,
+  are named by SR-128's terms below; the names are confirmed against Monier-Williams,
+  McGregor and Platts, and `LATIN_FALLBACK` lists neither kind (C2260, C2261).
+- **Changed:** `pack-budgets.json` budgets `en-Latn-NP` and sets `hi-Deva-IN` about a
+  tenth over its measured bundle; `locale-coverage-floor.json` holds `en-Latn-NP` at 0.
+
 **The place catalogue in the geo port, teigeodata 1.1.0 over its store, and the sea's zone (SR-141, SR-142, SR-129, SR-143, SR-144).**
 **Numbers:** no chart, day or stored resolution moves: a resolution on land
 reads as before, and `nautical` is written only when true. A teigeodata

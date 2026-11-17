@@ -603,13 +603,16 @@ fn a_duration_rounds_to_its_last_unit_and_joins_as_a_measure() {
     // An unknown option value is reported, and the defaults stand.
     let rendered = english
         .render_source(
-            "{$v :duration unit=second into=|minute,second| round=week list=or}",
+            "{$v :duration unit=second into=|minute,second| round=fortnight list=or}",
             &params([("v", Value::Int(90))]),
         )
         .unwrap();
     assert_eq!(rendered.text, "1 minute and 30 seconds");
     let said = &rendered.warnings;
-    assert!(said.iter().any(|w| w.contains("`round=week`")), "{said:?}");
+    assert!(
+        said.iter().any(|w| w.contains("`round=fortnight`")),
+        "{said:?}"
+    );
     assert!(said.iter().any(|w| w.contains("`list=or`")), "{said:?}");
 
     // The shipped messages, in each locale's words and joiner: CLDR's
@@ -918,4 +921,100 @@ fn a_tibetan_date_says_its_leap_month_and_its_leap_day() {
         ),
         "month 1, day 1, 2026"
     );
+}
+
+/// SR-134: every locale counts years, months and weeks in its own words,
+/// with its own plural forms (CLDR 48's unit patterns for English, Hindi
+/// and Nepali; Sanskrit's three numbers), and names an age or a span
+/// between two dates, given as counts, and a number of days in weeks.
+#[test]
+fn every_locale_counts_years_months_and_weeks() {
+    for (locale, unit, n, expected) in [
+        ("en-Latn", "year", 1, "1 year"),
+        ("en-Latn", "year", 25, "25 years"),
+        ("en-Latn", "month", 1, "1 month"),
+        ("en-Latn", "month", 3, "3 months"),
+        ("en-Latn", "week", 1, "1 week"),
+        ("en-Latn", "week", 2, "2 weeks"),
+        ("hi-Deva-IN", "year", 1, "१ वर्ष"),
+        ("hi-Deva-IN", "year", 25, "२५ वर्ष"),
+        ("hi-Deva-IN", "month", 1, "१ महीना"),
+        ("hi-Deva-IN", "month", 3, "३ महीने"),
+        ("hi-Deva-IN", "week", 2, "२ सप्ताह"),
+        ("ne-Deva-NP", "year", 25, "२५ वर्ष"),
+        ("ne-Deva-NP", "month", 3, "३ महिना"),
+        ("ne-Deva-NP", "week", 2, "२ हप्ता"),
+        ("sa-Deva", "year", 1, "१ वर्षम्"),
+        ("sa-Deva", "year", 2, "२ वर्षे"),
+        ("sa-Deva", "year", 25, "२५ वर्षाणि"),
+        ("sa-Deva", "month", 1, "१ मासः"),
+        ("sa-Deva", "month", 2, "२ मासौ"),
+        ("sa-Deva", "month", 3, "३ मासाः"),
+        ("sa-Deva", "week", 1, "१ सप्ताहः"),
+        ("sa-Deva", "week", 2, "२ सप्ताहौ"),
+        ("sa-Deva", "week", 3, "३ सप्ताहाः"),
+        ("sa-Latn", "year", 25, "25 varṣāṇi"),
+        ("sa-Latn", "month", 2, "2 māsau"),
+        ("sa-Latn", "week", 1, "1 saptāhaḥ"),
+    ] {
+        let rendered = engine(locale).render(
+            &format!("sdk.calendar.duration.{unit}"),
+            &params([("n", Value::Int(n))]),
+        );
+        assert!(
+            rendered.warnings.is_empty(),
+            "{locale} {unit}: {:?}",
+            rendered.warnings
+        );
+        assert_eq!(
+            rendered.resolved_from.as_deref(),
+            Some(locale),
+            "{locale} {unit}"
+        );
+        assert_eq!(rendered.text, expected, "{locale} {unit} {n}");
+    }
+
+    let span = |years: i64, months: i64, days: i64| {
+        params([
+            ("years", Value::Int(years)),
+            ("months", Value::Int(months)),
+            ("days", Value::Int(days)),
+        ])
+    };
+    for (locale, given, expected) in [
+        ("en-Latn", span(25, 3, 2), "25 years, 3 months, 2 days"),
+        ("en-Latn", span(0, 11, 0), "11 months"),
+        ("en-Latn", span(1, 0, 0), "1 year"),
+        ("hi-Deva-IN", span(25, 3, 2), "२५ वर्ष, ३ महीने और २ दिन"),
+        ("ne-Deva-NP", span(25, 3, 2), "२५ वर्ष, ३ महिना, २ दिन"),
+        ("sa-Deva", span(25, 2, 1), "२५ वर्षाणि, २ मासौ, तथा १ दिनम्"),
+        ("sa-Latn", span(2, 0, 3), "2 varṣe tathā 3 dināni"),
+    ] {
+        let rendered = engine(locale).render("sdk.calendar.duration.yearsMonthsDays", &given);
+        assert!(
+            rendered.warnings.is_empty(),
+            "{locale}: {:?}",
+            rendered.warnings
+        );
+        assert_eq!(rendered.text, expected, "{locale}");
+    }
+
+    for (locale, days, expected) in [
+        ("en-Latn", 17, "2 weeks, 3 days"),
+        ("en-Latn", 14, "2 weeks"),
+        ("en-Latn", 6, "6 days"),
+        ("ne-Deva-NP", 17, "२ हप्ता, ३ दिन"),
+        ("sa-Deva", 15, "२ सप्ताहौ तथा १ दिनम्"),
+    ] {
+        let rendered = engine(locale).render(
+            "sdk.calendar.duration.weeksDays",
+            &params([("days", Value::Int(days))]),
+        );
+        assert!(
+            rendered.warnings.is_empty(),
+            "{locale}: {:?}",
+            rendered.warnings
+        );
+        assert_eq!(rendered.text, expected, "{locale} {days}");
+    }
 }

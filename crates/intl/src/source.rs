@@ -821,9 +821,9 @@ impl LocaleSource {
 /// #
 /// # let tree = Tree::load(&sdk_root())?;
 ///
-/// // The SDK's own five locales.
+/// // The SDK's own six locales.
 /// let tags: Vec<&str> = tree.locales.keys().map(String::as_str).collect();
-/// assert_eq!(tags, ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
+/// assert_eq!(tags, ["en-Latn", "en-Latn-NP", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]
@@ -887,7 +887,58 @@ impl Tree {
             locales,
         })
     }
+
+    /// The SDK's own sources, as this crate embedded them when it was
+    /// compiled: the files [`sdk_root`] holds, read from no directory.
+    ///
+    /// A program that only reads the SDK's sources (a build script that
+    /// compiles them into bundles, a test, a tool) takes them here, so it
+    /// keeps working wherever the crate was compiled from and whatever has
+    /// happened to that directory since: a build reused across checkouts
+    /// that share a target directory once kept the path of a checkout that
+    /// had been deleted (SR-135). The tree's `root` is
+    /// [`EMBEDDED_ROOT`], a label for messages rather than a directory. A
+    /// tool that edits the sources reads them from [`sdk_root`] instead.
+    ///
+    /// ```
+    /// use teistro_intl::source::{EMBEDDED_ROOT, Tree};
+    ///
+    /// let tree = Tree::sdk()?;
+    /// assert!(tree.locales.contains_key("ne-Deva-NP"));
+    /// assert_eq!(tree.root, std::path::Path::new(EMBEDDED_ROOT));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// None for the files as shipped, which `cargo xtask check-intl`
+    /// validates; the error is the one [`Tree::load`] would give for a file
+    /// that breaks the shape rules.
+    pub fn sdk() -> Result<Tree, SourceError> {
+        let root = Path::new(EMBEDDED_ROOT);
+        let mut locales = BTreeMap::new();
+        for (tag, files) in crate::embedded::SOURCES {
+            let dir = root.join(tag);
+            let meta = files
+                .iter()
+                .find(|(name, _)| *name == META_FILE)
+                .map(|(_, text)| *text)
+                .ok_or_else(|| SourceError::new(&dir.join(META_FILE), "not embedded"))?;
+            let namespaces = files.iter().filter(|(name, _)| *name != META_FILE).copied();
+            let locale = parse_locale(&dir, meta, namespaces)?;
+            locales.insert(locale.tag.clone(), locale);
+        }
+        Ok(Tree {
+            root: root.to_path_buf(),
+            locales,
+        })
+    }
 }
+
+/// The `root` of the tree [`Tree::sdk`] gives: where the files were
+/// embedded from, inside `teistro-intl`'s package, as a label that error
+/// messages and reports name. No file is read from it.
+pub const EMBEDDED_ROOT: &str = "teistro-intl/i18n";
 
 /// A file that could not be loaded.
 ///
@@ -1190,6 +1241,67 @@ pub fn is_member_key(s: &str) -> bool {
 }
 
 fn load_locale(dir: &Path) -> Result<LocaleSource, SourceError> {
+    let meta_path = dir.join(META_FILE);
+    let meta = std::fs::read_to_string(&meta_path)
+        .map_err(|e| SourceError::new(&meta_path, e.to_string()))?;
+    let mut paths: Vec<PathBuf> = std::fs::read_dir(dir)
+        .map_err(|e| SourceError::new(dir, e.to_string()))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|e| e == "json"))
+        .filter(|path| {
+            path.file_name()
+                .is_some_and(|name| is_locale_file(&name.to_string_lossy()))
+        })
+        .collect();
+    paths.sort();
+    let mut files = Vec::with_capacity(paths.len());
+    for path in paths {
+        let text =
+            std::fs::read_to_string(&path).map_err(|e| SourceError::new(&path, e.to_string()))?;
+        let name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        files.push((name, text));
+    }
+    parse_locale(
+        dir,
+        &meta,
+        files
+            .iter()
+            .map(|(name, text)| (name.as_str(), text.as_str())),
+    )
+}
+
+/// Whether a file inside a locale directory is one the locale is read from:
+/// a JSON file whose name does not open with `_`. Such a file belongs to
+/// the tooling rather than to the locale: `_meta.json`, read on its own,
+/// and the overrides a derived locale keeps beside its sources. What
+/// [`Tree::sdk`] embeds is `_meta.json` and these.
+///
+/// ```
+/// use teistro_intl::source::is_locale_file;
+///
+/// assert!(is_locale_file("sdk.entity.json"));
+/// assert!(!is_locale_file("_meta.json"));
+/// assert!(!is_locale_file("_overrides.json"));
+/// assert!(!is_locale_file("notes.md"));
+/// ```
+#[must_use]
+pub fn is_locale_file(name: &str) -> bool {
+    name.strip_suffix(".json")
+        .is_some_and(|stem| !stem.is_empty() && !stem.starts_with('_'))
+}
+
+/// One locale from its directory's `_meta.json` and its namespace files,
+/// each given by file name and text, in order: what [`Tree::load`] reads
+/// from a directory and [`Tree::sdk`] from what this crate embedded.
+fn parse_locale<'t>(
+    dir: &Path,
+    meta_text: &str,
+    files: impl IntoIterator<Item = (&'t str, &'t str)>,
+) -> Result<LocaleSource, SourceError> {
     let tag = dir
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -1201,10 +1313,8 @@ fn load_locale(dir: &Path) -> Result<LocaleSource, SourceError> {
         ));
     }
     let meta_path = dir.join(META_FILE);
-    let meta_text = std::fs::read_to_string(&meta_path)
-        .map_err(|e| SourceError::new(&meta_path, e.to_string()))?;
-    let meta: Meta = serde_json::from_str(&meta_text)
-        .map_err(|e| SourceError::new(&meta_path, e.to_string()))?;
+    let meta: Meta =
+        serde_json::from_str(meta_text).map_err(|e| SourceError::new(&meta_path, e.to_string()))?;
     if meta.locale != tag {
         return Err(SourceError::new(
             &meta_path,
@@ -1212,35 +1322,20 @@ fn load_locale(dir: &Path) -> Result<LocaleSource, SourceError> {
         ));
     }
     let mut namespaces = BTreeMap::new();
-    let mut files: Vec<PathBuf> = std::fs::read_dir(dir)
-        .map_err(|e| SourceError::new(dir, e.to_string()))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|e| e == "json"))
-        // A file whose name opens with `_` belongs to the tooling rather
-        // than to the locale: `_meta.json`, and the overrides a derived
-        // locale keeps beside its sources.
-        .filter(|path| {
-            path.file_stem()
-                .is_none_or(|n| !n.to_string_lossy().starts_with('_'))
-        })
-        .collect();
-    files.sort();
-    for file in files {
-        let name = file
-            .file_stem()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
+    for (file_name, text) in files {
+        let file = dir.join(file_name);
+        let name = file_name
+            .strip_suffix(".json")
+            .unwrap_or(file_name)
+            .to_string();
         if !is_namespace_name(&name) {
             return Err(SourceError::new(
                 &file,
                 "a namespace file is named `<namespace>.json` with lowercase dotted words",
             ));
         }
-        let text =
-            std::fs::read_to_string(&file).map_err(|e| SourceError::new(&file, e.to_string()))?;
         let value: serde_json::Value =
-            serde_json::from_str(&text).map_err(|e| SourceError::new(&file, e.to_string()))?;
+            serde_json::from_str(text).map_err(|e| SourceError::new(&file, e.to_string()))?;
         let mut namespace = Namespace::default();
         flatten(&file, &name, "", &value, &mut namespace)?;
         namespaces.insert(name, namespace);
@@ -1357,12 +1452,19 @@ fn entity(
     Ok(entity)
 }
 
-/// The SDK's own sources, `i18n/` inside this crate: what the tests, the
-/// gate, the command line and `teistro`'s build script read by default.
+/// The directory of the SDK's own sources, `i18n/` inside this crate:
+/// what the command line edits and validates by default, and what a tool
+/// that writes the sources reads.
 ///
 /// They are this crate's files, so its package carries them and a
 /// build from the published crates alone finds them where a checkout
 /// does; a path out of the crate would name a directory no package has.
+///
+/// The path is where the crate was **compiled** from, fixed at that
+/// moment: a build reused across checkouts that share a target directory
+/// can hand back a checkout that has since been deleted. A program that
+/// only reads the sources takes them from [`Tree::sdk`], which this crate
+/// embedded and which no directory can take away (SR-135).
 ///
 /// ```
 /// use teistro_intl::sdk_root;
@@ -1443,7 +1545,11 @@ mod tests {
     #[test]
     fn the_sdk_sources_load() {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(tree.locales.len(), 5, "four written, `sa-Latn` derived");
+        assert_eq!(
+            tree.locales.len(),
+            6,
+            "four written, `sa-Latn` derived, `en-Latn-NP` its metadata alone"
+        );
         let base = tree.base().unwrap_or_else(|| panic!("base"));
         assert_eq!(base.meta.numbering_system, "latn");
         let sun = base.entity("graha.SUN").unwrap_or_else(|| panic!("sun"));

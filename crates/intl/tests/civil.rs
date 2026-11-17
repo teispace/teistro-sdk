@@ -342,13 +342,15 @@ fn a_datetime_in_full_shows_a_time() {
 /// its own words, and writes a whole date and a twelve-hour clock with no
 /// English in them. A locale in Devanagari has no Latin letter anywhere;
 /// one in Latin script differs from English wherever it names something.
+/// A regional English (`en-Latn-NP`) is English, and names nothing of its
+/// own.
 #[test]
 fn every_shipped_locale_writes_its_dates_in_its_own_words() {
     let intl = intl();
     let english = |key: &str, params: &teistro_intl::Params| intl.render(key, params).text;
     let tags: Vec<String> = intl.locales().map(|l| l.tag.clone()).collect();
     assert!(tags.len() >= 5, "{tags:?}");
-    for tag in tags.iter().filter(|tag| *tag != "en-Latn") {
+    for tag in tags.iter().filter(|tag| !tag.starts_with("en-")) {
         let mut local = crate::intl();
         local.set_locale(tag).unwrap();
         let devanagari = tag.contains("-Deva");

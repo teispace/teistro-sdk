@@ -1,6 +1,10 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-25 when an instant became a value read
+Status: `draft`, revised 2026-11-17 when `:duration` learnt years,
+months and weeks and to name a span given as counts (§5), the crate
+embedded its own sources (`Tree::sdk`, §3), and English as Nepal writes
+it shipped as `en-Latn-NP` with a locale lookup that reads a range's
+likely script first (§3, §6); revised 2026-09-25 when an instant became a value read
 in the zone `timeZone` names (§5) and the precedence of what an engine
 holds was decided (§8); revised 2026-09-06 when the parts of the day became a
 locale's own (`_meta.json`'s `dayPeriods`) and `:duration` learnt to
@@ -56,10 +60,11 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   here is an error.
 - **Namespaces** are lowercase dotted words; the SDK's are prefixed
   `sdk.`; the entity namespace `sdk.entity` holds records, every other
-  namespace holds messages. The SDK ships five locales: `en-Latn` (the
+  namespace holds messages. The SDK ships six locales: `en-Latn` (the
   base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN`,
   `sa-Deva` and `sa-Latn` at `base` completeness until their messages are
-  translated — **what that costs a reader is measured** rather than left
+  translated, and `en-Latn-NP`, English as Nepal writes it, which is its
+  metadata alone (below) — **what that costs a reader is measured** rather than left
   as a flag, on `interpret-measured.md`: of one founded chart's plan the
   two strict locales answer every item from their own messages and the
   other three answer none — but **374 of 433 come out different from
@@ -199,6 +204,63 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
 - **No parameter sidecar.** Types follow from the function applied to a
   variable or from a context; see section 5.
 
+**English as Nepal writes it (SR-140, C2266).** `en-Latn-NP` is a locale
+of one file, `_meta.json`: Latin digits, the grouping `[3, 2]`, so a
+number reads in lakhs and crores (`2,71,700`, `1,00,00,000`) as Nepal's
+English press and its rupee amounts write it, and `fallback: ["en-Latn"]`
+at `base` completeness, so every word is the base locale's and none is
+copied. CLDR 48 has no `en_NP`; its `en_IN` writes the same pattern,
+`#,##,##0.###`, which is where the grouping comes from. The tag carries
+its script, as every tag here does, and `en-NP` chooses it (§6). Amounts
+in words follow the grouping: a request in `en-Latn-NP` that leaves the
+grouping out is counted in lakhs by CLDR's `en_IN` rules (`two lakh
+seventy-one thousand seven hundred`), with the rupee's units from
+`en-Latn`. A regional locale of the base language is held to its
+budget and coverage floor like any other (`pack-budgets.json`,
+`locale-coverage-floor.json`), and the generated pages name it as having
+nothing of its own to translate rather than as a gap. A locale of
+metadata alone has no namespace to pack: its `.tbundle` carries it, and a
+`.tpack` never could.
+
+**The SDK's own sources, embedded (SR-135, C2268, C2269).** `sdk_root()`
+is the directory `i18n/` inside this crate, by `env!("CARGO_MANIFEST_DIR")`,
+which fixes the path **when the crate is compiled**. Cargo hashes a path
+dependency by its place in the workspace, so two checkouts of the same
+tree that share a target directory share one build of `teistro-intl`, and
+one whose files are older than the other's build reuses it, path and
+all: `teistro`'s build script then read the sources of a checkout that had
+since been deleted and failed ("the i18n/ sources load"). The sources are
+now **also** embedded: `Tree::sdk()` reads them from the crate itself,
+through a listing `cargo xtask gen intl` writes (`src/embedded.rs`, one
+`include_str!` per file with a path relative to the listing, held by
+`check-intl`), and `teistro`'s build script and every reader that only
+reads the sources take them there. The choices it rests on:
+
+- **Embedded rather than found at run time.** A search at run time has
+  nothing to search from that a reused build does not also get wrong
+  (the executable's directory is the target's, the working directory is
+  the caller's), and an environment variable is a setting every consumer
+  would have to know about to get what the crate already holds.
+- **A generated listing rather than a build script.** A build script that
+  walked `i18n/` would write the directory it ran in into its output,
+  and its output is reused as the crate's build is, which is the same
+  failure one step later. The listing names no directory, and
+  `check-intl` fails when a source file is added and the listing is not
+  regenerated; a test holds `Tree::sdk()` equal to `Tree::load(&sdk_root())`
+  locale by locale.
+- **What it costs, measured** (2026-11-17, release, aarch64-apple-darwin).
+  The sources are 1,462,591 bytes of JSON (258,023 gzipped), and they
+  reach only a binary that calls `Tree::sdk()`: the linker keeps a static
+  only when something reads it. `teistro`'s build script, a host tool that
+  is never shipped, carries them; the `teistro-intl` command line
+  (3,076,848 bytes) carries none of their text. A shipped library is
+  unchanged, since it embeds the compiled bundles (§8) and not the
+  sources.
+
+`sdk_root()` stays, documented as the directory: the command line edits
+and validates the sources there, and a tool that writes them must read
+what it writes.
+
 ## 4. The grammar
 
 The engine implements the stable `MessageFormat 2` grammar (Unicode LDML
@@ -241,7 +303,7 @@ panics (two property tests).
 | `:time` | a time of day | `style=numeric\|long`, `hour12=true`, `pattern` | | time |
 | `:datetime` | a date with a time | `calendar`, `style`, `hour12=true`, `pattern` | | date and time |
 | `:ghati` | a ghati-pala count | `style=numeric\|long`, `pattern` | | ghati |
-| `:duration` | number | `unit=day\|hour\|minute\|second`, `into=\|hour,minute,second\|`, `round=<unit>`, `list=and\|unit` | | number |
+| `:duration` | number, or none | `unit=year\|month\|week\|day\|hour\|minute\|second`, `into=\|hour,minute,second\|`, `round=<unit>`, `list=and\|unit`; with no operand, a count per unit (`year=$years`) | | number; each count a number |
 
 Numbers render in the locale's numbering system, grouping and
 separators; angles in the same digits. `:zodiac` looks the sign name up
@@ -305,6 +367,37 @@ hour, 2 minutes, 5 seconds", an "ends in" line) and `daysHours` ("1 day,
 4 hours"). A part that is zero is dropped as before, so 48 minutes reads
 "48 minutes", not "0 hours, 48 minutes".
 
+**Years, months and weeks (SR-134, C2262–C2264).** Every locale names
+`duration.year`, `duration.month` and `duration.week` over `$n` beside
+the day, hour, minute and second, with the same plural forms: CLDR 48's
+long unit patterns in English, Hindi and Nepali (`2 years`, `३ महीने`,
+`३ महिना`), and in Sanskrit the three numbers by exact match, as the day
+does (`१ वर्षम्`, `२ वर्षे`, `५ वर्षाणि`; `मासः`; `सप्ताहः`). A week is
+seven days, so `into=` and `round=` take it like any fixed unit. A year
+and a month are **calendar units**: their length depends on where they
+fall, so no length in seconds is ever broken into them or rounded to
+them, and naming one in `into=` or `round=` warns and leaves it out. An
+age or the span between two dates is reckoned by a calendar, which knows
+how long each month it crossed was, and `:duration` names what it
+reckoned, given **as counts**: with no operand, an option per unit,
+written in any order and read longest first, each a number or a variable
+holding one, dropping a part that is zero as `into=` does and joined by
+the same `list=` pattern:
+
+```text
+{:duration year=$years month=$months day=$days list=unit}
+  25, 3, 2  ->  25 years, 3 months, 2 days      २५ वर्ष, ३ महीने और २ दिन
+  0, 11, 0  ->  11 months
+```
+
+Every locale ships two messages built on it: `duration.yearsMonthsDays`
+over `$years`, `$months` and `$days` (an age, a date span), and
+`duration.weeksDays` over `$days` (`2 weeks, 3 days`). Analysis types a
+unit's count as a number, so each binding's accessor takes three numbers
+(`YearsMonthsDays { years, months, days }`), and a count given beside an
+operand, or an operand option (`unit=`, `into=`, `round=`) beside counts,
+warns rather than being read silently.
+
 **An instant in a zone.** A value may be an instant, the SDK's own (a
 Julian day in UTC, `{"$instant": 2460000.25}` on the wire), and `:date`,
 `:time` and `:datetime` read it in the zone their `timeZone` option names:
@@ -364,7 +457,8 @@ as §3.3.1's basic filtering reads it.
 | asked | chosen |
 |---|---|
 | `ne`, `ne-NP`, `ne-Deva` | `ne-Deva-NP` |
-| `en`, `en-US`, `en-Latn-GB` | `en-Latn` |
+| `en`, `en-US`, `en-IN`, `en-Latn-GB` | `en-Latn` |
+| `en-NP`, `en-Latn-NP` | `en-Latn-NP` |
 | `hi`, `hi-IN` | `hi-Deva-IN` |
 | `sa`, `sa-IN` | `sa-Deva` |
 | `sa-Latn-IN` | `sa-Latn` |
@@ -384,6 +478,17 @@ strict completeness are the locale's, untouched here.
 Where several tags answer, CLDR's `likelySubtags` for the shipped languages
 settle it: `sa` is Devanagari. A language with no such row, or two tags in the
 likely script, is refused with both named, and never settled by sort order.
+
+**A range with no script is read with its likely one first** (SR-140,
+C2267). Once English shipped for a region, `en` met two tags in the likely
+script, `en-Latn` and `en-Latn-NP`, and was refused; and `en-NP` met no tag
+at all, since it is not a prefix of `en-Latn-NP`. So a range that states no
+script is first looked up with its language's likely script inserted after
+the language (`en-NP` as `en-Latn-NP`, `en` as `en-Latn`, `hi-IN` as
+`hi-Deva-IN`), which is how CLDR's own lookup adds likely subtags, and only
+when that finds nothing is it matched by prefix as before. `en-IN` truncates
+to `en-Latn`, not to Nepal's English, and a language with no likely script
+row is read exactly as it was.
 
 The runtime API (`runtime`): `load_pack(&bytes)` takes a `.tpack` or a
 `.tbundle` after construction, adding a locale (its metadata from the

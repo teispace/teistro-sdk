@@ -7,6 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::mf2::ast::{Body, Declaration, Expression, Key, Message, Operand, OptValue, Part};
+use crate::render::DURATION_UNITS;
 use crate::source::Meta;
 
 /// The type a parameter takes, inferred from the function applied to it.
@@ -297,7 +298,16 @@ impl Collector<'_> {
         };
         for option in &function.options {
             if let OptValue::Variable(name) = &option.value {
-                self.note(name, ParamType::String, false);
+                // A span given as counts (`{:duration year=$years}`): each
+                // unit's option is a number.
+                let kind = if function.name.is("duration")
+                    && DURATION_UNITS.iter().any(|unit| option.name.is(unit))
+                {
+                    ParamType::Number
+                } else {
+                    ParamType::String
+                };
+                self.note(name, kind, false);
             }
         }
         if let Some(Operand::Literal(literal)) = &expression.operand {

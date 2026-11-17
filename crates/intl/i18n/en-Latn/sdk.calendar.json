@@ -127,13 +127,18 @@
   "long": ".input {$ghati :integer} .input {$pala :integer} .match $ghati one {{{$ghati} ghati {$pala} pala}} * {{{$ghati} ghatis {$pala} pala}}"
  },
  "duration": {
+  "year": ".input {$n :number} .match $n one {{{$n} year}} * {{{$n} years}}",
+  "month": ".input {$n :number} .match $n one {{{$n} month}} * {{{$n} months}}",
+  "week": ".input {$n :number} .match $n one {{{$n} week}} * {{{$n} weeks}}",
   "day": ".input {$n :number} .match $n one {{{$n} day}} * {{{$n} days}}",
   "hour": ".input {$n :number} .match $n one {{{$n} hour}} * {{{$n} hours}}",
   "minute": ".input {$n :number} .match $n one {{{$n} minute}} * {{{$n} minutes}}",
   "second": ".input {$n :number} .match $n one {{{$n} second}} * {{{$n} seconds}}",
   "daysHours": "{$seconds :duration unit=second into=|day,hour| round=hour list=unit}",
   "hoursMinutes": "{$seconds :duration unit=second into=|hour,minute| round=minute list=unit}",
-  "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}"
+  "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}",
+  "weeksDays": "{$days :duration unit=day into=|week,day| list=unit}",
+  "yearsMonthsDays": "{:duration year=$years month=$months day=$days list=unit}"
  },
  "dayPeriod": {
   "am": "am",

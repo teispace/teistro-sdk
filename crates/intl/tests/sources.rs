@@ -460,3 +460,33 @@ fn a_derived_locale_without_entities_is_its_metadata_alone() {
     let error = overrides_of(&root, "sa-Deva").unwrap_err();
     assert!(error.contains(OVERRIDES_FILE), "{error}");
 }
+
+/// SR-135: the sources the crate embeds are the sources in its directory,
+/// locale by locale, so a program reading [`Tree::sdk`] reads what one
+/// loading [`sdk_root`] would, with no directory to lose.
+#[test]
+fn the_embedded_sources_are_the_directory_s() {
+    let embedded = Tree::sdk().unwrap();
+    let read = Tree::load(&sdk_root()).unwrap();
+    assert_eq!(embedded.locales, read.locales);
+    assert_eq!(
+        embedded.root,
+        Path::new(teistro_intl::source::EMBEDDED_ROOT)
+    );
+    // Every file the directory holds for a locale, and no other, is there:
+    // a file `cargo xtask gen intl` had not listed would be missing above.
+    for (tag, locale) in &read.locales {
+        let mut files: Vec<String> = std::fs::read_dir(sdk_root().join(tag))
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|name| teistro_intl::source::is_locale_file(name))
+            .collect();
+        files.sort();
+        let names: Vec<String> = locale
+            .namespaces
+            .keys()
+            .map(|n| format!("{n}.json"))
+            .collect();
+        assert_eq!(files, names, "{tag}");
+    }
+}

@@ -65,12 +65,46 @@ fn likely<'a>(under: &[&'a str]) -> Option<&'a str> {
 /// The loaded tag `range` means, compared without regard to case.
 ///
 /// A stated script is never truncated away: `hi-Latn` asks for Latin letters,
-/// and a Devanagari locale does not answer it.
+/// and a Devanagari locale does not answer it. A range with no script is
+/// first read with its language's likely script (CLDR's `likelySubtags`), so
+/// `en-NP` means `en-Latn-NP` and `en` means `en-Latn` even where a regional
+/// English is loaded beside it; only a range that names nothing that way is
+/// matched by prefix alone.
 pub(crate) fn lookup<'a>(range: &str, loaded: &[&'a str]) -> Result<&'a str, Missed<'a>> {
     if !well_formed(range) {
         return Err(Missed::Unknown);
     }
     let subtags: Vec<&str> = range.split('-').collect();
+    if let Some(scripted) = with_likely_script(&subtags)
+        && let Ok(tag) = truncated(&scripted, loaded)
+    {
+        return Ok(tag);
+    }
+    truncated(&subtags, loaded)
+}
+
+/// The range with its language's likely script after the language, when it
+/// states none and the language has one.
+fn with_likely_script<'s>(subtags: &[&'s str]) -> Option<Vec<&'s str>> {
+    let (language, rest) = subtags.split_first()?;
+    if rest.first().is_some_and(|subtag| is_script(subtag)) {
+        return None;
+    }
+    let (_, script) = LIKELY_SCRIPTS
+        .iter()
+        .find(|(known, _)| known.eq_ignore_ascii_case(language))?;
+    Some(
+        [language, script]
+            .into_iter()
+            .chain(rest)
+            .copied()
+            .collect(),
+    )
+}
+
+/// RFC 4647 lookup over the subtags, a prefix of a loaded tag counting at
+/// each length, never truncating a stated script away.
+fn truncated<'a>(subtags: &[&str], loaded: &[&'a str]) -> Result<&'a str, Missed<'a>> {
     let floor = if subtags.get(1).is_some_and(|subtag| is_script(subtag)) {
         2
     } else {
@@ -110,7 +144,14 @@ pub(crate) fn lookup<'a>(range: &str, loaded: &[&'a str]) -> Result<&'a str, Mis
 mod tests {
     use super::{Missed, lookup};
 
-    const SHIPPED: [&str; 5] = ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"];
+    const SHIPPED: [&str; 6] = [
+        "en-Latn",
+        "en-Latn-NP",
+        "hi-Deva-IN",
+        "ne-Deva-NP",
+        "sa-Deva",
+        "sa-Latn",
+    ];
 
     #[test]
     fn a_shipped_tag_answers_itself_in_any_case() {
@@ -129,6 +170,9 @@ mod tests {
             ("ne-Deva", "ne-Deva-NP"),
             ("en", "en-Latn"),
             ("en-US", "en-Latn"),
+            ("en-NP", "en-Latn-NP"),
+            ("EN-np", "en-Latn-NP"),
+            ("en-IN", "en-Latn"),
             ("hi", "hi-Deva-IN"),
             ("hi-IN", "hi-Deva-IN"),
             ("sa", "sa-Deva"),
@@ -142,6 +186,8 @@ mod tests {
     fn a_long_tag_truncates_to_a_shorter_one() {
         for (range, tag) in [
             ("en-Latn-GB", "en-Latn"),
+            ("en-Latn-NP-u-nu-latn", "en-Latn-NP"),
+            ("en-NP-x-mine", "en-Latn-NP"),
             ("ne-Deva-NP-u-nu-latn", "ne-Deva-NP"),
             ("sa-Latn-IN", "sa-Latn"),
             ("sa-Deva-x-mine", "sa-Deva"),
@@ -191,5 +237,24 @@ mod tests {
         let two = ["ne-Deva-IN", "ne-Deva-NP"];
         assert_eq!(lookup("ne", &two), Err(Missed::Ambiguous(two.to_vec())));
         assert_eq!(lookup("ne-Deva-IN", &two), Ok("ne-Deva-IN"));
+    }
+
+    /// A regional English beside the plain one: the likely script settles
+    /// a range with none, so neither the plain range nor another region is
+    /// read as ambiguous or as Nepal's English.
+    #[test]
+    fn a_regional_locale_does_not_take_its_languages_other_ranges() {
+        for (range, tag) in [
+            ("en", "en-Latn"),
+            ("en-Latn", "en-Latn"),
+            ("en-GB", "en-Latn"),
+            ("en-NP", "en-Latn-NP"),
+            ("en-Latn-NP", "en-Latn-NP"),
+        ] {
+            assert_eq!(lookup(range, &SHIPPED), Ok(tag), "{range}");
+        }
+        // Only the regional one loaded: a range with no region still finds it.
+        assert_eq!(lookup("en", &["en-Latn-NP"]), Ok("en-Latn-NP"));
+        assert_eq!(lookup("en-Deva-NP", &SHIPPED), Err(Missed::Unknown));
     }
 }

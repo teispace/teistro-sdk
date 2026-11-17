@@ -1,6 +1,10 @@
 {
   "en-Latn": { "members": 422, "messages": 144 },
-  "hi-Deva-IN": { "members": 531, "messages": 69 },
+  "en-Latn-NP": {
+  "members": 0,
+  "messages": 0
+ },
+ "hi-Deva-IN": { "members": 531, "messages": 69 },
   "ne-Deva-NP": { "members": 422, "messages": 144 },
   "sa-Deva": { "members": 530, "messages": 68 },
   "sa-Latn": { "members": 530, "messages": 0 }

@@ -13850,11 +13850,46 @@ class MessagesSdkCalendarDuration:
             {"n": n},
         )
 
+    def month(self, *, n: float) -> str:
+        """`sdk.calendar.duration.month`"""
+        return self._r.render(
+            "sdk.calendar.duration.month",
+            {"n": n},
+        )
+
     def second(self, *, n: float) -> str:
         """`sdk.calendar.duration.second`"""
         return self._r.render(
             "sdk.calendar.duration.second",
             {"n": n},
+        )
+
+    def week(self, *, n: float) -> str:
+        """`sdk.calendar.duration.week`"""
+        return self._r.render(
+            "sdk.calendar.duration.week",
+            {"n": n},
+        )
+
+    def weeks_days(self, *, days: float) -> str:
+        """`sdk.calendar.duration.weeksDays`"""
+        return self._r.render(
+            "sdk.calendar.duration.weeksDays",
+            {"days": days},
+        )
+
+    def year(self, *, n: float) -> str:
+        """`sdk.calendar.duration.year`"""
+        return self._r.render(
+            "sdk.calendar.duration.year",
+            {"n": n},
+        )
+
+    def years_months_days(self, *, days: float, months: float, years: float) -> str:
+        """`sdk.calendar.duration.yearsMonthsDays`"""
+        return self._r.render(
+            "sdk.calendar.duration.yearsMonthsDays",
+            {"days": days, "months": months, "years": years},
         )
 
 

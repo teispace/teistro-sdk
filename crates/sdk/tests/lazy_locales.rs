@@ -92,9 +92,16 @@ fn a_context_decodes_the_locales_it_reads_and_no_others() {
 
     // Every embedded bundle decodes: the gate on the bytes the build
     // embedded, which the first context only verified.
-    let tags: Vec<String> = ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]
-        .map(String::from)
-        .into();
+    let tags: Vec<String> = [
+        "en-Latn",
+        "en-Latn-NP",
+        "hi-Deva-IN",
+        "ne-Deva-NP",
+        "sa-Deva",
+        "sa-Latn",
+    ]
+    .map(String::from)
+    .into();
     for tag in &tags {
         second.intl().set_locale(tag).unwrap();
         said(&second);

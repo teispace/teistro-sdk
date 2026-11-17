@@ -179,7 +179,7 @@ impl Locales {
     /// use teistro_intl::sdk_root;
     ///
     /// let locales = Locales::from(Tree::load(&sdk_root())?.locales);
-    /// assert_eq!(locales.tags().count(), 5);
+    /// assert_eq!(locales.tags().count(), 6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn tags(&self) -> impl Iterator<Item = &str> {
@@ -196,7 +196,7 @@ impl Locales {
     ///
     /// // Sources are decoded already.
     /// let locales = Locales::from(Tree::load(&sdk_root())?.locales);
-    /// assert_eq!(locales.decoded().count(), 5);
+    /// assert_eq!(locales.decoded().count(), 6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn decoded(&self) -> impl Iterator<Item = &str> {
@@ -261,7 +261,7 @@ impl From<BTreeMap<String, Arc<LocaleSource>>> for Locales {
     /// use teistro_intl::sdk_root;
     ///
     /// let shared = Tree::load(&sdk_root())?.locales.into_iter().map(|(tag, locale)| (tag, Arc::new(locale)));
-    /// assert_eq!(Locales::from(shared.collect::<std::collections::BTreeMap<_, _>>()).tags().count(), 5);
+    /// assert_eq!(Locales::from(shared.collect::<std::collections::BTreeMap<_, _>>()).tags().count(), 6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     fn from(sources: BTreeMap<String, Arc<LocaleSource>>) -> Locales {
@@ -368,8 +368,9 @@ mod tests {
         let locales = Locales::from_bundles(&bundles).unwrap();
         let mut intl = Intl::over(locales.clone()).unwrap();
         let tags: Vec<&str> = intl.locale_tags().collect();
-        assert_eq!(tags.len(), 5);
+        assert_eq!(tags.len(), 6);
         assert_eq!(intl.lookup_locale("ne").unwrap(), "ne-Deva-NP");
+        assert_eq!(intl.lookup_locale("en-NP").unwrap(), "en-Latn-NP");
         intl.set_locale("ne-Deva-NP").unwrap();
         assert_eq!(
             decoded(&locales),

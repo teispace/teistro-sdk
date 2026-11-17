@@ -431,24 +431,78 @@ pub fn rashi_key(index: usize) -> String {
 /// order a decomposition walks them in, so it is the order the constant
 /// is written in rather than a sort at every call.
 ///
+/// A year and a month are **calendar units**: they have no fixed length,
+/// so a length in seconds is never broken into them, and a span in them
+/// is given as counts a calendar has already reckoned
+/// (`{:duration year=$years month=$months day=$days}`). The rest are
+/// fixed: a week is seven days.
+///
 /// ```
-/// use teistro_intl::render::DURATION_UNITS;
+/// use teistro_intl::render::{DURATION_UNITS, is_calendar_unit};
 ///
 /// // Longest first, the order a decomposition walks them in.
-/// assert_eq!(DURATION_UNITS.first(), Some(&"day"));
+/// assert_eq!(DURATION_UNITS.first(), Some(&"year"));
+/// assert!(is_calendar_unit("month"));
+/// assert!(!is_calendar_unit("week"));
 /// ```
-pub const DURATION_UNITS: [&str; 4] = ["day", "hour", "minute", "second"];
+pub const DURATION_UNITS: [&str; 7] = ["year", "month", "week", "day", "hour", "minute", "second"];
 
-/// How many seconds one of each duration unit is, in the same order.
-const DURATION_SECONDS: [f64; 4] = [86_400.0, 3_600.0, 60.0, 1.0];
+/// How many seconds one of each duration unit is, in the same order, or
+/// `None` for a calendar unit, whose length depends on where it falls.
+const DURATION_SECONDS: [Option<f64>; 7] = [
+    None,
+    None,
+    Some(604_800.0),
+    Some(86_400.0),
+    Some(3_600.0),
+    Some(60.0),
+    Some(1.0),
+];
 
-/// How many seconds a duration unit is, or `None` when nothing is called
+/// The known unit a name is, as the constant holds it, with its length in
+/// seconds (`None` for a calendar unit), or `None` when nothing is called
 /// that.
+fn duration_unit(unit: &str) -> Option<(&'static str, Option<f64>)> {
+    let at = DURATION_UNITS.iter().position(|known| *known == unit)?;
+    Some((*DURATION_UNITS.get(at)?, *DURATION_SECONDS.get(at)?))
+}
+
+/// Whether a duration unit is a calendar unit (a year or a month), whose
+/// length depends on where it falls, so that a length in seconds is never
+/// broken into it.
+///
+/// ```
+/// use teistro_intl::render::is_calendar_unit;
+///
+/// assert!(is_calendar_unit("year"));
+/// assert!(!is_calendar_unit("day"));
+/// assert!(!is_calendar_unit("fortnight"), "not a duration unit at all");
+/// ```
+#[must_use]
+pub fn is_calendar_unit(unit: &str) -> bool {
+    duration_unit(unit).is_some_and(|(_, seconds)| seconds.is_none())
+}
+
+/// How many seconds a fixed duration unit is, or `None` when it is a
+/// calendar unit or nothing is called that.
 fn unit_seconds(unit: &str) -> Option<f64> {
-    DURATION_UNITS
-        .iter()
-        .position(|known| *known == unit)
-        .and_then(|at| DURATION_SECONDS.get(at).copied())
+    duration_unit(unit).and_then(|(_, seconds)| seconds)
+}
+
+/// The parts of a span given as counts, longest unit first: a part that
+/// is zero is dropped, unless every part is, when the shortest unit named
+/// keeps it, as [`decompose`] keeps it. Each count is kept as given,
+/// sign and all: the calendar that reckoned them owns their meaning.
+fn counted(counts: Vec<(&'static str, f64)>) -> Vec<(&'static str, f64)> {
+    let shortest = counts.last().map(|(unit, _)| *unit);
+    let parts: Vec<_> = counts
+        .into_iter()
+        .filter(|(_, count)| *count != 0.0)
+        .collect();
+    match (parts.is_empty(), shortest) {
+        (true, Some(unit)) => vec![(unit, 0.0)],
+        _ => parts,
+    }
 }
 
 /// A duration in seconds, split into the units named, longest first.
@@ -467,11 +521,7 @@ fn decompose(seconds: f64, units: &[&str]) -> Vec<(&'static str, f64)> {
     let mut left = seconds.abs();
     let mut parts: Vec<(&'static str, f64)> = Vec::with_capacity(units.len());
     for (index, unit) in units.iter().enumerate() {
-        let Some((name, size)) = DURATION_UNITS
-            .iter()
-            .position(|known| known == unit)
-            .and_then(|at| Some((*DURATION_UNITS.get(at)?, *DURATION_SECONDS.get(at)?)))
-        else {
+        let Some((name, Some(size))) = duration_unit(unit) else {
             continue;
         };
         let last = index + 1 == units.len();
@@ -483,20 +533,7 @@ fn decompose(seconds: f64, units: &[&str]) -> Vec<(&'static str, f64)> {
         left -= count * size;
         parts.push((name, count));
     }
-    if parts.iter().all(|(_, count)| *count == 0.0) {
-        parts.truncate(1);
-        if let Some(last) = parts.last_mut() {
-            // The shortest unit named, so a duration of nothing reads as
-            // "0 seconds" rather than as "0 days".
-            if let Some(&shortest) = units.last()
-                && let Some(name) = DURATION_UNITS.iter().find(|known| **known == shortest)
-            {
-                *last = (name, 0.0);
-            }
-        }
-    } else {
-        parts.retain(|(_, count)| *count != 0.0);
-    }
+    let mut parts = counted(parts);
     if negative && let Some(first) = parts.first_mut() {
         first.1 = -first.1;
     }
@@ -679,6 +716,8 @@ pub fn engine_params(key: &str) -> &'static [&'static str] {
         "daysHours" | "hoursMinutes" | "hoursMinutesSeconds" if rest.starts_with("duration.") => {
             &["seconds"]
         }
+        "weeksDays" if rest.starts_with("duration.") => &["days"],
+        "yearsMonthsDays" if rest.starts_with("duration.") => &["years", "months", "days"],
         _ if rest.starts_with("duration.") => &["n"],
         _ => &[],
     }
@@ -1473,7 +1512,7 @@ impl Intl {
     /// # let tree = Tree::load(&sdk_root())?;
     /// # let mut intl = Intl::from_tree(&tree)?;
     ///
-    /// assert_eq!(intl.locales().count(), 5);
+    /// assert_eq!(intl.locales().count(), 6);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn locales(&self) -> impl Iterator<Item = &LocaleSource> {
@@ -1491,7 +1530,7 @@ impl Intl {
     /// # let intl = Intl::from_tree(&tree)?;
     ///
     /// let tags: Vec<&str> = intl.locale_tags().collect();
-    /// assert_eq!(tags, ["en-Latn", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
+    /// assert_eq!(tags, ["en-Latn", "en-Latn-NP", "hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"]);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn locale_tags(&self) -> impl Iterator<Item = &str> {
@@ -2422,7 +2461,7 @@ impl<'a> Eval<'a> {
             "datetime" => self.date(operand.as_ref(), &options, true),
             "time" => self.time(operand.as_ref(), &options),
             "ghati" => self.ghati(operand.as_ref(), &options),
-            "duration" => self.duration(operand.as_ref(), &options),
+            "duration" => self.duration(operand.as_ref(), &options, &function.options),
             "dms" => self.dms(operand.as_ref(), &options),
             "zodiac" => self.zodiac(operand.as_ref(), &options),
             "entity" => self.entity(operand.as_ref(), &options),
@@ -2752,8 +2791,9 @@ impl<'a> Eval<'a> {
         }
     }
 
-    /// `:duration`: a count of `unit=day|hour|minute|second` (minutes by
-    /// default) through the locale's plural message for the unit.
+    /// `:duration`: a count of `unit=year|month|week|day|hour|minute|second`
+    /// (minutes by default) through the locale's plural message for the
+    /// unit.
     ///
     /// `into=|hour,minute,second|` breaks the count into several units
     /// and joins them with the locale's own list pattern, so a dasha
@@ -2764,8 +2804,22 @@ impl<'a> Eval<'a> {
     /// in an option value unless the value is quoted. `round=minute`
     /// rounds the length to a unit first, so the last part is whole, and
     /// `list=unit` joins the parts with the locale's unit pattern rather
-    /// than its prose `and`.
-    fn duration(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
+    /// than its prose `and`. A year and a month have no fixed length, so
+    /// neither `into=` nor `round=` takes one.
+    ///
+    /// With no operand, the span is given as counts, an option per unit
+    /// (`{:duration year=$years month=$months day=$days}`): an age or a
+    /// span between two dates, which a calendar reckons and no length in
+    /// seconds can. The parts are joined as `into=`'s are.
+    fn duration(
+        &mut self,
+        operand: Option<&Val>,
+        options: &BTreeMap<String, String>,
+        written: &[Opt],
+    ) -> Formatted {
+        if operand.is_none() {
+            return self.duration_counts(options, written);
+        }
         let Some(value) = self.numeric(operand) else {
             return Formatted {
                 value: None,
@@ -2774,20 +2828,31 @@ impl<'a> Eval<'a> {
             };
         };
         let unit = options.get("unit").map_or("minute", String::as_str);
-        if !DURATION_UNITS.contains(&unit) {
+        if duration_unit(unit).is_none() {
             self.warn(format!("`unit={unit}` is not a duration unit"));
+        }
+        for unit in DURATION_UNITS {
+            if written.iter().any(|option| option.name.is(unit)) {
+                self.warn(format!(
+                    "`{unit}=` counts a unit only when `:duration` has no operand"
+                ));
+            }
         }
         let into = self.duration_units(options.get("into").map(String::as_str));
         let text = match (into.as_slice(), unit_seconds(unit)) {
-            ([], _) | (_, None) => self.duration_text(unit, value),
+            ([], _) => self.duration_text(unit, value),
+            (_, None) => {
+                if is_calendar_unit(unit) {
+                    self.warn(format!(
+                        "`unit={unit}` has no fixed length, so `into=` cannot break it up"
+                    ));
+                }
+                self.duration_text(unit, value)
+            }
             (units, Some(size)) => {
                 let seconds = self.duration_rounded(value * size, options.get("round"));
-                let list = self.duration_list(options.get("list"));
-                let parts: Vec<String> = decompose(seconds, units)
-                    .into_iter()
-                    .map(|(name, count)| self.duration_text(name, count))
-                    .collect();
-                self.join_list(&parts, list)
+                let parts = decompose(seconds, units);
+                self.duration_join(parts, options.get("list"))
             }
         };
         Formatted {
@@ -2795,6 +2860,72 @@ impl<'a> Eval<'a> {
             parts: text_parts(text),
             keys: Keys::None,
         }
+    }
+
+    /// A span given as counts, an option per unit, longest unit first
+    /// whatever order the options are written in; each count is a number
+    /// or a variable holding one.
+    fn duration_counts(
+        &mut self,
+        options: &BTreeMap<String, String>,
+        written: &[Opt],
+    ) -> Formatted {
+        for ignored in ["unit", "into", "round"] {
+            if options.contains_key(ignored) {
+                self.warn(format!(
+                    "`{ignored}=` reads an operand, and a span given as counts has none"
+                ));
+            }
+        }
+        let mut counts: Vec<(&'static str, f64)> = Vec::new();
+        for unit in DURATION_UNITS {
+            let Some(option) = written.iter().find(|option| option.name.is(unit)) else {
+                continue;
+            };
+            let count = match &option.value {
+                OptValue::Variable(name) => {
+                    let value = self.variable(name);
+                    self.numeric(Some(&value))
+                }
+                OptValue::Literal(literal) => {
+                    let parsed = literal.value.parse::<f64>().ok();
+                    if parsed.is_none() {
+                        self.warn(format!("`{unit}={}` is not a number", literal.value));
+                    }
+                    parsed
+                }
+            };
+            if let Some(count) = count {
+                counts.push((unit, count));
+            }
+        }
+        if counts.is_empty() {
+            self.warn(String::from(
+                "`:duration` with no operand counts the units its options name, and names none",
+            ));
+            return Formatted {
+                value: None,
+                parts: text_parts(String::from("{:duration}")),
+                keys: Keys::None,
+            };
+        }
+        let text = self.duration_join(counted(counts), options.get("list"));
+        Formatted {
+            value: None,
+            parts: text_parts(text),
+            keys: Keys::None,
+        }
+    }
+
+    /// The parts of a duration, each through its unit's plural message,
+    /// joined by the list pattern a `list=` option names.
+    fn duration_join(&mut self, parts: Vec<(&'static str, f64)>, list: Option<&String>) -> String {
+        let list = self.duration_list(list);
+        let parts: Vec<String> = parts
+            .into_iter()
+            .map(|(name, count)| self.duration_text(name, count))
+            .collect();
+        self.join_list(&parts, list)
     }
 
     /// A length in seconds rounded, half away from zero, to the unit a
@@ -2806,7 +2937,11 @@ impl<'a> Eval<'a> {
             return seconds;
         };
         let Some(size) = unit_seconds(round) else {
-            self.warn(format!("`round={round}` is not a duration unit"));
+            if is_calendar_unit(round) {
+                self.warn(format!("`round={round}` has no fixed length to round to"));
+            } else {
+                self.warn(format!("`round={round}` is not a duration unit"));
+            }
             return seconds;
         };
         (seconds / size).round() * size
@@ -2839,7 +2974,11 @@ impl<'a> Eval<'a> {
             .filter(|unit| !unit.is_empty())
             .collect();
         for unit in &named {
-            if !DURATION_UNITS.contains(unit) {
+            if is_calendar_unit(unit) {
+                self.warn(format!(
+                    "`into=` names `{unit}`, which has no fixed length: give the span as counts"
+                ));
+            } else if duration_unit(unit).is_none() {
                 self.warn(format!(
                     "`into=` names `{unit}`, which is not a duration unit"
                 ));
@@ -2850,7 +2989,7 @@ impl<'a> Eval<'a> {
         // message happened to spell it.
         DURATION_UNITS
             .into_iter()
-            .filter(|unit| named.contains(unit))
+            .filter(|unit| named.contains(unit) && !is_calendar_unit(unit))
             .collect()
     }
 
