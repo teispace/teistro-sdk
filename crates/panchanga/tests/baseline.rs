@@ -133,6 +133,7 @@ fn local_day(chart: &Value) -> LocalDay {
         state: DayState::Normal,
         convention: SunriseConvention::from(Sunrise::UpperLimbRefraction),
         model: String::from("the corpus's recorded arcs"),
+        clipped: None,
     }
 }
 

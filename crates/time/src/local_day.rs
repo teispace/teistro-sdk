@@ -7,7 +7,8 @@ use core::fmt;
 use teistro_calendar::solar::{DayArc, DayLight, SolarModel, civil_day_light};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_core::catalogue::Vara;
-use teistro_core::error::Error;
+use teistro_core::coverage::Clipped;
+use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::{Air, PolarDayPolicy, SunriseConvention};
 use teistro_core::time::LocalClock;
@@ -120,6 +121,14 @@ pub struct LocalDay {
     pub convention: SunriseConvention,
     /// The model that gave the arc, for provenance.
     pub model: String,
+    /// `END` when the next sunrise lies past the ephemeris's coverage
+    /// (SR-136, C2244): `next_sunrise` is then the coverage's last instant
+    /// and not a sunrise, the day's night is not known, and what divides
+    /// it is left out of the day. The last civil day of the coverage is
+    /// such a day wherever its next sunrise falls after the coverage
+    /// ends. Absent on every other day, and then left out of its document.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clipped: Option<Clipped>,
 }
 
 impl LocalDay {
@@ -450,9 +459,35 @@ pub fn local_day_carrying(
         Some((left_for, at, light)) if left_for == day && at == *place => light,
         _ => civil_day_light(model, clock, place, day)?,
     };
-    let tomorrow = civil_day_light(model, clock, place, day.plus_days(1))?;
-    carried.0 = Some((day.plus_days(1), *place, tomorrow));
+    let tomorrow = within_coverage(civil_day_light(model, clock, place, day.plus_days(1)))?;
+    carried.0 = tomorrow.map(|light| (day.plus_days(1), *place, light));
     local_day_lit(model, clock, place, (date, day), policy, (today, tomorrow))
+}
+
+/// A day's light, or `None` when it lies past the ephemeris's coverage
+/// (an `OUT_OF_RANGE` refusal): what the next civil day's light is to a
+/// day, whose own is then cut at the coverage's end (SR-136).
+///
+/// ```
+/// use teistro_calendar::solar::DayLight;
+/// use teistro_core::error::{Error, Status};
+/// use teistro_time::local_day::within_coverage;
+///
+/// assert_eq!(within_coverage(Ok(DayLight::NeverUp))?, Some(DayLight::NeverUp));
+/// assert_eq!(within_coverage(Err(Error::new(Status::OutOfRange, "past the end")))?, None);
+/// assert!(within_coverage(Err(Error::invalid_arg("a bad place"))).is_err());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// Any other refusal, as it came.
+pub fn within_coverage(light: Result<DayLight, Error>) -> Result<Option<DayLight>, Error> {
+    match light {
+        Ok(light) => Ok(Some(light)),
+        Err(error) if error.status == Status::OutOfRange => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 
 /// The local day of a civil date from its light and the next civil
@@ -479,7 +514,7 @@ pub fn local_day_carrying(
 /// let fixed = fixed_from_gregorian(2024, 1, 1);
 /// let lights = (
 ///     civil_day_light(&text, &clock, &kathmandu, fixed)?,
-///     civil_day_light(&text, &clock, &kathmandu, fixed.plus_days(1))?,
+///     Some(civil_day_light(&text, &clock, &kathmandu, fixed.plus_days(1))?),
 /// );
 /// let lit = local_day_lit(&text, &clock, &kathmandu, (&date, fixed), PolarDayPolicy::Undefined, lights)?;
 /// assert_eq!(lit, local_day(&text, &Gregorian, &clock, &kathmandu, &date, PolarDayPolicy::Undefined)?);
@@ -495,8 +530,11 @@ pub fn local_day_lit(
     place: &Place,
     (date, day): (&CalendarDate, FixedDay),
     policy: PolarDayPolicy,
-    (today, tomorrow): (DayLight, DayLight),
+    (today, tomorrow): (DayLight, Option<DayLight>),
 ) -> Result<LocalDay, Error> {
+    let Some(tomorrow) = tomorrow else {
+        return cut_at_the_end(model, place, (date, day), today);
+    };
     let (sunrise, sunset, next_sunrise, state) = match (today, tomorrow) {
         (DayLight::Arc(arc), DayLight::Arc(next)) => {
             (arc.sunrise, arc.sunset, next.sunrise, DayState::Normal)
@@ -556,6 +594,42 @@ pub fn local_day_lit(
         state,
         convention: model.convention(),
         model: model.describe(),
+        clipped: None,
+    })
+}
+
+/// The day whose next sunrise lies past the coverage (SR-136, C2244): its
+/// own sunrise and sunset, and the coverage's last instant where the next
+/// sunrise would be, marked `END`. A day with no arc of its own there has
+/// no night to stand in for and is refused `OUT_OF_RANGE` on `date`.
+fn cut_at_the_end(
+    model: &dyn SolarModel,
+    place: &Place,
+    (date, day): (&CalendarDate, FixedDay),
+    today: DayLight,
+) -> Result<LocalDay, Error> {
+    let end = model.coverage().to;
+    let arc = today
+        .arc()
+        .filter(|arc| arc.sunset.get() <= end && end.is_finite());
+    let Some(arc) = arc else {
+        return Err(Error::new(
+            Status::OutOfRange,
+            format!("{date}: the day's light reaches past the ephemeris's coverage"),
+        )
+        .with_field("date"));
+    };
+    Ok(LocalDay {
+        place: *place,
+        date: date.clone(),
+        vara: day.weekday().vara(),
+        sunrise: arc.sunrise,
+        sunset: arc.sunset,
+        next_sunrise: JulianDay::try_new(end)?,
+        state: DayState::Normal,
+        convention: model.convention(),
+        model: model.describe(),
+        clipped: Some(Clipped::End),
     })
 }
 

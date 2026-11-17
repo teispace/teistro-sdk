@@ -664,6 +664,7 @@ mod tests {
             whole,
             inside: whole,
             margin_minutes: None,
+            clipped: None,
         }
     }
 

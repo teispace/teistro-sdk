@@ -224,6 +224,10 @@ impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
             None => self.tropical.describe(),
         }
     }
+
+    fn coverage(&self) -> teistro_core::coverage::Coverage {
+        self.tropical.coverage()
+    }
 }
 
 /// A zodiac to read longitudes in: which ayanamsha, on which basis, under

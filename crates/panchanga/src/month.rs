@@ -19,6 +19,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::lunisolar::{MonthKind, MonthMargin};
 use teistro_core::catalogue::{Masa, Paksha, Tithi};
+use teistro_core::coverage::Clipped;
 use teistro_core::settings::LunarMonth as Convention;
 
 /// The lunar month a day falls in, under both conventions.
@@ -66,9 +67,32 @@ pub struct LunarMonth {
     /// built from its parts alone ([`of`]), which knows no new moons.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub margin: Option<MonthMargin>,
+    /// Which of the month's new moons fell outside the ephemeris's
+    /// coverage (SR-136, C2246): its name and kind were then read from
+    /// the edge, and it has no `margin`. Absent on every month whose
+    /// new moons were both computed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clipped: Option<Clipped>,
 }
 
 impl LunarMonth {
+    /// The month with the mark of the new moons the coverage cut off.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::MonthKind;
+    /// use teistro_core::catalogue::{Masa, Tithi};
+    /// use teistro_core::coverage::Clipped;
+    /// use teistro_core::settings::LunarMonth as Convention;
+    /// use teistro_panchanga::month;
+    ///
+    /// let day = month::of(Masa::Pausha, Tithi::ShuklaDashami, Convention::Amanta, MonthKind::Nija);
+    /// assert_eq!(day.with_clipped(Some(Clipped::End)).clipped, Some(Clipped::End));
+    /// ```
+    #[must_use]
+    pub const fn with_clipped(self, clipped: Option<Clipped>) -> Self {
+        LunarMonth { clipped, ..self }
+    }
+
     /// The month with its decision margin.
     ///
     /// ```
@@ -157,6 +181,7 @@ pub fn of(amanta: Masa, at_sunrise: Tithi, convention: Convention, kind: MonthKi
         paksha,
         kind,
         margin: None,
+        clipped: None,
     }
 }
 

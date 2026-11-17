@@ -242,6 +242,7 @@ impl YearRuler {
 ///     state: DayState::Normal,
 ///     convention: Sunrise::CentreNoRefraction.into(),
 ///     model: String::new(),
+///     clipped: None,
 /// };
 /// // An ingress in the night: Thursday's by the weekday, Friday's by the daylight.
 /// let night = jd(2_461_238.2);
@@ -381,16 +382,26 @@ pub fn events<S: Longitudes + ?Sized>(
         } else {
             &signs
         };
-        let found = list
+        let reach = if office == YearOffice::Meghadhipati {
+            ARDRA_REACH_DAYS
+        } else {
+            YEAR_REACH_DAYS
+        };
+        match list
             .iter()
             .find(|event| same_line(event.boundary_deg, target))
-            .ok_or_else(|| {
-                Error::new(
+        {
+            Some(found) => offices.push((office, JulianDay::try_new(found.instant.get())?)),
+            // An ingress past the last instant the ephemeris answers is
+            // not known, and its office is left out (SR-136, C2249).
+            None if after(reach).get() > source.coverage().to => {}
+            None => {
+                return Err(Error::new(
                     Status::NotConverged,
                     format!("no ingress at {target}° within a year of the opening at {opened}"),
-                )
-            })?;
-        offices.push((office, JulianDay::try_new(found.instant.get())?));
+                ));
+            }
+        }
     }
     let tithi = crossings(
         Quantity::ELONGATION,

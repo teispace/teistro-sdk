@@ -447,6 +447,37 @@ fn settings_describe_answers_the_profiles_and_the_patch_schema() {
     assert_eq!(refused["structuredContent"]["field"], "arguments.profile");
 }
 
+/// **`coverage.describe` answers the range as data** (SR-136, C2250):
+/// the days the context's ephemeris covers, the Bikram Sambat table's
+/// years and each holiday set's, and refuses an argument past its scope.
+#[test]
+fn coverage_describe_answers_the_range_as_data() {
+    let mut server = Server::new(Engine::Builtin);
+    let result = call(
+        &mut server,
+        "coverage.describe",
+        &json!({"profile": "nepali-drik"}),
+    );
+    assert_eq!(result["isError"], false, "{result}");
+    let coverage = &result["structuredContent"];
+    let first = &coverage["ephemeris"]["first"];
+    assert_eq!(
+        (&first["year"], &first["month"], &first["day"]),
+        (&json!(1800), &json!(1), &json!(1))
+    );
+    assert_eq!(coverage["ephemeris"]["last"]["year"], 2399);
+    assert!(
+        coverage["bikramSambat"]["officialFirstYear"]
+            .as_i64()
+            .unwrap()
+            <= 2083
+    );
+    assert_eq!(coverage["holidays"][0]["years"], json!([2083]));
+    let refused = call(&mut server, "coverage.describe", &json!({"at": 1}));
+    assert_eq!(refused["isError"], true);
+    assert_eq!(refused["structuredContent"]["field"], "arguments.at");
+}
+
 #[test]
 fn a_chart_request_answers_its_charts_and_a_row_a_chart_of_each_table_asked() {
     let mut server = Server::new(Engine::Builtin);

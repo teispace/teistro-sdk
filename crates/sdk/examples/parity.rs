@@ -8929,6 +8929,41 @@ fn settings(report: &mut Report) {
         })
         .collect();
     put(report, "settings-diff", parted.join(","));
+    // The range as data (SR-136): the dates the built-in ephemeris answers
+    // under `nepali-drik`, the Bikram Sambat table's years, official
+    // and computed, and each holiday set's years.
+    let coverage = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .and_then(|sky| sky.coverage())
+        .expect("the built-in sky's coverage");
+    let span = coverage.ephemeris.expect("a span");
+    let day =
+        |date: &teistro::CalendarDay| format!("{}-{:02}-{:02}", date.year, date.month, date.day);
+    let bs = coverage.bikram_sambat;
+    let sets: Vec<String> = coverage
+        .holidays
+        .iter()
+        .map(|set| {
+            let years: Vec<String> = set.years.iter().map(i32::to_string).collect();
+            format!("{}:{}", set.set, years.join("+"))
+        })
+        .collect();
+    put(
+        report,
+        "coverage",
+        format!(
+            "{} {} {} {} {} {} {}",
+            day(&span.first),
+            day(&span.last),
+            bs.first_year,
+            bs.last_year,
+            bs.official_first_year,
+            bs.official_last_year,
+            sets.join(",")
+        ),
+    );
 }
 
 fn main() {

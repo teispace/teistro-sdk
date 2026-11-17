@@ -59,7 +59,10 @@ Each record tool takes `{request, profile, settings, locale}`. `request`
 is the record its binding sends, refused by the same reader under the
 same field names; `settings` is a patch over the profile, and
 `settings.describe` answers its JSON Schema with every knob's
-documentation. An answer is `{value, provenance}`. A refusal is a tool
+documentation. `coverage.describe`, under the same scope, answers the dates
+every call answers: the ephemeris's first and last instants and Gregorian
+dates, the Bikram Sambat table's years and each holiday set's years. An
+answer is `{value, provenance}`. A refusal is a tool
 error whose structured content is the SDK's error record, naming the
 field, the range and a hint.
 

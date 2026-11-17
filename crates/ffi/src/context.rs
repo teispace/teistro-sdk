@@ -1374,6 +1374,58 @@ pub unsafe extern "C" fn ts_context_explain_settings(
     })
 }
 
+/// **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+/// §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+/// `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+/// instants the configured ephemeris answers under the context's profile,
+/// Julian days on UT1, and the first and last Gregorian dates the span
+/// holds at least half of, on UT, as `{calendar, year, month, day}`; left
+/// out with no ephemeris. `bikramSambat` is
+/// `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+/// shipped table's years and those the government published; `holidays`
+/// each shipped holiday set as `{set, years}`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::context::ts_context_coverage;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_context_coverage(&raw const ctx, &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["ephemeris"]["first"]["year"], 1800);
+/// assert_eq!(answer["ephemeris"]["last"]["year"], 2399);
+/// assert_eq!(answer["holidays"][0]["set"], "NEPAL_GAZETTE");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_context_coverage(
+    context: *const TsContext,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        let coverage = ctx.sdk().coverage()?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&coverage));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// **Where two contexts' settings part** (`settings.diff`), as canonical
 /// JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`,
 /// each knob on which `context`'s settings and `other`'s differ as

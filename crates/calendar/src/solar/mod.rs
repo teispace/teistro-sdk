@@ -14,6 +14,7 @@ pub mod rule;
 pub mod sankranti;
 mod siddhanta;
 
+use teistro_core::coverage::Coverage;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::SunriseConvention;
@@ -231,6 +232,22 @@ pub trait SolarModel: Send + Sync {
         false
     }
 
+    /// The instants the model answers, on UT1 (SR-136): a modern
+    /// ephemeris's coverage, every instant for a model that states none.
+    /// A day whose light lies past it is refused `OUT_OF_RANGE`, and a day
+    /// whose next sunrise lies past it is a day cut at the coverage's end
+    /// (`teistro_time::LocalDay::clipped`).
+    ///
+    /// ```
+    /// use teistro_calendar::solar::SolarModel;
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// assert!(!SuryaSiddhanta::text().coverage().is_bounded());
+    /// ```
+    fn coverage(&self) -> Coverage {
+        Coverage::UNBOUNDED
+    }
+
     /// Sunrise and sunset of a civil day at a place, or `None` where the
     /// Sun neither rises nor sets that day.
     ///
@@ -399,5 +416,9 @@ impl<M: SolarModel + ?Sized> SolarModel for &M {
 
     fn defines_sunrise(&self) -> bool {
         (**self).defines_sunrise()
+    }
+
+    fn coverage(&self) -> Coverage {
+        (**self).coverage()
     }
 }

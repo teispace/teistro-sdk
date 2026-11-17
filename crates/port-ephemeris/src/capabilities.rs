@@ -10,6 +10,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use teistro_core::catalogue::Ayanamsha;
+use teistro_core::coverage::Coverage;
 use teistro_core::envelope::{Hash, ProviderStamp};
 use teistro_core::settings::Tier;
 
@@ -579,7 +580,11 @@ impl Astronomy {
 pub struct Capabilities {
     /// Who.
     pub identity: Identity,
-    /// Coverage in UT1 Julian days, inclusive.
+    /// Coverage in Julian days, inclusive, held against an instant in
+    /// the scale it is asked in: TT for every modern request the SDK
+    /// makes (it carries UT1 to TT itself), UT1 for a classical
+    /// astronomy's. The SDK's searches clip to it (SR-136,
+    /// [`Capabilities::coverage`]).
     pub jd_range: (f64, f64),
     /// The bodies it computes.
     pub bodies: Vec<Body>,
@@ -649,6 +654,23 @@ impl Capabilities {
     #[must_use]
     pub fn covers(&self, jd: f64) -> bool {
         jd >= self.jd_range.0 && jd <= self.jd_range.1
+    }
+
+    /// The coverage as the SDK's searches read it: [`Capabilities::jd_range`]
+    /// as a [`Coverage`], and every instant when a provider declares a
+    /// range that runs backwards or is not a number, which is a defect
+    /// [`ask_positions`](crate::ask_positions) refuses cell by cell anyway.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Capabilities, EphemerisProvider, TestProvider};
+    ///
+    /// let coverage = TestProvider::new().capabilities().coverage();
+    /// assert_eq!((coverage.from, coverage.to), TestProvider::JD_RANGE);
+    /// assert!(!Capabilities::default().coverage().is_bounded());
+    /// ```
+    #[must_use]
+    pub fn coverage(&self) -> Coverage {
+        Coverage::new(self.jd_range.0, self.jd_range.1).unwrap_or(Coverage::UNBOUNDED)
     }
 
     /// Whether a body is offered.

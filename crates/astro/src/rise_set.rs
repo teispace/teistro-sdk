@@ -1692,8 +1692,16 @@ impl<'a> Solver<'a> {
                 });
             }
         }
-        let start = from.get();
-        let end = start + window_days;
+        // Cut to what the sky answers (SR-136, C2242): a window wholly
+        // outside it holds no event the sky can say, and one across an
+        // edge is searched up to it.
+        let coverage = self.sky.coverage();
+        let Some((start, end, _)) = coverage.clip(from.get(), from.get() + window_days) else {
+            return Ok(None);
+        };
+        if end <= start {
+            return Ok(None);
+        }
         let mut evaluations = 0u32;
         // The window's first reading, which the iteration starts from and
         // the scan's proofs start from too: read once for both.
@@ -1928,7 +1936,13 @@ impl<'a> Solver<'a> {
             return Ok(None);
         }
         let mut retried = false;
+        let coverage = self.sky.coverage();
         for _ in 0..MAX_ITERATIONS {
+            // An estimate outside what the sky answers hands the search to
+            // the scan, which walks the window alone.
+            if !coverage.contains(t) {
+                return Ok(None);
+            }
             let sample = self.sample_in(round, t, evaluations).await?;
             let correction = match kind {
                 HorizonEventKind::Transit | HorizonEventKind::Antitransit => {

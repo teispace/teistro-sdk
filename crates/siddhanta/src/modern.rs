@@ -33,6 +33,11 @@ use teistro_port_ephemeris::{
 
 use crate::provider::SiddhantaProvider;
 
+/// How far inside the modern ephemeris's coverage a sky taking parts of
+/// it ends, days: an hour, more than the spread of every Delta T model the
+/// SDK offers at either end of six centuries.
+const MODERN_SLACK_DAYS: f64 = 1.0 / 24.0;
+
 /// The Surya Siddhanta's sky with the parts asked for taken from a modern
 /// ephemeris.
 ///
@@ -338,6 +343,26 @@ impl EphemerisProvider for ModernParts {
                 capabilities.identity.data_version,
                 zodiac_name(&ayanamsha)
             );
+        }
+        // A part taken from the modern ephemeris is answered only where
+        // it is (SR-136, C2245): the sky's coverage is the text's cut to
+        // the modern one's, carried to UT1 (this sky is asked on UT1, a
+        // classical astronomy's scale) and an hour inside it, so that no
+        // Delta T model's minutes between the scales reach past it.
+        if self.sunrise || self.planets.is_some() {
+            let modern = Completion::new(
+                self.modern.as_ref(),
+                OverridePolicy::PreferNative,
+                DeltaTModel::default(),
+            )
+            .coverage();
+            let slack = if modern.is_bounded() {
+                MODERN_SLACK_DAYS
+            } else {
+                0.0
+            };
+            let (from, to) = capabilities.jd_range;
+            capabilities.jd_range = (from.max(modern.from + slack), to.min(modern.to - slack));
         }
         // The text's declaration of the rise and set stands: this sky
         // answers it, for any convention rather than only the text's.

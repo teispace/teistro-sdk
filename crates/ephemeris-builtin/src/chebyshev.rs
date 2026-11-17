@@ -191,6 +191,86 @@ impl Table {
     }
 }
 
+impl Table {
+    /// As [`Table::at`], with the end blocks' series carried at most
+    /// `reach` days past the span (SR-136, C2241).
+    ///
+    /// A fit diverges far past its interval, which is why [`Table::at`]
+    /// refuses; a day past a block of hundreds or thousands of days is
+    /// not far. Chebyshev's variable is then within `2·reach/interval`
+    /// of ±1, where a degree-11 series moves by its own slope there and
+    /// nothing more: the provider's tests carry each interior block a day
+    /// past its start and hold it to the neighbour that fits that day,
+    /// so the carry's error is measured, not assumed.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// // A tenth of a day before the span, within a reach of a quarter.
+    /// let (position, _) = table.at_within(2_451_544.9, 0.25).ok_or("within reach")?;
+    /// // y = T1 = x, which is -1.1 there: the series carried, not clamped.
+    /// assert!((position[1] + 1.1).abs() < 1e-9);
+    /// assert!(table.at_within(2_451_544.5, 0.25).is_none());
+    /// assert_eq!(table.at_within(2_451_546.0, 0.25), table.at(2_451_546.0));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn at_within(&self, jd: f64, reach: f64) -> Option<([f64; 3], [f64; 3])> {
+        if self.covers(jd) {
+            return self.at(jd);
+        }
+        let (first, last) = self.span();
+        let intervals = self.intervals();
+        let index = if (first - reach..first).contains(&jd) {
+            0
+        } else if jd > last && jd <= last + reach {
+            intervals.checked_sub(1)?
+        } else {
+            return None;
+        };
+        self.block_at(index, jd)
+    }
+
+    /// One block's series at an instant, wherever the instant is: the
+    /// carry [`Table::at_within`] makes, and what a test measures it by.
+    ///
+    /// ```
+    /// # use teistro_ephemeris_builtin::chebyshev::Table;
+    /// #
+    /// # // x = T2, y = T1 and z = 3, over the two days from J2000.
+    /// # static COEFFICIENTS: [f64; 9] = [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 3.0, 0.0, 0.0];
+    /// # let table = Table { start_jd: 2_451_545.0, interval_days: 2.0, terms: 3, coefficients: &COEFFICIENTS };
+    /// assert_eq!(table.block_at(0, 2_451_546.0), table.at(2_451_546.0));
+    /// assert!(table.block_at(1, 2_451_546.0).is_none(), "one block");
+    /// ```
+    #[must_use]
+    pub fn block_at(&self, index: usize, jd: f64) -> Option<([f64; 3], [f64; 3])> {
+        if index >= self.intervals() || self.interval_days <= 0.0 || !jd.is_finite() {
+            return None;
+        }
+        #[expect(
+            clippy::cast_precision_loss,
+            reason = "an interval index is thousands at most"
+        )]
+        let opens = (index as f64).mul_add(self.interval_days, self.start_jd);
+        let x = 2.0f64.mul_add((jd - opens) / self.interval_days, -1.0);
+        let per_day = 2.0 / self.interval_days;
+        let mut position = [0.0; COMPONENTS];
+        let mut rate = [0.0; COMPONENTS];
+        for component in 0..COMPONENTS {
+            let from = (index * COMPONENTS + component) * self.terms;
+            let series = self.coefficients.get(from..from + self.terms)?;
+            let (value, slope) = evaluate(series, x);
+            *position.get_mut(component)? = value;
+            *rate.get_mut(component)? = slope * per_day;
+        }
+        Some((position, rate))
+    }
+}
+
 /// A Chebyshev series and its derivative, the SDK's one evaluator.
 pub use teistro_core::chebyshev::evaluate;
 

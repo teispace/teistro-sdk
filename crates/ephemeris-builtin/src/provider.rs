@@ -74,12 +74,28 @@ const KM_PER_AU: f64 = 149_597_870.7;
 const ARCSEC_PER_DEGREE: f64 = 3_600.0;
 
 /// The span the tiers were measured over, and so the span they are
-/// claimed for: 1800 to 2400 (`03-design/builtin-ephemeris-measured.md`).
+/// claimed for: 1800 to 2400 (`03-design/builtin-ephemeris-measured.md`),
+/// as civil days: 1800-01-01 00:00 to 2400-01-01 00:00 UT, the six
+/// hundred years 1800 to 2399 whole (SR-136, C2240).
+///
+/// The sweeps that measured the tiers ran every thirty days from noon on
+/// 1800-01-01, so the half day either side of them is no less measured
+/// than the noon itself: the theories are analytic and smooth there, and
+/// the one fitted body, Pluto, is carried past its fit by
+/// [`PLUTO_REACH_DAYS`] under a measured bound. A span opening at noon
+/// left the first and last civil days half answered, which a calendar
+/// cannot use.
 ///
 /// Outside it the theories still evaluate, and their error grows in a way
 /// nothing has measured — so a request outside is refused rather than
 /// answered with a number nobody can put a bound on.
-const JD_RANGE: (f64, f64) = (2_378_497.0, 2_597_641.0);
+pub const JD_RANGE: (f64, f64) = (2_378_496.5, 2_597_641.5);
+
+/// How far Pluto's fit is carried past its own span: a day, which holds
+/// the half day between the fit's noon start and [`JD_RANGE`]'s midnight
+/// with the dynamical scale's lead on UT to spare (C2241). The carry's
+/// error is measured in `tests/provider.rs`.
+pub const PLUTO_REACH_DAYS: f64 = 1.0;
 
 /// The bodies the built-in ephemeris computes.
 ///
@@ -631,9 +647,10 @@ fn native_frame() -> Frame {
 /// written once and Pluto cannot drift from the planets it sits beside.
 fn heliocentric_of(body: Body, jd: f64) -> Option<([f64; 3], [f64; 3])> {
     if body == Body::Pluto {
-        // Refuses outside its fit rather than extrapolating: a Chebyshev
-        // table does not degrade past its span, it diverges.
-        return crate::pluto::PLUTO.at(jd);
+        // Refuses past a day beyond its fit rather than extrapolating: a
+        // Chebyshev table does not degrade far past its span, it
+        // diverges. The day is measured (`PLUTO_REACH_DAYS`).
+        return crate::pluto::PLUTO.at_within(jd, PLUTO_REACH_DAYS);
     }
     Builtin::heliocentric(series_name(body)?, jd)
 }

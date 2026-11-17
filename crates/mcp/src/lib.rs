@@ -1419,6 +1419,9 @@ impl Server {
             tools::describe(arguments, &self.own.described())
         } else if name == schemas::DESCRIBE {
             schemas::describe(arguments)
+        } else if name == tools::COVERAGE {
+            tools::Arguments::scope(arguments)
+                .and_then(|(scope, rest)| tools::coverage(self.context(&scope)?, &rest))
         } else if let Some(at) = self.tools.iter().position(|tool| tool.name == name) {
             if let Err(refusal) = self.limits.check_fields(arguments) {
                 return Ok(tool_result(refused(&refusal), true));

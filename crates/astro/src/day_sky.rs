@@ -37,7 +37,8 @@
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::chebyshev::{evaluate, lobatto};
-use teistro_core::error::Error;
+use teistro_core::coverage::{Clipped, Coverage};
+use teistro_core::error::{Error, Status};
 use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, Horizon, HorizonEventKind};
@@ -317,6 +318,7 @@ impl BodySky {
 /// let sky = DaySky {
 ///     from: JulianDay::literal(2_460_000.5),
 ///     to: JulianDay::literal(2_460_001.5),
+///     clipped: None,
 ///     step_minutes: SkyStep::default().minutes(),
 ///     sun: none.clone(),
 ///     moon: none,
@@ -331,6 +333,10 @@ pub struct DaySky {
     pub from: JulianDay<Ut1>,
     /// The window's end; an event here is the next window's.
     pub to: JulianDay<Ut1>,
+    /// Which ends of the window asked the ephemeris's coverage cut, `from`
+    /// or `to` then being its edge (SR-136, C2242). Absent when neither.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clipped: Option<Clipped>,
     /// The step asked, minutes.
     pub step_minutes: u16,
     /// The Sun.
@@ -358,6 +364,10 @@ impl Fit {
     ) -> Result<Fit, Error> {
         let half = length / 2.0;
         let middle = start + half;
+        // A node at a window's end can round a bit past it, which at an
+        // edge of the coverage is an instant the source refuses: held to
+        // the coverage, which inside it moves nothing.
+        let coverage = source.coverage();
         #[expect(
             clippy::cast_precision_loss,
             reason = "a node's number is tens at most"
@@ -365,7 +375,10 @@ impl Fit {
         let instants: Vec<JulianDay<Ut1>> = (0..FIT_NODES)
             .map(|node| {
                 let angle = core::f64::consts::PI * node as f64 / (FIT_NODES - 1) as f64;
-                JulianDay::literal(half.mul_add(math::cos(angle), middle))
+                JulianDay::literal(
+                    half.mul_add(math::cos(angle), middle)
+                        .clamp(coverage.from, coverage.to),
+                )
             })
             .collect();
         let mut readings = Vec::with_capacity(FIT_NODES);
@@ -430,6 +443,10 @@ impl Fitted<'_> {
 }
 
 impl ApparentPositions for Fitted<'_> {
+    fn coverage(&self) -> Coverage {
+        self.source.coverage()
+    }
+
     fn apparent(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<Apparent, Error> {
         match self.fit_of(body, ut1.get()) {
             Some(fit) => Ok(fit.at(ut1.get())),
@@ -710,8 +727,33 @@ pub fn day_sky(
         ))
         .with_field("window"));
     }
-    let start = from.get() - FIT_LEAD_DAYS;
-    let length = FIT_LEAD_DAYS + days + FIT_TRAIL_DAYS;
+    // Cut to what the source answers (SR-136, C2242), and the fit with it.
+    let coverage = source.coverage();
+    let Some((cut_from, cut_to, clipped)) = coverage.clip(from.get(), to.get()) else {
+        return Err(Error::new(
+            Status::OutOfRange,
+            format!(
+                "the sky from JD {} to {} is outside the ephemeris's coverage",
+                from.get(),
+                to.get()
+            ),
+        )
+        .with_field("window"));
+    };
+    if cut_to <= cut_from {
+        return Err(Error::new(
+            Status::OutOfRange,
+            format!("the sky at JD {cut_from} is at an edge of the ephemeris's coverage"),
+        )
+        .with_field("window"));
+    }
+    let (from, to) = (
+        JulianDay::<Ut1>::literal(cut_from),
+        JulianDay::<Ut1>::literal(cut_to),
+    );
+    let days = cut_to - cut_from;
+    let start = (cut_from - FIT_LEAD_DAYS).max(coverage.from);
+    let length = (cut_to + FIT_TRAIL_DAYS).min(coverage.to) - start;
     let fitted = Fitted {
         source,
         sun: Fit::read(source, Body::Sun, start, length)?,
@@ -745,6 +787,7 @@ pub fn day_sky(
     Ok(DaySky {
         from,
         to,
+        clipped,
         step_minutes: step.minutes(),
         sun: body_sky(&reader, Body::Sun, horizon, (from, to), &samples)?,
         moon: body_sky(&reader, Body::Moon, horizon, (from, to), &samples)?,

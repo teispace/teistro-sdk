@@ -544,7 +544,7 @@ pub const TS_PANCHANGA_GOWRI: u32 = 256;
 
 /// A month's decision margin as the `days` columns from `month_marginal`
 /// to `closing_margin_minutes`: zeros for a month that carries none,
-/// which no almanac day is (SR-92).
+/// which is only one the coverage cuts (SR-92, SR-136).
 fn month_margin(margin: Option<MonthMargin>) -> [FixedValue; 7] {
     let Some(margin) = margin else {
         return [

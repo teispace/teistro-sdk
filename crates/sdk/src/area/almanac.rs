@@ -425,6 +425,16 @@ impl<'a> AlmanacArea<'a> {
 
     /// Runs `work` over this context's almanac for a range written in
     /// `from`'s calendar, on `offset`'s clock.
+    /// Work over this context's almanac on the Gregorian calendar and
+    /// UTC: what reads instants rather than days, as its coverage
+    /// (`Context::coverage`).
+    pub(crate) fn with_utc_almanac<T>(
+        self,
+        work: impl for<'f> FnOnce(&Almanac<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        self.with_almanac(Calendar::Gregorian, UtcOffset::UTC, work)
+    }
+
     fn with_almanac<T>(
         self,
         calendar: Calendar,
@@ -713,20 +723,30 @@ impl<'a> AlmanacArea<'a> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
         let (back, ahead) = widening(request);
+        // The widening is cut to the days the ephemeris answers (SR-136,
+        // C2248): a range near an end of its coverage is reckoned from the
+        // days there are, as a rule at the edge of any range is.
+        let answered =
+            self.with_almanac(from.calendar, offset, |almanac| almanac.answered(place))?;
+        let earlier_run = answered_run(answered, first.plus_days(-back), first.plus_days(-1));
+        let later_run = answered_run(answered, last.plus_days(1), last.plus_days(ahead));
         let (before, after) = (
-            calendar.date_of(first.plus_days(-back))?,
+            calendar.date_of(earlier_run.map_or(first, |run| run.0))?,
             (
                 calendar.date_of(last.plus_days(1))?,
-                calendar.date_of(last.plus_days(ahead))?,
+                calendar.date_of(later_run.map_or(last, |run| run.1))?,
             ),
         );
         let (earlier, later) = self.with_almanac(from.calendar, offset, |almanac| {
-            Ok((
-                almanac
-                    .festival_days(&before, &calendar.date_of(first.plus_days(-1))?, place)?
-                    .value,
-                almanac.festival_days(&after.0, &after.1, place)?.value,
-            ))
+            let founded = |run: Option<(FixedDay, FixedDay)>| -> Result<Vec<FestivalDay>, Error> {
+                match run {
+                    Some((a, b)) => Ok(almanac
+                        .festival_days(&calendar.date_of(a)?, &calendar.date_of(b)?, place)?
+                        .value),
+                    None => Ok(Vec::new()),
+                }
+            };
+            Ok((founded(earlier_run)?, founded(later_run)?))
         })?;
         let Envelope {
             value: range,
@@ -738,7 +758,7 @@ impl<'a> AlmanacArea<'a> {
         let viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
         let (found, (before, after)) = self.reckoned_over(
             (from.calendar, first, last),
-            (place, offset),
+            (place, offset, answered),
             request,
             (viewed, (before, after.1)),
         )?;
@@ -771,7 +791,7 @@ impl<'a> AlmanacArea<'a> {
     pub(crate) fn reckoned_over(
         self,
         (calendar, first, last): (Calendar, FixedDay, FixedDay),
-        (place, offset): (&Place, UtcOffset),
+        (place, offset, answered): (&Place, UtcOffset, Answered),
         request: &FestivalRequest,
         (mut viewed, founded): (Vec<FestivalDay>, (CalendarDate, CalendarDate)),
     ) -> Result<(Observances, (CalendarDate, CalendarDate)), Error> {
@@ -795,8 +815,13 @@ impl<'a> AlmanacArea<'a> {
         // The groups judge a span by the days the widening founded, not
         // by an adhika lunation laid beside them.
         let seen = (system.fixed_of(&founded.0)?, system.fixed_of(&founded.1)?);
-        let founded =
-            self.beside_doubled((calendar, system), offset, place, &mut viewed, founded)?;
+        let founded = self.beside_doubled(
+            (calendar, system),
+            (offset, answered),
+            place,
+            &mut viewed,
+            founded,
+        )?;
         self.searched(calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;
         let counted = following(request.following(), &karmakala.observances, &viewed)?;
@@ -852,7 +877,7 @@ impl<'a> AlmanacArea<'a> {
     fn beside_doubled(
         self,
         (calendar, system): (Calendar, &dyn CalendarSystem),
-        offset: UtcOffset,
+        (offset, answered): (UtcOffset, Answered),
         place: &Place,
         viewed: &mut Vec<FestivalDay>,
         (mut before, mut after): (CalendarDate, CalendarDate),
@@ -864,7 +889,12 @@ impl<'a> AlmanacArea<'a> {
                 .first()
                 .map_or(0, |span| i64::from(span.member.id()))
         };
+        // A lunation beside that the coverage does not hold is not looked
+        // into (SR-136, C2248).
         let one = |at: FixedDay| -> Result<Option<FestivalDay>, Error> {
+            if answered_run(answered, at, at).is_none() {
+                return Ok(None);
+            }
             let date = system.date_of(at)?;
             self.with_almanac(calendar, offset, |almanac| {
                 Ok(almanac
@@ -2345,4 +2375,19 @@ fn with_vedhas(
 /// midnight change (`03-design/time-and-timezone.md` §3.4).
 pub(crate) fn noon_of(day: FixedDay) -> Result<JulianDay<Utc>, Error> {
     Ok(JulianDay::try_new(day.jd_at_midnight()?.get() + 0.5)?)
+}
+
+/// The first and last days an almanac answers at a place
+/// ([`Almanac::answered`]).
+pub(crate) type Answered = (Option<FixedDay>, Option<FixedDay>);
+
+/// A run of days cut to those answered, or `None` when none is.
+pub(crate) fn answered_run(
+    (first, last): Answered,
+    from: FixedDay,
+    to: FixedDay,
+) -> Option<(FixedDay, FixedDay)> {
+    let from = first.map_or(from, |first| from.max(first));
+    let to = last.map_or(to, |last| to.min(last));
+    (from <= to).then_some((from, to))
 }

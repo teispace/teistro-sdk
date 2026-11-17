@@ -209,6 +209,11 @@ fn boundaries(day: &LocalDay, reckoning: Reckoning) -> [f64; 25] {
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 ///
+/// A day cut at the coverage's end (`LocalDay::clipped`, SR-136) has no
+/// night to divide: it keeps the horas that end by what it knows, the
+/// daylight's under the proportional reckoning and those inside the
+/// coverage under the equal one.
+///
 /// # Errors
 ///
 /// A day whose boundaries are not instants (never for a day the local
@@ -216,9 +221,15 @@ fn boundaries(day: &LocalDay, reckoning: Reckoning) -> [f64; 25] {
 pub fn horas(day: &LocalDay, reckoning: Reckoning) -> Result<Vec<Hora>, Error> {
     let vara = day_vara(day);
     let bounds = boundaries(day, reckoning);
+    let known_until = match (day.clipped, reckoning) {
+        (Some(clipped), Reckoning::Proportional) if clipped.end() => day.sunset.get(),
+        (Some(clipped), Reckoning::Equal) if clipped.end() => day.next_sunrise.get(),
+        _ => f64::INFINITY,
+    };
     bounds
         .windows(2)
         .enumerate()
+        .filter(|(_, pair)| pair.get(1).is_some_and(|end| *end <= known_until))
         .map(|(index, pair)| {
             let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
                 return Err(Error::internal("a window of two has two ends"));

@@ -32,8 +32,10 @@ use std::collections::BTreeMap;
 use teistro_astro::events::{
     Longitudes, Search, quantity_least_rate, quantity_rate_deg_per_day, value_of,
 };
+use teistro_calendar::lunisolar::Beyond;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
+use teistro_core::coverage::{Clipped, Coverage};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
@@ -346,6 +348,77 @@ pub fn sun_nakshatra_at<S: Longitudes + ?Sized>(
         &source,
         JulianDay::<Ut1>::literal(at.get()),
     )?;
+    Ok(Nakshatra::of(
+        Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
+    ))
+}
+
+/// [`sun_nakshatra_at`] at an instant the ephemeris's coverage may not
+/// hold (SR-136, C2247): read at the nearer edge when the Sun at his
+/// greatest rate cannot have reached his nakshatra's boundary between
+/// the two, as a civil day's midnight a few hours before the first
+/// instant answered is.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// use teistro_panchanga::limb::{sun_nakshatra_at, sun_nakshatra_near};
+///
+/// // Inside the coverage, the reading itself.
+/// let at = JulianDay::literal(2_460_000.5);
+/// assert_eq!(sun_nakshatra_near(&longitudes, at, zodiac)?, sun_nakshatra_at(&longitudes, at, zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`sun_nakshatra_at`], and `OUT_OF_RANGE` on `date` when the Sun may
+/// have changed nakshatra between the instant and the edge.
+pub fn sun_nakshatra_near<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+) -> Result<Nakshatra, Error> {
+    let coverage = tropical.coverage();
+    if coverage.contains(at.get()) {
+        return sun_nakshatra_at(tropical, at, zodiac);
+    }
+    let edge = at.get().clamp(coverage.from, coverage.to);
+    let source = Sidereal::over(tropical, zodiac);
+    let degrees = value_of(
+        Quantity::Longitude(Body::Sun),
+        &source,
+        JulianDay::<Ut1>::literal(edge),
+    )?;
+    let span = 360.0 / f64::from(Limb::Nakshatra.divisions());
+    let into = degrees.rem_euclid(span);
+    let boundary = if at.get() < edge { into } else { span - into };
+    if teistro_astro::events::greatest_rate(Body::Sun) * (at.get() - edge).abs() >= boundary {
+        return Err(Error::new(
+            Status::OutOfRange,
+            format!(
+                "the Sun's nakshatra at {at} is outside the ephemeris's coverage, near enough a boundary that it is not known"
+            ),
+        )
+        .with_field("date"));
+    }
     Ok(Nakshatra::of(
         Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
     ))
@@ -1001,35 +1074,41 @@ where
     T: Member,
 {
     let mut out = Vec::new();
-    let edges = edges(found, window);
-    for pair in edges.windows(2) {
-        let (Some(from), Some(to)) = (pair.first(), pair.get(1)) else {
-            continue;
-        };
-        let whole = Interval::literal(*from, *to);
+    for (from, to, clipped) in cut(found, window, LONGEST_SPAN_DAYS, source.coverage()) {
+        let whole = Interval::literal(from, to);
         if !whole.overlaps(window) {
             continue;
         }
         // The member is read in the middle of its own span, where no
         // boundary is, so a solver's last bit cannot change the answer;
         // a run read every span's middle already.
-        let index = match known.and_then(|known| known.middle(limb.quantity(), *from, *to)) {
+        let index = match known.and_then(|known| known.middle(limb.quantity(), from, to)) {
             Some(degrees) => Nas::try_from_degrees(degrees)?.division_index(limb.divisions()),
-            None => classify(source, limb, middle_of(*from, *to))?,
+            None => classify(source, limb, middle_of(from, to))?,
         };
         if let Some(span) = Span::new(T::of(index), whole, window) {
-            out.push(span);
+            out.push(span.with_clipped(clipped));
         }
     }
     Ok(out)
 }
 
-/// The instants that bound the spans touching a window: the boundaries
-/// inside the widened search, with the widened ends closing the first and
-/// last spans.
-fn edges(boundaries: &[f64], window: Interval) -> Vec<f64> {
-    let first = window.from.get() - LONGEST_SPAN_DAYS;
-    let last = window.to.get() + LONGEST_SPAN_DAYS;
+/// The spans touching a window as their two ends: the boundaries inside
+/// the window widened by `reach` either side, with the widened ends
+/// closing the first and last spans, the whole cut to the coverage
+/// (SR-136, C2242). A first or last span the coverage cut is marked: it
+/// runs from or to the coverage's edge, which is not its own.
+fn cut(
+    boundaries: &[f64],
+    window: Interval,
+    reach: f64,
+    coverage: Coverage,
+) -> Vec<(f64, f64, Option<Clipped>)> {
+    let Some((first, last, clipped)) =
+        coverage.clip(window.from.get() - reach, window.to.get() + reach)
+    else {
+        return Vec::new();
+    };
     let mut edges = Vec::with_capacity(boundaries.len() + 2);
     edges.push(first);
     edges.extend(
@@ -1039,7 +1118,18 @@ fn edges(boundaries: &[f64], window: Interval) -> Vec<f64> {
             .filter(|at| *at > first && *at < last),
     );
     edges.push(last);
+    let pairs = edges.len().saturating_sub(1);
     edges
+        .windows(2)
+        .enumerate()
+        .filter_map(|(index, pair)| {
+            let (from, to) = (*pair.first()?, *pair.get(1)?);
+            let mark = clipped.and_then(|cut| {
+                Clipped::of(cut.start() && index == 0, cut.end() && index + 1 == pairs)
+            });
+            Some((from, to, mark))
+        })
+        .collect()
 }
 
 /// Which member of the limb the quantity names at an instant, by the
@@ -1235,26 +1325,22 @@ pub fn signs_known<S: Longitudes + ?Sized>(
             events.iter().map(|event| event.instant.get()).collect()
         };
     let mut out = Vec::new();
-    let edges = sign_edges(&found, window, reach);
-    for pair in edges.windows(2) {
-        let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
-            continue;
-        };
-        let whole = Interval::literal(*start, *end);
+    for (start, end, clipped) in cut(&found, window, reach, source.coverage()) {
+        let whole = Interval::literal(start, end);
         if !whole.overlaps(window) {
             continue;
         }
-        let degrees = match known.and_then(|known| known.middle(quantity, *start, *end)) {
+        let degrees = match known.and_then(|known| known.middle(quantity, start, end)) {
             Some(degrees) => degrees,
             None => teistro_astro::events::value_of(
                 quantity,
                 &source,
-                JulianDay::<Ut1>::literal(middle_of(*start, *end)),
+                JulianDay::<Ut1>::literal(middle_of(start, end)),
             )?,
         };
         let sign = Nas::try_from_degrees(degrees)?.sign();
         if let Some(span) = Span::new(sign, whole, window) {
-            out.push(span);
+            out.push(span.with_clipped(clipped));
         }
     }
     Ok(out)
@@ -1379,27 +1465,24 @@ pub fn nakshatras_known<S: Longitudes + ?Sized>(
             .collect()
     };
     let mut out = Vec::new();
-    for pair in sign_edges(&found, window, reach).windows(2) {
-        let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
-            continue;
-        };
-        let whole = Interval::literal(*start, *end);
+    for (start, end, clipped) in cut(&found, window, reach, source.coverage()) {
+        let whole = Interval::literal(start, end);
         if !whole.overlaps(window) {
             continue;
         }
-        let degrees = match known.and_then(|known| known.middle(quantity, *start, *end)) {
+        let degrees = match known.and_then(|known| known.middle(quantity, start, end)) {
             Some(degrees) => degrees,
             None => teistro_astro::events::value_of(
                 quantity,
                 &source,
-                JulianDay::<Ut1>::literal(middle_of(*start, *end)),
+                JulianDay::<Ut1>::literal(middle_of(start, end)),
             )?,
         };
         let star = Nakshatra::of(
             Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
         );
         if let Some(span) = Span::new(star, whole, window) {
-            out.push(span);
+            out.push(span.with_clipped(clipped));
         }
     }
     Ok(out)
@@ -1447,22 +1530,6 @@ pub fn sign_reach_days(body: Body) -> f64 {
         .map_or(SIGN_SEARCH_CAP_DAYS, |dwell| {
             dwell.min(SIGN_SEARCH_CAP_DAYS)
         })
-}
-
-/// The instants bounding the sign spans that touch a window.
-fn sign_edges(boundaries: &[f64], window: Interval, reach: f64) -> Vec<f64> {
-    let first = window.from.get() - reach;
-    let last = window.to.get() + reach;
-    let mut edges = Vec::with_capacity(boundaries.len() + 2);
-    edges.push(first);
-    edges.extend(
-        boundaries
-            .iter()
-            .copied()
-            .filter(|at| *at > first && *at < last),
-    );
-    edges.push(last);
-    edges
 }
 
 /// The amanta month a window falls in.
@@ -1573,7 +1640,83 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Interval, Error> {
+    let month = lunar_month_cut(tropical, window, zodiac)?;
+    match month.clipped {
+        None => Ok(month.span),
+        Some(_) => Err(Error::new(
+            Status::OutOfRange,
+            format!(
+                "the lunar month holding {} has a new moon outside the ephemeris's coverage",
+                window.from
+            ),
+        )
+        .with_field("date")),
+    }
+}
+
+/// A lunar month's span as far as the coverage holds it (SR-136, C2246):
+/// a new moon outside the coverage is replaced by the edge, marked in
+/// `clipped`, and how far past the edge it lies is bounded in `before`
+/// or `after` from the Moon's age there.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MonthCut {
+    /// From the opening new moon, or the coverage's first instant, to the
+    /// closing one or its last.
+    pub span: Interval,
+    /// Which new moons the coverage does not hold.
+    pub clipped: Option<Clipped>,
+    /// How far before the span's start the opening new moon lies, when
+    /// the start is cut.
+    pub before: Option<Beyond>,
+    /// How far after the span's end the closing new moon lies, when the
+    /// end is cut.
+    pub after: Option<Beyond>,
+}
+
+/// [`lunar_month_span`], with a new moon the coverage does not hold
+/// replaced by its edge rather than refused (SR-136, C2246).
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{lunar_month_cut, lunar_month_span};
+///
+/// // A sky with no edge cuts nothing.
+/// let month = lunar_month_cut(&longitudes, window, zodiac)?;
+/// assert_eq!((month.span, month.clipped), (lunar_month_span(&longitudes, window, zodiac)?, None));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`lunar_month_span`], less the refusal of a month the coverage
+/// cuts.
+pub fn lunar_month_cut<S: Longitudes + ?Sized>(
+    tropical: &S,
+    window: Interval,
+    zodiac: Zodiac,
+) -> Result<MonthCut, Error> {
     let source = Sidereal::over(tropical, zodiac);
+    let coverage = source.coverage();
     let search = Search::new(&source, Quantity::ELONGATION, Lattice::single(0.0));
     let from = window.from.get();
     // The Moon's age at the window's start bounds where both new moons
@@ -1635,29 +1778,84 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
         -elongation,
         elongation < 360.0 - wraps,
     )?;
-    let opened = before.last().map(|event| event.instant).ok_or_else(|| {
+    let refused = |side: &str, of: String| {
         Error::new(
             Status::NotConverged,
-            format!(
-                "no new moon in the {SYNODIC_SEARCH_DAYS} days before {}",
-                window.from
-            ),
+            format!("no new moon in the {SYNODIC_SEARCH_DAYS} days {side} {of}"),
         )
-    })?;
-    let wide = (opened.get() + 1.0, opened.get() + SYNODIC_SEARCH_DAYS);
+    };
+    let (opened, before) = match before.last() {
+        Some(event) => (event.instant.get(), None),
+        None if coverage.from > from - SYNODIC_SEARCH_DAYS => {
+            let reach = beyond_edge(&source, coverage.from, false)?;
+            (
+                coverage.from,
+                Some(reach.ok_or_else(|| refused("before", window.from.to_string()))?),
+            )
+        }
+        None => return Err(refused("before", window.from.to_string())),
+    };
+    let wide = (opened + 1.0, opened + SYNODIC_SEARCH_DAYS);
     // The next new moon is the first after the start, the last before
     // it being `opened`.
     let after = between(wide, 360.0 - elongation, elongation > wraps)?;
-    let closed = after.first().map(|event| event.instant).ok_or_else(|| {
-        Error::new(
-            Status::NotConverged,
-            format!("no new moon in the {SYNODIC_SEARCH_DAYS} days after {opened}"),
-        )
-    })?;
-    Interval::new(
-        JulianDay::try_new(opened.get())?,
-        JulianDay::try_new(closed.get())?,
-    )
+    let (closed, after) = match after.first() {
+        Some(event) => (event.instant.get(), None),
+        None if coverage.to < wide.1 => {
+            let reach = beyond_edge(&source, coverage.to, true)?;
+            let reach = reach.ok_or_else(|| refused("after", opened.to_string()))?;
+            (
+                coverage.to,
+                Some(within_lunation(reach, coverage.to - opened)),
+            )
+        }
+        None => return Err(refused("after", opened.to_string())),
+    };
+    // The start's reach is held to a lunation once the closing new moon
+    // is known.
+    let before = before.map(|reach| match after {
+        None => within_lunation(reach, closed - opened),
+        Some(_) => reach,
+    });
+    Ok(MonthCut {
+        span: Interval::new(JulianDay::try_new(opened)?, JulianDay::try_new(closed)?)?,
+        clipped: Clipped::of(before.is_some(), after.is_some()),
+        before,
+        after,
+    })
+}
+
+/// How far past an edge of the coverage the new moon it cut off lies,
+/// from the Moon's age there over her least and greatest rates (SR-136,
+/// C2246): `ahead` for the new moon after the edge. `None` for a sky
+/// whose elongation has no least rate, which bounds nothing.
+fn beyond_edge<S: Longitudes + ?Sized>(
+    source: &S,
+    edge: f64,
+    ahead: bool,
+) -> Result<Option<Beyond>, Error> {
+    let Some(slowest) = quantity_least_rate(Quantity::ELONGATION) else {
+        return Ok(None);
+    };
+    let age = value_of(
+        Quantity::ELONGATION,
+        source,
+        JulianDay::<Ut1>::literal(edge),
+    )?;
+    let arc = if ahead { 360.0 - age } else { age };
+    Ok(Some(Beyond {
+        least: arc / quantity_rate_deg_per_day(Quantity::ELONGATION),
+        most: arc / slowest,
+    }))
+}
+
+/// A reach past an edge held to a lunation less the part of it the
+/// coverage holds, `known` days.
+fn within_lunation(reach: Beyond, known: f64) -> Beyond {
+    Beyond {
+        least: reach.least.max(LUNATION_LEAST_DAYS - known),
+        most: reach.most.min(LUNATION_MOST_DAYS - known),
+    }
 }
 
 /// The lunar month the Sun's sign at an instant names.
@@ -1704,12 +1902,56 @@ pub fn masa_at<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
 ) -> Result<Masa, Error> {
     let source = Sidereal::over(tropical, zodiac);
-    let sun = teistro_astro::events::value_of(
+    let sun = value_of(
         Quantity::Longitude(Body::Sun),
         &source,
         JulianDay::<Ut1>::literal(at.get()),
     )?;
-    let sign = Nas::try_from_degrees(sun)?.sign();
+    masa_of_sun(sun)
+}
+
+/// The amanta month a lunar month carries: [`masa_at`] its opening new
+/// moon, or, when the coverage cut that new moon off, the Sun's sign at
+/// the coverage's edge less the sankrantis his rates say he passed in
+/// between (SR-136, C2246).
+///
+/// # Errors
+///
+/// As [`masa_at`], and `OUT_OF_RANGE` on `date` when the Sun may or may
+/// not have entered his sign between the new moon and the edge.
+pub fn masa_opening<S: Longitudes + ?Sized>(
+    tropical: &S,
+    month: &MonthCut,
+    zodiac: Zodiac,
+) -> Result<Masa, Error> {
+    let Some(before) = month.before else {
+        return masa_at(tropical, month.span.from, zodiac);
+    };
+    let source = Sidereal::over(tropical, zodiac);
+    let sun = value_of(
+        Quantity::Longitude(Body::Sun),
+        &source,
+        JulianDay::<Ut1>::literal(month.span.from.get()),
+    )?;
+    let into = sun.rem_euclid(30.0);
+    let passed = before.sankrantis(into).ok_or_else(|| {
+        Error::new(
+            Status::OutOfRange,
+            format!(
+                "the lunar month holding {} opened before the ephemeris's coverage, near enough a sankranti that its name is not known",
+                month.span.from
+            ),
+        )
+        .with_field("date")
+    })?;
+    // The middle of the sign `passed` signs back from the Sun's.
+    let back = 30.0 * f64::from(u8::try_from(passed).unwrap_or(0));
+    masa_of_sun((sun - into + 15.0 - back).rem_euclid(360.0))
+}
+
+/// The amanta month whose solar sign holds a sidereal longitude.
+fn masa_of_sun(sun_deg: f64) -> Result<Masa, Error> {
+    let sign = Nas::try_from_degrees(sun_deg)?.sign();
     Masa::ALL
         .iter()
         .copied()
@@ -1720,6 +1962,14 @@ pub fn masa_at<S: Longitudes + ?Sized>(
 /// How far back a new moon is looked for: a synodic month is 29.53 days,
 /// so thirty-one always holds one.
 const SYNODIC_SEARCH_DAYS: f64 = 31.0;
+
+/// The shortest a lunation runs, days, with room: the synodic month runs
+/// 29.27 to 29.83 days over the millennia the SDK reads (Meeus,
+/// *Astronomical Algorithms*, ch. 49).
+const LUNATION_LEAST_DAYS: f64 = 29.2;
+
+/// The longest a lunation runs, days, with room ([`LUNATION_LEAST_DAYS`]).
+const LUNATION_MOST_DAYS: f64 = 29.9;
 
 /// How far past the Moon's age bounds a new moon is looked for, days:
 /// room for the elongation read at an instant the rates were not
@@ -1786,7 +2036,7 @@ mod tests {
 
     use super::{
         LONGEST_SPAN_DAYS, Limb, SIGN_SEARCH_CAP_DAYS, SYNODIC_SEARCH_DAYS, Sidereal, Zodiac,
-        amanta_month, edges, karana_of, lunar_month_span, sign_edges, sign_reach_days,
+        amanta_month, cut, karana_of, lunar_month_span, sign_reach_days,
     };
     use teistro_astro::ayanamsha::Basis;
     use teistro_astro::completion::Completion;
@@ -1794,6 +2044,7 @@ mod tests {
     use teistro_astro::events::Search;
     use teistro_astro::precession::PrecessionModel;
     use teistro_core::catalogue::{Ayanamsha, Karana, Masa};
+    use teistro_core::coverage::{Clipped, Coverage};
     use teistro_core::interval::Interval;
     use teistro_core::quantity::{JulianDay, Ut1};
     use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
@@ -1941,18 +2192,41 @@ mod tests {
         }
     }
 
+    /// The ends `cut` closes spans at, in order.
+    fn ends(spans: &[(f64, f64, Option<Clipped>)]) -> Vec<f64> {
+        let mut ends: Vec<f64> = spans.iter().map(|span| span.0).collect();
+        ends.extend(spans.last().map(|span| span.1));
+        ends
+    }
+
     #[test]
     fn the_edges_close_the_first_and_last_spans_outside_the_window() {
         let window = Interval::literal(100.0, 101.0);
         // Two boundaries inside the day and one outside the widened search.
         let found = [99.5, 100.4, 100.9, 200.0];
-        let edges = edges(&found, window);
+        let spans = cut(&found, window, LONGEST_SPAN_DAYS, Coverage::UNBOUNDED);
+        let edges = ends(&spans);
         assert_eq!(edges.first().copied(), Some(100.0 - LONGEST_SPAN_DAYS));
         assert_eq!(edges.last().copied(), Some(101.0 + LONGEST_SPAN_DAYS));
         assert!(edges.contains(&99.5), "a boundary before the day is kept");
         assert!(!edges.contains(&200.0), "one outside the search is not");
         // Every consecutive pair is a span, and they are in order.
         assert!(edges.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!(spans.iter().all(|span| span.2.is_none()), "nothing is cut");
+    }
+
+    #[test]
+    fn the_coverage_cuts_the_first_span_and_marks_it_alone() {
+        let window = Interval::literal(100.0, 101.0);
+        let found = [99.5, 100.4, 100.9];
+        let coverage = Coverage::new(99.0, 1000.0).unwrap();
+        let spans = cut(&found, window, LONGEST_SPAN_DAYS, coverage);
+        assert_eq!(ends(&spans).first().copied(), Some(99.0), "cut at the edge");
+        assert_eq!(spans.first().and_then(|span| span.2), Some(Clipped::Start));
+        assert!(spans.iter().skip(1).all(|span| span.2.is_none()));
+        // A window the coverage does not reach has no spans.
+        let gone = Coverage::new(500.0, 1000.0).unwrap();
+        assert_eq!(cut(&found, window, LONGEST_SPAN_DAYS, gone), Vec::new());
     }
 
     #[test]
@@ -2010,13 +2284,18 @@ mod tests {
         // One crossing inside the reach either side, and one far outside.
         let found = [98.0, 100.4, 110.0];
         assert_eq!(
-            sign_edges(&found, window, 2.5),
+            ends(&cut(&found, window, 2.5, Coverage::UNBOUNDED)),
             vec![97.5, 98.0, 100.4, 103.5],
             "the sentinels sit at the reach and the far crossing is dropped"
         );
         // The same crossings, searched to forty days, keep the far one.
         assert_eq!(
-            sign_edges(&found, window, SIGN_SEARCH_CAP_DAYS),
+            ends(&cut(
+                &found,
+                window,
+                SIGN_SEARCH_CAP_DAYS,
+                Coverage::UNBOUNDED
+            )),
             vec![60.0, 98.0, 100.4, 110.0, 141.0]
         );
     }
