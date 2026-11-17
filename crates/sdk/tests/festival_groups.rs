@@ -38,12 +38,12 @@ fn day(year: i32, month: u8, day: u8) -> CalendarDate {
 }
 
 /// The spans a request's reckoning gives over a range at Kathmandu.
-fn spans(from: CalendarDate, to: CalendarDate, request: &FestivalRequest) -> Vec<GroupSpan> {
+fn spans(from: &CalendarDate, to: &CalendarDate, request: &FestivalRequest) -> Vec<GroupSpan> {
     committee()
         .almanac()
         .festivals(
-            &from,
-            &to,
+            from,
+            to,
             &kathmandu(),
             UtcOffset::literal(5, 45, 0),
             request,
@@ -100,7 +100,7 @@ fn bs_2083_tihar_holds_kartik_23_as_a_gap_however_short_the_range() {
         (day(2026, 11, 11), day(2026, 11, 20)),
         (day(2026, 10, 30), day(2026, 11, 7)),
     ] {
-        let found = spans(from.clone(), to.clone(), &nepal());
+        let found = spans(&from, &to, &nepal());
         let tihar: Vec<&GroupSpan> = found.iter().filter(|s| s.group == "TIHAR").collect();
         assert_eq!(tihar.len(), 1, "{from}..{to}");
         assert_eq!(written(tihar[0]), whole, "{from}..{to}");
@@ -116,7 +116,7 @@ fn bs_2083_tihar_holds_kartik_23_as_a_gap_however_short_the_range() {
 fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
     // 2026: the 8th holds two sunrises, so 19 October lies between the
     // Mahashtami and the Mahanavami, a gap of the span.
-    let doubled = spans(day(2026, 10, 20), day(2026, 10, 30), &nepal());
+    let doubled = spans(&day(2026, 10, 20), &day(2026, 10, 30), &nepal());
     let dashain = doubled.iter().find(|s| s.group == "DASHAIN").unwrap();
     assert_eq!(
         (ymd(&dashain.first), ymd(&dashain.last)),
@@ -131,7 +131,7 @@ fn dashain_spans_a_doubled_tithi_and_a_lost_one() {
     assert!(dashain.days[8].gap);
     // 2024: the 8th holds no sunrise, so the Mahashtami and the Mahanavami
     // share 11 October and the span is a day shorter.
-    let lost = spans(day(2024, 10, 1), day(2024, 10, 31), &nepal());
+    let lost = spans(&day(2024, 10, 1), &day(2024, 10, 31), &nepal());
     let dashain = lost.iter().find(|s| s.group == "DASHAIN").unwrap();
     assert_eq!(
         (ymd(&dashain.first), ymd(&dashain.last)),
@@ -154,7 +154,7 @@ fn a_request_regroups_by_key_and_a_filter_keeps_a_group_by_its_members() {
         "source": "the consumer's grouping"}]}"#;
     let asked = FestivalRequest::from_json(text).unwrap();
     assert_eq!(asked.groups().len(), 2);
-    let found = spans(day(2026, 10, 1), day(2026, 11, 30), &asked);
+    let found = spans(&day(2026, 10, 1), &day(2026, 11, 30), &asked);
     let dashain = found.iter().find(|s| s.group == "DASHAIN").unwrap();
     assert_eq!(ymd(&dashain.last), (2026, 10, 21));
     assert_eq!(
@@ -164,8 +164,8 @@ fn a_request_regroups_by_key_and_a_filter_keeps_a_group_by_its_members() {
     // The Newar filter keeps Tihar, whose Mha puja is the Newars'.
     let newar = r#"{"rules": "NEPAL_PANCHANGA", "only": {"communities": ["NEWAR"]}}"#;
     let found = spans(
-        day(2026, 10, 1),
-        day(2026, 11, 30),
+        &day(2026, 10, 1),
+        &day(2026, 11, 30),
         &FestivalRequest::from_json(newar).unwrap(),
     );
     assert_eq!(
@@ -174,11 +174,11 @@ fn a_request_regroups_by_key_and_a_filter_keeps_a_group_by_its_members() {
     );
     // A pack without groups answers none.
     let plain = spans(
-        day(2026, 10, 1),
-        day(2026, 11, 30),
+        &day(2026, 10, 1),
+        &day(2026, 11, 30),
         &FestivalRequest::from(FestivalPack::Dharmasindhu),
     );
-    assert!(plain.is_empty());
+    assert_eq!(plain, Vec::<GroupSpan>::new());
 }
 
 #[test]
@@ -218,7 +218,7 @@ fn a_group_is_refused_by_its_field() {
 #[test]
 fn bihar_keeps_chhath_from_kharna_to_the_morning_arghya() {
     let bihar = FestivalRequest::from(FestivalPack::IndiaBihar);
-    let found = spans(day(2026, 11, 1), day(2026, 11, 30), &bihar);
+    let found = spans(&day(2026, 11, 1), &day(2026, 11, 30), &bihar);
     let chhath = found.iter().find(|s| s.group == "CHHATH").unwrap();
     assert_eq!(
         written(chhath),
