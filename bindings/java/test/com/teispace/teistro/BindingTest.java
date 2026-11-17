@@ -155,6 +155,22 @@ public final class BindingTest {
             }
         });
 
+        tests.put("coverage is the range as data (SR-136)", () -> {
+            try (Context ctx = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build());
+                    Context bare = teistro.context(ContextOptions.builder().profile("nepali-committee").build())) {
+                check(bare.coverage().ephemeris() == null, "no ephemeris, no span");
+                Coverage coverage = ctx.coverage();
+                check(coverage.ephemeris().first().equals(java.time.LocalDate.of(1800, 1, 1)),
+                        "the first date answered is 1800-01-01: " + coverage);
+                check(coverage.ephemeris().last().equals(java.time.LocalDate.of(2399, 12, 31)),
+                        "the last date answered is 2399-12-31: " + coverage);
+                check(coverage.ephemeris().fromJd() < coverage.ephemeris().toJd(), "the span runs forward");
+                check(coverage.bikramSambat().officialFirstYear() <= 2083, "VS 2083 is official");
+                check(coverage.holidays().get(0).equals(new Coverage.Holidays("NEPAL_GAZETTE", List.of(2083))),
+                        "the gazette's year: " + coverage.holidays());
+            }
+        });
         tests.put("explainSettings names each knob's layer and source, and diffSettings where two part", () -> {
             // The context's own patch is its layer, a per-call patch the request's.
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")

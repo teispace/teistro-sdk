@@ -500,7 +500,8 @@ final class AlmanacReads {
                             Reads.integer(j, "count"), Reads.number(j, "from"), Reads.number(j, "to"));
                 }),
                 lupta == null ? null : Reads.member(Samvatsara.byKey(Reads.string(lupta)), "Samvatsara", lupta),
-                Reads.each(y, "rulers", AlmanacReads::yearRuler));
+                Reads.each(y, "rulers", AlmanacReads::yearRuler),
+                y.get("clipped") == null ? null : Reads.string(y.get("clipped")));
     }
 
     /** One office of a year as a JSON answer writes it. */
@@ -518,10 +519,18 @@ final class AlmanacReads {
                 }));
     }
 
-    /** A day's lunar month as the Rust types serialise it, members resolved. */
+    /**
+     * A day's lunar month as the Rust types serialise it, members resolved;
+     * a month the coverage cuts carries no margin and reads as zeros, as the
+     * days blob writes it (SR-136).
+     */
     private static Month lunarMonth(Map<?, ?> m) {
-        Map<?, ?> margin = Reads.object(m, "margin");
+        Object held = m.get("margin");
+        Map<?, ?> margin = held == null ? null : Reads.object(held);
         java.util.function.Function<String, NewMoonMargin> side = which -> {
+            if (margin == null) {
+                return new NewMoonMargin(0, 0, 0);
+            }
             Map<?, ?> raw = Reads.object(margin, which);
             return new NewMoonMargin(Reads.number(raw, "new_moon"), Reads.number(raw, "degrees"),
                     Reads.number(raw, "minutes"));
@@ -533,7 +542,8 @@ final class AlmanacReads {
                 member(m, "paksha", "Paksha", Paksha::byKey),
                 member(m, "convention", "LunarMonth", LunarMonth::byKey),
                 member(m, "kind", "MonthKind", MonthKind::byKey),
-                new MonthMargin(side.apply("opening"), side.apply("closing"), Reads.flag(margin, "marginal")));
+                new MonthMargin(side.apply("opening"), side.apply("closing"),
+                        margin != null && Reads.flag(margin, "marginal")));
     }
 
     /** {@code ts_almanac_sankalpa}'s answer: the time recited, its members resolved, with the provenance beside it. */

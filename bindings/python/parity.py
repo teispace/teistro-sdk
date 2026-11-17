@@ -3405,6 +3405,22 @@ def main() -> None:
             parted = committee.diff_settings(drik)
         put("settings-diff", ",".join(f"{one['knob']}:{one['moves']}" for one in parted["knobs"]))
 
+    # The range as data (SR-136).
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as range_sky:
+        range_answer = range_sky.coverage()
+    range_span, range_table = range_answer["ephemeris"], range_answer["bikramSambat"]
+
+    def range_day(day: Any) -> str:
+        return f"{day['year']}-{day['month']:02d}-{day['day']:02d}"
+
+    put(
+        "coverage",
+        f"{range_day(range_span['first'])} {range_day(range_span['last'])} "
+        f"{range_table['firstYear']} {range_table['lastYear']} "
+        f"{range_table['officialFirstYear']} {range_table['officialLastYear']} "
+        + ",".join(f"{one['set']}:{'+'.join(str(y) for y in one['years'])}" for one in range_answer["holidays"]),
+    )
+
     # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
     # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share

@@ -4563,6 +4563,21 @@ final class Context {
             as Map<String, Object?>,
       );
 
+  /// **What this context answers over** (SR-136): the first and last
+  /// instants its ephemeris covers under its profile (Julian days on UT1)
+  /// with the first and last dates it holds at least half of, the Bikram
+  /// Sambat years the shipped table holds and those the government
+  /// published, and each holiday set's years. Every date from
+  /// [EphemerisSpan.first] to [EphemerisSpan.last] is answered; a lunar
+  /// month, year or span the coverage cuts says so in its `clipped`.
+  ///
+  /// ```dart
+  /// final span = ctx.coverage().ephemeris!;
+  /// (span.first.year, span.last.year); // (1800, 2399)
+  /// ```
+  Coverage coverage() =>
+      Coverage._of(jsonDecode(_inner.coverage()) as Map<String, Object?>);
+
   /// **Where two contexts' settings part** (`settings.diff`): each knob
   /// [knobs] names, every one when left out, on which this context's
   /// settings and [other]'s differ, both values beside what it moves and
@@ -4665,6 +4680,118 @@ final class SettingsExplained {
   final String profile;
   final String settingsHash;
   final List<KnobExplained> knobs;
+}
+
+/// What a context answers over ([Context.coverage], SR-136).
+final class Coverage {
+  const Coverage({
+    required this.ephemeris,
+    required this.bikramSambat,
+    required this.holidays,
+  });
+
+  factory Coverage._of(Map<String, Object?> json) {
+    final span = json['ephemeris'] as Map<String, Object?>?;
+    final bs = json['bikramSambat']! as Map<String, Object?>;
+    return Coverage(
+      ephemeris: span == null ? null : EphemerisSpan._of(span),
+      bikramSambat: BikramSambatSpan(
+        firstYear: bs['firstYear']! as int,
+        lastYear: bs['lastYear']! as int,
+        officialFirstYear: bs['officialFirstYear']! as int,
+        officialLastYear: bs['officialLastYear']! as int,
+      ),
+      holidays: List.unmodifiable(
+        (json['holidays']! as List<Object?>).map((raw) {
+          final set = raw! as Map<String, Object?>;
+          return HolidayYears(
+            set: set['set']! as String,
+            years: List.unmodifiable(
+              (set['years']! as List<Object?>).cast<int>(),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  /// The days the context's ephemeris covers; null with no ephemeris.
+  final EphemerisSpan? ephemeris;
+
+  /// The Bikram Sambat years the shipped table holds.
+  final BikramSambatSpan bikramSambat;
+
+  /// Each shipped holiday set and the years it lists.
+  final List<HolidayYears> holidays;
+}
+
+/// The instants and the civil days an ephemeris covers.
+final class EphemerisSpan {
+  const EphemerisSpan({
+    required this.fromJd,
+    required this.toJd,
+    required this.first,
+    required this.last,
+  });
+
+  factory EphemerisSpan._of(Map<String, Object?> json) => EphemerisSpan(
+    fromJd: (json['fromJd']! as num).toDouble(),
+    toJd: (json['toJd']! as num).toDouble(),
+    first: _utcDate(json['first']! as Map<String, Object?>),
+    last: _utcDate(json['last']! as Map<String, Object?>),
+  );
+
+  /// The first instant answered, a Julian day on UT1.
+  final double fromJd;
+
+  /// The last instant answered.
+  final double toJd;
+
+  /// The first Gregorian date, on UT, the span holds at least half of
+  /// (midnight UTC).
+  final DateTime first;
+
+  /// The last such date (midnight UTC).
+  final DateTime last;
+}
+
+DateTime _utcDate(Map<String, Object?> json) => DateTime.utc(
+  json['year']! as int,
+  json['month']! as int,
+  json['day']! as int,
+);
+
+/// The Bikram Sambat years the shipped table holds.
+final class BikramSambatSpan {
+  const BikramSambatSpan({
+    required this.firstYear,
+    required this.lastYear,
+    required this.officialFirstYear,
+    required this.officialLastYear,
+  });
+
+  /// The table's first year.
+  final int firstYear;
+
+  /// Its last.
+  final int lastYear;
+
+  /// The first year the government's calendar committee published.
+  final int officialFirstYear;
+
+  /// The last.
+  final int officialLastYear;
+}
+
+/// A shipped holiday set and the Bikram Sambat years it lists.
+final class HolidayYears {
+  const HolidayYears({required this.set, required this.years});
+
+  /// The set's key, as a festival request names it.
+  final String set;
+
+  /// The years it lists, in order.
+  final List<int> years;
 }
 
 /// One knob on which two contexts' settings differ.
@@ -21135,6 +21262,7 @@ final class LunarYear extends _Value {
     required this.jovian,
     required this.lupta,
     required this.rulers,
+    this.clipped,
   });
 
   /// The name the year carries under `calendars.samvatsara`.
@@ -21178,6 +21306,12 @@ final class LunarYear extends _Value {
   /// its texts give (`03-design/year-rulers.md`).
   final List<YearRuler> rulers;
 
+  /// Which end of the year the ephemeris's coverage cut: `START` (it began
+  /// before the coverage, numbered from the next year, with no
+  /// office-bearers), `END` or `BOTH`; null for a year the coverage holds
+  /// whole (SR-136).
+  final String? clipped;
+
   @override
   List<Object?> get _fields => [
     samvatsara,
@@ -21192,6 +21326,7 @@ final class LunarYear extends _Value {
     jovian,
     lupta,
     rulers,
+    clipped,
   ];
 }
 
@@ -21497,10 +21632,14 @@ T _must<T>(Object? key, T? Function(String) byKey, String kind) =>
     (throw ArgumentError.value(key, kind, 'not a $kind'));
 
 /// A day's lunar month as the Rust types serialise it, members as this
-/// binding's enums.
+/// binding's enums; a month the coverage cuts carries no margin and reads
+/// as zeros, as the days blob writes it (SR-136).
 Month _lunarMonth(Map<String, Object?> month) {
-  final margin = month['margin']! as Map<String, Object?>;
+  final margin = month['margin'] as Map<String, Object?>?;
   NewMoonMargin side(String which) {
+    if (margin == null) {
+      return const NewMoonMargin(newMoon: 0, degrees: 0, minutes: 0);
+    }
     final raw = margin[which]! as Map<String, Object?>;
     return NewMoonMargin(
       newMoon: (raw['new_moon']! as num).toDouble(),
@@ -21519,7 +21658,7 @@ Month _lunarMonth(Map<String, Object?> month) {
     margin: MonthMargin(
       opening: side('opening'),
       closing: side('closing'),
-      marginal: margin['marginal']! as bool,
+      marginal: margin != null && margin['marginal']! as bool,
     ),
   );
 }
@@ -21572,6 +21711,7 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
       for (final item in raw['rulers']! as List<Object?>)
         ruler(item! as Map<String, Object?>),
     ]),
+    clipped: raw['clipped'] as String?,
   );
 }
 

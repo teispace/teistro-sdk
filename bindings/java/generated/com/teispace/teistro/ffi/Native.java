@@ -4376,6 +4376,7 @@ public final class Native {
         "ts_context_settings_json",
         "ts_context_settings_hash",
         "ts_context_explain_settings",
+        "ts_context_coverage",
         "ts_context_diff_settings",
         "ts_key_parse",
         "ts_key_name",
@@ -4635,6 +4636,20 @@ public final class Native {
      * no group or knob, is `INVALID_ARG` naming it (`knobs[0]`).
      */
     public final MethodHandle ts_context_explain_settings;
+
+    /**
+     * **What this context answers over** (SR-136, `03-design/coverage-edges.md`
+     * §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`.
+     * `ephemeris` is `{fromJd, toJd, first, last}`: the first and last
+     * instants the configured ephemeris answers under the context's profile,
+     * Julian days on UT1, and the first and last Gregorian dates the span
+     * holds at least half of, on UT, as `{calendar, year, month, day}`; left
+     * out with no ephemeris. `bikramSambat` is
+     * `{firstYear, lastYear, officialFirstYear, officialLastYear}`, the
+     * shipped table's years and those the government published; `holidays`
+     * each shipped holiday set as `{set, years}`.
+     */
+    public final MethodHandle ts_context_coverage;
 
     /**
      * **Where two contexts' settings part** (`settings.diff`), as canonical
@@ -6283,6 +6298,7 @@ public final class Native {
         ts_context_settings_json = linker.downcallHandle(symbols.find("ts_context_settings_json").orElseThrow(() -> missing("ts_context_settings_json")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_settings_hash = linker.downcallHandle(symbols.find("ts_context_settings_hash").orElseThrow(() -> missing("ts_context_settings_hash")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_explain_settings = linker.downcallHandle(symbols.find("ts_context_explain_settings").orElseThrow(() -> missing("ts_context_explain_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_context_coverage = linker.downcallHandle(symbols.find("ts_context_coverage").orElseThrow(() -> missing("ts_context_coverage")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_context_diff_settings = linker.downcallHandle(symbols.find("ts_context_diff_settings").orElseThrow(() -> missing("ts_context_diff_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_key_parse = linker.downcallHandle(symbols.find("ts_key_parse").orElseThrow(() -> missing("ts_key_parse")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_key_name = linker.downcallHandle(symbols.find("ts_key_name").orElseThrow(() -> missing("ts_key_name")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));

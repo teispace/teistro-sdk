@@ -22,10 +22,14 @@ import java.util.List;
  *     names no year; may be null
  * @param rulers the year's office-bearers, the raja first, each read under
  *     every rule its texts give ({@code 03-design/year-rulers.md})
+ * @param clipped which end of the year the ephemeris's coverage cut:
+ *     {@code START} (it began before the coverage, numbered from the next
+ *     year, with no office-bearers), {@code END} or {@code BOTH}; null for
+ *     a year the coverage holds whole (SR-136)
  */
 public record LunarYear(
         Samvatsara samvatsara, String count, int vikrama, int shaka, int kali, int viraNirvana, double opened, double began, double ended,
-        List<JovianYear> jovian, Samvatsara lupta, List<YearRuler> rulers) {
+        List<JovianYear> jovian, Samvatsara lupta, List<YearRuler> rulers, String clipped) {
     /** Keeps the lists unmodifiable. */
     public LunarYear {
         jovian = List.copyOf(jovian);

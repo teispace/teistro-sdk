@@ -1,4 +1,4 @@
 {
   "title": "Context",
-  "pages": ["ts_error_free", "ts_context_new", "ts_context_derive", "ts_context_free", "ts_context_last_error", "ts_context_profile", "ts_context_settings_json", "ts_context_settings_hash", "ts_context_explain_settings", "ts_context_diff_settings"]
+  "pages": ["ts_error_free", "ts_context_new", "ts_context_derive", "ts_context_free", "ts_context_last_error", "ts_context_profile", "ts_context_settings_json", "ts_context_settings_hash", "ts_context_explain_settings", "ts_context_coverage", "ts_context_diff_settings"]
 }
