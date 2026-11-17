@@ -5565,6 +5565,12 @@
       "short": "हि.",
       "name": "हिजरी सन्",
       "prose": "हिजरी सन्"
+    },
+    "KIRAT_YELE": {
+      "short": "ये.सं.",
+      "name": "येले संवत्",
+      "prose": "किरात येले संवत्",
+      "iast": "Yele Saṃvat"
     }
   },
   "year_office": {

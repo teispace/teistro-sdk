@@ -921,6 +921,83 @@ pub(crate) const ROOT_SOURCES: &[Citation] = &[
             "nine decimals of a degree, eight of a day and three of a score: below every input's own precision",
         ),
     ),
+    Citation::new(
+        "frame.precession",
+        Source::new(
+            "Vondrák, Capitaine and Wallace (2011)",
+            "A&A 534, A22: valid over ±200 000 years, so at every catalogued epoch; crux C1752",
+        ),
+    ),
+    Citation::new(
+        "frame.nutation",
+        Source::new(
+            "McCarthy and Luzum (2003)",
+            "IAU 2000B, the SDK's own series; docs/03-design/astro-timescales-and-frames.md",
+        ),
+    ),
+    Citation::new(
+        "frame.frame_bias",
+        Source::new(
+            "IERS Conventions (2010)",
+            "§5.4.4: the IAU 2006 frame bias between the GCRS and the dynamical frame of J2000",
+        ),
+    ),
+    Citation::new(
+        "day.horizon",
+        Source::new(
+            "ADR-0024",
+            "what every almanac and the SDK have reckoned by: Bennett's refraction, the actual disc of the IAU 2015 radii, the body's own latitude, no dip and the ideal horizon; docs/03-design/horizon-atmosphere.md",
+        ),
+    ),
+    Citation::new(
+        "time.dut1",
+        Source::new(
+            "IERS Bulletin A",
+            "leap seconds keep UTC within 0.9 s of UT1, so UT1 is taken as UTC: what a civil clock reads and every almanac assumes",
+        ),
+    ),
+    Citation::new(
+        "time.sidereal_time",
+        Source::new(
+            "IERS Conventions (2010)",
+            "eq. 5.32: the Earth rotation angle with the IAU 2006 polynomial, the SDK's own",
+        ),
+    ),
+    Citation::new(
+        "vargas.schemes",
+        Source::new(
+            BPHS,
+            "ch. 6: Parashara's division for every chart no scheme is named for; docs/03-design/varga-schemes.md",
+        ),
+    ),
+    Citation::new(
+        "rashifal.score_bands",
+        Source::new(
+            "Tithipatra (SR-124)",
+            "75, 50 and 30, the consumer's bands, since no text bands a score; docs/03-design/rashifal.md, The score band",
+        ),
+    ),
+    Citation::new(
+        "jaimini.seven_karaka_order",
+        Source::new(
+            "Jaimini Sutras (B. Suryanarain Rao)",
+            "1.1.13 to 18: Atma, Amatya, Bhratri, Matri, Putra, Gnati and Dara, the ranks' names when seven are counted; crux C2061",
+        ),
+    ),
+    Citation::new(
+        "calendars.marginal_month_minutes",
+        Source::new(
+            "Nepal Panchanga Nirnayak Samiti",
+            "covers every month the committee and a drik almanac decided differently in AD 1900 to 2100, the widest by 6.3 hours",
+        ),
+    ),
+    Citation::new(
+        "calendars.kirat_yele",
+        Source::new(
+            "Kantipur, 15 January 2026",
+            "KIRATI, the count printed today: 5086 from Magh 1, 2082 BS; docs/calendars/bikram-sambat.md, Kirat Yele Sambat",
+        ),
+    ),
 ];
 
 fn depth_all(depth: u8) -> BTreeMap<DashaSystem, Depth> {

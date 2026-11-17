@@ -6,7 +6,6 @@ use teistro_astro::day_sky::{DaySky, SkyStep, day_sky};
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::terrain::{HorizonProfile, VisibleDay, visible_day};
 use teistro_calendar::CalendarDate;
-#[cfg(feature = "muhurta")]
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::FixedDay;
 use teistro_calendar::hijri::HijriOffset;
