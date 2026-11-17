@@ -5719,6 +5719,12 @@
       "short": "Hi.saṃ.",
       "name": "Hijri",
       "prose": "Hijri"
+    },
+    "KIRAT_YELE": {
+      "short": "Ye.saṃ.",
+      "name": "Yelesaṃvat",
+      "prose": "Kirātayelesaṃvat",
+      "iast": "Yele Saṃvat"
     }
   },
   "chart_kind": {
