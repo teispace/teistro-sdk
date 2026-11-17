@@ -3,7 +3,7 @@
 Status: `plan`, written 2026-11-17 from `01-research/ketaki.md`. Phase K1 is built
 (2026-11-17, lane `ketaki-k1`): the `KETAKI` member, the `ketaki` and `tilak-revati`
 profiles, T1 to T6 (`crates/astro/tests/ketaki.rs`, `crates/sdk/tests/ketaki.rs`, the
-settings tests). The rest of the page is not built yet. Cruxes C2180 to C2199 hold what is still open. The framework that Ketaki is the
+settings tests), and T10 from K2 (both Tilak dates reproduced at Pune). The rest of the page is not built yet. Cruxes C2180 to C2199 hold what is still open. The framework that Ketaki is the
 first new member of is `03-design/reckonings.md`. Read that page first if you are adding
 a reckoning other than Ketaki.
 

@@ -23,7 +23,7 @@ Grahagaṇitam*'s 22°21′6″; Shaka 1800 −0.04″ from *Jyotirgaṇitam*'s 
 stands 53.1″ to 65.9″ below mean `LAHIRI` and 1.45″ to 5.0″ below Spica's mean geometric
 longitude less 180° (the SDK's star table), so its Mesha sankranti of April 2026 falls
 24.7 minutes before Lahiri's, and the Tilak panchang's (ζ Piscium at 0°) about four days
-before Ketaki's. No existing settings hash moves; the two new profiles hash
+before Ketaki's. Under `tilak-revati` at Pune the adhika month of Shaka 1848 is Jyeshtha and Ganesh Chaturthi of 2015 falls on 18 August, as the Tilak panchang printed (17 September under `ketaki`). No existing settings hash moves; the two new profiles hash
 `0ab6e4fd…a6b94bda` (`ketaki`) and `953264da…df172e3f` (`tilak-revati`).
 - **New:** `Ayanamsha::Ketaki` (`KETAKI`, id 47, `VEDIC_STANDARD`), computed by the SDK under any
   engine: `teistro_astro::ayanamsha::Definition::Linear`, `Linear` and `KETAKI`, evaluated
