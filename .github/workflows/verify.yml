@@ -715,6 +715,9 @@ jobs:
       # teigeodata's data release the tests read, built by the engine tag
       # the adapter pins (adapters/geo-teigeodata/rust/Cargo.toml).
       TEIGEODATA_DATA: data-2026.11.15
+      # teigeodata's app pack, the one Tithipatra's apps ship first: the
+      # world's places and Nepal's outlines in one layer, read alone.
+      TEIGEODATA_APP: data-2026.11.17
     defaults:
       run:
         working-directory: adapters/geo-teigeodata/rust
@@ -768,6 +771,29 @@ jobs:
           # Nepal's pack first, so it answers Nepal before the baseline.
           TEISTRO_TEIGEODATA_PACKS: ${{ runner.temp }}/teigeodata/np-places-lite.tgd:${{ runner.temp }}/teigeodata/baseline-lite.tgd
           # A test that finds no pack fails here instead of skipping.
+          TEISTRO_TEIGEODATA_REQUIRED: '1'
+        run: cargo test --locked
+      - name: The app pack, cached by its release
+        id: app
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/teigeodata-app
+          key: teigeodata-${{ env.TEIGEODATA_APP }}-world-np-app-lite
+      - name: Download and check the app pack
+        if: steps.app.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir -p teigeodata-app && cd teigeodata-app
+          gh release download "$TEIGEODATA_APP" -R teispace/teigeodata \
+            -p world-np-app-lite.tgd -p SHA256SUMS
+          grep -E ' world-np-app-lite\.tgd$' SHA256SUMS > wanted
+          test "$(wc -l < wanted)" -eq 1
+          sha256sum --check --strict wanted
+      - name: Tests over the app pack alone
+        env:
+          TEISTRO_TEIGEODATA_PACKS: ${{ runner.temp }}/teigeodata-app/world-np-app-lite.tgd
           TEISTRO_TEIGEODATA_REQUIRED: '1'
         run: cargo test --locked
 

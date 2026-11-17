@@ -48,6 +48,12 @@ wasm32; with search 347,616 / 181,663 and 393,386 / 154,992.
   `nautical_zone` reckons from the longitude, marked so. The teigeodata
   adapter says so only with the world baseline installed; its zone rules
   answer `Etc/GMT-12` to `Etc/GMT+12` as fixed offsets (C2216, C2217).
+- **New:** over teigeodata's app pack (`world-np-app-lite.tgd`,
+  `data-2026.11.17`), which outlines Nepal alone, a point abroad takes the
+  zone of the town it lies within (London: `Europe/London`), and is never
+  called sea where the data outlines no land near it (C2216, C2218). The
+  pack carries no DEM and no populations (C2219); verify runs the adapter's
+  tests over it alone.
 - **New:** `GeoTable` takes an optional `places` list, which the four
   methods answer from; the SDK's test table carries five.
 - **Changed:** `GeoProvider::source` answers `GeoSource` owned (C2200).

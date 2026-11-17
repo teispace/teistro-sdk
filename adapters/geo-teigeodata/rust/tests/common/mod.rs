@@ -38,6 +38,18 @@ pub(crate) fn packs(test: &str) -> Option<Vec<PathBuf>> {
     None
 }
 
+/// Whether any pack the provider holds carries `component`: teigeodata's
+/// app pack (`world-np-app-lite.tgd`) carries no DEM and no populations,
+/// so the tests that read them say `SKIP` over it.
+pub(crate) fn holds(
+    geo: &TeigeodataGeo,
+    component: teigeodata_format::component::Component,
+) -> bool {
+    geo.snapshot()
+        .layers()
+        .any(|layer| layer.components().contains(component))
+}
+
 /// The provider over [`packs`], `None` when the variable is unset, or a
 /// failure when a named pack is missing or does not open.
 pub(crate) fn provider(test: &str) -> Option<TeigeodataGeo> {

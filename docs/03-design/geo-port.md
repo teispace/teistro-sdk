@@ -322,11 +322,11 @@ that answers:
 
 | port | engine |
 |---|---|
-| `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as `tgd` reads it) |
+| `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as `tgd` reads it); where no area outline holds the point, the zone of the settlement or locality it lies within (`mark_inside`, `tz_of`; C2218) |
 | `height_at` | `elevation_at`: metres above EGM2008, the DEM product's name as `source` (`NASADEM`), its north-south spacing as `resolutionM` |
 | `admin_at` | `admin_at`, coarse to fine, each unit's `admin_level`, `iso_code` (`NP`, `NP-P3`) and canonical name |
 | `source` | `teigeodata`, `1.1.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), and `tz_version()` as `tzdb`; `none` while the store has installed nothing (§13.2) |
-| `at_sea` | a `world` layer with zones and outlines installed, and neither `tz_at` nor `admin_at` holding the point (§5, C2216) |
+| `at_sea` | a `world` layer installed, neither `tz_at` nor `admin_at` holding the point, and the nearest settlement, locality or unit lying inside a unit the packs hold (§5, C2216) |
 
 A point no pack covers answers `None` or an empty list. An engine error
 crosses as `PROVIDER` on the question's field (`zone`, `height`, `admin`),
@@ -560,6 +560,20 @@ On `np-places-main.tgd` and `baseline-main.tgd` of `data-2026.11.15`
 | list `within: tgd:np/410` (Kathmandu district) | its 11 municipalities, Kathmandu first (863,151, modelled) |
 
 The adapter's tests hold these (`adapters/geo-teigeodata/rust/tests/catalogue.rs`).
+
+On teigeodata's app pack alone (`world-np-app-lite.tgd` of
+`data-2026.11.17`, the pack Tithipatra's apps ship first; C2219):
+
+| query | as the adapter answers |
+|---|---|
+| `काठमाडौं` / `Kathmandu` | Kathmandu settlement 144, district 136, metropolitan city 131, each `Kathmandu, Bagmati, Nepal` |
+| `Kathamandu` | the same three, 109, 101, 96 |
+| `Kathmandu, Bagmati` | the same three, 1,000 higher each |
+| reverse 27.7172, 85.324 | near: Narayanhiti Royal Palace 331 m, inside; admin: Nepal (`NP`), Bagmati (`NP-P3`), Kathmandu district, Kathmandu metropolitan city; zone `Asia/Kathmandu`; no height |
+| reverse 51.5074, −0.1278 | near: London 190 m, inside; no unit; zone `Europe/London` from the town (C2218) |
+| 0, −30 (Atlantic) | no zone, no unit, not called sea (C2216) |
+| list `NP`, level 1 | the seven provinces, no populations, by name |
+| list Bagmati, level 3, any depth | 124 local levels, no populations, by name |
 
 ### 12.8 The table provider
 

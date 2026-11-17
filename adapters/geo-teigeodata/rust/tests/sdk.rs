@@ -7,7 +7,8 @@
 #![allow(
     clippy::unwrap_used,
     clippy::indexing_slicing,
-    reason = "tests fail by panicking"
+    clippy::print_stderr,
+    reason = "tests fail by panicking, and say SKIP where the runner shows it"
 )]
 
 mod common;
@@ -15,6 +16,7 @@ mod common;
 use std::sync::Arc;
 
 use serde_json::{Value, json};
+use teigeodata_format::component::Component;
 use teistro::verify::{IssueRequest, ReceiptVerdict};
 use teistro::{Context, Ephemeris, PlaceRequest, Status, ZoneSpec};
 
@@ -26,9 +28,15 @@ const KATHMANDU: PlaceRequest = PlaceRequest {
 /// Noon in Kathmandu on 1 June 2026.
 const BIRTH: f64 = 2_461_192.760_417;
 
-/// A context with the provider, or `None` when no pack is named.
+/// A context with the provider, or `None` when no pack is named, or,
+/// for a test that reads a height, when no pack carries a DEM (the app
+/// pack), said on stderr.
 fn context(test: &str) -> Option<Context> {
     let geo = common::provider(test)?;
+    if !common::holds(&geo, Component::Dem) {
+        eprintln!("SKIP  {test}: no pack carries a DEM, so no height");
+        return None;
+    }
     Some(
         Context::builder()
             .ephemeris([Ephemeris::Builtin])
@@ -149,6 +157,10 @@ fn a_teigeodata_height_reaches_the_sunrise_and_says_where_it_came_from() {
     let Some(geo) = common::provider("sdk sunrise") else {
         return;
     };
+    if !common::holds(&geo, Component::Dem) {
+        eprintln!("SKIP  sdk sunrise: no pack carries a DEM, so no height");
+        return;
+    }
     // The sunrise under the standard air at the observer's height, which
     // reads the height (`geo-port.md` §6a).
     let sdk = Context::builder()

@@ -12,15 +12,15 @@
 use std::collections::VecDeque;
 use std::str::FromStr;
 
-use teigeodata_core::{E6, IsoCode, PlaceId, PlaceKind as Kind, Point};
+use teigeodata_core::{E6, E7, IsoCode, PlaceId, PlaceKind as Kind, Point};
 use teigeodata_engine::{
     Engine, Error as EngineError, NameInfo, NameType, Origin, Place, PopulationSource, Scratch,
 };
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
-    ChosenName, FoundPlace, LangTag, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind,
-    PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, Population,
-    PopulationKind, label,
+    ChosenName, FoundPlace, GeoPoint, LangTag, NamedPlace, NearPlace, NearbyPlaces, ParentPlace,
+    PlaceKind, PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch,
+    Population, PopulationKind, label,
 };
 
 use crate::{NAME_BYTES, failed};
@@ -338,6 +338,82 @@ pub(crate) fn search(
 
 /// The nearest named places, kept to the point's country, and the units
 /// holding it (§12.5).
+/// The admin units holding `at` into `out`, coarse to fine; `false` where
+/// the packs hold no outline index to ask (a component not installed),
+/// which is no answer rather than a refusal.
+pub(crate) fn units_at(
+    engine: &Engine,
+    scratch: &mut Scratch,
+    at: Point<E7>,
+    out: &mut Vec<Place>,
+) -> Result<bool, Error> {
+    match engine.admin_at(at, scratch, out) {
+        Ok(_) => Ok(true),
+        Err(EngineError::MissingComponent { .. }) => {
+            out.clear();
+            Ok(false)
+        }
+        Err(why) => Err(failed(&why, "zone")),
+    }
+}
+
+/// How many of the nearest places [`nearest_named`] looks through for a
+/// settlement, a locality or a unit.
+const NEAREST: usize = 8;
+
+/// Where the settlement, locality or unit nearest `at` stands, in any
+/// country; `None` where the packs name none.
+pub(crate) fn nearest_named(
+    engine: &Engine,
+    scratch: &mut Scratch,
+    at: GeoPoint,
+) -> Result<Option<Point<E6>>, Error> {
+    let from = point(at.latitude.get(), at.longitude.get(), "zone")?;
+    let mut near = Vec::new();
+    engine
+        .reverse(from, NEAREST, scratch, &mut near)
+        .map_err(|why| failed(&why, "zone"))?;
+    Ok(near
+        .iter()
+        .find(|one| {
+            matches!(
+                one.place.kind,
+                Some(Kind::Settlement | Kind::Locality | Kind::Admin | Kind::Country)
+            )
+        })
+        .map(|one| one.place.point))
+}
+
+/// The timezone area of the settlement or locality nearest `at` that the
+/// point lies within (`Engine::mark_inside`: 750 m of a settlement, 700 m
+/// of a locality), from each place's own zone (`Engine::tz_of`); `None`
+/// where the point lies within none, or the packs hold no place zones.
+pub(crate) fn zone_within(
+    engine: &Engine,
+    scratch: &mut Scratch,
+    at: GeoPoint,
+) -> Result<Option<Place>, Error> {
+    let from = point(at.latitude.get(), at.longitude.get(), "zone")?;
+    let mut near = Vec::new();
+    engine
+        .reverse(from, NEAREST, scratch, &mut near)
+        .map_err(|why| failed(&why, "zone"))?;
+    near.retain(|one| matches!(one.place.kind, Some(Kind::Settlement | Kind::Locality)));
+    match engine.mark_inside(from, scratch, &mut near) {
+        Ok(()) => {}
+        Err(EngineError::MissingComponent { .. }) => return Ok(None),
+        Err(why) => return Err(failed(&why, "zone")),
+    }
+    let Some(within) = near.iter().find(|one| one.inside == Some(true)) else {
+        return Ok(None);
+    };
+    match engine.tz_of(&within.place) {
+        Ok(area) => Ok(area),
+        Err(EngineError::MissingComponent { .. }) => Ok(None),
+        Err(why) => Err(failed(&why, "zone")),
+    }
+}
+
 pub(crate) fn reverse(
     engine: &Engine,
     scratch: &mut Scratch,
