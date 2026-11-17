@@ -337,7 +337,11 @@ fn the_moon_is_lit_by_her_true_distance_under_a_classical_sky() {
         #[expect(clippy::cast_possible_truncation, reason = "a minute's count of days")]
         let minute = ((2_461_345.5 + day - 1.0) * 1440.0).round() as i64;
         let (at, want) = modern.range(minute..).next().unwrap();
-        assert!((classical[at] - want).abs() < 0.03, "{day}: {} for {want}", classical[at]);
+        assert!(
+            (classical[at] - want).abs() < 0.03,
+            "{day}: {} for {want}",
+            classical[at]
+        );
     }
     assert!(worst.0 < 0.03, "{worst:?}");
 }
@@ -471,4 +475,61 @@ fn price() {
         "31 days: off {off:.4} s, on {on:.4} s, {:.1}%",
         (on / off - 1.0) * 100.0
     );
+}
+
+/// SR-127's other half: with her true distance the classical sky's Moon
+/// has her parallax again, so she rises later and sets earlier than a
+/// Moon placed as far off as the Sun. Measured over November 2026 at
+/// Kathmandu, each first rise and set of the civil day under the official
+/// reckoning against the modern sky's, in minutes.
+#[test]
+fn the_classical_moon_rises_where_her_parallax_puts_her() {
+    let official = Context::builder()
+        .nepal_official([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let modern = context();
+    let days = |sdk: &Context| {
+        sdk.almanac()
+            .of(
+                &date(2026, 11, 1),
+                &date(2026, 11, 30),
+                &kathmandu(),
+                nepal(),
+            )
+            .unwrap()
+            .value
+    };
+    let (classical, modern) = (days(&official), days(&modern));
+    let mut apart: BTreeMap<&str, Vec<f64>> = BTreeMap::new();
+    for (ours, theirs) in classical.iter().zip(&modern) {
+        for (kind, a, b) in [
+            ("rise", ours.moon.rises.first(), theirs.moon.rises.first()),
+            ("set", ours.moon.sets.first(), theirs.moon.sets.first()),
+        ] {
+            if let (Some(a), Some(b)) = (a, b) {
+                apart
+                    .entry(kind)
+                    .or_default()
+                    .push((a.get() - b.get()) * 1440.0);
+            }
+        }
+    }
+    for (kind, minutes) in &apart {
+        let mut sorted = minutes.clone();
+        sorted.sort_by(f64::total_cmp);
+        println!(
+            "{kind}: n {} min {:.2} median {:.2} max {:.2}",
+            sorted.len(),
+            sorted[0],
+            sorted[sorted.len() / 2],
+            sorted[sorted.len() - 1]
+        );
+        // The text's Moon stands up to about 3° from the modern one, which
+        // moves a rise by up to half an hour; the median stays within ten
+        // minutes (November 2026: rises -6.9, sets -4.1).
+        assert!(sorted.len() >= 25, "{kind} {}", sorted.len());
+        assert!(sorted[sorted.len() / 2].abs() < 10.0, "{kind} {sorted:?}");
+        assert!(sorted.iter().all(|minutes| minutes.abs() < 30.0), "{kind} {sorted:?}");
+    }
 }
