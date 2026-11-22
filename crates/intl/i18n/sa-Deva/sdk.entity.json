@@ -5765,6 +5765,26 @@
       "name": "कृष्णाष्टमीव्रत",
       "prose": "कृष्णाष्टमीव्रत",
       "iast": "Kṛṣṇa Aṣṭamī Vrata"
+    },
+    "TULASI_ROPANA": {
+      "name": "तुलसीरोपण",
+      "prose": "तुलसीरोपण",
+      "iast": "Tulasī Ropaṇa"
+    },
+    "TULASI_DAL_RAKHNE": {
+      "name": "तुलसीदलस्थापन",
+      "prose": "तुलसीदलस्थापन",
+      "iast": "Tulasī Dala Rākhne Dina"
+    },
+    "VYASA_JAYANTI": {
+      "name": "व्यासजयन्ती",
+      "prose": "व्यासजयन्ती",
+      "iast": "Vyāsa Jayantī"
+    },
+    "TULASI_PIYE": {
+      "name": "तुलसीपिए",
+      "prose": "तुलसीपिए",
+      "iast": "Tulasīpie"
     }
   },
   "year_office": {
