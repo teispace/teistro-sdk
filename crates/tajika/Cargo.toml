@@ -18,11 +18,11 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema", "teistro-dasha/schema"]
 
 [dependencies]
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.4" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.4" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.4" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.4" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.4" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.6" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.6" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.6" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.6" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.6" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
