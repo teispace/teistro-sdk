@@ -738,6 +738,19 @@ mod tests {
             ),
             "geo.places[0].latitudeDeg"
         );
+        // A blank name, and a blank id.
+        assert_eq!(
+            refused(
+                r#"{"id": "a", "names": [{"text": " "}], "kind": "NATURAL", "latitudeDeg": 1, "longitudeDeg": 1}"#
+            ),
+            "geo.places[0].names"
+        );
+        assert_eq!(
+            refused(
+                r#"{"id": " ", "names": [{"text": "A"}], "kind": "NATURAL", "latitudeDeg": 1, "longitudeDeg": 1}"#
+            ),
+            "geo.places[0].id"
+        );
         // A table without places writes none.
         let bare = GeoTable::from_json(
             r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#,
@@ -899,5 +912,48 @@ mod tests {
         let wrong = Wrong(searched("Pokhara", None).remove(0).place);
         let listing: PlaceListing = serde_json::from_str(r#"{"within": "np"}"#).unwrap();
         assert_eq!(wrong.list(&listing).unwrap(), Vec::new());
+    }
+
+    #[test]
+    fn a_cycle_of_parents_ends_and_a_tie_ranks_by_name_then_id() {
+        let cyclic = GeoTable::from_json(
+            r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": [], "places": [
+                {"id": "a", "names": [{"text": "Alpha"}], "kind": "ADMIN", "level": 1, "latitudeDeg": 1, "longitudeDeg": 1, "parent": "b"},
+                {"id": "b", "names": [{"text": "Beta"}], "kind": "ADMIN", "level": 1, "latitudeDeg": 1, "longitudeDeg": 1, "parent": "a"},
+                {"id": "d", "names": [{"text": "Same"}], "kind": "NATURAL", "latitudeDeg": 1, "longitudeDeg": 1, "parent": "a"},
+                {"id": "c", "names": [{"text": "Same"}], "kind": "NATURAL", "latitudeDeg": 1, "longitudeDeg": 1, "parent": "a"}
+            ]}"#,
+        )
+        .unwrap();
+        // A place's parents stop where the chain comes back to it.
+        let alpha = search(
+            &cyclic,
+            &PlaceSearch {
+                query: "Alpha".into(),
+                focus: None,
+                limit: 1,
+                lang: None,
+            },
+        )
+        .unwrap();
+        let parents: Vec<&str> = alpha[0]
+            .place
+            .parents
+            .iter()
+            .map(|p| p.id.as_str())
+            .collect();
+        assert_eq!(parents, ["b"]);
+        // A chain that loops without reaching the unit is not below it.
+        let none: PlaceListing = serde_json::from_str(r#"{"within": "c", "depth": null}"#).unwrap();
+        assert_eq!(list(&cyclic, &none).unwrap(), Vec::new());
+        // No people on either: the same name, then the id, ranks them.
+        let kept: PlaceListing =
+            serde_json::from_str(r#"{"within": "a", "kinds": ["NATURAL"]}"#).unwrap();
+        let ids: Vec<String> = list(&cyclic, &kept)
+            .unwrap()
+            .into_iter()
+            .map(|p| p.id)
+            .collect();
+        assert_eq!(ids, ["c", "d"]);
     }
 }
