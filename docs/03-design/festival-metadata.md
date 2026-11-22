@@ -139,7 +139,22 @@ that field unset fails a list that is given, because a filter promises what it
 keeps. Every rule is still reckoned, so a day counted from one filtered out
 stands. The filter runs on the answer, after the published sets and before the
 saits, so a filtered rule pays for no sait. A family's anniversaries carry no
-values, so they stand only when no filter is set.
+values, so they stand only when the filter asks nothing of the meta: none, or
+`keys` alone.
+
+`keys` keeps rules by key, before any list of the meta:
+
+```json
+{"rules": "NEPAL_PANCHANGA", "only": {"keys": ["GAURA_SAPTAMI"]}}
+```
+
+A request narrowed to a festival (`narrowed_to`, `narrowed_to_group`) sets it.
+It carries every rule the festival's day is read from: the karmakala rule a
+following rule counts from, the rite a parana follows, and the rule a day is
+barred with, each in turn. It answers the festival alone. The Gaura parva's
+days are barred with the Durva ashtami's day. Asked alone, they failed for
+want of that rule (tithipatra-core#168), and once carried they answered its
+day too.
 
 SR-11's feed filter by kind or tradition reads this field.
 

@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A festival asked alone carries the rules its day is read from (tithipatra-core#168).**
+**Numbers:** none move. `FestivalRequest::narrowed_to` and `narrowed_to_group` carry every
+rule a festival's day is read from: the karmakala rule it counts from, the rite its parana
+follows, and the rule it is barred with, each in turn. They answer the festival alone. Before
+this, the Gaura parva's days (Biruda panchami, Gaura and Amuktabharana saptami) failed in
+VS 2083 and 2084 for want of the Durva ashtami's rule. Carried, that rule answered its own day
+on their pages. A request's `only` takes `keys`, which keeps rules by key; the narrowing sets
+it. An anniversary now stands under a filter that asks nothing of the meta.
+
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each

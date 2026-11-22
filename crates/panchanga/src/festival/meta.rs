@@ -683,9 +683,10 @@ impl FestivalMeta {
     }
 }
 
-/// What a request keeps of its answer: a rule stands when, of each list
-/// given, its meta holds a member. An empty list asks nothing of its
-/// field, and a rule with that field unset fails a list that is not.
+/// What a request keeps of its answer: a rule stands when its key is one
+/// of `keys`, if given, and, of each other list given, its meta holds a
+/// member. An empty list asks nothing of its field, and a rule with that
+/// field unset fails a list that is not.
 ///
 /// ```
 /// use teistro_panchanga::festival::{FestivalMeta, MetaFilter};
@@ -702,6 +703,11 @@ impl FestivalMeta {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct MetaFilter {
+    /// The rules kept, by key: a request narrowed to a festival reckons the
+    /// rules its day is read from (the rite a parana follows, the rule it
+    /// is barred with) and answers only these.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub keys: Vec<String>,
     /// The kinds kept.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub kinds: Vec<FestivalKind>,
@@ -720,7 +726,52 @@ pub struct MetaFilter {
 }
 
 impl MetaFilter {
-    /// Whether a rule with this meta stands.
+    /// Whether a rule of this key stands by `keys`: every key when none
+    /// is given.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::MetaFilter;
+    ///
+    /// let gaura = MetaFilter { keys: vec!["GAURA_SAPTAMI".to_owned()], ..MetaFilter::default() };
+    /// assert!(gaura.admits_key("GAURA_SAPTAMI"));
+    /// assert!(!gaura.admits_key("DURVA_ASHTAMI"));
+    /// assert!(MetaFilter::default().admits_key("DURVA_ASHTAMI"));
+    /// ```
+    #[must_use]
+    pub fn admits_key(&self, key: &str) -> bool {
+        self.keys.is_empty() || self.keys.iter().any(|kept| kept == key)
+    }
+
+    /// Whether the filter asks anything of a rule's meta, beyond its key:
+    /// a family's anniversary, which carries no meta, stands only under a
+    /// filter that does not.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::MetaFilter;
+    /// use teistro_core::catalogue::FestivalKind;
+    ///
+    /// let by_key = MetaFilter { keys: vec!["BIRTHDAY".to_owned()], ..MetaFilter::default() };
+    /// assert!(!by_key.asks_meta());
+    /// assert!(MetaFilter { kinds: vec![FestivalKind::Gazetted], ..by_key }.asks_meta());
+    /// ```
+    #[must_use]
+    pub fn asks_meta(&self) -> bool {
+        let MetaFilter {
+            keys: _,
+            kinds,
+            traditions,
+            communities,
+            regions,
+            min_significance,
+        } = self;
+        !(kinds.is_empty()
+            && traditions.is_empty()
+            && communities.is_empty()
+            && regions.is_empty()
+            && min_significance.is_none())
+    }
+
+    /// Whether a rule with this meta stands by every list but `keys`.
     #[must_use]
     pub fn admits(&self, meta: &FestivalMeta) -> bool {
         let one_of = |wanted: &[String], held: &[String]| {

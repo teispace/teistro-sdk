@@ -477,3 +477,32 @@ fn price() {
         }
     }
 }
+
+/// A festival page asks for one rule (tithipatra-core#168): the Gaura
+/// parva's days barred with the Durva ashtami's failed alone in VS 2083
+/// and 2084, the partner no rule asked for. Narrowed, each is reckoned
+/// with the rule it is barred with and answers its own days only.
+#[test]
+fn a_barred_festival_narrowed_alone_answers_its_own_days() {
+    let sdk = committee();
+    let span = asked(
+        r#""fromYear": 2083, "years": 2, "calendar": "BIKRAM_SAMBAT""#,
+        r#""kind": "SANKRANTI""#,
+    );
+    let years = sdk.almanac().occurrences(&span).unwrap().value.years;
+    assert_eq!(years.len(), 2);
+    let pack = FestivalRequest::from_json(r#"{"rules": "NEPAL_PANCHANGA"}"#).unwrap();
+    for key in ["BIRUDA_PANCHAMI", "GAURA_SAPTAMI", "AMUKTABHARANA_SAPTAMI"] {
+        let narrowed = pack.narrowed_to(key).unwrap();
+        for year in &years {
+            let found = sdk
+                .almanac()
+                .festivals(&year.first, &year.last, &kathmandu(), npt(), &narrowed)
+                .unwrap()
+                .value;
+            let keys: Vec<&str> = found.observances.iter().map(|o| o.rule.as_str()).collect();
+            assert!(keys.contains(&key), "{key} in {:?}: {keys:?}", year.first);
+            assert!(keys.iter().all(|held| *held == key), "{key}: {keys:?}");
+        }
+    }
+}
