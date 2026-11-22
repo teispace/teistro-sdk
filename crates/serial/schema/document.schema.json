@@ -1401,7 +1401,8 @@
             "ODIA_SOLAR",
             "MALAYALAM_SOLAR",
             "TAMIL_VAKYA",
-            "ASSAM_SOLAR"
+            "ASSAM_SOLAR",
+            "HIJRI_SIGHTED"
           ],
           "type": "string"
         },
@@ -1423,7 +1424,8 @@
             "calendar.ODIA_SOLAR",
             "calendar.MALAYALAM_SOLAR",
             "calendar.TAMIL_VAKYA",
-            "calendar.ASSAM_SOLAR"
+            "calendar.ASSAM_SOLAR",
+            "calendar.HIJRI_SIGHTED"
           ],
           "type": "string",
           "writeOnly": true

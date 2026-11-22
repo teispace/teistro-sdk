@@ -67,6 +67,7 @@ __all__ = [
     "InWordsRequest",
     "LexiconRequest",
     "LookupRequest",
+    "RenderRequest",
     "TimeTextRequest",
     "BandRequest",
     "NaamRequest",
@@ -166,6 +167,7 @@ __all__ = [
     "WordsAmount",
     "WordsGrouping",
     "WordsStyle",
+    "Item",
     "ClockTime",
     "TimeStyle",
     "GunaBands",
@@ -2004,6 +2006,13 @@ class LookupRequest(TypedDict, total=False):
     """The text."""
 
 
+class RenderRequest(TypedDict, total=False):
+    """The items to say, each a message key and its slots as a composer's plan writes them: a rashifal's plans, an interpretation's, a day's sentences."""
+
+    items: Required[Sequence[Item]]
+    """The items, said in their order."""
+
+
 class TimeTextRequest(TypedDict, total=False):
     """What a caller asks to be written: a time of day, and how."""
 
@@ -3610,6 +3619,16 @@ WordsStyle: TypeAlias = Literal['PLAIN', 'VERBOSE']
 `PLAIN`: `spellout-cardinal`: "one hundred five".
 `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
 """
+
+
+class Item(TypedDict, total=False):
+    """One thing to say: a message key and the slots it is said with."""
+
+    key: Required[str]
+    """The message, as `sdk.reason.grahaInRashi`."""
+
+    params: Required[Any]
+    """Its slots, in the order a message names them being irrelevant: the map is ordered, so a plan is the same bytes every time."""
 
 
 class ClockTime(TypedDict, total=False):
@@ -11103,7 +11122,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.blackouts', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.limbAngles', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.list', 'geo.names', 'geo.resolve', 'geo.reverse', 'geo.search', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.blackouts', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.limbAngles', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.list', 'geo.names', 'geo.resolve', 'geo.reverse', 'geo.search', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.render', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -11256,6 +11275,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['intl.lookup'], request: LookupRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.render'], request: RenderRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['intl.time'], request: TimeTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

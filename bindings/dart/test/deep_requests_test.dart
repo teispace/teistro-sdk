@@ -4814,6 +4814,23 @@ void main() {
     );
   });
 
+  test('intl.render: RenderRequest', () {
+    _holds(
+      'intl.render',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: RenderRequest(
+        items: [
+          Item(
+            key: 'sdk.rashifal.saturn',
+            params: <String, Object?>{'house': 12, 'phase': 'RISING', 'spell': 'no'},
+          ),
+        ],
+      ).toJson(),
+    );
+  });
+
   test('intl.time: TimeTextRequest', () {
     _holds(
       'intl.time',

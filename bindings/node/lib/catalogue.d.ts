@@ -4014,6 +4014,7 @@ export type Calendar =
   | 'calendar.MALAYALAM_SOLAR'
   | 'calendar.TAMIL_VAKYA'
   | 'calendar.ASSAM_SOLAR'
+  | 'calendar.HIJRI_SIGHTED'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -4082,6 +4083,10 @@ export declare const Calendar: {
    * Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
    */
   readonly AssamSolar: 'calendar.ASSAM_SOLAR';
+  /**
+   * Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days
+   */
+  readonly HijriSighted: 'calendar.HIJRI_SIGHTED';
 };
 
 /**

@@ -1961,6 +1961,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   MalayalamSolar: 'calendar.MALAYALAM_SOLAR',
   TamilVakya: 'calendar.TAMIL_VAKYA',
   AssamSolar: 'calendar.ASSAM_SOLAR',
+  HijriSighted: 'calendar.HIJRI_SIGHTED',
 });
 
 /**
@@ -1984,6 +1985,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [13, 'calendar.MALAYALAM_SOLAR'],
   [14, 'calendar.TAMIL_VAKYA'],
   [15, 'calendar.ASSAM_SOLAR'],
+  [16, 'calendar.HIJRI_SIGHTED'],
 ]);
 
 /** Every Era by name. */

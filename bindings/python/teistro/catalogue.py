@@ -2383,6 +2383,9 @@ class Calendar(Catalogued):
     ASSAM_SOLAR = 15
     """Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)"""
 
+    HIJRI_SIGHTED = 16
+    """Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -7200,6 +7203,7 @@ _KEYS: dict[str, dict[int, str]] = {
         13: "MALAYALAM_SOLAR",
         14: "TAMIL_VAKYA",
         15: "ASSAM_SOLAR",
+        16: "HIJRI_SIGHTED",
         -1: "UNKNOWN",
     },
     "Era": {

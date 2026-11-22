@@ -6,14 +6,14 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 671 of 671 | 100.0% | 363 of 363 | 100.0% |
-| `en-Latn-NP` | base | 0 of 671 | 0.0% | 0 of 363 | 0.0% |
-| `hi-Deva-IN` | base | 661 of 671 | 98.5% | 350 of 363 | 96.4% |
-| `ne-Deva-NP` | strict | 671 of 671 | 100.0% | 363 of 363 | 100.0% |
-| `sa-Deva` | base | 660 of 671 | 98.4% | 347 of 363 | 95.6% |
-| `sa-Latn` | base | 660 of 671 | 98.4% | 347 of 363 | 95.6% |
+| `en-Latn` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
+| `en-Latn-NP` | base | 0 of 672 | 0.0% | 0 of 373 | 0.0% |
+| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 373 | 96.5% |
+| `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
+| `sa-Deva` | base | 661 of 672 | 98.4% | 356 of 373 | 95.4% |
+| `sa-Latn` | base | 661 of 672 | 98.4% | 356 of 373 | 95.4% |
 
-671 members of 45 kinds, 363 messages.
+672 members of 45 kinds, 373 messages.
 
 ## By kind
 
@@ -27,7 +27,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `avastha_sayanadi` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
 | `ayana` | 2 | 2 | 0 | 2 | 2 | 2 | 2 |
 | `ayanamsha` | 48 | 48 | 0 | 48 | 48 | 48 | 48 |
-| `calendar` | 16 | 16 | 0 | 16 | 16 | 16 | 16 |
+| `calendar` | 17 | 17 | 0 | 17 | 17 | 17 | 17 |
 | `chart_frame` | 4 | 4 | 0 | 4 | 4 | 4 | 4 |
 | `chart_kind` | 8 | 8 | 0 | 8 | 8 | 8 | 8 |
 | `choghadiya` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |

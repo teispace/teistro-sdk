@@ -59,6 +59,7 @@ public final class Requests {
             Map.entry("intl.inWords", InWordsRequest::of),
             Map.entry("intl.lexicon", LexiconRequest::of),
             Map.entry("intl.lookup", LookupRequest::of),
+            Map.entry("intl.render", RenderRequest::of),
             Map.entry("intl.time", TimeTextRequest::of),
             Map.entry("matching.band", BandRequest::of),
             Map.entry("matching.naam", NaamRequest::of),
@@ -224,6 +225,9 @@ public final class Requests {
 
     /** {@code intl.lookup}, whose request is {@link LookupRequest}. */
     public static final RecordOf<LookupRequest> INTL_LOOKUP = new RecordOf<>("intl.lookup");
+
+    /** {@code intl.render}, whose request is {@link RenderRequest}. */
+    public static final RecordOf<RenderRequest> INTL_RENDER = new RecordOf<>("intl.render");
 
     /** {@code intl.time}, whose request is {@link TimeTextRequest}. */
     public static final RecordOf<TimeTextRequest> INTL_TIME = new RecordOf<>("intl.time");

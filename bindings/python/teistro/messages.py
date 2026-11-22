@@ -237,6 +237,7 @@ class CalendarKey(enum.StrEnum):
     INDIAN_LUNISOLAR = "calendar.INDIAN_LUNISOLAR"
     INDIAN_NATIONAL = "calendar.INDIAN_NATIONAL"
     HIJRI_TABULAR = "calendar.HIJRI_TABULAR"
+    HIJRI_SIGHTED = "calendar.HIJRI_SIGHTED"
     TIBETAN_PHUGPA = "calendar.TIBETAN_PHUGPA"
     BANGLADESHI = "calendar.BANGLADESHI"
     TAMIL_SOLAR = "calendar.TAMIL_SOLAR"
@@ -621,6 +622,25 @@ class FestivalKey(enum.StrEnum):
     MAKARA_SANKRANTI = "festival.MAKARA_SANKRANTI"
     KUMBHA_SANKRANTI = "festival.KUMBHA_SANKRANTI"
     MINA_SANKRANTI = "festival.MINA_SANKRANTI"
+    BAISAKH_SANKRANTI = "festival.BAISAKH_SANKRANTI"
+    JESTHA_SANKRANTI = "festival.JESTHA_SANKRANTI"
+    ASAR_SANKRANTI = "festival.ASAR_SANKRANTI"
+    SAUNE_SANKRANTI = "festival.SAUNE_SANKRANTI"
+    SHRAWAN_SANKRANTI = "festival.SHRAWAN_SANKRANTI"
+    BHADRA_SANKRANTI = "festival.BHADRA_SANKRANTI"
+    ASHWIN_SANKRANTI = "festival.ASHWIN_SANKRANTI"
+    KARTIK_SANKRANTI = "festival.KARTIK_SANKRANTI"
+    MANGSIR_SANKRANTI = "festival.MANGSIR_SANKRANTI"
+    POUSH_SANKRANTI = "festival.POUSH_SANKRANTI"
+    MAGHE_SANKRANTI = "festival.MAGHE_SANKRANTI"
+    FALGUN_SANKRANTI = "festival.FALGUN_SANKRANTI"
+    CHAITRA_SANKRANTI = "festival.CHAITRA_SANKRANTI"
+    JANAI_PURNIMA = "festival.JANAI_PURNIMA"
+    RISHI_TARPANI = "festival.RISHI_TARPANI"
+    SARASWATI_PUJA = "festival.SARASWATI_PUJA"
+    SHREE_PANCHAMI = "festival.SHREE_PANCHAMI"
+    DAHI_CHIURA_KHANE_DIN = "festival.DAHI_CHIURA_KHANE_DIN"
+    GHYU_CHAKU_KHANE_DIN = "festival.GHYU_CHAKU_KHANE_DIN"
     LOKTANTRA_DIWAS = "festival.LOKTANTRA_DIWAS"
     CONSTITUTION_DAY = "festival.CONSTITUTION_DAY"
     PRITHVI_JAYANTI = "festival.PRITHVI_JAYANTI"
@@ -3093,6 +3113,14 @@ class MessagesSdkSettingsEffectCalendars:
         """`sdk.settings.effect.calendars.eras`"""
         return self._r.render("sdk.settings.effect.calendars.eras")
 
+    def hijri_criterion(self) -> str:
+        """`sdk.settings.effect.calendars.hijriCriterion`"""
+        return self._r.render("sdk.settings.effect.calendars.hijriCriterion")
+
+    def hijri_zone(self) -> str:
+        """`sdk.settings.effect.calendars.hijriZone`"""
+        return self._r.render("sdk.settings.effect.calendars.hijriZone")
+
     def kirat_yele(self) -> str:
         """`sdk.settings.effect.calendars.kiratYele`"""
         return self._r.render("sdk.settings.effect.calendars.kiratYele")
@@ -3664,6 +3692,13 @@ class MessagesSdkRashifal:
         return self._r.render(
             "sdk.rashifal.ingress",
             {"good": good, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}},
+        )
+
+    def passing(self, *, graha: GrahaKey, house: int, verdict: str) -> str:
+        """`sdk.rashifal.passing`"""
+        return self._r.render(
+            "sdk.rashifal.passing",
+            {"graha": {"$entity": graha.value}, "house": house, "verdict": verdict},
         )
 
     def saturn(self, *, house: int, phase: str, spell: str) -> str:
@@ -8452,6 +8487,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.ARYAGHAT_MADHAV_NARAYAN_MELA")
 
     @property
+    def asar_sankranti(self) -> EntityForms:
+        """The forms of `festival.ASAR_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.ASAR_SANKRANTI")
+
+    @property
     def ashtami_shraddha(self) -> EntityForms:
         """The forms of `festival.ASHTAMI_SHRADDHA` in the current locale."""
         return self._r.entity("festival.ASHTAMI_SHRADDHA")
@@ -8470,6 +8510,11 @@ class MessagesSdkEntityFestival:
     def ashvina_ayambil_oli_end(self) -> EntityForms:
         """The forms of `festival.ASHVINA_AYAMBIL_OLI_END` in the current locale."""
         return self._r.entity("festival.ASHVINA_AYAMBIL_OLI_END")
+
+    @property
+    def ashwin_sankranti(self) -> EntityForms:
+        """The forms of `festival.ASHWIN_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.ASHWIN_SANKRANTI")
 
     @property
     def asom_divas(self) -> EntityForms:
@@ -8510,6 +8555,11 @@ class MessagesSdkEntityFestival:
     def bahuda_jatra(self) -> EntityForms:
         """The forms of `festival.BAHUDA_JATRA` in the current locale."""
         return self._r.entity("festival.BAHUDA_JATRA")
+
+    @property
+    def baisakh_sankranti(self) -> EntityForms:
+        """The forms of `festival.BAISAKH_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.BAISAKH_SANKRANTI")
 
     @property
     def baisakh_snan_ends(self) -> EntityForms:
@@ -8565,6 +8615,11 @@ class MessagesSdkEntityFestival:
     def bathukamma(self) -> EntityForms:
         """The forms of `festival.BATHUKAMMA` in the current locale."""
         return self._r.entity("festival.BATHUKAMMA")
+
+    @property
+    def bhadra_sankranti(self) -> EntityForms:
+        """The forms of `festival.BHADRA_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.BHADRA_SANKRANTI")
 
     @property
     def bhai_tika(self) -> EntityForms:
@@ -8772,6 +8827,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.CHAITRA_AYAMBIL_OLI_END")
 
     @property
+    def chaitra_sankranti(self) -> EntityForms:
+        """The forms of `festival.CHAITRA_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.CHAITRA_SANKRANTI")
+
+    @property
     def champa_shashthi(self) -> EntityForms:
         """The forms of `festival.CHAMPA_SHASHTHI` in the current locale."""
         return self._r.entity("festival.CHAMPA_SHASHTHI")
@@ -8920,6 +8980,11 @@ class MessagesSdkEntityFestival:
     def constitution_day(self) -> EntityForms:
         """The forms of `festival.CONSTITUTION_DAY` in the current locale."""
         return self._r.entity("festival.CONSTITUTION_DAY")
+
+    @property
+    def dahi_chiura_khane_din(self) -> EntityForms:
+        """The forms of `festival.DAHI_CHIURA_KHANE_DIN` in the current locale."""
+        return self._r.entity("festival.DAHI_CHIURA_KHANE_DIN")
 
     @property
     def dakshinamurti_puja(self) -> EntityForms:
@@ -9167,6 +9232,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.FALGUNANDA_JAYANTI")
 
     @property
+    def falgun_sankranti(self) -> EntityForms:
+        """The forms of `festival.FALGUN_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.FALGUN_SANKRANTI")
+
+    @property
     def first_onam(self) -> EntityForms:
         """The forms of `festival.FIRST_ONAM` in the current locale."""
         return self._r.entity("festival.FIRST_ONAM")
@@ -9275,6 +9345,11 @@ class MessagesSdkEntityFestival:
     def ghode_jatra(self) -> EntityForms:
         """The forms of `festival.GHODE_JATRA` in the current locale."""
         return self._r.entity("festival.GHODE_JATRA")
+
+    @property
+    def ghyu_chaku_khane_din(self) -> EntityForms:
+        """The forms of `festival.GHYU_CHAKU_KHANE_DIN` in the current locale."""
+        return self._r.entity("festival.GHYU_CHAKU_KHANE_DIN")
 
     @property
     def gita_jayanti(self) -> EntityForms:
@@ -9762,6 +9837,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.JAIN_PARVA_PURNIMA")
 
     @property
+    def janai_purnima(self) -> EntityForms:
+        """The forms of `festival.JANAI_PURNIMA` in the current locale."""
+        return self._r.entity("festival.JANAI_PURNIMA")
+
+    @property
     def janmashtami(self) -> EntityForms:
         """The forms of `festival.JANMASHTAMI` in the current locale."""
         return self._r.entity("festival.JANMASHTAMI")
@@ -9775,6 +9855,11 @@ class MessagesSdkEntityFestival:
     def jayaprakash_narayan_jayanti(self) -> EntityForms:
         """The forms of `festival.JAYAPRAKASH_NARAYAN_JAYANTI` in the current locale."""
         return self._r.entity("festival.JAYAPRAKASH_NARAYAN_JAYANTI")
+
+    @property
+    def jestha_sankranti(self) -> EntityForms:
+        """The forms of `festival.JESTHA_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.JESTHA_SANKRANTI")
 
     @property
     def jhulana_purnima(self) -> EntityForms:
@@ -9910,6 +9995,11 @@ class MessagesSdkEntityFestival:
     def karpoori_thakur_jayanti(self) -> EntityForms:
         """The forms of `festival.KARPOORI_THAKUR_JAYANTI` in the current locale."""
         return self._r.entity("festival.KARPOORI_THAKUR_JAYANTI")
+
+    @property
+    def kartik_sankranti(self) -> EntityForms:
+        """The forms of `festival.KARTIK_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.KARTIK_SANKRANTI")
 
     @property
     def kartik_snan_begins(self) -> EntityForms:
@@ -10127,6 +10217,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.MAGHA_SHRADDHA")
 
     @property
+    def maghe_sankranti(self) -> EntityForms:
+        """The forms of `festival.MAGHE_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.MAGHE_SANKRANTI")
+
+    @property
     def maghi_tharu(self) -> EntityForms:
         """The forms of `festival.MAGHI_THARU` in the current locale."""
         return self._r.entity("festival.MAGHI_THARU")
@@ -10210,6 +10305,11 @@ class MessagesSdkEntityFestival:
     def mangala_chaturthi(self) -> EntityForms:
         """The forms of `festival.MANGALA_CHATURTHI` in the current locale."""
         return self._r.entity("festival.MANGALA_CHATURTHI")
+
+    @property
+    def mangsir_sankranti(self) -> EntityForms:
+        """The forms of `festival.MANGSIR_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.MANGSIR_SANKRANTI")
 
     @property
     def mannam_jayanthi(self) -> EntityForms:
@@ -10602,6 +10702,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.POHELA_BOISHAKH")
 
     @property
+    def poush_sankranti(self) -> EntityForms:
+        """The forms of `festival.POUSH_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.POUSH_SANKRANTI")
+
+    @property
     def pradosha_vrata(self) -> EntityForms:
         """The forms of `festival.PRADOSHA_VRATA` in the current locale."""
         return self._r.entity("festival.PRADOSHA_VRATA")
@@ -10732,6 +10837,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.RISHI_PANCHAMI")
 
     @property
+    def rishi_tarpani(self) -> EntityForms:
+        """The forms of `festival.RISHI_TARPANI` in the current locale."""
+        return self._r.entity("festival.RISHI_TARPANI")
+
+    @property
     def ropai_jatra(self) -> EntityForms:
         """The forms of `festival.ROPAI_JATRA` in the current locale."""
         return self._r.entity("festival.ROPAI_JATRA")
@@ -10822,6 +10932,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.SAPTAMI_SHRADDHA")
 
     @property
+    def saraswati_puja(self) -> EntityForms:
+        """The forms of `festival.SARASWATI_PUJA` in the current locale."""
+        return self._r.entity("festival.SARASWATI_PUJA")
+
+    @property
     def sardar_patel_jayanti(self) -> EntityForms:
         """The forms of `festival.SARDAR_PATEL_JAYANTI` in the current locale."""
         return self._r.entity("festival.SARDAR_PATEL_JAYANTI")
@@ -10835,6 +10950,11 @@ class MessagesSdkEntityFestival:
     def satyayugadi(self) -> EntityForms:
         """The forms of `festival.SATYAYUGADI` in the current locale."""
         return self._r.entity("festival.SATYAYUGADI")
+
+    @property
+    def saune_sankranti(self) -> EntityForms:
+        """The forms of `festival.SAUNE_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.SAUNE_SANKRANTI")
 
     @property
     def savitri_amavasya(self) -> EntityForms:
@@ -10912,6 +11032,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.SHRAWAN_PUTRADA_EKADASHI")
 
     @property
+    def shrawan_sankranti(self) -> EntityForms:
+        """The forms of `festival.SHRAWAN_SANKRANTI` in the current locale."""
+        return self._r.entity("festival.SHRAWAN_SANKRANTI")
+
+    @property
     def shreegha_jatra(self) -> EntityForms:
         """The forms of `festival.SHREEGHA_JATRA` in the current locale."""
         return self._r.entity("festival.SHREEGHA_JATRA")
@@ -10920,6 +11045,11 @@ class MessagesSdkEntityFestival:
     def shree_ballabh_jayanti(self) -> EntityForms:
         """The forms of `festival.SHREE_BALLABH_JAYANTI` in the current locale."""
         return self._r.entity("festival.SHREE_BALLABH_JAYANTI")
+
+    @property
+    def shree_panchami(self) -> EntityForms:
+        """The forms of `festival.SHREE_PANCHAMI` in the current locale."""
+        return self._r.entity("festival.SHREE_PANCHAMI")
 
     @property
     def shri_krishna_sinha_jayanti(self) -> EntityForms:
@@ -12710,6 +12840,11 @@ class MessagesSdkEntityCalendar:
         return self._r.entity("calendar.GREGORIAN")
 
     @property
+    def hijri_sighted(self) -> EntityForms:
+        """The forms of `calendar.HIJRI_SIGHTED` in the current locale."""
+        return self._r.entity("calendar.HIJRI_SIGHTED")
+
+    @property
     def hijri_tabular(self) -> EntityForms:
         """The forms of `calendar.HIJRI_TABULAR` in the current locale."""
         return self._r.entity("calendar.HIJRI_TABULAR")
@@ -13769,6 +13904,11 @@ class MessagesSdkCalendar:
         return MessagesSdkCalendarGregorian(self._r)
 
     @property
+    def hijri_sighted(self) -> MessagesSdkCalendarHijriSighted:
+        """The messages under `HIJRI_SIGHTED`."""
+        return MessagesSdkCalendarHijriSighted(self._r)
+
+    @property
     def hijri_tabular(self) -> MessagesSdkCalendarHijriTabular:
         """The messages under `HIJRI_TABULAR`."""
         return MessagesSdkCalendarHijriTabular(self._r)
@@ -14465,6 +14605,76 @@ class MessagesSdkCalendarHijriTabularDate:
         """`sdk.calendar.HIJRI_TABULAR.date.numeric`"""
         return self._r.render(
             "sdk.calendar.HIJRI_TABULAR.date.numeric",
+            {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkCalendarHijriSighted:
+    """The messages under `MessagesSdkCalendarHijriSighted`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def date(self) -> MessagesSdkCalendarHijriSightedDate:
+        """The messages under `date`."""
+        return MessagesSdkCalendarHijriSightedDate(self._r)
+
+    def month_name(self, *, month: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.monthName`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.monthName",
+            {"month": month},
+        )
+
+    def month_short(self, *, month: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.monthShort`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.monthShort",
+            {"month": month},
+        )
+
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
+
+class MessagesSdkCalendarHijriSightedDate:
+    """The messages under `MessagesSdkCalendarHijriSightedDate`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def full(self, *, day: int, month_name: str, weekday_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.date.full`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.date.full",
+            {"day": day, "monthName": month_name, "weekdayName": weekday_name, "year": year},
+        )
+
+    def long(self, *, day: int, month_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.date.long`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.date.long",
+            {"day": day, "monthName": month_name, "year": year},
+        )
+
+    def numeric(self, *, day: int, month: int, year: int) -> str:
+        """`sdk.calendar.HIJRI_SIGHTED.date.numeric`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_SIGHTED.date.numeric",
             {"day": day, "month": month, "year": year},
         )
 

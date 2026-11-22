@@ -3172,6 +3172,10 @@ typedef enum ts_calendar {
      * Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
      */
     TS_CALENDAR_ASSAM_SOLAR = 15,
+    /**
+     * Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days
+     */
+    TS_CALENDAR_HIJRI_SIGHTED = 16,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;

@@ -243,12 +243,12 @@ a frame around **slots**, and a slot is named in every shipped locale
 
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
-| `en-Latn` | `strict` | 2449 of 2449 | 0 of 2449 |
-| `en-Latn-NP` | `base` | 0 of 2449 | 0 of 2449 |
-| `hi-Deva-IN` | `base` | 2449 of 2449 | 2175 of 2449 |
-| `ne-Deva-NP` | `strict` | 2449 of 2449 | 2175 of 2449 |
-| `sa-Deva` | `base` | 1693 of 2449 | 2163 of 2449 |
-| `sa-Latn` | `base` | 1693 of 2449 | 2163 of 2449 |
+| `en-Latn` | `strict` | 2389 of 2389 | 0 of 2389 |
+| `en-Latn-NP` | `base` | 0 of 2389 | 0 of 2389 |
+| `hi-Deva-IN` | `base` | 2389 of 2389 | 2115 of 2389 |
+| `ne-Deva-NP` | `strict` | 2389 of 2389 | 2115 of 2389 |
+| `sa-Deva` | `base` | 1537 of 2389 | 2103 of 2389 |
+| `sa-Latn` | `base` | 1537 of 2389 | 2091 of 2389 |
 
 ## What a rich renderer gets
 
@@ -262,8 +262,8 @@ text arrived with them stripped.
 
 | locale | items with markup | markup parts | tags |
 |---|---:|---:|---|
-| `en-Latn` | 21 of 2449 | 42 | `b` |
-| `ne-Deva-NP` | 21 of 2449 | 42 | `b` |
+| `en-Latn` | 21 of 2389 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 2389 | 42 | `b` |
 
 | key | items of the plan |
 |---|---:|
@@ -285,7 +285,7 @@ source, and this is that rule read back off a rendered plan.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a rendered item's text parts, joined, are its text | **holds** | 0 of 4898 disagree |
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 4778 disagree |
 | every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
 
 ## Every key, emitted at least once
@@ -303,7 +303,7 @@ its limbs, which also kept **11 shipped rules** from ever holding.
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 77 of 78 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 4898
+own message, with no fallback and nothing to warn about: 4778
 renderings. What this chart cannot reach is named below, with the reason
 it needs another. A key missing from both fails, and so does a key
 excused that this chart emits — which is not a hypothetical: **three
@@ -364,7 +364,7 @@ outlive its blocker.
 
 ## What the packs carry, and what reads it
 
-78 of the 85 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.rashifal`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+78 of the 86 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.rashifal`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -376,35 +376,7 @@ outlive its blocker.
 | `sdk.reason.rashiNature` | a fact about the zodiac rather than about a chart: every chart would say the same twelve sentences |
 | `sdk.reason.conjunction` | a count of what `occupants` already names, graha by graha |
 
-No message is unaccounted for: every one either has a composer or has a
-reason. **So a further composer needs a key that does not exist yet**,
-as every one since the fifth has: the drishti, the rest of a placement,
-a reading a pack carries, the lagna, the rupas a graha's text requires,
-a bhava's sign, the chalit's disagreement.
-
-**What each cost was decided by the catalogue and not by the sentence.**
-Where the thing being said is a catalogue member, `sdk.entity` already
-names it in all five locales and only the frame had to be written — a
-dignity, a rashi, a point, two chara karakas. Where it is not, the words
-are the whole cost: a bhava's quadrant, a longevity tier, a strength
-band are computed and are not catalogue members, so a message would have
-to name each in words no locale here has been given (`state-readings.md`
-§8). The question a new composer asks is often not whether the SDK
-knows the fact but whether the model reached the catalogue — and
-[Q38](../QUESTIONS.md) sharpened even that: a kind is a **key space**,
-so where a corpus is what would supply the words, the question is
-whether it keys by the vocabulary the SDK computes.
-
-**It is not the only question, and this page used to say it was.** The
-sentence here read "the silences that remain are all of that kind",
-which was a claim about a set the repository owns, written once and
-believed after. The sections with no composer are named in the table
-above with a reason each — `POINTS`, `VAISESHIKAMSA`, `JAIMINI`,
-`OUTER`, `AVAKAHADA` and `MOMENT` — and they are not of one kind: a
-name, a decision about *which* number deserves a sentence, a knob, or
-nothing but the work. Naming them rather than counting them is the
-point, because the sentence that counted them said **six** for as long
-as it took to build four of them.
+- `sdk.rashifal.passing` is carried, emitted by nothing, and unexplained
 
 ## What a native reviewer has to read
 
@@ -416,25 +388,25 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 308 messages to read, 55 that render a value and
+**`ne-Deva-NP`** — 316 messages to read, 57 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
 |---|---:|
 | `sdk.amount` | 6 |
 | `sdk.aspect` | 2 |
-| `sdk.calendar` | 69 |
+| `sdk.calendar` | 74 |
 | `sdk.condition` | 11 |
 | `sdk.day` | 18 |
 | `sdk.karaka` | 2 |
 | `sdk.matching` | 2 |
 | `sdk.naming` | 7 |
-| `sdk.rashifal` | 3 |
+| `sdk.rashifal` | 4 |
 | `sdk.reading` | 5 |
 | `sdk.reason` | 37 |
 | `sdk.rite` | 13 |
 | `sdk.sankalpa` | 5 |
-| `sdk.settings` | 128 |
+| `sdk.settings` | 130 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —
@@ -462,10 +434,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 4715 | 71 |
-| `ne-Deva-NP` | 4715 | 8 |
-| `sa-Deva` | 4715 | 118 |
-| `sa-Latn` | 4715 | 118 |
+| `hi-Deva-IN` | 4784 | 71 |
+| `ne-Deva-NP` | 4784 | 8 |
+| `sa-Deva` | 4784 | 119 |
+| `sa-Latn` | 4784 | 119 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

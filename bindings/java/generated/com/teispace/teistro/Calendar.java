@@ -89,6 +89,11 @@ public enum Calendar implements Catalogued {
      */
     ASSAM_SOLAR(15, "ASSAM_SOLAR"),
 
+    /**
+     * Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days
+     */
+    HIJRI_SIGHTED(16, "HIJRI_SIGHTED"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

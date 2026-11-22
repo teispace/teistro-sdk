@@ -55,14 +55,17 @@ pub enum Calendar {
     TamilVakya = 14,
     /// Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
     AssamSolar = 15,
+    /// Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days
+    HijriSighted = 16,
 }
 
-const BY_KEY: [(&str, Calendar); 16] = [
+const BY_KEY: [(&str, Calendar); 17] = [
     ("ASSAM_SOLAR", Calendar::AssamSolar),
     ("BANGLADESHI", Calendar::Bangladeshi),
     ("BENGAL_SOLAR", Calendar::BengalSolar),
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
     ("GREGORIAN", Calendar::Gregorian),
+    ("HIJRI_SIGHTED", Calendar::HijriSighted),
     ("HIJRI_TABULAR", Calendar::HijriTabular),
     ("INDIAN_LUNISOLAR", Calendar::IndianLunisolar),
     ("INDIAN_NATIONAL", Calendar::IndianNational),
@@ -84,7 +87,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 16] = [
+    pub const ALL: [Calendar; 17] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -101,6 +104,7 @@ impl Calendar {
         Calendar::MalayalamSolar,
         Calendar::TamilVakya,
         Calendar::AssamSolar,
+        Calendar::HijriSighted,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -129,6 +133,7 @@ impl Calendar {
             Calendar::MalayalamSolar => "MALAYALAM_SOLAR",
             Calendar::TamilVakya => "TAMIL_VAKYA",
             Calendar::AssamSolar => "ASSAM_SOLAR",
+            Calendar::HijriSighted => "HIJRI_SIGHTED",
         }
     }
 
@@ -158,6 +163,7 @@ impl Calendar {
             Calendar::MalayalamSolar => "calendar.MALAYALAM_SOLAR",
             Calendar::TamilVakya => "calendar.TAMIL_VAKYA",
             Calendar::AssamSolar => "calendar.ASSAM_SOLAR",
+            Calendar::HijriSighted => "calendar.HIJRI_SIGHTED",
         }
     }
 
@@ -187,6 +193,7 @@ impl Calendar {
             Calendar::MalayalamSolar => "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
             Calendar::TamilVakya => "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha",
             Calendar::AssamSolar => "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)",
+            Calendar::HijriSighted => "Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days",
         }
     }
 
@@ -216,6 +223,7 @@ impl Calendar {
             Calendar::MalayalamSolar => None,
             Calendar::TamilVakya => None,
             Calendar::AssamSolar => None,
+            Calendar::HijriSighted => None,
         }
     }
 
@@ -245,6 +253,7 @@ impl Calendar {
             Calendar::MalayalamSolar => Mark::Verified,
             Calendar::TamilVakya => Mark::Verified,
             Calendar::AssamSolar => Mark::Verified,
+            Calendar::HijriSighted => Mark::Verified,
         }
     }
 
@@ -274,6 +283,7 @@ impl Calendar {
             Calendar::MalayalamSolar => false,
             Calendar::TamilVakya => false,
             Calendar::AssamSolar => false,
+            Calendar::HijriSighted => false,
         }
     }
 
@@ -304,6 +314,7 @@ impl Calendar {
             Calendar::MalayalamSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
             Calendar::TamilVakya => &[Source { text: "Vakyakarana, ed. T. S. Kuppanna Sastri and K. V. Sarma, 1962, I.2-4 and III.1, III.7-8; Manonmani Vilasam suddha vakya almanac, 1997-2021", reference: "docs/calendars/regional-solar.md" }],
             Calendar::AssamSolar => &[Source { text: "Government of Assam, General Administration Department, lists of holidays for 2023 and 2025 (Bhaskarabda dates); Sewell and Dikshit, The Indian Calendar, 1896, art. 28", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::HijriSighted => &[Source { text: "Odeh, New criterion for lunar crescent visibility, Experimental Astronomy 18, 2004, eq. 2, p. 61; Yallop, NAO Technical Note 69, 1997, eq. 6.1, p. 11", reference: "docs/03-design/hijri-sighted.md" }],
         }
     }
 
@@ -333,6 +344,7 @@ impl Calendar {
             Calendar::MalayalamSolar => &[],
             Calendar::TamilVakya => &[],
             Calendar::AssamSolar => &[],
+            Calendar::HijriSighted => &[],
         }
     }
 
@@ -381,7 +393,7 @@ impl Calendar {
     /// use teistro_core::catalogue::Calendar;
     ///
     /// assert_eq!(Calendar::from_id(0), Some(Calendar::Gregorian));
-    /// assert_eq!(Calendar::from_id(16), None);
+    /// assert_eq!(Calendar::from_id(17), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Calendar> {
@@ -402,6 +414,7 @@ impl Calendar {
             13 => Some(Calendar::MalayalamSolar),
             14 => Some(Calendar::TamilVakya),
             15 => Some(Calendar::AssamSolar),
+            16 => Some(Calendar::HijriSighted),
             _ => None,
         }
     }
