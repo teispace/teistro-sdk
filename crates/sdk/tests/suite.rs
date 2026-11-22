@@ -112,6 +112,8 @@ mod gujarat;
 #[cfg(feature = "builtin-ephemeris")]
 mod harmonics;
 #[cfg(feature = "builtin-ephemeris")]
+mod hijri_sighted;
+#[cfg(feature = "builtin-ephemeris")]
 mod hits;
 #[cfg(feature = "builtin-ephemeris")]
 mod homa_ahuti;

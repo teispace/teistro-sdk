@@ -12,7 +12,7 @@ use super::knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
+    CrescentCriterion, CrescentZone, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
     Ekadhipatya, FestivalObserver, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException,
     GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
@@ -1075,6 +1075,11 @@ fn calendars() -> Calendars {
         // The count printed today (`calendars/bikram-sambat.md` §Kirat
         // Yele Sambat).
         kirat_yele: KiratYeleEpoch::Kirati,
+        // Odeh's criterion, fitted to the most sightings, at its
+        // naked-eye zone, which gives every printed Nepali Eid of AH
+        // 1440 to 1447 (`03-design/hijri-sighted-measured.md`).
+        hijri_criterion: CrescentCriterion::Odeh2006,
+        hijri_zone: CrescentZone::A,
     }
 }
 

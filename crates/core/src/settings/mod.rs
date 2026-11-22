@@ -44,7 +44,7 @@ pub use knobs::{
     AfterCycle, AmritKalam, AntardashaPlace, AshtakavargaGoodFrom, AshtottariGrouping,
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
-    DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Dip, Drekkana, Drik, DstGap,
+    CrescentCriterion, CrescentZone, DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Dip, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
     Ekadhipatya, FestivalObserver, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException,
     GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
@@ -1606,6 +1606,18 @@ group!(
         /// (*Kirat Yele Samvat Abhilekh*, 2010), 1281 years fewer
         /// (`calendars/bikram-sambat.md` §Kirat Yele Sambat).
         kirat_yele: KiratYeleEpoch => Rule,
+        /// The test a sighted Hijri month's crescent is judged by
+        /// (`calendar.HIJRI_SIGHTED`, `03-design/hijri-sighted.md` §2):
+        /// Odeh's zones over the topocentric arc of vision and crescent
+        /// width (*Experimental Astronomy* 18, 2004, eq. 2, p. 61), or
+        /// Yallop's q-test (NAO Technical Note 69, 1997, eq. 6.1, p. 11).
+        hijri_criterion: CrescentCriterion => Rule,
+        /// The weakest zone of `hijri_criterion` a crescent counts as
+        /// seen in. The default, zone A, is Odeh's "visible by naked
+        /// eyes": at Kathmandu it gives all twelve of Nepal's Eids of
+        /// AH 1440 to 1447 measured, and 339 of the 386 moon-sighted days
+        /// India's lists print (`03-design/hijri-sighted-measured.md`).
+        hijri_zone: CrescentZone => Rule,
     }
 );
 

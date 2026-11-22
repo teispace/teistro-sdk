@@ -47,6 +47,7 @@ pub mod change;
 pub mod death_time;
 pub mod festival;
 pub mod first_year;
+pub mod hijri_sighted;
 pub mod limb;
 pub mod month;
 pub mod nepal_sambat;

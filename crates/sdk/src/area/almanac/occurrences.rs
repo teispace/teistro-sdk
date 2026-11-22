@@ -473,6 +473,7 @@ impl AlmanacArea<'_> {
             (place, offset, answered),
             &festivals,
             (viewed, (from, to)),
+            &mut provenance,
         )?;
         let mut years = Vec::with_capacity(bounds.len());
         for year in &bounds {

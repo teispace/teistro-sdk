@@ -13,11 +13,13 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::Completion;
+use teistro_astro::crescent::Sighting;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::FrameLongitudes;
 use teistro_astro::lockstep::Lockstep;
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::rise_set::Solver;
+use teistro_calendar::hijri_sighted::SightedMonths;
 use teistro_calendar::lunisolar::{MonthKind, SAMSARPA_REACH_MONTHS};
 use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
@@ -2158,6 +2160,68 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let days = self.run(from, to, place, Moon::Unread, Self::change_value)?;
         let points = ChangePoints::of(&days.value)?;
         Ok(Envelope::new(points, days.provenance))
+    }
+
+    /// The sighted Hijri months covering every day from `first` to `last`
+    /// at `place` (`calendar.HIJRI_SIGHTED`, `03-design/hijri-sighted.md`),
+    /// the crescent judged by the settings' `calendars.hijri_criterion` down
+    /// to `calendars.hijri_zone` over the almanac's own sky.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// # use teistro_calendar::Gregorian;
+    /// # use teistro_core::catalogue::Ayanamsha;
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// let (first, last) = (fixed_from_gregorian(2025, 3, 1), fixed_from_gregorian(2025, 4, 30));
+    /// let months = almanac.sighted_hijri(first, last, &kathmandu)?;
+    /// // The months cover the span, from a first day at or before it.
+    /// assert!(months.months()[0].first.get() <= first.get());
+    /// assert!(months.end().get() > last.get());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A zone the criterion calls unseen (`INVALID_ARG` on
+    /// `calendars.hijri_zone`), and whatever
+    /// [`crate::hijri_sighted::sighted_months`] refuses.
+    pub fn sighted_hijri(
+        &self,
+        first: FixedDay,
+        last: FixedDay,
+        place: &Place,
+    ) -> Result<SightedMonths, Error> {
+        let settings = self.settings();
+        let sighting = Sighting::new(
+            settings.calendars.hijri_criterion,
+            settings.calendars.hijri_zone,
+        )?;
+        let completion = self.completion();
+        crate::hijri_sighted::sighted_months(
+            &completion,
+            *place,
+            self.delta_t,
+            sighting,
+            (first, last),
+        )
     }
 
     /// Fills each day's first moonrise between its sunrise and the next

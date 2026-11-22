@@ -23,6 +23,7 @@ use serde::{Deserialize, Serialize};
 use teistro_calendar::easter::{Computus, easter};
 use teistro_calendar::gregorian::gregorian_from_fixed;
 use teistro_calendar::hijri::HijriOffset;
+use teistro_calendar::hijri_sighted::SightedMonths;
 use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Nakshatra, Tithi, Vara};
@@ -1348,6 +1349,36 @@ impl Dated {
 }
 
 impl DatedRule {
+    /// Whether the rule reads a date of the sighted Hijri calendar, whose
+    /// months the almanac reckons at the request's place only for a rule
+    /// that asks ([`dated_with`]).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_panchanga::festival::{Dated, DatedRule};
+    ///
+    /// let eid = DatedRule {
+    ///     key: "EID_AL_FITR".to_owned(),
+    ///     source: "1 Shawwal".to_owned(),
+    ///     on: Dated::CivilDate { calendar: Calendar::HijriSighted, month: 10, day: 1, skipped: None },
+    ///     meta: Default::default(),
+    /// };
+    /// assert!(eid.reads_sighted_hijri());
+    /// ```
+    #[must_use]
+    pub fn reads_sighted_hijri(&self) -> bool {
+        matches!(
+            self.on,
+            Dated::CivilDate {
+                calendar: Calendar::HijriSighted,
+                ..
+            } | Dated::CivilWeekday {
+                calendar: Calendar::HijriSighted,
+                ..
+            }
+        )
+    }
+
     /// Whether the rule is kept on the civil day of the Sun's entry into a
     /// nakshatra, which the days are read for only when a rule asks
     /// ([`FestivalDay::sun_entry`]).
@@ -1481,7 +1512,15 @@ impl DatedRule {
             } => ("tithiInMonth", calendar, month),
             Dated::SunEnters { .. } | Dated::Easter { .. } => return Ok(()),
         };
-        if shipped(calendar).is_none() {
+        let sighted = calendar == Calendar::HijriSighted;
+        if sighted && matches!(form, "nakshatraInMonth" | "tithiInMonth") {
+            return Err(Error::unsupported(format!(
+                "{}: a star's or a tithi's day in a sighted Hijri month is not reckoned; keep the rule on a date or a weekday",
+                self.key
+            ))
+            .with_field(format!("{form}.calendar")));
+        }
+        if shipped(calendar).is_none() && !sighted {
             return Err(Error::invalid_arg(format!(
                 "{}: the SDK does not ship the `{}` calendar",
                 self.key,
@@ -1832,6 +1871,24 @@ pub fn dated(
     days: &[FestivalDay],
     hijri: HijriOffset,
 ) -> Result<Observances, Error> {
+    dated_with(rules, days, hijri, None)
+}
+
+/// As [`dated`], with the sighted Hijri months a rule on
+/// `calendar.HIJRI_SIGHTED` reads its days in: the almanac reckons them at
+/// the request's place over the days and the year before them
+/// (`Almanac::sighted_hijri`, `03-design/hijri-sighted.md`).
+///
+/// # Errors
+///
+/// As [`dated`], and a rule on the sighted calendar with no months to
+/// read (`INVALID_ARG`), or a day the months do not cover.
+pub fn dated_with(
+    rules: &[DatedRule],
+    days: &[FestivalDay],
+    hijri: HijriOffset,
+    sighted: Option<&SightedMonths>,
+) -> Result<Observances, Error> {
     for rule in rules {
         rule.check()?;
     }
@@ -1894,6 +1951,14 @@ pub fn dated(
                     keeps_tibetan(fixed, on.year, month, wanted, skipped.unwrap_or_default())
                         .then_some(on)
                 }
+                Dated::CivilDate {
+                    calendar: Calendar::HijriSighted,
+                    ..
+                }
+                | Dated::CivilWeekday {
+                    calendar: Calendar::HijriSighted,
+                    ..
+                } => on_sighted(rule, sighted, fixed, day.vara)?,
                 Dated::CivilDate { calendar, .. } | Dated::CivilWeekday { calendar, .. } => {
                     let on = if calendar == Calendar::HijriTabular {
                         hijri.read(fixed)?
@@ -1916,6 +1981,25 @@ pub fn dated(
         }
     }
     Ok(answer)
+}
+
+/// The sighted Hijri date `fixed` keeps `rule` on, if it keeps it.
+fn on_sighted(
+    rule: &DatedRule,
+    sighted: Option<&SightedMonths>,
+    fixed: FixedDay,
+    vara: Vara,
+) -> Result<Option<CalendarDate>, Error> {
+    let months = sighted.ok_or_else(|| {
+        Error::invalid_arg(format!(
+            "{}: a rule on `HIJRI_SIGHTED` reads the months sighted at a place, which only a request at a place reckons",
+            rule.key
+        ))
+        .with_field("civilDate.calendar")
+    })?;
+    let on = months.date_of(fixed)?;
+    let length = months.month_length(on.year, on.month)?;
+    Ok(rule.on.holds(&on, length, vara).then_some(on))
 }
 
 /// The spans of one limb of a day, the nakshatras or the tithis.
