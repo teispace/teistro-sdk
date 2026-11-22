@@ -20,12 +20,13 @@
 //! nothing. A hit that is neither an ingress nor a station is not an event
 //! of a period, so it is not said.
 
+use teistro_gochar::GrahaGochar;
 use teistro_gochar::hits::{HitEvent, Motion};
 use teistro_gochar::sade_sati::Phase;
 use teistro_intl::messages::sdk::rashifal as said;
 use teistro_rashifal::{EventFrom, RashiReading, SaturnStanding};
 
-use crate::Plan;
+use crate::{Plan, gochar};
 
 /// What `reading` says, in the order a reader takes it in.
 ///
@@ -54,12 +55,39 @@ use crate::Plan;
 /// ```
 #[must_use]
 pub fn rashifal(reading: &RashiReading) -> Plan {
-    let mut plan = crate::gochar(&reading.gochar);
+    let mut plan = Plan::default();
+    gochar::say_from(&mut plan, &reading.gochar);
+    for graha in &reading.gochar.grahas {
+        let holds = reading
+            .holds
+            .get(graha.graha as usize)
+            .copied()
+            .unwrap_or(true);
+        if holds {
+            gochar::say_graha(&mut plan, graha);
+        } else {
+            say_passing(&mut plan, graha);
+        }
+    }
+    gochar::say_bindus(&mut plan, &reading.gochar);
     say_saturn(&mut plan, reading.saturn);
     for event in &reading.events {
         say_event(&mut plan, event);
     }
     plan
+}
+
+/// A transit whose graha may change sign within the period: its house
+/// and verdict at the reading and who obstructs it, said as the reading's
+/// alone. Where in its sign it bears fruit is left unsaid, since the sign
+/// may not be the period's.
+fn say_passing(plan: &mut Plan, graha: &GrahaGochar) {
+    plan.say(&said::Passing {
+        graha: graha.graha,
+        house: i64::from(graha.house),
+        verdict: String::from(graha.verdict.key()),
+    });
+    gochar::say_vedha(plan, graha);
 }
 
 /// Saturn's house from the sign, with its phase or its spell.
@@ -193,6 +221,31 @@ mod tests {
             let transits = crate::gochar(&reading.gochar);
             assert_eq!(plan.items[..transits.len()], transits.items[..]);
         }
+    }
+
+    /// A transit that does not hold through the period is said as the
+    /// reading's alone, in its place among the transits, without where it
+    /// bears fruit; every other transit is the gochar composer's own.
+    #[test]
+    fn a_transit_that_does_not_hold_is_said_as_the_readings() {
+        let mut reading = readings()[0].clone();
+        reading.holds[Graha::Moon as usize] = false;
+        let plan = rashifal(&reading);
+        let passing = keyed(&plan, said::Passing::KEY);
+        assert_eq!(passing.len(), 1);
+        assert_eq!(passing[0].params["graha"], Value::catalogued(Graha::Moon));
+        let moon = Value::catalogued(Graha::Moon);
+        let moon_items = |key: &str| {
+            keyed(&plan, key)
+                .into_iter()
+                .filter(|item| item.params.get("graha") == Some(&moon))
+                .count()
+        };
+        assert_eq!(moon_items("sdk.reason.gochar.transit"), 0);
+        assert_eq!(moon_items("sdk.reason.gochar.fruition"), 0);
+        // The Sun's lines come first and are the gochar composer's own.
+        let whole = rashifal(&readings()[0]);
+        assert_eq!(plan.items[1], whole.items[1]);
     }
 
     #[test]

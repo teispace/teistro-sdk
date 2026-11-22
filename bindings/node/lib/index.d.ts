@@ -1346,6 +1346,12 @@ export interface RashiReading {
   readonly saturn: { readonly house: number; readonly sadeSati: SadeSatiPhase | null; readonly spell: boolean };
   /** Every event of the period, in time order, counted from it. */
   readonly events: readonly RashifalEvent[];
+  /**
+   * Whether each graha, the Sun to Ketu, keeps its sign through the whole
+   * period, so its verdict is the period's; false when it changes sign
+   * within it, or may, and the verdict is the snapshot's alone.
+   */
+  readonly holds: readonly boolean[];
 }
 
 /** One period read for each of the twelve signs. */

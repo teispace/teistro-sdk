@@ -13793,6 +13793,11 @@ class RashiReading:
     events: Tuple[RashifalEvent, ...]
     """Every event of the period, in time order, counted from it."""
 
+    holds: Tuple[bool, ...]
+    """Whether each graha, the Sun to Ketu, keeps its sign through the whole
+    period, so its verdict is the period's; false when it changes sign
+    within it, or may, and the verdict is the snapshot's alone."""
+
 
 @dataclass(frozen=True)
 class RashifalPanchanga:
@@ -17862,6 +17867,7 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
                 )
                 for e in one["events"]
             ),
+            holds=tuple(bool(kept) for kept in one["holds"]),
         )
 
     def score(one: Mapping[str, Any]) -> BaselineScore:

@@ -3,8 +3,10 @@
 //! period's ingresses and stations found exactly.
 
 use teistro_astro::events::Lattice;
+use teistro_astro::events::{greatest_rate, least_rate};
 use teistro_calendar::{CalendarDate, FixedDay};
 use teistro_chart::foundation::{TransitEvent, TransitEventKind};
+use teistro_core::catalogue::Graha;
 use teistro_core::envelope::{Convention, Envelope};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -12,8 +14,9 @@ use teistro_core::time::UtcOffset;
 use teistro_gochar::hits::{self, Hit, HitEvent};
 use teistro_gochar::{GocharRules, Transit};
 use teistro_panchanga::span;
+use teistro_port_ephemeris::Body;
 use teistro_rashifal::baseline::Panchanga as Limbs;
-use teistro_rashifal::{PeriodEvent, RashifalRules, rashifal, reference_day};
+use teistro_rashifal::{PeriodEvent, RashifalRules, rashifal_holding, reference_day};
 
 use crate::area::{AlmanacArea, ChartArea, system_of};
 use crate::hit_request::{motion, station};
@@ -104,10 +107,14 @@ impl ChartArea<'_> {
                 .iter()
                 .map(|one| {
                     let place = *one.request.place();
+                    // The snapshot, a minute after it for the motion, and the
+                    // period's two ends for which graha keeps its sign.
                     let places = founder.longitudes(
                         &[
                             one.instant,
                             JulianDay::literal(one.instant.get() + MOTION_STEP_DAYS),
+                            one.window.0,
+                            one.window.1,
                         ],
                         &place,
                     )?;
@@ -128,9 +135,9 @@ impl ChartArea<'_> {
         let mut provenance = None;
         let mut periods = Vec::with_capacity(prepared.len());
         for (one, (places, events)) in prepared.into_iter().zip(searched) {
-            let [now, then] = places.value.as_slice() else {
+            let [now, then, opening, closing] = places.value.as_slice() else {
                 return Err(Error::internal(
-                    "two instants were placed and the founder answered otherwise",
+                    "four instants were placed and the founder answered otherwise",
                 ));
             };
             let transits = now.map(Transit::at_longitude);
@@ -144,7 +151,20 @@ impl ChartArea<'_> {
                 spells: one.request.spells().to_vec(),
             };
             let events: Vec<PeriodEvent> = events.iter().map(period_event).collect();
-            let readings = rashifal(&transits, &events, &rules);
+            let days = one.window.1.get() - one.window.0.get();
+            let holds = std::array::from_fn(|at| {
+                let graha = Graha::ALL.get(at).copied();
+                let tracked = graha.is_some_and(|graha| one.request.events().contains(&graha));
+                match (graha, opening.get(at), closing.get(at)) {
+                    (Some(graha), _, _) if tracked => !events.iter().any(|event| {
+                        event.hit.graha == graha
+                            && matches!(event.hit.event, HitEvent::SignIngress { .. })
+                    }),
+                    (Some(graha), Some(&from), Some(&to)) => keeps_its_sign(graha, from, to, days),
+                    _ => false,
+                }
+            });
+            let readings = rashifal_holding(&transits, &events, holds, &rules);
             let stamp = provenance.get_or_insert(places.provenance);
             let snapshot = snapshot_convention(one.request.snapshot());
             if !stamp.applied_conventions.contains(&snapshot) {
@@ -268,6 +288,35 @@ struct Prepared<'r> {
     window: (JulianDay<Utc>, JulianDay<Utc>),
 }
 
+/// Whether a graha whose ingresses were not searched keeps one sign from
+/// `from` to `to` (sidereal degrees) over `days`. A body that never turns
+/// (the Sun, the Moon) kept it when both ends share a sign and it could
+/// not have gone the whole way round; one that can turn kept it only when
+/// even its greatest rate could not have reached either edge of the sign.
+/// The nodes are taken as the true node's, which turns, so a period the
+/// bound cannot clear says "may change" rather than "holds".
+fn keeps_its_sign(graha: Graha, from: f64, to: f64, days: f64) -> bool {
+    const SIGN: f64 = 30.0;
+    let body = match graha {
+        Graha::Sun => Body::Sun,
+        Graha::Moon => Body::Moon,
+        Graha::Mars => Body::Mars,
+        Graha::Mercury => Body::Mercury,
+        Graha::Jupiter => Body::Jupiter,
+        Graha::Venus => Body::Venus,
+        Graha::Saturn => Body::Saturn,
+        _ => Body::TrueNode,
+    };
+    let sign = |at: f64| (at.rem_euclid(360.0) / SIGN).floor();
+    let reach = greatest_rate(body) * days;
+    if least_rate(body).is_some() {
+        sign(from) == sign(to) && reach < 360.0 - SIGN
+    } else {
+        let into = from.rem_euclid(SIGN);
+        reach < into.min(SIGN - into)
+    }
+}
+
 /// The convention a snapshot is stamped with.
 fn snapshot_convention(snapshot: Snapshot) -> Convention {
     Convention {
@@ -320,5 +369,34 @@ fn period_event(event: &TransitEvent) -> PeriodEvent {
             event: happened,
         },
         sign,
+    }
+}
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_steady_body_keeps_its_sign_unless_it_could_have_gone_round() {
+        // The Moon over one day, mid-sign at both ends.
+        assert!(keeps_its_sign(Graha::Moon, 100.0, 112.0, 1.0));
+        // Into the next sign by the day's end.
+        assert!(!keeps_its_sign(Graha::Moon, 115.0, 128.0, 1.0));
+        // Over a month she comes round to the sign she left.
+        assert!(!keeps_its_sign(Graha::Moon, 100.0, 101.0, 29.0));
+        // The Sun over a week, mid-sign.
+        assert!(keeps_its_sign(Graha::Sun, 212.0, 219.0, 7.0));
+    }
+
+    #[test]
+    fn a_body_that_turns_keeps_its_sign_only_out_of_reach_of_its_edges() {
+        // Mars mid-sign over a week: 6.3 degrees at most, 15 to an edge.
+        assert!(keeps_its_sign(Graha::Mars, 135.0, 136.0, 7.0));
+        // Near an edge over a month he may have crossed and come back.
+        assert!(!keeps_its_sign(Graha::Mars, 121.0, 122.0, 30.0));
+        // The nodes are bounded as the true node's.
+        assert!(!keeps_its_sign(Graha::Rahu, 300.5, 300.3, 7.0));
+        assert!(keeps_its_sign(Graha::Rahu, 315.0, 314.8, 7.0));
     }
 }

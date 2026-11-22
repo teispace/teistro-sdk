@@ -6237,6 +6237,7 @@ final class RashiReading {
     required this.gochar,
     required this.saturn,
     required this.events,
+    required this.holds,
   });
 
   /// The sign.
@@ -6250,6 +6251,11 @@ final class RashiReading {
 
   /// Every event of the period, in time order, counted from it.
   final List<RashifalEvent> events;
+
+  /// Whether each graha, the Sun to Ketu, keeps its sign through the whole
+  /// period, so its verdict is the period's; false when it changes sign
+  /// within it, or may, and the verdict is the snapshot's alone.
+  final List<bool> holds;
 }
 
 /// What the baseline's score reads of the reference day's panchanga at
@@ -18666,6 +18672,9 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
             house: e['house']! as int,
             goodHouse: e['goodHouse']! as bool,
           ),
+      ]),
+      holds: List<bool>.unmodifiable([
+        for (final kept in one['holds']! as List<Object?>) kept! as bool,
       ]),
     );
   }

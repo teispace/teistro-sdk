@@ -52,15 +52,27 @@ use crate::Plan;
 #[must_use]
 pub fn gochar(reading: &GocharReading) -> Plan {
     let mut plan = Plan::default();
+    say_from(&mut plan, reading);
+    for graha in &reading.grahas {
+        say_graha(&mut plan, graha);
+    }
+    say_bindus(&mut plan, reading);
+    plan
+}
+
+/// The sign the transits are counted from, when the message has words
+/// for its reference.
+pub(crate) fn say_from(plan: &mut Plan, reading: &GocharReading) {
     if let Some(from) = from_key(reading.reference.from) {
         plan.say(&said::From {
             from: String::from(from),
             rashi: reading.reference.sign,
         });
     }
-    for graha in &reading.grahas {
-        say_graha(&mut plan, graha);
-    }
+}
+
+/// The seven's bindus, when the reading carries the Ashtakavarga.
+pub(crate) fn say_bindus(plan: &mut Plan, reading: &GocharReading) {
     for transit in reading.ashtakavarga.iter().flatten() {
         plan.say(&said::Ashtakavarga {
             graha: transit.graha,
@@ -68,11 +80,10 @@ pub fn gochar(reading: &GocharReading) -> Plan {
             good: String::from(yes_or_no(transit.good)),
         });
     }
-    plan
 }
 
 /// One graha's sentences: the transit, its obstruction, its fruition.
-fn say_graha(plan: &mut Plan, graha: &GrahaGochar) {
+pub(crate) fn say_graha(plan: &mut Plan, graha: &GrahaGochar) {
     plan.say(&said::Transit {
         graha: graha.graha,
         house: i64::from(graha.house),
@@ -80,6 +91,12 @@ fn say_graha(plan: &mut Plan, graha: &GrahaGochar) {
         // spelling too.
         verdict: String::from(graha.verdict.key()),
     });
+    say_vedha(plan, graha);
+    say_fruition(plan, graha);
+}
+
+/// Who obstructs a transit, when something does.
+pub(crate) fn say_vedha(plan: &mut Plan, graha: &GrahaGochar) {
     if let (Verdict::Obstructed, Some(house)) = (graha.verdict, graha.vedha_house) {
         plan.say(&said::Vedha {
             grahas: graha
@@ -90,6 +107,10 @@ fn say_graha(plan: &mut Plan, graha: &GrahaGochar) {
             house: i64::from(house),
         });
     }
+}
+
+/// Where in its sign a transit bears fruit, unless it bears it throughout.
+fn say_fruition(plan: &mut Plan, graha: &GrahaGochar) {
     if let Some(part) = part_key(graha.fruition) {
         plan.say(&said::Fruition {
             graha: graha.graha,
