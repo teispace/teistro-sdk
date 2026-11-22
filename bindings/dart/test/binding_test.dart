@@ -1103,8 +1103,8 @@ void main() {
       altitudeM: Altitude(1400),
     );
     const panchanga = FestivalRequest(rules: FestivalPack.nepalPanchanga);
-    // Kartik 23, 2083 (9 November 2026) alone: Tihar's gap day, its span
-    // whole all the same.
+    // Kartik 23, 2083 (9 November 2026) alone: the cows' worship (C2301),
+    // Tihar's span whole all the same.
     final answer = ctx.almanac.festivals(
       from: Calendar.gregorian.date(2026, 11, 9),
       to: Calendar.gregorian.date(2026, 11, 9),
@@ -1121,10 +1121,10 @@ void main() {
       ),
       [
         '7:KAG_TIHAR',
-        '8:KUKUR_TIHAR+LAKSHMI_PUJA',
-        '9:-',
-        '10:GOVARDHAN_PUJA+MHA_PUJA',
-        '11:YAMA_DWITIYA',
+        '8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI',
+        '9:GAI_PUJA',
+        '10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR',
+        '11:YAMA_DWITIYA+KIJA_PUJA',
       ],
     );
     final dashain = ctx.almanac.next(
@@ -1136,6 +1136,9 @@ void main() {
     );
     expect([dashain.day.month, dashain.day.day], [10, 11]);
     expect([dashain.group!.last.month, dashain.group!.last.day], [10, 25]);
+    // The 8th holds two sunrises, so the 19th is a gap of the span.
+    final gap = dashain.group!.days[8];
+    expect([gap.day.day, gap.gap], [19, true]);
     expect(
       () => ctx.almanac.next(
         after: 2461041.76,

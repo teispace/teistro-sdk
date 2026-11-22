@@ -881,9 +881,10 @@ public final class BindingTest {
         });
 
         // Festival groups (festival-groups.md): Kartik 23, 2083 alone
-        // answers Tihar's whole span with its gap day, the next Dashain
-        // from 1 January 2026 runs 11 to 25 October, and a key no group of
-        // the request has is refused on group.
+        // answers Tihar's whole span, the 9th the cows' worship (C2301);
+        // the next Dashain from 1 January 2026 runs 11 to 25 October with
+        // the 19th a gap; and a key no group of the request has is refused
+        // on group.
         tests.put("a festival group spans its members and marks a gap day", () -> {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
@@ -895,14 +896,18 @@ public final class BindingTest {
                 GroupSpan tihar = answer.groups().stream().filter(s -> s.group().equals("TIHAR")).findFirst()
                         .orElseThrow();
                 same("LAKSHMI_PUJA", tihar.main(), "Lakshmi puja its main day");
-                same(List.of("7:KAG_TIHAR", "8:KUKUR_TIHAR+LAKSHMI_PUJA", "9:-", "10:GOVARDHAN_PUJA+MHA_PUJA",
-                        "11:YAMA_DWITIYA"), tihar.days().stream()
-                        .map(d -> d.day().day() + ":" + (d.gap() ? "-" : String.join("+", d.members())))
-                        .toList(), "the five days and the gap");
+                same(List.of("7:KAG_TIHAR", "8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI",
+                        "9:GAI_PUJA", "10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR", "11:YAMA_DWITIYA+KIJA_PUJA"),
+                        tihar.days().stream()
+                                .map(d -> d.day().day() + ":" + (d.gap() ? "-" : String.join("+", d.members())))
+                                .toList(),
+                        "the five days");
                 NextOccurrence dashain = committee.almanac().nextGroup(2_461_041.76, kathmandu, 20_700, "DASHAIN",
                         panchanga, null, null);
                 same(List.of(10, 11, 10, 25), List.of(dashain.day().month(), dashain.day().day(),
                         dashain.group().last().month(), dashain.group().last().day()), "Dashain's span");
+                var gap = dashain.group().days().get(8);
+                same(List.of(19, true), List.of(gap.day().day(), gap.gap()), "Dashain's gap day");
                 same("group", refusal(() -> committee.almanac().nextGroup(2_461_041.76, kathmandu, 20_700, "HOLI",
                         panchanga, null, null)).field(), "a group the request has not");
             }
