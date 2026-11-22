@@ -5302,10 +5302,10 @@ final class Day {
   /// Which policy synthesised its bounds, when it had none; zero otherwise.
   final Uint8List statePolarPolicy;
 
-  /// Which sunrise convention the arc was reckoned by, the one an atmospheric convention gave its air to, or a composed convention's disc point and refraction; `0xFF` for a custom altitude.
+  /// Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.
   final Uint8List conventionKind;
 
-  /// The altitude in degrees when the convention is custom, the horizon's depression by the observer's height (negative) when it is composed with one; zero otherwise.
+  /// The altitude in degrees when the convention is custom; zero otherwise.
   final Float64List conventionValue;
 
   /// The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise.
