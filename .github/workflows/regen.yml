@@ -11,7 +11,11 @@
 # author reads, applies (`git apply --3way regen.patch`) and commits.
 #
 #   gh workflow run regen.yml --ref <branch>
+#   gh workflow run regen.yml --ref <branch> -f version=1.0.0-rc.7
 #   gh run download <run> --name regen
+#
+# With a version, `cargo xtask version` sets it first, so a release's bump
+# and every page that names the version come back as one patch.
 #
 # The check list is read from fast-check.yml, so a check added there is
 # swept here without an edit (docs/06-cicd/01-pipelines.md).
@@ -19,6 +23,11 @@ name: regen
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "A release's version to set first (cargo xtask version), or empty"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -49,6 +58,16 @@ jobs:
           shared-key: regen
       - name: Build the tasks
         run: cargo build -p xtask
+      - name: Set the release's version
+        if: ${{ inputs.version != '' }}
+        env:
+          VERSION: ${{ inputs.version }}
+        # The lock takes the members' new version, and the tasks are built
+        # again: the SDK they link names its version in every provenance.
+        run: |
+          ./target/debug/xtask version "$VERSION"
+          cargo update --workspace
+          cargo build -p xtask
       - name: Run every generator
         run: |
           failed=0

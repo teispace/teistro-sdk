@@ -44,6 +44,11 @@ $EDITOR CHANGELOG.md             # rename `## Unreleased` and answer Numbers
 cargo xtask check-versions       # says what is still wrong
 ```
 
+The same, without a local build: `gh workflow run regen.yml --ref <branch>
+-f version=0.1.0` sets the version, relocks, rebuilds the tasks and runs every
+generator on GitHub's runners, and hands the changes back as one patch
+(`01-pipelines.md`, "Regen"). The changelog is still written by hand.
+
 Then a pull request and the fast check, and the verify matrix on the
 pull request's branch before the merge:
 
