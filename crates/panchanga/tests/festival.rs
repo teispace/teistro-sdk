@@ -164,6 +164,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
         decide,
         otherwise,
         parana: Vec::new(),
+        ekadashi: None,
         meta: teistro_panchanga::festival::FestivalMeta::default(),
     }
 }

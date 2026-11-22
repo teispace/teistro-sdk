@@ -71,10 +71,10 @@ pub use anniversary::{
 pub use barred::Barred;
 pub use dated::{Dated, DatedObservance, DatedRule, DayReckoning, dated, dated_with};
 pub use ekadashi::{
-    EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, JoinedNakshatra,
-    Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraBar, NakshatraJoining, Parana,
-    ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion, TrisprishaAt, Vedha, VyanjuliPast,
-    ekadashis,
+    EkadashiDecision, EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess,
+    JoinedNakshatra, Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraBar,
+    NakshatraJoining, Parana, ParanaBarred, ParanaEdge, ParanaKept, ParanaRule, Portion,
+    TrisprishaAt, Vedha, VyanjuliPast, ekadashis,
 };
 pub use following::{FollowingRule, following};
 pub use group::{FestivalGroup, GroupDay, GroupMember, GroupSpan, group_spans};
@@ -168,7 +168,7 @@ pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -280,7 +280,7 @@ impl DayPart {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -467,7 +467,7 @@ pub enum Which {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -564,7 +564,7 @@ pub enum Case {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -732,7 +732,7 @@ pub enum Predicate {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -834,7 +834,7 @@ pub enum Edge {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -964,6 +964,12 @@ pub struct FestivalRule {
     pub decide: Vec<Guard>,
     /// What decides when no guard holds.
     pub otherwise: Choice,
+    /// For a rule kept on an 11th: decide it as an Ekadashi is, by the
+    /// 10th's vedha and which tithis stand in excess (§10.7). Then the
+    /// guards and `otherwise` are not read, and the window gives only the
+    /// extents an observance shows. Absent for a rule decided by its window.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ekadashi: Option<EkadashiDecision>,
     /// When the fast kept on the day is broken, each reading answered in
     /// order (§8.7); none when left out.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -1444,7 +1450,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     meta: Default::default(),
+    /// #     ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1606,7 +1612,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     meta: Default::default(),
+    /// #     ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1643,6 +1649,18 @@ impl FestivalRule {
             .with_field("decide"));
         }
         check_window(&self.key, self.at, "at")?;
+        if self.ekadashi.is_some()
+            && !matches!(
+                self.occurs.tithi(),
+                Some(Tithi::ShuklaEkadashi | Tithi::KrishnaEkadashi)
+            )
+        {
+            return Err(Error::invalid_arg(format!(
+                "{}: an Ekadashi decision judges an 11th, and the rule is kept on {:?}",
+                self.key, self.occurs
+            ))
+            .with_field("ekadashi"));
+        }
         if let Some(held) = self.in_month {
             held.check(&self.key, self.month.is_some())?;
         }
@@ -1833,7 +1851,7 @@ fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1947,7 +1965,7 @@ pub struct FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2098,7 +2116,7 @@ pub enum SunEntry {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2262,7 +2280,7 @@ impl FestivalDay {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, barred: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2407,7 +2425,7 @@ impl FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2497,7 +2515,7 @@ pub struct Extent {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2521,6 +2539,14 @@ pub enum Decided {
     },
     /// No guard held.
     Otherwise,
+    /// The rule's [`EkadashiDecision`]: the cell of its table for these
+    /// facts.
+    Ekadashi {
+        /// Whether the 10th pierces the 11th's day by the decision's vedha.
+        pierced: bool,
+        /// Which of the 11th and the 12th stand in excess.
+        excess: Excess,
+    },
     /// A [`FollowingRule`]: this many civil days after the day of the rule
     /// named, whose facts the observance carries.
     After {
@@ -2598,7 +2624,7 @@ pub enum Decided {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2752,7 +2778,7 @@ pub struct Observance {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2848,7 +2874,7 @@ pub struct Unjudged {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3131,7 +3157,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, barred: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3234,7 +3260,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     in_month: None, barred: None, meta: Default::default(),
+    /// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3334,7 +3360,7 @@ impl Observances {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
-/// #     in_month: None, barred: None, meta: Default::default(),
+/// #     in_month: None, barred: None, ekadashi: None, meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3459,7 +3485,7 @@ pub(crate) fn observances_over(
         for (rule, whole, month) in pass {
             let judged = match month {
                 Ok((month, clause)) => {
-                    let judged = judge(rule, whole, month, days, &rites)?;
+                    let judged = judge(rule, whole, month, days, tithis, &rites)?;
                     barred::keep(rule, judged, whole, month, tithis, days, &rites)?.map(|kept| {
                         kept.map(|observance| Observance {
                             malamasa: clause.map(Malamasa::of),
@@ -3648,6 +3674,19 @@ fn moonrise_kept(rule: &FestivalRule, kept: &FestivalDay) -> Option<MoonriseAt> 
     }
 }
 
+/// The first of the rule's guards that holds on `facts`, and its choice;
+/// `otherwise` when none does.
+fn guarded(rule: &FestivalRule, facts: &Facts<'_>) -> Result<(Decided, Choice), Error> {
+    for (index, guard) in rule.decide.iter().enumerate() {
+        if guard.when.iter().try_fold(true, |all, predicate| {
+            Ok::<bool, Error>(all && facts.holds(*predicate)?)
+        })? {
+            return Ok((Decided::Guard { index }, guard.choose));
+        }
+    }
+    Ok((Decided::Otherwise, rule.otherwise))
+}
+
 /// The observance, none when the rule chose [`Choice::None`], or why the
 /// occurrence could not be judged.
 type Judged = Result<Option<Observance>, String>;
@@ -3657,9 +3696,25 @@ fn judge(
     tithi: Interval,
     month: LunarMonth,
     days: &[FestivalDay],
+    tithis: &[Span<Tithi>],
     rites: &Rites<'_>,
 ) -> Result<Judged, Error> {
-    let Some((earlier, later)) = pair(tithi, days) else {
+    // An Ekadashi decision reads the 11th's own day and the day after, as
+    // an Ekadashi rule does; a window's rule, the two days `pair` gives.
+    let as_ekadashi = match rule
+        .ekadashi
+        .as_ref()
+        .map(|decision| ekadashi::decide(decision, days, tithis, tithi))
+        .transpose()
+    {
+        Ok(decision) => decision,
+        Err(why) => return Ok(Err(why)),
+    };
+    let Some((earlier, later)) = as_ekadashi
+        .as_ref()
+        .map(|decision| (decision.days[0], decision.days[1]))
+        .or_else(|| pair(tithi, days))
+    else {
         return Ok(Err(
             "the days do not reach the tithi and the day after it".to_owned()
         ));
@@ -3693,17 +3748,19 @@ fn judge(
         earlier,
         later,
     };
-    let mut decided_by = Decided::Otherwise;
-    let mut choice = rule.otherwise;
-    for (index, guard) in rule.decide.iter().enumerate() {
-        if guard.when.iter().try_fold(true, |all, predicate| {
-            Ok::<bool, Error>(all && facts.holds(*predicate)?)
-        })? {
-            decided_by = Decided::Guard { index };
-            choice = guard.choose;
-            break;
-        }
-    }
+    let (decided_by, choice) = match &as_ekadashi {
+        Some(decision) => (
+            Decided::Ekadashi {
+                pierced: decision.pierced,
+                excess: decision.excess,
+            },
+            match decision.choice {
+                Which::Earlier => Choice::Earlier,
+                Which::Later => Choice::Later,
+            },
+        ),
+        None => guarded(rule, &facts)?,
+    };
     let which = match choice {
         Choice::Earlier => Which::Earlier,
         Choice::Later => Which::Later,
@@ -3733,10 +3790,10 @@ fn judge(
             Err(why) => return Ok(Err(why)),
         }
     };
-    let margin_seconds = if case == Case::EqualParts {
-        0.0
-    } else {
-        margin(rule, tithi, earlier, later, facts.time)? * SECONDS_PER_DAY
+    let margin_seconds = match &as_ekadashi {
+        Some(decision) => decision.margin_days * SECONDS_PER_DAY,
+        None if case == Case::EqualParts => 0.0,
+        None => margin(rule, tithi, earlier, later, facts.time)? * SECONDS_PER_DAY,
     };
     Ok(Ok(Some(Observance {
         rule: rule.key.clone(),
@@ -4015,7 +4072,7 @@ fn lakshmi_puja() -> FestivalRule {
         )],
         otherwise: Earlier,
         parana: Vec::new(),
-        meta: FestivalMeta::default(),
+        ekadashi: None, meta: FestivalMeta::default(),
     }
 }
 
@@ -4072,7 +4129,7 @@ impl FestivalRule {
                     },
                     VrataParana::NextTithi,
                 ],
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4097,7 +4154,7 @@ impl FestivalRule {
                 ],
                 otherwise: Later,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4136,6 +4193,7 @@ impl FestivalRule {
             ],
             otherwise: Choice::Later,
             parana: Vec::new(),
+            ekadashi: None,
             meta: FestivalMeta::default(),
         };
         vec![
@@ -4163,7 +4221,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
                 otherwise: Choice::Later,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4224,7 +4282,7 @@ impl FestivalRule {
             decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
             otherwise: Choice::Later,
             parana: Vec::new(),
-            meta: FestivalMeta::default(),
+            ekadashi: None, meta: FestivalMeta::default(),
         }
     }
 
@@ -4300,7 +4358,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
-    /// #     meta: Default::default(),
+    /// #     ekadashi: None, meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -4350,7 +4408,7 @@ impl FestivalRule {
                     nakshatra: None,
                     yamas: None,
                 }],
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4374,7 +4432,7 @@ impl FestivalRule {
                     },
                     VrataParana::Sunrise,
                 ],
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4412,7 +4470,7 @@ impl FestivalRule {
                 ],
                 otherwise: Earlier,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             lakshmi_puja(),
         ]
@@ -4435,7 +4493,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([case(Case::Neither)], Earlier)],
                 otherwise: Later,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4459,7 +4517,7 @@ impl FestivalRule {
                 ],
                 otherwise: Earlier,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4473,7 +4531,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4499,7 +4557,7 @@ impl FestivalRule {
                         yamas: None,
                     },
                 ],
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4527,7 +4585,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([lasts(6)], Later)],
                 otherwise: Earlier,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4541,7 +4599,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([lasts(18)], Later)],
                 otherwise: Earlier,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
             FestivalRule {
                 in_month: None, barred: None,
@@ -4558,7 +4616,7 @@ impl FestivalRule {
                 ],
                 otherwise: Later,
                 parana: Vec::new(),
-                meta: FestivalMeta::default(),
+                ekadashi: None, meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4593,6 +4651,7 @@ impl FestivalRule {
             ],
             otherwise: Earlier,
             parana: Vec::new(),
+            ekadashi: None,
             meta: FestivalMeta::default(),
         };
         vec![
@@ -4637,7 +4696,7 @@ impl FestivalRule {
             )],
             otherwise: Choice::Later,
             parana: Vec::new(),
-            meta: FestivalMeta::default(),
+            ekadashi: None, meta: FestivalMeta::default(),
         }
     }
 }

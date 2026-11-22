@@ -553,6 +553,8 @@ void putFestivals(String prefix, FestivalAnswer answer) {
     final by = switch (decided.by) {
       'GUARD' => 'guard:${decided.index}',
       'AFTER' => 'after:${decided.rule}:${decided.days}',
+      'EKADASHI' =>
+        'ekadashi:${decided.pierced == true ? 'pierced' : 'pure'}:${decided.excess}',
       _ => 'otherwise',
     };
     final (earlier, later) = observance.extents;

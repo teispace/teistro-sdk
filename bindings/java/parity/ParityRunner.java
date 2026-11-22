@@ -676,6 +676,8 @@ public final class ParityRunner {
                 by = "guard:" + decided.index();
             } else if ("AFTER".equals(decided.by())) {
                 by = "after:" + decided.rule() + ":" + decided.days();
+            } else if ("EKADASHI".equals(decided.by())) {
+                by = "ekadashi:" + (Boolean.TRUE.equals(decided.pierced()) ? "pierced" : "pure") + ":" + decided.excess();
             } else {
                 by = "otherwise";
             }

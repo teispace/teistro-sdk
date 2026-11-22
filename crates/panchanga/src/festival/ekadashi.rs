@@ -14,6 +14,7 @@
 //! quarter, in the windows a [`ParanaRule`] names (§8.5).
 
 use super::FestivalMeta;
+use crate::span::Span;
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
@@ -252,20 +253,7 @@ impl EkadashiRule {
                 key: "EKADASHI_SMARTA".to_owned(),
                 source: "Dharmasindhu pp. 11–12, the householder: pierced at sunrise, the 11th is left only when the 12th stands in excess (S2, S4, S6, S8); pure, the earlier day unless both stand in excess (S1, S3, S5, S7), S5 by Madhava, whom the closing says present practice follows (C182)".to_owned(),
                 vedha: Vedha::Sunrise,
-                table: EkadashiTable {
-                    pure: EkadashiKinds {
-                        eleventh: Earlier,
-                        twelfth: Earlier,
-                        both: Later,
-                        neither: Earlier,
-                    },
-                    pierced: EkadashiKinds {
-                        eleventh: Earlier,
-                        twelfth: Later,
-                        both: Later,
-                        neither: Earlier,
-                    },
-                },
+                table: SMARTA,
                 parana: Some(ParanaRule::dharmasindhu()),
                 mahadvadashi: None,
                 meta: super::FestivalMeta::default(),
@@ -289,6 +277,128 @@ impl EkadashiRule {
             },
         ]
     }
+}
+
+/// The householder's table (*Dharmasindhu* pp. 11–12): pierced at
+/// sunrise, the 11th is left only when the 12th stands in excess (S2, S4,
+/// S6, S8); pure, the earlier day unless both stand in excess (S1, S3, S5,
+/// S7).
+const SMARTA: EkadashiTable = EkadashiTable {
+    pure: EkadashiKinds {
+        eleventh: Which::Earlier,
+        twelfth: Which::Earlier,
+        both: Which::Later,
+        neither: Which::Earlier,
+    },
+    pierced: EkadashiKinds {
+        eleventh: Which::Earlier,
+        twelfth: Which::Later,
+        both: Which::Later,
+        neither: Which::Earlier,
+    },
+};
+
+/// A festival rule kept on an 11th and decided as an Ekadashi is, by the
+/// 10th's vedha and which tithis stand in excess, rather than by a window
+/// (`festival-rules.md` §10.7): a named ekadashi, Haribodhini or Bhima,
+/// is the fortnight's Ekadashi under its observer's table.
+///
+/// ```
+/// use teistro_panchanga::festival::{EkadashiDecision, EkadashiRule, Excess, Vedha, Which};
+///
+/// let nepal = EkadashiDecision::NEPAL_SMARTA;
+/// assert_eq!(nepal.vedha, Vedha::Sunrise);
+/// // The one cell the print keeps apart from the householder's table.
+/// assert_eq!(nepal.table.pierced.of(Excess::Eleventh), Which::Later);
+/// let smarta = EkadashiRule::dharmasindhu().into_iter().find(|rule| rule.key == "EKADASHI_SMARTA").unwrap();
+/// assert_eq!(smarta.table.pierced.of(Excess::Eleventh), Which::Earlier);
+/// assert_eq!(nepal.table.pure, smarta.table.pure);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct EkadashiDecision {
+    /// Where the 10th pierces.
+    pub vedha: Vedha,
+    /// The day each kind takes.
+    pub table: EkadashiTable,
+}
+
+impl EkadashiDecision {
+    /// The Smarta Ekadashi as Nepal's calendars print it: the householder's
+    /// table, pierced at sunrise, but the pierced 11th alone in excess
+    /// (S2) takes the later day, which the print keeps in all 7 such years
+    /// of VS 2076 to 2083 against both digests (published-only, C2322).
+    pub const NEPAL_SMARTA: EkadashiDecision = EkadashiDecision {
+        vedha: Vedha::Sunrise,
+        table: EkadashiTable {
+            pierced: EkadashiKinds {
+                eleventh: Which::Later,
+                ..SMARTA.pierced
+            },
+            ..SMARTA
+        },
+    };
+}
+
+/// What decided a festival rule's 11th as an Ekadashi
+/// ([`EkadashiDecision`]): its own day and the day after, and the cell.
+pub(super) struct Decision<'d> {
+    /// The 11th's own day and the day after (C181).
+    pub(super) days: [&'d FestivalDay; 2],
+    /// Pierced by the decision's vedha.
+    pub(super) pierced: bool,
+    /// Which stand in excess.
+    pub(super) excess: Excess,
+    /// The day the table gives.
+    pub(super) choice: Which,
+    /// How far the place can move, in days ([`EkadashiFast::margin_seconds`]).
+    pub(super) margin_days: f64,
+}
+
+/// [`EkadashiDecision`] on the 11th `eleventh`, one of `tithis`, the run
+/// of the days: the facts are an Ekadashi rule's, so the two answers never
+/// read different instants.
+pub(super) fn decide<'d>(
+    decision: &EkadashiDecision,
+    days: &'d [FestivalDay],
+    tithis: &[Span<Tithi>],
+    eleventh: Interval,
+) -> Result<Decision<'d>, String> {
+    let at = tithis
+        .iter()
+        .position(|held| {
+            held.whole
+                .from
+                .get()
+                .total_cmp(&eleventh.from.get())
+                .is_eq()
+        })
+        .ok_or("the days do not hold the 11th")?;
+    let (tenth, twelfth) = at
+        .checked_sub(1)
+        .and_then(|before| tithis.get(before))
+        .zip(tithis.get(at + 1))
+        .ok_or("the days do not hold the 10th and the 12th beside it")?;
+    let facts = facts(
+        days,
+        [tenth.whole, eleventh, twelfth.whole],
+        twelfth.member,
+        None,
+    )?;
+    let pierced = facts.pierced_at.is_some_and(|at| at >= decision.vedha);
+    let kinds = if pierced {
+        decision.table.pierced
+    } else {
+        decision.table.pure
+    };
+    Ok(Decision {
+        days: facts.days,
+        pierced,
+        excess: facts.excess,
+        choice: kinds.of(facts.excess),
+        margin_days: facts.margin(decision.vedha),
+    })
 }
 
 /// The Vaishnava's table (*Dharmasindhu* pp. 11–12): pierced at
