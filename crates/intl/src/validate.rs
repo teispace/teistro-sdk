@@ -1103,8 +1103,9 @@ mod tests {
             ("yoni", 14),
             ("paksha", 2),
             ("ayana", 2),
-            // Imported whole from the baseline engine's vetted name tables.
-            ("ayanamsha", 47),
+            // Imported whole from the baseline engine's vetted name tables,
+            // and Ketaki's (K1), named from its almanac.
+            ("ayanamsha", 48),
             ("house_system", 22),
             ("masa", 12),
             ("direction", 8),
