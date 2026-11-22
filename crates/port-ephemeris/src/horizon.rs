@@ -545,6 +545,15 @@ pub struct Horizons {
 impl Horizons {
     /// A context's two horizons: `day.sunrise` and `day.moonrise`, each
     /// reckoned by `day.horizon`.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Sunrise, root};
+    /// use teistro_port_ephemeris::{Horizon, Horizons};
+    ///
+    /// let mut settings = root();
+    /// settings.day.sunrise = Sunrise::CentreRefraction.into();
+    /// assert_eq!(Horizons::of(&settings).sun, Horizon::CENTRE_REFRACTION);
+    /// ```
     #[must_use]
     pub const fn of(settings: &Settings) -> Horizons {
         Horizons {
@@ -555,6 +564,14 @@ impl Horizons {
 
     /// The horizon a body rises by: the Moon's for the Moon, the Sun's
     /// for every other.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::{Body, Horizon, Horizons};
+    ///
+    /// let horizons = Horizons { sun: Horizon::CENTRE_REFRACTION, moon: Horizon::UPPER_LIMB_REFRACTION };
+    /// assert_eq!(horizons.of_body(Body::Moon), Horizon::UPPER_LIMB_REFRACTION);
+    /// assert_eq!(horizons.of_body(Body::Mars), Horizon::CENTRE_REFRACTION);
+    /// ```
     #[must_use]
     pub const fn of_body(&self, body: Body) -> Horizon {
         match body {
