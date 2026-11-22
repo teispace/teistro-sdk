@@ -501,10 +501,9 @@ mod tests {
         let before = JulianDay::<Ut1>::literal(from.get() - 1.0);
         let refused = changes(&Unread, Body::Sun, &d9, from, before).unwrap_err();
         assert_eq!(refused.field(), Some("to"));
-        assert!(
-            changes(&Unread, Body::Sun, &d9, from, from)
-                .unwrap()
-                .is_empty()
+        assert_eq!(
+            changes(&Unread, Body::Sun, &d9, from, from).unwrap(),
+            Vec::new()
         );
     }
 }
