@@ -1062,7 +1062,8 @@ test('every catalogue enum has a complete id table', () => {
   // 1599 since `TsSunrise` gained `UPPER_LIMB_NO_REFRACTION` and
   // `LOWER_LIMB_NO_REFRACTION`.
   // 1600 since `TsAyanamsha` gained `KETAKI`.
-  assert.equal(entries, 1600, 'every member of every enum is in a table');
+  // 1601 since `TsCalendar` gained `HIJRI_SIGHTED`.
+  assert.equal(entries, 1601, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -5370,7 +5371,7 @@ test('a festival group spans its members and marks a gap day', () => {
   assert.deepEqual([dashain.group.last.month, dashain.group.last.day], [10, 25]);
   const gap = dashain.group.days[8];
   assert.deepEqual([gap.day.day, gap.gap], [19, true], 'the 8th holds two sunrises');
-  assert.equal(dashain.keys.length, 6);
+  assert.equal(dashain.keys.length, 8);
   assert.throws(
     () => ctx.almanac.next({ after: 2461041.76, place, utcOffsetSeconds: 20700, group: 'HOLI', festivals: { rules: 'NEPAL_PANCHANGA' } }),
     (e) => e instanceof TeistroError && e.field === 'group',
