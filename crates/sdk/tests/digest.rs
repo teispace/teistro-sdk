@@ -30,7 +30,7 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 /// committee's reckoning took the true sine, moving the week's limb ends by
 /// up to a minute (C1950), and again when each day's moonrise moved to the
 /// Moon's upper limb (SR-102).
-const PINNED: &str = "ff07e6c72b8edce9dbf02fd7a1a46590254be8a8538376c7cd839a1ec59a6e49";
+const PINNED: &str = "f3d9f018aa54efd0675ab7ffd7c7444cc33df742d7866033492eb6e2b53e9618";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;

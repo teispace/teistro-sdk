@@ -1861,7 +1861,7 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
 /// // A sky with no edge holds both new moons.
 /// let month = lunar_month_cut(&longitudes, window, zodiac)?;
 /// assert!(month.clipped.is_none() && month.before.is_none() && month.after.is_none());
-/// assert!(month.span.from <= window.from && window.to <= month.span.to);
+/// assert!(month.span.from.get() <= window.from.get() && window.to.get() <= month.span.to.get());
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
