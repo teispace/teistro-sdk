@@ -134,54 +134,39 @@ impl Fit {
             ),
             Fit::Share(window) => {
                 let (decide, otherwise) = by_share();
-                (window, decide, otherwise, format!(
-                    "{}: the day holding more of it, in time; the earlier on a tie, both holding it wholly being one, and when neither holds it (C601, C603)",
-                    Fit::name(window)
-                ))
+                Fit::at(window, decide, otherwise, "the day holding more of it, in time; the earlier on a tie, both holding it wholly being one, and when neither holds it (C601, C603)")
             }
             Fit::Crescent => Fit::crescent(),
-            Fit::EarlierWholly(window) => (
+            Fit::EarlierWholly(window) => Fit::at(
                 window,
                 vec![Guard::new([Predicate::Wholly { day: Which::Earlier }], Earlier)],
                 Later,
-                format!(
-                    "{}: the earlier day when the tithi holds it wholly, the later otherwise",
-                    Fit::name(window)
-                ),
+                "the earlier day when the tithi holds it wholly, the later otherwise",
             ),
             Fit::LaterPastMoonrise(ghatis) => Fit::later_past(Edge::Moonrise, ghatis),
             Fit::LaterPastSunrise(ghatis) => Fit::later_past(Edge::Sunrise, ghatis),
-            Fit::EarlierAlone(window) => (
+            Fit::EarlierAlone(window) => Fit::at(
                 window,
                 vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 Later,
-                format!(
-                    "{}: the earlier day only when it alone holds the tithi there, the later otherwise",
-                    Fit::name(window)
-                ),
+                "the earlier day only when it alone holds the tithi there, the later otherwise",
             ),
-            Fit::EarlierHolds(window) => (
+            Fit::EarlierHolds(window) => Fit::at(
                 window,
                 vec![
                     Guard::new([case(Case::EarlierOnly)], Earlier),
                     Guard::new([case(Case::Both)], Earlier),
                 ],
                 Later,
-                format!(
-                    "{}: the earlier day when it holds the tithi there, alone or with the later, the later otherwise",
-                    Fit::name(window)
-                ),
+                "the earlier day when it holds the tithi there, alone or with the later, the later otherwise",
             ),
-            Fit::LaterAlone(window) => (
+            Fit::LaterAlone(window) => Fit::at(
                 window,
                 vec![Guard::new([case(Case::LaterOnly)], Later)],
                 Earlier,
-                format!(
-                    "{}: the later day only when it alone holds the tithi there, the earlier otherwise",
-                    Fit::name(window)
-                ),
+                "the later day only when it alone holds the tithi there, the earlier otherwise",
             ),
-            Fit::EarlierAny(window) => (
+            Fit::EarlierAny(window) => Fit::at(
                 window,
                 vec![
                     Guard::new([case(Case::EarlierOnly)], Earlier),
@@ -190,12 +175,9 @@ impl Fit {
                     Guard::new([case(Case::UnequalParts)], Earlier),
                 ],
                 Later,
-                format!(
-                    "{}: the earlier day whenever the tithi touches it there, the later otherwise",
-                    Fit::name(window)
-                ),
+                "the earlier day whenever the tithi touches it there, the later otherwise",
             ),
-            Fit::LaterWhollyOrAlone(window) => (
+            Fit::LaterWhollyOrAlone(window) => Fit::at(
                 window,
                 vec![
                     Guard::new([case(Case::Both)], Earlier),
@@ -203,14 +185,27 @@ impl Fit {
                     Guard::new([case(Case::LaterOnly)], Later),
                 ],
                 Earlier,
-                format!(
-                    "{}: the later day when it holds the tithi there wholly, or alone, and the earlier only in part; the earlier otherwise, both holding it wholly being the earlier",
-                    Fit::name(window)
-                ),
+                "the later day when it holds the tithi there wholly, or alone, and the earlier only in part; the earlier otherwise, both holding it wholly being the earlier",
             ),
             Fit::OnVara(vara) => Fit::on_vara(vara),
             Fit::Ekadashi => Fit::ekadashi(),
         }
+    }
+
+    /// A fit on one window: its guards and fallback, and its words after
+    /// the window's name.
+    fn at(
+        window: Window,
+        guards: Vec<Guard>,
+        otherwise: Choice,
+        words: &str,
+    ) -> (Window, Vec<Guard>, Choice, String) {
+        (
+            window,
+            guards,
+            otherwise,
+            format!("{}: {words}", Fit::name(window)),
+        )
     }
 
     /// [`Fit::LaterPastMoonrise`]'s and [`Fit::LaterPastSunrise`]'s
