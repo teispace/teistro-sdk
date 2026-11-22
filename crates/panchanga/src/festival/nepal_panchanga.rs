@@ -139,16 +139,7 @@ impl Fit {
                     Fit::name(window)
                 ))
             }
-            Fit::Crescent => {
-                let (at, decide, otherwise, _) =
-                    Fit::EarlierWholly(Window::DayMuhurta { from: 15, to: 15 }).decide();
-                (
-                    at,
-                    decide,
-                    otherwise,
-                    "the earlier day when the tithi holds its last muhurta before sunset wholly, the later otherwise (C684)".to_owned(),
-                )
-            }
+            Fit::Crescent => Fit::crescent(),
             Fit::EarlierWholly(window) => (
                 window,
                 vec![Guard::new([Predicate::Wholly { day: Which::Earlier }], Earlier)],
@@ -218,14 +209,7 @@ impl Fit {
                 ),
             ),
             Fit::OnVara(vara) => Fit::on_vara(vara),
-            // The window gives only the extents an observance shows; the
-            // decision's table reads no guard (`FestivalRule::ekadashi`).
-            Fit::Ekadashi => (
-                Window::Sunrise,
-                Vec::new(),
-                Earlier,
-                "the Smartas' Ekadashi as Nepal's calendars print it: Dharmasindhu pp. 11–12's householder, pierced at sunrise, but the pierced 11th alone in excess (S2) is kept on the later day, which the print keeps in all 7 such years of VS 2076 to 2083 (published-only, C2322)".to_owned(),
-            ),
+            Fit::Ekadashi => Fit::ekadashi(),
         }
     }
 
@@ -252,6 +236,30 @@ impl Fit {
             format!(
                 "{edge}: the later day when the tithi lasts {ghatis} ghatis past its {edge}, the earlier otherwise"
             ),
+        )
+    }
+
+    /// [`Fit::Crescent`]'s window, guards, fallback and words.
+    fn crescent() -> (Window, Vec<Guard>, Choice, String) {
+        let (at, decide, otherwise, _) =
+            Fit::EarlierWholly(Window::DayMuhurta { from: 15, to: 15 }).decide();
+        (
+            at,
+            decide,
+            otherwise,
+            "the earlier day when the tithi holds its last muhurta before sunset wholly, the later otherwise (C684)".to_owned(),
+        )
+    }
+
+    /// [`Fit::Ekadashi`]'s window, guards, fallback and words: the window
+    /// gives only the extents an observance shows, and the decision's
+    /// table reads no guard (`FestivalRule::ekadashi`).
+    fn ekadashi() -> (Window, Vec<Guard>, Choice, String) {
+        (
+            Window::Sunrise,
+            Vec::new(),
+            Choice::Earlier,
+            "the Smartas' Ekadashi as Nepal's calendars print it: Dharmasindhu pp. 11–12's householder, pierced at sunrise, but the pierced 11th alone in excess (S2) is kept on the later day, which the print keeps in all 7 such years of VS 2076 to 2083 (published-only, C2322)".to_owned(),
         )
     }
 
