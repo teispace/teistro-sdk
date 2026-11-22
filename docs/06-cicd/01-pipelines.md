@@ -28,7 +28,9 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo vet --locked`,
 `check-versions`.
 
 It runs as parallel jobs. `checks` runs the format, the lints, the
-dependency policy, the tests and the documentation. `families` builds
+dependency policy and the documentation, and `tests` the workspace's
+tests beside it, the longest step on its own (30 of `checks`'s 37
+minutes on 2026-11-22). `families` builds
 the façade, the boundary, its tests and the wasm module with no module
 family, which is the wasm `panchanga` profile. It runs the family test
 there, and again with the chart area alone, where each family read off a
@@ -41,6 +43,13 @@ long as its slowest job rather than the sum of all of them, which was
 is still called `fast-check`: it runs once every other job has finished
 and passes only if all of them passed. A new page goes into the
 shortest shard.
+
+A step that fails does not stop the steps after it: each job builds what
+its steps share once, and every step after runs unless the run was
+cancelled or that build failed, so one run names every failing gate
+rather than the first (a fix used to take a round per gate). A push to
+a pull request cancels the run of its previous head, whose answer no
+longer counts; main's runs are each kept, since they seed the caches.
 
 Each one exists because of a failure that is easy to make and invisible to
 a reader; the comment on the task names that failure. The newest,
