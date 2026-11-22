@@ -488,6 +488,10 @@ mod tests {
         fn longitude_and_speed(&self, _: Body, _: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
             Err(Error::internal("the sky was read"))
         }
+
+        fn describe(&self) -> String {
+            String::from("a sky that answers nothing")
+        }
     }
 
     #[test]
