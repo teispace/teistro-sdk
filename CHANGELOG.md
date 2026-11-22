@@ -31,6 +31,27 @@ published calendar in each year the calendars agree on.
 - **Fixed:** the mahalaya's and Pishachamochana's citations name the pages the running
   headers give (*Dharmasindhu* pp. 59 to 63, pp. 265 to 266).
 
+**Nepal's named ekadashis decided as the Ekadashi is, and arunodaya by the day's sixtieths (C2322, C2328).**
+**Numbers:** at Kathmandu under `nepali-committee`, 2019 to 2027: `MOKSHADA_EKADASHI` moves
+from 2019-12-07 to 2019-12-08 and `PAPMOCHANI_EKADASHI` from 2019-03-31 to 2019-04-01, both
+pure with both tithis in excess; every calendar that prints Mokshada's keeps the new day.
+`EKADASHI_VAISHNAVA` moves a day later in 4 occurrences (2019-04-16, 2022-04-27,
+2024-08-30, 2026-07-11), where the 10th ends 85 to 93 minutes before sunrise;
+`EKADASHI_GAUDIYA`, pierced at the same instant, moves with it where no mahadvadashi sets
+its day. No other rule's day moves.
+- **Added:** `FestivalRule.ekadashi` (`EkadashiDecision { vedha, table }`): a rule kept on an
+  11th is decided by the 10th's vedha and which tithis stand in excess, from the facts an
+  Ekadashi rule reads, and its observance's `decidedBy` is `{by: EKADASHI, pierced, excess}`
+  in every binding. `check` refuses it on any other tithi.
+- **Changed:** `NEPAL_PANCHANGA`'s 26 named ekadashis take `EkadashiDecision::NEPAL_SMARTA`,
+  *Dharmasindhu*'s householder with the pierced 11th alone in excess kept on the later day, as
+  the print keeps it in all 7 such years of VS 2076 to 2083 (published-only, C2322). Over the
+  window the table gives the printed day in 191 of the 192 Smarta ekadashis the calendars
+  agree on.
+- **Fixed:** arunodaya is ghati 56 of the sunrise-to-sunrise day, as *Dharmasindhu*'s "a pala
+  past 56 ghatis" counts, not four thirtieths of the night (C2328); Nepal's calendars mark the
+  Vaishnava fast by it in all 8 years that print one.
+
 **A request's locale takes a short tag.**
 **Numbers:** none move; a request that was refused now answers.
 - **Fixed:** day sentences, sankalpa words and band words resolve a request's `locale` by
