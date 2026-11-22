@@ -443,7 +443,7 @@ pub(crate) fn raised(
         let floor = floors
             .entry(name.clone())
             .or_insert_with(|| rebased.clone());
-        if floor.counted_by != measured.counted_by {
+        if !same_counter(&floor.counted_by, &measured.counted_by) {
             *floor = rebased;
             continue;
         }
@@ -454,6 +454,24 @@ pub(crate) fn raised(
         };
     }
     floors
+}
+
+/// Whether two reports were counted alike: the same tool at the same major
+/// and minor version. A patch release fixes the tool, not what it counts,
+/// and an exact match turned the nightly matrix red on Node 22.23.4 to
+/// 22.23.5 and Dart 3.14.0 to 3.14.1 with nothing measured differently.
+fn same_counter(a: &str, b: &str) -> bool {
+    fn minor(tool: &str) -> &str {
+        let Some((name, version)) = tool.rsplit_once(' ') else {
+            return tool;
+        };
+        let mut dots = version.match_indices('.').map(|(at, _)| at);
+        match (dots.next(), dots.next()) {
+            (Some(_), Some(second)) => tool.get(..name.len() + 1 + second).unwrap_or(tool),
+            _ => tool,
+        }
+    }
+    minor(a) == minor(b)
 }
 
 /// What a run says against the floors: a binding under either, a floored
@@ -471,7 +489,7 @@ pub(crate) fn findings(
             ));
             continue;
         };
-        if measured.counted_by != floor.counted_by {
+        if !same_counter(&measured.counted_by, &floor.counted_by) {
             found.push(format!(
                 "the `{name}` binding was counted by `{}` and its floors by `{}`: record the run \
                  with `cargo xtask coverage --bindings DIR`",
@@ -514,7 +532,10 @@ pub(crate) fn lowered(
 ) -> Vec<String> {
     let mut found = Vec::new();
     for (name, was) in main {
-        let Some(now) = now.get(name).filter(|now| now.counted_by == was.counted_by) else {
+        let Some(now) = now
+            .get(name)
+            .filter(|now| same_counter(&now.counted_by, &was.counted_by))
+        else {
             continue;
         };
         if now.lines < was.lines {
@@ -540,6 +561,16 @@ mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use super::*;
+
+    #[test]
+    fn a_patch_release_counts_alike_and_a_minor_one_does_not() {
+        assert!(same_counter("node 22.23.4", "node 22.23.5"));
+        assert!(same_counter("dart 3.14.0", "dart 3.14.1"));
+        assert!(same_counter("jacoco 2", "jacoco 2"));
+        assert!(!same_counter("node 22.23.4", "node 22.24.0"));
+        assert!(!same_counter("node 22.23.4", "dart 22.23.4"));
+        assert!(!same_counter("jacoco 2", "jacoco 3"));
+    }
 
     fn counts(count: u64, covered: u64) -> Counts {
         Counts { count, covered }

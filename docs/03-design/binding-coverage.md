@@ -56,7 +56,10 @@ way, as each llvm does). The rules are the crates':
 
 - `cargo xtask coverage --bindings DIR` raises each binding's floors to
   the run's figures, rounded down to a whole percent, and never lowers
-  one; a record counted by another tool version is re-based;
+  one; a record counted by another tool version is re-based. A version
+  is compared to its minor: a patch release fixes the tool, not what it
+  counts, and an exact match turned the nightly matrix red on Node
+  22.23.4 to 22.23.5 with nothing measured differently;
 - `cargo xtask check-coverage --bindings DIR` fails a binding under
   either floor, a floored binding with no report, and a report with no
   floor;
