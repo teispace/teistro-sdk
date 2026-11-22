@@ -1953,7 +1953,7 @@ const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
-const EVERY_MONTH: [(&str, Occurs, Fit, &str); 8] = [
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 10] = [
     (
         "PRADOSHA_VRATA",
         Occurs::DayOfPaksha { day_of_paksha: 13 },
@@ -1991,6 +1991,22 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 8] = [
         },
         Fit::OnVara(Vara::Somavara),
         "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
+    ),
+    (
+        "SHUKLA_ASHTAMI_VRATA",
+        Occurs::Tithi {
+            tithi: Tithi::ShuklaAshtami,
+        },
+        Fit::UdayaLater,
+        "Dharmasindhu p. 10: for a vrata the bright 8th is the later (व्रतमात्रेऽष्टमी शुक्लपक्षे परा); Nepal's calendars print अष्टमी व्रत on it, 20 of 20 bright 8ths of VS 2076–2083 on this rule",
+    ),
+    (
+        "KRISHNA_ASHTAMI_VRATA",
+        Occurs::Tithi {
+            tithi: Tithi::KrishnaAshtami,
+        },
+        Fit::Share(Window::Pradosha),
+        "Dharmasindhu p. 10: some fast on every dark 8th for Kalabhairava (सर्वकृष्णाष्टमीषु कालभैरवोद्देशेन केचिदुपवसन्ति), the 8th holding the pradosha by the Kaustubha and by the practice of the learned (प्रदोषव्यापिनीति कौस्तुभे); Nepal's calendars print अष्टमी व्रत on it, 22 of 22 dark 8ths of VS 2076–2083 on this rule, and 15 on the earlier day the text gives a vrata otherwise",
     ),
     (
         "DARSHA_SHRADDHA",

@@ -5755,6 +5755,16 @@
       "name": "Darśaśrāddha",
       "prose": "Darśaśrāddha",
       "iast": "Darśa Śrāddha"
+    },
+    "SHUKLA_ASHTAMI_VRATA": {
+      "name": "Śuklāṣṭamīvrata",
+      "prose": "Śuklāṣṭamīvrata",
+      "iast": "Śukla Aṣṭamī Vrata"
+    },
+    "KRISHNA_ASHTAMI_VRATA": {
+      "name": "Kṛṣṇāṣṭamīvrata",
+      "prose": "Kṛṣṇāṣṭamīvrata",
+      "iast": "Kṛṣṇa Aṣṭamī Vrata"
     }
   },
   "year_office": {

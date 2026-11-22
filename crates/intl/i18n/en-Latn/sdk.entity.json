@@ -6194,6 +6194,16 @@
       "name": "Darsha Shraddha",
       "prose": "Darsha Shraddha",
       "iast": "Darśa Śrāddha"
+    },
+    "SHUKLA_ASHTAMI_VRATA": {
+      "name": "Shukla Ashtami Vrata",
+      "prose": "Shukla Ashtami Vrata",
+      "iast": "Śukla Aṣṭamī Vrata"
+    },
+    "KRISHNA_ASHTAMI_VRATA": {
+      "name": "Krishna Ashtami Vrata",
+      "prose": "Krishna Ashtami Vrata",
+      "iast": "Kṛṣṇa Aṣṭamī Vrata"
     }
   },
   "agni_vasa": {

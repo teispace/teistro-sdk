@@ -194,3 +194,23 @@ fn darsha_shraddha_holds_the_new_moon_at_aparahna() {
         assert_eq!(kept("DARSHA_SHRADDHA", from, to), [day]);
     }
 }
+
+#[test]
+fn the_monthly_ashtami_vrata_is_the_later_bright_8th_and_the_dark_8th_at_pradosha() {
+    // Dharmasindhu p. 10: a bright 8th the later day; a dark one, kept for
+    // Kalabhairava, the day whose pradosha holds more of it. Each pair
+    // parts, so the other half's rule would give the other day.
+    for (from, to, day) in [
+        ((2023, 9, 19), (2023, 9, 27), (2023, 9, 23)),
+        ((2026, 5, 20), (2026, 5, 28), (2026, 5, 24)),
+    ] {
+        assert_eq!(kept("SHUKLA_ASHTAMI_VRATA", from, to), [day]);
+    }
+    for (from, to, day) in [
+        ((2023, 6, 6), (2023, 6, 14), (2023, 6, 10)),
+        ((2025, 10, 9), (2025, 10, 17), (2025, 10, 13)),
+        ((2026, 8, 1), (2026, 8, 9), (2026, 8, 5)),
+    ] {
+        assert_eq!(kept("KRISHNA_ASHTAMI_VRATA", from, to), [day]);
+    }
+}
