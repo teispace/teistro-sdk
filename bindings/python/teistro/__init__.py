@@ -903,6 +903,13 @@ from ._requests import (
     Tara as Tara,
     AayadiSystem as AayadiSystem,
     ManasaraMeasure as ManasaraMeasure,
+    PlaceKind as PlaceKind,
+    SearchFocus as SearchFocus,
+    FestivalNames as FestivalNames,
+    FestivalObserver as FestivalObserver,
+    Variant as Variant,
+    RenderRequest as RenderRequest,
+    PlanItem as PlanItem,
 )
 from .catalogue import (
     Colour,
@@ -2345,6 +2352,12 @@ __all__ = [
     "RulerDayRule",
     "Yoga",
     "Yoni",
+    "PlaceKind",
+    "SearchFocus",
+    "FestivalNames",
+    "FestivalObserver",
+    "Variant",
+    "RenderRequest",
 ]
 __all__ += _records.__all__
 
@@ -17244,15 +17257,6 @@ class RulesReading(TypedDict, total=False):
     houses: List[Dict[str, Any]]
     longevity: Dict[str, Any]
     unreadable: List[str]
-
-
-class PlanItem(TypedDict):
-    """One thing to say: a message key and its slots. The slots are the very
-    mapping `intl.render` takes, so `sdk.intl.render(item["key"],
-    item["params"])` says it, in whatever locale the context is in."""
-
-    key: str
-    params: Dict[str, Any]
 
 
 class Plans(TypedDict, total=False):
