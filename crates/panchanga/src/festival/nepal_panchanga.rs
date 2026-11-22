@@ -1953,7 +1953,7 @@ const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
-const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 8] = [
     (
         "PRADOSHA_VRATA",
         Occurs::DayOfPaksha { day_of_paksha: 13 },
@@ -1991,6 +1991,14 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
         },
         Fit::OnVara(Vara::Somavara),
         "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
+    ),
+    (
+        "DARSHA_SHRADDHA",
+        Occurs::Tithi {
+            tithi: Tithi::Amavasya,
+        },
+        Fit::Share(APARAHNA),
+        "Dharmasindhu p. 266: a parvana shraddha takes the tithi holding the aparahna, the fourth fifth of the day (पार्वणे त्वपराह्णव्यापिनी ग्राह्या); on both days or neither, or in equal parts, the earlier, and in unequal parts the greater. Nepal's calendars print दर्शश्राद्ध on every new moon of the years they print it, 33 of 34 days of VS 2080, 2082 and 2083 on this rule and 25 on the sunrise's; Nepal's national panchanga, VS 2083 p. 24, prints Monday 8 March 2027, the later day, where the earlier holds 93% of the aparahna and the later 55%",
     ),
     (
         "CHANDRODAYA",

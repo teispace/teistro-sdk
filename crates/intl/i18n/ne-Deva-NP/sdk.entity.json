@@ -6199,6 +6199,11 @@
     "CHHATH_SAMAPAN": {
       "name": "छठ समापन",
       "prose": "छठ समापन"
+    },
+    "DARSHA_SHRADDHA": {
+      "name": "दर्श श्राद्ध",
+      "prose": "दर्श श्राद्ध",
+      "iast": "Darśa Śrāddha"
     }
   },
   "agni_vasa": {

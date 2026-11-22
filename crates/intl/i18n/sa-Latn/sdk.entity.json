@@ -5750,6 +5750,11 @@
     "CHHATH_SAMAPAN": {
       "name": "Pratihāraṣaṣṭhīsamāpana",
       "prose": "Pratihāraṣaṣṭhīsamāpana"
+    },
+    "DARSHA_SHRADDHA": {
+      "name": "Darśaśrāddha",
+      "prose": "Darśaśrāddha",
+      "iast": "Darśa Śrāddha"
     }
   },
   "year_office": {

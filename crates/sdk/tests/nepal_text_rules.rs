@@ -180,3 +180,17 @@ fn a_named_ekadashi_is_the_fortnight_s_ekadashi_as_the_print_keeps_it() {
         [(2019, 12, 8)]
     );
 }
+
+#[test]
+fn darsha_shraddha_holds_the_new_moon_at_aparahna() {
+    // Dharmasindhu p. 266; each new moon below ends before the later
+    // day's aparahna, so the sunrise's rule gave the day after, and
+    // Nepal's calendars print the earlier.
+    for (from, to, day) in [
+        ((2023, 4, 15), (2023, 4, 24), (2023, 4, 19)),
+        ((2025, 11, 15), (2025, 11, 24), (2025, 11, 19)),
+        ((2026, 3, 14), (2026, 3, 23), (2026, 3, 18)),
+    ] {
+        assert_eq!(kept("DARSHA_SHRADDHA", from, to), [day]);
+    }
+}
