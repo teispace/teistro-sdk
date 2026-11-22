@@ -1992,11 +1992,13 @@ mod tests {
     /// graha: an unheld Darakaraka (the last two grahas tied) stays unheld
     /// though the chart carries a Pitrikaraka.
     #[test]
-    fn only_the_putrakaraka_falls_back_to_the_matrikaraka() {
+    fn only_the_putrakaraka_falls_back_to_the_matrikaraka() -> Result<(), teistro_core::error::Error>
+    {
+        let house = House::try_new(1)?;
         let at = |longitude| Placement {
             longitude,
             sign: Rashi::Aries,
-            house: House::try_new(1).unwrap(),
+            house,
             dignity: Dignity::Neutral,
             retrograde: false,
             combust: false,
@@ -2008,7 +2010,9 @@ mod tests {
         let mut placements = [at(0.5); 10];
         let degrees = [29.0, 28.0, 27.0, 26.0, 25.0, 24.0, 24.0];
         for (graha, degree) in KARAKA_GRAHAS.iter().zip(degrees) {
-            placements[Body::Graha(*graha).index()] = at(degree);
+            if let Some(placement) = placements.get_mut(Body::Graha(*graha).index()) {
+                *placement = at(degree);
+            }
         }
         let chart = RuleChart {
             placements,
@@ -2025,6 +2029,7 @@ mod tests {
             chart.holder(CharaKaraka::Putrakaraka, false),
             Some(Graha::Mercury)
         );
+        Ok(())
     }
 
     /// A span with either part below nothing has no part.
