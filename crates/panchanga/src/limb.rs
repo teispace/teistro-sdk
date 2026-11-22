@@ -422,6 +422,7 @@ pub fn sun_nakshatra_near<S: Longitudes + ?Sized>(
     Ok(Nakshatra::of(
         Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
     ))
+}
 
 /// `frame`, geocentric: what an almanac's season and a day's Moon signs
 /// read, whatever centre the limbs are found from.
