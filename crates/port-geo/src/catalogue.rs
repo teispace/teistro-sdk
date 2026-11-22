@@ -824,3 +824,726 @@ pub fn label(name: &str, parents: &[ParentPlace]) -> String {
     }
     parts.join(", ")
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(
+        clippy::panic,
+        clippy::unwrap_used,
+        clippy::indexing_slicing,
+        reason = "tests fail by panicking"
+    )]
+
+    use std::sync::Arc;
+
+    use super::*;
+    use crate::{AdminUnit, GeoSource, GroundHeight};
+
+    /// A provider answering every catalogue question with what it holds.
+    #[derive(Default)]
+    struct Canned {
+        found: Vec<FoundPlace>,
+        nearby: NearbyPlaces,
+        names: Option<PlaceNames>,
+        listed: Vec<NamedPlace>,
+    }
+
+    impl GeoProvider for Canned {
+        fn source(&self) -> GeoSource {
+            GeoSource {
+                name: "canned".into(),
+                version: "1".into(),
+                data_version: "1".into(),
+                tzdb: None,
+            }
+        }
+
+        fn zone_at(&self, _: GeoPoint) -> Result<Option<String>, Error> {
+            Ok(None)
+        }
+
+        fn height_at(&self, _: GeoPoint) -> Result<Option<GroundHeight>, Error> {
+            Ok(None)
+        }
+
+        fn admin_at(&self, _: GeoPoint) -> Result<Vec<AdminUnit>, Error> {
+            Ok(Vec::new())
+        }
+
+        fn search(&self, _: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> {
+            Ok(self.found.clone())
+        }
+
+        fn reverse(&self, _: &PlaceReverse) -> Result<NearbyPlaces, Error> {
+            Ok(self.nearby.clone())
+        }
+
+        fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
+            Ok(self
+                .names
+                .clone()
+                .unwrap_or_else(|| PlaceNames::none(asked)))
+        }
+
+        fn list(&self, _: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
+            Ok(self.listed.clone())
+        }
+    }
+
+    fn parent(id: &str, name: &str, level: u8) -> ParentPlace {
+        ParentPlace {
+            id: id.into(),
+            name: name.into(),
+            level,
+            code: None,
+        }
+    }
+
+    fn pokhara() -> NamedPlace {
+        NamedPlace {
+            id: "p1".into(),
+            name: "Pokhara".into(),
+            name_lang: None,
+            label: "Pokhara, Kaski, Nepal".into(),
+            kind: PlaceKind::Settlement,
+            level: None,
+            code: None,
+            latitude_deg: 28.21,
+            longitude_deg: 83.99,
+            population: Some(Population {
+                people: 518_452,
+                kind: Some(PopulationKind::Counted),
+            }),
+            parents: vec![parent("np", "Nepal", 0), parent("kaski", "Kaski", 2)],
+        }
+    }
+
+    fn nepal() -> NamedPlace {
+        NamedPlace {
+            id: "np".into(),
+            name: "Nepal".into(),
+            label: "Nepal".into(),
+            kind: PlaceKind::Country,
+            level: Some(0),
+            code: Some("NP".into()),
+            parents: Vec::new(),
+            population: None,
+            ..pokhara()
+        }
+    }
+
+    fn near(distance_m: f64, bearing_deg: f64) -> NearPlace {
+        NearPlace {
+            place: pokhara(),
+            distance_m,
+            bearing_deg,
+            inside: None,
+        }
+    }
+
+    fn search_for(query: &str) -> PlaceSearch {
+        PlaceSearch {
+            query: query.into(),
+            focus: None,
+            limit: 10,
+            lang: None,
+        }
+    }
+
+    fn reverse_at() -> PlaceReverse {
+        PlaceReverse {
+            latitude_deg: 28.2,
+            longitude_deg: 84.0,
+            limit: 5,
+            lang: None,
+        }
+    }
+
+    /// The field and status a refusal names.
+    fn refusal(why: &Error) -> (Status, Option<&str>) {
+        (why.status, why.field())
+    }
+
+    fn malformed(place: NamedPlace) -> Error {
+        let canned = Canned {
+            listed: vec![pokhara(), place],
+            ..Canned::default()
+        };
+        list(&canned, &PlaceListing::within("NP")).unwrap_err()
+    }
+
+    /// A provider answering only the questions every provider must.
+    struct Bare;
+
+    impl GeoProvider for Bare {
+        fn source(&self) -> GeoSource {
+            Canned::default().source()
+        }
+
+        fn zone_at(&self, _: GeoPoint) -> Result<Option<String>, Error> {
+            Ok(None)
+        }
+
+        fn height_at(&self, _: GeoPoint) -> Result<Option<GroundHeight>, Error> {
+            Ok(None)
+        }
+
+        fn admin_at(&self, _: GeoPoint) -> Result<Vec<AdminUnit>, Error> {
+            Ok(Vec::new())
+        }
+    }
+
+    #[test]
+    fn a_provider_without_a_catalogue_finds_nothing_borrowed_or_shared() {
+        fn answers<P: GeoProvider>(provider: &P) -> (usize, NearbyPlaces, PlaceNames, usize, bool) {
+            let asked = PlaceNamesRequest {
+                id: "p1".into(),
+                langs: vec!["ne".into()],
+            };
+            let at = GeoPoint::new(
+                teistro_core::quantity::Latitude::literal(28.2),
+                teistro_core::quantity::Longitude::literal(84.0),
+            );
+            (
+                provider.search(&search_for("Pokhara")).unwrap().len(),
+                provider.reverse(&reverse_at()).unwrap(),
+                provider.names(&asked).unwrap(),
+                provider.list(&PlaceListing::within("NP")).unwrap().len(),
+                provider.at_sea(at).unwrap(),
+            )
+        }
+        let bare = answers(&Bare);
+        assert_eq!(bare.0 + bare.3, 0);
+        assert_eq!(bare.1, NearbyPlaces::default());
+        assert_eq!(
+            bare.2,
+            PlaceNames::none(&PlaceNamesRequest {
+                id: "p1".into(),
+                langs: vec!["ne".into()]
+            })
+        );
+        assert!(!bare.4);
+        assert_eq!(answers(&&Bare), bare);
+        assert_eq!(answers(&Arc::new(Bare)), bare);
+    }
+
+    #[test]
+    fn a_language_tag_is_its_language_and_script() {
+        let tag = LangTag::parse("NE_deva_np").unwrap();
+        assert_eq!(
+            (tag.language.as_str(), tag.script.as_deref()),
+            ("ne", Some("Deva"))
+        );
+        // A region in the script's place is no script.
+        assert_eq!(LangTag::parse("en-GB").unwrap().script, None);
+        assert_eq!(
+            LangTag::parse("en").unwrap().script_or_usual(),
+            Some("Latn")
+        );
+        assert_eq!(
+            LangTag::parse("new").unwrap().script_or_usual(),
+            Some("Deva")
+        );
+        assert_eq!(LangTag::parse("ja").unwrap().script_or_usual(), None);
+        assert_eq!(
+            LangTag::parse("sa-Latn").unwrap().script_or_usual(),
+            Some("Latn")
+        );
+        for bad in ["", "n", "nepa", "n3", "ne pal"] {
+            assert!(LangTag::parse(bad).is_none(), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn a_search_is_refused_on_the_field_at_fault() {
+        let canned = Canned::default();
+        let field = |asked: PlaceSearch| {
+            search(&canned, &asked)
+                .unwrap_err()
+                .field()
+                .map(str::to_owned)
+        };
+        assert_eq!(field(search_for("  ")).as_deref(), Some("query"));
+        let far = SearchFocus {
+            latitude_deg: 91.0,
+            longitude_deg: 0.0,
+            scale_m: 1.0,
+        };
+        assert_eq!(
+            field(PlaceSearch {
+                focus: Some(far),
+                ..search_for("x")
+            })
+            .as_deref(),
+            Some("focus.latitudeDeg")
+        );
+        for scale_m in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            let focus = SearchFocus {
+                latitude_deg: 28.0,
+                longitude_deg: 84.0,
+                scale_m,
+            };
+            assert_eq!(
+                field(PlaceSearch {
+                    focus: Some(focus),
+                    ..search_for("x")
+                })
+                .as_deref(),
+                Some("focus.scaleM")
+            );
+        }
+        assert_eq!(
+            field(PlaceSearch {
+                lang: Some("not a tag".into()),
+                ..search_for("x")
+            })
+            .as_deref(),
+            Some("lang")
+        );
+        for limit in [0, MOST_FOUND + 1] {
+            assert_eq!(
+                field(PlaceSearch {
+                    limit,
+                    ..search_for("x")
+                })
+                .as_deref(),
+                Some("limit")
+            );
+        }
+        let focus = SearchFocus {
+            latitude_deg: 28.0,
+            longitude_deg: 84.0,
+            scale_m: FOCUS_SCALE_M,
+        };
+        let asked = PlaceSearch {
+            focus: Some(focus),
+            lang: Some("ne".into()),
+            limit: MOST_FOUND,
+            ..search_for("x")
+        };
+        assert_eq!(asked.checked().unwrap(), 100);
+    }
+
+    #[test]
+    fn a_search_keeps_the_limit_and_checks_every_answer() {
+        let hit = |score| FoundPlace {
+            place: pokhara(),
+            score,
+        };
+        let canned = Canned {
+            found: vec![hit(3), hit(2), hit(1)],
+            ..Canned::default()
+        };
+        let asked = PlaceSearch {
+            limit: 2,
+            ..search_for("Pokhara")
+        };
+        assert_eq!(
+            search(&canned, &asked)
+                .unwrap()
+                .iter()
+                .map(|f| f.score)
+                .collect::<Vec<_>>(),
+            [3, 2]
+        );
+        // Through a reference and a shared provider, the same answer.
+        assert_eq!(search(&&canned, &asked).unwrap().len(), 2);
+        assert_eq!(
+            search(
+                &Arc::new(Canned {
+                    found: vec![hit(1)],
+                    ..Canned::default()
+                }),
+                &asked
+            )
+            .unwrap()
+            .len(),
+            1
+        );
+        let bad = Canned {
+            found: vec![
+                hit(1),
+                FoundPlace {
+                    place: NamedPlace {
+                        name: " ".into(),
+                        ..pokhara()
+                    },
+                    score: 0,
+                },
+            ],
+            ..Canned::default()
+        };
+        let why = search(&bad, &asked).unwrap_err();
+        assert_eq!(refusal(&why), (Status::Provider, Some("[1].place.name")));
+    }
+
+    #[test]
+    fn a_malformed_place_is_the_providers_failure_named_by_its_field() {
+        let cases: [(NamedPlace, &str); 8] = [
+            (
+                NamedPlace {
+                    id: String::new(),
+                    ..pokhara()
+                },
+                "[1].id",
+            ),
+            (
+                NamedPlace {
+                    latitude_deg: 100.0,
+                    ..pokhara()
+                },
+                "[1].latitudeDeg",
+            ),
+            (
+                NamedPlace {
+                    longitude_deg: f64::NAN,
+                    ..pokhara()
+                },
+                "[1].longitudeDeg",
+            ),
+            (
+                NamedPlace {
+                    level: Some(2),
+                    ..pokhara()
+                },
+                "[1].level",
+            ),
+            (
+                NamedPlace {
+                    level: None,
+                    ..nepal()
+                },
+                "[1].level",
+            ),
+            (
+                NamedPlace {
+                    code: Some("NP-P3".into()),
+                    ..nepal()
+                },
+                "[1].code",
+            ),
+            (
+                NamedPlace {
+                    code: Some("np".into()),
+                    ..pokhara()
+                },
+                "[1].code",
+            ),
+            (
+                NamedPlace {
+                    parents: vec![parent("kaski", "Kaski", 2), parent("np", "Nepal", 0)],
+                    ..pokhara()
+                },
+                "[1].parents[1].level",
+            ),
+        ];
+        for (place, field) in cases {
+            assert_eq!(refusal(&malformed(place)), (Status::Provider, Some(field)));
+        }
+        let unnamed_parent = NamedPlace {
+            parents: vec![parent("np", "Nepal", 0), parent(" ", "Kaski", 2)],
+            ..pokhara()
+        };
+        assert_eq!(
+            refusal(&malformed(unnamed_parent)),
+            (Status::Provider, Some("[1].parents[1].id"))
+        );
+        // A unit's subdivision code, and a place's country code, are well formed.
+        let bagmati = NamedPlace {
+            kind: PlaceKind::Admin,
+            level: Some(1),
+            code: Some("NP-P3".into()),
+            ..pokhara()
+        };
+        let in_nepal = NamedPlace {
+            code: Some("NP".into()),
+            ..pokhara()
+        };
+        let canned = Canned {
+            listed: vec![nepal(), bagmati, in_nepal],
+            ..Canned::default()
+        };
+        assert_eq!(list(&canned, &PlaceListing::within("NP")).unwrap().len(), 3);
+    }
+
+    #[test]
+    fn a_listing_is_refused_on_its_field_and_keeps_its_limit() {
+        let canned = Canned {
+            listed: vec![nepal(), pokhara(), pokhara()],
+            ..Canned::default()
+        };
+        let field = |asked: PlaceListing| {
+            list(&canned, &asked)
+                .unwrap_err()
+                .field()
+                .map(str::to_owned)
+        };
+        assert_eq!(field(PlaceListing::within("")).as_deref(), Some("within"));
+        let flat = PlaceListing {
+            depth: Some(0),
+            ..PlaceListing::within("NP")
+        };
+        let why = list(&canned, &flat).unwrap_err();
+        assert_eq!((why.field(), why.hint().is_some()), (Some("depth"), true));
+        assert_eq!(
+            field(PlaceListing {
+                lang: Some("?".into()),
+                ..PlaceListing::within("NP")
+            })
+            .as_deref(),
+            Some("lang")
+        );
+        assert_eq!(
+            field(PlaceListing {
+                limit: MOST_LISTED + 1,
+                ..PlaceListing::within("NP")
+            })
+            .as_deref(),
+            Some("limit")
+        );
+        let two = PlaceListing {
+            limit: 2,
+            ..PlaceListing::within("NP")
+        }
+        .at_any_depth();
+        assert_eq!(list(&Arc::new(canned), &two).unwrap().len(), 2);
+        let kinds = PlaceListing::within("NP")
+            .of_level(1)
+            .of_kinds([PlaceKind::Admin, PlaceKind::Country]);
+        assert_eq!(
+            (kinds.level, kinds.kinds.len(), kinds.depth),
+            (Some(1), 2, Some(1))
+        );
+    }
+
+    #[test]
+    fn a_reverse_checks_its_point_and_every_answer() {
+        let canned = Canned::default();
+        let why = reverse(
+            &canned,
+            &PlaceReverse {
+                latitude_deg: -91.0,
+                ..reverse_at()
+            },
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("latitudeDeg"));
+        let why = reverse(
+            &canned,
+            &PlaceReverse {
+                lang: Some("x y".into()),
+                ..reverse_at()
+            },
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("lang"));
+        let why = reverse(
+            &canned,
+            &PlaceReverse {
+                limit: 0,
+                ..reverse_at()
+            },
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("limit"));
+
+        let good = Canned {
+            nearby: NearbyPlaces {
+                near: vec![near(10.0, 0.0), near(20.0, 359.9), near(0.0, 90.0)],
+                admin: vec![nepal()],
+            },
+            ..Canned::default()
+        };
+        let two = PlaceReverse {
+            limit: 2,
+            ..reverse_at()
+        };
+        let nearby = reverse(&&good, &two).unwrap();
+        assert_eq!((nearby.near.len(), nearby.admin.len()), (2, 1));
+        assert_eq!(reverse(&Arc::new(good), &two).unwrap().near.len(), 2);
+    }
+
+    #[test]
+    fn a_malformed_nearby_answer_is_the_providers_failure() {
+        let failing = |nearby: NearbyPlaces| {
+            refusal(
+                &reverse(
+                    &Canned {
+                        nearby,
+                        ..Canned::default()
+                    },
+                    &reverse_at(),
+                )
+                .unwrap_err(),
+            )
+            .1
+            .map(str::to_owned)
+        };
+        for distance_m in [-1.0, f64::NAN, f64::INFINITY] {
+            let nearby = NearbyPlaces {
+                near: vec![near(distance_m, 0.0)],
+                admin: Vec::new(),
+            };
+            assert_eq!(failing(nearby).as_deref(), Some("near[0].distanceM"));
+        }
+        for bearing_deg in [-0.1, 360.0, f64::NAN] {
+            let nearby = NearbyPlaces {
+                near: vec![near(1.0, bearing_deg)],
+                admin: Vec::new(),
+            };
+            assert_eq!(failing(nearby).as_deref(), Some("near[0].bearingDeg"));
+        }
+        let unnamed = NearPlace {
+            place: NamedPlace {
+                id: String::new(),
+                ..pokhara()
+            },
+            ..near(1.0, 1.0)
+        };
+        assert_eq!(
+            failing(NearbyPlaces {
+                near: vec![unnamed],
+                admin: Vec::new()
+            })
+            .as_deref(),
+            Some("near[0].place.id")
+        );
+        let unit = NamedPlace {
+            level: None,
+            ..nepal()
+        };
+        let why = reverse(
+            &Canned {
+                nearby: NearbyPlaces {
+                    near: Vec::new(),
+                    admin: vec![unit],
+                },
+                ..Canned::default()
+            },
+            &reverse_at(),
+        )
+        .unwrap_err();
+        assert_eq!(refusal(&why), (Status::Provider, Some("admin[0].level")));
+    }
+
+    #[test]
+    fn a_places_names_follow_the_languages_asked() {
+        let asked = PlaceNamesRequest {
+            id: "p1".into(),
+            langs: vec!["ne".into(), "en".into()],
+        };
+        // A provider holding no names answers none for each language.
+        let none = names(&Canned::default(), &asked).unwrap();
+        assert_eq!(
+            (none.id.as_str(), none.best.len(), none.all.len()),
+            ("p1", 2, 0)
+        );
+        assert!(none.best.iter().all(|chosen| chosen.name.is_none()));
+
+        let name = |text: &str| PlaceName {
+            text: text.into(),
+            lang: Some("ne".into()),
+            script: Some("Deva".into()),
+            kind: None,
+            origin: "test".into(),
+            machine: false,
+        };
+        let chosen = |asked: &str| ChosenName {
+            asked: asked.into(),
+            name: Some(name("पोखरा")),
+        };
+        let answer = |id: &str, best: Vec<ChosenName>, all: Vec<PlaceName>| Canned {
+            names: Some(PlaceNames {
+                id: id.into(),
+                best,
+                all,
+            }),
+            ..Canned::default()
+        };
+        let good = answer("p1", vec![chosen("ne"), chosen("en")], vec![name("पोखरा")]);
+        assert_eq!(names(&&good, &asked).unwrap().all.len(), 1);
+        assert_eq!(names(&Arc::new(good), &asked).unwrap().best.len(), 2);
+
+        let failed = |canned: Canned| {
+            refusal(&names(&canned, &asked).unwrap_err())
+                .1
+                .map(str::to_owned)
+        };
+        assert_eq!(
+            failed(answer("p2", vec![chosen("ne"), chosen("en")], Vec::new())).as_deref(),
+            Some("id")
+        );
+        assert_eq!(
+            failed(answer("p1", vec![chosen("ne")], Vec::new())).as_deref(),
+            Some("best")
+        );
+        assert_eq!(
+            failed(answer("p1", vec![chosen("en"), chosen("ne")], Vec::new())).as_deref(),
+            Some("best")
+        );
+        assert_eq!(
+            failed(answer(
+                "p1",
+                vec![chosen("ne"), chosen("en")],
+                vec![name("x"), name("")]
+            ))
+            .as_deref(),
+            Some("all[1].text")
+        );
+
+        let why = names(
+            &Canned::default(),
+            &PlaceNamesRequest {
+                id: " ".into(),
+                langs: Vec::new(),
+            },
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("id"));
+        let why = names(
+            &Canned::default(),
+            &PlaceNamesRequest {
+                id: "p1".into(),
+                langs: vec!["ne".into(), "??".into()],
+            },
+        )
+        .unwrap_err();
+        assert_eq!(why.field(), Some("langs[1]"));
+    }
+
+    #[test]
+    fn a_label_says_the_country_once() {
+        let parents = [parent("np", "Nepal", 0), parent("kaski", "Kaski", 2)];
+        assert_eq!(label("Pokhara", &parents), "Pokhara, Kaski, Nepal");
+        // The finest parent sharing the place's name is passed over.
+        let city = [parent("np", "Nepal", 0), parent("ktm", "Kathmandu", 2)];
+        assert_eq!(label("Kathmandu", &city), "Kathmandu, Nepal");
+        // A country's own parent, itself, is not said twice.
+        assert_eq!(label("Nepal", &[parent("np", "Nepal", 0)]), "Nepal");
+        // Parents without a country end at the finest.
+        assert_eq!(
+            label("Pokhara", &[parent("kaski", "Kaski", 2)]),
+            "Pokhara, Kaski"
+        );
+    }
+
+    #[test]
+    fn a_requests_defaults_are_its_serde_defaults() {
+        let search: PlaceSearch = serde_json::from_str(
+            r#"{"query": "x", "focus": {"latitudeDeg": 1, "longitudeDeg": 2}}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            (search.limit, search.focus.unwrap().scale_m),
+            (10, FOCUS_SCALE_M)
+        );
+        let reverse: PlaceReverse =
+            serde_json::from_str(r#"{"latitudeDeg": 1, "longitudeDeg": 2}"#).unwrap();
+        assert_eq!(reverse.limit, 5);
+        let listing: PlaceListing = serde_json::from_str(r#"{"within": "NP"}"#).unwrap();
+        assert_eq!(listing, PlaceListing::within("NP"));
+        let any: PlaceListing = serde_json::from_str(r#"{"within": "NP", "depth": null}"#).unwrap();
+        assert_eq!(any.depth, None);
+    }
+}
