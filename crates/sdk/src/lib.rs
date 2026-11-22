@@ -183,6 +183,7 @@ mod rectification_request;
 mod rectify;
 #[cfg(feature = "remedies")]
 mod remedy_request;
+mod render_request;
 #[cfg(feature = "research")]
 mod research_request;
 mod sankalpa_request;
@@ -388,6 +389,7 @@ pub use teistro_render_svg as render_svg;
 // without building it (`03-design/dasha-kernels.md`).
 #[cfg(feature = "chart")]
 pub use crate::plan_request::{PlanInputs, PlanRequest};
+pub use crate::render_request::{RenderRequest, Said};
 // A chart request composed whole, its records read beside it
 // (`03-design/mcp-server.md`, step 2).
 #[cfg(feature = "chart")]

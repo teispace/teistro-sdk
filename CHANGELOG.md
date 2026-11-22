@@ -40,6 +40,10 @@ Venus's, as the reading's alone, where it said them as the period's.
 - **Added:** `sdk.rashifal.passing` in English, Nepali and Hindi: a transit
   at the reading whose graha may leave its sign within the period. Its
   vedha is said, and where it bears fruit is not.
+- **Added:** the record `intl.render` (`IntlArea::say`, `RenderRequest`, `Said`):
+  a plan's items said in the context's locale. An agent over the MCP server can
+  now read a rashifal's or an interpretation's plans as text, where it got only
+  keys and slots.
 
 **The vedha, the blackouts and the limbs' longitudes without the muhurta family (SR-132, SR-137, SR-138).**
 **Numbers:** no computed value moves under any shipped profile or in a build with the
