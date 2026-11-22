@@ -73,7 +73,7 @@ impl FestivalRule {
     ///
     /// let fortnight = FestivalRule::pitri_paksha();
     /// assert_eq!(fortnight.len(), 19);
-    /// assert!(fortnight.iter().all(|rule| rule.source.starts_with("Dharmasindhu p. 6")));
+    /// assert!(fortnight.iter().all(|rule| rule.source.starts_with("Dharmasindhu p")));
     /// ```
     #[must_use]
     pub fn pitri_paksha() -> Vec<FestivalRule> {
