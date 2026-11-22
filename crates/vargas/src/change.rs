@@ -362,11 +362,14 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{TOLERANCE_DAYS, either_side, equal_spans, lines, sampling_step};
+    use super::{TOLERANCE_DAYS, changes, either_side, equal_spans, lines, sampling_step};
     use crate::evaluate::place;
     use crate::scheme::{Classifier, Group, Scheme, Spans};
+    use teistro_astro::events::Longitudes;
     use teistro_core::angle::Nas;
     use teistro_core::catalogue::Varga;
+    use teistro_core::error::Error;
+    use teistro_core::quantity::{JulianDay, Ut1};
     use teistro_port_ephemeris::Body;
 
     /// A chart of the consumer's own reaches every arm of [`lines`]. The
@@ -475,5 +478,29 @@ mod tests {
         assert!(sampling_step(Body::Moon, &Scheme::cyclic(150).unwrap()) < step);
         // And it never collapses to nothing.
         assert!(sampling_step(Body::Moon, &Scheme::cyclic(300).unwrap()) >= TOLERANCE_DAYS);
+    }
+
+    /// A sky that answers nothing: a window decided before the sky is read
+    /// never asks it.
+    struct Unread;
+
+    impl Longitudes for Unread {
+        fn longitude_and_speed(&self, _: Body, _: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
+            Err(Error::internal("the sky was read"))
+        }
+    }
+
+    #[test]
+    fn a_window_ending_before_it_begins_is_refused_and_one_of_no_width_is_empty() {
+        let d9 = Scheme::of(Varga::D9);
+        let from = JulianDay::<Ut1>::J2000;
+        let before = JulianDay::<Ut1>::literal(from.get() - 1.0);
+        let refused = changes(&Unread, Body::Sun, &d9, from, before).unwrap_err();
+        assert_eq!(refused.field(), Some("to"));
+        assert!(
+            changes(&Unread, Body::Sun, &d9, from, from)
+                .unwrap()
+                .is_empty()
+        );
     }
 }

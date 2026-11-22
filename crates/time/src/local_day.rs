@@ -721,6 +721,75 @@ mod tests {
     use super::*;
     use crate::zones;
 
+    /// A Sun rising at 06:00 and setting at 18:00 UTC, answered until the
+    /// Julian day held.
+    struct SixToSixUntil(f64);
+
+    impl SolarModel for SixToSixUntil {
+        fn sidereal_sun_deg(&self, _jd_ut: f64) -> Result<f64, Error> {
+            Ok(0.0)
+        }
+
+        fn day_light(&self, day: FixedDay, _place: &Place) -> Result<DayLight, Error> {
+            let midnight = day.jd_at_midnight()?;
+            Ok(DayLight::Arc(DayArc {
+                sunrise: midnight.plus_days(0.25)?,
+                sunset: midnight.plus_days(0.75)?,
+            }))
+        }
+
+        fn describe(&self) -> String {
+            String::from("six to six, bounded")
+        }
+
+        fn convention(&self) -> SunriseConvention {
+            teistro_core::settings::Sunrise::CentreNoRefraction.into()
+        }
+
+        fn coverage(&self) -> teistro_core::coverage::Coverage {
+            teistro_core::coverage::Coverage {
+                from: f64::NEG_INFINITY,
+                to: self.0,
+            }
+        }
+    }
+
+    /// The last day a coverage holds has no next sunrise: it runs to the
+    /// coverage's end, marked `END`, when its own light lies inside it.
+    #[test]
+    fn the_last_day_of_a_coverage_is_cut_at_its_end() {
+        let place = Place::new(
+            Latitude::literal(0.0),
+            Longitude::literal(0.0),
+            Altitude::literal(0.0),
+        );
+        let date = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 23);
+        let fixed = gregorian::fixed_from_gregorian(2024, 6, 23);
+        let midnight = fixed.jd_at_midnight().unwrap().get();
+        let lit = |model: &SixToSixUntil| {
+            let today = civil_day_light(model, &UtcOffset::UTC, &place, fixed)?;
+            local_day_lit(
+                model,
+                &UtcOffset::UTC,
+                &place,
+                (&date, fixed),
+                PolarDayPolicy::Undefined,
+                (today, None),
+            )
+        };
+        let day = lit(&SixToSixUntil(midnight + 1.05)).unwrap();
+        assert_eq!(day.clipped, Some(Clipped::End));
+        assert_eq!(day.state, DayState::Normal);
+        assert_eq!(day.sunset.get(), midnight + 0.75);
+        assert_eq!(day.next_sunrise.get(), midnight + 1.05);
+        // A coverage ending before the sunset, or never, leaves no night
+        // to stand in for.
+        for end in [midnight + 0.5, f64::INFINITY] {
+            let refused = lit(&SixToSixUntil(end)).unwrap_err();
+            assert_eq!(refused.field(), Some("date"), "{end}");
+        }
+    }
+
     /// A standing arc is the sky's where it has one, and otherwise the
     /// same sunrise and sunset the day's own row gives under the policy.
     #[test]

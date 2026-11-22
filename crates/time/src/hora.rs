@@ -326,6 +326,7 @@ mod tests {
     use teistro_calendar::solar::DayArc;
     use teistro_calendar::{CalendarDate, FixedDay, Gregorian};
     use teistro_core::catalogue::Calendar;
+    use teistro_core::coverage::Clipped;
     use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
     use teistro_core::settings::{PolarDayPolicy, Sunrise};
     use teistro_core::time::UtcOffset;
@@ -436,5 +437,45 @@ mod tests {
             Reckoning::try_from(HoraReckoning::Proportional).unwrap(),
             Reckoning::Proportional
         );
+    }
+    #[test]
+    fn a_day_cut_at_the_coverage_s_end_keeps_the_horas_it_knows() {
+        let place = Place::new(
+            Latitude::literal(0.0),
+            Longitude::literal(0.0),
+            Altitude::literal(0.0),
+        );
+        let date = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 23);
+        let day = local_day(
+            &SixToSix,
+            &Gregorian,
+            &UtcOffset::UTC,
+            &place,
+            &date,
+            PolarDayPolicy::Undefined,
+        )
+        .unwrap();
+        // The coverage ends 0.3 days after sunset, so the night is not known.
+        let cut = LocalDay {
+            next_sunrise: day.sunset.plus_days(0.3).unwrap(),
+            clipped: Some(Clipped::End),
+            ..day.clone()
+        };
+        // A proportional night hora is a share of that night: the day's twelve alone.
+        let proportional = horas(&cut, Reckoning::Proportional).unwrap();
+        assert_eq!(proportional.len(), 12);
+        assert_eq!(proportional[11].end, cut.sunset);
+        // An equal hora is the clock's: those ending by the cut, 19 of 24.
+        let equal = horas(&cut, Reckoning::Equal).unwrap();
+        assert_eq!(equal.len(), 19);
+        assert!(equal[18].end <= cut.next_sunrise);
+        // A day cut at its start knows its end: every hora under either.
+        let started = LocalDay {
+            clipped: Some(Clipped::Start),
+            ..day
+        };
+        for reckoning in [Reckoning::Proportional, Reckoning::Equal] {
+            assert_eq!(horas(&started, reckoning).unwrap().len(), 24);
+        }
     }
 }
