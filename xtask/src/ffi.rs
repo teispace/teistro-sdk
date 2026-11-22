@@ -114,13 +114,15 @@ const UNTYPED_REQUESTS: [&str; 2] = ["engine.call", "engine.manifest"];
 /// open style and content, and a receipt's request, packs and settings,
 /// which are any record's, the stamps the issuing context wrote, and the
 /// settings document `settings.describe` states: a receipt is handed back
-/// whole, as it came.
-const RAW_REQUEST_PARTS: [&str; 15] = [
+/// whole, as it came. A plan item's slots (`intl.render`) are the open
+/// parameters of whichever message it names.
+const RAW_REQUEST_PARTS: [&str; 16] = [
     "BodyRef",
     "BodySubject",
     "ChartDisagreementsRequest.first",
     "ChartDisagreementsRequest.second",
     "IssueRequest.request",
+    "Item.params",
     "Receipt.packs",
     "Receipt.request",
     "ResearchRequest.control",

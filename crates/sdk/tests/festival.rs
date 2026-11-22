@@ -584,12 +584,14 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
 /// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
 /// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions and those
 /// [`KEPT_CIVIL_DAYS`], [`KEPT_INTERNATIONAL_DAYS`] and [`MORE_KEPT_DAYS`]
-/// hold to a patro's verified days.
+/// hold to a patro's verified days, and the two Eids, kept on the sighted
+/// Hijri calendar (`hijri_sighted.rs` holds them).
 fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
     kept_dated(from, to)
         .into_iter()
         .filter(|(rule, _)| {
-            PRINTED_CIVIL_DAYS
+            !rule.starts_with("EID_AL_")
+                && PRINTED_CIVIL_DAYS
                 .iter()
                 .chain(&KEPT_CIVIL_DAYS)
                 .chain(&KEPT_INTERNATIONAL_DAYS)
