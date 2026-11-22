@@ -337,6 +337,10 @@ name = "custom_ayanamsha"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "coverage_edges"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ketaki"
 required-features = ["builtin-ephemeris"]
 

@@ -617,8 +617,8 @@ impl FestivalMeta {
             .with_names(key)
     }
 
-    /// These values with what Nepal calls `key` ([`NAMES`]): its primary
-    /// name, its others and its place on its day.
+    /// These values with what Nepal calls `key`, from the table of Nepal's
+    /// names: its primary name, its others and its place on its day.
     #[must_use]
     pub fn with_names(self, key: &str) -> FestivalMeta {
         FestivalMeta {
@@ -2212,7 +2212,9 @@ mod tests {
                 "{key} is not a Nepal key"
             );
             for names in FestivalMeta::nepal(key).names {
-                names.check().unwrap();
+                if let Err(error) = names.check() {
+                    panic!("{key}: {error}");
+                }
             }
         }
     }

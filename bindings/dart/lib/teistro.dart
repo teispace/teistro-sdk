@@ -18953,6 +18953,7 @@ final class FestivalRequest extends _Facade {
   /// How a day's observances are listed in a cell; by significance when
   /// null (`03-design/festival-metadata.md` §7).
   final DayOrder? order;
+
   /// Festival groups, each spelt as its JSON (`03-design/festival-groups.md`):
   /// `key`, `members` (rule keys of the request, in order), `main` (one of
   /// them) and `source`. Each is put in place of a pack's group of its key,

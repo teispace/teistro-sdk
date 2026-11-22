@@ -10674,19 +10674,11 @@ void _engineTests() {
     expect(((best[0]! as Map)['name']! as Map)['text'], 'काठमाडौं');
     expect((best[1]! as Map)['asked'], 'sa');
     final listed = ctx.geo.list(const PlaceListing(within: 'NP-P3'));
-    expect(
-      listed.map((place) => (place! as Map)['id']),
-      ['np-ktm', 'np-ltp'],
-    );
-    expect(
-      ((listed[1]! as Map)['population']! as Map)['kind'],
-      'MODELLED',
-    );
+    expect(listed.map((place) => (place! as Map)['id']), ['np-ktm', 'np-ltp']);
+    expect(((listed[1]! as Map)['population']! as Map)['kind'], 'MODELLED');
     expect(
       () => ctx.geo.search(const PlaceSearch(query: '')),
-      throwsA(
-        isA<TeistroException>().having((e) => e.field, 'field', 'query'),
-      ),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'query')),
     );
   });
 

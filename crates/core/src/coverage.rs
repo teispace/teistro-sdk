@@ -54,6 +54,14 @@ pub enum Clipped {
 
 impl Clipped {
     /// The mark for a span cut at its start, its end, both or neither.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Clipped;
+    ///
+    /// assert_eq!(Clipped::of(true, true), Some(Clipped::Both));
+    /// assert_eq!(Clipped::of(false, true), Some(Clipped::End));
+    /// assert_eq!(Clipped::of(false, false), None);
+    /// ```
     #[must_use]
     pub const fn of(start: bool, end: bool) -> Option<Clipped> {
         match (start, end) {
@@ -65,18 +73,39 @@ impl Clipped {
     }
 
     /// Whether the start was cut.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Clipped;
+    ///
+    /// assert!(Clipped::Start.start() && Clipped::Both.start());
+    /// assert!(!Clipped::End.start());
+    /// ```
     #[must_use]
     pub const fn start(self) -> bool {
         matches!(self, Clipped::Start | Clipped::Both)
     }
 
     /// Whether the end was cut.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Clipped;
+    ///
+    /// assert!(Clipped::End.end() && Clipped::Both.end());
+    /// assert!(!Clipped::Start.end());
+    /// ```
     #[must_use]
     pub const fn end(self) -> bool {
         matches!(self, Clipped::End | Clipped::Both)
     }
 
     /// This mark joined with another: a span cut at either end by either.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Clipped;
+    ///
+    /// assert_eq!(Clipped::Start.with(Some(Clipped::End)), Clipped::Both);
+    /// assert_eq!(Clipped::End.with(None), Clipped::End);
+    /// ```
     #[must_use]
     pub const fn with(self, other: Option<Clipped>) -> Clipped {
         match other {
@@ -141,6 +170,15 @@ impl Coverage {
     ///
     /// `INVALID_ARG` on `coverage` for an end that is not a number or a
     /// span that runs backwards.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Coverage;
+    ///
+    /// let coverage = Coverage::new(10.0, 20.0)?;
+    /// assert_eq!((coverage.from, coverage.to), (10.0, 20.0));
+    /// assert_eq!(Coverage::new(f64::NAN, 1.0).unwrap_err().field(), Some("coverage"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     pub fn new(from: f64, to: f64) -> Result<Coverage, Error> {
         if from.is_nan() || to.is_nan() || from > to {
             return Err(Error::invalid_arg(format!(
@@ -151,13 +189,30 @@ impl Coverage {
         Ok(Coverage { from, to })
     }
 
-    /// Whether an instant is answered.
+    /// Whether an instant is answered, either end included.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Coverage;
+    ///
+    /// let coverage = Coverage::new(10.0, 20.0)?;
+    /// assert!(coverage.contains(10.0) && coverage.contains(20.0));
+    /// assert!(!coverage.contains(9.5));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn contains(self, jd: f64) -> bool {
         jd >= self.from && jd <= self.to
     }
 
     /// Whether either end is finite.
+    ///
+    /// ```
+    /// use teistro_core::coverage::Coverage;
+    ///
+    /// assert!(Coverage::new(f64::NEG_INFINITY, 20.0)?.is_bounded());
+    /// assert!(!Coverage::UNBOUNDED.is_bounded());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
     #[must_use]
     pub fn is_bounded(self) -> bool {
         self.from.is_finite() || self.to.is_finite()

@@ -26,7 +26,7 @@ use std::path::Path;
 use serde_json::Value;
 use teistro::catalogue::{Calendar, Karana, MuhurtaYoga, Nakshatra, Tithi, Yoga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
-use teistro::{CalendarDate, Context, Ephemeris, Error, Panchanga, Span, Status, UtcOffset};
+use teistro::{CalendarDate, Context, Ephemeris, Error, Panchanga, Span, UtcOffset};
 
 /// Seconds in a day.
 const SECONDS: f64 = 86_400.0;
@@ -82,17 +82,12 @@ const YOGAS: [(&str, MuhurtaYoga); 5] = [
     ("tripushkar", MuhurtaYoga::Tripushkar),
 ];
 
-/// The births at the ends of the data's years (tagged `range-start` and
-/// `range-end`), whose days the SDK refuses: a day's window and the Moon's
-/// search around it reach past the first or the last day the built-in
-/// ephemeris holds, where the recording engine's files ran on. The A/B
-/// excuses the same two (`05-testing/ab-measured.md`).
-const RANGE_EDGES: [&str; 2] = ["c047", "c048"];
-
 /// Every recorded chart, in name order, with the days the SDK computes for
-/// its local civil date at its place and `around` days either side of it;
-/// the days at [`RANGE_EDGES`] are held to be refused for being out of
-/// range, and left out.
+/// its local civil date at its place and `around` days either side of it.
+/// The births at the ends of the data's years (c047 and c048, tagged
+/// `range-start` and `range-end`) are answered and held like the rest:
+/// the SDK answers every date its coverage holds, cutting a search at the
+/// coverage's edge rather than refusing the day (SR-136).
 fn days(around: i64) -> Vec<(Value, Vec<Panchanga>)> {
     let sdk = context();
     let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/baseline/charts");
@@ -114,22 +109,9 @@ fn days(around: i64) -> Vec<(Value, Vec<Panchanga>)> {
             let day = days_of(&sdk, &chart, around);
             (chart, day)
         })
-        .filter_map(|(chart, day)| {
-            let edge = RANGE_EDGES.contains(&id(&chart));
-            match day {
-                Ok(day) => {
-                    assert!(!edge, "{}: answered at a range edge", id(&chart));
-                    Some((chart, day))
-                }
-                Err(error) => {
-                    assert!(
-                        edge && error.status == Status::OutOfRange,
-                        "{}: {error}",
-                        id(&chart)
-                    );
-                    None
-                }
-            }
+        .map(|(chart, day)| match day {
+            Ok(day) => (chart, day),
+            Err(error) => panic!("{}: {error}", id(&chart)),
         })
         .collect()
 }
