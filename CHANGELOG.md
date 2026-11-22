@@ -63,7 +63,7 @@ other year or rule moves.
   calendars print them (32 of 32).
 
 **Nepal's monthly darsha shraddha and ashtami vratas, by *Dharmasindhu*, and Ramanujacharya jayanti.**
-**Numbers:** four rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
+**Numbers:** eight rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
 to 2083 Nepal's calendars print them on 33 of 34, 20 of 20 and 22 of 22 of the days they
 print them (the sunrise's rule would give 25, 20 and 7).
 - **Added:** `DARSHA_SHRADDHA` on each new moon, the adhika month's too, on the day whose
@@ -76,6 +76,9 @@ print them (the sunrise's rule would give 25, 20 and 7).
 - **Added:** `RAMANUJACHARYA_JAYANTI` on Ardra in Vaishakha's bright half, at sunrise, where
   Nepal's calendars print it in every year VS 2076 to 2083; in 2021 that is 16 May, where the
   south's Ardra in Chittirai was 18 April (C2330).
+- **Added:** four days Nepal's calendars print on a festival's day: `TULASI_ROPANA` on
+  Harishayani Ekadashi, `TULASI_PIYE` the day after, `TULASI_DAL_RAKHNE` on Nirjala Ekadashi
+  and `VYASA_JAYANTI` on Guru Purnima, each in every year (or 8 of 9) that prints it.
 
 **A request's locale takes a short tag.**
 **Numbers:** none move; a request that was refused now answers.

@@ -6204,6 +6204,26 @@
       "name": "Krishna Ashtami Vrata",
       "prose": "Krishna Ashtami Vrata",
       "iast": "Kṛṣṇa Aṣṭamī Vrata"
+    },
+    "TULASI_ROPANA": {
+      "name": "Tulasi Ropana",
+      "prose": "Tulasi Ropana",
+      "iast": "Tulasī Ropaṇa"
+    },
+    "TULASI_DAL_RAKHNE": {
+      "name": "Tulasi Dal Rakhne Din",
+      "prose": "Tulasi Dal Rakhne Din",
+      "iast": "Tulasī Dala Rākhne Dina"
+    },
+    "VYASA_JAYANTI": {
+      "name": "Vyasa Jayanti",
+      "prose": "Vyasa Jayanti",
+      "iast": "Vyāsa Jayantī"
+    },
+    "TULASI_PIYE": {
+      "name": "Tulasi Piye",
+      "prose": "Tulasi Piye",
+      "iast": "Tulasīpie"
     }
   },
   "agni_vasa": {

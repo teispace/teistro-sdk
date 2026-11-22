@@ -243,3 +243,21 @@ fn ramanujacharya_jayanti_is_ardra_in_vaishakha_s_bright_half() {
         [(2022, 5, 5)]
     );
 }
+
+#[test]
+fn the_tulasi_days_and_vyasa_jayanti_keep_their_festivals_days() {
+    // Nepal's calendars print तुलसी रोपण on Harishayani, तुलसीपिए the day
+    // after, and व्यास जयन्ती on Guru Purnima (2024).
+    assert_eq!(
+        kept("TULASI_ROPANA", (2024, 7, 10), (2024, 7, 25)),
+        kept("HARISHAYANI_EKADASHI", (2024, 7, 10), (2024, 7, 25))
+    );
+    assert_eq!(
+        kept("TULASI_PIYE", (2024, 7, 10), (2024, 7, 25)),
+        [(2024, 7, 18)]
+    );
+    assert_eq!(
+        kept("VYASA_JAYANTI", (2024, 7, 15), (2024, 7, 25)),
+        kept("GURU_PURNIMA", (2024, 7, 15), (2024, 7, 25))
+    );
+}

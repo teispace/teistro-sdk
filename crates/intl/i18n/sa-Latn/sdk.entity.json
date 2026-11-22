@@ -5765,6 +5765,26 @@
       "name": "Kṛṣṇāṣṭamīvrata",
       "prose": "Kṛṣṇāṣṭamīvrata",
       "iast": "Kṛṣṇa Aṣṭamī Vrata"
+    },
+    "TULASI_ROPANA": {
+      "name": "Tulasīropaṇa",
+      "prose": "Tulasīropaṇa",
+      "iast": "Tulasī Ropaṇa"
+    },
+    "TULASI_DAL_RAKHNE": {
+      "name": "Tulasīdalasthāpana",
+      "prose": "Tulasīdalasthāpana",
+      "iast": "Tulasī Dala Rākhne Dina"
+    },
+    "VYASA_JAYANTI": {
+      "name": "Vyāsajayantī",
+      "prose": "Vyāsajayantī",
+      "iast": "Vyāsa Jayantī"
+    },
+    "TULASI_PIYE": {
+      "name": "Tulasīpie",
+      "prose": "Tulasīpie",
+      "iast": "Tulasīpie"
     }
   },
   "year_office": {

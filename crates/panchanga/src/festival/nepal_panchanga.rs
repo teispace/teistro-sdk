@@ -2047,7 +2047,22 @@ const ON_A_STAR: [(&str, Masa, Occurs, Fit, &str); 1] = [(
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 26] = [
+const SAME_DAY: [(&str, &str, &str); 29] = [
+    (
+        "TULASI_ROPANA",
+        "HARISHAYANI_EKADASHI",
+        "Nepal's calendars, VS 2076 to 2083: तुलसी रोपण, or हरिशयनी एकादशी व्रत (तुलसी रोप्ने), on Harishayani's day in all 11 years each prints it: the day of HARISHAYANI_EKADASHI",
+    ),
+    (
+        "TULASI_DAL_RAKHNE",
+        "NIRJALA_EKADASHI",
+        "Nepal's calendars, VS 2076 to 2083: तुलसीको दल राख्ने दिन, or निर्जला एकादशी व्रत (तुलसीको दल राख्ने दिन), on Nirjala's day in 8 of the 9 years each prints it: the day of NIRJALA_EKADASHI",
+    ),
+    (
+        "VYASA_JAYANTI",
+        "GURU_PURNIMA",
+        "Nepal's calendars, VS 2076 to 2083: व्यास जयन्ती, or गुरु(व्यास) पूजा, on Guru Purnima's day in all 9 years each prints it: the day of GURU_PURNIMA",
+    ),
     (
         "KALARATRI",
         "MAHA_ASHTAMI",
@@ -2182,7 +2197,13 @@ const SAME_DAY: [(&str, &str, &str); 26] = [
 
 /// The days counted from another rule's day: key, the rule, the days
 /// after it (before it when negative), and where.
-const COUNTED: [(&str, &str, i8, &str); 4] = [
+const COUNTED: [(&str, &str, i8, &str); 5] = [
+    (
+        "TULASI_PIYE",
+        "HARISHAYANI_EKADASHI",
+        1,
+        "Nepal's calendars, VS 2076 to 2083: तुलसीपिए in all 10 years each prints it: the day after HARISHAYANI_EKADASHI",
+    ),
     (
         "KOKA_KAUSHIKI_SANGAM_MELA",
         "DHANYA_PURNIMA",
