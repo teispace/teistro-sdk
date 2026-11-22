@@ -6393,6 +6393,46 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.rashifal.passing`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rashifal::Passing;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage};
+        ///
+        /// let message = Passing {
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     house: 2,
+        ///     verdict: String::from("verdict"),
+        /// };
+        /// assert_eq!(Passing::KEY, "sdk.rashifal.passing");
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Passing {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `house` parameter.
+            pub house: i64,
+            /// The `verdict` parameter.
+            pub verdict: String,
+        }
+
+        impl crate::TypedMessage for Passing {
+            const KEY: &'static str = "sdk.rashifal.passing";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("house", crate::Value::Int(self.house)),
+                    ("verdict", crate::Value::Str(self.verdict.clone())),
+                ])
+            }
+        }
+
         /// The message `sdk.rashifal.saturn`.
         ///
         /// ```
