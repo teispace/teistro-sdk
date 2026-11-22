@@ -445,6 +445,23 @@ pub fn vedha_of(
 /// read by [`vedha_of`] off the days `day` answers; an eclipse the place
 /// does not see keeps `None`.
 ///
+/// ```
+/// use teistro_astro::eclipse::EclipsesHere;
+/// use teistro_calendar::Gregorian;
+/// use teistro_core::error::Error;
+/// use teistro_core::settings::EclipseVedha;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_panchanga::vedha::with_vedhas;
+///
+/// // No eclipse seen, so no day is asked for and nothing is given.
+/// let mut found = EclipsesHere::default();
+/// with_vedhas(&mut found, EclipseVedha::Dharmasindhu, &Gregorian, &UtcOffset::UTC, |_| {
+///     Err(Error::internal("no day is asked for"))
+/// })?;
+/// assert_eq!(found, EclipsesHere::default());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
 /// # Errors
 ///
 /// As [`vedha_of`].

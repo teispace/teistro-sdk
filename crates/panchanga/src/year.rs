@@ -284,6 +284,43 @@ impl LunarYear {
     }
 
     /// The year with the mark of the ends the coverage cut.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_core::coverage::Clipped;
+    ///
+    /// let year = almanac.years(&date(11, 25), &date(11, 25), &kathmandu)?.value.remove(0);
+    /// assert_eq!(year.clipped, None);
+    /// assert_eq!(year.with_clipped(Some(Clipped::End)).clipped, Some(Clipped::End));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
     pub fn with_clipped(self, clipped: Option<Clipped>) -> Self {
         LunarYear { clipped, ..self }
@@ -486,6 +523,38 @@ pub fn chaitra_opening<S: Longitudes + ?Sized>(
 /// [`chaitra_opening`], or `None` when the year opened before the first
 /// instant the ephemeris answers (SR-136, C2249): the search back to
 /// Chaitra reaches the coverage's start without finding it.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::year::{chaitra_opening, chaitra_opening_within};
+///
+/// // A sky with no edge finds the year's opening as the search does.
+/// let opened = chaitra_opening_within(&longitudes, zodiac, window.from)?;
+/// assert_eq!(opened, Some(chaitra_opening(&longitudes, zodiac, window.from)?));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
