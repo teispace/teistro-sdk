@@ -214,3 +214,18 @@ fn the_monthly_ashtami_vrata_is_the_later_bright_8th_and_the_dark_8th_at_pradosh
         assert_eq!(kept("KRISHNA_ASHTAMI_VRATA", from, to), [day]);
     }
 }
+
+#[test]
+fn bhai_tika_keeps_the_aparahna_where_the_2nd_barely_holds_the_later_sunrise() {
+    // Dharmasindhu p. 79 (C2329): the 2nd holds the later sunrise by 6
+    // and 42 minutes, and Nepal's calendars print the earlier day, which
+    // holds the aparahna; the sunrise's reading gave the day after.
+    assert_eq!(
+        kept("YAMA_DWITIYA", (2019, 10, 25), (2019, 11, 2)),
+        [(2019, 10, 29)]
+    );
+    assert_eq!(
+        kept("YAMA_DWITIYA", (2020, 11, 12), (2020, 11, 20)),
+        [(2020, 11, 16)]
+    );
+}

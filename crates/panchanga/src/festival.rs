@@ -4080,6 +4080,16 @@ fn lakshmi_puja() -> FestivalRule {
     }
 }
 
+/// The daylight rites [`FestivalRule::nepal`] keeps on *Dharmasindhu*'s day
+/// rather than the sunrise's (C2329). Bhai Tika, यमद्वितीया, keeps p. 79's
+/// aparahna: at Kathmandu under `nepali-committee` the readings part on
+/// 29 October 2019 and 16 November 2020, where the 2nd holds the later
+/// sunrise by 6 and 42 minutes, and Nepal's calendars print the earlier
+/// day, 5 of 5; the other rites the two readings part on (Maha Navami,
+/// Vijaya Dashami, Devi Visarjan, Upakarma, Rakshabandhan) are printed on
+/// the sunrise's day, 32 of 32, VS 2076 to 2083.
+const KEPT_BY_TEXT_IN_NEPAL: [&str; 1] = ["YAMA_DWITIYA"];
+
 impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
@@ -4236,7 +4246,15 @@ impl FestivalRule {
     /// sunrise holds its tithi ([`FestivalRule::udaya`]). The Nepal
     /// Panchanga Decision Committee's printed days for VS 2082 and 2083
     /// agree with this reading on every row, and with the text alone on all
-    /// but the three daylight rites where the two part.
+    /// but the three daylight rites where the two part. Bhai Tika
+    /// (`YAMA_DWITIYA`) keeps the text's aparahna: Nepal's calendars print
+    /// it there in every year the readings part (C2329).
+    ///
+    /// ```
+    /// # use teistro_panchanga::festival::FestivalRule;
+    /// let tika = |rules: Vec<FestivalRule>| rules.into_iter().find(|rule| rule.key == "YAMA_DWITIYA");
+    /// assert_eq!(tika(FestivalRule::nepal()), tika(FestivalRule::dharmasindhu()));
+    /// ```
     ///
     /// ```
     /// use teistro_panchanga::festival::FestivalRule;
@@ -4253,7 +4271,7 @@ impl FestivalRule {
         let mut rules: Vec<FestivalRule> = FestivalRule::printed_in_nepal()
             .into_iter()
             .map(|rule| {
-                if rule.at.in_daylight() {
+                if rule.at.in_daylight() && !KEPT_BY_TEXT_IN_NEPAL.contains(&rule.key.as_str()) {
                     rule.udaya()
                 } else {
                     rule

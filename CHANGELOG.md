@@ -52,6 +52,16 @@ its day. No other rule's day moves.
   past 56 ghatis" counts, not four thirtieths of the night (C2328); Nepal's calendars mark the
   Vaishnava fast by it in all 8 years that print one.
 
+**Bhai Tika on the day Nepal keeps it (C2329).**
+**Numbers:** `YAMA_DWITIYA` in `NEPAL` and `NEPAL_PANCHANGA` moves from 2019-10-30 to
+2019-10-29 and from 2020-11-17 to 2020-11-16, at Kathmandu under `nepali-committee`; no
+other year or rule moves.
+- **Fixed:** Nepal's packs read every daylight rite by the sunrise (C197), which put Bhai
+  Tika a day late where the 2nd holds the later sunrise by minutes. It now keeps
+  *Dharmasindhu* p. 79's aparahna, as Nepal's calendars print it in every year the two
+  readings part (5 of 5); the other rites that part stay on the sunrise's day, as the
+  calendars print them (32 of 32).
+
 **Nepal's monthly darsha shraddha and ashtami vratas, by *Dharmasindhu*.**
 **Numbers:** three rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
 to 2083 Nepal's calendars print them on 33 of 34, 20 of 20 and 22 of 22 of the days they
