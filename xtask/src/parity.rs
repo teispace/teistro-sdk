@@ -115,15 +115,17 @@ struct Report {
 /// the compact tier, and the sky view and the sky pose, whose Moon stands
 /// a few ten-thousandths of a degree from the standard tier's, and the
 /// moonrise conventions' days and moonrises, a tenth of a second from the
-/// standard tier's with the Sun's and the Moon's truncation. So these
-/// lines are
+/// standard tier's with the Sun's and the Moon's truncation, and the
+/// limbs' angles, a few ten-thousandths of a degree apart, and the
+/// season's blackouts, whose bounds are the ingresses and new moons tens of
+/// seconds apart on the compact tier. So these lines are
 /// held to the same **shape** — every kind, rule and count, and which
 /// contacts and stretches exist — and their numbers and hashes are the
 /// tier's own. The list fails both ways: a line with a different shape
 /// fails, and so does a prefix none of whose lines differ any more,
 /// because then the build carries the standard tier and the exception is
 /// stale.
-const WASM_TIER: [&str; 7] = [
+const WASM_TIER: [&str; 9] = [
     "eclipses-",
     "lilith-",
     "lagnas-",
@@ -131,6 +133,8 @@ const WASM_TIER: [&str; 7] = [
     "sky-view-",
     "sky-pose-",
     "moonrise-",
+    "limb-angles-",
+    "blackouts-",
 ];
 
 /// The wasm runner's own values: its build's target, which must be a
