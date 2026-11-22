@@ -2916,7 +2916,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// ayanamsha and its basis, the panchanga's centre, the positions
     /// (apparent or true), a custom ayanamsha, and a provider that defines
     /// its own zodiac, each honoured because the sky is the one every day's
-    /// limbs are found in ([`Almanac::limb_sky`]), not a frame built beside
+    /// limbs are found in (the almanac's limb sky), not a frame built beside
     /// it. So a wheel drawn from these angles and a day's limbs never
     /// disagree: at an instant the limb search found, the angle sits on the
     /// limb's grid to the search's tolerance.

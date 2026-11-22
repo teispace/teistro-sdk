@@ -302,7 +302,7 @@ impl TsDayState {
 /// #     convention: SunriseConvention::Named { which: Sunrise::UpperLimbRefraction },
 /// #     model: String::from("an example"),
 /// #     clipped: None,
-/// # /// # };
+/// # };
 /// use teistro_idl::blob::FixedValue;
 /// use teistro_ffi::day::{TsSunrise, day_values};
 ///

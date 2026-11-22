@@ -330,6 +330,12 @@ pub struct Beyond {
 
 impl Beyond {
     /// The same reach, from an edge `days` further in.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::Beyond;
+    ///
+    /// assert_eq!(Beyond { least: 1.0, most: 3.0 }.and(2.0), Beyond { least: 3.0, most: 5.0 });
+    /// ```
     #[must_use]
     pub fn and(self, days: f64) -> Beyond {
         Beyond {
@@ -341,6 +347,13 @@ impl Beyond {
     /// How many sign boundaries the Sun passes in the stretch past the
     /// edge, the first `distance_deg` from where he stands there, when
     /// his least and greatest rates settle it; `None` when they do not.
+    ///
+    /// ```
+    /// use teistro_calendar::lunisolar::Beyond;
+    ///
+    /// // 40° to the first boundary and at most 10 days: he passes none.
+    /// assert_eq!(Beyond { least: 5.0, most: 10.0 }.sankrantis(40.0), Some(0));
+    /// ```
     #[must_use]
     pub fn sankrantis(self, distance_deg: f64) -> Option<usize> {
         let sun = teistro_port_ephemeris::Body::Sun;
