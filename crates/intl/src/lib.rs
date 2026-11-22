@@ -83,11 +83,11 @@ pub mod xliff;
 #[allow(clippy::all, clippy::pedantic, reason = "generated")]
 pub mod messages;
 
+pub use item::Item;
 pub use render::{
     ClockTime, Ghati, Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value,
     engine_params, params,
 };
-pub use item::Item;
 pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};
 
