@@ -298,15 +298,11 @@ sentence. `teistro_interpret::rashifal(&RashiReading) -> Plan` does, and
     not a reading.
 
 **The words.** `sdk.rashifal` is a namespace of its own, in `en-Latn`,
-`ne-Deva-NP` and `hi-Deva-IN`. Nepali's `sdk.reason` is reviewed, so the
-rashifal's three messages could not sit in it without the mark covering
-reviewed text. Nepali and Hindi drafts are unreviewed (Q42) and ship
-marked draft: `ne-Deva-NP` drafts `sdk.day` and `sdk.rashifal`, and
-`hi-Deva-IN` drafts `sdk.calendar`, `sdk.rashifal` and `sdk.reason`. Hindi
-had no `sdk.reason`, so it read the gochar's sentences in English. A
-drafted namespace must be whole (`intl-engine-and-packs.md`, "Text not
-yet reviewed"), so Hindi's `sdk.reason` carries every reason, not only
-the five the gochar says. `crates/intl/tests/draft.rs` pins the lists.
+`ne-Deva-NP` and `hi-Deva-IN`. Every pack ships final, the maintainer
+reviewing after shipping (Q42), so none of the rashifal's text is marked
+draft; `crates/intl/tests/draft.rs` holds that no shipped namespace is.
+Hindi's `sdk.reason` carries every reason, so it reads the gochar's
+sentences in Hindi rather than English.
 
 **At the boundary.** The batch `ts_rashifal` reads takes `"plans": true`,
 false when left out, and each period's answer then carries `plans`:
@@ -320,5 +316,4 @@ rashifal (2026, Kathmandu) for the twelve signs, which emits every phase
 and both spells, ingresses and stations, and renders each item in every
 strict locale with no fallback and no warning. A façade test
 (`crates/sdk/tests/rashifal.rs`) holds the batch's plans to the composer
-and renders each in English, Nepali and Hindi, the Nepali and Hindi
-marked draft.
+and renders each in English, Nepali and Hindi, none of it draft.
