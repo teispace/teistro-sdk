@@ -52,6 +52,18 @@ its day. No other rule's day moves.
   past 56 ghatis" counts, not four thirtieths of the night (C2328); Nepal's calendars mark the
   Vaishnava fast by it in all 8 years that print one.
 
+**Nepal's monthly darsha shraddha and ashtami vratas, by *Dharmasindhu*.**
+**Numbers:** three rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
+to 2083 Nepal's calendars print them on 33 of 34, 20 of 20 and 22 of 22 of the days they
+print them (the sunrise's rule would give 25, 20 and 7).
+- **Added:** `DARSHA_SHRADDHA` on each new moon, the adhika month's too, on the day whose
+  aparahna holds more of it, as *Dharmasindhu* p. 266 decides a parvana shraddha. Nepal's
+  national panchanga keeps Monday 8 March 2027, where the earlier day holds 93% of the
+  aparahna: the source names that departure.
+- **Added:** `SHUKLA_ASHTAMI_VRATA` on the later bright 8th, and `KRISHNA_ASHTAMI_VRATA` on
+  the dark 8th holding more of the pradosha, the fast for Kalabhairava (*Dharmasindhu* p. 10),
+  named अष्टमी व्रत in `ne-Deva-NP` as the calendars print both.
+
 **A request's locale takes a short tag.**
 **Numbers:** none move; a request that was refused now answers.
 - **Fixed:** day sentences, sankalpa words and band words resolve a request's `locale` by
