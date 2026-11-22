@@ -1831,6 +1831,39 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
 /// a new moon outside the coverage is replaced by the edge, marked in
 /// `clipped`, and how far past the edge it lies is bounded in `before`
 /// or `after` from the Moon's age there.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::lunar_month_cut;
+///
+/// // A sky with no edge holds both new moons.
+/// let month = lunar_month_cut(&longitudes, window, zodiac)?;
+/// assert!(month.clipped.is_none() && month.before.is_none() && month.after.is_none());
+/// assert!(month.span.from <= window.from && window.to <= month.span.to);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MonthCut {
     /// From the opening new moon, or the coverage's first instant, to the
@@ -2087,6 +2120,38 @@ pub fn masa_at<S: Longitudes + ?Sized>(
 /// moon, or, when the coverage cut that new moon off, the Sun's sign at
 /// the coverage's edge less the sankrantis his rates say he passed in
 /// between (SR-136, C2246).
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::quantity::JulianDay;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # // The analytic test sky, read in Lahiri's sidereal zodiac.
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// # let window = Interval::literal(2_460_000.5, 2_460_001.5);
+///
+/// use teistro_panchanga::limb::{lunar_month_cut, masa_at, masa_opening};
+///
+/// // An uncut month is named from its opening new moon.
+/// let month = lunar_month_cut(&longitudes, window, zodiac)?;
+/// assert_eq!(masa_opening(&longitudes, &month, zodiac)?, masa_at(&longitudes, month.span.from, zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 ///
 /// # Errors
 ///
