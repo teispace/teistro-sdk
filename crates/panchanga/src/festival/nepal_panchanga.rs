@@ -143,36 +143,8 @@ impl Fit {
                     Fit::name(window)
                 ),
             ),
-            Fit::LaterPastMoonrise(ghatis) => (
-                Window::Moonrise,
-                vec![Guard::new(
-                    [Predicate::Lasts {
-                        day: Which::Later,
-                        from: Edge::Moonrise,
-                        ghatis,
-                    }],
-                    Later,
-                )],
-                Earlier,
-                format!(
-                    "moonrise: the later day when the tithi lasts {ghatis} ghatis past its moonrise, the earlier otherwise"
-                ),
-            ),
-            Fit::LaterPastSunrise(ghatis) => (
-                Window::Sunrise,
-                vec![Guard::new(
-                    [Predicate::Lasts {
-                        day: Which::Later,
-                        from: Edge::Sunrise,
-                        ghatis,
-                    }],
-                    Later,
-                )],
-                Earlier,
-                format!(
-                    "sunrise: the later day when the tithi lasts {ghatis} ghatis past its sunrise, the earlier otherwise"
-                ),
-            ),
+            Fit::LaterPastMoonrise(ghatis) => Fit::later_past(Edge::Moonrise, ghatis),
+            Fit::LaterPastSunrise(ghatis) => Fit::later_past(Edge::Sunrise, ghatis),
             Fit::EarlierAlone(window) => (
                 window,
                 vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
@@ -205,6 +177,32 @@ impl Fit {
             ),
             Fit::OnVara(vara) => Fit::on_vara(vara),
         }
+    }
+
+    /// [`Fit::LaterPastMoonrise`]'s and [`Fit::LaterPastSunrise`]'s
+    /// window, guards, fallback and words: the later day when the tithi
+    /// lasts `ghatis` past `from` on it, the earlier otherwise.
+    fn later_past(from: Edge, ghatis: u8) -> (Window, Vec<Guard>, Choice, String) {
+        let (window, edge) = match from {
+            Edge::Sunrise => (Window::Sunrise, "sunrise"),
+            Edge::Sunset => (Window::Sunset, "sunset"),
+            Edge::Moonrise => (Window::Moonrise, "moonrise"),
+        };
+        (
+            window,
+            vec![Guard::new(
+                [Predicate::Lasts {
+                    day: Which::Later,
+                    from,
+                    ghatis,
+                }],
+                Choice::Later,
+            )],
+            Choice::Earlier,
+            format!(
+                "{edge}: the later day when the tithi lasts {ghatis} ghatis past its {edge}, the earlier otherwise"
+            ),
+        )
     }
 
     /// [`Fit::OnVara`]'s window, guards, fallback and words.
