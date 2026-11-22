@@ -85,6 +85,17 @@ pub(super) enum Fit {
     /// The later day only when it alone holds the tithi at a window, the
     /// earlier otherwise: Kali Puja's new moon at nishitha in Bengal.
     LaterAlone(Window),
+    /// The earlier day whenever the tithi touches a window of it at all,
+    /// wholly or in part, alone or with the later; the later otherwise:
+    /// Gathamuga charhe's evening rite, kept on the first pradosha the
+    /// fourteenth reaches (rc.8 audit, a community rule).
+    EarlierAny(Window),
+    /// The earlier day when both hold a window wholly, or neither does;
+    /// the later when it holds it wholly or alone while the earlier holds
+    /// it in part at most: *Dharmasindhu* p. 55's chaturthi, "the later
+    /// when the earlier holds madhyahna in part and the later wholly", and
+    /// so for the other months' (“एवं मासान्तरेऽपि”).
+    LaterWhollyOrAlone(Window),
     /// The earlier day when the tithi holds a window of it wholly, the
     /// later otherwise: the Vat Savitri fast's three muhurtas before
     /// sunset (*Dharmasindhu* p. 41).
@@ -172,6 +183,33 @@ impl Fit {
                 Earlier,
                 format!(
                     "{}: the later day only when it alone holds the tithi there, the earlier otherwise",
+                    Fit::name(window)
+                ),
+            ),
+            Fit::EarlierAny(window) => (
+                window,
+                vec![
+                    Guard::new([case(Case::EarlierOnly)], Earlier),
+                    Guard::new([case(Case::Both)], Earlier),
+                    Guard::new([case(Case::EqualParts)], Earlier),
+                    Guard::new([case(Case::UnequalParts)], Earlier),
+                ],
+                Later,
+                format!(
+                    "{}: the earlier day whenever the tithi touches it there, the later otherwise",
+                    Fit::name(window)
+                ),
+            ),
+            Fit::LaterWhollyOrAlone(window) => (
+                window,
+                vec![
+                    Guard::new([case(Case::Both)], Earlier),
+                    Guard::new([Predicate::Wholly { day: Which::Later }], Later),
+                    Guard::new([case(Case::LaterOnly)], Later),
+                ],
+                Earlier,
+                format!(
+                    "{}: the later day when it holds the tithi there wholly, or alone, and the earlier only in part; the earlier otherwise, both holding it wholly being the earlier",
                     Fit::name(window)
                 ),
             ),
@@ -286,15 +324,15 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "CHAITE_DASHAIN",
         Masa::Chaitra,
         Tithi::ShuklaAshtami,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 25: चैतेदशैं",
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 25: चैतेदशैं; the 8th joined to the 9th (Nirnayasindhu p. 154) (rc.8 audit)",
     ),
     (
         "PARASHURAMA_JAYANTI",
         Masa::Vaishakha,
         Tithi::ShuklaTritiya,
-        Fit::Share(Window::Pradosha),
-        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: परशुरामजयन्ती",
+        Fit::EarlierAlone(Window::Pradosha),
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: परशुरामजयन्ती; the night's first part, the earlier only when it alone holds it (Dharmasindhu p. 37; Nirnayasindhu p. 180) (rc.8 audit)",
     ),
     (
         "SHANKARACHARYA_JAYANTI",
@@ -307,8 +345,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "GANGA_SAPTAMI",
         Masa::Vaishakha,
         Tithi::ShuklaSaptami,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: गंगासप्तमी",
+        Fit::LaterWhollyOrAlone(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: गंगासप्तमी; madhyahna, the earlier when both, neither or each in part hold it (Nirnayasindhu p. 180; Dharmasindhu p. 37) (rc.8 audit)",
     ),
     (
         "SITA_NAVAMI",
@@ -384,29 +422,29 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "CHATHA",
         Masa::Bhadrapada,
         Tithi::ShuklaChaturthi,
-        Fit::Share(APARAHNA),
-        "Nepal's national panchanga, VS 2082 p. 11: चन्द्रदोषदर्शन (चथा); VS 2083 p. 13: चन्द्रदर्शनदोष (चथा); the Newar name of the 4th's night",
+        Fit::EarlierHolds(SAYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11: चन्द्रदोषदर्शन (चथा); VS 2083 p. 13: चन्द्रदर्शनदोष (चथा); the Newar name of the 4th's night; a 4th begun by the sayahna puts the moon's fault on the earlier evening (Dharmasindhu p. 55; Nirnayasindhu p. 259) (rc.8 audit)",
     ),
     (
         "GANESHA_CHATURTHI",
         Masa::Bhadrapada,
         Tithi::ShuklaChaturthi,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: गणेशचतुर्थीव्रत",
+        Fit::LaterWhollyOrAlone(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: गणेशचतुर्थीव्रत; madhyahna, the later when it holds it wholly and the earlier in part (Dharmasindhu p. 55) (rc.8 audit)",
     ),
     (
         "RISHI_PANCHAMI",
         Masa::Bhadrapada,
         Tithi::ShuklaPanchami,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: ऋषिपञ्चमीव्रत",
+        Fit::LaterWhollyOrAlone(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: ऋषिपञ्चमीव्रत; madhyahna, the earlier when both or neither hold it (Dharmasindhu p. 55) (rc.8 audit)",
     ),
     (
         "GAURA_SAPTAMI",
         Masa::Bhadrapada,
         Tithi::ShuklaSaptami,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: गौरासप्तमी; barred with DURVA_ASHTAMI, VS 2083 printing Shravana's dark 7th, inside the solar Bhadra (C608, C686)",
+        Fit::LaterAlone(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: गौरासप्तमी; barred with DURVA_ASHTAMI, VS 2083 printing Shravana's dark 7th, inside the solar Bhadra (C608, C686); the 7th joined to the earlier, its puja at madhyahna (Nirnayasindhu pp. 260, 262) (rc.8 audit)",
     ),
     (
         "BIRUDA_PANCHAMI",
@@ -417,17 +455,17 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
     ),
     (
         "HILE_JATRA",
-        Masa::Bhadrapada,
-        Tithi::ShuklaNavami,
+        Masa::Shravana,
+        Tithi::KrishnaNavami,
         Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: रामेछाप चिसापानी हिलेजात्रा; the print's Hile jatra (Ramechhap) is Shravana's dark 9th (C609)",
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: रामेछाप चिसापानी हिलेजात्रा; Shravana's dark 9th, the day the committee prints (C609) (rc.8 audit)",
     ),
     (
         "VAMANA_DWADASHI",
         Masa::Bhadrapada,
         Tithi::ShuklaDwadashi,
-        Fit::Share(PURVAHNA),
-        "Nepal's national panchanga, VS 2082 p. 11: वामनद्वादशी; VS 2083 p. 13: वामनजयन्ती",
+        Fit::LaterAlone(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 11: वामनद्वादशी; VS 2083 p. 13: वामनजयन्ती; madhyahna, the day joined to the 11th when both or neither hold it (Dharmasindhu p. 58) (rc.8 audit)",
     ),
     (
         "PRAUSHTHAPADI_SHRADDHA",
@@ -496,8 +534,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "NAVAMI_SHRADDHA",
         Masa::Bhadrapada,
         Tithi::KrishnaNavami,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: नवमीश्राद्ध, मातृनवमीश्राद्ध",
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: नवमीश्राद्ध, मातृनवमीश्राद्ध; a parvana shraddha, decided at aparahna as the other mahalayas (Dharmasindhu pp. 59, 266) (rc.8 audit)",
     ),
     (
         "DASHAMI_SHRADDHA",
@@ -531,8 +569,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "CHATURDASHI_SHRADDHA",
         Masa::Bhadrapada,
         Tithi::KrishnaChaturdashi,
-        Fit::Share(APARAHNA),
-        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध",
+        Fit::Share(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध; an ekoddishta, decided at madhyahna (Dharmasindhu pp. 63, 266; Nirnayasindhu p. 310) (rc.8 audit)",
     ),
     (
         "AMAVASYA_SHRADDHA",
@@ -545,8 +583,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "UPANGA_LALITA_VRATA",
         Masa::Ashwina,
         Tithi::ShuklaPanchami,
-        Fit::Share(PURVAHNA),
-        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: उपाङ्गललिताव्रत",
+        Fit::LaterAlone(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: उपाङ्गललिताव्रत; aparahna, the earlier unless the later alone holds it (Dharmasindhu p. 69) (rc.8 audit)",
     ),
     (
         "KUCHHI_BHOYE",
@@ -587,8 +625,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "HARIBODHINI_EKADASHI",
         Masa::Kartika,
         Tithi::ShuklaEkadashi,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हरिबोधिनीएकादशीव्रत",
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हरिबोधिनीएकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
     ),
     (
         "PASHUPATI_HALESI_MELA",
@@ -607,9 +645,9 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
     (
         "DATTATREYA_JAYANTI",
         Masa::Margashirsha,
-        Tithi::ShuklaChaturdashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: दत्तात्रेयजयन्ती",
+        Tithi::Purnima,
+        Fit::EarlierAlone(Window::Pradosha),
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: दत्तात्रेयजयन्ती; Margashirsha's full moon at pradosha (Nirnayasindhu p. 424, 'pradoshavyapini') (rc.8 audit)",
     ),
     (
         "PISHACHAMOCHANA_SHRADDHA",
@@ -629,8 +667,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "PAUSHA_PUTRADA_EKADASHI",
         Masa::Pausha,
         Tithi::ShuklaEkadashi,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 19: पुत्रदाएकादशीव्रत; VS 2083 p. 21: स्मार्तहरुको पुत्रदाएकादशीव्रत",
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 19: पुत्रदाएकादशीव्रत; VS 2083 p. 21: स्मार्तहरुको पुत्रदाएकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
     ),
     (
         "LAI_CHARHE",
@@ -657,8 +695,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "TILAKUNDA_CHATURTHI",
         Masa::Magha,
         Tithi::ShuklaChaturthi,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: तिलकुन्द चौथी",
+        Fit::EarlierAlone(Window::Pradosha),
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: तिलकुन्द चौथी; a nakta fast at pradosha (Dharmasindhu pp. 6–7, 89; Nirnayasindhu p. 445) (rc.8 audit)",
     ),
     (
         "CHAMPA_SHASHTHI",
@@ -671,22 +709,22 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "BHIMA_EKADASHI",
         Masa::Magha,
         Tithi::ShuklaEkadashi,
-        Fit::Share(PURVAHNA),
-        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीमा एकादशीव्रत",
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीमा एकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
     ),
     (
         "VIJAYA_EKADASHI",
         Masa::Magha,
         Tithi::KrishnaEkadashi,
         Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: विजया एकादशीव्रत; the later sunrise, which VS 2083 prints (C610)",
+        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: विजया एकादशीव्रत; the later sunrise, which VS 2083 prints (C610); the 11th pierced by the 10th at sunrise and only it outlasting the next sunrise is printed on the later day, against Dharmasindhu pp. 11–12's earlier: that one cell is the print's (rc.8 audit)",
     ),
     (
         "DVAPARA_YUGADI",
         Masa::Magha,
         Tithi::Amavasya,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: द्वापरयुगादि",
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: द्वापरयुगादि; aparahna, kept with the new moon's shraddha (Dharmasindhu p. 94; Nirnayasindhu p. 175) (rc.8 audit)",
     ),
     (
         "PAHAN_CHARHE",
@@ -706,8 +744,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "MATSYANARAYANA_MELA",
         Masa::Chaitra,
         Tithi::ShuklaTritiya,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 25 and VS 2083 p. 27: मत्स्यनारायणमेला",
+        Fit::Share(APARAHNA),
+        "Nepal's national panchanga, VS 2082 p. 25 and VS 2083 p. 27: मत्स्यनारायणमेला; the fair is Matsya jayanti's day, aparahna (Nirnayasindhu p. 151), as the calendars print the two together (rc.8 audit)",
     ),
     (
         "MATSYA_JAYANTI",
@@ -755,8 +793,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "KALKI_JAYANTI",
         Masa::Shravana,
         Tithi::ShuklaShashthi,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: कल्कीजयन्ती; a patro printed in Nepal gives the bright 5th, a day before both printed days",
+        Fit::LaterAlone(Window::Sunset),
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: कल्कीजयन्ती; a patro printed in Nepal gives the bright 5th, a day before both printed days; at evening, the earlier when the kala is equal (Nirnayasindhu p. 151) (rc.8 audit)",
     ),
     (
         "BAHIDYO_BOYEGU",
@@ -790,8 +828,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "GATHAMUGA_CHARHE",
         Masa::Ashadha,
         Tithi::KrishnaChaturdashi,
-        Fit::Share(Window::Pradosha),
-        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: घण्टाकर्ण चतुर्दशी, (गथां मुगः चःह्रे पूजा); the printed charhe at pradosha, Pahan charhe's window, which gives both editions' days and more of a patro's verified days than sayahna (C614, C1812)",
+        Fit::EarlierAny(Window::Pradosha),
+        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: घण्टाकर्ण चतुर्दशी, (गथां मुगः चःह्रे पूजा); the printed charhe at pradosha, Pahan charhe's window, which gives both editions' days and more of a patro's verified days than sayahna (C614, C1812); a community rule: the rite on the first pradosha the 14th touches, which every calendar of VS 2076–2083 keeps but one cal-C sunrise year (rc.8 audit)",
     ),
     (
         "JUGA_CHARHE",
@@ -2326,5 +2364,69 @@ mod tests {
         assert!(kojagrat.source.contains("Dharmasindhu p. 74"));
         assert!(kojagrat.source.contains("the text's rule: nishitha"));
         assert!(!kojagrat.source.contains("fitted"));
+    }
+
+    /// The day a fit keeps when the tithi holds these shares of its window
+    /// on the earlier and the later day, read as `observances` reads the
+    /// guards: the first whose predicates all hold, else the fallback.
+    fn kept(fit: Fit, earlier: f64, later: f64) -> Choice {
+        let (_, decide, otherwise, _) = fit.decide();
+        let is = super::super::case_of(earlier, later);
+        let holds = |predicate: &Predicate| match *predicate {
+            Predicate::Case { case } => case == is,
+            Predicate::Wholly {
+                day: Which::Earlier,
+            } => earlier >= 1.0,
+            Predicate::Wholly { day: Which::Later } => later >= 1.0,
+            other => panic!("{other:?} is not read here"),
+        };
+        decide
+            .iter()
+            .find(|guard| guard.when.iter().all(holds))
+            .map_or(otherwise, |guard| guard.choose)
+    }
+
+    #[test]
+    fn the_earlier_any_keeps_the_earlier_whenever_it_is_touched() {
+        use Choice::{Earlier, Later};
+        // Gathamuga: the earlier day whenever pradosha holds the 14th at all.
+        let fit = Fit::EarlierAny(Window::Pradosha);
+        for (earlier, later, choice) in [
+            (0.4, 0.0, Earlier),
+            (1.0, 1.0, Earlier),
+            (0.5, 0.5, Earlier),
+            (0.2, 1.0, Earlier),
+            (0.0, 1.0, Later),
+            (0.0, 0.0, Later),
+        ] {
+            assert_eq!(kept(fit, earlier, later), choice, "{earlier}, {later}");
+        }
+        assert!(fit.decide().3.starts_with("pradosha"));
+    }
+
+    #[test]
+    fn the_later_wholly_or_alone_is_the_text_s_decision() {
+        use Choice::{Earlier, Later};
+        // Dharmasindhu p. 55: the later day when it holds madhyahna wholly
+        // and the earlier in part, or when it alone holds it; both wholly
+        // give the earlier, and so does the earlier holding more of it.
+        let fit = Fit::LaterWhollyOrAlone(MADHYAHNA);
+        for (earlier, later, choice) in [
+            (1.0, 1.0, Earlier),
+            (0.3, 1.0, Later),
+            (0.0, 0.6, Later),
+            (1.0, 0.6, Earlier),
+            (0.6, 0.3, Earlier),
+            (0.4, 0.4, Earlier),
+            (0.7, 0.0, Earlier),
+            (0.0, 0.0, Earlier),
+        ] {
+            assert_eq!(kept(fit, earlier, later), choice, "{earlier}, {later}");
+        }
+        let ganesha = FestivalRule::nepal_panchanga()
+            .into_iter()
+            .find(|rule| rule.key == "GANESHA_CHATURTHI")
+            .unwrap();
+        assert!(ganesha.source.contains("p. 55"), "{}", ganesha.source);
     }
 }
