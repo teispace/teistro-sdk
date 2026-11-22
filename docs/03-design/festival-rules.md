@@ -1472,3 +1472,51 @@ measured page's figures replace the emulation's.
 | C603 | neither day holds the window | **the later**, the consumer's sunrise fallback, which always gives the later | the earlier (the maintainer's decision); no verified year has the case |
 | C606 | Jyeshtha's rites in a year with an adhika Jyeshtha | **the adhika month**, as the committee printed in VS 2083 and *Dharmasindhu* p. 38 directs for Dashahara (`inAdhika: FIRST`) | the nija month, as the consumer projects |
 | C610 | Vijaya ekadashi | **the later of two sunrises**, as VS 2083 prints | the earlier, the consumer's |
+
+### 10.6 The rc.8 audit: text rules for the fitted rows (C2320)
+
+The fitted rows were back-tested against the texts and three calendars
+published in Nepal over VS 2076 to 2083 (read locally, rows not kept),
+71 rules in three families. 39 have a text rule, 9 are a community's own
+(the charhe, Indra jatra's dark 4th) and 23 are published-only. 22 rows
+move to their text's rule, each `source` naming the book, the page (read
+from the 1888 edition's running headers) and the clause; two fits join the
+language:
+
+- `Fit::EarlierAny(window)`: the earlier day whenever the tithi touches
+  the window there, the later otherwise (Gathamuga's pradosha).
+- `Fit::LaterWhollyOrAlone(window)`: the later day when it holds the
+  window wholly and the earlier only in part, or when it alone holds it;
+  the earlier otherwise, both holding it wholly being the earlier
+  (*Dharmasindhu* p. 55: Ganesha chaturthi, Rishi panchami, Ganga saptami).
+
+Chaturdashi shraddha is an ekoddishta and so is decided at madhyahna
+(*Dharmasindhu* p. 63, *Nirnayasindhu* p. 310; C2321), in this pack and in
+`pitri_paksha()`.
+
+### 10.7 The named ekadashis by the Ekadashi table (next)
+
+The 26 named ekadashis are rows of this pack decided by a window, though
+an Ekadashi is decided by its vedha and excess (§8). Over VS 2076 to 2083
+the calendars print 198 Smarta ekadashis, 6 of them disputed between the
+calendars. Of the 192 others, *Dharmasindhu*'s householder table (§8.3)
+gives the printed day in 184. A table that differs in one cell, pierced at
+sunrise with the 11th alone in excess (S2) taking the later day, gives 191:
+the print keeps the later day in all 7 such years, against both digests
+(C2322). The one day it misses, 2021-02-07, is pierced with neither in
+excess, where both tables give the earlier.
+
+The design, built after this page:
+
+- A `FestivalRule` may carry `ekadashi: { vedha, table }`. Then its
+  window, guards and fallback are not read, and `check` refuses a rule
+  whose tithi is not an 11th.
+- The judgement reuses §8's facts, the 10th, the 11th and the 12th read
+  from the run of days, so the pierced and excess cases are the same
+  instants an Ekadashi rule reads. The observance keeps its shape, which
+  groups, names and the bindings read. Its `decided_by` gains an
+  `EKADASHI` case carrying `pierced` and `excess`.
+- `NEPAL_SMARTA` is the householder's table with that one cell changed,
+  cited as published-only (C2322). Every named ekadashi of this pack takes
+  it; the fits they hold until then (`UdayaLater` for Haribodhini, Pausha
+  putrada and Bhima) score the same over the window.
