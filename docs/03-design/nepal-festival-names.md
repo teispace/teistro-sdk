@@ -129,11 +129,17 @@ Nepal's entries (`NAMES` in `meta.rs`):
 | `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI` |
 | `KARKATA_SANKRANTI` | `SAUNE_SANKRANTI` | `KARKATA_SANKRANTI`, `SHRAWAN_SANKRANTI` |
 | the other ten sankrantis | | the month each opens (`BAISAKH_SANKRANTI`, `JESTHA_SANKRANTI`, …, `CHAITRA_SANKRANTI`) |
+| `UPAKARMA_MADHYANDINA` | `JANAI_PURNIMA` | `UPAKARMA_MADHYANDINA`, `RISHI_TARPANI` |
+| `BASANTA_PANCHAMI` | | `SARASWATI_PUJA`, `SHREE_PANCHAMI` |
 
 The sankrantis' names are measured over Nepal's patros (C2312): the locales
 once named the Makara and Karkata sankrantis माघे and साउने in Nepali and
 English, a region's name held in a language's file, which §3 rejects; they
 name all twelve by the sign again, and Nepal's entries lead with the month.
+The upakarma the committee prints as जनैपूर्णिमा leads with that name, and
+Basanta Panchami keeps the committee's वसन्तपञ्चमी and lists the patros'
+सरस्वती पूजा and श्रीपञ्चमी (C2314). Raksha Bandhan, printed on the same row,
+keeps its own name, so no two rules of one day lead with one name.
 A test holds every listed name to a festival name in every locale.
 
 Not shipped (C2311): गाई तिहार, which the book does not print (it prints

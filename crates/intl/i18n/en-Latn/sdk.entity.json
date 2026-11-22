@@ -3931,6 +3931,26 @@
       "prose": "Chaitra Sankranti",
       "iast": "Caitrasaṅkrānti"
     },
+    "JANAI_PURNIMA": {
+      "name": "Janai Purnima",
+      "prose": "Janai Purnima",
+      "iast": "Janai pūrṇimā"
+    },
+    "RISHI_TARPANI": {
+      "name": "Rishi Tarpani",
+      "prose": "Rishi Tarpani",
+      "iast": "Ṛṣitarpaṇī"
+    },
+    "SARASWATI_PUJA": {
+      "name": "Saraswati Puja",
+      "prose": "Saraswati Puja",
+      "iast": "Sarasvatī pūjā"
+    },
+    "SHREE_PANCHAMI": {
+      "name": "Shree Panchami",
+      "prose": "Shree Panchami",
+      "iast": "Śrī pañcamī"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "Loktantra Diwas",
       "prose": "Loktantra Diwas, Baisakh 11",
