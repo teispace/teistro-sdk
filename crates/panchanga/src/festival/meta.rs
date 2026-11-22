@@ -1209,7 +1209,7 @@ type Names = (
     Option<u16>,
     &'static str,
 );
-const NAMES: [Names; 36] = [
+const NAMES: [Names; 37] = [
     (
         "AMAVASYA_SHRADDHA",
         None,
@@ -1277,7 +1277,13 @@ const NAMES: [Names; 36] = [
         Some(1),
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: लक्ष्मीपूजा, दीपमालिका, one row; the maintainer's order for SR-145: it leads Kartik's new moon, where the print sets Kukur Tihar first (C2303)",
     ),
-    ("MAKARA_SANKRANTI", Some("MAGHE_SANKRANTI"), &["MAKARA_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "MAKARA_SANKRANTI",
+        Some("MAGHE_SANKRANTI"),
+        &["MAKARA_SANKRANTI", "GHYU_CHAKU_KHANE_DIN"],
+        Some(0),
+        "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315)",
+    ),
     ("MESHA_SANKRANTI", None, &["BAISAKH_SANKRANTI"], Some(0), SANKRANTI),
     ("MHA_PUJA", None, &[], Some(3), PRINTED),
     ("MINA_SANKRANTI", None, &["CHAITRA_SANKRANTI"], Some(0), SANKRANTI),
@@ -1952,6 +1958,13 @@ const NEPAL_KEYS: [(&str, u8); 501] = [
     ("NATIONAL_TOPI_DAY", 16),
     ("NATIONAL_YOGA_DAY", 16),
     ("NAVAMI_SHRADDHA", 19),
+    (
+        "NATIONAL_PADDY_DAY",
+        None,
+        &["DAHI_CHIURA_KHANE_DIN"],
+        None,
+        "Kantipur, VS 2082 Asar 15 (29 June 2025): Asar 15 is राष्ट्रिय धान दिवस, kept since VS 2062, and दही-चिउरा is eaten that day; three calendars published in Nepal over VS 2076 to 2084, read for SR-145, print दहीचिउरा खाने दिन on Asar 15 (C2315)",
+    ),
     ("NAVARATRA_ARAMBHA", 1),
     ("NEPALI_ARMY_DAY", 15),
     ("NEPAL_NURSING_DAY", 16),
@@ -2366,7 +2379,10 @@ mod tests {
         let named = |names: &[&str]| names.iter().map(|&name| name.to_owned()).collect::<Vec<_>>();
         assert_eq!(
             lead_and_aliases("MAKARA_SANKRANTI"),
-            [(Some("MAGHE_SANKRANTI".to_owned()), named(&["MAKARA_SANKRANTI"]))]
+            [(
+                Some("MAGHE_SANKRANTI".to_owned()),
+                named(&["MAKARA_SANKRANTI", "GHYU_CHAKU_KHANE_DIN"])
+            )]
         );
         assert_eq!(
             lead_and_aliases("KARKATA_SANKRANTI"),
