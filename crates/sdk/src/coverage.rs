@@ -17,6 +17,7 @@ use crate::Context;
 /// What the SDK answers over.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// use teistro::{Context, Ephemeris};
 ///
 /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
@@ -26,6 +27,7 @@ use crate::Context;
 /// assert_eq!((span.last.year, span.last.month, span.last.day), (2399, 12, 31));
 /// assert!(coverage.bikram_sambat.official_first_year <= 2083);
 /// assert_eq!(coverage.holidays[0].set, "NEPAL_GAZETTE");
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]

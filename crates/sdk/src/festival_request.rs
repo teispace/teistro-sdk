@@ -479,7 +479,7 @@ impl FestivalPack {
     /// use teistro::FestivalPack;
     ///
     /// let keys: Vec<String> = FestivalPack::NepalPanchanga.groups().into_iter().map(|g| g.key).collect();
-    /// assert_eq!(keys, ["DASHAIN", "TIHAR"]);
+    /// assert_eq!(keys, ["SORHA_SHRADDHA", "DASHAIN", "TIHAR", "CHHATH", "TEEJ"]);
     /// assert!(FestivalPack::Dharmasindhu.groups().is_empty());
     /// ```
     #[must_use]
@@ -1060,11 +1060,13 @@ impl FestivalRequest {
     /// use teistro::festival::FestivalGroup;
     ///
     /// // Dashain to the Vijaya Dashami, without the full moon.
-    /// let mut ten_days = FestivalPack::NepalPanchanga.groups().remove(0);
+    /// let groups = FestivalPack::NepalPanchanga.groups();
+    /// let mut ten_days = groups.iter().find(|group| group.key == "DASHAIN").cloned().expect("in the pack");
     /// ten_days.members.retain(|member| member != "KOJAGRAT_PURNIMA");
     /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga).with_group(ten_days.clone());
-    /// assert_eq!(asked.groups().len(), 2);
-    /// assert_eq!(asked.groups()[0], ten_days);
+    /// // Put in the pack's own Dashain's place: no group is added.
+    /// assert_eq!(asked.groups().len(), groups.len());
+    /// assert_eq!(asked.groups()[1], ten_days);
     /// asked.check()?;
     /// # Ok::<(), teistro::Error>(())
     /// ```
@@ -1083,7 +1085,7 @@ impl FestivalRequest {
     /// use teistro::{FestivalPack, FestivalRequest};
     ///
     /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga);
-    /// assert_eq!(asked.groups()[1].key, "TIHAR");
+    /// assert_eq!(asked.groups()[2].key, "TIHAR");
     /// ```
     #[must_use]
     pub fn groups(&self) -> &[FestivalGroup] {
@@ -1215,7 +1217,7 @@ impl FestivalRequest {
     /// let nepal = FestivalRequest::from(FestivalPack::NepalPanchanga);
     /// let tihar = nepal.narrowed_to_group("TIHAR").expect("in the pack");
     /// assert_eq!(tihar.groups().len(), 1);
-    /// assert_eq!(tihar.rules().len() + tihar.following().len() + tihar.dated().len(), 6);
+    /// assert_eq!(tihar.rules().len() + tihar.following().len() + tihar.dated().len(), 12);
     /// tihar.check()?;
     /// assert!(nepal.narrowed_to_group("NO_SUCH_GROUP").is_none());
     /// # Ok::<(), teistro::Error>(())

@@ -21,6 +21,7 @@
     },
     "day": {
       "sunrise": "Sūryodayaṃ nimeṣamātreṇa adhikena vā cālayati, tena saha sūryodaye paṭhitaṃ pratyekam aṅgaṃ tataḥ mitaṃ pratyekaṃ kālakhaṇḍaṃ ca",
+      "moonrise": "Candrodayaṃ candrāstaṃ ca katipayanimeṣaparyantaṃ cālayati, sūryodaye paṭhitaṃ kimapi na",
       "dayBoundary": "Dinaṃ kutra ārabhate, ataḥ kṣaṇaḥ kasmin dine patati, iti cālayati",
       "polarDayPolicy": "Sūryodayarahitaṃ dinaṃ kim iti parivartayati: anirdiṣṭam, samīpodayāt astāt vā, ardharātrāt vā",
       "ghatiReckoning": "Ghaṭīṃ caturviṃśatinimeṣebhyaḥ vāstavikāhorātrasya ṣaṣṭitamabhāge parivartayati",
