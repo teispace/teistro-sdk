@@ -310,7 +310,8 @@ fn keeps_its_sign(graha: Graha, from: f64, to: f64, days: f64) -> bool {
     let sign = |at: f64| (at.rem_euclid(360.0) / SIGN).floor();
     let reach = greatest_rate(body) * days;
     if least_rate(body).is_some() {
-        sign(from) == sign(to) && reach < 360.0 - SIGN
+        // Both are whole sign indices, so half a sign apart is apart.
+        (sign(from) - sign(to)).abs() < 0.5 && reach < 360.0 - SIGN
     } else {
         let into = from.rem_euclid(SIGN);
         reach < into.min(SIGN - into)

@@ -211,9 +211,16 @@ the generators; no binding has code of its own.
 
 ## 5. Errors and limits
 
-- A place where the Sun does not set on an evening is refused as the
-  rise and set solver refuses it (`LIMIT`): the sighted calendar has no
-  answer in a polar summer.
+- A place where the Sun does not set on an evening has no sighted
+  months: the rise and set solver refuses the evening (`LIMIT`), and
+  the calendar has no answer in a polar summer. So has a range whose
+  year of months before it reaches past the sky's coverage
+  (`OUT_OF_RANGE`, or `LIMIT` from an evening the sky does not hold).
+  A festival request then answers every other rule, its rules on
+  `HIJRI_SIGHTED` give no day, and the provenance's
+  `calendars.hijri_criterion` entry says why. A pack is many rules, and
+  `NEPAL_PANCHANGA`'s two Eids must not cost Tromsø its other days, nor
+  1 January 1800 its tithis (§9).
 - A rule on `HIJRI_SIGHTED` outside a festival request at a place is
   refused as `INVALID_ARG` on `civilDate.calendar`.
 - The answer is a sighting by a good observer under a clear sky at the

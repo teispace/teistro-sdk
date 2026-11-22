@@ -1211,24 +1211,7 @@ fn intl_records() -> [Record; 7] {
             brief: Brief::Whole,
             schemas: schemas!(crate::LexiconRequest => crate::Lexicon),
         },
-        Record {
-            name: "intl.render",
-            boundary: "ts_intl_render",
-            title: "A plan's items said in the context's locale",
-            reads: Some(
-                "`request` is `{\"items\": [{\"key\", \"params\"}]}`, each item as a composer's \
-                 plan writes it (a rashifal's `plans`, an interpretation's), its slots the JSON \
-                 `ts_intl_render` takes. Answers each item's `{key, text, resolvedFrom, fallback, \
-                 draft, warnings}` in order; a message no locale has is said as its key with a \
-                 warning. No item is `INVALID_ARG` on `render.items`.",
-            ),
-            run: |context, json| {
-                Answered::plain(&context.intl().say(&crate::RenderRequest::from_json(json)?))
-            },
-            compares: None,
-            brief: Brief::Whole,
-            schemas: schemas!(crate::RenderRequest => Vec<crate::Said>),
-        },
+        render_record(),
         Record {
             name: "intl.lookup",
             boundary: "ts_intl_lookup",
@@ -1263,6 +1246,28 @@ fn intl_records() -> [Record; 7] {
             schemas: schemas!(crate::DatesRequest => crate::FoundDates),
         },
     ]
+}
+
+/// `intl.render`: a plan's items said in the context's locale.
+fn render_record() -> Record {
+    Record {
+        name: "intl.render",
+        boundary: "ts_intl_render",
+        title: "A plan's items said in the context's locale",
+        reads: Some(
+            "`request` is `{\"items\": [{\"key\", \"params\"}]}`, each item as a composer's \
+             plan writes it (a rashifal's `plans`, an interpretation's), its slots the JSON \
+             `ts_intl_render` takes. Answers each item's `{key, text, resolvedFrom, fallback, \
+             draft, warnings}` in order; a message no locale has is said as its key with a \
+             warning. No item is `INVALID_ARG` on `render.items`.",
+        ),
+        run: |context, json| {
+            Answered::plain(&context.intl().say(&crate::RenderRequest::from_json(json)?))
+        },
+        compares: None,
+        brief: Brief::Whole,
+        schemas: schemas!(crate::RenderRequest => Vec<crate::Said>),
+    }
 }
 
 /// The naming of a child's records: the five `NamingArea` operations a

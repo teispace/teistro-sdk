@@ -318,37 +318,78 @@ fn the_nepal_pack_keeps_its_printed_eids() {
         .build()
         .unwrap();
     let request = FestivalRequest::from(FestivalPack::NepalPanchanga);
-    let found = context
-        .almanac()
-        .festivals(
-            &CalendarDate::defined(Calendar::Gregorian, 2024, 4, 1),
-            &CalendarDate::defined(Calendar::Gregorian, 2026, 6, 30),
-            &kathmandu(),
-            UtcOffset::literal(5, 45, 0),
-            &request,
-        )
-        .unwrap();
-    let kept: Vec<_> = found
-        .value
-        .dated
-        .iter()
-        .filter(|kept| kept.rule.starts_with("EID_AL_"))
-        .map(|kept| {
-            let day = &kept.day;
-            (
-                kept.rule.as_str(),
-                fixed_from_gregorian(day.year, day.month, day.day),
+    // A range holds at most a year: three requests over the span.
+    let spans = [
+        ((2024, 4, 1), (2025, 3, 31)),
+        ((2025, 4, 1), (2026, 3, 31)),
+        ((2026, 4, 1), (2026, 6, 30)),
+    ];
+    let mut kept = Vec::new();
+    for ((y0, m0, d0), (y1, m1, d1)) in spans {
+        let found = context
+            .almanac()
+            .festivals(
+                &CalendarDate::defined(Calendar::Gregorian, y0, m0, d0),
+                &CalendarDate::defined(Calendar::Gregorian, y1, m1, d1),
+                &kathmandu(),
+                UtcOffset::literal(5, 45, 0),
+                &request,
             )
-        })
-        .collect();
+            .unwrap();
+        kept.extend(
+            found
+                .value
+                .dated
+                .iter()
+                .filter(|kept| kept.rule.starts_with("EID_AL_"))
+                .map(|kept| {
+                    let day = &kept.day;
+                    (
+                        kept.rule.clone(),
+                        fixed_from_gregorian(day.year, day.month, day.day),
+                    )
+                }),
+        );
+    }
     // Six Eids fall in the span; the calendars measured print five of
     // them (Eid al-Adha 1446 is not among the twelve), each on its day.
     assert_eq!(kept.len(), 6, "{kept:?}");
     let missed: Vec<_> = nepal_days()
         .into_iter()
-        .filter(|&(key, year, day)| year >= 1445 && !kept.contains(&(key, day)))
+        .filter(|&(key, year, day)| year >= 1445 && !kept.contains(&(key.to_owned(), day)))
         .collect();
     assert!(missed.is_empty(), "{missed:?} in {kept:?}");
+}
+
+/// Where the Sun does not set the sighted months cannot be reckoned: the
+/// Nepal pack still answers its other days at Tromsø in its polar summer,
+/// gives no Eid, and says why (`03-design/hijri-sighted.md` §5).
+#[test]
+fn a_place_without_an_evening_keeps_the_packs_other_days() {
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let tromso = place(69.6492, 18.9553, 10.0);
+    let found = context
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 5, 15),
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 6, 15),
+            &tromso,
+            UtcOffset::literal(2, 0, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+        )
+        .unwrap();
+    assert!(!found.value.dated.is_empty() || !found.value.observances.is_empty());
+    assert!(found.value.dated.iter().all(|kept| !kept.rule.starts_with("EID_AL_")));
+    assert!(
+        found.provenance.applied_conventions.iter().any(|applied| applied.knob
+            == "calendars.hijri_criterion"
+            && applied.reason.contains("were not reckoned")),
+        "{:?}",
+        found.provenance.applied_conventions
+    );
 }
 
 /// The sweep the measured page prints: every criterion and zone against

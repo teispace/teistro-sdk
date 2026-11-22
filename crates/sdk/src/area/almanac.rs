@@ -15,7 +15,7 @@ use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::{Calendar, Masa};
 use teistro_core::envelope::{Convention, Envelope, Hash, Provenance, content_hash};
-use teistro_core::error::Error;
+use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::LunarMonth;
@@ -32,7 +32,7 @@ use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
     Anniversary, AnniversaryKind, DatedRule, EkadashiRule, FestivalDay, FestivalGroup,
     FestivalRule, GroupSpan, InAdhika, InSamsarpa, Observances, Origin, anniversaries,
-    apply_published, dated_with, ekadashis, following, group_spans, observances,
+    apply_published, dated, dated_with, ekadashis, following, group_spans, observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -582,7 +582,11 @@ impl<'a> AlmanacArea<'a> {
     /// The sighted Hijri months over the viewed days at the place, for a
     /// request with a rule on `calendar.HIJRI_SIGHTED` and for no other
     /// (`03-design/hijri-sighted.md` §4), the crescent test they were
-    /// reckoned by named in `provenance`.
+    /// reckoned by named in `provenance`. Where they cannot be reckoned,
+    /// because the place has an evening without a sunset or the year of
+    /// months before the days reaches past the sky's coverage, the answer
+    /// is `None` and `provenance` says why: the request's other rules are
+    /// still answered, and its sighted ones give no day (§5).
     fn sighted(
         self,
         (calendar, offset, place): (&dyn CalendarSystem, UtcOffset, &Place),
@@ -600,18 +604,25 @@ impl<'a> AlmanacArea<'a> {
             calendar.fixed_of(&first.date)?,
             calendar.fixed_of(&last.date)?,
         );
-        let months = self.with_almanac(calendar.id(), offset, |almanac| {
+        let reckoned = self.with_almanac(calendar.id(), offset, |almanac| {
             almanac.sighted_hijri(span.0, span.1, place)
-        })?;
+        });
         let settings = self.context.settings();
-        sighted_convention(
-            provenance,
-            Sighting::new(
-                settings.calendars.hijri_criterion,
-                settings.calendars.hijri_zone,
-            )?,
-        );
-        Ok(Some(months))
+        let sighting = Sighting::new(
+            settings.calendars.hijri_criterion,
+            settings.calendars.hijri_zone,
+        )?;
+        match reckoned {
+            Ok(months) => {
+                sighted_convention(provenance, sighting, None);
+                Ok(Some(months))
+            }
+            Err(refused) if matches!(refused.status, Status::Limit | Status::OutOfRange) => {
+                sighted_convention(provenance, sighting, Some(&refused.message));
+                Ok(None)
+            }
+            Err(refused) => Err(refused),
+        }
     }
 
     /// Each anniversary's days over the viewed days, its origin found at
@@ -865,12 +876,24 @@ impl<'a> AlmanacArea<'a> {
         let mut found = karmakala
             .merged(counted)
             .merged(ekadashis(request.ekadashis(), &viewed)?)
-            .merged(dated_with(
-                request.dated(),
-                &viewed,
-                request.hijri_offset(),
-                sighted.as_ref(),
-            )?)
+            .merged(match &sighted {
+                Some(months) => dated_with(
+                    request.dated(),
+                    &viewed,
+                    request.hijri_offset(),
+                    Some(months),
+                )?,
+                None => dated(
+                    &request
+                        .dated()
+                        .iter()
+                        .filter(|rule| !rule.reads_sighted_hijri())
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                    &viewed,
+                    request.hijri_offset(),
+                )?,
+            })
             .merged(self.kept_anniversaries(
                 calendar,
                 offset,
@@ -2372,13 +2395,19 @@ fn hijri_convention(provenance: &mut Provenance, offset: HijriOffset) {
 
 /// Names the crescent test the sighted Hijri months were reckoned by,
 /// when a rule read them (`03-design/hijri-sighted.md` §4).
-fn sighted_convention(provenance: &mut Provenance, sighting: Sighting) {
+fn sighted_convention(provenance: &mut Provenance, sighting: Sighting, unreckoned: Option<&str>) {
+    let reason = match unreckoned {
+        None => String::from(
+            "a rule on HIJRI_SIGHTED reads months begun the day after the evening the crescent is seen at the request's place, judged at the sunset plus four ninths of the lag; a month whose 29th sees none completes thirty days",
+        ),
+        Some(why) => format!(
+            "the sighted months were not reckoned at the request's place, so its rules on HIJRI_SIGHTED give no day and every other rule is answered: {why}"
+        ),
+    };
     provenance.applied_conventions.push(Convention {
         knob: String::from("calendars.hijri_criterion"),
         value: sighting.describe(),
-        reason: String::from(
-            "a rule on HIJRI_SIGHTED reads months begun the day after the evening the crescent is seen at the request's place, judged at the sunset plus four ninths of the lag; a month whose 29th sees none completes thirty days",
-        ),
+        reason,
     });
 }
 
