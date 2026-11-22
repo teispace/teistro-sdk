@@ -60,7 +60,7 @@ pub enum Kind {
     AvasthaBaladi = 21,
     /// Conditions a body can be in.
     State = 22,
-    /// The catalogued ayanamshas; a custom one is a settings value, not a member. `swiss_mode` is the Swiss Ephemeris sidereal mode a member is, absent for one the SDK alone defines.
+    /// The catalogued ayanamshas; a custom one is a settings value, not a member.
     Ayanamsha = 23,
     /// The house systems; the cusp arithmetic lives in the astro layer.
     HouseSystem = 24,
@@ -554,7 +554,7 @@ impl Kind {
             Kind::Relationship => 5,
             Kind::AvasthaBaladi => 5,
             Kind::State => 12,
-            Kind::Ayanamsha => 48,
+            Kind::Ayanamsha => 47,
             Kind::HouseSystem => 22,
             Kind::Varga => 21,
             Kind::DashaSystem => 45,

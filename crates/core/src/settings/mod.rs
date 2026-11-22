@@ -46,13 +46,13 @@ pub use knobs::{
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
     DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Dip, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
-    Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
-    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    Ekadhipatya, FestivalObserver, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException,
+    GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
     KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
     MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, Nutation, Observer, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy,
-    PolarPolicy, Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
+    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     RefractionFormula, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RisingLatitude,
     RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
     SeedOverflow, SevenKarakaOrder, ShantaSign, ShivaVasaReading, Shodhana, SiderealTime,
@@ -1609,7 +1609,7 @@ group!(
         /// so it only ever drops a reading: of *Dharmasindhu*'s three Ekadashi
         /// observers, and of a Smarta pack's Janmashtami, Rama Navami or
         /// Nrisimha jayanti beside the `GAUDIYA` pack's. No day moves.
-        observer: Observer => Rule,
+        observer: FestivalObserver => Rule,
     }
 );
 

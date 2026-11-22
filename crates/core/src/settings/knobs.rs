@@ -1271,7 +1271,7 @@ knob!(
     /// festival, nor moves a day: a festival carried in one reading stands
     /// whatever the observer (C2143).
     #[derive(Default)]
-    Observer { /// Every reading the request carries.
+    FestivalObserver { /// Every reading the request carries.
         #[default]
         Every = "EVERY", /// The Smarta householder's: *Dharmasindhu*'s Ekadashi
         /// with its vedha at sunrise (pp. 11–12), and its Janmashtami,
@@ -1287,24 +1287,26 @@ knob!(
         /// reading where none is the Gaudiya's (C2142).
         Gaudiya = "GAUDIYA" }
 );
-impl Observer {
+impl FestivalObserver {
     /// The tradition whose reading this one keeps where a festival has
     /// none of its own (`festival-traditions.md` §5, C2142): the
     /// renunciant the householder's, the Gaudiya the Vaishnava's.
     ///
     /// ```
-    /// use teistro_core::settings::knobs::Observer;
+    /// use teistro_core::settings::knobs::FestivalObserver;
     ///
-    /// assert_eq!(Observer::Gaudiya.follows(), Some(Observer::Vaishnava));
-    /// assert_eq!(Observer::SmartaRenunciant.follows(), Some(Observer::Smarta));
-    /// assert_eq!(Observer::Vaishnava.follows(), None);
+    /// assert_eq!(FestivalObserver::Gaudiya.follows(), Some(FestivalObserver::Vaishnava));
+    /// assert_eq!(FestivalObserver::SmartaRenunciant.follows(), Some(FestivalObserver::Smarta));
+    /// assert_eq!(FestivalObserver::Vaishnava.follows(), None);
     /// ```
     #[must_use]
-    pub const fn follows(self) -> Option<Observer> {
+    pub const fn follows(self) -> Option<FestivalObserver> {
         match self {
-            Observer::SmartaRenunciant => Some(Observer::Smarta),
-            Observer::Gaudiya => Some(Observer::Vaishnava),
-            Observer::Every | Observer::Smarta | Observer::Vaishnava => None,
+            FestivalObserver::SmartaRenunciant => Some(FestivalObserver::Smarta),
+            FestivalObserver::Gaudiya => Some(FestivalObserver::Vaishnava),
+            FestivalObserver::Every | FestivalObserver::Smarta | FestivalObserver::Vaishnava => {
+                None
+            }
         }
     }
 }
