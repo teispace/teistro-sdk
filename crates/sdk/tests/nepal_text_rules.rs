@@ -134,3 +134,49 @@ fn hile_jatra_is_shravana_s_dark_9th() {
         [(2026, 9, 5)]
     );
 }
+
+#[test]
+fn a_named_ekadashi_is_the_fortnight_s_ekadashi_as_the_print_keeps_it() {
+    // Pierced at sunrise with the 11th alone in excess (S2): the later day,
+    // against Dharmasindhu's householder (C2322).
+    for (rule, from, to, day) in [
+        (
+            "AMALAKI_EKADASHI",
+            (2020, 3, 1),
+            (2020, 3, 10),
+            (2020, 3, 6),
+        ),
+        (
+            "UTPATTIKA_EKADASHI",
+            (2020, 12, 6),
+            (2020, 12, 15),
+            (2020, 12, 11),
+        ),
+        (
+            "VIJAYA_EKADASHI",
+            (2022, 2, 22),
+            (2022, 3, 3),
+            (2022, 2, 27),
+        ),
+        (
+            "MOKSHADA_EKADASHI",
+            (2023, 12, 18),
+            (2023, 12, 27),
+            (2023, 12, 23),
+        ),
+        (
+            "SHRAWAN_PUTRADA_EKADASHI",
+            (2024, 8, 11),
+            (2024, 8, 20),
+            (2024, 8, 16),
+        ),
+    ] {
+        assert_eq!(kept(rule, from, to), [day], "{rule}");
+    }
+    // Pure with both in excess (S5, by Madhava): the later day, where the
+    // udaya rule gave the earlier, and every calendar prints the later.
+    assert_eq!(
+        kept("MOKSHADA_EKADASHI", (2019, 12, 3), (2019, 12, 12)),
+        [(2019, 12, 8)]
+    );
+}

@@ -1494,7 +1494,7 @@ Chaturdashi shraddha is an ekoddishta and so is decided at madhyahna
 (*Dharmasindhu* p. 63, *Nirnayasindhu* p. 310; C2321), in this pack and in
 `pitri_paksha()`.
 
-### 10.7 The named ekadashis by the Ekadashi table (next)
+### 10.7 The named ekadashis by the Ekadashi table
 
 The 26 named ekadashis are rows of this pack decided by a window, though
 an Ekadashi is decided by its vedha and excess (§8). Over VS 2076 to 2083
@@ -1506,7 +1506,7 @@ the print keeps the later day in all 7 such years, against both digests
 (C2322). The one day it misses, 2021-02-07, is pierced with neither in
 excess, where both tables give the earlier.
 
-The design, built after this page:
+The design:
 
 - A `FestivalRule` may carry `ekadashi: { vedha, table }`. Then its
   window, guards and fallback are not read, and `check` refuses a rule
@@ -1516,7 +1516,10 @@ The design, built after this page:
   instants an Ekadashi rule reads. The observance keeps its shape, which
   groups, names and the bindings read. Its `decided_by` gains an
   `EKADASHI` case carrying `pierced` and `excess`.
-- `NEPAL_SMARTA` is the householder's table with that one cell changed,
-  cited as published-only (C2322). Every named ekadashi of this pack takes
-  it; the fits they hold until then (`UdayaLater` for Haribodhini, Pausha
-  putrada and Bhima) score the same over the window.
+- `EkadashiDecision::NEPAL_SMARTA` is the householder's table with that
+  one cell changed, cited as published-only (C2322). The pack's 26 named
+  ekadashis take it through `Fit::Ekadashi`, 24 yearly in one table and
+  the adhika month's two. Against the fits they held (udaya, and the later
+  sunrise for six) it moves two days over 2019 to 2027: Papmochani on
+  2019-04-01 and Mokshada on 2019-12-08, both pure with both tithis in
+  excess (S5), and every calendar prints Mokshada's.

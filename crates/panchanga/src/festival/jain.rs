@@ -264,6 +264,7 @@ fn at_sunrise(
         decide,
         otherwise: Choice::Earlier,
         parana: Vec::new(),
+        ekadashi: None,
         meta: kept_by(communities),
     }
 }
