@@ -1161,6 +1161,26 @@ request carries so its receipt replays without it. SR-88 adapts the geo engine t
 engine's first tag. SR-90 is built: a resolved height is the sunrise's observer height
 unless the caller states one, and the provenance says where it came from.
 
+### SR-145: Nepal's festivals, computed best and evidenced (2026-11-17)
+
+The consumer asked for every day, observance and festival Nepal prints to be computed as
+well as the texts allow. The measurement against three current published calendars over
+VS 2076 to 2084 found the dates sound, with 1.7 to 3% of names a day off. It found the
+coverage short: the SDK prints 44 to 55% of the names they print. Each step ships as its
+own release candidate, and each is measured against the committee's books and those
+calendars, year by year:
+
+| step | what it holds | estimate |
+|---|---|---|
+| **rc.7: names** | Every day of a multi-day festival named, with each name's rank and marks (`03-design/nepal-festival-names.md`); the most visible missing days; a festival asked alone carries the rules its day is read from (tithipatra-core#168) | 3 to 4 days |
+| **rc.8: text rules and evidence** | Every rule audited as text-ruled, fitted or published-only. Fitted rules are replaced by the kala rules of *Dharmasindhu* and *Nirnayasindhu*, each with its source. A year-by-year table for VS 2076 to 2083 names every parting and settles disputed years from the texts | about a week |
+| **rc.9: coverage and speed** | Sankrantis named every year, national days and holiday marks for every year, Newar, Kirat, Tharu, Mithila and Lhosar (a Tibetan calendar module), other faiths' days, international days, a tithi-change mark; the speed requests SR-119 to SR-122 | 1.5 to 2 weeks |
+| **rc.10: four languages** | Names and a one-line description in ne, en, hi and sa, and the whole year's cheap gist form with size and time budgets | about a week |
+
+The target is the committee's book, day for day. A rule agrees only when it matches in
+every year it is measured over. An observance no text rules is published-only, never
+guessed.
+
 ## v1.0 release and baseline migration
 
 The baseline engine replaces `packages/` with the SDK; production golden vectors confirm
