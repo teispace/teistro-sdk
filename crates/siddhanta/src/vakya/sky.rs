@@ -160,6 +160,21 @@ impl VakyaSky {
         self.place
     }
 
+    /// Why no sunrise was found from `midnight`: out of range when the
+    /// day's window reaches past what the sky answers (SR-136), so an
+    /// almanac reads the day as one its coverage does not hold; a refusal
+    /// otherwise.
+    fn no_sunrise(&self, midnight: f64) -> ProviderError {
+        let coverage = self.parts.capabilities().coverage();
+        if coverage.contains(midnight) && coverage.contains(midnight + 1.0) {
+            ProviderError::Refused {
+                detail: format!("no sunrise at {} to count a vakya day from", self.place),
+            }
+        } else {
+            ProviderError::OutOfRange { jd: midnight }
+        }
+    }
+
     /// The sunrise that begins the civil date whose noon is Julian day
     /// `noon`, at the sky's place.
     fn sunrise(&self, noon: i64) -> Result<f64, ProviderError> {
@@ -184,9 +199,7 @@ impl VakyaSky {
                 // request names: its sunrise under the standard models.
                 conventions: Conventions::STANDARD,
             })?
-            .ok_or_else(|| ProviderError::Refused {
-                detail: format!("no sunrise at {} to count a vakya day from", self.place),
-            })?
+            .ok_or_else(|| self.no_sunrise(midnight))?
             .get();
         if let Ok(mut kept) = self.sunrises.lock() {
             if kept.len() >= KEPT_SUNRISES {

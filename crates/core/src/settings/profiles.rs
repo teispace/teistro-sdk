@@ -1116,6 +1116,34 @@ fn root_panchanga() -> Panchanga {
     }
 }
 
+/// The root's day: its sunrise, its moonrise and the horizon they share.
+fn root_day() -> Day {
+    Day {
+        // The observable rise: the upper limb on the horizon with
+        // standard refraction, which Drik Panchang and Swiss
+        // Ephemeris default to and astronomical almanacs print, and
+        // which the eclipse horizon already reads
+        // (`03-design/sunrise-convention.md`).
+        sunrise: Sunrise::UpperLimbRefraction.into(),
+        // The almanacs' moonrise: the Moon's upper limb on the horizon
+        // with 34 arcminutes of refraction, her semidiameter and
+        // horizontal parallax applied (USNO, *Rise, Set, and Twilight
+        // Definitions*; *Explanatory Supplement* §9.33; Meeus ch. 15's
+        // h₀ = 0.7275π − 34′). Its own knob, so a day that opens at
+        // another sunrise does not move its Moon (SR-102,
+        // `03-design/moonrise-convention.md`).
+        moonrise: Sunrise::UpperLimbRefraction.into(),
+        day_boundary: DayBoundary::Sunrise,
+        polar_day_policy: PolarDayPolicy::Undefined,
+        ghati_reckoning: GhatiReckoning::Civil,
+        hora_reckoning: HoraReckoning::Proportional,
+        // Bennett's formula for a named air (Meeus eq. 16.4), the IAU
+        // 2015 radii, the body's own latitude, no dip and the ideal
+        // horizon: what every almanac and the SDK have reckoned by.
+        horizon: HorizonModel::STANDARD,
+    }
+}
+
 /// The root: every knob set and cited; never selected directly.
 ///
 /// ```
@@ -1165,30 +1193,7 @@ pub fn root() -> Settings {
                 .collect(),
             polar_policy: PolarPolicy::Error,
         },
-        day: Day {
-            // The observable rise: the upper limb on the horizon with
-            // standard refraction, which Drik Panchang and Swiss
-            // Ephemeris default to and astronomical almanacs print, and
-            // which the eclipse horizon already reads
-            // (`03-design/sunrise-convention.md`).
-            sunrise: Sunrise::UpperLimbRefraction.into(),
-            // The almanacs' moonrise: the Moon's upper limb on the horizon
-            // with 34 arcminutes of refraction, her semidiameter and
-            // horizontal parallax applied (USNO, *Rise, Set, and Twilight
-            // Definitions*; *Explanatory Supplement* §9.33; Meeus ch. 15's
-            // h₀ = 0.7275π − 34′). Its own knob, so a day that opens at
-            // another sunrise does not move its Moon (SR-102,
-            // `03-design/moonrise-convention.md`).
-            moonrise: Sunrise::UpperLimbRefraction.into(),
-            day_boundary: DayBoundary::Sunrise,
-            polar_day_policy: PolarDayPolicy::Undefined,
-            ghati_reckoning: GhatiReckoning::Civil,
-            hora_reckoning: HoraReckoning::Proportional,
-            // Bennett's formula for a named air (Meeus eq. 16.4), the IAU
-            // 2015 radii, the body's own latitude, no dip and the ideal
-            // horizon: what every almanac and the SDK have reckoned by.
-            horizon: HorizonModel::STANDARD,
-        },
+        day: root_day(),
         panchanga: root_panchanga(),
         time: root_time(),
         dasha: Dasha {

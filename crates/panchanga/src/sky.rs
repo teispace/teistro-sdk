@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use teistro_calendar::solar::{MonthStartRule, SolarModel, rule};
 use teistro_calendar::{BikramSambat, CalendarSystem, FixedDay};
 use teistro_core::catalogue::{Ayana, Masa, Rashi, Ritu};
+use teistro_core::coverage::Clipped;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
@@ -443,14 +444,19 @@ pub fn solar_month(
         let arc_of = |day| standing_arc(model, clock, place, day, policy);
         Ok(rule.month_start_by(index, sankranti, clock, &arc_of)? <= date)
     };
+    // An end the coverage cut is its edge, not a sankranti (SR-136): a
+    // sign entered before the coverage opened has begun its month, and
+    // the sankranti after a sign the coverage closes on lies past the
+    // last day answered, so it begins no month of one.
+    let cut = |span: &Span<Rashi>, end: fn(Clipped) -> bool| span.clipped.is_some_and(end);
     let mut month = previous(first.member);
     for span in signs {
-        if placed(span.member, span.whole.from)? {
+        if cut(span, Clipped::start) || placed(span.member, span.whole.from)? {
             month = span.member;
         }
     }
     let after = next(last.member);
-    if placed(after, last.whole.to)? {
+    if !cut(last, Clipped::end) && placed(after, last.whole.to)? {
         month = after;
     }
     Ok(Some(month))

@@ -31,8 +31,8 @@ use teistro::{CalendarDate, Context, Ephemeris, Error, Panchanga, Span, UtcOffse
 /// Seconds in a day.
 const SECONDS: f64 = 86_400.0;
 
-/// The bound on a limb's change, in terrestrial time: the worst of the 271
-/// the corpus records outside the range-edge days measured 7.2 s over the
+/// The bound on a limb's change, in terrestrial time: the worst of the 280
+/// the corpus records, the range-edge days' among them, measured 7.2 s over the
 /// built-in standard tier, median 3.2 s, a figure the two ephemerides'
 /// Moons set (an arc-second of the Moon is about two seconds of time, and
 /// the tier is a few arc-seconds). Ten seconds keeps a margin over the
@@ -50,6 +50,15 @@ const TRANSITION_SECONDS: f64 = 10.0;
 /// close to explain it, so the cause is not named yet. The bound is the
 /// measurement's, rounded up, so that a change in either sky shows.
 const MOON_EVENT_SECONDS: f64 = 30.0;
+
+/// The seconds a moonrise or moonset moves for a second of ΔT, rounded
+/// up: an event is compared in UT, and between two ΔT models the Moon
+/// stands where she is a ΔT's difference later, moving 13.2° a day against
+/// the Earth's turn of 361°, so her horizon crossing moves by about
+/// 13.2 / (361 − 13.2) ≈ 0.038 of it. At the data's last day the models
+/// part by 524 s (c048), about 20 s of a moonset; the bound is held to
+/// what is left.
+const MOON_EVENT_PER_DELTA_T: f64 = 0.04;
 
 /// The profile the corpus was recorded under, over the built-in ephemeris.
 fn context() -> Context {
@@ -265,13 +274,14 @@ fn the_limbs_change_when_the_recording_says() {
         worst_ut_apart.0,
         worst_ut_apart.1
     );
-    // The models part the most at 2350, by minutes.
-    assert_eq!(worst_ut_apart.1, "c046");
+    // The models part the most at the data's last day, 2399, by minutes
+    // (c046, at 2350, by nearly as many).
+    assert_eq!(worst_ut_apart.1, "c048");
     assert!(worst_ut_apart.0.abs() > 60.0, "{worst_ut_apart:?}");
     assert_eq!(
         errors.len(),
-        271,
-        "every change the corpus records, less the nine on the two range-edge days"
+        280,
+        "every change the corpus records, the two range-edge days' nine among them"
     );
     accuracy::record(
         "crossings",
@@ -301,8 +311,10 @@ fn the_moon_rises_and_sets_when_the_recording_says() {
     // The SDK's instant less the recording's, by kind, signed: a horizon
     // convention moves rises one way and sets the other.
     let mut signed: BTreeMap<&str, Vec<f64>> = BTreeMap::new();
+    let sdk = context();
     for (chart, days) in &days(0) {
         let day = &days[0];
+        let models = MOON_EVENT_PER_DELTA_T * delta_t_apart(&sdk, chart).abs();
         for (key, ours) in [
             ("moonrise_jd", day.moon.rises.first()),
             ("moonset_jd", day.moon.sets.first()),
@@ -320,8 +332,10 @@ fn the_moon_rises_and_sets_when_the_recording_says() {
             };
             let offset = (ours.get() - recorded) * SECONDS;
             signed.entry(key).or_default().push(offset);
-            if offset.abs() > worst.0 {
-                worst = (offset.abs(), format!("{} {key}", id(chart)));
+            // What the two ΔT models do not explain.
+            let unexplained = (offset.abs() - models).max(0.0);
+            if unexplained > worst.0 {
+                worst = (unexplained, format!("{} {key}", id(chart)));
             }
             compared += 1;
         }
@@ -342,8 +356,8 @@ fn the_moon_rises_and_sets_when_the_recording_says() {
     }
     assert_eq!(
         (compared, absent),
-        (104, 2),
-        "the 108 recorded less the four on the range-edge days; c029's polar night has neither"
+        (108, 2),
+        "every moon event recorded, the range-edge days' four among them; c029's polar night has neither"
     );
     accuracy::record(
         "rise_set",
@@ -402,7 +416,10 @@ const KNOWN_YOGAS: [(&str, &str, &str); 13] = [
 fn the_muhurta_yogas_are_the_recorded_flags_but_for_the_tables() {
     let mut agree = 0;
     let mut differ: Vec<(String, &str, String)> = Vec::new();
-    for (chart, days) in &days(0) {
+    let charts = days(0);
+    // Every recorded chart, the two at the data's edges among them.
+    assert_eq!(charts.len(), 55);
+    for (chart, days) in &charts {
         let day = &days[0];
         let flags = &chart["panchanga_day"]["muhurta_yogas"];
         for (key, yoga) in YOGAS {
@@ -427,7 +444,7 @@ fn the_muhurta_yogas_are_the_recorded_flags_but_for_the_tables() {
         }
     }
     println!("{agree} muhurta yoga flags agree; {} differ", differ.len());
-    assert_eq!(agree + differ.len(), 53 * YOGAS.len());
+    assert_eq!(agree + differ.len(), charts.len() * YOGAS.len());
     let known: Vec<(String, &str, String)> = KNOWN_YOGAS
         .iter()
         .map(|(id, key, day)| ((*id).to_owned(), *key, (*day).to_owned()))

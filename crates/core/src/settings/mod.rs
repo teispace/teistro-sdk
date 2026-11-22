@@ -3614,9 +3614,9 @@ mod tests {
     }
 
     /// The pinned hashes of the two profiles (T6).
-    const KETAKI_HASH: &str = "7509867f056f27d85b0017dba7540583b5abd86b02fed0eed0daf2bf5b77da8a";
+    const KETAKI_HASH: &str = "1ddab0778a79b35af31c0feaa4c4e821a02f6680da373f749391ffe9ce8d2765";
     const TILAK_REVATI_HASH: &str =
-        "1c20cc241c031c73df99fe315b23848b588dfee19f6090f5c6476040fa204a5a";
+        "1c31920849b800d58be3246bf65bea2928472790161ee5402db7e60c12389793";
 
     #[test]
     fn profiles_inherit_and_are_listed() {
