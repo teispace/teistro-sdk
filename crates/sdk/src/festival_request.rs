@@ -841,8 +841,9 @@ impl FestivalRequest {
     /// The same request keeping, of its answer, only the rules `only`
     /// admits (`03-design/festival-metadata.md` §4). Every rule is still
     /// reckoned, so a day counted from a rule filtered out stands. A
-    /// family's anniversaries, which carry no values, stand only when no
-    /// filter is set.
+    /// family's anniversaries, which carry no values, stand only when the
+    /// filter asks nothing of the meta ([`MetaFilter::asks_meta`]): none,
+    /// or one of keys alone.
     ///
     /// ```
     /// use teistro::{FestivalPack, FestivalRequest};
@@ -868,7 +869,10 @@ impl FestivalRequest {
         let Some(only) = &self.only else {
             return true;
         };
-        self.meta_of(key).is_some_and(|meta| only.admits(meta))
+        only.admits_key(key)
+            && self
+                .meta_of(key)
+                .map_or(!only.asks_meta(), |meta| only.admits(meta))
     }
 
     /// What the rule of this key says of itself, of whichever list holds
@@ -1166,10 +1170,13 @@ impl FestivalRequest {
     }
 
     /// The request cut to what finding `key`'s days needs: the rule of
-    /// that key, of whichever kind, and the karmakala rule it counts from;
-    /// the saits elected on them; and each published set's entries for
-    /// them, a set left with none dropped. `None` when no rule has the key
-    /// and no set adds a day under it.
+    /// that key, of whichever kind; the rules its day is read from (the
+    /// karmakala rule it counts from, the rite its parana follows, the rule
+    /// it is barred with, and theirs in turn); the saits elected on them;
+    /// and each published set's entries for them, a set left with none
+    /// dropped. Its answer keeps `key`'s days alone (`only.keys`): the
+    /// others are reckoned for the day they lend. `None` when no rule has
+    /// the key and no set adds a day under it.
     ///
     /// ```
     /// use teistro::{FestivalPack, FestivalRequest};
@@ -1179,7 +1186,15 @@ impl FestivalRequest {
     /// let holi = nepal.narrowed_to("HOLI_TERAI").expect("in the pack");
     /// assert_eq!((holi.rules().len(), holi.following().len()), (1, 1));
     /// assert_eq!(holi.rules()[0].key, holi.following()[0].after);
+    /// assert!(holi.keeps("HOLI_TERAI") && !holi.keeps(&holi.rules()[0].key));
     /// holi.check()?;
+    /// // The Gaura saptami is barred with the Durva ashtami's day, so that
+    /// // rule is carried and not answered.
+    /// let committee = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    /// let gaura = committee.narrowed_to("GAURA_SAPTAMI").expect("in the pack");
+    /// assert!(gaura.rules().iter().any(|rule| rule.key == "DURVA_ASHTAMI"));
+    /// assert!(gaura.keeps("GAURA_SAPTAMI") && !gaura.keeps("DURVA_ASHTAMI"));
+    /// gaura.check()?;
     /// assert!(nepal.narrowed_to("NO_SUCH_DAY").is_none());
     /// # Ok::<(), teistro::Error>(())
     /// ```
@@ -1261,6 +1276,21 @@ impl FestivalRequest {
             }
         }
         let kept = |held: &str| wanted.contains(&held);
+        // The rules added above are reckoned for the day they lend and not
+        // answered (tithipatra-core#168: a festival barred with another's
+        // day failed alone, and answered the other's day once carried).
+        // Of a filter's own keys only those asked stay; when it keeps
+        // none of them, its keys stand, none of them carried, so the
+        // answer is empty rather than every rule.
+        let mut only = self.only.clone().unwrap_or_default();
+        let asked: Vec<String> = keys
+            .iter()
+            .filter(|key| only.admits_key(key))
+            .map(|key| (*key).to_owned())
+            .collect();
+        if !asked.is_empty() {
+            only.keys = asked;
+        }
         let published = self
             .published
             .iter()
@@ -1283,7 +1313,7 @@ impl FestivalRequest {
             .collect();
         FestivalRequest {
             groups,
-            only: self.only.clone(),
+            only: Some(only),
             hijri_offset: self.hijri_offset,
             order: self.order,
             rules: self
