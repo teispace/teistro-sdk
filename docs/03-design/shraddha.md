@@ -267,16 +267,18 @@ none (`crates/sdk/tests/anniversary.rs`), each guard proved red.
 ### 3.2 The `PITRI_PAKSHA` pack
 
 As built (`FestivalRule::pitri_paksha`, `FestivalPack::PitriPaksha`):
-*Dharmasindhu* pp. 61–62 (1888 edition), every rule in Bhadrapada's dark
-half, amanta, at aparahna by `by_share` (DS p. 61, "निर्णयोऽपराह्णव्याप्त्यादौ"):
+*Dharmasindhu* pp. 59–63 (1888 edition, pages read from its running
+headers), every rule in Bhadrapada's dark half, amanta, by `by_share`, at
+aparahna (DS p. 61, "निर्णयोऽपराह्णव्याप्त्यादौ") but the 14th:
 
 - fourteen mahalayas, the 1st to the new moon but the 14th, keyed as
   `NEPAL_PANCHANGA` keys the same days (`PRATIPADA_SHRADDHA` …
   `AMAVASYA_SHRADDHA`), so a reader names them once; a request naming both
   packs keeps the later one's rule of each key;
-- `CHATURDASHI_SHRADDHA`, the 14th for the killed by a weapon alone (p. 61:
+- `CHATURDASHI_SHRADDHA`, the 14th for the killed by a weapon alone (p. 59:
   a death on the 14th or the full moon keeps its mahalaya on the 12th or the
-  new moon instead);
+  new moon instead), an ekoddishta and so at madhyahna (p. 63; *Nirnayasindhu*
+  p. 310; C2321);
 - `AVIDHAVA_NAVAMI` (p. 62), on the 9th;
 - `SANYASI_MAHALAYA` (p. 62), the ascetics' on the 12th holding the
   aparahna, the text preferring it to the Ekadashi's parana day;
