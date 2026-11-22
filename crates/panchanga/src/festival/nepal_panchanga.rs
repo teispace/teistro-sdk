@@ -654,7 +654,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         Masa::Margashirsha,
         Tithi::ShuklaChaturdashi,
         Fit::Share(APARAHNA),
-        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: काशीमा पिशाचमोचन तीर्थश्राद्ध; a shraddha, kept in aparahna as Dharmasindhu p. 265 keeps shraddha, where purvahna gave both years a day late (C602)",
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: काशीमा पिशाचमोचन तीर्थश्राद्ध; a shraddha, kept in aparahna as Dharmasindhu keeps shraddha (the day's fourth fifth, p. 265; the day holding more of it, p. 266), where purvahna gave both years a day late (C602)",
     ),
     (
         "GAIDU_PUJA",
