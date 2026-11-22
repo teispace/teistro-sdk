@@ -43,7 +43,7 @@
 //! The pradosha fast and the weekday fasts are kept in every month, the
 //! adhika included, on a day of either paksha (§3.4) or the new moon.
 
-use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
+use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Paksha, Tithi, Vara};
 use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
@@ -1953,7 +1953,7 @@ const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
-const EVERY_MONTH: [(&str, Occurs, Fit, &str); 10] = [
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
     (
         "PRADOSHA_VRATA",
         Occurs::DayOfPaksha { day_of_paksha: 13 },
@@ -1993,6 +1993,20 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 10] = [
         "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
     ),
     (
+        "CHANDRODAYA",
+        Occurs::Tithi {
+            tithi: Tithi::ShuklaDvitiya,
+        },
+        Fit::Crescent,
+        "Nepal's national panchanga, the first row of every bright half of VS 2082 (pp. 3–25) and VS 2083 (pp. 3–27): चन्द्रोदय, the first evening the crescent is named, the day after the new moon's; 18 February 2026 is not printed, its 2nd beginning 26 minutes before sunset, and every printed day's began at least 166 minutes before",
+    ),
+];
+
+/// The rules kept in every month, the adhika included, by their text's
+/// decision: key, what is kept, fit, and the text with what the calendars
+/// print. Nepal's calendars print each in the years they print it at all.
+const EVERY_MONTH_BY_TEXT: [(&str, Occurs, Fit, &str); 3] = [
+    (
         "SHUKLA_ASHTAMI_VRATA",
         Occurs::Tithi {
             tithi: Tithi::ShuklaAshtami,
@@ -2016,15 +2030,20 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 10] = [
         Fit::Share(APARAHNA),
         "Dharmasindhu p. 266: a parvana shraddha takes the tithi holding the aparahna, the fourth fifth of the day (पार्वणे त्वपराह्णव्यापिनी ग्राह्या); on both days or neither, or in equal parts, the earlier, and in unequal parts the greater. Nepal's calendars print दर्शश्राद्ध on every new moon of the years they print it, 33 of 34 days of VS 2080, 2082 and 2083 on this rule and 25 on the sunrise's; Nepal's national panchanga, VS 2083 p. 24, prints Monday 8 March 2027, the later day, where the earlier holds 93% of the aparahna and the later 55%",
     ),
-    (
-        "CHANDRODAYA",
-        Occurs::Tithi {
-            tithi: Tithi::ShuklaDvitiya,
-        },
-        Fit::Crescent,
-        "Nepal's national panchanga, the first row of every bright half of VS 2082 (pp. 3–25) and VS 2083 (pp. 3–27): चन्द्रोदय, the first evening the crescent is named, the day after the new moon's; 18 February 2026 is not printed, its 2nd beginning 26 minutes before sunset, and every printed day's began at least 166 minutes before",
-    ),
 ];
+
+/// The days kept on a nakshatra in a lunar month: key, month, what is
+/// kept, fit, and where the days are printed.
+const ON_A_STAR: [(&str, Masa, Occurs, Fit, &str); 1] = [(
+    "RAMANUJACHARYA_JAYANTI",
+    Masa::Vaishakha,
+    Occurs::Nakshatra {
+        nakshatra: Nakshatra::Ardra,
+        paksha: Paksha::Shukla,
+    },
+    Fit::Udaya,
+    "Nepal's calendars print श्री रामानुजाचार्य जयन्ती on Ardra in Vaishakha's bright half, every year of VS 2076 to 2083 they print it, 2021's on 16 May where Tamil Chittirai's Ardra was 18 April (C2330); the south keeps Thiruvathirai in Chittirai (`INDIA_KARNATAKA`, C1323)",
+)];
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
@@ -2280,15 +2299,23 @@ impl FestivalRule {
         let monthly = EVERY_MONTH
             .iter()
             .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed, "fitted"));
+        let monthly_by_text = EVERY_MONTH_BY_TEXT
+            .iter()
+            .map(|&(key, occurs, fit, read)| (key, None, occurs, fit, read, "the text's rule"));
         let by_text = BY_TEXT.iter().map(|&(key, month, tithi, fit, read)| {
             (key, Some(month), tithi.into(), fit, read, "the text's rule")
+        });
+        let on_a_star = ON_A_STAR.iter().map(|&(key, month, occurs, fit, printed)| {
+            (key, Some(month), occurs, fit, printed, "fitted")
         });
         yearly
             .chain(at_sunrise)
             .chain(ekadashis)
             .chain(adhika)
             .chain(monthly)
+            .chain(monthly_by_text)
             .chain(by_text)
+            .chain(on_a_star)
             .map(|(key, month, occurs, fit, printed, how)| FestivalRule {
                 barred: barred(key),
                 ..fit.rule(

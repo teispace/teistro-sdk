@@ -1712,7 +1712,7 @@ const NEPAL_GROUPS: [Group; 24] = [
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 506] = [
+const NEPAL_KEYS: [(&str, u8); 507] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
@@ -2076,6 +2076,7 @@ const NEPAL_KEYS: [(&str, u8); 506] = [
     ("PURNIMA_VRATA", 19),
     ("RADHASHTAMI", 15),
     ("RAKSHABANDHAN", 1),
+    ("RAMANUJACHARYA_JAYANTI", 15),
     ("RAMA_EKADASHI", 15),
     ("RAMA_NAVAMI", 1),
     ("RAMESHWAR_PUJA", 15),
