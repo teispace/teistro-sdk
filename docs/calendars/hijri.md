@@ -1,9 +1,9 @@
 # The Hijri calendar
 
-Status: `built` for the tabular calendar, 2026-10-20.
-`Calendar::HijriTabular` (`calendar.HIJRI_TABULAR`), era `era.HIJRI`,
-`crates/calendar/src/hijri.rs`. A sighted month waits on published
-overrides (P2-4).
+Status: `built` for the tabular calendar, 2026-10-20, and the sighted
+calendar, 2026-11-22. `Calendar::HijriTabular` (`calendar.HIJRI_TABULAR`),
+era `era.HIJRI`, `crates/calendar/src/hijri.rs`; `Calendar::HijriSighted`
+(`calendar.HIJRI_SIGHTED`), `03-design/hijri-sighted.md`.
 
 ## Two Hijri calendars
 
@@ -60,6 +60,14 @@ era or the calendar is in hand, so `era.HIJRI` and the calendar are
 listed as unnamed in `xtask/src/intl.rs`, and Hindi falls back to English.
 
 ## A sighted calendar
+
+`HIJRI_SIGHTED` begins each month on the day after the evening its
+crescent is seen at the request's place, by Odeh's criterion (the
+default, to zone A) or Yallop's q-test, a month whose 29th sees none
+completing thirty days (`03-design/hijri-sighted.md`). A dated rule names
+it as it names the table. At Kathmandu it gives all twelve of Nepal's
+Eids of AH 1440 to 1447 measured, and 339 of India's 386 moon-sighted
+days at the lists' capitals (`03-design/hijri-sighted-measured.md`).
 
 A consumer that needs the declared Eid has the published month
 beginnings, carried as data and laid over the tabular calendar: P2-4's

@@ -28,6 +28,27 @@ a median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The
 first and last dates answered are 1800-01-01 and 2399-12-31 over the
 built-in ephemeris, where the coverage's edges were refused.
 
+**The sighted Hijri calendar.**
+**Numbers:** no day moves: only a rule that names the new calendar reads it.
+Every settings hash moves, the settings gaining `calendars.hijri_criterion` and
+`calendars.hijri_zone`; no profile version moves, since no profile but the root
+sets them. The catalogue's `calendar` kind gains a member (16 to 17).
+- **New:** `calendar.HIJRI_SIGHTED`: a month begins on the day after the evening
+  its new crescent is seen at the request's place, judged at the sunset plus
+  four ninths of the lag; a month whose 29th sees none completes thirty days
+  (`03-design/hijri-sighted.md`). A dated rule's `civilDate` and `civilWeekday`
+  name it as they name `HIJRI_TABULAR`, and the answer's provenance names the
+  test.
+- **New:** the settings `calendars.hijri_criterion` (`ODEH_2006`, the default,
+  or `YALLOP_1997`) and `calendars.hijri_zone` (`A` by default to `D`; Odeh's
+  `D` is refused). At Kathmandu the default gives all twelve of Nepal's Eids of
+  AH 1440 to 1447, and 339 of the 386 moon-sighted days India's lists print
+  (`03-design/hijri-sighted-measured.md`).
+- **New:** `teistro_astro::crescent` (Odeh's V, Yallop's q and their zones),
+  `teistro_calendar::hijri_sighted::SightedMonths`,
+  `teistro_panchanga::hijri_sighted::sighted_months` and
+  `Almanac::sighted_hijri`.
+
 **A rashifal's transit says how long it holds (C2313).**
 **Numbers:** no verdict, house or event moves. Each period now places the
 nine grahas twice more, at its two ends. A week's, a month's or a year's

@@ -1191,7 +1191,8 @@ no answer moved except the documented fixes; `packages/` is deleted.
 The full star catalogue in `astro`, `ephemeris-de` (the JPL DE file
 reader with range-request streaming) and the `reference` tier
 (ADR-0021), additional calendars (the regional solar calendars, the
-sighted Hijri months, Hebrew, Persian), the remaining dasha rows as their
+sighted Hijri months — built 2026-11-22, `03-design/hijri-sighted.md` —
+Hebrew, Persian), the remaining dasha rows as their
 citations close, Uranian points
 and dials, platform-native drawing above the geometry contract, Swift and
 Kotlin bindings if needed.
