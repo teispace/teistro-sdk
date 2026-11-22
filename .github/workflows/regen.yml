@@ -1,0 +1,163 @@
+# Regenerate: every generated file and measured page of a branch, rebuilt
+# on GitHub's runners and handed back as one patch.
+#
+# A change to a rule, a catalogue or a boundary moves pages that
+# fast-check only compares: it fails with "differs from what `cargo xtask
+# X` produces" and the author regenerates locally, which takes a full
+# build and the whole page loop. This workflow does that work in
+# parallel: the generators once, then fast-check's own `check-*` list in
+# four shards, each check that names a generator regenerated with it and
+# checked again. Nothing is pushed: the patch is an artifact, which the
+# author reads, applies (`git apply --3way regen.patch`) and commits.
+#
+#   gh workflow run regen.yml --ref <branch>
+#   gh run download <run> --name regen
+#
+# The check list is read from fast-check.yml, so a check added there is
+# swept here without an edit (docs/06-cicd/01-pipelines.md).
+name: regen
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One regeneration per branch: a newer dispatch supersedes an older one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: never
+
+jobs:
+  # The generators that write a file no check names: every one, in the
+  # order the pages read each other.
+  generate:
+    name: generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: regen
+      - name: Build the tasks
+        run: cargo build -p xtask
+      - name: Run every generator
+        run: |
+          failed=0
+          for g in "gen intl" "gen ffi" "festival" "surface" "areas" "rust-surface" "exercised" "interpret" \
+                   "interpretations" "schema" "document-schema" "dossier" "dossier-tokens" "locale-coverage" \
+                   "sizes --render" "muhurta" "batching" "answers" "detail-tokens" "cofiring"; do
+            # shellcheck disable=SC2086 # a generator's arguments split on purpose
+            if ! ./target/debug/xtask $g > out.log 2>&1; then
+              failed=1; echo "::error title=xtask $g::$(tail -5 out.log | tr '\n' ' ')"
+            fi
+          done
+          rm -f out.log
+          cargo fmt --all
+          exit $failed
+      - name: Record the patch
+        if: ${{ !cancelled() }}
+        run: git diff --binary -- . ':!fixtures' > generate.patch
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: regen-generate
+          path: generate.patch
+          retention-days: 3
+
+  # fast-check's checks, a quarter each, over the generators' tree.
+  sweep:
+    name: sweep ${{ matrix.shard }}
+    needs: generate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: regen
+      - uses: actions/download-artifact@v4
+        with:
+          name: regen-generate
+      - name: Take the generators' tree
+        run: |
+          [ -s generate.patch ] && git apply generate.patch
+          rm generate.patch
+          git add -A -- . ':!fixtures'
+      - name: Build the tasks
+        run: cargo build -p xtask
+      - name: Sweep this shard's checks
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          # The checks that measure CI itself or a branch's history are not pages a regeneration moves.
+          skip=" check-coverage check-mutants check-dco check-sizes check-costs "
+          i=0; bad=0
+          while read -r g; do
+            case "$skip" in *" $g "*) continue;; esac
+            i=$((i + 1))
+            [ $((i % 4)) = "$SHARD" ] || continue
+            out=$(./target/debug/xtask "$g" 2>&1 < /dev/null) && continue
+            while read -r p; do
+              echo "regenerate $p (for $g)"
+              ./target/debug/xtask "$p" > /dev/null 2>&1 < /dev/null || echo "::warning title=xtask $p::rc=$?"
+            done < <(echo "$out" | grep -oE 'what `cargo xtask [a-z0-9-]+' | sed 's/.*xtask //' | sort -u)
+            out=$(./target/debug/xtask "$g" 2>&1 < /dev/null) && continue
+            bad=$((bad + 1))
+            echo "::error title=$g::$(echo "$out" | grep -E '^(FAIL|error)|line [0-9]+:' | head -4 | tr '\n' ' ')"
+          done < <(grep -oE 'cargo xtask check-[a-z0-9-]+' .github/workflows/fast-check.yml | sed 's/cargo xtask //' | sort -u)
+          cargo fmt --all
+          echo "$bad check(s) still failing after regeneration"
+      - name: Record the patch
+        if: ${{ !cancelled() }}
+        run: git diff --binary -- . ':!fixtures' > sweep-${{ matrix.shard }}.patch
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: regen-sweep-${{ matrix.shard }}
+          path: sweep-${{ matrix.shard }}.patch
+          retention-days: 3
+
+  # The generators' patch and the shards' in one, each shard's applied
+  # three-way since two checks may regenerate one page alike.
+  patch:
+    name: patch
+    needs: [generate, sweep]
+    if: ${{ !cancelled() && needs.generate.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: regen-*
+          merge-multiple: true
+      - name: Merge the patches
+        run: |
+          git config user.name regen; git config user.email regen@invalid
+          for p in generate.patch sweep-*.patch; do
+            [ -s "$p" ] || continue
+            git apply --3way --index "$p" || { echo "::error title=$p::does not apply"; exit 1; }
+          done
+          git diff --cached --binary > regen.patch
+          git diff --cached --stat | tail -40 >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regen
+          path: regen.patch
+          retention-days: 7

@@ -17,6 +17,7 @@ red teaches people to ignore it.
 | [`release`](../../.github/workflows/release.yml) | a `v*` tag, or a dispatch that publishes nothing | every platform built, merged, staged and published |
 | [`docs`](../../.github/workflows/docs.yml) | every push to `main`, a pull request touching the site, a tag | the site builds and renders every generated reference page; a tag publishes it |
 | [`benchmarks`](../../.github/workflows/benchmarks.yml) | every pull request, on demand | the instruction count of every section of the fixed scenario, against the base commit measured in the same job |
+| [`regen`](../../.github/workflows/regen.yml) | on demand | nothing: it regenerates a branch's generated files and measured pages and hands them back as one patch |
 
 ## The fast check
 
@@ -112,6 +113,20 @@ The site and its generated reference, described in
 [`05-docs-deploy.md`](05-docs-deploy.md). It is published on a tag alone,
 so the site a reader lands on is the site of the version they are reading
 about.
+
+## Regen
+
+A dispatch on a branch (`gh workflow run regen.yml --ref <branch>`)
+runs every generator once, then fast-check's own `check-*` list in four
+shards over the generators' tree: a check that fails naming the
+generator it compares against ("differs from what `cargo xtask X`
+produces") is regenerated with it and checked again. The shards' patches
+and the generators' merge into one artifact, `regen`, which the author
+reads and applies (`git apply --3way regen.patch`); nothing is pushed.
+It is a full regeneration in about the time of fast-check's longest
+pages shard, on runners rather than the author's machine. The checks
+that measure CI itself (coverage, mutants, sizes, costs, the sign-off)
+are not swept: their records come from a CI run's artifacts.
 
 ## Release
 
