@@ -126,11 +126,12 @@ Nepal's entries (`NAMES` in `meta.rs`):
 | `HARITALIKA` | | `TEEJ` |
 | `CHHATH` | | `SANDHYA_ARGHYA`, `DALA_PUJA` |
 | `CHHATH_SECOND_DAY` | `USHA_ARGHYA` | `CHHATH_SAMAPAN`, `CHHATH_SECOND_DAY` |
-| `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI` |
+| `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI`, `GHYU_CHAKU_KHANE_DIN` |
 | `KARKATA_SANKRANTI` | `SAUNE_SANKRANTI` | `KARKATA_SANKRANTI`, `SHRAWAN_SANKRANTI` |
 | the other ten sankrantis | | the month each opens (`BAISAKH_SANKRANTI`, `JESTHA_SANKRANTI`, …, `CHAITRA_SANKRANTI`) |
 | `UPAKARMA_MADHYANDINA` | `JANAI_PURNIMA` | `UPAKARMA_MADHYANDINA`, `RISHI_TARPANI` |
 | `BASANTA_PANCHAMI` | | `SARASWATI_PUJA`, `SHREE_PANCHAMI` |
+| `NATIONAL_PADDY_DAY` | | `DAHI_CHIURA_KHANE_DIN` |
 
 The sankrantis' names are measured over Nepal's patros (C2312): the locales
 once named the Makara and Karkata sankrantis माघे and साउने in Nepali and
@@ -139,7 +140,10 @@ name all twelve by the sign again, and Nepal's entries lead with the month.
 The upakarma the committee prints as जनैपूर्णिमा leads with that name, and
 Basanta Panchami keeps the committee's वसन्तपञ्चमी and lists the patros'
 सरस्वती पूजा and श्रीपञ्चमी (C2314). Raksha Bandhan, printed on the same row,
-keeps its own name, so no two rules of one day lead with one name.
+keeps its own name, so no two rules of one day lead with one name. The
+two eating days are other names of a day already kept: Magh 1's घ्यू-चाकु
+खाने दिन is Maghe Sankranti, and Asar 15's दही-चिउरा खाने दिन is Paddy Day
+(C2315).
 A test holds every listed name to a festival name in every locale.
 
 Not shipped (C2311): गाई तिहार, which the book does not print (it prints

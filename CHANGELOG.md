@@ -217,6 +217,10 @@ rules gaining `meta.names`.
   with जनै पूर्णिमा (`JANAI_PURNIMA`) and lists ऋषितर्पणी (`RISHI_TARPANI`);
   `BASANTA_PANCHAMI` lists सरस्वती पूजा (`SARASWATI_PUJA`) and श्रीपञ्चमी
   (`SHREE_PANCHAMI`). 4 festival names in all five locales.
+- **Added:** the two eating days as Nepal's other names for the days they fall on (C2315):
+  `MAKARA_SANKRANTI` lists घ्यू-चाकु खाने दिन (`GHYU_CHAKU_KHANE_DIN`) and
+  `NATIONAL_PADDY_DAY` lists दही-चिउरा खाने दिन (`DAHI_CHIURA_KHANE_DIN`). 2 festival names
+  in all five locales.
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each
