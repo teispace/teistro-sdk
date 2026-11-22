@@ -518,7 +518,8 @@ pub use crate::progressions_request::{ContactWindow, Progressions, ProgressionsR
 #[cfg(feature = "chart")]
 pub use teistro_interpret as interpret;
 #[cfg(feature = "chart")]
-pub use teistro_interpret::{Item, Plan};
+pub use teistro_interpret::Plan;
+pub use teistro_intl::Item;
 #[cfg(feature = "kp")]
 pub use teistro_kp as kp;
 #[cfg(feature = "kp")]

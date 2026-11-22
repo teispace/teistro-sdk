@@ -182,6 +182,7 @@ import type {
   FeedHint,
   FeedSelector,
   MundaneEvent,
+  PlanItem,
   Projection,
   RelocationRequest,
   SuppliedEvent,
@@ -5084,18 +5085,6 @@ export interface RulesReading {
   readonly longevity?: Readonly<Record<string, unknown>>;
   /** An input a rule named that the chart could not have, such as `'points'`. */
   readonly unreadable?: readonly string[];
-}
-
-/**
- * One thing to say: a message key and its slots. The slots are the very
- * record `intl.render` takes, so `sdk.intl.render(item.key, item.params)`
- * says it, in whatever locale the context is in.
- */
-export interface PlanItem {
-  /** The message to say it with. */
-  readonly key: string;
-  /** Its slots, ready for `intl.render`. */
-  readonly params: Readonly<Record<string, unknown>>;
 }
 
 /** What a chart has to say, holding no words: the composers asked for. */

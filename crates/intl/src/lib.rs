@@ -60,6 +60,7 @@ pub mod derive;
 #[rustfmt::skip]
 mod embedded;
 pub mod generate;
+mod item;
 pub mod lexicon;
 pub mod locales;
 mod lookup;
@@ -86,6 +87,7 @@ pub use render::{
     ClockTime, Ghati, Intl, OutPart, Params, Rendered, Resolution, TypedMessage, Value,
     engine_params, params,
 };
+pub use item::Item;
 pub use runtime::{Loaded, LocaleReport, RuntimeReport};
 pub use source::{BASE_LOCALE, ENTITY_NAMESPACE, sdk_root};
 
