@@ -2408,13 +2408,23 @@ mod tests {
 
     #[test]
     fn nepal_names_the_upakarma_janai_purnima_and_basanta_panchami_saraswati_puja() {
-        let upakarma = FestivalMeta::nepal("UPAKARMA_MADHYANDINA");
-        let names = upakarma.names.first().expect("Nepal's names");
-        assert_eq!(names.lead.as_deref(), Some("JANAI_PURNIMA"));
-        assert_eq!(names.aliases, ["UPAKARMA_MADHYANDINA", "RISHI_TARPANI"]);
-        let panchami = FestivalMeta::nepal("BASANTA_PANCHAMI");
-        let names = panchami.names.first().expect("Nepal's names");
-        assert_eq!(names.lead, None);
-        assert_eq!(names.aliases, ["SARASWATI_PUJA", "SHREE_PANCHAMI"]);
+        let first = |key: &str| {
+            FestivalMeta::nepal(key)
+                .names
+                .first()
+                .map(|names| (names.lead.clone(), names.aliases.clone()))
+        };
+        let owned = |keys: &[&str]| keys.iter().map(|&key| key.to_owned()).collect::<Vec<_>>();
+        assert_eq!(
+            first("UPAKARMA_MADHYANDINA"),
+            Some((
+                Some("JANAI_PURNIMA".to_owned()),
+                owned(&["UPAKARMA_MADHYANDINA", "RISHI_TARPANI"])
+            ))
+        );
+        assert_eq!(
+            first("BASANTA_PANCHAMI"),
+            Some((None, owned(&["SARASWATI_PUJA", "SHREE_PANCHAMI"])))
+        );
     }
 }
