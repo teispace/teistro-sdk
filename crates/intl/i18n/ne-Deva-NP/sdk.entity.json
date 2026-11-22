@@ -6204,6 +6204,16 @@
       "name": "दर्श श्राद्ध",
       "prose": "दर्श श्राद्ध",
       "iast": "Darśa Śrāddha"
+    },
+    "SHUKLA_ASHTAMI_VRATA": {
+      "name": "अष्टमी व्रत",
+      "prose": "अष्टमी व्रत",
+      "iast": "Śukla Aṣṭamī Vrata"
+    },
+    "KRISHNA_ASHTAMI_VRATA": {
+      "name": "अष्टमी व्रत",
+      "prose": "अष्टमी व्रत",
+      "iast": "Kṛṣṇa Aṣṭamī Vrata"
     }
   },
   "agni_vasa": {
