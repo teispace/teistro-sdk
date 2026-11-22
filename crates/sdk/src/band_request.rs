@@ -165,18 +165,11 @@ impl MatchingArea<'_> {
         let table = asked.table().map_err(|why| why.under(BAND))?;
         let graded = table.grade_total(asked.total, asked.dushkuta);
         let intl = self.context().locale_engine();
-        let tag = asked
-            .locale
-            .clone()
-            .unwrap_or_else(|| intl.locale().to_owned());
-        if !intl.locale_tags().any(|loaded| loaded == tag) {
-            let known: Vec<&str> = intl.locale_tags().collect();
-            return Err(
-                Error::unsupported(format!("the locale `{tag}` is not loaded"))
-                    .with_field(format!("{BAND}.locale"))
-                    .with_hint(format!("the locales are {}", known.join(", "))),
-            );
-        }
+        let tag = match &asked.locale {
+            Some(locale) => crate::area::intl::loaded_locale(&intl, locale)
+                .map_err(|why| why.with_field(format!("{BAND}.locale")))?,
+            None => intl.locale().to_owned(),
+        };
         let spelled = serde_json::to_value(graded.band)
             .ok()
             .and_then(|value| value.as_str().map(str::to_owned))
@@ -268,6 +261,17 @@ mod tests {
                 );
             }
         }
+        let short = BandRequest {
+            total: 20.0,
+            dushkuta: false,
+            shipped: None,
+            bands: None,
+            locale: Some("hi".into()),
+        };
+        assert_eq!(
+            sdk.matching().band_words(&short).unwrap().locale,
+            "hi-Deva-IN"
+        );
         let nowhere = BandRequest {
             total: 20.0,
             dushkuta: false,

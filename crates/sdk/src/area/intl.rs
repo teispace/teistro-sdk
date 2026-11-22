@@ -43,6 +43,16 @@ pub(crate) fn refused_locale(engine: &Intl, tag: &str, why: &str) -> Error {
         ))
 }
 
+/// The loaded locale a request's `tag` means, by the lookup the builder
+/// uses: `ne` is `ne-Deva-NP`, `en-NP` is `en-Latn-NP`. A request takes
+/// what [`IntlArea::lookup_locale`] answers, and is refused as it is.
+pub(crate) fn loaded_locale(engine: &Intl, tag: &str) -> Result<String, Error> {
+    engine
+        .lookup_locale(tag)
+        .map(str::to_owned)
+        .map_err(|e| refused_locale(engine, tag, &e.to_string()))
+}
+
 impl<'a> IntlArea<'a> {
     pub(crate) fn of(context: &'a Context) -> IntlArea<'a> {
         IntlArea { context }
@@ -75,11 +85,7 @@ impl<'a> IntlArea<'a> {
     ///
     /// As [`IntlArea::set_locale`].
     pub fn lookup_locale(self, tag: &str) -> Result<String, Error> {
-        let engine = self.context.locale_engine();
-        engine
-            .lookup_locale(tag)
-            .map(str::to_owned)
-            .map_err(|e| refused_locale(&engine, tag, &e.to_string()))
+        loaded_locale(&self.context.locale_engine(), tag)
     }
 
     /// Changes the locale every render resolves from, by RFC 4647 lookup,
