@@ -3474,6 +3474,26 @@
       "prose": "चैत्रसङ्क्रान्ति",
       "iast": "Caitrasaṅkrānti"
     },
+    "JANAI_PURNIMA": {
+      "name": "जनै पूर्णिमा",
+      "prose": "जनै पूर्णिमा",
+      "iast": "Janai pūrṇimā"
+    },
+    "RISHI_TARPANI": {
+      "name": "ऋषितर्पणी",
+      "prose": "ऋषितर्पणी",
+      "iast": "Ṛṣitarpaṇī"
+    },
+    "SARASWATI_PUJA": {
+      "name": "सरस्वतीपूजा",
+      "prose": "सरस्वतीपूजा",
+      "iast": "Sarasvatī pūjā"
+    },
+    "SHREE_PANCHAMI": {
+      "name": "श्रीपञ्चमी",
+      "prose": "श्रीपञ्चमी",
+      "iast": "Śrī pañcamī"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतन्त्र दिवस",
       "prose": "लोकतन्त्र दिवस",

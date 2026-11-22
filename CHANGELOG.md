@@ -213,6 +213,10 @@ rules gaining `meta.names`.
   locales name `MAKARA_SANKRANTI` and `KARKATA_SANKRANTI` by the sign again
   (मकर, कर्कट), so a reader showing the key's own name, not Nepal's lead, now sees the
   sign. 13 festival names in all five locales; a test holds every listed name to them.
+- **Added:** Nepal's names for two shared festivals (C2314). `UPAKARMA_MADHYANDINA` leads
+  with जनै पूर्णिमा (`JANAI_PURNIMA`) and lists ऋषितर्पणी (`RISHI_TARPANI`);
+  `BASANTA_PANCHAMI` lists सरस्वती पूजा (`SARASWATI_PUJA`) and श्रीपञ्चमी
+  (`SHREE_PANCHAMI`). 4 festival names in all five locales.
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each

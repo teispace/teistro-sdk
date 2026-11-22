@@ -1209,13 +1209,20 @@ type Names = (
     Option<u16>,
     &'static str,
 );
-const NAMES: [Names; 34] = [
+const NAMES: [Names; 36] = [
     (
         "AMAVASYA_SHRADDHA",
         None,
         &["PITRI_VISARJAN"],
         None,
         "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: औंसीश्राद्ध, पितृविसर्जन, one row",
+    ),
+    (
+        "BASANTA_PANCHAMI",
+        None,
+        &["SARASWATI_PUJA", "SHREE_PANCHAMI"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: वसन्तपञ्चमी; two of three calendars published in Nepal over VS 2076 to 2084, read for SR-145, add सरस्वती पूजा and श्रीपञ्चमी (C2314)",
     ),
     ("BUDDHA_JAYANTI", None, &[], Some(2), PRINTED),
     ("CHANDI_PURNIMA", None, &[], Some(1), PRINTED),
@@ -1288,6 +1295,13 @@ const NAMES: [Names; 34] = [
     ("SWASTHANI_VRAT_BEGINS", None, &[], Some(1), PRINTED),
     ("TULA_SANKRANTI", None, &["KARTIK_SANKRANTI"], Some(0), SANKRANTI),
     ("UBHAULI", None, &[], Some(4), PRINTED),
+    (
+        "UPAKARMA_MADHYANDINA",
+        Some("JANAI_PURNIMA"),
+        &["UPAKARMA_MADHYANDINA", "RISHI_TARPANI"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: जनैपूर्णिमा, beside रक्षाबन्धन; three calendars published in Nepal over VS 2076 to 2084, read for SR-145, print जनै पूर्णिमा nearly every year and ऋषितर्पणी (C2314)",
+    ),
     (
         "VIJAYA_DASHAMI",
         None,
@@ -2365,5 +2379,17 @@ mod tests {
             lead_and_aliases("MESHA_SANKRANTI"),
             [(None, named(&["BAISAKH_SANKRANTI"]))]
         );
+    }
+
+    #[test]
+    fn nepal_names_the_upakarma_janai_purnima_and_basanta_panchami_saraswati_puja() {
+        let upakarma = FestivalMeta::nepal("UPAKARMA_MADHYANDINA");
+        let names = upakarma.names.first().expect("Nepal's names");
+        assert_eq!(names.lead.as_deref(), Some("JANAI_PURNIMA"));
+        assert_eq!(names.aliases, ["UPAKARMA_MADHYANDINA", "RISHI_TARPANI"]);
+        let panchami = FestivalMeta::nepal("BASANTA_PANCHAMI");
+        let names = panchami.names.first().expect("Nepal's names");
+        assert_eq!(names.lead, None);
+        assert_eq!(names.aliases, ["SARASWATI_PUJA", "SHREE_PANCHAMI"]);
     }
 }
