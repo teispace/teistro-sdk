@@ -1008,6 +1008,20 @@ pub(crate) const ROOT_SOURCES: &[Citation] = &[
         ),
     ),
     Citation::new(
+        "calendars.hijri_criterion",
+        Source::new(
+            "Odeh, Experimental Astronomy 18 (2004)",
+            "ODEH_2006: eq. 2, p. 61, the topocentric arc of vision and crescent width, fitted to 737 observations; Yallop, NAO Technical Note 69 (1997), eq. 6.1, p. 11, the other choice; docs/03-design/hijri-sighted.md §2",
+        ),
+    ),
+    Citation::new(
+        "calendars.hijri_zone",
+        Source::new(
+            "Odeh, Experimental Astronomy 18 (2004)",
+            "A, visible by naked eye (eq. 2's zones, p. 61): at Kathmandu it gives all twelve of Nepal's Eids of AH 1440 to 1447, zone B losing two; docs/03-design/hijri-sighted-measured.md",
+        ),
+    ),
+    Citation::new(
         "festivals.observer",
         Source::new(
             "Nepal Panchanga Nirnayak Samiti",
