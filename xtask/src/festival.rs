@@ -603,6 +603,10 @@ pub(super) fn decided_by(decided: &Decided) -> String {
         Decided::Guard { index } => format!("guard {index}"),
         Decided::Otherwise => "otherwise".to_owned(),
         Decided::After { rule, days } => format!("{days} after {rule}"),
+        Decided::Ekadashi { pierced, excess } => format!(
+            "the Ekadashi table, {} with {excess:?} in excess",
+            if *pierced { "pierced" } else { "pure" }
+        ),
     }
 }
 
