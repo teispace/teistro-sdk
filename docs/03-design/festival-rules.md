@@ -1514,8 +1514,10 @@ The design:
 - The judgement reuses §8's facts, the 10th, the 11th and the 12th read
   from the run of days, so the pierced and excess cases are the same
   instants an Ekadashi rule reads. The observance keeps its shape, which
-  groups, names and the bindings read. Its `decided_by` gains an
-  `EKADASHI` case carrying `pierced` and `excess`.
+  groups, names and the bindings read: its two days are the 11th's own
+  and the day after, its extents are read at the rule's window (shown,
+  deciding nothing), its margin is the Ekadashi's, and its `decidedBy`
+  is `{by: EKADASHI, pierced, excess}`.
 - `EkadashiDecision::NEPAL_SMARTA` is the householder's table with that
   one cell changed, cited as published-only (C2322). The pack's 26 named
   ekadashis take it through `Fit::Ekadashi`, 24 yearly in one table and
