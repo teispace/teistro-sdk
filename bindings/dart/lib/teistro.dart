@@ -1205,7 +1205,9 @@ ResolvedPlace _resolvedPlace(Map<String, Object?> json) {
     latitudeDeg: (json['latitudeDeg']! as num).toDouble(),
     longitudeDeg: (json['longitudeDeg']! as num).toDouble(),
     zone: json['zone'] as String?,
-    nautical: json['nautical'] as bool? ?? false,
+    // Written only when true, and read back so: a land place handed on
+    // to a request carries no `nautical` the reader would refuse.
+    nautical: json['nautical'] == true ? true : null,
     height:
         height == null
             ? null
