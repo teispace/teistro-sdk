@@ -11,7 +11,7 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-mod common;
+use crate::common;
 
 use common::{fixture, reading};
 use serde_json::Value;

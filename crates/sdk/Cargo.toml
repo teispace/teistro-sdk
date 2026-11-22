@@ -13,6 +13,9 @@ categories = ["science", "date-and-time"]
 # the maintainer, used here so the crate can be built and measured. A
 # rename is one `sed`; nothing outside this manifest spells it.
 publish = false
+# Every test file is a module of `tests/suite.rs` unless it is listed
+# below with a target of its own (see that file).
+autotests = false
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -196,59 +199,14 @@ harness = false
 required-features = ["builtin-ephemeris", "rectification"]
 
 [[test]]
-name = "sealing"
-required-features = ["builtin-ephemeris"]
+name = "suite"
+path = "tests/suite.rs"
 
 [[test]]
-name = "terrain_horizon"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "next"
-required-features = ["builtin-ephemeris"]
+name = "lazy_locales"
 
 [[test]]
 name = "occurrences"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "polar_day"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "month_margin"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "sentences"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "anniversaries"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "published"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "festival_meta"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "sait"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "disagreements"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "chart_disagreements"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
@@ -259,57 +217,18 @@ required-features = ["builtin-ephemeris"]
 name = "peak_memory"
 required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
-[[test]]
-name = "cells"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "changes"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "days_request"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "festival"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "festival_observer"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "samvatsara"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "year_rulers"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "jain"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "sankalpa"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "verify"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "receipt"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "geo"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "finders"
-required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
 [[bench]]
 name = "finders"
@@ -317,103 +236,7 @@ harness = false
 required-features = ["builtin-ephemeris", "chart", "muhurta"]
 
 [[test]]
-name = "ritu"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "eclipses"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "panchanga_reach"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "punya_kala"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "custom_ayanamsha"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "coverage_edges"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "festival_groups"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "ketaki"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
 name = "day_sky"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "sky_view"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "sky_pose"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "homa_ahuti"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "day_markers"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "turns"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "annual_chart"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "ashtakavarga"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "rules"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "plans"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "bhava_bala"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "dasha"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "render"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "shadbala"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "jaimini"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "varga_schemes"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "baseline_chara_karakas"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
@@ -425,144 +248,24 @@ name = "limb_oracle"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
-name = "moonrise"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "gochar"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "transit_centre"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "hits"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "sade_sati"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "dignities"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "time_lords"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "fixed_points"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "kp"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "prashna"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "rectify"
-required-features = ["builtin-ephemeris", "rectification"]
-
-[[test]]
-name = "ishta_devata"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
-name = "lalkitab"
-required-features = ["builtin-ephemeris", "lalkitab"]
-
-[[test]]
-name = "chart_zone"
-required-features = ["builtin-ephemeris", "tajika"]
-
-[[test]]
-name = "zone_requests"
-required-features = ["builtin-ephemeris", "full"]
-
-[[test]]
-name = "compose"
-required-features = ["builtin-ephemeris", "kp", "prashna", "tajika", "western"]
-
-[[test]]
-name = "pakshi"
-required-features = ["builtin-ephemeris", "pakshi"]
-
-[[test]]
-name = "remedies"
-required-features = ["builtin-ephemeris"]
-
-[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "threads"
-required-features = ["builtin-ephemeris", "chart"]
 
-[[test]]
-name = "vaiseshikamsa"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "dasha_phala"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "consumer_dasha"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "vimshopaka"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "progressions"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "outer_planets"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "western_aspects"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "synastry"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "declinations"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "antiscia"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "midpoints"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "composites"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "harmonics"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "returns"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "mundane"
-required-features = ["builtin-ephemeris", "western"]
 
 [[bench]]
 name = "mundane"
@@ -573,101 +276,29 @@ required-features = ["builtin-ephemeris", "western"]
 name = "immanuel"
 required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "sarvatobhadra"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "sidecar"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "dossier"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "lilith"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "tithi_pravesha"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "masa_pravesha"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "matching"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "naming"
-required-features = ["chart"]
 
-[[test]]
-name = "moment"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "twilight"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "printed_day"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "parana"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "parana_bar"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "anniversary"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "vrata_parana"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "mahadvadashi"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "gaudiya"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "festival_calendar"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "digest"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "ashauch"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "death_time"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "first_year"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "every_profile"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "western_houses"
-required-features = ["builtin-ephemeris"]
 
 [[example]]
 name = "annual_chart"
@@ -729,66 +360,18 @@ required-features = ["builtin-ephemeris"]
 name = "your_own_ephemeris"
 required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "rashifal"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "janma"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "research"
-required-features = ["builtin-ephemeris", "research"]
 
-[[test]]
-name = "vakya"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "tamil_nadu"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "assam"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "kerala"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "karnataka"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "telangana"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "gujarat"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "andhra_pradesh"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "uttar_pradesh"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "odisha"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "bihar"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "festival_rank"
-required-features = ["builtin-ephemeris"]
 
-[[test]]
-name = "nepal_gazette"
-required-features = ["builtin-ephemeris"]

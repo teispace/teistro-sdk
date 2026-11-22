@@ -14,7 +14,7 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-mod common;
+use crate::common;
 
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Readings, shipped};

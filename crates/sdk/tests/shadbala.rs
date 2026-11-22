@@ -11,7 +11,7 @@
     reason = "tests fail by panicking and index JSON by key"
 )]
 
-mod common;
+use crate::common;
 
 use common::{fixture, reading};
 use teistro::strength::ShadbalaRules;

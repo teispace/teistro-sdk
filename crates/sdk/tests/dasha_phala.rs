@@ -12,7 +12,7 @@
     reason = "tests fail by panicking, and the points are exact halves"
 )]
 
-mod common;
+use crate::common;
 
 use common::reading;
 use teistro::catalogue::{Dignity, Graha};
