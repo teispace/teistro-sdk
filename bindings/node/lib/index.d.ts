@@ -250,7 +250,6 @@ import type {
   PlaceNamesRequest,
   PlaceListing,
   PlaceKind,
-  Population,
   HarmonicRequest,
   HarshaRules,
   HitRequest,
@@ -8175,6 +8174,12 @@ export interface NamedPlace {
   readonly longitudeDeg: number;
   readonly population: Population | null;
   readonly parents: readonly ParentPlace[];
+}
+
+/** The people of a place, with how they were reckoned where known. */
+export interface Population {
+  readonly people: number;
+  readonly kind: 'COUNTED' | 'MODELLED' | null;
 }
 
 /** An admin unit above a place, coarse to fine. */
