@@ -123,7 +123,7 @@ A null here is a real answer and not a missing one — no war, no
 sankranti that day, no combustion orbs for a body that cannot be combust
 — which is why the field is written rather than skipped.
 
-## 7. The layer reads back, and 15 types do not derive it
+## 7. The layer reads back, and 16 types do not derive it
 
 A schema's most valuable consumer is the SDK itself: a stored document
 is worth validating precisely because something will try to read it
@@ -133,13 +133,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 7 | 6 |
 | `chart` | 19 | 16 |
-| `panchanga` | 194 | 189 |
+| `panchanga` | 198 | 192 |
 | `vargas` | 9 | 5 |
 | `state` | 12 | 12 |
 | `aspect` | 10 | 8 |
 | `points` | 5 | 5 |
 | `houses` | 5 | 5 |
-| **total** | **261** | **246** |
+| **total** | **265** | **249** |
 
 Each type that serialises without a derived reader, found where its
 derive names `Serialize` and not `Deserialize`, with how it is read
@@ -151,6 +151,7 @@ instead:
 | `chart` | `ChartAngles` | no reader |
 | `chart` | `Input` | private, only hashed |
 | `chart` | `BatchInput` | private, only hashed |
+| `panchanga` | `AnglesInput` | private, only hashed |
 | `panchanga` | `SankalpaInput` | private, only hashed |
 | `panchanga` | `AshauchInput` | private, only hashed |
 | `panchanga` | `HouseholdInput` | private, only hashed |
@@ -198,11 +199,11 @@ chart at all. It can now publish one and read it back.
 A schema's `enum` has to spell a member the way the document really
 writes it. Reading every `enum` and `const` in the document's own schema
 — a closed enum's members and a tagged union's tags, from whichever
-crate holds the value — 852 words are written:
+crate holds the value — 854 words are written:
 
 | spelt | words |
 |---|---|
-| as a key, `[A-Z][A-Z0-9_]*` | 852 |
+| as a key, `[A-Z][A-Z0-9_]*` | 854 |
 | otherwise | 0 |
 
 **Every one is a key**, so a consumer reading a document meets one
@@ -268,7 +269,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 45 of 185 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 246 types that serialise also derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 249 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5604 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5604 |

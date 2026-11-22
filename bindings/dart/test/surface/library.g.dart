@@ -1348,11 +1348,12 @@ final List<Surface> requests = [
   ], fields: (v) => [v.communities, v.fast, v.kind, v.names, v.optional, v.regions, v.significance, v.tradition]),
   Built<MetaFilter>('MetaFilter', MetaFilter.new, [
     Param('communities', ListOf(Scalar('String'), (items) => List<String>.from(items))),
+    Param('keys', ListOf(Scalar('String'), (items) => List<String>.from(items))),
     Param('kinds', ListOf(Named('FestivalKind'), (items) => List<FestivalKind>.from(items))),
     Param('minSignificance', Named('Significance')),
     Param('regions', ListOf(Scalar('String'), (items) => List<String>.from(items))),
     Param('traditions', ListOf(Named('Tradition'), (items) => List<Tradition>.from(items))),
-  ], fields: (v) => [v.communities, v.kinds, v.minSignificance, v.regions, v.traditions]),
+  ], fields: (v) => [v.communities, v.keys, v.kinds, v.minSignificance, v.regions, v.traditions]),
   KeySet<DayOrder>('DayOrder', DayOrder.values, (m) => m.key),
   Built<PublishedSet>('PublishedSet', PublishedSet.new, [
     Param('entries', ListOf(Named('PublishedEntry'), (items) => List<PublishedEntry>.from(items))),
@@ -2486,7 +2487,7 @@ final List<Surface> requests = [
   ], fields: (v) => [v.source, v.tier]),
   Built<Variant>('Variant', Variant.new, [
     Param('festival', Scalar('String')),
-    Param('observer', Named('Observer')),
+    Param('observer', Named('FestivalObserver')),
   ], fields: (v) => [v.festival, v.observer]),
   KeySet<SaitChoice>('SaitChoice', SaitChoice.values, (m) => m.key),
   Built<SaitRising>('SaitRising', SaitRising.new, [
@@ -2649,7 +2650,7 @@ final List<Surface> requests = [
   KeySet<EnemySign>('EnemySign', EnemySign.values, (m) => m.key),
   KeySet<OfficeOrder>('OfficeOrder', OfficeOrder.values, (m) => m.key),
   KeySet<SettingPart>('SettingPart', SettingPart.values, (m) => m.key),
-  KeySet<Observer>('Observer', Observer.values, (m) => m.key),
+  KeySet<FestivalObserver>('FestivalObserver', FestivalObserver.values, (m) => m.key),
   KeySet<RisingOf>('RisingOf', RisingOf.values, (m) => m.key),
   Sealed('SaitAvoid'),
   Built<SaitAvoidTithiStart>('SaitAvoidTithiStart', SaitAvoidTithiStart.new, [

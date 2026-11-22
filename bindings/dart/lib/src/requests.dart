@@ -6281,10 +6281,11 @@ final class MetaPatch extends _Request {
   List<Object?> get _fields => [communities, fast, kind, names, optional, regions, significance, tradition];
 }
 
-/// What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
+/// What a request keeps of its answer: a rule stands when its key is one of `keys`, if given, and, of each other list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
 final class MetaFilter extends _Request {
   const MetaFilter({
     this.communities,
+    this.keys,
     this.kinds,
     this.minSignificance,
     this.regions,
@@ -6293,6 +6294,9 @@ final class MetaFilter extends _Request {
 
   /// The communities kept.
   final List<String>? communities;
+
+  /// The rules kept, by key: a request narrowed to a festival reckons the rules its day is read from (the rite a parana follows, the rule it is barred with) and answers only these.
+  final List<String>? keys;
 
   /// The kinds kept.
   final List<FestivalKind>? kinds;
@@ -6309,6 +6313,7 @@ final class MetaFilter extends _Request {
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (communities case final communitiesValue?) 'communities': communitiesValue,
+    if (keys case final keysValue?) 'keys': keysValue,
     if (kinds case final kindsValue?) 'kinds': [for (final e0 in kindsValue) e0.key],
     if (minSignificance case final minSignificanceValue?) 'minSignificance': minSignificanceValue.key,
     if (regions case final regionsValue?) 'regions': regionsValue,
@@ -6316,7 +6321,7 @@ final class MetaFilter extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [communities, kinds, minSignificance, regions, traditions];
+  List<Object?> get _fields => [communities, keys, kinds, minSignificance, regions, traditions];
 }
 
 /// How a day's observances are listed (`03-design/festival-metadata.md` §7): a month grid's cell, `almanac.cells`.
@@ -14889,7 +14894,7 @@ final class Variant extends _Request {
   final String festival;
 
   /// Whose reading it is; never `EVERY`, which is no tradition.
-  final Observer observer;
+  final FestivalObserver observer;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -15916,7 +15921,7 @@ enum SettingPart implements _Keyed {
 }
 
 /// Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
-enum Observer implements _Keyed {
+enum FestivalObserver implements _Keyed {
   /// Every reading the request carries.
   every('EVERY'),
   /// The Smarta householder's: *Dharmasindhu*'s Ekadashi with its vedha at sunrise (pp. 11–12), and its Janmashtami, Rama Navami and Nrisimha jayanti.
@@ -15928,7 +15933,7 @@ enum Observer implements _Keyed {
   /// The Gaudiya Vaishnava's: *Hari Bhakti Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's reading where none is the Gaudiya's (C2142).
   gaudiya('GAUDIYA');
 
-  const Observer(this.key);
+  const FestivalObserver(this.key);
 
   /// The key the wire spells it with.
   @override

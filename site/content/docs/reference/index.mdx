@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 114 entry points over 30 structs and 192 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 121 entry points over 30 structs and 192 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 
@@ -45,6 +45,7 @@ ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 | [`ts_context_settings_json`](context/ts_context_settings_json) | The resolved settings as their canonical JSON document, allocated for the caller; free it with `ts_string_free`. |
 | [`ts_context_settings_hash`](context/ts_context_settings_hash) | The SHA-256 of the canonical settings document: the `settings_hash` every result's provenance carries. |
 | [`ts_context_explain_settings`](context/ts_context_explain_settings) | **Why each knob has its value** (`settings.explain`, `03-design/settings-and-profiles.md` §3.5), as canonical JSON: `{profile, settingsHash, knobs}`, each knob `{knob, value, layer, profile, citation, moves, effect}`. |
+| [`ts_context_coverage`](context/ts_context_coverage) | **What this context answers over** (SR-136, `03-design/coverage-edges.md` §5), as canonical JSON: `{ephemeris, bikramSambat, holidays}`. |
 | [`ts_context_diff_settings`](context/ts_context_diff_settings) | **Where two contexts' settings part** (`settings.diff`), as canonical JSON: `{profile, otherProfile, settingsHash, otherSettingsHash, knobs}`, each knob on which `context`'s settings and `other`'s differ as `{knob, value, otherValue, moves, effect}`, `moves` and `effect` as `ts_context_explain_settings` gives them, the note in `context`'s locale; no knobs when the two hash alike. |
 
 ### Key
@@ -104,6 +105,10 @@ ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 |---|---|
 | [`ts_geo_resolve`](geo/ts_geo_resolve) | A place resolved through the context's geo provider, answered as canonical JSON `{latitudeDeg, longitudeDeg, zone, height, admin, source}`: the IANA zone (or null), the ground height `{metres, source, resolutionM, datum}` (or null), the admin units holding the point coarse to fine, each `{level, code, name}` with its ISO 3166-1 (level 0) or ISO 3166-2 code, and the provider's `{name, version, dataVersion, tzdb}`. |
 | [`ts_geo_load`](geo/ts_geo_load) | Installs a geo table as the context's geo provider, in place of any it had, answering the table's source as canonical JSON `{name, version, dataVersion, tzdb}`. |
+| [`ts_geo_search`](geo/ts_geo_search) | The places matching a name, best first, as the context's geo provider ranks them, answered as canonical JSON: a list of `{place, score}`, each place `{id, name, nameLang, label, kind, level, code, latitudeDeg, longitudeDeg, population, parents}`. |
+| [`ts_geo_reverse`](geo/ts_geo_reverse) | The named places nearest a point and the admin units holding it, from the context's geo provider, answered as canonical JSON `{near, admin}`: `near` the nearest places, nearest first, each `{place, distanceM, bearingDeg, inside}`; `admin` the units holding the point coarse to fine, each a place as `ts_geo_search` answers one. |
+| [`ts_geo_names`](geo/ts_geo_names) | A place's names from the context's geo provider, answered as canonical JSON `{id, best, all}`: `all` every name, each `{text, lang, script, type, origin, machine}` (`origin` `REVIEWED` for a name a person corrected against a source), and `best` one `{asked, name}` per language asked, `name` null where the place has none in it. |
+| [`ts_geo_list`](geo/ts_geo_list) | The places of an admin unit from the context's geo provider, ranked by population (most first, a place with none after), answered as canonical JSON: a list of places as `ts_geo_search` answers them, each with `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`. |
 
 ### Locale engine
 
@@ -156,6 +161,8 @@ ABI version **3**, SDK **1.0.0-rc.4**, symbol prefix `ts_`.
 | [`ts_almanac_cells`](panchanga/ts_almanac_cells) | What a month grid prints of every date in a range, as sealed JSON (`03-design/month-cells.md`). |
 | [`ts_almanac_sky_view`](panchanga/ts_almanac_sky_view) | The sky at a place and an instant (`03-design/sky-view.md`), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_sky_pose`](panchanga/ts_almanac_sky_pose) | A device's camera pointed at the sky (`03-design/sky-pose.md`), answered with `{value, provenance}` as canonical JSON. |
+| [`ts_almanac_limb_angles`](panchanga/ts_almanac_limb_angles) | The Sun's and the Moon's sidereal longitudes at instants as the panchanga's limbs read them (SR-137, `03-design/panchanga-reach.md` §3), answered with `{value, provenance}` as canonical JSON. |
+| [`ts_almanac_blackouts`](panchanga/ts_almanac_blackouts) | The blackouts the Sun and the Moon make over a range of civil days by the context's profile (SR-138, `03-design/panchanga-reach.md` §2), answered with `{value, provenance}` as canonical JSON. |
 
 ### Naam
 

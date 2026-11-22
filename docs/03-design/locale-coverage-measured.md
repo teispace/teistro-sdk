@@ -6,59 +6,61 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 542 of 542 | 100.0% | 356 of 356 | 100.0% |
-| `hi-Deva-IN` | base | 532 of 542 | 98.2% | 343 of 356 | 96.3% |
-| `ne-Deva-NP` | strict | 542 of 542 | 100.0% | 356 of 356 | 100.0% |
-| `sa-Deva` | base | 531 of 542 | 98.0% | 340 of 356 | 95.5% |
-| `sa-Latn` | base | 531 of 542 | 98.0% | 340 of 356 | 95.5% |
+| `en-Latn` | strict | 671 of 671 | 100.0% | 362 of 362 | 100.0% |
+| `en-Latn-NP` | base | 0 of 671 | 0.0% | 0 of 362 | 0.0% |
+| `hi-Deva-IN` | base | 661 of 671 | 98.5% | 349 of 362 | 96.4% |
+| `ne-Deva-NP` | strict | 671 of 671 | 100.0% | 362 of 362 | 100.0% |
+| `sa-Deva` | base | 660 of 671 | 98.4% | 346 of 362 | 95.6% |
+| `sa-Latn` | base | 660 of 671 | 98.4% | 346 of 362 | 95.6% |
 
-542 members of 44 kinds, 356 messages.
+671 members of 45 kinds, 362 messages.
 
 ## By kind
 
-| kind | members | `en-Latn` | `hi-Deva-IN` | `ne-Deva-NP` | `sa-Deva` | `sa-Latn` |
-|---|---:|---:|---:|---:|---:|---:|
-| `avastha_baladi` | 5 | 5 | 5 | 5 | 5 | 5 |
-| `avastha_cheshta` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `avastha_deeptadi` | 9 | 9 | 9 | 9 | 9 | 9 |
-| `avastha_jagradadi` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `avastha_lajjitadi` | 6 | 6 | 6 | 6 | 6 | 6 |
-| `avastha_sayanadi` | 12 | 12 | 12 | 12 | 12 | 12 |
-| `ayana` | 2 | 2 | 2 | 2 | 2 | 2 |
-| `ayanamsha` | 47 | 47 | 47 | 47 | 47 | 47 |
-| `calendar` | 16 | 16 | 16 | 16 | 16 | 16 |
-| `chart_frame` | 4 | 4 | 4 | 4 | 4 | 4 |
-| `chart_kind` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `dasha_system` | 45 | 45 | 45 | 45 | 45 | 45 |
-| `day_marker` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
-| `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `era` | 13 | 13 | 3 | 13 | 2 | 2 |
-| `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `gowri` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `graha` | 12 | 12 | 12 | 12 | 12 | 12 |
-| `house_system` | 22 | 22 | 22 | 22 | 22 | 22 |
-| `kaala` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `karana` | 11 | 11 | 11 | 11 | 11 | 11 |
-| `masa` | 12 | 12 | 12 | 12 | 12 | 12 |
-| `muhurta_yoga` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `nadi` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `nakshatra` | 27 | 27 | 27 | 27 | 27 | 27 |
-| `nature` | 3 | 3 | 3 | 3 | 3 | 3 |
-| `paksha` | 2 | 2 | 2 | 2 | 2 | 2 |
-| `panchaka` | 5 | 5 | 5 | 5 | 5 | 5 |
-| `paya` | 4 | 4 | 4 | 4 | 4 | 4 |
-| `point` | 49 | 49 | 49 | 49 | 49 | 49 |
-| `rashi` | 12 | 12 | 12 | 12 | 12 | 12 |
-| `relationship` | 5 | 5 | 5 | 5 | 5 | 5 |
-| `ritu` | 6 | 6 | 6 | 6 | 6 | 6 |
-| `shiva_vasa` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `tithi` | 30 | 30 | 30 | 30 | 30 | 30 |
-| `tithi_class` | 5 | 5 | 5 | 5 | 5 | 5 |
-| `vaiseshikamsa` | 30 | 30 | 30 | 30 | 30 | 30 |
-| `vara` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `varga` | 21 | 21 | 21 | 21 | 21 | 21 |
-| `varna` | 5 | 5 | 5 | 5 | 5 | 5 |
-| `yoga` | 27 | 27 | 27 | 27 | 27 | 27 |
-| `yoni` | 14 | 14 | 14 | 14 | 14 | 14 |
+| kind | members | `en-Latn` | `en-Latn-NP` | `hi-Deva-IN` | `ne-Deva-NP` | `sa-Deva` | `sa-Latn` |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `avastha_baladi` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
+| `avastha_cheshta` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `avastha_deeptadi` | 9 | 9 | 0 | 9 | 9 | 9 | 9 |
+| `avastha_jagradadi` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `avastha_lajjitadi` | 6 | 6 | 0 | 6 | 6 | 6 | 6 |
+| `avastha_sayanadi` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
+| `ayana` | 2 | 2 | 0 | 2 | 2 | 2 | 2 |
+| `ayanamsha` | 48 | 48 | 0 | 48 | 48 | 48 | 48 |
+| `calendar` | 16 | 16 | 0 | 16 | 16 | 16 | 16 |
+| `chart_frame` | 4 | 4 | 0 | 4 | 4 | 4 | 4 |
+| `chart_kind` | 8 | 8 | 0 | 8 | 8 | 8 | 8 |
+| `choghadiya` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |
+| `dasha_system` | 45 | 45 | 0 | 45 | 45 | 45 | 45 |
+| `day_marker` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `dignity` | 11 | 11 | 0 | 11 | 11 | 11 | 11 |
+| `direction` | 8 | 8 | 0 | 8 | 8 | 8 | 8 |
+| `era` | 13 | 13 | 0 | 3 | 13 | 2 | 2 |
+| `gana` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `gowri` | 8 | 8 | 0 | 8 | 8 | 8 | 8 |
+| `graha` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
+| `house_system` | 22 | 22 | 0 | 22 | 22 | 22 | 22 |
+| `kaala` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `karana` | 11 | 11 | 0 | 11 | 11 | 11 | 11 |
+| `masa` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
+| `muhurta_yoga` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |
+| `nadi` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `nakshatra` | 27 | 27 | 0 | 27 | 27 | 27 | 27 |
+| `nature` | 3 | 3 | 0 | 3 | 3 | 3 | 3 |
+| `paksha` | 2 | 2 | 0 | 2 | 2 | 2 | 2 |
+| `panchaka` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
+| `paya` | 4 | 4 | 0 | 4 | 4 | 4 | 4 |
+| `point` | 49 | 49 | 0 | 49 | 49 | 49 | 49 |
+| `rashi` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
+| `relationship` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
+| `ritu` | 6 | 6 | 0 | 6 | 6 | 6 | 6 |
+| `shiva_vasa` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |
+| `star` | 128 | 128 | 0 | 128 | 128 | 128 | 128 |
+| `tithi` | 30 | 30 | 0 | 30 | 30 | 30 | 30 |
+| `tithi_class` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
+| `vaiseshikamsa` | 30 | 30 | 0 | 30 | 30 | 30 | 30 |
+| `vara` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |
+| `varga` | 21 | 21 | 0 | 21 | 21 | 21 | 21 |
+| `varna` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
+| `yoga` | 27 | 27 | 0 | 27 | 27 | 27 | 27 |
+| `yoni` | 14 | 14 | 0 | 14 | 14 | 14 | 14 |

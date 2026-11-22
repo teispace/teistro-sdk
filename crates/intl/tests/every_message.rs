@@ -6,7 +6,7 @@
 #![allow(clippy::expect_used, reason = "a test fails by panicking")]
 
 use teistro_intl::source::Tree;
-use teistro_intl::{Intl, TypedMessage, sdk_root};
+use teistro_intl::{Intl, TypedMessage};
 
 /// Renders `message`; one naming no entity, whose text the SDK's
 /// sources give, must render with no warning.
@@ -25,9 +25,9 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 356 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 362 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
-    let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+    let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
     renders(&intl, &teistro_intl::messages::sdk::amount::inr::Major { count: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::amount::inr::Minor { count: 2 }, true);
@@ -238,7 +238,12 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::calendar::duration::HoursMinutes { seconds: 2.5 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::duration::HoursMinutesSeconds { seconds: 2.5 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::duration::Minute { n: 2.5 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::duration::Month { n: 2.5 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::duration::Second { n: 2.5 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::duration::Week { n: 2.5 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::duration::WeeksDays { days: 2.5 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::duration::Year { n: 2.5 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::duration::YearsMonthsDays { days: 2.5, months: 2.5, years: 2.5 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::ghati::Long { ghati: 2, pala: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::ghati::Numeric { ghati: 2, pala: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::LunarMonth {
@@ -645,6 +650,7 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Horizon, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Sunrise, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::festivals::Observer, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Ayanamsha, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::AyanamshaBasis, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::frame::Centre, true);

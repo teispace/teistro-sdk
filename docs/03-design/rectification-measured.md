@@ -7,8 +7,7 @@ regenerates this page and fails on any difference.
 Each recorded birth's day, sunrise to the next sunrise, is narrowed
 under `conformance-baseline` by the purifier of BPHS ch. 2 vv. 67–78
 (`rectification.md`). A reading keeps a run when one of its clauses
-holds there. 54 days were narrowed; refused: `c048-kathmandu-2399-12-30`
-(SUN at JD 2597641.2629888887 UT1: the provider answered OutOfRange).
+holds there. 55 days were narrowed.
 
 ## How much of a day each reading keeps (X8)
 
@@ -20,15 +19,15 @@ Whether trusted birth times survive the bar waits for a corpus of them.
 
 | reading | kept | least kept day | most kept day | recorded instants kept |
 |---|---|---|---|---|
-| all three, with v. 76 | 86.5% | 62.5% | 100.0% | 46 of 54 (85.2%) |
-| all three, without v. 76 | 58.7% | 43.7% | 69.2% | 34 of 54 (63.0%) |
-| the pranapada alone | 25.0% | 24.1% | 26.0% | 16 of 54 (29.6%) |
-| Gulika alone, with v. 76 | 75.7% | 48.4% | 100.0% | 37 of 54 (68.5%) |
-| Gulika alone, without v. 76 | 27.0% | 16.4% | 34.3% | 11 of 54 (20.4%) |
-| the Moon alone | 25.1% | 20.4% | 37.6% | 10 of 54 (18.5%) |
-| the pranapada alone, the printed reading | 25.0% | 23.7% | 26.0% | 10 of 54 (18.5%) |
-| the pranapada alone, the SDK's point | 25.0% | 21.7% | 30.5% | 15 of 54 (27.8%) |
-| Gulika alone, with v. 76, at the start of Saturn's eighth | 73.8% | 48.6% | 100.0% | 40 of 54 (74.1%) |
+| all three, with v. 76 | 86.4% | 62.5% | 100.0% | 47 of 55 (85.5%) |
+| all three, without v. 76 | 58.8% | 43.7% | 69.2% | 35 of 55 (63.6%) |
+| the pranapada alone | 25.0% | 24.1% | 26.0% | 17 of 55 (30.9%) |
+| Gulika alone, with v. 76 | 75.2% | 48.4% | 100.0% | 37 of 55 (67.3%) |
+| Gulika alone, without v. 76 | 27.0% | 16.4% | 34.3% | 11 of 55 (20.0%) |
+| the Moon alone | 25.1% | 20.4% | 37.6% | 10 of 55 (18.2%) |
+| the pranapada alone, the printed reading | 25.0% | 23.7% | 26.0% | 10 of 55 (18.2%) |
+| the pranapada alone, the SDK's point | 25.1% | 21.7% | 30.5% | 15 of 55 (27.3%) |
+| Gulika alone, with v. 76, at the start of Saturn's eighth | 73.8% | 48.6% | 100.0% | 41 of 55 (74.5%) |
 
 ## The verse's pranapada and the SDK's point (X2)
 

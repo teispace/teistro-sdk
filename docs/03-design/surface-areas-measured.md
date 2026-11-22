@@ -12,10 +12,10 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 |---|---|---|
 | a boundary module a consumer reaches is reached from one area | **holds** | 0 of 22 disagree; so no operation can be looked for under two names |
 | every area holds an operation that reaches the boundary | **holds** | 0 of 14 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 100 disagree; which is what the namespace is for |
+| no operation's name repeats its own area's | **holds** | 0 of 106 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 30 disagree; unreached: `blob`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 36 of 114 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_sankalpa_words`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_occurrences`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_almanac_cells`, `ts_almanac_sky_view`, `ts_almanac_sky_pose`, `ts_matching_band`, `ts_chart_relocated`, `ts_chart_astrocartography`, `ts_chart_mundane`, `ts_almanac_elect`, `ts_almanac_observance`, `ts_almanac_people`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | falsified | 100 of 447 disagree; unlisted: `(root).with_settings by parity.mjs`, `(root).explain_settings by parity.mjs`, `(root).diff_settings by parity.mjs`, `(root).record by parity.mjs`, `(root).recorded_settings by parity.mjs`, `intl.lookup_locale by parity.mjs`, `intl.in_words by parity.mjs`, `intl.time by parity.mjs`, `intl.date by parity.mjs`, `intl.lexicon by parity.mjs`, `intl.lookup by parity.mjs`, `intl.dates by parity.mjs`, `almanac.household by parity.mjs`, `almanac.ashauch_kin by parity.mjs`, `almanac.ashauch_rite by parity.mjs`, `almanac.death_time by parity.mjs`, `almanac.sky_view by parity.mjs`, `almanac.sky_pose by parity.mjs`, `almanac.festival_pack by parity.mjs`, `almanac.elect by parity.mjs`, `almanac.observance by parity.mjs`, `almanac.people by parity.mjs`, `verify.claims by parity.mjs`, `verify.issue by parity.mjs`, `verify.receipt by parity.mjs`, `(root).with_settings by parity.dart`, `(root).explain_settings by parity.dart`, `(root).diff_settings by parity.dart`, `(root).record by parity.dart`, `(root).recorded_settings by parity.dart`, `intl.lookup_locale by parity.dart`, `intl.in_words by parity.dart`, `intl.time by parity.dart`, `intl.date by parity.dart`, `intl.lexicon by parity.dart`, `intl.lookup by parity.dart`, `intl.dates by parity.dart`, `almanac.household by parity.dart`, `almanac.ashauch_kin by parity.dart`, `almanac.ashauch_rite by parity.dart`, `almanac.death_time by parity.dart`, `almanac.sky_view by parity.dart`, `almanac.sky_pose by parity.dart`, `almanac.festival_pack by parity.dart`, `almanac.elect by parity.dart`, `almanac.observance by parity.dart`, `almanac.people by parity.dart`, `verify.claims by parity.dart`, `verify.issue by parity.dart`, `verify.receipt by parity.dart`, `(root).with_settings by parity.py`, `(root).explain_settings by parity.py`, `(root).diff_settings by parity.py`, `(root).record by parity.py`, `(root).recorded_settings by parity.py`, `intl.lookup_locale by parity.py`, `intl.in_words by parity.py`, `intl.time by parity.py`, `intl.date by parity.py`, `intl.lexicon by parity.py`, `intl.lookup by parity.py`, `intl.dates by parity.py`, `almanac.household by parity.py`, `almanac.ashauch_kin by parity.py`, `almanac.ashauch_rite by parity.py`, `almanac.death_time by parity.py`, `almanac.sky_view by parity.py`, `almanac.sky_pose by parity.py`, `almanac.festival_pack by parity.py`, `almanac.elect by parity.py`, `almanac.observance by parity.py`, `almanac.people by parity.py`, `verify.claims by parity.py`, `verify.issue by parity.py`, `verify.receipt by parity.py`, `(root).with_settings by parity.rs`, `(root).explain_settings by parity.rs`, `(root).diff_settings by parity.rs`, `(root).record by parity.rs`, `(root).recorded_settings by parity.rs`, `intl.lookup_locale by parity.rs`, `intl.in_words by parity.rs`, `intl.time by parity.rs`, `intl.date by parity.rs`, `intl.lexicon by parity.rs`, `intl.lookup by parity.rs`, `intl.dates by parity.rs`, `almanac.household by parity.rs`, `almanac.ashauch_kin by parity.rs`, `almanac.ashauch_rite by parity.rs`, `almanac.death_time by parity.rs`, `almanac.sky_view by parity.rs`, `almanac.sky_pose by parity.rs`, `almanac.festival_pack by parity.rs`, `almanac.elect by parity.rs`, `almanac.observance by parity.rs`, `almanac.people by parity.rs`, `verify.claims by parity.rs`, `verify.issue by parity.rs`, `verify.receipt by parity.rs` |
+| an entry point's name already carries its own module | falsified | 38 of 121 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_sankalpa_words`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_occurrences`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_almanac_cells`, `ts_almanac_sky_view`, `ts_almanac_sky_pose`, `ts_almanac_limb_angles`, `ts_almanac_blackouts`, `ts_matching_band`, `ts_chart_relocated`, `ts_chart_astrocartography`, `ts_chart_mundane`, `ts_almanac_elect`, `ts_almanac_observance`, `ts_almanac_people`, `ts_context_new_with_provider` |
+| every operation the layer declares is listed by every parity runner | falsified | 112 of 475 disagree; unlisted: `(root).with_settings by parity.mjs`, `(root).explain_settings by parity.mjs`, `(root).coverage by parity.mjs`, `(root).diff_settings by parity.mjs`, `(root).record by parity.mjs`, `(root).recorded_settings by parity.mjs`, `intl.lookup_locale by parity.mjs`, `intl.in_words by parity.mjs`, `intl.time by parity.mjs`, `intl.date by parity.mjs`, `intl.lexicon by parity.mjs`, `intl.lookup by parity.mjs`, `intl.dates by parity.mjs`, `almanac.household by parity.mjs`, `almanac.ashauch_kin by parity.mjs`, `almanac.ashauch_rite by parity.mjs`, `almanac.death_time by parity.mjs`, `almanac.sky_view by parity.mjs`, `almanac.sky_pose by parity.mjs`, `almanac.limb_angles by parity.mjs`, `almanac.blackouts by parity.mjs`, `almanac.festival_pack by parity.mjs`, `almanac.elect by parity.mjs`, `almanac.observance by parity.mjs`, `almanac.people by parity.mjs`, `verify.claims by parity.mjs`, `verify.issue by parity.mjs`, `verify.receipt by parity.mjs`, `(root).with_settings by parity.dart`, `(root).explain_settings by parity.dart`, `(root).coverage by parity.dart`, `(root).diff_settings by parity.dart`, `(root).record by parity.dart`, `(root).recorded_settings by parity.dart`, `intl.lookup_locale by parity.dart`, `intl.in_words by parity.dart`, `intl.time by parity.dart`, `intl.date by parity.dart`, `intl.lexicon by parity.dart`, `intl.lookup by parity.dart`, `intl.dates by parity.dart`, `almanac.household by parity.dart`, `almanac.ashauch_kin by parity.dart`, `almanac.ashauch_rite by parity.dart`, `almanac.death_time by parity.dart`, `almanac.sky_view by parity.dart`, `almanac.sky_pose by parity.dart`, `almanac.limb_angles by parity.dart`, `almanac.blackouts by parity.dart`, `almanac.festival_pack by parity.dart`, `almanac.elect by parity.dart`, `almanac.observance by parity.dart`, `almanac.people by parity.dart`, `verify.claims by parity.dart`, `verify.issue by parity.dart`, `verify.receipt by parity.dart`, `(root).with_settings by parity.py`, `(root).explain_settings by parity.py`, `(root).coverage by parity.py`, `(root).diff_settings by parity.py`, `(root).record by parity.py`, `(root).recorded_settings by parity.py`, `intl.lookup_locale by parity.py`, `intl.in_words by parity.py`, `intl.time by parity.py`, `intl.date by parity.py`, `intl.lexicon by parity.py`, `intl.lookup by parity.py`, `intl.dates by parity.py`, `almanac.household by parity.py`, `almanac.ashauch_kin by parity.py`, `almanac.ashauch_rite by parity.py`, `almanac.death_time by parity.py`, `almanac.sky_view by parity.py`, `almanac.sky_pose by parity.py`, `almanac.limb_angles by parity.py`, `almanac.blackouts by parity.py`, `almanac.festival_pack by parity.py`, `almanac.elect by parity.py`, `almanac.observance by parity.py`, `almanac.people by parity.py`, `verify.claims by parity.py`, `verify.issue by parity.py`, `verify.receipt by parity.py`, `(root).with_settings by parity.rs`, `(root).explain_settings by parity.rs`, `(root).coverage by parity.rs`, `(root).diff_settings by parity.rs`, `(root).record by parity.rs`, `(root).recorded_settings by parity.rs`, `intl.lookup_locale by parity.rs`, `intl.in_words by parity.rs`, `intl.time by parity.rs`, `intl.date by parity.rs`, `intl.lexicon by parity.rs`, `intl.lookup by parity.rs`, `intl.dates by parity.rs`, `almanac.household by parity.rs`, `almanac.ashauch_kin by parity.rs`, `almanac.ashauch_rite by parity.rs`, `almanac.death_time by parity.rs`, `almanac.sky_view by parity.rs`, `almanac.sky_pose by parity.rs`, `almanac.limb_angles by parity.rs`, `almanac.blackouts by parity.rs`, `almanac.festival_pack by parity.rs`, `almanac.elect by parity.rs`, `almanac.observance by parity.rs`, `almanac.people by parity.rs`, `verify.claims by parity.rs`, `verify.issue by parity.rs`, `verify.receipt by parity.rs` |
 | every area the layer wires is named by the site's guide, and no other | falsified | 1 of 14 disagree; not on the page: `geo` |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
@@ -28,11 +28,11 @@ The unreached modules are `blob`, `lib`, `provider`, `string`. 4 of them are the
 
 1 is an exception **declared in [`surface-areas.md`](surface-areas.md)** and still counted here for the same reason: `ts_context_new_with_provider`. It belongs to `context`'s family by the name a consumer calls and to `provider`'s by what it depends on, and the name that should read well is the one a consumer calls.
 
-The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts_almanac_observance`, `ts_almanac_people`, `ts_chart_relocated`, `ts_chart_astrocartography`, `ts_chart_mundane`, `ts_matching_band`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_sankalpa_words`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_occurrences`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_almanac_cells`, `ts_almanac_sky_view`, `ts_almanac_sky_pose`.
+The remaining 31 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts_almanac_observance`, `ts_almanac_people`, `ts_chart_relocated`, `ts_chart_astrocartography`, `ts_chart_mundane`, `ts_matching_band`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_sankalpa_words`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_occurrences`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_almanac_cells`, `ts_almanac_sky_view`, `ts_almanac_sky_pose`, `ts_almanac_limb_angles`, `ts_almanac_blackouts`.
 
 ## The areas the layer wires
 
-**14 areas over 100 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**14 areas over 106 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -45,6 +45,7 @@ The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts
 | `settingsHash` | `ts_context_settings_hash` (context) |
 | `withSettings` | `ts_context_derive` (context) |
 | `explainSettings` | `ts_context_explain_settings` (context) |
+| `coverage` | `ts_context_coverage` (context) |
 | `diffSettings` | `ts_context_diff_settings` (context) |
 | `record` | `ts_record_answer` (record) |
 | `recordedSettings` | `ts_recorded_settings` (recorded) |
@@ -109,6 +110,10 @@ The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts
 |---|---|
 | `load` | `ts_geo_load` (geo) |
 | `resolve` | `ts_geo_resolve` (geo) |
+| `search` | `ts_geo_search` (geo) |
+| `reverse` | `ts_geo_reverse` (geo) |
+| `names` | `ts_geo_names` (geo) |
+| `list` | `ts_geo_list` (geo) |
 
 ### `sdk.frame` — `FrameArea`
 
@@ -151,6 +156,8 @@ The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts
 | `deathTime` | `ts_almanac_death_time` (panchanga) |
 | `skyView` | `ts_almanac_sky_view` (panchanga) |
 | `skyPose` | `ts_almanac_sky_pose` (panchanga) |
+| `limbAngles` | `ts_almanac_limb_angles` (panchanga) |
+| `blackouts` | `ts_almanac_blackouts` (panchanga) |
 | `firstYear` | `ts_almanac_first_year` (panchanga), `ts_navatara` (navatara) |
 | `navatara` | `ts_navatara` (navatara), `ts_aayadi` (aayadi) |
 | `aayadi` | `ts_aayadi` (aayadi) |
@@ -229,11 +236,11 @@ The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts
 | `blob` | 1 | — |
 | `calendar` | 12 | `calendar` |
 | `chart` | 3 | `chart` |
-| `context` | 10 | `(root)` |
+| `context` | 11 | `(root)` |
 | `ephemeris` | 2 | `engine` |
 | `finders` | 3 | `almanac` |
 | `frame` | 3 | `(root)`, `frame` |
-| `geo` | 2 | `geo` |
+| `geo` | 6 | `geo` |
 | `intl` | 14 | `intl` |
 | `key` | 2 | `keys` |
 | `lib` | 6 | — |
@@ -244,7 +251,7 @@ The remaining 29 are not accounted for: `ts_error_free`, `ts_almanac_elect`, `ts
 | `navatara` | 1 | `almanac` |
 | `numerology` | 1 | `numerology` |
 | `pakshi` | 1 | `almanac` |
-| `panchanga` | 22 | `almanac` |
+| `panchanga` | 24 | `almanac` |
 | `positions` | 1 | `(root)` |
 | `provider` | 3 | — |
 | `published` | 1 | `almanac` |

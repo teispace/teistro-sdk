@@ -149,6 +149,9 @@
       "marginalMonthMinutes": "Ke māsāḥ sīmāntāḥ iti cihnitāḥ, tat teṣāṃ nirṇāyakakṣaṇasya sīmāyāḥ sāmīpyena cālayati; na kāpi dināṅkaḥ calati",
       "kiratYele": "Pratyekena dināṅkena dhṛtaṃ kirātayelesaṃvadvarṣaṃ gaṇanayoḥ madhye 1281 varṣaiḥ cālayati"
     },
+    "festivals": {
+      "observer": "Yatra anurodhaḥ utsavasya dvau vā adhikān vā pāṭhān vahati tatra uttaraṃ kaṃ pāṭhaṃ rakṣati iti parivartayati: tasyāḥ paramparāyāḥ svam; na ko'pi divasaḥ calati"
+    },
     "provider": {
       "overrides": "Yatra pañcāṅgayantraṃ svakāryānvayanaṃ dadāti tatra kasya uttaraṃ pravartate iti parivartayati: antyāṅkeṣu saṅkhyāḥ",
       "tier": "Antarnihitasya pañcāṅgayantrasya śuddhiṃ parivartayati: candraṃ prāyaḥ ekayā vikalayā",

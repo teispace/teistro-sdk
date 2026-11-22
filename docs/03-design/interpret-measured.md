@@ -244,6 +244,7 @@ a frame around **slots**, and a slot is named in every shipped locale
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
 | `en-Latn` | `strict` | 2449 of 2449 | 0 of 2449 |
+| `en-Latn-NP` | `base` | 0 of 2449 | 0 of 2449 |
 | `hi-Deva-IN` | `base` | 2449 of 2449 | 2175 of 2449 |
 | `ne-Deva-NP` | `strict` | 2449 of 2449 | 2175 of 2449 |
 | `sa-Deva` | `base` | 1693 of 2449 | 2163 of 2449 |
@@ -415,14 +416,14 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 303 messages to read, 53 that render a value and
+**`ne-Deva-NP`** — 307 messages to read, 55 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
 |---|---:|
 | `sdk.amount` | 6 |
 | `sdk.aspect` | 2 |
-| `sdk.calendar` | 66 |
+| `sdk.calendar` | 69 |
 | `sdk.condition` | 11 |
 | `sdk.day` | 18 |
 | `sdk.karaka` | 2 |
@@ -433,7 +434,7 @@ need no reading.
 | `sdk.reason` | 37 |
 | `sdk.rite` | 13 |
 | `sdk.sankalpa` | 5 |
-| `sdk.settings` | 126 |
+| `sdk.settings` | 127 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —
@@ -442,6 +443,10 @@ so their share of the sign-off is the **names**, held by
 vetted source. `hi-Deva-IN` is one of them, which is worth saying
 plainly: the roadmap asks for `hi` sign-off and there is not a sentence
 in it to sign off.
+
+`en-Latn-NP` is the base language as a region writes it (its digits and
+grouping), every word the base locale's, so there is nothing of its own
+to sign off or translate.
 
 ### The job itself, and it is one command
 
@@ -457,10 +462,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 4649 | 71 |
-| `ne-Deva-NP` | 4649 | 8 |
-| `sa-Deva` | 4649 | 118 |
-| `sa-Latn` | 4649 | 118 |
+| `hi-Deva-IN` | 4714 | 71 |
+| `ne-Deva-NP` | 4714 | 8 |
+| `sa-Deva` | 4714 | 118 |
+| `sa-Latn` | 4714 | 118 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

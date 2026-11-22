@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 /**
  * Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
  */
-public enum Observer implements RequestJson {
+public enum FestivalObserver implements RequestJson {
     /**
      * Every reading the request carries.
      */
@@ -30,7 +30,7 @@ public enum Observer implements RequestJson {
 
     private final String key;
 
-    Observer(String key) {
+    FestivalObserver(String key) {
         this.key = key;
     }
 
@@ -49,8 +49,8 @@ public enum Observer implements RequestJson {
      * @param key the key
      * @return the member
      */
-    public static java.util.Optional<Observer> byKey(String key) {
-        for (Observer member : values()) {
+    public static java.util.Optional<FestivalObserver> byKey(String key) {
+        for (FestivalObserver member : values()) {
             if (member.key.equals(key)) {
                 return java.util.Optional.of(member);
             }
@@ -65,8 +65,8 @@ public enum Observer implements RequestJson {
      * @return the member
      * @throws IllegalArgumentException for a key the SDK does not read
      */
-    public static Observer of(Object raw) {
-        return Read.member(raw, "Observer", Observer::byKey);
+    public static FestivalObserver of(Object raw) {
+        return Read.member(raw, "FestivalObserver", FestivalObserver::byKey);
     }
 
     @Override

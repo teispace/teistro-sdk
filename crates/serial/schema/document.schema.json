@@ -1958,6 +1958,26 @@
         }
       ]
     },
+    "Clipped": {
+      "description": "Which ends of a span the coverage cut: the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both. The cut end is the coverage's edge and **not** the member's own; the member itself is the one the covered part names.",
+      "oneOf": [
+        {
+          "const": "START",
+          "description": "It began before the coverage: its start is the coverage's first instant.",
+          "type": "string"
+        },
+        {
+          "const": "END",
+          "description": "It outlasts the coverage: its end is the coverage's last instant.",
+          "type": "string"
+        },
+        {
+          "const": "BOTH",
+          "description": "Both.",
+          "type": "string"
+        }
+      ]
+    },
     "ClockEra": {
       "description": "Which rules produced an offset.",
       "oneOf": [
@@ -2539,6 +2559,17 @@
     "DayMarkerSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -3813,6 +3844,17 @@
     "GrahaSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -4658,6 +4700,17 @@
     "KaranaSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -4982,6 +5035,17 @@
     "LocalDay": {
       "description": "A local day.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "`END` when the next sunrise lies past the ephemeris's coverage (SR-136, C2244): `next_sunrise` is then the coverage's last instant and not a sunrise, the day's night is not known, and what divides it is left out of the day. The last civil day of the coverage is such a day wherever its next sunrise falls after the coverage ends. Absent on every other day, and then left out of its document."
+        },
         "convention": {
           "$ref": "#/$defs/SunriseConvention",
           "description": "The sunrise convention the arc was reckoned by."
@@ -5578,6 +5642,17 @@
     "NakshatraSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -5959,6 +6034,17 @@
     "PanchakaSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -6157,6 +6243,17 @@
         "amanta": {
           "$ref": "#/$defs/Masa",
           "description": "The amanta month: new moon to new moon."
+        },
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which of the month's new moons fell outside the ephemeris's coverage (SR-136, C2246): its name and kind were then read from the edge, and it has no `margin`. Absent on every month whose new moons were both computed."
         },
         "convention": {
           "$ref": "#/$defs/LunarMonth",
@@ -7079,6 +7176,17 @@
     "RashiSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -7590,6 +7698,17 @@
     "ShivaVasaSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -8652,6 +8771,17 @@
     "TithiSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
@@ -9541,6 +9671,17 @@
     "YogaSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
+        "clipped": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Clipped"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which ends of `whole` the ephemeris's coverage cut (SR-136, C2242): the member began before the first instant the ephemeris answers (`START`), outlasts the last (`END`), or both, and that end of `whole` is the coverage's edge rather than the member's own. The member is the one the covered part names. Absent on a span the coverage did not cut, and then left out of the day's document."
+        },
         "inside": {
           "$ref": "#/$defs/Interval",
           "description": "The part of it inside the day: what an almanac row prints."
