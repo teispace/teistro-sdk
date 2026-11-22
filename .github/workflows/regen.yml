@@ -64,9 +64,12 @@ jobs:
           VERSION: ${{ inputs.version }}
         # The lock takes the members' new version, and the tasks are built
         # again: the SDK they link names its version in every provenance.
+        # The fuzz workspace's lock names the SDK's crates too; resolving it
+        # takes their new version and moves nothing else.
         run: |
           ./target/debug/xtask version "$VERSION"
           cargo update --workspace
+          cargo metadata --manifest-path fuzz/Cargo.toml --format-version 1 > /dev/null
           cargo build -p xtask
       - name: Run every generator
         run: |
