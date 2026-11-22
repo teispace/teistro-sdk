@@ -65,7 +65,10 @@ jobs:
           exit $failed
       - name: Record the patch
         if: ${{ !cancelled() }}
-        run: git diff --binary -- . ':!fixtures' > generate.patch
+        # New files are marked intent-to-add, or the diff would leave them out.
+        run: |
+          git ls-files -z --others --exclude-standard | xargs -0 -r git add -N --
+          git diff --binary -- . ':!fixtures' > generate.patch
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -114,10 +117,12 @@ jobs:
             i=$((i + 1))
             [ $((i % 4)) = "$SHARD" ] || continue
             out=$(./target/debug/xtask "$g" 2>&1 < /dev/null) && continue
+            # shellcheck disable=SC2016 # the backtick is the message's, matched literally
             while read -r p; do
               echo "regenerate $p (for $g)"
-              ./target/debug/xtask "$p" > /dev/null 2>&1 < /dev/null || echo "::warning title=xtask $p::rc=$?"
-            done < <(echo "$out" | grep -oE 'what `cargo xtask [a-z0-9-]+' | sed 's/.*xtask //' | sort -u)
+              # shellcheck disable=SC2086 # a generator's arguments split on purpose
+              ./target/debug/xtask $p > /dev/null 2>&1 < /dev/null || echo "::warning title=xtask $p::rc=$?"
+            done < <(echo "$out" | grep -oE 'what `cargo xtask [^`]+' | sed 's/.*cargo xtask //' | sort -u)
             out=$(./target/debug/xtask "$g" 2>&1 < /dev/null) && continue
             bad=$((bad + 1))
             echo "::error title=$g::$(echo "$out" | grep -E '^(FAIL|error)|line [0-9]+:' | head -4 | tr '\n' ' ')"
@@ -126,7 +131,9 @@ jobs:
           echo "$bad check(s) still failing after regeneration"
       - name: Record the patch
         if: ${{ !cancelled() }}
-        run: git diff --binary -- . ':!fixtures' > sweep-${{ matrix.shard }}.patch
+        run: |
+          git ls-files -z --others --exclude-standard | xargs -0 -r git add -N --
+          git diff --binary -- . ':!fixtures' > sweep-${{ matrix.shard }}.patch
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
