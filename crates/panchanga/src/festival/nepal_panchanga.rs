@@ -43,7 +43,7 @@
 //! The pradosha fast and the weekday fasts are kept in every month, the
 //! adhika included, on a day of either paksha (§3.4) or the new moon.
 
-use teistro_core::catalogue::{Calendar, Masa, Nakshatra, Paksha, Tithi, Vara};
+use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
 use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
@@ -2032,19 +2032,6 @@ const EVERY_MONTH_BY_TEXT: [(&str, Occurs, Fit, &str); 3] = [
     ),
 ];
 
-/// The days kept on a nakshatra in a lunar month: key, month, what is
-/// kept, fit, and where the days are printed.
-const ON_A_STAR: [(&str, Masa, Occurs, Fit, &str); 1] = [(
-    "RAMANUJACHARYA_JAYANTI",
-    Masa::Vaishakha,
-    Occurs::Nakshatra {
-        nakshatra: Nakshatra::Ardra,
-        paksha: Paksha::Shukla,
-    },
-    Fit::Udaya,
-    "Nepal's calendars print श्री रामानुजाचार्य जयन्ती on Ardra in Vaishakha's bright half, every year of VS 2076 to 2083 they print it, 2021's on 16 May where Tamil Chittirai's Ardra was 18 April (C2330); the south keeps Thiruvathirai in Chittirai (`INDIA_KARNATAKA`, C1323)",
-)];
-
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
 const SAME_DAY: [(&str, &str, &str); 29] = [
@@ -2326,9 +2313,6 @@ impl FestivalRule {
         let by_text = BY_TEXT.iter().map(|&(key, month, tithi, fit, read)| {
             (key, Some(month), tithi.into(), fit, read, "the text's rule")
         });
-        let on_a_star = ON_A_STAR.iter().map(|&(key, month, occurs, fit, printed)| {
-            (key, Some(month), occurs, fit, printed, "fitted")
-        });
         yearly
             .chain(at_sunrise)
             .chain(ekadashis)
@@ -2336,7 +2320,6 @@ impl FestivalRule {
             .chain(monthly)
             .chain(monthly_by_text)
             .chain(by_text)
-            .chain(on_a_star)
             .map(|(key, month, occurs, fit, printed, how)| FestivalRule {
                 barred: barred(key),
                 ..fit.rule(

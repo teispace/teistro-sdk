@@ -575,7 +575,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1665,
+            derived.entities, 1672,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -597,7 +597,8 @@ mod tests {
              1473 until the text terms of 28 kinds (SR-128), 1622 until the Kirat Yele Sambat, 1623 until Ketaki's ayanamsha, \
              1624 until the twenty-one names of Nepal's festival days (SR-145), \
              1645 until the sankrantis' thirteen month names and Nepal's six names for four shared days (C2312, C2314, C2315), \
-             1664 until the sighted Hijri calendar"
+             1664 until the sighted Hijri calendar, \
+             1665 until Nepal's darsha shraddha, two ashtami vratas and four days kept on a festival's day"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
