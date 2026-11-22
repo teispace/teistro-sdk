@@ -570,7 +570,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         Masa::Bhadrapada,
         Tithi::KrishnaChaturdashi,
         Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध; an ekoddishta, decided at madhyahna (Dharmasindhu pp. 63, 266; Nirnayasindhu p. 310) (rc.8 audit)",
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध; an ekoddishta, decided at madhyahna (Dharmasindhu p. 63; Nirnayasindhu p. 310) (rc.8 audit)",
     ),
     (
         "AMAVASYA_SHRADDHA",
