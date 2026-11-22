@@ -1996,7 +1996,9 @@ for (const [name, rules, published, hijriOffset, span, groups] of [
         ? `guard:${decided.index}`
         : decided.by === 'AFTER'
           ? `after:${decided.rule}:${decided.days}`
-          : 'otherwise';
+          : decided.by === 'EKADASHI'
+            ? `ekadashi:${decided.pierced ? 'pierced' : 'pure'}:${decided.excess}`
+            : 'otherwise';
     const [earlier, later] = observance.extents;
     put(
       key(`-${k}`),

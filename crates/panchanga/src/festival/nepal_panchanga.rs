@@ -47,8 +47,8 @@ use teistro_core::catalogue::{Calendar, Masa, Tithi, Vara};
 use teistro_core::settings::LunarMonth as Convention;
 
 use super::{
-    APARAHNA, Barred, Case, Choice, DayPart, Edge, FestivalRule, FollowingRule, Guard, InAdhika,
-    MADHYAHNA, Occurs, Predicate, Which, Window, by_share, case,
+    APARAHNA, Barred, Case, Choice, DayPart, Edge, EkadashiDecision, FestivalRule, FollowingRule,
+    Guard, InAdhika, MADHYAHNA, Occurs, Predicate, Which, Window, by_share, case,
 };
 
 /// Purvahna: the daylight's first six muhurtas, its first two fifths
@@ -108,6 +108,10 @@ pub(super) enum Fit {
     /// past its sunrise, the earlier otherwise: the Bali pratipada's
     /// cows' worship (*Dharmasindhu* p. 78).
     LaterPastSunrise(u8),
+    /// The fortnight's Ekadashi, decided as Nepal's calendars print it
+    /// ([`EkadashiDecision::NEPAL_SMARTA`]) rather than by a window; only
+    /// [`Fit::rule`] carries the decision, so a rule takes it from there.
+    Ekadashi,
 }
 
 impl Fit {
@@ -214,6 +218,14 @@ impl Fit {
                 ),
             ),
             Fit::OnVara(vara) => Fit::on_vara(vara),
+            // The window gives only the extents an observance shows; the
+            // decision's table reads no guard (`FestivalRule::ekadashi`).
+            Fit::Ekadashi => (
+                Window::Sunrise,
+                Vec::new(),
+                Earlier,
+                "the Smartas' Ekadashi as Nepal's calendars print it: Dharmasindhu pp. 11–12's householder, pierced at sunrise, but the pierced 11th alone in excess (S2) is kept on the later day, which the print keeps in all 7 such years of VS 2076 to 2083 (published-only, C2322)".to_owned(),
+            ),
         }
     }
 
@@ -286,6 +298,7 @@ impl Fit {
             decide,
             otherwise,
             parana: Vec::new(),
+            ekadashi: matches!(self, Fit::Ekadashi).then_some(EkadashiDecision::NEPAL_SMARTA),
             meta: super::FestivalMeta::default(),
         }
     }
@@ -319,7 +332,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 70] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -384,13 +397,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 5: गङ्गादशहरा; VS 2083 prints it in the adhika month, as *Dharmasindhu* p. 38 keeps Dashahara in a doubled Jyeshtha (C606)",
     ),
     (
-        "NIRJALA_EKADASHI",
-        Masa::Jyeshtha,
-        Tithi::ShuklaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: निर्जला एकादशीव्रत",
-    ),
-    (
         "ANALA_PUNHI",
         Masa::Jyeshtha,
         Tithi::Purnima,
@@ -410,13 +416,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         Tithi::ShuklaAshtami,
         Fit::Udaya,
         "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), Bhadra 22 of the Bikram Sambat, so VS 2083 prints Shravana's dark 8th (C608)",
-    ),
-    (
-        "AJA_EKADASHI",
-        Masa::Shravana,
-        Tithi::KrishnaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: अजाएकादशीव्रत",
     ),
     (
         "CHATHA",
@@ -622,13 +621,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; in a doubled Kartika the year begins on the adhika month's first day, Dharmasindhu p. 31 (चैत्रस्य मलमासत्वे वत्सरारम्भनिमित्तकं ... मलमासप्रतिपद्येव कुर्यात्), as the Nepal Sambat calendar begins it, while Mha puja keeps the nija month (C2041)",
     ),
     (
-        "HARIBODHINI_EKADASHI",
-        Masa::Kartika,
-        Tithi::ShuklaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हरिबोधिनीएकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
-    ),
-    (
         "PASHUPATI_HALESI_MELA",
         Masa::Kartika,
         Tithi::KrishnaTrayodashi,
@@ -664,13 +656,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: गैडुपूजा",
     ),
     (
-        "PAUSHA_PUTRADA_EKADASHI",
-        Masa::Pausha,
-        Tithi::ShuklaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 19: पुत्रदाएकादशीव्रत; VS 2083 p. 21: स्मार्तहरुको पुत्रदाएकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
-    ),
-    (
         "LAI_CHARHE",
         Masa::Pausha,
         Tithi::KrishnaChaturdashi,
@@ -704,20 +689,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 76] = [
         Tithi::ShuklaShashthi,
         Fit::Udaya,
         "kept in Nepal, though the national panchanga prints it in neither VS 2082 nor 2083 (C613); the print names this day Skanda shashthi (C612)",
-    ),
-    (
-        "BHIMA_EKADASHI",
-        Masa::Magha,
-        Tithi::ShuklaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीमा एकादशीव्रत; the householder's ekadashi (Dharmasindhu pp. 11–12), the later sunrise when both hold the tithi (rc.8 audit)",
-    ),
-    (
-        "VIJAYA_EKADASHI",
-        Masa::Magha,
-        Tithi::KrishnaEkadashi,
-        Fit::UdayaLater,
-        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: विजया एकादशीव्रत; the later sunrise, which VS 2083 prints (C610); the 11th pierced by the 10th at sunrise and only it outlasting the next sunrise is printed on the later day, against Dharmasindhu pp. 11–12's earlier: that one cell is the print's (rc.8 audit)",
     ),
     (
         "DVAPARA_YUGADI",
@@ -928,7 +899,7 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 9] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 146] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -978,12 +949,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 2 and VS 2083 p. 2: मातातीर्थस्नान",
     ),
     (
-        "VARUTHINI_EKADASHI",
-        Masa::Chaitra,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 2: बरुथिनीएकादशीव्रत; VS 2082 p. 26: बरुथिनी एकादशीव्रत; the Smartas' day, as the print names it where the Vaishnavas' differs (C688)",
-    ),
-    (
         "RATO_MACHHINDRANATH_RATHAROHAN",
         Masa::Vaishakha,
         Tithi::ShuklaPratipada,
@@ -1014,12 +979,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: श्रीपशुपतिनाथमा दमनार्पण",
     ),
     (
-        "MOHINI_EKADASHI",
-        Masa::Vaishakha,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 3: मोहिनी एकादशीव्रत; VS 2083 p. 3: मोहिनीएकादशीव्रत",
-    ),
-    (
         "BAISAKH_SNAN_ENDS",
         Masa::Vaishakha,
         Tithi::Purnima,
@@ -1048,12 +1007,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Vaishakha,
         Tithi::Purnima,
         "Nepal's national panchanga, VS 2082 p. 3 and VS 2083 p. 3: उभौलीपर्व",
-    ),
-    (
-        "APARA_EKADASHI",
-        Masa::Vaishakha,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 4 and VS 2083 p. 4: अपराएकादशीव्रत",
     ),
     (
         "SHANI_JAYANTI",
@@ -1152,12 +1105,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 6 and VS 2083 p. 8: नक्वादिशी",
     ),
     (
-        "YOGINI_EKADASHI",
-        Masa::Jyeshtha,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 6: स्मार्तहरूको योगिनी एकादशीव्रत; VS 2083 p. 8: स्मार्तहरुको योगिनी एकादशीव्रत; the Smartas' day, the Vaishnavas' printed the day after (C688)",
-    ),
-    (
         "JAGANNATH_RATH_JATRA",
         Masa::Ashadha,
         Tithi::ShuklaDvitiya,
@@ -1182,12 +1129,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: चतुर्मासव्रत सुरु",
     ),
     (
-        "HARISHAYANI_EKADASHI",
-        Masa::Ashadha,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 7: हरिशयनीएकादशीव्रत; VS 2083 p. 9: हरिशयनी एकादशीव्रत",
-    ),
-    (
         "DAKSHINAMURTI_PUJA",
         Masa::Ashadha,
         Tithi::Purnima,
@@ -1204,12 +1145,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Ashadha,
         Tithi::Purnima,
         "Nepal's national panchanga, VS 2082 p. 7 and VS 2083 p. 9: गुरुपूर्णिमा",
-    ),
-    (
-        "KAMIKA_EKADASHI",
-        Masa::Ashadha,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: कामिकाएकादशीव्रत",
     ),
     (
         "GUNLA_BEGINS",
@@ -1240,12 +1175,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Shravana,
         Tithi::ShuklaAshtami,
         "Nepal's national panchanga, VS 2082 p. 9: (यल पञ्चदान); VS 2083 p. 11: (यँलपञ्चदान)",
-    ),
-    (
-        "SHRAWAN_PUTRADA_EKADASHI",
-        Masa::Shravana,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: पुत्रदाएकादशीव्रत",
     ),
     (
         "KWATI_PUNHI",
@@ -1332,12 +1261,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: अदुःखनवमीव्रत",
     ),
     (
-        "HARIPARIVARTINI_EKADASHI",
-        Masa::Bhadrapada,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: हरिपरिवर्तिनी एकादशीव्रत",
-    ),
-    (
         "INDRADHWAJA_UTTHAN",
         Masa::Bhadrapada,
         Tithi::ShuklaDwadashi,
@@ -1390,12 +1313,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Bhadrapada,
         Tithi::KrishnaAshtami,
         "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: (जितियापर्व)",
-    ),
-    (
-        "INDIRA_EKADASHI",
-        Masa::Bhadrapada,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: इन्दिराएकादशीव्रत",
     ),
     (
         "MAGHA_SHRADDHA",
@@ -1470,12 +1387,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 13: अन्नपूर्णयात्रा; VS 2083 p. 15: अन्नपूर्णायात्रा",
     ),
     (
-        "PAPANKUSHA_EKADASHI",
-        Masa::Ashwina,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: पापाङ्कुशा एकादशीव्रत",
-    ),
-    (
         "KHANCHI_SARAI_PARVA",
         Masa::Ashwina,
         Tithi::ShuklaTrayodashi,
@@ -1516,12 +1427,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Ashwina,
         Tithi::KrishnaAshtami,
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: राधाष्टमी",
-    ),
-    (
-        "RAMA_EKADASHI",
-        Masa::Ashwina,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: रमाएकादशीव्रत",
     ),
     (
         "DHANTERAS",
@@ -1668,12 +1573,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: गुह्येश्वरीयात्रा",
     ),
     (
-        "UTPATTIKA_EKADASHI",
-        Masa::Kartika,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: उत्पत्तिका एकादशीव्रत",
-    ),
-    (
         "BALA_CHATURDASHI_BALA",
         Masa::Kartika,
         Tithi::KrishnaChaturdashi,
@@ -1716,12 +1615,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: गीताजयन्ती",
     ),
     (
-        "MOKSHADA_EKADASHI",
-        Masa::Margashirsha,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: मोक्षदा एकादशीव्रत",
-    ),
-    (
         "DHANYA_PURNIMA",
         Masa::Margashirsha,
         Tithi::Purnima,
@@ -1738,12 +1631,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Margashirsha,
         Tithi::Purnima,
         "Nepal's national panchanga, VS 2082 p. 17: (योमरीपून्हि, थिंलापून्हि); VS 2083 p. 19: (योमरीपून्हि)",
-    ),
-    (
-        "SAFALA_EKADASHI",
-        Masa::Margashirsha,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 18 and VS 2083 p. 20: सफला एकादशीव्रत",
     ),
     (
         "GAYA_MAUNI_AUNSI",
@@ -1786,12 +1673,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Masa::Pausha,
         Tithi::Purnima,
         "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 21: श्रीस्वस्थानीव्रत सुरु",
-    ),
-    (
-        "SHATTILA_EKADASHI",
-        Masa::Pausha,
-        Tithi::KrishnaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: षट्तिला एकादशीव्रत",
     ),
     (
         "ARYAGHAT_MADHAV_NARAYAN_MELA",
@@ -1878,12 +1759,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         "Nepal's national panchanga, VS 2082 p. 23: चिरोत्थान; VS 2083 p. 25: चिरस्वाय",
     ),
     (
-        "AMALAKI_EKADASHI",
-        Masa::Phalguna,
-        Tithi::ShuklaEkadashi,
-        "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: आमलकी एकादशीव्रत",
-    ),
-    (
         "GOVINDA_DWADASHI",
         Masa::Phalguna,
         Tithi::ShuklaDwadashi,
@@ -1901,6 +1776,146 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
         Tithi::KrishnaAshtami,
         "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: शीतलाष्टमी",
     ),
+];
+
+/// The named ekadashis, each the fortnight's Ekadashi decided as Nepal's
+/// calendars print it ([`Fit::Ekadashi`]): key, month (amanta, the nija
+/// month), tithi, and where the day is printed. Over VS 2076 to 2083 the
+/// table gives the printed day in 191 of the 192 Smarta ekadashis the
+/// calendars agree on (`festival-rules.md` §10.7, C2322).
+const EKADASHIS: [(&str, Masa, Tithi, &str); 24] = [
+    (
+        "NIRJALA_EKADASHI",
+        Masa::Jyeshtha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 5 and VS 2083 p. 7: निर्जला एकादशीव्रत",
+    ),
+    (
+        "AJA_EKADASHI",
+        Masa::Shravana,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 12: अजाएकादशीव्रत",
+    ),
+    (
+        "HARIBODHINI_EKADASHI",
+        Masa::Kartika,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: हरिबोधिनीएकादशीव्रत",
+    ),
+    (
+        "PAUSHA_PUTRADA_EKADASHI",
+        Masa::Pausha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 19: पुत्रदाएकादशीव्रत; VS 2083 p. 21: स्मार्तहरुको पुत्रदाएकादशीव्रत",
+    ),
+    (
+        "BHIMA_EKADASHI",
+        Masa::Magha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: भीमा एकादशीव्रत",
+    ),
+    (
+        "VIJAYA_EKADASHI",
+        Masa::Magha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: विजया एकादशीव्रत; the 11th pierced at sunrise with it alone in excess, printed on the later day (C610, C2322)",
+    ),
+    (
+        "VARUTHINI_EKADASHI",
+        Masa::Chaitra,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 2: बरुथिनीएकादशीव्रत; VS 2082 p. 26: बरुथिनी एकादशीव्रत; the Smartas' day, as the print names it where the Vaishnavas' differs (C688)",
+    ),
+    (
+        "MOHINI_EKADASHI",
+        Masa::Vaishakha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 3: मोहिनी एकादशीव्रत; VS 2083 p. 3: मोहिनीएकादशीव्रत",
+    ),
+    (
+        "APARA_EKADASHI",
+        Masa::Vaishakha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 4 and VS 2083 p. 4: अपराएकादशीव्रत",
+    ),
+    (
+        "YOGINI_EKADASHI",
+        Masa::Jyeshtha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 6: स्मार्तहरूको योगिनी एकादशीव्रत; VS 2083 p. 8: स्मार्तहरुको योगिनी एकादशीव्रत; the Smartas' day, the Vaishnavas' printed the day after (C688)",
+    ),
+    (
+        "HARISHAYANI_EKADASHI",
+        Masa::Ashadha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 7: हरिशयनीएकादशीव्रत; VS 2083 p. 9: हरिशयनी एकादशीव्रत",
+    ),
+    (
+        "KAMIKA_EKADASHI",
+        Masa::Ashadha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 8 and VS 2083 p. 10: कामिकाएकादशीव्रत",
+    ),
+    (
+        "SHRAWAN_PUTRADA_EKADASHI",
+        Masa::Shravana,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 9 and VS 2083 p. 11: पुत्रदाएकादशीव्रत",
+    ),
+    (
+        "HARIPARIVARTINI_EKADASHI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: हरिपरिवर्तिनी एकादशीव्रत",
+    ),
+    (
+        "INDIRA_EKADASHI",
+        Masa::Bhadrapada,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: इन्दिराएकादशीव्रत",
+    ),
+    (
+        "PAPANKUSHA_EKADASHI",
+        Masa::Ashwina,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: पापाङ्कुशा एकादशीव्रत",
+    ),
+    (
+        "RAMA_EKADASHI",
+        Masa::Ashwina,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: रमाएकादशीव्रत",
+    ),
+    (
+        "UTPATTIKA_EKADASHI",
+        Masa::Kartika,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 16 and VS 2083 p. 18: उत्पत्तिका एकादशीव्रत",
+    ),
+    (
+        "MOKSHADA_EKADASHI",
+        Masa::Margashirsha,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 17 and VS 2083 p. 19: मोक्षदा एकादशीव्रत",
+    ),
+    (
+        "SAFALA_EKADASHI",
+        Masa::Margashirsha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 18 and VS 2083 p. 20: सफला एकादशीव्रत",
+    ),
+    (
+        "SHATTILA_EKADASHI",
+        Masa::Pausha,
+        Tithi::KrishnaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 20 and VS 2083 p. 22: षट्तिला एकादशीव्रत",
+    ),
+    (
+        "AMALAKI_EKADASHI",
+        Masa::Phalguna,
+        Tithi::ShuklaEkadashi,
+        "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: आमलकी एकादशीव्रत",
+    ),
     (
         "PAPMOCHANI_EKADASHI",
         Masa::Phalguna,
@@ -1916,7 +1931,7 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 164] = [
 ];
 
 /// The ekadashis kept in an adhika month alone, whichever month is
-/// doubled, on the udaya rule as the committee prints them: key, tithi,
+/// doubled, each decided as [`EKADASHIS`]' are: key, tithi,
 /// and where the day is printed (§3.7, §3.10). VS 2082, with no adhika
 /// month, prints neither.
 const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
@@ -2215,9 +2230,26 @@ impl FestivalRule {
                 "fitted",
             )
         });
-        let adhika = IN_ADHIKA
-            .iter()
-            .map(|&(key, tithi, printed)| (key, None, tithi.into(), Fit::Udaya, printed, "fitted"));
+        let ekadashis = EKADASHIS.iter().map(|&(key, month, tithi, printed)| {
+            (
+                key,
+                Some(month),
+                tithi.into(),
+                Fit::Ekadashi,
+                printed,
+                "the print's table",
+            )
+        });
+        let adhika = IN_ADHIKA.iter().map(|&(key, tithi, printed)| {
+            (
+                key,
+                None,
+                tithi.into(),
+                Fit::Ekadashi,
+                printed,
+                "the print's table",
+            )
+        });
         let monthly = EVERY_MONTH
             .iter()
             .map(|&(key, occurs, fit, printed)| (key, None, occurs, fit, printed, "fitted"));
@@ -2226,6 +2258,7 @@ impl FestivalRule {
         });
         yearly
             .chain(at_sunrise)
+            .chain(ekadashis)
             .chain(adhika)
             .chain(monthly)
             .chain(by_text)
@@ -2316,6 +2349,45 @@ mod tests {
             );
             assert!(keys.insert(rule.key.clone()), "{} twice", rule.key);
         }
+    }
+
+    #[test]
+    fn every_named_ekadashi_and_only_one_is_decided_as_an_ekadashi() {
+        let rules = FestivalRule::nepal_panchanga();
+        let named: Vec<&str> = rules
+            .iter()
+            .filter(|rule| rule.ekadashi.is_some())
+            .map(|rule| rule.key.as_str())
+            .collect();
+        assert_eq!(named.len(), EKADASHIS.len() + IN_ADHIKA.len());
+        assert!(
+            named.iter().all(|key| key.ends_with("_EKADASHI")),
+            "{named:?}"
+        );
+        assert!(
+            rules
+                .iter()
+                .filter(|rule| rule.ekadashi.is_some())
+                .all(|rule| rule.ekadashi == Some(EkadashiDecision::NEPAL_SMARTA)
+                    && rule.source.contains("C2322"))
+        );
+        // A decision on another tithi is refused, naming the field.
+        let gita = rules
+            .iter()
+            .find(|rule| rule.key == "GITA_JAYANTI")
+            .unwrap();
+        assert!(gita.check().is_ok());
+        let durva = rules
+            .iter()
+            .find(|rule| rule.key == "DURVA_ASHTAMI")
+            .unwrap();
+        let refused = FestivalRule {
+            ekadashi: Some(EkadashiDecision::NEPAL_SMARTA),
+            ..durva.clone()
+        }
+        .check()
+        .unwrap_err();
+        assert_eq!(refused.field(), Some("ekadashi"));
     }
 
     #[test]

@@ -551,8 +551,9 @@ fn reach<'r>(
             let guard = match observance.decided_by {
                 Decided::Guard { index } => Some(index),
                 Decided::Otherwise => None,
-                // A day counted from another's has no guard of its own.
-                Decided::After { .. } => continue,
+                // A day counted from another's, or decided as an
+                // Ekadashi, has no guard of its own.
+                Decided::After { .. } | Decided::Ekadashi { .. } => continue,
             };
             *decided.entry((observance.rule.clone(), guard)).or_default() += 1;
         }

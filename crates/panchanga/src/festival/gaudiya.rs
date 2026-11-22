@@ -62,6 +62,7 @@ fn rule(
         decide,
         otherwise,
         parana,
+        ekadashi: None,
         meta: FestivalMeta::default(),
     }
 }

@@ -581,6 +581,7 @@ impl Anniversary {
             decide,
             otherwise,
             parana: Vec::new(),
+            ekadashi: None,
             meta: super::FestivalMeta::default(),
         }
     }

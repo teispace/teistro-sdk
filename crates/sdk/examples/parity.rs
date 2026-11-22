@@ -7033,6 +7033,11 @@ fn put_festivals(report: &mut Report, name: &str, answer: &teistro::festival::Ob
             teistro::festival::Decided::Guard { index } => format!("guard:{index}"),
             teistro::festival::Decided::Otherwise => "otherwise".to_owned(),
             teistro::festival::Decided::After { rule, days } => format!("after:{rule}:{days}"),
+            teistro::festival::Decided::Ekadashi { pierced, excess } => format!(
+                "ekadashi:{}:{}",
+                if *pierced { "pierced" } else { "pure" },
+                tag(excess)
+            ),
         };
         let [earlier, later] = &observance.extents;
         put(

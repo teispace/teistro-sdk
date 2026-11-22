@@ -691,6 +691,8 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
             by = f"guard:{decided.index}"
         elif decided.by == "AFTER":
             by = f"after:{decided.rule}:{decided.days}"
+        elif decided.by == "EKADASHI":
+            by = f"ekadashi:{'pierced' if decided.pierced else 'pure'}:{decided.excess}"
         else:
             by = "otherwise"
         earlier, later = observance.extents

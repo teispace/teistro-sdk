@@ -772,6 +772,7 @@ fn every(
         parana: Vec::new(),
         in_month: None,
         barred: None,
+        ekadashi: None,
         meta: crate::festival::FestivalMeta::default(),
     };
     let found = observances(core::slice::from_ref(&rule), days)?;
