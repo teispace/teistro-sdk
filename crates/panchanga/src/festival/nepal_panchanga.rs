@@ -2282,7 +2282,7 @@ impl FollowingRule {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+    #![allow(clippy::unwrap_used, clippy::panic, reason = "tests fail by panicking")]
 
     use std::collections::HashSet;
 
