@@ -1896,9 +1896,10 @@ class AnEngine(WithLibrary):
 
     def test_a_festival_group_spans_its_members_and_marks_a_gap_day(self) -> None:
         """BS 2083's Tihar, 7 to 11 November 2026, asked of Kartik 23 alone:
-        the span is whole and the 9th, which no member falls on, is a gap;
-        and the next Dashain from 1 January 2026 is its span of 11 to 25
-        October (`03-design/festival-groups.md`, SR-125)."""
+        the span is whole and the 9th is the cows' worship (C2301); and the
+        next Dashain from 1 January 2026 is its span of 11 to 25 October,
+        the 19th a gap between the Mahashtami and the Mahanavami
+        (`03-design/festival-groups.md`, SR-125)."""
         from teistro import date
         from teistro.catalogue import Calendar
 
@@ -1915,7 +1916,13 @@ class AnEngine(WithLibrary):
             self.assertEqual((tihar.group, tihar.main), ("TIHAR", "LAKSHMI_PUJA"))
             self.assertEqual(
                 [f"{d.day.day}:{'-' if d.gap else '+'.join(d.members)}" for d in tihar.days],
-                ["7:KAG_TIHAR", "8:KUKUR_TIHAR+LAKSHMI_PUJA", "9:-", "10:GOVARDHAN_PUJA+MHA_PUJA", "11:YAMA_DWITIYA"],
+                [
+                    "7:KAG_TIHAR",
+                    "8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI",
+                    "9:GAI_PUJA",
+                    "10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR",
+                    "11:YAMA_DWITIYA+KIJA_PUJA",
+                ],
             )
             self.assertTrue(all(m.day is not None for m in tihar.members))
             dashain = sky.almanac.next(
@@ -1928,6 +1935,8 @@ class AnEngine(WithLibrary):
             assert dashain.group is not None
             self.assertEqual((dashain.day.month, dashain.day.day), (10, 11))
             self.assertEqual((dashain.group.last.month, dashain.group.last.day), (10, 25))
+            gap = dashain.group.days[8]
+            self.assertEqual((gap.day.day, gap.gap), (19, True))
             self.assertEqual(len(dashain.keys), 6)
             with self.assertRaises(TeistroError) as unknown:
                 sky.almanac.next(

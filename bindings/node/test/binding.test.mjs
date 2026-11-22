@@ -1061,7 +1061,8 @@ test('every catalogue enum has a complete id table', () => {
   // 1597 since Delta T's band, `TsDeltaTBand`, five.
   // 1599 since `TsSunrise` gained `UPPER_LIMB_NO_REFRACTION` and
   // `LOWER_LIMB_NO_REFRACTION`.
-  assert.equal(entries, 1599, 'every member of every enum is in a table');
+  // 1600 since `TsAyanamsha` gained `KETAKI`.
+  assert.equal(entries, 1600, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -5329,8 +5330,9 @@ test('the next sankranti and a pack\'s festival are found', () => {
 
 /**
  * Festival groups (`03-design/festival-groups.md`, SR-125): BS 2083's
- * Tihar, 7 to 11 November 2026, holds Kartik 23 as a gap however short
- * the range, and `almanac.next` finds Dashain's span.
+ * Tihar, 7 to 11 November 2026, is whole however short the range, its
+ * Kartik 23 the cows' worship (C2301), and `almanac.next` finds Dashain's
+ * span, 19 October a gap between the Mahashtami and the Mahanavami.
  */
 test('a festival group spans its members and marks a gap day', () => {
   const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
@@ -5347,7 +5349,13 @@ test('a festival group spans its members and marks a gap day', () => {
   assert.equal(tihar.main, 'LAKSHMI_PUJA');
   assert.deepEqual(
     tihar.days.map((d) => `${d.day.day}:${d.gap ? '-' : d.members.join('+')}`),
-    ['7:KAG_TIHAR', '8:KUKUR_TIHAR+LAKSHMI_PUJA', '9:-', '10:GOVARDHAN_PUJA+MHA_PUJA', '11:YAMA_DWITIYA'],
+    [
+      '7:KAG_TIHAR',
+      '8:LAKSHMI_PUJA+KUKUR_TIHAR+NARAK_CHATURDASHI+SUKHRATRI',
+      '9:GAI_PUJA',
+      '10:GORU_PUJA+GOVARDHAN_PUJA+MHA_PUJA+HALI_TIHAR',
+      '11:YAMA_DWITIYA+KIJA_PUJA',
+    ],
   );
   assert.deepEqual([tihar.first.day, tihar.last.day], [7, 11]);
   assert.ok(tihar.members.every((m) => m.day !== null));
@@ -5360,6 +5368,8 @@ test('a festival group spans its members and marks a gap day', () => {
   });
   assert.deepEqual([dashain.day.month, dashain.day.day], [10, 11]);
   assert.deepEqual([dashain.group.last.month, dashain.group.last.day], [10, 25]);
+  const gap = dashain.group.days[8];
+  assert.deepEqual([gap.day.day, gap.gap], [19, true], 'the 8th holds two sunrises');
   assert.equal(dashain.keys.length, 6);
   assert.throws(
     () => ctx.almanac.next({ after: 2461041.76, place, utcOffsetSeconds: 20700, group: 'HOLI', festivals: { rules: 'NEPAL_PANCHANGA' } }),
