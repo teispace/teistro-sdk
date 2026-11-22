@@ -206,6 +206,13 @@ rules gaining `meta.names`.
   (the consumer's `*`, C2308 open), carried by Node, Python, Dart and Java.
 - 21 festival names in all five locales. Design in `03-design/nepal-festival-names.md`,
   cruxes C2300 to C2311; C1661, C2110 and C2111 superseded.
+- **Changed:** a sankranti's names in Nepal (C2312). `MAKARA_SANKRANTI` leads with
+  माघे सङ्क्रान्ति (`MAGHE_SANKRANTI`) and `KARKATA_SANKRANTI` with साउने सङ्क्रान्ति
+  (`SAUNE_SANKRANTI`), each keeping its sign's name as an alias; the other ten list the
+  month they open (`BAISAKH_SANKRANTI` … `CHAITRA_SANKRANTI`). The Nepali and English
+  locales name `MAKARA_SANKRANTI` and `KARKATA_SANKRANTI` by the sign again
+  (मकर, कर्कट), so a reader showing the key's own name, not Nepal's lead, now sees the
+  sign. 13 festival names in all five locales; a test holds every listed name to them.
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each

@@ -3852,8 +3852,8 @@
       "iast": "Dhanusaṅkrānti"
     },
     "MAKARA_SANKRANTI": {
-      "name": "Maghe Sankranti",
-      "prose": "Maghe sankranti, the sun's turn north",
+      "name": "Makara Sankranti",
+      "prose": "Makara sankranti, the sun's turn north",
       "iast": "Makarasaṅkrānti"
     },
     "KUMBHA_SANKRANTI": {
@@ -3865,6 +3865,71 @@
       "name": "Mina Sankranti",
       "prose": "Mina sankranti",
       "iast": "Mīnasaṅkrānti"
+    },
+    "BAISAKH_SANKRANTI": {
+      "name": "Baisakh Sankranti",
+      "prose": "Baisakh Sankranti",
+      "iast": "Vaiśākhasaṅkrānti"
+    },
+    "JESTHA_SANKRANTI": {
+      "name": "Jestha Sankranti",
+      "prose": "Jestha Sankranti",
+      "iast": "Jyeṣṭhasaṅkrānti"
+    },
+    "ASAR_SANKRANTI": {
+      "name": "Asar Sankranti",
+      "prose": "Asar Sankranti",
+      "iast": "Āṣāḍhasaṅkrānti"
+    },
+    "SAUNE_SANKRANTI": {
+      "name": "Saune Sankranti",
+      "prose": "Saune Sankranti",
+      "iast": "Sāune saṅkrānti"
+    },
+    "SHRAWAN_SANKRANTI": {
+      "name": "Shrawan Sankranti",
+      "prose": "Shrawan Sankranti",
+      "iast": "Śrāvaṇasaṅkrānti"
+    },
+    "BHADRA_SANKRANTI": {
+      "name": "Bhadra Sankranti",
+      "prose": "Bhadra Sankranti",
+      "iast": "Bhādrapadasaṅkrānti"
+    },
+    "ASHWIN_SANKRANTI": {
+      "name": "Ashwin Sankranti",
+      "prose": "Ashwin Sankranti",
+      "iast": "Āśvinasaṅkrānti"
+    },
+    "KARTIK_SANKRANTI": {
+      "name": "Kartik Sankranti",
+      "prose": "Kartik Sankranti",
+      "iast": "Kārttikasaṅkrānti"
+    },
+    "MANGSIR_SANKRANTI": {
+      "name": "Mangsir Sankranti",
+      "prose": "Mangsir Sankranti",
+      "iast": "Mārgaśīrṣasaṅkrānti"
+    },
+    "POUSH_SANKRANTI": {
+      "name": "Poush Sankranti",
+      "prose": "Poush Sankranti",
+      "iast": "Pauṣasaṅkrānti"
+    },
+    "MAGHE_SANKRANTI": {
+      "name": "Maghe Sankranti",
+      "prose": "Maghe Sankranti",
+      "iast": "Māghe saṅkrānti"
+    },
+    "FALGUN_SANKRANTI": {
+      "name": "Falgun Sankranti",
+      "prose": "Falgun Sankranti",
+      "iast": "Phālgunasaṅkrānti"
+    },
+    "CHAITRA_SANKRANTI": {
+      "name": "Chaitra Sankranti",
+      "prose": "Chaitra Sankranti",
+      "iast": "Caitrasaṅkrānti"
     },
     "LOKTANTRA_DIWAS": {
       "name": "Loktantra Diwas",

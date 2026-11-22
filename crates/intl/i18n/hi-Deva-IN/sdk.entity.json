@@ -3414,6 +3414,71 @@
       "prose": "मीन संक्रांति",
       "iast": "Mīnasaṅkrānti"
     },
+    "BAISAKH_SANKRANTI": {
+      "name": "वैशाख संक्रांति",
+      "prose": "वैशाख संक्रांति",
+      "iast": "Vaiśākhasaṅkrānti"
+    },
+    "JESTHA_SANKRANTI": {
+      "name": "ज्येष्ठ संक्रांति",
+      "prose": "ज्येष्ठ संक्रांति",
+      "iast": "Jyeṣṭhasaṅkrānti"
+    },
+    "ASAR_SANKRANTI": {
+      "name": "आषाढ़ संक्रांति",
+      "prose": "आषाढ़ संक्रांति",
+      "iast": "Āṣāḍhasaṅkrānti"
+    },
+    "SAUNE_SANKRANTI": {
+      "name": "साउने संक्रांति",
+      "prose": "साउने संक्रांति",
+      "iast": "Sāune saṅkrānti"
+    },
+    "SHRAWAN_SANKRANTI": {
+      "name": "श्रावण संक्रांति",
+      "prose": "श्रावण संक्रांति",
+      "iast": "Śrāvaṇasaṅkrānti"
+    },
+    "BHADRA_SANKRANTI": {
+      "name": "भाद्रपद संक्रांति",
+      "prose": "भाद्रपद संक्रांति",
+      "iast": "Bhādrapadasaṅkrānti"
+    },
+    "ASHWIN_SANKRANTI": {
+      "name": "आश्विन संक्रांति",
+      "prose": "आश्विन संक्रांति",
+      "iast": "Āśvinasaṅkrānti"
+    },
+    "KARTIK_SANKRANTI": {
+      "name": "कार्तिक संक्रांति",
+      "prose": "कार्तिक संक्रांति",
+      "iast": "Kārttikasaṅkrānti"
+    },
+    "MANGSIR_SANKRANTI": {
+      "name": "मार्गशीर्ष संक्रांति",
+      "prose": "मार्गशीर्ष संक्रांति",
+      "iast": "Mārgaśīrṣasaṅkrānti"
+    },
+    "POUSH_SANKRANTI": {
+      "name": "पौष संक्रांति",
+      "prose": "पौष संक्रांति",
+      "iast": "Pauṣasaṅkrānti"
+    },
+    "MAGHE_SANKRANTI": {
+      "name": "माघे संक्रांति",
+      "prose": "माघे संक्रांति",
+      "iast": "Māghe saṅkrānti"
+    },
+    "FALGUN_SANKRANTI": {
+      "name": "फाल्गुन संक्रांति",
+      "prose": "फाल्गुन संक्रांति",
+      "iast": "Phālgunasaṅkrānti"
+    },
+    "CHAITRA_SANKRANTI": {
+      "name": "चैत्र संक्रांति",
+      "prose": "चैत्र संक्रांति",
+      "iast": "Caitrasaṅkrānti"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतंत्र दिवस",
       "prose": "लोकतंत्र दिवस",

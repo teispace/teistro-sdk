@@ -3814,8 +3814,8 @@
       "iast": "Mithunasaṅkrānti"
     },
     "KARKATA_SANKRANTI": {
-      "name": "साउने सङ्क्रान्ति",
-      "prose": "साउने सङ्क्रान्ति",
+      "name": "कर्कट सङ्क्रान्ति",
+      "prose": "कर्कट सङ्क्रान्ति",
       "iast": "Karkaṭasaṅkrānti"
     },
     "SIMHA_SANKRANTI": {
@@ -3844,8 +3844,8 @@
       "iast": "Dhanusaṅkrānti"
     },
     "MAKARA_SANKRANTI": {
-      "name": "माघे सङ्क्रान्ति",
-      "prose": "माघे सङ्क्रान्ति",
+      "name": "मकर सङ्क्रान्ति",
+      "prose": "मकर सङ्क्रान्ति",
       "iast": "Makarasaṅkrānti"
     },
     "KUMBHA_SANKRANTI": {
@@ -3857,6 +3857,71 @@
       "name": "मीन सङ्क्रान्ति",
       "prose": "मीन सङ्क्रान्ति",
       "iast": "Mīnasaṅkrānti"
+    },
+    "BAISAKH_SANKRANTI": {
+      "name": "वैशाख सङ्क्रान्ति",
+      "prose": "वैशाख सङ्क्रान्ति",
+      "iast": "Vaiśākhasaṅkrānti"
+    },
+    "JESTHA_SANKRANTI": {
+      "name": "ज्येष्ठ सङ्क्रान्ति",
+      "prose": "ज्येष्ठ सङ्क्रान्ति",
+      "iast": "Jyeṣṭhasaṅkrānti"
+    },
+    "ASAR_SANKRANTI": {
+      "name": "असार सङ्क्रान्ति",
+      "prose": "असार सङ्क्रान्ति",
+      "iast": "Āṣāḍhasaṅkrānti"
+    },
+    "SAUNE_SANKRANTI": {
+      "name": "साउने सङ्क्रान्ति",
+      "prose": "साउने सङ्क्रान्ति",
+      "iast": "Sāune saṅkrānti"
+    },
+    "SHRAWAN_SANKRANTI": {
+      "name": "श्रावण सङ्क्रान्ति",
+      "prose": "श्रावण सङ्क्रान्ति",
+      "iast": "Śrāvaṇasaṅkrānti"
+    },
+    "BHADRA_SANKRANTI": {
+      "name": "भाद्र सङ्क्रान्ति",
+      "prose": "भाद्र सङ्क्रान्ति",
+      "iast": "Bhādrapadasaṅkrānti"
+    },
+    "ASHWIN_SANKRANTI": {
+      "name": "आश्विन सङ्क्रान्ति",
+      "prose": "आश्विन सङ्क्रान्ति",
+      "iast": "Āśvinasaṅkrānti"
+    },
+    "KARTIK_SANKRANTI": {
+      "name": "कार्तिक सङ्क्रान्ति",
+      "prose": "कार्तिक सङ्क्रान्ति",
+      "iast": "Kārttikasaṅkrānti"
+    },
+    "MANGSIR_SANKRANTI": {
+      "name": "मार्गशीर्ष सङ्क्रान्ति",
+      "prose": "मार्गशीर्ष सङ्क्रान्ति",
+      "iast": "Mārgaśīrṣasaṅkrānti"
+    },
+    "POUSH_SANKRANTI": {
+      "name": "पौष सङ्क्रान्ति",
+      "prose": "पौष सङ्क्रान्ति",
+      "iast": "Pauṣasaṅkrānti"
+    },
+    "MAGHE_SANKRANTI": {
+      "name": "माघे सङ्क्रान्ति",
+      "prose": "माघे सङ्क्रान्ति",
+      "iast": "Māghe saṅkrānti"
+    },
+    "FALGUN_SANKRANTI": {
+      "name": "फाल्गुण सङ्क्रान्ति",
+      "prose": "फाल्गुण सङ्क्रान्ति",
+      "iast": "Phālgunasaṅkrānti"
+    },
+    "CHAITRA_SANKRANTI": {
+      "name": "चैत्र सङ्क्रान्ति",
+      "prose": "चैत्र सङ्क्रान्ति",
+      "iast": "Caitrasaṅkrānti"
     },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतन्त्र दिवस",

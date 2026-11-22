@@ -3409,6 +3409,71 @@
       "prose": "मीनसङ्क्रान्ति",
       "iast": "Mīnasaṅkrānti"
     },
+    "BAISAKH_SANKRANTI": {
+      "name": "वैशाखसङ्क्रान्ति",
+      "prose": "वैशाखसङ्क्रान्ति",
+      "iast": "Vaiśākhasaṅkrānti"
+    },
+    "JESTHA_SANKRANTI": {
+      "name": "ज्येष्ठसङ्क्रान्ति",
+      "prose": "ज्येष्ठसङ्क्रान्ति",
+      "iast": "Jyeṣṭhasaṅkrānti"
+    },
+    "ASAR_SANKRANTI": {
+      "name": "आषाढसङ्क्रान्ति",
+      "prose": "आषाढसङ्क्रान्ति",
+      "iast": "Āṣāḍhasaṅkrānti"
+    },
+    "SAUNE_SANKRANTI": {
+      "name": "साउने सङ्क्रान्ति",
+      "prose": "साउने सङ्क्रान्ति",
+      "iast": "Sāune saṅkrānti"
+    },
+    "SHRAWAN_SANKRANTI": {
+      "name": "श्रावणसङ्क्रान्ति",
+      "prose": "श्रावणसङ्क्रान्ति",
+      "iast": "Śrāvaṇasaṅkrānti"
+    },
+    "BHADRA_SANKRANTI": {
+      "name": "भाद्रपदसङ्क्रान्ति",
+      "prose": "भाद्रपदसङ्क्रान्ति",
+      "iast": "Bhādrapadasaṅkrānti"
+    },
+    "ASHWIN_SANKRANTI": {
+      "name": "आश्विनसङ्क्रान्ति",
+      "prose": "आश्विनसङ्क्रान्ति",
+      "iast": "Āśvinasaṅkrānti"
+    },
+    "KARTIK_SANKRANTI": {
+      "name": "कार्त्तिकसङ्क्रान्ति",
+      "prose": "कार्त्तिकसङ्क्रान्ति",
+      "iast": "Kārttikasaṅkrānti"
+    },
+    "MANGSIR_SANKRANTI": {
+      "name": "मार्गशीर्षसङ्क्रान्ति",
+      "prose": "मार्गशीर्षसङ्क्रान्ति",
+      "iast": "Mārgaśīrṣasaṅkrānti"
+    },
+    "POUSH_SANKRANTI": {
+      "name": "पौषसङ्क्रान्ति",
+      "prose": "पौषसङ्क्रान्ति",
+      "iast": "Pauṣasaṅkrānti"
+    },
+    "MAGHE_SANKRANTI": {
+      "name": "माघे सङ्क्रान्ति",
+      "prose": "माघे सङ्क्रान्ति",
+      "iast": "Māghe saṅkrānti"
+    },
+    "FALGUN_SANKRANTI": {
+      "name": "फाल्गुनसङ्क्रान्ति",
+      "prose": "फाल्गुनसङ्क्रान्ति",
+      "iast": "Phālgunasaṅkrānti"
+    },
+    "CHAITRA_SANKRANTI": {
+      "name": "चैत्रसङ्क्रान्ति",
+      "prose": "चैत्रसङ्क्रान्ति",
+      "iast": "Caitrasaṅkrānti"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतन्त्र दिवस",
       "prose": "लोकतन्त्र दिवस",
