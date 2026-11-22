@@ -212,8 +212,11 @@ the generators; no binding has code of its own.
 ## 5. Errors and limits
 
 - A place where the Sun does not set on an evening has no sighted
-  months: the rise and set solver refuses the evening (`LIMIT`), and
-  the calendar has no answer in a polar summer. So has a range whose
+  months: the rise and set solver refuses the evening (`LIMIT`, or
+  `UNSUPPORTED` where the day's polar policy is left undefined), and
+  the calendar has no answer in a polar summer. An app there names a
+  `day.polar_day_policy` for the day's other rules, and the crescent's
+  evening still never comes. So has a range whose
   year of months before it reaches past the sky's coverage
   (`OUT_OF_RANGE`, or `LIMIT` from an evening the sky does not hold).
   A festival request then answers every other rule, its rules on
