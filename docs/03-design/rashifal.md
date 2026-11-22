@@ -273,6 +273,20 @@ sentence. `teistro_interpret::rashifal(&RashiReading) -> Plan` does, and
   them, and it needs no corpus.
 - **One plan a sign.** A period is read for twelve signs and a reader
   reads one. The façade composes the twelve, Aries to Pisces.
+- **A verdict says how long it holds (C2313).** The transits are read at
+  one instant, and a week's, a month's or a year's reading would
+  otherwise give the Moon's house of that instant as the period's. Each
+  reading carries `holds`, the Sun to Ketu: whether the graha keeps the
+  sign it stands in from the period's first instant to its last. A graha
+  whose ingresses the period searched holds when it has none; one it did
+  not search (the Moon, by default) is placed at both ends, and a body
+  that never turns (the Sun, the Moon) holds when both ends share its
+  sign and it could not have gone round, any other only when its greatest
+  rate cannot reach an edge of its sign (the nodes bounded as the true
+  node's). A transit that does not hold is said by `sdk.rashifal.passing`
+  ("…at the reading, a sign it may leave within the period"), its vedha
+  kept and where it bears fruit left out; the period's events say where
+  it goes. Two more places a period, no new search.
 - **Left unsaid**, on purpose:
   - an event's date: the instant is UTC, and the plan has no clock to
     date it by. The n-th event item is the reading's n-th event, so a

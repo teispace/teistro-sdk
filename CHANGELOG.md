@@ -28,6 +28,19 @@ a median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The
 first and last dates answered are 1800-01-01 and 2399-12-31 over the
 built-in ephemeris, where the coverage's edges were refused.
 
+**A rashifal's transit says how long it holds (C2313).**
+**Numbers:** no verdict, house or event moves. Each period now places the
+nine grahas twice more, at its two ends. A week's, a month's or a year's
+plan says the Moon's transit, and over a year the Sun's, Mercury's and
+Venus's, as the reading's alone, where it said them as the period's.
+- **Added:** `RashiReading.holds` (`holds` in every binding), the Sun to Ketu:
+  whether the graha keeps its sign through the whole period.
+  `teistro_rashifal::rashifal_holding` reads a period whose grahas move;
+  `rashifal` is an instant's reading, every transit holding.
+- **Added:** `sdk.rashifal.passing` in English, Nepali and Hindi: a transit
+  at the reading whose graha may leave its sign within the period. Its
+  vedha is said, and where it bears fruit is not.
+
 **The vedha, the blackouts and the limbs' longitudes without the muhurta family (SR-132, SR-137, SR-138).**
 **Numbers:** no computed value moves under any shipped profile or in a build with the
 muhurta family: the season and the vedha moved into `teistro-panchanga` unchanged, and

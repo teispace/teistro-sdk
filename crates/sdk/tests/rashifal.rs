@@ -272,6 +272,52 @@ fn a_batch_reads_each_period_as_it_reads_alone() {
 
 /// SR-37: each sign's reading in words, through the batch a binding sends,
 /// said in every locale that carries the messages, and final in each (Q42).
+/// A period's verdict holds for a graha that keeps its sign through it:
+/// over Mangsir 2083 (17 November to 15 December 2026) Saturn stays in
+/// Pisces while the Moon goes round, and a graha that enters a sign in the
+/// period does not hold; a day the Moon stays in her sign holds hers. The
+/// plan says a transit that does not hold as the reading's alone.
+#[test]
+fn a_verdict_holds_for_the_period_only_where_the_graha_keeps_its_sign() {
+    let sdk = context();
+    let mangsir =
+        RashifalRequest::between(date(2026, 11, 17), date(2026, 12, 15), kathmandu(), NEPAL);
+    let read = period(&sdk, &mangsir);
+    let aries = read.of(Rashi::Aries);
+    assert!(aries.holds[Graha::Saturn as usize]);
+    assert!(!aries.holds[Graha::Moon as usize]);
+    for one in &aries.events {
+        if matches!(one.event.hit.event, HitEvent::SignIngress { .. }) {
+            assert!(
+                !aries.holds[one.event.hit.graha as usize],
+                "{:?}",
+                one.event.hit.graha
+            );
+        }
+    }
+    // Every sign reads the same motion.
+    assert!(
+        read.readings
+            .iter()
+            .all(|reading| reading.holds == aries.holds)
+    );
+    let plan = sdk.interpret().rashifal(aries);
+    let passing = plan
+        .iter()
+        .filter(|item| item.key == "sdk.rashifal.passing")
+        .count();
+    let moving = aries.holds.iter().filter(|&&kept| !kept).count();
+    assert_eq!(passing, moving);
+    // 22 November 2026: the Moon stands at 29.5° Pisces at sunrise and
+    // enters Aries that day, so even a day's reading does not hold hers.
+    let day = period(
+        &sdk,
+        &RashifalRequest::day(date(2026, 11, 22), kathmandu(), NEPAL),
+    );
+    let held = day.of(Rashi::Aries).holds;
+    assert!(held[Graha::Saturn as usize] && !held[Graha::Moon as usize]);
+}
+
 #[test]
 fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     let sdk = context();
@@ -295,6 +341,8 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
         "sdk.rashifal.saturn",
         "sdk.rashifal.ingress",
         "sdk.rashifal.station",
+        // The Sun, the Moon and the faster grahas change sign in a year.
+        "sdk.rashifal.passing",
     ] {
         assert!(keys.contains(&key), "{key}");
     }

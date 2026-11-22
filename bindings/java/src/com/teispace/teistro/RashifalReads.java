@@ -186,6 +186,12 @@ final class RashifalReads {
                     Map<?, ?> event = Reads.object(o, "event");
                     return new RashifalEvent(hit(Reads.field(event, "hit")), member(event, "sign", "Rashi", Rashi::byKey),
                             Reads.integer(o, "house"), Reads.flag(o, "goodHouse"));
+                }),
+                Reads.each(one, "holds", flag -> {
+                    if (flag instanceof Boolean kept) {
+                        return kept;
+                    }
+                    throw Reads.internal("a holds flag is true or false, and the library wrote " + flag);
                 }));
     }
 

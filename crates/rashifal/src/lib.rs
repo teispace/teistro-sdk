@@ -199,6 +199,13 @@ pub struct RashiReading {
     pub saturn: SaturnStanding,
     /// Each event of the period, counted from it, in the events' order.
     pub events: Vec<EventFrom>,
+    /// Whether each graha, the Sun to Ketu, keeps through the whole period
+    /// the sign it stands in at the snapshot, so that its transit's
+    /// verdict is the period's; `false` when it changes sign within the
+    /// period, or may, and the verdict is the snapshot's alone. The Moon
+    /// changes sign every two or three days, so a week's, a month's or a
+    /// year's reading never holds hers.
+    pub holds: [bool; 9],
 }
 
 /// The twelve signs' readings of one period: the nine `transits` at its
@@ -222,6 +229,31 @@ pub struct RashiReading {
 pub fn rashifal(
     transits: &[Transit; 9],
     events: &[PeriodEvent],
+    rules: &RashifalRules,
+) -> [RashiReading; 12] {
+    rashifal_holding(transits, events, [true; 9], rules)
+}
+
+/// [`rashifal`] over a period in which the grahas move: `holds` says,
+/// the Sun to Ketu, which keep their sign from the period's first instant
+/// to its last ([`RashiReading::holds`]), as the façade finds it.
+///
+/// ```
+/// use teistro_core::catalogue::{Graha, Rashi};
+/// use teistro_gochar::Transit;
+/// use teistro_rashifal::{RashifalRules, rashifal_holding};
+///
+/// let transits = [Transit::new(Rashi::Aries, 5.0); 9];
+/// let mut holds = [true; 9];
+/// holds[Graha::Moon as usize] = false;
+/// let read = rashifal_holding(&transits, &[], holds, &RashifalRules::default());
+/// assert!(read.iter().all(|reading| !reading.holds[Graha::Moon as usize]));
+/// ```
+#[must_use]
+pub fn rashifal_holding(
+    transits: &[Transit; 9],
+    events: &[PeriodEvent],
+    holds: [bool; 9],
     rules: &RashifalRules,
 ) -> [RashiReading; 12] {
     Rashi::ALL.map(|rashi| {
@@ -251,6 +283,7 @@ pub fn rashifal(
                     }
                 })
                 .collect(),
+            holds,
         }
     })
 }
