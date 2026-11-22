@@ -266,3 +266,22 @@ fn the_tulasi_days_and_vyasa_jayanti_keep_their_festivals_days() {
         kept("GURU_PURNIMA", (2024, 7, 15), (2024, 7, 25))
     );
 }
+
+#[test]
+fn gorakhkali_puja_is_the_bright_8th_s_later_day_and_the_dark_8th_s_at_madhyahna() {
+    // The national panchanga, VS 2083: p. 5 the bright 8th's later day;
+    // p. 4 the dark 8th's earlier day, the 8th ending before the later
+    // madhyahna; p. 10 its later day, a day after the ashtami vrata.
+    assert_eq!(
+        kept("SHUKLA_GORAKHKALI_PUJA", (2026, 5, 20), (2026, 5, 28)),
+        [(2026, 5, 24)]
+    );
+    assert_eq!(
+        kept("KRISHNA_GORAKHKALI_PUJA", (2026, 5, 5), (2026, 5, 13)),
+        [(2026, 5, 9)]
+    );
+    assert_eq!(
+        kept("KRISHNA_GORAKHKALI_PUJA", (2026, 8, 1), (2026, 8, 9)),
+        [(2026, 8, 6)]
+    );
+}

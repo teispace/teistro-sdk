@@ -6224,6 +6224,16 @@
       "name": "Tulasi Piye",
       "prose": "Tulasi Piye",
       "iast": "Tulasīpie"
+    },
+    "SHUKLA_GORAKHKALI_PUJA": {
+      "name": "Shukla Gorakhkali Puja",
+      "prose": "Shukla Gorakhkali Puja",
+      "iast": "Śukla Gorakhakālī Pūjā"
+    },
+    "KRISHNA_GORAKHKALI_PUJA": {
+      "name": "Krishna Gorakhkali Puja",
+      "prose": "Krishna Gorakhkali Puja",
+      "iast": "Kṛṣṇa Gorakhakālī Pūjā"
     }
   },
   "agni_vasa": {

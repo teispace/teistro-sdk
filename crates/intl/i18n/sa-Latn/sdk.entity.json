@@ -5785,6 +5785,16 @@
       "name": "Tulasīpie",
       "prose": "Tulasīpie",
       "iast": "Tulasīpie"
+    },
+    "SHUKLA_GORAKHKALI_PUJA": {
+      "name": "Śuklagorakhakālīpūjā",
+      "prose": "Śuklagorakhakālīpūjā",
+      "iast": "Śukla Gorakhakālī Pūjā"
+    },
+    "KRISHNA_GORAKHKALI_PUJA": {
+      "name": "Kṛṣṇagorakhakālīpūjā",
+      "prose": "Kṛṣṇagorakhakālīpūjā",
+      "iast": "Kṛṣṇa Gorakhakālī Pūjā"
     }
   },
   "year_office": {

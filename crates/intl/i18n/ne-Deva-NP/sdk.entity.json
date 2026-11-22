@@ -6234,6 +6234,16 @@
       "name": "तुलसीपिए",
       "prose": "तुलसीपिए",
       "iast": "Tulasīpie"
+    },
+    "SHUKLA_GORAKHKALI_PUJA": {
+      "name": "गोरखकाली पूजा",
+      "prose": "गोरखकाली पूजा",
+      "iast": "Śukla Gorakhakālī Pūjā"
+    },
+    "KRISHNA_GORAKHKALI_PUJA": {
+      "name": "गोरखकाली पूजा",
+      "prose": "गोरखकाली पूजा",
+      "iast": "Kṛṣṇa Gorakhakālī Pūjā"
     }
   },
   "agni_vasa": {
