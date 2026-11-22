@@ -10,7 +10,23 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.6
+
+The sixth release candidate of 1.0.0, and the first since 1.0.0-rc.4: no
+1.0.0-rc.5 was tagged, so its work ships here. It carries the panchanga's
+reach without the muhurta family, every date of the coverage answered,
+festival groups, traditions and years, the Moon's own horizon, Ketaki's
+zodiac, custom ayanamshas, the Hindi festival names, the settings'
+sources, and three more Indian state sets. It is released on GitHub only;
+no package goes to a registry.
+**Numbers:** measured against 1.0.0-rc.4 entry by entry: each entry below
+says what it moves. Across them, every settings hash moves, since the
+settings gain knobs (among them `day.moonrise`, `festivals.observer`,
+`jaimini.seven_karaka_order` and `vargas.schemes`). Under `nepali-drik` and
+`nepali-committee` every moonrise moves earlier and every moonset later, by
+a median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The
+first and last dates answered are 1800-01-01 and 2399-12-31 over the
+built-in ephemeris, where the coverage's edges were refused.
 
 **The vedha, the blackouts and the limbs' longitudes without the muhurta family (SR-132, SR-137, SR-138).**
 **Numbers:** no computed value moves under any shipped profile or in a build with the
