@@ -198,6 +198,11 @@ that were asked for.
   duplicate `ts_intl_render`, which already answers every item at 140 bytes
   of parameters. Worth revisiting only if a measurement shows the per-item
   crossing costs a consumer more than the render itself.
+  A caller holding only JSON, an agent over the MCP server, has no
+  `ts_intl_render` to call; for it the record `intl.render` (2026-11-22)
+  says a batch of items in the context's locale, `{"items": [{key,
+  params}]}` in and each item's text out. It is the same render taken as
+  a batch, so the chart request still carries no locale.
 - **A typed plan in each binding**, generated over a schema, as the rules
   page defers its own typed result: the first step parses the section into
   each language's native value.
