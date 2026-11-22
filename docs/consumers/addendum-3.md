@@ -203,3 +203,77 @@ SR-89 is built on `lane/iso-regions`, which merges first, and SR-90 on this lane
 | SR-90 | P2 | done | `chart.found` and `almanac.days` take `place`; `crates/sdk/src/asked.rs` (`Where`, `resolved`); `03-design/geo-port.md` §6a | A resolved place's ground height is the observer's for the sunrise's dip and pressure unless the caller's `altitudeM` states one, which wins. The provenance records it as the applied convention `observer.height`: the height used and whether it came from the provider (its name, version, data release, and the height's source, resolution and datum), from the caller, or is sea level where the provider knows none. A Kathmandu sunrise resolved through the test provider equals the one with `altitudeM` written by hand, and its receipt replays `HELD` without the provider. The height moves the sunrise under the convention that names its air (`ATMOSPHERIC`, `"air": {}` for the standard air at the height); the shipped profiles' fixed 34′ reads no height, and a resolved place does not switch it. **Question:** should the consumer's profile name the air, which moves its stored sunrises by up to half a minute at Kathmandu? The typed C entry points take coordinates; bindings reach `place` through `record`. |
 | SR-91 | P3 | done | `almanac.days`'s `horizonProfile` and `visible`; `crates/astro/src/terrain.rs` (`HorizonProfile`, `visible_day`), `Solver::with_terrain`; `03-design/terrain-horizon.md` | A profile of the skyline's apparent elevation by azimuth, read linearly and round through north, answers each day's Sun and Moon `visibleRise` and `visibleSet` (instant, azimuth, skyline) beside the level horizon's `rise` and `set`, and `visibleState` (`ALWAYS_BELOW` when the body never clears it). The refraction is the convention's, carried to the skyline by Bennett's formula; the observer's height reaches it only through the air (SR-90), with no dip, since a profile is measured from the eye. The panchanga days still open at the astronomical sunrise, unchanged to the bit. Acceptance: at Kathmandu a 2° ridge at the rise's azimuth delays the sunrise by about eleven minutes, within 0.02 s of an independent derivation (655.29 s against 655.27 s on 12 November) (§6 of the design page). A TG-09 profile should carry terrestrial refraction and the Earth's curve already. |
 | SR-69 | P1 | done | release | `v1.0.0-rc.2` is the first tag a consumer pins (see the row above). |
+
+## 14. Addendum 8's requests (2026-11-14)
+
+Addendum 8 asks for Nepal's completeness and the settings' reach. Most of it ships in
+rc.6: on main since rc.4, in PR #494 (batch A), batch B and PR #492. What is open
+is scheduled in the roadmap (`07-roadmap/00-roadmap.md`, "SR-145").
+
+| SR | Wave | Status | Where | Note |
+|---|---|---|---|---|
+| SR-92 | P0 | done | rc.6, on main | Each lunar month carries its decision, its margin and the reason. |
+| SR-93 | P0 | done | rc.6, PR #494 | `festival-malamasa.md`: a kshaya lunation is both months it joins, and an observance a month rule placed carries `malamasa` (C2040–C2045). |
+| SR-94 | P0 | open | rc.8 | `almanac.compare` is not built. It reads `SKY` as a model, so it follows SR-113. |
+| SR-95 | P0 | done | rc.6, on main | Each limb span carries its margin to the nearest sunrise. |
+| SR-96 | P1 | done | rc.6, on main | `calendars.kirat_yele` and the era `KIRAT_YELE`, named in every shipped locale. |
+| SR-97 | P1 | done | rc.6, on main | The full Nepal Sambat date, in Nepal Bhasa month names. |
+| SR-98 | P0 | in part | private corpus | Phase 1 measured 730 days of VS 2082 and 2083 in a private corpus (mean absolute tithi end 0.31 min). The committee's print stays out of the public repository; its measured agreement is published in aggregate. The other years wait on editions that are not online. |
+| SR-99 | P1 | done | rc.6, on main | Bratabandha held to the committee's list. |
+| SR-100 | P0 | done | rc.6, on main | The drik basis is TRUE with APPARENT positions, cited and held by a coherence rule. |
+| SR-101 | P0 | done | rc.6, on main | A trigonometry knob for the Surya Siddhanta sky. |
+| SR-102 | P0 | done | rc.6, PR #492 | Moonrise by the Moon's own horizon. |
+| SR-103 | P0 | done | rc.6, on main | The polar day under `NEAREST_EVENT`. |
+| SR-104 | P1 | done | rc.6, PR #494 | Delta T's value and band in provenance, carried into day times. |
+| SR-105 | P0 | done | rc.6, on main | A DE440 limb-time oracle on the accuracy page. |
+| SR-106 | P1 | done | rc.6, PR #494 | The local eclipse's largest phase seen. |
+| SR-107 | P1 | done | rc.6, PR #494 | The four disputed Bikram Sambat rows, sourced. |
+| SR-108 | P2 | done | rc.6, PR #494 | Observer height and the horizon, documented. |
+| SR-109 | P1 | open | rc.8 | Consumer profiles as documents. |
+| SR-110 | P1 | done | rc.6, PR #494 | `settings.explain` and `settings.diff`, priced on CI. |
+| SR-111 | P2 | open | rc.8 | Mean planets and the rest of the frame. |
+| SR-112 | P1 | done | rc.6, batch B | Custom ayanamshas beyond linear, through `ayanamsha_coherence`. |
+| SR-113 | P1 | done | rc.6, PR #492 | Every part of the horizon a knob. |
+| SR-114 | P1 | done | rc.6, PR #494 | Varga schemes selectable. |
+| SR-115 | P2 | done | rc.6, PR #494 | Karaka schemes, seven-karaka namings among them. |
+| SR-116 | P1 | done | rc.6, batch B | `festivals.observer` (`FestivalObserver`): whose reading a festival keeps. |
+| SR-117 | P1 | open | rc.8 | Effect sizes and tiers in `settings.describe`. |
+| SR-118 | P1 | done | rc.6, on main | More coherence rules, the basis's among them. |
+| SR-119 | P1 | open | rc.9 | Change-point packs. |
+| SR-120 | P1 | open | rc.9 | Nutation on a grid, a wasm speed harness, a low-end Android gate. |
+| SR-121 | P2 | open | rc.9 | Sunrise packs for Nepal's local levels and the world's cities. |
+| SR-122 | P2 | open | rc.9 | The anniversary batch and thread efficiency. |
+
+## 15. Addendum 9's requests (2026-11-17)
+
+| SR | Wave | Status | Where | Note |
+|---|---|---|---|---|
+| SR-125 | P1 | done | rc.6, batch B | Festival groups in the pack (`festival-groups.md`). |
+| SR-126 | P2 | done | rc.6, batch B | `almanac.occurrences`: a rule's or a kind's days year by year in one call (`rule-years.md`). |
+| SR-127 | P0 | done | rc.6, PR #494 | The day sky's Moon stands at her true distance. |
+| SR-128 | P0 | done | rc.6, PR #494 | Every NEPAL_PANCHANGA member named in Hindi; no Latin name in Devanagari. |
+
+## 16. Addendum 10's requests (2026-11-17)
+
+Addendum 10's rows are built on four lanes (geo search, intl words, coverage range and
+panchanga reach). They are folded into one batch for rc.7.
+
+| SR | Wave | Status | Where | Note |
+|---|---|---|---|---|
+| SR-129 | P1 | done | rc.7, lane | List places through the geo port. |
+| SR-130 | P1 | superseded | rc.7 | Replaced by SR-142, the adapter on teigeodata 1.1.0. |
+| SR-131 | P1 | done | rc.7, lane | Sanskrit eclipse kinds. |
+| SR-132 | P2 | done | rc.7, lane | Eclipse vedha without the muhurta feature. |
+| SR-133 | P0 | this release | rc.6 | The tag is `v1.0.0-rc.6`, with SR-124. No rc.5 was tagged: its work ships in rc.6. |
+| SR-134 | P1 | done | rc.7, lane | Duration words for years, months and weeks. |
+| SR-135 | P1 | done | rc.7, lane | `i18n/` found without `CARGO_MANIFEST_DIR`. |
+| SR-136 | P1 | done | rc.7, lane | The supported range as data, every calendar answer across it. |
+| SR-137 | P1 | done | rc.7, lane | The panchanga's own sidereal longitudes at an instant. |
+| SR-138 | P2 | done | rc.7, lane | The muhurta blackouts without the muhurta feature. |
+| SR-139 | P1 | done | rc.7, lane | Hindi and Sanskrit names for the blackouts. |
+| SR-140 | P1 | done | rc.7, lane | English as Nepal writes it. |
+| SR-141 | P0 | done | rc.7, lane | Search and naming through the geo port. |
+| SR-142 | P0 | done | rc.7, lane | The adapter on teigeodata 1.1.0, wasm32 too. |
+| SR-143 | P1 | done | rc.7, lane | A city list ranked by population. |
+| SR-144 | P2 | done | rc.7, lane | The ocean zone where no area holds a point. |
+| SR-145 | P0 | in progress | rc.7 to rc.10 | Every day named (rc.7), text rules and the year-by-year evidence (rc.8), coverage (rc.9), four languages and the gist (rc.10); `nepal-festival-names.md`, `00-roadmap.md` "SR-145". |
