@@ -5775,10 +5775,9 @@ typedef enum ts_day_part {
  *
  * The named conventions only: each point of the disc, with standard
  * refraction or without. A profile may ask for the centre of the disc
- * at a chosen altitude instead, which is a `Custom` convention, or for
- * an observer's height, which is a `Composed` one; a blob carries that
- * altitude or that dip beside this, because a variant with a payload
- * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
+ * at a chosen altitude instead, which is a `Custom` convention; a blob
+ * carries that as its altitude beside this, because a variant with a
+ * payload cannot be an id (`03-design/chart-at-the-boundary.md` §8).
  */
 typedef enum ts_sunrise {
     /**

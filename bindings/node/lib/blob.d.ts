@@ -5117,12 +5117,12 @@ export interface Day {
    */
   readonly statePolarPolicy: Uint8Array;
   /**
-   * Which sunrise convention the arc was reckoned by, the one an atmospheric convention gave its air to, or a composed convention's disc point and refraction; `0xFF` for a custom altitude.
+   * Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.
    * The values are `Sunrise` ids.
    */
   readonly conventionKind: Uint8Array;
   /**
-   * The altitude in degrees when the convention is custom, the horizon's depression by the observer's height (negative) when it is composed with one; zero otherwise.
+   * The altitude in degrees when the convention is custom; zero otherwise.
    */
   readonly conventionValue: Float64Array;
   /**
