@@ -229,3 +229,17 @@ fn bhai_tika_keeps_the_aparahna_where_the_2nd_barely_holds_the_later_sunrise() {
         [(2020, 11, 16)]
     );
 }
+
+#[test]
+fn ramanujacharya_jayanti_is_ardra_in_vaishakha_s_bright_half() {
+    // C2330: in 2021 Tamil Chittirai's Ardra fell on 18 April and Nepal's
+    // calendars print Vaishakha's, 16 May.
+    assert_eq!(
+        kept("RAMANUJACHARYA_JAYANTI", (2021, 4, 10), (2021, 5, 31)),
+        [(2021, 5, 16)]
+    );
+    assert_eq!(
+        kept("RAMANUJACHARYA_JAYANTI", (2022, 4, 10), (2022, 5, 31)),
+        [(2022, 5, 5)]
+    );
+}
