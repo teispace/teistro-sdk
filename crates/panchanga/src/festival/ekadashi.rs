@@ -40,8 +40,9 @@ pub use mahadvadashi::{
 #[cfg_attr(feature = "schema", schemars(rename = "EkadashiVedha"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Vedha {
-    /// At arunodaya, four ghatis of the night before sunrise: the 10th
-    /// "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+    /// At arunodaya, four ghatis before sunrise, a ghati a sixtieth of the
+    /// sunrise-to-sunrise day: the 10th "entering even a pala past 56
+    /// ghatis" (C2328). The Vaishnavas' vedha.
     Arunodaya,
     /// At sunrise: the 10th standing "a pala past the sixty-ghati
     /// sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya
@@ -1216,9 +1217,13 @@ fn facts(
     })
 }
 
-/// Four ghatis of the night before a sunrise, a ghati a thirtieth of the
-/// night (C176): on a day of sixty, ghati 56.
+/// Ghati 56 of the sixty from the sunrise before: four ghatis before the
+/// sunrise, a ghati a sixtieth of the sunrise-to-sunrise day, as "a pala
+/// past 56 ghatis" counts (C2328). A thirtieth of the night (C176's unit
+/// inside a window) gives the same instant only when the night is half the
+/// day; Nepal's calendars mark the Vaishnava fast by the sixtieth in all 8
+/// years of VS 2076 to 2083 that print one, the night's in 5.
 fn arunodaya(before: &FestivalDay, day: &FestivalDay) -> JulianDay<Utc> {
-    let night = day.sunrise.get() - before.sunset.get();
-    JulianDay::literal((night / 30.0).mul_add(-4.0, day.sunrise.get()))
+    let ahoratra = day.sunrise.get() - before.sunrise.get();
+    JulianDay::literal((ahoratra / 60.0).mul_add(-4.0, day.sunrise.get()))
 }
