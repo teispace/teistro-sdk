@@ -62,8 +62,8 @@ other year or rule moves.
   readings part (5 of 5); the other rites that part stay on the sunrise's day, as the
   calendars print them (32 of 32).
 
-**Nepal's monthly darsha shraddha and ashtami vratas by *Dharmasindhu*, and five more days its calendars print.**
-**Numbers:** eight rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
+**Nepal's monthly darsha shraddha and ashtami vratas by *Dharmasindhu*, Gorakhkali's pujas, and five more days its calendars print.**
+**Numbers:** ten rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
 to 2083 Nepal's calendars print them on 33 of 34, 20 of 20 and 22 of 22 of the days they
 print them (the sunrise's rule would give 25, 20 and 7).
 - **Added:** `DARSHA_SHRADDHA` on each new moon, the adhika month's too, on the day whose
@@ -76,6 +76,10 @@ print them (the sunrise's rule would give 25, 20 and 7).
 - **Added:** `RAMANUJACHARYA_JAYANTI` on Ardra in Vaishakha's bright half, at sunrise, where
   Nepal's calendars print it in every year VS 2076 to 2083; in 2021 that is 16 May, where the
   south's Ardra in Chittirai was 18 April (C2330).
+- **Added:** Gorakhkali's puja on every 8th, as the national panchanga prints it (VS 2083
+  pp. 3–10): `SHUKLA_GORAKHKALI_PUJA` on the bright 8th's later day, and
+  `KRISHNA_GORAKHKALI_PUJA` on the dark 8th's later day only when the 8th reaches its
+  madhyahna, by the new fit `LaterAny`; Nepal's calendars agree 59 of 60 and 61 of 61.
 - **Added:** four days Nepal's calendars print on a festival's day: `TULASI_ROPANA` on
   Harishayani Ekadashi, `TULASI_PIYE` the day after, `TULASI_DAL_RAKHNE` on Nirjala Ekadashi
   and `VYASA_JAYANTI` on Guru Purnima, each in every year (or 8 of 9) that prints it.

@@ -90,6 +90,12 @@ pub(super) enum Fit {
     /// Gathamuga charhe's evening rite, kept on the first pradosha the
     /// fourteenth reaches (rc.8 audit, a community rule).
     EarlierAny(Window),
+    /// The later day whenever the tithi touches a window of it at all,
+    /// wholly or in part, alone or with the earlier; the earlier otherwise:
+    /// Gorakhkali's puja on a dark 8th, kept on the later day only when the
+    /// 8th reaches its madhyahna (the national panchanga, VS 2083 pp. 4 and
+    /// 10).
+    LaterAny(Window),
     /// The earlier day when both hold a window wholly, or neither does;
     /// the later when it holds it wholly or alone while the earlier holds
     /// it in part at most: *Dharmasindhu* p. 55's chaturthi, "the later
@@ -176,6 +182,17 @@ impl Fit {
                 ],
                 Later,
                 "the earlier day whenever the tithi touches it there, the later otherwise",
+            ),
+            Fit::LaterAny(window) => Fit::at(
+                window,
+                vec![
+                    Guard::new([case(Case::LaterOnly)], Later),
+                    Guard::new([case(Case::Both)], Later),
+                    Guard::new([case(Case::EqualParts)], Later),
+                    Guard::new([case(Case::UnequalParts)], Later),
+                ],
+                Earlier,
+                "the later day whenever the tithi touches it there, the earlier otherwise",
             ),
             Fit::LaterWhollyOrAlone(window) => Fit::at(
                 window,
@@ -1953,7 +1970,7 @@ const IN_ADHIKA: [(&str, Tithi, &str); 2] = [
 /// The fitted rules kept in every month, the adhika included, as the
 /// committee prints them in both editions: key, what is kept, fit, and
 /// where the days are printed (§3.4, §3.5).
-const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
+const EVERY_MONTH: [(&str, Occurs, Fit, &str); 9] = [
     (
         "PRADOSHA_VRATA",
         Occurs::DayOfPaksha { day_of_paksha: 13 },
@@ -1993,6 +2010,22 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
         "Nepal's national panchanga, VS 2083 pp. 6 and 16: सोमबारे औसी; Dharmasindhu p. 20 names the new moon on a Monday; VS 2083 p. 24 does not name Monday 8 March 2027's new moon, a day it prints as दर्शश्राद्ध",
     ),
     (
+        "SHUKLA_GORAKHKALI_PUJA",
+        Occurs::Tithi {
+            tithi: Tithi::ShuklaAshtami,
+        },
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2083 pp. 3 and 5: गोरखकालीपूजा in the row of अष्टमीव्रत on Vaishakha's and the adhika Jyeshtha's bright 8th, 24 May 2026 the later day though the 8th held the earlier madhyahna; Nepal's calendars print it on every bright 8th, 59 of 60 of VS 2076 to 2083 on this rule",
+    ),
+    (
+        "KRISHNA_GORAKHKALI_PUJA",
+        Occurs::Tithi {
+            tithi: Tithi::KrishnaAshtami,
+        },
+        Fit::LaterAny(MADHYAHNA),
+        "Nepal's national panchanga, VS 2083 p. 4: गोरखकालीपूजा on 9 May 2026, the earlier day, the 8th ending before the later madhyahna though it held the later sunrise; p. 10: on 6 August 2026, the later, a day after अष्टमीव्रत; Nepal's calendars print it on every dark 8th, 61 of 61 of VS 2076 to 2083 on this rule and 48 on the sunrise's",
+    ),
+    (
         "CHANDRODAYA",
         Occurs::Tithi {
             tithi: Tithi::ShuklaDvitiya,
@@ -2012,7 +2045,7 @@ const EVERY_MONTH_BY_TEXT: [(&str, Occurs, Fit, &str); 3] = [
             tithi: Tithi::ShuklaAshtami,
         },
         Fit::UdayaLater,
-        "Dharmasindhu p. 10: for a vrata the bright 8th is the later (व्रतमात्रेऽष्टमी शुक्लपक्षे परा); Nepal's calendars print अष्टमी व्रत on it, 20 of 20 bright 8ths of VS 2076–2083 on this rule",
+        "Dharmasindhu p. 10: for a vrata the bright 8th is the later (व्रतमात्रेऽष्टमी शुक्लपक्षे परा); Nepal's national panchanga, VS 2083 p. 5: अष्टमीव्रत on 24 May 2026, the later day; Nepal's calendars print अष्टमी व्रत on it, 20 of 20 bright 8ths of VS 2076–2083 on this rule",
     ),
     (
         "KRISHNA_ASHTAMI_VRATA",
@@ -2020,7 +2053,7 @@ const EVERY_MONTH_BY_TEXT: [(&str, Occurs, Fit, &str); 3] = [
             tithi: Tithi::KrishnaAshtami,
         },
         Fit::Share(Window::Pradosha),
-        "Dharmasindhu p. 10: some fast on every dark 8th for Kalabhairava (सर्वकृष्णाष्टमीषु कालभैरवोद्देशेन केचिदुपवसन्ति), the 8th holding the pradosha by the Kaustubha and by the practice of the learned (प्रदोषव्यापिनीति कौस्तुभे); Nepal's calendars print अष्टमी व्रत on it, 22 of 22 dark 8ths of VS 2076–2083 on this rule, and 15 on the earlier day the text gives a vrata otherwise",
+        "Dharmasindhu p. 10: some fast on every dark 8th for Kalabhairava (सर्वकृष्णाष्टमीषु कालभैरवोद्देशेन केचिदुपवसन्ति), the 8th holding the pradosha by the Kaustubha and by the practice of the learned (प्रदोषव्यापिनीति कौस्तुभे); Nepal's national panchanga, VS 2083 p. 10: अष्टमीव्रत on 5 August 2026, whose pradosha holds the 8th, a day before गोरखकालीपूजा; Nepal's calendars print अष्टमी व्रत on it, 22 of 22 dark 8ths of VS 2076–2083 on this rule, and 15 on the earlier day the text gives a vrata otherwise",
     ),
     (
         "DARSHA_SHRADDHA",
@@ -2531,6 +2564,24 @@ mod tests {
             .iter()
             .find(|guard| guard.when.iter().all(holds))
             .map_or(otherwise, |guard| guard.choose)
+    }
+
+    #[test]
+    fn the_later_any_keeps_the_later_whenever_it_is_touched() {
+        use Choice::{Earlier, Later};
+        // Gorakhkali's dark 8th: the later day whenever madhyahna holds it.
+        let fit = Fit::LaterAny(MADHYAHNA);
+        for (earlier, later, choice) in [
+            (0.0, 0.4, Later),
+            (1.0, 1.0, Later),
+            (0.5, 0.5, Later),
+            (1.0, 0.2, Later),
+            (1.0, 0.0, Earlier),
+            (0.0, 0.0, Earlier),
+        ] {
+            assert_eq!(kept(fit, earlier, later), choice, "{earlier}, {later}");
+        }
+        assert!(fit.decide().3.starts_with("madhyahna"));
     }
 
     #[test]

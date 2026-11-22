@@ -5785,6 +5785,16 @@
       "name": "तुलसी पिए",
       "prose": "तुलसी पिए",
       "iast": "Tulasīpie"
+    },
+    "SHUKLA_GORAKHKALI_PUJA": {
+      "name": "शुक्ल गोरखकाली पूजा",
+      "prose": "शुक्ल गोरखकाली पूजा",
+      "iast": "Śukla Gorakhakālī Pūjā"
+    },
+    "KRISHNA_GORAKHKALI_PUJA": {
+      "name": "कृष्ण गोरखकाली पूजा",
+      "prose": "कृष्ण गोरखकाली पूजा",
+      "iast": "Kṛṣṇa Gorakhakālī Pūjā"
     }
   },
   "era": {
