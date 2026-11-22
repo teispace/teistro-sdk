@@ -1711,7 +1711,45 @@ impl DatedRule {
         rules.extend(Self::on_printed_dates());
         rules.extend(Self::on_the_suns_entry());
         rules.extend(Self::on_kept_dates());
+        rules.extend(Self::on_the_sighted_moon());
         rules
+    }
+
+    /// Nepal's two Eids, on the sighted Hijri calendar's date: the gazette
+    /// keeps each "on the day of" the festival and prints no day, and the
+    /// sighted months at the request's place give it
+    /// (`03-design/hijri-sighted.md` §9), all twelve of AH 1440 to 1447 at
+    /// Kathmandu (`03-design/hijri-sighted-measured.md`).
+    fn on_the_sighted_moon() -> [DatedRule; 2] {
+        let eid = |key: &str, month: u8, day: i8, clause: &str, printed: &str| DatedRule {
+            key: key.to_owned(),
+            source: format!(
+                "Nepal Gazette vol. 75 no. 67 part 5 (Falgun 18, 2082), the Ministry of Home Affairs' public holidays of VS 2083, {clause}: \"{printed}\", with no day printed; the day is the sighted Hijri calendar's"
+            ),
+            on: Dated::CivilDate {
+                calendar: Calendar::HijriSighted,
+                month,
+                day,
+                skipped: None,
+            },
+            meta: super::FestivalMeta::default(),
+        };
+        [
+            eid(
+                "EID_AL_FITR",
+                10,
+                1,
+                "2.1 (त)",
+                "इस्लाम धर्मावलम्बीको पर्व ईद (ईद उल फित्र) का दिन",
+            ),
+            eid(
+                "EID_AL_ADHA",
+                12,
+                10,
+                "2.1 (थ)",
+                "इस्लाम धर्मावलम्बीको पर्व बकर ईद (ईद उल अजहा) का दिन",
+            ),
+        ]
     }
 
     /// The days the national panchanga prints in neither edition, each

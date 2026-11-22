@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 
 use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
-use teistro::{CalendarDate, Context, Ephemeris, FestivalRequest, UtcOffset};
+use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 use teistro_astro::completion::Completion;
 use teistro_astro::crescent::{Crescent, Sighting};
 use teistro_astro::delta_t::DeltaTModel;
@@ -306,6 +306,49 @@ fn a_request_keeps_its_rules_on_the_sighted_days() {
         )
         .unwrap_err();
     assert_eq!(refused.field(), Some("calendars.hijri_zone"));
+}
+
+/// Nepal's own pack keeps the gazette's two Eids on the sighted days at
+/// Kathmandu: each Eid from Eid al-Fitr 1445 (April 2024) to Eid al-Adha
+/// 1447 (May 2026) once, every printed one on its printed day.
+#[test]
+fn the_nepal_pack_keeps_its_printed_eids() {
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let request = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    let found = context
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2024, 4, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2026, 6, 30),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &request,
+        )
+        .unwrap();
+    let kept: Vec<_> = found
+        .value
+        .dated
+        .iter()
+        .filter(|kept| kept.rule.starts_with("EID_AL_"))
+        .map(|kept| {
+            let day = &kept.day;
+            (
+                kept.rule.as_str(),
+                fixed_from_gregorian(day.year, day.month, day.day),
+            )
+        })
+        .collect();
+    // Six Eids fall in the span; the calendars measured print five of
+    // them (Eid al-Adha 1446 is not among the twelve), each on its day.
+    assert_eq!(kept.len(), 6, "{kept:?}");
+    let missed: Vec<_> = nepal_days()
+        .into_iter()
+        .filter(|&(key, year, day)| year >= 1445 && !kept.contains(&(key, day)))
+        .collect();
+    assert!(missed.is_empty(), "{missed:?} in {kept:?}");
 }
 
 /// The sweep the measured page prints: every criterion and zone against

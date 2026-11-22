@@ -29,7 +29,8 @@ first and last dates answered are 1800-01-01 and 2399-12-31 over the
 built-in ephemeris, where the coverage's edges were refused.
 
 **The sighted Hijri calendar.**
-**Numbers:** no day moves: only a rule that names the new calendar reads it.
+**Numbers:** `NEPAL_PANCHANGA` gains its two Eids, about two days a year; no
+other pack's day moves, since only a rule that names the new calendar reads it.
 Every settings hash moves, the settings gaining `calendars.hijri_criterion` and
 `calendars.hijri_zone`; no profile version moves, since no profile but the root
 sets them. The catalogue's `calendar` kind gains a member (16 to 17).
@@ -48,6 +49,10 @@ sets them. The catalogue's `calendar` kind gains a member (16 to 17).
   `teistro_calendar::hijri_sighted::SightedMonths`,
   `teistro_panchanga::hijri_sighted::sighted_months` and
   `Almanac::sighted_hijri`.
+- **New:** `NEPAL_PANCHANGA` keeps Eid al-Fitr (1 Shawwal) and Eid al-Adha
+  (10 Dhu al-Hijja) on the sighted calendar, the gazette's clauses 2.1 त and
+  थ, which print no day; every printed Eid from AH 1445 falls on its day at
+  Kathmandu. Before, the pack gave neither.
 
 **A rashifal's transit says how long it holds (C2313).**
 **Numbers:** no verdict, house or event moves. Each period now places the

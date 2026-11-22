@@ -285,21 +285,23 @@ sa-Deva: "मासस्य एकोनत्रिंशे दिने स�
 दुर्बलतमम्। दुर्बलतरं क्षेत्रं चन्द्रं शीघ्रं पश्यति, मासः च एकेन दिनेन
 पूर्वं आरभते।"
 
-## 9. Wiring the Eids into the Nepal packs
+## 9. The Eids in the Nepal pack
 
-Not done here: the Nepal packs, their metadata and their names belong to
-another lane. When they take the Eids, the pack adds two dated rules,
+`NEPAL_PANCHANGA` keeps the gazette's two Eids (clauses 2.1 त and थ,
+which print no day) as two dated rules,
 
 ```json
 { "key": "EID_AL_FITR", "on": { "civilDate": { "calendar": "HIJRI_SIGHTED", "month": 10, "day": 1 } } }
 { "key": "EID_AL_ADHA", "on": { "civilDate": { "calendar": "HIJRI_SIGHTED", "month": 12, "day": 10 } } }
 ```
 
-with the holiday class and names the pack's other public holidays carry.
-The request's place is Kathmandu's for the national list; the default
-settings need no change. A declared day still goes in as a published
-`SET` entry, which wins over the computed one and is marked as
-published.
+gazetted, of the Islamic tradition, and of Nepal. The request's place is
+Kathmandu's for the national list; the default settings need no change.
+A request on the pack therefore reckons the sighted months over its days.
+A declared day still goes in as a published `SET` entry, which wins over
+the computed one and is marked as published. The test
+`the_nepal_pack_keeps_its_printed_eids` holds the pack to every printed
+Eid from AH 1445 on.
 
 ## 10. Open questions
 
