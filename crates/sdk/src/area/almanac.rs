@@ -617,7 +617,15 @@ impl<'a> AlmanacArea<'a> {
                 sighted_convention(provenance, sighting, None);
                 Ok(Some(months))
             }
-            Err(refused) if matches!(refused.status, Status::Limit | Status::OutOfRange) => {
+            // No crescent is judged where the chain of months reaches past the
+            // coverage, or where the criterion's evening does not happen (a
+            // polar day): every other rule is still answered.
+            Err(refused)
+                if matches!(
+                    refused.status,
+                    Status::Limit | Status::OutOfRange | Status::Unsupported
+                ) =>
+            {
                 sighted_convention(provenance, sighting, Some(&refused.message));
                 Ok(None)
             }

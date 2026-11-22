@@ -366,8 +366,11 @@ fn the_nepal_pack_keeps_its_printed_eids() {
 /// gives no Eid, and says why (`03-design/hijri-sighted.md` §5).
 #[test]
 fn a_place_without_an_evening_keeps_the_packs_other_days() {
+    // A polar day has no sunrise either, so an app there names a policy
+    // for the day's other rules; the crescent's evening still never comes.
     let context = Context::builder()
         .ephemeris([Ephemeris::Builtin])
+        .settings_json(r#"{"day": {"polar_day_policy": "CIVIL_MIDNIGHT"}}"#)
         .build()
         .unwrap();
     let tromso = place(69.6492, 18.9553, 10.0);
@@ -382,11 +385,20 @@ fn a_place_without_an_evening_keeps_the_packs_other_days() {
         )
         .unwrap();
     assert!(!found.value.dated.is_empty() || !found.value.observances.is_empty());
-    assert!(found.value.dated.iter().all(|kept| !kept.rule.starts_with("EID_AL_")));
     assert!(
-        found.provenance.applied_conventions.iter().any(|applied| applied.knob
-            == "calendars.hijri_criterion"
-            && applied.reason.contains("were not reckoned")),
+        found
+            .value
+            .dated
+            .iter()
+            .all(|kept| !kept.rule.starts_with("EID_AL_"))
+    );
+    assert!(
+        found
+            .provenance
+            .applied_conventions
+            .iter()
+            .any(|applied| applied.knob == "calendars.hijri_criterion"
+                && applied.reason.contains("were not reckoned")),
         "{:?}",
         found.provenance.applied_conventions
     );
