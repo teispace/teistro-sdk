@@ -2010,13 +2010,7 @@ static PRINTED: [(i32, &str, Day, &str); 634] = [
 /// rule): the day it gives within a fortnight of the printed one, or none,
 /// and the cause. The pass fails on a parting with no entry, on an entry
 /// whose row agrees, and on an entry whose day is not the one found.
-const PARTS: [(i32, &str, Option<Day>, &str); 5] = [
-    (
-        2082,
-        "HILE_JATRA",
-        Some((2025, 9, 1)),
-        "the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)",
-    ),
+const PARTS: [(i32, &str, Option<Day>, &str); 3] = [
     (
         2083,
         "INDRADHWAJA_PATAN",
@@ -2031,15 +2025,9 @@ const PARTS: [(i32, &str, Option<Day>, &str); 5] = [
     ),
     (
         2083,
-        "HILE_JATRA",
-        Some((2026, 9, 20)),
-        "the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)",
-    ),
-    (
-        2083,
         "NUWAKOT_DUPCHESHWAR_MELA",
         Some((2026, 12, 23)),
-        "the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)",
+        "the committee prints the mela a day apart from Dattatreya jayanti, whose day the rule keeps (C611)",
     ),
 ];
 
