@@ -4822,7 +4822,7 @@ void main() {
       members: 0,
       written: RenderRequest(
         items: [
-          Item(
+          PlanItem(
             key: 'sdk.rashifal.saturn',
             params: <String, Object?>{'house': 12, 'phase': 'RISING', 'spell': 'no'},
           ),

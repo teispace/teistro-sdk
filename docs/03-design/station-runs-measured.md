@@ -10,7 +10,7 @@ between two samples. That is sound only while no two stations fall
 inside one stride, so the stride is bounded by three quarters of the
 body's shortest run between stations, which `shortest_run_days` states
 as a table. This page holds the table to the built-in ephemeris over its
-whole coverage, JD 2378497.0 to 2597641.0, sampled daily in the
+whole coverage, JD 2378496.5 to 2597641.5, sampled daily in the
 canonical frame. It then compares every crossing the strided scan finds
 with the fine scan's, over signs, nakshatras and a single point
 together: from 1900 to 2100 in the canonical frame, and from 2000 to

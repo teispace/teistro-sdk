@@ -1416,7 +1416,7 @@ export interface RenderRequest {
   /**
    * The items, said in their order.
    */
-  readonly items: readonly Item[];
+  readonly items: readonly PlanItem[];
 }
 
 /**
@@ -3399,7 +3399,7 @@ export type WordsStyle = 'PLAIN' | 'VERBOSE';
 /**
  * One thing to say: a message key and the slots it is said with.
  */
-export interface Item {
+export interface PlanItem {
   /**
    * The message, as `sdk.reason.grahaInRashi`.
    */
