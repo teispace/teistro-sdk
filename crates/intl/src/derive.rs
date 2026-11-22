@@ -660,9 +660,11 @@ mod tests {
         // transliterator writes letter for letter (the charhe's `Carhe` is
         // the spoken name, as Dila's and Lai's are). 549 with the text
         // terms of 28 kinds (SR-128): 29 of them carry an IAST form the
-        // Sanskrit term spells letter for letter.
+        // Sanskrit term spells letter for letter. 558 with the twenty-one
+        // names of Nepal's festival days (SR-145), 9 of them spelled letter
+        // for letter.
         assert_eq!(
-            derived.agreeing, 549,
+            derived.agreeing, 558,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }
