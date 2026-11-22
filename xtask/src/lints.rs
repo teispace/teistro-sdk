@@ -2616,7 +2616,7 @@ fn declaration_gated(body: &str, module: &str, feature: &str) -> Option<bool> {
                 .is_some_and(|vis| vis.starts_with("pub"))
     })?;
     let gate = format!("feature = \"{feature}\"");
-    let attributes = lines[..at]
+    let mut attributes = lines[..at]
         .iter()
         .rev()
         .map(|line| line.trim())
