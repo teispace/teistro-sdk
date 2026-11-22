@@ -468,7 +468,7 @@ mod tests {
         // An equal hora is the clock's: those ending by the cut, 19 of 24.
         let equal = horas(&cut, Reckoning::Equal).unwrap();
         assert_eq!(equal.len(), 19);
-        assert!(equal[18].end <= cut.next_sunrise);
+        assert!(equal[18].end.get() <= cut.next_sunrise.get());
         // A day cut at its start knows its end: every hora under either.
         let started = LocalDay {
             clipped: Some(Clipped::Start),
