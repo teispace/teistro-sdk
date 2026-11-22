@@ -663,9 +663,10 @@ mod tests {
         // terms of 28 kinds (SR-128): 29 of them carry an IAST form the
         // Sanskrit term spells letter for letter. 558 with the twenty-one
         // names of Nepal's festival days (SR-145), 9 of them spelled letter
-        // for letter.
+        // for letter; 570 with the sankrantis' month names and Nepal's six
+        // names for shared days (C2312, C2314, C2315), 12 more.
         assert_eq!(
-            derived.agreeing, 558,
+            derived.agreeing, 570,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

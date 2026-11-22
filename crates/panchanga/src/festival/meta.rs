@@ -1289,6 +1289,13 @@ const NAMES: [Names; 37] = [
     ("MINA_SANKRANTI", None, &["CHAITRA_SANKRANTI"], Some(0), SANKRANTI),
     ("MITHUNA_SANKRANTI", None, &["ASAR_SANKRANTI"], Some(0), SANKRANTI),
     (
+        "NATIONAL_PADDY_DAY",
+        None,
+        &["DAHI_CHIURA_KHANE_DIN"],
+        None,
+        "Kantipur, VS 2082 Asar 15 (29 June 2025): Asar 15 is राष्ट्रिय धान दिवस, kept since VS 2062, and दही-चिउरा is eaten that day; three calendars published in Nepal over VS 2076 to 2084, read for SR-145, print दहीचिउरा खाने दिन on Asar 15 (C2315)",
+    ),
+    (
         "NAVARATRA_ARAMBHA",
         Some("GHATASTHAPANA"),
         &["NAVARATRA_ARAMBHA"],
@@ -1958,13 +1965,6 @@ const NEPAL_KEYS: [(&str, u8); 501] = [
     ("NATIONAL_TOPI_DAY", 16),
     ("NATIONAL_YOGA_DAY", 16),
     ("NAVAMI_SHRADDHA", 19),
-    (
-        "NATIONAL_PADDY_DAY",
-        None,
-        &["DAHI_CHIURA_KHANE_DIN"],
-        None,
-        "Kantipur, VS 2082 Asar 15 (29 June 2025): Asar 15 is राष्ट्रिय धान दिवस, kept since VS 2062, and दही-चिउरा is eaten that day; three calendars published in Nepal over VS 2076 to 2084, read for SR-145, print दहीचिउरा खाने दिन on Asar 15 (C2315)",
-    ),
     ("NAVARATRA_ARAMBHA", 1),
     ("NEPALI_ARMY_DAY", 15),
     ("NEPAL_NURSING_DAY", 16),
