@@ -462,3 +462,120 @@ impl EphemerisProvider for ModernParts {
 fn zodiac_name(choice: &AyanamshaChoice) -> String {
     choice.describe()
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::float_cmp,
+        reason = "tests fail by panicking, and compare a cell passed through"
+    )]
+
+    use teistro_core::catalogue::Ayanamsha;
+    use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    use teistro_port_ephemeris::{Horizon, HorizonEventKind, TestProvider};
+
+    use super::*;
+
+    fn parts() -> ModernParts {
+        ModernParts::new(SiddhantaProvider::text(), Box::new(TestProvider::new()))
+    }
+
+    fn sunrise_of(
+        sky: &dyn EphemerisProvider,
+        body: Body,
+    ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
+        sky.horizon_event(&HorizonRequest {
+            body,
+            kind: HorizonEventKind::Rise,
+            place: Place::new(
+                Latitude::literal(27.7172),
+                Longitude::literal(85.324),
+                Altitude::literal(1400.0),
+            ),
+            from: JulianDay::literal(2_460_413.5),
+            window_days: 1.0,
+            horizon: Horizon::CENTRE_NO_REFRACTION,
+            conventions: Conventions::STANDARD,
+        })
+    }
+
+    /// Without a modern part the sky is the text's: its identity, its span
+    /// and its sunrise.
+    #[test]
+    fn a_sky_with_no_modern_part_is_the_texts() {
+        let sky = parts();
+        let text = SiddhantaProvider::text();
+        assert_eq!(sky.capabilities().identity, text.capabilities().identity);
+        assert_eq!(sky.capabilities().jd_range, text.capabilities().jd_range);
+        assert_eq!(
+            sunrise_of(&sky, Body::Sun).unwrap(),
+            sunrise_of(&text, Body::Sun).unwrap()
+        );
+        assert_eq!(
+            sky.text().capabilities().identity,
+            text.capabilities().identity
+        );
+        assert_eq!(
+            sky.modern().capabilities().identity,
+            TestProvider::new().capabilities().identity
+        );
+    }
+
+    /// The modern sunrise is the Sun's: another body's rise is refused by
+    /// name rather than taken from the text.
+    #[test]
+    fn a_modern_sunrise_is_the_suns_alone() {
+        let sky = parts().with_sunrise();
+        assert!(
+            sky.capabilities()
+                .identity
+                .data_version
+                .contains("sunrise from")
+        );
+        assert!(sunrise_of(&sky, Body::Sun).unwrap().is_some());
+        let refused = sunrise_of(&sky, Body::Moon).unwrap_err();
+        assert!(
+            matches!(refused, ProviderError::Unsupported { .. }),
+            "{refused:?}"
+        );
+    }
+
+    /// The star planets come from the modern ephemeris and the Sun and the
+    /// Moon from the text, with or without speeds.
+    #[test]
+    fn the_star_planets_alone_are_modern() {
+        let lahiri = AyanamshaChoice::Catalogued {
+            id: Ayanamsha::Lahiri,
+        };
+        let sky = parts().with_planets(lahiri);
+        let version = sky.capabilities().identity.data_version;
+        assert!(
+            version.contains("star planets from") && !version.contains("sunrise"),
+            "{version}"
+        );
+        let text = SiddhantaProvider::text();
+        let jds = [2_460_413.5];
+        let bodies = [Body::Sun, Body::Mars];
+        for speeds in [true, false] {
+            let request = PositionRequest {
+                speeds,
+                ..PositionRequest::new(&jds, TimeScale::Ut1, &bodies, SiddhantaProvider::FRAME)
+            };
+            let ours = sky.positions(&request).unwrap();
+            let theirs = text.positions(&request).unwrap();
+            assert_eq!(ours.at(0, 0).unwrap().lon, theirs.at(0, 0).unwrap().lon);
+            let mars = ours.at(0, 1).unwrap();
+            assert_ne!(mars.lon, theirs.at(0, 1).unwrap().lon);
+            assert!((0.0..360.0).contains(&mars.lon));
+        }
+        // A request with no star planet is the text's answer whole.
+        let moon = [Body::Moon];
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &moon, SiddhantaProvider::FRAME);
+        assert_eq!(
+            sky.positions(&request).unwrap().at(0, 0).unwrap().lon,
+            text.positions(&request).unwrap().at(0, 0).unwrap().lon
+        );
+    }
+}

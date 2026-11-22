@@ -2439,3 +2439,55 @@ pub(crate) fn answered_run(
     let to = last.map_or(to, |last| to.min(last));
     (from <= to).then_some((from, to))
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use teistro_astro::terrain::HorizonSample;
+
+    use super::*;
+
+    /// A request asks for days alone until any other section is asked for,
+    /// and each section reads back as it was asked.
+    #[test]
+    fn a_request_is_days_alone_until_a_section_is_asked() {
+        let plain = AlmanacRequest::new();
+        assert!(plain.is_days_alone());
+        assert!(!plain.days_omitted() && plain.festivals().is_none());
+        let step = SkyStep::of_minutes(30).unwrap();
+        let hills = HorizonProfile::try_new(vec![HorizonSample {
+            azimuth_deg: 90.0,
+            elevation_deg: 2.0,
+        }])
+        .unwrap();
+        let sections = [
+            AlmanacRequest::new().with_festivals(FestivalRequest::new(Vec::new())),
+            AlmanacRequest::new().with_years(),
+            AlmanacRequest::new().with_eclipses(),
+            AlmanacRequest::new().with_lagnas(),
+            AlmanacRequest::new().with_sky(step),
+            AlmanacRequest::new().with_visible(hills.clone()),
+            AlmanacRequest::new().without_days(),
+        ];
+        for asked in &sections {
+            assert!(!asked.is_days_alone(), "{asked:?}");
+        }
+        let [festivals, years, eclipses, lagnas, sky, visible, omitted] = sections;
+        assert!(festivals.festivals().is_some());
+        assert!(years.years() && eclipses.eclipses() && lagnas.lagnas());
+        assert_eq!((sky.sky(), visible.visible()), (Some(step), Some(&hills)));
+        assert!(omitted.days_omitted());
+        // The flags that change what a day carries, not whether days alone
+        // are asked.
+        let flags = AlmanacRequest::new()
+            .with_nepal_sambat()
+            .with_homa_ahuti()
+            .with_markers()
+            .with_gowri()
+            .with_uncertainty();
+        assert!(flags.nepal_sambat() && flags.homa_ahuti() && flags.markers());
+        assert!(flags.gowri() && flags.uncertainty());
+    }
+}

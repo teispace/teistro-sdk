@@ -704,6 +704,24 @@ fn angle(a: &Vector3, b: &Vector3) -> f64 {
 mod tests {
     use super::*;
 
+    /// Yallop's six zones are cut at his q edges, each edge in the zone
+    /// below it.
+    #[test]
+    fn yallops_zones_are_cut_at_his_edges() {
+        let edges = [
+            (0.216, Zone::A, Zone::B),
+            (-0.014, Zone::B, Zone::C),
+            (-0.160, Zone::C, Zone::D),
+            (-0.232, Zone::D, Zone::E),
+            (-0.293, Zone::E, Zone::F),
+        ];
+        for (edge, above, below) in edges {
+            assert_eq!(yallop_zone(edge + 1e-9), above, "above {edge}");
+            assert_eq!(yallop_zone(edge), below, "at {edge}");
+        }
+        assert_eq!(yallop_zone(-1.0), Zone::F);
+    }
+
     /// Odeh's table V (p. 43) is his equation's zone edges: at each width
     /// the tabled ARCV1, ARCV2 and ARCV3 give V at -0.96, 2 and 5.65, to
     /// the table's tenth of a degree.

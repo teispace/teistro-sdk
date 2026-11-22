@@ -223,6 +223,23 @@ mod tests {
             field(r#"{"total": 20, "dushkut": true}"#).as_deref(),
             Some("band.dushkut")
         );
+        assert_eq!(field(r#"{"total": -1}"#).as_deref(), Some("band.total"));
+        // One table grades a total: a shipped one and a written one are two.
+        let both = BandRequest {
+            total: 20.0,
+            dushkuta: false,
+            shipped: Some("NEPALI_ALMANAC".into()),
+            bands: Some(GunaBands::default()),
+            locale: None,
+        };
+        assert_eq!(both.table().unwrap_err().field(), Some("bands"));
+        let nan = BandRequest {
+            total: f64::NAN,
+            shipped: None,
+            bands: None,
+            ..both
+        };
+        assert_eq!(nan.table().unwrap_err().field(), Some("total"));
     }
 
     #[test]
