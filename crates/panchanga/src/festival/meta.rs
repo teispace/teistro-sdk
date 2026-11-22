@@ -2212,9 +2212,8 @@ mod tests {
                 "{key} is not a Nepal key"
             );
             for names in FestivalMeta::nepal(key).names {
-                if let Err(error) = names.check() {
-                    panic!("{key}: {error}");
-                }
+                let checked = names.check();
+                assert!(checked.is_ok(), "{key}: {checked:?}");
             }
         }
     }
