@@ -1145,7 +1145,7 @@ fn map_records() -> Vec<Record> {
 }
 
 /// The locale engine's records.
-fn intl_records() -> [Record; 6] {
+fn intl_records() -> [Record; 7] {
     [
         Record {
             name: "intl.inWords",
