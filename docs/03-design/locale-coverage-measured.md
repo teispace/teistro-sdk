@@ -6,14 +6,14 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 671 of 671 | 100.0% | 362 of 362 | 100.0% |
-| `en-Latn-NP` | base | 0 of 671 | 0.0% | 0 of 362 | 0.0% |
-| `hi-Deva-IN` | base | 661 of 671 | 98.5% | 349 of 362 | 96.4% |
-| `ne-Deva-NP` | strict | 671 of 671 | 100.0% | 362 of 362 | 100.0% |
-| `sa-Deva` | base | 660 of 671 | 98.4% | 346 of 362 | 95.6% |
-| `sa-Latn` | base | 660 of 671 | 98.4% | 346 of 362 | 95.6% |
+| `en-Latn` | strict | 671 of 671 | 100.0% | 363 of 363 | 100.0% |
+| `en-Latn-NP` | base | 0 of 671 | 0.0% | 0 of 363 | 0.0% |
+| `hi-Deva-IN` | base | 661 of 671 | 98.5% | 350 of 363 | 96.4% |
+| `ne-Deva-NP` | strict | 671 of 671 | 100.0% | 363 of 363 | 100.0% |
+| `sa-Deva` | base | 660 of 671 | 98.4% | 347 of 363 | 95.6% |
+| `sa-Latn` | base | 660 of 671 | 98.4% | 347 of 363 | 95.6% |
 
-671 members of 45 kinds, 362 messages.
+671 members of 45 kinds, 363 messages.
 
 ## By kind
 

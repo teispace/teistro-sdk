@@ -2237,6 +2237,7 @@ export function messages(r) {
             ghatiReckoning: () => r.render('sdk.settings.effect.day.ghatiReckoning'),
             horaReckoning: () => r.render('sdk.settings.effect.day.horaReckoning'),
             horizon: () => r.render('sdk.settings.effect.day.horizon'),
+            moonrise: () => r.render('sdk.settings.effect.day.moonrise'),
             polarDayPolicy: () => r.render('sdk.settings.effect.day.polarDayPolicy'),
             sunrise: () => r.render('sdk.settings.effect.day.sunrise'),
           },

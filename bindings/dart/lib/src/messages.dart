@@ -5718,6 +5718,7 @@ final class MessagesSdkSettingsEffectDay {
   String ghatiReckoning() => _r.render('sdk.settings.effect.day.ghatiReckoning');
   String horaReckoning() => _r.render('sdk.settings.effect.day.horaReckoning');
   String horizon() => _r.render('sdk.settings.effect.day.horizon');
+  String moonrise() => _r.render('sdk.settings.effect.day.moonrise');
   String polarDayPolicy() => _r.render('sdk.settings.effect.day.polarDayPolicy');
   String sunrise() => _r.render('sdk.settings.effect.day.sunrise');
 }

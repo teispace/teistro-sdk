@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 362 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 363 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -648,6 +648,7 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::GhatiReckoning, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::HoraReckoning, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Horizon, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Moonrise, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::PolarDayPolicy, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::day::Sunrise, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::festivals::Observer, true);

@@ -2969,6 +2969,10 @@ class MessagesSdkSettingsEffectDay:
         """`sdk.settings.effect.day.horizon`"""
         return self._r.render("sdk.settings.effect.day.horizon")
 
+    def moonrise(self) -> str:
+        """`sdk.settings.effect.day.moonrise`"""
+        return self._r.render("sdk.settings.effect.day.moonrise")
+
     def polar_day_policy(self) -> str:
         """`sdk.settings.effect.day.polarDayPolicy`"""
         return self._r.render("sdk.settings.effect.day.polarDayPolicy")

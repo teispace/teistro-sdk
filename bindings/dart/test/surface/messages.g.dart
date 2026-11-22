@@ -286,6 +286,7 @@ final List<MessageSurface> messages = [
   MessageSurface('MessagesSdkSettingsEffectDay.ghatiReckoning', (m) => m.sdk.settings.effect.day.ghatiReckoning, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.horaReckoning', (m) => m.sdk.settings.effect.day.horaReckoning, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.horizon', (m) => m.sdk.settings.effect.day.horizon, const []),
+  MessageSurface('MessagesSdkSettingsEffectDay.moonrise', (m) => m.sdk.settings.effect.day.moonrise, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.polarDayPolicy', (m) => m.sdk.settings.effect.day.polarDayPolicy, const []),
   MessageSurface('MessagesSdkSettingsEffectDay.sunrise', (m) => m.sdk.settings.effect.day.sunrise, const []),
   MessageSurface('MessagesSdkSettingsEffectFestivals.observer', (m) => m.sdk.settings.effect.festivals.observer, const []),
