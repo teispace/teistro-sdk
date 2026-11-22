@@ -10,23 +10,18 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## 1.0.0-rc.6
+## 1.0.0-rc.7
 
-The sixth release candidate of 1.0.0, and the first since 1.0.0-rc.4: no
-1.0.0-rc.5 was tagged, so its work ships here. It carries the panchanga's
-reach without the muhurta family, every date of the coverage answered,
-festival groups, traditions and years, the Moon's own horizon, Ketaki's
-zodiac, custom ayanamshas, the Hindi festival names, the settings'
-sources, and three more Indian state sets. It is released on GitHub only;
-no package goes to a registry.
-**Numbers:** measured against 1.0.0-rc.4 entry by entry: each entry below
-says what it moves. Across them, every settings hash moves, since the
-settings gain knobs (among them `day.moonrise`, `festivals.observer`,
-`jaimini.seven_karaka_order` and `vargas.schemes`). Under `nepali-drik` and
-`nepali-committee` every moonrise moves earlier and every moonset later, by
-a median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The
-first and last dates answered are 1800-01-01 and 2399-12-31 over the
-built-in ephemeris, where the coverage's edges were refused.
+The seventh release candidate of 1.0.0. 1.0.0-rc.6 was tagged, but its
+release run failed in the verify matrix (the bindings', wasm's and the
+coverage floors' jobs, which no pull request ran), so nothing was published
+under it: its work ships here, with the fixes that run needed. rc.7 adds the
+sighted Hijri calendar and Nepal's two Eids, a rashifal transit that says how
+long it holds, the record `intl.render`, and Nepal's names for the
+sankrantis. It is released on GitHub only; no package goes to a registry.
+**Numbers:** measured against 1.0.0-rc.6's tree entry by entry: each entry
+below says what it moves. Every settings hash moves, the settings gaining
+`calendars.hijri_criterion` and `calendars.hijri_zone`.
 
 **The sighted Hijri calendar.**
 **Numbers:** `NEPAL_PANCHANGA` gains its two Eids, about two days a year; no
@@ -70,6 +65,53 @@ Venus's, as the reading's alone, where it said them as the period's.
   a plan's items said in the context's locale. An agent over the MCP server can
   now read a rashifal's or an interpretation's plans as text, where it got only
   keys and slots.
+
+**Nepal's names for the sankrantis, Janai Purnima and the eating days (C2312, C2314, C2315).**
+**Numbers:** no day moves. Names move as each bullet says; 19 festival names in all
+five locales.
+- **Changed:** a sankranti's names in Nepal (C2312). `MAKARA_SANKRANTI` leads with
+  माघे सङ्क्रान्ति (`MAGHE_SANKRANTI`) and `KARKATA_SANKRANTI` with साउने सङ्क्रान्ति
+  (`SAUNE_SANKRANTI`), each keeping its sign's name as an alias; the other ten list the
+  month they open (`BAISAKH_SANKRANTI` … `CHAITRA_SANKRANTI`). The Nepali and English
+  locales name `MAKARA_SANKRANTI` and `KARKATA_SANKRANTI` by the sign again
+  (मकर, कर्कट), so a reader showing the key's own name, not Nepal's lead, now sees the
+  sign. 13 festival names in all five locales; a test holds every listed name to them.
+- **Added:** Nepal's names for two shared festivals (C2314). `UPAKARMA_MADHYANDINA` leads
+  with जनै पूर्णिमा (`JANAI_PURNIMA`) and lists ऋषितर्पणी (`RISHI_TARPANI`);
+  `BASANTA_PANCHAMI` lists सरस्वती पूजा (`SARASWATI_PUJA`) and श्रीपञ्चमी
+  (`SHREE_PANCHAMI`). 4 festival names in all five locales.
+- **Added:** the two eating days as Nepal's other names for the days they fall on (C2315):
+  `MAKARA_SANKRANTI` lists घ्यू-चाकु खाने दिन (`GHYU_CHAKU_KHANE_DIN`) and
+  `NATIONAL_PADDY_DAY` lists दही-चिउरा खाने दिन (`DAHI_CHIURA_KHANE_DIN`). 2 festival names
+  in all five locales.
+**What 1.0.0-rc.6's release run found.**
+**Numbers:** none move.
+- **Fixed:** Dart reads a land place's nautical field back as absent, and the
+  binding pins follow the catalogue (Tihar's days, the enum counts).
+- **Fixed:** a binding's tool is compared to its minor version, not its patch.
+- **Fixed:** `url` 2.5.9, past the stack overflow on nested blob URLs.
+- **Changed:** the release notes say the verify matrix runs on the release
+  branch before the tag; `regen.yml` regenerates a branch's generated files on
+  GitHub's runners (`06-cicd/01-pipelines.md`).
+
+## 1.0.0-rc.6
+
+The sixth release candidate of 1.0.0, and the first since 1.0.0-rc.4: no
+1.0.0-rc.5 was tagged, so its work ships here. It carries the panchanga's
+reach without the muhurta family, every date of the coverage answered,
+festival groups, traditions and years, the Moon's own horizon, Ketaki's
+zodiac, custom ayanamshas, the Hindi festival names, the settings'
+sources, and three more Indian state sets. Its tag stands, but its release
+run failed and nothing was published under it; its work ships in
+1.0.0-rc.7.
+**Numbers:** measured against 1.0.0-rc.4 entry by entry: each entry below
+says what it moves. Across them, every settings hash moves, since the
+settings gain knobs (among them `day.moonrise`, `festivals.observer`,
+`jaimini.seven_karaka_order` and `vargas.schemes`). Under `nepali-drik` and
+`nepali-committee` every moonrise moves earlier and every moonset later, by
+a median of 76 to 79 s and at most 94 s at Kathmandu over 1900 to 2100. The
+first and last dates answered are 1800-01-01 and 2399-12-31 over the
+built-in ephemeris, where the coverage's edges were refused.
 
 **The vedha, the blackouts and the limbs' longitudes without the muhurta family (SR-132, SR-137, SR-138).**
 **Numbers:** no computed value moves under any shipped profile or in a build with the
@@ -249,21 +291,6 @@ rules gaining `meta.names`.
   (the consumer's `*`, C2308 open), carried by Node, Python, Dart and Java.
 - 21 festival names in all five locales. Design in `03-design/nepal-festival-names.md`,
   cruxes C2300 to C2311; C1661, C2110 and C2111 superseded.
-- **Changed:** a sankranti's names in Nepal (C2312). `MAKARA_SANKRANTI` leads with
-  माघे सङ्क्रान्ति (`MAGHE_SANKRANTI`) and `KARKATA_SANKRANTI` with साउने सङ्क्रान्ति
-  (`SAUNE_SANKRANTI`), each keeping its sign's name as an alias; the other ten list the
-  month they open (`BAISAKH_SANKRANTI` … `CHAITRA_SANKRANTI`). The Nepali and English
-  locales name `MAKARA_SANKRANTI` and `KARKATA_SANKRANTI` by the sign again
-  (मकर, कर्कट), so a reader showing the key's own name, not Nepal's lead, now sees the
-  sign. 13 festival names in all five locales; a test holds every listed name to them.
-- **Added:** Nepal's names for two shared festivals (C2314). `UPAKARMA_MADHYANDINA` leads
-  with जनै पूर्णिमा (`JANAI_PURNIMA`) and lists ऋषितर्पणी (`RISHI_TARPANI`);
-  `BASANTA_PANCHAMI` lists सरस्वती पूजा (`SARASWATI_PUJA`) and श्रीपञ्चमी
-  (`SHREE_PANCHAMI`). 4 festival names in all five locales.
-- **Added:** the two eating days as Nepal's other names for the days they fall on (C2315):
-  `MAKARA_SANKRANTI` lists घ्यू-चाकु खाने दिन (`GHYU_CHAKU_KHANE_DIN`) and
-  `NATIONAL_PADDY_DAY` lists दही-चिउरा खाने दिन (`DAHI_CHIURA_KHANE_DIN`). 2 festival names
-  in all five locales.
 **A rule's days, year by year (SR-126).**
 **Numbers:** none move: a new call. `almanac.occurrences` answers every day a festival
 rule or a kind of day (`EKADASHI`, `PURNIMA`, `AMAVASYA`, `SANKRANTI`) falls on in each
