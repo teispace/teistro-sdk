@@ -44,7 +44,17 @@ $EDITOR CHANGELOG.md             # rename `## Unreleased` and answer Numbers
 cargo xtask check-versions       # says what is still wrong
 ```
 
-Then a pull request, the fast check, a merge, and:
+Then a pull request and the fast check, and the verify matrix on the
+pull request's branch before the merge:
+
+```sh
+gh workflow run verify.yml --ref <branch>
+```
+
+The fast check never runs the bindings' suites or the station scan, and
+the tag runs the whole matrix again, so a red row found only there costs a
+re-tag (1.0.0-rc.6's first tag went red on two Node tests and a station
+page the fast check could not see). Once verify is green, a merge, and:
 
 ```sh
 git tag -s v0.1.0 -m 'Teistro 0.1.0'
