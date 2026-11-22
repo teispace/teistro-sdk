@@ -26,9 +26,9 @@ through the façade's `dignities`, founding a chart at each step.
 | the chart's own daylight is the day birth the corpus records, but for the births listed below with their reasons, and every listed birth still differs | **holds** | 0 of 55 disagree; 3 differ, and the list is exact |
 | Valens's horizon (`SectRule::Horizon`) reads each birth on a day with a sunrise and a sunset as the chart's daylight (`SectRule::Daylight`) does | **holds** | 0 of 53 disagree; no birth falls in the minutes they part |
 | on a polar day the horizon reads the birth by the sky the day has: day where the Sun does not set, night where it does not rise | **holds** | 0 of 2 disagree; the chart's daylight, inside the bounds its polar policy synthesised, reads 1 of them otherwise |
-| the horizon rises after the chart's apparent sunrise, at every birth's place and day the Sun rises | **holds** | 0 of 52 disagree |
-| the horizon sets before the chart's apparent sunset, at every birth's place and day the Sun sets | **holds** | 0 of 52 disagree |
-| every birth whose turns cannot be bracketed is listed below with its reason, and every listed birth still cannot be | **holds** | 0 of 55 disagree; the list is exact |
+| the horizon rises after the chart's apparent sunrise, at every birth's place and day the Sun rises | **holds** | 0 of 53 disagree |
+| the horizon sets before the chart's apparent sunset, at every birth's place and day the Sun sets | **holds** | 0 of 53 disagree |
+| every birth whose turns cannot be bracketed is listed below with its reason, and every listed birth still cannot be | falsified | 1 of 55 disagree; c047-london-1800-01-02 (listed, but holds) |
 | how long the two readings part at each end of the day | **holds** | 3.4 to 25.4 min at sunrise, 3.4 to 25.5 min at sunset |
 
 ## Recorded otherwise
@@ -104,7 +104,7 @@ sunset to the horizon's setting, on the birth's own day.
 | c044-ushuaia-1995-12-22 | -54.80° | night | night | night | 8.2 min | -8.2 min |
 | c045-sao-paulo-2019-02-16 | -23.55° | night | night | night | 3.8 min | -3.8 min |
 | c046-kathmandu-2350-01-01 | 27.72° | day | day | day | 4.2 min | -4.2 min |
-| c047-london-1800-01-02 | 51.51° | day | day | day | unbracketed | unbracketed |
+| c047-london-1800-01-02 | 51.51° | day | day | day | 6.8 min | -6.8 min |
 | c048-kathmandu-2399-12-30 | 27.72° | day | day | day | 4.2 min | -4.2 min |
 | c049-kathmandu-2010-06-01 | 27.72° | day | day | day | 4.1 min | -4.2 min |
 | c050-kathmandu-2015-03-01 | 27.72° | day | day | day | 3.8 min | -3.8 min |

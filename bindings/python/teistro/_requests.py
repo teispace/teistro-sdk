@@ -23,6 +23,7 @@ __all__ = [
     "AshauchQuery",
     "KinQuery",
     "RiteQuery",
+    "BlackoutsRequest",
     "CellsRequest",
     "ChangesRequest",
     "AlmanacDaysRequest",
@@ -33,6 +34,7 @@ __all__ = [
     "FestivalCalendarRequest",
     "FirstYearQuery",
     "HouseholdQuery",
+    "LimbAnglesRequest",
     "NavataraRequest",
     "NextRequest",
     "ObservanceRequest",
@@ -55,7 +57,11 @@ __all__ = [
     "MundaneRequest",
     "BatchAsked",
     "RelocationRequest",
+    "PlaceListing",
+    "PlaceNamesRequest",
     "PlaceRequest",
+    "PlaceReverse",
+    "PlaceSearch",
     "DateTextRequest",
     "DatesRequest",
     "InWordsRequest",
@@ -93,8 +99,8 @@ __all__ = [
     "KinTable",
     "AshauchRiteAsked",
     "AshauchRiteTable",
-    "FestivalRequest",
     "DayAsked",
+    "FestivalRequest",
     "ChangeKind",
     "HorizonSample",
     "MuhurtaRequest",
@@ -152,6 +158,8 @@ __all__ = [
     "BaselinePeriod",
     "PeriodAsked",
     "RelocationPlace",
+    "PlaceKind",
+    "SearchFocus",
     "CalendarDay",
     "WordsDigits",
     "DateStyle",
@@ -762,7 +770,7 @@ __all__ = [
     "EnemySign",
     "OfficeOrder",
     "SettingPart",
-    "Observer",
+    "FestivalObserver",
     "RisingOf",
     "SaitAvoid",
     "SaitAvoidTithiStart",
@@ -897,6 +905,28 @@ class RiteQuery(TypedDict, total=False):
 
     table: Optional[AshauchRiteTable]
     """The table, every row data; the *Dharmasindhu*'s when left out."""
+
+
+class BlackoutsRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar the days are written in; Gregorian when left out."""
+
+    first: Required[DayAsked]
+    """The range's first day."""
+
+    kinds: Sequence[Union[_catalogue.BlackoutKind, str]]
+    """The kinds wanted, each one the Sun and the Moon make: `CHATURMAS`, `ADHIKA_MASA`, `SAMSARPA`, `KSHAYA_MASA`, `KHARMAS`, `PITRU_PAKSHA`, `SANKRANTI` or `HOLASHTAKA`; every one when left out."""
+
+    last: Optional[DayAsked]
+    """The last day; the first when left out."""
+
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the days' midnights are read at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone the days are read on, at its offset on the first day; or `utcOffsetSeconds`, not both."""
 
 
 class CellsRequest(TypedDict, total=False):
@@ -1200,6 +1230,22 @@ class HouseholdQuery(TypedDict, total=False):
 
     zone: Optional[ZoneSpec]
     """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
+
+
+class LimbAnglesRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    instants: Required[Sequence[float]]
+    """The instants, UTC Julian days: one to 4096."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
 
 
 class NavataraRequest(TypedDict, total=False):
@@ -1810,6 +1856,38 @@ class RelocationRequest(TypedDict, total=False):
     """The places, one to 256."""
 
 
+class PlaceListing(TypedDict, total=False):
+    """The places of a unit: what `geo.list` reads."""
+
+    depth: Optional[int]
+    """How many levels below `within` to look: 1 its children, `null` any depth; 1 when left out."""
+
+    kinds: Sequence[PlaceKind]
+    """Only places of these kinds; empty for every kind."""
+
+    lang: Optional[str]
+    """The language to name each place in, or `null`."""
+
+    level: Optional[int]
+    """Only units of this admin level, or `null` for any place."""
+
+    limit: int
+    """The most places to answer, 1 to 1,000; 100 when left out."""
+
+    within: Required[str]
+    """The unit to list within: a place's id, or an ISO 3166 code (`NP`, `NP-P3`)."""
+
+
+class PlaceNamesRequest(TypedDict, total=False):
+    """A place's names: what `geo.names` reads."""
+
+    id: Required[str]
+    """The place's id, as an answer gave it."""
+
+    langs: Sequence[str]
+    """The languages to choose a name in (`ne`, `en`, `hi`, `sa`); empty for none."""
+
+
 class PlaceRequest(TypedDict, total=False):
     """A place to resolve, as `geo.resolve` reads it."""
 
@@ -1818,6 +1896,38 @@ class PlaceRequest(TypedDict, total=False):
 
     longitudeDeg: Required[float]
     """The longitude, in degrees, east positive."""
+
+
+class PlaceReverse(TypedDict, total=False):
+    """A point to its nearest places and its units: what `geo.reverse` reads."""
+
+    lang: Optional[str]
+    """The language to name each place in, or `null`."""
+
+    latitudeDeg: Required[float]
+    """The latitude, in degrees."""
+
+    limit: int
+    """The most nearby places to answer, 1 to 100; 5 when left out."""
+
+    longitudeDeg: Required[float]
+    """The longitude, in degrees."""
+
+
+class PlaceSearch(TypedDict, total=False):
+    """A name to places: what `geo.search` reads."""
+
+    focus: Optional[SearchFocus]
+    """Prefer places near this point, or `null`."""
+
+    lang: Optional[str]
+    """The language to name each place in (`ne`, `en-Latn`), or `null` for its canonical name."""
+
+    limit: int
+    """The most places to answer, 1 to 100; 10 when left out."""
+
+    query: Required[str]
+    """The text as typed, in any script; after a comma it names a parent (`Kathmandu, Bagmati`)."""
 
 
 class DateTextRequest(TypedDict, total=False):
@@ -2425,6 +2535,16 @@ class AshauchRiteTable(TypedDict, total=False):
     """The rows."""
 
 
+class DayAsked(TypedDict, total=False):
+    """A civil day as a request names it."""
+
+    day: Required[int]
+
+    month: Required[int]
+
+    year: Required[int]
+
+
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
 
@@ -2448,16 +2568,6 @@ class FestivalRequest(TypedDict, total=False):
 
     rules: Required[FestivalRules]
     """The rules: a pack's name, or a list of names and rules spelt out."""
-
-
-class DayAsked(TypedDict, total=False):
-    """A civil day as a request names it."""
-
-    day: Required[int]
-
-    month: Required[int]
-
-    year: Required[int]
 
 
 ChangeKind: TypeAlias = Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'MOON_SIGN', 'SUN_SIGN', 'VARA']
@@ -2518,11 +2628,14 @@ class ResolvedPlace(TypedDict, total=False):
     longitudeDeg: Required[float]
     """The longitude asked, in degrees."""
 
+    nautical: bool
+    """The zone is the nautical one (`Etc/GMT±n` from the longitude), not a land zone; written only when true, so a land answer reads as it always has."""
+
     source: Required[GeoSource]
     """Who answered, and from which data."""
 
     zone: Optional[str]
-    """The IANA zone holding the point, or `null` where the data has none."""
+    """The IANA zone holding the point, or `null` where the data has none. At sea, where the provider knows no area holds the point, the nautical zone `nautical_zone` reckons from the longitude, with `ResolvedPlace::nautical` set (SR-144)."""
 
 
 class DeathTimeTable(TypedDict, total=False):
@@ -3397,6 +3510,31 @@ class RelocationPlace(TypedDict, total=False):
 
     longitudeDeg: Required[float]
     """Longitude, degrees, east positive."""
+
+
+PlaceKind: TypeAlias = Literal['COUNTRY', 'ADMIN', 'SETTLEMENT', 'LOCALITY', 'NATURAL', 'POSTAL_AREA']
+"""What a place of the catalogue is.
+
+`COUNTRY`: A country, at admin level 0.
+`ADMIN`: An administrative unit below a country: a province, a district, a municipality, a ward.
+`SETTLEMENT`: A populated place: a city, a town, a village.
+`LOCALITY`: A named part of a settlement, or a locality with no people: a tole, a neighbourhood.
+`NATURAL`: A natural feature: a peak, a pass, a lake, a river.
+`POSTAL_AREA`: A postal area.
+"""
+
+
+class SearchFocus(TypedDict, total=False):
+    """A search's focus: prefer places near this point."""
+
+    latitudeDeg: Required[float]
+    """The latitude, in degrees."""
+
+    longitudeDeg: Required[float]
+    """The longitude, in degrees."""
+
+    scaleM: float
+    """The distance, in metres, at which the focus's gain halves; 50 km when left out."""
 
 
 class CalendarDay(TypedDict, total=False):
@@ -4291,10 +4429,13 @@ class MetaPatch(TypedDict, total=False):
 
 
 class MetaFilter(TypedDict, total=False):
-    """What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not."""
+    """What a request keeps of its answer: a rule stands when its key is one of `keys`, if given, and, of each other list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not."""
 
     communities: Sequence[str]
     """The communities kept."""
+
+    keys: Sequence[str]
+    """The rules kept, by key: a request narrowed to a festival reckons the rules its day is read from (the rite a parana follows, the rule it is barred with) and answers only these."""
 
     kinds: Sequence[Union[_catalogue.FestivalKind, str]]
     """The kinds kept."""
@@ -9730,7 +9871,7 @@ class Variant(TypedDict, total=False):
     festival: Required[str]
     """The festival, as an open key every reading of it shares (`EKADASHI`, `JANMASHTAMI`)."""
 
-    observer: Required[Observer]
+    observer: Required[FestivalObserver]
     """Whose reading it is; never `EVERY`, which is no tradition."""
 
 
@@ -10563,7 +10704,7 @@ SettingPart: TypeAlias = Literal['NAVAMSHA_SIGN', 'NAVAMSHA_ARC']
 """
 
 
-Observer: TypeAlias = Literal['EVERY', 'SMARTA', 'SMARTA_RENUNCIANT', 'VAISHNAVA', 'GAUDIYA']
+FestivalObserver: TypeAlias = Literal['EVERY', 'SMARTA', 'SMARTA_RENUNCIANT', 'VAISHNAVA', 'GAUDIYA']
 """Whose reading of a festival an answer keeps, where a request carries two or more (`03-design/festival-traditions.md`, SR-116, C2140): the tradition a family follows, applied to every festival that has readings. It chooses between readings and never hides a festival, nor moves a day: a festival carried in one reading stands whatever the observer (C2143).
 
 `EVERY`: Every reading the request carries.
@@ -10962,7 +11103,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.resolve', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.blackouts', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.limbAngles', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.list', 'geo.names', 'geo.resolve', 'geo.reverse', 'geo.search', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -10983,6 +11124,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['almanac.ashauchRite'], request: RiteQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.blackouts'], request: BlackoutsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['almanac.cells'], request: CellsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
@@ -11013,6 +11157,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['almanac.household'], request: HouseholdQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.limbAngles'], request: LimbAnglesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['almanac.navatara'], request: NavataraRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
@@ -11081,7 +11228,19 @@ class RecordCalls:
     def record(self, name: Literal['chart.relocated'], request: RelocationRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
+    def record(self, name: Literal['geo.list'], request: PlaceListing, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['geo.names'], request: PlaceNamesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
     def record(self, name: Literal['geo.resolve'], request: PlaceRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['geo.reverse'], request: PlaceReverse, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['geo.search'], request: PlaceSearch, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['intl.date'], request: DateTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

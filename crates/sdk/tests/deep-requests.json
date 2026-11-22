@@ -344,6 +344,9 @@
           "communities": [
             "x"
           ],
+          "keys": [
+            "x"
+          ],
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
@@ -897,6 +900,9 @@
         },
         "only": {
           "communities": [
+            "x"
+          ],
+          "keys": [
             "x"
           ],
           "kinds": [
@@ -1717,6 +1723,9 @@
           "communities": [
             "x"
           ],
+          "keys": [
+            "x"
+          ],
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
@@ -2518,6 +2527,9 @@
           "communities": [
             "x"
           ],
+          "keys": [
+            "x"
+          ],
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
@@ -3278,6 +3290,9 @@
           "communities": [
             "x"
           ],
+          "keys": [
+            "x"
+          ],
           "kinds": [
             "festival_kind.RELIGIOUS_CULTURAL"
           ],
@@ -3813,6 +3828,9 @@
               "communities": [
                 "x"
               ],
+              "keys": [
+                "x"
+              ],
               "kinds": [
                 "festival_kind.RELIGIOUS_CULTURAL"
               ],
@@ -4332,6 +4350,9 @@
         },
         "only": {
           "communities": [
+            "x"
+          ],
+          "keys": [
             "x"
           ],
           "kinds": [
@@ -4924,6 +4945,9 @@
         },
         "only": {
           "communities": [
+            "x"
+          ],
+          "keys": [
             "x"
           ],
           "kinds": [

@@ -9,15 +9,16 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
+ * What a request keeps of its answer: a rule stands when its key is one of `keys`, if given, and, of each other list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
  *
  * @param communities The communities kept. Null leaves the SDK's default.
+ * @param keys The rules kept, by key: a request narrowed to a festival reckons the rules its day is read from (the rite a parana follows, the rule it is barred with) and answers only these. Null leaves the SDK's default.
  * @param kinds The kinds kept. Null leaves the SDK's default.
  * @param minSignificance The least tier kept: `REGIONAL` keeps every tier but `MINOR`. Null leaves the SDK's default.
  * @param regions The regions kept. Null leaves the SDK's default.
  * @param traditions The traditions kept. Null leaves the SDK's default.
  */
-public record MetaFilter(List<String> communities, List<com.teispace.teistro.FestivalKind> kinds, Significance minSignificance, List<String> regions, List<com.teispace.teistro.Tradition> traditions) implements RequestJson {
+public record MetaFilter(List<String> communities, List<String> keys, List<com.teispace.teistro.FestivalKind> kinds, Significance minSignificance, List<String> regions, List<com.teispace.teistro.Tradition> traditions) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -27,6 +28,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
      */
     public MetaFilter {
         communities = communities == null ? null : List.copyOf(communities);
+        keys = keys == null ? null : List.copyOf(keys);
         kinds = kinds == null ? null : List.copyOf(kinds);
         regions = regions == null ? null : List.copyOf(regions);
         traditions = traditions == null ? null : List.copyOf(traditions);
@@ -38,7 +40,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
      *
      */
     public MetaFilter() {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     /**
@@ -54,6 +56,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
     /** Builds a {@link MetaFilter} a field at a time. */
     public static final class Builder {
         private List<String> communities;
+        private List<String> keys;
         private List<com.teispace.teistro.FestivalKind> kinds;
         private Significance minSignificance;
         private List<String> regions;
@@ -69,6 +72,17 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
          */
         public Builder communities(List<String> communities) {
             this.communities = communities;
+            return this;
+        }
+
+        /**
+         * Sets {@code keys}.
+         *
+         * @param keys The rules kept, by key: a request narrowed to a festival reckons the rules its day is read from (the rite a parana follows, the rule it is barred with) and answers only these. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder keys(List<String> keys) {
+            this.keys = keys;
             return this;
         }
 
@@ -123,7 +137,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
          * @throws NullPointerException naming a required field left unset
          */
         public MetaFilter build() {
-            return new MetaFilter(communities, kinds, minSignificance, regions, traditions);
+            return new MetaFilter(communities, keys, kinds, minSignificance, regions, traditions);
         }
     }
 
@@ -138,6 +152,7 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
         Map<String, Object> json = Read.object(raw, "MetaFilter");
         return new MetaFilter(
             Read.orNull(json.get("communities"), present -> Read.list(present, "MetaFilter.communities", item0 -> Read.text(item0, "MetaFilter.communities"))),
+            Read.orNull(json.get("keys"), present -> Read.list(present, "MetaFilter.keys", item0 -> Read.text(item0, "MetaFilter.keys"))),
             Read.orNull(json.get("kinds"), present -> Read.list(present, "MetaFilter.kinds", item0 -> Read.member(item0, "MetaFilter.kinds", com.teispace.teistro.FestivalKind::byKey))),
             Read.orNull(json.get("minSignificance"), present -> Read.member(present, "MetaFilter.minSignificance", Significance::byKey)),
             Read.orNull(json.get("regions"), present -> Read.list(present, "MetaFilter.regions", item0 -> Read.text(item0, "MetaFilter.regions"))),
@@ -149,6 +164,9 @@ public record MetaFilter(List<String> communities, List<com.teispace.teistro.Fes
         Map<String, Object> json = new LinkedHashMap<>();
         if (communities != null) {
             json.put("communities", communities);
+        }
+        if (keys != null) {
+            json.put("keys", keys);
         }
         if (kinds != null) {
             json.put("kinds", kinds.stream().map(item0 -> item0.fullKey()).toList());

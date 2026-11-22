@@ -14,7 +14,7 @@ import java.util.Objects;
  * @param festival The festival, as an open key every reading of it shares (`EKADASHI`, `JANMASHTAMI`).
  * @param observer Whose reading it is; never `EVERY`, which is no tradition.
  */
-public record Variant(String festival, Observer observer) implements RequestJson {
+public record Variant(String festival, FestivalObserver observer) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,7 +38,7 @@ public record Variant(String festival, Observer observer) implements RequestJson
         Map<String, Object> json = Read.object(raw, "Variant");
         return new Variant(
             Read.text(Read.required(json.get("festival"), "Variant.festival"), "Variant.festival"),
-            Read.member(Read.required(json.get("observer"), "Variant.observer"), "Variant.observer", Observer::byKey));
+            Read.member(Read.required(json.get("observer"), "Variant.observer"), "Variant.observer", FestivalObserver::byKey));
     }
 
     @Override

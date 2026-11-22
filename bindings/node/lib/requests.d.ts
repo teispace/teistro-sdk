@@ -4395,13 +4395,17 @@ export interface MetaPatch {
 }
 
 /**
- * What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
+ * What a request keeps of its answer: a rule stands when its key is one of `keys`, if given, and, of each other list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
  */
 export interface MetaFilter {
   /**
    * The communities kept.
    */
   readonly communities?: readonly string[];
+  /**
+   * The rules kept, by key: a request narrowed to a festival reckons the rules its day is read from (the rite a parana follows, the rule it is barred with) and answers only these.
+   */
+  readonly keys?: readonly string[];
   /**
    * The kinds kept.
    */
@@ -9660,7 +9664,7 @@ export interface Variant {
   /**
    * Whose reading it is; never `EVERY`, which is no tradition.
    */
-  readonly observer: Observer;
+  readonly observer: FestivalObserver;
 }
 
 /**
@@ -10720,7 +10724,7 @@ export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
  * `VAISHNAVA`: The Vaishnava's: *Dharmasindhu*'s Ekadashi with its vedha at arunodaya, and *Hari Bhakti Vilasa*'s rule of a viddha tithi (15.358).
  * `GAUDIYA`: The Gaudiya Vaishnava's: *Hari Bhakti Vilasa*'s Ekadashi with its mahadvadashis, and the Vaishnava's reading where none is the Gaudiya's (C2142).
  */
-export type Observer = 'EVERY' | 'SMARTA' | 'SMARTA_RENUNCIANT' | 'VAISHNAVA' | 'GAUDIYA';
+export type FestivalObserver = 'EVERY' | 'SMARTA' | 'SMARTA_RENUNCIANT' | 'VAISHNAVA' | 'GAUDIYA';
 
 /**
  * Which rising sign a [`SaitRising`] reads.
