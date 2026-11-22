@@ -122,7 +122,7 @@ const RAW_REQUEST_PARTS: [&str; 16] = [
     "ChartDisagreementsRequest.first",
     "ChartDisagreementsRequest.second",
     "IssueRequest.request",
-    "Item.params",
+    "PlanItem.params",
     "Receipt.packs",
     "Receipt.request",
     "ResearchRequest.control",
