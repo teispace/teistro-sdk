@@ -192,7 +192,11 @@ class TheCatalogue(unittest.TestCase):
             + 5
             # `Sunrise`'s `UPPER_LIMB_NO_REFRACTION` and
             # `LOWER_LIMB_NO_REFRACTION` (SR-113).
-            + 2,
+            + 2
+            # `Ayanamsha`'s `KETAKI`.
+            + 1
+            # `Calendar`'s `HIJRI_SIGHTED`, the moon-sighted months.
+            + 1,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

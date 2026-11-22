@@ -444,6 +444,13 @@ const Map<String, Type> _records = {
   'almanac.elect': ElectRequest,
   'almanac.observance': ObservanceRequest,
   'almanac.people': PeopleRequest,
+  'almanac.blackouts': BlackoutsRequest,
+  'almanac.limbAngles': LimbAnglesRequest,
+  'geo.list': PlaceListing,
+  'geo.names': PlaceNamesRequest,
+  'geo.reverse': PlaceReverse,
+  'geo.search': PlaceSearch,
+  'intl.render': RenderRequest,
 };
 
 void main() {
