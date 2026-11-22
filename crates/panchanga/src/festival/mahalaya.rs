@@ -8,7 +8,7 @@
 use teistro_core::catalogue::{Masa, Nakshatra, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
 
-use super::{APARAHNA, FestivalRule, InAdhika, Occurs, by_share};
+use super::{APARAHNA, FestivalRule, InAdhika, MADHYAHNA, Occurs, Window, by_share};
 
 /// The mahalaya's tithis: the dark 1st to the new moon but the 14th, which
 /// DS p. 61 keeps for the killed by a weapon alone. The keys are the ones
@@ -32,26 +32,30 @@ const MAHALAYAS: [(&str, Tithi); 14] = [
 ];
 
 /// The fortnight's own days kept on a tithi, each with what DS says of it.
-const SPECIAL: [(&str, Tithi, &str); 4] = [
+const SPECIAL: [(&str, Tithi, &str, Window); 4] = [
     (
         "AVIDHAVA_NAVAMI",
         Tithi::KrishnaNavami,
         "Dharmasindhu p. 62: on the 9th, the shraddha of every woman of the family who died before her husband (अविधवानवमी)",
+        APARAHNA,
     ),
     (
         "SANYASI_MAHALAYA",
         Tithi::KrishnaDwadashi,
         "Dharmasindhu p. 62: the ascetics' mahalaya on the 12th holding the aparahna (अपराह्णव्यापिन्यां द्वादश्याम्); the text records Vaishnavas keeping it on the Ekadashi's parana day and prefers the 12th",
+        APARAHNA,
     ),
     (
         "MAGHA_SHRADDHA",
         Tithi::KrishnaTrayodashi,
         "Dharmasindhu p. 62: a shraddha on the 13th, joined with Magha or alone (त्रयोदश्यां मघायुतायां केवलायां वा), and on Magha alone too, which is not given here",
+        APARAHNA,
     ),
     (
         "CHATURDASHI_SHRADDHA",
         Tithi::KrishnaChaturdashi,
-        "Dharmasindhu p. 61: the 14th only for the killed by a weapon (श्राद्धं शस्त्रहतस्यैव चतुर्दश्यां प्रकीर्तितम्); any other death on the 14th or the full moon keeps its mahalaya on the 12th or the new moon",
+        "Dharmasindhu p. 61: the 14th only for the killed by a weapon (श्राद्धं शस्त्रहतस्यैव चतुर्दश्यां प्रकीर्तितम्); any other death on the 14th or the full moon keeps its mahalaya on the 12th or the new moon; an ekoddishta, decided at madhyahna (Dharmasindhu pp. 63, 266; Nirnayasindhu p. 310)",
+        MADHYAHNA,
     ),
 ];
 
@@ -72,7 +76,7 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn pitri_paksha() -> Vec<FestivalRule> {
-        let rule = |key: &str, occurs: Occurs, source: String| {
+        let rule = |key: &str, occurs: Occurs, at: Window, source: String| {
             let (decide, otherwise) = by_share();
             FestivalRule {
                 in_month: None,
@@ -83,35 +87,44 @@ impl FestivalRule {
                 convention: Convention::Amanta,
                 occurs,
                 in_adhika: InAdhika::Nija,
-                at: APARAHNA,
+                at,
                 decide,
                 otherwise,
                 parana: Vec::new(),
                 meta: super::FestivalMeta::default(),
             }
         };
-        let share = "the day holding more of it in the aparahna, the earlier on a tie and when neither does (C663, C664)";
+        let share = |at: &str| {
+            format!(
+                "the day holding more of it in the {at}, the earlier on a tie and when neither does (C663, C664)"
+            )
+        };
         let mut rules: Vec<FestivalRule> = MAHALAYAS
             .into_iter()
             .map(|(key, tithi)| {
-                rule(key, tithi.into(), format!(
-                    "Dharmasindhu p. 61: a mahalaya on the death tithi, Bhadrapada's dark half from the 1st to the new moon (भाद्रपदापरपक्षे प्रतिपदमारभ्य दर्शान्ततिथिषु), decided by the aparahna (निर्णयोऽपराह्णव्याप्त्यादौ); {share}"
+                rule(key, tithi.into(), APARAHNA, format!(
+                    "Dharmasindhu p. 61: a mahalaya on the death tithi, Bhadrapada's dark half from the 1st to the new moon (भाद्रपदापरपक्षे प्रतिपदमारभ्य दर्शान्ततिथिषु), decided by the aparahna (निर्णयोऽपराह्णव्याप्त्यादौ); {}", share("aparahna")
                 ))
             })
             .collect();
-        rules.extend(
-            SPECIAL
-                .into_iter()
-                .map(|(key, tithi, said)| rule(key, tithi.into(), format!("{said}; {share}"))),
-        );
+        rules.extend(SPECIAL.into_iter().map(|(key, tithi, said, at)| {
+            let window = if at == MADHYAHNA {
+                "madhyahna"
+            } else {
+                "aparahna"
+            };
+            rule(key, tithi.into(), at, format!("{said}; {}", share(window)))
+        }));
         rules.push(rule(
             "BHARANI_SHRADDHA",
             Occurs::Nakshatra {
                 nakshatra: Nakshatra::Bharani,
                 paksha: Paksha::Krishna,
             },
+            APARAHNA,
             format!(
-                "Dharmasindhu p. 61: once in the dark half, on Bharani, without pinda and by the sankalpa (अपरपक्षे भरणीश्राद्धम् अपिण्डकम्); {share}"
+                "Dharmasindhu p. 61: once in the dark half, on Bharani, without pinda and by the sankalpa (अपरपक्षे भरणीश्राद्धम् अपिण्डकम्); {}",
+                share("aparahna")
             ),
         ));
         rules
