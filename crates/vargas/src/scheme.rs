@@ -1053,17 +1053,65 @@ mod tests {
         reason = "tests fail by panicking and index their own fixtures"
     )]
 
-    use teistro_core::settings::UnattestedDn;
+    use teistro_core::settings::{UnattestedDn, VargaVariant};
 
     use super::{
-        Classifier, MOST_DIVISIONS, Map, SCHEMES, Scheme, SignBase, Spans, part_of, target,
+        Classifier, Group, MOST_DIVISIONS, Map, SCHEMES, Scheme, SignBase, Spans, VARIANTS, listed,
+        part_of, row, step, target, variant,
     };
+
     use teistro_core::angle::Nas;
     use teistro_core::catalogue::{Rashi, Varga};
     use teistro_core::quantity::Degrees;
 
     fn at(degrees: f64) -> Nas {
         Nas::from_degrees(Degrees::try_new(degrees).expect("a finite angle"))
+    }
+
+    /// The rows' builders run at compile time, where coverage cannot see
+    /// them: each row and group built again at run time is the one compiled.
+    #[test]
+    fn every_row_built_at_run_time_is_the_row_compiled() {
+        let rebuilt = |group: &Group| match (group.spans, group.map) {
+            (
+                Spans::Equal,
+                Map::Step {
+                    base,
+                    step: by,
+                    offset,
+                },
+            ) => step(base, by, offset),
+            (Spans::Equal, Map::Listed { signs }) => listed(signs),
+            _ => *group,
+        };
+        for scheme in SCHEMES.iter().chain(&VARIANTS) {
+            let groups: Vec<Group> = scheme.groups.iter().map(rebuilt).collect();
+            assert_eq!(groups, scheme.groups, "{:?}", scheme.varga);
+            let chart = scheme.varga.unwrap();
+            let built = match scheme.variant {
+                VargaVariant::Parashara => {
+                    row(chart, scheme.divisions, scheme.classifier, scheme.groups)
+                }
+                which => variant(
+                    chart,
+                    scheme.divisions,
+                    which,
+                    scheme.classifier,
+                    scheme.groups,
+                ),
+            };
+            assert_eq!(built, *scheme);
+        }
+    }
+
+    /// A chart the catalogue does not name is written without one and read
+    /// back as the cyclic rule.
+    #[test]
+    fn a_written_arbitrary_chart_reads_back_as_the_cyclic_rule() {
+        let d7 = Scheme::cyclic(7).unwrap();
+        let written = serde_json::to_value(d7).unwrap();
+        let read: Scheme = serde_json::from_value(written).unwrap();
+        assert_eq!((read, read.varga), (d7, None));
     }
 
     /// A written scheme reads back as this build's row, and one whose

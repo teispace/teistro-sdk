@@ -278,7 +278,9 @@ fn by_bisection<S: Longitudes + ?Sized>(
     let mut changes = Vec::new();
     let mut left = from.get();
     let mut left_sign = sign_at(source, body, scheme, left)?;
-    while left < to.get() {
+    // `changes` hands on only a window of some width, so a step is taken
+    // before the end is tested.
+    loop {
         let right = (left + step).min(to.get());
         let right_sign = sign_at(source, body, scheme, right)?;
         if right_sign != left_sign {
