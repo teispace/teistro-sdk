@@ -1231,6 +1231,41 @@ impl KiratYeleEpoch {
     }
 }
 knob!(
+    /// The test a sighted Hijri month's crescent is judged by on an
+    /// evening (`03-design/hijri-sighted.md` §2). Both read the sky at
+    /// the best time, the sunset plus four ninths of the Moon's lag
+    /// (Yallop 1997, eq. 4.1, p. 4).
+    #[derive(Default)]
+    CrescentCriterion { /// Odeh's: the airless topocentric arc of vision against
+        /// the topocentric crescent width, zones A to D (*Experimental
+        /// Astronomy* 18, 2004, eq. 2, p. 61), fitted to 737 sightings.
+        #[default]
+        Odeh2006 = "ODEH_2006", /// Yallop's q-test: the airless geocentric arc of
+        /// vision against the topocentric width, zones A to F (NAO
+        /// Technical Note 69, eq. 6.1 and Table 5, pp. 11 and 12), fitted
+        /// to 295 sightings.
+        Yallop1997 = "YALLOP_1997" }
+);
+knob!(
+    /// The weakest zone of [`CrescentCriterion`] in which a crescent
+    /// counts as seen (`03-design/hijri-sighted.md` §2): the crescent is
+    /// seen on an evening when its zone is this one or a better one.
+    /// Odeh's zones run A to C for a crescent seen at all, Yallop's A to
+    /// D; a zone past those is refused where the calendar is reckoned.
+    #[derive(Default)]
+    CrescentZone { /// Odeh's "visible by naked eyes" (V ≥ 5.65); Yallop's
+        /// "easily visible" (q > +0.216).
+        #[default]
+        A = "A", /// Odeh's "visible by optical aid, and it could be seen by
+        /// naked eyes" (V ≥ 2); Yallop's "visible under perfect
+        /// conditions" (q > −0.014).
+        B = "B", /// Odeh's "visible by optical aid only" (V ≥ −0.96); Yallop's
+        /// "may need optical aid to find crescent" (q > −0.160).
+        C = "C", /// Yallop's "will need optical aid to find crescent"
+        /// (q > −0.232); Odeh's D is "not visible even by optical aid".
+        D = "D" }
+);
+knob!(
     /// Whose sunrise a day under the Surya Siddhanta begins at.
     ///
     /// The text's own carries no equation of time (III.34 to 35, C37), so

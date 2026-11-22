@@ -69,7 +69,7 @@ pub use anniversary::{
     InSamsarpa, JanmaOptions, MonthClause, Origin, OriginFound, TithiShape, anniversaries,
 };
 pub use barred::Barred;
-pub use dated::{Dated, DatedObservance, DatedRule, DayReckoning, dated};
+pub use dated::{Dated, DatedObservance, DatedRule, DayReckoning, dated, dated_with};
 pub use ekadashi::{
     EkadashiFast, EkadashiKinds, EkadashiRule, EkadashiTable, Excess, JoinedNakshatra,
     Mahadvadashi, MahadvadashiKind, MahadvadashiRule, NakshatraBar, NakshatraJoining, Parana,

@@ -115,3 +115,10 @@ members:
       - text: "Government of Assam, General Administration Department, lists of holidays for 2023 and 2025 (Bhaskarabda dates); Sewell and Dikshit, The Indian Calendar, 1896, art. 28"
         ref: "docs/calendars/regional-solar.md"
     mark: V
+  - key: HIJRI_SIGHTED
+    id: 16
+    doc: "Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days"
+    sources:
+      - text: "Odeh, New criterion for lunar crescent visibility, Experimental Astronomy 18, 2004, eq. 2, p. 61; Yallop, NAO Technical Note 69, 1997, eq. 6.1, p. 11"
+        ref: "docs/03-design/hijri-sighted.md"
+    mark: V

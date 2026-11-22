@@ -6702,6 +6702,10 @@
       "name": "Tabular Hijri calendar",
       "prose": "Tabular Hijri calendar"
     },
+    "HIJRI_SIGHTED": {
+      "name": "Sighted Hijri calendar",
+      "prose": "Sighted Hijri calendar"
+    },
     "TIBETAN_PHUGPA": {
       "name": "Tibetan calendar (Phugpa)",
       "prose": "Tibetan calendar (Phugpa)"

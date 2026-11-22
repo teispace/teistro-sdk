@@ -24,6 +24,7 @@ pub mod easter;
 pub mod fixed;
 pub mod gregorian;
 pub mod hijri;
+pub mod hijri_sighted;
 pub mod ical;
 pub mod indian_national;
 pub mod iso_week;

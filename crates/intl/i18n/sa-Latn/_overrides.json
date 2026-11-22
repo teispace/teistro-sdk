@@ -183,6 +183,10 @@
     "name": "Tabular Hijri calendar",
     "prose": "Tabular Hijri calendar"
   },
+  "calendar.HIJRI_SIGHTED": {
+    "name": "Sighted Hijri calendar",
+    "prose": "Sighted Hijri calendar"
+  },
   "calendar.TIBETAN_PHUGPA": {
     "name": "Tibetan calendar (Phugpa)",
     "prose": "Tibetan calendar (Phugpa)"
