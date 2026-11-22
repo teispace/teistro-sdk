@@ -42,7 +42,13 @@ mod chart_disagreements;
 #[cfg(all(feature = "builtin-ephemeris", feature = "tajika"))]
 mod chart_zone;
 mod classical_chart;
-#[cfg(all(feature = "builtin-ephemeris", feature = "kp", feature = "prashna", feature = "tajika", feature = "western"))]
+#[cfg(all(
+    feature = "builtin-ephemeris",
+    feature = "kp",
+    feature = "prashna",
+    feature = "tajika",
+    feature = "western"
+))]
 mod compose;
 #[cfg(feature = "builtin-ephemeris")]
 mod composites;
