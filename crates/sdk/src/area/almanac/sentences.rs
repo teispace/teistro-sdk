@@ -143,18 +143,10 @@ pub struct DaySentences {
     pub withheld: Vec<String>,
 }
 
-/// Refuses a locale that is not loaded or that does not itself carry every
-/// template. A fallback would answer another language under the asked
-/// tag's name, so a locale's own messages are what is checked.
+/// Refuses a loaded locale that does not itself carry every template. A
+/// fallback would answer another language under the asked tag's name, so a
+/// locale's own messages are what is checked.
 fn templates_in(intl: &Intl, tag: &str) -> Result<(), Error> {
-    if !intl.locale_tags().any(|locale| locale == tag) {
-        let known: Vec<&str> = intl.locale_tags().collect();
-        return Err(
-            Error::unsupported(format!("the locale `{tag}` is not loaded"))
-                .with_field("locale")
-                .with_hint(format!("the locales are {}", known.join(", "))),
-        );
-    }
     let carried = |key: &str| {
         intl.resolve_from(tag, key)
             .is_some_and(|(locale, _)| locale.tag == tag)
@@ -214,10 +206,10 @@ impl AlmanacArea<'_> {
     ) -> Result<Envelope<DaySentences>, Error> {
         let tag = {
             let intl = self.context.locale_engine();
-            let tag = asked
-                .locale
-                .clone()
-                .unwrap_or_else(|| intl.locale().to_owned());
+            let tag = match &asked.locale {
+                Some(locale) => crate::area::intl::loaded_locale(&intl, locale)?,
+                None => intl.locale().to_owned(),
+            };
             templates_in(&intl, &tag)?;
             tag
         };
