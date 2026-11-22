@@ -10,6 +10,34 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+**NEPAL_PANCHANGA's fitted days by their texts (C2320 to C2327).**
+**Numbers:** at Kathmandu under `nepali-committee`, April 2019 to April 2027, 13 rules move
+28 days: `HILE_JATRA` 8, `KALKI_JAYANTI` and `MATSYANARAYANA_MELA` 3 each,
+`AMUKTABHARANA_SAPTAMI`, `DVAPARA_YUGADI`, `GAURA_SAPTAMI` and `NAVAMI_SHRADDHA` 2 each,
+and `DATTATREYA_JAYANTI`, `GATHAMUGA_CHARHE`, `GHANTAKARNA_CHATURDASHI`,
+`NUWAKOT_DUPCHESHWAR_MELA`, `TILAKUNDA_CHATURTHI` and `VAMANA_DWADASHI` 1 each. No other
+pack's day moves. Over VS 2076 to 2083 the fortnight's shraddhas agree with every
+published calendar in each year the calendars agree on.
+- **Changed:** 22 rules the pack had fitted to the committee's two books now carry
+  *Dharmasindhu*'s or *Nirnayasindhu*'s decision, each citing its page: the shraddhas at
+  the aparahna, Kalki jayanti at sunset, Vamana dvadashi at madhyahna, Dvapara yugadi at
+  the aparahna, Gathamuga charhe at the first pradosha the 14th touches, Matsyanarayana on
+  Matsya jayanti's day, Hile jatra on Shravana's dark 9th (`03-design/festival-rules.md`
+  §10.6). A rule no text decides keeps its fit and says so (published-only).
+- **Added:** two fits, `EarlierAny` and `LaterWhollyOrAlone` (*Dharmasindhu* p. 55's
+  chaturthi), each with its guards' unit tests.
+- **Fixed:** the mahalaya's and Pishachamochana's citations name the pages the running
+  headers give (*Dharmasindhu* pp. 59 to 63, pp. 265 to 266).
+
+**A request's locale takes a short tag.**
+**Numbers:** none move; a request that was refused now answers.
+- **Fixed:** day sentences, sankalpa words and band words resolve a request's `locale` by
+  the lookup the builder uses, so `ne` answers in `ne-Deva-NP` and `en-NP` in
+  `en-Latn-NP`, where they were refused as not loaded. An unknown tag is refused in the
+  builder's words, on the same field.
+
 ## 1.0.0-rc.7
 
 The seventh release candidate of 1.0.0. 1.0.0-rc.6 was tagged, but its
