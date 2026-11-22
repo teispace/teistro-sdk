@@ -2,8 +2,9 @@
 //! (`03-design/shraddha.md` §2.5, §3.2): a mahalaya on each death tithi of
 //! Bhadrapada's dark half (amanta), and the fortnight's special days, each
 //! on the day whose aparahna holds more of its tithi (DS p. 61: "निर्णयो
-//! ऽपराह्णव्याप्त्यादौ"; C663, C664). Pages are the 1888 Nirnaya-sagara
-//! edition's.
+//! ऽपराह्णव्याप्त्यादौ"; C663, C664), the 14th's at madhyahna (C2321).
+//! Pages are the 1888 Nirnaya-sagara edition's, read from its running
+//! headers.
 
 use teistro_core::catalogue::{Masa, Nakshatra, Paksha, Tithi};
 use teistro_core::settings::LunarMonth as Convention;
@@ -11,7 +12,7 @@ use teistro_core::settings::LunarMonth as Convention;
 use super::{APARAHNA, FestivalRule, InAdhika, MADHYAHNA, Occurs, Window, by_share};
 
 /// The mahalaya's tithis: the dark 1st to the new moon but the 14th, which
-/// DS p. 61 keeps for the killed by a weapon alone. The keys are the ones
+/// DS p. 59 keeps for the killed by a weapon alone. The keys are the ones
 /// `NEPAL_PANCHANGA` gives the same days, so a reader names them once; a
 /// request naming both packs keeps the later one's rule of each key.
 const MAHALAYAS: [(&str, Tithi); 14] = [
@@ -54,13 +55,13 @@ const SPECIAL: [(&str, Tithi, &str, Window); 4] = [
     (
         "CHATURDASHI_SHRADDHA",
         Tithi::KrishnaChaturdashi,
-        "Dharmasindhu p. 61: the 14th only for the killed by a weapon (श्राद्धं शस्त्रहतस्यैव चतुर्दश्यां प्रकीर्तितम्); any other death on the 14th or the full moon keeps its mahalaya on the 12th or the new moon; an ekoddishta, decided at madhyahna (Dharmasindhu pp. 63, 266; Nirnayasindhu p. 310)",
+        "Dharmasindhu p. 59: the 14th only for the killed by a weapon (श्राद्धं शस्त्रहतस्यैव चतुर्दश्यां प्रकीर्तितम्); any other death on the 14th or the full moon keeps its mahalaya on the 12th or the new moon; an ekoddishta, decided at madhyahna (Dharmasindhu p. 63; Nirnayasindhu p. 310)",
         MADHYAHNA,
     ),
 ];
 
 impl FestivalRule {
-    /// *Dharmasindhu*'s fortnight of the ancestors (pp. 61–62): fourteen
+    /// *Dharmasindhu*'s fortnight of the ancestors (pp. 59–63): fourteen
     /// mahalayas, the 1st to the new moon of Bhadrapada's dark half but the
     /// 14th, then Avidhava Navami, the ascetics' mahalaya on the 12th, Magha
     /// trayodashi, the 14th of the killed by a weapon and the Bharani
@@ -103,7 +104,7 @@ impl FestivalRule {
             .into_iter()
             .map(|(key, tithi)| {
                 rule(key, tithi.into(), APARAHNA, format!(
-                    "Dharmasindhu p. 61: a mahalaya on the death tithi, Bhadrapada's dark half from the 1st to the new moon (भाद्रपदापरपक्षे प्रतिपदमारभ्य दर्शान्ततिथिषु), decided by the aparahna (निर्णयोऽपराह्णव्याप्त्यादौ); {}", share("aparahna")
+                    "Dharmasindhu pp. 59, 61: a mahalaya on the death tithi, Bhadrapada's dark half from the 1st to the new moon (भाद्रपदापरपक्षे प्रतिपदमारभ्य दर्शान्ततिथिषु, p. 59), decided by the aparahna (निर्णयोऽपराह्णव्याप्त्यादौ); {}", share("aparahna")
                 ))
             })
             .collect();
