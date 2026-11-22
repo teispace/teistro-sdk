@@ -1937,7 +1937,7 @@ class AnEngine(WithLibrary):
             self.assertEqual((dashain.group.last.month, dashain.group.last.day), (10, 25))
             gap = dashain.group.days[8]
             self.assertEqual((gap.day.day, gap.gap), (19, True))
-            self.assertEqual(len(dashain.keys), 6)
+            self.assertEqual(len(dashain.keys), 8)
             with self.assertRaises(TeistroError) as unknown:
                 sky.almanac.next(
                     after=2461041.76,
