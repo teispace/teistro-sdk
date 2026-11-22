@@ -14,13 +14,13 @@ use super::knobs::{
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
     DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
     DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
-    Ekadhipatya, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException, GrahaDivision,
-    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    Ekadhipatya, FestivalObserver, FirdariaNodes, FrameBias, GhatiReckoning, GrahaArudhaException,
+    GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
     KalachakraMembership, KiratYeleEpoch, Kranti, LuminaryCheshta, LunarMonth, MaranaSaturn,
     MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha, Naisargika, NaisargikaDivision,
     NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers,
-    NodeVedha, Nutation, Observer, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy,
-    PolarPolicy, Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
+    NodeVedha, Nutation, OverridePolicy, PanchakaName, PanchakaStart, PolarDayPolicy, PolarPolicy,
+    Positions, PreDawnNight, Precession, PunyaKalaTable, PushkaraBhaga, RashiStart,
     ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning, RulingCount,
     SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, SevenKarakaOrder,
     ShantaSign, ShivaVasaReading, Shodhana, SiderealTime, SolarMonthStart, StrongestGraha,
@@ -1051,7 +1051,7 @@ fn jaimini() -> Jaimini {
 /// profile is a sect's (`03-design/festival-traditions.md` §6, C2147).
 const fn festivals() -> Festivals {
     Festivals {
-        observer: Observer::Every,
+        observer: FestivalObserver::Every,
     }
 }
 

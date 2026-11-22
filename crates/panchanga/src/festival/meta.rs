@@ -14,7 +14,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{FastKind, FestivalKind, HolidayScope, Tradition};
 use teistro_core::error::Error;
-use teistro_core::settings::knobs::Observer;
+use teistro_core::settings::knobs::FestivalObserver;
 
 /// What a rule's festival is, as far as a source says.
 ///
@@ -83,11 +83,11 @@ pub struct FestivalMeta {
 /// way (`03-design/festival-traditions.md` §3, C2141).
 ///
 /// ```
-/// use teistro_core::settings::knobs::Observer;
+/// use teistro_core::settings::knobs::FestivalObserver;
 /// use teistro_panchanga::festival::{FestivalMeta, Variant};
 ///
 /// let smarta = FestivalMeta::of_text("EKADASHI_SMARTA").variant;
-/// assert_eq!(smarta, Some(Variant { festival: "EKADASHI".to_owned(), observer: Observer::Smarta }));
+/// assert_eq!(smarta, Some(Variant { festival: "EKADASHI".to_owned(), observer: FestivalObserver::Smarta }));
 /// // A government's list is one day a festival, whoever's reading it is.
 /// assert_eq!(FestivalMeta::nepal("GAI_JATRA").variant, None);
 /// let written = serde_json::to_string(&smarta)?;
@@ -102,53 +102,65 @@ pub struct Variant {
     /// (`EKADASHI`, `JANMASHTAMI`).
     pub festival: String,
     /// Whose reading it is; never `EVERY`, which is no tradition.
-    pub observer: Observer,
+    pub observer: FestivalObserver,
 }
 
 impl Variant {
     /// The shipped readings: the rule's key in its pack, the festival and
     /// whose reading (`festival-traditions.md` §1), sorted by key for the
     /// binary search.
-    const SHIPPED: [(&'static str, &'static str, Observer); 10] = [
+    const SHIPPED: [(&'static str, &'static str, FestivalObserver); 10] = [
         // Hari Bhakti Vilasa 12-13: the Vaishnava's vedha and table, and the
         // eight mahadvadashis (festival-rules.md §8.9).
-        ("EKADASHI_GAUDIYA", "EKADASHI", Observer::Gaudiya),
+        ("EKADASHI_GAUDIYA", "EKADASHI", FestivalObserver::Gaudiya),
         // Dharmasindhu pp. 11-12: the three observers' columns (§8.3).
-        ("EKADASHI_SMARTA", "EKADASHI", Observer::Smarta),
+        ("EKADASHI_SMARTA", "EKADASHI", FestivalObserver::Smarta),
         (
             "EKADASHI_SMARTA_RENUNCIANT",
             "EKADASHI",
-            Observer::SmartaRenunciant,
+            FestivalObserver::SmartaRenunciant,
         ),
-        ("EKADASHI_VAISHNAVA", "EKADASHI", Observer::Vaishnava),
+        (
+            "EKADASHI_VAISHNAVA",
+            "EKADASHI",
+            FestivalObserver::Vaishnava,
+        ),
         // Dharmasindhu pp. 49-50 against Hari Bhakti Vilasa 15.358-374 (C175).
-        ("JANMASHTAMI", "JANMASHTAMI", Observer::Smarta),
-        ("JANMASHTAMI_VAISHNAVA", "JANMASHTAMI", Observer::Vaishnava),
+        ("JANMASHTAMI", "JANMASHTAMI", FestivalObserver::Smarta),
+        (
+            "JANMASHTAMI_VAISHNAVA",
+            "JANMASHTAMI",
+            FestivalObserver::Vaishnava,
+        ),
         // Dharmasindhu p. 37 against Hari Bhakti Vilasa 14.455-461.
         (
             "NARASIMHA_JAYANTI",
             "NRISIMHA_CHATURDASHI",
-            Observer::Smarta,
+            FestivalObserver::Smarta,
         ),
         (
             "NRISIMHA_CHATURDASHI",
             "NRISIMHA_CHATURDASHI",
-            Observer::Vaishnava,
+            FestivalObserver::Vaishnava,
         ),
         // Dharmasindhu p. 33 against Hari Bhakti Vilasa 14.249-253.
-        ("RAMA_NAVAMI", "RAMA_NAVAMI", Observer::Smarta),
-        ("RAMA_NAVAMI_VAISHNAVA", "RAMA_NAVAMI", Observer::Vaishnava),
+        ("RAMA_NAVAMI", "RAMA_NAVAMI", FestivalObserver::Smarta),
+        (
+            "RAMA_NAVAMI_VAISHNAVA",
+            "RAMA_NAVAMI",
+            FestivalObserver::Vaishnava,
+        ),
     ];
 
     /// The reading a text's rule of this key is, as the shipped packs
     /// read it; `None` for a key that is no tradition's reading.
     ///
     /// ```
-    /// use teistro_core::settings::knobs::Observer;
+    /// use teistro_core::settings::knobs::FestivalObserver;
     /// use teistro_panchanga::festival::Variant;
     ///
     /// let vaishnava = Variant::of("JANMASHTAMI_VAISHNAVA").ok_or("shipped")?;
-    /// assert_eq!((vaishnava.festival.as_str(), vaishnava.observer), ("JANMASHTAMI", Observer::Vaishnava));
+    /// assert_eq!((vaishnava.festival.as_str(), vaishnava.observer), ("JANMASHTAMI", FestivalObserver::Vaishnava));
     /// assert_eq!(Variant::of("NARASIMHA_JAYANTI").ok_or("shipped")?.festival, "NRISIMHA_CHATURDASHI");
     /// assert!(Variant::of("HOLIKA").is_none());
     /// # Ok::<(), &str>(())
@@ -169,12 +181,12 @@ impl Variant {
     /// or `EVERY`, which is no tradition's, named under `variant`.
     ///
     /// ```
-    /// use teistro_core::settings::knobs::Observer;
+    /// use teistro_core::settings::knobs::FestivalObserver;
     /// use teistro_panchanga::festival::Variant;
     ///
-    /// let every = Variant { festival: "EKADASHI".to_owned(), observer: Observer::Every };
+    /// let every = Variant { festival: "EKADASHI".to_owned(), observer: FestivalObserver::Every };
     /// assert_eq!(every.check().unwrap_err().field(), Some("variant.observer"));
-    /// let unnamed = Variant { festival: String::new(), observer: Observer::Smarta };
+    /// let unnamed = Variant { festival: String::new(), observer: FestivalObserver::Smarta };
     /// assert_eq!(unnamed.check().unwrap_err().field(), Some("variant.festival"));
     /// ```
     ///
@@ -188,7 +200,7 @@ impl Variant {
             )
             .with_field("variant.festival"));
         }
-        if self.observer == Observer::Every {
+        if self.observer == FestivalObserver::Every {
             return Err(Error::invalid_arg(
                 "`EVERY` is no tradition, so no rule is its reading; name the tradition whose it is",
             )
@@ -1866,7 +1878,7 @@ mod tests {
                 keys.iter().any(|held| held == key),
                 "{key} is no shipped rule"
             );
-            assert_ne!(observer, Observer::Every, "{key}");
+            assert_ne!(observer, FestivalObserver::Every, "{key}");
             let others = Variant::SHIPPED
                 .iter()
                 .filter(|row| row.1 == festival && row.2 != observer)

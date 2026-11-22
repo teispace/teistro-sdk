@@ -12,7 +12,7 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
-use teistro_core::settings::knobs::Observer;
+use teistro_core::settings::knobs::FestivalObserver;
 use teistro_panchanga::festival::{
     Anniversary, Barred, Dated, DatedRule, EkadashiRule, FestivalGroup, FestivalMeta, FestivalRule,
     FollowingRule, KindRules, MetaFilter, MetaPatch, PublishedEntry, PublishedSet, SaitRule,
@@ -1541,30 +1541,30 @@ impl FestivalRequest {
     ///
     /// ```
     /// use teistro::{FestivalPack, FestivalRequest};
-    /// use teistro::settings::knobs::Observer;
+    /// use teistro::settings::knobs::FestivalObserver;
     ///
     /// let asked = FestivalRequest::from(FestivalPack::Dharmasindhu);
-    /// assert!(asked.left_by(Observer::Every).is_empty());
-    /// let smarta = asked.left_by(Observer::Smarta);
+    /// assert!(asked.left_by(FestivalObserver::Every).is_empty());
+    /// let smarta = asked.left_by(FestivalObserver::Smarta);
     /// assert_eq!(smarta.iter().map(String::as_str).collect::<Vec<_>>(), ["EKADASHI_SMARTA_RENUNCIANT", "EKADASHI_VAISHNAVA"]);
     /// // The Gaudiya pack is not asked, so the Gaudiya keeps the Vaishnava's.
-    /// assert!(!asked.left_by(Observer::Gaudiya).contains("EKADASHI_VAISHNAVA"));
+    /// assert!(!asked.left_by(FestivalObserver::Gaudiya).contains("EKADASHI_VAISHNAVA"));
     /// // Janmashtami is carried in one reading, the Smarta's, and stands.
-    /// assert!(!asked.left_by(Observer::Vaishnava).contains("JANMASHTAMI"));
+    /// assert!(!asked.left_by(FestivalObserver::Vaishnava).contains("JANMASHTAMI"));
     ///
     /// let both = FestivalRequest::from_json(r#"{"rules": ["NEPAL", "GAUDIYA"]}"#)?;
-    /// let vaishnava = both.left_by(Observer::Vaishnava);
+    /// let vaishnava = both.left_by(FestivalObserver::Vaishnava);
     /// assert!(vaishnava.contains("JANMASHTAMI") && !vaishnava.contains("JANMASHTAMI_VAISHNAVA"));
     /// assert!(vaishnava.contains("EKADASHI_GAUDIYA"));
     /// # Ok::<(), teistro::Error>(())
     /// ```
     #[must_use]
-    pub fn left_by(&self, observer: Observer) -> BTreeSet<String> {
+    pub fn left_by(&self, observer: FestivalObserver) -> BTreeSet<String> {
         let mut left = BTreeSet::new();
-        if observer == Observer::Every {
+        if observer == FestivalObserver::Every {
             return left;
         }
-        let mut readings: BTreeMap<&str, Vec<(&str, Observer)>> = BTreeMap::new();
+        let mut readings: BTreeMap<&str, Vec<(&str, FestivalObserver)>> = BTreeMap::new();
         for (_, key, meta) in self.metas() {
             if let Some(variant) = &meta.variant {
                 readings
