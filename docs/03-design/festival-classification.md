@@ -441,8 +441,8 @@ An authority announces the day.
 | key | name | नाम | community | note |
 |---|---|---|---|---|
 | `BARAHAKSHETRA_MELA` | Barahakshetra Mela | वराहक्षेत्र मेला |  |  |
-| `EID_AL_ADHA` | Eid al-Adha | बकर ईद | Muslim |  |
-| `EID_AL_FITR` | Eid al-Fitr | ईद उल फित्र | Muslim |  |
+| `EID_AL_ADHA` | Eid al-Adha | बकर ईद | Muslim | shipped: a dated day in NEPAL_PANCHANGA, 10 Dhu al-Hijja of HIJRI_SIGHTED |
+| `EID_AL_FITR` | Eid al-Fitr | ईद उल फित्र | Muslim | shipped: a dated day in NEPAL_PANCHANGA, 1 Shawwal of HIJRI_SIGHTED |
 | `MAWLID` | Mawlid | मोहम्मद जयन्ती | Muslim |  |
 | `MUKTAK_DIWAS` | Muktak Diwas | मुक्तक दिवस |  |  |
 
