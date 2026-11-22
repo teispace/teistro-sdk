@@ -336,6 +336,24 @@ mod tests {
 
     use super::*;
 
+    /// Each weekday reads back from its ISO number, names itself as it
+    /// displays, and is a vara of its own.
+    #[test]
+    fn a_weekday_reads_back_from_its_iso_number_and_name() {
+        for day in Weekday::ALL {
+            assert_eq!(Weekday::from_iso_number(day.iso_number()), Some(day));
+            assert_eq!(day.to_string(), day.name());
+        }
+        let varas: std::collections::BTreeSet<_> =
+            Weekday::ALL.iter().map(|day| day.vara().key()).collect();
+        assert_eq!(varas.len(), 7);
+        let names: Vec<&str> = Weekday::ALL.iter().map(|day| day.name()).collect();
+        assert_eq!(names.len(), 7);
+        assert!(names.iter().all(|name| name.ends_with("day")));
+        assert_eq!(Weekday::from_iso_number(0), None);
+        assert_eq!(Weekday::from_iso_number(8), None);
+    }
+
     #[test]
     fn the_epoch_and_its_weekday() {
         assert_eq!(FixedDay::EPOCH.weekday(), Weekday::Monday);

@@ -410,6 +410,23 @@ fn a_sky_asked_without_days_still_answers_and_a_zone_too() {
         .unwrap();
     assert_eq!(alone.days.value.len(), 0);
     assert_eq!(alone.sky.unwrap().value.len(), 1);
+    // So does any other section reckoned from the days: a visible horizon,
+    // and the Nepal Sambat date.
+    let hills = teistro::terrain::HorizonProfile::try_new(vec![teistro::terrain::HorizonSample {
+        azimuth_deg: 90.0,
+        elevation_deg: 2.0,
+    }])
+    .unwrap();
+    for request in [
+        AlmanacRequest::new().with_visible(hills).without_days(),
+        AlmanacRequest::new().with_nepal_sambat().without_days(),
+    ] {
+        let answer = sdk
+            .almanac()
+            .asked(&day, &day, &kathmandu(), nepal(), &request)
+            .unwrap();
+        assert_eq!(answer.days.value.len(), 0, "{request:?}");
+    }
 }
 
 #[test]

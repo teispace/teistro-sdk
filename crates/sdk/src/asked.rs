@@ -259,3 +259,43 @@ pub(crate) fn offset_of(seconds: i32) -> Result<UtcOffset, Error> {
 pub(crate) fn instant(jd: f64, field: &str) -> Result<JulianDay<Utc>, Error> {
     JulianDay::<Utc>::try_new(jd).map_err(|why| Error::from(why).with_field(field))
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use teistro_core::settings::{Atmosphere, Sunrise, root};
+
+    use super::*;
+
+    /// Each part that stands at the observer's height is named, and none
+    /// is under the root settings.
+    #[test]
+    fn the_height_is_read_by_what_stands_at_it() {
+        let readers = |change: fn(&mut Settings)| {
+            let mut settings = root();
+            change(&mut settings);
+            height_readers(&settings)
+        };
+        assert_eq!(readers(|_| {}), Vec::<&str>::new());
+        let standard = readers(|s| {
+            s.day.sunrise = SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbRefraction,
+                air: Atmosphere::STANDARD,
+            };
+        });
+        assert_eq!(standard.len(), 1, "{standard:?}");
+        // An air whose pressure is given does not need the height.
+        let weather = readers(|s| {
+            s.day.sunrise = SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbRefraction,
+                air: Atmosphere::given(987.0, 4.5),
+            };
+        });
+        assert_eq!(weather, Vec::<&str>::new());
+        let stations = readers(|s| {
+            s.frame.centre = Centre::Topocentric;
+            s.panchanga.centre = Centre::Topocentric;
+        });
+        assert_eq!(stations.len(), 2, "{stations:?}");
+    }
+}

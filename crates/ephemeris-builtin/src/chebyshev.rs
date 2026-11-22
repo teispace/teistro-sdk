@@ -368,5 +368,39 @@ mod tests {
         assert_eq!(empty.intervals(), 0);
         assert!(!empty.covers(2_451_545.0));
         assert!(empty.at(2_451_545.0).is_none());
+        // Nor carries past either end, there being no block to carry.
+        assert!(empty.at_within(2_451_545.0, 1.0).is_none());
+        assert!(empty.block_at(0, 2_451_545.0).is_none());
+    }
+
+    /// Within `reach` of either end the nearest block's series is carried;
+    /// beyond it, or at an instant that is not one, nothing is.
+    #[test]
+    fn a_block_is_carried_only_within_its_reach() {
+        static COEFFICIENTS: [f64; 12] =
+            [1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0];
+        let table = Table {
+            start_jd: 100.0,
+            interval_days: 10.0,
+            terms: 2,
+            coefficients: &COEFFICIENTS,
+        };
+        assert_eq!((table.intervals(), table.span()), (2, (100.0, 120.0)));
+        assert_eq!(table.at_within(110.0, 1.0), table.at(110.0));
+        assert_eq!(table.at_within(99.5, 1.0), table.block_at(0, 99.5));
+        assert_eq!(table.at_within(120.5, 1.0), table.block_at(1, 120.5));
+        // The carry is the series run on: x = 1 + T1 is 0 at the first block's start.
+        assert!((table.at_within(99.5, 1.0).unwrap().0[0] + 0.1).abs() < 1e-12);
+        for (jd, reach) in [(98.9, 1.0), (121.1, 1.0), (99.5, 0.0), (f64::NAN, 1.0)] {
+            assert!(table.at_within(jd, reach).is_none(), "{jd} within {reach}");
+        }
+        assert!(table.block_at(2, 110.0).is_none());
+        assert!(table.block_at(0, f64::INFINITY).is_none());
+        let flat = Table {
+            interval_days: 0.0,
+            ..table
+        };
+        assert!(flat.at(100.0).is_none());
+        assert!(flat.block_at(0, 100.0).is_none());
     }
 }

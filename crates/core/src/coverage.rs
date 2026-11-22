@@ -255,3 +255,58 @@ impl Coverage {
         (start <= end).then(|| (start, end, Clipped::of(from < self.from, to > self.to)))
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::{Clipped, Coverage};
+
+    #[test]
+    fn a_clipping_joins_its_ends() {
+        let all = [
+            None,
+            Some(Clipped::Start),
+            Some(Clipped::End),
+            Some(Clipped::Both),
+        ];
+        for a in all {
+            for b in all {
+                let joined = Clipped::join(a, b);
+                let start = a.is_some_and(Clipped::start) || b.is_some_and(Clipped::start);
+                let end = a.is_some_and(Clipped::end) || b.is_some_and(Clipped::end);
+                assert_eq!(joined, Clipped::of(start, end), "{a:?} with {b:?}");
+                // Joining is symmetric.
+                assert_eq!(joined, Clipped::join(b, a));
+            }
+        }
+        assert_eq!(Clipped::Start.with(None), Clipped::Start);
+        assert_eq!(Clipped::Start.with(Some(Clipped::End)), Clipped::Both);
+    }
+
+    #[test]
+    fn a_coverage_runs_forward_and_is_bounded_at_either_end() {
+        for (from, to) in [(f64::NAN, 1.0), (0.0, f64::NAN), (2.0, 1.0)] {
+            let why = Coverage::new(from, to).unwrap_err();
+            assert_eq!(why.field(), Some("coverage"));
+        }
+        let point = Coverage::new(1.0, 1.0).unwrap();
+        assert!(point.contains(1.0) && !point.contains(1.5));
+        assert!(!Coverage::UNBOUNDED.is_bounded());
+        assert!(Coverage::new(f64::NEG_INFINITY, 0.0).unwrap().is_bounded());
+        assert!(Coverage::new(0.0, f64::INFINITY).unwrap().is_bounded());
+        // Two coverages that do not meet intersect in an empty one at the later start.
+        let apart = Coverage::new(0.0, 1.0)
+            .unwrap()
+            .intersect(Coverage::new(2.0, 3.0).unwrap());
+        assert_eq!((apart.from, apart.to), (2.0, 2.0));
+        let range = Coverage::new(10.0, 20.0).unwrap();
+        assert_eq!(range.clip(12.0, 18.0), Some((12.0, 18.0, None)));
+        assert_eq!(
+            range.clip(5.0, 25.0),
+            Some((10.0, 20.0, Some(Clipped::Both)))
+        );
+        assert_eq!(range.clip(21.0, 25.0), None);
+    }
+}
