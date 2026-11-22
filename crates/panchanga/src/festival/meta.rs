@@ -1494,7 +1494,7 @@ const FASTS: [(&str, &[Reading]); 42] = [
 
 /// The groups of [`NEPAL_KEYS`], whose rows name them by index: each one set
 /// of sourced values, in the order the table reads.
-const NEPAL_GROUPS: [Group; 23] = [
+const NEPAL_GROUPS: [Group; 24] = [
     Group {
         kind: Some(FestivalKind::Gazetted),
         tradition: Some(Tradition::Buddhist),
@@ -1635,11 +1635,18 @@ const NEPAL_GROUPS: [Group; 23] = [
         communities: &["MAITHIL", "BHOJPURI"],
         regions: &["NP"],
     },
+    // 23: the gazette's two Eids, of the Islamic tradition.
+    Group {
+        kind: Some(FestivalKind::Gazetted),
+        tradition: Some(Tradition::Islamic),
+        communities: &[],
+        regions: &["NP"],
+    },
 ];
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 501] = [
+const NEPAL_KEYS: [(&str, u8); 503] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
@@ -1748,6 +1755,8 @@ const NEPAL_KEYS: [(&str, u8); 501] = [
     ("DWITIYA_SHRADDHA", 19),
     ("EARTHQUAKE_SAFETY_DAY", 16),
     ("EARTH_DAY", 16),
+    ("EID_AL_ADHA", 23),
+    ("EID_AL_FITR", 23),
     ("EKADASHI_GAUDIYA", 19),
     ("EKADASHI_SHRADDHA", 19),
     ("EKADASHI_SMARTA", 19),
