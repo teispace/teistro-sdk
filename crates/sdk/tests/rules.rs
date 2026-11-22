@@ -961,11 +961,12 @@ fn the_doshas_that_read_a_table_answer_as_the_engine_recorded() {
             }
         }
     }
-    // The corpus records 25 and 41; c047 and c048 lie outside the built-in
-    // ephemeris (one Mrityu Bhaga, two Dagdha Rashi between them), and c008
-    // is born 34 seconds before Krishna Trayodashi ends by the SDK's Moon,
-    // after it by the engine's, so the engine reads the next tithi's burnt
-    // signs: a tithi edge inside any tier's accuracy.
-    assert_eq!(held, [24, 38], "{differ:?}");
+    // The corpus records 25 and 41. c047 and c048, at the built-in
+    // ephemeris's edges, are answered since SR-136 and agree (one Mrityu
+    // Bhaga, two Dagdha Rashi between them); c008 is born 34 seconds before
+    // Krishna Trayodashi ends by the SDK's Moon, after it by the engine's,
+    // so the engine reads the next tithi's burnt signs: a tithi edge inside
+    // any tier's accuracy.
+    assert_eq!(held, [25, 40], "{differ:?}");
     assert_eq!(differ, ["c008-delhi-1947-08-15.json DAGDHA_RASHI_DOSHA"]);
 }
