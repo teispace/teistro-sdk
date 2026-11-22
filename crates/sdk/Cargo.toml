@@ -341,6 +341,10 @@ name = "coverage_edges"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "festival_groups"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ketaki"
 required-features = ["builtin-ephemeris"]
 
