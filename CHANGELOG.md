@@ -62,7 +62,7 @@ other year or rule moves.
   readings part (5 of 5); the other rites that part stay on the sunrise's day, as the
   calendars print them (32 of 32).
 
-**Nepal's monthly darsha shraddha and ashtami vratas, by *Dharmasindhu*, and Ramanujacharya jayanti.**
+**Nepal's monthly darsha shraddha and ashtami vratas by *Dharmasindhu*, and five more days its calendars print.**
 **Numbers:** eight rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
 to 2083 Nepal's calendars print them on 33 of 34, 20 of 20 and 22 of 22 of the days they
 print them (the sunrise's rule would give 25, 20 and 7).
