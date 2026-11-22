@@ -2420,6 +2420,24 @@ final class LookupRequest extends _Request {
   List<Object?> get _fields => [kinds, locale, text];
 }
 
+/// The items to say, each a message key and its slots as a composer's plan writes them: a rashifal's plans, an interpretation's, a day's sentences.
+final class RenderRequest extends _Request {
+  const RenderRequest({
+    required this.items,
+  });
+
+  /// The items, said in their order.
+  final List<Item> items;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'items': [for (final e0 in items) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [items];
+}
+
 /// What a caller asks to be written: a time of day, and how.
 final class TimeTextRequest extends _Request {
   const TimeTextRequest({
@@ -4835,6 +4853,29 @@ enum WordsStyle implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// One thing to say: a message key and the slots it is said with.
+final class Item extends _Request {
+  const Item({
+    required this.key,
+    required this.params,
+  });
+
+  /// The message, as `sdk.reason.grahaInRashi`.
+  final String key;
+
+  /// Its slots, in the order a message names them being irrelevant: the map is ordered, so a plan is the same bytes every time.
+  final Object? params;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'key': key,
+    'params': params,
+  };
+
+  @override
+  List<Object?> get _fields => [key, params];
 }
 
 /// A time of day, for `:time` and `:datetime`.
@@ -16777,6 +16818,9 @@ abstract final class Records {
   /// `intl.lookup`, whose request is [LookupRequest].
   static const intlLookup = RecordOf<LookupRequest>._('intl.lookup');
 
+  /// `intl.render`, whose request is [RenderRequest].
+  static const intlRender = RecordOf<RenderRequest>._('intl.render');
+
   /// `intl.time`, whose request is [TimeTextRequest].
   static const intlTime = RecordOf<TimeTextRequest>._('intl.time');
 
@@ -16882,6 +16926,7 @@ abstract final class Records {
     intlInWords,
     intlLexicon,
     intlLookup,
+    intlRender,
     intlTime,
     matchingBand,
     matchingNaam,

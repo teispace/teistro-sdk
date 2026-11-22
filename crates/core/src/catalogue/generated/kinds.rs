@@ -570,7 +570,7 @@ impl Kind {
             Kind::Guna => 3,
             Kind::Direction => 8,
             Kind::Gender => 3,
-            Kind::Calendar => 16,
+            Kind::Calendar => 17,
             Kind::Era => 13,
             Kind::BodyClass => 4,
             Kind::Parity => 2,

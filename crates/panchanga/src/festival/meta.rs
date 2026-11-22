@@ -1241,7 +1241,13 @@ const NAMES: [Names; 37] = [
         None,
         "Bihar's notification, Schedule-2: the morning arghya, the day after the evening's, with which Chhath ends; the national panchanga prints no day after छठपर्व in VS 2082 or 2083 (C2306)",
     ),
-    ("DHANU_SANKRANTI", None, &["POUSH_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "DHANU_SANKRANTI",
+        None,
+        &["POUSH_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     ("GORU_PUJA", None, &[], Some(1), PRINTED),
     ("GOVARDHAN_PUJA", None, &[], Some(2), PRINTED),
     (
@@ -1259,8 +1265,20 @@ const NAMES: [Names; 37] = [
         None,
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: काकबली, कागतिहार, one row",
     ),
-    ("KANYA_SANKRANTI", None, &["ASHWIN_SANKRANTI"], Some(0), SANKRANTI),
-    ("KARKATA_SANKRANTI", Some("SAUNE_SANKRANTI"), &["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "KANYA_SANKRANTI",
+        None,
+        &["ASHWIN_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
+    (
+        "KARKATA_SANKRANTI",
+        Some("SAUNE_SANKRANTI"),
+        &["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     ("KARTIK_SNAN_ENDS", None, &[], Some(1), PRINTED),
     (
         "KUKUR_TIHAR",
@@ -1269,7 +1287,13 @@ const NAMES: [Names; 37] = [
         Some(2),
         "the maintainer's order for SR-145: Lakshmi puja leads Kartik's new moon in Nepal, and Kukur Tihar follows it, where the committee's VS 2083 print p. 16 sets Kukur Tihar first (C2303)",
     ),
-    ("KUMBHA_SANKRANTI", None, &["FALGUN_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "KUMBHA_SANKRANTI",
+        None,
+        &["FALGUN_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     (
         "LAKSHMI_PUJA",
         None,
@@ -1284,10 +1308,28 @@ const NAMES: [Names; 37] = [
         Some(0),
         "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315)",
     ),
-    ("MESHA_SANKRANTI", None, &["BAISAKH_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "MESHA_SANKRANTI",
+        None,
+        &["BAISAKH_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     ("MHA_PUJA", None, &[], Some(3), PRINTED),
-    ("MINA_SANKRANTI", None, &["CHAITRA_SANKRANTI"], Some(0), SANKRANTI),
-    ("MITHUNA_SANKRANTI", None, &["ASAR_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "MINA_SANKRANTI",
+        None,
+        &["CHAITRA_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
+    (
+        "MITHUNA_SANKRANTI",
+        None,
+        &["ASAR_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     (
         "NATIONAL_PADDY_DAY",
         None,
@@ -1304,9 +1346,21 @@ const NAMES: [Names; 37] = [
     ),
     ("NEPAL_SAMBAT_NEW_YEAR", None, &[], Some(4), PRINTED),
     ("PRADOSHA_VRATA", None, &[], Some(1), PRINTED),
-    ("SIMHA_SANKRANTI", None, &["BHADRA_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "SIMHA_SANKRANTI",
+        None,
+        &["BHADRA_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     ("SWASTHANI_VRAT_BEGINS", None, &[], Some(1), PRINTED),
-    ("TULA_SANKRANTI", None, &["KARTIK_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "TULA_SANKRANTI",
+        None,
+        &["KARTIK_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     ("UBHAULI", None, &[], Some(4), PRINTED),
     (
         "UPAKARMA_MADHYANDINA",
@@ -1322,8 +1376,20 @@ const NAMES: [Names; 37] = [
         None,
         "Nepal's national panchanga, VS 2083 p. 15: विजयादशमी, दशैंको टीका, one row",
     ),
-    ("VRISHABHA_SANKRANTI", None, &["JESTHA_SANKRANTI"], Some(0), SANKRANTI),
-    ("VRISHCHIKA_SANKRANTI", None, &["MANGSIR_SANKRANTI"], Some(0), SANKRANTI),
+    (
+        "VRISHABHA_SANKRANTI",
+        None,
+        &["JESTHA_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
+    (
+        "VRISHCHIKA_SANKRANTI",
+        None,
+        &["MANGSIR_SANKRANTI"],
+        Some(0),
+        SANKRANTI,
+    ),
     (
         "YAMA_DWITIYA",
         Some("BHAI_TIKA"),
@@ -2370,7 +2436,11 @@ mod tests {
             }
             locales += 1;
         }
-        assert!(locales >= 5, "{locales} locales read under {}", root.display());
+        assert!(
+            locales >= 5,
+            "{locales} locales read under {}",
+            root.display()
+        );
         Ok(())
     }
 
@@ -2385,7 +2455,12 @@ mod tests {
                 .map(|names| (names.lead, names.aliases))
                 .collect::<Vec<_>>()
         };
-        let named = |names: &[&str]| names.iter().map(|&name| name.to_owned()).collect::<Vec<_>>();
+        let named = |names: &[&str]| {
+            names
+                .iter()
+                .map(|&name| name.to_owned())
+                .collect::<Vec<_>>()
+        };
         assert_eq!(
             lead_and_aliases("MAKARA_SANKRANTI"),
             [(

@@ -79,6 +79,17 @@
       "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī"
     }
   },
+  "HIJRI_SIGHTED": {
+    "monthName": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
+    "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthShort :msg}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false} hijarī",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} hijarī}} * {{{$monthName}–{$untilMonthName} {$untilYear :integer useGrouping=false} hijarī}}",
+    "date": {
+      "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} hijarī",
+      "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī"
+    }
+  },
   "TIBETAN_PHUGPA": {
     "monthName": ".input {$leap :string} .match $leap MONTH {{Adhikamāsaḥ {$month :integer}}} MONTH_AND_DAY {{Adhikamāsaḥ {$month :integer}}} * {{Māsaḥ {$month :integer}}}",
     "monthShort": ".input {$leap :string} .match $leap MONTH {{Adhika {$month :integer}}} MONTH_AND_DAY {{Adhika {$month :integer}}} * {{{$month :integer}}}",

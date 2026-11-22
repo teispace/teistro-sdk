@@ -1410,6 +1410,16 @@ export interface LookupRequest {
 }
 
 /**
+ * The items to say, each a message key and its slots as a composer's plan writes them: a rashifal's plans, an interpretation's, a day's sentences.
+ */
+export interface RenderRequest {
+  /**
+   * The items, said in their order.
+   */
+  readonly items: readonly Item[];
+}
+
+/**
  * What a caller asks to be written: a time of day, and how.
  */
 export interface TimeTextRequest {
@@ -3385,6 +3395,20 @@ export type WordsGrouping = 'INDIAN' | 'INTERNATIONAL';
  * `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
  */
 export type WordsStyle = 'PLAIN' | 'VERBOSE';
+
+/**
+ * One thing to say: a message key and the slots it is said with.
+ */
+export interface Item {
+  /**
+   * The message, as `sdk.reason.grahaInRashi`.
+   */
+  readonly key: string;
+  /**
+   * Its slots, in the order a message names them being irrelevant: the map is ordered, so a plan is the same bytes every time.
+   */
+  readonly params: unknown;
+}
 
 /**
  * A time of day, for `:time` and `:datetime`.
@@ -11219,6 +11243,7 @@ export interface RecordRequests {
   readonly 'intl.inWords': InWordsRequest;
   readonly 'intl.lexicon': LexiconRequest;
   readonly 'intl.lookup': LookupRequest;
+  readonly 'intl.render': RenderRequest;
   readonly 'intl.time': TimeTextRequest;
   readonly 'matching.band': BandRequest;
   readonly 'matching.naam': NaamRequest;

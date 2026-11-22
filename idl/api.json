@@ -4544,6 +4544,12 @@
           "value": 15,
           "doc": "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)",
           "key": "ASSAM_SOLAR"
+        },
+        {
+          "name": "HijriSighted",
+          "value": 16,
+          "doc": "Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days",
+          "key": "HIJRI_SIGHTED"
         }
       ],
       "source": "catalogue/catalogue.json"

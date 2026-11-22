@@ -592,11 +592,11 @@ fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
         .filter(|(rule, _)| {
             !rule.starts_with("EID_AL_")
                 && PRINTED_CIVIL_DAYS
-                .iter()
-                .chain(&KEPT_CIVIL_DAYS)
-                .chain(&KEPT_INTERNATIONAL_DAYS)
-                .chain(&MORE_KEPT_DAYS)
-                .all(|&(civil, ..)| civil != rule)
+                    .iter()
+                    .chain(&KEPT_CIVIL_DAYS)
+                    .chain(&KEPT_INTERNATIONAL_DAYS)
+                    .chain(&MORE_KEPT_DAYS)
+                    .all(|&(civil, ..)| civil != rule)
         })
         .collect()
 }

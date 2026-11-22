@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 363 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 373 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -116,6 +116,24 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::calendar::gregorian::MonthShort { month: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::gregorian::MonthYear { month_name: String::from("monthName"), year: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::calendar::gregorian::MonthYearRange {
+        greatest: String::from("greatest"),
+        month_name: String::from("monthName"),
+        until_month_name: String::from("untilMonthName"),
+        until_year: 2,
+        year: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::date::Full {
+        day: 2,
+        month_name: String::from("monthName"),
+        weekday_name: String::from("weekdayName"),
+        year: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::date::Long { day: 2, month_name: String::from("monthName"), year: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::date::Numeric { day: 2, month: 2, year: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::MonthName { month: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::MonthShort { month: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::MonthYear { month_name: String::from("monthName"), year: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::calendar::hijri_sighted::MonthYearRange {
         greatest: String::from("greatest"),
         month_name: String::from("monthName"),
         until_month_name: String::from("untilMonthName"),
@@ -430,6 +448,11 @@ fn every_typed_message_renders_from_the_sdk_sources() {
         house: 2,
         rashi: teistro_core::catalogue::Rashi::ALL[0],
     }, false);
+    renders(&intl, &teistro_intl::messages::sdk::rashifal::Passing {
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        verdict: String::from("verdict"),
+    }, false);
     renders(&intl, &teistro_intl::messages::sdk::rashifal::Saturn { house: 2, phase: String::from("phase"), spell: String::from("spell") }, true);
     renders(&intl, &teistro_intl::messages::sdk::rashifal::Station {
         good: String::from("good"),
@@ -618,6 +641,8 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::aspect::NodeAspects, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::CivilCalendar, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::Eras, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::HijriCriterion, true);
+    renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::HijriZone, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::KiratYele, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::LunarMonth, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::calendars::MarginalMonthMinutes, true);

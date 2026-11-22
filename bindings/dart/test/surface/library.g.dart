@@ -703,6 +703,9 @@ final List<Surface> requests = [
     Param('locale', Scalar('String')),
     Param('text', Scalar('String')),
   ], fields: (v) => [v.kinds, v.locale, v.text]),
+  Built<RenderRequest>('RenderRequest', RenderRequest.new, [
+    Param('items', ListOf(Named('Item'), (items) => List<Item>.from(items))),
+  ], fields: (v) => [v.items]),
   Built<TimeTextRequest>('TimeTextRequest', TimeTextRequest.new, [
     Param('at', Named('ClockTime')),
     Param('digits', Named('WordsDigits')),
@@ -1134,6 +1137,10 @@ final List<Surface> requests = [
   ], fields: (v) => [v.currency, v.minorDigits, v.only, v.rounding, v.value]),
   KeySet<WordsGrouping>('WordsGrouping', WordsGrouping.values, (m) => m.key),
   KeySet<WordsStyle>('WordsStyle', WordsStyle.values, (m) => m.key),
+  Built<Item>('Item', Item.new, [
+    Param('key', Scalar('String')),
+    Param('params', Scalar('Object')),
+  ], fields: (v) => [v.key, v.params]),
   Built<ClockTime>('ClockTime', ClockTime.new, [
     Param('hour', Scalar('int')),
     Param('minute', Scalar('int')),

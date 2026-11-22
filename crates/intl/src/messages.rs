@@ -1396,6 +1396,271 @@ pub mod sdk {
 
         }
 
+        /// The `HIJRI_SIGHTED` group.
+        pub mod hijri_sighted {
+            /// The `date` group.
+            pub mod date {
+                /// The message `sdk.calendar.HIJRI_SIGHTED.date.full`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_sighted::date::Full;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Full {
+                ///     day: 2,
+                ///     month_name: String::from("monthName"),
+                ///     weekday_name: String::from("weekdayName"),
+                ///     year: 2,
+                /// };
+                /// assert_eq!(Full::KEY, "sdk.calendar.HIJRI_SIGHTED.date.full");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Full {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `weekdayName` parameter.
+                    pub weekday_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Full {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.date.full";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("weekdayName", crate::Value::Str(self.weekday_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.HIJRI_SIGHTED.date.long`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_sighted::date::Long;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Long { day: 2, month_name: String::from("monthName"), year: 2 };
+                /// assert_eq!(Long::KEY, "sdk.calendar.HIJRI_SIGHTED.date.long");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Long {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `monthName` parameter.
+                    pub month_name: String,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Long {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.date.long";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("monthName", crate::Value::Str(self.month_name.clone())),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.calendar.HIJRI_SIGHTED.date.numeric`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::calendar::hijri_sighted::date::Numeric;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Numeric { day: 2, month: 2, year: 2 };
+                /// assert_eq!(Numeric::KEY, "sdk.calendar.HIJRI_SIGHTED.date.numeric");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Numeric {
+                    /// The `day` parameter.
+                    pub day: i64,
+                    /// The `month` parameter.
+                    pub month: i64,
+                    /// The `year` parameter.
+                    pub year: i64,
+                }
+
+                impl crate::TypedMessage for Numeric {
+                    const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.date.numeric";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("day", crate::Value::Int(self.day)),
+                            ("month", crate::Value::Int(self.month)),
+                            ("year", crate::Value::Int(self.year)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.calendar.HIJRI_SIGHTED.monthName`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_sighted::MonthName;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = MonthName { month: 2 };
+            /// assert_eq!(MonthName::KEY, "sdk.calendar.HIJRI_SIGHTED.monthName");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthName {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthName {
+                const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.monthName";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.HIJRI_SIGHTED.monthShort`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_sighted::MonthShort;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = MonthShort { month: 2 };
+            /// assert_eq!(MonthShort::KEY, "sdk.calendar.HIJRI_SIGHTED.monthShort");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthShort {
+                /// The `month` parameter.
+                pub month: i64,
+            }
+
+            impl crate::TypedMessage for MonthShort {
+                const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.monthShort";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.HIJRI_SIGHTED.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_sighted::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.HIJRI_SIGHTED.monthYear");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.HIJRI_SIGHTED.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_sighted::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.HIJRI_SIGHTED.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.HIJRI_SIGHTED.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `HIJRI_TABULAR` group.
         pub mod hijri_tabular {
             /// The `date` group.
@@ -8924,6 +9189,56 @@ pub mod sdk {
 
                 impl crate::TypedMessage for Eras {
                     const KEY: &'static str = "sdk.settings.effect.calendars.eras";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.hijriCriterion`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::HijriCriterion;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = HijriCriterion;
+                /// assert_eq!(HijriCriterion::KEY, "sdk.settings.effect.calendars.hijriCriterion");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct HijriCriterion;
+
+                impl crate::TypedMessage for HijriCriterion {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.hijriCriterion";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.settings.effect.calendars.hijriZone`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::calendars::HijriZone;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = HijriZone;
+                /// assert_eq!(HijriZone::KEY, "sdk.settings.effect.calendars.hijriZone");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct HijriZone;
+
+                impl crate::TypedMessage for HijriZone {
+                    const KEY: &'static str = "sdk.settings.effect.calendars.hijriZone";
                     fn params(&self) -> crate::Params {
                         crate::Params::new()
                     }

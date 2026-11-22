@@ -2909,6 +2909,8 @@ enum Calendar implements KeyOf<Calendar> {
   tamilVakya(14, 'TAMIL_VAKYA'),
   /// Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
   assamSolar(15, 'ASSAM_SOLAR'),
+  /// Hijri sighted: months from the evening the new crescent is seen at the place, by Odeh's or Yallop's criterion, a 29th unseen completing thirty days
+  hijriSighted(16, 'HIJRI_SIGHTED'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

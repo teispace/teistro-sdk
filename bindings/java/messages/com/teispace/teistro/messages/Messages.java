@@ -626,6 +626,8 @@ public final class Messages {
         INDIAN_NATIONAL("calendar.INDIAN_NATIONAL"),
         /** `calendar.HIJRI_TABULAR`. */
         HIJRI_TABULAR("calendar.HIJRI_TABULAR"),
+        /** `calendar.HIJRI_SIGHTED`. */
+        HIJRI_SIGHTED("calendar.HIJRI_SIGHTED"),
         /** `calendar.TIBETAN_PHUGPA`. */
         TIBETAN_PHUGPA("calendar.TIBETAN_PHUGPA"),
         /** `calendar.BANGLADESHI`. */
@@ -4604,6 +4606,126 @@ public final class Messages {
 
 
             /**
+             * The messages under `HIJRI_SIGHTED`.
+             *
+             * @return the group
+             */
+            public SdkCalendarHijriSighted hijriSighted() {
+                return new SdkCalendarHijriSighted(r);
+            }
+
+            /** The messages under `SdkCalendarHijriSighted`, each rendered by its own key. */
+            public static final class SdkCalendarHijriSighted {
+                private final Renderer r;
+
+                SdkCalendarHijriSighted(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `date`.
+                 *
+                 * @return the group
+                 */
+                public SdkCalendarHijriSightedDate date() {
+                    return new SdkCalendarHijriSightedDate(r);
+                }
+
+                /** The messages under `SdkCalendarHijriSightedDate`, each rendered by its own key. */
+                public static final class SdkCalendarHijriSightedDate {
+                    private final Renderer r;
+
+                    SdkCalendarHijriSightedDate(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_SIGHTED.date.full`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param weekdayName `weekdayName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String full(long day, String monthName, String weekdayName, long year) {
+                        return r.render("sdk.calendar.HIJRI_SIGHTED.date.full", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("weekdayName", weekdayName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_SIGHTED.date.long`
+                     *
+                     * @param day `day`
+                     * @param monthName `monthName`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String long_(long day, String monthName, long year) {
+                        return r.render("sdk.calendar.HIJRI_SIGHTED.date.long", Map.ofEntries(Map.entry("day", day), Map.entry("monthName", monthName), Map.entry("year", year)));
+                    }
+
+                    /**
+                     * `sdk.calendar.HIJRI_SIGHTED.date.numeric`
+                     *
+                     * @param day `day`
+                     * @param month `month`
+                     * @param year `year`
+                     * @return the text
+                     */
+                    public String numeric(long day, long month, long year) {
+                        return r.render("sdk.calendar.HIJRI_SIGHTED.date.numeric", Map.ofEntries(Map.entry("day", day), Map.entry("month", month), Map.entry("year", year)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.calendar.HIJRI_SIGHTED.monthName`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthName(long month) {
+                    return r.render("sdk.calendar.HIJRI_SIGHTED.monthName", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.HIJRI_SIGHTED.monthShort`
+                 *
+                 * @param month `month`
+                 * @return the text
+                 */
+                public String monthShort(long month) {
+                    return r.render("sdk.calendar.HIJRI_SIGHTED.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.HIJRI_SIGHTED.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.HIJRI_SIGHTED.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.HIJRI_SIGHTED.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.HIJRI_SIGHTED.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
+                }
+            }
+
+
+            /**
              * The messages under `HIJRI_TABULAR`.
              *
              * @return the group
@@ -7610,6 +7732,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `calendar.HIJRI_SIGHTED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hijriSighted() {
+                    return r.entity("calendar.HIJRI_SIGHTED");
+                }
+
+                /**
                  * The forms of `calendar.HIJRI_TABULAR` in the current locale.
                  *
                  * @return the forms
@@ -9813,6 +9944,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.ASAR_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms asarSankranti() {
+                    return r.entity("festival.ASAR_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.ASHTAMI_SHRADDHA` in the current locale.
                  *
                  * @return the forms
@@ -9846,6 +9986,15 @@ public final class Messages {
                  */
                 public EntityForms ashvinaAyambilOliEnd() {
                     return r.entity("festival.ASHVINA_AYAMBIL_OLI_END");
+                }
+
+                /**
+                 * The forms of `festival.ASHWIN_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ashwinSankranti() {
+                    return r.entity("festival.ASHWIN_SANKRANTI");
                 }
 
                 /**
@@ -9918,6 +10067,15 @@ public final class Messages {
                  */
                 public EntityForms bahudaJatra() {
                     return r.entity("festival.BAHUDA_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.BAISAKH_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms baisakhSankranti() {
+                    return r.entity("festival.BAISAKH_SANKRANTI");
                 }
 
                 /**
@@ -10017,6 +10175,15 @@ public final class Messages {
                  */
                 public EntityForms bathukamma() {
                     return r.entity("festival.BATHUKAMMA");
+                }
+
+                /**
+                 * The forms of `festival.BHADRA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhadraSankranti() {
+                    return r.entity("festival.BHADRA_SANKRANTI");
                 }
 
                 /**
@@ -10389,6 +10556,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.CHAITRA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chaitraSankranti() {
+                    return r.entity("festival.CHAITRA_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.CHAMPA_SHASHTHI` in the current locale.
                  *
                  * @return the forms
@@ -10656,6 +10832,15 @@ public final class Messages {
                  */
                 public EntityForms constitutionDay() {
                     return r.entity("festival.CONSTITUTION_DAY");
+                }
+
+                /**
+                 * The forms of `festival.DAHI_CHIURA_KHANE_DIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dahiChiuraKhaneDin() {
+                    return r.entity("festival.DAHI_CHIURA_KHANE_DIN");
                 }
 
                 /**
@@ -11100,6 +11285,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.FALGUN_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms falgunSankranti() {
+                    return r.entity("festival.FALGUN_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.FIRST_ONAM` in the current locale.
                  *
                  * @return the forms
@@ -11295,6 +11489,15 @@ public final class Messages {
                  */
                 public EntityForms ghodeJatra() {
                     return r.entity("festival.GHODE_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.GHYU_CHAKU_KHANE_DIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ghyuChakuKhaneDin() {
+                    return r.entity("festival.GHYU_CHAKU_KHANE_DIN");
                 }
 
                 /**
@@ -12171,6 +12374,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.JANAI_PURNIMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms janaiPurnima() {
+                    return r.entity("festival.JANAI_PURNIMA");
+                }
+
+                /**
                  * The forms of `festival.JANMASHTAMI` in the current locale.
                  *
                  * @return the forms
@@ -12195,6 +12407,15 @@ public final class Messages {
                  */
                 public EntityForms jayaprakashNarayanJayanti() {
                     return r.entity("festival.JAYAPRAKASH_NARAYAN_JAYANTI");
+                }
+
+                /**
+                 * The forms of `festival.JESTHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jesthaSankranti() {
+                    return r.entity("festival.JESTHA_SANKRANTI");
                 }
 
                 /**
@@ -12438,6 +12659,15 @@ public final class Messages {
                  */
                 public EntityForms karpooriThakurJayanti() {
                     return r.entity("festival.KARPOORI_THAKUR_JAYANTI");
+                }
+
+                /**
+                 * The forms of `festival.KARTIK_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kartikSankranti() {
+                    return r.entity("festival.KARTIK_SANKRANTI");
                 }
 
                 /**
@@ -12828,6 +13058,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.MAGHE_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms magheSankranti() {
+                    return r.entity("festival.MAGHE_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.MAGHI_THARU` in the current locale.
                  *
                  * @return the forms
@@ -12978,6 +13217,15 @@ public final class Messages {
                  */
                 public EntityForms mangalaChaturthi() {
                     return r.entity("festival.MANGALA_CHATURTHI");
+                }
+
+                /**
+                 * The forms of `festival.MANGSIR_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mangsirSankranti() {
+                    return r.entity("festival.MANGSIR_SANKRANTI");
                 }
 
                 /**
@@ -13683,6 +13931,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.POUSH_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms poushSankranti() {
+                    return r.entity("festival.POUSH_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.PRADOSHA_VRATA` in the current locale.
                  *
                  * @return the forms
@@ -13917,6 +14174,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.RISHI_TARPANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rishiTarpani() {
+                    return r.entity("festival.RISHI_TARPANI");
+                }
+
+                /**
                  * The forms of `festival.ROPAI_JATRA` in the current locale.
                  *
                  * @return the forms
@@ -14079,6 +14345,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SARASWATI_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms saraswatiPuja() {
+                    return r.entity("festival.SARASWATI_PUJA");
+                }
+
+                /**
                  * The forms of `festival.SARDAR_PATEL_JAYANTI` in the current locale.
                  *
                  * @return the forms
@@ -14103,6 +14378,15 @@ public final class Messages {
                  */
                 public EntityForms satyayugadi() {
                     return r.entity("festival.SATYAYUGADI");
+                }
+
+                /**
+                 * The forms of `festival.SAUNE_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sauneSankranti() {
+                    return r.entity("festival.SAUNE_SANKRANTI");
                 }
 
                 /**
@@ -14241,6 +14525,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SHRAWAN_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shrawanSankranti() {
+                    return r.entity("festival.SHRAWAN_SANKRANTI");
+                }
+
+                /**
                  * The forms of `festival.SHREEGHA_JATRA` in the current locale.
                  *
                  * @return the forms
@@ -14256,6 +14549,15 @@ public final class Messages {
                  */
                 public EntityForms shreeBallabhJayanti() {
                     return r.entity("festival.SHREE_BALLABH_JAYANTI");
+                }
+
+                /**
+                 * The forms of `festival.SHREE_PANCHAMI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shreePanchami() {
+                    return r.entity("festival.SHREE_PANCHAMI");
                 }
 
                 /**
@@ -23386,6 +23688,18 @@ public final class Messages {
             }
 
             /**
+             * `sdk.rashifal.passing`
+             *
+             * @param graha `graha`
+             * @param house `house`
+             * @param verdict `verdict`
+             * @return the text
+             */
+            public String passing(GrahaKey graha, long house, String verdict) {
+                return r.render("sdk.rashifal.passing", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("verdict", verdict)));
+            }
+
+            /**
              * `sdk.rashifal.saturn`
              *
              * @param house `house`
@@ -24389,6 +24703,24 @@ public final class Messages {
                      */
                     public String eras() {
                         return r.render("sdk.settings.effect.calendars.eras", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.hijriCriterion`
+                     *
+                     * @return the text
+                     */
+                    public String hijriCriterion() {
+                        return r.render("sdk.settings.effect.calendars.hijriCriterion", Map.of());
+                    }
+
+                    /**
+                     * `sdk.settings.effect.calendars.hijriZone`
+                     *
+                     * @return the text
+                     */
+                    public String hijriZone() {
+                        return r.render("sdk.settings.effect.calendars.hijriZone", Map.of());
                     }
 
                     /**

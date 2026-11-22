@@ -3425,8 +3425,8 @@
       "iast": "Āṣāḍhasaṅkrānti"
     },
     "SAUNE_SANKRANTI": {
-      "name": "Sāune saṅkrānti",
-      "prose": "Sāune saṅkrānti",
+      "name": "Sāune Saṅkrānti",
+      "prose": "Sāune Saṅkrānti",
       "iast": "Sāune saṅkrānti"
     },
     "SHRAWAN_SANKRANTI": {
@@ -3460,8 +3460,8 @@
       "iast": "Pauṣasaṅkrānti"
     },
     "MAGHE_SANKRANTI": {
-      "name": "Māghe saṅkrānti",
-      "prose": "Māghe saṅkrānti",
+      "name": "Māghe Saṅkrānti",
+      "prose": "Māghe Saṅkrānti",
       "iast": "Māghe saṅkrānti"
     },
     "FALGUN_SANKRANTI": {
@@ -3475,8 +3475,8 @@
       "iast": "Caitrasaṅkrānti"
     },
     "JANAI_PURNIMA": {
-      "name": "Janai pūrṇimā",
-      "prose": "Janai pūrṇimā",
+      "name": "Janai Pūrṇimā",
+      "prose": "Janai Pūrṇimā",
       "iast": "Janai pūrṇimā"
     },
     "RISHI_TARPANI": {
@@ -3495,13 +3495,13 @@
       "iast": "Śrī pañcamī"
     },
     "DAHI_CHIURA_KHANE_DIN": {
-      "name": "Dahī-ciurā khāne din",
-      "prose": "Dahī-ciurā khāne din",
+      "name": "Dahī-ciurā Khāne Dina",
+      "prose": "Dahī-ciurā Khāne Dina",
       "iast": "Dahī-ciurā khāne din"
     },
     "GHYU_CHAKU_KHANE_DIN": {
-      "name": "Ghyū-cāku khāne din",
-      "prose": "Ghyū-cāku khāne din",
+      "name": "Ghyū-cāku Khāne Dina",
+      "prose": "Ghyū-cāku Khāne Dina",
       "iast": "Ghyū-cāku khāne din"
     },
     "LOKTANTRA_DIWAS": {
@@ -5878,6 +5878,10 @@
     "HIJRI_TABULAR": {
       "name": "Tabular Hijri calendar",
       "prose": "Tabular Hijri calendar"
+    },
+    "HIJRI_SIGHTED": {
+      "name": "Sighted Hijri calendar",
+      "prose": "Sighted Hijri calendar"
     },
     "TIBETAN_PHUGPA": {
       "name": "Tibetan calendar (Phugpa)",
