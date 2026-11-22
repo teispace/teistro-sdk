@@ -21,6 +21,7 @@
     },
     "day": {
       "sunrise": "Moves sunrise by a minute or more, and with it every limb read at sunrise and every span measured from it",
+      "moonrise": "Moves moonrise and moonset by up to a few minutes, and nothing read at sunrise",
       "dayBoundary": "Moves where the day begins, and so which day an instant falls on",
       "polarDayPolicy": "Changes what a day without a sunrise is: undefined, from the nearest rise or set, or from midnight",
       "ghatiReckoning": "Changes a ghati from 24 minutes to a sixtieth of the actual day and night",

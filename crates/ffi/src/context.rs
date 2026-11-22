@@ -1386,6 +1386,7 @@ pub unsafe extern "C" fn ts_context_explain_settings(
 /// each shipped holiday set as `{set, years}`.
 ///
 /// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
@@ -1407,6 +1408,7 @@ pub unsafe extern "C" fn ts_context_explain_settings(
 /// assert_eq!(answer["ephemeris"]["first"]["year"], 1800);
 /// assert_eq!(answer["ephemeris"]["last"]["year"], 2399);
 /// assert_eq!(answer["holidays"][0]["set"], "NEPAL_GAZETTE");
+/// # }
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///
