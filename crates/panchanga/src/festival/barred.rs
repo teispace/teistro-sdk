@@ -214,7 +214,7 @@ pub(super) fn keep(
         )));
     };
     Ok(
-        judge(rule, occurrence.whole, month, days, rites)?.map(|judged| {
+        judge(rule, occurrence.whole, month, days, tithis, rites)?.map(|judged| {
             judged.map(|observance| Observance {
                 barred: true,
                 ..observance
