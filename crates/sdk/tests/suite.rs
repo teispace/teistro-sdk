@@ -162,6 +162,8 @@ mod naming;
 #[cfg(feature = "builtin-ephemeris")]
 mod nepal_gazette;
 #[cfg(feature = "builtin-ephemeris")]
+mod nepal_text_rules;
+#[cfg(feature = "builtin-ephemeris")]
 mod next;
 #[cfg(feature = "builtin-ephemeris")]
 mod odisha;
