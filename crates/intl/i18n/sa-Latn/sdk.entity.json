@@ -3409,6 +3409,71 @@
       "prose": "Mīnasaṅkrānti",
       "iast": "Mīnasaṅkrānti"
     },
+    "BAISAKH_SANKRANTI": {
+      "name": "Vaiśākhasaṅkrānti",
+      "prose": "Vaiśākhasaṅkrānti",
+      "iast": "Vaiśākhasaṅkrānti"
+    },
+    "JESTHA_SANKRANTI": {
+      "name": "Jyeṣṭhasaṅkrānti",
+      "prose": "Jyeṣṭhasaṅkrānti",
+      "iast": "Jyeṣṭhasaṅkrānti"
+    },
+    "ASAR_SANKRANTI": {
+      "name": "Āṣāḍhasaṅkrānti",
+      "prose": "Āṣāḍhasaṅkrānti",
+      "iast": "Āṣāḍhasaṅkrānti"
+    },
+    "SAUNE_SANKRANTI": {
+      "name": "Sāune saṅkrānti",
+      "prose": "Sāune saṅkrānti",
+      "iast": "Sāune saṅkrānti"
+    },
+    "SHRAWAN_SANKRANTI": {
+      "name": "Śrāvaṇasaṅkrānti",
+      "prose": "Śrāvaṇasaṅkrānti",
+      "iast": "Śrāvaṇasaṅkrānti"
+    },
+    "BHADRA_SANKRANTI": {
+      "name": "Bhādrapadasaṅkrānti",
+      "prose": "Bhādrapadasaṅkrānti",
+      "iast": "Bhādrapadasaṅkrānti"
+    },
+    "ASHWIN_SANKRANTI": {
+      "name": "Āśvinasaṅkrānti",
+      "prose": "Āśvinasaṅkrānti",
+      "iast": "Āśvinasaṅkrānti"
+    },
+    "KARTIK_SANKRANTI": {
+      "name": "Kārttikasaṅkrānti",
+      "prose": "Kārttikasaṅkrānti",
+      "iast": "Kārttikasaṅkrānti"
+    },
+    "MANGSIR_SANKRANTI": {
+      "name": "Mārgaśīrṣasaṅkrānti",
+      "prose": "Mārgaśīrṣasaṅkrānti",
+      "iast": "Mārgaśīrṣasaṅkrānti"
+    },
+    "POUSH_SANKRANTI": {
+      "name": "Pauṣasaṅkrānti",
+      "prose": "Pauṣasaṅkrānti",
+      "iast": "Pauṣasaṅkrānti"
+    },
+    "MAGHE_SANKRANTI": {
+      "name": "Māghe saṅkrānti",
+      "prose": "Māghe saṅkrānti",
+      "iast": "Māghe saṅkrānti"
+    },
+    "FALGUN_SANKRANTI": {
+      "name": "Phālgunasaṅkrānti",
+      "prose": "Phālgunasaṅkrānti",
+      "iast": "Phālgunasaṅkrānti"
+    },
+    "CHAITRA_SANKRANTI": {
+      "name": "Caitrasaṅkrānti",
+      "prose": "Caitrasaṅkrānti",
+      "iast": "Caitrasaṅkrānti"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "Lokatantra Divasa",
       "prose": "Lokatantra Divasa",

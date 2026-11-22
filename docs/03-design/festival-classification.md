@@ -408,7 +408,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डारक पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1 |
 | `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 15 |
 | `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Bhadra 1 |
-| `MAGHE_SANKRANTI` | Maghe Sankranti | माघे सङ्क्रान्ति |  | shipped as `MAKARA_SANKRANTI` in NEPAL_PANCHANGA |
+| `MAGHE_SANKRANTI` | Maghe Sankranti | माघे सङ्क्रान्ति |  | shipped as `MAKARA_SANKRANTI` in NEPAL_PANCHANGA, whose Nepal names lead with it (C2312) |
 | `MAGHI_THARU` | Maghi (Tharu) | माघी | Tharu | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `MAKAR_SNAN` | Makar Snan | मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
 | `NEPALI_NEW_YEAR` | Nepali New Year | नव वर्ष |  | shipped as `MESHA_SANKRANTI` in NEPAL_PANCHANGA |

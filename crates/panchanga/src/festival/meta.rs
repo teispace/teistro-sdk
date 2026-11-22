@@ -1187,6 +1187,9 @@ const GAURA_PURNIMA: [Reading; 1] = [reading(
 /// The committee's order of a day's observances, read off its rows.
 const PRINTED: &str = "Nepal's national panchanga (the committee's VS 2083 print) prints it at this place among the day's observances of its tier";
 
+/// A sankranti's names in Nepal and its place on its day (C2312).
+const SANKRANTI: &str = "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier; Nepal's patros from 2013 to 2027, read for SR-145, name the Makara and Karkata sankrantis by the month they open, माघे and साउने सङ्क्रान्ति, and the others by their sign or by that month (C2312)";
+
 /// [`FestivalNames::shipped`]'s table, sorted by key for the binary
 /// search: the key, the name Nepal leads with when it is not the key's
 /// own, its other names, its place among a day's observances of one tier
@@ -1231,7 +1234,7 @@ const NAMES: [Names; 34] = [
         None,
         "Bihar's notification, Schedule-2: the morning arghya, the day after the evening's, with which Chhath ends; the national panchanga prints no day after छठपर्व in VS 2082 or 2083 (C2306)",
     ),
-    ("DHANU_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("DHANU_SANKRANTI", None, &["POUSH_SANKRANTI"], Some(0), SANKRANTI),
     ("GORU_PUJA", None, &[], Some(1), PRINTED),
     ("GOVARDHAN_PUJA", None, &[], Some(2), PRINTED),
     (
@@ -1249,8 +1252,8 @@ const NAMES: [Names; 34] = [
         None,
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: काकबली, कागतिहार, one row",
     ),
-    ("KANYA_SANKRANTI", None, &[], Some(0), PRINTED),
-    ("KARKATA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("KANYA_SANKRANTI", None, &["ASHWIN_SANKRANTI"], Some(0), SANKRANTI),
+    ("KARKATA_SANKRANTI", Some("SAUNE_SANKRANTI"), &["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"], Some(0), SANKRANTI),
     ("KARTIK_SNAN_ENDS", None, &[], Some(1), PRINTED),
     (
         "KUKUR_TIHAR",
@@ -1259,7 +1262,7 @@ const NAMES: [Names; 34] = [
         Some(2),
         "the maintainer's order for SR-145: Lakshmi puja leads Kartik's new moon in Nepal, and Kukur Tihar follows it, where the committee's VS 2083 print p. 16 sets Kukur Tihar first (C2303)",
     ),
-    ("KUMBHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("KUMBHA_SANKRANTI", None, &["FALGUN_SANKRANTI"], Some(0), SANKRANTI),
     (
         "LAKSHMI_PUJA",
         None,
@@ -1267,11 +1270,11 @@ const NAMES: [Names; 34] = [
         Some(1),
         "Nepal's national panchanga, VS 2082 p. 14 and VS 2083 p. 16: लक्ष्मीपूजा, दीपमालिका, one row; the maintainer's order for SR-145: it leads Kartik's new moon, where the print sets Kukur Tihar first (C2303)",
     ),
-    ("MAKARA_SANKRANTI", None, &[], Some(0), PRINTED),
-    ("MESHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("MAKARA_SANKRANTI", Some("MAGHE_SANKRANTI"), &["MAKARA_SANKRANTI"], Some(0), SANKRANTI),
+    ("MESHA_SANKRANTI", None, &["BAISAKH_SANKRANTI"], Some(0), SANKRANTI),
     ("MHA_PUJA", None, &[], Some(3), PRINTED),
-    ("MINA_SANKRANTI", None, &[], Some(0), PRINTED),
-    ("MITHUNA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("MINA_SANKRANTI", None, &["CHAITRA_SANKRANTI"], Some(0), SANKRANTI),
+    ("MITHUNA_SANKRANTI", None, &["ASAR_SANKRANTI"], Some(0), SANKRANTI),
     (
         "NAVARATRA_ARAMBHA",
         Some("GHATASTHAPANA"),
@@ -1281,9 +1284,9 @@ const NAMES: [Names; 34] = [
     ),
     ("NEPAL_SAMBAT_NEW_YEAR", None, &[], Some(4), PRINTED),
     ("PRADOSHA_VRATA", None, &[], Some(1), PRINTED),
-    ("SIMHA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("SIMHA_SANKRANTI", None, &["BHADRA_SANKRANTI"], Some(0), SANKRANTI),
     ("SWASTHANI_VRAT_BEGINS", None, &[], Some(1), PRINTED),
-    ("TULA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("TULA_SANKRANTI", None, &["KARTIK_SANKRANTI"], Some(0), SANKRANTI),
     ("UBHAULI", None, &[], Some(4), PRINTED),
     (
         "VIJAYA_DASHAMI",
@@ -1292,8 +1295,8 @@ const NAMES: [Names; 34] = [
         None,
         "Nepal's national panchanga, VS 2083 p. 15: विजयादशमी, दशैंको टीका, one row",
     ),
-    ("VRISHABHA_SANKRANTI", None, &[], Some(0), PRINTED),
-    ("VRISHCHIKA_SANKRANTI", None, &[], Some(0), PRINTED),
+    ("VRISHABHA_SANKRANTI", None, &["JESTHA_SANKRANTI"], Some(0), SANKRANTI),
+    ("VRISHCHIKA_SANKRANTI", None, &["MANGSIR_SANKRANTI"], Some(0), SANKRANTI),
     (
         "YAMA_DWITIYA",
         Some("BHAI_TIKA"),
@@ -2304,6 +2307,63 @@ mod tests {
                 ..MetaFilter::default()
             }
             .admits(&meta)
+        );
+    }
+
+    /// Every name a region leads with or lists is a festival name in each
+    /// locale: a key no locale names reaches a reader as the key (C2312).
+    #[test]
+    fn every_shipped_name_is_named_in_every_locale() -> Result<(), Box<dyn std::error::Error>> {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../intl/i18n");
+        let mut locales = 0;
+        for dir in std::fs::read_dir(&root)? {
+            let file = dir?.path().join("sdk.entity.json");
+            let Ok(text) = std::fs::read_to_string(&file) else {
+                continue;
+            };
+            let entities: serde_json::Value = serde_json::from_str(&text)?;
+            let festivals = entities.get("festival").ok_or("a festival section")?;
+            for &(key, lead, aliases, _, _) in &NAMES {
+                for name in lead.iter().chain(aliases) {
+                    assert!(
+                        festivals.get(name).is_some(),
+                        "{key}'s name {name} is not named in {}",
+                        file.display()
+                    );
+                }
+            }
+            locales += 1;
+        }
+        assert!(locales >= 5, "{locales} locales read under {}", root.display());
+        Ok(())
+    }
+
+    /// Nepal leads the Makara and Karkata sankrantis with the month they
+    /// open and keeps the sign's name beside it; the others lead with the
+    /// sign and keep the month's (C2312).
+    #[test]
+    fn nepal_names_a_sankranti_by_its_month() {
+        let lead_and_aliases = |key: &str| {
+            FestivalNames::shipped(key)
+                .into_iter()
+                .map(|names| (names.lead, names.aliases))
+                .collect::<Vec<_>>()
+        };
+        let named = |names: &[&str]| names.iter().map(|&name| name.to_owned()).collect::<Vec<_>>();
+        assert_eq!(
+            lead_and_aliases("MAKARA_SANKRANTI"),
+            [(Some("MAGHE_SANKRANTI".to_owned()), named(&["MAKARA_SANKRANTI"]))]
+        );
+        assert_eq!(
+            lead_and_aliases("KARKATA_SANKRANTI"),
+            [(
+                Some("SAUNE_SANKRANTI".to_owned()),
+                named(&["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"])
+            )]
+        );
+        assert_eq!(
+            lead_and_aliases("MESHA_SANKRANTI"),
+            [(None, named(&["BAISAKH_SANKRANTI"]))]
         );
     }
 }

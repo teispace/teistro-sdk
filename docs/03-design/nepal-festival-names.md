@@ -126,6 +126,15 @@ Nepal's entries (`NAMES` in `meta.rs`):
 | `HARITALIKA` | | `TEEJ` |
 | `CHHATH` | | `SANDHYA_ARGHYA`, `DALA_PUJA` |
 | `CHHATH_SECOND_DAY` | `USHA_ARGHYA` | `CHHATH_SAMAPAN`, `CHHATH_SECOND_DAY` |
+| `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI` |
+| `KARKATA_SANKRANTI` | `SAUNE_SANKRANTI` | `KARKATA_SANKRANTI`, `SHRAWAN_SANKRANTI` |
+| the other ten sankrantis | | the month each opens (`BAISAKH_SANKRANTI`, `JESTHA_SANKRANTI`, …, `CHAITRA_SANKRANTI`) |
+
+The sankrantis' names are measured over Nepal's patros (C2312): the locales
+once named the Makara and Karkata sankrantis माघे and साउने in Nepali and
+English, a region's name held in a language's file, which §3 rejects; they
+name all twelve by the sign again, and Nepal's entries lead with the month.
+A test holds every listed name to a festival name in every locale.
 
 Not shipped (C2311): गाई तिहार, which the book does not print (it prints
 गाईपूजा), and धनत्रयोदशी as Dhanteras's other name, which is its Sanskrit
