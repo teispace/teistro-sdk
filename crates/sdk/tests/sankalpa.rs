@@ -356,6 +356,12 @@ fn the_himavatkhande_template_speaks_the_time_the_almanac_reckons() {
                 (HIMAVATKHANDE, tag)
             );
         }
+        // A short tag means the loaded locale the builder's lookup gives it.
+        let short = sdk
+            .almanac()
+            .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some("ne"))
+            .unwrap();
+        assert_eq!(short.locale, "ne-Deva-NP");
         let text = sdk
             .almanac()
             .sankalpa_words(&time, &asked, HIMAVATKHANDE, Some("sa-Deva"))

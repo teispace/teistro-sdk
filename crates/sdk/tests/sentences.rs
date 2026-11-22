@@ -149,7 +149,19 @@ fn a_locale_without_templates_is_refused_and_says_why() {
         .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("xx-Latn")))
         .unwrap_err();
     assert_eq!(unknown.field(), Some("locale"));
-    assert!(unknown.message.contains("not loaded"), "{unknown}");
+    assert!(unknown.message.contains("unknown locale"), "{unknown}");
+}
+
+/// A short tag means the loaded locale the builder's lookup gives it:
+/// `ne` answers in `ne-Deva-NP`, as `Context::builder().locale("ne")` does.
+#[test]
+fn a_short_tag_answers_in_the_locale_it_means() {
+    let sdk = context("{}");
+    let said = sdk
+        .almanac()
+        .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("ne")))
+        .unwrap();
+    assert_eq!(said.value.locale, "ne-Deva-NP");
 }
 
 /// Left out, the locale is the context's.

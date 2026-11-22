@@ -284,15 +284,10 @@ impl AlmanacArea<'_> {
     ) -> Result<SankalpaWords, Error> {
         asked.check_under(SANKALPA)?;
         let intl = self.context.locale_engine();
-        let tag = locale.map_or_else(|| intl.locale().to_owned(), str::to_owned);
-        if !intl.locale_tags().any(|loaded| loaded == tag) {
-            let known: Vec<&str> = intl.locale_tags().collect();
-            return Err(
-                Error::unsupported(format!("the locale `{tag}` is not loaded"))
-                    .with_field("locale")
-                    .with_hint(format!("the locales are {}", known.join(", "))),
-            );
-        }
+        let tag = match locale {
+            Some(asked) => crate::area::intl::loaded_locale(&intl, asked)?,
+            None => intl.locale().to_owned(),
+        };
         if intl.resolve_from(&tag, tradition).is_none() {
             return Err(Error::unsupported(format!(
                 "no loaded pack carries the sankalpa tradition `{tradition}`"
