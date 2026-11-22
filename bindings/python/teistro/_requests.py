@@ -167,7 +167,7 @@ __all__ = [
     "WordsAmount",
     "WordsGrouping",
     "WordsStyle",
-    "Item",
+    "PlanItem",
     "ClockTime",
     "TimeStyle",
     "GunaBands",
@@ -2009,7 +2009,7 @@ class LookupRequest(TypedDict, total=False):
 class RenderRequest(TypedDict, total=False):
     """The items to say, each a message key and its slots as a composer's plan writes them: a rashifal's plans, an interpretation's, a day's sentences."""
 
-    items: Required[Sequence[Item]]
+    items: Required[Sequence[PlanItem]]
     """The items, said in their order."""
 
 
@@ -3621,7 +3621,7 @@ WordsStyle: TypeAlias = Literal['PLAIN', 'VERBOSE']
 """
 
 
-class Item(TypedDict, total=False):
+class PlanItem(TypedDict, total=False):
     """One thing to say: a message key and the slots it is said with."""
 
     key: Required[str]

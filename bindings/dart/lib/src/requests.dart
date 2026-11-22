@@ -2427,7 +2427,7 @@ final class RenderRequest extends _Request {
   });
 
   /// The items, said in their order.
-  final List<Item> items;
+  final List<PlanItem> items;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -4856,8 +4856,8 @@ enum WordsStyle implements _Keyed {
 }
 
 /// One thing to say: a message key and the slots it is said with.
-final class Item extends _Request {
-  const Item({
+final class PlanItem extends _Request {
+  const PlanItem({
     required this.key,
     required this.params,
   });
