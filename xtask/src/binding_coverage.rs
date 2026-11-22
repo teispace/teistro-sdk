@@ -744,7 +744,7 @@ mod tests {
             (
                 "java".into(),
                 Measured {
-                    counted_by: "jacoco 0.8.12".into(),
+                    counted_by: "jacoco 0.9.0".into(),
                     ..measured(counts(10, 5), None)
                 },
             ),
@@ -770,7 +770,7 @@ mod tests {
         assert_eq!(
             floors["java"],
             Floors {
-                counted_by: "jacoco 0.8.12".into(),
+                counted_by: "jacoco 0.9.0".into(),
                 lines: 50,
                 branches: None
             }
