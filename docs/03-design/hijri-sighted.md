@@ -261,8 +261,8 @@ named in `sdk.entity.json`: "Sighted Hijri calendar", "हिजरी पात
 (चन्द्रदर्शन)", "हिजरी कैलेंडर (चंद्रदर्शन)", "हिजरी दिनदर्शिका
 (चन्द्रदर्शन)"; sa-Latn is derived by `gen intl`.
 
-The settings' sources and effect notes join `ROOT_SOURCES` when that
-table lands (SR-110), as:
+The settings' sources are in `ROOT_SOURCES` (SR-110) and their effect
+notes in every locale's `sdk.settings.json`; the measured text they rest on:
 
 | knob | source | effect (en-Latn) |
 |---|---|---|

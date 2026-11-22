@@ -148,7 +148,9 @@
       "samvatsara": "Changes the name of a year in the sixty-year cycle",
       "eras": "Changes which era years a date carries",
       "marginalMonthMinutes": "Moves which months are flagged marginal, by how near their deciding moment falls to the boundary; no date moves",
-      "kiratYele": "Moves the Kirat Yele Sambat year every date carries, by 1281 years between the two counts"
+      "kiratYele": "Moves the Kirat Yele Sambat year every date carries, by 1281 years between the two counts",
+      "hijriCriterion": "Moves the day a sighted Hijri month begins, by a day where Odeh's test, read from the place, and Yallop's, read from the Earth's centre, judge an evening's crescent differently",
+      "hijriZone": "Moves the day a sighted Hijri month begins, a weaker zone counting a crescent seen an evening sooner; zone B loses two of Nepal's Eids measured"
     },
     "festivals": {
       "observer": "Changes which of a festival's readings an answer keeps where a request carries two or more: the tradition's own; no day moves"
