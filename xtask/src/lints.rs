@@ -2530,34 +2530,41 @@ fn crate_targets_declare_their_features(root: &Path, krate: &str, outcome: &mut 
             if !text.contains(GATED.1) || text.contains(&self_gated) {
                 continue;
             }
-            // A shared module (`tests/common/mod.rs`) is no target of its
-            // own: every target that declares it (`mod common;`) names what
-            // it names, so each of those must require the feature.
-            let targets: Vec<String> = if path.file_name().is_some_and(|f| f == "mod.rs") {
-                let Some(module) = path
-                    .parent()
-                    .and_then(Path::file_name)
-                    .map(|m| m.to_string_lossy().to_string())
-                else {
-                    continue;
-                };
-                sources(&root.join(&directory))
-                    .into_iter()
-                    .filter(|target| target.parent() == Some(&root.join(&directory)))
-                    .filter(|target| {
-                        std::fs::read_to_string(target)
-                            .is_ok_and(|body| body.contains(&format!("mod {module};")))
-                    })
-                    .filter_map(|target| {
-                        target
-                            .file_stem()
-                            .map(|stem| stem.to_string_lossy().to_string())
-                    })
-                    .collect()
+            // A file a top-level file declares as a module (`mod common;`,
+            // or every module of `tests/suite.rs`) is no target of its own:
+            // each declarer must gate the declaration on the feature or
+            // require the feature itself. A shared `mod.rs` no file declares
+            // is built by nothing.
+            let module = if path.file_name().is_some_and(|f| f == "mod.rs") {
+                path.parent().and_then(Path::file_name)
             } else {
                 path.file_stem()
-                    .map(|stem| stem.to_string_lossy().to_string())
+            };
+            let Some(module) = module.map(|m| m.to_string_lossy().to_string()) else {
+                continue;
+            };
+            let top = root.join(&directory);
+            let declarers: Vec<(String, bool)> = sources(&top)
+                .into_iter()
+                .filter(|target| target.parent() == Some(top.as_path()) && *target != path)
+                .filter_map(|target| {
+                    let gated = std::fs::read_to_string(&target)
+                        .ok()
+                        .and_then(|body| declaration_gated(&body, &module, GATED.0))?;
+                    let stem = target.file_stem()?.to_string_lossy().to_string();
+                    Some((stem, gated))
+                })
+                .collect();
+            let targets: Vec<String> = if declarers.is_empty() {
+                if path.file_name().is_some_and(|f| f == "mod.rs") {
+                    continue;
+                }
+                vec![module]
+            } else {
+                declarers
                     .into_iter()
+                    .filter(|(_, gated)| !gated)
+                    .map(|(name, _)| name)
                     .collect()
             };
             for name in targets {
@@ -2592,6 +2599,32 @@ fn crate_targets_declare_their_features(root: &Path, krate: &str, outcome: &mut 
             }
         }
     }
+}
+
+/// Whether `body` declares `mod {module};`, and if so whether the
+/// attributes directly above the declaration gate it on `feature`
+/// (`#[cfg(feature = "…")]`, or a `cfg(all(…))` naming it, over as many
+/// lines as rustfmt wraps it to).
+fn declaration_gated(body: &str, module: &str, feature: &str) -> Option<bool> {
+    let lines: Vec<&str> = body.lines().collect();
+    let declared = format!("mod {module};");
+    let at = lines.iter().position(|line| {
+        let line = line.trim();
+        line == declared
+            || line
+                .strip_suffix(&declared)
+                .is_some_and(|vis| vis.starts_with("pub"))
+    })?;
+    let gate = format!("feature = \"{feature}\"");
+    let attributes = lines[..at]
+        .iter()
+        .rev()
+        .map(|line| line.trim())
+        .take_while(|line| {
+            !line.is_empty()
+                && (line.starts_with("//") || !(line.ends_with(';') || line.ends_with('}')))
+        });
+    Some(attributes.any(|line| !line.starts_with("//") && line.contains(&gate)))
 }
 
 /// The name an item line declares (`pub enum Quantity {`), if it declares
@@ -3922,6 +3955,17 @@ mod tests {
         gate_run_by, names_private_engine, names_question, open_questions_are_named, section_of,
         shapes,
     };
+
+    #[test]
+    fn a_module_is_gated_by_the_attributes_above_its_declaration() {
+        let suite = "//! The suite.\n\n// Shared.\n#[cfg(feature = \"builtin-ephemeris\")]\nmod common;\n\nmod plain;\n#[cfg(all(\n    feature = \"builtin-ephemeris\",\n    feature = \"kp\"\n))]\nmod wrapped;\n#[cfg(feature = \"kp\")]\npub mod other;\n";
+        let gated = |module| super::declaration_gated(suite, module, "builtin-ephemeris");
+        assert_eq!(gated("common"), Some(true));
+        assert_eq!(gated("plain"), Some(false));
+        assert_eq!(gated("wrapped"), Some(true));
+        assert_eq!(gated("other"), Some(false));
+        assert_eq!(gated("absent"), None);
+    }
 
     #[test]
     fn a_private_adapter_path_or_api_is_found_and_the_engine_name_is_not() {
