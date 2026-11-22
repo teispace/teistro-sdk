@@ -3674,6 +3674,35 @@ fn moonrise_kept(rule: &FestivalRule, kept: &FestivalDay) -> Option<MoonriseAt> 
     }
 }
 
+/// The rule's Ekadashi decision on the 11th `tithi`, when it carries one,
+/// and the two days it is judged between: the 11th's own and the day
+/// after, as an Ekadashi rule reads them, or the two [`pair`] gives.
+fn judged_between<'d>(
+    rule: &FestivalRule,
+    tithi: Interval,
+    days: &'d [FestivalDay],
+    tithis: &[Span<Tithi>],
+) -> Result<
+    (
+        Option<ekadashi::Decision<'d>>,
+        &'d FestivalDay,
+        &'d FestivalDay,
+    ),
+    String,
+> {
+    let as_ekadashi = rule
+        .ekadashi
+        .as_ref()
+        .map(|decision| ekadashi::decide(decision, days, tithis, tithi))
+        .transpose()?;
+    let (earlier, later) = as_ekadashi
+        .as_ref()
+        .map(|decision| (decision.days[0], decision.days[1]))
+        .or_else(|| pair(tithi, days))
+        .ok_or("the days do not reach the tithi and the day after it")?;
+    Ok((as_ekadashi, earlier, later))
+}
+
 /// The first of the rule's guards that holds on `facts`, and its choice;
 /// `otherwise` when none does.
 fn guarded(rule: &FestivalRule, facts: &Facts<'_>) -> Result<(Decided, Choice), Error> {
@@ -3699,25 +3728,9 @@ fn judge(
     tithis: &[Span<Tithi>],
     rites: &Rites<'_>,
 ) -> Result<Judged, Error> {
-    // An Ekadashi decision reads the 11th's own day and the day after, as
-    // an Ekadashi rule does; a window's rule, the two days `pair` gives.
-    let as_ekadashi = match rule
-        .ekadashi
-        .as_ref()
-        .map(|decision| ekadashi::decide(decision, days, tithis, tithi))
-        .transpose()
-    {
-        Ok(decision) => decision,
+    let (as_ekadashi, earlier, later) = match judged_between(rule, tithi, days, tithis) {
+        Ok(judged) => judged,
         Err(why) => return Ok(Err(why)),
-    };
-    let Some((earlier, later)) = as_ekadashi
-        .as_ref()
-        .map(|decision| (decision.days[0], decision.days[1]))
-        .or_else(|| pair(tithi, days))
-    else {
-        return Ok(Err(
-            "the days do not reach the tithi and the day after it".to_owned()
-        ));
     };
     if !(earlier.normal && later.normal) {
         return Ok(Err(format!(
@@ -3749,16 +3762,7 @@ fn judge(
         later,
     };
     let (decided_by, choice) = match &as_ekadashi {
-        Some(decision) => (
-            Decided::Ekadashi {
-                pierced: decision.pierced,
-                excess: decision.excess,
-            },
-            match decision.choice {
-                Which::Earlier => Choice::Earlier,
-                Which::Later => Choice::Later,
-            },
-        ),
+        Some(decision) => decision.decided(),
         None => guarded(rule, &facts)?,
     };
     let which = match choice {

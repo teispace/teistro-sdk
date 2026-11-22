@@ -356,6 +356,22 @@ pub(super) struct Decision<'d> {
     pub(super) margin_days: f64,
 }
 
+impl Decision<'_> {
+    /// What an observance says decided it, and the choice its table gave.
+    pub(super) const fn decided(&self) -> (super::Decided, super::Choice) {
+        (
+            super::Decided::Ekadashi {
+                pierced: self.pierced,
+                excess: self.excess,
+            },
+            match self.choice {
+                Which::Earlier => super::Choice::Earlier,
+                Which::Later => super::Choice::Later,
+            },
+        )
+    }
+}
+
 /// [`EkadashiDecision`] on the 11th `eleventh`, one of `tithis`, the run
 /// of the days: the facts are an Ekadashi rule's, so the two answers never
 /// read different instants.
