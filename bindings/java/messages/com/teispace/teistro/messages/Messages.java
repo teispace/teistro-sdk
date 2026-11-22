@@ -24700,6 +24700,15 @@ public final class Messages {
                     }
 
                     /**
+                     * `sdk.settings.effect.day.moonrise`
+                     *
+                     * @return the text
+                     */
+                    public String moonrise() {
+                        return r.render("sdk.settings.effect.day.moonrise", Map.of());
+                    }
+
+                    /**
                      * `sdk.settings.effect.day.polarDayPolicy`
                      *
                      * @return the text

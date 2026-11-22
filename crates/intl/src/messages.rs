@@ -9647,6 +9647,31 @@ pub mod sdk {
                     }
                 }
 
+                /// The message `sdk.settings.effect.day.moonrise`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::settings::effect::day::Moonrise;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Moonrise;
+                /// assert_eq!(Moonrise::KEY, "sdk.settings.effect.day.moonrise");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Moonrise;
+
+                impl crate::TypedMessage for Moonrise {
+                    const KEY: &'static str = "sdk.settings.effect.day.moonrise";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
                 /// The message `sdk.settings.effect.day.polarDayPolicy`.
                 ///
                 /// ```
