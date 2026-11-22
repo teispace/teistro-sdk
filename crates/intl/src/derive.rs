@@ -666,9 +666,10 @@ mod tests {
         // Sanskrit term spells letter for letter. 558 with the twenty-one
         // names of Nepal's festival days (SR-145), 9 of them spelled letter
         // for letter; 570 with the sankrantis' month names and Nepal's six
-        // names for shared days (C2312, C2314, C2315), 12 more.
+        // names for shared days (C2312, C2314, C2315), 12 more; 571 with
+        // तुलसीपिए, whose IAST is its letters.
         assert_eq!(
-            derived.agreeing, 570,
+            derived.agreeing, 571,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

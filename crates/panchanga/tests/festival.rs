@@ -659,7 +659,8 @@ fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
         Some("PURNIMA_VRATA")
     );
     for (text, nepal) in text.iter().zip(&nepal) {
-        if text.at.in_daylight() {
+        // Bhai Tika keeps the text's aparahna (C2329).
+        if text.at.in_daylight() && text.key != "YAMA_DWITIYA" {
             assert_eq!(*nepal, text.clone().udaya(), "{}", text.key);
             assert_eq!(nepal.at, Window::Sunrise);
         } else {
