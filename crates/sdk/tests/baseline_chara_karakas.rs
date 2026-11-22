@@ -18,7 +18,7 @@
     reason = "tests fail by panicking, index the corpus's JSON by key and print the measurement under --nocapture"
 )]
 
-mod common;
+use crate::common;
 
 use serde_json::Value;
 use teistro::catalogue::{CharaKaraka, Graha};

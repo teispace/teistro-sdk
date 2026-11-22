@@ -12,7 +12,7 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-mod common;
+use crate::common;
 
 use teistro::{ChartRequest, Context, Document, Ephemeris, canonical_json};
 

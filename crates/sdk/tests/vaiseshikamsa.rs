@@ -11,7 +11,7 @@
     reason = "tests fail by panicking"
 )]
 
-mod common;
+use crate::common;
 
 use common::reading;
 

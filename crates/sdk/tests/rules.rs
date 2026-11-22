@@ -13,7 +13,7 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-mod common;
+use crate::common;
 
 use common::fixture;
 use teistro::catalogue::ChartKind;
