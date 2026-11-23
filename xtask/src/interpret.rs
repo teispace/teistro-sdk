@@ -2001,9 +2001,11 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
     if !regional.is_empty() {
         let _ = write!(
             out,
-            "{} {} the base language as a region writes it (its digits and \
-             grouping), every word the base locale's, so there is nothing \
-             of {} own to sign off or translate.\n\n",
+            "{} {} the base language as a region writes it (its digits, \
+             its grouping and any names it spells its own way, as Nepal's \
+             English spells the twelve signs, C2332), every sentence the \
+             base locale's, so there is no message of {} own to sign off \
+             or translate.\n\n",
             regional.join(", "),
             if regional.len() == 1 { "is" } else { "are" },
             if regional.len() == 1 { "its" } else { "their" },
@@ -2013,8 +2015,8 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
 }
 
 /// Whether a locale is the base locale's language for a region
-/// (`en-Latn-NP` beside `en-Latn`): its words are the base's, so it has
-/// nothing of its own to review or translate.
+/// (`en-Latn-NP` beside `en-Latn`): its sentences are the base's, so it
+/// has no message of its own to review or translate.
 fn is_regional_base(tag: &str, base: &str) -> bool {
     let language = |t: &str| t.split('-').next().unwrap_or(t).to_owned();
     tag != base && language(tag) == language(base)

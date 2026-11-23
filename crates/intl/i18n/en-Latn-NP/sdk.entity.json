@@ -1,0 +1,112 @@
+{
+  "rashi": {
+    "ARIES": {
+      "short": "Ar",
+      "name": "Mesh",
+      "prose": "Mesh",
+      "iast": "Meṣa",
+      "indic": "Mesh",
+      "glyph": "♈",
+      "gender": "m"
+    },
+    "TAURUS": {
+      "short": "Ta",
+      "name": "Brish",
+      "prose": "Brish",
+      "iast": "Vṛṣabha",
+      "indic": "Brish",
+      "glyph": "♉",
+      "gender": "f"
+    },
+    "GEMINI": {
+      "short": "Ge",
+      "name": "Mithun",
+      "prose": "Mithun",
+      "iast": "Mithuna",
+      "indic": "Mithun",
+      "glyph": "♊",
+      "gender": "m"
+    },
+    "CANCER": {
+      "short": "Cn",
+      "name": "Karkat",
+      "prose": "Karkat",
+      "iast": "Karka",
+      "indic": "Karkat",
+      "glyph": "♋",
+      "gender": "f"
+    },
+    "LEO": {
+      "short": "Le",
+      "name": "Singha",
+      "prose": "Singha",
+      "iast": "Siṃha",
+      "indic": "Singha",
+      "glyph": "♌",
+      "gender": "m"
+    },
+    "VIRGO": {
+      "short": "Vi",
+      "name": "Kanya",
+      "prose": "Kanya",
+      "iast": "Kanyā",
+      "indic": "Kanya",
+      "glyph": "♍",
+      "gender": "f"
+    },
+    "LIBRA": {
+      "short": "Li",
+      "name": "Tula",
+      "prose": "Tula",
+      "iast": "Tulā",
+      "indic": "Tula",
+      "glyph": "♎",
+      "gender": "m"
+    },
+    "SCORPIO": {
+      "short": "Sc",
+      "name": "Brishchik",
+      "prose": "Brishchik",
+      "iast": "Vṛścika",
+      "indic": "Brishchik",
+      "glyph": "♏",
+      "gender": "f"
+    },
+    "SAGITTARIUS": {
+      "short": "Sg",
+      "name": "Dhanu",
+      "prose": "Dhanu",
+      "iast": "Dhanu",
+      "indic": "Dhanu",
+      "glyph": "♐",
+      "gender": "m"
+    },
+    "CAPRICORN": {
+      "short": "Cp",
+      "name": "Makar",
+      "prose": "Makar",
+      "iast": "Makara",
+      "indic": "Makar",
+      "glyph": "♑",
+      "gender": "f"
+    },
+    "AQUARIUS": {
+      "short": "Aq",
+      "name": "Kumbha",
+      "prose": "Kumbha",
+      "iast": "Kumbha",
+      "indic": "Kumbha",
+      "glyph": "♒",
+      "gender": "m"
+    },
+    "PISCES": {
+      "short": "Pi",
+      "name": "Meen",
+      "prose": "Meen",
+      "iast": "Mīna",
+      "indic": "Meen",
+      "glyph": "♓",
+      "gender": "f"
+    }
+  }
+}

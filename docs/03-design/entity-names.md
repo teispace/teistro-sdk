@@ -713,6 +713,14 @@ optional field.
 fortnight's `short` begins its `name`, and the twelve `indic` names are
 distinct.
 
+**Nepal's English (SR-151, C2332, 2026-11-23).** `en-Latn-NP` names the
+signs as Nepal's English press does in its rashifal columns (rank 4
+practice, the consumer, 2026-11-23): Mesh, Brish, Mithun, Karkat,
+Singha, Kanya, Tula, Brishchik, Dhanu, Makar, Kumbha, Meen. They are its
+`name`, `prose` and `indic`, so a message that names a sign with no form
+says "Dhanu" there; the romanisation above stays every other locale's
+`indic`, and `iast` stays the IAST.
+
 ## 4g. The rashifal's words (SR-124, 2026-11-15)
 
 A consumer's home page shows a sign's rashifal as words: the life areas

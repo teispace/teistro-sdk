@@ -343,7 +343,7 @@ fn a_datetime_in_full_shows_a_time() {
 /// English in them. A locale in Devanagari has no Latin letter anywhere;
 /// one in Latin script differs from English wherever it names something.
 /// A regional English (`en-Latn-NP`) is English, and names nothing of its
-/// own.
+/// own here: its own names are the twelve signs' (C2332).
 #[test]
 fn every_shipped_locale_writes_its_dates_in_its_own_words() {
     let intl = intl();

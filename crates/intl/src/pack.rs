@@ -1318,8 +1318,8 @@ mod tests {
         }
         let borrowed: Vec<&[u8]> = packs.iter().map(Vec::as_slice).collect();
         let locales = locales_from_packs(&borrowed).unwrap_or_else(|e| panic!("{e}"));
-        // A locale of metadata alone (`en-Latn-NP`, Nepal's English
-        // grouping) has no namespace to pack: its bundle carries it.
+        // A locale of metadata alone has no namespace to pack: its bundle
+        // carries it.
         for (tag, locale) in tree
             .locales
             .iter()

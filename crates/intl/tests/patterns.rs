@@ -362,3 +362,82 @@ fn nepals_english_groups_by_lakhs_and_crores() {
         .unwrap();
     assert_eq!(rendered.text, "271,700");
 }
+
+/// SR-151 (C2332): Nepal's English names the twelve signs as its press
+/// does in its rashifal columns, Mesh to Meen, where `en-Latn` names the
+/// Western sign; an explicit form and a graha are English's, and every
+/// sentence still comes from `en-Latn`.
+#[test]
+fn nepals_english_names_the_signs_as_its_press_does() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let mut intl = Intl::from_tree(&tree).unwrap();
+    let from = |intl: &Intl, rashi: &str| {
+        intl.render(
+            "sdk.reason.gochar.from",
+            &params([
+                ("from", Value::from("MOON")),
+                ("rashi", Value::Entity(format!("rashi.{rashi}"))),
+            ]),
+        )
+    };
+    assert_eq!(
+        from(&intl, "SAGITTARIUS").text,
+        "Transits counted from the natal Moon, Sagittarius"
+    );
+    intl.set_locale("en-Latn-NP").unwrap();
+    let dhanu = from(&intl, "SAGITTARIUS");
+    assert_eq!(dhanu.text, "Transits counted from the natal Moon, Dhanu");
+    assert_eq!(dhanu.resolved_from.as_deref(), Some("en-Latn"));
+    assert!(dhanu.warnings.is_empty(), "{:?}", dhanu.warnings);
+    let named: Vec<String> = [
+        "ARIES",
+        "TAURUS",
+        "GEMINI",
+        "CANCER",
+        "LEO",
+        "VIRGO",
+        "LIBRA",
+        "SCORPIO",
+        "SAGITTARIUS",
+        "CAPRICORN",
+        "AQUARIUS",
+        "PISCES",
+    ]
+    .iter()
+    .map(|rashi| {
+        intl.render_source(
+            "{$v :entity kind=rashi}",
+            &params([("v", Value::Entity(format!("rashi.{rashi}")))]),
+        )
+        .unwrap()
+        .text
+    })
+    .collect();
+    assert_eq!(
+        named,
+        [
+            "Mesh",
+            "Brish",
+            "Mithun",
+            "Karkat",
+            "Singha",
+            "Kanya",
+            "Tula",
+            "Brishchik",
+            "Dhanu",
+            "Makar",
+            "Kumbha",
+            "Meen"
+        ]
+    );
+    // An explicit form is the record's, and a graha has no name of Nepal's.
+    for (source, key, expected) in [
+        ("{$v :entity kind=rashi form=iast}", "rashi.PISCES", "Mīna"),
+        ("{$v :entity kind=graha}", "graha.SATURN", "Saturn"),
+    ] {
+        let rendered = intl
+            .render_source(source, &params([("v", Value::Entity(key.into()))]))
+            .unwrap();
+        assert_eq!(rendered.text, expected, "{source}");
+    }
+}

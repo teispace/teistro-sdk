@@ -139,6 +139,19 @@ pub struct EventFrom {
     pub good_house: bool,
 }
 
+impl EventFrom {
+    /// `event` counted from `rashi`: the house its sign is from it, and
+    /// whether v. 2 makes the graha's transit of that house good.
+    pub(crate) fn counted(rashi: Rashi, event: PeriodEvent) -> EventFrom {
+        let house = House::between(rashi, event.sign).get();
+        EventFrom {
+            event,
+            house,
+            good_house: good_house(event.hit.graha, house),
+        }
+    }
+}
+
 /// Saturn's standing from one sign.
 ///
 /// ```
@@ -274,14 +287,7 @@ pub fn rashifal_holding(
             },
             events: events
                 .iter()
-                .map(|&event| {
-                    let house = House::between(rashi, event.sign).get();
-                    EventFrom {
-                        event,
-                        house,
-                        good_house: good_house(event.hit.graha, house),
-                    }
-                })
+                .map(|&event| EventFrom::counted(rashi, event))
                 .collect(),
             holds,
         }

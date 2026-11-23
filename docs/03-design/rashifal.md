@@ -1,7 +1,8 @@
 # Rashifal: a period read for each sign (the `rashifal` module)
 
 Status: `built`, 2026-10-08; every step of the order of work built, the
-fifth (said in words) on 2026-11-10.
+fifth (said in words) on 2026-11-10; a score made independent of the
+events reported, and the words in `sa-Deva`, on 2026-11-23 (SR-151).
 Written from the text and from the baseline engine's code before any of
 this module's code; the building is expected to correct it.
 
@@ -82,7 +83,10 @@ does this:
   baseline reads that panchanga on the wrong day. Each event adds +0.5
   of the graha's weight for an ingress into a good house, −0.3 for any
   other house, and −0.15 for a station. The sum is mapped linearly from
-  [−0.6·Σw − 25, Σw + 10] onto 0–100 and clamped.
+  [−0.6·Σw − 25, Σw + 10] onto 0–100 and clamped. The SDK counts the
+  events of C360's set here, every graha but the Moon, whatever a
+  request asks to be reported (C2331): a period carries them as
+  `scored`, beside each sign's reported `events`.
 - **Life areas.** Eight are scored, each from a fixed house map, and the
   overall area counts the 1st and 4th houses twice.
 - **Key influences.** Five grahas with weight 8 or more are named, and
@@ -199,6 +203,7 @@ ingress on the last evening is the period's. A batch form,
 | C358 | the instant a period is read at | sunrise at the place on the reference day | the roadmap's "the snapshot at sunrise, not 06:00", and the baseline's own comments; its 06:00 clock is `Snapshot::Clock(6, 0)` |
 | C359 | a long period's reference day | the middle day, first + ⌊(n − 1)/2⌋ | it is what the baseline's midpoint by date comes to for every length, and no text reads a period at another day; a caller wanting the whole span reads its days, the batch form being the cheap way |
 | C360 | which grahas' events a period reports | every graha but the Moon, the nodes included | the Moon changes sign about every 2.5 days, so a week would be a list of its ingresses; it is one knob away. The nodes' ingresses are the slowest events after Saturn's and Jupiter's, and the baseline's omission is a defect |
+| C2331 | which events a score counts | C360's set, every graha but the Moon, whatever `events` asks to be reported | asking to hear of the Moon's ingresses moved a score (Mithuna 32 → 33, the consumer's hub §7 q. 1), so what is reported changed what is judged. No text scores a rashifal (C361), so this is a design fix: the score reads the sky and the period. Rejected: no events in the score (it breaks C361's formula-for-formula copy), and the union of the two sets (it still moves) |
 | C361 | the baseline's score | `baseline_score`, `BASELINE`, over the SDK's own reading | no text scores a rashifal. The score is reproduced formula for formula (its double count and its five key influences included, since a consumer of its numbers sees them), but over the text's tables, exact events and the reference day's panchanga. The measured page counts each difference that moves a verdict or a score: the three tables, the missed events, 06:00 against sunrise and the panchanga's day |
 
 ## Tests
@@ -297,8 +302,13 @@ sentence. `teistro_interpret::rashifal(&RashiReading) -> Plan` does, and
   - the baseline's score, which is a number of the baseline's (C361) and
     not a reading.
 
-**The words.** `sdk.rashifal` is a namespace of its own, in `en-Latn`,
-`ne-Deva-NP` and `hi-Deva-IN`. Every pack ships final, the maintainer
+**The words.** `sdk.rashifal` is a namespace of its own, written in
+`en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva`, with `sa-Latn`
+derived from the last (`DERIVED_MESSAGES`). Sade Sati has no classical
+name (C89), so Sanskrit writes it as the loan साढेसाती, as Nepali and
+Hindi do, rather than coin a calque a reader would take for a text's
+word; Saturn's smaller spell is the loan ढैया for the same reason, and
+Kantaka and Ashtama Shani are practice (C149) (C2333). Every pack ships final, the maintainer
 reviewing after shipping (Q42), so none of the rashifal's text is marked
 draft; `crates/intl/tests/draft.rs` holds that no shipped namespace is.
 Hindi's `sdk.reason` carries every reason, so it reads the gochar's
@@ -316,4 +326,5 @@ rashifal (2026, Kathmandu) for the twelve signs, which emits every phase
 and both spells, ingresses and stations, and renders each item in every
 strict locale with no fallback and no warning. A façade test
 (`crates/sdk/tests/rashifal.rs`) holds the batch's plans to the composer
-and renders each in English, Nepali and Hindi, none of it draft.
+and renders each in English, Nepali, Hindi and both Sanskrit scripts,
+none of it draft.

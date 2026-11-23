@@ -21,7 +21,7 @@ use teistro_rashifal::{PeriodEvent, RashifalRules, rashifal_holding, reference_d
 use crate::area::{AlmanacArea, ChartArea, system_of};
 use crate::hit_request::{motion, station};
 use crate::rashifal_request::{
-    RashifalAnswer, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
+    EVENT_GRAHAS, RashifalAnswer, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
 };
 use crate::reading::ReadClock;
 
@@ -34,6 +34,8 @@ impl ChartArea<'_> {
     /// reader's janma rāśi: Phaladeepika ch. 26's gochar from it at the
     /// reference day's sunrise (C358, C359), Saturn's standing from it,
     /// and every ingress and station of the period counted from it (C360).
+    /// The events reported are the request's; those a score counts are
+    /// always C360's set ([`RashifalPeriod::scored`], C2331).
     ///
     /// The period runs from local midnight of its first day to local
     /// midnight after its last, so an ingress on the last evening counts;
@@ -100,12 +102,17 @@ impl ChartArea<'_> {
             .iter()
             .map(|request| self.prepared(request))
             .collect::<Result<Vec<_>, Error>>()?;
+        let searched_grahas: Vec<Vec<Graha>> = prepared
+            .iter()
+            .map(|one| searched(one.request.events()))
+            .collect();
         // A rashifal's sky is a transit's, seen from where
         // `gochar.transit_centre` puts it (crux C778).
         let searched = self.transiting(|founder| {
             prepared
                 .iter()
-                .map(|one| {
+                .zip(&searched_grahas)
+                .map(|(one, grahas)| {
                     let place = *one.request.place();
                     // The snapshot, a minute after it for the motion, and the
                     // period's two ends for which graha keeps its sign.
@@ -120,7 +127,7 @@ impl ChartArea<'_> {
                     )?;
                     let events = founder.transit_events(
                         &place,
-                        one.request.events(),
+                        grahas,
                         &[Lattice::SIGNS],
                         true,
                         one.window,
@@ -134,7 +141,9 @@ impl ChartArea<'_> {
         let stated = prepared.first().map(|one| (one.clock.clone(), one.instant));
         let mut provenance = None;
         let mut periods = Vec::with_capacity(prepared.len());
-        for (one, (places, events)) in prepared.into_iter().zip(searched) {
+        for ((one, grahas), (places, events)) in
+            prepared.into_iter().zip(&searched_grahas).zip(searched)
+        {
             let [now, then, opening, closing] = places.value.as_slice() else {
                 return Err(Error::internal(
                     "four instants were placed and the founder answered otherwise",
@@ -150,20 +159,13 @@ impl ChartArea<'_> {
                 gochar,
                 spells: one.request.spells().to_vec(),
             };
-            let events: Vec<PeriodEvent> = events.iter().map(period_event).collect();
+            let found: Vec<PeriodEvent> = events.iter().map(period_event).collect();
+            let (events, scored) = (
+                of_grahas(&found, one.request.events()),
+                of_grahas(&found, &EVENT_GRAHAS),
+            );
             let days = one.window.1.get() - one.window.0.get();
-            let holds = std::array::from_fn(|at| {
-                let graha = Graha::ALL.get(at).copied();
-                let tracked = graha.is_some_and(|graha| one.request.events().contains(&graha));
-                match (graha, opening.get(at), closing.get(at)) {
-                    (Some(graha), _, _) if tracked => !events.iter().any(|event| {
-                        event.hit.graha == graha
-                            && matches!(event.hit.event, HitEvent::SignIngress { .. })
-                    }),
-                    (Some(graha), Some(&from), Some(&to)) => keeps_its_sign(graha, from, to, days),
-                    _ => false,
-                }
-            });
+            let holds = holding(grahas, &found, (opening, closing), days);
             let readings = rashifal_holding(&transits, &events, holds, &rules);
             let stamp = provenance.get_or_insert(places.provenance);
             let snapshot = snapshot_convention(one.request.snapshot());
@@ -179,6 +181,7 @@ impl ChartArea<'_> {
                 retrograde,
                 panchanga: one.limbs,
                 readings,
+                scored,
             });
         }
         let mut provenance =
@@ -288,6 +291,29 @@ struct Prepared<'r> {
     window: (JulianDay<Utc>, JulianDay<Utc>),
 }
 
+/// Which grahas, the Sun to Ketu, keep their sign through a period of
+/// `days`: one `searched` keeps it when `found` holds no ingress of it, any
+/// other when its places at the period's two `ends` show it could not
+/// have left ([`keeps_its_sign`]).
+fn holding(
+    searched: &[Graha],
+    found: &[PeriodEvent],
+    ends: (&[f64; 9], &[f64; 9]),
+    days: f64,
+) -> [bool; 9] {
+    std::array::from_fn(|at| {
+        let graha = Graha::ALL.get(at).copied();
+        let tracked = graha.is_some_and(|graha| searched.contains(&graha));
+        match (graha, ends.0.get(at), ends.1.get(at)) {
+            (Some(graha), _, _) if tracked => !found.iter().any(|event| {
+                event.hit.graha == graha && matches!(event.hit.event, HitEvent::SignIngress { .. })
+            }),
+            (Some(graha), Some(&from), Some(&to)) => keeps_its_sign(graha, from, to, days),
+            _ => false,
+        }
+    })
+}
+
 /// Whether a graha whose ingresses were not searched keeps one sign from
 /// `from` to `to` (sidereal degrees) over `days`. A body that never turns
 /// (the Sun, the Moon) kept it when both ends share a sign and it could
@@ -316,6 +342,24 @@ fn keeps_its_sign(graha: Graha, from: f64, to: f64, days: f64) -> bool {
         let into = from.rem_euclid(SIGN);
         reach < into.min(SIGN - into)
     }
+}
+
+/// The grahas a period's events are searched for: C360's set, which a
+/// score counts, and any other the request asks to be reported, so that
+/// what is reported never moves a score (C2331).
+fn searched(asked: &[Graha]) -> Vec<Graha> {
+    let mut grahas = EVENT_GRAHAS.to_vec();
+    grahas.extend(asked.iter().filter(|graha| !EVENT_GRAHAS.contains(graha)));
+    grahas
+}
+
+/// The events of `grahas` among those `found`, in their order.
+fn of_grahas(found: &[PeriodEvent], grahas: &[Graha]) -> Vec<PeriodEvent> {
+    found
+        .iter()
+        .filter(|event| grahas.contains(&event.hit.graha))
+        .copied()
+        .collect()
 }
 
 /// The convention a snapshot is stamped with.

@@ -277,3 +277,12 @@ panchanga reach). They are folded into one batch for rc.7.
 | SR-143 | P1 | done | rc.7, lane | A city list ranked by population. |
 | SR-144 | P2 | done | rc.7, lane | The ocean zone where no area holds a point. |
 | SR-145 | P0 | in progress | rc.7 to rc.10 | Every day named (rc.7), text rules and the year-by-year evidence (rc.8), coverage (rc.9, with Nepal's gazetted holidays of every year from VS 2076, `nepal-gazette-holidays.md`), four languages and the gist (rc.10); `nepal-festival-names.md`, `00-roadmap.md` "SR-145". |
+
+## 17. Addendum 12's requests (2026-11-23)
+
+Addendum 12 §3 asks for the rashifal as Nepal reads it, five requests in all.
+Batch 1 is the first three.
+
+| SR | Wave | Status | Where | Note |
+|---|---|---|---|---|
+| SR-151 | P2 | in progress | lane | Batch 1 built: a score independent of the events reported (C2331), the signs named as Nepal's English press names them in `en-Latn-NP` (C2332), the rashifal's four lines in `sa-Deva`, derived to `sa-Latn` (C2333). Sade Sati over a span and a yearly score are batches to come. |

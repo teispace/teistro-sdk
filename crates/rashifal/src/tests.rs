@@ -15,7 +15,7 @@ use teistro_gochar::sade_sati::Phase;
 use teistro_gochar::{Reference, Transit, Verdict, gochar};
 
 use crate::baseline::{Colour, LifeArea, Panchanga, Period, ScoreBand, ScoreBands, baseline_score};
-use crate::{PeriodEvent, RashifalRules, rashifal, reference_day};
+use crate::{PeriodEvent, RashiReading, RashifalRules, rashifal, reference_day};
 
 fn rules() -> RashifalRules {
     RashifalRules::default()
@@ -103,6 +103,32 @@ fn an_event_is_counted_from_every_sign() {
     assert_eq!(good, [2, 11, 9, 7, 5]);
 }
 
+/// C2331: a score counts the events it is given, from the reading's own
+/// sign, and not the events the reading reports.
+#[test]
+fn a_score_counts_the_events_it_is_given_not_those_reported() {
+    let jupiter = ingress(Graha::Jupiter, Rashi::Cancer);
+    let moon = ingress(Graha::Moon, Rashi::Taurus);
+    let quiet = &rashifal(&sky(&[]), &[], &rules())[0];
+    let reporting = &rashifal(&sky(&[]), &[jupiter, moon], &rules())[0];
+    let score = |read: &RashiReading, scored: &[PeriodEvent]| {
+        baseline_score(
+            read,
+            scored,
+            &[false; 9],
+            QUIET,
+            Period::Daily,
+            ScoreBands::DEFAULT,
+        )
+    };
+    // The same events scored give the same score whatever is reported.
+    assert_eq!(score(quiet, &[jupiter]), score(reporting, &[jupiter]));
+    assert_eq!(score(quiet, &[]), score(reporting, &[]));
+    // Jupiter entering Cancer, the 4th from Aries, which v. 2 does not
+    // make good: −0.3 of a day's weight of 20, six on a span of 188.6.
+    assert!(score(quiet, &[jupiter]).overall < score(quiet, &[]).overall);
+}
+
 #[test]
 fn the_reference_day_is_the_middle_one() {
     for (days, offset) in [
@@ -143,7 +169,14 @@ fn the_baseline_scores_an_all_good_day_by_hand() {
     let mut retrograde = [false; 9];
     retrograde[7] = true;
     retrograde[8] = true;
-    let score = baseline_score(read, &retrograde, QUIET, Period::Daily, ScoreBands::DEFAULT);
+    let score = baseline_score(
+        read,
+        &[],
+        &retrograde,
+        QUIET,
+        Period::Daily,
+        ScoreBands::DEFAULT,
+    );
     // Re-derived from the formula: each verdict's contribution, a quiet
     // panchanga's -2 (bhadra) + 0 (Vajra), no events, no Saturn penalty.
     let raw: f64 = read
@@ -183,6 +216,7 @@ fn the_baseline_counts_the_first_and_fourth_twice_in_the_whole() {
     let read = &rashifal(&sky(&[]), &[], &rules())[0];
     let score = baseline_score(
         read,
+        &[],
         &[false; 9],
         QUIET,
         Period::Yearly,
@@ -199,8 +233,17 @@ fn the_baseline_counts_the_first_and_fourth_twice_in_the_whole() {
 fn sade_sati_at_its_peak_lowers_the_score() {
     let calm = &rashifal(&sky(&[(Graha::Saturn, Rashi::Leo)]), &[], &rules())[0];
     let peak = &rashifal(&sky(&[(Graha::Saturn, Rashi::Aries)]), &[], &rules())[0];
-    let score =
-        |read| baseline_score(read, &[false; 9], QUIET, Period::Daily, ScoreBands::DEFAULT).overall;
+    let score = |read| {
+        baseline_score(
+            read,
+            &[],
+            &[false; 9],
+            QUIET,
+            Period::Daily,
+            ScoreBands::DEFAULT,
+        )
+        .overall
+    };
     assert!(score(peak) < score(calm));
 }
 
@@ -310,7 +353,7 @@ fn a_score_is_banded_at_each_threshold() {
 #[test]
 fn a_score_carries_the_band_of_its_overall_under_the_thresholds_given() {
     let read = &rashifal(&sky(&[]), &[], &rules())[0];
-    let score = |bands| baseline_score(read, &[false; 9], QUIET, Period::Daily, bands);
+    let score = |bands| baseline_score(read, &[], &[false; 9], QUIET, Period::Daily, bands);
     let default = score(ScoreBands::DEFAULT);
     assert_eq!(default.band(), ScoreBands::DEFAULT.band(default.overall));
     // Thresholds at and just above the score move the band, not the score.
@@ -335,6 +378,7 @@ fn the_catalogue_kinds_are_the_values_the_baseline_computes() {
     let read = &rashifal(&sky(&[]), &[], &rules())[0];
     let score = baseline_score(
         read,
+        &[],
         &[false; 9],
         QUIET,
         Period::Weekly,
@@ -359,9 +403,16 @@ fn the_catalogue_kinds_are_the_values_the_baseline_computes() {
     let colours: std::collections::BTreeSet<Colour> = rashifal(&sky(&[]), &[], &rules())
         .iter()
         .map(|read| {
-            baseline_score(read, &[false; 9], QUIET, Period::Daily, ScoreBands::DEFAULT)
-                .lucky
-                .colour
+            baseline_score(
+                read,
+                &[],
+                &[false; 9],
+                QUIET,
+                Period::Daily,
+                ScoreBands::DEFAULT,
+            )
+            .lucky
+            .colour
         })
         .collect();
     assert_eq!(colours.into_iter().collect::<Vec<_>>(), Colour::ALL);
