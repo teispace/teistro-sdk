@@ -2896,7 +2896,14 @@ public final class BindingTest {
                 check(kalas <= 1, "a sankranti a month: " + kalas);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
-                check(!read.period().scored().isEmpty()
+                // A score counts every graha's events but the Moon's (C2331),
+                // read over the week the other bindings read: one day may hold
+                // the Moon's events alone, and then nothing is scored.
+                RashifalPeriod weekly = sky.chart().rashifal(RashifalRequest.of(
+                        Civil.date(Calendar.GREGORIAN, 2026, 10, 4), kathmandu, 20_700)
+                        .withLast(Civil.date(Calendar.GREGORIAN, 2026, 10, 10))).period();
+                check(!weekly.scored().isEmpty()
+                        && weekly.scored().stream().noneMatch(e -> e.hit().graha() == Graha.MOON)
                         && read.period().scored().stream().noneMatch(e -> e.hit().graha() == Graha.MOON),
                         "a score counts every graha's events but the Moon's (C2331)");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)
