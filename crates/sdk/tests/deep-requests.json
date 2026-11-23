@@ -738,6 +738,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -1296,6 +1313,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -2117,6 +2151,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -2921,6 +2972,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -3684,6 +3752,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -4222,6 +4307,23 @@
                     ]
                   }
                 ],
+                "ekadashi": {
+                  "table": {
+                    "pierced": {
+                      "both": "LATER",
+                      "eleventh": "LATER",
+                      "neither": "LATER",
+                      "twelfth": "LATER"
+                    },
+                    "pure": {
+                      "both": "LATER",
+                      "eleventh": "LATER",
+                      "neither": "LATER",
+                      "twelfth": "LATER"
+                    }
+                  },
+                  "vedha": "SUNRISE"
+                },
                 "inAdhika": true,
                 "inMonth": {
                   "calendar": "calendar.JULIAN",
@@ -4746,6 +4848,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",
@@ -5341,6 +5460,23 @@
                 ]
               }
             ],
+            "ekadashi": {
+              "table": {
+                "pierced": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                },
+                "pure": {
+                  "both": "LATER",
+                  "eleventh": "LATER",
+                  "neither": "LATER",
+                  "twelfth": "LATER"
+                }
+              },
+              "vedha": "SUNRISE"
+            },
             "inAdhika": true,
             "inMonth": {
               "calendar": "calendar.JULIAN",

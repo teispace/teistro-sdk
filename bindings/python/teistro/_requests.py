@@ -711,6 +711,7 @@ __all__ = [
     "BarredFrom",
     "BarredWith",
     "Guard",
+    "EkadashiDecision",
     "InAdhika",
     "InMonth",
     "FestivalChoice",
@@ -9127,6 +9128,9 @@ class FestivalRule(TypedDict, total=False):
     decide: Required[Sequence[Guard]]
     """The guards, in order; the first that holds decides."""
 
+    ekadashi: Optional[EkadashiDecision]
+    """For a rule kept on an 11th: decide it as an Ekadashi is, by the 10th's vedha and which tithis stand in excess (§10.7). Then the guards and `otherwise` are not read, and the window gives only the extents an observance shows. Absent for a rule decided by its window."""
+
     inAdhika: InAdhika
     """Which of a doubled month's two holds it (C171): the nija month by default."""
 
@@ -9970,7 +9974,7 @@ class EkadashiTable(TypedDict, total=False):
 EkadashiVedha: TypeAlias = Literal['ARUNODAYA', 'SUNRISE']
 """Where the 10th pierces the 11th's day (p. 11).
 
-`ARUNODAYA`: At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+`ARUNODAYA`: At arunodaya, four ghatis before sunrise, a ghati a sixtieth of the sunrise-to-sunrise day: the 10th "entering even a pala past 56 ghatis" (C2328). The Vaishnavas' vedha.
 `SUNRISE`: At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
 """
 
@@ -10113,6 +10117,16 @@ class Guard(TypedDict, total=False):
 
     when: Required[Sequence[Predicate]]
     """What must all hold."""
+
+
+class EkadashiDecision(TypedDict, total=False):
+    """A festival rule kept on an 11th and decided as an Ekadashi is, by the 10th's vedha and which tithis stand in excess, rather than by a window (`festival-rules.md` §10.7): a named ekadashi, Haribodhini or Bhima, is the fortnight's Ekadashi under its observer's table."""
+
+    table: Required[EkadashiTable]
+    """The day each kind takes."""
+
+    vedha: Required[EkadashiVedha]
+    """Where the 10th pierces."""
 
 
 InAdhika: TypeAlias = "Union[Literal['NIJA', 'ALSO', 'ONLY', 'FIRST'], bool]"

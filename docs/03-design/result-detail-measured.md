@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 381 110 | 124 319 | 32.6% |
-| the value | 356 060 | 120 383 | 33.8% |
-| the provenance | 24 350 | 2916 | 12.0% |
+| the envelope | 381 075 | 124 283 | 32.6% |
+| the value | 356 036 | 120 359 | 33.8% |
+| the provenance | 24 339 | 2904 | 11.9% |
 
 20 of the 68 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -59,17 +59,17 @@ value.
 | `almanac.digest` | 3573 | 171 | 4.8% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2638 | 877 | 33.2% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
 | `almanac.festivalPack` | 3520 | 1644 | 46.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
-| `almanac.festival_calendar` | 6661 | 5910 | 88.7% | the whole value |
+| `almanac.festival_calendar` | 6635 | 5879 | 88.6% | the whole value |
 | `almanac.firstYear` | 12 564 | 4195 | 33.4% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
 | `almanac.household` | 1450 | 311 | 21.4% | `observers.key`, `observers.pureAt`, `observers.periods.key`, `observers.periods.kind`, `observers.periods.relation`, `observers.periods.start`, `observers.periods.end`, `observers.periods.length`, `observers.periods.days` |
 | `almanac.limbAngles` | 822 | 251 | 30.5% | the whole value |
 | `almanac.navatara` | 1221 | 1221 | 100.0% | the whole value |
 | `almanac.next` | 1649 | 490 | 29.7% | `day`, `keys`, `from`, `searchedDays`, `festivals.observances.rule`, `festivals.observances.day`, `festivals.observances.tithi`, `festivals.observances.month`, `festivals.observances.choice`, `festivals.ekadashis`, `festivals.unjudged` |
-| `almanac.observance` | 36 037 | 18 128 | 50.3% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
+| `almanac.observance` | 36 038 | 18 128 | 50.3% | `traditions.name`, `traditions.rule`, `traditions.reckoning`, `traditions.profile`, `occurrences.month`, `occurrences.adhika`, `occurrences.kept.tradition`, `occurrences.kept.day`, `occurrences.kept.fast.rule`, `occurrences.kept.fast.tithi`, `occurrences.kept.fast.month`, `occurrences.kept.fast.adhika`, `occurrences.kept.fast.choice`, `occurrences.kept.fast.day`, `occurrences.kept.fast.parana.day`, `occurrences.kept.fast.parana.kept.span`, `occurrences.agree`, `occurrences.differs`, `occurrences.reason`, `unjudged`, `parted` |
 | `almanac.occurrences` | 4093 | 1320 | 32.3% | `keys`, `years.year`, `years.days`, `years.festivals.observances.rule`, `years.festivals.observances.day`, `years.festivals.observances.tithi`, `years.festivals.observances.month`, `years.festivals.ekadashis`, `years.festivals.unjudged` |
 | `almanac.pakshi` | 14 025 | 2731 | 19.5% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
 | `almanac.people` | 3815 | 1744 | 45.7% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 884 | 128 | 14.5% | the whole value |
+| `almanac.publishedReasons` | 874 | 123 | 14.1% | the whole value |
 | `almanac.sankalpa` | 1390 | 819 | 58.9% | the whole value |
 | `almanac.sankalpaWords` | 1851 | 1285 | 69.4% | the whole value |
 | `almanac.sentences` | 3698 | 1009 | 27.3% | `sentences.text`, `locale`, `withheld`, `draft` |

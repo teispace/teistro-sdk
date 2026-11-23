@@ -8,7 +8,7 @@ package com.teispace.teistro.request;
  */
 public enum EkadashiVedha implements RequestJson {
     /**
-     * At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+     * At arunodaya, four ghatis before sunrise, a ghati a sixtieth of the sunrise-to-sunrise day: the 10th "entering even a pala past 56 ghatis" (C2328). The Vaishnavas' vedha.
      */
     ARUNODAYA("ARUNODAYA"),
     /**

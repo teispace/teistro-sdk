@@ -3953,6 +3953,16 @@
       "prose": "घ्यू-चाकु खाने दिन",
       "iast": "Ghyū-cāku khāne din"
     },
+    "UTTARAYANA_ARAMBHA": {
+      "name": "उत्तरायण आरम्भ",
+      "prose": "उत्तरायण आरम्भ",
+      "iast": "Uttarāyaṇārambha"
+    },
+    "DAKSHINAYANA_ARAMBHA": {
+      "name": "दक्षिणायन आरम्भ",
+      "prose": "दक्षिणायन आरम्भ",
+      "iast": "Dakṣiṇāyanārambha"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतन्त्र दिवस",
       "prose": "लोकतन्त्र दिवस",
@@ -4299,8 +4309,8 @@
       "prose": "मघा श्राद्ध"
     },
     "AVIDHAVA_NAVAMI": {
-      "name": "अविधवा नवमी",
-      "prose": "अविधवा नवमी"
+      "name": "मातृ नवमी",
+      "prose": "मातृ नवमी"
     },
     "SANYASI_MAHALAYA": {
       "name": "संन्यासी महालय",
@@ -6206,13 +6216,13 @@
       "iast": "Darśa Śrāddha"
     },
     "SHUKLA_ASHTAMI_VRATA": {
-      "name": "अष्टमी व्रत",
-      "prose": "अष्टमी व्रत",
+      "name": "शुक्ल अष्टमी व्रत",
+      "prose": "शुक्ल अष्टमी व्रत",
       "iast": "Śukla Aṣṭamī Vrata"
     },
     "KRISHNA_ASHTAMI_VRATA": {
-      "name": "अष्टमी व्रत",
-      "prose": "अष्टमी व्रत",
+      "name": "कृष्ण अष्टमी व्रत",
+      "prose": "कृष्ण अष्टमी व्रत",
       "iast": "Kṛṣṇa Aṣṭamī Vrata"
     },
     "TULASI_ROPANA": {
@@ -6236,13 +6246,13 @@
       "iast": "Tulasīpie"
     },
     "SHUKLA_GORAKHKALI_PUJA": {
-      "name": "गोरखकाली पूजा",
-      "prose": "गोरखकाली पूजा",
+      "name": "शुक्ल गोरखकाली पूजा",
+      "prose": "शुक्ल गोरखकाली पूजा",
       "iast": "Śukla Gorakhakālī Pūjā"
     },
     "KRISHNA_GORAKHKALI_PUJA": {
-      "name": "गोरखकाली पूजा",
-      "prose": "गोरखकाली पूजा",
+      "name": "कृष्ण गोरखकाली पूजा",
+      "prose": "कृष्ण गोरखकाली पूजा",
       "iast": "Kṛṣṇa Gorakhakālī Pūjā"
     }
   },
