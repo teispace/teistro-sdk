@@ -5001,7 +5001,7 @@
       "prose": "विश्व वातावरण दिवस"
     },
     "INTERNATIONAL_SPORTS_JOURNALISTS_DAY": {
-      "name": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस",
+      "name": "विश्व खेलकुद पत्रकार दिवस",
       "prose": "अन्तर्राष्ट्रिय खेलकुद पत्रकार दिवस"
     },
     "WORLD_POPULATION_DAY": {
@@ -5017,7 +5017,7 @@
       "prose": "अन्तर्राष्ट्रिय साक्षरता दिवस"
     },
     "INTERNATIONAL_DAY_OF_PEACE": {
-      "name": "अन्तर्राष्ट्रिय शान्ति दिवस",
+      "name": "विश्व शान्ति दिवस",
       "prose": "अन्तर्राष्ट्रिय शान्ति दिवस"
     },
     "WORLD_TOURISM_DAY": {
@@ -5686,7 +5686,7 @@
       "prose": "नेपाल नर्सिङ दिवस"
     },
     "INTERNATIONAL_MOTHER_LANGUAGE_DAY": {
-      "name": "अन्तर्राष्ट्रिय मातृभाषा दिवस",
+      "name": "विश्व मातृभाषा दिवस",
       "prose": "अन्तर्राष्ट्रिय मातृभाषा दिवस"
     },
     "WORLD_HEALTH_DAY": {
@@ -5702,11 +5702,11 @@
       "prose": "अन्तर्राष्ट्रिय परिवार दिवस"
     },
     "INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS": {
-      "name": "अन्तर्राष्ट्रिय शान्ति सैनिक दिवस",
+      "name": "शान्ति सेना दिवस",
       "prose": "अन्तर्राष्ट्रिय शान्ति सैनिक दिवस"
     },
     "INTERNATIONAL_DAY_OF_YOGA": {
-      "name": "अन्तर्राष्ट्रिय योग दिवस",
+      "name": "विश्व योग दिवस",
       "prose": "अन्तर्राष्ट्रिय योग दिवस"
     },
     "INTERNATIONAL_YOUTH_DAY": {
@@ -5742,7 +5742,7 @@
       "prose": "विश्व बाल दिवस"
     },
     "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN": {
-      "name": "महिला हिंसा उन्मूलन अन्तर्राष्ट्रिय दिवस",
+      "name": "अन्तर्राष्ट्रिय महिला हिंसा अन्त्य दिवस",
       "prose": "महिला हिंसा उन्मूलन अन्तर्राष्ट्रिय दिवस"
     },
     "WORLD_AIDS_DAY": {
@@ -5754,7 +5754,7 @@
       "prose": "अन्तर्राष्ट्रिय स्वयंसेवक दिवस"
     },
     "INTERNATIONAL_ANTI_CORRUPTION_DAY": {
-      "name": "अन्तर्राष्ट्रिय भ्रष्टाचार विरोधी दिवस",
+      "name": "भ्रष्टाचारविरुद्धको अन्तर्राष्ट्रिय दिवस",
       "prose": "अन्तर्राष्ट्रिय भ्रष्टाचार विरोधी दिवस"
     },
     "INTERNATIONAL_MOUNTAIN_DAY": {
@@ -5786,7 +5786,7 @@
       "prose": "अन्तर्राष्ट्रिय खुसी दिवस"
     },
     "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_RACIAL_DISCRIMINATION": {
-      "name": "जातीय विभेद उन्मूलन अन्तर्राष्ट्रिय दिवस",
+      "name": "अन्तर्राष्ट्रिय जातीय उत्पीडनविरुद्धको दिवस",
       "prose": "जातीय विभेद उन्मूलन अन्तर्राष्ट्रिय दिवस"
     },
     "WORLD_METEOROLOGICAL_DAY": {
@@ -5798,7 +5798,7 @@
       "prose": "विश्व अटिजम सचेतना दिवस"
     },
     "INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE": {
-      "name": "विकास तथा शान्तिका लागि अन्तर्राष्ट्रिय खेलकुद दिवस",
+      "name": "विश्व खेलकुद दिवस",
       "prose": "विकास तथा शान्तिका लागि अन्तर्राष्ट्रिय खेलकुद दिवस"
     },
     "INTERNATIONAL_WELLNESS_DAY": {
@@ -5822,7 +5822,7 @@
       "prose": "विश्व स्मृति तथा मेलमिलाप दिवस"
     },
     "WORLD_TELECOMMUNICATION_AND_INFORMATION_SOCIETY_DAY": {
-      "name": "विश्व दूरसञ्चार तथा सूचना समाज दिवस",
+      "name": "विश्व दूरसञ्चार दिवस",
       "prose": "विश्व दूरसञ्चार तथा सूचना समाज दिवस"
     },
     "WORLD_BEE_DAY": {
@@ -5850,7 +5850,7 @@
       "prose": "विश्व महासागर दिवस"
     },
     "WORLD_DAY_AGAINST_CHILD_LABOUR": {
-      "name": "बालश्रम विरुद्धको विश्व दिवस",
+      "name": "विश्व बालश्रम विरुद्ध दिवस",
       "prose": "बालश्रम विरुद्धको विश्व दिवस"
     },
     "WORLD_BLOOD_DONOR_DAY": {
@@ -5858,7 +5858,7 @@
       "prose": "विश्व रक्तदाता दिवस"
     },
     "WORLD_DAY_TO_COMBAT_DESERTIFICATION_AND_DROUGHT": {
-      "name": "विश्व मरुभूमीकरण तथा खडेरी रोकथाम दिवस",
+      "name": "विश्व खडेरी रोकथाम दिवस",
       "prose": "विश्व मरुभूमीकरण तथा खडेरी रोकथाम दिवस"
     },
     "WORLD_REFUGEE_DAY": {
@@ -5866,7 +5866,7 @@
       "prose": "विश्व शरणार्थी दिवस"
     },
     "INTERNATIONAL_DAY_AGAINST_DRUG_ABUSE_AND_ILLICIT_TRAFFICKING": {
-      "name": "लागूऔषध दुरुपयोग तथा ओसारपसार विरुद्धको अन्तर्राष्ट्रिय दिवस",
+      "name": "विश्व लागूपदार्थ ओसारपसार विरुद्धको दिवस",
       "prose": "लागूऔषध दुरुपयोग तथा ओसारपसार विरुद्धको अन्तर्राष्ट्रिय दिवस"
     },
     "MICRO_SMALL_AND_MEDIUM_SIZED_ENTERPRISES_DAY": {
@@ -5878,7 +5878,7 @@
       "prose": "अन्तर्राष्ट्रिय साङ्केतिक भाषा दिवस"
     },
     "INTERNATIONAL_DAY_FOR_THE_TOTAL_ELIMINATION_OF_NUCLEAR_WEAPONS": {
-      "name": "आणविक हतियार पूर्ण उन्मूलन अन्तर्राष्ट्रिय दिवस",
+      "name": "अन्तर्राष्ट्रिय परमाणु हतियार निर्मूल दिवस",
       "prose": "आणविक हतियार पूर्ण उन्मूलन अन्तर्राष्ट्रिय दिवस"
     },
     "WORLD_POST_DAY": {
@@ -5886,7 +5886,7 @@
       "prose": "विश्व हुलाक दिवस"
     },
     "INTERNATIONAL_DAY_FOR_DISASTER_RISK_REDUCTION": {
-      "name": "अन्तर्राष्ट्रिय विपद् जोखिम न्यूनीकरण दिवस",
+      "name": "प्राकृतिक विपत्ति न्यूनीकरण दिवस",
       "prose": "अन्तर्राष्ट्रिय विपद् जोखिम न्यूनीकरण दिवस"
     },
     "INTERNATIONAL_DAY_OF_RURAL_WOMEN": {
@@ -5954,11 +5954,11 @@
       "prose": "अन्तर्राष्ट्रिय नृत्य दिवस"
     },
     "INTERNATIONAL_NURSES_DAY": {
-      "name": "अन्तर्राष्ट्रिय नर्स दिवस",
+      "name": "विश्व नर्स दिवस",
       "prose": "अन्तर्राष्ट्रिय नर्स दिवस"
     },
     "INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH": {
-      "name": "अन्तर्राष्ट्रिय महिला स्वास्थ्य कार्य दिवस",
+      "name": "विश्व महिला स्वास्थ्य दिवस",
       "prose": "अन्तर्राष्ट्रिय महिला स्वास्थ्य कार्य दिवस"
     },
     "WORLD_MUSIC_DAY": {
@@ -5974,15 +5974,15 @@
       "prose": "विश्व अल्जाइमर दिवस"
     },
     "WORLD_RABIES_DAY": {
-      "name": "विश्व रेबिज दिवस",
+      "name": "रेबिजविरुद्ध दिवस",
       "prose": "विश्व रेबिज दिवस"
     },
     "WORLD_HEART_DAY": {
-      "name": "विश्व हृदय दिवस",
+      "name": "विश्व मुटु दिवस",
       "prose": "विश्व हृदय दिवस"
     },
     "WORLD_ANIMAL_DAY": {
-      "name": "विश्व पशु दिवस",
+      "name": "विश्व प्राणी दिवस",
       "prose": "विश्व पशु दिवस"
     },
     "GLOBAL_HANDWASHING_DAY": {
@@ -6410,6 +6410,70 @@
     "INTERNATIONAL_DAY_OF_COOPERATIVES": {
       "name": "अन्तर्राष्ट्रिय सहकारी दिवस",
       "prose": "अन्तर्राष्ट्रिय सहकारी दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE": {
+      "name": "विज्ञानमा महिला तथा बालिकाको अन्तर्राष्ट्रिय दिवस",
+      "prose": "विज्ञानमा महिला तथा बालिकाको अन्तर्राष्ट्रिय दिवस"
+    },
+    "WORLD_NGO_DAY": {
+      "name": "विश्व गैरसरकारी संस्था दिवस",
+      "prose": "विश्व गैरसरकारी संस्था दिवस"
+    },
+    "ZERO_DISCRIMINATION_DAY": {
+      "name": "शून्य विभेद दिवस",
+      "prose": "शून्य विभेद दिवस"
+    },
+    "WORLD_WILDLIFE_DAY": {
+      "name": "विश्व वन्यजन्तु दिवस",
+      "prose": "विश्व वन्यजन्तु दिवस"
+    },
+    "WORLD_POETRY_DAY": {
+      "name": "विश्व कविता दिवस",
+      "prose": "विश्व कविता दिवस"
+    },
+    "INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY": {
+      "name": "पारलैङ्गिक दृश्यताको अन्तर्राष्ट्रिय दिवस",
+      "prose": "पारलैङ्गिक दृश्यताको अन्तर्राष्ट्रिय दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT": {
+      "name": "अन्तर्राष्ट्रिय मानव अन्तरिक्ष उडान दिवस",
+      "prose": "अन्तर्राष्ट्रिय मानव अन्तरिक्ष उडान दिवस"
+    },
+    "WORLD_ART_DAY": {
+      "name": "विश्व कला दिवस",
+      "prose": "विश्व कला दिवस"
+    },
+    "WORLD_IMMUNIZATION_WEEK": {
+      "name": "विश्व खोप सप्ताह",
+      "prose": "विश्व खोप सप्ताह"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES": {
+      "name": "अन्तर्राष्ट्रिय परिवार रेमिट्यान्स दिवस",
+      "prose": "पारिवारिक विप्रेषणको अन्तर्राष्ट्रिय दिवस"
+    },
+    "WORLD_PATIENT_SAFETY_DAY": {
+      "name": "विश्व बिरामी सुरक्षा दिवस",
+      "prose": "विश्व बिरामी सुरक्षा दिवस"
+    },
+    "INTERSEX_AWARENESS_DAY": {
+      "name": "अन्तरलिङ्गी जनचेतना दिवस",
+      "prose": "अन्तरलिङ्गी जनचेतना दिवस"
+    },
+    "WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT": {
+      "name": "शान्ति र विकासका लागि विश्व विज्ञान दिवस",
+      "prose": "शान्ति र विकासका लागि विश्व विज्ञान दिवस"
+    },
+    "WORLD_PNEUMONIA_DAY": {
+      "name": "विश्व निमोनिया दिवस",
+      "prose": "विश्व निमोनिया दिवस"
+    },
+    "WORLD_PHILOSOPHY_DAY": {
+      "name": "विश्व दर्शनशास्त्र दिवस",
+      "prose": "विश्व दर्शनशास्त्र दिवस"
+    },
+    "WORLD_MEDITATION_DAY": {
+      "name": "विश्व ध्यान दिवस",
+      "prose": "विश्व ध्यान दिवस"
     }
   },
   "agni_vasa": {

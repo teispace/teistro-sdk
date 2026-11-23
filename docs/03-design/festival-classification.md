@@ -450,7 +450,7 @@ An authority announces the day.
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
 
-169 of them ship as dated days in `NEPAL_PANCHANGA`, 38 on a Bikram Sambat date and 131 on a Gregorian one, five of those on a weekday of the month. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
+185 of them ship as dated days in `NEPAL_PANCHANGA`, 38 on a Bikram Sambat date and 147 on a Gregorian one, six of those on a weekday of the month. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
 
 Five are printed and still not shipped, because no one date holds:
 - `GURU_GOBIND_SINGH_JAYANTI`: Poush 21 in both editions, 5 January, but the verified days fall on 4 and 6 January in two years.
@@ -480,6 +480,11 @@ Five are printed and still not shipped, because no one date holds:
 - Thirteen of the UN's international days on its list's dates: `WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK`, `INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION`, `WORLD_ELDER_ABUSE_AWARENESS_DAY`, `INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT`, `WORLD_YOUTH_SKILLS_DAY`, `WORLD_HEPATITIS_DAY`, `WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS`, `WORLD_BREASTFEEDING_WEEK` (its first day), `INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS`, `INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES`, `INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER`, `INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION` and `INTERNATIONAL_DAY_OF_NEUTRALITY`.
 - Two on their keepers' dates: `GLOBAL_TIGER_DAY` (29 July) and `WORLD_SUICIDE_PREVENTION_DAY` (10 September).
 - Two on a weekday of the month: `WORLD_LEPROSY_DAY` (January's last Sunday) and `INTERNATIONAL_DAY_OF_COOPERATIVES` (July's first Saturday).
+
+16 more ship from the same read (C2346, the same tables, each source read 2026-11-23):
+- Nine of the UN's international days on its list's dates: `INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE`, `ZERO_DISCRIMINATION_DAY`, `WORLD_WILDLIFE_DAY`, `WORLD_POETRY_DAY`, `INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT`, `WORLD_IMMUNIZATION_WEEK` (its first day), `INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES`, `WORLD_PATIENT_SAFETY_DAY` and `WORLD_MEDITATION_DAY`.
+- Six on their keepers' dates: `WORLD_NGO_DAY` (27 February), `INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY` (31 March), `WORLD_ART_DAY` (15 April, UNESCO), `INTERSEX_AWARENESS_DAY` (26 October), `WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT` (10 November, UNESCO) and `WORLD_PNEUMONIA_DAY` (12 November).
+- One on a weekday of the month: `WORLD_PHILOSOPHY_DAY` (November's third Thursday, UNESCO).
 
 The other unprinted days wait for a source of their own (C1603): Safer Internet day's kept Tuesdays fit no `civilWeekday` (C1806), and Earthquake memorial, Forest users', Siddhicharan's, UNESCO and World photography day lack a source that dates them (C1807 to C1811).
 

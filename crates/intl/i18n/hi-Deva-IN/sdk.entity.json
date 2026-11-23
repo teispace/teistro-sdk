@@ -5961,6 +5961,70 @@
     "INTERNATIONAL_DAY_OF_COOPERATIVES": {
       "name": "अंतर्राष्ट्रीय सहकारिता दिवस",
       "prose": "अंतर्राष्ट्रीय सहकारिता दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE": {
+      "name": "विज्ञान में महिलाओं और बालिकाओं का अंतर्राष्ट्रीय दिवस",
+      "prose": "विज्ञान में महिलाओं और बालिकाओं का अंतर्राष्ट्रीय दिवस"
+    },
+    "WORLD_NGO_DAY": {
+      "name": "विश्व गैर-सरकारी संगठन दिवस",
+      "prose": "विश्व गैर-सरकारी संगठन दिवस"
+    },
+    "ZERO_DISCRIMINATION_DAY": {
+      "name": "शून्य भेदभाव दिवस",
+      "prose": "शून्य भेदभाव दिवस"
+    },
+    "WORLD_WILDLIFE_DAY": {
+      "name": "विश्व वन्यजीव दिवस",
+      "prose": "विश्व वन्यजीव दिवस"
+    },
+    "WORLD_POETRY_DAY": {
+      "name": "विश्व कविता दिवस",
+      "prose": "विश्व कविता दिवस"
+    },
+    "INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY": {
+      "name": "अंतर्राष्ट्रीय ट्रांसजेंडर दृश्यता दिवस",
+      "prose": "अंतर्राष्ट्रीय ट्रांसजेंडर दृश्यता दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT": {
+      "name": "मानव अंतरिक्ष उड़ान का अंतर्राष्ट्रीय दिवस",
+      "prose": "मानव अंतरिक्ष उड़ान का अंतर्राष्ट्रीय दिवस"
+    },
+    "WORLD_ART_DAY": {
+      "name": "विश्व कला दिवस",
+      "prose": "विश्व कला दिवस"
+    },
+    "WORLD_IMMUNIZATION_WEEK": {
+      "name": "विश्व टीकाकरण सप्ताह",
+      "prose": "विश्व टीकाकरण सप्ताह"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES": {
+      "name": "पारिवारिक प्रेषण का अंतर्राष्ट्रीय दिवस",
+      "prose": "पारिवारिक प्रेषण का अंतर्राष्ट्रीय दिवस"
+    },
+    "WORLD_PATIENT_SAFETY_DAY": {
+      "name": "विश्व रोगी सुरक्षा दिवस",
+      "prose": "विश्व रोगी सुरक्षा दिवस"
+    },
+    "INTERSEX_AWARENESS_DAY": {
+      "name": "इंटरसेक्स जागरूकता दिवस",
+      "prose": "इंटरसेक्स जागरूकता दिवस"
+    },
+    "WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT": {
+      "name": "शांति और विकास के लिए विश्व विज्ञान दिवस",
+      "prose": "शांति और विकास के लिए विश्व विज्ञान दिवस"
+    },
+    "WORLD_PNEUMONIA_DAY": {
+      "name": "विश्व निमोनिया दिवस",
+      "prose": "विश्व निमोनिया दिवस"
+    },
+    "WORLD_PHILOSOPHY_DAY": {
+      "name": "विश्व दर्शन दिवस",
+      "prose": "विश्व दर्शन दिवस"
+    },
+    "WORLD_MEDITATION_DAY": {
+      "name": "विश्व ध्यान दिवस",
+      "prose": "विश्व ध्यान दिवस"
     }
   },
   "era": {

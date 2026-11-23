@@ -72,14 +72,16 @@ fn kartik_2083_comes_out_as_the_print_sets_it() {
     // Kartik 7: Khanchi's sarai, kept there, before the UN day.
     assert_eq!(on(&cells, 24)[0], "KHANCHI_SARAI_PARVA");
     // Kartik 9: Kartik snan begins with the sky lamps (both open a
-    // stretch), then Argha's sarai and Katin punhi.
+    // stretch), then Argha's sarai and Katin punhi, and Intersex Awareness
+    // Day last (C2346).
     assert_eq!(
         on(&cells, 26),
         [
             "KARTIK_SNAN_BEGINS",
             "AKASHDEEPADAN_ARAMBHA",
             "ARGHA_SARAI_PARVA",
-            "KATIN_PUNHI"
+            "KATIN_PUNHI",
+            "INTERSEX_AWARENESS_DAY"
         ]
     );
     // Kartik 19: Rama ekadashi before Govatsa dwadashi.
@@ -108,7 +110,8 @@ fn the_rule_order_is_the_answer_s_own() {
             "ARGHA_SARAI_PARVA",
             "KARTIK_SNAN_BEGINS",
             "KATIN_PUNHI",
-            "AKASHDEEPADAN_ARAMBHA"
+            "AKASHDEEPADAN_ARAMBHA",
+            "INTERSEX_AWARENESS_DAY"
         ]
     );
 }

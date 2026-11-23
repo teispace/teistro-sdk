@@ -395,7 +395,9 @@ custom on a Gregorian date (C1803, C1804), and World First Aid, Smile and
 Sight day on a weekday of the month (C1805). 17 more follow from the
 coverage read of Nepal's calendars (`LISTED_UN_DAYS`, `KEEPERS_DAYS`,
 `KEEPERS_WEEKDAYS`, C2345): thirteen UN days, two keepers' dates, and World
-Leprosy Day and the cooperatives' day on a weekday of the month.
+Leprosy Day and the cooperatives' day on a weekday of the month; and 16 more
+from the same read (C2346): nine UN days, six keepers' dates, and World
+Philosophy Day on November's third Thursday.
 Bhaktapur's pole is raised on the Bikram Sambat year's last day, a day of a
 month counted from its end (`YOSIN_UTTHAN`, Chaitra −1), which VS 2083 prints
 and the press reports kept (C1650).

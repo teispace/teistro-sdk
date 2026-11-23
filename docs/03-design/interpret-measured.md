@@ -244,11 +244,11 @@ a frame around **slots**, and a slot is named in every shipped locale
 | locale | completeness | its own messages | anything of its own |
 |---|---|---:|---:|
 | `en-Latn` | `strict` | 2389 of 2389 | 0 of 2389 |
-| `en-Latn-NP` | `base` | 0 of 2389 | 0 of 2389 |
+| `en-Latn-NP` | `base` | 0 of 2389 | 844 of 2389 |
 | `hi-Deva-IN` | `base` | 2389 of 2389 | 2115 of 2389 |
 | `ne-Deva-NP` | `strict` | 2389 of 2389 | 2115 of 2389 |
-| `sa-Deva` | `base` | 1537 of 2389 | 2103 of 2389 |
-| `sa-Latn` | `base` | 1537 of 2389 | 2091 of 2389 |
+| `sa-Deva` | `base` | 2389 of 2389 | 2115 of 2389 |
+| `sa-Latn` | `base` | 2389 of 2389 | 2115 of 2389 |
 
 ## What a rich renderer gets
 
@@ -416,9 +416,10 @@ vetted source. `hi-Deva-IN` is one of them, which is worth saying
 plainly: the roadmap asks for `hi` sign-off and there is not a sentence
 in it to sign off.
 
-`en-Latn-NP` is the base language as a region writes it (its digits and
-grouping), every word the base locale's, so there is nothing of its own
-to sign off or translate.
+`en-Latn-NP` is the base language as a region writes it (its digits, its
+grouping and any names it spells its own way, as Nepal's English spells
+the twelve signs, C2332), every sentence the base locale's, so there is
+no message of its own to sign off or translate.
 
 ### The job itself, and it is one command
 
@@ -434,10 +435,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 4869 | 71 |
-| `ne-Deva-NP` | 4869 | 8 |
-| `sa-Deva` | 4869 | 119 |
-| `sa-Latn` | 4869 | 119 |
+| `hi-Deva-IN` | 4935 | 71 |
+| `ne-Deva-NP` | 4935 | 8 |
+| `sa-Deva` | 4935 | 115 |
+| `sa-Latn` | 4935 | 115 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

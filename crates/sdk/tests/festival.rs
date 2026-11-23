@@ -1014,12 +1014,13 @@ const MORE_KEPT_DAYS: [(&str, Day, Day); 29] = [
     ("APRIL_FOOLS_DAY", (2026, 4, 1), (2027, 4, 1)),
 ];
 
-/// The international and keepers' days SR-145's coverage read added (C2345),
-/// each with the Gregorian day of VS 2082 and of VS 2083 its rule gives. The
-/// weekday ones are the days their keepers' pages give: the cooperatives'
-/// 5 July 2025 (the UN's list) and 4 July 2026 (its page), and World
-/// Leprosy Day's 25 January 2026.
-const COVERAGE_DAYS: [(&str, Day, Day); 17] = [
+/// The international and keepers' days SR-145's coverage read added (C2345,
+/// C2346), each with the Gregorian day of VS 2082 and of VS 2083 its rule
+/// gives. The weekday ones are the days their keepers' pages give: the
+/// cooperatives' 5 July 2025 (the UN's list) and 4 July 2026 (its page),
+/// World Leprosy Day's 25 January 2026, and World Philosophy Day's
+/// 19 November 2026 (UNESCO's page).
+const COVERAGE_DAYS: [(&str, Day, Day); 33] = [
     (
         "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK",
         (2025, 4, 28),
@@ -1081,6 +1082,42 @@ const COVERAGE_DAYS: [(&str, Day, Day); 17] = [
         (2026, 12, 12),
     ),
     ("WORLD_LEPROSY_DAY", (2026, 1, 25), (2027, 1, 31)),
+    ("WORLD_ART_DAY", (2025, 4, 15), (2026, 4, 15)),
+    ("WORLD_IMMUNIZATION_WEEK", (2025, 4, 24), (2026, 4, 24)),
+    (
+        "INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES",
+        (2025, 6, 16),
+        (2026, 6, 16),
+    ),
+    ("WORLD_PATIENT_SAFETY_DAY", (2025, 9, 17), (2026, 9, 17)),
+    ("INTERSEX_AWARENESS_DAY", (2025, 10, 26), (2026, 10, 26)),
+    (
+        "WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT",
+        (2025, 11, 10),
+        (2026, 11, 10),
+    ),
+    ("WORLD_PNEUMONIA_DAY", (2025, 11, 12), (2026, 11, 12)),
+    ("WORLD_PHILOSOPHY_DAY", (2025, 11, 20), (2026, 11, 19)),
+    ("WORLD_MEDITATION_DAY", (2025, 12, 21), (2026, 12, 21)),
+    (
+        "INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE",
+        (2026, 2, 11),
+        (2027, 2, 11),
+    ),
+    ("WORLD_NGO_DAY", (2026, 2, 27), (2027, 2, 27)),
+    ("ZERO_DISCRIMINATION_DAY", (2026, 3, 1), (2027, 3, 1)),
+    ("WORLD_WILDLIFE_DAY", (2026, 3, 3), (2027, 3, 3)),
+    ("WORLD_POETRY_DAY", (2026, 3, 21), (2027, 3, 21)),
+    (
+        "INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY",
+        (2026, 3, 31),
+        (2027, 3, 31),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT",
+        (2026, 4, 12),
+        (2027, 4, 12),
+    ),
 ];
 
 /// Each civil day the committee does not print falls on the day its keeper

@@ -6400,6 +6400,70 @@
     "INTERNATIONAL_DAY_OF_COOPERATIVES": {
       "name": "International Day of Cooperatives",
       "prose": "International Day of Cooperatives, the first Saturday of July"
+    },
+    "INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE": {
+      "name": "International Day of Women and Girls in Science",
+      "prose": "International Day of Women and Girls in Science, 11 February"
+    },
+    "WORLD_NGO_DAY": {
+      "name": "World NGO Day",
+      "prose": "World NGO Day, 27 February"
+    },
+    "ZERO_DISCRIMINATION_DAY": {
+      "name": "Zero Discrimination Day",
+      "prose": "Zero Discrimination Day, 1 March"
+    },
+    "WORLD_WILDLIFE_DAY": {
+      "name": "World Wildlife Day",
+      "prose": "World Wildlife Day, 3 March"
+    },
+    "WORLD_POETRY_DAY": {
+      "name": "World Poetry Day",
+      "prose": "World Poetry Day, 21 March"
+    },
+    "INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY": {
+      "name": "International Transgender Day of Visibility",
+      "prose": "International Transgender Day of Visibility, 31 March"
+    },
+    "INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT": {
+      "name": "International Day of Human Space Flight",
+      "prose": "International Day of Human Space Flight, 12 April"
+    },
+    "WORLD_ART_DAY": {
+      "name": "World Art Day",
+      "prose": "World Art Day, 15 April"
+    },
+    "WORLD_IMMUNIZATION_WEEK": {
+      "name": "World Immunization Week",
+      "prose": "World Immunization Week, from 24 April"
+    },
+    "INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES": {
+      "name": "International Day of Family Remittances",
+      "prose": "International Day of Family Remittances, 16 June"
+    },
+    "WORLD_PATIENT_SAFETY_DAY": {
+      "name": "World Patient Safety Day",
+      "prose": "World Patient Safety Day, 17 September"
+    },
+    "INTERSEX_AWARENESS_DAY": {
+      "name": "Intersex Awareness Day",
+      "prose": "Intersex Awareness Day, 26 October"
+    },
+    "WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT": {
+      "name": "World Science Day for Peace and Development",
+      "prose": "World Science Day for Peace and Development, 10 November"
+    },
+    "WORLD_PNEUMONIA_DAY": {
+      "name": "World Pneumonia Day",
+      "prose": "World Pneumonia Day, 12 November"
+    },
+    "WORLD_PHILOSOPHY_DAY": {
+      "name": "World Philosophy Day",
+      "prose": "World Philosophy Day, the third Thursday of November"
+    },
+    "WORLD_MEDITATION_DAY": {
+      "name": "World Meditation Day",
+      "prose": "World Meditation Day, 21 December"
     }
   },
   "agni_vasa": {
