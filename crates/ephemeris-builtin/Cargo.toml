@@ -38,9 +38,9 @@ full = []
 ingest = []
 
 [dependencies]
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.7" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.7" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.7" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.8" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.8" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.8" }
 
 [dev-dependencies]
 teistro-chart = { path = "../chart" }

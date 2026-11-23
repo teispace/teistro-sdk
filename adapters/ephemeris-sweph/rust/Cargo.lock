@@ -461,7 +461,7 @@ dependencies = [
 
 [[package]]
 name = "teistro"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -507,7 +507,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-aspect"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-chart",
@@ -516,7 +516,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-astro"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -526,7 +526,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-calendar"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -537,7 +537,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-chart"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -549,7 +549,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-core"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "libm",
  "serde",
@@ -560,7 +560,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-dasha"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -568,7 +568,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-ephemeris-kit"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -590,7 +590,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-geometry"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-chart",
@@ -600,7 +600,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-gochar"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -608,7 +608,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-hellenistic"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -616,7 +616,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-houses"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -626,7 +626,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-idl"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -634,7 +634,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-interpret"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
@@ -651,7 +651,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-intl"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "crc32fast",
  "fixed_decimal",
@@ -668,7 +668,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-kp"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
@@ -678,7 +678,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-lalkitab"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-matching"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -695,7 +695,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-muhurta"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -711,7 +711,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-numerology"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-calendar",
@@ -720,7 +720,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-pakshi"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -728,7 +728,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-panchanga"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-points"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-chart",
@@ -751,7 +751,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-ephemeris"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -761,7 +761,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-geo"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -770,7 +770,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-timezone"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -778,7 +778,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-prashna"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
@@ -788,7 +788,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rashifal"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -797,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rectification"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
@@ -809,7 +809,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-remedies"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-core",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-render-svg"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -827,7 +827,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-research"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -836,7 +836,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rules"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-serial"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "serde_json",
@@ -871,7 +871,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-siddhanta"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -881,7 +881,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-state"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-chart",
@@ -891,7 +891,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-strength"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
@@ -902,7 +902,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-tajika"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -914,7 +914,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-time"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "base64",
  "jiff",
@@ -929,7 +929,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-vargas"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-astro",
@@ -940,7 +940,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-western"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 dependencies = [
  "serde",
  "teistro-aspect",
