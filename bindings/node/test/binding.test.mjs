@@ -7456,6 +7456,8 @@ test('a rashifal period is read for each of the twelve signs', () => {
   assert.deepEqual([period.reference.calendar, period.reference.day], ['calendar.GREGORIAN', 7]);
   assert.equal(period.transits.length, 9);
   assert.equal(period.retrograde.length, 9);
+  // A score counts every graha's events but the Moon's, whatever is reported (C2331).
+  assert.ok(period.scored.length > 0 && period.scored.every((e) => e.hit.graha !== 'graha.MOON' && e.sign.startsWith('rashi.')));
   assert.ok(period.panchanga.tithi.startsWith('tithi.') && period.panchanga.yoga.startsWith('yoga.'));
   assert.deepEqual(
     [period.readings.length, period.readings[0].rashi, period.readings[11].rashi],

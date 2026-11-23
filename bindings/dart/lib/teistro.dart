@@ -6279,6 +6279,18 @@ final class RashifalPanchanga {
   final int muhurtaYogas;
 }
 
+/// One event of a rashifal period, the sign it happened in uncounted.
+final class PeriodEvent {
+  const PeriodEvent({required this.hit, required this.sign});
+
+  /// The ingress or station.
+  final Hit hit;
+
+  /// The sign it happened in: the one entered, or the one a station stood
+  /// in.
+  final Rashi sign;
+}
+
 /// One period read for each of the twelve signs.
 final class RashifalPeriod {
   const RashifalPeriod({
@@ -6290,6 +6302,7 @@ final class RashifalPeriod {
     required this.retrograde,
     required this.panchanga,
     required this.readings,
+    this.scored = const [],
   });
 
   /// The first day.
@@ -6313,8 +6326,14 @@ final class RashifalPeriod {
   /// The reference day's limbs the baseline reads.
   final RashifalPanchanga panchanga;
 
-  /// Each sign's reading, Aries to Pisces.
+  /// Each sign's reading, Aries to Pisces, its events those the request
+  /// asked to be reported.
   final List<RashiReading> readings;
+
+  /// The period's events a score counts: every graha's but the Moon's,
+  /// whatever the request asked to be reported, so that asking to hear of
+  /// an event never moves a score (C2331).
+  final List<PeriodEvent> scored;
 }
 
 /// A graha the baseline's score names, with its house and verdict.
@@ -18734,6 +18753,13 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
       ),
       readings: List<RashiReading>.unmodifiable([
         for (final one in rows(period['readings'])) reading(one),
+      ]),
+      scored: List<PeriodEvent>.unmodifiable([
+        for (final e in rows(period['scored']))
+          PeriodEvent(
+            hit: hit(e['hit']! as Map<String, Object?>),
+            sign: _key(e['sign'], Rashi.byKey, Rashi.unknown),
+          ),
       ]),
     ),
     baseline:

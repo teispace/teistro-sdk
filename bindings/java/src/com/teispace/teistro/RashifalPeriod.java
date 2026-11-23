@@ -12,15 +12,19 @@ import java.util.List;
  * @param transits each graha's sign and degrees then, the Sun to Ketu
  * @param retrograde whether each was moving backwards then, the Sun to Ketu
  * @param panchanga what the baseline reads of the reference day's panchanga
- * @param readings each sign's reading, Aries to Pisces
+ * @param readings each sign's reading, Aries to Pisces, its events those the request asked to be reported
+ * @param scored the period's events a score counts: every graha's but the Moon's, whatever the request asked
+ *     to be reported, so that asking to hear of an event never moves a score (C2331)
  */
 public record RashifalPeriod(
         CalendarDate first, CalendarDate last, CalendarDate reference, double instant, List<Transit> transits,
-        List<Boolean> retrograde, RashifalPanchanga panchanga, List<RashiReading> readings) {
+        List<Boolean> retrograde, RashifalPanchanga panchanga, List<RashiReading> readings,
+        List<PeriodEvent> scored) {
     /** Keeps the lists unmodifiable. */
     public RashifalPeriod {
         transits = List.copyOf(transits);
         retrograde = List.copyOf(retrograde);
         readings = List.copyOf(readings);
+        scored = List.copyOf(scored);
     }
 }

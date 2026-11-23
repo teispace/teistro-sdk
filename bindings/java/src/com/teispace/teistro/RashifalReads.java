@@ -241,7 +241,11 @@ final class RashifalReads {
                         }),
                         new RashifalPanchanga(member(limbs, "tithi", "Tithi", Tithi::byKey),
                                 member(limbs, "yoga", "Yoga", Yoga::byKey), Reads.integer(limbs, "muhurtaYogas")),
-                        Reads.each(period, "readings", one -> reading(one, instant))),
+                        Reads.each(period, "readings", one -> reading(one, instant)),
+                        Reads.each(period, "scored", e -> {
+                            Map<?, ?> o = Reads.object(e);
+                            return new PeriodEvent(hit(Reads.field(o, "hit")), member(o, "sign", "Rashi", Rashi::byKey));
+                        })),
                 baseline == null ? null : Reads.array(baseline).stream().map(RashifalReads::score).toList(),
                 plans == null ? null : JsonRead.list(plans).stream()
                         .map(plan -> JsonRead.list(plan).stream().map(JsonRead::object).toList())

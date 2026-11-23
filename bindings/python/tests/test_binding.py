@@ -3002,6 +3002,10 @@ class AnEngine(WithLibrary):
             period = read.period
             self.assertEqual((period.reference.calendar, period.reference.day), (Calendar.GREGORIAN, 7))
             self.assertEqual((len(period.transits), len(period.retrograde)), (9, 9))
+            # A score counts every graha's events but the Moon's, whatever is reported (C2331).
+            self.assertTrue(period.scored)
+            self.assertNotIn(Graha.MOON, {event.hit.graha for event in period.scored})
+            self.assertTrue(all(isinstance(event.sign, Rashi) for event in period.scored))
             self.assertIsInstance(period.panchanga.tithi, Tithi)
             self.assertIsInstance(period.panchanga.yoga, Yoga)
             signs = [rashi for rashi in Rashi if rashi.value >= 0]
