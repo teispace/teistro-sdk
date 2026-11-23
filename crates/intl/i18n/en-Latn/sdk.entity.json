@@ -3971,6 +3971,94 @@
       "prose": "Dakshinayana arambha, the sun's turn south",
       "iast": "Dakṣiṇāyanārambha"
     },
+    "LUTO_FALNE_DIN": {
+      "name": "Luto Falne Din",
+      "prose": "Luto Falne Din, Shrawan 1",
+      "iast": "Luto phālne din"
+    },
+    "RASHTRIYA_EKATA_DIWAS": {
+      "name": "Rashtriya Ekata Diwas",
+      "prose": "Rashtriya Ekata Diwas, National Unity Day",
+      "iast": "Rāṣṭriya ekatā divasa"
+    },
+    "BUBAKO_MUKH_HERNE_DIN": {
+      "name": "Bubako Mukh Herne Din",
+      "prose": "Bubako Mukh Herne Din, Father's Day",
+      "iast": "Bubāko mukh herne din"
+    },
+    "UDHAULI_PARVA": {
+      "name": "Udhauli Parva",
+      "prose": "Udhauli Parva",
+      "iast": "Udhaulī parva"
+    },
+    "GHYA_CHAKU_SALHU": {
+      "name": "Ghya Chaku Salhu",
+      "prose": "Ghya Chaku Salhu, Maghe Sankranti in Nepal Bhasa",
+      "iast": "Ghyaḥcāku salhū"
+    },
+    "BISKA_JATRA": {
+      "name": "Biska Jatra",
+      "prose": "Biska Jatra",
+      "iast": "Biskā jātrā"
+    },
+    "KWATI_KHANE_DIN": {
+      "name": "Kwati Khane Din",
+      "prose": "Kwati Khane Din",
+      "iast": "Kvāti khāne din"
+    },
+    "SHATABIJ_ROPAN": {
+      "name": "Shatabij Ropan",
+      "prose": "Shatabij Ropan, the sowing of a hundred seeds",
+      "iast": "Śatabīja ropaṇa"
+    },
+    "JANA_BAHA_DYAH_NHAVAN": {
+      "name": "Jana Baha Dyah Nhavan",
+      "prose": "Jana Baha Dyah Nhavan",
+      "iast": "Janabahāḥdyaḥ nhavaṃ"
+    },
+    "PISHACHA_CHATURDASHI": {
+      "name": "Pishacha Chaturdashi",
+      "prose": "Pishacha Chaturdashi",
+      "iast": "Piśāca caturdaśī"
+    },
+    "NIMKO_PAAT_KHANE_DIN": {
+      "name": "Nimko Paat Khane Din",
+      "prose": "Nimko Paat Khane Din, the day neem leaves are eaten",
+      "iast": "Nīmko pāt khāne din"
+    },
+    "JYOTISH_DIWAS": {
+      "name": "Jyotish Diwas",
+      "prose": "Jyotish Diwas, the astrologers' day",
+      "iast": "Jyotiṣa divasa"
+    },
+    "MOHARATRI": {
+      "name": "Moharatri",
+      "prose": "Moharatri, the night of Krishna's birth",
+      "iast": "Moharātri"
+    },
+    "SAPTARSHI_PUJA": {
+      "name": "Saptarshi Puja",
+      "prose": "Saptarshi Puja",
+      "iast": "Saptarṣi pūjā"
+    },
+    "PAUSHE_AUNSI": {
+      "name": "Paushe Aunsi",
+      "prose": "Paushe Aunsi"
+    },
+    "NAYA_BARSHA": {
+      "name": "Naya Barsha",
+      "prose": "Naya Barsha, the Bikram Sambat new year",
+      "iast": "Nayā̃ varṣa"
+    },
+    "NEPAL_SAMBAT_ARAMBHA": {
+      "name": "Nepal Sambat Arambha",
+      "prose": "Nepal Sambat Arambha, the beginning of the Nepal Sambat year",
+      "iast": "Nepāla saṃvat prārambha"
+    },
+    "YOSIN_THANEGU": {
+      "name": "Yosin Thanegu",
+      "prose": "Yosin Thanegu, the pole's raising"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "Loktantra Diwas",
       "prose": "Loktantra Diwas, Baisakh 11",

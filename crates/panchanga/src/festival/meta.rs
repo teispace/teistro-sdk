@@ -1209,13 +1209,20 @@ type Names = (
     Option<u16>,
     &'static str,
 );
-const NAMES: [Names; 38] = [
+const NAMES: [Names; 51] = [
     (
         "AMAVASYA_SHRADDHA",
         None,
         &["PITRI_VISARJAN"],
         None,
         "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: औंसीश्राद्ध, पितृविसर्जन, one row",
+    ),
+    (
+        "BALA_CHATURDASHI",
+        None,
+        &["SHATABIJ_ROPAN"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print शतबीज रोपण on this day, 8 printings over the 8 years: the hundred seeds scattered for the dead are Bala Chaturdashi's rite",
     ),
     (
         "BASANTA_PANCHAMI",
@@ -1248,6 +1255,13 @@ const NAMES: [Names; 38] = [
         Some(0),
         SANKRANTI,
     ),
+    (
+        "GAYA_MAUNI_AUNSI",
+        None,
+        &["PAUSHE_AUNSI"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print पौषे औँसी on this day, 4 printings over VS 2077 to 2083",
+    ),
     ("GORU_PUJA", None, &[], Some(1), PRINTED),
     ("GOVARDHAN_PUJA", None, &[], Some(2), PRINTED),
     (
@@ -1258,6 +1272,13 @@ const NAMES: [Names; 38] = [
         "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: हरितालिकाव्रत (तीज)",
     ),
     ("INTERNATIONAL_LABOUR_DAY", None, &[], Some(3), PRINTED),
+    (
+        "JANMASHTAMI",
+        None,
+        &["MOHARATRI"],
+        None,
+        "one of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, prints मोहरात्रि on this day in 7 of the 8 years",
+    ),
     (
         "KAG_TIHAR",
         None,
@@ -1279,9 +1300,10 @@ const NAMES: [Names; 38] = [
             "KARKATA_SANKRANTI",
             "SHRAWAN_SANKRANTI",
             "DAKSHINAYANA_ARAMBHA",
+            "LUTO_FALNE_DIN",
         ],
         Some(0),
-        "Nepal's national panchanga (the committee's VS 2082 print): श्रावणसङ्क्रान्ति, दक्षिणायनारम्भ, one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Cancer are his southern course; Nepal's calendars over VS 2076 to 2083 print दक्षिणायन आरम्भ on this day in 16 of the 17 years they print it; Nepal's patros from 2013 to 2027, read for SR-145, name it साउने सङ्क्रान्ति (C2312)",
+        "Nepal's national panchanga (the committee's VS 2082 print): श्रावणसङ्क्रान्ति, दक्षिणायनारम्भ, one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Cancer are his southern course; Nepal's calendars over VS 2076 to 2083 print दक्षिणायन आरम्भ on this day in 16 of the 17 years they print it; all three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print लुतो फाल्ने दिन on this day, 20 printings over the 8 years; Nepal's patros from 2013 to 2027, read for SR-145, name it साउने सङ्क्रान्ति (C2312)",
     ),
     ("KARTIK_SNAN_ENDS", None, &[], Some(1), PRINTED),
     (
@@ -1299,6 +1321,20 @@ const NAMES: [Names; 38] = [
         SANKRANTI,
     ),
     (
+        "KUSHE_AUNSI",
+        None,
+        &["BUBAKO_MUKH_HERNE_DIN"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print बुबाको मुख हेर्ने दिन on this day, 12 printings over the 8 years",
+    ),
+    (
+        "KWATI_PUNHI",
+        None,
+        &["KWATI_KHANE_DIN"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print क्वाति खाने दिन on this day, 8 printings over the 8 years",
+    ),
+    (
         "LAKSHMI_PUJA",
         None,
         &["DEEPAMALIKA"],
@@ -1312,16 +1348,17 @@ const NAMES: [Names; 38] = [
             "MAKARA_SANKRANTI",
             "GHYU_CHAKU_KHANE_DIN",
             "UTTARAYANA_ARAMBHA",
+            "GHYA_CHAKU_SALHU",
         ],
         Some(0),
-        "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier, and its VS 2082 print माघसङ्क्रान्ति, उत्तरायण सुरु in one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Capricorn are his northern course; Nepal's calendars over VS 2076 to 2083 print उत्तरायण आरम्भ on this day in all 17 years they print it; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315)",
+        "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier, and its VS 2082 print माघसङ्क्रान्ति, उत्तरायण सुरु in one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Capricorn are his northern course; Nepal's calendars over VS 2076 to 2083 print उत्तरायण आरम्भ on this day in all 17 years they print it; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315); two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print its Nepal Bhasa name घ्यःचाकु सल्हू beside it, 10 printings over the 8 years",
     ),
     (
         "MESHA_SANKRANTI",
-        None,
-        &["BAISAKH_SANKRANTI"],
+        Some("NAYA_BARSHA"),
+        &["MESHA_SANKRANTI", "BAISAKH_SANKRANTI"],
         Some(0),
-        SANKRANTI,
+        "the Ministry of Home Affairs' holiday notices for VS 2076 to 2083 (Nepal Gazette, part 5) name Baisakh 1's holiday नव वर्ष, first of the year's holidays; Nepal's national panchanga (the committee's VS 2082 print): वैशाखसंक्रान्ति, नववर्षारम्भ, one row, first among the day's observances of its tier; two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print नयाँ वर्ष on this day, 10 printings over the 8 years; Nepal's patros from 2013 to 2027, read for SR-145, name the sankrantis other than Makara and Karkata by their sign or by the month they open (C2312, C2341)",
     ),
     ("MHA_PUJA", None, &[], Some(3), PRINTED),
     (
@@ -1359,8 +1396,49 @@ const NAMES: [Names; 38] = [
         None,
         "Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: घटस्थापना first, then नवरात्रारम्भ; the Ministry of Home Affairs' VS 2083 notice, 2.1 (ङ): घटस्थापना",
     ),
-    ("NEPAL_SAMBAT_NEW_YEAR", None, &[], Some(4), PRINTED),
+    (
+        "NEPAL_SAMBAT_NEW_YEAR",
+        None,
+        &["NEPAL_SAMBAT_ARAMBHA"],
+        Some(4),
+        "Nepal's national panchanga (the committee's VS 2083 print) prints it at this place among the day's observances of its tier; the Ministry of Home Affairs' holiday notices for VS 2076 to 2082 (Nepal Gazette, part 5) name it नेपाल संवत् प्रारम्भ in the row of Govardhan puja and Mha puja (C2341)",
+    ),
+    (
+        "PAHAN_CHARHE",
+        None,
+        &["PISHACHA_CHATURDASHI"],
+        None,
+        "one of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, prints पिशाच चतुर्दशी beside it on this day in all 8 years",
+    ),
     ("PRADOSHA_VRATA", None, &[], Some(1), PRINTED),
+    (
+        "PRITHVI_JAYANTI",
+        None,
+        &["RASHTRIYA_EKATA_DIWAS"],
+        None,
+        "the Ministry of Home Affairs' holiday notices (Nepal Gazette, part 5) name Poush 27 राष्ट्रिय एकता दिवस, kept with offices open, for VS 2076 to 2079, and पृथ्वी जयन्ती (राष्ट्रिय एकता दिवस), a holiday, for VS 2080 to 2083; all three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print राष्ट्रिय एकता दिवस on this day, 16 printings over the 8 years (C2340)",
+    ),
+    (
+        "RISHI_PANCHAMI",
+        None,
+        &["SAPTARSHI_PUJA"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print सप्तर्षि पूजा on this day, 7 printings over VS 2077 to 2083",
+    ),
+    (
+        "SAMVATSARA_ARAMBHA",
+        None,
+        &["NIMKO_PAAT_KHANE_DIN", "JYOTISH_DIWAS"],
+        None,
+        "all three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print नीमको पात खाने दिन on this day, 15 of 16 printings over VS 2077 to 2083, and ज्योतिष दिवस, 4 of 5 printings over VS 2081 to 2083",
+    ),
+    (
+        "SETO_MACHHINDRANATH_SNAN",
+        None,
+        &["JANA_BAHA_DYAH_NHAVAN"],
+        None,
+        "one of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, prints जनबहाःद्यः न्हवं beside it on this day in all 8 years",
+    ),
     (
         "SIMHA_SANKRANTI",
         None,
@@ -1377,6 +1455,13 @@ const NAMES: [Names; 38] = [
         SANKRANTI,
     ),
     ("UBHAULI", None, &[], Some(4), PRINTED),
+    (
+        "UDHAULI",
+        None,
+        &["UDHAULI_PARVA"],
+        None,
+        "the Ministry of Home Affairs' VS 2083 notice, 2.1: Kirat communities' उधौली पर्व on Dhanya Purnima; two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print उधौली पर्व on this day, 10 printings over the 8 years",
+    ),
     (
         "UPAKARMA_MADHYANDINA",
         Some("JANAI_PURNIMA"),
@@ -1411,6 +1496,20 @@ const NAMES: [Names; 38] = [
         &["YAMA_DWITIYA"],
         None,
         "Nepal's national panchanga, VS 2082 p. 15: यमद्वितीया, भाइटीका; VS 2083 p. 17: भाइटीका first, then यमद्वितीया; the Ministry of Home Affairs' VS 2083 notice, 2.1 (छ): भाइटिका",
+    ),
+    (
+        "YOSIN_PATAN",
+        None,
+        &["BISKA_JATRA"],
+        None,
+        "one of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, prints बिस्का जात्रा on this day, Bisket jatra's Baisakh 1, in all 8 years",
+    ),
+    (
+        "YOSIN_UTTHAN",
+        None,
+        &["YOSIN_THANEGU"],
+        None,
+        "two of three calendars published in Nepal over VS 2076 to 2083, read for SR-145, print Bhaktapur's raising of the pole, योसिं थनेगु, 6 printings: all 3 since VS 2081 on this day, Chaitra's last, and those of VS 2076 to 2079 on Baisakh 1, the older practice (C1650)",
     ),
 ];
 
@@ -2499,8 +2598,9 @@ mod tests {
     }
 
     /// Nepal leads the Makara and Karkata sankrantis with the month they
-    /// open and keeps the sign's name beside it; the others lead with the
-    /// sign and keep the month's (C2312).
+    /// open and keeps the sign's name beside it; Mesha's leads with the new
+    /// year it opens (C2341); the others lead with the sign and keep the
+    /// month's (C2312).
     #[test]
     fn nepal_names_a_sankranti_by_its_month() {
         let lead_and_aliases = |key: &str| {
@@ -2522,7 +2622,8 @@ mod tests {
                 named(&[
                     "MAKARA_SANKRANTI",
                     "GHYU_CHAKU_KHANE_DIN",
-                    "UTTARAYANA_ARAMBHA"
+                    "UTTARAYANA_ARAMBHA",
+                    "GHYA_CHAKU_SALHU"
                 ])
             )]
         );
@@ -2533,13 +2634,24 @@ mod tests {
                 named(&[
                     "KARKATA_SANKRANTI",
                     "SHRAWAN_SANKRANTI",
-                    "DAKSHINAYANA_ARAMBHA"
+                    "DAKSHINAYANA_ARAMBHA",
+                    "LUTO_FALNE_DIN"
                 ])
             )]
         );
         assert_eq!(
             lead_and_aliases("MESHA_SANKRANTI"),
-            [(None, named(&["BAISAKH_SANKRANTI"]))]
+            [(
+                Some("NAYA_BARSHA".to_owned()),
+                named(&["MESHA_SANKRANTI", "BAISAKH_SANKRANTI"])
+            )]
+        );
+        // The ministry's yearly notices call Baisakh 1 the new year, and
+        // Prithvi Jayanti by its own name with National Unity Day beside it
+        // (C2340, C2341).
+        assert_eq!(
+            lead_and_aliases("PRITHVI_JAYANTI"),
+            [(None, named(&["RASHTRIYA_EKATA_DIWAS"]))]
         );
     }
 

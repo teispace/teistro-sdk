@@ -3519,6 +3519,94 @@
       "prose": "दक्षिणायन आरंभ",
       "iast": "Dakṣiṇāyanārambha"
     },
+    "LUTO_FALNE_DIN": {
+      "name": "लुतो फाल्ने दिन",
+      "prose": "लुतो फाल्ने दिन",
+      "iast": "Luto phālne din"
+    },
+    "RASHTRIYA_EKATA_DIWAS": {
+      "name": "राष्ट्रीय एकता दिवस",
+      "prose": "राष्ट्रीय एकता दिवस",
+      "iast": "Rāṣṭriya ekatā divasa"
+    },
+    "BUBAKO_MUKH_HERNE_DIN": {
+      "name": "बुबाको मुख हेर्ने दिन",
+      "prose": "बुबाको मुख हेर्ने दिन",
+      "iast": "Bubāko mukh herne din"
+    },
+    "UDHAULI_PARVA": {
+      "name": "उधौली पर्व",
+      "prose": "उधौली पर्व",
+      "iast": "Udhaulī parva"
+    },
+    "GHYA_CHAKU_SALHU": {
+      "name": "घ्यःचाकु सल्हू",
+      "prose": "घ्यःचाकु सल्हू",
+      "iast": "Ghyaḥcāku salhū"
+    },
+    "BISKA_JATRA": {
+      "name": "बिस्का जात्रा",
+      "prose": "बिस्का जात्रा",
+      "iast": "Biskā jātrā"
+    },
+    "KWATI_KHANE_DIN": {
+      "name": "क्वाति खाने दिन",
+      "prose": "क्वाति खाने दिन",
+      "iast": "Kvāti khāne din"
+    },
+    "SHATABIJ_ROPAN": {
+      "name": "शतबीज रोपण",
+      "prose": "शतबीज रोपण",
+      "iast": "Śatabīja ropaṇa"
+    },
+    "JANA_BAHA_DYAH_NHAVAN": {
+      "name": "जनबहाःद्यः न्हवं",
+      "prose": "जनबहाःद्यः न्हवं",
+      "iast": "Janabahāḥdyaḥ nhavaṃ"
+    },
+    "PISHACHA_CHATURDASHI": {
+      "name": "पिशाच चतुर्दशी",
+      "prose": "पिशाच चतुर्दशी",
+      "iast": "Piśāca caturdaśī"
+    },
+    "NIMKO_PAAT_KHANE_DIN": {
+      "name": "नीम के पत्ते खाने का दिन",
+      "prose": "नीम के पत्ते खाने का दिन",
+      "iast": "Nīmko pāt khāne din"
+    },
+    "JYOTISH_DIWAS": {
+      "name": "ज्योतिष दिवस",
+      "prose": "ज्योतिष दिवस",
+      "iast": "Jyotiṣa divasa"
+    },
+    "MOHARATRI": {
+      "name": "मोहरात्रि",
+      "prose": "मोहरात्रि",
+      "iast": "Moharātri"
+    },
+    "SAPTARSHI_PUJA": {
+      "name": "सप्तर्षि पूजा",
+      "prose": "सप्तर्षि पूजा",
+      "iast": "Saptarṣi pūjā"
+    },
+    "PAUSHE_AUNSI": {
+      "name": "पौष अमावस्या",
+      "prose": "पौष अमावस्या"
+    },
+    "NAYA_BARSHA": {
+      "name": "नव वर्ष",
+      "prose": "नव वर्ष",
+      "iast": "Nayā̃ varṣa"
+    },
+    "NEPAL_SAMBAT_ARAMBHA": {
+      "name": "नेपाल संवत् प्रारंभ",
+      "prose": "नेपाल संवत् प्रारंभ",
+      "iast": "Nepāla saṃvat prārambha"
+    },
+    "YOSIN_THANEGU": {
+      "name": "योसिं थनेगु",
+      "prose": "योसिं थनेगु"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "लोकतंत्र दिवस",
       "prose": "लोकतंत्र दिवस",

@@ -575,7 +575,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1693,
+            derived.entities, 1711,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -601,7 +601,8 @@ mod tests {
              1665 until Nepal's darsha shraddha, two ashtami vratas and four days kept on a festival's day, \
              1672 until Gorakhkali's two pujas, \
              1674 until the two ayanas' names, \
-             1676 until SR-145's seventeen international and keepers' days"
+             1676 until SR-145's seventeen international and keepers' days, \
+             1693 until Nepal's eighteen other names for its days (C2340, C2341)"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -671,9 +672,10 @@ mod tests {
         // for letter; 570 with the sankrantis' month names and Nepal's six
         // names for shared days (C2312, C2314, C2315), 12 more; 571 with
         // तुलसीपिए, whose IAST is its letters; 573 with the two ayanas'
-        // closed compounds उत्तरायणारम्भ and दक्षिणायनारम्भ.
+        // closed compounds उत्तरायणारम्भ and दक्षिणायनारम्भ; 574 with
+        // मोहरात्रि.
         assert_eq!(
-            derived.agreeing, 573,
+            derived.agreeing, 574,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

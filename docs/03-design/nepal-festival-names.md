@@ -126,12 +126,28 @@ Nepal's entries (`NAMES` in `meta.rs`):
 | `HARITALIKA` | | `TEEJ` |
 | `CHHATH` | | `SANDHYA_ARGHYA`, `DALA_PUJA` |
 | `CHHATH_SECOND_DAY` | `USHA_ARGHYA` | `CHHATH_SAMAPAN`, `CHHATH_SECOND_DAY` |
-| `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI`, `GHYU_CHAKU_KHANE_DIN` |
-| `KARKATA_SANKRANTI` | `SAUNE_SANKRANTI` | `KARKATA_SANKRANTI`, `SHRAWAN_SANKRANTI` |
-| the other ten sankrantis | | the month each opens (`BAISAKH_SANKRANTI`, `JESTHA_SANKRANTI`, …, `CHAITRA_SANKRANTI`) |
+| `MAKARA_SANKRANTI` | `MAGHE_SANKRANTI` | `MAKARA_SANKRANTI`, `GHYU_CHAKU_KHANE_DIN`, `UTTARAYANA_ARAMBHA`, `GHYA_CHAKU_SALHU` |
+| `KARKATA_SANKRANTI` | `SAUNE_SANKRANTI` | `KARKATA_SANKRANTI`, `SHRAWAN_SANKRANTI`, `DAKSHINAYANA_ARAMBHA`, `LUTO_FALNE_DIN` |
+| `MESHA_SANKRANTI` | `NAYA_BARSHA` | `MESHA_SANKRANTI`, `BAISAKH_SANKRANTI` |
+| the other nine sankrantis | | the month each opens (`JESTHA_SANKRANTI`, …, `CHAITRA_SANKRANTI`) |
 | `UPAKARMA_MADHYANDINA` | `JANAI_PURNIMA` | `UPAKARMA_MADHYANDINA`, `RISHI_TARPANI` |
 | `BASANTA_PANCHAMI` | | `SARASWATI_PUJA`, `SHREE_PANCHAMI` |
 | `NATIONAL_PADDY_DAY` | | `DAHI_CHIURA_KHANE_DIN` |
+| `NAVAMI_SHRADDHA` | | `AVIDHAVA_NAVAMI` |
+| `NEPAL_SAMBAT_NEW_YEAR` | | `NEPAL_SAMBAT_ARAMBHA` |
+| `PRITHVI_JAYANTI` | | `RASHTRIYA_EKATA_DIWAS` |
+| `KUSHE_AUNSI` | | `BUBAKO_MUKH_HERNE_DIN` |
+| `UDHAULI` | | `UDHAULI_PARVA` |
+| `YOSIN_PATAN` | | `BISKA_JATRA` |
+| `YOSIN_UTTHAN` | | `YOSIN_THANEGU` |
+| `KWATI_PUNHI` | | `KWATI_KHANE_DIN` |
+| `BALA_CHATURDASHI` | | `SHATABIJ_ROPAN` |
+| `SETO_MACHHINDRANATH_SNAN` | | `JANA_BAHA_DYAH_NHAVAN` |
+| `PAHAN_CHARHE` | | `PISHACHA_CHATURDASHI` |
+| `SAMVATSARA_ARAMBHA` | | `NIMKO_PAAT_KHANE_DIN`, `JYOTISH_DIWAS` |
+| `JANMASHTAMI` | | `MOHARATRI` |
+| `RISHI_PANCHAMI` | | `SAPTARSHI_PUJA` |
+| `GAYA_MAUNI_AUNSI` | | `PAUSHE_AUNSI` |
 
 The sankrantis' names are measured over Nepal's patros (C2312): the locales
 once named the Makara and Karkata sankrantis माघे and साउने in Nepali and
@@ -144,6 +160,19 @@ keeps its own name, so no two rules of one day lead with one name. The
 two eating days are other names of a day already kept: Magh 1's घ्यू-चाकु
 खाने दिन is Maghe Sankranti, and Asar 15's दही-चिउरा खाने दिन is Paddy Day
 (C2315).
+
+rc.9 adds the other names Nepal's calendars print on days the pack already
+keeps (eighteen keys, C2340 to C2342). Each entry's source gives how many
+of three calendars published in Nepal over VS 2076 to 2083 print it on the
+day, and in how many of their years. Two leads were weighed against the
+Ministry of Home Affairs' yearly notices: Baisakh 1 leads with नयाँ वर्ष,
+the notices' new year, before the sign and the month; Prithvi Jayanti keeps
+its own name, as the notices have led with it since VS 2080, and lists
+राष्ट्रिय एकता दिवस (C2340, C2341). Tulasi's seed-sowing on Nirjala Ekadashi
+is another act than the leaf's keeping, so it is no name of
+`TULASI_DAL_RAKHNE` (C2342). A name that carries its year (नेपाल संवत् ११४६
+प्रारम्भ) is left to the consumer, which appends the day's year in the era
+(C2341).
 A test holds every listed name to a festival name in every locale.
 
 Not shipped (C2311): गाई तिहार, which the book does not print (it prints
