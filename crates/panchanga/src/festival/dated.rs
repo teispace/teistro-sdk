@@ -1094,8 +1094,8 @@ const KEPT_WEEKDAYS: [(&str, u8, Vara, i8, &str); 3] = [
 /// The United Nations' international days Nepal's calendars print over
 /// VS 2076 to 2083 and `NEPAL_PANCHANGA` named on no day, each on the date
 /// the UN's list gives: key, month, day, and the list's entry as printed,
-/// read 2026-11-23 for SR-145's coverage (C2345).
-const LISTED_UN_DAYS: [(&str, u8, i8, &str); 13] = [
+/// read 2026-11-23 for SR-145's coverage (C2345, C2346).
+const LISTED_UN_DAYS: [(&str, u8, i8, &str); 22] = [
     (
         "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK",
         4,
@@ -1174,45 +1174,144 @@ const LISTED_UN_DAYS: [(&str, u8, i8, &str); 13] = [
         12,
         "\"International Day of Neutrality\", 12 December, A/RES/71/275",
     ),
+    (
+        "INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE",
+        2,
+        11,
+        "\"International Day of Women and Girls in Science\", 11 February, A/RES/70/212",
+    ),
+    (
+        "ZERO_DISCRIMINATION_DAY",
+        3,
+        1,
+        "\"Zero Discrimination Day [UNAIDS]\", 1 March",
+    ),
+    (
+        "WORLD_WILDLIFE_DAY",
+        3,
+        3,
+        "\"World Wildlife Day\", 3 March, A/RES/68/205",
+    ),
+    (
+        "WORLD_POETRY_DAY",
+        3,
+        21,
+        "\"World Poetry Day [UNESCO]\", 21 March, 30 C/Resolution 29",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT",
+        4,
+        12,
+        "\"International Day of Human Space Flight\", 12 April, A/RES/65/271",
+    ),
+    (
+        "WORLD_IMMUNIZATION_WEEK",
+        4,
+        24,
+        "\"World Immunization Week, 24-30 April [WHO]\", the week's first day",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES",
+        6,
+        16,
+        "\"International Day of Family Remittances\", 16 June, A/RES/72/281",
+    ),
+    (
+        "WORLD_PATIENT_SAFETY_DAY",
+        9,
+        17,
+        "\"World Patient Safety Day [WHO]\", 17 September",
+    ),
+    (
+        "WORLD_MEDITATION_DAY",
+        12,
+        21,
+        "\"World Meditation Day\", 21 December, A/RES/79/137",
+    ),
 ];
 
 /// The days other bodies keep on a Gregorian date that Nepal's calendars
 /// print over VS 2076 to 2083 and `NEPAL_PANCHANGA` named on no day, each
-/// on the date the keeping body's own page gives, read 2026-11-23: key,
-/// month, day, and the body, its page and the line read (C2345).
-const KEEPERS_DAYS: [(&str, u8, i8, &str); 2] = [
+/// on the date the keeping body's own page gives: key, month, day, and the
+/// body, its page, the line read and when, and the source's rank (C2345,
+/// C2346).
+const KEEPERS_DAYS: [(&str, u8, i8, &str); 8] = [
     (
         "GLOBAL_TIGER_DAY",
         7,
         29,
-        "the Global Tiger Forum, globaltigerforum.org: \"The Tiger Day of 29th July was announced on 23rd November 2010\", at the St Petersburg tiger summit",
+        "the Global Tiger Forum, globaltigerforum.org: \"The Tiger Day of 29th July was announced on 23rd November 2010\", at the St Petersburg tiger summit (read 2026-11-23, rank 2)",
     ),
     (
         "WORLD_SUICIDE_PREVENTION_DAY",
         9,
         10,
-        "the International Association for Suicide Prevention, iasp.info/wspd: \"10 September World Suicide Prevention Day\"",
+        "the International Association for Suicide Prevention, iasp.info/wspd: \"10 September World Suicide Prevention Day\" (read 2026-11-23, rank 2)",
+    ),
+    (
+        "WORLD_NGO_DAY",
+        2,
+        27,
+        "World NGO Day, worldngoday.org: \"World NGO Day is observed worldwide on February 27.\" (read 2026-11-23, rank 2)",
+    ),
+    (
+        "INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY",
+        3,
+        31,
+        "Trans Student Educational Resources, transstudent.org/tdov: \"TDoV is on March 31st every year!\" (read 2026-11-23, rank 2)",
+    ),
+    (
+        "WORLD_ART_DAY",
+        4,
+        15,
+        "UNESCO, unesco.org/en/days/world-art: \"Each year, on 15 April, World Art Day celebrations help reinforce the links between artistic creations and society\", proclaimed at its General Conference's 40th session (read 2026-11-23 from the page's web.archive.org copy, the page refusing scripted reads; rank 1)",
+    ),
+    (
+        "INTERSEX_AWARENESS_DAY",
+        10,
+        26,
+        "intersexday.org: \"Intersex Awareness Day on October 26 marks the first public demonstration by intersex people in North America.\" (read 2026-11-23, rank 2)",
+    ),
+    (
+        "WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT",
+        11,
+        10,
+        "UNESCO, unesco.org/en/days/science-peace-development: \"Celebrated every 10 November, World Science Day for Peace and Development highlights the important role of science in society\" (read 2026-11-23 from the page's web.archive.org copy, the page refusing scripted reads; rank 1)",
+    ),
+    (
+        "WORLD_PNEUMONIA_DAY",
+        11,
+        12,
+        "Every Breath Counts, stoppneumonia.org/world-pneumonia-day: \"A global day of action: 12 November\" (read 2026-11-23, rank 2)",
     ),
 ];
 
 /// The days kept on a weekday of a Gregorian month that Nepal's calendars
 /// print over VS 2076 to 2083, each on that weekday in every year they
 /// print it, and `NEPAL_PANCHANGA` named on no day: key, month, weekday,
-/// which of the month's, and the source read on 2026-11-23 (C2345).
-const KEEPERS_WEEKDAYS: [(&str, u8, Vara, i8, &str); 2] = [
+/// which of the month's, and the source read on 2026-11-23 with its rank
+/// (C2345, C2346).
+const KEEPERS_WEEKDAYS: [(&str, u8, Vara, i8, &str); 3] = [
     (
         "WORLD_LEPROSY_DAY",
         1,
         Vara::Ravivara,
         -1,
-        "The Leprosy Mission, leprosymission.org/leprosy-champions/world-leprosy-day: \"World Leprosy Day always takes place on the last Sunday of January.\"",
+        "The Leprosy Mission, leprosymission.org/leprosy-champions/world-leprosy-day: \"World Leprosy Day always takes place on the last Sunday of January.\" (rank 2)",
     ),
     (
         "INTERNATIONAL_DAY_OF_COOPERATIVES",
         7,
         Vara::Shanivara,
         1,
-        "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-23): \"International Day of Cooperatives\", July, A/RES/47/90; the International Co-operative Alliance, ica.coop: \"celebrated annually on the first Saturday of July\"",
+        "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-23): \"International Day of Cooperatives\", July, A/RES/47/90; the International Co-operative Alliance, ica.coop: \"celebrated annually on the first Saturday of July\" (rank 2)",
+    ),
+    (
+        "WORLD_PHILOSOPHY_DAY",
+        11,
+        Vara::Guruvara,
+        3,
+        "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-23): \"World Philosophy Day [UNESCO]\", 33 C/Resolution 37; UNESCO, unesco.org/en/days/philosophy (its web.archive.org copy, the page refusing scripted reads): \"By celebrating World Philosophy Day each year, on the third Thursday of November\" (rank 1)",
     ),
 ];
 
@@ -1886,8 +1985,8 @@ impl DatedRule {
     /// ([`KEPT_GREGORIAN_DAYS`]) or on a weekday of a Gregorian month
     /// ([`KEPT_WEEKDAYS`]).
     fn on_kept_dates() -> impl Iterator<Item = DatedRule> {
-        /// What SR-145's coverage read says of a day it added (C2345).
-        const PRINTED_IN_NEPAL: &str = "Nepal's calendars print it over VS 2076 to 2083, and NEPAL_PANCHANGA named no observance on its day (SR-145, C2345)";
+        /// What SR-145's coverage read says of a day it added (C2345, C2346).
+        const PRINTED_IN_NEPAL: &str = "Nepal's calendars print it over VS 2076 to 2083, and NEPAL_PANCHANGA named no observance on its day (SR-145, C2345, C2346)";
         let weekday = |cited: fn(&str) -> String| {
             move |&(key, month, weekday, nth, source): &(&str, u8, Vara, i8, &str)| DatedRule {
                 key: key.to_owned(),
@@ -1957,10 +2056,10 @@ impl DatedRule {
                 )
             })))
             .chain(KEEPERS_DAYS.iter().map(kept(Calendar::Gregorian, |source| {
-                format!("{source} (read 2026-11-23, rank 2); {PRINTED_IN_NEPAL}")
+                format!("{source}; {PRINTED_IN_NEPAL}")
             })))
             .chain(KEEPERS_WEEKDAYS.iter().map(weekday(|source| {
-                format!("{source} (rank 2); {PRINTED_IN_NEPAL}")
+                format!("{source}; {PRINTED_IN_NEPAL}")
             })))
     }
 

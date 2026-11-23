@@ -1234,6 +1234,22 @@ class FestivalKey(enum.StrEnum):
     GLOBAL_TIGER_DAY = "festival.GLOBAL_TIGER_DAY"
     WORLD_LEPROSY_DAY = "festival.WORLD_LEPROSY_DAY"
     INTERNATIONAL_DAY_OF_COOPERATIVES = "festival.INTERNATIONAL_DAY_OF_COOPERATIVES"
+    INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE = "festival.INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE"
+    WORLD_NGO_DAY = "festival.WORLD_NGO_DAY"
+    ZERO_DISCRIMINATION_DAY = "festival.ZERO_DISCRIMINATION_DAY"
+    WORLD_WILDLIFE_DAY = "festival.WORLD_WILDLIFE_DAY"
+    WORLD_POETRY_DAY = "festival.WORLD_POETRY_DAY"
+    INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY = "festival.INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY"
+    INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT = "festival.INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT"
+    WORLD_ART_DAY = "festival.WORLD_ART_DAY"
+    WORLD_IMMUNIZATION_WEEK = "festival.WORLD_IMMUNIZATION_WEEK"
+    INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES = "festival.INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES"
+    WORLD_PATIENT_SAFETY_DAY = "festival.WORLD_PATIENT_SAFETY_DAY"
+    INTERSEX_AWARENESS_DAY = "festival.INTERSEX_AWARENESS_DAY"
+    WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT = "festival.WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT"
+    WORLD_PNEUMONIA_DAY = "festival.WORLD_PNEUMONIA_DAY"
+    WORLD_PHILOSOPHY_DAY = "festival.WORLD_PHILOSOPHY_DAY"
+    WORLD_MEDITATION_DAY = "festival.WORLD_MEDITATION_DAY"
 
 
 class FestivalKindKey(enum.StrEnum):
@@ -9773,9 +9789,19 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.INTERNATIONAL_DAY_OF_FAMILIES")
 
     @property
+    def international_day_of_family_remittances(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES")
+
+    @property
     def international_day_of_happiness(self) -> EntityForms:
         """The forms of `festival.INTERNATIONAL_DAY_OF_HAPPINESS` in the current locale."""
         return self._r.entity("festival.INTERNATIONAL_DAY_OF_HAPPINESS")
+
+    @property
+    def international_day_of_human_space_flight(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT")
 
     @property
     def international_day_of_innocent_children_victims_of_aggression(self) -> EntityForms:
@@ -9838,6 +9864,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS")
 
     @property
+    def international_day_of_women_and_girls_in_science(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE")
+
+    @property
     def international_day_of_yoga(self) -> EntityForms:
         """The forms of `festival.INTERNATIONAL_DAY_OF_YOGA` in the current locale."""
         return self._r.entity("festival.INTERNATIONAL_DAY_OF_YOGA")
@@ -9888,6 +9919,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.INTERNATIONAL_STUDENTS_DAY")
 
     @property
+    def international_transgender_day_of_visibility(self) -> EntityForms:
+        """The forms of `festival.INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY` in the current locale."""
+        return self._r.entity("festival.INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY")
+
+    @property
     def international_volunteer_day(self) -> EntityForms:
         """The forms of `festival.INTERNATIONAL_VOLUNTEER_DAY` in the current locale."""
         return self._r.entity("festival.INTERNATIONAL_VOLUNTEER_DAY")
@@ -9906,6 +9942,11 @@ class MessagesSdkEntityFestival:
     def international_youth_day(self) -> EntityForms:
         """The forms of `festival.INTERNATIONAL_YOUTH_DAY` in the current locale."""
         return self._r.entity("festival.INTERNATIONAL_YOUTH_DAY")
+
+    @property
+    def intersex_awareness_day(self) -> EntityForms:
+        """The forms of `festival.INTERSEX_AWARENESS_DAY` in the current locale."""
+        return self._r.entity("festival.INTERSEX_AWARENESS_DAY")
 
     @property
     def jagannath_rath_jatra(self) -> EntityForms:
@@ -11713,6 +11754,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.WORLD_ANIMAL_DAY")
 
     @property
+    def world_art_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_ART_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_ART_DAY")
+
+    @property
     def world_autism_awareness_day(self) -> EntityForms:
         """The forms of `festival.WORLD_AUTISM_AWARENESS_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_AUTISM_AWARENESS_DAY")
@@ -11853,6 +11899,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.WORLD_HYPERTENSION_DAY")
 
     @property
+    def world_immunization_week(self) -> EntityForms:
+        """The forms of `festival.WORLD_IMMUNIZATION_WEEK` in the current locale."""
+        return self._r.entity("festival.WORLD_IMMUNIZATION_WEEK")
+
+    @property
     def world_intellectual_property_day(self) -> EntityForms:
         """The forms of `festival.WORLD_INTELLECTUAL_PROPERTY_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_INTELLECTUAL_PROPERTY_DAY")
@@ -11866,6 +11917,11 @@ class MessagesSdkEntityFestival:
     def world_malaria_day(self) -> EntityForms:
         """The forms of `festival.WORLD_MALARIA_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_MALARIA_DAY")
+
+    @property
+    def world_meditation_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_MEDITATION_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_MEDITATION_DAY")
 
     @property
     def world_mental_health_day(self) -> EntityForms:
@@ -11883,6 +11939,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.WORLD_MUSIC_DAY")
 
     @property
+    def world_ngo_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_NGO_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_NGO_DAY")
+
+    @property
     def world_no_tobacco_day(self) -> EntityForms:
         """The forms of `festival.WORLD_NO_TOBACCO_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_NO_TOBACCO_DAY")
@@ -11898,14 +11959,34 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.WORLD_ORAL_HEALTH_DAY")
 
     @property
+    def world_patient_safety_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_PATIENT_SAFETY_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_PATIENT_SAFETY_DAY")
+
+    @property
     def world_pharmacists_day(self) -> EntityForms:
         """The forms of `festival.WORLD_PHARMACISTS_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_PHARMACISTS_DAY")
 
     @property
+    def world_philosophy_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_PHILOSOPHY_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_PHILOSOPHY_DAY")
+
+    @property
     def world_physiotherapy_day(self) -> EntityForms:
         """The forms of `festival.WORLD_PHYSIOTHERAPY_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_PHYSIOTHERAPY_DAY")
+
+    @property
+    def world_pneumonia_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_PNEUMONIA_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_PNEUMONIA_DAY")
+
+    @property
+    def world_poetry_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_POETRY_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_POETRY_DAY")
 
     @property
     def world_population_day(self) -> EntityForms:
@@ -11951,6 +12032,11 @@ class MessagesSdkEntityFestival:
     def world_remembrance_and_reconciliation_day(self) -> EntityForms:
         """The forms of `festival.WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY")
+
+    @property
+    def world_science_day_for_peace_and_development(self) -> EntityForms:
+        """The forms of `festival.WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT` in the current locale."""
+        return self._r.entity("festival.WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT")
 
     @property
     def world_sight_day(self) -> EntityForms:
@@ -12023,6 +12109,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.WORLD_WETLANDS_DAY")
 
     @property
+    def world_wildlife_day(self) -> EntityForms:
+        """The forms of `festival.WORLD_WILDLIFE_DAY` in the current locale."""
+        return self._r.entity("festival.WORLD_WILDLIFE_DAY")
+
+    @property
     def world_youth_skills_day(self) -> EntityForms:
         """The forms of `festival.WORLD_YOUTH_SKILLS_DAY` in the current locale."""
         return self._r.entity("festival.WORLD_YOUTH_SKILLS_DAY")
@@ -12071,6 +12162,11 @@ class MessagesSdkEntityFestival:
     def yosin_utthan(self) -> EntityForms:
         """The forms of `festival.YOSIN_UTTHAN` in the current locale."""
         return self._r.entity("festival.YOSIN_UTTHAN")
+
+    @property
+    def zero_discrimination_day(self) -> EntityForms:
+        """The forms of `festival.ZERO_DISCRIMINATION_DAY` in the current locale."""
+        return self._r.entity("festival.ZERO_DISCRIMINATION_DAY")
 
 
 class MessagesSdkEntityFastKind:

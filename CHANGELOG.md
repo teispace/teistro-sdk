@@ -97,6 +97,26 @@ answer moves.
   text names either (C89, C149, C2333). `sa-Latn` derives them
   (`DERIVED_MESSAGES` gains `sdk.rashifal`).
 
+**Sixteen more international days, and the Nepali names Nepal's calendars print (C2346).**
+**Numbers:** 16 rules join `NEPAL_PANCHANGA`, 15 on a fixed Gregorian date and 1 on a
+weekday of the month; no existing rule's day moves. `ne-Deva-NP` and `sa-Deva` name 20
+international days otherwise, so their `name` (not their `prose`) moves.
+- **Added:** nine of the UN's international days on the dates its list gives (read
+  2026-11-23), among them `INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE`,
+  `ZERO_DISCRIMINATION_DAY`, `WORLD_MEDITATION_DAY` and `WORLD_IMMUNIZATION_WEEK` on its
+  first day; six on their keepers' dates, among them `WORLD_ART_DAY` (15 April) and
+  `WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT` (10 November) on UNESCO's, and
+  `WORLD_NGO_DAY` (27 February) and `WORLD_PNEUMONIA_DAY` (12 November) on their
+  organisers'; and `WORLD_PHILOSOPHY_DAY` on November's third Thursday. Each is named in
+  every locale. World Photography Day and the day against illicit trafficking in cultural
+  property stay out: no keeper's page dates them.
+- **Changed:** an international day's Nepali `name` is the wording most of Nepal's
+  calendars print, when two of the three print it, and its formal title moves to `prose`:
+  `INTERNATIONAL_DAY_OF_YOGA` is विश्व योग दिवस, `WORLD_HEART_DAY` विश्व मुटु दिवस, and 18
+  more. Ten keep their name, among them `WORLD_NO_TOBACCO_DAY` (the print names smoking),
+  `PI_DAY` (the print's पाई डे is a loanword) and eight whose printed wording one calendar
+  alone uses. `hi-Deva-IN` is unchanged.
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by

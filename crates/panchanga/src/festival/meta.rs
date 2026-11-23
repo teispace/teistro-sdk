@@ -1826,7 +1826,7 @@ const NEPAL_GROUPS: [Group; 24] = [
 
 /// Every key `NEPAL` and `NEPAL_PANCHANGA` ship, sorted for the binary
 /// search, with its group in [`NEPAL_GROUPS`].
-const NEPAL_KEYS: [(&str, u8); 530] = [
+const NEPAL_KEYS: [(&str, u8); 546] = [
     ("ACHALA_SAPTAMI", 15),
     ("ADUKHA_NAVAMI", 17),
     ("AJA_EKADASHI", 15),
@@ -2042,7 +2042,9 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("INTERNATIONAL_DAY_OF_COOPERATIVES", 16),
     ("INTERNATIONAL_DAY_OF_EDUCATION", 16),
     ("INTERNATIONAL_DAY_OF_FAMILIES", 16),
+    ("INTERNATIONAL_DAY_OF_FAMILY_REMITTANCES", 16),
     ("INTERNATIONAL_DAY_OF_HAPPINESS", 16),
+    ("INTERNATIONAL_DAY_OF_HUMAN_SPACE_FLIGHT", 16),
     (
         "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION",
         16,
@@ -2061,6 +2063,7 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ),
     ("INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES", 16),
     ("INTERNATIONAL_DAY_OF_UNITED_NATIONS_PEACEKEEPERS", 16),
+    ("INTERNATIONAL_DAY_OF_WOMEN_AND_GIRLS_IN_SCIENCE", 16),
     ("INTERNATIONAL_DAY_OF_YOGA", 16),
     ("INTERNATIONAL_LABOUR_DAY", 2),
     ("INTERNATIONAL_LITERACY_DAY", 16),
@@ -2071,10 +2074,12 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("INTERNATIONAL_OLYMPIC_DAY", 16),
     ("INTERNATIONAL_SPORTS_JOURNALISTS_DAY", 16),
     ("INTERNATIONAL_STUDENTS_DAY", 16),
+    ("INTERNATIONAL_TRANSGENDER_DAY_OF_VISIBILITY", 16),
     ("INTERNATIONAL_VOLUNTEER_DAY", 16),
     ("INTERNATIONAL_WELLNESS_DAY", 16),
     ("INTERNATIONAL_WOMEN_S_DAY", 2),
     ("INTERNATIONAL_YOUTH_DAY", 16),
+    ("INTERSEX_AWARENESS_DAY", 16),
     ("JAGANNATH_RATH_JATRA", 15),
     ("JANMASHTAMI", 1),
     ("JITIYA", 13),
@@ -2313,6 +2318,7 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("WORLD_AIDS_DAY", 16),
     ("WORLD_ALZHEIMER_S_DAY", 16),
     ("WORLD_ANIMAL_DAY", 16),
+    ("WORLD_ART_DAY", 16),
     ("WORLD_AUTISM_AWARENESS_DAY", 16),
     ("WORLD_BEE_DAY", 16),
     ("WORLD_BICYCLE_DAY", 16),
@@ -2341,17 +2347,24 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("WORLD_HEPATITIS_DAY", 16),
     ("WORLD_HERITAGE_DAY", 16),
     ("WORLD_HYPERTENSION_DAY", 16),
+    ("WORLD_IMMUNIZATION_WEEK", 16),
     ("WORLD_INTELLECTUAL_PROPERTY_DAY", 16),
     ("WORLD_LEPROSY_DAY", 16),
     ("WORLD_MALARIA_DAY", 16),
+    ("WORLD_MEDITATION_DAY", 16),
     ("WORLD_MENTAL_HEALTH_DAY", 16),
     ("WORLD_METEOROLOGICAL_DAY", 16),
     ("WORLD_MUSIC_DAY", 16),
+    ("WORLD_NGO_DAY", 16),
     ("WORLD_NO_TOBACCO_DAY", 16),
     ("WORLD_OCEANS_DAY", 16),
     ("WORLD_ORAL_HEALTH_DAY", 16),
+    ("WORLD_PATIENT_SAFETY_DAY", 16),
     ("WORLD_PHARMACISTS_DAY", 16),
+    ("WORLD_PHILOSOPHY_DAY", 16),
     ("WORLD_PHYSIOTHERAPY_DAY", 16),
+    ("WORLD_PNEUMONIA_DAY", 16),
+    ("WORLD_POETRY_DAY", 16),
     ("WORLD_POPULATION_DAY", 16),
     ("WORLD_POST_DAY", 16),
     ("WORLD_PRESS_FREEDOM_DAY", 16),
@@ -2361,6 +2374,7 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("WORLD_RED_CROSS_DAY", 16),
     ("WORLD_REFUGEE_DAY", 16),
     ("WORLD_REMEMBRANCE_AND_RECONCILIATION_DAY", 16),
+    ("WORLD_SCIENCE_DAY_FOR_PEACE_AND_DEVELOPMENT", 16),
     ("WORLD_SIGHT_DAY", 16),
     ("WORLD_SMILE_DAY", 16),
     ("WORLD_SOIL_DAY", 16),
@@ -2375,6 +2389,7 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("WORLD_TUBERCULOSIS_DAY", 16),
     ("WORLD_WATER_DAY", 16),
     ("WORLD_WETLANDS_DAY", 16),
+    ("WORLD_WILDLIFE_DAY", 16),
     ("WORLD_YOUTH_SKILLS_DAY", 16),
     ("YALA_PANCHADAN", 17),
     ("YAMADEEPADAN", 15),
@@ -2384,6 +2399,7 @@ const NEPAL_KEYS: [(&str, u8); 530] = [
     ("YOMARI_PUNHI", 8),
     ("YOSIN_PATAN", 17),
     ("YOSIN_UTTHAN", 17),
+    ("ZERO_DISCRIMINATION_DAY", 16),
 ];
 
 #[cfg(test)]
@@ -2577,7 +2593,11 @@ mod tests {
                 continue;
             };
             let entities: serde_json::Value = serde_json::from_str(&text)?;
-            let festivals = entities.get("festival").ok_or("a festival section")?;
+            // A regional locale (en-Latn-NP) holds only what it says otherwise
+            // and falls back to its base for the festivals.
+            let Some(festivals) = entities.get("festival") else {
+                continue;
+            };
             for &(key, lead, aliases, _, _) in &NAMES {
                 for name in lead.iter().chain(aliases) {
                     assert!(

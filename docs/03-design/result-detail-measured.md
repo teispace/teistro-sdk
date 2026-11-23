@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 381 084 | 124 294 | 32.6% |
-| the value | 356 058 | 120 367 | 33.8% |
-| the provenance | 24 326 | 2907 | 12.0% |
+| the envelope | 381 094 | 124 298 | 32.6% |
+| the value | 356 066 | 120 367 | 33.8% |
+| the provenance | 24 328 | 2911 | 12.0% |
 
 20 of the 68 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -59,7 +59,7 @@ value.
 | `almanac.digest` | 3577 | 178 | 5.0% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2639 | 878 | 33.3% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
 | `almanac.festivalPack` | 3520 | 1644 | 46.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
-| `almanac.festival_calendar` | 6633 | 5878 | 88.6% | the whole value |
+| `almanac.festival_calendar` | 6627 | 5881 | 88.7% | the whole value |
 | `almanac.firstYear` | 12 569 | 4200 | 33.4% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
 | `almanac.household` | 1447 | 308 | 21.3% | `observers.key`, `observers.pureAt`, `observers.periods.key`, `observers.periods.kind`, `observers.periods.relation`, `observers.periods.start`, `observers.periods.end`, `observers.periods.length`, `observers.periods.days` |
 | `almanac.limbAngles` | 818 | 247 | 30.2% | the whole value |
@@ -69,7 +69,7 @@ value.
 | `almanac.occurrences` | 4093 | 1320 | 32.3% | `keys`, `years.year`, `years.days`, `years.festivals.observances.rule`, `years.festivals.observances.day`, `years.festivals.observances.tithi`, `years.festivals.observances.month`, `years.festivals.ekadashis`, `years.festivals.unjudged` |
 | `almanac.pakshi` | 14 020 | 2726 | 19.4% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
 | `almanac.people` | 3819 | 1748 | 45.8% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 874 | 123 | 14.1% | the whole value |
+| `almanac.publishedReasons` | 880 | 124 | 14.1% | the whole value |
 | `almanac.sankalpa` | 1394 | 823 | 59.0% | the whole value |
 | `almanac.sankalpaWords` | 1850 | 1284 | 69.4% | the whole value |
 | `almanac.sentences` | 3698 | 1009 | 27.3% | `sentences.text`, `locale`, `withheld`, `draft` |
@@ -83,7 +83,7 @@ value.
 | `chart.disagreements` | 1572 | 886 | 56.4% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
 | `chart.found` | 33 392 | 17 467 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
 | `chart.mundane` | 810 | 180 | 22.2% | the whole value |
-| `chart.rashifal` | 17 975 | 4743 | 26.4% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
+| `chart.rashifal` | 17 985 | 4743 | 26.4% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
 | `chart.relocated` | 1120 | 493 | 44.0% | the whole value |
 | `geo.list` | 404 | 404 | 100.0% | the whole value |
 | `geo.names` | 316 | 316 | 100.0% | the whole value |
@@ -141,7 +141,7 @@ names it.
 - `almanac.skyView`: `atmosphere`, `ecliptic`, `eclipticStepDeg`, `horizon`, `horizonStepDeg`, `obliquityDeg`, `siderealTimeDeg`.
 - `chart.disagreements`: `otherSettingsHash`.
 - `chart.found`: `charts.foundation.chalit`, `charts.foundation.clock`, `charts.foundation.day`, `charts.foundation.day_lagna_deg`, `charts.foundation.grahas.distance_au`, `charts.foundation.grahas.latitude_deg`, `charts.foundation.grahas.tropical_deg`, `charts.foundation.lilith`, `charts.foundation.outer`, `charts.foundation.steps`, `charts.foundation.timing`, `charts.shadbala.grahas.ashubha_rashmi`, `charts.shadbala.grahas.cheshta`, `charts.shadbala.grahas.dig`, `charts.shadbala.grahas.drik`, `charts.shadbala.grahas.ishta`, `charts.shadbala.grahas.kaala`, `charts.shadbala.grahas.kashta`, `charts.shadbala.grahas.naisargika`, `charts.shadbala.grahas.sthana`, `charts.shadbala.grahas.subha_rashmi`, `charts.shadbala.grahas.virupas`, `charts.shadbala.rules`, `fortitudes.dignities`, `fortitudes.rules`, `fortitudes.sky`, `hashes`, `kp.chart.cusps`, `kp.chart.system`, `lots.fortuneReversed`, `lots.request`.
-- `chart.rashifal`: `period.readings.gochar`, `period.readings.holds`, `period.reference`.
+- `chart.rashifal`: `period.readings.gochar`, `period.readings.holds`, `period.reference`, `period.scored`.
 - `verify.issue`: `receipt.calculationVersion`, `receipt.catalogueVersion`, `receipt.locale`, `receipt.packs`, `receipt.provider`, `receipt.request`, `receipt.sdkVersion`, `receipt.settings`, `receipt.tzdb`.
 
 ## The fields of the larger answers
@@ -182,7 +182,7 @@ marked.
 - `chart.disagreements`: `dashas` 387 (kept), `yogas` 157 (kept), `lagna` 96 (kept), `nakshatra` 83 (kept), `otherSettingsHash` 47, `otherProfile` 15 (kept), `at` 9 (kept), `grahas` 7 (kept), `compared` 6 (kept).
 - `chart.found`: `charts` 12 033 (kept), `kp` 10 476 (kept), `fortitudes` 6980 (kept), `lots` 1720 (kept), `western` 931 (kept), `varsha` 251 (kept), `hashes` 86, `tithi_pravesha` 10 (kept), `considerations` 9 (kept), `masa_pravesha` 9 (kept), `rectification` 9 (kept), `sarvatobhadra` 9 (kept), `dignities` 8 (kept), `matchings` 8 (kept), `perfections` 8 (kept), `sade_sati` 8 (kept), `dossier` 7 (kept), `gochar` 7 (kept), `lalkitab` 7 (kept), `plans` 7 (kept), `prashna` 7 (kept), `readings` 7 (kept), `remedies` 7 (kept), `hits` 6 (kept), `svgs` 6 (kept).
 - `chart.mundane`: `instant` 12 (kept), `kind` 12 (kept), `latitudeDeg` 10 (kept), `longitudeDeg` 9 (kept), `utcOffsetSeconds` 9 (kept), `altitudeM` 8 (kept).
-- `chart.rashifal`: `period` 13 592 (kept), `baseline` 3591 (kept).
+- `chart.rashifal`: `period` 13 600 (kept), `baseline` 3591 (kept).
 - `chart.relocated`: `places` 353 (kept), `obliquityDeg` 13 (kept), `instant` 10 (kept).
 - `geo.list`: `parents` 160 (kept), `population` 48 (kept), `label` 31 (kept), `latitudeDeg` 20 (kept), `longitudeDeg` 20 (kept), `id` 18 (kept), `kind` 18 (kept), `name` 17 (kept), `nameLang` 16 (kept), `level` 12 (kept), `code` 10 (kept).
 - `geo.reverse`: `near` 534 (kept), `admin` 296 (kept).
