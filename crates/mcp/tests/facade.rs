@@ -472,7 +472,10 @@ fn coverage_describe_answers_the_range_as_data() {
             .unwrap()
             <= 2083
     );
-    assert_eq!(coverage["holidays"][0]["years"], json!([2083]));
+    assert_eq!(
+        coverage["holidays"][0]["years"],
+        json!([2076, 2077, 2078, 2079, 2080, 2081, 2082, 2083])
+    );
     let refused = call(&mut server, "coverage.describe", &json!({"at": 1}));
     assert_eq!(refused["isError"], true);
     assert_eq!(refused["structuredContent"]["field"], "arguments.at");
