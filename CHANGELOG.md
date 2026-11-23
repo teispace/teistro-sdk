@@ -105,6 +105,25 @@ print them (the sunrise's rule would give 25, 20 and 7).
   `en-Latn-NP`, where they were refused as not loaded. An unknown tag is refused in the
   builder's words, on the same field.
 
+**A build chooses its locales, and a release ships each as a bundle (SR-150).**
+**Numbers:** none. A default or `full` build embeds the same five locales and answers as
+before; only a build that names fewer is smaller, by 51 to 57 KB gzipped for each locale it
+leaves out.
+- **Added:** a `locale-` feature for each locale `teistro` embeds beside `en-Latn`
+  (`locale-en-latn-np`, `locale-hi-deva-in`, `locale-ne-deva-np`, `locale-sa-deva`,
+  `locale-sa-latn`), forwarded by `teistro-ffi` and the wasm crate; `locales` names them all,
+  and `full` names `locales`. `en-Latn`, every locale's fallback, is always embedded. The
+  build stops on a locale under `i18n/` that has no feature, so none can be embedded
+  unswitchably.
+- **Added:** every locale's bundle as a release asset, `teistro-intl-<version>-<tag>.tbundle`,
+  with its digest in `checksums.txt` and `manifest.json`: a build that leaves a locale out
+  answers in it once `load_pack` (`intl.loadPack`, `ts_intl_load_pack`) has the bundle.
+- **Changed:** a locale that is not loaded is refused with one sentence wherever a request
+  names it, and for one of the SDK's own that the build leaves out the hint names its feature
+  and its bundle.
+- **Added:** the release notes state each wasm module's gzipped size and its change since the
+  previous release.
+
 ## 1.0.0-rc.7
 
 The seventh release candidate of 1.0.0. 1.0.0-rc.6 was tagged, but its

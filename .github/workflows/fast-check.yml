@@ -148,6 +148,9 @@ jobs:
       - name: Every chart family refused and every section written, with the chart area alone
         if: ${{ !cancelled() }}
         run: cargo test -p teistro-ffi --no-default-features --features builtin-compact,chart --test families
+      - name: A locale left out refused by name and loaded from its bundle (SR-150)
+        if: ${{ !cancelled() }}
+        run: cargo test -p teistro --no-default-features --features builtin-compact --test left_out_locale
 
   # A third of the measured pages, balanced by each step's time on CI
   # (the shards are rebalanced by hand when a page grows).

@@ -1,6 +1,8 @@
 //! `sdk.intl`: the locale engine — a message, an entity's forms,
 //! transliteration, and a pack loaded at run time.
 
+use std::fmt::Write as _;
+
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_intl::civil::{CivilText, DateTextRequest, TimeTextRequest};
@@ -34,13 +36,30 @@ pub struct IntlArea<'a> {
 /// The refusal of a locale tag, the same from the builder and from a change:
 /// a consumer who mistyped a tag wants the same sentence wherever they did.
 pub(crate) fn refused_locale(engine: &Intl, tag: &str, why: &str) -> Error {
-    let known: Vec<&str> = engine.locale_tags().collect();
     Error::unsupported(why)
         .with_field("locale")
-        .with_hint(format!(
-            "`{tag}` is not loaded; the locales are {}",
-            known.join(", ")
-        ))
+        .with_hint(not_loaded(engine, tag))
+}
+
+/// What a caller can do about a locale that is not loaded: the locales that
+/// are and, for one of the SDK's own that this build leaves out (SR-150),
+/// the feature that embeds it and the release bundle that loads it.
+fn not_loaded(engine: &Intl, tag: &str) -> String {
+    let known: Vec<&str> = engine.locale_tags().collect();
+    let mut hint = format!(
+        "`{tag}` is not loaded; the locales are {}",
+        known.join(", ")
+    );
+    if crate::LEFT_OUT.contains(&tag) {
+        let _ = write!(
+            hint,
+            "; this build leaves it out (the feature `locale-{}`): load the release's \
+             `teistro-intl-{}-{tag}.tbundle` with `load_pack`",
+            tag.to_ascii_lowercase(),
+            env!("CARGO_PKG_VERSION"),
+        );
+    }
+    hint
 }
 
 /// The loaded locale a request's `tag` means, by the lookup the builder

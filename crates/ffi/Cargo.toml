@@ -68,9 +68,18 @@ signed-packs = ["teistro/signed-packs"]
 # half. A wasm module leaves it out, where a mask answers `CAPABILITY`. Not
 # a module family.
 fields = ["teistro/masks"]
+# The locales embedded beside `en-Latn`, forwarded to the façade (SR-150):
+# one feature each, `locales` naming them all. A locale left out answers
+# once its `.tbundle` is loaded with `ts_intl_load_pack`.
+locales = ["teistro/locales"]
+locale-en-latn-np = ["teistro/locale-en-latn-np"]
+locale-hi-deva-in = ["teistro/locale-hi-deva-in"]
+locale-ne-deva-np = ["teistro/locale-ne-deva-np"]
+locale-sa-deva = ["teistro/locale-sa-deva"]
+locale-sa-latn = ["teistro/locale-sa-latn"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["teistro/full", "locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area, and the document reader only it uses.
 chart = ["teistro/chart", "dep:teistro-serial"]
 kp = ["chart", "teistro/kp"]

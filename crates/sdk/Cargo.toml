@@ -83,12 +83,27 @@ default = ["builtin-standard", "full", "signed-packs"]
 # transport and passes the set. Not a module family, since it turns on no
 # crate of its own, so the default names it beside `full`.
 signed-packs = ["teistro-panchanga/signed-packs", "teistro-time/signed-packs"]
+# The locales the library embeds beside `en-Latn`, which every other falls
+# back on and which is always embedded (SR-150). Each is one feature,
+# `locale-` and its tag in lower case; `locales` names them all and is the
+# default. A build that leaves one out still answers in it once its bundle
+# is loaded (`IntlArea::load_pack`, the release's `.tbundle` assets), and
+# refuses it until then. `build.rs` refuses a locale under `i18n/` that has
+# no feature here, so a new locale cannot be embedded unswitchably. `full`
+# names `locales`: a build that asks for everything gets every locale, and
+# one that names its families gets `en-Latn` and the locales it names.
+locales = ["locale-en-latn-np", "locale-hi-deva-in", "locale-ne-deva-np", "locale-sa-deva", "locale-sa-latn"]
+locale-en-latn-np = []
+locale-hi-deva-in = []
+locale-ne-deva-np = []
+locale-sa-deva = []
+locale-sa-latn = []
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -204,6 +219,9 @@ path = "tests/suite.rs"
 
 [[test]]
 name = "lazy_locales"
+
+[[test]]
+name = "left_out_locale"
 
 [[test]]
 name = "occurrences"

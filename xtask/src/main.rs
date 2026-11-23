@@ -59,7 +59,8 @@
 //! - `check-versions`, `version` and `version X`: one version across the
 //!   workspace, both package manifests and the API description; the
 //!   command prints it, and with an argument moves it.
-//! - `changelog-entry X`: the changelog's entry for a version, which is a
+//! - `changelog-entry X`: the changelog's entry for a version and the wasm
+//!   modules' gzipped sizes against the previous tag's record, which are a
 //!   release's notes.
 //! - `chalit` and `check-chalit`: the falsification pass over the bhava
 //!   chalit methods, and the page it writes.

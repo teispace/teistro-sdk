@@ -869,7 +869,8 @@ pub fn fixed_of_jd(jd: f64) -> (FixedDay, f64) {
     FixedDay::from_local_jd(jd)
 }
 
-// `BUNDLES`: the SDK's locales, built from `i18n/` by this crate's build
+// `BUNDLES` and `LEFT_OUT`: the SDK's locales this build embeds and leaves
+// out (SR-150), built from `i18n/` by this crate's build
 // script so a consumer needs no files to render its messages (ADR-0010).
 include!(concat!(env!("OUT_DIR"), "/bundles.rs"));
 

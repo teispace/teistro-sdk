@@ -398,7 +398,95 @@ pub(crate) fn changelog_entry(root: &Path, wanted: &str) -> i32 {
         return 1;
     };
     print!("{entry}");
+    let current: Option<Value> = serde_json::from_str(&read(&root.join(crate::sizes::RECORD))).ok();
+    let previous = previous_tag(root, wanted).and_then(|tag| {
+        let shown = std::process::Command::new("git")
+            .current_dir(root)
+            .args(["show", &format!("{tag}:{}", crate::sizes::RECORD)])
+            .output()
+            .ok()?;
+        let record = serde_json::from_slice::<Value>(&shown.stdout).ok()?;
+        Some((tag, record))
+    });
+    if let Some(current) = current {
+        print!(
+            "{}",
+            size_section(
+                &current,
+                previous
+                    .as_ref()
+                    .map(|(tag, record)| (tag.as_str(), record))
+            )
+        );
+    }
     0
+}
+
+/// The release tag before `version`'s, by version order; none for the
+/// first release or a checkout without its tags.
+fn previous_tag(root: &Path, version: &str) -> Option<String> {
+    let listed = std::process::Command::new("git")
+        .current_dir(root)
+        .args(["tag", "--list", "v*", "--sort=-v:refname"])
+        .output()
+        .ok()?;
+    let this = format!("v{version}");
+    String::from_utf8(listed.stdout)
+        .ok()?
+        .lines()
+        .skip_while(|tag| *tag != this)
+        .nth(1)
+        .map(str::to_owned)
+}
+
+/// The wasm modules' gzipped sizes as the release notes state them
+/// (SR-150): each module CI measured for this release, and its change from
+/// the previous release's record when there is one. A consumer budgeting
+/// a download reads the line rather than measuring.
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "a percentage to one decimal, of sizes far under 2^52 bytes"
+)]
+pub(crate) fn size_section(current: &Value, previous: Option<(&str, &Value)>) -> String {
+    use std::fmt::Write as _;
+
+    let modules = |record: &Value| -> Vec<(String, u64)> {
+        record["rows"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|row| row["artefact"] == "module")
+            .filter_map(|row| Some((row["subject"].as_str()?.to_owned(), row["gzip"].as_u64()?)))
+            .collect()
+    };
+    let now = modules(current);
+    if now.is_empty() {
+        return String::new();
+    }
+    let before: Vec<(String, u64)> = previous
+        .map(|(_, record)| modules(record))
+        .unwrap_or_default();
+    let kb = |bytes: u64| format!("{} KB", bytes.saturating_add(500) / 1000);
+    let mut section =
+        String::from("\n### Sizes\n\nThe wasm modules, gzipped, as CI measured them:\n\n");
+    for (subject, gzip) in &now {
+        let change = before
+            .iter()
+            .find(|(was, _)| was == subject)
+            .zip(previous)
+            .map(|((_, was), (tag, _))| {
+                let (sign, delta) = if gzip < was {
+                    ("−", was - gzip)
+                } else {
+                    ("+", gzip - was)
+                };
+                let percent = delta as f64 * 100.0 / *was as f64;
+                format!(", {sign}{} ({sign}{percent:.1}%) since {tag}", kb(delta))
+            })
+            .unwrap_or_default();
+        let _ = writeln!(section, "- `{subject}`: {}{change}", kb(*gzip));
+    }
+    section
 }
 
 /// A changelog's entry under `## {heading}`, its heading line included, up
@@ -870,6 +958,33 @@ fn read_or_empty(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
+    /// The release notes state each wasm module's gzipped size and its
+    /// change since the previous release's record (SR-150).
+    #[test]
+    fn the_notes_state_each_module_s_size_and_its_change() {
+        let record = |full: u64, panchanga: u64| {
+            serde_json::json!({ "rows": [
+                { "subject": "linux-x64", "artefact": "library", "gzip": 9 },
+                { "subject": "full", "artefact": "module", "gzip": full },
+                { "subject": "panchanga", "artefact": "module", "gzip": panchanga },
+            ]})
+        };
+        let now = record(3_060_000, 2_500_000);
+        let was = record(2_800_000, 2_560_970);
+        let section = super::size_section(&now, Some(("v1.0.0-rc.6", &was)));
+        assert!(
+            section.contains("- `full`: 3060 KB, +260 KB (+9.3%) since v1.0.0-rc.6\n"),
+            "{section}"
+        );
+        assert!(
+            section.contains("- `panchanga`: 2500 KB, −61 KB (−2.4%) since v1.0.0-rc.6\n"),
+            "{section}"
+        );
+        assert!(!section.contains("linux-x64"), "{section}");
+        assert!(super::size_section(&now, None).contains("- `full`: 3060 KB\n"));
+        assert_eq!(super::size_section(&serde_json::json!({}), None), "");
+    }
+
     use super::{is_semver, path_packages, python_version, workspace_version};
 
     #[test]
