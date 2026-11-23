@@ -291,3 +291,119 @@ fn gorakhkali_puja_is_the_bright_8th_s_later_day_and_the_dark_8th_s_at_madhyahna
         [(2026, 8, 6)]
     );
 }
+
+#[test]
+fn chhaya_darshan_keeps_a_kshaya_14th_on_the_day_it_runs_in() {
+    // Magha's bright 14th of VS 2082 runs from 07:33 on 31 January 2026 to
+    // 05:40 the next morning, held by no sunrise; the national panchanga,
+    // VS 2082 p. 21, prints श्रीपशुपतिनाथको छाँयादर्शन on the 31st, the day
+    // it runs in, beside सौभाग्य शूर्पदान, the 13th holding that sunrise
+    // (C2347). Udaya's fallback is the earlier day, the 14th's own.
+    assert_eq!(
+        kept("PASHUPATINATH_CHHAYA_DARSHAN", (2026, 1, 25), (2026, 2, 5)),
+        [(2026, 1, 31)]
+    );
+    assert_eq!(
+        kept("SAUBHAGYA_SHURPADAN", (2026, 1, 25), (2026, 2, 5)),
+        [(2026, 1, 31)]
+    );
+    // Republica reports the darshan on 11 February 2025; VS 2083 p. 23
+    // prints 20 February 2027, the 14th's sunrise day.
+    assert_eq!(
+        kept("PASHUPATINATH_CHHAYA_DARSHAN", (2025, 2, 5), (2025, 2, 15)),
+        [(2025, 2, 11)]
+    );
+    assert_eq!(
+        kept("PASHUPATINATH_CHHAYA_DARSHAN", (2027, 2, 15), (2027, 2, 25)),
+        [(2027, 2, 20)]
+    );
+}
+
+#[test]
+fn saraswati_is_invoked_on_the_day_whose_sunrise_mula_holds() {
+    // Dharmasindhu p. 68's Mula in Ashvina's bright half, at sunrise
+    // (C2350): 22 October 2020, which Mula holds 82 minutes past sunrise;
+    // VS 2082 p. 13's 29 September 2025; VS 2083 p. 15's 17 October 2026.
+    assert_eq!(
+        kept("SARASWATI_AVAHAN", (2020, 10, 15), (2020, 10, 30)),
+        [(2020, 10, 22)]
+    );
+    assert_eq!(
+        kept("SARASWATI_AVAHAN", (2025, 9, 22), (2025, 10, 6)),
+        [(2025, 9, 29)]
+    );
+    assert_eq!(
+        kept("SARASWATI_AVAHAN", (2026, 10, 10), (2026, 10, 24)),
+        [(2026, 10, 17)]
+    );
+}
+
+#[test]
+fn a_manvadi_keeps_the_sunrise_where_the_text_s_forenoon_parts() {
+    // Dharmasindhu p. 32 keeps a bright fortnight's manvadi in the
+    // forenoon, which gives 1 April and 13 September 2026; the national
+    // panchanga prints मन्वादि on the day whose sunrise holds the tithi
+    // (VS 2082 p. 25, VS 2083 p. 13; C2351).
+    assert_eq!(
+        kept("MANVADI_CHAITRA_PURNIMA", (2026, 3, 28), (2026, 4, 6)),
+        [(2026, 4, 2)]
+    );
+    assert_eq!(
+        kept(
+            "MANVADI_BHADRAPADA_SHUKLA_TRITIYA",
+            (2026, 9, 10),
+            (2026, 9, 18)
+        ),
+        [(2026, 9, 14)]
+    );
+}
+
+#[test]
+fn the_phalguna_dark_1st_s_three_days_keep_its_sunrise() {
+    // The national panchanga, VS 2082 p. 24 and VS 2083 p. 26: the mango
+    // blossom, Gangaur's beginning and Nala's bath on the dark 1st's
+    // sunrise day, 4 March 2026 and 23 March 2027 (C2352, C2353).
+    for rule in [
+        "AANPKO_MUJURA_KHANE_DIN",
+        "GANGAUR_PUJA_ARAMBHA",
+        "NALA_MACHHINDRANATH_SNAN",
+    ] {
+        assert_eq!(kept(rule, (2026, 3, 1), (2026, 3, 8)), [(2026, 3, 4)]);
+        assert_eq!(
+            kept(rule, (2027, 3, 19), (2027, 3, 26)),
+            [(2027, 3, 23)],
+            "{rule}"
+        );
+    }
+}
+
+#[test]
+fn the_days_printed_on_a_festival_s_day_keep_it() {
+    // Gurhi on Nag panchami, which Kantipur reports for 29 July 2025;
+    // Banepa's chariot on Buddha jayanti and Nimbarka's jayanti on
+    // Kartika's full moon, in those rows of the national panchanga
+    // (C2348, C2349, C2352).
+    assert_eq!(
+        kept("GURHI_PARVA", (2025, 7, 20), (2025, 8, 5)),
+        [(2025, 7, 29)]
+    );
+    for (rule, base, from, to) in [
+        ("GURHI_PARVA", "NAG_PANCHAMI", (2025, 7, 20), (2025, 8, 5)),
+        (
+            "BANEPA_CHANDESHWARI_JATRA",
+            "BUDDHA_JAYANTI",
+            (2025, 5, 5),
+            (2025, 5, 20),
+        ),
+        (
+            "NIMBARKACHARYA_JAYANTI",
+            "KARTIK_SNAN_ENDS",
+            (2025, 11, 1),
+            (2025, 11, 10),
+        ),
+    ] {
+        let days = kept(rule, from, to);
+        assert_eq!(days.len(), 1, "{rule}");
+        assert_eq!(days, kept(base, from, to), "{rule}");
+    }
+}

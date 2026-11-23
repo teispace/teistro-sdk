@@ -117,6 +117,25 @@ international days otherwise, so their `name` (not their `prose`) moves.
   `PI_DAY` (the print's पाई डे is a loanword) and eight whose printed wording one calendar
   alone uses. `hi-Deva-IN` is unchanged.
 
+**Thirty more days Nepal's calendars print: Newar, Tharu and vrata days, and the fourteen manvadis (C2347 to C2358).**
+**Numbers:** 30 rules join `NEPAL_PANCHANGA`, 25 decided and 5 published-only; no existing
+rule's day moves. Over VS 2076 to 2083 the 25 agree with 77 of the 78 days Nepal's calendars
+print for them, the 5 published-only with 26 of 33.
+- **Added:** `PASHUPATINATH_CHHAYA_DARSHAN`, `RADHA_JANMOTSAV`, `SAUBHAGYA_SHURPADAN`,
+  `AANPKO_MUJURA_KHANE_DIN`, `GANGAUR_PUJA_ARAMBHA` and `NALA_MACHHINDRANATH_SNAN` at sunrise;
+  a kshaya 14th keeps Chhaya darshan on the day it runs in, as the national panchanga prints
+  31 January 2026.
+- **Added:** `SARASWATI_AVAHAN` on Mula in Ashvina's bright half at sunrise (*Dharmasindhu*
+  p. 68), 9 of 9 printings on the SDK's own Moon.
+- **Added:** the fourteen manvadis of *Dharmasindhu* p. 32, `MANVADI_CHAITRA_SHUKLA_TRITIYA`
+  to `MANVADI_PHALGUNA_AMAVASYA`, each at sunrise as the national panchanga prints them.
+- **Added:** `BANEPA_CHANDESHWARI_JATRA` on Buddha jayanti's day, `NIMBARKACHARYA_JAYANTI` on
+  Kartika's full moon, and the Tharu's `GURIYA_PARVA` on Shrawan 1 and `GURHI_PARVA` on Nag
+  panchami, in a group of their own (`THARU`).
+- **Added:** published-only, each with an open crux: `PHARPING_HARISHANKAR_JATRA`,
+  `RATO_MACHHINDRANATH_SNAN`, `CHITTADHAR_HRIDAYA_JAYANTI`, `DEOPATAN_DESHODDHAR_PUJA` (by the
+  share of the daylight's first four muhurtas) and `MATINA_PARU`.
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by

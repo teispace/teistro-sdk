@@ -369,10 +369,10 @@ Baisakh 11, संविधानदिवस on Asoj 3, पृथ्वीज�
 earthquake safety day on Magh 2, तमुल्होछार on Poush 15 (p. 19), सहिद
 दिवस on Magh 16 (p. 21) and राष्ट्रिय प्रजातन्त्र दिवस on Phalgun 7
 (p. 23), with VS 2083's Baisakh and Poush to Phalgun rows checked too (`crates/sdk/tests/festival.rs`). Each is an event in
-the iCalendar feed. Sixteen festivals of a solar date follow, each on the
+the iCalendar feed. Seventeen festivals of a solar date follow, each on the
 day both editions print: Bisket's beginning on Chaitra's fourth-last day
 and its end on Baisakh 5, the Baisakh jatras of Bhaktapur, Tokha and
-Thimi on Baisakh 1 to 4, Kandakarak puja and Kheer khane din on Shrawan 1
+Thimi on Baisakh 1 to 4, Kandakarak puja, the Tharu's Guriya and Kheer khane din on Shrawan 1
 and 15, Kirtipur's Bagh Bhairav jatra on Bhadra 1, Vishwakarma puja on
 Asoj 1, and Maghi and the Makar snans on Magh 1 (`SOLAR_DAYS`). 35 civil days
 follow on the dates both editions print them, 15 Bikram Sambat and 20
@@ -737,7 +737,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 18 | `INDRADHWAJA_PATAN` | 10 of 14 in the morning | madhyahna or sayahna, 10 of 14 | none new | **shipped** on Yanla's dark 4th at sunrise (Toffin 1992, Lewis 1984): VS 2082's day; VS 2083 prints the evening the 4th begins, a day before, and no window gives both (C1470). Not a count |
 | 19 | `NANICHAYA` | 11 of 14 | sunrise, 11 of 14 | none new | **shipped** on the lowering's day, which both editions print it beside; it parts from VS 2083 with it (C1470) |
 | 20 | `MAHALAXMI_VRAT_ENDS` | 10 of 14 at pradosha | pradosha or nishitha, 10 of 14 | §3.1 moonrise | **shipped** by the text: *Nirnayasindhu* p. 300, at moonrise, the later day when the 8th lasts three muhurtas past its moonrise, the earlier otherwise (`LASTS` from `MOONRISE`); both printed days (2025-09-14, 2026-10-03). Not a count: the consumer's days end 14 to 16 days after the start |
-| 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none | evidence; still held after the sources read 2026-11-14 (C1659) |
+| 21 | `PHARPING_HARISHANKAR_JATRA` | 9 of 14 | sunrise, 9 of 14 | none new | **shipped** published-only on `DWADASHI_SHRADDHA`'s day, the row both editions print it in; Nepal's calendars agree on 4 of their 8 days over VS 2076 to 2083 (C1659, C2354) |
 | 22 | `NALASWANE_CHARHE` | a charhe; 9 of 14 | aparahna to pradosha, 9 of 14 | none | **shipped** at sayahna (C1812): both printed days (2025-09-20, 2026-10-09); the consumer's 9 of 14, the same at every window (C614) |
 | 23 | `KOJAGRAT_PURNIMA` | 9 of 14; the Kojagara rule (midnight) 7 of 14; the source lists the eve and the day in 2081–2083 | sunrise, 12 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 74, nishitha, the earlier day only when it alone holds it (C617); both editions print one day, the text's |
 | 24 | `GOVATSA_DWADASHI` | 8 of 14 | madhyahna, aparahna or sayahna with `GREATER`, 13 of 14 | none new | **shipped** by the text: *Dharmasindhu* p. 76 keeps it at pradosha, the later day when neither holds it and the earlier when both do, as most authorities say; both editions print it there (2025-10-17, 2026-11-05), on the day whose sunrise holds the 11th. The source's days fit a daylight share better, and the print parts from them |
@@ -746,10 +746,10 @@ is missing is evidence. "None" means no form would decide the row.
 | 27 | `GURU_GOBIND_SINGH_JAYANTI` | Poush 21 or 20, or 5 January; 12 of 14 at best | a civil date | §3.6 a civil date | the community's own calendar sets it (C619) |
 | 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | none new | **shipped** by the text: Magha's dark 4th (purnimanta; the amanta Pausha's) is a Sankashta chaturthi, kept at moonrise and on the earlier day when both hold it (*Dharmasindhu* p. 9); both editions print it on the day whose sunrise holds the 3rd and whose moonrise the 4th (2026-01-06, 2027-01-25) |
 | 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | **shipped** on Magha's full moon, the source's rule: both editions print it on the full-moon fast's day, so it takes that rule (C200); the source's bright 5th days are not printed (C693) |
-| 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence; still held after the sources read 2026-11-14 (C1656) |
+| 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none new | **shipped** at sunrise: Nepal's calendars agree on all 14 of their days over VS 2076 to 2083, and a kshaya 14th keeps the day it runs in, VS 2082's 31 January 2026; the consumer's misses fall before VS 2076 (C1656, C2347) |
 | 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | none new | **shipped** on the Holika day: the gazette notices of 2082 and 2083 set it there, the days both editions print the hill districts' Holi (C693) |
-| 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | a candidate only; still held after the sources read 2026-11-14 (C1660) |
-| 33 | `RATO_MACHHINDRANATH_SNAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence; still held after the sources read 2026-11-14 (C1657) |
+| 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | **shipped** published-only by the share of day muhurtas 1 to 4, a window no source names; three committee editions and 6 of the calendars' 7 days over VS 2076 to 2083 (C1660, C2357) |
+| 33 | `RATO_MACHHINDRANATH_SNAN` | 11 of 13 | sunrise, 11 of 13 | none new | **shipped** published-only on Chaitra's dark 1st at sunrise, the later of two, as VS 2082 prints it; 4 of the calendars' 6 days over VS 2076 to 2083 (C1657, C2355) |
 | 34 | `EID_AL_FITR` | the Hijri month begins on a sighting | none | none | published only: a sighting and an announcement; a crescent-visibility estimate is a different feature |
 | 35 | `GAI_TIHAR` | 4 of 6 | sayahna, 6 of 6 | none new | the language has sayahna; six years are too few to ship; still held after the sources read 2026-11-14 (C1661) |
 | 36 | `EID_AL_ADHA` | the Hijri month begins on a sighting | none | none | published only |
@@ -766,7 +766,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 47 | `WALKE_PARVA` | 2 of 3 by Bhadra 1 or Shravana's bright 13th in the morning | none | none new | **shipped** on Bhadra 1, a civil date: both editions print it on भाद्रसङ्क्रान्ति, and all three verified days are Bhadra 1 |
 | 48 | `KRISHNA_RATH_JATRA` | 0 of 3 by the source; 1 of 3 at best | madhyahna to moonrise, 2 of 3 | none new | evidence; still held after the sources read 2026-11-14 (C1662) |
 | 49 | `RADHA_KRISHNA_RATH_JATRA` | 2 of 2 in the morning | madhyahna to moonrise, 2 of 2 | none new | two years; evidence; still held after the sources read 2026-11-14 (C1663) |
-| 50 | `NALA_MACHHINDRANATH_SNAN` | 1 of 3 | sayahna to moonrise, 2 of 3 | none new | evidence; still held after the sources read 2026-11-14 (C1658) |
+| 50 | `NALA_MACHHINDRANATH_SNAN` | 1 of 3 | sayahna to moonrise, 2 of 3 | none new | **shipped** at sunrise, as three committee editions print it; 3 of the calendars' 4 days over VS 2076 to 2083 (C1658, C2353) |
 | 51 | `DISHI_PUJA` | one verified day | none | none | community; evidence |
 | 52 | `DISHI_CHARHE` | one verified day | none | none | **shipped** at sayahna (C1812): both printed days (2025-12-18, 2027-01-06), the consumer's one day among them |
 | 53 | `THAKALI_TORANLA_PARVA` | one verified day | none | none | community |
@@ -782,8 +782,8 @@ is missing is evidence. "None" means no form would decide the row.
 | civil and solar dates (§3.6) | 3 |
 | a bar (§3.8) | 1 |
 | counts and two days (§3.9) | 0: both rows proposed for a count are refuted by the print (rows 18 and 20) |
-| none new: the language can say it; 28 of them are shipped, the committee's print of both years settling each, and the evidence is short for the other 5 | 33 |
-| none: a sighting, a day set each year, one verified day, or a window no year's day tells from sunrise (row 25) | 17 |
+| none new: the language can say it; 32 of them are shipped, two of those published-only, the committee's print of both years settling the rest, and the evidence is short for the other 4 | 36 |
+| none: a sighting, a day set each year, one verified day, or a window no year's day tells from sunrise (row 25) | 14 |
 
 ## 5. Janmashtami
 

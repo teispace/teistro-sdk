@@ -366,7 +366,7 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `ARYA_DIWAS` | Arya Diwas | आर्य दिवस |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
 | `JAMARE_AUNSI` | Jamare Aunsi | जमरे औँसी |  | one verified day; VS 2083 does not print it on the sunrise rule's day, 10 October 2026 (C685) |
 | `MADHAV_NARAYAN_MAHOTSAV` | Madhav Narayan Mahotsav | माधवनारायण महोत्सव |  | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
-| `MATINA_PARU` | Matina Paru | मतिना पारु | Newar | the committee prints it in neither VS 2082 nor VS 2083 (C685) |
+| `MATINA_PARU` | Matina Paru | मतिना पारु | Newar | shipped published-only: Margashirsha's dark 1st at sunrise in NEPAL_PANCHANGA, the day Nepal's calendars print all 5 times; the committee prints it in neither edition (C685, C2358) |
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689); still held after the sources of 2026-11-14 (C1651) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687); still held after the sources of 2026-11-14 (C1652) |
 
@@ -376,22 +376,22 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
-| `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  | held: no source gives every verified day (C1660) |
+| `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  | shipped published-only: Phalguna's dark 12th by the share of the daylight's first four muhurtas in NEPAL_PANCHANGA, 6 of 7 printed days (C1660, C2357) |
 | `GAI_TIHAR` | Gai Tihar | गाई तिहार |  | held: no source gives every verified day (C1661) |
 | `KRISHNA_RATH_JATRA` | Krishna Rath Jatra | कृष्ण रथ जात्रा |  | held: no source gives every verified day (C1662) |
 | `MAJHI_LADI_PUJA` | Majhi Ladi Puja | माझी लदी पूजा | Majhi | held: no source gives every verified day (C1665) |
 | `MATSYA_DARSHAN` | Matsya Darshan | मत्स्य दर्शन |  | held: no source gives every verified day (C1655) |
-| `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1658) |
-| `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  | held: no source gives every verified day (C1656) |
-| `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  | held: no source gives every verified day (C1659) |
+| `NALA_MACHHINDRANATH_SNAN` | Nala Machhindranath Snan | नाला मच्छिन्द्रनाथ स्नान | Newar | shipped: Phalguna's dark 1st at sunrise in NEPAL_PANCHANGA, as three committee editions print it (C1658, C2353) |
+| `PASHUPATINATH_CHHAYA_DARSHAN` | Pashupatinath Chhaya Darshan | पशुपतिनाथ छाया दर्शन |  | shipped: Magha's bright 14th at sunrise in NEPAL_PANCHANGA, a kshaya 14th on the day it runs in, as VS 2082 prints 31 January 2026 (C1656, C2347) |
+| `PHARPING_HARISHANKAR_JATRA` | Pharping Harishankar Jatra | फर्पिङ हरिशङ्कर जात्रा |  | shipped published-only: on `DWADASHI_SHRADDHA`'s day in NEPAL_PANCHANGA, as both committee editions print it, 4 of 8 printed days (C1659, C2354) |
 | `RADHA_KRISHNA_RATH_JATRA` | Radha Krishna Rath Jatra | राधाकृष्ण रथ जात्रा |  | held: no source gives every verified day (C1663) |
 | `RAMANUJACHARYA_JAYANTI` | Ramanujacharya Jayanti | रामानुजाचार्य जयन्ती |  | held: no source gives every verified day (C1654) |
-| `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar | held: no source gives every verified day (C1657) |
+| `RATO_MACHHINDRANATH_SNAN` | Rato Machhindranath Snan | रातो मच्छिन्द्रनाथ स्नान | Newar | shipped published-only: Chaitra's dark 1st at sunrise, the later of two, in NEPAL_PANCHANGA, as VS 2082 prints it, 4 of 6 printed days (C1657, C2355) |
 | `VISHNU_BAIKUNTHA_CHATURDASHI` | Vishnu Baikuntha Chaturdashi | विष्णु बैकुण्ठ चतुर्दशी |  | held: no source gives every verified day (C1664) |
 
 ### Solar (26)
 
-A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 19 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 21 of the 26 ship. `YOSIN_UTTHAN` ships too, on the Bikram Sambat year's last day, which VS 2083 alone prints and the press reports kept (C1650), and Bode's tongue-piercing and Thimi's Sindoor jatra on Baisakh 2, which neither edition prints and the press reports kept every year (C1800), so 24 ship; the note says why each other is not.
+A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`festival-rule-language.md` §3.6). 20 of the 26 are shipped as dated days of `NEPAL_PANCHANGA`, each printed on that day in both of the committee's editions, read with the row's continuation letters followed, and on every day a patro printed in Nepal gives it. Bhumiraj and the Bhumi puja are not a date at all but the Sun's entry into Ardra, and ship in the same pack on that form (`sunEnters`, C696), so 22 of the 26 ship. `YOSIN_UTTHAN` ships too, on the Bikram Sambat year's last day, which VS 2083 alone prints and the press reports kept (C1650), and Bode's tongue-piercing and Thimi's Sindoor jatra on Baisakh 2, which neither edition prints and the press reports kept every year (C1800), so 25 ship; the note says why each other is not.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
@@ -404,7 +404,7 @@ A day of the solar month (C619), a `civilDate` in the Bikram Sambat calendar (`f
 | `BISKET_JATRA_ENDS` | Bisket Jatra Ends | बिस्केट जात्रा समाप्ति | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 5 |
 | `BODE_JIBRO_CHHEDNE_JATRA` | Bode Jibro Chhedne Jatra | बोडे जिब्रो छेड्ने जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Baisakh 2, which neither edition prints; Kantipur (VS 2079 Chaitra 25, VS 2083 Baisakh 2) reports it kept "प्रत्येक वैशाख २" (C1800) |
 | `DEVGHAT_MAKAR_SNAN` | Devghat Makar Snan | देवघाट मकर स्नान |  | shipped: a dated day in NEPAL_PANCHANGA, Magh 1 |
-| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | printed on Shrawan 1 in both editions, but a patro printed in Nepal keeps a second day in most years and not Shrawan 1 in two (C621); still held after the sources of 2026-11-14 (C1653) |
+| `GURIYA_PARVA` | Guriya Parva | गुरिया पर्व | Tharu | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1; the second day the calendars print is the western Tarai's Gurhi, shipped as `GURHI_PARVA` on Nag panchami (C621, C1653, C2349) |
 | `KANDAKARAK_PUJA` | Kandakarak Puja | कण्डारक पूजा |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 1 |
 | `KHEER_KHANE_DIN` | Kheer Khane Din | खीर खाने दिन |  | shipped: a dated day in NEPAL_PANCHANGA, Shrawan 15 |
 | `KIRTIPUR_BAGH_BHAIRAV_JATRA` | Kirtipur Bagh Bhairav Jatra | कीर्तिपुर बाघभैरव जात्रा | Newar | shipped: a dated day in NEPAL_PANCHANGA, Bhadra 1 |

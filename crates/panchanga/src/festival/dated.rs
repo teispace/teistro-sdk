@@ -39,7 +39,7 @@ use crate::span::Span;
 /// month's last), and where the day is printed. Each also gives every day
 /// a patro printed in Nepal verified for it, by a back-test kept outside
 /// the repository (`festival-classification.md`).
-const SOLAR_DAYS: [(&str, u8, i8, &str); 31] = [
+const SOLAR_DAYS: [(&str, u8, i8, &str); 32] = [
     (
         "TOKHA_SAPAN_TIRTHA_SNAN",
         1,
@@ -93,6 +93,12 @@ const SOLAR_DAYS: [(&str, u8, i8, &str); 31] = [
         4,
         1,
         "VS 2082 p. 8 and VS 2083 p. 9: \"कण्डारकपूजा\" on Shrawan 1, the day of श्रावणसङ्क्रान्ति",
+    ),
+    (
+        "GURIYA_PARVA",
+        4,
+        1,
+        "VS 2082 p. 8: \"थारु गुरिया पर्व\", Shrawan 1's row continued after Ⓑ, and VS 2083 p. 9: \"थारुगुरिया पर्व\" on Shrawan 1, continued after Ⓐ; the Tharu's Guriya, which Nepal's calendars print on Shrawan 1 or, as Gurhi, on Nag panchami (`GURHI_PARVA`), every printing of VS 2076 to 2083 on one of the two (C2349)",
     ),
     (
         "KHEER_KHANE_DIN",
