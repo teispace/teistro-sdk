@@ -95,7 +95,10 @@ fn the_range_is_data() {
     assert!(span.from_jd < 2_378_496.6 && span.to_jd > 2_597_641.4);
     let bs = coverage.bikram_sambat;
     assert!(bs.first_year <= bs.official_first_year && bs.official_last_year <= bs.last_year);
-    assert_eq!(coverage.holidays[0].years, vec![2083]);
+    assert_eq!(
+        coverage.holidays[0].years,
+        (2076..=2083).collect::<Vec<i32>>()
+    );
 }
 
 #[test]

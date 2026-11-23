@@ -43,6 +43,24 @@ weekday of the month; no existing rule's day moves.
 - Tulasi's seed-sowing on Nirjala Ekadashi is not named as `TULASI_DAL_RAKHNE`: the
   calendars print two acts, and it waits for a rule of its own (C2342).
 
+**Nepal's gazetted holidays for every year from VS 2076 (SR-123, SR-145).**
+**Numbers:** none reckoned. No festival's day and no tier moves: the tiers stay VS 2083's
+notice's, the latest. `NEPAL_GAZETTE` lists VS 2076 to 2083 (346 holidays) where it listed
+VS 2083's 45, so `NEPAL` and `NEPAL_PANCHANGA`'s pack listings carry every year's, and
+`coverage().holidays` answers `years` 2076 to 2083.
+- **Added:** the Ministry of Home Affairs' yearly notices of VS 2076 to 2082 (Nepal Gazette
+  vol. 68 no. 58 to vol. 74 no. 59, part 5), each clause with its words, festival keys,
+  scope and days, and the later notices found: added holidays (VS 2076's Eid, state visit and
+  Kija Puja, VS 2078's nationwide Gyalpo Lhosar, VS 2079's day of mourning, VS 2081's Ram
+  Navami), VS 2076's Bhoto Jatra and VS 2080's Eid dated, and VS 2080's Janayuddha Day
+  cancelled (`HolidaySet::cancelled`).
+- **Added:** `Holiday.year`; `HolidaySet::years`, `holidays_of` and `cancelled`.
+- **Changed:** each year's notice, VS 2083's too, is data
+  (`crates/panchanga/data/np-holidays/<year>.json`) read by one loader and held to its shape
+  by a unit test, where VS 2083's was hand-written rows. `HolidaySet::year` is gone (use
+  `years`); `festival_days` and `nepal_gazette_scope` take the year (`None`: the latest).
+  A holiday naming no festival the SDK keys is listed with none, its words naming it.
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by

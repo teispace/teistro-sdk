@@ -276,4 +276,4 @@ panchanga reach). They are folded into one batch for rc.7.
 | SR-142 | P0 | done | rc.7, lane | The adapter on teigeodata 1.1.0, wasm32 too. |
 | SR-143 | P1 | done | rc.7, lane | A city list ranked by population. |
 | SR-144 | P2 | done | rc.7, lane | The ocean zone where no area holds a point. |
-| SR-145 | P0 | in progress | rc.7 to rc.10 | Every day named (rc.7), text rules and the year-by-year evidence (rc.8), coverage (rc.9), four languages and the gist (rc.10); `nepal-festival-names.md`, `00-roadmap.md` "SR-145". |
+| SR-145 | P0 | in progress | rc.7 to rc.10 | Every day named (rc.7), text rules and the year-by-year evidence (rc.8), coverage (rc.9, with Nepal's gazetted holidays of every year from VS 2076, `nepal-gazette-holidays.md`), four languages and the gist (rc.10); `nepal-festival-names.md`, `00-roadmap.md` "SR-145". |

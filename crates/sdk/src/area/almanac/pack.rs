@@ -125,9 +125,10 @@ pub struct PackListing {
     pub pack: String,
     /// Its rows, by key.
     pub rules: Vec<PackRow>,
-    /// The holidays a government's notice gives the pack's country, in the
-    /// notice's order (`03-design/nepal-gazette-holidays.md`): each names
-    /// its festivals by key, kept apart from the notice's words.
+    /// The holidays a government's notices give the pack's country, year
+    /// by year, each year's in its notice's order
+    /// (`03-design/nepal-gazette-holidays.md`): each names its year and its
+    /// festivals by key, kept apart from the notice's words.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub holidays: Vec<Holiday>,
 }
@@ -204,8 +205,8 @@ impl FestivalPack {
         }
     }
 
-    /// The holiday notices of the pack's country: Nepal's gazette for
-    /// Nepal's two packs, none for a pack whose country's notice is not
+    /// The holiday notices of the pack's country: Nepal's gazette, every
+    /// year's, for Nepal's two packs, none for a pack whose country's notice is not
     /// in hand.
     ///
     /// ```

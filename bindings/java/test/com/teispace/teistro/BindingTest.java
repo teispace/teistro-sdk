@@ -167,8 +167,8 @@ public final class BindingTest {
                         "the last date answered is 2399-12-31: " + coverage);
                 check(coverage.ephemeris().fromJd() < coverage.ephemeris().toJd(), "the span runs forward");
                 check(coverage.bikramSambat().officialFirstYear() <= 2083, "VS 2083 is official");
-                check(coverage.holidays().get(0).equals(new Coverage.Holidays("NEPAL_GAZETTE", List.of(2083))),
-                        "the gazette's year: " + coverage.holidays());
+                check(coverage.holidays().get(0).equals(new Coverage.Holidays("NEPAL_GAZETTE", List.of(2076, 2077, 2078, 2079, 2080, 2081, 2082, 2083))),
+                        "the gazette's years: " + coverage.holidays());
             }
         });
         tests.put("explainSettings names each knob's layer and source, and diffSettings where two part", () -> {
