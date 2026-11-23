@@ -138,7 +138,7 @@ impl Context {
                 .iter()
                 .map(|set| HolidayYears {
                     set: set.key().to_owned(),
-                    years: vec![set.year()],
+                    years: set.years(),
                 })
                 .collect(),
         })

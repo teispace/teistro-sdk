@@ -130,7 +130,7 @@ binding's context, the MCP tool `coverage.describe`) answers:
 |---|---|
 | `ephemeris` | `{fromJd, toJd, first, last}`: the first and last instants the configured ephemeris answers under the profile, UT1, and the first and last Gregorian dates the span holds at least half of, on UT (an end on UT1 is not a midnight: the built-in span opens 14 s before 0 h UT on 1 January 1800 under the drik profile, an hour after it under the official one). Built-in and Teimeris: 1800-01-01 to 2399-12-31 |
 | `bikramSambat` | `{firstYear, lastYear, officialFirstYear, officialLastYear}`: the shipped table's years and those the government's calendar committee published (`BikramSambat::official_years`) |
-| `holidays` | `[{set, years}]`: each shipped holiday set and its years (`NEPAL_GAZETTE`: VS 2083) |
+| `holidays` | `[{set, years}]`: each shipped holiday set and its years (`NEPAL_GAZETTE`: VS 2076 to 2083) |
 
 ## 6. What is narrower than the range
 

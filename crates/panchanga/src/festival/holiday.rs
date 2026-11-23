@@ -1,20 +1,29 @@
-//! A government's holidays as its notice lists them
+//! A government's holidays as its notices list them
 //! (`03-design/nepal-gazette-holidays.md`, SR-123): each clause's words,
 //! the festivals it names by their keys, whom it is for, and the days it
-//! prints.
+//! prints, year by year.
 //!
 //! A clause's words are kept apart from its festivals' names. Nepal's VS
 //! 2083 notice gives Dhanya Purnima's day as "धान्य पूर्णिमा - किराँत
 //! समुदायको उधौली पर्व, योमरी पुन्हि, ज्यापू दिवस": one holiday naming four
 //! festivals, each of which has its own name in every locale. A reader
-//! shows the notice as the notice, and each festival by its key.
+//! shows the notice as the notice, and each festival by its key. A clause
+//! naming no festival the SDK keys (a state visit, a day of mourning) is
+//! listed with none, its words carrying it.
 //!
 //! The days are the notice's own, in the Bikram Sambat calendar. A clause
 //! that gives none ("on the day of Eid") has none: the festival's rule
 //! gives the day, and the notice moves nothing.
+//!
+//! Each year's notice is data, `data/np-holidays/<year>.json`: its
+//! citation, its clauses in its order, and the later notices amending it
+//! (a holiday added, a clause's day fixed, a clause cancelled). One reader
+//! makes every year's list, and a unit test holds every file to its shape.
+
+use std::sync::LazyLock;
 
 use serde::{Deserialize, Serialize};
-use teistro_calendar::CalendarDay;
+use teistro_calendar::{BikramSambat, CalendarDay, CalendarSystem};
 use teistro_core::catalogue::{Calendar, HolidayScope};
 
 /// A clause's words, as printed and in English.
@@ -34,10 +43,11 @@ pub struct HolidayNotice {
 /// use teistro_core::catalogue::HolidayScope;
 /// use teistro_panchanga::festival::HolidaySet;
 ///
-/// let holidays = HolidaySet::NepalGazette.holidays();
+/// let holidays = HolidaySet::NepalGazette.holidays_of(2083);
 /// let poush_9 = holidays.iter().find(|holiday| holiday.festivals.len() == 4).ok_or("listed")?;
 /// assert_eq!(poush_9.festivals, ["DHANYA_PURNIMA", "UDHAULI", "YOMARI_PUNHI", "JYAPU_DIWAS"]);
 /// assert_eq!(poush_9.scope, HolidayScope::National);
+/// assert_eq!(poush_9.year, 2083);
 /// assert_eq!(poush_9.first.as_ref().map(|day| (day.year, day.month, day.day)), Some((2083, 9, 9)));
 /// # Ok::<(), &str>(())
 /// ```
@@ -47,9 +57,12 @@ pub struct HolidayNotice {
 pub struct Holiday {
     /// The set it is of ([`HolidaySet::key`]).
     pub set: String,
+    /// The Bikram Sambat year whose notice lists it.
+    pub year: i32,
     /// Its clause's words.
     pub notice: HolidayNotice,
-    /// The festivals the clause names, by key, in its order.
+    /// The festivals the clause names, by key, in its order; empty for a
+    /// clause naming none the SDK keys, which its notice names.
     pub festivals: Vec<String>,
     /// Whom it is for.
     pub scope: HolidayScope,
@@ -70,16 +83,18 @@ pub struct Holiday {
     /// The last day, for a holiday of several days.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last: Option<CalendarDay>,
-    /// The notice and its clause.
+    /// The notice and its clause, and the later notice that dated or
+    /// added it.
     pub source: String,
 }
 
 /// A government's list of holidays the SDK ships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum HolidaySet {
-    /// Nepal's public, festival and substitute holidays of VS 2083, as
-    /// the Ministry of Home Affairs' notice in the Nepal Gazette (vol. 75
-    /// no. 67, part 5, Falgun 18, 2082) lists them.
+    /// Nepal's public, festival and substitute holidays, as the Ministry
+    /// of Home Affairs' yearly notice in the Nepal Gazette (part 5) lists
+    /// them, for every Bikram Sambat year from 2076 to 2083, with the
+    /// later notices amending a year's.
     NepalGazette,
 }
 
@@ -95,125 +110,419 @@ impl HolidaySet {
         }
     }
 
-    /// The year of the calendar its days are in that it lists.
-    #[must_use]
-    pub const fn year(self) -> i32 {
-        match self {
-            HolidaySet::NepalGazette => 2083,
-        }
-    }
-
-    /// The days of the festivals its holidays of several days are granted
-    /// as, by key, as the notice's year reckons them: Dashain's and
-    /// Tihar's days the pack keys apart from the festivals the clause
-    /// names. A day inside its holiday's span is granted as the festival's.
+    /// The years of the calendar its days are in that it lists, in order.
     ///
     /// ```
     /// use teistro_panchanga::festival::HolidaySet;
     ///
-    /// let days = HolidaySet::NepalGazette.festival_days();
-    /// assert!(days.iter().any(|(key, day)| key == "KUKUR_TIHAR" && (day.month, day.day) == (7, 22)));
+    /// assert_eq!(HolidaySet::NepalGazette.years(), (2076..=2083).collect::<Vec<_>>());
     /// ```
     #[must_use]
-    pub fn festival_days(self) -> Vec<(String, CalendarDay)> {
-        match self {
-            HolidaySet::NepalGazette => NEPAL_2083
-                .iter()
-                .flat_map(|row| row.days_of)
-                .map(|&(key, (month, day))| {
-                    (
-                        key.to_owned(),
-                        CalendarDay {
-                            calendar: Calendar::BikramSambat,
-                            year: self.year(),
-                            month,
-                            day,
-                            era: None,
-                            leap: None,
-                        },
-                    )
-                })
-                .collect(),
-        }
+    pub fn years(self) -> Vec<i32> {
+        self.notices().iter().map(|year| year.year).collect()
     }
 
-    /// Its holidays, in the notice's order.
+    /// Its holidays, year by year, each year's in its notice's order with
+    /// the holidays later notices added after them.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::HolidaySet;
+    ///
+    /// let holidays = HolidaySet::NepalGazette.holidays();
+    /// assert_eq!(holidays.first().map(|holiday| holiday.year), Some(2076));
+    /// assert_eq!(holidays.last().map(|holiday| holiday.year), Some(2083));
+    /// ```
+    #[must_use]
+    pub fn holidays(self) -> Vec<Holiday> {
+        self.notices()
+            .iter()
+            .flat_map(|year| year.holidays(self, &year.listed))
+            .collect()
+    }
+
+    /// The holidays of one year, in its notice's order with the holidays
+    /// later notices added after them; none for a year it does not list.
     ///
     /// ```
     /// use teistro_core::catalogue::HolidayScope;
     /// use teistro_panchanga::festival::HolidaySet;
     ///
-    /// let holidays = HolidaySet::NepalGazette.holidays();
+    /// let holidays = HolidaySet::NepalGazette.holidays_of(2083);
     /// assert_eq!(holidays.len(), 45);
     /// assert!(holidays.iter().any(|holiday| holiday.scope == HolidayScope::Women));
+    /// assert!(HolidaySet::NepalGazette.holidays_of(2050).is_empty());
     /// ```
     #[must_use]
-    pub fn holidays(self) -> Vec<Holiday> {
+    pub fn holidays_of(self, year: i32) -> Vec<Holiday> {
+        self.notice(year)
+            .map(|notice| notice.holidays(self, &notice.listed))
+            .unwrap_or_default()
+    }
+
+    /// The holidays of one year a later notice cancelled, each with its
+    /// clause's source and the cancelling notice's.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::HolidaySet;
+    ///
+    /// let cancelled = HolidaySet::NepalGazette.cancelled(2080);
+    /// assert_eq!(cancelled.len(), 1);
+    /// assert_eq!(cancelled[0].notice.ne, "जनयुद्ध दिवस");
+    /// assert!(cancelled[0].source.contains("cancelled by Nepal Gazette vol. 73 no. 54"));
+    /// ```
+    #[must_use]
+    pub fn cancelled(self, year: i32) -> Vec<Holiday> {
+        self.notice(year)
+            .map(|notice| notice.holidays(self, &notice.cancelled))
+            .unwrap_or_default()
+    }
+
+    /// The days of the festivals its holidays of several days in `year`
+    /// are granted as, by key: the days the notice prints inside a span
+    /// (Phulpati, Lakshmi Puja, Tihar's other days in VS 2078 to 2081),
+    /// and for VS 2083,
+    /// whose notice prints only the span's ends, Dashain's and Tihar's
+    /// days the pack keys apart from the festivals the clause names, as
+    /// the pack reckons them that year. A day inside its holiday's span is
+    /// granted as the festival's.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::HolidaySet;
+    ///
+    /// let days = HolidaySet::NepalGazette.festival_days(2083);
+    /// assert!(days.iter().any(|(key, day)| key == "KUKUR_TIHAR" && (day.month, day.day) == (7, 22)));
+    /// let printed = HolidaySet::NepalGazette.festival_days(2080);
+    /// assert!(printed.iter().any(|(key, day)| key == "KIJA_PUJA" && (day.month, day.day) == (7, 29)));
+    /// ```
+    #[must_use]
+    pub fn festival_days(self, year: i32) -> Vec<(String, CalendarDay)> {
+        self.notice(year)
+            .map(|notice| {
+                notice
+                    .listed
+                    .iter()
+                    .flat_map(|listed| &listed.row.days_of)
+                    .map(|(key, on)| (key.clone(), bikram_sambat(year, *on)))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Every year's notice, in order.
+    fn notices(self) -> &'static [Listing] {
         match self {
-            HolidaySet::NepalGazette => NEPAL_2083
-                .iter()
-                .map(|row| row.holiday(self, NEPAL_GAZETTE))
-                .collect(),
+            HolidaySet::NepalGazette => &NEPAL_GAZETTE,
         }
+    }
+
+    /// One year's notice.
+    fn notice(self, year: i32) -> Option<&'static Listing> {
+        self.notices().iter().find(|notice| notice.year == year)
     }
 }
 
-/// Whom Nepal's notice gives `key` a holiday for, and where it says so:
-/// the broadest of the clauses naming it (a nationwide clause over one for
-/// some), `None` for a key no clause names.
+/// Whom Nepal's notice of `year` gives `key` a holiday for, and where it
+/// says so: the broadest of the clauses naming it (a nationwide clause
+/// over one for some), `None` for a key no clause names or a year no
+/// notice is shipped for. With no year, the latest notice is read.
 ///
 /// ```
 /// use teistro_core::catalogue::HolidayScope;
 /// use teistro_panchanga::festival::nepal_gazette_scope;
 ///
-/// let (scope, source) = nepal_gazette_scope("TAMU_LHOSAR").ok_or("named")?;
+/// let (scope, source) = nepal_gazette_scope("TAMU_LHOSAR", None).ok_or("named")?;
 /// assert_eq!(scope, HolidayScope::National);
 /// assert!(source.ends_with("clause 2.1 (ट)"));
-/// assert_eq!(nepal_gazette_scope("GAURA_PARVA").map(|(scope, _)| scope), Some(HolidayScope::Concerned));
-/// assert_eq!(nepal_gazette_scope("NO_SUCH_DAY"), None);
+/// assert_eq!(nepal_gazette_scope("GAURA_PARVA", None).map(|(scope, _)| scope), Some(HolidayScope::Concerned));
+/// assert_eq!(nepal_gazette_scope("NO_SUCH_DAY", None), None);
+/// // VS 2077's notice gave Tamu Lhosar only to those it concerns.
+/// assert_eq!(nepal_gazette_scope("TAMU_LHOSAR", Some(2077)).map(|(scope, _)| scope), Some(HolidayScope::Concerned));
+/// assert_eq!(nepal_gazette_scope("TAMU_LHOSAR", Some(2050)), None);
 /// # Ok::<(), &str>(())
 /// ```
 #[must_use]
-pub fn nepal_gazette_scope(key: &str) -> Option<(HolidayScope, String)> {
-    let granted = |row: &&Row| row.festivals.contains(&key) || row.grants_as_its_festival(key);
-    let naming = NEPAL_2083.iter().filter(granted);
-    let row = naming
+pub fn nepal_gazette_scope(key: &str, year: Option<i32>) -> Option<(HolidayScope, String)> {
+    let notices = HolidaySet::NepalGazette.notices();
+    let notice = match year {
+        Some(year) => notices.iter().find(|notice| notice.year == year),
+        None => notices.last(),
+    }?;
+    let granted = |listed: &&Listed| {
+        listed.row.festivals.iter().any(|held| held == key)
+            || listed.row.grants_as_its_festival(key)
+    };
+    let naming = notice.listed.iter().filter(granted);
+    let listed = naming
         .clone()
-        .find(|row| row.scope == HolidayScope::National)
+        .find(|listed| listed.row.scope == HolidayScope::National)
         .or_else(|| naming.clone().next())?;
-    let within = if row.festivals.contains(&key) {
+    let within = if listed.row.festivals.iter().any(|held| held == key) {
         ""
     } else {
         ", a day of the festival it grants"
     };
-    Some((
-        row.scope,
-        format!("{NEPAL_GAZETTE}, clause {}{within}", row.clause),
-    ))
+    Some((listed.row.scope, format!("{}{within}", listed.source)))
 }
 
-/// The notice Nepal's VS 2083 holidays are of.
-const NEPAL_GAZETTE: &str = "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs' notice of the public, festival and substitute holidays of VS 2083";
+/// Each year's notice as shipped, in order.
+const NEPAL_GAZETTE_FILES: [&str; 8] = [
+    include_str!("../../data/np-holidays/2076.json"),
+    include_str!("../../data/np-holidays/2077.json"),
+    include_str!("../../data/np-holidays/2078.json"),
+    include_str!("../../data/np-holidays/2079.json"),
+    include_str!("../../data/np-holidays/2080.json"),
+    include_str!("../../data/np-holidays/2081.json"),
+    include_str!("../../data/np-holidays/2082.json"),
+    include_str!("../../data/np-holidays/2083.json"),
+];
+
+/// Nepal's notices, read once.
+static NEPAL_GAZETTE: LazyLock<Vec<Listing>> = LazyLock::new(|| {
+    #[allow(
+        clippy::expect_used,
+        reason = "embedded data, read by a test on every build"
+    )]
+    NEPAL_GAZETTE_FILES
+        .into_iter()
+        .map(Listing::read)
+        .collect::<Result<Vec<Listing>, String>>()
+        .expect("the shipped notices read")
+});
 
 /// A day of the notice: month and day.
-type On = Option<(u8, u8)>;
+type On = (u8, u8);
 
-/// One holiday as the table writes it.
+/// The Bikram Sambat day `on` of `year`.
+const fn bikram_sambat(year: i32, (month, day): On) -> CalendarDay {
+    CalendarDay {
+        calendar: Calendar::BikramSambat,
+        year,
+        month,
+        day,
+        era: None,
+        leap: None,
+    }
+}
+
+/// One year's notice as its file writes it.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct File {
+    /// The Bikram Sambat year it lists.
+    year: i32,
+    /// Its citation.
+    notice: String,
+    /// Its clauses, in its order.
+    holidays: Vec<Row>,
+    /// The later notices amending it, in their order.
+    #[serde(default)]
+    amendments: Vec<Amendment>,
+}
+
+/// One holiday as a file writes it.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Row {
-    clause: &'static str,
+    /// Its clause; absent for a holiday a later notice added.
+    #[serde(default)]
+    clause: Option<String>,
     scope: HolidayScope,
-    festivals: &'static [&'static str],
-    regions: &'static [&'static str],
-    communities: &'static [&'static str],
-    first: On,
-    last: On,
-    /// For a holiday of several days granted as one festival's (Dashain's,
-    /// Tihar's), that festival's other days the pack keys apart, with the
-    /// day it reckons each in the notice's year: a day inside `first` to
-    /// `last` is granted as the festival's.
-    days_of: &'static [(&'static str, (u8, u8))],
-    ne: &'static str,
-    en: &'static str,
+    festivals: Vec<String>,
+    #[serde(default)]
+    regions: Vec<String>,
+    #[serde(default)]
+    communities: Vec<String>,
+    #[serde(default)]
+    first: Option<On>,
+    #[serde(default)]
+    last: Option<On>,
+    /// For a holiday of several days, the day of each festival inside it
+    /// the notice prints, or for one it does not print that the pack keys
+    /// apart, the day the pack reckons in the notice's year: a day inside
+    /// `first` to `last` is granted as the festival's.
+    #[serde(default)]
+    days_of: Vec<(String, On)>,
+    ne: String,
+    en: String,
+}
+
+/// A later notice's change to a year's list, keyed as a member is.
+#[derive(Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum Amendment {
+    /// A holiday the notice adds.
+    Adds(Added),
+    /// The day the notice fixes for a clause that gave none.
+    Dates(Dated),
+    /// A clause the notice cancels.
+    Cancels(Cancelled),
+}
+
+/// A holiday a later notice adds.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Added {
+    notice: String,
+    holiday: Row,
+}
+
+/// The day a later notice fixes for a clause.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Dated {
+    notice: String,
+    clause: String,
+    on: On,
+}
+
+/// A clause a later notice cancels.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Cancelled {
+    notice: String,
+    clause: String,
+}
+
+/// One year's holidays, its amendments applied.
+#[derive(Debug)]
+struct Listing {
+    year: i32,
+    listed: Vec<Listed>,
+    cancelled: Vec<Listed>,
+}
+
+/// A holiday with the source it is listed by.
+#[derive(Debug)]
+struct Listed {
+    row: Row,
+    source: String,
+}
+
+impl Listing {
+    /// A notice's file read and its amendments applied, its days and
+    /// clauses checked.
+    fn read(text: &str) -> Result<Listing, String> {
+        let file: File = serde_json::from_str(text).map_err(|error| error.to_string())?;
+        let year = file.year;
+        let mut listed = file
+            .holidays
+            .into_iter()
+            .map(|row| {
+                let source = match &row.clause {
+                    Some(clause) => format!("{}, clause {clause}", file.notice),
+                    None => return Err(format!("VS {year}: `{}` has no clause", row.ne)),
+                };
+                Ok(Listed { row, source })
+            })
+            .collect::<Result<Vec<Listed>, String>>()?;
+        let mut cancelled = Vec::new();
+        for amendment in file.amendments {
+            match amendment {
+                Amendment::Adds(Added { notice, holiday }) => listed.push(Listed {
+                    row: holiday,
+                    source: notice,
+                }),
+                Amendment::Dates(Dated { notice, clause, on }) => {
+                    let at = only(&listed, year, &clause)?;
+                    let entry = listed
+                        .get_mut(at)
+                        .ok_or_else(|| format!("VS {year}: clause {clause} is not listed"))?;
+                    if entry.row.first.replace(on).is_some() {
+                        return Err(format!("VS {year}: clause {clause} already prints its day"));
+                    }
+                    entry.source = format!("{}; its day by {notice}", entry.source);
+                }
+                Amendment::Cancels(Cancelled { notice, clause }) => {
+                    let at = only(&listed, year, &clause)?;
+                    let mut entry = listed.remove(at);
+                    entry.source = format!("{}; cancelled by {notice}", entry.source);
+                    cancelled.push(entry);
+                }
+            }
+        }
+        let read = Listing {
+            year,
+            listed,
+            cancelled,
+        };
+        read.check()?;
+        Ok(read)
+    }
+
+    /// That every day it prints is a day of its year, in order, and every
+    /// key and scope is written as a key.
+    fn check(&self) -> Result<(), String> {
+        let bs = BikramSambat::shipped();
+        let year = self.year;
+        let real = |(month, day): On| {
+            bs.month_length(year, month)
+                .is_ok_and(|length| (1..=length).contains(&day))
+        };
+        let key = |text: &str| {
+            !text.is_empty()
+                && text
+                    .bytes()
+                    .all(|byte| byte.is_ascii_uppercase() || byte.is_ascii_digit() || byte == b'_')
+        };
+        for listed in self.listed.iter().chain(&self.cancelled) {
+            let row = &listed.row;
+            let named = |held: bool, what: &str| {
+                if held {
+                    Ok(())
+                } else {
+                    Err(format!("VS {year}, {}: {what}", listed.source))
+                }
+            };
+            let forward = match (row.first, row.last) {
+                (_, None) => true,
+                (Some(first), Some(last)) => first < last,
+                (None, Some(_)) => false,
+            };
+            named(
+                row.first.iter().chain(&row.last).all(|&on| real(on)),
+                "a day the year does not have",
+            )?;
+            named(forward, "a span that does not run forward")?;
+            named(
+                row.days_of.iter().all(|&(_, on)| real(on)),
+                "a festival's day the year does not have",
+            )?;
+            named(
+                row.festivals
+                    .iter()
+                    .chain(&row.regions)
+                    .chain(&row.communities)
+                    .chain(row.days_of.iter().map(|(held, _)| held))
+                    .all(|held| key(held)),
+                "a key not written as one",
+            )?;
+            named(!row.ne.is_empty() && !row.en.is_empty(), "no words")?;
+        }
+        Ok(())
+    }
+
+    /// The holidays `listed` of this year, as a set answers them.
+    fn holidays(&self, set: HolidaySet, listed: &[Listed]) -> Vec<Holiday> {
+        listed
+            .iter()
+            .map(|listed| listed.row.holiday(set, self.year, &listed.source))
+            .collect()
+    }
+}
+
+/// The one holiday of `listed` printed under `clause`.
+fn only(listed: &[Listed], year: i32, clause: &str) -> Result<usize, String> {
+    let mut under = listed
+        .iter()
+        .enumerate()
+        .filter(|(_, listed)| listed.row.clause.as_deref() == Some(clause))
+        .map(|(at, _)| at);
+    match (under.next(), under.next()) {
+        (Some(at), None) => Ok(at),
+        _ => Err(format!(
+            "VS {year}: an amendment names clause {clause}, which is not one holiday"
+        )),
+    }
 }
 
 impl Row {
@@ -225,494 +534,27 @@ impl Row {
         };
         self.days_of
             .iter()
-            .any(|&(held, day)| held == key && (first..=last).contains(&day))
+            .any(|(held, day)| held == key && (first..=last).contains(day))
     }
 
-    fn holiday(&self, set: HolidaySet, notice: &str) -> Holiday {
-        let owned = |keys: &[&str]| keys.iter().map(|&key| key.to_owned()).collect();
-        let day = |on: On| {
-            on.map(|(month, day)| CalendarDay {
-                calendar: Calendar::BikramSambat,
-                year: set.year(),
-                month,
-                day,
-                era: None,
-                leap: None,
-            })
-        };
+    fn holiday(&self, set: HolidaySet, year: i32, source: &str) -> Holiday {
         Holiday {
             set: set.key().to_owned(),
+            year,
             notice: HolidayNotice {
-                ne: self.ne.to_owned(),
-                en: self.en.to_owned(),
+                ne: self.ne.clone(),
+                en: self.en.clone(),
             },
-            festivals: owned(self.festivals),
+            festivals: self.festivals.clone(),
             scope: self.scope,
-            regions: owned(self.regions),
-            communities: owned(self.communities),
-            first: day(self.first),
-            last: day(self.last),
-            source: format!("{notice}, clause {}", self.clause),
+            regions: self.regions.clone(),
+            communities: self.communities.clone(),
+            first: self.first.map(|on| bikram_sambat(year, on)),
+            last: self.last.map(|on| bikram_sambat(year, on)),
+            source: source.to_owned(),
         }
     }
 }
-
-/// A holiday the whole country keeps on one printed day.
-const fn national(
-    clause: &'static str,
-    festivals: &'static [&'static str],
-    first: On,
-    (ne, en): (&'static str, &'static str),
-) -> Row {
-    Row {
-        clause,
-        scope: HolidayScope::National,
-        festivals,
-        regions: &[],
-        communities: &[],
-        first,
-        last: None,
-        days_of: &[],
-        ne,
-        en,
-    }
-}
-
-/// A holiday for some, by its scope, with the region or community the
-/// clause names.
-#[expect(
-    clippy::too_many_arguments,
-    reason = "one argument a column of the notice's table"
-)]
-const fn limited(
-    clause: &'static str,
-    scope: HolidayScope,
-    festivals: &'static [&'static str],
-    regions: &'static [&'static str],
-    communities: &'static [&'static str],
-    first: On,
-    ne: &'static str,
-    en: &'static str,
-) -> Row {
-    Row {
-        clause,
-        scope,
-        festivals,
-        regions,
-        communities,
-        first,
-        last: None,
-        days_of: &[],
-        ne,
-        en,
-    }
-}
-
-/// The days the Kathmandu valley's jatra holidays are for (clause 5).
-const VALLEY: &[&str] = &["KATHMANDU_VALLEY"];
-
-/// Nepal's VS 2083 notice, clause by clause in its order: the festivals
-/// (2.1 nationwide, 2.2 for those they concern), women employees (3),
-/// educational institutions (4), the valley's jatras (5), the days (6.1
-/// nationwide, 6.2 for employees with disabilities), the birth
-/// anniversaries (7.1 nationwide, 7.2 for a religion's followers) and the
-/// days kept with offices open (8). Clause 1's Saturdays name no festival,
-/// and clause 9 lets a mission abroad set its own.
-const NEPAL_2083: [Row; 45] = [
-    national(
-        "2.1 (क)",
-        &["MESHA_SANKRANTI"],
-        Some((1, 1)),
-        ("नव वर्ष", "New Year"),
-    ),
-    national(
-        "2.1 (ख)",
-        &["CHANDI_PURNIMA", "BUDDHA_JAYANTI", "UBHAULI"],
-        Some((1, 18)),
-        (
-            "चण्डी पूर्णिमा (वैशाख पूर्णिमा) - बुद्ध जयन्ती, राई, लिम्बू, याक्खा, सुनुवारलगायतका किराँत समुदायको उभौली पर्व",
-            "Chandi Purnima (the full moon of Baisakh): Buddha Jayanti, and Ubhauli of the Kirat community, the Rai, Limbu, Yakkha, Sunuwar and others",
-        ),
-    ),
-    national(
-        "2.1 (ग)",
-        &["RAKSHABANDHAN"],
-        Some((5, 12)),
-        ("रक्षाबन्धन", "Raksha Bandhan"),
-    ),
-    national(
-        "2.1 (घ)",
-        &["JANMASHTAMI"],
-        Some((5, 19)),
-        ("श्रीकृष्ण जन्माष्टमी", "Shri Krishna Janmashtami"),
-    ),
-    national(
-        "2.1 (ङ)",
-        &["NAVARATRA_ARAMBHA"],
-        Some((6, 25)),
-        ("घटस्थापना", "Ghatasthapana"),
-    ),
-    Row {
-        clause: "2.1 (च)",
-        scope: HolidayScope::National,
-        festivals: &["VIJAYA_DASHAMI", "PHULPATI"],
-        regions: &[],
-        communities: &[],
-        first: Some((6, 31)),
-        last: Some((7, 6)),
-        // Mahashtami (Kartik 1) and Mahanavami (Kartik 3), Dashain's days.
-        days_of: &[("MAHA_ASHTAMI", (7, 1)), ("MAHA_NAVAMI", (7, 3))],
-        ne: "दशैं बिदा (फूलपातीदेखि द्वादशीसम्म)",
-        en: "The Dashain holiday (from Phulpati to the 12th)",
-    },
-    Row {
-        clause: "2.1 (छ)",
-        scope: HolidayScope::National,
-        festivals: &["LAKSHMI_PUJA", "YAMA_DWITIYA"],
-        regions: &[],
-        communities: &[],
-        first: Some((7, 22)),
-        last: Some((7, 26)),
-        // Tihar's days the pack groups with its gazetted festivals: Kag
-        // Tihar (Kartik 21, before the span), Kukur Tihar (Kartik 22, with
-        // Lakshmi Puja), the cows' worship (Kartik 23), and Govardhan and
-        // the oxen's worship (Kartik 24). Mha puja is a Newar festival in
-        // the pack's grouping, not one of these.
-        days_of: &[
-            ("KAG_TIHAR", (7, 21)),
-            ("KUKUR_TIHAR", (7, 22)),
-            ("GAI_PUJA", (7, 23)),
-            ("GOVARDHAN_PUJA", (7, 24)),
-            ("GORU_PUJA", (7, 24)),
-        ],
-        ne: "तिहार बिदा (लक्ष्मीपूजा देखि भाइटिकाको भोलिपल्टसम्म)",
-        en: "The Tihar holiday (from Lakshmi Puja to the day after Bhai Tika)",
-    },
-    national("2.1 (ज)", &["CHHATH"], Some((7, 29)), ("छठ पर्व", "Chhath")),
-    national(
-        "2.1 (झ)",
-        &["DHANYA_PURNIMA", "UDHAULI", "YOMARI_PUNHI", "JYAPU_DIWAS"],
-        Some((9, 9)),
-        (
-            "धान्य पूर्णिमा - किराँत समुदायको उधौली पर्व, योमरी पुन्हि, ज्यापू दिवस",
-            "Dhanya Purnima: Udhauli of the Kirat community, Yomari Punhi and Jyapu Day",
-        ),
-    ),
-    national(
-        "2.1 (ञ)",
-        &["CHRISTMAS"],
-        Some((9, 10)),
-        (
-            "इसाई धर्मावलम्बीको पर्व क्रिसमस डे, (डिसेम्बर २५)",
-            "Christmas Day, the festival of the Christians (25 December)",
-        ),
-    ),
-    national(
-        "2.1 (ट)",
-        &["TAMU_LHOSAR"],
-        Some((9, 15)),
-        ("तमू ल्होछार", "Tamu Lhochhar"),
-    ),
-    national(
-        "2.1 (ठ)",
-        &["MAGHI_THARU", "MAKARA_SANKRANTI"],
-        Some((10, 1)),
-        ("माघी पर्व/माघे सङ्क्रान्ति", "Maghi and Maghe Sankranti"),
-    ),
-    national(
-        "2.1 (ड)",
-        &["SONAM_LHOSAR"],
-        Some((10, 24)),
-        ("सोनम ल्होछार", "Sonam Lhochhar"),
-    ),
-    national(
-        "2.1 (ढ)",
-        &["SHIVARATRI"],
-        Some((11, 22)),
-        ("महाशिवरात्री", "Maha Shivaratri"),
-    ),
-    national(
-        "2.1 (ण)",
-        &["GYALPO_LHOSAR"],
-        Some((11, 25)),
-        ("ग्याल्पो ल्होसार", "Gyalpo Losar"),
-    ),
-    national(
-        "2.1 (त)",
-        &["EID_AL_FITR"],
-        None,
-        (
-            "इस्लाम धर्मावलम्बीको पर्व ईद (ईद उल फित्र) का दिन",
-            "On the day of Eid (Eid al-Fitr), the festival of the Muslims",
-        ),
-    ),
-    national(
-        "2.1 (थ)",
-        &["EID_AL_ADHA"],
-        None,
-        (
-            "इस्लाम धर्मावलम्बीको पर्व बकर ईद (ईद उल अजहा) का दिन",
-            "On the day of Bakr Eid (Eid al-Adha), the festival of the Muslims",
-        ),
-    ),
-    limited(
-        "2.1 (द)",
-        HolidayScope::Region,
-        &["HOLI_HILLS"],
-        &["HILLS"],
-        &[],
-        Some((12, 7)),
-        "फागुपूर्णिमा - हिमाली र पहाडी ५६ जिल्लाहरूमा",
-        "Fagu Purnima, in the 56 mountain and hill districts",
-    ),
-    limited(
-        "2.1 (द)",
-        HolidayScope::Region,
-        &["HOLI_TERAI"],
-        &["TERAI"],
-        &[],
-        Some((12, 8)),
-        "फागुपूर्णिमा - तराईका जिल्ला झापा, मोरङ, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली र कञ्चनपुरमा",
-        "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur",
-    ),
-    limited(
-        "2.2 (क)",
-        HolidayScope::Community,
-        &["GAI_JATRA"],
-        &[],
-        &["NEWAR"],
-        Some((5, 13)),
-        "गाईजात्रा (देशभरका नेवार समुदायका लागि मात्र)",
-        "Gai Jatra (for the Newar community across the country only)",
-    ),
-    limited(
-        "2.2 (ख)",
-        HolidayScope::Concerned,
-        &["GAURA_PARVA"],
-        &[],
-        &[],
-        Some((5, 19)),
-        "गौरा पर्व",
-        "Gaura Parva",
-    ),
-    limited(
-        "2.2 (ग)",
-        HolidayScope::Community,
-        &["DURA_MHAIPRU_NAKUMA"],
-        &[],
-        &["DURA"],
-        Some((9, 15)),
-        "दुरा म्हैप्रु नकुमा (देशभरका दुरा समुदायका लागि मात्र)",
-        "Dura Mhaipru Nakuma (for the Dura community across the country only)",
-    ),
-    limited(
-        "2.2 (घ)",
-        HolidayScope::Region,
-        &["SIRUWA_PAVANI"],
-        &[],
-        &[],
-        None,
-        "सिरुवा पावनीको दिन - सो पर्व मनाउने झापा, मोरङ, सुनसरी, सिराहा र सप्तरी जिल्लामा",
-        "On the day of Sirua Pavani, in the districts that keep it: Jhapa, Morang, Sunsari, Siraha and Saptari",
-    ),
-    limited(
-        "3 (क)",
-        HolidayScope::Women,
-        &["HARITALIKA"],
-        &[],
-        &[],
-        Some((5, 29)),
-        "हरितालिका (तीज) व्रत",
-        "The Haritalika (Teej) vrata",
-    ),
-    limited(
-        "3 (ख)",
-        HolidayScope::Women,
-        &["JITIYA"],
-        &[],
-        &[],
-        Some((6, 18)),
-        "जितिया पर्व (जितिया पर्व मनाउने महिला कर्मचारीको लागि)",
-        "Jitiya (for the women employees who keep it)",
-    ),
-    limited(
-        "4",
-        HolidayScope::Schools,
-        &["BASANTA_PANCHAMI"],
-        &[],
-        &[],
-        Some((10, 28)),
-        "वसन्त पञ्चमी",
-        "Basanta Panchami",
-    ),
-    limited(
-        "5 (क)",
-        HolidayScope::Region,
-        &["GAI_JATRA"],
-        VALLEY,
-        &[],
-        Some((5, 13)),
-        "गाईजात्रा",
-        "Gai Jatra, in the Kathmandu valley",
-    ),
-    limited(
-        "5 (ख)",
-        HolidayScope::Region,
-        &["INDRA_JATRA"],
-        VALLEY,
-        &[],
-        Some((6, 9)),
-        "इन्द्रजात्रा",
-        "Indra Jatra, in the Kathmandu valley",
-    ),
-    limited(
-        "5 (ग)",
-        HolidayScope::Region,
-        &["BHOTO_JATRA"],
-        VALLEY,
-        &[],
-        None,
-        "मत्स्येन्द्रनाथको भोटो देखाउने जात्रा (सो जात्रा हुने दिन)",
-        "The jatra showing Matsyendranath's vest (on the day of the jatra), in the Kathmandu valley",
-    ),
-    limited(
-        "5 (घ)",
-        HolidayScope::Region,
-        &["GHODE_JATRA"],
-        VALLEY,
-        &[],
-        Some((12, 23)),
-        "घोडेजात्रा",
-        "Ghode Jatra, in the Kathmandu valley",
-    ),
-    national(
-        "6.1 (क)",
-        &["INTERNATIONAL_LABOUR_DAY"],
-        Some((1, 18)),
-        ("विश्व मजदुर दिवस - (मे १)", "World Labour Day (1 May)"),
-    ),
-    national(
-        "6.1 (ख)",
-        &["REPUBLIC_DAY"],
-        Some((2, 15)),
-        ("गणतन्त्र दिवस", "Republic Day"),
-    ),
-    national(
-        "6.1 (ग)",
-        &["CONSTITUTION_DAY"],
-        Some((6, 3)),
-        (
-            "संविधान दिवस (राष्ट्रिय दिवस)",
-            "Constitution Day (the National Day)",
-        ),
-    ),
-    national(
-        "6.1 (घ)",
-        &["MARTYRS_DAY"],
-        Some((10, 16)),
-        ("सहिद दिवस", "Martyrs' Day"),
-    ),
-    national(
-        "6.1 (ङ)",
-        &["DEMOCRACY_DAY"],
-        Some((11, 7)),
-        ("राष्ट्रिय प्रजातन्त्र दिवस", "National Democracy Day"),
-    ),
-    national(
-        "6.1 (च)",
-        &["INTERNATIONAL_WOMEN_S_DAY"],
-        Some((11, 24)),
-        (
-            "अन्तर्राष्ट्रिय महिला दिवस (मार्च ८)",
-            "International Women's Day (8 March)",
-        ),
-    ),
-    limited(
-        "6.2",
-        HolidayScope::Disability,
-        &["INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES"],
-        &[],
-        &[],
-        Some((8, 17)),
-        "अन्तर्राष्ट्रिय अपाङ्गता दिवस (डिसेम्बर ३) (अपाङ्गता भएका नेपालभित्रका सम्पूर्ण कर्मचारीको लागि)",
-        "International Day of Persons with Disabilities (3 December), for every employee in Nepal with a disability",
-    ),
-    national(
-        "7.1 (क)",
-        &["BUDDHA_JAYANTI"],
-        Some((1, 18)),
-        ("बुद्ध जयन्ती", "Buddha Jayanti"),
-    ),
-    national(
-        "7.1 (ख)",
-        &["PRITHVI_JAYANTI"],
-        Some((9, 27)),
-        (
-            "पृथ्वी जयन्ती (राष्ट्रिय एकता दिवस)",
-            "Prithvi Jayanti (National Unity Day)",
-        ),
-    ),
-    limited(
-        "7.2 (क)",
-        HolidayScope::Religion,
-        &["FALGUNANDA_JAYANTI"],
-        &[],
-        &["KIRAT"],
-        Some((7, 25)),
-        "फाल्गुनन्द जयन्ती (किराँत धर्मावलम्बी)",
-        "Falgunanda Jayanti (for the followers of the Kirat religion)",
-    ),
-    limited(
-        "7.2 (ख)",
-        HolidayScope::Religion,
-        &["MAWLID"],
-        &[],
-        &["MUSLIM"],
-        None,
-        "मोहम्मद जयन्तीका दिन (नेपाली मुस्लिम धर्मावलम्बी)",
-        "On the day of Mohammad Jayanti (for Nepali Muslims)",
-    ),
-    limited(
-        "7.2 (ग)",
-        HolidayScope::Religion,
-        &["GURU_NANAK_JAYANTI"],
-        &[],
-        &["SIKH"],
-        None,
-        "गुरु नानक जयन्तीका दिन (नेपाली सिख धर्मावलम्बी)",
-        "On the day of Guru Nanak Jayanti (for Nepali Sikhs)",
-    ),
-    limited(
-        "8 (क)",
-        HolidayScope::OfficesOpen,
-        &["CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY"],
-        &[],
-        &[],
-        Some((2, 21)),
-        "जातीय भेदभाव तथा छुवाछुत उन्मूलन राष्ट्रिय दिवस",
-        "National Day for the Elimination of Caste Discrimination and Untouchability",
-    ),
-    limited(
-        "8 (ख)",
-        HolidayScope::OfficesOpen,
-        &["CIVIL_SERVICE_DAY"],
-        &[],
-        &[],
-        Some((5, 22)),
-        "निजामती सेवा दिवस",
-        "Civil Service Day",
-    ),
-    limited(
-        "8 (ग)",
-        HolidayScope::OfficesOpen,
-        &["GEN_Z_MARTYRS_DAY"],
-        &[],
-        &[],
-        Some((5, 23)),
-        "जेनजी सहिद दिवस",
-        "Gen Z Martyrs' Day",
-    ),
-];
 
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -726,22 +568,151 @@ mod tests {
     use super::*;
 
     #[test]
-    fn every_holiday_names_a_festival_and_a_dated_one_runs_forward() {
-        for holiday in HolidaySet::NepalGazette.holidays() {
-            assert!(!holiday.festivals.is_empty(), "{}", holiday.source);
-            if let (Some(first), Some(last)) = (&holiday.first, &holiday.last) {
-                assert!(
-                    (first.month, first.day) < (last.month, last.day),
-                    "{}",
-                    holiday.source
-                );
-            }
-            assert!(
-                holiday.last.is_none() || holiday.first.is_some(),
-                "{}",
-                holiday.source
-            );
+    fn every_notice_reads_and_checks() {
+        let mut years = Vec::new();
+        for text in NEPAL_GAZETTE_FILES {
+            let read = Listing::read(text);
+            assert!(read.is_ok(), "{read:?}");
+            years.push(read.unwrap().year);
         }
+        assert_eq!(years, (2076..=2083).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn a_bad_file_is_refused_by_name() {
+        let refused = |text: &str| Listing::read(text).unwrap_err();
+        let file = |holiday: &str, amendments: &str| {
+            format!(
+                r#"{{"year": 2080, "notice": "N", "holidays": [{holiday}], "amendments": [{amendments}]}}"#
+            )
+        };
+        let row = r#"{"clause": "1", "scope": "NATIONAL", "festivals": [], "ne": "न", "en": "N"}"#;
+        assert!(
+            refused(&file(
+                r#"{"clause": "1", "scope": "NATIONAL", "festivals": [], "first": [2, 33], "ne": "न", "en": "N"}"#,
+                ""
+            ))
+            .contains("a day the year does not have")
+        );
+        assert!(
+            refused(&file(
+                r#"{"clause": "1", "scope": "NATIONAL", "festivals": ["Not a key"], "ne": "न", "en": "N"}"#,
+                ""
+            ))
+            .contains("a key not written as one")
+        );
+        assert!(
+            refused(&file(
+                r#"{"scope": "NATIONAL", "festivals": [], "ne": "न", "en": "N"}"#,
+                ""
+            ))
+            .contains("has no clause")
+        );
+        assert!(
+            refused(&file(row, r#"{"CANCELS": {"notice": "M", "clause": "2"}}"#))
+                .contains("not one holiday")
+        );
+        assert!(
+            refused(&file(
+                r#"{"clause": "1", "scope": "NATIONAL", "festivals": [], "first": [1, 1], "ne": "न", "en": "N"}"#,
+                r#"{"DATES": {"notice": "M", "clause": "1", "on": [1, 2]}}"#
+            ))
+            .contains("already prints its day")
+        );
+        assert!(refused(&file(row, r#"{"MOVES": {}}"#)).contains("unknown variant"));
+    }
+
+    #[test]
+    fn each_year_lists_its_notice_s_holidays() {
+        // Each year's clauses, a span of days one holiday, with the
+        // holidays later notices added and without the one cancelled.
+        let counts: Vec<(i32, usize)> = HolidaySet::NepalGazette
+            .years()
+            .into_iter()
+            .map(|year| (year, HolidaySet::NepalGazette.holidays_of(year).len()))
+            .collect();
+        assert_eq!(
+            counts,
+            [
+                (2076, 44),
+                (2077, 40),
+                (2078, 41),
+                (2079, 44),
+                (2080, 43),
+                (2081, 45),
+                (2082, 44),
+                (2083, 45),
+            ]
+        );
+        assert_eq!(
+            HolidaySet::NepalGazette.holidays().len(),
+            counts.iter().map(|(_, count)| count).sum::<usize>()
+        );
+    }
+
+    #[test]
+    fn every_year_s_dashain_holiday_holds_vijaya_dashami() {
+        let spans: Vec<(i32, On, On)> = HolidaySet::NepalGazette
+            .holidays()
+            .into_iter()
+            .filter(|holiday| holiday.festivals.contains(&"VIJAYA_DASHAMI".to_owned()))
+            .map(|holiday| {
+                let (first, last) = (holiday.first.unwrap(), holiday.last.unwrap());
+                (
+                    holiday.year,
+                    (first.month, first.day),
+                    (last.month, last.day),
+                )
+            })
+            .collect();
+        assert_eq!(
+            spans,
+            [
+                (2076, (6, 18), (6, 22)),
+                (2077, (7, 7), (7, 11)),
+                (2078, (6, 26), (6, 30)),
+                (2079, (6, 16), (6, 21)),
+                (2080, (7, 4), (7, 9)),
+                (2081, (6, 24), (6, 28)),
+                (2082, (6, 13), (6, 18)),
+                (2083, (6, 31), (7, 6)),
+            ]
+        );
+    }
+
+    #[test]
+    fn a_later_notice_adds_dates_and_cancels() {
+        let set = HolidaySet::NepalGazette;
+        // VS 2078: Gyalpo Lhosar, the Sherpa community's in the notice,
+        // given to the whole country by a later one.
+        let (scope, source) = nepal_gazette_scope("GYALPO_LHOSAR", Some(2078)).unwrap();
+        assert_eq!(scope, HolidayScope::National);
+        assert!(source.contains("Falgun 18, 2078"), "{source}");
+        assert!(set.holidays_of(2078).iter().any(|holiday| {
+            holiday.festivals == ["GYALPO_LHOSAR"] && holiday.scope == HolidayScope::Community
+        }));
+        // VS 2080: Janayuddha Day's holiday cancelled, and Eid's day fixed.
+        assert!(
+            set.holidays_of(2080)
+                .iter()
+                .all(|holiday| holiday.notice.ne != "जनयुद्ध दिवस")
+        );
+        let eid = set
+            .holidays_of(2080)
+            .into_iter()
+            .find(|holiday| holiday.festivals == ["EID_AL_FITR"])
+            .unwrap();
+        assert_eq!(eid.first.map(|day| (day.month, day.day)), Some((12, 29)));
+        assert!(
+            eid.source.contains("clause 2.1 (त); its day by"),
+            "{}",
+            eid.source
+        );
+        // VS 2079: a day of mourning, a holiday naming no festival.
+        assert!(set.holidays_of(2079).iter().any(|holiday| {
+            holiday.festivals.is_empty()
+                && holiday.first.as_ref().map(|day| (day.month, day.day)) == Some((7, 1))
+        }));
     }
 
     #[test]
@@ -755,8 +726,13 @@ mod tests {
             ) {
                 names(!holiday.communities.is_empty());
             } else if holiday.scope == HolidayScope::Region {
-                // Sirua Pavani's five districts have no key; its notice names them.
-                names(!holiday.regions.is_empty() || holiday.festivals == ["SIRUWA_PAVANI"]);
+                // Sirua Pavani's districts and Dhawathambu Chheuchik's have
+                // no key; their notices name them.
+                names(
+                    !holiday.regions.is_empty()
+                        || holiday.notice.ne.starts_with("सिरुवा पावनी")
+                        || holiday.notice.ne.starts_with("धवथाम्बु छेउचिक"),
+                );
             } else {
                 names(!limited);
             }
@@ -766,19 +742,29 @@ mod tests {
     #[test]
     fn a_festival_s_day_inside_its_holiday_is_granted_and_one_outside_is_not() {
         // Kukur Tihar, Kartik 22, inside Tihar's Kartik 22 to 26.
-        let (scope, source) = nepal_gazette_scope("KUKUR_TIHAR").unwrap();
+        let (scope, source) = nepal_gazette_scope("KUKUR_TIHAR", Some(2083)).unwrap();
         assert_eq!(scope, HolidayScope::National);
         assert!(source.ends_with("clause 2.1 (छ), a day of the festival it grants"));
         // Kag Tihar, Kartik 21, the day before it.
-        assert_eq!(nepal_gazette_scope("KAG_TIHAR"), None);
+        assert_eq!(nepal_gazette_scope("KAG_TIHAR", Some(2083)), None);
         // Mha puja is no day of the clause's festival in the pack's grouping.
-        assert_eq!(nepal_gazette_scope("MHA_PUJA"), None);
+        assert_eq!(nepal_gazette_scope("MHA_PUJA", Some(2083)), None);
+        // VS 2080's notice names it among Tihar's days.
+        assert_eq!(
+            nepal_gazette_scope("MHA_PUJA", Some(2080)).map(|(scope, _)| scope),
+            Some(HolidayScope::National)
+        );
+        // The latest notice is VS 2083's.
+        assert_eq!(
+            nepal_gazette_scope("KUKUR_TIHAR", None),
+            nepal_gazette_scope("KUKUR_TIHAR", Some(2083))
+        );
     }
 
     #[test]
     fn the_holidays_naming_more_than_one_festival_are_the_notices_five() {
         let several: Vec<Vec<String>> = HolidaySet::NepalGazette
-            .holidays()
+            .holidays_of(2083)
             .into_iter()
             .filter(|holiday| holiday.festivals.len() > 1)
             .map(|holiday| holiday.festivals)

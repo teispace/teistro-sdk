@@ -1,6 +1,7 @@
-//! Nepal's gazetted holidays of VS 2083 (`03-design/nepal-gazette-holidays.md`,
-//! SR-123): the set each Nepal pack's listing carries, its days held to the
-//! days `NEPAL_PANCHANGA` reckons for the festivals each holiday names.
+//! Nepal's gazetted holidays (`03-design/nepal-gazette-holidays.md`, SR-123):
+//! the set each Nepal pack's listing carries, every year's festivals named
+//! in the catalogue, and VS 2083's days held to the days `NEPAL_PANCHANGA`
+//! reckons for the festivals each holiday names.
 
 #![allow(
     clippy::unwrap_used,
@@ -77,20 +78,49 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
 
 #[test]
 fn every_nepal_pack_lists_the_gazette_and_no_other_pack_does() {
+    // Every year's, VS 2076 to 2083.
+    let every = HolidaySet::NepalGazette.holidays().len();
+    assert_eq!(every, 346);
     for pack in FestivalPack::ALL {
         let listed = pack.listing();
         let nepal = matches!(pack, FestivalPack::Nepal | FestivalPack::NepalPanchanga);
         assert_eq!(
             listed.holidays.len(),
-            if nepal { 45 } else { 0 },
+            if nepal { every } else { 0 },
             "{}",
             pack.key()
         );
     }
     let json = serde_json::to_value(FestivalPack::NepalPanchanga.listing()).unwrap();
-    assert_eq!(json["holidays"][8]["festivals"][3], "JYAPU_DIWAS");
-    assert_eq!(json["holidays"][8]["scope"], "NATIONAL");
-    assert_eq!(json["holidays"][8]["first"]["month"], 9);
+    let of_2083: Vec<&serde_json::Value> = json["holidays"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|holiday| holiday["year"] == 2083)
+        .collect();
+    assert_eq!(of_2083.len(), 45);
+    assert_eq!(of_2083[8]["festivals"][3], "JYAPU_DIWAS");
+    assert_eq!(of_2083[8]["scope"], "NATIONAL");
+    assert_eq!(of_2083[8]["first"]["month"], 9);
+}
+
+#[test]
+fn every_festival_a_holiday_names_is_in_the_catalogue() {
+    let sdk = Context::builder().build().unwrap();
+    let set = HolidaySet::NepalGazette;
+    let cancelled = set.years().into_iter().flat_map(|year| set.cancelled(year));
+    let mut named = 0;
+    for holiday in set.holidays().into_iter().chain(cancelled) {
+        for key in &holiday.festivals {
+            assert!(
+                sdk.intl().entity(&format!("festival.{key}")).is_ok(),
+                "{key}, named by {}, is no festival of the catalogue",
+                holiday.source
+            );
+            named += 1;
+        }
+    }
+    assert!(named > 300, "{named}");
 }
 
 /// A holiday's festivals and its first day, month and day.
@@ -99,7 +129,7 @@ type Named<'a> = (Vec<&'a str>, Option<(u8, u8)>);
 #[test]
 fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() {
     let several: Vec<Holiday> = HolidaySet::NepalGazette
-        .holidays()
+        .holidays_of(2083)
         .into_iter()
         .filter(|holiday| holiday.festivals.len() > 1)
         .collect();
@@ -147,7 +177,7 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
     let days = reckoned();
     let mut held = 0;
-    for holiday in HolidaySet::NepalGazette.holidays() {
+    for holiday in HolidaySet::NepalGazette.holidays_of(2083) {
         let Some(first) = &holiday.first else {
             continue;
         };
@@ -182,7 +212,7 @@ fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
     // Jayanti, Bhoto Jatra, Sirua Pavani) print no day to hold.
     assert_eq!(held, 46);
     // The festival days a span is read with are the days the pack reckons.
-    for (key, day) in HolidaySet::NepalGazette.festival_days() {
+    for (key, day) in HolidaySet::NepalGazette.festival_days(2083) {
         assert!(
             days.get(&key)
                 .is_some_and(|on| on.contains(&(day.month, day.day))),

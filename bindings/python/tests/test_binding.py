@@ -279,7 +279,7 @@ class AContext(WithLibrary):
         self.assertEqual((span["last"]["year"], span["last"]["month"], span["last"]["day"]), (2399, 12, 31))
         self.assertLess(span["fromJd"], span["toJd"])
         self.assertLessEqual(coverage["bikramSambat"]["officialFirstYear"], 2083)
-        self.assertEqual(coverage["holidays"][0], {"set": "NEPAL_GAZETTE", "years": [2083]})
+        self.assertEqual(coverage["holidays"][0], {"set": "NEPAL_GAZETTE", "years": list(range(2076, 2084))})
 
     def test_explain_settings_names_each_layer_and_diff_settings_where_two_part(self) -> None:
         # The context's own patch is its layer, a per-call patch the request's.

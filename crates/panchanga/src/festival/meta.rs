@@ -696,16 +696,16 @@ impl FestivalMeta {
     }
 
     /// These values with the tier Nepal's gazetted notice gives `key`
-    /// (`nepal-gazette-holidays.md` §4), read from VS 2083's notice, the
-    /// one in hand: `NATIONAL` for a holiday the whole country keeps,
+    /// (`nepal-gazette-holidays.md` §4), read from the latest notice the
+    /// SDK ships, VS 2083's: `NATIONAL` for a holiday the whole country keeps,
     /// `REGIONAL` for one only some keep (a community, a region, women,
     /// schools), or `MAJOR` when a text also gives it a fast. A holiday of
     /// several days granted as one festival's grants that festival's days
     /// inside it ([`super::nepal_gazette_scope`]). A key the
     /// notice gives the whole country no holiday is not `NATIONAL`, whatever
     /// its group says: it takes the tier its fields give below it. A later
-    /// year's notice is read the same way when it is added, and replaces
-    /// this one's tiers.
+    /// year's notice, when shipped, is read the same way and replaces
+    /// this one's tiers; the earlier years' notices give none.
     ///
     /// ```
     /// use teistro_panchanga::festival::{FestivalMeta, Significance};
@@ -721,7 +721,7 @@ impl FestivalMeta {
     /// ```
     #[must_use]
     pub fn with_gazette(self, key: &str) -> FestivalMeta {
-        let (tier, source) = match super::nepal_gazette_scope(key) {
+        let (tier, source) = match super::nepal_gazette_scope(key, None) {
             Some((HolidayScope::National, source)) => (Significance::National, source),
             Some((scope, source)) if scope != HolidayScope::OfficesOpen => {
                 let tier = if self.fast.is_empty() {
@@ -2459,7 +2459,7 @@ mod tests {
             let unmarked = FestivalMeta::nepal_unmarked(key);
             assert!(tier < unmarked.tier(), "{key}'s mark does not raise it");
             assert!(
-                super::super::nepal_gazette_scope(key)
+                super::super::nepal_gazette_scope(key, None)
                     .is_none_or(|(scope, _)| scope == HolidayScope::OfficesOpen),
                 "{key}: a gazetted holiday takes the clause's tier"
             );
@@ -2481,7 +2481,7 @@ mod tests {
         for &(key, _) in &NEPAL_KEYS {
             if FestivalMeta::nepal(key).tier() == Significance::National {
                 assert!(
-                    super::super::nepal_gazette_scope(key)
+                    super::super::nepal_gazette_scope(key, None)
                         .is_some_and(|(scope, _)| scope == HolidayScope::National),
                     "{key} is NATIONAL and VS 2083's notice gives the country no holiday for it"
                 );

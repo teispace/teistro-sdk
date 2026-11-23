@@ -155,7 +155,7 @@ test('coverage is the range as data (SR-136)', () => {
   assert.deepEqual([last.year, last.month, last.day], [2399, 12, 31]);
   assert.ok(fromJd < toJd);
   assert.ok(coverage.bikramSambat.officialFirstYear <= 2083);
-  assert.deepEqual(coverage.holidays[0], { set: 'NEPAL_GAZETTE', years: [2083] });
+  assert.deepEqual(coverage.holidays[0], { set: 'NEPAL_GAZETTE', years: [2076, 2077, 2078, 2079, 2080, 2081, 2082, 2083] });
   assert.ok(Object.isFrozen(coverage));
 });
 
