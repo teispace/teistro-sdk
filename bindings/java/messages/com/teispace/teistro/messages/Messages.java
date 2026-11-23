@@ -11546,6 +11546,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.GLOBAL_TIGER_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms globalTigerDay() {
+                    return r.entity("festival.GLOBAL_TIGER_DAY");
+                }
+
+                /**
                  * The forms of `festival.GOOD_FRIDAY` in the current locale.
                  *
                  * @return the forms
@@ -11996,6 +12005,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayAgainstNuclearTests() {
+                    return r.entity("festival.INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS");
+                }
+
+                /**
                  * The forms of `festival.INTERNATIONAL_DAY_FOR_BIOLOGICAL_DIVERSITY` in the current locale.
                  *
                  * @return the forms
@@ -12032,6 +12050,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayForTheEliminationOfSexualViolenceInConflict() {
+                    return r.entity("festival.INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT");
+                }
+
+                /**
                  * The forms of `festival.INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_VIOLENCE_AGAINST_WOMEN` in the current locale.
                  *
                  * @return the forms
@@ -12047,6 +12074,15 @@ public final class Messages {
                  */
                 public EntityForms internationalDayForTheEradicationOfPoverty() {
                     return r.entity("festival.INTERNATIONAL_DAY_FOR_THE_ERADICATION_OF_POVERTY");
+                }
+
+                /**
+                 * The forms of `festival.INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayForThePreservationOfTheOzoneLayer() {
+                    return r.entity("festival.INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER");
                 }
 
                 /**
@@ -12068,12 +12104,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayForUniversalAccessToInformation() {
+                    return r.entity("festival.INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION");
+                }
+
+                /**
                  * The forms of `festival.INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms internationalDayOfActionForWomenSHealth() {
                     return r.entity("festival.INTERNATIONAL_DAY_OF_ACTION_FOR_WOMEN_S_HEALTH");
+                }
+
+                /**
+                 * The forms of `festival.INTERNATIONAL_DAY_OF_COOPERATIVES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayOfCooperatives() {
+                    return r.entity("festival.INTERNATIONAL_DAY_OF_COOPERATIVES");
                 }
 
                 /**
@@ -12101,6 +12155,24 @@ public final class Messages {
                  */
                 public EntityForms internationalDayOfHappiness() {
                     return r.entity("festival.INTERNATIONAL_DAY_OF_HAPPINESS");
+                }
+
+                /**
+                 * The forms of `festival.INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayOfInnocentChildrenVictimsOfAggression() {
+                    return r.entity("festival.INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION");
+                }
+
+                /**
+                 * The forms of `festival.INTERNATIONAL_DAY_OF_NEUTRALITY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayOfNeutrality() {
+                    return r.entity("festival.INTERNATIONAL_DAY_OF_NEUTRALITY");
                 }
 
                 /**
@@ -12164,6 +12236,15 @@ public final class Messages {
                  */
                 public EntityForms internationalDayOfSportForDevelopmentAndPeace() {
                     return r.entity("festival.INTERNATIONAL_DAY_OF_SPORT_FOR_DEVELOPMENT_AND_PEACE");
+                }
+
+                /**
+                 * The forms of `festival.INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms internationalDayOfTheVictimsOfEnforcedDisappearances() {
+                    return r.entity("festival.INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES");
                 }
 
                 /**
@@ -15479,6 +15560,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.WORLD_BREASTFEEDING_WEEK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldBreastfeedingWeek() {
+                    return r.entity("festival.WORLD_BREASTFEEDING_WEEK");
+                }
+
+                /**
                  * The forms of `festival.WORLD_CANCER_DAY` in the current locale.
                  *
                  * @return the forms
@@ -15533,6 +15623,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldDayAgainstTraffickingInPersons() {
+                    return r.entity("festival.WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS");
+                }
+
+                /**
+                 * The forms of `festival.WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldDayForSafetyAndHealthAtWork() {
+                    return r.entity("festival.WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK");
+                }
+
+                /**
                  * The forms of `festival.WORLD_DAY_OF_SOCIAL_JUSTICE` in the current locale.
                  *
                  * @return the forms
@@ -15566,6 +15674,15 @@ public final class Messages {
                  */
                 public EntityForms worldDiabetesDay() {
                     return r.entity("festival.WORLD_DIABETES_DAY");
+                }
+
+                /**
+                 * The forms of `festival.WORLD_ELDER_ABUSE_AWARENESS_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldElderAbuseAwarenessDay() {
+                    return r.entity("festival.WORLD_ELDER_ABUSE_AWARENESS_DAY");
                 }
 
                 /**
@@ -15623,6 +15740,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.WORLD_HEPATITIS_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldHepatitisDay() {
+                    return r.entity("festival.WORLD_HEPATITIS_DAY");
+                }
+
+                /**
                  * The forms of `festival.WORLD_HERITAGE_DAY` in the current locale.
                  *
                  * @return the forms
@@ -15647,6 +15773,15 @@ public final class Messages {
                  */
                 public EntityForms worldIntellectualPropertyDay() {
                     return r.entity("festival.WORLD_INTELLECTUAL_PROPERTY_DAY");
+                }
+
+                /**
+                 * The forms of `festival.WORLD_LEPROSY_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldLeprosyDay() {
+                    return r.entity("festival.WORLD_LEPROSY_DAY");
                 }
 
                 /**
@@ -15848,6 +15983,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.WORLD_SUICIDE_PREVENTION_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldSuicidePreventionDay() {
+                    return r.entity("festival.WORLD_SUICIDE_PREVENTION_DAY");
+                }
+
+                /**
                  * The forms of `festival.WORLD_TEACHERS_DAY` in the current locale.
                  *
                  * @return the forms
@@ -15926,6 +16070,15 @@ public final class Messages {
                  */
                 public EntityForms worldWetlandsDay() {
                     return r.entity("festival.WORLD_WETLANDS_DAY");
+                }
+
+                /**
+                 * The forms of `festival.WORLD_YOUTH_SKILLS_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms worldYouthSkillsDay() {
+                    return r.entity("festival.WORLD_YOUTH_SKILLS_DAY");
                 }
 
                 /**

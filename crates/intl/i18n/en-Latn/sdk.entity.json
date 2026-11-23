@@ -6244,6 +6244,74 @@
       "name": "Krishna Gorakhkali Puja",
       "prose": "Krishna Gorakhkali Puja",
       "iast": "Kṛṣṇa Gorakhakālī Pūjā"
+    },
+    "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK": {
+      "name": "World Day for Safety and Health at Work",
+      "prose": "World Day for Safety and Health at Work, 28 April"
+    },
+    "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION": {
+      "name": "International Day of Innocent Children Victims of Aggression",
+      "prose": "International Day of Innocent Children Victims of Aggression, 4 June"
+    },
+    "WORLD_ELDER_ABUSE_AWARENESS_DAY": {
+      "name": "World Elder Abuse Awareness Day",
+      "prose": "World Elder Abuse Awareness Day, 15 June"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT": {
+      "name": "International Day for the Elimination of Sexual Violence in Conflict",
+      "prose": "International Day for the Elimination of Sexual Violence in Conflict, 19 June"
+    },
+    "WORLD_YOUTH_SKILLS_DAY": {
+      "name": "World Youth Skills Day",
+      "prose": "World Youth Skills Day, 15 July"
+    },
+    "WORLD_HEPATITIS_DAY": {
+      "name": "World Hepatitis Day",
+      "prose": "World Hepatitis Day, 28 July"
+    },
+    "WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS": {
+      "name": "World Day against Trafficking in Persons",
+      "prose": "World Day against Trafficking in Persons, 30 July"
+    },
+    "WORLD_BREASTFEEDING_WEEK": {
+      "name": "World Breastfeeding Week",
+      "prose": "World Breastfeeding Week, from 1 August"
+    },
+    "INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS": {
+      "name": "International Day against Nuclear Tests",
+      "prose": "International Day against Nuclear Tests, 29 August"
+    },
+    "INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES": {
+      "name": "International Day of the Victims of Enforced Disappearances",
+      "prose": "International Day of the Victims of Enforced Disappearances, 30 August"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER": {
+      "name": "International Day for the Preservation of the Ozone Layer",
+      "prose": "International Day for the Preservation of the Ozone Layer, 16 September"
+    },
+    "INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION": {
+      "name": "International Day for Universal Access to Information",
+      "prose": "International Day for Universal Access to Information, 28 September"
+    },
+    "INTERNATIONAL_DAY_OF_NEUTRALITY": {
+      "name": "International Day of Neutrality",
+      "prose": "International Day of Neutrality, 12 December"
+    },
+    "WORLD_SUICIDE_PREVENTION_DAY": {
+      "name": "World Suicide Prevention Day",
+      "prose": "World Suicide Prevention Day, 10 September"
+    },
+    "GLOBAL_TIGER_DAY": {
+      "name": "Global Tiger Day",
+      "prose": "Global Tiger Day, 29 July"
+    },
+    "WORLD_LEPROSY_DAY": {
+      "name": "World Leprosy Day",
+      "prose": "World Leprosy Day, the last Sunday of January"
+    },
+    "INTERNATIONAL_DAY_OF_COOPERATIVES": {
+      "name": "International Day of Cooperatives",
+      "prose": "International Day of Cooperatives, the first Saturday of July"
     }
   },
   "agni_vasa": {
