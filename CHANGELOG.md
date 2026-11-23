@@ -10,6 +10,19 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+**Seventeen international and keepers' days Nepal's calendars print (C2345).**
+**Numbers:** 17 rules join `NEPAL_PANCHANGA`, 15 on a fixed Gregorian date and 2 on a
+weekday of the month; no existing rule's day moves.
+- **Added:** thirteen of the UN's international days on the dates its list gives (read
+  2026-11-23), among them `WORLD_HEPATITIS_DAY`, `INTERNATIONAL_DAY_OF_NEUTRALITY` and
+  `WORLD_BREASTFEEDING_WEEK` on its first day; `GLOBAL_TIGER_DAY` (29 July) and
+  `WORLD_SUICIDE_PREVENTION_DAY` (10 September) on their keepers' dates; and
+  `WORLD_LEPROSY_DAY` (January's last Sunday) and `INTERNATIONAL_DAY_OF_COOPERATIVES` (July's
+  first Saturday). Each is named in every locale, in Nepali as Nepal's calendars mostly print
+  it. Safer Internet Day stays out: its kept Tuesdays fit no weekday rule (C1806).
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by

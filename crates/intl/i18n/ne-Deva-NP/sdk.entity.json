@@ -6254,6 +6254,74 @@
       "name": "कृष्ण गोरखकाली पूजा",
       "prose": "कृष्ण गोरखकाली पूजा",
       "iast": "Kṛṣṇa Gorakhakālī Pūjā"
+    },
+    "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK": {
+      "name": "कार्यस्थलमा सुरक्षा र स्वास्थ्यका लागि विश्व दिवस",
+      "prose": "कार्यस्थलमा सुरक्षा र स्वास्थ्यका लागि विश्व दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION": {
+      "name": "निर्दोष बालबालिकामाथि अत्याचारविरुद्धको दिवस",
+      "prose": "निर्दोष बालबालिकामाथि अत्याचारविरुद्धको दिवस"
+    },
+    "WORLD_ELDER_ABUSE_AWARENESS_DAY": {
+      "name": "ज्येष्ठ नागरिक दुर्व्यवहारविरुद्ध विश्व सचेतना दिवस",
+      "prose": "ज्येष्ठ नागरिक दुर्व्यवहारविरुद्ध विश्व सचेतना दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT": {
+      "name": "द्वन्द्वमा यौन हिंसा उन्मूलनका लागि अन्तर्राष्ट्रिय दिवस",
+      "prose": "द्वन्द्वमा यौन हिंसा उन्मूलनका लागि अन्तर्राष्ट्रिय दिवस"
+    },
+    "WORLD_YOUTH_SKILLS_DAY": {
+      "name": "विश्व युवा सीप दिवस",
+      "prose": "विश्व युवा सीप दिवस"
+    },
+    "WORLD_HEPATITIS_DAY": {
+      "name": "विश्व हेपाटाइटिस दिवस",
+      "prose": "विश्व हेपाटाइटिस दिवस"
+    },
+    "WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS": {
+      "name": "अन्तर्राष्ट्रिय मानव बेचबिखनविरुद्ध दिवस",
+      "prose": "अन्तर्राष्ट्रिय मानव बेचबिखनविरुद्ध दिवस"
+    },
+    "WORLD_BREASTFEEDING_WEEK": {
+      "name": "विश्व स्तनपान सप्ताह",
+      "prose": "विश्व स्तनपान सप्ताह"
+    },
+    "INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS": {
+      "name": "विश्व आणविक परीक्षणविरुद्धको दिवस",
+      "prose": "विश्व आणविक परीक्षणविरुद्धको दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES": {
+      "name": "विश्व बेपत्ताविरुद्धको दिवस",
+      "prose": "विश्व बेपत्ताविरुद्धको दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER": {
+      "name": "विश्व ओजोन तह बचाउ दिवस",
+      "prose": "विश्व ओजोन तह बचाउ दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION": {
+      "name": "सूचनामा विश्वव्यापी पहुँचको अन्तर्राष्ट्रिय दिवस",
+      "prose": "सूचनामा विश्वव्यापी पहुँचको अन्तर्राष्ट्रिय दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_NEUTRALITY": {
+      "name": "अन्तर्राष्ट्रिय तटस्थता दिवस",
+      "prose": "अन्तर्राष्ट्रिय तटस्थता दिवस"
+    },
+    "WORLD_SUICIDE_PREVENTION_DAY": {
+      "name": "विश्व आत्महत्या रोकथाम दिवस",
+      "prose": "विश्व आत्महत्या रोकथाम दिवस"
+    },
+    "GLOBAL_TIGER_DAY": {
+      "name": "विश्व बाघ दिवस",
+      "prose": "विश्व बाघ दिवस"
+    },
+    "WORLD_LEPROSY_DAY": {
+      "name": "विश्व कुष्ठरोग दिवस",
+      "prose": "विश्व कुष्ठरोग दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_COOPERATIVES": {
+      "name": "अन्तर्राष्ट्रिय सहकारी दिवस",
+      "prose": "अन्तर्राष्ट्रिय सहकारी दिवस"
     }
   },
   "agni_vasa": {

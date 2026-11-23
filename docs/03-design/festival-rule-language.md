@@ -392,7 +392,10 @@ dates, each source opened before it went into its rule (`MORE_KEPT_DAYS`,
 Thimi's Sindoor jatra on a Bikram Sambat date (C1800), Language day in
 Bagmati Province alone (`NP-P3`, C1802), fifteen days of other bodies and
 custom on a Gregorian date (C1803, C1804), and World First Aid, Smile and
-Sight day on a weekday of the month (C1805).
+Sight day on a weekday of the month (C1805). 17 more follow from the
+coverage read of Nepal's calendars (`LISTED_UN_DAYS`, `KEEPERS_DAYS`,
+`KEEPERS_WEEKDAYS`, C2345): thirteen UN days, two keepers' dates, and World
+Leprosy Day and the cooperatives' day on a weekday of the month.
 Bhaktapur's pole is raised on the Bikram Sambat year's last day, a day of a
 month counted from its end (`YOSIN_UTTHAN`, Chaitra −1), which VS 2083 prints
 and the press reports kept (C1650).

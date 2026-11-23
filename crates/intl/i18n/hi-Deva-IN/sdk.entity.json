@@ -5805,6 +5805,74 @@
       "name": "कृष्ण गोरखकाली पूजा",
       "prose": "कृष्ण गोरखकाली पूजा",
       "iast": "Kṛṣṇa Gorakhakālī Pūjā"
+    },
+    "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK": {
+      "name": "कार्यस्थल पर सुरक्षा और स्वास्थ्य के लिए विश्व दिवस",
+      "prose": "कार्यस्थल पर सुरक्षा और स्वास्थ्य के लिए विश्व दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION": {
+      "name": "आक्रामकता के शिकार मासूम बच्चों का अंतर्राष्ट्रीय दिवस",
+      "prose": "आक्रामकता के शिकार मासूम बच्चों का अंतर्राष्ट्रीय दिवस"
+    },
+    "WORLD_ELDER_ABUSE_AWARENESS_DAY": {
+      "name": "विश्व बुज़ुर्ग दुर्व्यवहार जागरूकता दिवस",
+      "prose": "विश्व बुज़ुर्ग दुर्व्यवहार जागरूकता दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT": {
+      "name": "संघर्ष में यौन हिंसा के उन्मूलन के लिए अंतर्राष्ट्रीय दिवस",
+      "prose": "संघर्ष में यौन हिंसा के उन्मूलन के लिए अंतर्राष्ट्रीय दिवस"
+    },
+    "WORLD_YOUTH_SKILLS_DAY": {
+      "name": "विश्व युवा कौशल दिवस",
+      "prose": "विश्व युवा कौशल दिवस"
+    },
+    "WORLD_HEPATITIS_DAY": {
+      "name": "विश्व हेपेटाइटिस दिवस",
+      "prose": "विश्व हेपेटाइटिस दिवस"
+    },
+    "WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS": {
+      "name": "मानव तस्करी के विरुद्ध विश्व दिवस",
+      "prose": "मानव तस्करी के विरुद्ध विश्व दिवस"
+    },
+    "WORLD_BREASTFEEDING_WEEK": {
+      "name": "विश्व स्तनपान सप्ताह",
+      "prose": "विश्व स्तनपान सप्ताह"
+    },
+    "INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS": {
+      "name": "परमाणु परीक्षण के विरुद्ध अंतर्राष्ट्रीय दिवस",
+      "prose": "परमाणु परीक्षण के विरुद्ध अंतर्राष्ट्रीय दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES": {
+      "name": "बलात् गुमशुदगी के पीड़ितों का अंतर्राष्ट्रीय दिवस",
+      "prose": "बलात् गुमशुदगी के पीड़ितों का अंतर्राष्ट्रीय दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER": {
+      "name": "ओज़ोन परत संरक्षण के लिए अंतर्राष्ट्रीय दिवस",
+      "prose": "ओज़ोन परत संरक्षण के लिए अंतर्राष्ट्रीय दिवस"
+    },
+    "INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION": {
+      "name": "सूचना तक सार्वभौमिक पहुँच के लिए अंतर्राष्ट्रीय दिवस",
+      "prose": "सूचना तक सार्वभौमिक पहुँच के लिए अंतर्राष्ट्रीय दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_NEUTRALITY": {
+      "name": "अंतर्राष्ट्रीय तटस्थता दिवस",
+      "prose": "अंतर्राष्ट्रीय तटस्थता दिवस"
+    },
+    "WORLD_SUICIDE_PREVENTION_DAY": {
+      "name": "विश्व आत्महत्या रोकथाम दिवस",
+      "prose": "विश्व आत्महत्या रोकथाम दिवस"
+    },
+    "GLOBAL_TIGER_DAY": {
+      "name": "विश्व बाघ दिवस",
+      "prose": "विश्व बाघ दिवस"
+    },
+    "WORLD_LEPROSY_DAY": {
+      "name": "विश्व कुष्ठ रोग दिवस",
+      "prose": "विश्व कुष्ठ रोग दिवस"
+    },
+    "INTERNATIONAL_DAY_OF_COOPERATIVES": {
+      "name": "अंतर्राष्ट्रीय सहकारिता दिवस",
+      "prose": "अंतर्राष्ट्रीय सहकारिता दिवस"
     }
   },
   "era": {

@@ -450,7 +450,7 @@ An authority announces the day.
 
 A date in the Bikram Sambat or the Gregorian calendar, fixed by law or by the body that keeps it. These are listed by key and English name only.
 
-152 of them ship as dated days in `NEPAL_PANCHANGA`, 38 on a Bikram Sambat date and 114 on a Gregorian one, three of those on a weekday of the month. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
+169 of them ship as dated days in `NEPAL_PANCHANGA`, 38 on a Bikram Sambat date and 131 on a Gregorian one, five of those on a weekday of the month. 41 were searched for on every page of both editions of the committee's print, and ship only where both editions print them on the same date and every day a patro printed in Nepal verified for them agrees. The six national days came first (`LOKTANTRA_DIWAS`, `CONSTITUTION_DAY`, `PRITHVI_JAYANTI`, `EARTHQUAKE_SAFETY_DAY`, `MARTYRS_DAY`, `DEMOCRACY_DAY`); the other 35 are listed with their pages in `crates/panchanga/src/festival/dated.rs` (`SOLAR_DAYS`, `GREGORIAN_DAYS`), and `crates/sdk/tests/festival.rs` holds each to the Gregorian day both editions print.
 
 Five are printed and still not shipped, because no one date holds:
 - `GURU_GOBIND_SINGH_JAYANTI`: Poush 21 in both editions, 5 January, but the verified days fall on 4 and 6 January in two years.
@@ -475,6 +475,11 @@ Five are printed and still not shipped, because no one date holds:
 - Thirteen on the Gregorian date their keeping body names (C1803): `WORLD_HERITAGE_DAY`, `WORLD_HYPERTENSION_DAY`, `SAGARMATHA_DAY`, `INTERNATIONAL_OLYMPIC_DAY`, `WORLD_PHARMACISTS_DAY`, `NON_RESIDENT_NEPALI_DAY`, `WORLD_STANDARDS_DAY`, `WORLD_RADIOGRAPHY_DAY`, `WORLD_FREEDOM_DAY`, `INTERNATIONAL_STUDENTS_DAY`, `PI_DAY`, and `NATIONAL_DRESS_DAY` and `NATIONAL_TOPI_DAY`, one day of 1 January under two names.
 - Two customs no body keeps, on the press's report of them kept in Nepal (C1804): `VALENTINE_S_DAY` and `APRIL_FOOLS_DAY`.
 - Three on a weekday of a Gregorian month, as their organisers state it (C1805): `WORLD_FIRST_AID_DAY` (September's second Saturday), `WORLD_SMILE_DAY` (October's first Friday) and `WORLD_SIGHT_DAY` (October's second Thursday).
+
+17 more ship from SR-145's coverage read of Nepal's calendars (C2345; `LISTED_UN_DAYS`, `KEEPERS_DAYS` and `KEEPERS_WEEKDAYS` in `dated.rs`, each source read 2026-11-23, and `COVERAGE_DAYS` in `crates/sdk/tests/festival.rs`):
+- Thirteen of the UN's international days on its list's dates: `WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK`, `INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION`, `WORLD_ELDER_ABUSE_AWARENESS_DAY`, `INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT`, `WORLD_YOUTH_SKILLS_DAY`, `WORLD_HEPATITIS_DAY`, `WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS`, `WORLD_BREASTFEEDING_WEEK` (its first day), `INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS`, `INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES`, `INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER`, `INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION` and `INTERNATIONAL_DAY_OF_NEUTRALITY`.
+- Two on their keepers' dates: `GLOBAL_TIGER_DAY` (29 July) and `WORLD_SUICIDE_PREVENTION_DAY` (10 September).
+- Two on a weekday of the month: `WORLD_LEPROSY_DAY` (January's last Sunday) and `INTERNATIONAL_DAY_OF_COOPERATIVES` (July's first Saturday).
 
 The other unprinted days wait for a source of their own (C1603): Safer Internet day's kept Tuesdays fit no `civilWeekday` (C1806), and Earthquake memorial, Forest users', Siddhicharan's, UNESCO and World photography day lack a source that dates them (C1807 to C1811).
 

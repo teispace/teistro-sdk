@@ -1091,6 +1091,131 @@ const KEPT_WEEKDAYS: [(&str, u8, Vara, i8, &str); 3] = [
     ),
 ];
 
+/// The United Nations' international days Nepal's calendars print over
+/// VS 2076 to 2083 and `NEPAL_PANCHANGA` named on no day, each on the date
+/// the UN's list gives: key, month, day, and the list's entry as printed,
+/// read 2026-11-23 for SR-145's coverage (C2345).
+const LISTED_UN_DAYS: [(&str, u8, i8, &str); 13] = [
+    (
+        "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK",
+        4,
+        28,
+        "\"World Day for Safety and Health at Work\", 28 April",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION",
+        6,
+        4,
+        "\"International Day of Innocent Children Victims of Aggression\", 4 June, A/RES/ES-7/8",
+    ),
+    (
+        "WORLD_ELDER_ABUSE_AWARENESS_DAY",
+        6,
+        15,
+        "\"World Elder Abuse Awareness Day\", 15 June, A/RES/66/127",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT",
+        6,
+        19,
+        "\"International Day for the Elimination of Sexual Violence in Conflict\", 19 June, A/RES/69/293",
+    ),
+    (
+        "WORLD_YOUTH_SKILLS_DAY",
+        7,
+        15,
+        "\"World Youth Skills Day\", 15 July, A/RES/69/145",
+    ),
+    (
+        "WORLD_HEPATITIS_DAY",
+        7,
+        28,
+        "\"World Hepatitis Day [WHO]\", 28 July",
+    ),
+    (
+        "WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS",
+        7,
+        30,
+        "\"World Day against Trafficking in Persons\", 30 July, A/RES/68/192",
+    ),
+    (
+        "WORLD_BREASTFEEDING_WEEK",
+        8,
+        1,
+        "\"World Breastfeeding Week, 1-7 August [WHO]\", the week's first day",
+    ),
+    (
+        "INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS",
+        8,
+        29,
+        "\"International Day against Nuclear Tests\", 29 August, A/RES/64/35",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES",
+        8,
+        30,
+        "\"International Day of the Victims of Enforced Disappearances\", 30 August, A/RES/65/209",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER",
+        9,
+        16,
+        "\"International Day for the Preservation of the Ozone Layer\", 16 September, A/RES/49/114",
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION",
+        9,
+        28,
+        "\"International Day for Universal Access to Information\", 28 September, A/RES/74/5",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_NEUTRALITY",
+        12,
+        12,
+        "\"International Day of Neutrality\", 12 December, A/RES/71/275",
+    ),
+];
+
+/// The days other bodies keep on a Gregorian date that Nepal's calendars
+/// print over VS 2076 to 2083 and `NEPAL_PANCHANGA` named on no day, each
+/// on the date the keeping body's own page gives, read 2026-11-23: key,
+/// month, day, and the body, its page and the line read (C2345).
+const KEEPERS_DAYS: [(&str, u8, i8, &str); 2] = [
+    (
+        "GLOBAL_TIGER_DAY",
+        7,
+        29,
+        "the Global Tiger Forum, globaltigerforum.org: \"The Tiger Day of 29th July was announced on 23rd November 2010\", at the St Petersburg tiger summit",
+    ),
+    (
+        "WORLD_SUICIDE_PREVENTION_DAY",
+        9,
+        10,
+        "the International Association for Suicide Prevention, iasp.info/wspd: \"10 September World Suicide Prevention Day\"",
+    ),
+];
+
+/// The days kept on a weekday of a Gregorian month that Nepal's calendars
+/// print over VS 2076 to 2083, each on that weekday in every year they
+/// print it, and `NEPAL_PANCHANGA` named on no day: key, month, weekday,
+/// which of the month's, and the source read on 2026-11-23 (C2345).
+const KEEPERS_WEEKDAYS: [(&str, u8, Vara, i8, &str); 2] = [
+    (
+        "WORLD_LEPROSY_DAY",
+        1,
+        Vara::Ravivara,
+        -1,
+        "The Leprosy Mission, leprosymission.org/leprosy-champions/world-leprosy-day: \"World Leprosy Day always takes place on the last Sunday of January.\"",
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_COOPERATIVES",
+        7,
+        Vara::Shanivara,
+        1,
+        "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-23): \"International Day of Cooperatives\", July, A/RES/47/90; the International Co-operative Alliance, ica.coop: \"celebrated annually on the first Saturday of July\"",
+    ),
+];
+
 /// An observance on a date of a calendar.
 ///
 /// ```
@@ -1761,6 +1886,21 @@ impl DatedRule {
     /// ([`KEPT_GREGORIAN_DAYS`]) or on a weekday of a Gregorian month
     /// ([`KEPT_WEEKDAYS`]).
     fn on_kept_dates() -> impl Iterator<Item = DatedRule> {
+        /// What SR-145's coverage read says of a day it added (C2345).
+        const PRINTED_IN_NEPAL: &str = "Nepal's calendars print it over VS 2076 to 2083, and NEPAL_PANCHANGA named no observance on its day (SR-145, C2345)";
+        let weekday = |cited: fn(&str) -> String| {
+            move |&(key, month, weekday, nth, source): &(&str, u8, Vara, i8, &str)| DatedRule {
+                key: key.to_owned(),
+                source: cited(source),
+                on: Dated::CivilWeekday {
+                    calendar: Calendar::Gregorian,
+                    month,
+                    weekday,
+                    nth,
+                },
+                meta: super::FestivalMeta::default(),
+            }
+        };
         let kept = |calendar, cited: fn(&str) -> String| {
             move |&(key, month, day, source): &(&str, u8, i8, &str)| DatedRule {
                 key: key.to_owned(),
@@ -1808,23 +1948,20 @@ impl DatedRule {
                     .iter()
                     .map(kept(Calendar::Gregorian, str::to_owned)),
             )
-            .chain(
-                KEPT_WEEKDAYS
-                    .iter()
-                    .map(|&(key, month, weekday, nth, source)| DatedRule {
-                        key: key.to_owned(),
-                        source: format!(
-                            "{source}; the national panchanga prints it in neither VS 2082 nor 2083"
-                        ),
-                        on: Dated::CivilWeekday {
-                            calendar: Calendar::Gregorian,
-                            month,
-                            weekday,
-                            nth,
-                        },
-                        meta: super::FestivalMeta::default(),
-                    }),
-            )
+            .chain(KEPT_WEEKDAYS.iter().map(weekday(|source| {
+                format!("{source}; the national panchanga prints it in neither VS 2082 nor 2083")
+            })))
+            .chain(LISTED_UN_DAYS.iter().map(kept(Calendar::Gregorian, |entry| {
+                format!(
+                    "the United Nations' list of international days (un.org/en/observances/list-days-weeks, read 2026-11-23): {entry}; {PRINTED_IN_NEPAL}"
+                )
+            })))
+            .chain(KEEPERS_DAYS.iter().map(kept(Calendar::Gregorian, |source| {
+                format!("{source} (read 2026-11-23, rank 2); {PRINTED_IN_NEPAL}")
+            })))
+            .chain(KEEPERS_WEEKDAYS.iter().map(weekday(|source| {
+                format!("{source} (rank 2); {PRINTED_IN_NEPAL}")
+            })))
     }
 
     /// The festivals and civil days both editions print on one date of a

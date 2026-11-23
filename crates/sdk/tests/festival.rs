@@ -584,7 +584,7 @@ fn kept_dated(from: Day, to: Day) -> Vec<(String, Day)> {
 /// The days `NEPAL_PANCHANGA` keeps on a date over the range, less the
 /// civil days [`PRINTED_CIVIL_DAYS`] holds to both editions and those
 /// [`KEPT_CIVIL_DAYS`], [`KEPT_INTERNATIONAL_DAYS`] and [`MORE_KEPT_DAYS`]
-/// hold to a patro's verified days, and the two Eids, kept on the sighted
+/// hold to a patro's verified days, those [`COVERAGE_DAYS`] holds, and the two Eids, kept on the sighted
 /// Hijri calendar (`hijri_sighted.rs` holds them).
 fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
     kept_dated(from, to)
@@ -596,6 +596,7 @@ fn kept_solar(from: Day, to: Day) -> Vec<(String, Day)> {
                     .chain(&KEPT_CIVIL_DAYS)
                     .chain(&KEPT_INTERNATIONAL_DAYS)
                     .chain(&MORE_KEPT_DAYS)
+                    .chain(&COVERAGE_DAYS)
                     .all(|&(civil, ..)| civil != rule)
         })
         .collect()
@@ -1013,6 +1014,75 @@ const MORE_KEPT_DAYS: [(&str, Day, Day); 29] = [
     ("APRIL_FOOLS_DAY", (2026, 4, 1), (2027, 4, 1)),
 ];
 
+/// The international and keepers' days SR-145's coverage read added (C2345),
+/// each with the Gregorian day of VS 2082 and of VS 2083 its rule gives. The
+/// weekday ones are the days their keepers' pages give: the cooperatives'
+/// 5 July 2025 (the UN's list) and 4 July 2026 (its page), and World
+/// Leprosy Day's 25 January 2026.
+const COVERAGE_DAYS: [(&str, Day, Day); 17] = [
+    (
+        "WORLD_DAY_FOR_SAFETY_AND_HEALTH_AT_WORK",
+        (2025, 4, 28),
+        (2026, 4, 28),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_INNOCENT_CHILDREN_VICTIMS_OF_AGGRESSION",
+        (2025, 6, 4),
+        (2026, 6, 4),
+    ),
+    (
+        "WORLD_ELDER_ABUSE_AWARENESS_DAY",
+        (2025, 6, 15),
+        (2026, 6, 15),
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_ELIMINATION_OF_SEXUAL_VIOLENCE_IN_CONFLICT",
+        (2025, 6, 19),
+        (2026, 6, 19),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_COOPERATIVES",
+        (2025, 7, 5),
+        (2026, 7, 4),
+    ),
+    ("WORLD_YOUTH_SKILLS_DAY", (2025, 7, 15), (2026, 7, 15)),
+    ("WORLD_HEPATITIS_DAY", (2025, 7, 28), (2026, 7, 28)),
+    ("GLOBAL_TIGER_DAY", (2025, 7, 29), (2026, 7, 29)),
+    (
+        "WORLD_DAY_AGAINST_TRAFFICKING_IN_PERSONS",
+        (2025, 7, 30),
+        (2026, 7, 30),
+    ),
+    ("WORLD_BREASTFEEDING_WEEK", (2025, 8, 1), (2026, 8, 1)),
+    (
+        "INTERNATIONAL_DAY_AGAINST_NUCLEAR_TESTS",
+        (2025, 8, 29),
+        (2026, 8, 29),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_THE_VICTIMS_OF_ENFORCED_DISAPPEARANCES",
+        (2025, 8, 30),
+        (2026, 8, 30),
+    ),
+    ("WORLD_SUICIDE_PREVENTION_DAY", (2025, 9, 10), (2026, 9, 10)),
+    (
+        "INTERNATIONAL_DAY_FOR_THE_PRESERVATION_OF_THE_OZONE_LAYER",
+        (2025, 9, 16),
+        (2026, 9, 16),
+    ),
+    (
+        "INTERNATIONAL_DAY_FOR_UNIVERSAL_ACCESS_TO_INFORMATION",
+        (2025, 9, 28),
+        (2026, 9, 28),
+    ),
+    (
+        "INTERNATIONAL_DAY_OF_NEUTRALITY",
+        (2025, 12, 12),
+        (2026, 12, 12),
+    ),
+    ("WORLD_LEPROSY_DAY", (2026, 1, 25), (2027, 1, 31)),
+];
+
 /// Each civil day the committee does not print falls on the day its keeper
 /// names, the Bikram Sambat ones through the calendar's own conversion.
 #[test]
@@ -1026,6 +1096,7 @@ fn the_unprinted_civil_days_fall_on_their_keepers_dates() {
         .iter()
         .chain(&KEPT_INTERNATIONAL_DAYS)
         .chain(&MORE_KEPT_DAYS)
+        .chain(&COVERAGE_DAYS)
     {
         let days: Vec<Day> = kept
             .iter()
