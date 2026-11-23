@@ -179,7 +179,16 @@ void main() {
       expect(span.fromJd, lessThan(span.toJd));
       expect(coverage.bikramSambat.officialFirstYear, lessThanOrEqualTo(2083));
       expect(coverage.holidays.first.set, 'NEPAL_GAZETTE');
-      expect(coverage.holidays.first.years, [2076, 2077, 2078, 2079, 2080, 2081, 2082, 2083]);
+      expect(coverage.holidays.first.years, [
+        2076,
+        2077,
+        2078,
+        2079,
+        2080,
+        2081,
+        2082,
+        2083,
+      ]);
     } finally {
       ctx.dispose();
       bare.dispose();
