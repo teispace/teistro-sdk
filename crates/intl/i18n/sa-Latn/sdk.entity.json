@@ -6025,6 +6025,145 @@
     "WORLD_MEDITATION_DAY": {
       "name": "Viśva Dhyāna Divasa",
       "prose": "Viśva Dhyāna Divasa"
+    },
+    "PASHUPATINATH_CHHAYA_DARSHAN": {
+      "name": "Paśupatināthachāyādarśana",
+      "prose": "Paśupatināthachāyādarśana",
+      "iast": "Paśupatinātha Chāyā Darśana"
+    },
+    "BANEPA_CHANDESHWARI_JATRA": {
+      "name": "Banepā Caṇḍeśvarīrathayātrā",
+      "prose": "Banepā Caṇḍeśvarīrathayātrā"
+    },
+    "GURIYA_PARVA": {
+      "name": "Guriyāparva",
+      "prose": "Guriyāparva"
+    },
+    "GURHI_PARVA": {
+      "name": "Gurhīparva",
+      "prose": "Gurhīparva"
+    },
+    "RADHA_JANMOTSAV": {
+      "name": "Rādhājanmotsava",
+      "prose": "Rādhājanmotsava",
+      "iast": "Rādhā Janmotsava"
+    },
+    "NIMBARKACHARYA_JAYANTI": {
+      "name": "Nimbārkācāryajayantī",
+      "prose": "Nimbārkācāryajayantī",
+      "iast": "Nimbārkācārya Jayantī"
+    },
+    "SAUBHAGYA_SHURPADAN": {
+      "name": "Saubhāgyaśūrpadāna",
+      "prose": "Saubhāgyaśūrpadāna",
+      "iast": "Saubhāgya Śūrpadāna"
+    },
+    "AANPKO_MUJURA_KHANE_DIN": {
+      "name": "Āmramañjarīprāśana",
+      "prose": "Āmramañjarīprāśana"
+    },
+    "GANGAUR_PUJA_ARAMBHA": {
+      "name": "Gaṇagaurapūjārambha",
+      "prose": "Gaṇagaurapūjārambha"
+    },
+    "NALA_MACHHINDRANATH_SNAN": {
+      "name": "Nālā Matsyendranāthasnāna",
+      "prose": "Nālā Matsyendranāthasnāna"
+    },
+    "SARASWATI_AVAHAN": {
+      "name": "Sarasvatyāvāhana",
+      "prose": "Sarasvatyāvāhana",
+      "iast": "Sarasvatī Āvāhana"
+    },
+    "PHARPING_HARISHANKAR_JATRA": {
+      "name": "Pharpiṅa Hariśaṅkarayātrā",
+      "prose": "Pharpiṅa Hariśaṅkarayātrā"
+    },
+    "RATO_MACHHINDRANATH_SNAN": {
+      "name": "Lalitapura Matsyendranāthasnāna",
+      "prose": "Lalitapura Matsyendranāthasnāna"
+    },
+    "CHITTADHAR_HRIDAYA_JAYANTI": {
+      "name": "Cittadhara Hṛdaya Jayantī",
+      "prose": "Cittadhara Hṛdaya Jayantī"
+    },
+    "DEOPATAN_DESHODDHAR_PUJA": {
+      "name": "Devapāṭana Deśoddhārapūjā",
+      "prose": "Devapāṭana Deśoddhārapūjā"
+    },
+    "MATINA_PARU": {
+      "name": "Matināpāru",
+      "prose": "Matināpāru"
+    },
+    "MANVADI_CHAITRA_SHUKLA_TRITIYA": {
+      "name": "Caitraśuklatṛtīyāmanvādi",
+      "prose": "Caitraśuklatṛtīyāmanvādi",
+      "iast": "Caitra Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_CHAITRA_PURNIMA": {
+      "name": "Caitrapūrṇimāmanvādi",
+      "prose": "Caitrapūrṇimāmanvādi",
+      "iast": "Caitra Pūrṇimā Manvādi"
+    },
+    "MANVADI_JYESHTHA_PURNIMA": {
+      "name": "Jyeṣṭhapūrṇimāmanvādi",
+      "prose": "Jyeṣṭhapūrṇimāmanvādi",
+      "iast": "Jyeṣṭha Pūrṇimā Manvādi"
+    },
+    "MANVADI_ASHADHA_SHUKLA_DASHAMI": {
+      "name": "Āṣāḍhaśukladaśamīmanvādi",
+      "prose": "Āṣāḍhaśukladaśamīmanvādi",
+      "iast": "Āṣāḍha Śukla Daśamī Manvādi"
+    },
+    "MANVADI_ASHADHA_PURNIMA": {
+      "name": "Āṣāḍhapūrṇimāmanvādi",
+      "prose": "Āṣāḍhapūrṇimāmanvādi",
+      "iast": "Āṣāḍha Pūrṇimā Manvādi"
+    },
+    "MANVADI_SHRAVANA_KRISHNA_ASHTAMI": {
+      "name": "Śrāvaṇakṛṣṇāṣṭamīmanvādi",
+      "prose": "Śrāvaṇakṛṣṇāṣṭamīmanvādi",
+      "iast": "Śrāvaṇa Kṛṣṇa Aṣṭamī Manvādi"
+    },
+    "MANVADI_BHADRAPADA_SHUKLA_TRITIYA": {
+      "name": "Bhādrapadaśuklatṛtīyāmanvādi",
+      "prose": "Bhādrapadaśuklatṛtīyāmanvādi",
+      "iast": "Bhādrapada Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_ASHWINA_SHUKLA_NAVAMI": {
+      "name": "Āśvinaśuklanavamīmanvādi",
+      "prose": "Āśvinaśuklanavamīmanvādi",
+      "iast": "Āśvina Śukla Navamī Manvādi"
+    },
+    "MANVADI_KARTIKA_SHUKLA_DWADASHI": {
+      "name": "Kārtikaśukladvādaśīmanvādi",
+      "prose": "Kārtikaśukladvādaśīmanvādi",
+      "iast": "Kārttika Śukla Dvādaśī Manvādi"
+    },
+    "MANVADI_KARTIKA_PURNIMA": {
+      "name": "Kārtikapūrṇimāmanvādi",
+      "prose": "Kārtikapūrṇimāmanvādi",
+      "iast": "Kārttika Pūrṇimā Manvādi"
+    },
+    "MANVADI_PAUSHA_SHUKLA_EKADASHI": {
+      "name": "Pauṣaśuklaikādaśīmanvādi",
+      "prose": "Pauṣaśuklaikādaśīmanvādi",
+      "iast": "Pauṣa Śukla Ekādaśī Manvādi"
+    },
+    "MANVADI_MAGHA_SHUKLA_SAPTAMI": {
+      "name": "Māghaśuklasaptamīmanvādi",
+      "prose": "Māghaśuklasaptamīmanvādi",
+      "iast": "Māgha Śukla Saptamī Manvādi"
+    },
+    "MANVADI_PHALGUNA_PURNIMA": {
+      "name": "Phālgunapūrṇimāmanvādi",
+      "prose": "Phālgunapūrṇimāmanvādi",
+      "iast": "Phālguna Pūrṇimā Manvādi"
+    },
+    "MANVADI_PHALGUNA_AMAVASYA": {
+      "name": "Phālgunāmāvāsyāmanvādi",
+      "prose": "Phālgunāmāvāsyāmanvādi",
+      "iast": "Phālguna Amāvāsyā Manvādi"
     }
   },
   "year_office": {
