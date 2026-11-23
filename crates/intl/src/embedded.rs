@@ -31,6 +31,7 @@ pub(crate) static SOURCES: &[(&str, &[(&str, &str)])] = &[
         "en-Latn-NP",
         &[
             ("_meta.json", include_str!("../i18n/en-Latn-NP/_meta.json")),
+            ("sdk.entity.json", include_str!("../i18n/en-Latn-NP/sdk.entity.json")),
         ],
     ),
     (
@@ -90,6 +91,7 @@ pub(crate) static SOURCES: &[(&str, &[(&str, &str)])] = &[
             ("sdk.matching.json", include_str!("../i18n/sa-Deva/sdk.matching.json")),
             ("sdk.naming.json", include_str!("../i18n/sa-Deva/sdk.naming.json")),
             ("sdk.phala.json", include_str!("../i18n/sa-Deva/sdk.phala.json")),
+            ("sdk.rashifal.json", include_str!("../i18n/sa-Deva/sdk.rashifal.json")),
             ("sdk.reading.json", include_str!("../i18n/sa-Deva/sdk.reading.json")),
             ("sdk.reason.json", include_str!("../i18n/sa-Deva/sdk.reason.json")),
             ("sdk.sankalpa.json", include_str!("../i18n/sa-Deva/sdk.sankalpa.json")),
@@ -110,6 +112,7 @@ pub(crate) static SOURCES: &[(&str, &[(&str, &str)])] = &[
             ("sdk.matching.json", include_str!("../i18n/sa-Latn/sdk.matching.json")),
             ("sdk.naming.json", include_str!("../i18n/sa-Latn/sdk.naming.json")),
             ("sdk.phala.json", include_str!("../i18n/sa-Latn/sdk.phala.json")),
+            ("sdk.rashifal.json", include_str!("../i18n/sa-Latn/sdk.rashifal.json")),
             ("sdk.reading.json", include_str!("../i18n/sa-Latn/sdk.reading.json")),
             ("sdk.reason.json", include_str!("../i18n/sa-Latn/sdk.reason.json")),
             ("sdk.sankalpa.json", include_str!("../i18n/sa-Latn/sdk.sankalpa.json")),

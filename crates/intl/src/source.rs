@@ -1548,7 +1548,7 @@ mod tests {
         assert_eq!(
             tree.locales.len(),
             6,
-            "four written, `sa-Latn` derived, `en-Latn-NP` its metadata alone"
+            "four written, `sa-Latn` derived, `en-Latn-NP` its metadata and the signs' names"
         );
         let base = tree.base().unwrap_or_else(|| panic!("base"));
         assert_eq!(base.meta.numbering_system, "latn");

@@ -30,13 +30,13 @@ every node obstructing. 2385 of 39 420 verdicts move, by graha:
 | Rahu | 624 |
 | Ketu | 882 |
 
-The daily score moves on 1871 of 4380 sign-days, by 16 at most.
+The daily score moves on 1870 of 4380 sign-days, by 16 at most.
 
 ## 2. 06:00 against sunrise (C358, B5)
 
 The same days read at 06:00 at +05:45, the baseline's clock, under
 the text's tables. The Moon is in another sign on 3 of 365 days,
-58 of 39 420 verdicts move, and the daily score moves on 81 of 4380
+58 of 39 420 verdicts move, and the daily score moves on 83 of 4380
 sign-days, by 21 at most.
 
 ## 3. The events (C360, B1 to B4)

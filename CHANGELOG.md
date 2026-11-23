@@ -61,6 +61,42 @@ VS 2083's 45, so `NEPAL` and `NEPAL_PANCHANGA`'s pack listings carry every year'
   `years`); `festival_days` and `nepal_gazette_scope` take the year (`None`: the latest).
   A holiday naming no festival the SDK keys is listed with none, its words naming it.
 
+**The rashifal as Nepal reads it, batch 1 (SR-151, C2331 to C2333).**
+**Numbers:** a request that leaves `events` at its default scores as before;
+one that asks other events (none, Saturn's alone, the Moon's beside the rest)
+now scores as the default does, where its score moved with what it asked (the
+consumer's Mithuna, 32 with the default and 33 with the Moon). A period whose
+request asked fewer grahas than C360's set may now say a graha `holds` where
+the sign bound could not tell before, since every graha of the set is now
+searched. Every `chart.rashifal` answer gains `period.scored`, so its JSON
+and any hash of it move. `rashifal-measured.md`'s daily scores, which asked
+no events and now count C360's, move: the tables move the score on 1870
+sign-days of 4380 (was 1871) and 06:00 on 83 (was 81). `en-Latn-NP` names
+the twelve signs Mesh to Meen where it said Aries to Pisces, so 844 of the
+2389 items of `interpret-measured.md`'s founded chart now read otherwise than
+in English (none did); `sa-Deva` and `sa-Latn` say the rashifal's four lines
+in Sanskrit where they fell back to English, and now answer all 2389 items
+from their own messages (1537 before). No other locale's text and no other
+answer moves.
+- **Changed:** a score counts C360's events, every graha's but the Moon's,
+  whatever `events` asks to be reported; `events` chooses only what each
+  reading reports and the plans say (C2331). `baseline::baseline_score` takes
+  the events it scores after the reading (`scored: &[PeriodEvent]`), and
+  `RashifalPeriod` carries them as `scored`, which its `baseline_score` and a
+  batch's `baseline` count.
+- **Changed:** `en-Latn-NP` names the signs as Nepal's English press does in
+  its rashifal columns: Mesh, Brish, Mithun, Karkat, Singha, Kanya, Tula,
+  Brishchik, Dhanu, Makar, Kumbha, Meen (rank 4 practice, the consumer,
+  2026-11-23; C2332). They are its `name`, `prose` and `indic` forms, in an
+  `sdk.entity.json` of twelve records beside its `_meta.json`; every sentence
+  is still `en-Latn`'s, and every other locale keeps the shared romanisation.
+  Its bundle budget rises to hold the twelve.
+- **New:** `sa-Deva`'s `sdk.rashifal`: Saturn's standing, a transit that may
+  pass, an ingress and a station, final. Sade Sati is the loan साढेसाती and
+  the smaller spell the loan ढैया, as Nepali and Hindi write them, since no
+  text names either (C89, C149, C2333). `sa-Latn` derives them
+  (`DERIVED_MESSAGES` gains `sdk.rashifal`).
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by

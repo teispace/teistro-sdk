@@ -1,6 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-11-17 when `:duration` learnt years,
+Status: `draft`, revised 2026-11-23 when `en-Latn-NP` named the twelve
+signs as Nepal's English press does and `sa-Latn` gained the rashifal's
+lines by derivation (SR-151, C2332, C2333); revised 2026-11-17 when `:duration` learnt years,
 months and weeks and to name a span given as counts (§5), the crate
 embedded its own sources (`Tree::sdk`, §3), and English as Nepal writes
 it shipped as `en-Latn-NP` with a locale lookup that reads a range's
@@ -64,7 +66,7 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN`,
   `sa-Deva` and `sa-Latn` at `base` completeness until their messages are
   translated, and `en-Latn-NP`, English as Nepal writes it, which is its
-  metadata alone (below) — **what that costs a reader is measured** rather than left
+  metadata and the twelve signs' names (below) — **what that costs a reader is measured** rather than left
   as a flag, on `interpret-measured.md`: of one founded chart's plan the
   two strict locales answer every item from their own messages and the
   other three answer none — but **374 of 433 come out different from
@@ -204,12 +206,21 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
 - **No parameter sidecar.** Types follow from the function applied to a
   variable or from a context; see section 5.
 
-**English as Nepal writes it (SR-140, C2266).** `en-Latn-NP` is a locale
-of one file, `_meta.json`: Latin digits, the grouping `[3, 2]`, so a
+**English as Nepal writes it (SR-140, C2266; SR-151, C2332).** `en-Latn-NP`
+is a locale of two files. `_meta.json` gives Latin digits, the grouping `[3, 2]`, so a
 number reads in lakhs and crores (`2,71,700`, `1,00,00,000`) as Nepal's
 English press and its rupee amounts write it, and `fallback: ["en-Latn"]`
-at `base` completeness, so every word is the base locale's and none is
-copied. CLDR 48 has no `en_NP`; its `en_IN` writes the same pattern,
+at `base` completeness, so every sentence is the base locale's and none
+is copied. `sdk.entity.json` names the twelve signs as Nepal's English
+press spells them in its rashifal columns (rank 4 practice, the consumer,
+2026-11-23): Mesh, Brish, Mithun, Karkat, Singha, Kanya, Tula,
+Brishchik, Dhanu, Makar, Kumbha, Meen, as `name`, `prose` and `indic`, so
+a reading says "the natal Moon, Dhanu" where `en-Latn` says
+"Sagittarius". An entity is looked up whole along the chain, so each of
+the twelve records carries `en-Latn`'s `short`, `iast`, glyph and gender
+beside them; the shared romanisation (`entity-names.md` §4f) stays every
+other locale's `indic` and the catalogue's keys stay `rashi.ARIES` …
+`rashi.PISCES`. CLDR 48 has no `en_NP`; its `en_IN` writes the same pattern,
 `#,##,##0.###`, which is where the grouping comes from. The tag carries
 its script, as every tag here does, and `en-NP` chooses it (§6). Amounts
 in words follow the grouping: a request in `en-Latn-NP` that leaves the
@@ -218,7 +229,7 @@ seventy-one thousand seven hundred`), with the rupee's units from
 `en-Latn`. A regional locale of the base language is held to its
 budget and coverage floor like any other (`pack-budgets.json`,
 `locale-coverage-floor.json`), and the generated pages name it as having
-nothing of its own to translate rather than as a gap. A locale of
+no message of its own to translate rather than as a gap. A locale of
 metadata alone has no namespace to pack: its `.tbundle` carries it, and a
 `.tpack` never could.
 
@@ -759,7 +770,11 @@ and each namespace drafted in `_meta.json` until Q42's reviewers sign it.
 `sa-Latn` derives all eight beside `sdk.calendar` (`DERIVED_MESSAGES`)
 and keeps the marks; its day sentences open with a capital, as the
 English ones do (`SENTENCE_NAMESPACES`), and the rest are phrases a
-reader sets inside their own text. `sdk.phala` is entity forms with no
+reader sets inside their own text. The rashifal's four lines
+(`sdk.rashifal`: Saturn's standing, a transit that may pass, an ingress,
+a station) are written in `sa-Deva` and derived the same way (SR-151,
+C2333); they are phrases like `sdk.reason`'s gochar lines, which they
+follow. `sdk.phala` is entity forms with no
 words of its own, the same in every locale. What a reviewer should read
 first:
 

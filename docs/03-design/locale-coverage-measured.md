@@ -7,11 +7,11 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
 | `en-Latn` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
-| `en-Latn-NP` | base | 0 of 672 | 0.0% | 0 of 373 | 0.0% |
+| `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 373 | 0.0% |
 | `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 373 | 96.5% |
 | `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
-| `sa-Deva` | base | 661 of 672 | 98.4% | 356 of 373 | 95.4% |
-| `sa-Latn` | base | 661 of 672 | 98.4% | 356 of 373 | 95.4% |
+| `sa-Deva` | base | 661 of 672 | 98.4% | 360 of 373 | 96.5% |
+| `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 373 | 96.5% |
 
 672 members of 45 kinds, 373 messages.
 
@@ -51,7 +51,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `panchaka` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
 | `paya` | 4 | 4 | 0 | 4 | 4 | 4 | 4 |
 | `point` | 49 | 49 | 0 | 49 | 49 | 49 | 49 |
-| `rashi` | 12 | 12 | 0 | 12 | 12 | 12 | 12 |
+| `rashi` | 12 | 12 | 12 | 12 | 12 | 12 | 12 |
 | `relationship` | 5 | 5 | 0 | 5 | 5 | 5 | 5 |
 | `ritu` | 6 | 6 | 0 | 6 | 6 | 6 | 6 |
 | `shiva_vasa` | 7 | 7 | 0 | 7 | 7 | 7 | 7 |

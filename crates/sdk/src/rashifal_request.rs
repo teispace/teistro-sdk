@@ -7,8 +7,8 @@ use teistro_core::catalogue::{Calendar, Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::Transit;
-use teistro_rashifal::RashiReading;
 use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period, ScoreBands};
+use teistro_rashifal::{PeriodEvent, RashiReading};
 
 use teistro_time::ZoneSpec;
 
@@ -118,7 +118,8 @@ impl RashifalRequest {
         self
     }
 
-    /// The grahas whose ingresses and stations the period reports.
+    /// The grahas whose ingresses and stations the period reports. A
+    /// score counts C360's set whatever is asked here (C2331).
     #[must_use]
     pub fn with_events(mut self, grahas: impl IntoIterator<Item = Graha>) -> RashifalRequest {
         self.events = grahas.into_iter().collect();
@@ -258,8 +259,13 @@ pub struct RashifalPeriod {
     pub retrograde: [bool; 9],
     /// What the baseline's score reads of the reference day's panchanga.
     pub panchanga: Panchanga,
-    /// Each sign's reading, Aries to Pisces.
+    /// Each sign's reading, Aries to Pisces, its events those the request
+    /// asked to be reported.
     pub readings: [RashiReading; 12],
+    /// The period's events a score counts: C360's set, every graha's but
+    /// the Moon's, whatever the request asked to be reported, so that
+    /// asking to hear of an event never moves a score (C2331).
+    pub scored: Vec<PeriodEvent>,
 }
 
 impl RashifalPeriod {
@@ -274,7 +280,8 @@ impl RashifalPeriod {
     }
 
     /// The baseline engine's score of one sign's reading for `period`,
-    /// `BASELINE` and unsourced (C361), its overall banded by `bands`: a
+    /// `BASELINE` and unsourced (C361), counting the [`scored`](Self::scored)
+    /// events, its overall banded by `bands`: a
     /// context's are `settings().rashifal.score_bands`, which a batch
     /// ([`ChartArea::rashifal_answers`](crate::ChartArea::rashifal_answers))
     /// bands by.
@@ -282,6 +289,7 @@ impl RashifalPeriod {
     pub fn baseline_score(&self, rashi: Rashi, period: Period, bands: ScoreBands) -> BaselineScore {
         teistro_rashifal::baseline::baseline_score(
             self.of(rashi),
+            &self.scored,
             &self.retrograde,
             self.panchanga,
             period,

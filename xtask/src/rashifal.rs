@@ -173,6 +173,7 @@ fn over_days(sunrise: &[RashifalPeriod], six: &[RashifalPeriod]) -> OverDays {
             let score = |reading: &RashiReading, period: &RashifalPeriod| {
                 baseline_score(
                     reading,
+                    &period.scored,
                     &period.retrograde,
                     period.panchanga,
                     Period::Daily,
@@ -287,6 +288,7 @@ fn over_panchanga(months: &[RashifalPeriod], first_days: &[RashifalPeriod]) -> (
             let score = |panchanga| {
                 baseline_score(
                     reading,
+                    &month.scored,
                     &month.retrograde,
                     panchanga,
                     Period::Monthly,

@@ -1125,7 +1125,7 @@ mod tests {
         assert_eq!(
             report.coverage.len(),
             6,
-            "four written, `sa-Latn` derived, `en-Latn-NP` its metadata alone"
+            "four written, `sa-Latn` derived, `en-Latn-NP` its metadata and the signs' names"
         );
         assert!(
             !report.catalogue.contains_key("rule"),

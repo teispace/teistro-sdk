@@ -23,7 +23,7 @@ use teistro_gochar::hits::HitEvent;
 use teistro_gochar::sade_sati::Phase;
 use teistro_gochar::{GRAHAS, GocharReading, Verdict};
 
-use crate::RashiReading;
+use crate::{EventFrom, PeriodEvent, RashiReading};
 
 /// The period a score is weighed for, which sets the Moon's weight.
 ///
@@ -92,7 +92,7 @@ pub struct Panchanga {
 /// use teistro_rashifal::baseline::{Colour, ScoreBands, baseline_score};
 ///
 /// // Aries's lord is Mars: red, 9, the south, Tuesday.
-/// let lucky = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT).lucky;
+/// let lucky = baseline_score(&read[0], &[], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT).lucky;
 /// assert_eq!((lucky.colour, lucky.number), (Colour::Red, 9));
 /// assert_eq!((lucky.direction, lucky.day), (Direction::South, Vara::Mangalavara));
 /// ```
@@ -128,7 +128,7 @@ pub struct LuckyElements {
 /// use teistro_rashifal::Period;
 /// use teistro_rashifal::baseline::{ScoreBands, baseline_score};
 ///
-/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
+/// let score = baseline_score(&read[0], &[], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
 /// assert!(score.key_influences.len() <= 5);
 /// assert!(score.key_influences.iter().all(|influence| (1..=12).contains(&influence.house)));
 /// ```
@@ -162,7 +162,7 @@ pub struct KeyInfluence {
 /// use teistro_rashifal::Period;
 /// use teistro_rashifal::baseline::{LifeArea, ScoreBands, baseline_score};
 ///
-/// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Weekly, ScoreBands::DEFAULT);
+/// let score = baseline_score(&read[0], &[], &[false; 9], panchanga, Period::Weekly, ScoreBands::DEFAULT);
 /// assert!(score.overall <= 100);
 /// assert_eq!(score.areas.map(|(area, _)| area), LifeArea::ALL);
 /// // Its band is the overall's under the thresholds it was scored with.
@@ -202,7 +202,7 @@ impl BaselineScore {
     /// use teistro_rashifal::Period;
     /// use teistro_rashifal::baseline::{ScoreBands, baseline_score};
     ///
-    /// let score = baseline_score(&read[0], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
+    /// let score = baseline_score(&read[0], &[], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
     /// assert_eq!(score.band(), ScoreBands::DEFAULT.band(score.overall));
     /// // It crosses with the score, beside `overall`.
     /// let json = serde_json::to_value(&score).unwrap();
@@ -354,10 +354,15 @@ fn rounded(score: f64) -> u8 {
     whole
 }
 
-/// The baseline's score of `reading` for `period`, with each graha's
-/// motion at the snapshot (`retrograde`, the Sun to Ketu: the mean nodes
-/// always are) and the reference day's `panchanga`, its overall banded by
+/// The baseline's score of `reading` for `period`, with the period's
+/// `scored` events counted from the reading's sign, each graha's motion
+/// at the snapshot (`retrograde`, the Sun to Ketu: the mean nodes always
+/// are) and the reference day's `panchanga`, its overall banded by
 /// `bands`.
+///
+/// The events scored are the caller's, not `reading.events`: a period
+/// scores C360's set, every graha but the Moon, whatever it reports, so
+/// that asking to hear of an event never moves a score (C2331).
 ///
 /// ```
 /// # use teistro_core::catalogue::{Graha, Rashi};
@@ -377,18 +382,19 @@ fn rounded(score: f64) -> u8 {
 ///
 /// // The same reading weighed for a day and for a year: the Moon counts
 /// // for the one and not the other.
-/// let day = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
-/// let year = baseline_score(&read[3], &[false; 9], panchanga, Period::Yearly, ScoreBands::DEFAULT);
+/// let day = baseline_score(&read[3], &[], &[false; 9], panchanga, Period::Daily, ScoreBands::DEFAULT);
+/// let year = baseline_score(&read[3], &[], &[false; 9], panchanga, Period::Yearly, ScoreBands::DEFAULT);
 /// assert!(day.overall <= 100 && year.overall <= 100);
 /// assert_eq!(day.lucky, year.lucky);
 /// // Thresholds of nought band every score excellent.
-/// let lenient = baseline_score(&read[3], &[false; 9], panchanga, Period::Daily, ScoreBands([2, 1, 0]));
+/// let lenient = baseline_score(&read[3], &[], &[false; 9], panchanga, Period::Daily, ScoreBands([2, 1, 0]));
 /// assert_eq!(lenient.overall, day.overall);
 /// assert!(day.overall < 2 || lenient.band() == ScoreBand::Excellent);
 /// ```
 #[must_use]
 pub fn baseline_score(
     reading: &RashiReading,
+    scored: &[PeriodEvent],
     retrograde: &[bool; 9],
     panchanga: Panchanga,
     period: Period,
@@ -427,9 +433,9 @@ pub fn baseline_score(
         }
     }
     let saturn = saturn_penalty(reading);
-    let events: f64 = reading
-        .events
+    let events: f64 = scored
         .iter()
+        .map(|&event| EventFrom::counted(reading.rashi, event))
         .map(|from| {
             let w = weight(from.event.hit.graha, Period::Daily);
             match from.event.hit.event {

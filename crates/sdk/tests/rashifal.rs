@@ -202,6 +202,60 @@ fn the_baseline_score_reads_the_period_it_was_given() {
     }
 }
 
+/// C2331: what a period reports does not move its score. October 2026
+/// asked with no events, with the Moon's, with Saturn's alone and with the
+/// default set scores every sign alike, while the events each reports
+/// differ; the score always counts C360's set.
+#[test]
+fn a_score_is_the_same_whatever_events_are_reported() {
+    let sdk = context();
+    let month =
+        || RashifalRequest::between(date(2026, 10, 1), date(2026, 10, 31), kathmandu(), NEPAL);
+    let default = period(&sdk, &month());
+    let scores = |read: &RashifalPeriod| -> Vec<(u8, ScoreBand)> {
+        Rashi::ALL
+            .iter()
+            .map(|&rashi| {
+                let score = read.baseline_score(rashi, Period::Monthly, ScoreBands::DEFAULT);
+                (score.overall, score.band())
+            })
+            .collect()
+    };
+    let reported = |read: &RashifalPeriod| -> Vec<Graha> {
+        read.of(Rashi::Aries)
+            .events
+            .iter()
+            .map(|one| one.event.hit.graha)
+            .collect()
+    };
+    let with_moon = period(
+        &sdk,
+        &month().with_events(teistro::EVENT_GRAHAS.into_iter().chain([Graha::Moon])),
+    );
+    let none = period(&sdk, &month().with_events([]));
+    let saturn = period(&sdk, &month().with_events([Graha::Saturn]));
+    // October's Moon changes sign a dozen times; only the Moon's ask hears of it.
+    assert!(reported(&with_moon).contains(&Graha::Moon));
+    assert!(!reported(&default).contains(&Graha::Moon));
+    assert_eq!(reported(&none), []);
+    assert!(
+        reported(&saturn)
+            .iter()
+            .all(|&graha| graha == Graha::Saturn)
+    );
+    for other in [&with_moon, &none, &saturn] {
+        assert_eq!(scores(other), scores(&default));
+        assert_eq!(other.scored, default.scored);
+    }
+    assert!(
+        default
+            .scored
+            .iter()
+            .all(|event| event.hit.graha != Graha::Moon),
+        "the Moon is never scored"
+    );
+}
+
 #[test]
 fn a_bad_request_is_refused_by_the_field_it_names() {
     let sdk = context();
@@ -346,7 +400,7 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     ] {
         assert!(keys.contains(&key), "{key}");
     }
-    for tag in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN"] {
+    for tag in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN", "sa-Deva", "sa-Latn"] {
         sdk.intl().set_locale(tag).unwrap();
         for plan in plans {
             for item in plan {
@@ -358,6 +412,9 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
                 );
                 if item.key.starts_with("sdk.rashifal.") {
                     assert!(!said.is_draft, "{tag} {} is final", item.key);
+                    // Each locale answers the rashifal's lines itself
+                    // (SR-151: Sanskrit's written, `sa-Latn`'s derived).
+                    assert_eq!(said.resolved_from.as_deref(), Some(tag), "{}", item.key);
                 }
             }
         }
@@ -367,6 +424,91 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     assert!(!plain.plans);
     let read = sdk.chart().rashifal_answers(&plain).unwrap().value;
     assert_eq!(read[0].plans, None);
+}
+
+/// SR-151: each of the rashifal's four lines in Sanskrit, every variant a
+/// reading can reach (the three phases, both named spells, an unnamed
+/// spell and none, the four passing verdicts, an ingress either way and
+/// both station turns), answered by `sa-Deva` itself and by `sa-Latn`
+/// from its derivation, final and distinct. Sade Sati is the loan
+/// साढेसाती (C89, C2333).
+#[test]
+fn the_rashifal_lines_are_said_in_sanskrit_in_both_scripts() {
+    use teistro::{Value, params};
+    let sdk = context();
+    let engine = sdk.locale_engine();
+    let saturn = Value::catalogued(Graha::Saturn);
+    let leo = Value::catalogued(Rashi::Leo);
+    let mut lines = Vec::new();
+    for (house, phase, spell) in [
+        (12, "RISING", "no"),
+        (1, "PEAK", "no"),
+        (2, "SETTING", "no"),
+        (4, "NONE", "yes"),
+        (8, "NONE", "yes"),
+        (7, "NONE", "yes"),
+        (5, "NONE", "no"),
+    ] {
+        lines.push((
+            "sdk.rashifal.saturn",
+            params([
+                ("house", Value::Int(house)),
+                ("phase", Value::from(phase)),
+                ("spell", Value::from(spell)),
+            ]),
+        ));
+    }
+    for verdict in ["GOOD", "OBSTRUCTED", "NOT_GOOD", "NONE"] {
+        lines.push((
+            "sdk.rashifal.passing",
+            params([
+                ("graha", saturn.clone()),
+                ("house", Value::Int(3)),
+                ("verdict", Value::from(verdict)),
+            ]),
+        ));
+    }
+    for good in ["yes", "no"] {
+        lines.push((
+            "sdk.rashifal.ingress",
+            params([
+                ("graha", saturn.clone()),
+                ("rashi", leo.clone()),
+                ("house", Value::Int(5)),
+                ("good", Value::from(good)),
+            ]),
+        ));
+    }
+    for turns in ["RETROGRADE", "DIRECT"] {
+        lines.push((
+            "sdk.rashifal.station",
+            params([
+                ("graha", saturn.clone()),
+                ("turns", Value::from(turns)),
+                ("rashi", leo.clone()),
+                ("house", Value::Int(5)),
+                ("good", Value::from("no")),
+            ]),
+        ));
+    }
+    for tag in ["sa-Deva", "sa-Latn"] {
+        let mut said = std::collections::BTreeSet::new();
+        for (key, asked) in &lines {
+            let rendered = engine.render_in(tag, key, asked);
+            assert!(rendered.warnings.is_empty(), "{tag} {key}: {rendered:?}");
+            assert_eq!(rendered.resolved_from.as_deref(), Some(tag), "{tag} {key}");
+            assert!(!rendered.is_draft, "{tag} {key} is final");
+            let devanagari = rendered
+                .text
+                .chars()
+                .any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+            assert_eq!(devanagari, tag == "sa-Deva", "{tag}: {}", rendered.text);
+            said.insert(rendered.text);
+        }
+        assert_eq!(said.len(), lines.len(), "{tag}: every variant its own line");
+    }
+    let rising = engine.render_in("sa-Deva", lines[0].0, &lines[0].1).text;
+    assert!(rising.contains("साढेसात्याः"), "{rising}");
 }
 
 /// A batch of the days from `first` to `last` of November 2026 at

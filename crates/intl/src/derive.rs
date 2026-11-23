@@ -233,8 +233,8 @@ pub fn derive(
 /// words is closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5),
 /// a match's bands (`sdk.matching`, SR-39), the sankalpa
 /// (`sdk.sankalpa`, SR-29) and the settings knobs' effect notes
-/// (`sdk.settings`, SR-110) in Sanskrit rather than in the fallback's
-/// English. A namespace listed here and absent from the source is
+/// (`sdk.settings`, SR-110) and a rashifal's four lines (`sdk.rashifal`,
+/// SR-151) in Sanskrit rather than in the fallback's English. A namespace listed here and absent from the source is
 /// skipped, so the list may name what the source has yet to write.
 ///
 /// ```
@@ -243,8 +243,9 @@ pub fn derive(
 /// assert_eq!(DERIVED_MESSAGES[0], "sdk.calendar");
 /// assert!(DERIVED_MESSAGES.contains(&"sdk.reason"));
 /// assert!(DERIVED_MESSAGES.contains(&"sdk.amount"));
+/// assert!(DERIVED_MESSAGES.contains(&"sdk.rashifal"));
 /// ```
-pub const DERIVED_MESSAGES: [&str; 13] = [
+pub const DERIVED_MESSAGES: [&str; 14] = [
     "sdk.calendar",
     "sdk.reason",
     "sdk.condition",
@@ -258,6 +259,7 @@ pub const DERIVED_MESSAGES: [&str; 13] = [
     "sdk.matching",
     "sdk.sankalpa",
     "sdk.settings",
+    "sdk.rashifal",
 ];
 
 /// The namespaces whose messages are sentences, which a Latin script
