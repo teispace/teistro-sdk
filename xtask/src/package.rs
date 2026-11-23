@@ -718,6 +718,14 @@ fn write_stage(
         ));
         merged["mcpb"] = bundle;
     }
+    let bundles = locale_bundles(root, dist, version)?;
+    for bundle in &bundles {
+        written.push(rel(
+            root,
+            &dist.join(bundle["file"].as_str().unwrap_or_default()),
+        ));
+    }
+    merged["localeBundles"] = Value::Array(bundles);
     let merged = &merged;
     let manifest = dist.join("manifest.json");
     fs::write(&manifest, format!("{}\n", to_json(merged)))?;
@@ -822,11 +830,13 @@ fn checksum_list(merged: &Value) -> String {
         }
     }
     let bundle = merged.get("mcpb").into_iter();
+    let locales = merged["localeBundles"].as_array().into_iter().flatten();
     for file in merged["maven"]["files"]
         .as_array()
         .into_iter()
         .flatten()
         .chain(bundle)
+        .chain(locales)
     {
         lines.push(format!(
             "{}  {}",
@@ -836,6 +846,35 @@ fn checksum_list(merged: &Value) -> String {
     }
     lines.sort();
     format!("{}\n", lines.join("\n"))
+}
+
+/// The release's name for a locale's bundle.
+pub(crate) fn locale_bundle_name(version: &str, tag: &str) -> String {
+    format!("teistro-intl-{version}-{tag}.tbundle")
+}
+
+/// Every locale's bundle, as a release asset (SR-150): the bytes the
+/// library embeds for a locale its build names, so a build that leaves one
+/// out loads it with `load_pack` and answers as one that embedded it. One
+/// record each, the locale, the file and its digest, for the manifest and
+/// the checksum list.
+fn locale_bundles(root: &Path, dist: &Path, version: &str) -> io::Result<Vec<Value>> {
+    let tree = teistro_intl::source::Tree::load(&root.join(crate::intl::SOURCES))
+        .map_err(|e| io::Error::other(format!("the locale sources: {e}")))?;
+    let mut records = Vec::with_capacity(tree.locales.len());
+    for (tag, locale) in &tree.locales {
+        let bytes = teistro_intl::pack::build_bundle(locale)
+            .map_err(|e| io::Error::other(format!("{tag}'s bundle: {e}")))?;
+        let file = locale_bundle_name(version, tag);
+        fs::write(dist.join(&file), &bytes)?;
+        records.push(json!({
+            "locale": tag,
+            "file": file,
+            "bytes": bytes.len(),
+            "sha256": hex(&Sha256::digest(&bytes)),
+        }));
+    }
+    Ok(records)
 }
 
 /// Stages the Node package a consumer installs: the generated and
@@ -1297,6 +1336,7 @@ pub(crate) fn to_json(value: &Value) -> String {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
+    use sha2::{Digest, Sha256};
 
     use super::{checksum_list, described, digest_rows, manifest_name};
     use crate::platform::Platform;
@@ -1332,6 +1372,45 @@ mod tests {
             checksum_list(&merged),
             "aa  a.gz\nbb  b.gz\ncc  b.cdx.json\n"
         );
+    }
+
+    /// Every locale under `crates/intl/i18n` is staged as a bundle a
+    /// context loads (SR-150), named for the release, and listed with its
+    /// digest beside the archives.
+    #[test]
+    fn every_locale_is_staged_as_a_bundle_a_context_loads() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let dist = std::env::temp_dir().join(format!("teistro-bundles-{}", std::process::id()));
+        std::fs::create_dir_all(&dist).unwrap();
+        let records = super::locale_bundles(&root, &dist, "1.2.3").unwrap();
+        let tags: Vec<String> = std::fs::read_dir(root.join(crate::intl::SOURCES))
+            .unwrap()
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                entry
+                    .path()
+                    .is_dir()
+                    .then(|| entry.file_name().to_string_lossy().into_owned())
+            })
+            .collect();
+        assert_eq!(records.len(), tags.len(), "{records:?}");
+        let tree = teistro_intl::source::Tree::load(&root.join(crate::intl::SOURCES)).unwrap();
+        let mut intl = teistro_intl::Intl::from_tree(&tree).unwrap();
+        for record in &records {
+            let file = record["file"].as_str().unwrap();
+            let tag = record["locale"].as_str().unwrap();
+            assert_eq!(file, super::locale_bundle_name("1.2.3", tag));
+            let bytes = std::fs::read(dist.join(file)).unwrap();
+            assert_eq!(
+                record["sha256"],
+                crate::hashes::hex(&Sha256::digest(&bytes))
+            );
+            intl.load_pack(&bytes)
+                .unwrap_or_else(|e| panic!("{file}: {e}"));
+        }
+        let merged = json!({ "localeBundles": records });
+        assert!(checksum_list(&merged).contains(&super::locale_bundle_name("1.2.3", "ne-Deva-NP")));
+        std::fs::remove_dir_all(&dist).unwrap();
     }
 
     #[test]

@@ -107,6 +107,33 @@ one.
      module's to the bit, and one call into each left-out family must
      be refused as Capability.
 
+## Locales (SR-150)
+
+The base's data has one lever after all: the locale bundles. Each is
+51 to 57 kB gzipped (`en-Latn` 52, `hi-Deva-IN` 56, `ne-Deva-NP` 57,
+`sa-Deva` 54, `sa-Latn` 51, measured 2026-11-23), every one falls back
+on `en-Latn` alone, and a consumer that writes in two languages ships
+three it never reads. So each locale beside `en-Latn` is a feature of
+`teistro` (`locale-` and its tag in lower case), forwarded by
+`teistro-ffi` and the wasm crate:
+
+- `locales` names them all and `full` names `locales`, so a build that
+  asks for everything is unchanged, and one that names its families gets
+  `en-Latn` and the locales it names, as it gets the families it names.
+- `en-Latn` is always embedded: it is every locale's fallback, and a
+  library that answers in no language has nothing to fall back on.
+- `crates/sdk/build.rs` embeds a bundle only when its feature is on, and
+  stops the build on a locale under `i18n/` with no feature, so a new
+  locale cannot be embedded unswitchably.
+- A locale left out is not lost: the release ships every locale's bundle
+  (`teistro-intl-<version>-<tag>.tbundle`, in `checksums.txt`), and
+  `load_pack` adds it at run time. A website serving four languages can
+  build with `en-Latn` and fetch only the visitor's.
+
+A refusal names the remedy: asked for a locale it left out, a build
+says which feature embeds it and which bundle loads it
+(`tests/left_out_locale.rs`, run by fast-check without any locale).
+
 ## Order of work
 
 1. `cargo xtask wasm-crates`, which reads a module's name section and

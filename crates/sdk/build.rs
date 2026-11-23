@@ -40,8 +40,15 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     let out = PathBuf::from(std::env::var_os("OUT_DIR").expect("cargo sets OUT_DIR"));
     let tree = Tree::sdk().unwrap_or_else(|e| panic!("the i18n/ sources load: {e}"));
+    let manifest = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"))
+        .expect("the package's own manifest");
     let mut entries = String::new();
+    let mut left_out = String::new();
     for (tag, locale) in &tree.locales {
+        if !embedded(tag, &manifest) {
+            let _ = write!(left_out, "{tag:?}, ");
+            continue;
+        }
         let bytes = build_bundle(locale).unwrap_or_else(|e| panic!("{tag}: {e}"));
         let path = out.join(format!("{tag}.tbundle"));
         std::fs::write(&path, bytes).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
@@ -52,8 +59,36 @@ fn main() {
         );
     }
     let listing = format!(
-        "/// The SDK's locales as bundles, built from `i18n/` when the crate is compiled.\npub(crate) static BUNDLES: &[(&str, &[u8])] = &[\n{entries}];\n"
+        "/// The SDK's locales as bundles, built from `i18n/` when the crate is compiled.\npub(crate) static BUNDLES: &[(&str, &[u8])] = &[\n{entries}];\n\n/// The SDK's locales this build leaves out, by their `locale-` features.\npub(crate) static LEFT_OUT: &[&str] = &[{left_out}];\n"
     );
     let path = out.join("bundles.rs");
     std::fs::write(&path, listing).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+}
+
+/// The locale every other falls back on, embedded in every build.
+const ROOT: &str = "en-Latn";
+
+/// The feature that embeds `tag`: `locale-` and the tag in lower case.
+fn feature(tag: &str) -> String {
+    format!("locale-{}", tag.to_ascii_lowercase())
+}
+
+/// Whether this build embeds `tag`: the root always, any other when its
+/// feature is on. A locale with no feature declared in the manifest stops
+/// the build, so every locale `teistro-intl` carries can be left out.
+fn embedded(tag: &str, manifest: &str) -> bool {
+    if tag == ROOT {
+        return true;
+    }
+    let feature = feature(tag);
+    assert!(
+        manifest.contains(&format!("\n{feature} = [")),
+        "{tag} has no feature `{feature}` in crates/sdk/Cargo.toml: declare it and add it to `locales`"
+    );
+    let var = format!(
+        "CARGO_FEATURE_{}",
+        feature.to_ascii_uppercase().replace('-', "_")
+    );
+    println!("cargo:rerun-if-env-changed={var}");
+    std::env::var_os(var).is_some()
 }

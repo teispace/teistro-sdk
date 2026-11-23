@@ -366,9 +366,12 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      # Every tag, so the notes compare this release's sizes with the
+      # previous one's record (`xtask changelog-entry`, SR-150).
       - uses: actions/checkout@v5
         with:
           submodules: recursive
+          fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
           name: release
@@ -387,6 +390,7 @@ jobs:
             dist/*.cdx.json
             dist/checksums.txt
             dist/manifest.json
+            dist/*.tbundle
             dist/maven/com/teispace/teistro/*/*.jar
             dist/maven/com/teispace/teistro/*/*.pom
       - name: The GitHub release, with the archives and their digests
@@ -398,7 +402,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "Teistro ${{ needs.gate.outputs.version }}" \
             --notes-file notes.md \
-            dist/*.gz dist/*.mcpb dist/*.cdx.json dist/checksums.txt dist/manifest.json \
+            dist/*.gz dist/*.mcpb dist/*.cdx.json dist/*.tbundle dist/checksums.txt dist/manifest.json \
             dist/maven/com/teispace/teistro/*/*.jar dist/maven/com/teispace/teistro/*/*.pom
 
   # The packages, after the GitHub release they point at. Gated on
