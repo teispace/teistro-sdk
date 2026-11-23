@@ -16,17 +16,34 @@
 //! printed, since the catalogue has no Shahenshahi calendar (C1243); its
 //! day does not wait on the moon, so it is not marked.
 
-use teistro_core::catalogue::Tradition;
+use teistro_core::catalogue::{Masa, Tithi, Tradition};
 
-use super::india_central::{Printed, PrintedDays, StateList, on_civil_date, sighted};
+use super::india_central::{Own, Printed, PrintedDays, StateList, on_civil_date, sighted};
+use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
-use super::{DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
+use super::{DatedRule, DayPart, FestivalMeta, FestivalRule, FollowingRule, PublishedSet, Window};
 
 /// Where the list is kept: India, then the state the notice names.
 const REGIONS: [&str; 2] = ["IN", "IN-MH"];
 
 /// The state's list.
 const STATE: StateList = StateList { regions: &REGIONS };
+
+/// The state's own lunar rules. Ganesh Chaturthi keeps the day holding
+/// more of the madhyahna, the rule every notification over seven years
+/// holds to; *Dharmasindhu* p. 55, which `NEPAL_PANCHANGA` now keeps,
+/// takes the later day only when it holds the madhyahna wholly, and so
+/// gives 18 September 2023 where the notice lists the 19th.
+const OWN: [Own; 1] = [(
+    "GANESHA_CHATURTHI",
+    Masa::Bhadrapada,
+    Tithi::ShuklaChaturthi,
+    Fit::Share(Window::Part {
+        part: DayPart::Madhyahna,
+    }),
+    false,
+    "Ganesh Chaturthi, Bhadrapada's bright 4th, on the day holding more of the madhyahna",
+)];
 
 /// The notification the list and its fixed days are read from, the first
 /// whose gazette page was read whole.
@@ -148,7 +165,8 @@ impl FestivalRule {
     pub fn india_maharashtra() -> Vec<FestivalRule> {
         let mut rules = STATE.central(&["JANMASHTAMI"]);
         rules.extend(STATE.by_text(&[("BALI_PRATIPADA", false), ("YAMA_DWITIYA", true)]));
-        rules.extend(STATE.by_print(&["SAMVATSARA_ARAMBHA", "GANESHA_CHATURTHI"]));
+        rules.extend(STATE.by_print(&["SAMVATSARA_ARAMBHA"]));
+        rules.extend(STATE.own(&OWN, |_, what| format!("{NOTICE}: {what}")));
         rules
     }
 }

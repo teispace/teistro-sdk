@@ -125,18 +125,12 @@ const TEXT_KEPT: [Kept; 1] = [(
 )];
 
 /// Nepal's printed panchanga's rules this list keeps.
-const PRINT_KEPT: [Kept; 7] = [
+const PRINT_KEPT: [Kept; 6] = [
     (
         "BASANTA_PANCHAMI",
         "BASANTA_PANCHAMI",
         false,
         "Basant Panchami and Saraswati Puja, Magha's bright 5th",
-    ),
-    (
-        "SAMRAT_ASHOK_ASHTAMI",
-        "CHAITE_DASHAIN",
-        false,
-        "Samrat Ashok's birthday, Chaitra's bright 8th (चैत्र शुक्ल अष्टमी), the print's Chaite Dashain",
     ),
     (
         "KABIR_JAYANTI",
@@ -170,15 +164,28 @@ const PRINT_KEPT: [Kept; 7] = [
     ),
 ];
 
-/// Bihar's own rule by the tithi of an amanta month.
-const BIHAR: [Own; 1] = [(
-    "SITA_NAVAMI",
-    Masa::Vaishakha,
-    Tithi::ShuklaNavami,
-    Fit::Udaya,
-    false,
-    "Janaki Navami, Vaishakha's bright 9th, kept at sunrise",
-)];
+/// Bihar's own rules by the tithi of an amanta month. Samrat Ashok's
+/// birthday keeps the 8th's sunrise, as every notification does;
+/// *Nirnayasindhu* p. 154's 8th joined to the 9th, which `NEPAL_PANCHANGA`'s
+/// Chaite Dashain keeps, would move 2006 and 2013 a day later at Patna.
+const BIHAR: [Own; 2] = [
+    (
+        "SITA_NAVAMI",
+        Masa::Vaishakha,
+        Tithi::ShuklaNavami,
+        Fit::Udaya,
+        false,
+        "Janaki Navami, Vaishakha's bright 9th, kept at sunrise",
+    ),
+    (
+        "SAMRAT_ASHOK_ASHTAMI",
+        Masa::Chaitra,
+        Tithi::ShuklaAshtami,
+        Fit::Udaya,
+        false,
+        "Samrat Ashok's birthday, Chaitra's bright 8th (चैत्र शुक्ल अष्टमी), kept at sunrise",
+    ),
+];
 
 /// The days counted from another: key, the rule, the count, whether it is
 /// restricted, and how the notifications give it.
@@ -482,7 +489,7 @@ impl FestivalRule {
     /// assert!(!chhath.meta.optional);
     /// assert!(chhath.source.contains("as Nepal's printed panchanga reckons it"));
     /// // Samrat Ashok's birthday is the print's Chaite Dashain.
-    /// assert!(of("SAMRAT_ASHOK_ASHTAMI").ok_or("shipped")?.source.contains("Chaite Dashain"));
+    /// assert!(of("SAMRAT_ASHOK_ASHTAMI").ok_or("shipped")?.source.contains("kept at sunrise"));
     /// assert!(of("HOLIKA").ok_or("shipped")?.meta.optional);
     /// let gurpurab = of("GURU_GOBIND_SINGH_JAYANTI").ok_or("shipped")?;
     /// assert_eq!(gurpurab.meta.tradition, Some(Tradition::Sikh));

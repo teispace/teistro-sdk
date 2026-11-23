@@ -64,12 +64,13 @@ days `CHRISTIAN`.
 | Republic Day, Independence Day, Gandhi Jayanti, Christmas, Good Friday | as `INDIA_CENTRAL` | the central list's rule | the notification |
 | Mahashivratri, Holi, Ram Navami, Mahavir Jayanti, Buddha Purnima, Janmashtami, Guru Nanak Jayanti | `SHIVARATRI`, `HOLI`, `RAMA_NAVAMI`, `MAHAVIR_JAYANTI`, `BUDDHA_JAYANTI`, `JANMASHTAMI`, `GURU_NANAK_JAYANTI` | the central list's rule; Holi the day after `HOLIKA` | *Dharmasindhu* and a printed panchanga, as the central list cites them |
 | Dussehra (Vijayadashami), Deepawali | `VIJAYA_DASHAMI`, `LAKSHMI_PUJA` | Telangana's rule | Telangana's list (C1528) |
-| Raksha Bandhan, Bhaiyadooj (Chitragupta Jayanti) | `RAKSHABANDHAN`, `YAMA_DWITIYA` | `NEPAL`'s rule | Nepal's pack (C1528) |
+| Raksha Bandhan | `RAKSHABANDHAN` | `NEPAL`'s rule | Nepal's pack (C1528) |
+| Bhaiyadooj (Chitragupta Jayanti) | `YAMA_DWITIYA` | the state's own | Kartika's bright 2nd at sunrise, the rule Nepal's pack kept until it took *Dharmasindhu* p. 79's aparahna (rc.9), which gives 26 October 2022 against the notice's 27th |
 | Dussehra (Mahanavami) | `MAHA_NAVAMI` | `NEPAL_PANCHANGA`'s rule | a printed panchanga (C1528) |
 | Holika Dahan | `HOLIKA` | `DHARMASINDHU`'s rule | *Dharmasindhu* (C1524) |
 | Narak Chaturdashi (restricted) | `NARAK_CHATURDASHI` | the day before `LAKSHMI_PUJA` | the notifications (C1528) |
 | Govardhan Puja; Maharaja Agrasen Jayanti (restricted) | `GOVARDHAN_PUJA`, `AGRASEN_JAYANTI` | *Dharmasindhu*'s Bali pratipada and Navaratra arambha | *Dharmasindhu* p. 78 (C1523) |
-| Basant Panchami, Chetichand, Parshuram Jayanti, Anant Chaturdashi, Mahashtami, Chhath (restricted) | `BASANTA_PANCHAMI`, `CHETI_CHAND`, `PARASHURAMA_JAYANTI`, `ANANTA_CHATURDASHI`, `MAHA_ASHTAMI`, `CHHATH` | `NEPAL_PANCHANGA`'s rule; Chetichand its Samvatsara arambha, as Gujarat's list keeps it | a printed panchanga |
+| Basant Panchami, Chetichand, Parshuram Jayanti, Anant Chaturdashi, Mahashtami, Chhath (restricted) | `BASANTA_PANCHAMI`, `CHETI_CHAND`, `PARASHURAMA_JAYANTI`, `ANANTA_CHATURDASHI`, `MAHA_ASHTAMI`, `CHHATH` | `NEPAL_PANCHANGA`'s rule; Chetichand its Samvatsara arambha, as Gujarat's list keeps it; Parshuram Jayanti the state's own, Vaishakha's bright 3rd by its share of the pradosha | a printed panchanga |
 | Maharshi Valmiki Jayanti (restricted) | `VALMIKI_JAYANTI` | Karnataka's rule, Ashvina's full moon at sunrise | the notifications; Karnataka's |
 | Sant Ravidas Jayanti (restricted) | `RAVIDAS_JAYANTI` | Magha's full moon at sunrise | the notifications (C1521) |
 | Holi, second day (restricted) | `HOLI_SECOND_DAY` | the second day after `HOLIKA` | the notification |

@@ -13,19 +13,24 @@ the previous release, not by nobody having looked.
 ## Unreleased
 
 **NEPAL_PANCHANGA's fitted days by their texts (C2320 to C2327).**
-**Numbers:** at Kathmandu under `nepali-committee`, April 2019 to April 2027, 13 rules move
-28 days: `HILE_JATRA` 8, `KALKI_JAYANTI` and `MATSYANARAYANA_MELA` 3 each,
-`AMUKTABHARANA_SAPTAMI`, `DVAPARA_YUGADI`, `GAURA_SAPTAMI` and `NAVAMI_SHRADDHA` 2 each,
+**Numbers:** at Kathmandu under `nepali-committee`, April 2019 to April 2027, 12 rules move
+26 days: `HILE_JATRA` 8, `KALKI_JAYANTI` and `MATSYANARAYANA_MELA` 3 each,
+`AMUKTABHARANA_SAPTAMI`, `GAURA_SAPTAMI` and `NAVAMI_SHRADDHA` 2 each,
 and `DATTATREYA_JAYANTI`, `GATHAMUGA_CHARHE`, `GHANTAKARNA_CHATURDASHI`,
 `NUWAKOT_DUPCHESHWAR_MELA`, `TILAKUNDA_CHATURTHI` and `VAMANA_DWADASHI` 1 each. No other
 pack's day moves. Over VS 2076 to 2083 the fortnight's shraddhas agree with every
 published calendar in each year the calendars agree on.
-- **Changed:** 22 rules the pack had fitted to the committee's two books now carry
+- **Changed:** 21 rules the pack had fitted to the committee's two books now carry
   *Dharmasindhu*'s or *Nirnayasindhu*'s decision, each citing its page: the shraddhas at
-  the aparahna, Kalki jayanti at sunset, Vamana dvadashi at madhyahna, Dvapara yugadi at
-  the aparahna, Gathamuga charhe at the first pradosha the 14th touches, Matsyanarayana on
+  the aparahna, Kalki jayanti at sunset, Vamana dvadashi at madhyahna, Gathamuga charhe at the first pradosha the 14th touches, Matsyanarayana on
   Matsya jayanti's day, Hile jatra on Shravana's dark 9th (`03-design/festival-rules.md`
   §10.6). A rule no text decides keeps its fit and says so (published-only).
+- **Changed:** five India packs that took a day from `NEPAL_PANCHANGA` keep it as a rule of
+  their own, as every one of their notifications does, so the text rules above move none of
+  their days (checked 2000 to 2050 at each capital): `INDIA_MAHARASHTRA`'s Ganesh Chaturthi
+  and `INDIA_ODISHA`'s Nuakhai by the share of the madhyahna, `INDIA_UTTAR_PRADESH`'s and
+  `INDIA_GUJARAT`'s Parashurama Jayanti by the share of the pradosha, and `INDIA_BIHAR`'s
+  Samrat Ashok Ashtami at sunrise.
 - **Added:** two fits, `EarlierAny` and `LaterWhollyOrAlone` (*Dharmasindhu* p. 55's
   chaturthi), each with its guards' unit tests.
 - **Fixed:** the mahalaya's and Pishachamochana's citations name the pages the running
@@ -61,6 +66,8 @@ other year or rule moves.
   *Dharmasindhu* p. 79's aparahna, as Nepal's calendars print it in every year the two
   readings part (5 of 5); the other rites that part stay on the sunrise's day, as the
   calendars print them (32 of 32).
+- **Changed:** `INDIA_UTTAR_PRADESH`, which took Bhaiyadooj from Nepal's pack, keeps it at
+  sunrise as a rule of its own, as all eight of its notifications do; its days do not move.
 
 **Nepal's monthly darsha shraddha and ashtami vratas by *Dharmasindhu*, Gorakhkali's pujas, and five more days its calendars print.**
 **Numbers:** ten rules join `NEPAL_PANCHANGA`; no existing rule's day moves. Over VS 2076
@@ -72,7 +79,8 @@ print them (the sunrise's rule would give 25, 20 and 7).
   aparahna: the source names that departure.
 - **Added:** `SHUKLA_ASHTAMI_VRATA` on the later bright 8th, and `KRISHNA_ASHTAMI_VRATA` on
   the dark 8th holding more of the pradosha, the fast for Kalabhairava (*Dharmasindhu* p. 10),
-  named अष्टमी व्रत in `ne-Deva-NP` as the calendars print both.
+  named शुक्ल and कृष्ण अष्टमी व्रत in `ne-Deva-NP`, where the calendars print अष्टमी व्रत
+  on both.
 - **Added:** `RAMANUJACHARYA_JAYANTI` on Ardra in Vaishakha's bright half, at sunrise, where
   Nepal's calendars print it in every year VS 2076 to 2083; in 2021 that is 16 May, where the
   south's Ardra in Chittirai was 18 April (C2330).
@@ -83,6 +91,12 @@ print them (the sunrise's rule would give 25, 20 and 7).
 - **Added:** four days Nepal's calendars print on a festival's day: `TULASI_ROPANA` on
   Harishayani Ekadashi, `TULASI_PIYE` the day after, `TULASI_DAL_RAKHNE` on Nirjala Ekadashi
   and `VYASA_JAYANTI` on Guru Purnima, each in every year (or 8 of 9) that prints it.
+- **Added:** `UTTARAYANA_ARAMBHA` and `DAKSHINAYANA_ARAMBHA`, names of the Makara and
+  Karkata sankrantis' days (Surya Siddhanta 14.9), where Nepal's calendars print उत्तरायण
+  आरम्भ in all 17 years and दक्षिणायन आरम्भ in 16 of 17 over VS 2076 to 2083.
+- **Added:** `AVIDHAVA_NAVAMI` names `NAVAMI_SHRADDHA`'s day in Nepal, मातृ नवमी in
+  `ne-Deva-NP`, as the national panchanga prints नवमीश्राद्ध, मातृनवमीश्राद्ध on one row
+  (VS 2082 p. 12, VS 2083 p. 14).
 
 **A request's locale takes a short tag.**
 **Numbers:** none move; a request that was refused now answers.
