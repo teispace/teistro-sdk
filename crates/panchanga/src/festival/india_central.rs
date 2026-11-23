@@ -21,7 +21,7 @@ use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{
     Dated, DatedRule, FestivalMeta, FestivalRule, FollowingRule, InAdhika, PublishedEntry,
-    PublishedSet, Which,
+    PublishedSet, Which, Window,
 };
 
 /// The notice the list comes from.
@@ -55,6 +55,23 @@ pub(super) type OnDay<'a> = (i32, &'a str, (u8, u8));
 /// A state's own lunar day: key, amanta month, tithi, how the rule fits
 /// its two days, whether the list holds it optional, and what the day is.
 pub(super) type Own = (&'static str, Masa, Tithi, Fit, bool, &'static str);
+
+/// Parashurama Jayanti, Vaishakha's bright 3rd, on the day holding more of
+/// the first part of the night: the day Uttar Pradesh's and Gujarat's
+/// notifications keep in every year they print it. *Dharmasindhu* p. 37's
+/// earlier day only when it alone holds that part, which `NEPAL_PANCHANGA`
+/// keeps, would move 2012, 2032 and 2038 a day later at those states'
+/// capitals, so the states keep the share as their own rule.
+pub(super) const fn parashurama_jayanti(optional: bool) -> Own {
+    (
+        "PARASHURAMA_JAYANTI",
+        Masa::Vaishakha,
+        Tithi::ShuklaTritiya,
+        Fit::Share(Window::Pradosha),
+        optional,
+        "Parashurama Jayanti, Vaishakha's bright 3rd, on the day holding more of the pradosha",
+    )
+}
 
 /// A state's day on a Gregorian date: key, (month, day), tradition,
 /// communities, and whether the list holds it optional.

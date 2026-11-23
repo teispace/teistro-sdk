@@ -23,7 +23,9 @@
 
 use teistro_core::catalogue::{Masa, Tithi, Tradition};
 
-use super::india_central::{Civil, Own, Printed, PrintedDays, StateList, as_cited, sighted};
+use super::india_central::{
+    Civil, Own, Printed, PrintedDays, StateList, as_cited, parashurama_jayanti, sighted,
+};
 use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
@@ -81,14 +83,17 @@ const ALMANAC: &str = "Gujarat's almanacs, as the state's notifications of 2019 
      citation is open (C1441)";
 
 /// Gujarat's rules by the tithi of an amanta month.
-const GUJARAT: [Own; 1] = [(
-    "VIKRAM_SAMVAT_NEW_YEAR",
-    Masa::Kartika,
-    Tithi::ShuklaPratipada,
-    Fit::Udaya,
-    false,
-    "Nutan Varsh Din, the Vikram Samvat New Year, Besatu Varsh (Kartak sud-1), Kartika's bright 1st, kept at sunrise where Dharmasindhu's Bali pratipada keeps the earlier day unless the 1st lasts nine muhurtas past the later sunrise (C1442)",
-)];
+const GUJARAT: [Own; 2] = [
+    (
+        "VIKRAM_SAMVAT_NEW_YEAR",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        Fit::Udaya,
+        false,
+        "Nutan Varsh Din, the Vikram Samvat New Year, Besatu Varsh (Kartak sud-1), Kartika's bright 1st, kept at sunrise where Dharmasindhu's Bali pratipada keeps the earlier day unless the 1st lasts nine muhurtas past the later sunrise (C1442)",
+    ),
+    parashurama_jayanti(false),
+];
 
 /// The rules of the central list this list keeps: every lunar one but
 /// Buddha Purnima, on every year's list.
@@ -98,10 +103,7 @@ const CENTRAL_LEFT: [&str; 1] = ["BUDDHA_JAYANTI"];
 /// them under, each with the print's key and whether it is optional:
 /// Chetichand is kept on Chaitra's bright 1st at sunrise, the print's
 /// Samvatsara arambha, the day after Chaitra's new moon (C1446).
-const PRINT_KEPT: [(&str, &str, bool); 2] = [
-    ("CHETI_CHAND", "SAMVATSARA_ARAMBHA", false),
-    ("PARASHURAMA_JAYANTI", "PARASHURAMA_JAYANTI", false),
-];
+const PRINT_KEPT: [(&str, &str, bool); 1] = [("CHETI_CHAND", "SAMVATSARA_ARAMBHA", false)];
 
 /// The Jain pack's Samvatsari, the Chaturthi Paksha's, as the notification
 /// names it.

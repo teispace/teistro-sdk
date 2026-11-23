@@ -65,7 +65,7 @@ notification's (C1493): Buddha Purnima is optional to 2021 and general after.
 | Janmashtami | `JANMASHTAMI` | *Dharmasindhu*'s rule, with its fast | *Dharmasindhu* |
 | Jhulana Purnima | `JHULANA_PURNIMA` | *Dharmasindhu*'s Rakshabandhan rule | *Dharmasindhu* (C1489) |
 | Basanta Panchami, Ratha Yatra, Ganesh Puja | `BASANTA_PANCHAMI`, `JAGANNATH_RATH_JATRA`, `GANESHA_CHATURTHI` | Nepal's printed panchanga's rules | a printed panchanga (C1486) |
-| Nuakhai | `NUAKHAI` | Bhadrapada's bright 5th at midday, the panchanga's Rishi Panchami rule | a printed panchanga (C1499) |
+| Nuakhai | `NUAKHAI` | Bhadrapada's bright 5th, the day holding more of the madhyahna, the state's own | a printed panchanga (C1499) |
 | Mahalaya | `MAHALAYA_AMAVASYA` | Bhadrapada's new moon at the afternoon, the panchanga's shraddha rule | a printed panchanga |
 | Maha Saptami, Maha Astami, Maha Navami | `PHULPATI`, `MAHA_ASHTAMI`, `MAHA_NAVAMI` | Ashvina's bright 7th, 8th and 9th at sunrise, the panchanga's rules | a printed panchanga (C1484) |
 | Rahas Purnima | `RAHAS_PURNIMA` | Kartika's full moon at sunrise, the panchanga's Guru Nanak Jayanti rule | a printed panchanga |

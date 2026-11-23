@@ -36,7 +36,8 @@ use super::india_telangana::SIGHTED_OPTIONAL;
 use super::nepal_panchanga::Fit;
 use super::published::PUBLISHED_FORMAT;
 use super::{
-    Dated, DatedRule, DayReckoning, FestivalMeta, FestivalRule, FollowingRule, PublishedSet, Window,
+    Dated, DatedRule, DayPart, DayReckoning, FestivalMeta, FestivalRule, FollowingRule,
+    PublishedSet, Window,
 };
 
 /// Where the list is kept: India, then the state the notification names.
@@ -108,7 +109,7 @@ const CENTRAL_KEPT: [(&str, bool); 3] = [
 type Kept = (&'static str, &'static str, bool, &'static str);
 
 /// Nepal's printed panchanga's rules this list keeps.
-const PRINT_KEPT: [Kept; 10] = [
+const PRINT_KEPT: [Kept; 9] = [
     (
         "BASANTA_PANCHAMI",
         "BASANTA_PANCHAMI",
@@ -126,12 +127,6 @@ const PRINT_KEPT: [Kept; 10] = [
         "GANESHA_CHATURTHI",
         false,
         "Ganesh Puja, Bhadrapada's bright 4th",
-    ),
-    (
-        "NUAKHAI",
-        "RISHI_PANCHAMI",
-        false,
-        "Nuakhai, the new rice's festival, Bhadrapada's bright 5th, the print's Rishi Panchami (C1499)",
     ),
     (
         "MAHALAYA_AMAVASYA",
@@ -198,8 +193,22 @@ const TEXT_KEPT: [Kept; 1] = [(
     "Jhulana Purnima, Shravana's full moon, on Dharmasindhu's Raksha Bandhan (C1489)",
 )];
 
-/// Odisha's own rules by the tithi of an amanta month.
-const ODIA: [Own; 3] = [
+/// Odisha's own rules by the tithi of an amanta month. Nuakhai keeps the
+/// day holding more of the madhyahna, the rule every notification over
+/// eight years holds to; *Dharmasindhu* p. 55, which `NEPAL_PANCHANGA`'s
+/// Rishi Panchami now keeps, takes the later day only when it holds the
+/// madhyahna wholly, and moves 2027's Nuakhai a day earlier.
+const ODIA: [Own; 4] = [
+    (
+        "NUAKHAI",
+        Masa::Bhadrapada,
+        Tithi::ShuklaPanchami,
+        Fit::Share(Window::Part {
+            part: DayPart::Madhyahna,
+        }),
+        false,
+        "Nuakhai, the new rice's festival, Bhadrapada's bright 5th, on the day holding more of the madhyahna (C1499)",
+    ),
     (
         "SAVITRI_AMAVASYA",
         Masa::Vaishakha,
@@ -448,8 +457,8 @@ impl FestivalRule {
     /// let kumar = of("KUMAR_PURNIMA").ok_or("shipped")?;
     /// assert_eq!(kumar.at, Window::Moonrise);
     /// assert_eq!(kumar.meta.regions, ["IN", "IN-OD"]);
-    /// // Nuakhai is the print's Rishi Panchami, Dola Purnima West Bengal's.
-    /// assert!(of("NUAKHAI").ok_or("shipped")?.source.contains("as Nepal's printed panchanga reckons it"));
+    /// // Nuakhai is the state's own, Dola Purnima West Bengal's.
+    /// assert!(of("NUAKHAI").ok_or("shipped")?.source.contains("holding more of the madhyahna"));
     /// assert!(of("DOLA_YATRA").ok_or("shipped")?.source.contains("as West Bengal's list reckons it"));
     /// let gurpurab = of("GURU_GOBIND_SINGH_JAYANTI").ok_or("shipped")?;
     /// assert_eq!(gurpurab.meta.tradition, Some(Tradition::Sikh));

@@ -29,7 +29,9 @@
 use teistro_calendar::easter::Computus;
 use teistro_core::catalogue::{Calendar, Masa, Tithi, Tradition};
 
-use super::india_central::{Civil, Own, Printed, PrintedDays, StateList, sighted};
+use super::india_central::{
+    Civil, Own, Printed, PrintedDays, StateList, parashurama_jayanti, sighted,
+};
 use super::nepal_panchanga::Fit;
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{Dated, DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
@@ -87,22 +89,31 @@ const ALMANAC: &str = "Uttar Pradesh's almanacs, as the state's notifications of
      the citation is open (C1521)";
 
 /// Uttar Pradesh's rules by the tithi of an amanta month.
-const UTTAR_PRADESH: [Own; 1] = [(
-    "RAVIDAS_JAYANTI",
-    Masa::Magha,
-    Tithi::Purnima,
-    Fit::Udaya,
-    true,
-    "the restricted list's Sant Ravidas Jayanti, Magha's full moon (माघ शुक्ल 15), kept at sunrise",
-)];
+const UTTAR_PRADESH: [Own; 3] = [
+    parashurama_jayanti(true),
+    (
+        "RAVIDAS_JAYANTI",
+        Masa::Magha,
+        Tithi::Purnima,
+        Fit::Udaya,
+        true,
+        "the restricted list's Sant Ravidas Jayanti, Magha's full moon (माघ शुक्ल 15), kept at sunrise",
+    ),
+    (
+        "YAMA_DWITIYA",
+        Masa::Kartika,
+        Tithi::ShuklaDvitiya,
+        Fit::Udaya,
+        false,
+        "Bhaiyadooj, Kartika's bright 2nd, kept at sunrise as every notification of 2019 to 2026 keeps it; Dharmasindhu p. 79's aparahna, which Nepal's packs keep, gives 26 October 2022 where the notice lists the 27th",
+    ),
+];
 
 /// Nepal's rules this list keeps, each with whether it is restricted:
-/// Raksha Bandhan and Bhaiyadooj, which meet every notification where
-/// *Dharmasindhu*'s rules part from two and one (C1528).
-const NEPAL_KEPT: [(&str, &str, bool); 2] = [
-    ("RAKSHABANDHAN", "RAKSHABANDHAN", false),
-    ("YAMA_DWITIYA", "YAMA_DWITIYA", false),
-];
+/// Raksha Bandhan, which meets every notification where *Dharmasindhu*'s
+/// rule parts from two (C1528). Bhaiyadooj, which Nepal's packs now keep at
+/// the aparahna, is the list's own at sunrise.
+const NEPAL_KEPT: [(&str, &str, bool); 1] = [("RAKSHABANDHAN", "RAKSHABANDHAN", false)];
 
 /// The rules of the central list this list keeps: every lunar one but the
 /// Holika fire, which the list holds as a public holiday of its own, and
@@ -136,11 +147,10 @@ const TEXT_KEPT: [(&str, &str, bool, &str); 2] = [
 /// the Dussehra's Mahanavami, which meets more of the notifications than
 /// *Dharmasindhu*'s (C1528), and Chetichand
 /// on Chaitra's bright 1st at sunrise, as Gujarat's list keeps it (C1446).
-const PRINT_KEPT: [(&str, &str, bool); 7] = [
+const PRINT_KEPT: [(&str, &str, bool); 6] = [
     ("MAHA_NAVAMI", "MAHA_NAVAMI", false),
     ("BASANTA_PANCHAMI", "BASANTA_PANCHAMI", true),
     ("CHETI_CHAND", "SAMVATSARA_ARAMBHA", true),
-    ("PARASHURAMA_JAYANTI", "PARASHURAMA_JAYANTI", true),
     ("ANANTA_CHATURDASHI", "ANANTA_CHATURDASHI", true),
     ("MAHA_ASHTAMI", "MAHA_ASHTAMI", true),
     ("CHHATH", "CHHATH", true),

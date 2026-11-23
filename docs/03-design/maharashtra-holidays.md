@@ -52,7 +52,8 @@ it is on every year's list, and kept in `["IN", "IN-MH"]` (ISO 3166-2; `MAHARASH
 | Buddha Pournima, Mahavir Jayanti, Guru Nanak Jayanti | `BUDDHA_JAYANTI`, `MAHAVIR_JAYANTI`, `GURU_NANAK_JAYANTI` | `INDIA_CENTRAL`'s lunar rule | a printed panchanga, as `NEPAL_PANCHANGA` ships them |
 | Holi (second day) | `HOLI` | `INDIA_CENTRAL`'s day after `HOLIKA` | *Dharmasindhu* p. 95 |
 | Diwali (Bali Pratipada), Bhaubeej | `BALI_PRATIPADA`, `YAMA_DWITIYA` | `DHARMASINDHU`'s rule | *Dharmasindhu* |
-| Gudhi Padwa, Ganesh Chaturthi | `SAMVATSARA_ARAMBHA`, `GANESHA_CHATURTHI` | `NEPAL_PANCHANGA`'s rule | Chaitra shukla 1 at sunrise; Bhadrapada shukla 4 by its share of the madhyahna |
+| Gudhi Padwa | `SAMVATSARA_ARAMBHA` | `NEPAL_PANCHANGA`'s rule | Chaitra shukla 1 at sunrise |
+| Ganesh Chaturthi | `GANESHA_CHATURTHI` | the state's own | Bhadrapada shukla 4 by its share of the madhyahna; `NEPAL_PANCHANGA` keeps *Dharmasindhu* p. 55's whole madhyahna, which gives 18 September 2023 against the notice's 19th |
 
 Bhaubeej is `optional`, since its own notification adds it in some years only (2022,
 2023, 2025 and 2026 in hand). Janmashtami is on the central list and not the state's,
