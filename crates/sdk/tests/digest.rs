@@ -29,8 +29,10 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 /// when Nalaswane charhe (20 September) did (C1812), again when the
 /// committee's reckoning took the true sine, moving the week's limb ends by
 /// up to a minute (C1950), and again when each day's moonrise moved to the
-/// Moon's upper limb (SR-102).
-const PINNED: &str = "f3d9f018aa54efd0675ab7ffd7c7444cc33df742d7866033492eb6e2b53e9618";
+/// Moon's upper limb (SR-102), and again when Nepal's fortnight of
+/// shraddhas took *Dharmasindhu*'s aparahna and its navami was named Matri
+/// Navami too (C2320, rc.8 and rc.9).
+const PINNED: &str = "b5a12a63f8b2839900a7ca10f0a36507204d7c778e977a72446b62ece0255564";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
