@@ -1326,10 +1326,18 @@ export interface RashifalRequest {
 /** Where Saturn stands in Sade Sati: the 12th, the 1st or the 2nd. */
 export type SadeSatiPhase = 'RISING' | 'PEAK' | 'SETTING';
 
+/** One event of a rashifal period, the sign it happened in uncounted. */
+export interface PeriodEvent {
+  /** The ingress or station. */
+  readonly hit: Hit;
+  /** The sign it happened in: the one entered, or the one a station stood in. */
+  readonly sign: Rashi | 'unknown';
+}
+
 /** One event of a rashifal period, counted from a sign. */
 export interface RashifalEvent {
   /** The event, and the sign it happened in: the one entered, or the one a station stood in. */
-  readonly event: { readonly hit: Hit; readonly sign: Rashi | 'unknown' };
+  readonly event: PeriodEvent;
   /** That sign's house from the reading's sign, 1 to 12. */
   readonly house: number;
   /** Whether v. 2 makes the graha's transit of that house good. */
@@ -1368,8 +1376,10 @@ export interface RashifalPeriod {
   readonly retrograde: readonly boolean[];
   /** What the baseline's score reads of the reference day's panchanga at sunrise. */
   readonly panchanga: { readonly tithi: Tithi | 'unknown'; readonly yoga: Yoga | 'unknown'; readonly muhurtaYogas: number };
-  /** Each sign's reading, Aries to Pisces. */
+  /** Each sign's reading, Aries to Pisces, its events those the request asked to be reported. */
   readonly readings: readonly RashiReading[];
+  /** The period's events a score counts: every graha's but the Moon's, whatever the request asked to be reported, so that asking to hear of an event never moves a score (C2331). */
+  readonly scored: readonly PeriodEvent[];
 }
 
 /** The baseline engine's score of one sign's reading, `BASELINE` and unsourced (C361). */

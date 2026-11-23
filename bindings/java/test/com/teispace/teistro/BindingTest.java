@@ -2896,6 +2896,9 @@ public final class BindingTest {
                 check(kalas <= 1, "a sankranti a month: " + kalas);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));
                 check(read.period() != null, "a rashifal period");
+                check(!read.period().scored().isEmpty()
+                        && read.period().scored().stream().noneMatch(e -> e.hit().graha() == Graha.MOON),
+                        "a score counts every graha's events but the Moon's (C2331)");
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)
                         .withSnapshot(new SnapshotClock(6, 0))).period() != null, "a rashifal at six");
                 check(!read.provenance().inputHash().isEmpty(), "the request is sealed");

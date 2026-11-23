@@ -2144,6 +2144,7 @@ __all__ = [
     "RashifalRequest",
     "SaturnStanding",
     "RashifalEvent",
+    "PeriodEvent",
     "RashiReading",
     "RashifalPanchanga",
     "RashifalPeriod",
@@ -13803,6 +13804,16 @@ class RashifalEvent:
 
 
 @dataclass(frozen=True)
+class PeriodEvent:
+    """One event of a period, the sign it happened in uncounted."""
+
+    hit: Hit
+    sign: Rashi
+    """The sign it happened in: the one entered, or the one a station stood
+    in."""
+
+
+@dataclass(frozen=True)
 class RashiReading:
     """One sign's reading of a period, the sign taken as a reader's janma
     rashi."""
@@ -13851,7 +13862,13 @@ class RashifalPeriod:
 
     panchanga: RashifalPanchanga
     readings: Tuple[RashiReading, ...]
-    """Each sign's reading, Aries to Pisces."""
+    """Each sign's reading, Aries to Pisces, its events those the request
+    asked to be reported."""
+
+    scored: Tuple[PeriodEvent, ...] = ()
+    """The period's events a score counts: every graha's but the Moon's,
+    whatever the request asked to be reported, so that asking to hear of an
+    event never moves a score (C2331)."""
 
 
 @dataclass(frozen=True)
@@ -17918,6 +17935,9 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
                 muhurta_yogas=limbs["muhurtaYogas"],
             ),
             readings=tuple(reading(one) for one in period["readings"]),
+            scored=tuple(
+                PeriodEvent(hit=hit(e["hit"]), sign=_member(Rashi, e["sign"])) for e in period["scored"]
+            ),
         ),
         baseline=None if baseline is None else tuple(score(one) for one in baseline),
         plans=None if plans is None else tuple(plans),

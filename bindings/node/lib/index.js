@@ -3856,6 +3856,11 @@ function rashifalAnswerFrom({ period, baseline, plans }) {
         return { kind: event.kind };
     }
   };
+  // An event of the period, the sign it happened in uncounted.
+  const periodEvent = (event) => ({
+    hit: { instant: event.hit.instant, graha: graha(event.hit.graha), event: hitEvent(event.hit.event) },
+    sign: rashi(event.sign),
+  });
   const reading = (one) => ({
     rashi: rashi(one.rashi),
     gochar: {
@@ -3873,10 +3878,7 @@ function rashifalAnswerFrom({ period, baseline, plans }) {
     },
     saturn: one.saturn,
     events: one.events.map((from) => ({
-      event: {
-        hit: { instant: from.event.hit.instant, graha: graha(from.event.hit.graha), event: hitEvent(from.event.hit.event) },
-        sign: rashi(from.event.sign),
-      },
+      event: periodEvent(from.event),
       house: from.house,
       goodHouse: from.goodHouse,
     })),
@@ -3908,6 +3910,7 @@ function rashifalAnswerFrom({ period, baseline, plans }) {
         muhurtaYogas: period.panchanga.muhurtaYogas,
       },
       readings: period.readings.map(reading),
+      scored: period.scored.map(periodEvent),
     },
     baseline: baseline === undefined ? null : baseline.map(score),
     // A plan's slots are already the record `intl.render` takes.

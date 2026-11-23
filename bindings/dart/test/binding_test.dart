@@ -11534,6 +11534,10 @@ void _engineTests() {
       [Calendar.gregorian, 7],
     );
     expect([period.transits.length, period.retrograde.length], [9, 9]);
+    // A score counts every graha's events but the Moon's, whatever is
+    // reported (C2331).
+    expect(period.scored, isNotEmpty);
+    expect(period.scored.map((e) => e.hit.graha), isNot(contains(Graha.moon)));
     final signs = [
       for (final r in Rashi.values)
         if (r.id >= 0) r,
