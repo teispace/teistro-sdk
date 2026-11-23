@@ -22,6 +22,13 @@ on:
 permissions:
   contents: read
 
+# A push to a pull request supersedes its previous head's run, as in the
+# fast check: an unfinished comparison of a stale commit only holds runners
+# the next run needs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   instructions:
     name: instructions

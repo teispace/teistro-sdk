@@ -26,6 +26,14 @@ on:
 permissions:
   contents: read
 
+# A second dispatch on a branch supersedes the first: its answer is about a
+# commit the branch has left, and its thirty jobs would queue the next run
+# behind them. The nightly and a release's call each keep their own group
+# and are never cancelled.
+concurrency:
+  group: verify-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' }}
+
 env:
   TEISTRO_STRICT: "1"
 
