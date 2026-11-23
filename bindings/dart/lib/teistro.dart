@@ -19042,9 +19042,17 @@ final class FestivalExtent extends _Value {
 /// What decided an observance's day: a guard, by its index in the rule's
 /// list, or the rule's `otherwise`, whose [index] is `null`.
 final class FestivalDecided extends _Value {
-  const FestivalDecided({required this.by, this.index, this.rule, this.days});
+  const FestivalDecided({
+    required this.by,
+    this.index,
+    this.rule,
+    this.days,
+    this.pierced,
+    this.excess,
+  });
 
-  /// `GUARD`, `OTHERWISE`, or `AFTER` for a following rule.
+  /// `GUARD`, `OTHERWISE`, `AFTER` for a following rule, or `EKADASHI` for
+  /// a rule decided as an Ekadashi.
   final String by;
 
   /// The guard's index; `null` unless a guard decided.
@@ -19056,8 +19064,16 @@ final class FestivalDecided extends _Value {
   /// The days a following rule counts; `null` unless [by] is `AFTER`.
   final int? days;
 
+  /// Whether the 10th pierces the 11th's day by the rule's vedha; `null`
+  /// unless [by] is `EKADASHI`.
+  final bool? pierced;
+
+  /// Which of the 11th and the 12th stand in excess (`ELEVENTH`, `TWELFTH`,
+  /// `BOTH` or `NEITHER`); `null` unless [by] is `EKADASHI`.
+  final String? excess;
+
   @override
-  List<Object?> get _fields => [by, index, rule, days];
+  List<Object?> get _fields => [by, index, rule, days, pierced, excess];
 }
 
 /// The day a rule falls on, and why.
@@ -20886,6 +20902,8 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         index: _festivalAt(raw['decidedBy'])['index'] as int?,
         rule: _festivalAt(raw['decidedBy'])['rule'] as String?,
         days: _festivalAt(raw['decidedBy'])['days'] as int?,
+        pierced: _festivalAt(raw['decidedBy'])['pierced'] as bool?,
+        excess: _festivalAt(raw['decidedBy'])['excess'] as String?,
       ),
       choice: raw['choice']! as String,
       marginSeconds: (raw['marginSeconds']! as num).toDouble(),

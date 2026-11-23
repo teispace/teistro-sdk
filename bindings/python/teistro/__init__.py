@@ -769,6 +769,7 @@ from ._requests import (
     FestivalRuleItem as FestivalRuleItem,
     SaitRule as SaitRule,
     EkadashiRule as EkadashiRule,
+    EkadashiDecision as EkadashiDecision,
     Anniversary as Anniversary,
     FollowingRule as FollowingRule,
     DatedRule as DatedRule,
@@ -11113,7 +11114,7 @@ class FestivalDecided:
     rule's list, or the rule's `otherwise`; or, for a following rule, the
     rule it counts from and how many days."""
 
-    by: Literal["GUARD", "OTHERWISE", "AFTER"]
+    by: Literal["GUARD", "OTHERWISE", "AFTER", "EKADASHI"]
     index: Optional[int]
     """The guard's index; `None` unless a guard decided."""
 
@@ -11122,6 +11123,14 @@ class FestivalDecided:
 
     days: Optional[int] = None
     """The days counted; `None` unless `by` is `AFTER`."""
+
+    pierced: Optional[bool] = None
+    """Whether the 10th pierces the 11th's day by the rule's vedha; `None`
+    unless `by` is `EKADASHI`."""
+
+    excess: Optional[Literal["ELEVENTH", "TWELFTH", "BOTH", "NEITHER"]] = None
+    """Which of the 11th and the 12th stand in excess; `None` unless `by`
+    is `EKADASHI`."""
 
 
 @dataclass(frozen=True)
@@ -19214,6 +19223,8 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
             index=decided.get("index"),
             rule=decided.get("rule"),
             days=decided.get("days"),
+            pierced=decided.get("pierced"),
+            excess=decided.get("excess"),
         ),
         choice=raw["choice"],
         margin_seconds=float(raw["marginSeconds"]),

@@ -6622,7 +6622,14 @@ export interface FestivalObservance {
   readonly decidedBy:
     | { readonly by: 'GUARD'; readonly index: number }
     | { readonly by: 'OTHERWISE' }
-    | { readonly by: 'AFTER'; readonly rule: string; readonly days: number };
+    | { readonly by: 'AFTER'; readonly rule: string; readonly days: number }
+    | {
+        readonly by: 'EKADASHI';
+        /** Whether the 10th pierces the 11th's day by the rule's vedha. */
+        readonly pierced: boolean;
+        /** Which of the 11th and the 12th stand in excess. */
+        readonly excess: 'ELEVENTH' | 'TWELFTH' | 'BOTH' | 'NEITHER';
+      };
   /** The choice that decided, which `day` resolves; a following rule's is its leader's. */
   readonly choice: FestivalChoice;
   /** How far the place can move: the seconds of time every instant the day was decided from (its sunrises and the windows the rule draws) may move, as another place moves them, before the day can change; 0 for two equal parts. */
