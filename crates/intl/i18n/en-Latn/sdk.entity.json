@@ -6464,6 +6464,145 @@
     "WORLD_MEDITATION_DAY": {
       "name": "World Meditation Day",
       "prose": "World Meditation Day, 21 December"
+    },
+    "PASHUPATINATH_CHHAYA_DARSHAN": {
+      "name": "Pashupatinath Chhaya Darshan",
+      "prose": "Pashupatinath Chhaya Darshan",
+      "iast": "Paśupatinātha Chāyā Darśana"
+    },
+    "BANEPA_CHANDESHWARI_JATRA": {
+      "name": "Banepa Chandeshwari Rath Jatra",
+      "prose": "Banepa Chandeshwari Rath Jatra"
+    },
+    "GURIYA_PARVA": {
+      "name": "Guriya Parva",
+      "prose": "Guriya Parva, Shrawan 1"
+    },
+    "GURHI_PARVA": {
+      "name": "Gurhi Parva",
+      "prose": "Gurhi Parva"
+    },
+    "RADHA_JANMOTSAV": {
+      "name": "Radha Janmotsav",
+      "prose": "Radha Janmotsav",
+      "iast": "Rādhā Janmotsava"
+    },
+    "NIMBARKACHARYA_JAYANTI": {
+      "name": "Nimbarkacharya Jayanti",
+      "prose": "Nimbarkacharya Jayanti",
+      "iast": "Nimbārkācārya Jayantī"
+    },
+    "SAUBHAGYA_SHURPADAN": {
+      "name": "Saubhagya Shurpadan",
+      "prose": "Saubhagya Shurpadan",
+      "iast": "Saubhāgya Śūrpadāna"
+    },
+    "AANPKO_MUJURA_KHANE_DIN": {
+      "name": "Aanpko Mujura Khane Din",
+      "prose": "Aanpko Mujura Khane Din"
+    },
+    "GANGAUR_PUJA_ARAMBHA": {
+      "name": "Gangaur Puja Begins",
+      "prose": "Gangaur Puja Begins"
+    },
+    "NALA_MACHHINDRANATH_SNAN": {
+      "name": "Nala Machhindranath Snan",
+      "prose": "Nala Machhindranath Snan"
+    },
+    "SARASWATI_AVAHAN": {
+      "name": "Saraswati Avahan",
+      "prose": "Saraswati Avahan",
+      "iast": "Sarasvatī Āvāhana"
+    },
+    "PHARPING_HARISHANKAR_JATRA": {
+      "name": "Pharping Harishankar Jatra",
+      "prose": "Pharping Harishankar Jatra"
+    },
+    "RATO_MACHHINDRANATH_SNAN": {
+      "name": "Rato Machhindranath Snan",
+      "prose": "Rato Machhindranath Snan"
+    },
+    "CHITTADHAR_HRIDAYA_JAYANTI": {
+      "name": "Chittadhar Hridaya Jayanti",
+      "prose": "Chittadhar Hridaya Jayanti"
+    },
+    "DEOPATAN_DESHODDHAR_PUJA": {
+      "name": "Deopatan Deshoddhar Puja",
+      "prose": "Deopatan Deshoddhar Puja"
+    },
+    "MATINA_PARU": {
+      "name": "Matina Paru",
+      "prose": "Matina Paru"
+    },
+    "MANVADI_CHAITRA_SHUKLA_TRITIYA": {
+      "name": "Chaitra Shukla Tritiya Manvadi",
+      "prose": "Chaitra Shukla Tritiya Manvadi",
+      "iast": "Caitra Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_CHAITRA_PURNIMA": {
+      "name": "Chaitra Purnima Manvadi",
+      "prose": "Chaitra Purnima Manvadi",
+      "iast": "Caitra Pūrṇimā Manvādi"
+    },
+    "MANVADI_JYESHTHA_PURNIMA": {
+      "name": "Jyeshtha Purnima Manvadi",
+      "prose": "Jyeshtha Purnima Manvadi",
+      "iast": "Jyeṣṭha Pūrṇimā Manvādi"
+    },
+    "MANVADI_ASHADHA_SHUKLA_DASHAMI": {
+      "name": "Ashadha Shukla Dashami Manvadi",
+      "prose": "Ashadha Shukla Dashami Manvadi",
+      "iast": "Āṣāḍha Śukla Daśamī Manvādi"
+    },
+    "MANVADI_ASHADHA_PURNIMA": {
+      "name": "Ashadha Purnima Manvadi",
+      "prose": "Ashadha Purnima Manvadi",
+      "iast": "Āṣāḍha Pūrṇimā Manvādi"
+    },
+    "MANVADI_SHRAVANA_KRISHNA_ASHTAMI": {
+      "name": "Shravana Krishna Ashtami Manvadi",
+      "prose": "Shravana Krishna Ashtami Manvadi",
+      "iast": "Śrāvaṇa Kṛṣṇa Aṣṭamī Manvādi"
+    },
+    "MANVADI_BHADRAPADA_SHUKLA_TRITIYA": {
+      "name": "Bhadrapada Shukla Tritiya Manvadi",
+      "prose": "Bhadrapada Shukla Tritiya Manvadi",
+      "iast": "Bhādrapada Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_ASHWINA_SHUKLA_NAVAMI": {
+      "name": "Ashwina Shukla Navami Manvadi",
+      "prose": "Ashwina Shukla Navami Manvadi",
+      "iast": "Āśvina Śukla Navamī Manvādi"
+    },
+    "MANVADI_KARTIKA_SHUKLA_DWADASHI": {
+      "name": "Kartika Shukla Dwadashi Manvadi",
+      "prose": "Kartika Shukla Dwadashi Manvadi",
+      "iast": "Kārttika Śukla Dvādaśī Manvādi"
+    },
+    "MANVADI_KARTIKA_PURNIMA": {
+      "name": "Kartika Purnima Manvadi",
+      "prose": "Kartika Purnima Manvadi",
+      "iast": "Kārttika Pūrṇimā Manvādi"
+    },
+    "MANVADI_PAUSHA_SHUKLA_EKADASHI": {
+      "name": "Pausha Shukla Ekadashi Manvadi",
+      "prose": "Pausha Shukla Ekadashi Manvadi",
+      "iast": "Pauṣa Śukla Ekādaśī Manvādi"
+    },
+    "MANVADI_MAGHA_SHUKLA_SAPTAMI": {
+      "name": "Magha Shukla Saptami Manvadi",
+      "prose": "Magha Shukla Saptami Manvadi",
+      "iast": "Māgha Śukla Saptamī Manvādi"
+    },
+    "MANVADI_PHALGUNA_PURNIMA": {
+      "name": "Phalguna Purnima Manvadi",
+      "prose": "Phalguna Purnima Manvadi",
+      "iast": "Phālguna Pūrṇimā Manvādi"
+    },
+    "MANVADI_PHALGUNA_AMAVASYA": {
+      "name": "Phalguna Amavasya Manvadi",
+      "prose": "Phalguna Amavasya Manvadi",
+      "iast": "Phālguna Amāvāsyā Manvādi"
     }
   },
   "agni_vasa": {

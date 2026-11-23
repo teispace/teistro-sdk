@@ -577,7 +577,7 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 1727,
+            derived.entities, 1757,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
              every listed member was named (SR-12), 792 until the round and petalled \
@@ -605,7 +605,8 @@ mod tests {
              1674 until the two ayanas' names, \
              1676 until SR-145's seventeen international and keepers' days, \
              1693 until Nepal's eighteen other names for its days (C2340, C2341), \
-             1711 until SR-145's sixteen more international days"
+             1711 until SR-145's sixteen more international days, \
+             1727 until SR-145's thirty Newar, Tharu and vrata days"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 

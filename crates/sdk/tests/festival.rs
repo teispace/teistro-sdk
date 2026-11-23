@@ -611,7 +611,7 @@ fn printed(rows: &[(&str, Day)]) -> Vec<(String, Day)> {
 /// The days `NEPAL_PANCHANGA` keeps on a Bikram Sambat date, over VS 2082
 /// at Kathmandu: exactly the rows read off the committee's print, each
 /// sankranti on its month's first day (pp. 2-24), the six national days,
-/// Tamu Lhosar, Walke parva, the sixteen festivals of a solar date
+/// Tamu Lhosar, Walke parva, the seventeen festivals of a solar date
 /// (Bisket and the Baisakh jatras, Shrawan's, Bhadra's, Asoj's and Magh's
 /// firsts), and Bhumiraj and the Bhumi puja on and three days after the
 /// Sun's entry into Ardra (p. 6). VS 2082 prints no day for
@@ -644,6 +644,7 @@ fn the_dated_days_are_the_committees_printed_rows() {
             ("BHUMI_PUJA", (2025, 6, 25)),
             ("KARKATA_SANKRANTI", (2025, 7, 17)),
             ("KANDAKARAK_PUJA", (2025, 7, 17)),
+            ("GURIYA_PARVA", (2025, 7, 17)),
             ("KHEER_KHANE_DIN", (2025, 7, 31)),
             ("SIMHA_SANKRANTI", (2025, 8, 17)),
             ("WALKE_PARVA", (2025, 8, 17)),
@@ -1197,7 +1198,7 @@ fn the_dated_days_are_the_second_editions_printed_rows() {
         kept((2026, 6, 25), (2026, 6, 25)),
         printed(&[("BHUMI_PUJA", (2026, 6, 25))])
     );
-    // VS 2083 pp. 9-13: Shrawan 1 and 15, Bhadra 1 (वल्केपर्व on
+    // VS 2083 pp. 9-13: Shrawan 1 (थारुगुरिया पर्व after Ⓐ) and 15, Bhadra 1 (वल्केपर्व on
     // भाद्रसङ्क्रान्ति) and Asoj 1.
     assert_eq!(
         kept((2026, 7, 17), (2026, 9, 17))
@@ -1206,6 +1207,7 @@ fn the_dated_days_are_the_second_editions_printed_rows() {
             .collect::<Vec<_>>(),
         printed(&[
             ("KANDAKARAK_PUJA", (2026, 7, 17)),
+            ("GURIYA_PARVA", (2026, 7, 17)),
             ("KHEER_KHANE_DIN", (2026, 7, 31)),
             ("WALKE_PARVA", (2026, 8, 17)),
             ("KIRTIPUR_BAGH_BHAIRAV_JATRA", (2026, 8, 17)),

@@ -6025,6 +6025,145 @@
     "WORLD_MEDITATION_DAY": {
       "name": "विश्व ध्यान दिवस",
       "prose": "विश्व ध्यान दिवस"
+    },
+    "PASHUPATINATH_CHHAYA_DARSHAN": {
+      "name": "पशुपतिनाथछायादर्शन",
+      "prose": "पशुपतिनाथछायादर्शन",
+      "iast": "Paśupatinātha Chāyā Darśana"
+    },
+    "BANEPA_CHANDESHWARI_JATRA": {
+      "name": "बनेपा चण्डेश्वरीरथयात्रा",
+      "prose": "बनेपा चण्डेश्वरीरथयात्रा"
+    },
+    "GURIYA_PARVA": {
+      "name": "गुरियापर्व",
+      "prose": "गुरियापर्व"
+    },
+    "GURHI_PARVA": {
+      "name": "गुर्हीपर्व",
+      "prose": "गुर्हीपर्व"
+    },
+    "RADHA_JANMOTSAV": {
+      "name": "राधाजन्मोत्सव",
+      "prose": "राधाजन्मोत्सव",
+      "iast": "Rādhā Janmotsava"
+    },
+    "NIMBARKACHARYA_JAYANTI": {
+      "name": "निम्बार्काचार्यजयन्ती",
+      "prose": "निम्बार्काचार्यजयन्ती",
+      "iast": "Nimbārkācārya Jayantī"
+    },
+    "SAUBHAGYA_SHURPADAN": {
+      "name": "सौभाग्यशूर्पदान",
+      "prose": "सौभाग्यशूर्पदान",
+      "iast": "Saubhāgya Śūrpadāna"
+    },
+    "AANPKO_MUJURA_KHANE_DIN": {
+      "name": "आम्रमञ्जरीप्राशन",
+      "prose": "आम्रमञ्जरीप्राशन"
+    },
+    "GANGAUR_PUJA_ARAMBHA": {
+      "name": "गणगौरपूजारम्भ",
+      "prose": "गणगौरपूजारम्भ"
+    },
+    "NALA_MACHHINDRANATH_SNAN": {
+      "name": "नाला मत्स्येन्द्रनाथस्नान",
+      "prose": "नाला मत्स्येन्द्रनाथस्नान"
+    },
+    "SARASWATI_AVAHAN": {
+      "name": "सरस्वत्यावाहन",
+      "prose": "सरस्वत्यावाहन",
+      "iast": "Sarasvatī Āvāhana"
+    },
+    "PHARPING_HARISHANKAR_JATRA": {
+      "name": "फर्पिङ हरिशङ्करयात्रा",
+      "prose": "फर्पिङ हरिशङ्करयात्रा"
+    },
+    "RATO_MACHHINDRANATH_SNAN": {
+      "name": "ललितपुर मत्स्येन्द्रनाथस्नान",
+      "prose": "ललितपुर मत्स्येन्द्रनाथस्नान"
+    },
+    "CHITTADHAR_HRIDAYA_JAYANTI": {
+      "name": "चित्तधर हृदय जयन्ती",
+      "prose": "चित्तधर हृदय जयन्ती"
+    },
+    "DEOPATAN_DESHODDHAR_PUJA": {
+      "name": "देवपाटन देशोद्धारपूजा",
+      "prose": "देवपाटन देशोद्धारपूजा"
+    },
+    "MATINA_PARU": {
+      "name": "मतिनापारु",
+      "prose": "मतिनापारु"
+    },
+    "MANVADI_CHAITRA_SHUKLA_TRITIYA": {
+      "name": "चैत्रशुक्लतृतीयामन्वादि",
+      "prose": "चैत्रशुक्लतृतीयामन्वादि",
+      "iast": "Caitra Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_CHAITRA_PURNIMA": {
+      "name": "चैत्रपूर्णिमामन्वादि",
+      "prose": "चैत्रपूर्णिमामन्वादि",
+      "iast": "Caitra Pūrṇimā Manvādi"
+    },
+    "MANVADI_JYESHTHA_PURNIMA": {
+      "name": "ज्येष्ठपूर्णिमामन्वादि",
+      "prose": "ज्येष्ठपूर्णिमामन्वादि",
+      "iast": "Jyeṣṭha Pūrṇimā Manvādi"
+    },
+    "MANVADI_ASHADHA_SHUKLA_DASHAMI": {
+      "name": "आषाढशुक्लदशमीमन्वादि",
+      "prose": "आषाढशुक्लदशमीमन्वादि",
+      "iast": "Āṣāḍha Śukla Daśamī Manvādi"
+    },
+    "MANVADI_ASHADHA_PURNIMA": {
+      "name": "आषाढपूर्णिमामन्वादि",
+      "prose": "आषाढपूर्णिमामन्वादि",
+      "iast": "Āṣāḍha Pūrṇimā Manvādi"
+    },
+    "MANVADI_SHRAVANA_KRISHNA_ASHTAMI": {
+      "name": "श्रावणकृष्णाष्टमीमन्वादि",
+      "prose": "श्रावणकृष्णाष्टमीमन्वादि",
+      "iast": "Śrāvaṇa Kṛṣṇa Aṣṭamī Manvādi"
+    },
+    "MANVADI_BHADRAPADA_SHUKLA_TRITIYA": {
+      "name": "भाद्रपदशुक्लतृतीयामन्वादि",
+      "prose": "भाद्रपदशुक्लतृतीयामन्वादि",
+      "iast": "Bhādrapada Śukla Tṛtīyā Manvādi"
+    },
+    "MANVADI_ASHWINA_SHUKLA_NAVAMI": {
+      "name": "आश्विनशुक्लनवमीमन्वादि",
+      "prose": "आश्विनशुक्लनवमीमन्वादि",
+      "iast": "Āśvina Śukla Navamī Manvādi"
+    },
+    "MANVADI_KARTIKA_SHUKLA_DWADASHI": {
+      "name": "कार्तिकशुक्लद्वादशीमन्वादि",
+      "prose": "कार्तिकशुक्लद्वादशीमन्वादि",
+      "iast": "Kārttika Śukla Dvādaśī Manvādi"
+    },
+    "MANVADI_KARTIKA_PURNIMA": {
+      "name": "कार्तिकपूर्णिमामन्वादि",
+      "prose": "कार्तिकपूर्णिमामन्वादि",
+      "iast": "Kārttika Pūrṇimā Manvādi"
+    },
+    "MANVADI_PAUSHA_SHUKLA_EKADASHI": {
+      "name": "पौषशुक्लैकादशीमन्वादि",
+      "prose": "पौषशुक्लैकादशीमन्वादि",
+      "iast": "Pauṣa Śukla Ekādaśī Manvādi"
+    },
+    "MANVADI_MAGHA_SHUKLA_SAPTAMI": {
+      "name": "माघशुक्लसप्तमीमन्वादि",
+      "prose": "माघशुक्लसप्तमीमन्वादि",
+      "iast": "Māgha Śukla Saptamī Manvādi"
+    },
+    "MANVADI_PHALGUNA_PURNIMA": {
+      "name": "फाल्गुनपूर्णिमामन्वादि",
+      "prose": "फाल्गुनपूर्णिमामन्वादि",
+      "iast": "Phālguna Pūrṇimā Manvādi"
+    },
+    "MANVADI_PHALGUNA_AMAVASYA": {
+      "name": "फाल्गुनामावास्यामन्वादि",
+      "prose": "फाल्गुनामावास्यामन्वादि",
+      "iast": "Phālguna Amāvāsyā Manvādi"
     }
   },
   "year_office": {

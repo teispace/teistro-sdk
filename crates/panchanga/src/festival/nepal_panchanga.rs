@@ -329,6 +329,7 @@ impl Fit {
             Window::DayMuhurta { from: 1, to: 6 } => {
                 "purvahna, the daylight's first six muhurtas (C602)"
             }
+            Window::DayMuhurta { from: 1, to: 4 } => "the daylight's first four muhurtas",
             Window::DayMuhurta { from: 13, to: 15 } => {
                 "the daylight's last three muhurtas, before sunset"
             }
@@ -352,7 +353,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 70] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -843,6 +844,34 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 70] = [
         Fit::Share(SAYAHNA),
         "Nepal's national panchanga, VS 2082 p. 18 and VS 2083 p. 20: (दिशीचह्रेपूजा); the printed charhe at sayahna, both editions' days (C614, C1812)",
     ),
+    (
+        "NALA_MACHHINDRANATH_SNAN",
+        Masa::Phalguna,
+        Tithi::KrishnaPratipada,
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2076 p. 24, VS 2082 p. 24 and VS 2083 p. 26: नालामत्स्येन्द्रनाथस्नान (नालान्हवं), on the dark 1st's sunrise day in all three; Nepal's calendars agree on 3 of the 4 days they print it over VS 2076 to 2083, the fourth on the dark 3rd, Nala's chariot day (C2353)",
+    ),
+    (
+        "RATO_MACHHINDRANATH_SNAN",
+        Masa::Chaitra,
+        Tithi::KrishnaPratipada,
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 26: ल.पु. मत्स्येन्द्रनाथस्नान (बुँगन्हव), on the dark 1st's sunrise day, and where the 1st holds two sunrises, as in 2025, Nepal's calendars print the later; Spotlight Nepal (10 April 2020) reports the bath held; Nepal's calendars agree on 4 of the 6 days they print it over VS 2076 to 2083, the other two Chaitra's bright 1st, and no Guthi source settles which bath is which (published-only, C2355)",
+    ),
+    (
+        "DEOPATAN_DESHODDHAR_PUJA",
+        Masa::Phalguna,
+        Tithi::KrishnaDwadashi,
+        Fit::Share(Window::DayMuhurta { from: 1, to: 4 }),
+        "Nepal's national panchanga, VS 2076 p. 24, VS 2082 p. 24 and VS 2083 p. 26: देउपाटन देशोद्धार पूजा, the day holding more of the morning's first four muhurtas in all three; Nepal's calendars agree on 6 of the 7 days they print it over VS 2076 to 2083, and no source names the window (published-only, C1660, C2357)",
+    ),
+    (
+        "MATINA_PARU",
+        Masa::Margashirsha,
+        Tithi::KrishnaPratipada,
+        Fit::Udaya,
+        "Kirtipur's feast on the day after Yomari punhi, which the national panchanga prints in neither VS 2082 (p. 18) nor VS 2083 (p. 20); Nepal's calendars print it on the dark 1st's sunrise day on all 5 days they print it over VS 2076 to 2083 (published-only, C685, C2358)",
+    ),
 ];
 
 /// The rules a text gives, which the committee's print follows in both
@@ -919,7 +948,7 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 9] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 146] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -1796,6 +1825,131 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 146] = [
         Tithi::KrishnaAshtami,
         "Nepal's national panchanga, VS 2082 p. 24 and VS 2083 p. 26: शीतलाष्टमी",
     ),
+    (
+        "RADHA_JANMOTSAV",
+        Masa::Bhadrapada,
+        Tithi::ShuklaAshtami,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13, each continuing the row after Ⓑ: राधाजीको जन्मोत्सव; Nepal's calendars, all 6 days they print it over VS 2076 to 2083 (C2352)",
+    ),
+    (
+        "SAUBHAGYA_SHURPADAN",
+        Masa::Magha,
+        Tithi::ShuklaTrayodashi,
+        "Nepal's national panchanga, VS 2082 p. 21 and VS 2083 p. 23: सौभाग्य शूर्पदान, VS 2082's on 31 January 2026, whose sunrise the 13th holds until 07:33; Nepal's calendars, all 5 days they print it over VS 2076 to 2083 (C2352)",
+    ),
+    (
+        "PASHUPATINATH_CHHAYA_DARSHAN",
+        Masa::Magha,
+        Tithi::ShuklaChaturdashi,
+        "Nepal's national panchanga, VS 2082 p. 21: श्रीपशुपतिनाथको छाँयादर्शन on 31 January 2026, the day a kshaya 14th runs in; VS 2083 p. 23: the full-moon fast's row continued after Ⓐ, the day whose sunrise holds the 14th; Republica (11 February 2025) reports the darshan; Nepal's calendars, all 14 days they print it over VS 2076 to 2083 (C2347)",
+    ),
+    (
+        "AANPKO_MUJURA_KHANE_DIN",
+        Masa::Phalguna,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2076 p. 24, VS 2082 p. 24 and VS 2083 p. 26: तेल लगाउने र आँपको मुजुरा खाने; Nepal's calendars, all 7 days they print it over VS 2076 to 2083, where the day after Holika gives 2 (C2352)",
+    ),
+    (
+        "GANGAUR_PUJA_ARAMBHA",
+        Masa::Phalguna,
+        Tithi::KrishnaPratipada,
+        "Nepal's national panchanga, VS 2076 p. 24, VS 2082 p. 24 and VS 2083 p. 26: गणगौरपूजा प्रारम्भ; Nepal's calendars, all 5 days they print it over VS 2076 to 2083 (C2352)",
+    ),
+];
+
+/// The fourteen manvadis, the days each Manu's age began, as *Dharmasindhu*
+/// p. 32 lists them (मन्वादयः): key, month (amanta, the nija month), tithi,
+/// and where the committee prints मन्वादि. Each is kept at sunrise, as the
+/// committee prints it; the text's own window, the forenoon for a bright
+/// fortnight's and the aparahna for a dark one's, parts from the print
+/// where it gives another day. Both editions print मन्वादि on Shravana's
+/// new moon too (VS 2082 p. 10, VS 2083 p. 12), a day the list does not
+/// hold, and no rule keeps it (C2351).
+const MANVADIS: [(&str, Masa, Tithi, &str); 14] = [
+    (
+        "MANVADI_CHAITRA_SHUKLA_TRITIYA",
+        Masa::Chaitra,
+        Tithi::ShuklaTritiya,
+        "VS 2082 p. 25",
+    ),
+    (
+        "MANVADI_CHAITRA_PURNIMA",
+        Masa::Chaitra,
+        Tithi::Purnima,
+        "VS 2082 p. 25, on 2 April 2026, the day whose sunrise the full moon holds, where the forenoon gives 1 April",
+    ),
+    (
+        "MANVADI_JYESHTHA_PURNIMA",
+        Masa::Jyeshtha,
+        Tithi::Purnima,
+        "VS 2082 p. 5",
+    ),
+    (
+        "MANVADI_ASHADHA_SHUKLA_DASHAMI",
+        Masa::Ashadha,
+        Tithi::ShuklaDashami,
+        "VS 2083 p. 9",
+    ),
+    (
+        "MANVADI_ASHADHA_PURNIMA",
+        Masa::Ashadha,
+        Tithi::Purnima,
+        "VS 2083 p. 9",
+    ),
+    (
+        "MANVADI_SHRAVANA_KRISHNA_ASHTAMI",
+        Masa::Shravana,
+        Tithi::KrishnaAshtami,
+        "VS 2082 p. 10 and VS 2083 p. 12",
+    ),
+    (
+        "MANVADI_BHADRAPADA_SHUKLA_TRITIYA",
+        Masa::Bhadrapada,
+        Tithi::ShuklaTritiya,
+        "VS 2082 p. 11 and VS 2083 p. 13, on 14 September 2026, the day whose sunrise the 3rd holds, where the forenoon gives 13 September",
+    ),
+    (
+        "MANVADI_ASHWINA_SHUKLA_NAVAMI",
+        Masa::Ashwina,
+        Tithi::ShuklaNavami,
+        "VS 2082 p. 13 and VS 2083 p. 15",
+    ),
+    (
+        "MANVADI_KARTIKA_SHUKLA_DWADASHI",
+        Masa::Kartika,
+        Tithi::ShuklaDwadashi,
+        "VS 2082 p. 15 and VS 2083 p. 17",
+    ),
+    (
+        "MANVADI_KARTIKA_PURNIMA",
+        Masa::Kartika,
+        Tithi::Purnima,
+        "VS 2082 p. 15 and VS 2083 p. 17",
+    ),
+    (
+        "MANVADI_PAUSHA_SHUKLA_EKADASHI",
+        Masa::Pausha,
+        Tithi::ShuklaEkadashi,
+        "VS 2082 p. 19",
+    ),
+    (
+        "MANVADI_MAGHA_SHUKLA_SAPTAMI",
+        Masa::Magha,
+        Tithi::ShuklaSaptami,
+        "VS 2082 p. 21 and VS 2083 p. 23",
+    ),
+    (
+        "MANVADI_PHALGUNA_PURNIMA",
+        Masa::Phalguna,
+        Tithi::Purnima,
+        "VS 2082 p. 23 and VS 2083 p. 25",
+    ),
+    (
+        "MANVADI_PHALGUNA_AMAVASYA",
+        Masa::Phalguna,
+        Tithi::Amavasya,
+        "VS 2083 p. 26, on 6 April 2027; VS 2082 p. 24 prints none",
+    ),
 ];
 
 /// The named ekadashis, each the fortnight's Ekadashi decided as Nepal's
@@ -2067,20 +2221,57 @@ const EVERY_MONTH_BY_TEXT: [(&str, Occurs, Fit, &str); 3] = [
 
 /// The days kept on a nakshatra in a lunar month: key, month, what is
 /// kept, fit, and where the days are printed.
-const ON_A_STAR: [(&str, Masa, Occurs, Fit, &str); 1] = [(
-    "RAMANUJACHARYA_JAYANTI",
-    Masa::Vaishakha,
-    Occurs::Nakshatra {
-        nakshatra: Nakshatra::Ardra,
-        paksha: Paksha::Shukla,
-    },
-    Fit::Udaya,
-    "Nepal's national panchanga, VS 2083 p. 3: रामानुजाचार्यजयन्ती on Vaishakha's bright 5th, the day whose sunrise Ardra holds; Nepal's calendars print it on Ardra in Vaishakha's bright half in every year of VS 2076 to 2083 they print it, 2021's on 16 May where Tamil Chittirai's Ardra was 18 April (C2330); the south keeps Thiruvathirai in Chittirai (`INDIA_KARNATAKA`, C1323)",
-)];
+const ON_A_STAR: [(&str, Masa, Occurs, Fit, &str); 2] = [
+    (
+        "RAMANUJACHARYA_JAYANTI",
+        Masa::Vaishakha,
+        Occurs::Nakshatra {
+            nakshatra: Nakshatra::Ardra,
+            paksha: Paksha::Shukla,
+        },
+        Fit::Udaya,
+        "Nepal's national panchanga, VS 2083 p. 3: रामानुजाचार्यजयन्ती on Vaishakha's bright 5th, the day whose sunrise Ardra holds; Nepal's calendars print it on Ardra in Vaishakha's bright half in every year of VS 2076 to 2083 they print it, 2021's on 16 May where Tamil Chittirai's Ardra was 18 April (C2330); the south keeps Thiruvathirai in Chittirai (`INDIA_KARNATAKA`, C1323)",
+    ),
+    (
+        "SARASWATI_AVAHAN",
+        Masa::Ashwina,
+        Occurs::Nakshatra {
+            nakshatra: Nakshatra::Mula,
+            paksha: Paksha::Shukla,
+        },
+        Fit::Udaya,
+        "Dharmasindhu p. 68: Sarasvati is invoked in the books on Mula in Ashvina's bright half (पुस्तकेषु सरस्वतीमावाह्य); Nepal's national panchanga, VS 2082 p. 13 and VS 2083 p. 15: सरस्वतीको आह्वान on the day whose sunrise Mula holds, where p. 69's day, the one whose daylight holds three muhurtas of Mula's first quarter, parts from VS 2083's; Nepal's calendars, all 9 days they print it over VS 2076 to 2083, on the SDK's own Moon (C2350)",
+    ),
+];
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 29] = [
+const SAME_DAY: [(&str, &str, &str); 34] = [
+    (
+        "BANEPA_CHANDESHWARI_JATRA",
+        "BUDDHA_JAYANTI",
+        "Nepal's national panchanga, VS 2082 p. 3, after Ⓑ, and VS 2083 p. 3, after Ⓓ and Ⓔ: वन्दिकापुरमा चण्डेश्वरी रथयात्रा in Vaishakha's full-moon row; Nepal's calendars, all 6 days they print it over VS 2076 to 2083: the day of BUDDHA_JAYANTI (C2348)",
+    ),
+    (
+        "GURHI_PARVA",
+        "NAG_PANCHAMI",
+        "Kantipur (29 July 2025; 6 August 2019) reports the western Tarai's Gurhi kept on Nag panchami, a local holiday in Kailali; Nepal's calendars print it on Nag panchami's day 6 times over VS 2076 to 2083, and every other printing on Shrawan 1, `GURIYA_PARVA`'s: the day of NAG_PANCHAMI (C2349)",
+    ),
+    (
+        "NIMBARKACHARYA_JAYANTI",
+        "KARTIK_SNAN_ENDS",
+        "Nepal's national panchanga, VS 2082 p. 15, after Ⓒ, and VS 2083 p. 17, after Ⓔ: निम्बार्काचार्यजयन्ती in Kartika's full-moon row; Nepal's calendars, all 6 days they print it over VS 2076 to 2083: the day of KARTIK_SNAN_ENDS (C2352)",
+    ),
+    (
+        "PHARPING_HARISHANKAR_JATRA",
+        "DWADASHI_SHRADDHA",
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: फर्पिङमा हरिशङ्करयात्रा in the row of द्वादशीश्राद्ध; Nepal's calendars agree from VS 2082, and on 4 of the 8 days they print it over VS 2076 to 2083, VS 2077 to 2080's falling a day or two before: the day of DWADASHI_SHRADDHA (published-only, C1659, C2354)",
+    ),
+    (
+        "CHITTADHAR_HRIDAYA_JAYANTI",
+        "APARA_EKADASHI",
+        "one of Nepal's calendars prints चित्तधर हृदय जन्मजयन्ती on Apara ekadashi's day, all 7 days it prints it over VS 2076 to 2083; the national panchanga prints it in neither VS 2082 (p. 4) nor VS 2083 (p. 4): the day of APARA_EKADASHI (published-only, C2356)",
+    ),
     (
         "TULASI_ROPANA",
         "HARISHAYANI_EKADASHI",
@@ -2263,6 +2454,44 @@ const COUNTED: [(&str, &str, i8, &str); 5] = [
     ),
 ];
 
+/// The rules a doubled Jyeshtha keeps in its adhika month (C606),
+/// the year a doubled Kartika begins there (C2041), and the one the
+/// print names only there (C607); a monthly rule is kept in an
+/// adhika month too.
+fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
+    match key {
+        "DASHAHARA_SNANA_ARAMBHA"
+        | "GANGA_DASHAHARA"
+        | "GANGA_PUJA"
+        | "RAMESHWAR_PUJA"
+        | "GURU_PADMASAMBHAVA_JAYANTI"
+        | "NEPAL_SAMBAT_NEW_YEAR" => InAdhika::First,
+        "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
+        _ if month.is_none() => InAdhika::Also,
+        _ => InAdhika::Nija,
+    }
+}
+
+/// The Durva fast barred once Agastya has risen (C608), and the
+/// Gaura parva's 5th and 7th with it (C686).
+fn barred(key: &str) -> Option<Barred> {
+    let with = |instead| Barred::With {
+        rule: "DURVA_ASHTAMI".to_owned(),
+        instead,
+    };
+    match key {
+        "DURVA_ASHTAMI" => Some(Barred::From {
+            calendar: Calendar::BikramSambat,
+            month: 5,
+            day: 22,
+            instead: Tithi::KrishnaAshtami,
+        }),
+        "GAURA_SAPTAMI" => Some(with(Tithi::KrishnaSaptami)),
+        "BIRUDA_PANCHAMI" => Some(with(Tithi::KrishnaPanchami)),
+        _ => None,
+    }
+}
+
 impl FestivalRule {
     /// The days Nepal's national panchanga prints beyond [`FestivalRule::nepal`],
     /// each rule fitted to the committee's VS 2082 and 2083 editions and
@@ -2281,42 +2510,6 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn nepal_panchanga() -> Vec<FestivalRule> {
-        // The rules a doubled Jyeshtha keeps in its adhika month (C606),
-        // the year a doubled Kartika begins there (C2041), and the one the
-        // print names only there (C607); a monthly rule is kept in an
-        // adhika month too.
-        fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
-            match key {
-                "DASHAHARA_SNANA_ARAMBHA"
-                | "GANGA_DASHAHARA"
-                | "GANGA_PUJA"
-                | "RAMESHWAR_PUJA"
-                | "GURU_PADMASAMBHAVA_JAYANTI"
-                | "NEPAL_SAMBAT_NEW_YEAR" => InAdhika::First,
-                "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
-                _ if month.is_none() => InAdhika::Also,
-                _ => InAdhika::Nija,
-            }
-        }
-        // The Durva fast barred once Agastya has risen (C608), and the
-        // Gaura parva's 5th and 7th with it (C686).
-        fn barred(key: &str) -> Option<Barred> {
-            let with = |instead| Barred::With {
-                rule: "DURVA_ASHTAMI".to_owned(),
-                instead,
-            };
-            match key {
-                "DURVA_ASHTAMI" => Some(Barred::From {
-                    calendar: Calendar::BikramSambat,
-                    month: 5,
-                    day: 22,
-                    instead: Tithi::KrishnaAshtami,
-                }),
-                "GAURA_SAPTAMI" => Some(with(Tithi::KrishnaSaptami)),
-                "BIRUDA_PANCHAMI" => Some(with(Tithi::KrishnaPanchami)),
-                _ => None,
-            }
-        }
         let yearly = RULES.iter().map(|&(key, month, tithi, fit, printed)| {
             (key, Some(month), tithi.into(), fit, printed, "fitted")
         });
@@ -2362,6 +2555,31 @@ impl FestivalRule {
         let on_a_star = ON_A_STAR.iter().map(|&(key, month, occurs, fit, printed)| {
             (key, Some(month), occurs, fit, printed, "fitted")
         });
+        let rule = |(key, month, occurs, fit, printed, how): (
+            &str,
+            Option<Masa>,
+            Occurs,
+            Fit,
+            &str,
+            &str,
+        )| FestivalRule {
+            barred: barred(key),
+            ..fit.rule(
+                key,
+                month,
+                occurs,
+                in_adhika(key, month),
+                &format!("{printed}; {how}"),
+            )
+        };
+        // Each manvadi cites the list it is one of and the page it is
+        // printed on.
+        let manvadis = MANVADIS.iter().map(|&(key, month, tithi, printed)| {
+            let cited = format!(
+                "Dharmasindhu p. 32: one of the fourteen manvadis (मन्वादयः); Nepal's national panchanga, {printed}: मन्वादि (C2351)"
+            );
+            rule((key, Some(month), tithi.into(), Fit::Udaya, &cited, "fitted"))
+        });
         yearly
             .chain(at_sunrise)
             .chain(ekadashis)
@@ -2370,16 +2588,8 @@ impl FestivalRule {
             .chain(monthly_by_text)
             .chain(by_text)
             .chain(on_a_star)
-            .map(|(key, month, occurs, fit, printed, how)| FestivalRule {
-                barred: barred(key),
-                ..fit.rule(
-                    key,
-                    month,
-                    occurs,
-                    in_adhika(key, month),
-                    &format!("{printed}; {how}"),
-                )
-            })
+            .map(&rule)
+            .chain(manvadis)
             .collect()
     }
 }
@@ -2521,6 +2731,11 @@ mod tests {
             ("madhyahna", "sayahna")
         );
         assert!(Fit::name(PURVAHNA).contains("C602"));
+        // Deopatan's puja, the morning's first four muhurtas (C2357).
+        assert_eq!(
+            Fit::name(Window::DayMuhurta { from: 1, to: 4 }),
+            "the daylight's first four muhurtas"
+        );
     }
 
     #[test]
