@@ -23,6 +23,26 @@ weekday of the month; no existing rule's day moves.
   first Saturday). Each is named in every locale, in Nepali as Nepal's calendars mostly print
   it. Safer Internet Day stays out: its kept Tuesdays fit no weekday rule (C1806).
 
+**Nepal's other names for its days (C2340 to C2342).**
+**Numbers:** none. No day moves; only the names a Nepal entry leads with or lists change.
+- **Changed:** `MESHA_SANKRANTI` leads with `NAYA_BARSHA` (नयाँ वर्ष) in Nepal, as the
+  Ministry of Home Affairs' notices of VS 2076 to 2083 name Baisakh 1's holiday the new
+  year; the sign's and the month's names follow it (C2341).
+- **Added:** 18 name keys in the five locales, each an other name of a day the pack already
+  keeps: `LUTO_FALNE_DIN` (Karkata sankranti), `GHYA_CHAKU_SALHU` (Makara sankranti),
+  `RASHTRIYA_EKATA_DIWAS` (Prithvi Jayanti, which keeps its lead, C2340),
+  `NEPAL_SAMBAT_ARAMBHA` (the notices' name for Nepal Sambat's new year),
+  `BUBAKO_MUKH_HERNE_DIN` (Kushe Aunsi), `UDHAULI_PARVA`, `BISKA_JATRA` (Yosin patan),
+  `YOSIN_THANEGU` (Yosin utthan, Bhaktapur's raising of the pole),
+  `KWATI_KHANE_DIN`, `SHATABIJ_ROPAN` (Bala Chaturdashi), `JANA_BAHA_DYAH_NHAVAN` (Seto
+  Machhindranath's bath), `PISHACHA_CHATURDASHI` (Pahan charhe), `NIMKO_PAAT_KHANE_DIN`
+  and `JYOTISH_DIWAS` (Samvatsara arambha), `MOHARATRI` (Janmashtami), `SAPTARSHI_PUJA`
+  (Rishi Panchami), `PAUSHE_AUNSI` (Gaya Mauni Aunsi) and `NAYA_BARSHA`. Nepal's names
+  table grows from 38 entries to 51. Each name is printed on its day by one to three of
+  Nepal's calendars over VS 2076 to 2083, in 4 to 20 of the 24 calendar-years.
+- Tulasi's seed-sowing on Nirjala Ekadashi is not named as `TULASI_DAL_RAKHNE`: the
+  calendars print two acts, and it waits for a rule of its own (C2342).
+
 ## 1.0.0-rc.8
 
 The eighth release candidate of 1.0.0. It decides Nepal's festivals by
