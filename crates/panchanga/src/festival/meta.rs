@@ -1209,7 +1209,7 @@ type Names = (
     Option<u16>,
     &'static str,
 );
-const NAMES: [Names; 37] = [
+const NAMES: [Names; 38] = [
     (
         "AMAVASYA_SHRADDHA",
         None,
@@ -1275,9 +1275,13 @@ const NAMES: [Names; 37] = [
     (
         "KARKATA_SANKRANTI",
         Some("SAUNE_SANKRANTI"),
-        &["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"],
+        &[
+            "KARKATA_SANKRANTI",
+            "SHRAWAN_SANKRANTI",
+            "DAKSHINAYANA_ARAMBHA",
+        ],
         Some(0),
-        SANKRANTI,
+        "Nepal's national panchanga (the committee's VS 2082 print): श्रावणसङ्क्रान्ति, दक्षिणायनारम्भ, one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Cancer are his southern course; Nepal's calendars over VS 2076 to 2083 print दक्षिणायन आरम्भ on this day in 16 of the 17 years they print it; Nepal's patros from 2013 to 2027, read for SR-145, name it साउने सङ्क्रान्ति (C2312)",
     ),
     ("KARTIK_SNAN_ENDS", None, &[], Some(1), PRINTED),
     (
@@ -1304,9 +1308,13 @@ const NAMES: [Names; 37] = [
     (
         "MAKARA_SANKRANTI",
         Some("MAGHE_SANKRANTI"),
-        &["MAKARA_SANKRANTI", "GHYU_CHAKU_KHANE_DIN"],
+        &[
+            "MAKARA_SANKRANTI",
+            "GHYU_CHAKU_KHANE_DIN",
+            "UTTARAYANA_ARAMBHA",
+        ],
         Some(0),
-        "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315)",
+        "Nepal's national panchanga (the committee's VS 2083 print) prints it first among the day's observances of its tier, and its VS 2082 print माघसङ्क्रान्ति, उत्तरायण सुरु in one row; Surya Siddhanta 14.9: the six months from the Sun's entry into Capricorn are his northern course; Nepal's calendars over VS 2076 to 2083 print उत्तरायण आरम्भ on this day in all 17 years they print it; Nepal's patros from 2013 to 2027, read for SR-145, name it माघे सङ्क्रान्ति (C2312); Kantipur, VS 2082 Magh 1: Magh 1 is माघे सङ्क्रान्ति, also called घ्यू-चाकु खाने दिन (C2315)",
     ),
     (
         "MESHA_SANKRANTI",
@@ -1336,6 +1344,13 @@ const NAMES: [Names; 37] = [
         &["DAHI_CHIURA_KHANE_DIN"],
         None,
         "Kantipur, VS 2082 Asar 15 (29 June 2025): Asar 15 is राष्ट्रिय धान दिवस, kept since VS 2062, and दही-चिउरा is eaten that day; three calendars published in Nepal over VS 2076 to 2084, read for SR-145, print दहीचिउरा खाने दिन on Asar 15 (C2315)",
+    ),
+    (
+        "NAVAMI_SHRADDHA",
+        None,
+        &["AVIDHAVA_NAVAMI"],
+        None,
+        "Nepal's national panchanga, VS 2082 p. 12 and VS 2083 p. 14: नवमीश्राद्ध, मातृनवमीश्राद्ध, one row; Dharmasindhu p. 62: on the 9th, the shraddha of every woman of the family who died before her husband (अविधवानवमी), at the aparahna as the fortnight's other shraddhas; one calendar published in Nepal prints मातृ नवमी on the day whose sunrise holds the 9th, a day later in 2 of VS 2076 to 2083's 8 years",
     ),
     (
         "NAVARATRA_ARAMBHA",
@@ -2475,14 +2490,22 @@ mod tests {
             lead_and_aliases("MAKARA_SANKRANTI"),
             [(
                 Some("MAGHE_SANKRANTI".to_owned()),
-                named(&["MAKARA_SANKRANTI", "GHYU_CHAKU_KHANE_DIN"])
+                named(&[
+                    "MAKARA_SANKRANTI",
+                    "GHYU_CHAKU_KHANE_DIN",
+                    "UTTARAYANA_ARAMBHA"
+                ])
             )]
         );
         assert_eq!(
             lead_and_aliases("KARKATA_SANKRANTI"),
             [(
                 Some("SAUNE_SANKRANTI".to_owned()),
-                named(&["KARKATA_SANKRANTI", "SHRAWAN_SANKRANTI"])
+                named(&[
+                    "KARKATA_SANKRANTI",
+                    "SHRAWAN_SANKRANTI",
+                    "DAKSHINAYANA_ARAMBHA"
+                ])
             )]
         );
         assert_eq!(

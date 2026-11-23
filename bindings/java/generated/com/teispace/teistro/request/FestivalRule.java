@@ -16,6 +16,7 @@ import java.util.Objects;
  * @param convention The convention the month is named in; amanta by default. Null leaves the SDK's default.
  * @param dayOfPaksha The day, 1 to 14. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  * @param decide The guards, in order; the first that holds decides.
+ * @param ekadashi For a rule kept on an 11th: decide it as an Ekadashi is, by the 10th's vedha and which tithis stand in excess (§10.7). Then the guards and `otherwise` are not read, and the window gives only the extents an observance shows. Absent for a rule decided by its window. Null leaves the SDK's default.
  * @param inAdhika Which of a doubled month's two holds it (C171): the nija month by default. Null leaves the SDK's default.
  * @param inMonth A calendar's month the day must fall in, in place of `month`: the rule is judged in every lunar month and keeps the day in this one, as Kerala keeps the dark 8th in Chingam (C1320). Null leaves the SDK's default.
  * @param key The rule's key in its pack, `"JANMASHTAMI"`.
@@ -28,7 +29,7 @@ import java.util.Objects;
  * @param source Where the rule is stated.
  * @param tithi The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  */
-public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, InAdhika inAdhika, InMonth inMonth, String key, FestivalMeta meta, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
+public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, EkadashiDecision ekadashi, InAdhika inAdhika, InMonth inMonth, String key, FestivalMeta meta, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -60,7 +61,7 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
      * @param source Where the rule is stated.
      */
     public FestivalRule(Window at, List<Guard> decide, String key, FestivalChoice otherwise, String source) {
-        this(at, null, null, null, decide, null, null, key, null, null, null, otherwise, null, null, source, null);
+        this(at, null, null, null, decide, null, null, null, key, null, null, null, otherwise, null, null, source, null);
     }
 
     /**
@@ -80,6 +81,7 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
         private com.teispace.teistro.LunarMonth convention;
         private Integer dayOfPaksha;
         private List<Guard> decide;
+        private EkadashiDecision ekadashi;
         private InAdhika inAdhika;
         private InMonth inMonth;
         private String key;
@@ -146,6 +148,17 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
          */
         public Builder decide(List<Guard> decide) {
             this.decide = decide;
+            return this;
+        }
+
+        /**
+         * Sets {@code ekadashi}.
+         *
+         * @param ekadashi For a rule kept on an 11th: decide it as an Ekadashi is, by the 10th's vedha and which tithis stand in excess (§10.7). Then the guards and `otherwise` are not read, and the window gives only the extents an observance shows. Absent for a rule decided by its window. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder ekadashi(EkadashiDecision ekadashi) {
+            this.ekadashi = ekadashi;
             return this;
         }
 
@@ -277,7 +290,7 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRule build() {
-            return new FestivalRule(at, barred, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi);
+            return new FestivalRule(at, barred, convention, dayOfPaksha, decide, ekadashi, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi);
         }
     }
 
@@ -296,6 +309,7 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
             Read.orNull(json.get("convention"), present -> Read.member(present, "FestivalRule.convention", com.teispace.teistro.LunarMonth::byKey)),
             Read.orNull(json.get("dayOfPaksha"), present -> Read.int32(present, "FestivalRule.dayOfPaksha")),
             Read.list(Read.required(json.get("decide"), "FestivalRule.decide"), "FestivalRule.decide", item0 -> Guard.of(item0)),
+            Read.orNull(json.get("ekadashi"), present -> EkadashiDecision.of(present)),
             Read.orNull(json.get("inAdhika"), present -> InAdhika.of(present)),
             Read.orNull(json.get("inMonth"), present -> InMonth.of(present)),
             Read.text(Read.required(json.get("key"), "FestivalRule.key"), "FestivalRule.key"),
@@ -323,6 +337,9 @@ public record FestivalRule(Window at, Barred barred, com.teispace.teistro.LunarM
             json.put("dayOfPaksha", dayOfPaksha);
         }
         json.put("decide", decide.stream().map(item0 -> item0.toJson()).toList());
+        if (ekadashi != null) {
+            json.put("ekadashi", ekadashi.toJson());
+        }
         if (inAdhika != null) {
             json.put("inAdhika", inAdhika.toJson());
         }

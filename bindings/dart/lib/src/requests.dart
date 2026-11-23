@@ -13114,6 +13114,7 @@ final class FestivalRule extends _Request {
     this.convention = LunarMonth.amanta,
     this.dayOfPaksha,
     required this.decide,
+    this.ekadashi,
     this.inAdhika,
     this.inMonth,
     required this.key,
@@ -13141,6 +13142,9 @@ final class FestivalRule extends _Request {
 
   /// The guards, in order; the first that holds decides.
   final List<Guard> decide;
+
+  /// For a rule kept on an 11th: decide it as an Ekadashi is, by the 10th's vedha and which tithis stand in excess (§10.7). Then the guards and `otherwise` are not read, and the window gives only the extents an observance shows. Absent for a rule decided by its window.
+  final EkadashiDecision? ekadashi;
 
   /// Which of a doubled month's two holds it (C171): the nija month by default.
   final InAdhika? inAdhika;
@@ -13182,6 +13186,7 @@ final class FestivalRule extends _Request {
     'convention': convention.key,
     if (dayOfPaksha case final dayOfPakshaValue?) 'dayOfPaksha': dayOfPakshaValue,
     'decide': [for (final e0 in decide) e0._wire],
+    if (ekadashi case final ekadashiValue?) 'ekadashi': ekadashiValue._wire,
     if (inAdhika case final inAdhikaValue?) 'inAdhika': inAdhikaValue._wire,
     if (inMonth case final inMonthValue?) 'inMonth': inMonthValue._wire,
     'key': key,
@@ -13196,7 +13201,7 @@ final class FestivalRule extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [at, barred, convention, dayOfPaksha, decide, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
+  List<Object?> get _fields => [at, barred, convention, dayOfPaksha, decide, ekadashi, inAdhika, inMonth, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
 }
 
 /// The threshold table a criterion compares its measure against.
@@ -15103,7 +15108,7 @@ final class EkadashiTable extends _Request {
 
 /// Where the 10th pierces the 11th's day (p. 11).
 enum EkadashiVedha implements _Keyed {
-  /// At arunodaya, four ghatis of the night before sunrise: the 10th "entering even a pala past 56 ghatis". The Vaishnavas' vedha.
+  /// At arunodaya, four ghatis before sunrise, a ghati a sixtieth of the sunrise-to-sunrise day: the 10th "entering even a pala past 56 ghatis" (C2328). The Vaishnavas' vedha.
   arunodaya('ARUNODAYA'),
   /// At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
   sunrise('SUNRISE');
@@ -15397,6 +15402,29 @@ final class Guard extends _Request {
 
   @override
   List<Object?> get _fields => [choose, when];
+}
+
+/// A festival rule kept on an 11th and decided as an Ekadashi is, by the 10th's vedha and which tithis stand in excess, rather than by a window (`festival-rules.md` §10.7): a named ekadashi, Haribodhini or Bhima, is the fortnight's Ekadashi under its observer's table.
+final class EkadashiDecision extends _Request {
+  const EkadashiDecision({
+    required this.table,
+    required this.vedha,
+  });
+
+  /// The day each kind takes.
+  final EkadashiTable table;
+
+  /// Where the 10th pierces.
+  final EkadashiVedha vedha;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'table': table._wire,
+    'vedha': vedha.key,
+  };
+
+  @override
+  List<Object?> get _fields => [table, vedha];
 }
 
 /// Which of a doubled month's two a rule is kept in.

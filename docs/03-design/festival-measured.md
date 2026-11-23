@@ -265,7 +265,7 @@ measures the fit and not a text (C600).
 | 2082 | HATYAMOCHANA_SNANA | 5 Jun | p. 5: हत्यामोचन तीर्थस्नान | 5 Jun | 5 Jun |
 | 2082 | NIRJALA_EKADASHI | 7 Jun | p. 5: निर्जला एकादशीव्रत | 7 Jun | 6 Jun ✗ |
 | 2082 | DILA_CHARHE | 24 Jun | p. 6: (दिल्ला चःह्रे पूजा) | 24 Jun | 24 Jun |
-| 2082 | HILE_JATRA | 17 Aug | p. 10: रामेछाप चिसापानी हिलेजात्रा | 1 Sep ✗ | 1 Sep ✗ |
+| 2082 | HILE_JATRA | 17 Aug | p. 10: रामेछाप चिसापानी हिलेजात्रा | 17 Aug | 17 Aug |
 | 2082 | AJA_EKADASHI | 19 Aug | p. 10: अजाएकादशीव्रत | 19 Aug | 19 Aug |
 | 2082 | CHATHA | 26 Aug | p. 11: चन्द्रदोषदर्शन (चथा) | 26 Aug | 27 Aug ✗ |
 | 2082 | GANESHA_CHATURTHI | 27 Aug | p. 11: गणेशचतुर्थीव्रत | 27 Aug | 27 Aug |
@@ -291,7 +291,7 @@ measures the fit and not a text (C600).
 | 2082 | KALI_YUGADI | 19 Sep | p. 12: कलियुगादि | 19 Sep | 19 Sep |
 | 2082 | CHATURDASHI_SHRADDHA | 20 Sep | p. 12: शस्त्रादिबाट निधन भएकाहरूको विश्वेदेवासहित एकोदिष्ट विधिले चतुर्दशीश्राद्ध | 20 Sep | 20 Sep |
 | 2082 | AMAVASYA_SHRADDHA | 21 Sep | p. 12: औंसीश्राद्ध, पितृविसर्जन | 21 Sep | 21 Sep |
-| 2082 | UPANGA_LALITA_VRATA | 26 Sep | p. 13: उपाङ्गललिताव्रत | 26 Sep | 27 Sep ✗ |
+| 2082 | UPANGA_LALITA_VRATA | 26 Sep | p. 13: उपाङ्गललिताव्रत | 26 Sep | 26 Sep |
 | 2082 | KUCHHI_BHOYE | 30 Sep | p. 13: (कूछि भ्वय्) | 30 Sep | 30 Sep |
 | 2082 | DHANVANTARI_JAYANTI | 19 Oct | p. 14: धन्वन्तरी जयन्ती | 19 Oct | 19 Oct |
 | 2082 | MHA_PUJA | 22 Oct | p. 15: म्हपूजा | 22 Oct | 22 Oct |
@@ -375,7 +375,7 @@ measures the fit and not a text (C600).
 | 2083 | GAURA_SAPTAMI | 3 Sep | p. 12: गौरासप्तमी | 3 Sep | 3 Sep |
 | 2083 | AMUKTABHARANA_SAPTAMI | 3 Sep | p. 12: अमुक्ताभरणसप्तमी | 3 Sep | 3 Sep |
 | 2083 | DURVA_ASHTAMI | 4 Sep | p. 12: दूर्वाष्टमीव्रत | 4 Sep | 4 Sep |
-| 2083 | HILE_JATRA | 5 Sep | p. 12: रामेछाप चिसापानी हिलेजात्रा | 20 Sep ✗ | 20 Sep ✗ |
+| 2083 | HILE_JATRA | 5 Sep | p. 12: रामेछाप चिसापानी हिलेजात्रा | 5 Sep | 5 Sep |
 | 2083 | AJA_EKADASHI | 7 Sep | p. 12: अजाएकादशीव्रत | 7 Sep | 7 Sep |
 | 2083 | CHATHA | 14 Sep | p. 13: चन्द्रदर्शनदोष (चथा) | 14 Sep | 14 Sep |
 | 2083 | GANESHA_CHATURTHI | 14 Sep | p. 13: गणेशचतुर्थीव्रत | 14 Sep | 14 Sep |
@@ -823,7 +823,7 @@ measures the fit and not a text (C600).
 | 2082 | SI_PUNHI | 1 Feb | p. 21: (सिपून्हि) | 1 Feb | 1 Feb |
 | 2082 | KAMADA_EKADASHI | 29 Mar | p. 25: कामदाएकादशीव्रत | 29 Mar | 29 Mar |
 | 2083 | VARAHA_JAYANTI | 15 Aug | p. 11: वराहजयन्ती | 15 Aug | 15 Aug |
-| 2083 | KALKI_JAYANTI | 18 Aug | p. 11: कल्कीजयन्ती | 18 Aug | 18 Aug |
+| 2083 | KALKI_JAYANTI | 18 Aug | p. 11: कल्कीजयन्ती | 18 Aug | 17 Aug ✗ |
 | 2083 | BAHIDYO_BOYEGU | 24 Aug | p. 11: बहिद्यब्बोय | 24 Aug | 24 Aug |
 | 2083 | SHIVA_PAVITRAROPAN | 27 Aug | p. 11: श्रीशिवजीमा पवित्रारोपण | 27 Aug | 27 Aug |
 | 2083 | HAYAGRIVA_JAYANTI | 27 Aug | p. 11: हयग्रीवोत्पत्ति | 27 Aug | 27 Aug |
@@ -881,16 +881,14 @@ measures the fit and not a text (C600).
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 5 of 634 disagree; each parting is named below with its cause |
-| the same over the modern sky falls on the printed day | falsified | 63 of 634 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
+| the `NEPAL_PANCHANGA` pack over the committee's sky falls on the printed day | falsified | 3 of 634 disagree; each parting is named below with its cause |
+| the same over the modern sky falls on the printed day | falsified | 61 of 634 disagree; the sky decides these: a tithi's end moves the day where the two skies part |
 
 Where the pack over the committee's sky parts from the print, and why:
 
-- VS 2082 HILE_JATRA (1 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
 - VS 2083 INDRADHWAJA_PATAN (30 Sep): the dark 4th begins just after sunset in both years (18:17 on 10 September 2025, 18:36 on 29 September 2026); VS 2082 prints the lowering on the day after, whose sunrise holds the 4th, and VS 2083 on the evening it begins, so no window gives both (C1470)
 - VS 2083 NANICHAYA (30 Sep): counted from INDRADHWAJA_PATAN (C1470)
-- VS 2083 HILE_JATRA (20 Sep): the print's हिलेजात्रा is Ramechhap's, on Shravana's dark 9th; the rule's Bhadrapada bright 9th prints no Hile jatra (C609)
-- VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela on the full moon, a day after Dattatreya's 14th (C611)
+- VS 2083 NUWAKOT_DUPCHESHWAR_MELA (23 Dec): the committee prints the mela a day apart from Dattatreya jayanti, whose day the rule keeps (C611)
 
 ## 7. The print as a published set
 
@@ -905,8 +903,8 @@ gives is the publisher's own.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 626 disagree |
-| every entry is placed on its rule's occurrence | falsified | 8 of 634 disagree |
+| the set laid over the modern sky gives every printed day it places | **holds** | 0 of 628 disagree |
+| every entry is placed on its rule's occurrence | falsified | 6 of 634 disagree |
 | the committee's sky gives every day the set moved | falsified | 3 of 55 disagree; the others' reasons are below |
 
 Of the 55 days the set moved, the committee's sky gives 52, and no change tried 3.
@@ -921,10 +919,8 @@ The entries no occurrence took, the rule giving no day within a week
 of the print under the modern sky (a weekday the sky does not meet, or
 a month the committee reckons otherwise, §6):
 
-- VS 2082 HILE_JATRA, printed 17 Aug
 - VS 2082 RAVI_SAPTAMI, printed 14 Sep
 - VS 2082 BUDHASHTAMI, printed 29 Oct
-- VS 2083 HILE_JATRA, printed 5 Sep
 - VS 2083 MANGALA_CHATURTHI, printed 21 Apr
 - VS 2083 MANGALA_CHATURTHI, printed 5 May
 - VS 2083 BUDHASHTAMI, printed 22 Jul

@@ -10853,6 +10853,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.DAKSHINAYANA_ARAMBHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dakshinayanaArambha() {
+                    return r.entity("festival.DAKSHINAYANA_ARAMBHA");
+                }
+
+                /**
                  * The forms of `festival.DALA_PUJA` in the current locale.
                  *
                  * @return the forms
@@ -10868,6 +10877,15 @@ public final class Messages {
                  */
                 public EntityForms damodardevaTithi() {
                     return r.entity("festival.DAMODARDEVA_TITHI");
+                }
+
+                /**
+                 * The forms of `festival.DARSHA_SHRADDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms darshaShraddha() {
+                    return r.entity("festival.DARSHA_SHRADDHA");
                 }
 
                 /**
@@ -12824,6 +12842,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KRISHNA_ASHTAMI_VRATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms krishnaAshtamiVrata() {
+                    return r.entity("festival.KRISHNA_ASHTAMI_VRATA");
+                }
+
+                /**
+                 * The forms of `festival.KRISHNA_GORAKHKALI_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms krishnaGorakhkaliPuja() {
+                    return r.entity("festival.KRISHNA_GORAKHKALI_PUJA");
+                }
+
+                /**
                  * The forms of `festival.KUCHHI_BHOYE` in the current locale.
                  *
                  * @return the forms
@@ -14570,6 +14606,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SHUKLA_ASHTAMI_VRATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shuklaAshtamiVrata() {
+                    return r.entity("festival.SHUKLA_ASHTAMI_VRATA");
+                }
+
+                /**
+                 * The forms of `festival.SHUKLA_GORAKHKALI_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shuklaGorakhkaliPuja() {
+                    return r.entity("festival.SHUKLA_GORAKHKALI_PUJA");
+                }
+
+                /**
                  * The forms of `festival.SILANGA_MAHARUDRA_KOTIHOM_MELA` in the current locale.
                  *
                  * @return the forms
@@ -14948,6 +15002,33 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.TULASI_DAL_RAKHNE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tulasiDalRakhne() {
+                    return r.entity("festival.TULASI_DAL_RAKHNE");
+                }
+
+                /**
+                 * The forms of `festival.TULASI_PIYE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tulasiPiye() {
+                    return r.entity("festival.TULASI_PIYE");
+                }
+
+                /**
+                 * The forms of `festival.TULASI_ROPANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tulasiRopana() {
+                    return r.entity("festival.TULASI_ROPANA");
+                }
+
+                /**
                  * The forms of `festival.TULASI_VIVAHA` in the current locale.
                  *
                  * @return the forms
@@ -15071,6 +15152,15 @@ public final class Messages {
                  */
                 public EntityForms utpattikaEkadashi() {
                     return r.entity("festival.UTPATTIKA_EKADASHI");
+                }
+
+                /**
+                 * The forms of `festival.UTTARAYANA_ARAMBHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uttarayanaArambha() {
+                    return r.entity("festival.UTTARAYANA_ARAMBHA");
                 }
 
                 /**
@@ -15287,6 +15377,15 @@ public final class Messages {
                  */
                 public EntityForms vrishchikaSankranti() {
                     return r.entity("festival.VRISHCHIKA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `festival.VYASA_JAYANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vyasaJayanti() {
+                    return r.entity("festival.VYASA_JAYANTI");
                 }
 
                 /**

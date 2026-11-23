@@ -552,6 +552,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -955,6 +972,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -1460,6 +1494,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -1982,6 +2033,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -2513,6 +2581,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -2877,6 +2962,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -3243,6 +3345,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',
@@ -3648,6 +3767,23 @@ void main() {
               ],
             ),
           ],
+          ekadashi: EkadashiDecision(
+            table: EkadashiTable(
+              pierced: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+              pure: EkadashiKinds(
+                both: FestivalWhich.later,
+                eleventh: FestivalWhich.later,
+                neither: FestivalWhich.later,
+                twelfth: FestivalWhich.later,
+              ),
+            ),
+            vedha: EkadashiVedha.sunrise,
+          ),
           inAdhika: InAdhikaValue(true),
           inMonth: InMonth(calendar: Calendar.julian, month: 1, twice: FestivalWhich.later),
           key: 'x',

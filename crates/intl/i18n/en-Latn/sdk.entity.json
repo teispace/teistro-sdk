@@ -3961,6 +3961,16 @@
       "prose": "Ghyu Chaku Khane Din",
       "iast": "Ghyū-cāku khāne din"
     },
+    "UTTARAYANA_ARAMBHA": {
+      "name": "Uttarayana Arambha",
+      "prose": "Uttarayana arambha, the sun's turn north",
+      "iast": "Uttarāyaṇārambha"
+    },
+    "DAKSHINAYANA_ARAMBHA": {
+      "name": "Dakshinayana Arambha",
+      "prose": "Dakshinayana arambha, the sun's turn south",
+      "iast": "Dakṣiṇāyanārambha"
+    },
     "LOKTANTRA_DIWAS": {
       "name": "Loktantra Diwas",
       "prose": "Loktantra Diwas, Baisakh 11",
