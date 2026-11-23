@@ -167,7 +167,8 @@ fn each_barred_share_is_where_a_modern_ephemeris_puts_the_moon() {
     }
 }
 
-/// Over 36 years Delhi keeps 91 fasts a share meets and Kathmandu 90, 6
+/// Over 36 years Delhi keeps 91 fasts a share meets and Kathmandu 92
+/// (arunodaya by the day's sixtieths, C2328, gives Kathmandu two more), 6
 /// of them with the bar set aside at each (Kathmandu's 2031-11-25
 /// Vaishnava parana met its bar at the centre's sunrise and misses it at
 /// the upper limb's, a few minutes earlier); every kept window lies outside a bar not set aside,
@@ -178,7 +179,7 @@ fn each_barred_share_is_where_a_modern_ephemeris_puts_the_moon() {
 /// leave nothing.
 #[test]
 fn a_bar_keeps_the_meal_outside_its_share_unless_it_outlasts_the_tithi() {
-    for (place, met) in [(delhi(), 91), (kathmandu(), 90)] {
+    for (place, met) in [(delhi(), 91), (kathmandu(), 92)] {
         let fasts = fasts(place, &NakshatraBar::dharmasindhu());
         let barred: Vec<_> = fasts
             .iter()
