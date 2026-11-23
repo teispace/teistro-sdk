@@ -714,8 +714,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 70] = [
         "DVAPARA_YUGADI",
         Masa::Magha,
         Tithi::Amavasya,
-        Fit::Share(APARAHNA),
-        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: द्वापरयुगादि; aparahna, kept with the new moon's shraddha (Dharmasindhu p. 94; Nirnayasindhu p. 175) (rc.8 audit)",
+        Fit::Share(MADHYAHNA),
+        "Nepal's national panchanga, VS 2082 p. 22 and VS 2083 p. 24: द्वापरयुगादि at the midday; the texts keep a dark fortnight's yugadi at the aparahna with the new moon's shraddha (Dharmasindhu p. 94; Nirnayasindhu p. 175), which gives 7 March 2027 where VS 2083 prints the 8th, the day whose midday holds the new moon (rc.9 gate)",
     ),
     (
         "PAHAN_CHARHE",

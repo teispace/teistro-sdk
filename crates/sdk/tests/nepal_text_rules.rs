@@ -1,4 +1,4 @@
-//! NEPAL_PANCHANGA's rules that rc.8 moved from a fitted rule to their
+//! `NEPAL_PANCHANGA`'s rules that rc.8 moved from a fitted rule to their
 //! text's (C2320), each on a year where the old rule and the new part.
 //! The expected day is the text's decision over the committee's sky at
 //! Kathmandu; the published calendars of Nepal keep it too (C2320's
@@ -79,12 +79,18 @@ fn vamana_dwadashi_is_the_later_day_only_when_it_alone_holds_madhyahna() {
 }
 
 #[test]
-fn dvapara_yugadi_holds_the_new_moon_at_aparahna() {
-    // Magha's new moon of 2023 (Dharmasindhu p. 94); the share of
-    // madhyahna gave 20 February.
+fn dvapara_yugadi_keeps_the_print_s_midday_over_the_text_s_aparahna() {
+    // Dharmasindhu p. 94's aparahna gives 7 March 2027, which no calendar
+    // of Nepal prints: the committee's VS 2083 book and the published
+    // calendars keep the 8th, whose midday holds the new moon. In 2023
+    // the calendars split between the 19th and this 20th.
+    assert_eq!(
+        kept("DVAPARA_YUGADI", (2027, 3, 3), (2027, 3, 12)),
+        [(2027, 3, 8)]
+    );
     assert_eq!(
         kept("DVAPARA_YUGADI", (2023, 2, 15), (2023, 2, 24)),
-        [(2023, 2, 19)]
+        [(2023, 2, 20)]
     );
 }
 
