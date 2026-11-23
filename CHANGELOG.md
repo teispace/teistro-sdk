@@ -10,7 +10,17 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.8
+
+The eighth release candidate of 1.0.0. It decides Nepal's festivals by
+their texts where the national panchanga had fitted them: the fortnight's
+shraddhas, the named ekadashis with arunodaya by the day's sixtieths, Bhai
+Tika, and the monthly darsha shraddha and ashtami vratas. A request's
+locale takes a short tag, and a build chooses which locales it embeds, the
+rest shipping as release bundles. It is released on GitHub only; no
+package goes to a registry.
+**Numbers:** measured against 1.0.0-rc.7's tree entry by entry: each entry
+below says what it moves.
 
 **NEPAL_PANCHANGA's fitted days by their texts (C2320 to C2327).**
 **Numbers:** at Kathmandu under `nepali-committee`, April 2019 to April 2027, 12 rules move
