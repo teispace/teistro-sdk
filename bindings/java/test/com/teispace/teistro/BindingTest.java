@@ -2946,11 +2946,11 @@ public final class BindingTest {
                     same(List.of(ReadingPlan.Area.values()),
                             plan.areas().stream().map(ReadingPlan.AreaReading::area).toList(), "the four areas");
                     same(9, plan.syllables().size(), "the sign's nine padas");
-                    List<ReadingPlan.Item> said = new java.util.ArrayList<>(plan.why());
-                    said.add(plan.headline());
-                    plan.parts().forEach(part -> said.addAll(part.items()));
-                    plan.areas().forEach(area -> said.add(area.note()));
-                    for (ReadingPlan.Item item : said) {
+                    List<ReadingPlan.Item> spoken = new java.util.ArrayList<>(plan.why());
+                    spoken.add(plan.headline());
+                    plan.parts().forEach(part -> spoken.addAll(part.items()));
+                    plan.areas().forEach(area -> spoken.add(area.note()));
+                    for (ReadingPlan.Item item : spoken) {
                         check(!item.restsOn().isEmpty(), item.intent() + " rests on its facts");
                     }
                 }

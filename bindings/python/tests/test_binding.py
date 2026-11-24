@@ -3072,16 +3072,16 @@ class AnEngine(WithLibrary):
             # Each sign in the reading voice (SR-152): intents with their facts.
             voiced = ctx.chart.rashifal(week, "WEEKLY", readings=True)
             assert voiced.readings is not None
-            self.assertEqual([plan.rashi for plan in voiced.readings], [one.rashi for one in voiced.period.readings])
-            for plan in voiced.readings:
-                self.assertEqual(plan.period, "WEEKLY")
-                self.assertEqual([area.area for area in plan.areas], ["WORK", "MONEY", "LOVE_FAMILY", "HEALTH"])
-                self.assertEqual(len(plan.syllables), 9)
-                said_items = [plan.headline, *plan.why, *(i for part in plan.parts for i in part.items)]
+            self.assertEqual([voice.rashi for voice in voiced.readings], [one.rashi for one in voiced.period.readings])
+            for voice in voiced.readings:
+                self.assertEqual(voice.period, "WEEKLY")
+                self.assertEqual([area.area for area in voice.areas], ["WORK", "MONEY", "LOVE_FAMILY", "HEALTH"])
+                self.assertEqual(len(voice.syllables), 9)
+                said_items = [voice.headline, *voice.why, *(i for part in voice.parts for i in part.items)]
                 self.assertTrue(all(item.rests_on for item in said_items))
                 self.assertTrue(all(item.intent.startswith("reading.rashifal.") for item in said_items))
-                if plan.best_day is not None:
-                    self.assertLess(plan.best_day, 7)
+                if voice.best_day is not None:
+                    self.assertLess(voice.best_day, 7)
             self.assertIsNone(read.readings, "the reading voice only when asked for")
 
             # 06:00 at +05:45 is 00:15 UTC on the reference day.
