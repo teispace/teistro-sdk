@@ -1932,6 +1932,7 @@ public final class ParityRunner {
             surface("geo.search", () -> ctx.geo().search(null));
             surface("geo.reverse", () -> ctx.geo().reverse(null));
             surface("geo.names", () -> ctx.geo().names(null));
+            surface("geo.place", () -> ctx.geo().place(null));
             surface("geo.list", () -> ctx.geo().list(null));
             surface("chart.layout", () -> ctx.chart().layout(""));
             surface("chart.found", () -> ctx.chart().found(0, place, 0, ChartOptions.none()));

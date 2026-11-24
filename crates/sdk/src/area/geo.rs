@@ -8,8 +8,9 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
-    FoundPlace, GeoPoint, GeoProvider, GeoSource, GeoTable, NamedPlace, NearbyPlaces, PlaceListing,
-    PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, ResolvedPlace, resolve,
+    FoundPlace, GeoPoint, GeoProvider, GeoSource, GeoTable, LookedUpPlace, NamedPlace,
+    NearbyPlaces, PlaceListing, PlaceLookup, PlaceNames, PlaceNamesRequest, PlaceReverse,
+    PlaceSearch, ResolvedPlace, resolve,
 };
 
 use crate::context::Context;
@@ -195,6 +196,34 @@ impl<'a> GeoArea<'a> {
     pub fn names(self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
         asked.checked()?;
         teistro_port_geo::names(&*self.provider()?, asked)
+    }
+
+    /// The place an id names, as a saved place reads it back: its record
+    /// named in the language asked, with its id line, time zone and
+    /// population. A provider follows a retired id to the place that
+    /// replaced it and says so (`moved`), so a caller stores the answer's
+    /// id over the one it kept; no place for an id the provider does not
+    /// know (SR-164).
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, GeoTable, PlaceLookup};
+    ///
+    /// let table = GeoTable::from_json(include_str!("../../tests/geo-table.json"))?;
+    /// let sdk = Context::builder().geo(Arc::new(table)).build()?;
+    /// let asked = PlaceLookup { id: "np-ktm".into(), lang: Some("ne".into()) };
+    /// let found = sdk.geo().place(&asked)?;
+    /// let place = found.place.ok_or("held")?;
+    /// assert_eq!((place.id.as_str(), place.name.as_str(), found.moved), ("np-ktm", "काठमाडौं", false));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoArea::search`], on `id` or `lang`.
+    pub fn place(self, asked: &PlaceLookup) -> Result<LookedUpPlace, Error> {
+        asked.checked()?;
+        teistro_port_geo::place(&*self.provider()?, asked)
     }
 
     /// The places of a unit (named by its id or its ISO 3166 code),

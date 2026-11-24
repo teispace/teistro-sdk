@@ -2087,6 +2087,19 @@ fn geo_records() -> [Record; 5] {
             schemas: schemas!(crate::PlaceNamesRequest => crate::PlaceNames),
         },
         Record {
+            name: "geo.place",
+            boundary: "ts_geo_place",
+            title: "A place by its id, a retired id followed to its survivor, with its id line, zone and population",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceLookup = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().place(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceLookup => crate::LookedUpPlace),
+        },
+        Record {
             name: "geo.list",
             boundary: "ts_geo_list",
             title: "The places of an admin unit, by level and kind, ranked by population counted or modelled",

@@ -298,10 +298,10 @@ object, and a binding hands its zone data over as a pack.
 
 | layer | what it gets |
 |---|---|
-| C | `ts_geo_resolve(context, request_json, out_json)` and `ts_geo_load(context, table_json, out_json)`, both canonical JSON, in `crates/ffi/src/geo.rs`; the catalogue's `ts_geo_search`, `ts_geo_reverse`, `ts_geo_names` and `ts_geo_list` (§12), the same shape |
-| IDL | the functions, the request types `PlaceRequest`, `PlaceSearch`, `PlaceReverse`, `PlaceNamesRequest` and `PlaceListing`, generated into every binding |
-| Node, Python, Dart, Java | `geo.load(table)` and `geo.resolve({latitudeDeg, longitudeDeg})`, a typed `ResolvedPlace`; `chart.found`'s generated request type gains `place`; `geo.search`, `geo.reverse`, `geo.names` and `geo.list`, each answering its decoded JSON (typed in Node's declarations) |
-| MCP | the `geo.resolve`, `geo.search`, `geo.reverse`, `geo.names` and `geo.list` tools, from the records; `--geo PATH` loads a table |
+| C | `ts_geo_resolve(context, request_json, out_json)` and `ts_geo_load(context, table_json, out_json)`, both canonical JSON, in `crates/ffi/src/geo.rs`; the catalogue's `ts_geo_search`, `ts_geo_reverse`, `ts_geo_names`, `ts_geo_place` and `ts_geo_list` (§12), the same shape |
+| IDL | the functions, the request types `PlaceRequest`, `PlaceSearch`, `PlaceReverse`, `PlaceNamesRequest`, `PlaceLookup` and `PlaceListing`, generated into every binding |
+| Node, Python, Dart, Java | `geo.load(table)` and `geo.resolve({latitudeDeg, longitudeDeg})`, a typed `ResolvedPlace`; `chart.found`'s generated request type gains `place`; `geo.search`, `geo.reverse`, `geo.names`, `geo.place` and `geo.list`, each answering its decoded JSON (typed in Node's declarations) |
+| MCP | the `geo.resolve`, `geo.search`, `geo.reverse`, `geo.names`, `geo.place` and `geo.list` tools, from the records; `--geo PATH` loads a table |
 
 Each binding's test loads the test table, asks each question, is refused
 without a provider, issues a chart on the resolved place and checks the
@@ -311,8 +311,8 @@ replays it on a context with no provider: `HELD`.
 ## 10. The teigeodata adapter (SR-88)
 
 `adapters/geo-teigeodata/rust` (`teistro-geo-teigeodata`) is the first
-provider over a real engine: teigeodata at its tag `v1.1.0` (§13.1; it was
-`v0.3.1` until SR-142), by git, in a
+provider over a real engine: teigeodata at its tag `v1.2.0` (§13.1; it was
+`v0.3.1` until SR-142 and `v1.1.0` until SR-164), by git, in a
 standalone crate with its own lock, outside the workspace like the
 ephemeris adapters (ADR-0019). It is public, since teigeodata is
 Apache-2.0. `TeigeodataGeo` opens pack files (`open`), packs in memory
@@ -325,7 +325,7 @@ that answers:
 | `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as `tgd` reads it); where no area outline holds the point, the zone of the settlement or locality it lies within (`mark_inside`, `tz_of`; C2218) |
 | `height_at` | `elevation_at`: metres above EGM2008, the DEM product's name as `source` (`NASADEM`), its north-south spacing as `resolutionM` |
 | `admin_at` | `admin_at`, coarse to fine, each unit's `admin_level`, `iso_code` (`NP`, `NP-P3`) and canonical name |
-| `source` | `teigeodata`, `1.1.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), and `tz_version()` as `tzdb`; `none` while the store has installed nothing (§13.2) |
+| `source` | `teigeodata`, `1.2.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), and `tz_version()` as `tzdb`; `none` while the store has installed nothing (§13.2) |
 | `at_sea` | a `world` layer installed, neither `tz_at` nor `admin_at` holding the point, and the nearest settlement, locality or unit lying inside a unit the packs hold (§5, C2216) |
 
 A point no pack covers answers `None` or an empty list. An engine error
@@ -405,6 +405,7 @@ empty list:
 fn search(&self, asked: &PlaceSearch) -> Result<Vec<FoundPlace>, Error> { Ok(Vec::new()) }
 fn reverse(&self, asked: &PlaceReverse) -> Result<NearbyPlaces, Error> { Ok(NearbyPlaces::default()) }
 fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> { Ok(PlaceNames::none(asked)) }
+fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> { Ok(None) }
 fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> { Ok(Vec::new()) }
 ```
 
@@ -417,6 +418,7 @@ them as JSON unchanged:
 | `PlaceSearch` | `query` (the text as typed; `"Name, Parent"` names a parent), `focus` (`{latitudeDeg, longitudeDeg, scaleM}` or `null`; `scaleM` defaults to 50 km), `limit` (1 to 100, default 10), `lang` (or `null`) |
 | `PlaceReverse` | `latitudeDeg`, `longitudeDeg`, `limit` (1 to 100, default 5), `lang` |
 | `PlaceNamesRequest` | `id`, `langs` (the languages to pick a name in; empty for none) |
+| `PlaceLookup` | `id` (as an answer gave it), `lang` (or `null`): a saved place read back (§12.9) |
 | `PlaceListing` | `within` (a place's id or an ISO 3166 code: `NP`, `NP-P3`), `level` (an admin level, or `null`), `kinds` (empty for every kind), `depth` (how far below `within`: 1 its children, `null` any depth; default 1), `limit` (1 to 1,000, default 100), `lang` |
 
 The SDK checks what a provider cannot be trusted to: a limit out of range
@@ -440,6 +442,9 @@ A **`NamedPlace`** is one place of the catalogue:
 | `latitudeDeg`, `longitudeDeg` | its point |
 | `population` | `{people, kind}`, `kind` `COUNTED` (a source stated it) or `MODELLED` (a population grid summed over it), `null` where the data has none (§12.6) |
 | `parents` | its admin units coarse to fine, each `{id, name, level, code}`, with `name` in `lang` |
+| `line` | the id line the id belongs to where a provider numbers more than one (teigeodata's `odbl` main and `cc-by-4.0` lite, its D-368), `null` otherwise (§12.9) |
+| `zone` | its IANA zone (`Asia/Kathmandu`), from its own timezone area, `null` where the data gives none: a clock needs no second question |
+| `class` | what a landmark is (`temple`, `palace`, `airport`), the provider's word, `null` for any other place |
 
 `search` answers `FoundPlace {place, score}`, best first; `score` is the
 provider's and compares within one query only. `reverse` answers
@@ -454,7 +459,8 @@ type, origin, machine}`, and `best` one per asked language that has one
 (§12.4). `list` answers `NamedPlace`s ranked by population (§12.6).
 
 Timezone areas, which teigeodata stores as places, are not places of the
-catalogue: they are left out of every answer (the zone is `zone_at`'s).
+catalogue: they are left out of every answer, and a place's own zone is
+its `zone` (a point's is `zone_at`'s).
 
 ### 12.3 Ranking and the label
 
@@ -588,9 +594,47 @@ great-circle distance, its `admin` the nearest place's chain of units;
 names as written; listings as §12.6. It ranks more simply than
 teigeodata does and makes no claim to its scores.
 
+### 12.9 A saved place read back (SR-164)
+
+A city a person saved is kept by its id, and read back later against
+newer data. Two things can have happened to the id: the place merged into
+another and its id was retired (teigeodata keeps a redirect, D-382), or it
+belongs to the other id line (teigeodata numbers its `odbl` main and its
+`cc-by-4.0` lite builds apart, D-368, so an id is looked up only in data of
+its line). `place` answers the first, and `line` names the second:
+
+```rust
+fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error>;
+```
+
+`sdk.geo().place(&asked)` (`geo.place`, `ts_geo_place`) answers
+`LookedUpPlace {asked, place, moved}`: `place` the record under its current
+id, `null` for an id the provider does not know or holds as removed, and
+`moved` true when that id is not the one asked, which the caller stores in
+its place. The provider follows the redirect (teigeodata's `Engine::get`,
+at most four hops); the SDK checks the record as every place is checked
+and sets `moved` itself, so no provider can claim a move it did not make.
+The answer is a record rather than a bare nullable place, so every binding
+reads it with the shapes it already has.
+
+`line` stays `null` from teigeodata 1.2.0: a pack's licence is in its
+manifest, which the engine's `Layer` does not expose (it exposes the
+address, component, release and attribution). It is asked for upstream;
+the adapter fills it when the engine says it.
+
 ## 13. Over teigeodata's store, and on the web (SR-142)
 
-### 13.1 teigeodata 1.1.0
+### 13.1 teigeodata 1.1.0, then 1.2.0
+
+SR-164 moves the adapter to `v1.2.0`: the live signed catalog's entries
+name their files under a release folder, which readers before 1.2 refuse
+(teigeodata D-384), and a place's landmark class is 1.2's (D-381). The
+engine kept every call the adapter makes. Verify's `TEIGEODATA_DATA` stays
+`data-2026.11.15`, whose packs 1.2 reads, since `data-2026.11.22.2` carries
+no baseline; a retired id answers its survivor only over packs that carry
+the redirects (from `data-2026.11.22.2`), and the adapter's test of it says
+`SKIP` over older ones.
+
 
 The adapter moves from the `v0.3.1` tag to `v1.1.0`, the stable release
 (`gh release list -R teispace/teigeodata`, 2026-11-17). Its packs are

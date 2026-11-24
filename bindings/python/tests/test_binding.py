@@ -1032,6 +1032,8 @@ class TheLocaleEngine(WithLibrary):
         names = sky.geo.names({"id": "np-ktm", "langs": ["ne", "sa"]})
         self.assertEqual(names["best"][0]["name"]["text"], "काठमाडौं")
         self.assertEqual(names["best"][1]["asked"], "sa")
+        found = sky.geo.place({"id": "np-ktm", "lang": "ne"})
+        self.assertEqual((found["place"]["name"], found["moved"]), ("काठमाडौं", False))
         listed = sky.geo.list({"within": "NP", "depth": None, "kinds": ["SETTLEMENT"]})
         self.assertEqual([place["id"] for place in listed], ["np-ktm", "np-ltp", "np-pkr"])
         self.assertEqual(listed[1]["population"]["kind"], "MODELLED")

@@ -3844,6 +3844,8 @@ test('the place catalogue: a search across scripts, a point named, a place\'s na
   const names = ctx.geo.names({ id: 'np-ktm', langs: ['ne', 'sa'] });
   assert.equal(names.best[0].name.text, 'काठमाडौं');
   assert.equal(names.best[1].asked, 'sa');
+  const found = ctx.geo.place({ id: 'np-ktm', lang: 'ne' });
+  assert.deepEqual([found.place.name, found.moved], ['काठमाडौं', false]);
   const listed = ctx.geo.list({ within: 'NP', depth: null, kinds: ['SETTLEMENT'] });
   assert.deepEqual(listed.map((place) => place.id), ['np-ktm', 'np-ltp', 'np-pkr']);
   assert.equal(listed[1].population.kind, 'MODELLED');

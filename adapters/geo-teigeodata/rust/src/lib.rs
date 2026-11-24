@@ -26,7 +26,7 @@
 //!
 //! The adapter depends on the SDK's port and never the reverse: it is a
 //! standalone crate outside the SDK workspace (ADR-0019), built against
-//! teigeodata's `v1.1.0` tag.
+//! teigeodata's `v1.2.0` tag.
 
 #[cfg(feature = "mmap")]
 use std::path::Path;
@@ -37,7 +37,8 @@ use teigeodata_engine::{Engine, Layer, LayerOptions, Place, Scratch, Shared};
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
     AdminUnit, FoundPlace, GeoPoint, GeoProvider, GeoSource, GroundHeight, NamedPlace,
-    NearbyPlaces, PlaceListing, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch,
+    NearbyPlaces, PlaceListing, PlaceLookup, PlaceNames, PlaceNamesRequest, PlaceReverse,
+    PlaceSearch,
 };
 use teistro_port_timezone::TimeZoneProvider;
 
@@ -54,7 +55,7 @@ pub const NAME: &str = "teigeodata";
 /// The version of teigeodata's engine this adapter is built against, the
 /// tag its `Cargo.toml` names; a test holds it to the version the lock
 /// resolved.
-pub const ENGINE_VERSION: &str = "1.1.0";
+pub const ENGINE_VERSION: &str = "1.2.0";
 
 /// The source's `dataVersion` while the engine holds no pack: a provider
 /// over a store that has installed nothing yet (§13.2).
@@ -269,7 +270,11 @@ impl TeigeodataGeo {
 }
 
 /// The canonical name of `place`, or `None` where its pack has none.
-fn name_of(engine: &Engine, place: &Place, field: &str) -> Result<Option<String>, Error> {
+pub(crate) fn name_of(
+    engine: &Engine,
+    place: &Place,
+    field: &str,
+) -> Result<Option<String>, Error> {
     let mut buf = [0_u8; NAME_BYTES];
     engine
         .name(place, &mut buf)
@@ -478,6 +483,10 @@ impl GeoProvider for TeigeodataGeo {
 
     fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
         catalogue::names(&self.shared.load(), asked)
+    }
+
+    fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+        catalogue::place(&self.shared.load(), asked)
     }
 
     fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {

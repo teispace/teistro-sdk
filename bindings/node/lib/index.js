@@ -3260,6 +3260,20 @@ export class GeoArea extends Area {
   }
 
   /**
+   * A place by its id, named in `lang`, with its id line, zone, population
+   * and landmark class: `{asked, place, moved}`, `moved` when the id asked
+   * was retired and `place` is the one that replaced it, whose id a caller
+   * stores instead; `place` null for an id the provider does not know.
+   *
+   * @param {{ id: string, lang?: string | null }} request
+   * @returns {object} the place looked up, frozen
+   * @throws {TeistroError} `INVALID_ARG` on `id` or `lang`
+   */
+  place(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoPlace(JSON.stringify(request)))));
+  }
+
+  /**
    * The places of a unit (its id or ISO 3166 code), by admin level and
    * kind, ranked by population, each with `{people, kind}`, `kind`
    * `COUNTED` or `MODELLED`.

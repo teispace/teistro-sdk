@@ -2823,6 +2823,7 @@ for (const [path, member] of [
   ['geo.search', shape.geo.search],
   ['geo.reverse', shape.geo.reverse],
   ['geo.names', shape.geo.names],
+  ['geo.place', shape.geo.place],
   ['geo.list', shape.geo.list],
   ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
