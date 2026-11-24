@@ -37,6 +37,10 @@ the previous release, not by nobody having looked.
   communities are named in Hindi and Sanskrit.
   Numbers: `GEN_Z_MARTYRS_DAY`'s tier, now national by VS 2083's latest
   decision; nothing reckoned.
+- **The western sign beside the Indian one (SR-156).** Each rashi in
+  `en-Latn` and `en-Latn-NP` carries `western` (Aries … Pisces), so Nepal's
+  English heads a sign "Mesh (Aries)" from one record; typed as an optional
+  `western` field in every binding. Numbers: none.
 - **A score band named for its period (SR-162).** `score_band` records
   gain `day`, `week`, `month` and `year` forms in every locale, a baseline
   score carries its `period`, and `band_form()` names the form to read.

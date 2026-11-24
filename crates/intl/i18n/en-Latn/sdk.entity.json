@@ -104,6 +104,7 @@
       "prose": "Aries",
       "iast": "Meṣa",
       "indic": "Mesha",
+      "western": "Aries",
       "glyph": "♈",
       "gender": "m"
     },
@@ -113,6 +114,7 @@
       "prose": "Taurus",
       "iast": "Vṛṣabha",
       "indic": "Vrishabha",
+      "western": "Taurus",
       "glyph": "♉",
       "gender": "f"
     },
@@ -122,6 +124,7 @@
       "prose": "Gemini",
       "iast": "Mithuna",
       "indic": "Mithuna",
+      "western": "Gemini",
       "glyph": "♊",
       "gender": "m"
     },
@@ -131,6 +134,7 @@
       "prose": "Cancer",
       "iast": "Karka",
       "indic": "Karka",
+      "western": "Cancer",
       "glyph": "♋",
       "gender": "f"
     },
@@ -140,6 +144,7 @@
       "prose": "Leo",
       "iast": "Siṃha",
       "indic": "Simha",
+      "western": "Leo",
       "glyph": "♌",
       "gender": "m"
     },
@@ -149,6 +154,7 @@
       "prose": "Virgo",
       "iast": "Kanyā",
       "indic": "Kanya",
+      "western": "Virgo",
       "glyph": "♍",
       "gender": "f"
     },
@@ -158,6 +164,7 @@
       "prose": "Libra",
       "iast": "Tulā",
       "indic": "Tula",
+      "western": "Libra",
       "glyph": "♎",
       "gender": "m"
     },
@@ -167,6 +174,7 @@
       "prose": "Scorpio",
       "iast": "Vṛścika",
       "indic": "Vrishchika",
+      "western": "Scorpio",
       "glyph": "♏",
       "gender": "f"
     },
@@ -176,6 +184,7 @@
       "prose": "Sagittarius",
       "iast": "Dhanu",
       "indic": "Dhanu",
+      "western": "Sagittarius",
       "glyph": "♐",
       "gender": "m"
     },
@@ -185,6 +194,7 @@
       "prose": "Capricorn",
       "iast": "Makara",
       "indic": "Makara",
+      "western": "Capricorn",
       "glyph": "♑",
       "gender": "f"
     },
@@ -194,6 +204,7 @@
       "prose": "Aquarius",
       "iast": "Kumbha",
       "indic": "Kumbha",
+      "western": "Aquarius",
       "glyph": "♒",
       "gender": "m"
     },
@@ -203,6 +214,7 @@
       "prose": "Pisces",
       "iast": "Mīna",
       "indic": "Mina",
+      "western": "Pisces",
       "glyph": "♓",
       "gender": "f"
     }

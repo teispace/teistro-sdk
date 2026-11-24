@@ -432,6 +432,56 @@ fn every_fortnight_has_a_short_and_every_rashi_an_indian_name() {
     assert_eq!(dhanu.form("indic"), Some("Dhanu"));
 }
 
+/// A rashi's `western` is the tropical sign a locale's readers search by
+/// (SR-156, `docs/03-design/entity-names.md` §4f): both English locales
+/// carry it, so Nepal's English heads a page "Mesh (Aries)" from one
+/// record; it is English `name`'s word, and the Devanagari locales, whose
+/// readers search by the Indian name, carry none.
+#[test]
+fn every_english_rashi_names_its_western_sign() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let entity = |tag: &str, key: &str| {
+        let Some(Entry::Entity(entity)) =
+            tree.locales[tag].namespaces["sdk.entity"].entries.get(key)
+        else {
+            panic!("{tag} has no {key}");
+        };
+        entity.clone()
+    };
+    for rashi in [
+        "ARIES",
+        "TAURUS",
+        "GEMINI",
+        "CANCER",
+        "LEO",
+        "VIRGO",
+        "LIBRA",
+        "SCORPIO",
+        "SAGITTARIUS",
+        "CAPRICORN",
+        "AQUARIUS",
+        "PISCES",
+    ] {
+        let key = format!("rashi.{rashi}");
+        let western = entity("en-Latn", &key).name().to_owned();
+        for tag in ["en-Latn", "en-Latn-NP"] {
+            assert_eq!(
+                entity(tag, &key).form("western"),
+                Some(western.as_str()),
+                "{tag} {key}"
+            );
+        }
+        for tag in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"] {
+            assert_eq!(entity(tag, &key).form("western"), None, "{tag} {key}");
+        }
+    }
+    let nepal = entity("en-Latn-NP", "rashi.ARIES");
+    assert_eq!(
+        (nepal.name(), nepal.form("western")),
+        ("Mesh", Some("Aries"))
+    );
+}
+
 /// SR-161: a Devanagari calendar message writes no Latin letter. Nepali
 /// read the Hijri months and era as `Muharram` and `AH` until the
 /// tithipatra asked for them in its own script. The ISO week's numeric form

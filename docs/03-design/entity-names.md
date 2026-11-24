@@ -721,6 +721,19 @@ Singha, Kanya, Tula, Brishchik, Dhanu, Makar, Kumbha, Meen. They are its
 says "Dhanu" there; the romanisation above stays every other locale's
 `indic`, and `iast` stays the IAST.
 
+**The western sign (SR-156, 2026-11-24).** English readers search by the
+tropical sign ("Aries horoscope today"), so a page in Nepal's English
+heads a sign "Mesh (Aries)". Each rashi in both English locales carries
+`western`, the English sign name (Aries … Pisces), typed in every binding
+as an optional field like `indic`. The Devanagari locales carry none: their
+readers search by the Indian name their `name` already is, and a form a
+locale lacks reads as absent rather than as another locale's word. No
+pattern joins the pair: only English carries the form, and the consumer
+places it ("Mesh (Aries)" in a heading, "Aries" alone in a page's
+metadata). A locale whose order differs would bring the pattern with its
+form. `crates/intl/tests/month_year.rs` holds the form in both English
+locales and its absence in the others.
+
 ## 4g. The rashifal's words (SR-124, 2026-11-15)
 
 A consumer's home page shows a sign's rashifal as words: the life areas
