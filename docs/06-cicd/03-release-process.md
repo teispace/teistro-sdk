@@ -56,15 +56,26 @@ pull request's branch before the merge:
 gh workflow run verify.yml --ref <branch>
 ```
 
-The fast check never runs the bindings' suites or the station scan, and
-the tag runs the whole matrix again, so a red row found only there costs a
-re-tag (1.0.0-rc.6's first tag went red on two Node tests and a station
-page the fast check could not see). Once verify is green, a merge, and:
+The fast check never runs the bindings' suites or the station scan, so a
+red row found only on the tag costs a re-tag (1.0.0-rc.6's first tag went
+red on two Node tests and a station page the fast check could not see).
+Once verify is green, a merge, and:
 
 ```sh
+.github/actions/verified/verified.sh HEAD   # prints the run that holds this tree
 git tag -s v0.1.0 -m 'Teistro 0.1.0'
 git push origin v0.1.0
 ```
+
+The size record moves with nearly every content change, so a release's
+verify often fails on `sizes` alone. Commit the run's own `sizes-record`
+(`gh run download RUN -n sizes-record`) unchanged and do not dispatch
+verify again: `verified.sh` accepts a run that failed on `sizes` alone
+when the only files that differ are the record and they equal that run's
+artifact byte for byte. The tag's `gate` asks the same script, and
+`verify` runs on the tag only when no run holds its tree (a rebase merge
+onto a main that has not moved keeps the tree, so the release branch's run
+stands for the merge commit: merge the release before anything else).
 
 `cargo xtask version` writes only the files that change and prints them.
 It is the one command that has to know the list; nobody else does.
@@ -82,7 +93,7 @@ release the installers fetch from included, keeps the version's own.
 | job | what it does |
 |---|---|
 | `gate` | `check-tag` (the tag is the version the repository carries), `check-versions`, the documentation, FFI and determinism gates, and the changelog's entry for this version |
-| `verify` | the whole verify matrix (`verify.yml`, called), every binding's gates on every platform, the wasm package and the ephemeris tiers; `publish` waits for it |
+| `verify` | the whole verify matrix (`verify.yml`, called), every binding's gates on every platform, the wasm package and the ephemeris tiers; skipped when `gate`'s `verified.sh` names a run that already holds the tag's tree; `publish` waits for it |
 | `build` | a runner a platform, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
 | `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome, Cloudflare's workerd, Deno, Bun and Next.js's edge runtime each held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
 | `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |

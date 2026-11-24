@@ -41,10 +41,15 @@ jobs:
   gate:
     name: gate
     runs-on: ubuntu-latest
+    # `actions: read` lists the verify runs and reads one's size record.
+    permissions:
+      contents: read
+      actions: read
     outputs:
       version: ${{ steps.version.outputs.version }}
       publish: ${{ github.event_name == 'push' }}
       registries: ${{ github.event_name == 'push' && vars.PUBLISH_REGISTRIES == 'true' }}
+      verified: ${{ steps.verified.outputs.run }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -78,6 +83,19 @@ jobs:
           cargo xtask check-docs
           cargo xtask check-ffi
           cargo xtask check-lints
+      # A release is verified before it is tagged, on the release branch:
+      # the run that holds this tree (or differs from it only by its own
+      # size record) stands for it, so the matrix does not run twice.
+      - id: verified
+        name: A green verify run already holds this tree
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if run=$(.github/actions/verified/verified.sh HEAD); then
+            echo "run=${run}" >> "$GITHUB_OUTPUT"
+            echo "verified by https://github.com/${GITHUB_REPOSITORY}/actions/runs/${run}" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - id: version
         name: What is being released
         run: |
@@ -94,10 +112,12 @@ jobs:
 
   # Every binding on every platform, as the nightly runs it. Publishing
   # waits for it: verify used to run on the tag as a workflow of its own,
-  # so a release could publish while verify was still red.
+  # so a release could publish while verify was still red. A tag whose
+  # tree a green run already holds (the gate's `verified`) skips it.
   verify:
     name: verify
     needs: gate
+    if: needs.gate.outputs.verified == ''
     uses: ./.github/workflows/verify.yml
 
   build:
@@ -358,7 +378,9 @@ jobs:
   publish:
     name: publish
     needs: [gate, verify, stage]
-    if: needs.gate.outputs.publish == 'true'
+    if: >-
+      !cancelled() && needs.gate.outputs.publish == 'true' && needs.stage.result == 'success' &&
+      (needs.verify.result == 'success' || (needs.verify.result == 'skipped' && needs.gate.outputs.verified != ''))
     runs-on: ubuntu-latest
     permissions:
       contents: write
