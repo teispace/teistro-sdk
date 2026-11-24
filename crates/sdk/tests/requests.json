@@ -229,6 +229,13 @@
     }
   },
   {
+    "record": "geo.place",
+    "request": {
+      "id": "np-ktm",
+      "lang": "ne"
+    }
+  },
+  {
     "record": "geo.list",
     "request": {
       "within": "NP-P3",
