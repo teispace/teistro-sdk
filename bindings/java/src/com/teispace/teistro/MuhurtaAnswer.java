@@ -23,16 +23,20 @@ import com.teispace.teistro.record.Provenance;
  *     cover their whole day, and were left out
  * @param ranking {@code TEXTS} or {@code BASELINE}
  * @param unjudged what the rules ask that the SDK does not judge yet
+ * @param reasons why each window is good, in its order, when the request set {@code reasons};
+ *     empty otherwise
  * @param provenance what computed it and under what: the asta criterion and
  *     the zodiac's instant among the applied conventions, and the hash of the value
  */
 public record MuhurtaAnswer(
         List<MuhurtaWindow> windows, List<ClosedDay> closed, int daysJudged, int daysCut, int windowsBlackedOut,
-        String ranking, List<MuhurtaUnjudged> unjudged, Provenance provenance) {
+        String ranking, List<MuhurtaUnjudged> unjudged, List<MuhurtaReasons> reasons,
+        Provenance provenance) {
     /** Keeps the lists unmodifiable. */
     public MuhurtaAnswer {
         windows = List.copyOf(windows);
         closed = List.copyOf(closed);
         unjudged = List.copyOf(unjudged);
+        reasons = List.copyOf(reasons);
     }
 }

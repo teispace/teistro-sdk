@@ -7263,6 +7263,30 @@ export interface MuhurtaWindow {
   } | null;
 }
 
+/**
+ * One reason a window is good, or a caution against it; `intl.render(reason.intent,
+ * reason.params)` says it.
+ */
+export interface MuhurtaReason {
+  /** A message key of the voice pack, as `'sdk.voice.muhurta.avoided.MARS_IN_EIGHTH'`. */
+  readonly intent: string;
+  /** Its slots: the clause's members and a `variant`. */
+  readonly params: Readonly<Record<string, unknown>>;
+  readonly side: 'FOR' | 'DESPITE' | 'AVOIDED';
+  /** The clause's key, as `'MARS_IN_EIGHTH'`. */
+  readonly key: string;
+  /** For `FOR` and `DESPITE`, the clause's index in the window's clauses; `null` for `AVOIDED`. */
+  readonly clause: number | null;
+}
+
+/** Why a window is good, in words (`03-design/muhurta-reasons.md`): a short line and the list. */
+export interface MuhurtaReasons {
+  /** The "why this date" line: the qualifying `limbs`, their `count`, the doshas `avoided`, the cautions `despite`. */
+  readonly line: { readonly intent: string; readonly params: Readonly<Record<string, unknown>> };
+  /** `FOR`, then `DESPITE`, then `AVOIDED`. */
+  readonly reasons: readonly MuhurtaReason[];
+}
+
 /** A muhurta search's answer (`03-design/muhurta-at-the-boundary.md` §4), frozen to its leaves. */
 export interface MuhurtaAnswer {
   /** The windows judged, best first under the ranking, at most `most`. */
@@ -7279,6 +7303,8 @@ export interface MuhurtaAnswer {
   readonly ranking: MuhurtaRanking;
   /** What the rules ask that was not judged. */
   readonly unjudged: readonly MuhurtaUnjudged[];
+  /** Why each window is good, in its order, when the request set `reasons`; empty otherwise. */
+  readonly reasons: readonly MuhurtaReasons[];
   /** What computed it and under what: the asta criterion and the zodiac's instant among the applied conventions, and the hash of this value. */
   readonly provenance: Provenance;
 }
@@ -8893,6 +8919,8 @@ export interface ElectedWindow {
   readonly barredBy: readonly Readonly<Record<string, unknown>>[];
   /** The ranking's score, where the ranking scores. */
   readonly score?: Readonly<Record<string, unknown>> | null;
+  /** Why it is good, when the request's `muhurta` set `reasons`: a `FOR` reason's `clause` indexes `holds`, a `DESPITE` one's `fails`. */
+  readonly reasons?: MuhurtaReasons;
 }
 
 /** What `almanac.elect` answers. */

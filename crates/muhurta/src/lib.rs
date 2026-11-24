@@ -35,6 +35,7 @@ pub mod day;
 pub mod grade;
 pub mod instant;
 pub mod judge;
+pub mod reasons;
 pub mod rites;
 pub mod search;
 pub mod season;

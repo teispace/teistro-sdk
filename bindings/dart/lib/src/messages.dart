@@ -6203,6 +6203,161 @@ final class MessagesSdkSettings {
   MessagesSdkSettingsEffect get effect => MessagesSdkSettingsEffect(_r);
 }
 
+final class MessagesSdkVoiceMuhurtaAvoided {
+  const MessagesSdkVoiceMuhurtaAvoided(this._r);
+
+  final Renderer _r;
+
+  String ashtamaLagna() => _r.render('sdk.voice.muhurta.avoided.ASHTAMA_LAGNA');
+  String ashubhaYoga() => _r.render('sdk.voice.muhurta.avoided.ASHUBHA_YOGA');
+  String chandrabala() => _r.render('sdk.voice.muhurta.avoided.CHANDRABALA');
+  String choghadiya() => _r.render('sdk.voice.muhurta.avoided.CHOGHADIYA');
+  String ghata() => _r.render('sdk.voice.muhurta.avoided.GHATA');
+  String kaala({required int variant}) =>
+      _r.render('sdk.voice.muhurta.avoided.KAALA', {'variant': variant});
+  String karana() => _r.render('sdk.voice.muhurta.avoided.KARANA');
+  String kartari() => _r.render('sdk.voice.muhurta.avoided.KARTARI');
+  String kunavamsa() => _r.render('sdk.voice.muhurta.avoided.KUNAVAMSA');
+  String lagna() => _r.render('sdk.voice.muhurta.avoided.LAGNA');
+  String lagnaTyajya() => _r.render('sdk.voice.muhurta.avoided.LAGNA_TYAJYA');
+  String maleficInLagna() => _r.render('sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA');
+  String marsInEighth() => _r.render('sdk.voice.muhurta.avoided.MARS_IN_EIGHTH');
+  String month() => _r.render('sdk.voice.muhurta.avoided.MONTH');
+  String moonInDusthana({required int variant}) =>
+      _r.render('sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA', {'variant': variant});
+  String moonJoined() => _r.render('sdk.voice.muhurta.avoided.MOON_JOINED');
+  String muhurtaYoga() => _r.render('sdk.voice.muhurta.avoided.MUHURTA_YOGA');
+  String nakshatra() => _r.render('sdk.voice.muhurta.avoided.NAKSHATRA');
+  String pada() => _r.render('sdk.voice.muhurta.avoided.PADA');
+  String panchakaRemainder() => _r.render('sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER');
+  String pradosha() => _r.render('sdk.voice.muhurta.avoided.PRADOSHA');
+  String seventhOccupied() => _r.render('sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED');
+  String solarMonth() => _r.render('sdk.voice.muhurta.avoided.SOLAR_MONTH');
+  String tarabala() => _r.render('sdk.voice.muhurta.avoided.TARABALA');
+  String tithi() => _r.render('sdk.voice.muhurta.avoided.TITHI');
+  String unwantedPlacement() => _r.render('sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT');
+  String vara() => _r.render('sdk.voice.muhurta.avoided.VARA');
+  String varjyam({required int variant}) =>
+      _r.render('sdk.voice.muhurta.avoided.VARJYAM', {'variant': variant});
+  String venusInSixth() => _r.render('sdk.voice.muhurta.avoided.VENUS_IN_SIXTH');
+  String vrishaVastu() => _r.render('sdk.voice.muhurta.avoided.VRISHA_VASTU');
+  String yoga() => _r.render('sdk.voice.muhurta.avoided.YOGA');
+}
+
+final class MessagesSdkVoiceMuhurtaDespite {
+  const MessagesSdkVoiceMuhurtaDespite(this._r);
+
+  final Renderer _r;
+
+  String ashtamaLagna() => _r.render('sdk.voice.muhurta.despite.ASHTAMA_LAGNA');
+  String ashubhaYoga({required AshubhaYogaKey yoga}) =>
+      _r.render('sdk.voice.muhurta.despite.ASHUBHA_YOGA', {'yoga': {r'$entity': yoga.key}});
+  String chandrabala() => _r.render('sdk.voice.muhurta.despite.CHANDRABALA');
+  String choghadiya({required ChoghadiyaKey choghadiya}) =>
+      _r.render('sdk.voice.muhurta.despite.CHOGHADIYA', {'choghadiya': {r'$entity': choghadiya.key}});
+  String ghata() => _r.render('sdk.voice.muhurta.despite.GHATA');
+  String kaala({required KaalaKey kaala}) =>
+      _r.render('sdk.voice.muhurta.despite.KAALA', {'kaala': {r'$entity': kaala.key}});
+  String karana({required KaranaKey karana}) =>
+      _r.render('sdk.voice.muhurta.despite.KARANA', {'karana': {r'$entity': karana.key}});
+  String kartari({required List<Object> second, required List<Object> twelfth}) =>
+      _r.render('sdk.voice.muhurta.despite.KARTARI', {'second': second, 'twelfth': twelfth});
+  String kunavamsa({required GrahaKey lord, required RashiKey navamsa}) =>
+      _r.render('sdk.voice.muhurta.despite.KUNAVAMSA', {'lord': {r'$entity': lord.key}, 'navamsa': {r'$entity': navamsa.key}});
+  String lagna({required RashiKey sign}) =>
+      _r.render('sdk.voice.muhurta.despite.LAGNA', {'sign': {r'$entity': sign.key}});
+  String lagnaTyajya({required RashiKey sign}) =>
+      _r.render('sdk.voice.muhurta.despite.LAGNA_TYAJYA', {'sign': {r'$entity': sign.key}});
+  String maleficInLagna({required List<Object> grahas}) =>
+      _r.render('sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA', {'grahas': grahas});
+  String marsInEighth() => _r.render('sdk.voice.muhurta.despite.MARS_IN_EIGHTH');
+  String month({required MasaKey masa}) =>
+      _r.render('sdk.voice.muhurta.despite.MONTH', {'masa': {r'$entity': masa.key}});
+  String moonInDusthana({required int house}) =>
+      _r.render('sdk.voice.muhurta.despite.MOON_IN_DUSTHANA', {'house': house});
+  String moonJoined({required List<Object> with$}) =>
+      _r.render('sdk.voice.muhurta.despite.MOON_JOINED', {'with': with$});
+  String muhurtaYoga({required MuhurtaYogaKey yoga}) =>
+      _r.render('sdk.voice.muhurta.despite.MUHURTA_YOGA', {'yoga': {r'$entity': yoga.key}});
+  String nakshatra({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.voice.muhurta.despite.NAKSHATRA', {'nakshatra': {r'$entity': nakshatra.key}});
+  String pada({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.voice.muhurta.despite.PADA', {'nakshatra': {r'$entity': nakshatra.key}});
+  String panchakaRemainder({required PanchakaKey panchaka}) =>
+      _r.render('sdk.voice.muhurta.despite.PANCHAKA_REMAINDER', {'panchaka': {r'$entity': panchaka.key}});
+  String pradosha({required TithiKey tithi}) =>
+      _r.render('sdk.voice.muhurta.despite.PRADOSHA', {'tithi': {r'$entity': tithi.key}});
+  String seventhOccupied({required List<Object> by}) =>
+      _r.render('sdk.voice.muhurta.despite.SEVENTH_OCCUPIED', {'by': by});
+  String solarMonth({required RashiKey sign}) =>
+      _r.render('sdk.voice.muhurta.despite.SOLAR_MONTH', {'sign': {r'$entity': sign.key}});
+  String tarabala() => _r.render('sdk.voice.muhurta.despite.TARABALA');
+  String tithi({required TithiKey tithi}) =>
+      _r.render('sdk.voice.muhurta.despite.TITHI', {'tithi': {r'$entity': tithi.key}});
+  String unwantedPlacement({required List<Object> by, required int house}) =>
+      _r.render('sdk.voice.muhurta.despite.UNWANTED_PLACEMENT', {'by': by, 'house': house});
+  String vara({required VaraKey vara}) =>
+      _r.render('sdk.voice.muhurta.despite.VARA', {'vara': {r'$entity': vara.key}});
+  String varjyam({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.voice.muhurta.despite.VARJYAM', {'nakshatra': {r'$entity': nakshatra.key}});
+  String venusInSixth() => _r.render('sdk.voice.muhurta.despite.VENUS_IN_SIXTH');
+  String vrishaVastu() => _r.render('sdk.voice.muhurta.despite.VRISHA_VASTU');
+  String yoga({required YogaKey yoga}) =>
+      _r.render('sdk.voice.muhurta.despite.YOGA', {'yoga': {r'$entity': yoga.key}});
+}
+
+final class MessagesSdkVoiceMuhurtaFavours {
+  const MessagesSdkVoiceMuhurtaFavours(this._r);
+
+  final Renderer _r;
+
+  String abhijit({required int variant}) =>
+      _r.render('sdk.voice.muhurta.favours.ABHIJIT', {'variant': variant});
+  String beneficInLagna({required List<Object> grahas}) =>
+      _r.render('sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA', {'grahas': grahas});
+  String chandrabala() => _r.render('sdk.voice.muhurta.favours.CHANDRABALA');
+  String choghadiya({required ChoghadiyaKey choghadiya}) =>
+      _r.render('sdk.voice.muhurta.favours.CHOGHADIYA', {'choghadiya': {r'$entity': choghadiya.key}});
+  String exaltedInLagna({required List<Object> grahas}) =>
+      _r.render('sdk.voice.muhurta.favours.EXALTED_IN_LAGNA', {'grahas': grahas});
+  String karana({required KaranaKey karana, required int variant}) =>
+      _r.render('sdk.voice.muhurta.favours.KARANA', {'karana': {r'$entity': karana.key}, 'variant': variant});
+  String kendraBenefics({required List<Object> grahas}) =>
+      _r.render('sdk.voice.muhurta.favours.KENDRA_BENEFICS', {'grahas': grahas});
+  String lagna({required RashiKey sign}) =>
+      _r.render('sdk.voice.muhurta.favours.LAGNA', {'sign': {r'$entity': sign.key}});
+  String luminaryInEleventh({required List<Object> grahas}) =>
+      _r.render('sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH', {'grahas': grahas});
+  String month({required MasaKey masa}) =>
+      _r.render('sdk.voice.muhurta.favours.MONTH', {'masa': {r'$entity': masa.key}});
+  String muhurtaYoga({required MuhurtaYogaKey yoga}) =>
+      _r.render('sdk.voice.muhurta.favours.MUHURTA_YOGA', {'yoga': {r'$entity': yoga.key}});
+  String nakshatra({required NakshatraKey nakshatra, required int variant}) =>
+      _r.render('sdk.voice.muhurta.favours.NAKSHATRA', {'nakshatra': {r'$entity': nakshatra.key}, 'variant': variant});
+  String solarMonth({required RashiKey sign}) =>
+      _r.render('sdk.voice.muhurta.favours.SOLAR_MONTH', {'sign': {r'$entity': sign.key}});
+  String tarabala() => _r.render('sdk.voice.muhurta.favours.TARABALA');
+  String tithi({required TithiKey tithi, required int variant}) =>
+      _r.render('sdk.voice.muhurta.favours.TITHI', {'tithi': {r'$entity': tithi.key}, 'variant': variant});
+  String vara({required VaraKey vara, required int variant}) =>
+      _r.render('sdk.voice.muhurta.favours.VARA', {'vara': {r'$entity': vara.key}, 'variant': variant});
+  String vrishaVastu() => _r.render('sdk.voice.muhurta.favours.VRISHA_VASTU');
+  String yoga({required int variant, required YogaKey yoga}) =>
+      _r.render('sdk.voice.muhurta.favours.YOGA', {'variant': variant, 'yoga': {r'$entity': yoga.key}});
+}
+
+final class MessagesSdkVoiceMuhurta {
+  const MessagesSdkVoiceMuhurta(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceMuhurtaAvoided get avoided => MessagesSdkVoiceMuhurtaAvoided(_r);
+  MessagesSdkVoiceMuhurtaDespite get despite => MessagesSdkVoiceMuhurtaDespite(_r);
+  MessagesSdkVoiceMuhurtaFavours get favours => MessagesSdkVoiceMuhurtaFavours(_r);
+  String line({required int avoided, required int count, required List<Object> limbs, required int variant}) =>
+      _r.render('sdk.voice.muhurta.line', {'avoided': avoided, 'count': count, 'limbs': limbs, 'variant': variant});
+}
+
 final class MessagesSdkVoiceRashifalAreaHealth {
   const MessagesSdkVoiceRashifalAreaHealth(this._r);
 
@@ -6542,6 +6697,7 @@ final class MessagesSdkVoice {
 
   final Renderer _r;
 
+  MessagesSdkVoiceMuhurta get muhurta => MessagesSdkVoiceMuhurta(_r);
   MessagesSdkVoiceRashifal get rashifal => MessagesSdkVoiceRashifal(_r);
 }
 
