@@ -75,9 +75,51 @@ LOVE_FAMILY's mean is rounded as the overall is (C2359). The other four
 baseline areas (EDUCATION, SPIRITUALITY and the overall's own houses) are
 not shown; the overall band already reads them.
 
+### Intents: what the SDK chooses, and what a pack writes
+
+The voice guide (hub `docs/02-research/notes/rashifal-voice.md`) writes each
+language natively from its own pattern bank, so one sentence key cannot serve
+every language. The plan therefore names an **intent**: what is said and on
+which facts. Each language's pack maps the intent to its own patterns. The
+SDK decides everything a checker must trust:
+
+- **which facts are said**: guide §8.4, in code. The opening is the band or
+  the area split (the two best areas and the worst). The reading takes each of
+  those areas from its strongest fact. The why is the strongest good influence
+  in the guide's order (Jupiter, Saturn, Rahu, Ketu, the Sun, Mars, Venus,
+  Mercury, the Moon), or the Moon when it changes sign that day, or Saturn when
+  its phase changes in the period; on a CARE day, the strongest not-good fact
+  worded as care. The closing is the band or the lucky items, never a caution;
+- **how firmly**: the hedge is part of the intent, from the facts (§5.2):
+  FIRM when the band is EXCELLENT and two facts agree, LIKELY on one good fact,
+  POSSIBLE when obstructed, and MAY for every caution. Nothing is certain;
+- **how many cautions**: at most one a day, two a week, one per half of a
+  month and one per part of a year (§7.2). Each is paired with what still
+  works and is never last;
+- **who is named**: grahas only in the why and in the events, and the Moon
+  only on a day.
+
+A pack's message for an intent (`reading.rashifal.area.WORK.GOOD`,
+`reading.rashifal.why.TRANSIT`, `reading.rashifal.caution.HOUSE_8` and so on)
+holds that language's patterns as variants. The pack chooses the words; it
+never chooses a fact.
+
+### The parts of each period
+
+| period | parts | from |
+|---|---|---|
+| day | 2 to 3 items; split at the Moon's ingress when it changes sign that day, with its time | the day's reading and the Moon's events, which the reading voice asks for on a day even though a score never counts them (C2331) |
+| week | start, middle and end, from the daily scores of its days; the week's best day when one day scores highest for the sign | seven daily readings of the same sign |
+| month | two halves, split at the month's largest ingress or station (Saturn's, Jupiter's and the nodes' first), dated | the month's events |
+| year | the slow grahas' standing (Jupiter, Saturn with its sade sati or dhaiya and their dates, Rahu and Ketu), then each quarter's events | the year's events |
+
+A longer period never contradicts a shorter one (the guide's D-313 guard). A
+week names a best day only when that day's own score is the week's highest,
+and ties name none.
+
 ### Choosing a wording
 
-A pack carries several wordings of each message key. The plan names one by
+A pack carries several wordings of each intent. The plan names one by
 `variant`, chosen by a seed:
 
 - the seed hashes the period's first civil date, the sign and the period
@@ -152,4 +194,6 @@ script.
 |---|---|---|---|
 | C2359 | LOVE_FAMILY's band | the mean of RELATIONSHIPS and FAMILY, rounded as the overall is | the consumer asked for one area; the mean keeps both houses' weight. Rejected: the lower of the two (it makes the area read worse than either half would on its own page) |
 | C2360 | the wording's choice | a seeded variant number in the plan, the wording in the pack | the same day reads the same in every binding, and a pack can add wordings without a code release |
+| C2362 | sentence keys across languages | intents chosen and traced in Rust; each language's pack maps an intent to its own patterns | the guide writes each language natively with different pattern counts (82 ne, 46 hi, 46 en, 16 sa), so a shared sentence key would force translation. Rejected: patterns with their fact conditions in the pack (the choice of fact would then live in data no test traces) |
+| C2363 | the week's best day | named only when one day's own score is the week's strict highest | the consumer asked for it only when computed; a tie names none, so a week never contradicts its days |
 | C2361 | the lucky items | the sign lord's, traced to the graha's own attributes; an item no text gives is left out | the consumer asked for traceable items and for none made up |
