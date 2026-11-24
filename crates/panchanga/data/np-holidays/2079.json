@@ -1,6 +1,7 @@
 {
   "year": 2079,
   "notice": "Nepal Gazette vol. 71 no. 48, part 5 (Falgun 26, 2078): the Ministry of Home Affairs' notice of the public, festival and substitute holidays of VS 2079",
+  "document": {"decided": [2078, 11, 26]},
   "holidays": [
     {"clause": "2.1 (क)", "scope": "NATIONAL", "festivals": ["MESHA_SANKRANTI"], "first": [1, 1], "ne": "नव वर्ष", "en": "New Year"},
     {"clause": "2.1 (ख)", "scope": "NATIONAL", "festivals": ["UBHAULI", "CHANDI_PURNIMA"], "first": [2, 2], "ne": "राई, लिम्बू, याक्खा, सुनुवार, लगायतका किराँत समुदायको उभौली पर्व - चण्डी पूर्णिमा (वैशाखपूर्णिमा)", "en": "Ubhauli of the Kirat community, the Rai, Limbu, Yakkha, Sunuwar and others: Chandi Purnima (the full moon of Baisakh)"},
@@ -18,11 +19,11 @@
     {"clause": "2.1 (ढ)", "scope": "NATIONAL", "festivals": ["EID_AL_ADHA"], "ne": "इस्लाम धर्मावलम्बीहरूको पर्व बकर ईद (ईद उल अजहा) का दिन", "en": "On the day of Bakr Eid (Eid al-Adha)"},
     {"clause": "2.1 (ण)", "scope": "NATIONAL", "festivals": ["EID_AL_FITR"], "ne": "इस्लाम धर्मावलम्बीहरूको पर्व ईद (ईद उल फित्र) का दिन", "en": "On the day of Eid (Eid al-Fitr)"},
     {"clause": "2.1 (त)", "scope": "REGION", "festivals": ["HOLI_HILLS"], "regions": ["HILLS"], "first": [11, 22], "ne": "फागुपूर्णिमा - हिमाली र पहाडी जिल्लालगायतका ५६ जिल्ला", "en": "Fagu Purnima, in the 56 districts, the mountain and hill districts among them"},
-    {"clause": "2.1 (त)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "first": [11, 23], "ne": "फागुपूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्तापूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रूपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
+    {"clause": "2.1 (त)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SAPTARI", "NP_SIRAHA", "NP_UDAYAPUR", "NP_DHANUSHA", "NP_MAHOTTARI", "NP_SARLAHI", "NP_RAUTAHAT", "NP_BARA", "NP_PARSA", "NP_NAWALPARASI_EAST", "NP_NAWALPARASI_WEST", "NP_RUPANDEHI", "NP_KAPILVASTU", "NP_DANG", "NP_BANKE", "NP_BARDIYA", "NP_KAILALI", "NP_KANCHANPUR"], "first": [11, 23], "ne": "फागुपूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्तापूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रूपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
     {"clause": "2.2 (क)", "scope": "COMMUNITY", "festivals": ["GAI_JATRA"], "communities": ["NEWAR"], "first": [4, 27], "ne": "गाईजात्रा", "en": "Gai Jatra"},
     {"clause": "2.2 (ख)", "scope": "CONCERNED", "festivals": ["GAURA_PARVA"], "first": [5, 18], "ne": "गौरा पर्व", "en": "Gaura Parva"},
     {"clause": "2.2 (ग)", "scope": "CONCERNED", "festivals": ["MAWLID"], "ne": "मोहम्मद जयन्तीका दिन", "en": "On the day of Mohammad Jayanti"},
-    {"clause": "2.2 (घ)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
+    {"clause": "2.2 (घ)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SIRAHA", "NP_SAPTARI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
     {"clause": "3 (क)", "scope": "WOMEN", "festivals": ["HARITALIKA"], "first": [5, 14], "ne": "हरितालिका(तीज) व्रत", "en": "The Haritalika (Teej) vrata"},
     {"clause": "3 (ख)", "scope": "WOMEN", "festivals": ["JITIYA"], "first": [6, 2], "ne": "जितिया पर्व", "en": "Jitiya"},
     {"clause": "4", "scope": "SCHOOLS", "festivals": ["BASANTA_PANCHAMI"], "first": [10, 12], "ne": "बसन्त पञ्चमी", "en": "Basanta Panchami"},
@@ -47,6 +48,6 @@
     {"clause": "10 (घ)", "scope": "OFFICES_OPEN", "festivals": ["MARTYRS_DAY"], "first": [10, 16], "ne": "शहीद दिवस", "en": "Martyrs' Day"}
   ],
   "amendments": [
-    {"ADDS": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Asoj 31, 2079", "holiday": {"scope": "NATIONAL", "festivals": [], "first": [7, 1], "ne": "संस्कृतिविद् एवं शताब्दी पुरुष सत्यमोहन जोशीको निधनको शोक", "en": "Mourning the death of Satya Mohan Joshi, scholar of culture and centenarian"}}}
+    {"ADDS": {"by": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Asoj 31, 2079", "decided": [2079, 6, 31]}, "holiday": {"scope": "NATIONAL", "festivals": [], "first": [7, 1], "ne": "संस्कृतिविद् एवं शताब्दी पुरुष सत्यमोहन जोशीको निधनको शोक", "en": "Mourning the death of Satya Mohan Joshi, scholar of culture and centenarian"}}}
   ]
 }

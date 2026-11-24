@@ -8547,6 +8547,10 @@
     "OFFICES_OPEN": {
       "name": "राष्ट्रिय दिवस, कार्यालय खुला",
       "prose": "राष्ट्रिय दिवस, कार्यालय खुला"
+    },
+    "OFFICES_AND_SCHOOLS": {
+      "name": "सरकारी कार्यालय र शैक्षिक संस्थाका लागि मात्र बिदा",
+      "prose": "सरकारी कार्यालय र शैक्षिक संस्थाका लागि मात्र बिदा"
     }
   },
   "observance": {
@@ -9981,6 +9985,90 @@
     "IN_WB": {
       "name": "पश्चिम बङ्गाल",
       "prose": "पश्चिम बङ्गाल"
+    },
+    "NP_JHAPA": {
+      "name": "झापा",
+      "prose": "झापा"
+    },
+    "NP_MORANG": {
+      "name": "मोरङ",
+      "prose": "मोरङ"
+    },
+    "NP_SUNSARI": {
+      "name": "सुनसरी",
+      "prose": "सुनसरी"
+    },
+    "NP_SAPTARI": {
+      "name": "सप्तरी",
+      "prose": "सप्तरी"
+    },
+    "NP_SIRAHA": {
+      "name": "सिराहा",
+      "prose": "सिराहा"
+    },
+    "NP_UDAYAPUR": {
+      "name": "उदयपुर",
+      "prose": "उदयपुर"
+    },
+    "NP_DHANUSHA": {
+      "name": "धनुषा",
+      "prose": "धनुषा"
+    },
+    "NP_MAHOTTARI": {
+      "name": "महोत्तरी",
+      "prose": "महोत्तरी"
+    },
+    "NP_SARLAHI": {
+      "name": "सर्लाही",
+      "prose": "सर्लाही"
+    },
+    "NP_RAUTAHAT": {
+      "name": "रौतहट",
+      "prose": "रौतहट"
+    },
+    "NP_BARA": {
+      "name": "बारा",
+      "prose": "बारा"
+    },
+    "NP_PARSA": {
+      "name": "पर्सा",
+      "prose": "पर्सा"
+    },
+    "NP_NAWALPARASI_EAST": {
+      "name": "नवलपरासी (बर्दघाट सुस्ता पूर्व)",
+      "prose": "नवलपरासी (बर्दघाट सुस्ता पूर्व)"
+    },
+    "NP_NAWALPARASI_WEST": {
+      "name": "नवलपरासी (बर्दघाट सुस्ता पश्चिम)",
+      "prose": "नवलपरासी (बर्दघाट सुस्ता पश्चिम)"
+    },
+    "NP_RUPANDEHI": {
+      "name": "रुपन्देही",
+      "prose": "रुपन्देही"
+    },
+    "NP_KAPILVASTU": {
+      "name": "कपिलवस्तु",
+      "prose": "कपिलवस्तु"
+    },
+    "NP_DANG": {
+      "name": "दाङ",
+      "prose": "दाङ"
+    },
+    "NP_BANKE": {
+      "name": "बाँके",
+      "prose": "बाँके"
+    },
+    "NP_BARDIYA": {
+      "name": "बर्दिया",
+      "prose": "बर्दिया"
+    },
+    "NP_KAILALI": {
+      "name": "कैलाली",
+      "prose": "कैलाली"
+    },
+    "NP_KANCHANPUR": {
+      "name": "कञ्चनपुर",
+      "prose": "कञ्चनपुर"
     }
   }
 }

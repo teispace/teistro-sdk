@@ -24,7 +24,7 @@ use std::sync::LazyLock;
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::{BikramSambat, CalendarDay, CalendarSystem};
-use teistro_core::catalogue::{Calendar, HolidayScope};
+use teistro_core::catalogue::{Calendar, HolidayScope, Vara};
 
 /// A clause's words, as printed and in English.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -35,6 +35,109 @@ pub struct HolidayNotice {
     pub ne: String,
     /// In English.
     pub en: String,
+}
+
+/// A notice or a decision as it was read
+/// (`03-design/nepal-gazette-holidays.md` §6): where, when, and the file.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HolidayDocument {
+    /// Its citation, as a holiday's `source` writes it.
+    pub citation: String,
+    /// The address it was read at.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    /// The SHA-256 of the file read, lowercase hex; absent for a page.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+    /// The civil day it was retrieved, ISO 8601 (`2026-09-14`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub retrieved: Option<String>,
+    /// The Bikram Sambat day it was decided or published.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub decided: Option<CalendarDay>,
+}
+
+/// What a later decision did to a holiday.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum HolidayChangeKind {
+    /// A holiday the notice did not list.
+    Added,
+    /// The day of a clause that gave it as the festival's own.
+    Dated,
+    /// The clause withdrawn.
+    Cancelled,
+    /// Whom it is for.
+    Rescoped,
+}
+
+/// A later decision's change to one holiday, with the decision.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HolidayChange {
+    /// What it did.
+    pub kind: HolidayChangeKind,
+    /// The decision.
+    pub document: HolidayDocument,
+    /// For a holiday rescoped, the scope its clause gave.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope_before: Option<HolidayScope>,
+}
+
+/// One year's notice and the decisions amending it, as documents.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HolidayYear {
+    /// The set it is of ([`HolidaySet::key`]).
+    pub set: String,
+    /// The Bikram Sambat year.
+    pub year: i32,
+    /// The year's notice.
+    pub notice: HolidayDocument,
+    /// The later decisions, in their order.
+    pub amendments: Vec<HolidayDocument>,
+}
+
+/// A day of the week a government keeps as a rest day, for whom and
+/// since when (`03-design/nepal-gazette-holidays.md` §6).
+///
+/// ```
+/// use teistro_core::catalogue::{HolidayScope, Vara};
+/// use teistro_panchanga::festival::HolidaySet;
+///
+/// let rest = HolidaySet::NepalGazette.rest_days();
+/// assert_eq!(rest[0].vara, Vara::Shanivara);
+/// assert_eq!(rest[0].scope, HolidayScope::National);
+/// let sunday = rest.iter().find(|day| day.vara == Vara::Ravivara).ok_or("listed")?;
+/// assert_eq!(sunday.scope, HolidayScope::OfficesAndSchools);
+/// assert_eq!(sunday.first.as_ref().map(|day| (day.year, day.month, day.day)), Some((2082, 12, 23)));
+/// assert!(sunday.last.is_none());
+/// # Ok::<(), &str>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RestDay {
+    /// The set it is of ([`HolidaySet::key`]).
+    pub set: String,
+    /// The day of the week.
+    pub vara: Vara,
+    /// Whom it is for.
+    pub scope: HolidayScope,
+    /// The first day it is kept, Bikram Sambat; absent for one the
+    /// notices give as standing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first: Option<CalendarDay>,
+    /// The last day it was kept; absent while it stands.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last: Option<CalendarDay>,
+    /// The notice or decision it rests on.
+    pub document: HolidayDocument,
 }
 
 /// One holiday of a notice.
@@ -61,6 +164,10 @@ pub struct Holiday {
     pub year: i32,
     /// Its clause's words.
     pub notice: HolidayNotice,
+    /// The notice's clause ("2.1 (क)"); absent for a holiday a later
+    /// decision added.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clause: Option<String>,
     /// The festivals the clause names, by key, in its order; empty for a
     /// clause naming none the SDK keys, which its notice names.
     pub festivals: Vec<String>,
@@ -72,6 +179,10 @@ pub struct Holiday {
     /// notice lists.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub regions: Vec<String>,
+    /// The districts the clause names, as region keys, `NP_` and the
+    /// district (`NP_JHAPA`), in its order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub districts: Vec<String>,
     /// For a holiday of a community or of a religion's followers, the
     /// community the clause names (`NEWAR`, `KIRAT`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -86,6 +197,9 @@ pub struct Holiday {
     /// The notice and its clause, and the later notice that dated or
     /// added it.
     pub source: String,
+    /// What later decisions did to it, in their order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub changes: Vec<HolidayChange>,
 }
 
 /// A government's list of holidays the SDK ships.
@@ -148,7 +262,7 @@ impl HolidaySet {
     /// use teistro_panchanga::festival::HolidaySet;
     ///
     /// let holidays = HolidaySet::NepalGazette.holidays_of(2083);
-    /// assert_eq!(holidays.len(), 45);
+    /// assert_eq!(holidays.len(), 46);
     /// assert!(holidays.iter().any(|holiday| holiday.scope == HolidayScope::Women));
     /// assert!(HolidaySet::NepalGazette.holidays_of(2050).is_empty());
     /// ```
@@ -175,6 +289,41 @@ impl HolidaySet {
         self.notice(year)
             .map(|notice| notice.holidays(self, &notice.cancelled))
             .unwrap_or_default()
+    }
+
+    /// Each year's notice and the decisions amending it, as documents, in
+    /// order (`03-design/nepal-gazette-holidays.md` §6).
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::HolidaySet;
+    ///
+    /// let years = HolidaySet::NepalGazette.documents();
+    /// let latest = years.last().ok_or("listed")?;
+    /// assert_eq!(latest.year, 2083);
+    /// assert!(latest.notice.url.as_deref().is_some_and(|url| url.starts_with("https://moha.gov.np/")));
+    /// assert_eq!(latest.amendments.len(), 2);
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn documents(self) -> Vec<HolidayYear> {
+        self.notices()
+            .iter()
+            .map(|notice| HolidayYear {
+                set: self.key().to_owned(),
+                year: notice.year,
+                notice: notice.document.clone(),
+                amendments: notice.amendments.clone(),
+            })
+            .collect()
+    }
+
+    /// The days of the week it keeps as rest days, each for whom and since
+    /// when ([`RestDay`]).
+    #[must_use]
+    pub fn rest_days(self) -> Vec<RestDay> {
+        match self {
+            HolidaySet::NepalGazette => NEPAL_REST_DAYS.clone(),
+        }
     }
 
     /// The days of the festivals its holidays of several days in `year`
@@ -276,6 +425,51 @@ const NEPAL_GAZETTE_FILES: [&str; 8] = [
     include_str!("../../data/np-holidays/2083.json"),
 ];
 
+/// Nepal's weekly rest days, as shipped.
+const NEPAL_REST_DAYS_FILE: &str = include_str!("../../data/np-holidays/rest-days.json");
+
+/// Nepal's rest days, read once.
+static NEPAL_REST_DAYS: LazyLock<Vec<RestDay>> = LazyLock::new(|| {
+    #[allow(
+        clippy::expect_used,
+        reason = "embedded data, read by a test on every build"
+    )]
+    read_rest_days(HolidaySet::NepalGazette, NEPAL_REST_DAYS_FILE)
+        .expect("the shipped rest days read")
+});
+
+/// A rest day as its file writes it.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RestRow {
+    vara: Vara,
+    scope: HolidayScope,
+    #[serde(default)]
+    first: Option<Day>,
+    #[serde(default)]
+    last: Option<Day>,
+    by: By,
+}
+
+/// A set's rest days read, each day checked a day of its year.
+fn read_rest_days(set: HolidaySet, text: &str) -> Result<Vec<RestDay>, String> {
+    let rows: Vec<RestRow> = serde_json::from_str(text).map_err(|error| error.to_string())?;
+    rows.into_iter()
+        .map(|row| {
+            let first = row.first.map(day_of).transpose()?;
+            let last = row.last.map(day_of).transpose()?;
+            Ok(RestDay {
+                set: set.key().to_owned(),
+                vara: row.vara,
+                scope: row.scope,
+                first,
+                last,
+                document: row.by.document()?,
+            })
+        })
+        .collect()
+}
+
 /// Nepal's notices, read once.
 static NEPAL_GAZETTE: LazyLock<Vec<Listing>> = LazyLock::new(|| {
     #[allow(
@@ -291,6 +485,103 @@ static NEPAL_GAZETTE: LazyLock<Vec<Listing>> = LazyLock::new(|| {
 
 /// A day of the notice: month and day.
 type On = (u8, u8);
+
+/// A day of any year: year, month and day, Bikram Sambat.
+type Day = (i32, u8, u8);
+
+/// A Bikram Sambat day written in full, checked a day of its year.
+fn day_of((year, month, day): Day) -> Result<CalendarDay, String> {
+    let real = BikramSambat::shipped()
+        .month_length(year, month)
+        .is_ok_and(|length| (1..=length).contains(&day));
+    if real {
+        Ok(bikram_sambat(year, (month, day)))
+    } else {
+        Err(format!("VS {year}-{month}-{day} is not a day of its year"))
+    }
+}
+
+/// Where and when a notice or a decision was read, as a file writes it.
+#[derive(Clone, Default, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Fetched {
+    #[serde(default)]
+    url: Option<String>,
+    #[serde(default)]
+    sha256: Option<String>,
+    #[serde(default)]
+    retrieved: Option<String>,
+    #[serde(default)]
+    decided: Option<Day>,
+}
+
+/// A decision as a file writes it: its citation and how it was read.
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct By {
+    notice: String,
+    #[serde(default)]
+    url: Option<String>,
+    #[serde(default)]
+    sha256: Option<String>,
+    #[serde(default)]
+    retrieved: Option<String>,
+    #[serde(default)]
+    decided: Option<Day>,
+}
+
+impl Fetched {
+    /// The document a citation and this record make, its hash and day
+    /// checked.
+    fn document(self, citation: String) -> Result<HolidayDocument, String> {
+        let hex = |hash: &str| {
+            hash.len() == 64
+                && hash
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        };
+        let iso = |day: &str| {
+            let bytes = day.as_bytes();
+            bytes.len() == 10
+                && bytes.iter().enumerate().all(|(at, b)| {
+                    if at == 4 || at == 7 {
+                        *b == b'-'
+                    } else {
+                        b.is_ascii_digit()
+                    }
+                })
+        };
+        if self.sha256.as_deref().is_some_and(|hash| !hex(hash)) {
+            return Err(format!(
+                "{citation}: a SHA-256 not written as 64 lowercase hex digits"
+            ));
+        }
+        if self.retrieved.as_deref().is_some_and(|day| !iso(day)) {
+            return Err(format!(
+                "{citation}: a retrieval day not written YYYY-MM-DD"
+            ));
+        }
+        Ok(HolidayDocument {
+            decided: self.decided.map(day_of).transpose()?,
+            citation,
+            url: self.url,
+            sha256: self.sha256,
+            retrieved: self.retrieved,
+        })
+    }
+}
+
+impl By {
+    fn document(self) -> Result<HolidayDocument, String> {
+        Fetched {
+            url: self.url,
+            sha256: self.sha256,
+            retrieved: self.retrieved,
+            decided: self.decided,
+        }
+        .document(self.notice)
+    }
+}
 
 /// The Bikram Sambat day `on` of `year`.
 const fn bikram_sambat(year: i32, (month, day): On) -> CalendarDay {
@@ -312,6 +603,9 @@ struct File {
     year: i32,
     /// Its citation.
     notice: String,
+    /// Where and when it was read.
+    #[serde(default)]
+    document: Fetched,
     /// Its clauses, in its order.
     holidays: Vec<Row>,
     /// The later notices amending it, in their order.
@@ -330,6 +624,8 @@ struct Row {
     festivals: Vec<String>,
     #[serde(default)]
     regions: Vec<String>,
+    #[serde(default)]
+    districts: Vec<String>,
     #[serde(default)]
     communities: Vec<String>,
     #[serde(default)]
@@ -356,13 +652,15 @@ enum Amendment {
     Dates(Dated),
     /// A clause the notice cancels.
     Cancels(Cancelled),
+    /// Whom the notice gives a clause's holiday to instead.
+    Rescopes(Rescoped),
 }
 
 /// A holiday a later notice adds.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Added {
-    notice: String,
+    by: By,
     holiday: Row,
 }
 
@@ -370,7 +668,7 @@ struct Added {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Dated {
-    notice: String,
+    by: By,
     clause: String,
     on: On,
 }
@@ -379,23 +677,36 @@ struct Dated {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Cancelled {
-    notice: String,
+    by: By,
     clause: String,
+}
+
+/// A clause a later notice gives to others.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Rescoped {
+    by: By,
+    clause: String,
+    scope: HolidayScope,
 }
 
 /// One year's holidays, its amendments applied.
 #[derive(Debug)]
 struct Listing {
     year: i32,
+    document: HolidayDocument,
+    amendments: Vec<HolidayDocument>,
     listed: Vec<Listed>,
     cancelled: Vec<Listed>,
 }
 
-/// A holiday with the source it is listed by.
+/// A holiday with the source it is listed by and what later notices did
+/// to it.
 #[derive(Debug)]
 struct Listed {
     row: Row,
     source: String,
+    changes: Vec<HolidayChange>,
 }
 
 impl Listing {
@@ -412,36 +723,67 @@ impl Listing {
                     Some(clause) => format!("{}, clause {clause}", file.notice),
                     None => return Err(format!("VS {year}: `{}` has no clause", row.ne)),
                 };
-                Ok(Listed { row, source })
+                Ok(Listed {
+                    row,
+                    source,
+                    changes: Vec::new(),
+                })
             })
             .collect::<Result<Vec<Listed>, String>>()?;
+        let document = file.document.document(file.notice)?;
+        let mut amendments = Vec::new();
         let mut cancelled = Vec::new();
         for amendment in file.amendments {
+            let (by, kind) = match &amendment {
+                Amendment::Adds(added) => (added.by.clone(), HolidayChangeKind::Added),
+                Amendment::Dates(dated) => (dated.by.clone(), HolidayChangeKind::Dated),
+                Amendment::Cancels(gone) => (gone.by.clone(), HolidayChangeKind::Cancelled),
+                Amendment::Rescopes(moved) => (moved.by.clone(), HolidayChangeKind::Rescoped),
+            };
+            let notice = by.notice.clone();
+            let decision = by.document()?;
+            amendments.push(decision.clone());
+            let change = |scope_before| HolidayChange {
+                kind,
+                document: decision.clone(),
+                scope_before,
+            };
             match amendment {
-                Amendment::Adds(Added { notice, holiday }) => listed.push(Listed {
+                Amendment::Adds(Added { holiday, .. }) => listed.push(Listed {
                     row: holiday,
                     source: notice,
+                    changes: vec![change(None)],
                 }),
-                Amendment::Dates(Dated { notice, clause, on }) => {
-                    let at = only(&listed, year, &clause)?;
-                    let entry = listed
-                        .get_mut(at)
-                        .ok_or_else(|| format!("VS {year}: clause {clause} is not listed"))?;
+                Amendment::Dates(Dated { clause, on, .. }) => {
+                    let entry = clause_entry(&mut listed, year, &clause)?;
                     if entry.row.first.replace(on).is_some() {
                         return Err(format!("VS {year}: clause {clause} already prints its day"));
                     }
                     entry.source = format!("{}; its day by {notice}", entry.source);
+                    entry.changes.push(change(None));
                 }
-                Amendment::Cancels(Cancelled { notice, clause }) => {
+                Amendment::Cancels(Cancelled { clause, .. }) => {
                     let at = only(&listed, year, &clause)?;
                     let mut entry = listed.remove(at);
                     entry.source = format!("{}; cancelled by {notice}", entry.source);
+                    entry.changes.push(change(None));
                     cancelled.push(entry);
+                }
+                Amendment::Rescopes(Rescoped { clause, scope, .. }) => {
+                    let entry = clause_entry(&mut listed, year, &clause)?;
+                    let before = std::mem::replace(&mut entry.row.scope, scope);
+                    if before == scope {
+                        return Err(format!("VS {year}: clause {clause} already has that scope"));
+                    }
+                    entry.source = format!("{}; {} by {notice}", entry.source, scope.key());
+                    entry.changes.push(change(Some(before)));
                 }
             }
         }
         let read = Listing {
             year,
+            document,
+            amendments,
             listed,
             cancelled,
         };
@@ -491,6 +833,7 @@ impl Listing {
                 row.festivals
                     .iter()
                     .chain(&row.regions)
+                    .chain(&row.districts)
                     .chain(&row.communities)
                     .chain(row.days_of.iter().map(|(held, _)| held))
                     .all(|held| key(held)),
@@ -505,9 +848,21 @@ impl Listing {
     fn holidays(&self, set: HolidaySet, listed: &[Listed]) -> Vec<Holiday> {
         listed
             .iter()
-            .map(|listed| listed.row.holiday(set, self.year, &listed.source))
+            .map(|listed| listed.row.holiday(set, self.year, listed))
             .collect()
     }
+}
+
+/// The one holiday of `listed` printed under `clause`, to change.
+fn clause_entry<'a>(
+    listed: &'a mut [Listed],
+    year: i32,
+    clause: &str,
+) -> Result<&'a mut Listed, String> {
+    let at = only(listed, year, clause)?;
+    listed
+        .get_mut(at)
+        .ok_or_else(|| format!("VS {year}: clause {clause} is not listed"))
 }
 
 /// The one holiday of `listed` printed under `clause`.
@@ -537,7 +892,7 @@ impl Row {
             .any(|(held, day)| held == key && (first..=last).contains(day))
     }
 
-    fn holiday(&self, set: HolidaySet, year: i32, source: &str) -> Holiday {
+    fn holiday(&self, set: HolidaySet, year: i32, listed: &Listed) -> Holiday {
         Holiday {
             set: set.key().to_owned(),
             year,
@@ -545,13 +900,16 @@ impl Row {
                 ne: self.ne.clone(),
                 en: self.en.clone(),
             },
+            clause: self.clause.clone(),
             festivals: self.festivals.clone(),
             scope: self.scope,
             regions: self.regions.clone(),
+            districts: self.districts.clone(),
             communities: self.communities.clone(),
             first: self.first.map(|on| bikram_sambat(year, on)),
             last: self.last.map(|on| bikram_sambat(year, on)),
-            source: source.to_owned(),
+            source: listed.source.clone(),
+            changes: listed.changes.clone(),
         }
     }
 }
@@ -609,13 +967,16 @@ mod tests {
             .contains("has no clause")
         );
         assert!(
-            refused(&file(row, r#"{"CANCELS": {"notice": "M", "clause": "2"}}"#))
-                .contains("not one holiday")
+            refused(&file(
+                row,
+                r#"{"CANCELS": {"by": {"notice": "M"}, "clause": "2"}}"#
+            ))
+            .contains("not one holiday")
         );
         assert!(
             refused(&file(
                 r#"{"clause": "1", "scope": "NATIONAL", "festivals": [], "first": [1, 1], "ne": "न", "en": "N"}"#,
-                r#"{"DATES": {"notice": "M", "clause": "1", "on": [1, 2]}}"#
+                r#"{"DATES": {"by": {"notice": "M"}, "clause": "1", "on": [1, 2]}}"#
             ))
             .contains("already prints its day")
         );
@@ -641,7 +1002,7 @@ mod tests {
                 (2080, 43),
                 (2081, 45),
                 (2082, 44),
-                (2083, 45),
+                (2083, 46),
             ]
         );
         assert_eq!(

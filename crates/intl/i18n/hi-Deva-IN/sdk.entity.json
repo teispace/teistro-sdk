@@ -8424,6 +8424,286 @@
     "OFFICES_OPEN": {
       "name": "राष्ट्रीय दिवस, कार्यालय खुले",
       "prose": "राष्ट्रीय दिवस, कार्यालय खुले"
+    },
+    "OFFICES_AND_SCHOOLS": {
+      "name": "केवल सरकारी कार्यालयों और शैक्षिक संस्थानों के लिए अवकाश",
+      "prose": "केवल सरकारी कार्यालयों और शैक्षिक संस्थानों के लिए अवकाश"
+    }
+  },
+  "region": {
+    "NP": {
+      "name": "नेपाल",
+      "prose": "नेपाल"
+    },
+    "KATHMANDU_VALLEY": {
+      "name": "काठमांडू घाटी",
+      "prose": "काठमांडू घाटी"
+    },
+    "NP_P3": {
+      "name": "बागमती प्रदेश",
+      "prose": "बागमती प्रदेश"
+    },
+    "HILLS": {
+      "name": "पहाड़ी क्षेत्र",
+      "prose": "पहाड़ी क्षेत्र"
+    },
+    "TERAI": {
+      "name": "तराई",
+      "prose": "तराई"
+    },
+    "IN": {
+      "name": "भारत",
+      "prose": "भारत"
+    },
+    "IN_AP": {
+      "name": "आंध्र प्रदेश",
+      "prose": "आंध्र प्रदेश"
+    },
+    "IN_AS": {
+      "name": "असम",
+      "prose": "असम"
+    },
+    "IN_BR": {
+      "name": "बिहार",
+      "prose": "बिहार"
+    },
+    "IN_GJ": {
+      "name": "गुजरात",
+      "prose": "गुजरात"
+    },
+    "IN_HR": {
+      "name": "हरियाणा",
+      "prose": "हरियाणा"
+    },
+    "IN_KA": {
+      "name": "कर्नाटक",
+      "prose": "कर्नाटक"
+    },
+    "IN_KL": {
+      "name": "केरल",
+      "prose": "केरल"
+    },
+    "IN_MH": {
+      "name": "महाराष्ट्र",
+      "prose": "महाराष्ट्र"
+    },
+    "IN_OD": {
+      "name": "ओडिशा",
+      "prose": "ओडिशा"
+    },
+    "IN_TG": {
+      "name": "तेलंगाना",
+      "prose": "तेलंगाना"
+    },
+    "IN_TN": {
+      "name": "तमिलनाडु",
+      "prose": "तमिलनाडु"
+    },
+    "IN_UP": {
+      "name": "उत्तर प्रदेश",
+      "prose": "उत्तर प्रदेश"
+    },
+    "IN_WB": {
+      "name": "पश्चिम बंगाल",
+      "prose": "पश्चिम बंगाल"
+    },
+    "NP_JHAPA": {
+      "name": "झापा",
+      "prose": "झापा"
+    },
+    "NP_MORANG": {
+      "name": "मोरंग",
+      "prose": "मोरंग"
+    },
+    "NP_SUNSARI": {
+      "name": "सुनसरी",
+      "prose": "सुनसरी"
+    },
+    "NP_SAPTARI": {
+      "name": "सप्तरी",
+      "prose": "सप्तरी"
+    },
+    "NP_SIRAHA": {
+      "name": "सिरहा",
+      "prose": "सिरहा"
+    },
+    "NP_UDAYAPUR": {
+      "name": "उदयपुर",
+      "prose": "उदयपुर"
+    },
+    "NP_DHANUSHA": {
+      "name": "धनुषा",
+      "prose": "धनुषा"
+    },
+    "NP_MAHOTTARI": {
+      "name": "महोत्तरी",
+      "prose": "महोत्तरी"
+    },
+    "NP_SARLAHI": {
+      "name": "सरलाही",
+      "prose": "सरलाही"
+    },
+    "NP_RAUTAHAT": {
+      "name": "रौतहट",
+      "prose": "रौतहट"
+    },
+    "NP_BARA": {
+      "name": "बारा",
+      "prose": "बारा"
+    },
+    "NP_PARSA": {
+      "name": "परसा",
+      "prose": "परसा"
+    },
+    "NP_NAWALPARASI_EAST": {
+      "name": "नवलपरासी (बर्दघाट सुस्ता पूर्व)",
+      "prose": "नवलपरासी (बर्दघाट सुस्ता पूर्व)"
+    },
+    "NP_NAWALPARASI_WEST": {
+      "name": "नवलपरासी (बर्दघाट सुस्ता पश्चिम)",
+      "prose": "नवलपरासी (बर्दघाट सुस्ता पश्चिम)"
+    },
+    "NP_RUPANDEHI": {
+      "name": "रूपन्देही",
+      "prose": "रूपन्देही"
+    },
+    "NP_KAPILVASTU": {
+      "name": "कपिलवस्तु",
+      "prose": "कपिलवस्तु"
+    },
+    "NP_DANG": {
+      "name": "दांग",
+      "prose": "दांग"
+    },
+    "NP_BANKE": {
+      "name": "बाँके",
+      "prose": "बाँके"
+    },
+    "NP_BARDIYA": {
+      "name": "बर्दिया",
+      "prose": "बर्दिया"
+    },
+    "NP_KAILALI": {
+      "name": "कैलाली",
+      "prose": "कैलाली"
+    },
+    "NP_KANCHANPUR": {
+      "name": "कंचनपुर",
+      "prose": "कंचनपुर"
+    }
+  },
+  "community": {
+    "NEWAR": {
+      "name": "नेवार",
+      "prose": "नेवार"
+    },
+    "THARU": {
+      "name": "थारू",
+      "prose": "थारू"
+    },
+    "KIRAT": {
+      "name": "किरात",
+      "prose": "किरात"
+    },
+    "SHERPA": {
+      "name": "शेरपा",
+      "prose": "शेरपा"
+    },
+    "TAMANG": {
+      "name": "तामांग",
+      "prose": "तामांग"
+    },
+    "GURUNG": {
+      "name": "गुरुंग",
+      "prose": "गुरुंग"
+    },
+    "MAGAR": {
+      "name": "मगर",
+      "prose": "मगर"
+    },
+    "CHHANTYAL": {
+      "name": "छन्त्याल",
+      "prose": "छन्त्याल"
+    },
+    "DURA": {
+      "name": "दुरा",
+      "prose": "दुरा"
+    },
+    "MAITHIL": {
+      "name": "मैथिल",
+      "prose": "मैथिल"
+    },
+    "BHOJPURI": {
+      "name": "भोजपुरी",
+      "prose": "भोजपुरी"
+    },
+    "MUSLIM": {
+      "name": "मुस्लिम",
+      "prose": "मुस्लिम"
+    },
+    "BRAHMIN": {
+      "name": "ब्राह्मण",
+      "prose": "ब्राह्मण"
+    },
+    "VISHWAKARMA": {
+      "name": "विश्वकर्मा",
+      "prose": "विश्वकर्मा"
+    },
+    "BANKS": {
+      "name": "बैंकिंग",
+      "prose": "बैंकिंग"
+    },
+    "PARSI": {
+      "name": "पारसी",
+      "prose": "पारसी"
+    },
+    "NADAR": {
+      "name": "नाडार",
+      "prose": "नाडार"
+    },
+    "RAVIDASSIA": {
+      "name": "रविदासिया",
+      "prose": "रविदासिया"
+    },
+    "SANTHAL": {
+      "name": "संथाल",
+      "prose": "संथाल"
+    },
+    "DIGAMBARA": {
+      "name": "दिगंबर जैन",
+      "prose": "दिगंबर जैन"
+    },
+    "SHVETAMBARA": {
+      "name": "श्वेतांबर जैन",
+      "prose": "श्वेतांबर जैन"
+    },
+    "STHANAKVASI": {
+      "name": "स्थानकवासी जैन",
+      "prose": "स्थानकवासी जैन"
+    },
+    "TERAPANTH": {
+      "name": "तेरापंथी जैन",
+      "prose": "तेरापंथी जैन"
+    },
+    "TAPAGACHHA": {
+      "name": "तपागच्छ जैन",
+      "prose": "तपागच्छ जैन"
+    },
+    "KHARATARA_GACHHA": {
+      "name": "खरतरगच्छ जैन",
+      "prose": "खरतरगच्छ जैन"
+    },
+    "ACHALGACHHA": {
+      "name": "अचलगच्छ जैन",
+      "prose": "अचलगच्छ जैन"
+    },
+    "SIKH": {
+      "name": "सिख",
+      "prose": "सिख"
+    },
+    "CHRISTIAN": {
+      "name": "ईसाई",
+      "prose": "ईसाई"
     }
   },
   "observance": {

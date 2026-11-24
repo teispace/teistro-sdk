@@ -98,7 +98,7 @@ fn every_nepal_pack_lists_the_gazette_and_no_other_pack_does() {
         .iter()
         .filter(|holiday| holiday["year"] == 2083)
         .collect();
-    assert_eq!(of_2083.len(), 45);
+    assert_eq!(of_2083.len(), 46);
     assert_eq!(of_2083[8]["festivals"][3], "JYAPU_DIWAS");
     assert_eq!(of_2083[8]["scope"], "NATIONAL");
     assert_eq!(of_2083[8]["first"]["month"], 9);
@@ -219,5 +219,82 @@ fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
             "{key}: the notice is read with {day:?}, the pack gives {:?}",
             days.get(&key)
         );
+    }
+}
+
+/// What SR-163 asked of a notice's record (`nepal-gazette-holidays.md` §6):
+/// the clause apart, a later decision typed with its document, each
+/// year's documents, the weekly rest days, and every region, district and
+/// community a holiday names said in every Devanagari locale.
+#[test]
+fn a_notice_carries_its_clauses_changes_documents_and_rest_days() {
+    let json = serde_json::to_value(FestivalPack::NepalPanchanga.listing()).unwrap();
+    let holidays = json["holidays"].as_array().unwrap();
+    let gen_z = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["clause"] == "8 (ग)")
+        .unwrap();
+    assert_eq!(gen_z["scope"], "NATIONAL");
+    assert_eq!(gen_z["changes"][0]["kind"], "RESCOPED");
+    assert_eq!(gen_z["changes"][0]["scopeBefore"], "OFFICES_OPEN");
+    assert_eq!(gen_z["changes"][0]["document"]["decided"]["month"], 5);
+    let mourning = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["changes"][0]["kind"] == "ADDED")
+        .unwrap();
+    assert_eq!(
+        mourning["scope"], "OFFICES_OPEN",
+        "a day of mourning, offices open"
+    );
+    let terai = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["festivals"][0] == "HOLI_TERAI")
+        .unwrap();
+    assert_eq!(terai["districts"].as_array().unwrap().len(), 21);
+    let years = json["holidayYears"].as_array().unwrap();
+    assert_eq!(years.len(), 8);
+    let latest = years.last().unwrap();
+    assert_eq!(latest["notice"]["sha256"].as_str().unwrap().len(), 64);
+    assert_eq!(latest["notice"]["retrieved"], "2026-09-14");
+    let rest = json["restDays"].as_array().unwrap();
+    assert_eq!(rest[0]["vara"], "SHANIVARA");
+    assert_eq!(rest[1]["scope"], "OFFICES_AND_SCHOOLS");
+
+    let set = HolidaySet::NepalGazette;
+    let cancelled = set.years().into_iter().flat_map(|year| set.cancelled(year));
+    let named: std::collections::BTreeSet<String> = set
+        .holidays()
+        .into_iter()
+        .chain(cancelled)
+        .flat_map(|holiday| {
+            let regions = holiday
+                .regions
+                .iter()
+                .chain(&holiday.districts)
+                .map(|key| format!("region.{key}"));
+            let communities = holiday
+                .communities
+                .iter()
+                .map(|key| format!("community.{key}"));
+            regions.chain(communities).collect::<Vec<_>>()
+        })
+        .chain([format!(
+            "holiday_scope.{}",
+            HolidayScope::OfficesAndSchools.key()
+        )])
+        .collect();
+    assert!(named.len() > 30, "{named:?}");
+    let devanagari = |name: &str| name.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+    for locale in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        let reader = Context::builder().locale(locale).build().unwrap();
+        let latin: Vec<String> = named
+            .iter()
+            .filter_map(|key| {
+                let entity = reader.intl().entity(key).unwrap();
+                let name = entity.form("name").unwrap().to_owned();
+                (!devanagari(&name)).then(|| format!("{key}: {name}"))
+            })
+            .collect();
+        assert!(latin.is_empty(), "{locale} names in Latin: {latin:?}");
     }
 }

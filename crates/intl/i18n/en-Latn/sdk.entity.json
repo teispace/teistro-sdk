@@ -8537,6 +8537,10 @@
     "OFFICES_OPEN": {
       "name": "National day, offices open",
       "prose": "National day, offices open"
+    },
+    "OFFICES_AND_SCHOOLS": {
+      "name": "Holiday for government offices and educational institutions",
+      "prose": "Holiday for government offices and educational institutions"
     }
   },
   "observance": {
@@ -9971,6 +9975,90 @@
     "IN_WB": {
       "name": "West Bengal",
       "prose": "West Bengal"
+    },
+    "NP_JHAPA": {
+      "name": "Jhapa",
+      "prose": "Jhapa"
+    },
+    "NP_MORANG": {
+      "name": "Morang",
+      "prose": "Morang"
+    },
+    "NP_SUNSARI": {
+      "name": "Sunsari",
+      "prose": "Sunsari"
+    },
+    "NP_SAPTARI": {
+      "name": "Saptari",
+      "prose": "Saptari"
+    },
+    "NP_SIRAHA": {
+      "name": "Siraha",
+      "prose": "Siraha"
+    },
+    "NP_UDAYAPUR": {
+      "name": "Udayapur",
+      "prose": "Udayapur"
+    },
+    "NP_DHANUSHA": {
+      "name": "Dhanusha",
+      "prose": "Dhanusha"
+    },
+    "NP_MAHOTTARI": {
+      "name": "Mahottari",
+      "prose": "Mahottari"
+    },
+    "NP_SARLAHI": {
+      "name": "Sarlahi",
+      "prose": "Sarlahi"
+    },
+    "NP_RAUTAHAT": {
+      "name": "Rautahat",
+      "prose": "Rautahat"
+    },
+    "NP_BARA": {
+      "name": "Bara",
+      "prose": "Bara"
+    },
+    "NP_PARSA": {
+      "name": "Parsa",
+      "prose": "Parsa"
+    },
+    "NP_NAWALPARASI_EAST": {
+      "name": "Nawalparasi (Bardaghat Susta East)",
+      "prose": "Nawalparasi (Bardaghat Susta East)"
+    },
+    "NP_NAWALPARASI_WEST": {
+      "name": "Nawalparasi (Bardaghat Susta West)",
+      "prose": "Nawalparasi (Bardaghat Susta West)"
+    },
+    "NP_RUPANDEHI": {
+      "name": "Rupandehi",
+      "prose": "Rupandehi"
+    },
+    "NP_KAPILVASTU": {
+      "name": "Kapilvastu",
+      "prose": "Kapilvastu"
+    },
+    "NP_DANG": {
+      "name": "Dang",
+      "prose": "Dang"
+    },
+    "NP_BANKE": {
+      "name": "Banke",
+      "prose": "Banke"
+    },
+    "NP_BARDIYA": {
+      "name": "Bardiya",
+      "prose": "Bardiya"
+    },
+    "NP_KAILALI": {
+      "name": "Kailali",
+      "prose": "Kailali"
+    },
+    "NP_KANCHANPUR": {
+      "name": "Kanchanpur",
+      "prose": "Kanchanpur"
     }
   }
 }

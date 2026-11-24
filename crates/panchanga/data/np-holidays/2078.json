@@ -1,6 +1,7 @@
 {
   "year": 2078,
   "notice": "Nepal Gazette vol. 70 no. 47, part 5 (Chaitra 9, 2077): the Ministry of Home Affairs' notice of the public, festival and substitute holidays of VS 2078",
+  "document": {"decided": [2077, 12, 9]},
   "holidays": [
     {"clause": "2.1 (क)", "scope": "NATIONAL", "festivals": ["MESHA_SANKRANTI"], "first": [1, 1], "ne": "नव वर्ष", "en": "New Year"},
     {"clause": "2.1 (ख)", "scope": "NATIONAL", "festivals": ["RAKSHABANDHAN"], "first": [5, 6], "ne": "रक्षाबन्धन", "en": "Raksha Bandhan"},
@@ -9,7 +10,7 @@
     {"clause": "2.1 (ङ)", "scope": "NATIONAL", "festivals": ["MAGHI_THARU", "MAKARA_SANKRANTI"], "first": [10, 1], "ne": "माघी पर्व/माघे सङ्क्रान्ति", "en": "Maghi and Maghe Sankranti"},
     {"clause": "2.1 (च)", "scope": "NATIONAL", "festivals": ["SHIVARATRI"], "first": [11, 17], "ne": "महाशिवरात्री", "en": "Maha Shivaratri"},
     {"clause": "2.1 (छ)", "scope": "REGION", "festivals": ["HOLI_HILLS"], "regions": ["HILLS"], "first": [12, 3], "ne": "फागु पूर्णिमा - हिमाली र पहाडी जिल्ला लगायतका ५६ जिल्ला", "en": "Fagu Purnima, in the 56 districts, the mountain and hill districts among them"},
-    {"clause": "2.1 (छ)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "first": [12, 4], "ne": "फागु पूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
+    {"clause": "2.1 (छ)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SAPTARI", "NP_SIRAHA", "NP_UDAYAPUR", "NP_DHANUSHA", "NP_MAHOTTARI", "NP_SARLAHI", "NP_RAUTAHAT", "NP_BARA", "NP_PARSA", "NP_NAWALPARASI_EAST", "NP_NAWALPARASI_WEST", "NP_RUPANDEHI", "NP_KAPILVASTU", "NP_DANG", "NP_BANKE", "NP_BARDIYA", "NP_KAILALI", "NP_KANCHANPUR"], "first": [12, 4], "ne": "फागु पूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
     {"clause": "2.2 (क)", "scope": "COMMUNITY", "festivals": ["UBHAULI", "CHANDI_PURNIMA"], "communities": ["KIRAT"], "first": [2, 12], "ne": "उभौली पर्व-चण्डी पूर्णिमा (वैशाख पूर्णिमा)", "en": "Ubhauli: Chandi Purnima (the full moon of Baisakh)"},
     {"clause": "2.2 (ख)", "scope": "CONCERNED", "festivals": ["GAURA_PARVA"], "first": [5, 14], "ne": "गौरा पर्व", "en": "Gaura Parva"},
     {"clause": "2.2 (ग)", "scope": "RELIGION", "festivals": ["EID_AL_FITR"], "communities": ["MUSLIM"], "ne": "ईद (ईद उल फित्र) का दिन", "en": "On the day of Eid (Eid al-Fitr)"},
@@ -19,7 +20,7 @@
     {"clause": "2.2 (छ)", "scope": "CONCERNED", "festivals": ["TAMU_LHOSAR"], "first": [9, 15], "ne": "तमू ल्होसार", "en": "Tamu Lhosar"},
     {"clause": "2.2 (ज)", "scope": "CONCERNED", "festivals": ["SONAM_LHOSAR"], "first": [10, 19], "ne": "सोनम ल्होसार", "en": "Sonam Lhosar"},
     {"clause": "2.2 (झ)", "scope": "COMMUNITY", "festivals": ["GYALPO_LHOSAR"], "communities": ["SHERPA"], "first": [11, 19], "ne": "ग्याल्पो ल्होसार", "en": "Gyalpo Lhosar"},
-    {"clause": "2.2 (ञ)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
+    {"clause": "2.2 (ञ)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SIRAHA", "NP_SAPTARI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
     {"clause": "3 (क)", "scope": "WOMEN", "festivals": ["HARITALIKA"], "first": [5, 24], "ne": "हरितालिका (तीज) व्रत", "en": "The Haritalika (Teej) vrata"},
     {"clause": "3 (ख)", "scope": "WOMEN", "festivals": ["JITIYA"], "first": [6, 13], "ne": "जितिया पर्व", "en": "Jitiya"},
     {"clause": "4", "scope": "SCHOOLS", "festivals": ["BASANTA_PANCHAMI"], "first": [10, 23], "ne": "बसन्त पञ्चमी", "en": "Basanta Panchami"},
@@ -44,6 +45,6 @@
     {"clause": "10 (घ)", "scope": "OFFICES_OPEN", "festivals": ["MARTYRS_DAY"], "first": [10, 16], "ne": "शहीद दिवस", "en": "Martyrs' Day"}
   ],
   "amendments": [
-    {"ADDS": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Falgun 18, 2078, on the Council of Ministers' decision of Falgun 16, 2078", "holiday": {"scope": "NATIONAL", "festivals": ["GYALPO_LHOSAR"], "first": [11, 19], "ne": "ग्याल्पो ल्होसार", "en": "Gyalpo Lhosar"}}}
+    {"ADDS": {"by": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Falgun 18, 2078, on the Council of Ministers' decision of Falgun 16, 2078", "decided": [2078, 11, 16]}, "holiday": {"scope": "NATIONAL", "festivals": ["GYALPO_LHOSAR"], "first": [11, 19], "ne": "ग्याल्पो ल्होसार", "en": "Gyalpo Lhosar"}}}
   ]
 }

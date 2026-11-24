@@ -80,7 +80,10 @@ pub use ekadashi::{
 };
 pub use following::{FollowingRule, following};
 pub use group::{FestivalGroup, GroupDay, GroupMember, GroupSpan, group_spans};
-pub use holiday::{Holiday, HolidayNotice, HolidaySet, nepal_gazette_scope};
+pub use holiday::{
+    Holiday, HolidayChange, HolidayChangeKind, HolidayDocument, HolidayNotice, HolidaySet,
+    HolidayYear, RestDay, nepal_gazette_scope,
+};
 pub use in_month::InMonth;
 pub use malamasa::{Malamasa, MalamasaClause};
 pub use meta::{

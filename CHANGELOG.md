@@ -24,6 +24,19 @@ the previous release, not by nobody having looked.
   together in every other year from 1800 to 2399.
   Numbers: the Nepal Sambat new year and the Nepal Sambat year of the days
   of an adhika Kartika; nothing else.
+- **A holiday notice's own record (SR-163).** Each holiday carries its
+  `clause`, its `districts` (region keys such as `NP_JHAPA`, named in every
+  locale) and `changes`: what a later decision did (`ADDED`, `DATED`,
+  `CANCELLED`, `RESCOPED`), with the decision's document. The pack listing
+  gains `holidayYears`, each notice's and decision's address, file SHA-256
+  and retrieval day, and `restDays`: Saturday for everyone, and Sunday for
+  government offices and educational institutions from Chaitra 23, 2082
+  (`holiday_scope.OFFICES_AND_SCHOOLS`, new). VS 2083 gains the cabinet's
+  decision of Bhadra 18: Gen Z Martyrs' Day a public holiday, and Bhadra 22
+  a day of national mourning kept with offices open (C2419). Regions and
+  communities are named in Hindi and Sanskrit.
+  Numbers: `GEN_Z_MARTYRS_DAY`'s tier, now national by VS 2083's latest
+  decision; nothing reckoned.
 
 - **The maha punya kala (SR-160).** A sankranti's punya kala now carries
   `maha`, the five nadis of the window nearest the entry, which the

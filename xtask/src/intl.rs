@@ -453,23 +453,13 @@ fn no_two_festivals_share_a_name(tree: &Tree) -> usize {
 /// fails, and so does a count that is now too high, so the list can only
 /// shrink. `festival` may never stand here (C2080).
 pub(crate) const LATIN_FALLBACK: &[(&str, &[(&str, usize)])] = &[
-    (
-        "hi-Deva-IN",
-        &[
-            ("community", 28),
-            ("era", 10),
-            ("festival_kind", 4),
-            ("region", 19),
-        ],
-    ),
+    ("hi-Deva-IN", &[("era", 10), ("festival_kind", 4)]),
     (
         "sa-Deva",
         &[
-            ("community", 28),
             ("era", 11),
             ("festival_kind", 4),
             ("mundane_kind", 13),
-            ("region", 19),
             ("tradition", 7),
         ],
     ),
