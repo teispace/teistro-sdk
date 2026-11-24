@@ -79,7 +79,7 @@ locale-sa-deva = ["teistro/locale-sa-deva"]
 locale-sa-latn = ["teistro/locale-sa-latn"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["teistro/full", "locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rashifal-reading", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area, and the document reader only it uses.
 chart = ["teistro/chart", "dep:teistro-serial"]
 kp = ["chart", "teistro/kp"]
@@ -90,6 +90,8 @@ pakshi = ["chart", "teistro/pakshi"]
 prashna = ["chart", "teistro/prashna"]
 rectification = ["chart", "teistro/rectification"]
 rashifal = ["chart", "teistro/rashifal"]
+# The rashifal's reading voice (SR-152): `readings` in a rashifal batch.
+rashifal-reading = ["rashifal", "teistro/rashifal-reading"]
 remedies = ["chart", "teistro/remedies"]
 research = ["chart", "teistro/research"]
 svg = ["chart", "teistro/svg"]
