@@ -28736,6 +28736,11 @@
               "name": "uncertainty",
               "scalar": "u32",
               "doc": "How many rows of `uncertainty` belong to this day."
+            },
+            {
+              "name": "maha_punya_kala",
+              "scalar": "u32",
+              "doc": "How many rows of `maha_punya_kala` belong to this day."
             }
           ]
         },
@@ -30487,6 +30492,66 @@
               "name": "moonrise_seconds",
               "scalar": "f64",
               "doc": "The one-sigma band of the moonrise and moonset, seconds."
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "name": "maha_punya_kala",
+          "doc": "The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The sign the Sun entered.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            },
+            {
+              "name": "margin_minutes",
+              "scalar": "f64",
+              "doc": "How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."
             }
           ]
         }

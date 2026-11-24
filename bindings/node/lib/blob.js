@@ -2070,6 +2070,7 @@ export function decodePanchanga(bytes) {
       markers: column(blob, at, 27, 'u32', at.count),
       gowri: column(blob, at, 28, 'u32', at.count),
       uncertainty: column(blob, at, 29, 'u32', at.count),
+      mahaPunyaKala: column(blob, at, 30, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2567,6 +2568,22 @@ export function decodePanchanga(bytes) {
       limbsSeconds: column(blob, at, 3, 'f64', at.count),
       sunriseSeconds: column(blob, at, 4, 'f64', at.count),
       moonriseSeconds: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 44, 'maha_punya_kala');
+    out.mahaPunyaKala = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      marginMinutes: column(blob, at, 9, 'f64', at.count),
       length: at.count,
     };
   }

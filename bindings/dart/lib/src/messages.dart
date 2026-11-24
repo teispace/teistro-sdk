@@ -3459,6 +3459,8 @@ final class MessagesSdkDay {
       _r.render('sdk.day.moonset', {'at': {r'$time': at.json}, 'when': when});
   String nakshatra({required String ends, required NakshatraKey nakshatra, required TimeValue until}) =>
       _r.render('sdk.day.nakshatra', {'ends': ends, 'nakshatra': {r'$entity': nakshatra.key}, 'until': {r'$time': until.json}});
+  String punyaKala({required TimeValue from, required TimeValue mahaFrom, required TimeValue mahaTo, required RashiKey rashi, required TimeValue to}) =>
+      _r.render('sdk.day.punyaKala', {'from': {r'$time': from.json}, 'mahaFrom': {r'$time': mahaFrom.json}, 'mahaTo': {r'$time': mahaTo.json}, 'rashi': {r'$entity': rashi.key}, 'to': {r'$time': to.json}});
   String ritu({required RituKey ritu}) =>
       _r.render('sdk.day.ritu', {'ritu': {r'$entity': ritu.key}});
   String sankranti({required TimeValue at, required RashiKey rashi, required String when}) =>

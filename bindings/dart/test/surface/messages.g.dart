@@ -151,6 +151,7 @@ final List<MessageSurface> messages = [
   MessageSurface('MessagesSdkDay.moonrise', (m) => m.sdk.day.moonrise, [Param('at', Scalar('TimeValue')), Param('when', Scalar('String'))]),
   MessageSurface('MessagesSdkDay.moonset', (m) => m.sdk.day.moonset, [Param('at', Scalar('TimeValue')), Param('when', Scalar('String'))]),
   MessageSurface('MessagesSdkDay.nakshatra', (m) => m.sdk.day.nakshatra, [Param('ends', Scalar('String')), Param('nakshatra', Members(NakshatraKey.values)), Param('until', Scalar('TimeValue'))]),
+  MessageSurface('MessagesSdkDay.punyaKala', (m) => m.sdk.day.punyaKala, [Param('from', Scalar('TimeValue')), Param('mahaFrom', Scalar('TimeValue')), Param('mahaTo', Scalar('TimeValue')), Param('rashi', Members(RashiKey.values)), Param('to', Scalar('TimeValue'))]),
   MessageSurface('MessagesSdkDay.ritu', (m) => m.sdk.day.ritu, [Param('ritu', Members(RituKey.values))]),
   MessageSurface('MessagesSdkDay.sankranti', (m) => m.sdk.day.sankranti, [Param('at', Scalar('TimeValue')), Param('rashi', Members(RashiKey.values)), Param('when', Scalar('String'))]),
   MessageSurface('MessagesSdkDay.sun', (m) => m.sdk.day.sun, [Param('rise', Scalar('TimeValue')), Param('set', Scalar('TimeValue'))]),

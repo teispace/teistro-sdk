@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 535 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 536 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -370,6 +370,13 @@ fn every_typed_message_renders_from_the_sdk_sources() {
         ends: String::from("ends"),
         nakshatra: teistro_core::catalogue::Nakshatra::ALL[0],
         until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::day::PunyaKala {
+        from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        maha_from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        maha_to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
     }, false);
     renders(&intl, &teistro_intl::messages::sdk::day::Ritu { ritu: teistro_core::catalogue::Ritu::ALL[0] }, false);
     renders(&intl, &teistro_intl::messages::sdk::day::Sankranti {

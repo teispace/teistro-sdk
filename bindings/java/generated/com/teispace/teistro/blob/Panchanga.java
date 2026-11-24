@@ -64,6 +64,7 @@ public final class Panchanga {
     private final Markers markers;
     private final Gowri gowri;
     private final Uncertainty uncertainty;
+    private final MahaPunyaKala mahaPunyaKala;
 
     private Panchanga(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -116,6 +117,7 @@ public final class Panchanga {
         this.markers = new Markers(blob, 41, "markers");
         this.gowri = new Gowri(blob, 42, "gowri");
         this.uncertainty = new Uncertainty(blob, 43, "uncertainty");
+        this.mahaPunyaKala = new MahaPunyaKala(blob, 44, "maha_punya_kala");
     }
 
     /**
@@ -563,6 +565,15 @@ public final class Panchanga {
      */
     public Uncertainty uncertainty() {
         return uncertainty;
+    }
+
+    /**
+     * The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.
+     *
+     * @return the mahaPunyaKala
+     */
+    public MahaPunyaKala mahaPunyaKala() {
+        return mahaPunyaKala;
     }
 
 
@@ -1022,6 +1033,7 @@ public final class Panchanga {
         private final int markersAt;
         private final int gowriAt;
         private final int uncertaintyAt;
+        private final int mahaPunyaKalaAt;
 
         Counts(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1057,6 +1069,7 @@ public final class Panchanga {
             this.markersAt = blob.column(at, 27, 4);
             this.gowriAt = blob.column(at, 28, 4);
             this.uncertaintyAt = blob.column(at, 29, 4);
+            this.mahaPunyaKalaAt = blob.column(at, 30, 4);
         }
 
         /**
@@ -1396,6 +1409,17 @@ public final class Panchanga {
          */
         public long uncertainty(int row) {
             return Integer.toUnsignedLong(bytes.getInt(uncertaintyAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * How many rows of `maha_punya_kala` belong to this day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long mahaPunyaKala(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(mahaPunyaKalaAt + Objects.checkIndex(row, length) * 4));
         }
     }
 
@@ -5573,6 +5597,165 @@ public final class Panchanga {
          */
         public double moonriseSeconds(int row) {
             return bytes.getDouble(moonriseSecondsAt + Objects.checkIndex(row, length) * 8);
+        }
+    }
+
+    /**
+     * The `maha_punya_kala` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.
+     */
+    public static final class MahaPunyaKala {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int memberAt;
+        private final int wholeFromAt;
+        private final int wholeToAt;
+        private final int insideFromAt;
+        private final int insideToAt;
+        private final int sunrisesAt;
+        private final int endsGhatiAt;
+        private final int endsPalaAt;
+        private final int endsVipalaAt;
+        private final int marginMinutesAt;
+
+        MahaPunyaKala(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.memberAt = blob.column(at, 0, 2);
+            this.wholeFromAt = blob.column(at, 1, 8);
+            this.wholeToAt = blob.column(at, 2, 8);
+            this.insideFromAt = blob.column(at, 3, 8);
+            this.insideToAt = blob.column(at, 4, 8);
+            this.sunrisesAt = blob.column(at, 5, 1);
+            this.endsGhatiAt = blob.column(at, 6, 1);
+            this.endsPalaAt = blob.column(at, 7, 1);
+            this.endsVipalaAt = blob.column(at, 8, 1);
+            this.marginMinutesAt = blob.column(at, 9, 8);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The sign the Sun entered.
+         *
+         * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int member(int row) {
+            return Short.toUnsignedInt(bytes.getShort(memberAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeFrom(int row) {
+            return bytes.getDouble(wholeFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeTo(int row) {
+            return bytes.getDouble(wholeToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day begins: what an almanac row prints.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideFrom(int row) {
+            return bytes.getDouble(insideFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day ends.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideTo(int row) {
+            return bytes.getDouble(insideToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+         *
+         * The id of a {@code Sunrises}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sunrises(int row) {
+            return Byte.toUnsignedInt(bytes.get(sunrisesAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsGhati(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsGhatiAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And palas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsPala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsPalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And vipalas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsVipala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double marginMinutes(int row) {
+            return bytes.getDouble(marginMinutesAt + Objects.checkIndex(row, length) * 8);
         }
     }
 }

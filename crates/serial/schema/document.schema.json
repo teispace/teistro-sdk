@@ -6992,6 +6992,10 @@
     "PunyaKala": {
       "description": "A sankranti's punya kala, on the day it falls.",
       "properties": {
+        "maha": {
+          "$ref": "#/$defs/Interval",
+          "description": "The maha punya kala: the five ghatis of the window nearest the entry, or the whole window when it is shorter (the module's step 4). After the entry for a window that follows it, before it for one that precedes it, and around it for the equinoxes."
+        },
         "sankranti": {
           "$ref": "#/$defs/JulianDay",
           "description": "When the Sun entered the sign, which may be in the night before or after the day."
@@ -7003,7 +7007,8 @@
       },
       "required": [
         "sankranti",
-        "span"
+        "span",
+        "maha"
       ],
       "type": "object"
     },

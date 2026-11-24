@@ -7859,6 +7859,7 @@ final class PanchangaCounts {
     required this.markers,
     required this.gowri,
     required this.uncertainty,
+    required this.mahaPunyaKala,
     required this.length,
   });
 
@@ -7951,6 +7952,9 @@ final class PanchangaCounts {
 
   /// How many rows of `uncertainty` belong to this day.
   final Uint32List uncertainty;
+
+  /// How many rows of `maha_punya_kala` belong to this day.
+  final Uint32List mahaPunyaKala;
 
   /// The number of rows every column holds.
   final int length;
@@ -9366,6 +9370,59 @@ final class PanchangaUncertainty {
   final int length;
 }
 
+/// The `maha_punya_kala` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.
+final class PanchangaMahaPunyaKala {
+  const PanchangaMahaPunyaKala({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.marginMinutes,
+    required this.length,
+  });
+
+  /// The sign the Sun entered.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95).
+  final Float64List marginMinutes;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -9419,6 +9476,7 @@ final class Panchanga {
     required this.markers,
     required this.gowri,
     required this.uncertainty,
+    required this.mahaPunyaKala,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -9565,6 +9623,9 @@ final class Panchanga {
   /// Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day.
   final PanchangaUncertainty uncertainty;
 
+  /// The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.
+  final PanchangaMahaPunyaKala mahaPunyaKala;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -9615,6 +9676,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atMarkers = blob.section(41, 'markers');
   final atGowri = blob.section(42, 'gowri');
   final atUncertainty = blob.section(43, 'uncertainty');
+  final atMahaPunyaKala = blob.section(44, 'maha_punya_kala');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -9685,6 +9747,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       markers: blob.column(atCounts, 27, 4, Uint32List.sublistView),
       gowri: blob.column(atCounts, 28, 4, Uint32List.sublistView),
       uncertainty: blob.column(atCounts, 29, 4, Uint32List.sublistView),
+      mahaPunyaKala: blob.column(atCounts, 30, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -10063,6 +10126,19 @@ Panchanga decodePanchanga(Uint8List bytes) {
       sunriseSeconds: blob.column(atUncertainty, 4, 8, Float64List.sublistView),
       moonriseSeconds: blob.column(atUncertainty, 5, 8, Float64List.sublistView),
       length: atUncertainty.count,
+    ),
+    mahaPunyaKala: PanchangaMahaPunyaKala(
+      member: blob.column(atMahaPunyaKala, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atMahaPunyaKala, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atMahaPunyaKala, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atMahaPunyaKala, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atMahaPunyaKala, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atMahaPunyaKala, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atMahaPunyaKala, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atMahaPunyaKala, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atMahaPunyaKala, 8, 1, Uint8List.sublistView),
+      marginMinutes: blob.column(atMahaPunyaKala, 9, 8, Float64List.sublistView),
+      length: atMahaPunyaKala.count,
     ),
   );
 }

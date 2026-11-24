@@ -4928,6 +4928,54 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.day.punyaKala`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::PunyaKala;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage};
+        ///
+        /// let message = PunyaKala {
+        ///     from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     maha_from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     maha_to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        ///     to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(PunyaKala::KEY, "sdk.day.punyaKala");
+        /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct PunyaKala {
+            /// The `from` parameter.
+            pub from: crate::ClockTime,
+            /// The `mahaFrom` parameter.
+            pub maha_from: crate::ClockTime,
+            /// The `mahaTo` parameter.
+            pub maha_to: crate::ClockTime,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+            /// The `to` parameter.
+            pub to: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for PunyaKala {
+            const KEY: &'static str = "sdk.day.punyaKala";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("from", crate::Value::Time(self.from)),
+                    ("mahaFrom", crate::Value::Time(self.maha_from)),
+                    ("mahaTo", crate::Value::Time(self.maha_to)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                    ("to", crate::Value::Time(self.to)),
+                ])
+            }
+        }
+
         /// The message `sdk.day.ritu`.
         ///
         /// ```

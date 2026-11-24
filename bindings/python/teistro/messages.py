@@ -17867,6 +17867,13 @@ class MessagesSdkDay:
             {"ends": ends, "nakshatra": {"$entity": nakshatra.value}, "until": {"$time": until}},
         )
 
+    def punya_kala(self, *, from_: TimeValue, maha_from: TimeValue, maha_to: TimeValue, rashi: RashiKey, to: TimeValue) -> str:
+        """`sdk.day.punyaKala`"""
+        return self._r.render(
+            "sdk.day.punyaKala",
+            {"from": {"$time": from_}, "mahaFrom": {"$time": maha_from}, "mahaTo": {"$time": maha_to}, "rashi": {"$entity": rashi.value}, "to": {"$time": to}},
+        )
+
     def ritu(self, *, ritu: RituKey) -> str:
         """`sdk.day.ritu`"""
         return self._r.render(

@@ -206,6 +206,7 @@ export function messages(r) {
         moonrise: (p) => r.render('sdk.day.moonrise', { at: { '$time': p.at }, when: p.when }),
         moonset: (p) => r.render('sdk.day.moonset', { at: { '$time': p.at }, when: p.when }),
         nakshatra: (p) => r.render('sdk.day.nakshatra', { ends: p.ends, nakshatra: { '$entity': p.nakshatra }, until: { '$time': p.until } }),
+        punyaKala: (p) => r.render('sdk.day.punyaKala', { from: { '$time': p.from }, mahaFrom: { '$time': p.mahaFrom }, mahaTo: { '$time': p.mahaTo }, rashi: { '$entity': p.rashi }, to: { '$time': p.to } }),
         ritu: (p) => r.render('sdk.day.ritu', { ritu: { '$entity': p.ritu } }),
         sankranti: (p) => r.render('sdk.day.sankranti', { at: { '$time': p.at }, rashi: { '$entity': p.rashi }, when: p.when }),
         sun: (p) => r.render('sdk.day.sun', { rise: { '$time': p.rise }, set: { '$time': p.set } }),

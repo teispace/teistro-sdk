@@ -8219,6 +8219,9 @@ class PanchangaCounts:
     uncertainty: memoryview[int]
     """How many rows of `uncertainty` belong to this day."""
 
+    maha_punya_kala: memoryview[int]
+    """How many rows of `maha_punya_kala` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9349,6 +9352,48 @@ class PanchangaUncertainty:
 
 
 @dataclass(frozen=True)
+class PanchangaMahaPunyaKala:
+    """The `maha_punya_kala` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.
+    """
+
+    member: memoryview[int]
+    """The sign the Sun entered."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    margin_minutes: memoryview[float]
+    """How close the member's end came to deciding which day it names: the minutes from the nearer of the day's two sunrises (its own and the next) to `whole_to`, positive when it ends after that sunrise and negative before it (SR-95)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -9499,6 +9544,9 @@ class Panchanga:
     uncertainty: PanchangaUncertainty
     """Each day's times' one-sigma band from Delta T, when `sections` asked for `TS_PANCHANGA_UNCERTAINTY` (SR-104, `time-and-timezone.md` §3.5): a limb's end, a sankranti and a lunation are fixed in TT, so their civil times take on Delta T's whole uncertainty; a rise is fixed by the Earth's turning and takes on only the body's mean motion's share of it, about a 365th for the Sun and a 26th for the Moon. At most one row a day."""
 
+    maha_punya_kala: PanchangaMahaPunyaKala
+    """The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9551,6 +9599,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_markers = blob.section(41, "markers")
     at_gowri = blob.section(42, "gowri")
     at_uncertainty = blob.section(43, "uncertainty")
+    at_maha_punya_kala = blob.section(44, "maha_punya_kala")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9666,6 +9715,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             gowri=blob.column(at_counts, 28, 4, at_counts.count).cast("I"),
             uncertainty=blob.column(
                 at_counts, 29, 4, at_counts.count
+            ).cast("I"),
+            maha_punya_kala=blob.column(
+                at_counts, 30, 4, at_counts.count
             ).cast("I"),
             length=at_counts.count,
         ),
@@ -10457,6 +10509,39 @@ def decode_panchanga(raw: bytes) -> Panchanga:
                 at_uncertainty, 5, 8, at_uncertainty.count
             ).cast("d"),
             length=at_uncertainty.count,
+        ),
+        maha_punya_kala=PanchangaMahaPunyaKala(
+            member=blob.column(
+                at_maha_punya_kala, 0, 2, at_maha_punya_kala.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_maha_punya_kala, 1, 8, at_maha_punya_kala.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_maha_punya_kala, 2, 8, at_maha_punya_kala.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_maha_punya_kala, 3, 8, at_maha_punya_kala.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_maha_punya_kala, 4, 8, at_maha_punya_kala.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_maha_punya_kala, 5, 1, at_maha_punya_kala.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_maha_punya_kala, 6, 1, at_maha_punya_kala.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_maha_punya_kala, 7, 1, at_maha_punya_kala.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_maha_punya_kala, 8, 1, at_maha_punya_kala.count
+            ).cast("B"),
+            margin_minutes=blob.column(
+                at_maha_punya_kala, 9, 8, at_maha_punya_kala.count
+            ).cast("d"),
+            length=at_maha_punya_kala.count,
         ),
     )
 

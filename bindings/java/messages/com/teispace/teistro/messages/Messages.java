@@ -6110,6 +6110,20 @@ public final class Messages {
             }
 
             /**
+             * `sdk.day.punyaKala`
+             *
+             * @param from `from`
+             * @param mahaFrom `mahaFrom`
+             * @param mahaTo `mahaTo`
+             * @param rashi `rashi`
+             * @param to `to`
+             * @return the text
+             */
+            public String punyaKala(TimeValue from, TimeValue mahaFrom, TimeValue mahaTo, RashiKey rashi, TimeValue to) {
+                return r.render("sdk.day.punyaKala", Map.ofEntries(Map.entry("from", Map.of("$time", from.json())), Map.entry("mahaFrom", Map.of("$time", mahaFrom.json())), Map.entry("mahaTo", Map.of("$time", mahaTo.json())), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("to", Map.of("$time", to.json()))));
+            }
+
+            /**
              * `sdk.day.ritu`
              *
              * @param ritu `ritu`

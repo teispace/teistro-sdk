@@ -6,6 +6,7 @@
     clippy::unwrap_used,
     clippy::indexing_slicing,
     clippy::print_stdout,
+    clippy::panic,
     reason = "tests fail by panicking, index what they asked for, and the sweep prints what it measured"
 )]
 
@@ -166,6 +167,42 @@ fn the_tables_and_the_day_boundary_are_settings() {
     assert_eq!(windows(&shipped), windows(&midnight));
 }
 
+/// Why a window can keep another day than the month rule gives it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Parting {
+    /// Makara in the three ghatis after sunset, or Karka in the three
+    /// before sunrise (C2421).
+    Twilight,
+    /// An entry between the night's middle and the nearer clock midnight.
+    Midnight,
+}
+
+/// The parting an entry at `at` (a Julian day, `fraction` of its civil
+/// day gone) falls in, read from the days around it; nothing when it
+/// falls in neither.
+fn parting(days: &[Panchanga], sign: Rashi, at: f64, fraction: f64) -> Option<Parting> {
+    let ghatis = |a: f64, b: f64| (b - a) / GHATI;
+    let night = days
+        .iter()
+        .find(|d| d.day.sunset.get() <= at && at < d.day.next_sunrise.get())?;
+    let (sunset, sunrise) = (night.day.sunset.get(), night.day.next_sunrise.get());
+    let twilight = match sign {
+        Rashi::Capricorn => ghatis(sunset, at) < 3.0,
+        Rashi::Cancer => ghatis(at, sunrise) < 3.0,
+        _ => false,
+    };
+    if twilight {
+        return Some(Parting::Twilight);
+    }
+    // The clock midnight nearer the entry: the one its day began with,
+    // or, past noon, the one that ends it.
+    let began = at - fraction;
+    let clock_midnight = if fraction > 0.5 { began + 1.0 } else { began };
+    let middle = f64::midpoint(sunset, sunrise);
+    let (lo, hi) = (middle.min(clock_midnight), middle.max(clock_midnight));
+    (lo <= at && at <= hi).then_some(Parting::Midnight)
+}
+
 /// What the sweep found: the entries whose window fell on the day the
 /// month-start rule gives, and the two kinds that may not.
 #[derive(Debug, Default, PartialEq)]
@@ -263,30 +300,13 @@ fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
             next = days[2].sun.signs.last().unwrap().whole.to;
             continue;
         }
-        let ghatis = |a: f64, b: f64| (b - a) / GHATI;
-        let night_of = days
-            .iter()
-            .find(|d| d.day.sunset.get() <= next.get() && next.get() < d.day.next_sunrise.get());
-        let twilight = night_of.is_some_and(|d| match sign {
-            Rashi::Capricorn => ghatis(d.day.sunset.get(), next.get()) < 3.0,
-            Rashi::Cancer => ghatis(next.get(), d.day.next_sunrise.get()) < 3.0,
-            _ => false,
-        });
-        let midnight = night_of.is_some_and(|d| {
-            let middle = f64::midpoint(d.day.sunset.get(), d.day.next_sunrise.get());
-            let clock_midnight = next.get() - fraction;
-            let (lo, hi) = (middle.min(clock_midnight), middle.max(clock_midnight));
-            lo <= next.get() && next.get() <= hi
-        });
-        assert!(
-            twilight || midnight,
-            "{sign:?} at {next}: window on {:?}, the month on {year}-{month}-{on}",
-            day.day.date
-        );
-        if twilight {
-            swept.twilight += 1;
-        } else {
-            swept.midnight += 1;
+        match parting(&days, sign, next.get(), fraction) {
+            Some(Parting::Twilight) => swept.twilight += 1,
+            Some(Parting::Midnight) => swept.midnight += 1,
+            None => panic!(
+                "{sign:?} at {next}: window on {:?}, the month on {year}-{month}-{on}",
+                day.day.date
+            ),
         }
         next = days[2].sun.signs.last().unwrap().whole.to;
     }
