@@ -8483,22 +8483,38 @@
     "EXCELLENT": {
       "short": "Excellent",
       "name": "Excellent",
-      "prose": "excellent"
+      "prose": "excellent",
+      "day": "An excellent day",
+      "week": "An excellent week",
+      "month": "An excellent month",
+      "year": "An excellent year"
     },
     "GOOD": {
       "short": "Good",
       "name": "Good",
-      "prose": "good"
+      "prose": "good",
+      "day": "A good day",
+      "week": "A good week",
+      "month": "A good month",
+      "year": "A good year"
     },
     "MIXED": {
       "short": "Mixed",
       "name": "Mixed",
-      "prose": "mixed"
+      "prose": "mixed",
+      "day": "A mixed day",
+      "week": "A mixed week",
+      "month": "A mixed month",
+      "year": "A mixed year"
     },
     "CARE": {
       "short": "Care",
       "name": "A day for care",
-      "prose": "a day for care"
+      "prose": "a day for care",
+      "day": "A day for care",
+      "week": "A week for care",
+      "month": "A month for care",
+      "year": "A year for care"
     }
   },
   "holiday_scope": {

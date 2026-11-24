@@ -838,3 +838,40 @@ fn every_reading_renders_in_all_four_languages() {
         said.len()
     );
 }
+
+/// Each band is named for each period a score is weighed for, in every
+/// locale the consumer shows (SR-162): a year's reading never says "a day".
+#[test]
+fn every_band_is_named_for_every_period() {
+    let periods = [
+        Period::Daily,
+        Period::Weekly,
+        Period::Monthly,
+        Period::Yearly,
+    ];
+    for locale in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN", "sa-Deva", "sa-Latn"] {
+        let sdk = Context::builder().locale(locale).build().unwrap();
+        for band in ScoreBand::ALL {
+            let entity = sdk
+                .intl()
+                .entity(&format!("score_band.{}", band.key()))
+                .unwrap();
+            let names: Vec<&str> = periods
+                .iter()
+                .map(|period| {
+                    entity
+                        .form(period.band_form())
+                        .unwrap_or_else(|| panic!("{locale} {band:?} {period:?}"))
+                })
+                .collect();
+            let distinct: std::collections::BTreeSet<&&str> = names.iter().collect();
+            assert_eq!(distinct.len(), 4, "{locale} {band:?}: {names:?}");
+        }
+    }
+    let sdk = Context::builder().build().unwrap();
+    let care = sdk.intl().entity("score_band.CARE").unwrap();
+    assert_eq!(
+        care.form(Period::Yearly.band_form()),
+        Some("A year for care")
+    );
+}

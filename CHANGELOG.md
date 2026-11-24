@@ -37,6 +37,10 @@ the previous release, not by nobody having looked.
   communities are named in Hindi and Sanskrit.
   Numbers: `GEN_Z_MARTYRS_DAY`'s tier, now national by VS 2083's latest
   decision; nothing reckoned.
+- **A score band named for its period (SR-162).** `score_band` records
+  gain `day`, `week`, `month` and `year` forms in every locale, a baseline
+  score carries its `period`, and `band_form()` names the form to read.
+  Numbers: none.
 
 - **The maha punya kala (SR-160).** A sankranti's punya kala now carries
   `maha`, the five nadis of the window nearest the entry, which the
