@@ -10,7 +10,17 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.9
+
+The ninth release candidate of 1.0.0. It brings the days Nepal's calendars
+print that the SDK had not named: thirty-three international and keepers'
+days, thirty Newar, Tharu and vrata days with the fourteen manvadis, the
+other names Nepal gives its days, and the government's gazetted holidays for
+every year from VS 2076 to 2083. The rashifal scores its period as Nepal
+reads it (batch 1). It is released on GitHub only; no package goes to a
+registry.
+**Numbers:** measured against 1.0.0-rc.8's tree entry by entry: each entry
+below says what it moves.
 
 **Seventeen international and keepers' days Nepal's calendars print (C2345).**
 **Numbers:** 17 rules join `NEPAL_PANCHANGA`, 15 on a fixed Gregorian date and 2 on a
