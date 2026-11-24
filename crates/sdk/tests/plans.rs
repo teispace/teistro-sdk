@@ -1025,6 +1025,36 @@ fn an_answer_names_each_pack_that_shaped_it() {
     assert_eq!(stamped[0].hash.to_string(), loaded.sha256);
 }
 
+/// The day's panel reads in plain words from the states corpus: every
+/// choghadiya, beside the kaalas and the four limbs the baseline gave, has
+/// a short and a long reading in every locale the corpus carries
+/// (SR-155). The choghadiya's are the SDK's own, so this is what holds
+/// them: the migration keeps them, and nothing else would notice a gap.
+#[test]
+fn every_choghadiya_is_said_in_plain_words_in_every_locale() {
+    use teistro::catalogue::Choghadiya;
+
+    let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    let tree = teistro::Tree::load(&states).expect("the states corpus");
+    assert_eq!(tree.locales.len(), 5, "{:?}", tree.locales.keys());
+    for (tag, corpus) in &tree.locales {
+        let sdk = Context::builder().locale(tag).build().expect("a context");
+        let bytes = teistro::pack::build(corpus, "sdk.entity").expect("a pack");
+        sdk.intl().load_pack(&bytes).expect("the pack loads");
+        for member in Choghadiya::ALL {
+            let entity = sdk.intl().entity(member.full_key()).expect("a record");
+            for form in ["phala", "phalaProse"] {
+                let text = entity.forms.get(form).map_or("", String::as_str);
+                assert!(!text.trim().is_empty(), "{tag}: {member} has no `{form}`");
+            }
+            assert!(
+                entity.forms["phalaProse"].len() > entity.forms["phala"].len(),
+                "{tag}: {member}'s long reading is the shorter"
+            );
+        }
+    }
+}
+
 /// The transits are said one plan an instant, from the readings the same
 /// call hands back, so a consumer pays for the transits once and gets both
 /// the numbers and the words; the plan is the composer's over those

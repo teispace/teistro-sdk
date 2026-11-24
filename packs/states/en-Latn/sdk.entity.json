@@ -1029,6 +1029,36 @@
       "phalaProse": "The Yamaganda Kaal is the eighth-part of the day ruled by Yama, falling at a different time by weekday. It is to be avoided for beginning auspicious work and is especially prohibited for starting a journey — travel begun in it brings obstacles and distress, and the work tends to be fruitless. Being connected with Yama, the lord of death, it is shunned for auspicious occasions."
     }
   },
+  "choghadiya": {
+    "UDVEG": {
+      "phala": "Udveg, ruled by the Sun — a period of anxiety, avoided for auspicious beginnings.",
+      "phalaProse": "Udveg is the Sun’s choghadiya, named for agitation. Auspicious beginnings — a marriage, a house-entry, a new venture — are avoided in it. Work with the government and those in authority is held to go well, since the Sun rules office."
+    },
+    "CHAR": {
+      "phala": "Char, ruled by Venus — a movable period, good for travel.",
+      "phalaProse": "Char is Venus’s choghadiya, named for motion. It suits whatever moves: setting out on a journey, buying a vehicle, and work that changes place. For things meant to stay fixed it is middling rather than ill."
+    },
+    "LAABH": {
+      "phala": "Laabh, ruled by Mercury — a period of gain, good for trade and study.",
+      "phalaProse": "Laabh is Mercury’s choghadiya, named for gain. It favours business, buying and selling, accounts, beginning studies and learning a skill; what is begun in it is expected to profit."
+    },
+    "AMRIT": {
+      "phala": "Amrit, ruled by the Moon — nectar, the best period, good for every work.",
+      "phalaProse": "Amrit is the Moon’s choghadiya, named for nectar, and the most auspicious of the seven. Every kind of good work may be begun in it: ceremonies, travel, trade, medicine and new undertakings alike."
+    },
+    "KAAL": {
+      "phala": "Kaal, ruled by Saturn — a period of loss, avoided for auspicious work.",
+      "phalaProse": "Kaal is Saturn’s choghadiya, named for time and death. Auspicious beginnings are avoided in it, for loss is expected to follow. Labour, repair and work that gathers or stores wealth are held to be the exception."
+    },
+    "SHUBHA": {
+      "phala": "Shubha, ruled by Jupiter — an auspicious period, good for ceremonies.",
+      "phalaProse": "Shubha is Jupiter’s choghadiya, named for the auspicious. It favours marriage, religious rites, worship, education and every ceremony; teachers and elders are best approached in it."
+    },
+    "ROG": {
+      "phala": "Rog, ruled by Mars — a period of illness, avoided for auspicious work.",
+      "phalaProse": "Rog is Mars’s choghadiya, named for disease. Auspicious beginnings, travel and the start of a treatment are avoided in it. Contests, disputes and work against an opponent are held to be the exception."
+    }
+  },
   "rashi": {
     "AQUARIUS": {
       "ishtaDevata": "For Karakamsha in Aquarius, the Ishta-devata is Saturn / Shiva.",

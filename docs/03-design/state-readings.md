@@ -198,6 +198,19 @@ that names none and is not there fails. Without it a corpus with three
 known gaps would fail the migration on every run, and the pressure would
 be to widen the check rather than to record the gaps.
 
+**A subject the corpus never described is written here, beside it.** The
+baseline has no reading of the seven choghadiya, and the day's panel
+asks for them in the same words as the kaalas beside them (SR-155). They
+are `phala` and `phalaProse` on `choghadiya.<KEY>`, written in English,
+Hindi, Nepali and Sanskrit with `sa-Latn` derived as the rest is; no
+category maps onto them, so the migration keeps them as it keeps any
+record it did not write, and `every_choghadiya_is_said_in_plain_words_in_every_locale`
+(`crates/sdk/tests/plans.rs`) holds them, since no gate on the migration
+would see one go missing. The meanings follow each choghadiya's lord and
+the catalogue's `auspicious`: Amrit, Shubha, Laabh and Char for good
+work, Udveg, Kaal and Rog avoided, each with the work the tradition
+excepts.
+
 **The form is written beside the category and not derived from it**, for
 the same reason the keys are. A reading's passage and its facets take the
 same word with a suffix (`phala`, `phalaProse`, `phalaGeneral`), so a
