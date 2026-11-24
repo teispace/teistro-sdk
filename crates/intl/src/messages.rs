@@ -12414,5 +12414,2509 @@ pub mod sdk {
 
     }
 
+    /// The `voice` group.
+    pub mod voice {
+        /// The `rashifal` group.
+        pub mod rashifal {
+            /// The `area` group.
+            pub mod area {
+                /// The `HEALTH` group.
+                pub mod health {
+                    /// The message `sdk.voice.rashifal.area.HEALTH.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::health::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.area.HEALTH.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.HEALTH.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.HEALTH.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::health::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.area.HEALTH.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.HEALTH.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.HEALTH.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::health::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.area.HEALTH.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.HEALTH.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.HEALTH.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::health::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.area.HEALTH.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.HEALTH.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `LOVE_FAMILY` group.
+                pub mod love_family {
+                    /// The message `sdk.voice.rashifal.area.LOVE_FAMILY.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::love_family::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.area.LOVE_FAMILY.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.LOVE_FAMILY.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::love_family::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.LOVE_FAMILY.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::love_family::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.area.LOVE_FAMILY.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.LOVE_FAMILY.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.LOVE_FAMILY.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::love_family::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.area.LOVE_FAMILY.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.LOVE_FAMILY.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `MONEY` group.
+                pub mod money {
+                    /// The message `sdk.voice.rashifal.area.MONEY.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::money::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.area.MONEY.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.MONEY.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.MONEY.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::money::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.area.MONEY.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.MONEY.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.MONEY.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::money::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.area.MONEY.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.MONEY.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.MONEY.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::money::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.area.MONEY.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.MONEY.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `WORK` group.
+                pub mod work {
+                    /// The message `sdk.voice.rashifal.area.WORK.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::work::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.area.WORK.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.WORK.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.WORK.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::work::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.area.WORK.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.WORK.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.WORK.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::work::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.area.WORK.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.WORK.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.area.WORK.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::area::work::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.area.WORK.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.area.WORK.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+            }
+
+            /// The message `sdk.voice.rashifal.best`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::rashifal::Best;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Best { best: String::from("best") };
+            /// assert_eq!(Best::KEY, "sdk.voice.rashifal.best");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Best {
+                /// The `best` parameter.
+                pub best: String,
+            }
+
+            impl crate::TypedMessage for Best {
+                const KEY: &'static str = "sdk.voice.rashifal.best";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("best", crate::Value::Str(self.best.clone())),
+                    ])
+                }
+            }
+
+            /// The `event` group.
+            pub mod event {
+                /// The `INGRESS` group.
+                pub mod ingress {
+                    /// The message `sdk.voice.rashifal.event.INGRESS.GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.INGRESS.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.event.INGRESS.NOT_GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct NotGood {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for NotGood {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.INGRESS.NOT_GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `STATION_DIRECT` group.
+                pub mod station_direct {
+                    /// The message `sdk.voice.rashifal.event.STATION_DIRECT.GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.STATION_DIRECT.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct NotGood {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for NotGood {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `STATION_RETROGRADE` group.
+                pub mod station_retrograde {
+                    /// The message `sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD`.
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct NotGood {
+                        /// The `date` parameter.
+                        pub date: teistro_calendar::CalendarDate,
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `rashi` parameter.
+                        pub rashi: teistro_core::catalogue::Rashi,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for NotGood {
+                        const KEY: &'static str = "sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("date", crate::Value::Date(self.date.clone())),
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("rashi", crate::Value::catalogued(self.rashi)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+            }
+
+            /// The `frame` group.
+            pub mod frame {
+                /// The message `sdk.voice.rashifal.frame.AFTER_MOON`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::AfterMoon;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = AfterMoon;
+                /// assert_eq!(AfterMoon::KEY, "sdk.voice.rashifal.frame.AFTER_MOON");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AfterMoon;
+
+                impl crate::TypedMessage for AfterMoon {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.AFTER_MOON";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.BEFORE_MOON`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::BeforeMoon;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = BeforeMoon;
+                /// assert_eq!(BeforeMoon::KEY, "sdk.voice.rashifal.frame.BEFORE_MOON");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BeforeMoon;
+
+                impl crate::TypedMessage for BeforeMoon {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.BEFORE_MOON";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.END`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::End;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = End;
+                /// assert_eq!(End::KEY, "sdk.voice.rashifal.frame.END");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct End;
+
+                impl crate::TypedMessage for End {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.END";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.FIRST_HALF`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::FirstHalf;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = FirstHalf;
+                /// assert_eq!(FirstHalf::KEY, "sdk.voice.rashifal.frame.FIRST_HALF");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct FirstHalf;
+
+                impl crate::TypedMessage for FirstHalf {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.FIRST_HALF";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.MIDDLE`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Middle;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Middle;
+                /// assert_eq!(Middle::KEY, "sdk.voice.rashifal.frame.MIDDLE");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Middle;
+
+                impl crate::TypedMessage for Middle {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.MIDDLE";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.QUARTER1`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Quarter1;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Quarter1;
+                /// assert_eq!(Quarter1::KEY, "sdk.voice.rashifal.frame.QUARTER1");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Quarter1;
+
+                impl crate::TypedMessage for Quarter1 {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.QUARTER1";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.QUARTER2`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Quarter2;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Quarter2;
+                /// assert_eq!(Quarter2::KEY, "sdk.voice.rashifal.frame.QUARTER2");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Quarter2;
+
+                impl crate::TypedMessage for Quarter2 {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.QUARTER2";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.QUARTER3`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Quarter3;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Quarter3;
+                /// assert_eq!(Quarter3::KEY, "sdk.voice.rashifal.frame.QUARTER3");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Quarter3;
+
+                impl crate::TypedMessage for Quarter3 {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.QUARTER3";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.QUARTER4`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Quarter4;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Quarter4;
+                /// assert_eq!(Quarter4::KEY, "sdk.voice.rashifal.frame.QUARTER4");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Quarter4;
+
+                impl crate::TypedMessage for Quarter4 {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.QUARTER4";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.SECOND_HALF`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::SecondHalf;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SecondHalf;
+                /// assert_eq!(SecondHalf::KEY, "sdk.voice.rashifal.frame.SECOND_HALF");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SecondHalf;
+
+                impl crate::TypedMessage for SecondHalf {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.SECOND_HALF";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.SLOW`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Slow;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Slow;
+                /// assert_eq!(Slow::KEY, "sdk.voice.rashifal.frame.SLOW");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Slow;
+
+                impl crate::TypedMessage for Slow {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.SLOW";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.START`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Start;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Start;
+                /// assert_eq!(Start::KEY, "sdk.voice.rashifal.frame.START");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Start;
+
+                impl crate::TypedMessage for Start {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.START";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.frame.WHOLE`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::frame::Whole;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Whole;
+                /// assert_eq!(Whole::KEY, "sdk.voice.rashifal.frame.WHOLE");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Whole;
+
+                impl crate::TypedMessage for Whole {
+                    const KEY: &'static str = "sdk.voice.rashifal.frame.WHOLE";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `headline` group.
+            pub mod headline {
+                /// The message `sdk.voice.rashifal.headline.CARE`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::headline::Care;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Care { period: String::from("period"), variant: 2 };
+                /// assert_eq!(Care::KEY, "sdk.voice.rashifal.headline.CARE");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Care {
+                    /// The `period` parameter.
+                    pub period: String,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Care {
+                    const KEY: &'static str = "sdk.voice.rashifal.headline.CARE";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("period", crate::Value::Str(self.period.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.headline.EXCELLENT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::headline::Excellent;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Excellent { period: String::from("period"), variant: 2 };
+                /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.headline.EXCELLENT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Excellent {
+                    /// The `period` parameter.
+                    pub period: String,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Excellent {
+                    const KEY: &'static str = "sdk.voice.rashifal.headline.EXCELLENT";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("period", crate::Value::Str(self.period.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.headline.GOOD`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::headline::Good;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Good { period: String::from("period"), variant: 2 };
+                /// assert_eq!(Good::KEY, "sdk.voice.rashifal.headline.GOOD");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Good {
+                    /// The `period` parameter.
+                    pub period: String,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Good {
+                    const KEY: &'static str = "sdk.voice.rashifal.headline.GOOD";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("period", crate::Value::Str(self.period.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.headline.MIXED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::headline::Mixed;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Mixed { period: String::from("period"), variant: 2 };
+                /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.headline.MIXED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Mixed {
+                    /// The `period` parameter.
+                    pub period: String,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Mixed {
+                    const KEY: &'static str = "sdk.voice.rashifal.headline.MIXED";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("period", crate::Value::Str(self.period.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.headline.SPLIT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::headline::Split;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Split { best: String::from("best"), variant: 2, worst: String::from("worst") };
+                /// assert_eq!(Split::KEY, "sdk.voice.rashifal.headline.SPLIT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Split {
+                    /// The `best` parameter.
+                    pub best: String,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                    /// The `worst` parameter.
+                    pub worst: String,
+                }
+
+                impl crate::TypedMessage for Split {
+                    const KEY: &'static str = "sdk.voice.rashifal.headline.SPLIT";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("best", crate::Value::Str(self.best.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                            ("worst", crate::Value::Str(self.worst.clone())),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The `line` group.
+            pub mod line {
+                /// The `HEALTH` group.
+                pub mod health {
+                    /// The message `sdk.voice.rashifal.line.HEALTH.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::health::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { house: 2, variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.line.HEALTH.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.HEALTH.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.HEALTH.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::health::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { house: 2, variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.line.HEALTH.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.HEALTH.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.HEALTH.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::health::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.line.HEALTH.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.HEALTH.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.HEALTH.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::health::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { house: 2, variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.line.HEALTH.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.HEALTH.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `LOVE_FAMILY` group.
+                pub mod love_family {
+                    /// The message `sdk.voice.rashifal.line.LOVE_FAMILY.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::love_family::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { house: 2, variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.line.LOVE_FAMILY.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.LOVE_FAMILY.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::love_family::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { house: 2, variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.LOVE_FAMILY.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::love_family::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.line.LOVE_FAMILY.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.LOVE_FAMILY.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.LOVE_FAMILY.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::love_family::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { house: 2, variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.line.LOVE_FAMILY.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.LOVE_FAMILY.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `MONEY` group.
+                pub mod money {
+                    /// The message `sdk.voice.rashifal.line.MONEY.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::money::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { house: 2, variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.line.MONEY.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.MONEY.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.MONEY.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::money::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { house: 2, variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.line.MONEY.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.MONEY.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.MONEY.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::money::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.line.MONEY.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.MONEY.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.MONEY.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::money::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { house: 2, variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.line.MONEY.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.MONEY.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `WORK` group.
+                pub mod work {
+                    /// The message `sdk.voice.rashifal.line.WORK.CARE`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::work::Care;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Care { house: 2, variant: 2 };
+                    /// assert_eq!(Care::KEY, "sdk.voice.rashifal.line.WORK.CARE");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Care {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Care {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.WORK.CARE";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.WORK.EXCELLENT`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::work::Excellent;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Excellent { house: 2, variant: 2 };
+                    /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.line.WORK.EXCELLENT");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Excellent {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Excellent {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.WORK.EXCELLENT";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.WORK.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::work::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.line.WORK.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.WORK.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.line.WORK.MIXED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::line::work::Mixed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Mixed { house: 2, variant: 2 };
+                    /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.line.WORK.MIXED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Mixed {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Mixed {
+                        const KEY: &'static str = "sdk.voice.rashifal.line.WORK.MIXED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+            }
+
+            /// The `moon` group.
+            pub mod moon {
+                /// The message `sdk.voice.rashifal.moon.GOOD`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::moon::Good;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Good {
+                ///     house: 2,
+                ///     time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+                ///     variant: 2,
+                /// };
+                /// assert_eq!(Good::KEY, "sdk.voice.rashifal.moon.GOOD");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Good {
+                    /// The `house` parameter.
+                    pub house: i64,
+                    /// The `time` parameter.
+                    pub time: crate::ClockTime,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Good {
+                    const KEY: &'static str = "sdk.voice.rashifal.moon.GOOD";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("house", crate::Value::Int(self.house)),
+                            ("time", crate::Value::Time(self.time)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.moon.NOT_GOOD`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::moon::NotGood;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = NotGood {
+                ///     house: 2,
+                ///     time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+                ///     variant: 2,
+                /// };
+                /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.moon.NOT_GOOD");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct NotGood {
+                    /// The `house` parameter.
+                    pub house: i64,
+                    /// The `time` parameter.
+                    pub time: crate::ClockTime,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for NotGood {
+                    const KEY: &'static str = "sdk.voice.rashifal.moon.NOT_GOOD";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("house", crate::Value::Int(self.house)),
+                            ("time", crate::Value::Time(self.time)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.voice.rashifal.nth`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::rashifal::Nth;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Nth { house: 2 };
+            /// assert_eq!(Nth::KEY, "sdk.voice.rashifal.nth");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Nth {
+                /// The `house` parameter.
+                pub house: i64,
+            }
+
+            impl crate::TypedMessage for Nth {
+                const KEY: &'static str = "sdk.voice.rashifal.nth";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("house", crate::Value::Int(self.house)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.voice.rashifal.theme`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::rashifal::Theme;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Theme { house: 2 };
+            /// assert_eq!(Theme::KEY, "sdk.voice.rashifal.theme");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Theme {
+                /// The `house` parameter.
+                pub house: i64,
+            }
+
+            impl crate::TypedMessage for Theme {
+                const KEY: &'static str = "sdk.voice.rashifal.theme";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("house", crate::Value::Int(self.house)),
+                    ])
+                }
+            }
+
+            /// The `week` group.
+            pub mod week {
+                /// The message `sdk.voice.rashifal.week.BEST_DAY`.
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BestDay {
+                    /// The `date` parameter.
+                    pub date: teistro_calendar::CalendarDate,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for BestDay {
+                    const KEY: &'static str = "sdk.voice.rashifal.week.BEST_DAY";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("date", crate::Value::Date(self.date.clone())),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.week.CARE`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::week::Care;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Care { variant: 2 };
+                /// assert_eq!(Care::KEY, "sdk.voice.rashifal.week.CARE");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Care {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Care {
+                    const KEY: &'static str = "sdk.voice.rashifal.week.CARE";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.week.EXCELLENT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::week::Excellent;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Excellent { variant: 2 };
+                /// assert_eq!(Excellent::KEY, "sdk.voice.rashifal.week.EXCELLENT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Excellent {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Excellent {
+                    const KEY: &'static str = "sdk.voice.rashifal.week.EXCELLENT";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.week.GOOD`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::week::Good;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Good { variant: 2 };
+                /// assert_eq!(Good::KEY, "sdk.voice.rashifal.week.GOOD");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Good {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Good {
+                    const KEY: &'static str = "sdk.voice.rashifal.week.GOOD";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.rashifal.week.MIXED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::week::Mixed;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Mixed { variant: 2 };
+                /// assert_eq!(Mixed::KEY, "sdk.voice.rashifal.week.MIXED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Mixed {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Mixed {
+                    const KEY: &'static str = "sdk.voice.rashifal.week.MIXED";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The `why` group.
+            pub mod why {
+                /// The message `sdk.voice.rashifal.why.MOON_TURN`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::why::MoonTurn;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MoonTurn {
+                ///     house: 2,
+                ///     time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+                ///     variant: 2,
+                /// };
+                /// assert_eq!(MoonTurn::KEY, "sdk.voice.rashifal.why.MOON_TURN");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonTurn {
+                    /// The `house` parameter.
+                    pub house: i64,
+                    /// The `time` parameter.
+                    pub time: crate::ClockTime,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for MoonTurn {
+                    const KEY: &'static str = "sdk.voice.rashifal.why.MOON_TURN";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("house", crate::Value::Int(self.house)),
+                            ("time", crate::Value::Time(self.time)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The `SATURN` group.
+                pub mod saturn {
+                    /// The message `sdk.voice.rashifal.why.SATURN.DHAIYA`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::saturn::Dhaiya;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Dhaiya { house: 2, variant: 2 };
+                    /// assert_eq!(Dhaiya::KEY, "sdk.voice.rashifal.why.SATURN.DHAIYA");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Dhaiya {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Dhaiya {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.SATURN.DHAIYA";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.why.SATURN.PEAK`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::saturn::Peak;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Peak { house: 2, variant: 2 };
+                    /// assert_eq!(Peak::KEY, "sdk.voice.rashifal.why.SATURN.PEAK");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Peak {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Peak {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.SATURN.PEAK";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.why.SATURN.RISING`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::saturn::Rising;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Rising { house: 2, variant: 2 };
+                    /// assert_eq!(Rising::KEY, "sdk.voice.rashifal.why.SATURN.RISING");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Rising {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Rising {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.SATURN.RISING";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.why.SATURN.SETTING`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::saturn::Setting;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Setting { house: 2, variant: 2 };
+                    /// assert_eq!(Setting::KEY, "sdk.voice.rashifal.why.SATURN.SETTING");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Setting {
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Setting {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.SATURN.SETTING";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+                /// The `TRANSIT` group.
+                pub mod transit {
+                    /// The message `sdk.voice.rashifal.why.TRANSIT.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::transit::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.why.TRANSIT.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.TRANSIT.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.why.TRANSIT.NOT_GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::transit::NotGood;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = NotGood { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 };
+                    /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.why.TRANSIT.NOT_GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct NotGood {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for NotGood {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.TRANSIT.NOT_GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::why::transit::Obstructed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Obstructed {
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(Obstructed::KEY, "sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Obstructed {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Obstructed {
+                        const KEY: &'static str = "sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+            }
+
+            /// The message `sdk.voice.rashifal.worst`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::rashifal::Worst;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Worst { worst: String::from("worst") };
+            /// assert_eq!(Worst::KEY, "sdk.voice.rashifal.worst");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Worst {
+                /// The `worst` parameter.
+                pub worst: String,
+            }
+
+            impl crate::TypedMessage for Worst {
+                const KEY: &'static str = "sdk.voice.rashifal.worst";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("worst", crate::Value::Str(self.worst.clone())),
+                    ])
+                }
+            }
+
+            /// The `year` group.
+            pub mod year {
+                /// The `SLOW` group.
+                pub mod slow {
+                    /// The message `sdk.voice.rashifal.year.SLOW.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::year::slow::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.year.SLOW.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Good {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Good {
+                        const KEY: &'static str = "sdk.voice.rashifal.year.SLOW.GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.year.SLOW.NOT_GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::year::slow::NotGood;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = NotGood { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 };
+                    /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.year.SLOW.NOT_GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct NotGood {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for NotGood {
+                        const KEY: &'static str = "sdk.voice.rashifal.year.SLOW.NOT_GOOD";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                    /// The message `sdk.voice.rashifal.year.SLOW.OBSTRUCTED`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::year::slow::Obstructed;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Obstructed {
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(Obstructed::KEY, "sdk.voice.rashifal.year.SLOW.OBSTRUCTED");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
+                    #[derive(Clone, Debug, PartialEq)]
+                    pub struct Obstructed {
+                        /// The `graha` parameter.
+                        pub graha: teistro_core::catalogue::Graha,
+                        /// The `house` parameter.
+                        pub house: i64,
+                        /// The `variant` parameter.
+                        pub variant: i64,
+                    }
+
+                    impl crate::TypedMessage for Obstructed {
+                        const KEY: &'static str = "sdk.voice.rashifal.year.SLOW.OBSTRUCTED";
+                        fn params(&self) -> crate::Params {
+                            crate::params([
+                                ("graha", crate::Value::catalogued(self.graha)),
+                                ("house", crate::Value::Int(self.house)),
+                                ("variant", crate::Value::Int(self.variant)),
+                            ])
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
 }
 

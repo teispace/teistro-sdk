@@ -53,7 +53,8 @@ final class _Checked implements intl.Renderer {
 }
 
 /// A value of an accessor's parameter: a member of an enum, the zone a
-/// zone names, an instant for a number, and text otherwise.
+/// zone names, an instant for a number, a date and a time of day, and text
+/// otherwise.
 Object _argument(Param parameter) => switch (parameter.shape) {
   Members(:final values) => values.first,
   Scalar(name: 'int') => 1,
@@ -61,6 +62,12 @@ Object _argument(Param parameter) => switch (parameter.shape) {
   Scalar(name: 'String') => parameter.name == 'zone' ? 'Asia/Kathmandu' : 'x',
   Scalar(name: 'List') => const <Object>['x'],
   Scalar(name: 'TimeValue') => const intl.TimeValue(hour: 6, minute: 5),
+  Scalar(name: 'DateValue') => const intl.DateValue(
+    calendar: 'GREGORIAN',
+    year: 2026,
+    month: 11,
+    day: 24,
+  ),
   final other =>
     throw StateError('no argument for ${parameter.name}, a $other'),
 };

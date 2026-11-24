@@ -675,7 +675,6 @@ fn every_word_a_rashifal_answer_carries_is_named_in_each_locale() {
 
 /// A batch asking for the reading voice with `readings`, its period the
 /// baseline's.
-#[cfg(feature = "rashifal-reading")]
 fn november_read(first: u8, last: u8, baseline: &str) -> RashifalBatch {
     RashifalBatch::from_json(&format!(
         r#"{{"periods": [{{"first": {{"year": 2026, "month": 11, "day": {first}}},
@@ -689,7 +688,6 @@ fn november_read(first: u8, last: u8, baseline: &str) -> RashifalBatch {
 /// The reading voice through the façade (`03-design/rashifal-reading.md`):
 /// twelve plans a period, every item naming facts the answer carries, a
 /// week's days read one by one and its best day only when one leads.
-#[cfg(feature = "rashifal-reading")]
 #[test]
 fn a_period_is_said_in_the_reading_voice_with_its_facts() {
     use teistro::interpret::rashifal_reading::{Fact, ReadingItem, ReadingPlan};
@@ -765,4 +763,77 @@ fn a_period_is_said_in_the_reading_voice_with_its_facts() {
         .unwrap()
         .value;
     assert!(plain[0].readings.is_none());
+}
+
+/// The voice packs say every plan (SR-152 S2): each intent the composer can
+/// name is in en-Latn and ne-Deva-NP, and every item of a month of days, its
+/// weeks, the month and a year renders in both with no warning, from the
+/// locale itself, marked draft until review (Q42).
+#[test]
+fn every_reading_renders_in_english_and_nepali() {
+    use teistro::interpret::rashifal_reading::{ReadingItem, intents};
+    const TAGS: [&str; 2] = ["en-Latn", "ne-Deva-NP"];
+    let sdk = context();
+    let engine = sdk.locale_engine();
+    let mut asked: Vec<RashifalBatch> = (1..=30)
+        .map(|day| november_read(day, day, "DAILY"))
+        .collect();
+    asked.extend([(1, 7), (8, 14), (15, 21), (22, 28)].map(|(a, b)| november_read(a, b, "WEEKLY")));
+    asked.push(november_read(1, 30, "MONTHLY"));
+    asked.push(
+        RashifalBatch::from_json(
+            r#"{"periods": [{"first": {"year": 2026, "month": 4, "day": 14},
+            "last": {"year": 2027, "month": 4, "day": 13},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700}], "baseline": "YEARLY", "readings": true}"#,
+        )
+        .unwrap(),
+    );
+    for tag in TAGS {
+        for key in intents() {
+            let rendered = engine.render_in(tag, &key, &teistro::Params::new());
+            assert_eq!(
+                rendered.resolved_from.as_deref(),
+                Some(tag),
+                "{tag} lacks {key}"
+            );
+        }
+    }
+    let mut said = std::collections::BTreeSet::new();
+    for batch in &asked {
+        for answer in sdk.chart().rashifal_answers(batch).unwrap().value {
+            for plan in answer.readings.expect("readings were asked for") {
+                let items: Vec<ReadingItem> = std::iter::once(plan.headline.clone())
+                    .chain(plan.parts.iter().flat_map(|part| part.items.clone()))
+                    .chain(plan.why.clone())
+                    .chain(plan.areas.iter().map(|area| area.note.clone()))
+                    .collect();
+                for item in items {
+                    said.insert(item.intent.clone());
+                    for tag in TAGS {
+                        let rendered = engine.render_in(tag, &item.intent, &item.params);
+                        assert!(
+                            rendered.warnings.is_empty(),
+                            "{tag} {}: {rendered:?}",
+                            item.intent
+                        );
+                        assert_eq!(
+                            rendered.resolved_from.as_deref(),
+                            Some(tag),
+                            "{tag} {}",
+                            item.intent
+                        );
+                        assert!(rendered.is_draft, "{tag} {} is unreviewed", item.intent);
+                        assert!(!rendered.text.contains('{'), "{tag}: {}", rendered.text);
+                    }
+                }
+            }
+        }
+    }
+    // A month of real skies reaches most of the voice, not a corner of it.
+    assert!(
+        said.len() >= 40,
+        "only {} intents said: {said:?}",
+        said.len()
+    );
 }

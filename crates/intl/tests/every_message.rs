@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 373 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 444 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -767,4 +767,95 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::UnknownTime, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::Schemes, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Care { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Excellent { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Good { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Mixed { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::love_family::Care { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::love_family::Excellent { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::love_family::Good { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::love_family::Mixed { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::money::Care { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::money::Excellent { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::money::Good { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::money::Mixed { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Care { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Excellent { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Good { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Mixed { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Best { best: String::from("best") }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::AfterMoon, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::BeforeMoon, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::End, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::FirstHalf, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Middle, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Quarter1, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Quarter2, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Quarter3, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Quarter4, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::SecondHalf, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Slow, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Start, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::Whole, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::headline::Care { period: String::from("period"), variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::headline::Excellent { period: String::from("period"), variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::headline::Good { period: String::from("period"), variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::headline::Mixed { period: String::from("period"), variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::headline::Split { best: String::from("best"), variant: 2, worst: String::from("worst") }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::health::Care { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::health::Excellent { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::health::Good { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::health::Mixed { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::love_family::Care { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::love_family::Excellent { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::love_family::Good { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::love_family::Mixed { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::money::Care { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::money::Excellent { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::money::Good { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::money::Mixed { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::work::Care { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::work::Excellent { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::work::Good { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::line::work::Mixed { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::moon::Good {
+        house: 2,
+        time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        variant: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::moon::NotGood {
+        house: 2,
+        time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        variant: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Nth { house: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Theme { house: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Care { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Excellent { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Good { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Mixed { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::MoonTurn {
+        house: 2,
+        time: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        variant: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::saturn::Dhaiya { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::saturn::Peak { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::saturn::Rising { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::saturn::Setting { house: 2, variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::transit::Good { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::transit::NotGood { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::why::transit::Obstructed {
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Worst { worst: String::from("worst") }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::year::slow::Good { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::year::slow::NotGood { graha: teistro_core::catalogue::Graha::ALL[0], house: 2, variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::year::slow::Obstructed {
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        variant: 2,
+    }, false);
 }

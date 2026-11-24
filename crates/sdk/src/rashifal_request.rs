@@ -486,7 +486,6 @@ pub struct RashifalAnswer {
     /// Each sign's period in the reading voice, Aries to Pisces, when the
     /// batch asked for it: intents a reading pack words, each naming the
     /// facts it rests on (`03-design/rashifal-reading.md`, SR-152).
-    #[cfg(feature = "rashifal-reading")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub readings: Option<Vec<teistro_interpret::rashifal_reading::ReadingPlan>>,
 }

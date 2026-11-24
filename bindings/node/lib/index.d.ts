@@ -1442,15 +1442,14 @@ export type ReadingFact =
 /**
  * One thing a reading says: an intent a reading pack words, its slots, how
  * firmly, and the facts it rests on; `sdk.intl.render(item.intent,
- * item.params)` says it in a locale whose pack carries the intent.
+ * item.params)` says it: the params carry its `hedge` and its `variant`, the
+ * seeded number a pack reads as one of its wordings.
  */
 export interface ReadingItem {
   readonly intent: string;
   readonly params: Readonly<Record<string, unknown>>;
   readonly hedge: ReadingHedge;
   readonly caution: boolean;
-  /** Which of the pack's wordings to say; a pack reads it modulo its count. */
-  readonly variant: number;
   readonly restsOn: readonly ReadingFact[];
 }
 

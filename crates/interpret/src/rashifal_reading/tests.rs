@@ -9,6 +9,7 @@ use teistro_core::quantity::JulianDay;
 use teistro_core::settings::ScoreBands;
 use teistro_gochar::Transit;
 use teistro_gochar::hits::{Hit, HitEvent, Motion};
+use teistro_intl::ClockTime;
 use teistro_rashifal::baseline::{BaselineScore, Panchanga, baseline_score};
 use teistro_rashifal::{Period, PeriodEvent, RashiReading, RashifalRules, rashifal};
 
@@ -104,6 +105,8 @@ fn plan(
         bands: ScoreBands::DEFAULT,
         moon_turn,
         days,
+        day_dates: &[],
+        event_dates: &[],
     })
 }
 
@@ -115,7 +118,7 @@ const PERIODS: [Period; 4] = [
 ];
 
 const TURN: MoonTurn = MoonTurn {
-    minutes: 805,
+    time: ClockTime::new(13, 25, 0),
     from_house: 3,
     to_house: 4,
     good_after: false,
@@ -228,7 +231,8 @@ fn the_same_period_reads_alike_and_the_next_day_differs() {
     for (a, b) in items(&today).into_iter().zip(items(&tomorrow)) {
         if a.intent == b.intent {
             assert_ne!(
-                a.variant, b.variant,
+                a.variant(),
+                b.variant(),
                 "{} reads alike two days running",
                 a.intent
             );
@@ -244,7 +248,7 @@ fn an_intent_said_twice_in_a_plan_is_worded_twice() {
         for (i, a) in said.iter().enumerate() {
             for b in &said[i + 1..] {
                 if a.intent == b.intent {
-                    assert_ne!(a.variant, b.variant, "{} repeats a wording", a.intent);
+                    assert_ne!(a.variant(), b.variant(), "{} repeats a wording", a.intent);
                 }
             }
         }
@@ -334,6 +338,61 @@ fn reading_is_reachable_by_its_public_name() {
         bands: ScoreBands::DEFAULT,
         moon_turn: None,
         days: &[],
+        day_dates: &[],
+        event_dates: &[],
     });
     assert_eq!(plan.rashi, Rashi::Aries);
+}
+
+#[test]
+fn every_item_carries_its_hedge_and_variant_as_slots() {
+    for read in &sky() {
+        for period in PERIODS {
+            let turn = (period == Period::Daily).then_some(TURN);
+            let plan = plan(read, period, 739_000, turn);
+            for item in items(&plan) {
+                assert!(item.variant().is_some(), "{} has no variant", item.intent);
+                assert_eq!(
+                    item.params.get("hedge"),
+                    Some(&teistro_intl::Value::from(item.hedge.key())),
+                    "{}'s hedge slot",
+                    item.intent
+                );
+                assert!(item.intent.starts_with("sdk.voice.rashifal."));
+            }
+        }
+    }
+}
+
+#[test]
+fn an_event_is_said_once_in_a_plan() {
+    for read in &sky() {
+        for period in [Period::Weekly, Period::Monthly, Period::Yearly] {
+            let plan = plan(read, period, 739_000, None);
+            for index in 0..read.events.len() {
+                let said = items(&plan)
+                    .into_iter()
+                    .filter(|item| item.rests_on.contains(&Fact::Event { index }))
+                    .count();
+                assert!(said <= 1, "{period:?} says event {index} {said} times");
+            }
+        }
+    }
+}
+
+#[test]
+fn every_intent_said_is_one_the_list_names() {
+    let known = super::intents();
+    for read in &sky() {
+        for period in PERIODS {
+            let turn = (period == Period::Daily).then_some(TURN);
+            for item in items(&plan(read, period, 739_000, turn)) {
+                assert!(
+                    known.contains(&item.intent),
+                    "{} is not listed",
+                    item.intent
+                );
+            }
+        }
+    }
 }

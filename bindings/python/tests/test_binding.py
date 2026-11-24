@@ -3079,7 +3079,12 @@ class AnEngine(WithLibrary):
                 self.assertEqual(len(voice.syllables), 9)
                 said_items = [voice.headline, *voice.why, *(i for part in voice.parts for i in part.items)]
                 self.assertTrue(all(item.rests_on for item in said_items))
-                self.assertTrue(all(item.intent.startswith("reading.rashifal.") for item in said_items))
+                self.assertTrue(all(item.intent.startswith("sdk.voice.rashifal.") for item in said_items))
+                for item in said_items:
+                    rendered = ctx.intl.render(item.intent, item.params)
+                    self.assertFalse(rendered.is_fallback, item.intent)
+                    self.assertEqual(rendered.warning_count, 0, item.intent)
+                    self.assertNotIn("{", rendered.text, item.intent)
                 if voice.best_day is not None:
                     self.assertLess(voice.best_day, 7)
             self.assertIsNone(read.readings, "the reading voice only when asked for")

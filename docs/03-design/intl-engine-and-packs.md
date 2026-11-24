@@ -303,7 +303,7 @@ panics (two property tests).
 | function | operand | options | selection keys | parameter type |
 |---|---|---|---|---|
 | `:string` | any | | the text | `string`, or the context whose name or values it selects with |
-| `:integer` | number | `select=ordinal`, `useGrouping=false`, `minimumIntegerDigits` | exact numeric match, then the plural category | integer |
+| `:integer` | number | `select=ordinal`, `useGrouping=false`, `minimumIntegerDigits`, `cycle=N` | exact numeric match, then the plural category; under `cycle=N`, the value modulo N alone (a pack's N wordings of one message, C2360) | integer |
 | `:number` | number | `minimumFractionDigits`, `maximumFractionDigits`, `useGrouping=false`, `minimumIntegerDigits`, `select=ordinal` | as `:integer`, on the visible digits | number |
 | `:dms` | degrees | `precision=deg\|min\|sec`, `signed=true` | | number |
 | `:zodiac` | ecliptic longitude | `form=degree-in-sign\|sign-degree`, `precision`, `signNames=name\|short\|glyph\|iast` | the sign's key | number |

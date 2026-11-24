@@ -11648,7 +11648,7 @@ void _engineTests() {
     );
     for (final reading in readings) {
       expect(reading.period, BaselinePeriod.weekly);
-      expect(reading.headline.intent, startsWith('reading.rashifal.'));
+      expect(reading.headline.intent, startsWith('sdk.voice.rashifal.'));
       expect(reading.parts.map((part) => part.frame).take(3), [
         ReadingFrame.start,
         ReadingFrame.middle,
@@ -11663,6 +11663,10 @@ void _engineTests() {
         for (final area in reading.areas) area.note,
       ]) {
         expect(item.restsOn, isNotEmpty, reason: item.intent);
+        final said = ctx.intl.render(item.intent, item.params);
+        expect(said.fallback, isFalse, reason: item.intent);
+        expect(said.warningCount, 0, reason: item.intent);
+        expect(said.text, isNot(contains('{')), reason: item.intent);
       }
     }
     expect(

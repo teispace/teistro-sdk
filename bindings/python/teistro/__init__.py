@@ -13962,14 +13962,13 @@ class ReadingFact:
 class ReadingItem:
     """One thing a reading says: an intent a reading pack words, its slots,
     how firmly, and the facts it rests on. `sdk.intl.render(item.intent,
-    item.params)` says it in a locale whose pack carries the intent."""
+    item.params)` says it: the params carry the item's `hedge` and its
+    `variant`, the seeded number a pack reads as one of its wordings."""
 
     intent: str
     params: Dict[str, Any]
     hedge: ReadingHedge
     caution: bool
-    variant: int
-    """Which of the pack's wordings to say; a pack reads it modulo its count."""
     rests_on: Tuple[ReadingFact, ...]
 
 
@@ -18038,7 +18037,6 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
             params=dict(one["params"]),
             hedge=one["hedge"],
             caution=bool(one["caution"]),
-            variant=one["variant"],
             rests_on=tuple(fact(f) for f in one["restsOn"]),
         )
 

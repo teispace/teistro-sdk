@@ -43,8 +43,7 @@ use crate::support::with_context;
 /// `readings` read for the period `baseline` names. A key it does not read, a last day before the first, a
 /// clock off the clock or a graha named twice is `INVALID_ARG`, named
 /// under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
-/// a build that leaves the `rashifal` family out, or asked for `readings`,
-/// the `rashifal-reading` family.
+/// a build that leaves the `rashifal` family out.
 ///
 /// ```
 /// # #[cfg(feature = "builtin-ephemeris")] {

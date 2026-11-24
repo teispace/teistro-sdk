@@ -1,0 +1,128 @@
+{
+  "rashifal": {
+    "nth": ".input {$house :integer} .match $house 1 {{पहिलो}} 2 {{दोस्रो}} 3 {{तेस्रो}} 4 {{चौथो}} 5 {{पाँचौं}} 6 {{छैटौं}} 7 {{सातौं}} 8 {{आठौं}} 9 {{नवौं}} 10 {{दसौं}} 11 {{एघारौं}} 12 {{बाह्रौं}} * {{{$house}औं}}",
+    "theme": ".input {$house :integer} .match $house 1 {{आफू, स्वास्थ्य र आत्मविश्वास}} 2 {{धन, बचत र बोली}} 3 {{साहस, भाइबहिनी र साना यात्रा}} 4 {{घर, आमा र मनको शान्ति}} 5 {{पढाइ, सन्तान र बुद्धि}} 6 {{प्रतिस्पर्धा, ऋण र दिनचर्या}} 7 {{जीवनसाथी र साझेदारी}} 8 {{अचानकका काम}} 9 {{भाग्य, धर्म र गुरु}} 10 {{काम र प्रतिष्ठा}} 11 {{आम्दानी, लाभ र साथी}} 12 {{खर्च, आराम र टाढाको यात्रा}} * {{आफू, स्वास्थ्य र आत्मविश्वास}}",
+    "best": ".input {$best :string} .match $best WORK {{पेशा}} MONEY {{धन}} LOVE_FAMILY {{सम्बन्ध र परिवार}} * {{स्वास्थ्य}}",
+    "worst": ".input {$worst :string} .match $worst WORK {{पेशा}} MONEY {{धन}} LOVE_FAMILY {{सम्बन्ध र परिवार}} * {{स्वास्थ्य}}",
+    "frame": {
+      "WHOLE": "समग्रमा",
+      "BEFORE_MOON": "दिनको पहिलो भाग",
+      "AFTER_MOON": "दिनको पछिल्लो भाग",
+      "START": "हप्ताको सुरुमा",
+      "MIDDLE": "हप्ताको बीचमा",
+      "END": "हप्ताको अन्त्यतिर",
+      "FIRST_HALF": "महिनाको पहिलो भाग",
+      "SECOND_HALF": "महिनाको पछिल्लो भाग",
+      "SLOW": "वर्षभरिका ढिला ग्रह",
+      "QUARTER1": "वर्षको पहिलो चौमासिक",
+      "QUARTER2": "वर्षको दोस्रो चौमासिक",
+      "QUARTER3": "वर्षको तेस्रो चौमासिक",
+      "QUARTER4": "वर्षको अन्तिम चौमासिक"
+    },
+    "headline": {
+      "EXCELLENT": ".input {$period :string} .input {$variant :integer cycle=3} .match $period $variant DAILY 0 {{आजको दिन उत्तम रहनेछ।}} DAILY 1 {{समग्रमा आजको दिन उत्तम रहने देखिन्छ।}} DAILY * {{आज योजनाअनुसार काम अघि बढ्नेछन्।}} WEEKLY 0 {{यो हप्ता उत्तम रहनेछ।}} WEEKLY 1 {{समग्रमा यो हप्ता उत्तम रहने देखिन्छ।}} WEEKLY * {{यो हप्ता योजनाअनुसार काम अघि बढ्नेछन्।}} MONTHLY 0 {{यो महिना उत्तम रहनेछ।}} MONTHLY 1 {{समग्रमा यो महिना उत्तम रहने देखिन्छ।}} MONTHLY * {{यो महिना योजनाअनुसार काम अघि बढ्नेछन्।}} * 0 {{यो वर्ष उत्तम रहनेछ।}} * 1 {{समग्रमा यो वर्ष उत्तम रहने देखिन्छ।}} * * {{यो वर्ष योजनाअनुसार काम अघि बढ्नेछन्।}}",
+      "GOOD": ".input {$period :string} .input {$variant :integer cycle=3} .match $period $variant DAILY 0 {{आजको दिन राम्रो रहनेछ।}} DAILY 1 {{समग्रमा आजको दिन राम्रो रहने देखिन्छ।}} DAILY * {{आज काम सहजै अघि बढ्नेछन्।}} WEEKLY 0 {{यो हप्ता राम्रो रहनेछ।}} WEEKLY 1 {{समग्रमा यो हप्ता राम्रो रहने देखिन्छ।}} WEEKLY * {{यो हप्ता काम सहजै अघि बढ्नेछन्।}} MONTHLY 0 {{यो महिना राम्रो रहनेछ।}} MONTHLY 1 {{समग्रमा यो महिना राम्रो रहने देखिन्छ।}} MONTHLY * {{यो महिना काम सहजै अघि बढ्नेछन्।}} * 0 {{यो वर्ष राम्रो रहनेछ।}} * 1 {{समग्रमा यो वर्ष राम्रो रहने देखिन्छ।}} * * {{यो वर्ष काम सहजै अघि बढ्नेछन्।}}",
+      "MIXED": ".input {$period :string} .input {$variant :integer cycle=2} .match $period $variant DAILY 0 {{समग्रमा आजको दिन मिश्रित रहने देखिन्छ।}} DAILY * {{आज केही काम बन्ने, केहीमा समय लाग्ने देखिन्छ।}} WEEKLY 0 {{समग्रमा यो हप्ता मिश्रित रहने देखिन्छ।}} WEEKLY * {{यो हप्ता केही काम बन्ने, केहीमा समय लाग्ने देखिन्छ।}} MONTHLY 0 {{समग्रमा यो महिना मिश्रित रहने देखिन्छ।}} MONTHLY * {{यो महिना केही काम बन्ने, केहीमा समय लाग्ने देखिन्छ।}} * 0 {{समग्रमा यो वर्ष मिश्रित रहने देखिन्छ।}} * * {{यो वर्ष केही काम बन्ने, केहीमा समय लाग्ने देखिन्छ।}}",
+      "CARE": ".input {$period :string} .input {$variant :integer cycle=2} .match $period $variant DAILY 0 {{आज धैर्य र सावधानीले अघि बढ्नु राम्रो हुनेछ।}} DAILY * {{आज बिस्तारै र सोचेर काम गर्दा राम्रो हुनेछ।}} WEEKLY 0 {{यो हप्ता धैर्य र सावधानीले अघि बढ्नु राम्रो हुनेछ।}} WEEKLY * {{यो हप्ता बिस्तारै र सोचेर काम गर्दा राम्रो हुनेछ।}} MONTHLY 0 {{यो महिना धैर्य र सावधानीले अघि बढ्नु राम्रो हुनेछ।}} MONTHLY * {{यो महिना बिस्तारै र सोचेर काम गर्दा राम्रो हुनेछ।}} * 0 {{यो वर्ष धैर्य र सावधानीले अघि बढ्नु राम्रो हुनेछ।}} * * {{यो वर्ष बिस्तारै र सोचेर काम गर्दा राम्रो हुनेछ।}}",
+      "SPLIT": ".input {$variant :integer cycle=2} .match $variant 0 {{{sdk.voice.rashifal.best :msg}मा साथ मिल्ने समय छ, {sdk.voice.rashifal.worst :msg}मा भने धैर्य चाहिन्छ।}} * {{{sdk.voice.rashifal.best :msg}मा सहजता, {sdk.voice.rashifal.worst :msg}मा धैर्य।}}"
+    },
+    "why": {
+      "TRANSIT": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा साथ।}} * {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा भएकाले {sdk.voice.rashifal.theme :msg}मा सहजता रहनेछ।}}",
+        "OBSTRUCTED": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा साथ छ, तर फल ढिलो मिल्न सक्छ।}} * {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा केही साथ, केही ढिलाइ।}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा धैर्य चाहिन्छ।}} * {{{$graha} {sdk.voice.rashifal.nth :msg} भावमा भएकाले {sdk.voice.rashifal.theme :msg}मा अलि बढी ध्यान दिनुहोला।}}"
+      },
+      "MOON_TURN": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$time}पछि चन्द्रमा {sdk.voice.rashifal.nth :msg} भावमा: ध्यान {sdk.voice.rashifal.theme :msg}तिर जानेछ।}} * {{चन्द्रमा {$time}मा {sdk.voice.rashifal.nth :msg} भावमा सर्छ, अनि ध्यान {sdk.voice.rashifal.theme :msg}तिर जानेछ।}}",
+      "SATURN": {
+        "RISING": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{शनि बाह्रौं भावमा, साढेसातीको पहिलो चरण: खर्च र आराममा ध्यान।}} * {{साढेसातीको पहिलो चरण: काम ढिलो भए पनि मेहनत खेर जाँदैन।}}",
+        "PEAK": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{शनि पहिलो भावमा, साढेसातीको मध्य चरण: मेहनत बढी, फल बिस्तारै।}} * {{साढेसातीको मध्य चरण: काम ढिलो भए पनि मेहनत खेर जाँदैन।}}",
+        "SETTING": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{शनि दोस्रो भावमा, साढेसातीको अन्तिम चरण: बिस्तारै सहजता।}} * {{साढेसातीको अन्तिम चरण: काम बिस्तारै सहज हुँदै जानेछन्।}}",
+        "DHAIYA": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 4 0 {{शनिको ढैया (कण्टक शनि): घर र मनको शान्तिमा समय दिनुहोला।}} 4 * {{शनि चौथो भावमा, ढैया: घरका काममा धैर्य राख्नुहोला।}} 8 0 {{शनिको ढैया (अष्टम शनि): अचानकका काममा धैर्य।}} 8 * {{शनि आठौं भावमा, ढैया: अचानक आएका काम शान्त भएर सम्हाल्नुहोला।}} * 0 {{शनि {sdk.voice.rashifal.nth :msg} भावमा: बिस्तारै, स्थिर मेहनतको समय।}} * * {{शनि {sdk.voice.rashifal.nth :msg} भावमा: बिस्तारै, स्थिर मेहनतको समय।}}"
+      }
+    },
+    "event": {
+      "INGRESS": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} {$rashi}मा प्रवेश गर्छ: {sdk.voice.rashifal.theme :msg}मा सुधार आउनेछ।}} * {{{$date}देखि {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा नयाँ मोड।}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} {$rashi}मा प्रवेश गर्छ: {sdk.voice.rashifal.theme :msg}मा ध्यान दिनुहोला।}} * {{{$date}देखि {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा धैर्य चाहिन्छ।}}"
+      },
+      "STATION_RETROGRADE": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} वक्री हुन्छ: {sdk.voice.rashifal.theme :msg}का पुराना काम फेरि हेर्ने समय।}} * {{{$date}देखि {$graha} {sdk.voice.rashifal.nth :msg} भावमा वक्री: {sdk.voice.rashifal.theme :msg}का काम फेरि एकपटक हेर्नुहोला।}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} वक्री हुन्छ: {sdk.voice.rashifal.theme :msg}मा निर्णयअघि फेरि सोच्नुहोला।}} * {{{$date}देखि {$graha} {sdk.voice.rashifal.nth :msg} भावमा वक्री: {sdk.voice.rashifal.theme :msg}मा हतार नगर्नुहोला।}}"
+      },
+      "STATION_DIRECT": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} मार्गी हुन्छ: {sdk.voice.rashifal.theme :msg}का रोकिएका काम अघि बढ्नेछन्।}} * {{{$date}देखि {$graha} मार्गी: {sdk.voice.rashifal.theme :msg}मा काम फेरि गति लिनेछन्।}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$date} {$graha} मार्गी हुन्छ: {sdk.voice.rashifal.theme :msg}का काम बिस्तारै अघि बढ्नेछन्।}} * {{{$date}देखि {$graha} मार्गी: {sdk.voice.rashifal.theme :msg}मा समय दिनुहोला।}}"
+      }
+    },
+    "moon": {
+      "GOOD": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$time}पछि सहजता बढ्नेछ, ध्यान {sdk.voice.rashifal.theme :msg}तिर जानेछ।}} * {{{$time}पछि मन हलुका हुनेछ।}}",
+      "NOT_GOOD": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$time}पछि मन अलि अशान्त हुन सक्छ, शान्त भएर काम गर्नुहोला।}} * {{{$time}पछि {sdk.voice.rashifal.theme :msg}मा अलि ध्यान दिनुहोला।}}"
+    },
+    "line": {
+      "WORK": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 10 0 {{कार्यक्षेत्रमा प्रगति हुनेछ, मेहनतको कदर हुनेछ।}} 10 * {{मान-सम्मान बढ्नेछ।}} * 0 {{कार्यक्षेत्रमा प्रगति हुनेछ।}} * * {{मेहनतअनुसारको फल मिल्नेछ।}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 3 0 {{सहकर्मीको सहयोगले काम सजिलै सकिनेछ।}} 3 * {{मिलेर गरेको काम छिटो अघि बढ्नेछ।}} 11 0 {{सहकर्मीको सहयोगले काम सजिलै सकिनेछ।}} 11 * {{मेहनतको कदर हुनेछ।}} * 0 {{रोकिएका काम अघि बढ्नेछन्।}} * * {{कार्यक्षेत्रमा प्रगतिको योग छ।}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{कामको जिम्मेवारी बढ्न सक्छ।}} * * {{कामको चाप बढे पनि परिणाम सन्तोषजनक हुनेछ।}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{काममा केही ढिलाइ हुन सक्छ, तर धैर्य राखे काम बन्नेछ।}} * * {{हतारमा निर्णय नगर्नुहोला, काम बिस्तारै बन्नेछ।}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 11 0 {{आम्दानीका नयाँ स्रोत खुल्ने सम्भावना छ।}} 11 * {{सानो प्रयासबाट पनि लाभ मिल्नेछ।}} * 0 {{आर्थिक पक्ष बलियो रहनेछ।}} * * {{सानो प्रयासबाट पनि लाभ मिल्नेछ।}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 2 0 {{अड्किएको रकम फिर्ता आउने योग छ।}} 2 * {{बचत बिस्तारै बढ्नेछ।}} 11 0 {{आम्दानीका नयाँ स्रोत खुल्ने सम्भावना छ।}} 11 * {{आम्दानीमा साथ मिल्नेछ।}} * 0 {{व्यापार-व्यवसायमा स्थिरता रहनेछ।}} * * {{आम्दानीमा साथ मिल्नेछ।}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{आर्थिक पक्ष सन्तुलित रहनेछ।}} * * {{ठूला आर्थिक निर्णयमा हतार नगर्नुहोला।}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 12 0 {{खर्च बढ्न सक्छ, बजेट मिलाएर चल्नु राम्रो हुनेछ।}} 12 * {{खर्चमा नियन्त्रण राख्नुपर्ने देखिन्छ।}} * 0 {{लेनदेनमा कागजपत्र स्पष्ट राख्नु उचित हुनेछ।}} * * {{ठूला आर्थिक निर्णयमा हतार नगर्नुहोला।}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{घरपरिवारमा रमाइलो वातावरण रहनेछ।}} * * {{प्रेम सम्बन्धमा निकटता बढ्नेछ।}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 2 0 {{घरमा पाहुना आउन सक्छन्।}} 2 * {{परिवारसँगको समय रमाइलो हुनेछ।}} 4 0 {{घरपरिवारमा रमाइलो वातावरण रहनेछ।}} 4 * {{परिवारसँगको समय रमाइलो हुनेछ।}} 5 0 {{प्रेम सम्बन्धमा निकटता बढ्नेछ।}} 5 * {{आफन्तसँगको समय राम्रो बित्नेछ।}} 7 0 {{जीवनसाथीसँग राम्रो तालमेल रहनेछ।}} 7 * {{प्रेम सम्बन्धमा निकटता बढ्नेछ।}} * 0 {{आफन्तसँगको समय राम्रो बित्नेछ।}} * * {{घरपरिवारमा रमाइलो वातावरण रहनेछ।}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{मनको कुरा खुलेर राख्दा सम्बन्ध बलियो हुनेछ।}} * * {{परिवारका ठूला सदस्यको सल्लाह उपयोगी हुनेछ।}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 4 0 {{घरका काममा समय दिनुपर्ने हुन सक्छ, तर शान्त भएर कुरा गर्दा वातावरण हलुका हुनेछ।}} 4 * {{घरपरिवारमा धैर्य राख्दा वातावरण हलुका हुनेछ।}} * 0 {{सानो कुरामा गलतफहमी हुन नदिनु राम्रो हुनेछ।}} * * {{शान्त भएर कुरा गर्दा सम्बन्ध बलियो रहनेछ।}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{स्वास्थ्य राम्रो रहनेछ।}} * * {{शरीरमा स्फूर्ति रहनेछ।}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{स्वास्थ्य सामान्य रहनेछ।}} * * {{शरीरमा स्फूर्ति रहनेछ।}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{खानपान र निद्रामा ध्यान दिनु राम्रो हुनेछ।}} * * {{स्वास्थ्य सामान्य रहनेछ।}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{थकान महसुस हुन सक्छ, पर्याप्त आराम लिनुहोला।}} * * {{दिनचर्या नियमित राख्नुहोला।}}"
+      }
+    },
+    "area": {
+      "WORK": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{प्रगतिको योग}} * {{मेहनतको कदर}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{काम सजिलै सकिनेछ}} * {{सहकर्मीको साथ}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{जिम्मेवारी बढ्न सक्छ}} * {{काम आफ्नै गतिमा}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{धैर्य राख्नुहोला}} * {{केही ढिलाइ सम्भव}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{लाभको योग}} * {{आम्दानीमा साथ}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{आम्दानी स्थिर}} * {{आर्थिक सहजता}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{बजेट मिलाउनुहोला}} * {{हतार नगर्नुहोला}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{खर्च बढ्न सक्छ}} * {{कागजपत्र स्पष्ट राख्नुहोला}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{निकटता बढ्नेछ}} * {{घरमा रमाइलो}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{घरमा सहजता}} * {{राम्रो साथ}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{खुलेर कुरा गर्नुहोला}} * {{सानो प्रयासले फरक पर्छ}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{धैर्य राख्नुहोला}} * {{शान्त भएर कुरा गर्नुहोला}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{स्फूर्ति रहनेछ}} * {{स्वास्थ्य राम्रो}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{स्वास्थ्य सामान्य}} * {{शरीरमा स्फूर्ति}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{पर्याप्त आराम लिनुहोला}} * {{खानपानमा ध्यान}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{पर्याप्त आराम लिनुहोला}} * {{दिनचर्या नियमित राख्नुहोला}}"
+      }
+    },
+    "week": {
+      "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{काम निकै राम्रोसँग अघि बढ्नेछन्।}} * {{हप्ताको सबैभन्दा सहज समय रहनेछ।}}",
+      "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{काम सहजै अघि बढ्नेछन्।}} * {{समय राम्रो बित्नेछ।}}",
+      "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{समय मिश्रित रहनेछ, बिस्तारै काम गर्नुहोला।}} * {{केही काम बन्नेछन्, केहीमा समय लाग्नेछ।}}",
+      "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{समय अलि ढिलो चल्नेछ, धैर्य राख्नुहोला।}} * {{धैर्य र संयमले काम लिनु राम्रो हुनेछ।}}",
+      "BEST_DAY": ".input {$date :date style=full} .input {$variant :integer cycle=2} .match $variant 0 {{हप्ताको सबैभन्दा राम्रो दिन {$date} रहने देखिन्छ।}} * {{{$date} हप्ताकै राम्रो दिन रहने देखिन्छ।}}"
+    },
+    "year": {
+      "SLOW": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{यो वर्ष {$graha}को साथ {sdk.voice.rashifal.theme :msg}मा रहनेछ।}} * {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा साथ।}}",
+        "OBSTRUCTED": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{यो वर्ष {$graha}को साथ {sdk.voice.rashifal.theme :msg}मा रहनेछ, तर फल बिस्तारै मिल्न सक्छ।}} * {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा साथ छ, केही ढिलाइसहित।}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा धैर्य चाहिन्छ।}} * {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा भएकाले {sdk.voice.rashifal.theme :msg}मा स्थिर ध्यान दिनुहोला।}}"
+      }
+    }
+  }
+}

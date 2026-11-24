@@ -6203,6 +6203,348 @@ final class MessagesSdkSettings {
   MessagesSdkSettingsEffect get effect => MessagesSdkSettingsEffect(_r);
 }
 
+final class MessagesSdkVoiceRashifalAreaHealth {
+  const MessagesSdkVoiceRashifalAreaHealth(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.HEALTH.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.HEALTH.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.HEALTH.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.HEALTH.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLoveFamily {
+  const MessagesSdkVoiceRashifalAreaLoveFamily(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.LOVE_FAMILY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.LOVE_FAMILY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.LOVE_FAMILY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaMoney {
+  const MessagesSdkVoiceRashifalAreaMoney(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.MONEY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.MONEY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.MONEY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.MONEY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaWork {
+  const MessagesSdkVoiceRashifalAreaWork(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.WORK.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.WORK.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.WORK.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.area.WORK.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalArea {
+  const MessagesSdkVoiceRashifalArea(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalAreaHealth get health => MessagesSdkVoiceRashifalAreaHealth(_r);
+  MessagesSdkVoiceRashifalAreaLoveFamily get loveFamily => MessagesSdkVoiceRashifalAreaLoveFamily(_r);
+  MessagesSdkVoiceRashifalAreaMoney get money => MessagesSdkVoiceRashifalAreaMoney(_r);
+  MessagesSdkVoiceRashifalAreaWork get work => MessagesSdkVoiceRashifalAreaWork(_r);
+}
+
+final class MessagesSdkVoiceRashifalEventIngress {
+  const MessagesSdkVoiceRashifalEventIngress(this._r);
+
+  final Renderer _r;
+
+  String good({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.INGRESS.GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+  String notGood({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.INGRESS.NOT_GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalEventStationDirect {
+  const MessagesSdkVoiceRashifalEventStationDirect(this._r);
+
+  final Renderer _r;
+
+  String good({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.STATION_DIRECT.GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+  String notGood({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalEventStationRetrograde {
+  const MessagesSdkVoiceRashifalEventStationRetrograde(this._r);
+
+  final Renderer _r;
+
+  String good({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+  String notGood({required DateValue date, required GrahaKey graha, required int house, required RashiKey rashi, required int variant}) =>
+      _r.render('sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD', {'date': {r'$date': date.json}, 'graha': {r'$entity': graha.key}, 'house': house, 'rashi': {r'$entity': rashi.key}, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalEvent {
+  const MessagesSdkVoiceRashifalEvent(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalEventIngress get ingress => MessagesSdkVoiceRashifalEventIngress(_r);
+  MessagesSdkVoiceRashifalEventStationDirect get stationDirect => MessagesSdkVoiceRashifalEventStationDirect(_r);
+  MessagesSdkVoiceRashifalEventStationRetrograde get stationRetrograde => MessagesSdkVoiceRashifalEventStationRetrograde(_r);
+}
+
+final class MessagesSdkVoiceRashifalFrame {
+  const MessagesSdkVoiceRashifalFrame(this._r);
+
+  final Renderer _r;
+
+  String afterMoon() => _r.render('sdk.voice.rashifal.frame.AFTER_MOON');
+  String beforeMoon() => _r.render('sdk.voice.rashifal.frame.BEFORE_MOON');
+  String end() => _r.render('sdk.voice.rashifal.frame.END');
+  String firstHalf() => _r.render('sdk.voice.rashifal.frame.FIRST_HALF');
+  String middle() => _r.render('sdk.voice.rashifal.frame.MIDDLE');
+  String quarter1() => _r.render('sdk.voice.rashifal.frame.QUARTER1');
+  String quarter2() => _r.render('sdk.voice.rashifal.frame.QUARTER2');
+  String quarter3() => _r.render('sdk.voice.rashifal.frame.QUARTER3');
+  String quarter4() => _r.render('sdk.voice.rashifal.frame.QUARTER4');
+  String secondHalf() => _r.render('sdk.voice.rashifal.frame.SECOND_HALF');
+  String slow() => _r.render('sdk.voice.rashifal.frame.SLOW');
+  String start() => _r.render('sdk.voice.rashifal.frame.START');
+  String whole() => _r.render('sdk.voice.rashifal.frame.WHOLE');
+}
+
+final class MessagesSdkVoiceRashifalHeadline {
+  const MessagesSdkVoiceRashifalHeadline(this._r);
+
+  final Renderer _r;
+
+  String care({required String period, required int variant}) =>
+      _r.render('sdk.voice.rashifal.headline.CARE', {'period': period, 'variant': variant});
+  String excellent({required String period, required int variant}) =>
+      _r.render('sdk.voice.rashifal.headline.EXCELLENT', {'period': period, 'variant': variant});
+  String good({required String period, required int variant}) =>
+      _r.render('sdk.voice.rashifal.headline.GOOD', {'period': period, 'variant': variant});
+  String mixed({required String period, required int variant}) =>
+      _r.render('sdk.voice.rashifal.headline.MIXED', {'period': period, 'variant': variant});
+  String split({required String best, required int variant, required String worst}) =>
+      _r.render('sdk.voice.rashifal.headline.SPLIT', {'best': best, 'variant': variant, 'worst': worst});
+}
+
+final class MessagesSdkVoiceRashifalLineHealth {
+  const MessagesSdkVoiceRashifalLineHealth(this._r);
+
+  final Renderer _r;
+
+  String care({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.HEALTH.CARE', {'house': house, 'variant': variant});
+  String excellent({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.HEALTH.EXCELLENT', {'house': house, 'variant': variant});
+  String good({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.HEALTH.GOOD', {'house': house, 'variant': variant});
+  String mixed({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.HEALTH.MIXED', {'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalLineLoveFamily {
+  const MessagesSdkVoiceRashifalLineLoveFamily(this._r);
+
+  final Renderer _r;
+
+  String care({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.LOVE_FAMILY.CARE', {'house': house, 'variant': variant});
+  String excellent({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT', {'house': house, 'variant': variant});
+  String good({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.LOVE_FAMILY.GOOD', {'house': house, 'variant': variant});
+  String mixed({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.LOVE_FAMILY.MIXED', {'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalLineMoney {
+  const MessagesSdkVoiceRashifalLineMoney(this._r);
+
+  final Renderer _r;
+
+  String care({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.MONEY.CARE', {'house': house, 'variant': variant});
+  String excellent({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.MONEY.EXCELLENT', {'house': house, 'variant': variant});
+  String good({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.MONEY.GOOD', {'house': house, 'variant': variant});
+  String mixed({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.MONEY.MIXED', {'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalLineWork {
+  const MessagesSdkVoiceRashifalLineWork(this._r);
+
+  final Renderer _r;
+
+  String care({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.WORK.CARE', {'house': house, 'variant': variant});
+  String excellent({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.WORK.EXCELLENT', {'house': house, 'variant': variant});
+  String good({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.WORK.GOOD', {'house': house, 'variant': variant});
+  String mixed({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.line.WORK.MIXED', {'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalLine {
+  const MessagesSdkVoiceRashifalLine(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalLineHealth get health => MessagesSdkVoiceRashifalLineHealth(_r);
+  MessagesSdkVoiceRashifalLineLoveFamily get loveFamily => MessagesSdkVoiceRashifalLineLoveFamily(_r);
+  MessagesSdkVoiceRashifalLineMoney get money => MessagesSdkVoiceRashifalLineMoney(_r);
+  MessagesSdkVoiceRashifalLineWork get work => MessagesSdkVoiceRashifalLineWork(_r);
+}
+
+final class MessagesSdkVoiceRashifalMoon {
+  const MessagesSdkVoiceRashifalMoon(this._r);
+
+  final Renderer _r;
+
+  String good({required int house, required TimeValue time, required int variant}) =>
+      _r.render('sdk.voice.rashifal.moon.GOOD', {'house': house, 'time': {r'$time': time.json}, 'variant': variant});
+  String notGood({required int house, required TimeValue time, required int variant}) =>
+      _r.render('sdk.voice.rashifal.moon.NOT_GOOD', {'house': house, 'time': {r'$time': time.json}, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalWeek {
+  const MessagesSdkVoiceRashifalWeek(this._r);
+
+  final Renderer _r;
+
+  String bestDay({required DateValue date, required int variant}) =>
+      _r.render('sdk.voice.rashifal.week.BEST_DAY', {'date': {r'$date': date.json}, 'variant': variant});
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.week.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.week.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.week.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.week.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalWhySaturn {
+  const MessagesSdkVoiceRashifalWhySaturn(this._r);
+
+  final Renderer _r;
+
+  String dhaiya({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.SATURN.DHAIYA', {'house': house, 'variant': variant});
+  String peak({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.SATURN.PEAK', {'house': house, 'variant': variant});
+  String rising({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.SATURN.RISING', {'house': house, 'variant': variant});
+  String setting({required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.SATURN.SETTING', {'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalWhyTransit {
+  const MessagesSdkVoiceRashifalWhyTransit(this._r);
+
+  final Renderer _r;
+
+  String good({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.TRANSIT.GOOD', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+  String notGood({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.TRANSIT.NOT_GOOD', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+  String obstructed({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalWhy {
+  const MessagesSdkVoiceRashifalWhy(this._r);
+
+  final Renderer _r;
+
+  String moonTurn({required int house, required TimeValue time, required int variant}) =>
+      _r.render('sdk.voice.rashifal.why.MOON_TURN', {'house': house, 'time': {r'$time': time.json}, 'variant': variant});
+  MessagesSdkVoiceRashifalWhySaturn get saturn => MessagesSdkVoiceRashifalWhySaturn(_r);
+  MessagesSdkVoiceRashifalWhyTransit get transit => MessagesSdkVoiceRashifalWhyTransit(_r);
+}
+
+final class MessagesSdkVoiceRashifalYearSlow {
+  const MessagesSdkVoiceRashifalYearSlow(this._r);
+
+  final Renderer _r;
+
+  String good({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.year.SLOW.GOOD', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+  String notGood({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.year.SLOW.NOT_GOOD', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+  String obstructed({required GrahaKey graha, required int house, required int variant}) =>
+      _r.render('sdk.voice.rashifal.year.SLOW.OBSTRUCTED', {'graha': {r'$entity': graha.key}, 'house': house, 'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalYear {
+  const MessagesSdkVoiceRashifalYear(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalYearSlow get slow => MessagesSdkVoiceRashifalYearSlow(_r);
+}
+
+final class MessagesSdkVoiceRashifal {
+  const MessagesSdkVoiceRashifal(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalArea get area => MessagesSdkVoiceRashifalArea(_r);
+  String best({required String best}) =>
+      _r.render('sdk.voice.rashifal.best', {'best': best});
+  MessagesSdkVoiceRashifalEvent get event => MessagesSdkVoiceRashifalEvent(_r);
+  MessagesSdkVoiceRashifalFrame get frame => MessagesSdkVoiceRashifalFrame(_r);
+  MessagesSdkVoiceRashifalHeadline get headline => MessagesSdkVoiceRashifalHeadline(_r);
+  MessagesSdkVoiceRashifalLine get line => MessagesSdkVoiceRashifalLine(_r);
+  MessagesSdkVoiceRashifalMoon get moon => MessagesSdkVoiceRashifalMoon(_r);
+  String nth({required int house}) =>
+      _r.render('sdk.voice.rashifal.nth', {'house': house});
+  String theme({required int house}) =>
+      _r.render('sdk.voice.rashifal.theme', {'house': house});
+  MessagesSdkVoiceRashifalWeek get week => MessagesSdkVoiceRashifalWeek(_r);
+  MessagesSdkVoiceRashifalWhy get why => MessagesSdkVoiceRashifalWhy(_r);
+  String worst({required String worst}) =>
+      _r.render('sdk.voice.rashifal.worst', {'worst': worst});
+  MessagesSdkVoiceRashifalYear get year => MessagesSdkVoiceRashifalYear(_r);
+}
+
+final class MessagesSdkVoice {
+  const MessagesSdkVoice(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifal get rashifal => MessagesSdkVoiceRashifal(_r);
+}
+
 final class MessagesSdk {
   const MessagesSdk(this._r);
 
@@ -6224,6 +6566,7 @@ final class MessagesSdk {
   MessagesSdkRite get rite => MessagesSdkRite(_r);
   MessagesSdkSankalpa get sankalpa => MessagesSdkSankalpa(_r);
   MessagesSdkSettings get settings => MessagesSdkSettings(_r);
+  MessagesSdkVoice get voice => MessagesSdkVoice(_r);
 }
 
 final class Messages {
