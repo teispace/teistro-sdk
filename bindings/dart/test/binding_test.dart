@@ -4611,6 +4611,12 @@ void _engineTests() {
     expect(kala.inside.from, greaterThanOrEqualTo(day.day.sunrise));
     expect(kala.inside.to, lessThanOrEqualTo(day.day.sunset));
     expect(kala.inside.from, lessThan(kala.inside.to));
+    // Its maha punya kala lies inside the window (C2421).
+    final maha = day.mahaPunyaKala.single;
+    expect(maha.member, Rashi.gemini);
+    expect(maha.inside.from, greaterThanOrEqualTo(kala.inside.from));
+    expect(maha.inside.to, lessThanOrEqualTo(kala.inside.to));
+    expect(maha.inside.from, lessThan(maha.inside.to));
   });
 
   test('a day marks its durmuhurtas and carries the shool, the chandra vasa '

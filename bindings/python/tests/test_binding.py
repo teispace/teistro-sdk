@@ -7894,6 +7894,12 @@ class ADaysOmens(AJuneWeek):
         self.assertGreaterEqual(kala.inside.from_jd, day.day.sunrise)
         self.assertLessEqual(kala.inside.to_jd, day.day.sunset)
         self.assertLess(kala.inside.from_jd, kala.inside.to_jd)
+        # Its maha punya kala lies inside the window (C2421).
+        [maha] = day.maha_punya_kala
+        self.assertIs(maha.member, Rashi.GEMINI)
+        self.assertGreaterEqual(maha.inside.from_jd, kala.inside.from_jd)
+        self.assertLessEqual(maha.inside.to_jd, kala.inside.to_jd)
+        self.assertLess(maha.inside.from_jd, maha.inside.to_jd)
 
 
 class AnAlmanacDay(WithLibrary):

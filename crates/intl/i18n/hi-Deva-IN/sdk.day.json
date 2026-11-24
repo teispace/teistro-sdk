@@ -16,5 +16,6 @@
   "ritu": "ऋतु {$ritu :entity kind=ritu} है।",
   "ayana": "अयन {$ayana :entity kind=ayana} है।",
   "kaala": "{$kaala :entity kind=kaala} {$from :time} से {$to :time} तक है।",
-  "abhijit": "अभिजित मुहूर्त {$from :time} से {$to :time} तक है।"
+  "abhijit": "अभिजित मुहूर्त {$from :time} से {$to :time} तक है।",
+  "punyaKala": "{$rashi :entity kind=rashi} संक्रांति का पुण्यकाल {$from :time} से {$to :time} तक और महापुण्यकाल {$mahaFrom :time} से {$mahaTo :time} तक है।"
 }

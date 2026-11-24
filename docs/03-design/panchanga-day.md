@@ -913,7 +913,8 @@ fruit only inside the sankranti's punya kala. A patro prints it as a
 window on one civil day, and the window is not always on the day the
 entry falls: an entry in the night gives the day before or the day
 after. The day carries it as `punya_kala`, the window that falls in its
-own daylight, whichever night the entry was in.
+own daylight, whichever night the entry was in, and `maha`, the five
+ghatis of it nearest the entry, the maha punya kala (SR-160).
 
 | step | the rule | source |
 |---|---|---|
@@ -921,6 +922,7 @@ own daylight, whichever night the entry was in.
 | by day only | the window is the part of those ghatis in the daylight; an entry with less than two ghatis of daylight after it reads the side before, and one less than two ghatis after sunrise the side after | *Dharmasindhu* p. 2 (*ghaṭikādvayādyalpadinaśeṣe … pūrvā eva puṇyāḥ*); *Nirnayasindhu* p. 4, "night being forbidden" |
 | an entry at night | before midnight, the afternoon before; after it, the morning after; at midnight, both | *Dharmasindhu* p. 2; *Nirnayasindhu* p. 5, Vriddha Vasishtha's verses |
 | the ayanas at night | Makara gives the next day, but within three ghatis of sunset the day it set on; Karka the day before, but within three ghatis of sunrise the day that rises | *Dharmasindhu* p. 2, the twilights as *jyotiḥśāstra* holds them |
+| the maha punya kala | the five nadis of the window nearest the entry: after a daytime entry for a window that follows it, before it for one that precedes it, around it at the equinoxes; the morning's first five or the afternoon's last for a night's entry; the whole window when it is shorter | *Dharmasindhu*, the Pausha chapter (*sūryodayottaraṃ pañca nāḍyaḥ puṇyatamāḥ … evaṃ divāsaṃkrame 'pi*); *Nirnayasindhu* p. 4, *yā yāḥ sannihitā nāḍyaḥ* (C2421) |
 
 `panchanga.punya_kala` names the table: `DHARMASINDHU` by default, the
 text the solar month's day is already placed by (C27 to C31), `HEMADRI`
@@ -939,19 +941,31 @@ it from the `sun_signs` of the day that held it. A day finds the entries
 from the Sun's sign spans it already has, each span's start and the
 last span's end, so it costs no search, and a midnight day boundary
 places every window on the same date as the sunrise one does, which the
-façade's test holds over 2026 at Kathmandu.
+façade's test holds over 2026 at Kathmandu. The day's sentences say
+both windows (`sdk.day.punyaKala`, in every locale).
 
 **What is open.** The dawn clause reads *ghaṭikādyalpa*, "a ghati or
 less", in the OCR, where the dusk clause has *ghaṭikādvaya*, two; the
 SDK reads two on both sides (C753), since the *Nirnayasindhu*'s verse
-turns either side over for the same reason. Drik Panchang also prints a
-*mahā* punya kala inside the window, which no text in hand defines
-(C754), so it is not built. The *Dharmasindhu*'s ±16 ghatis barred for
+turns either side over for the same reason. The *Dharmasindhu* counts
+the maha punya kala's five nadis only for a night's entry and says
+"likewise" of a daytime one; the SDK reads five for both, where Drik
+Panchang prints one ghati after a daytime entry (C2421). The same chapter
+calls the twilight rule the *Muhūrtacintāmaṇi*'s and not every
+dharmashastra text's; the SDK keeps it (C752), so a Makara entry in the
+three ghatis after sunset has its window on that day while
+`MonthStartRule::Punyakala`, which reads no twilight, begins Magh on the
+next. The façade's sweep over 1800 to 2399 at Kathmandu counts those, and
+the entries between the clock's midnight and the night's middle, where
+the window turns on the night and the month on the clock; every other
+window falls on the month rule's day. The *Dharmasindhu*'s ±16 ghatis barred for
 a marriage around every sankranti is a muhurta's concern, already the
 muhurta crate's.
 
 **What crosses.** The C boundary writes `punya_kala` as span section
-34, counted after `rahu_vasa`; every binding's day reads it as
+34, counted after `rahu_vasa`, and the maha punya kala as span section
+44, `maha_punya_kala`, counted last, `whole` and `inside` both its five
+ghatis; every binding reads it as `maha_punya_kala`/`mahaPunyaKala`; every binding's day reads it as
 `punya_kala`/`punyaKala`, a list of none or one span of `Rashi`. Each
 binding's test holds the week of 15 to 21 June 2024 at Kathmandu, which
 holds Mithuna's entry, to one window inside one daylight, and each parity

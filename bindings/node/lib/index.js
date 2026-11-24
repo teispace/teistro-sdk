@@ -2362,6 +2362,16 @@ export class AlmanacDay {
   }
 
   /**
+   * The maha punya kala inside `punyaKala`, on the same day (Dharmasindhu,
+   * the Pausha chapter, crux C2421): the five ghatis of the window nearest
+   * the sankranti, or the whole window when it is shorter; `whole` and
+   * `inside` are both the five ghatis.
+   */
+  get mahaPunyaKala() {
+    return this.#spans('mahaPunyaKala', RashiById);
+  }
+
+  /**
    * The homa ahuti, when the request asked with `homaAhuti: true`: the
    * graha whose mouth an oblation falls in, by the Moon's nakshatra
    * counted from the Sun's in threes (Muhurta Chintamani,

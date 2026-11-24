@@ -2920,7 +2920,14 @@ public final class BindingTest {
                         check(kala.inside().fromJd() >= day.day().sunrise()
                                 && kala.inside().toJd() <= day.day().sunset(), "a punya kala by day");
                         kalas += 1;
+                        // Its maha punya kala lies inside it (C2421).
+                        Span<Rashi> maha = day.mahaPunyaKala().get(0);
+                        check(maha.member() == kala.member()
+                                && maha.inside().fromJd() >= kala.inside().fromJd()
+                                && maha.inside().toJd() <= kala.inside().toJd()
+                                && maha.inside().fromJd() < maha.inside().toJd(), "a maha punya kala inside it");
                     }
+                    check(day.mahaPunyaKala().size() == day.punyaKala().size(), "a maha punya kala a window");
                 }
                 check(kalas <= 1, "a sankranti a month: " + kalas);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));

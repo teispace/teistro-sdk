@@ -16,5 +16,6 @@
   "ritu": "The season is {$ritu :entity kind=ritu}.",
   "ayana": "The ayana is {$ayana :entity kind=ayana}.",
   "kaala": "{$kaala :entity kind=kaala} runs from {$from :time} to {$to :time}.",
-  "abhijit": "Abhijit muhurta runs from {$from :time} to {$to :time}."
+  "abhijit": "Abhijit muhurta runs from {$from :time} to {$to :time}.",
+  "punyaKala": "The punya kala of the sankranti into {$rashi :entity kind=rashi} runs from {$from :time} to {$to :time}, and its maha punya kala from {$mahaFrom :time} to {$mahaTo :time}."
 }

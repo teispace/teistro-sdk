@@ -12,6 +12,16 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+- **The maha punya kala (SR-160).** A sankranti's punya kala now carries
+  `maha`, the five nadis of the window nearest the entry, which the
+  *Dharmasindhu*'s Pausha chapter calls the most meritorious (C2421). It
+  crosses as span section 44, `maha_punya_kala`, read by every binding,
+  and the day's sentences say both windows in every locale. A façade test
+  reads every sankranti at Kathmandu from 1800 to 2399 and holds each
+  window to the day `MonthStartRule::Punyakala` begins the month on, but
+  for the twilights and the stretch between the clock's midnight and the
+  night's middle, which it counts.
+
 - **Hijri months in Nepali (SR-161).** ne-Deva-NP names the twelve Hijri
   months in Devanagari as Nepali print spells them (मुहर्रम … जिल्हिज्जा)
   and leads its dates and month titles with हिजरी, where it wrote CLDR's

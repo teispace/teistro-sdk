@@ -4983,6 +4983,12 @@ test('fire follows each tithi with the vara, and Rahu walks the daylight from th
   assert.equal(kala.member, 'rashi.GEMINI');
   assert.ok(kala.inside.from >= day.day.sunrise && kala.inside.to <= day.day.sunset);
   assert.ok(kala.inside.from < kala.inside.to);
+  // Its maha punya kala lies inside the window (C2421).
+  assert.equal(day.mahaPunyaKala.length, 1);
+  const [maha] = day.mahaPunyaKala;
+  assert.equal(maha.member, 'rashi.GEMINI');
+  assert.ok(maha.inside.from >= kala.inside.from && maha.inside.to <= kala.inside.to);
+  assert.ok(maha.inside.from < maha.inside.to);
   ctx.dispose();
 });
 

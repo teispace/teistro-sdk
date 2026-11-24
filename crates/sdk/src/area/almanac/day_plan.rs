@@ -45,7 +45,7 @@ impl Plan {
 /// Every message the day's composer can emit. The answer's refusal reads
 /// it: a locale that does not carry all of these has no templates for a
 /// day.
-pub(crate) const DAY_KEYS: [&str; 18] = [
+pub(crate) const DAY_KEYS: [&str; 19] = [
     <messages::Vara as TypedMessage>::KEY,
     <messages::Tithi as TypedMessage>::KEY,
     <messages::Nakshatra as TypedMessage>::KEY,
@@ -64,6 +64,7 @@ pub(crate) const DAY_KEYS: [&str; 18] = [
     <messages::Ayana as TypedMessage>::KEY,
     <messages::Kaala as TypedMessage>::KEY,
     <messages::Abhijit as TypedMessage>::KEY,
+    <messages::PunyaKala as TypedMessage>::KEY,
 ];
 
 /// `ends` when the fact ends on the civil day it opened on.
@@ -206,6 +207,15 @@ pub(crate) fn day_sentences(day: &Panchanga, clock: &dyn LocalClock) -> DayPlan 
         plan.say(&messages::Abhijit {
             from: reading.time(abhijit.from),
             to: reading.time(abhijit.to),
+        });
+    }
+    if let Some(kala) = day.punya_kala {
+        plan.say(&messages::PunyaKala {
+            rashi: kala.span.member,
+            from: reading.time(kala.span.inside.from),
+            to: reading.time(kala.span.inside.to),
+            maha_from: reading.time(kala.maha.from),
+            maha_to: reading.time(kala.maha.to),
         });
     }
     DayPlan {

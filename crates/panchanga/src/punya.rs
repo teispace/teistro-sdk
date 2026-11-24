@@ -23,6 +23,15 @@
 //!    Makara within three ghatis of sunset keeps the day it set on, and
 //!    Karka within three ghatis of sunrise the day that rises.
 //!
+//! 4. **The maha punya kala.** Within the window the five nadis nearest
+//!    the entry are the most meritorious, *puṇyatama* (*Dharmasindhu*,
+//!    the Pausha chapter: after sunrise when the morning is meritorious,
+//!    before sunset when the afternoon is, and *evaṃ divāsaṃkrame 'pi*
+//!    the nadis beside a daytime entry, on the side its rule reads;
+//!    *Nirnayasindhu*: *yā yāḥ sannihitā nāḍyas tās tāḥ puṇyatamāḥ*).
+//!    The text counts five for the night's entries and says "likewise"
+//!    of the day's, so five are read for both (crux C2421).
+//!
 //! The ghatis are counted under `day.ghati_reckoning`, so a proportional
 //! almanac's sixteen ghatis are sixteen thirtieths of the arc they lie in.
 
@@ -56,6 +65,8 @@ use crate::span::Span;
 /// let kala = punya_kala(Rashi::Capricorn, entry, &arcs, PunyaKalaTable::Dharmasindhu, Reckoning::Civil)?
 ///     .ok_or("the day holds it")?;
 /// assert_eq!(kala.span.inside, Interval::literal(100.6, 100.75));
+/// // Its maha punya kala: the five ghatis after the entry.
+/// assert_eq!(kala.maha, Interval::literal(100.6, 100.6 + 5.0 / 60.0));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -68,6 +79,41 @@ pub struct PunyaKala {
     /// day a night's entry makes meritorious; `inside` their part in the
     /// day's daylight, the window itself.
     pub span: Span<Rashi>,
+    /// The maha punya kala: the five ghatis of the window nearest the
+    /// entry, or the whole window when it is shorter (the module's step
+    /// 4). After the entry for a window that follows it, before it for
+    /// one that precedes it, and around it for the equinoxes.
+    pub maha: Interval,
+}
+
+impl PunyaKala {
+    /// The maha punya kala as a span of the sign entered, `whole` and
+    /// `inside` both its five ghatis: the shape the C boundary writes
+    /// beside the window's.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::Rashi;
+    /// use teistro_core::interval::Interval;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::settings::PunyaKalaTable;
+    /// use teistro_panchanga::punya::{Arcs, punya_kala};
+    /// use teistro_time::Reckoning;
+    ///
+    /// let arcs = Arcs {
+    ///     before: Interval::literal(99.75, 100.25),
+    ///     daylight: Interval::literal(100.25, 100.75),
+    ///     after: Interval::literal(100.75, 101.25),
+    /// };
+    /// let kala = punya_kala(Rashi::Cancer, JulianDay::literal(100.6), &arcs, PunyaKalaTable::Dharmasindhu, Reckoning::Civil)?
+    ///     .ok_or("the day holds it")?;
+    /// let maha = kala.maha_span().ok_or("five ghatis")?;
+    /// assert_eq!((maha.member, maha.whole, maha.inside), (Rashi::Cancer, kala.maha, kala.maha));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn maha_span(&self) -> Option<Span<Rashi>> {
+        Span::new(self.span.member, self.maha, self.maha)
+    }
 }
 
 /// The day's daylight and the nights either side of it, which an entry
@@ -141,6 +187,10 @@ pub fn ghatis(sign: Rashi, table: PunyaKalaTable) -> Result<(u8, u8), Error> {
 /// The two ghatis of daylight an entry must leave on the side it reads,
 /// or the side turns over (*Dharmasindhu* p. 2, crux C753).
 const TURNING_GHATIS: f64 = 2.0;
+
+/// The nadis of the maha punya kala, the most meritorious of the window
+/// (*Dharmasindhu*, the Pausha chapter, crux C2421).
+const MAHA_GHATIS: f64 = 5.0;
 
 /// The ghatis of a twilight, *sandhyā*: three after sunset and three
 /// before sunrise (*Dharmasindhu* p. 2).
@@ -232,7 +282,39 @@ pub fn punya_kala(
     };
     Ok(Span::new(sign, whole, daylight)
         .filter(|span| !span.inside.is_empty())
-        .map(|span| PunyaKala { sankranti, span }))
+        .map(|span| PunyaKala {
+            sankranti,
+            maha: nearest(&walk, t, span.inside),
+            span,
+        }))
+}
+
+/// The `MAHA_GHATIS` of a window nearest an instant: from its start or
+/// to its end when the instant lies outside it or too near an edge, else
+/// centred on the instant; never wider than the window.
+fn nearest(walk: &Walk<'_>, t: f64, window: Interval) -> Interval {
+    let (from, to) = (window.from.get(), window.to.get());
+    let first = || (from, walk.step(from, MAHA_GHATIS).get());
+    let last = || (walk.step(to, -MAHA_GHATIS).get(), to);
+    let (lo, hi) = if t <= from {
+        first()
+    } else if t >= to {
+        last()
+    } else {
+        let half = MAHA_GHATIS / 2.0;
+        let (lo, hi) = (walk.step(t, -half).get(), walk.step(t, half).get());
+        if lo < from {
+            first()
+        } else if hi > to {
+            last()
+        } else {
+            (lo, hi)
+        }
+    };
+    Interval {
+        from: JulianDay::literal(lo.max(from)),
+        to: JulianDay::literal(hi.min(to)),
+    }
 }
 
 /// The instant halfway through an arc.
@@ -451,6 +533,48 @@ mod tests {
             100.25 - g + 30.0 * g
         ));
         assert_eq!(at(Rashi::Cancer, 100.1), None);
+    }
+
+    fn maha(sign: Rashi, entry: f64) -> Option<Interval> {
+        punya_kala(
+            sign,
+            JulianDay::literal(entry),
+            &ARCS,
+            PunyaKalaTable::Dharmasindhu,
+            Reckoning::Civil,
+        )
+        .ok()
+        .flatten()
+        .map(|kala| kala.maha)
+    }
+
+    #[test]
+    fn the_maha_punya_kala_is_the_five_ghatis_nearest_the_entry() {
+        let g = CIVIL_GHATI;
+        // A daytime entry: after it, before it, or around it.
+        assert!(close(maha(Rashi::Capricorn, 100.5), 100.5, 100.5 + 5.0 * g));
+        assert!(close(maha(Rashi::Cancer, 100.6), 100.6 - 5.0 * g, 100.6));
+        assert!(close(
+            maha(Rashi::Aries, 100.5),
+            100.5 - 2.5 * g,
+            100.5 + 2.5 * g
+        ));
+        // Near an edge the five stay inside the window.
+        assert!(close(
+            maha(Rashi::Aries, 100.25 + g),
+            100.25,
+            100.25 + 5.0 * g
+        ));
+        // A night's entry: the morning's first five, the afternoon's last.
+        assert!(close(maha(Rashi::Leo, 100.1), 100.25, 100.25 + 5.0 * g));
+        assert!(close(maha(Rashi::Leo, 100.9), 100.75 - 5.0 * g, 100.75));
+        assert!(close(maha(Rashi::Cancer, 101.1), 100.75 - 5.0 * g, 100.75));
+        // A window shorter than five ghatis is its own maha punya kala.
+        assert!(close(
+            maha(Rashi::Gemini, 100.75 - 3.0 * g),
+            100.75 - 3.0 * g,
+            100.75
+        ));
     }
 
     #[test]

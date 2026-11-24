@@ -2927,6 +2927,7 @@ def main() -> None:
             put(f"day-{i}-named-panchaka-count", len(almanac_day.named_panchaka))
             put(f"day-{i}-rahu-vasa-count", len(almanac_day.rahu_vasa))
             put(f"day-{i}-punya-kala-count", len(almanac_day.punya_kala))
+            put(f"day-{i}-maha-punya-kala-count", len(almanac_day.maha_punya_kala))
             limbs: list[tuple[str, list[Any]]] = [
                 ("tithi", list(almanac_day.tithi)),
                 ("nakshatra", list(almanac_day.nakshatra)),
@@ -2944,6 +2945,7 @@ def main() -> None:
                 ("named-panchaka", list(almanac_day.named_panchaka)),
                 ("rahu-vasa", list(almanac_day.rahu_vasa)),
                 ("punya-kala", list(almanac_day.punya_kala)),
+                ("maha-punya-kala", list(almanac_day.maha_punya_kala)),
             ]
             for name, spans in limbs:
                 for j, span in enumerate(spans):

@@ -24278,6 +24278,15 @@ class AlmanacDay:
         return self._spans("punya_kala", self.batch.decoded.punya_kala, Rashi)
 
     @property
+    def maha_punya_kala(self) -> list[Span[Rashi]]:
+        """The maha punya kala inside ``punya_kala``, on the same day
+        (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of
+        the window nearest the sankranti, or the whole window when it is
+        shorter; ``whole`` and ``inside`` are both the five ghatis.
+        """
+        return self._spans("maha_punya_kala", self.batch.decoded.maha_punya_kala, Rashi)
+
+    @property
     def homa_ahuti(self) -> list[Span[Graha]]:
         """The homa ahuti, when `homa_ahuti=True` asked for it: the graha
         whose mouth an oblation falls in, by the Moon's nakshatra counted
@@ -24501,6 +24510,7 @@ class Almanac:
             "markers",
             "gowri",
             "uncertainty",
+            "maha_punya_kala",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)
