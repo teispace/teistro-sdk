@@ -8,7 +8,7 @@ difference. The design it measures is
 
 ## Where the corpus landed
 
-27 of the engine's 38 state categories map onto a subject this SDK has, and they become 355 records under 22 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
+27 of the engine's 38 state categories map onto a subject this SDK has, and they become 362 records under 23 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
 
 | category | kinds | form | records |
 |---|---|---|---:|
@@ -201,7 +201,7 @@ so the count is here.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every refused key is absent from the packs | **holds** | 0 of 3 disagree |
-| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1775 disagree |
+| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1810 disagree |
 
 ## What the state readings cost
 
@@ -213,25 +213,25 @@ it. A consumer loads one pack a locale from each root it wants.
 
 | locale | source | pack |
 |---|---:|---:|
-| `en-Latn` | 206 KB | 200 KB |
-| `hi-Deva-IN` | 394 KB | 387 KB |
-| `ne-Deva-NP` | 371 KB | 364 KB |
-| `sa-Deva` | 362 KB | 356 KB |
-| `sa-Latn` | 200 KB | 194 KB |
-| **all** | **1536 KB** | **1503 KB** |
+| `en-Latn` | 209 KB | 202 KB |
+| `hi-Deva-IN` | 398 KB | 392 KB |
+| `ne-Deva-NP` | 375 KB | 369 KB |
+| `sa-Deva` | 367 KB | 360 KB |
+| `sa-Latn` | 203 KB | 196 KB |
+| **all** | **1554 KB** | **1521 KB** |
 
 Beside the rule readings' 2920 KB, which is the other pack a consumer
-that wants both would load: 4423 KB in all for every language, and 1101
+that wants both would load: 4441 KB in all for every language, and 1105
 KB for one.
 
 ## What the packs decide
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 355 disagree |
-| every locale carries every record the base locale carries | **holds** | 0 of 1775 disagree |
-| every record carries a form to be read by | **holds** | 0 of 1775 disagree |
+| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 362 disagree |
+| every locale carries every record the base locale carries | **holds** | 0 of 1810 disagree |
+| every record carries a form to be read by | **holds** | 0 of 1810 disagree |
 | every locale's state readings build into a pack an engine can load | **holds** | 0 of 5 disagree |
-| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 4900 disagree |
+| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 4970 disagree |
 | a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 660 disagree |
 
