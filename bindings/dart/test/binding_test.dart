@@ -4011,6 +4011,43 @@ void _engineTests() {
     final answer = almanac.muhurta!;
     expect(answer.windows, isNotEmpty);
     expect(answer.ranking, MuhurtaRanking.texts);
+    // Asked, each window says why it is good (SR-154), and every item
+    // renders from the pack with no warning; not asked, none.
+    expect(answer.reasons, isEmpty);
+    final why =
+        days(
+          muhurta: const MuhurtaRequest(
+            rules: MuhurtaActivity.ramanMarriage,
+            native: MuhurtaNative(
+              star: Nakshatra.rohini,
+              moonSign: Rashi.taurus,
+              lagna: Rashi.leo,
+            ),
+            daysWithWindows: 9,
+            most: 1000,
+            reasons: true,
+          ),
+        ).muhurta!;
+    expect(why.reasons, hasLength(why.windows.length));
+    for (final said in why.reasons) {
+      expect(said.line.intent, 'sdk.voice.muhurta.line');
+      for (final reason in said.reasons) {
+        expect(
+          reason.clause == null,
+          reason.side == 'AVOIDED',
+          reason: reason.intent,
+        );
+      }
+      for (final (intent, params) in [
+        (said.line.intent, said.line.params),
+        for (final reason in said.reasons) (reason.intent, reason.params),
+      ]) {
+        final rendered = ctx.intl.render(intent, params);
+        expect(rendered.fallback, isFalse, reason: intent);
+        expect(rendered.warningCount, 0, reason: intent);
+        expect(rendered.text, isNot(contains('{')), reason: intent);
+      }
+    }
     // The days are the ones asked without a search.
     for (var k = 0; k < plain.length; k += 1) {
       expect(
