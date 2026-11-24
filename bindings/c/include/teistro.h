@@ -12331,24 +12331,29 @@ ts_status ts_pakshi(const ts_context * context, const char * request_json, ts_st
 /**
  * Reads periods of civil days at a place for each of the twelve signs and
  * answers with `{value, provenance}` as canonical JSON, `value` an array
- * of `{period, baseline, plans}`, one per period: the
+ * of `{period, baseline, plans, readings}`, one per period: the
  * sky at the reference day's sunrise (or a clock time), each sign's
  * gochar from Phaladeepika ch. 26, Saturn's standing, and every ingress
  * and station of the period counted from each sign; `baseline` the
  * baseline engine's score of each sign when the request names a period
  * for it, absent otherwise; `plans` each sign's reading in words, twelve
  * plans of `{key, params}` Aries to Pisces, when the request asks for
- * them, absent otherwise.
+ * them, absent otherwise; `readings` each sign's period in the reading
+ * voice, twelve plans Aries to Pisces of intents a reading pack words,
+ * each naming the facts it rests on (`03-design/rashifal-reading.md`),
+ * when the request asks for them, absent otherwise.
  *
- * `request_json` is `{"periods", "baseline", "plans"}`: each period `{"calendar",
+ * `request_json` is `{"periods", "baseline", "plans", "readings"}`: each period `{"calendar",
  * "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
  * "utcOffsetSeconds" or "zone", "snapshot", "events", "spells"}`, the days as
  * `{"year", "month", "day"}` and everything but `first`, the place and
  * the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
- * and `YEARLY`; `plans` a boolean, false when left out. A key it does not read, a last day before the first, a
+ * and `YEARLY`; `plans` and `readings` booleans, false when left out,
+ * `readings` read for the period `baseline` names. A key it does not read, a last day before the first, a
  * clock off the clock or a graha named twice is `INVALID_ARG`, named
  * under `rashifal`. A context without an ephemeris is `CAPABILITY`, as is
- * a build that leaves the `rashifal` family out.
+ * a build that leaves the `rashifal` family out, or asked for `readings`,
+ * the `rashifal-reading` family.
  * Safety: `context` must be a live handle; `request_json` NUL-terminated;
  * `out_json` valid for a write.
  */

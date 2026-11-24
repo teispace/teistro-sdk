@@ -14,8 +14,9 @@ import java.util.Objects;
  * @param baseline The period a score is weighed for, which sets the Moon's weight. Null leaves the SDK's default.
  * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
  * @param plans Whether each sign's reading is composed into a narrative plan. Null leaves the SDK's default.
+ * @param readings Whether each sign's period is said in the reading voice, for the period `baseline` names (`03-design/rashifal-reading.md`). Null leaves the SDK's default.
  */
-public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boolean plans) implements RequestJson {
+public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boolean plans, Boolean readings) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -35,7 +36,7 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boo
      * @param periods One period as a binding writes it, camel-cased as every request record is: the days, the place and the offset, and optionally the snapshot, the grahas whose events are reported and Saturn's spells.
      */
     public BatchAsked(List<PeriodAsked> periods) {
-        this(null, periods, null);
+        this(null, periods, null, null);
     }
 
     /**
@@ -53,6 +54,7 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boo
         private BaselinePeriod baseline;
         private List<PeriodAsked> periods;
         private Boolean plans;
+        private Boolean readings;
 
         private Builder() {}
 
@@ -90,13 +92,24 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boo
         }
 
         /**
+         * Sets {@code readings}.
+         *
+         * @param readings Whether each sign's period is said in the reading voice, for the period `baseline` names (`03-design/rashifal-reading.md`). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder readings(boolean readings) {
+            this.readings = readings;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public BatchAsked build() {
-            return new BatchAsked(baseline, periods, plans);
+            return new BatchAsked(baseline, periods, plans, readings);
         }
     }
 
@@ -112,7 +125,8 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boo
         return new BatchAsked(
             Read.orNull(json.get("baseline"), present -> Read.member(present, "BatchAsked.baseline", BaselinePeriod::byKey)),
             Read.list(Read.required(json.get("periods"), "BatchAsked.periods"), "BatchAsked.periods", item0 -> PeriodAsked.of(item0)),
-            Read.orNull(json.get("plans"), present -> Read.bool(present, "BatchAsked.plans")));
+            Read.orNull(json.get("plans"), present -> Read.bool(present, "BatchAsked.plans")),
+            Read.orNull(json.get("readings"), present -> Read.bool(present, "BatchAsked.readings")));
     }
 
     @Override
@@ -124,6 +138,9 @@ public record BatchAsked(BaselinePeriod baseline, List<PeriodAsked> periods, Boo
         json.put("periods", periods.stream().map(item0 -> item0.toJson()).toList());
         if (plans != null) {
             json.put("plans", plans);
+        }
+        if (readings != null) {
+            json.put("readings", readings);
         }
         return json;
     }

@@ -1185,6 +1185,10 @@ export interface BatchAsked {
    * Whether each sign's reading is composed into a narrative plan.
    */
   readonly plans?: boolean;
+  /**
+   * Whether each sign's period is said in the reading voice, for the period `baseline` names (`03-design/rashifal-reading.md`).
+   */
+  readonly readings?: boolean;
 }
 
 /**

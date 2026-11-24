@@ -2062,6 +2062,7 @@ final class BatchAsked extends _Request {
     this.baseline,
     required this.periods,
     this.plans = false,
+    this.readings = false,
   });
 
   final BaselinePeriod? baseline;
@@ -2071,15 +2072,19 @@ final class BatchAsked extends _Request {
   /// Whether each sign's reading is composed into a narrative plan.
   final bool plans;
 
+  /// Whether each sign's period is said in the reading voice, for the period `baseline` names (`03-design/rashifal-reading.md`).
+  final bool readings;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (baseline case final baselineValue?) 'baseline': baselineValue.key,
     'periods': [for (final e0 in periods) e0._wire],
     'plans': plans,
+    'readings': readings,
   };
 
   @override
-  List<Object?> get _fields => [baseline, periods, plans];
+  List<Object?> get _fields => [baseline, periods, plans, readings];
 }
 
 /// A chart's instant recast at other places.

@@ -641,7 +641,8 @@ final List<Surface> requests = [
     Param('baseline', Named('BaselinePeriod')),
     Param('periods', ListOf(Named('PeriodAsked'), (items) => List<PeriodAsked>.from(items))),
     Param('plans', Scalar('bool')),
-  ], fields: (v) => [v.baseline, v.periods, v.plans]),
+    Param('readings', Scalar('bool')),
+  ], fields: (v) => [v.baseline, v.periods, v.plans, v.readings]),
   Built<RelocationRequest>('RelocationRequest', RelocationRequest.new, [
     Param('houseSystem', Named('HouseSystem')),
     Param('instant', Scalar('double')),
