@@ -8,9 +8,9 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 |---|---|---:|---:|---:|---:|
 | `en-Latn` | strict | 672 of 672 | 100.0% | 451 of 451 | 100.0% |
 | `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 451 | 0.0% |
-| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 451 | 79.8% |
+| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 438 of 451 | 97.1% |
 | `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 451 of 451 | 100.0% |
-| `sa-Deva` | base | 661 of 672 | 98.4% | 360 of 451 | 79.8% |
+| `sa-Deva` | base | 661 of 672 | 98.4% | 438 of 451 | 97.1% |
 | `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 451 | 79.8% |
 
 672 members of 45 kinds, 451 messages.

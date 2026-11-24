@@ -10,6 +10,18 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+**The rashifal's reading voice in Hindi and Sanskrit (SR-152, S3).**
+**Numbers:** none. No plan changes; only the words a hi or sa pack says them with.
+- **Added:** `hi-Deva-IN` and `sa-Deva` write every intent the reading plan names
+  (`sdk.voice.rashifal.*`), final and with their own variants, so `rashifal.reading(...)`
+  renders whole in four languages. Sanskrit compounds a graha's or a sign's stem
+  (`सूर्यग्रहः`, `मेषराशिम्`) and says a house's theme with `-विषये`; Hindi follows the Nepali
+  wording's sense. sa-Latn reads the voice from its fallback until its messages are derived.
+- **Changed:** the hi and sa packs' size budgets rise to hold the voice
+  (`docs/05-testing/pack-budgets.json`).
+
 ## 1.0.0-rc.9
 
 The ninth release candidate of 1.0.0. It brings the days Nepal's calendars
