@@ -124,5 +124,10 @@
         "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{This year {$graha} in your {sdk.voice.rashifal.nth :msg} house asks for patience with {sdk.voice.rashifal.theme :msg}.}} * {{With {$graha} in your {sdk.voice.rashifal.nth :msg} house this year, give {sdk.voice.rashifal.theme :msg} steady care.}}"
       }
     }
+  },
+  "festival": {
+    "about": ".input {$festival :entity kind=festival form=about} {{{$festival}}}",
+    "observance": ".input {$act :entity kind=observance} {{{$act}}}",
+    "who": ".input {$shape :string} .match $shape t_c_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} community in {$regions :list type=and}.}} t_cs_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} communities in {$regions :list type=and}.}} t_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept in {$regions :list type=and}.}} c_r {{Kept by the {$communities :list type=and} community in {$regions :list type=and}.}} cs_r {{Kept by the {$communities :list type=and} communities in {$regions :list type=and}.}} r {{Kept in {$regions :list type=and}.}} t_c {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} community.}} t_cs {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} communities.}} t {{A festival of the {$tradition :entity kind=tradition} tradition.}} c {{Kept by the {$communities :list type=and} community.}} cs {{Kept by the {$communities :list type=and} communities.}} * {{Kept by all.}}"
   }
 }

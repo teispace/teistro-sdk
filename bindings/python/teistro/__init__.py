@@ -5175,16 +5175,21 @@ class AlmanacArea(_Area):
             provenance=decode_provenance(provenance),
         )
 
-    def festival_pack(self, pack: str) -> Mapping[str, Any]:
+    def festival_pack(self, pack: str, *, about: bool = False) -> Mapping[str, Any]:
         """Every rule of a festival pack with what it is: ``{pack, rules}``,
         each row ``{key, form, source, meta, unsourced}``, ``meta`` its kind,
         tradition, communities, regions and fast and ``unsourced`` the fields no
-        source gives (``03-design/festival-metadata.md``).
+        source gives (``03-design/festival-metadata.md``). With ``about``, also
+        ``about``, each described festival and group as ``{key, about,
+        observance, who, sources}`` whose items render with ``intl.render``,
+        and ``unwritten``, the keys not described yet
+        (``03-design/festival-about.md``).
 
         >>> rows = sdk.almanac.festival_pack("INDIA_CENTRAL")["rules"]  # doctest: +SKIP
         """
+        asked: dict[str, Any] = {"pack": pack, "about": True} if about else {"pack": pack}
         answered = self._context._through_provider(
-            lambda: self._context.inner.almanac_festival_pack(json.dumps({"pack": pack}))
+            lambda: self._context.inner.almanac_festival_pack(json.dumps(asked))
         )
         listing: Mapping[str, Any] = json.loads(answered)
         return listing

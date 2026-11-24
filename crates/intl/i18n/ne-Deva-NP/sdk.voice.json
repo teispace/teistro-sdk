@@ -124,5 +124,10 @@
         "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा: {sdk.voice.rashifal.theme :msg}मा धैर्य चाहिन्छ।}} * {{यो वर्ष {$graha} {sdk.voice.rashifal.nth :msg} भावमा भएकाले {sdk.voice.rashifal.theme :msg}मा स्थिर ध्यान दिनुहोला।}}"
       }
     }
+  },
+  "festival": {
+    "about": ".input {$festival :entity kind=festival form=about} {{{$festival}}}",
+    "observance": ".input {$act :entity kind=observance} {{{$act}}}",
+    "who": ".input {$shape :string} .match $shape t_c_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_cs_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_r {{{$regions :list type=and}मा मनाइने {$tradition :entity kind=tradition} चाड।}} c_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने चाड।}} cs_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने चाड।}} r {{{$regions :list type=and}मा मनाइने चाड।}} t_c {{{$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_cs {{{$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t {{{$tradition :entity kind=tradition} चाड।}} c {{{$communities :list type=and} समुदायले मनाउने चाड।}} cs {{{$communities :list type=and} समुदायले मनाउने चाड।}} * {{सबैले मनाउने चाड।}}"
   }
 }

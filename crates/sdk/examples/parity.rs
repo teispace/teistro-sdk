@@ -358,6 +358,7 @@ fn the_calendars(report: &mut Report, sdk: &Context) {
     );
     let listed = sdk.almanac().festival_pack(&teistro::PackRequest {
         pack: teistro::FestivalPack::IndiaCentral,
+        about: false,
     });
     let first = listed.rules.first().map_or("", |row| row.key.as_str());
     put(

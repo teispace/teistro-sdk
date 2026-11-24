@@ -6164,6 +6164,16 @@
       "name": "फाल्गुनामावास्यामन्वादि",
       "prose": "फाल्गुनामावास्यामन्वादि",
       "iast": "Phālguna Amāvāsyā Manvādi"
+    },
+    "DASHAIN": {
+      "name": "दशहरा",
+      "prose": "दशहरा",
+      "iast": "Daśaharā"
+    },
+    "TIHAR": {
+      "name": "यमपञ्चक",
+      "prose": "यमपञ्चक",
+      "iast": "Yamapañcaka"
     }
   },
   "year_office": {

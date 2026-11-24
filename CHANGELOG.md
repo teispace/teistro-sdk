@@ -10,6 +10,23 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+**What a festival is, how it is kept, and who keeps it where (SR-153, stage a).**
+**Numbers:** none. No day moves; a listing asked with `about` gains descriptions.
+- **Added:** `PackRequest.about`: a pack listing asked with it carries `about`, one
+  `FestivalAbout` per festival or group the SDK describes (its `about`, `observance` and `who`
+  items and the works its facts come from), and `unwritten`, the subjects it does not yet
+  describe. Forty-two subjects of Nepal's national panchanga are described in English and
+  Nepali, Dashain's and Tihar's groups among them. In every binding: Node
+  `festivalPack(pack, {about: true})`, Python `festival_pack(pack, about=True)`, Dart
+  `festivalPack(pack, about: true)` and Java `festivalPack(pack, true)`.
+- **Added:** the open kinds `observance`, `community` and `region`, and the messages
+  `sdk.voice.festival.{about,observance,who}`; every community and region a shipped pack's
+  meta names has an English and a Nepali name (`docs/03-design/festival-about.md`).
+- **Changed:** the groups `DASHAIN` and `TIHAR` are named in en, ne, hi and sa; the ne pack's
+  size budget rises to 448,000 bytes.
+
 ## 1.0.0-rc.9
 
 The ninth release candidate of 1.0.0. It brings the days Nepal's calendars

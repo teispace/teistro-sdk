@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 444 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 447 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -767,6 +767,14 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::UnknownTime, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::Schemes, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::festival::About { festival: String::from("festival.RAMA_NAVAMI") }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::festival::Observance { act: String::from("observance.KALASH_SET_UP") }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::festival::Who {
+        communities: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        regions: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        shape: String::from("shape"),
+        tradition: teistro_core::catalogue::Tradition::ALL[0],
+    }, false);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Care { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Excellent { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Good { variant: 2 }, true);

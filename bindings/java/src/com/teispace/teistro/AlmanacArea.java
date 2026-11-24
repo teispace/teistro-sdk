@@ -1541,10 +1541,29 @@ public final class AlmanacArea {
      * @throws TeistroException {@code INVALID_ARG} for a pack it does not ship
      */
     public Map<?, ?> festivalPack(String pack) {
+        return festivalPack(pack, false);
+    }
+
+    /**
+     * A festival pack's rows, and with {@code about} each described festival
+     * and group as {@code {key, about, observance, who, sources}}, whose items
+     * render with {@code intl().render}, and {@code unwritten}, the keys not
+     * described yet ({@code 03-design/festival-about.md}).
+     *
+     * <pre>{@code
+     * Map<?, ?> listed = sdk.almanac().festivalPack("NEPAL_PANCHANGA", true);
+     * }</pre>
+     *
+     * @param pack a pack the SDK ships
+     * @param about whether to describe each festival
+     * @return the pack's rows, and its festivals described when asked
+     * @throws TeistroException {@code INVALID_ARG} for a pack it does not ship
+     */
+    public Map<?, ?> festivalPack(String pack, boolean about) {
         if (pack == null) {
             throw Reads.invalid("pack is a pack's name", "pack");
         }
-        String json = Json.write(Map.of("pack", pack));
+        String json = Json.write(about ? Map.of("pack", pack, "about", true) : Map.of("pack", pack));
         return Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacFestivalPack(lib, raw, json))));
     }
 

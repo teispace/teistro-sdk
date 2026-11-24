@@ -3871,6 +3871,7 @@ public final class Messages {
      * @param name the `name` form; empty when the record lacks it
      * @param prose the `prose` form; empty when the record lacks it
      * @param abbrev the `abbrev` form, or null
+     * @param about the `about` form, or null
      * @param indic the `indic` form, or null
      * @param locative the `locative` form, or null
      * @param short_ the `short` form, or null
@@ -3878,7 +3879,7 @@ public final class Messages {
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String abbrev, String indic, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String about, String indic, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3895,6 +3896,7 @@ public final class Messages {
                     text(forms, "name", ""),
                     text(forms, "prose", ""),
                     text(forms, "abbrev", null),
+                    text(forms, "about", null),
                     text(forms, "indic", null),
                     text(forms, "locative", null),
                     text(forms, "short", null),
@@ -8325,6 +8327,277 @@ public final class Messages {
 
 
             /**
+             * The messages under `community`.
+             *
+             * @return the group
+             */
+            public SdkEntityCommunity community() {
+                return new SdkEntityCommunity(r);
+            }
+
+            /** The messages under `SdkEntityCommunity`, each rendered by its own key. */
+            public static final class SdkEntityCommunity {
+                private final Renderer r;
+
+                SdkEntityCommunity(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `community.ACHALGACHHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms achalgachha() {
+                    return r.entity("community.ACHALGACHHA");
+                }
+
+                /**
+                 * The forms of `community.BANKS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms banks() {
+                    return r.entity("community.BANKS");
+                }
+
+                /**
+                 * The forms of `community.BHOJPURI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhojpuri() {
+                    return r.entity("community.BHOJPURI");
+                }
+
+                /**
+                 * The forms of `community.BRAHMIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms brahmin() {
+                    return r.entity("community.BRAHMIN");
+                }
+
+                /**
+                 * The forms of `community.CHHANTYAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chhantyal() {
+                    return r.entity("community.CHHANTYAL");
+                }
+
+                /**
+                 * The forms of `community.CHRISTIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms christian() {
+                    return r.entity("community.CHRISTIAN");
+                }
+
+                /**
+                 * The forms of `community.DIGAMBARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms digambara() {
+                    return r.entity("community.DIGAMBARA");
+                }
+
+                /**
+                 * The forms of `community.DURA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dura() {
+                    return r.entity("community.DURA");
+                }
+
+                /**
+                 * The forms of `community.GURUNG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gurung() {
+                    return r.entity("community.GURUNG");
+                }
+
+                /**
+                 * The forms of `community.KHARATARA_GACHHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kharataraGachha() {
+                    return r.entity("community.KHARATARA_GACHHA");
+                }
+
+                /**
+                 * The forms of `community.KIRAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kirat() {
+                    return r.entity("community.KIRAT");
+                }
+
+                /**
+                 * The forms of `community.MAGAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms magar() {
+                    return r.entity("community.MAGAR");
+                }
+
+                /**
+                 * The forms of `community.MAITHIL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms maithil() {
+                    return r.entity("community.MAITHIL");
+                }
+
+                /**
+                 * The forms of `community.MUSLIM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms muslim() {
+                    return r.entity("community.MUSLIM");
+                }
+
+                /**
+                 * The forms of `community.NADAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nadar() {
+                    return r.entity("community.NADAR");
+                }
+
+                /**
+                 * The forms of `community.NEWAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms newar() {
+                    return r.entity("community.NEWAR");
+                }
+
+                /**
+                 * The forms of `community.PARSI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms parsi() {
+                    return r.entity("community.PARSI");
+                }
+
+                /**
+                 * The forms of `community.RAVIDASSIA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ravidassia() {
+                    return r.entity("community.RAVIDASSIA");
+                }
+
+                /**
+                 * The forms of `community.SANTHAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms santhal() {
+                    return r.entity("community.SANTHAL");
+                }
+
+                /**
+                 * The forms of `community.SHERPA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sherpa() {
+                    return r.entity("community.SHERPA");
+                }
+
+                /**
+                 * The forms of `community.SHVETAMBARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shvetambara() {
+                    return r.entity("community.SHVETAMBARA");
+                }
+
+                /**
+                 * The forms of `community.SIKH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sikh() {
+                    return r.entity("community.SIKH");
+                }
+
+                /**
+                 * The forms of `community.STHANAKVASI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sthanakvasi() {
+                    return r.entity("community.STHANAKVASI");
+                }
+
+                /**
+                 * The forms of `community.TAMANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamang() {
+                    return r.entity("community.TAMANG");
+                }
+
+                /**
+                 * The forms of `community.TAPAGACHHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tapagachha() {
+                    return r.entity("community.TAPAGACHHA");
+                }
+
+                /**
+                 * The forms of `community.TERAPANTH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms terapanth() {
+                    return r.entity("community.TERAPANTH");
+                }
+
+                /**
+                 * The forms of `community.THARU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tharu() {
+                    return r.entity("community.THARU");
+                }
+
+                /**
+                 * The forms of `community.VISHWAKARMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vishwakarma() {
+                    return r.entity("community.VISHWAKARMA");
+                }
+            }
+
+
+            /**
              * The messages under `dasha_family`.
              *
              * @return the group
@@ -10958,6 +11231,15 @@ public final class Messages {
                  */
                 public EntityForms dashaharaSnanaArambha() {
                     return r.entity("festival.DASHAHARA_SNANA_ARAMBHA");
+                }
+
+                /**
+                 * The forms of `festival.DASHAIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dashain() {
+                    return r.entity("festival.DASHAIN");
                 }
 
                 /**
@@ -15479,6 +15761,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.TIHAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tihar() {
+                    return r.entity("festival.TIHAR");
+                }
+
+                /**
                  * The forms of `festival.TILAKUNDA_CHATURTHI` in the current locale.
                  *
                  * @return the forms
@@ -18761,6 +19052,745 @@ public final class Messages {
 
 
             /**
+             * The messages under `observance`.
+             *
+             * @return the group
+             */
+            public SdkEntityObservance observance() {
+                return new SdkEntityObservance(r);
+            }
+
+            /** The messages under `SdkEntityObservance`, each rendered by its own key. */
+            public static final class SdkEntityObservance {
+                private final Renderer r;
+
+                SdkEntityObservance(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `observance.ALMS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alms() {
+                    return r.entity("observance.ALMS");
+                }
+
+                /**
+                 * The forms of `observance.ARGHYA_TO_SUN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms arghyaToSun() {
+                    return r.entity("observance.ARGHYA_TO_SUN");
+                }
+
+                /**
+                 * The forms of `observance.BHAJAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhajan() {
+                    return r.entity("observance.BHAJAN");
+                }
+
+                /**
+                 * The forms of `observance.BHOTO_SHOWN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhotoShown() {
+                    return r.entity("observance.BHOTO_SHOWN");
+                }
+
+                /**
+                 * The forms of `observance.BIRUDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms biruda() {
+                    return r.entity("observance.BIRUDA");
+                }
+
+                /**
+                 * The forms of `observance.BONFIRES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bonfires() {
+                    return r.entity("observance.BONFIRES");
+                }
+
+                /**
+                 * The forms of `observance.CAROLS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms carols() {
+                    return r.entity("observance.CAROLS");
+                }
+
+                /**
+                 * The forms of `observance.CHARIOT_PROCESSION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chariotProcession() {
+                    return r.entity("observance.CHARIOT_PROCESSION");
+                }
+
+                /**
+                 * The forms of `observance.CHIR_RAISED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chirRaised() {
+                    return r.entity("observance.CHIR_RAISED");
+                }
+
+                /**
+                 * The forms of `observance.CHURCH_SERVICE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms churchService() {
+                    return r.entity("observance.CHURCH_SERVICE");
+                }
+
+                /**
+                 * The forms of `observance.COLOURS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms colours() {
+                    return r.entity("observance.COLOURS");
+                }
+
+                /**
+                 * The forms of `observance.COW_HONOURED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms cowHonoured() {
+                    return r.entity("observance.COW_HONOURED");
+                }
+
+                /**
+                 * The forms of `observance.COW_PROCESSION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms cowProcession() {
+                    return r.entity("observance.COW_PROCESSION");
+                }
+
+                /**
+                 * The forms of `observance.DAR_FEAST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms darFeast() {
+                    return r.entity("observance.DAR_FEAST");
+                }
+
+                /**
+                 * The forms of `observance.DEUDA_DANCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms deudaDance() {
+                    return r.entity("observance.DEUDA_DANCE");
+                }
+
+                /**
+                 * The forms of `observance.DEUSI_BHAILO` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms deusiBhailo() {
+                    return r.entity("observance.DEUSI_BHAILO");
+                }
+
+                /**
+                 * The forms of `observance.DOG_HONOURED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dogHonoured() {
+                    return r.entity("observance.DOG_HONOURED");
+                }
+
+                /**
+                 * The forms of `observance.DORO_TIED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms doroTied() {
+                    return r.entity("observance.DORO_TIED");
+                }
+
+                /**
+                 * The forms of `observance.DURGA_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms durgaWorship() {
+                    return r.entity("observance.DURGA_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.EID_PRAYER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eidPrayer() {
+                    return r.entity("observance.EID_PRAYER");
+                }
+
+                /**
+                 * The forms of `observance.FAMILY_VISITS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms familyVisits() {
+                    return r.entity("observance.FAMILY_VISITS");
+                }
+
+                /**
+                 * The forms of `observance.FAST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fast() {
+                    return r.entity("observance.FAST");
+                }
+
+                /**
+                 * The forms of `observance.FEAST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms feast() {
+                    return r.entity("observance.FEAST");
+                }
+
+                /**
+                 * The forms of `observance.FIRST_LETTERS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms firstLetters() {
+                    return r.entity("observance.FIRST_LETTERS");
+                }
+
+                /**
+                 * The forms of `observance.FLOWER_GARLANDS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms flowerGarlands() {
+                    return r.entity("observance.FLOWER_GARLANDS");
+                }
+
+                /**
+                 * The forms of `observance.GIFTS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gifts() {
+                    return r.entity("observance.GIFTS");
+                }
+
+                /**
+                 * The forms of `observance.GIFTS_TO_SISTERS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms giftsToSisters() {
+                    return r.entity("observance.GIFTS_TO_SISTERS");
+                }
+
+                /**
+                 * The forms of `observance.GOVARDHAN_HILL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms govardhanHill() {
+                    return r.entity("observance.GOVARDHAN_HILL");
+                }
+
+                /**
+                 * The forms of `observance.HOLIKA_BONFIRE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms holikaBonfire() {
+                    return r.entity("observance.HOLIKA_BONFIRE");
+                }
+
+                /**
+                 * The forms of `observance.HORSE_RACES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms horseRaces() {
+                    return r.entity("observance.HORSE_RACES");
+                }
+
+                /**
+                 * The forms of `observance.JAMARA_SOWN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jamaraSown() {
+                    return r.entity("observance.JAMARA_SOWN");
+                }
+
+                /**
+                 * The forms of `observance.JANAI_CHANGED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms janaiChanged() {
+                    return r.entity("observance.JANAI_CHANGED");
+                }
+
+                /**
+                 * The forms of `observance.KALASH_SET_UP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kalashSetUp() {
+                    return r.entity("observance.KALASH_SET_UP");
+                }
+
+                /**
+                 * The forms of `observance.KITES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kites() {
+                    return r.entity("observance.KITES");
+                }
+
+                /**
+                 * The forms of `observance.KUMARI_CHARIOT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kumariChariot() {
+                    return r.entity("observance.KUMARI_CHARIOT");
+                }
+
+                /**
+                 * The forms of `observance.KWATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kwati() {
+                    return r.entity("observance.KWATI");
+                }
+
+                /**
+                 * The forms of `observance.LAKSHMI_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms lakshmiWorship() {
+                    return r.entity("observance.LAKSHMI_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.LAMPS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms lamps() {
+                    return r.entity("observance.LAMPS");
+                }
+
+                /**
+                 * The forms of `observance.LANGAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms langar() {
+                    return r.entity("observance.LANGAR");
+                }
+
+                /**
+                 * The forms of `observance.MANDALA_FOR_EACH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mandalaForEach() {
+                    return r.entity("observance.MANDALA_FOR_EACH");
+                }
+
+                /**
+                 * The forms of `observance.MASKED_DANCES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms maskedDances() {
+                    return r.entity("observance.MASKED_DANCES");
+                }
+
+                /**
+                 * The forms of `observance.MIDNIGHT_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms midnightPuja() {
+                    return r.entity("observance.MIDNIGHT_PUJA");
+                }
+
+                /**
+                 * The forms of `observance.MONASTERY_VISIT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms monasteryVisit() {
+                    return r.entity("observance.MONASTERY_VISIT");
+                }
+
+                /**
+                 * The forms of `observance.NATURE_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms natureWorship() {
+                    return r.entity("observance.NATURE_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.NEW_CLOTHES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms newClothes() {
+                    return r.entity("observance.NEW_CLOTHES");
+                }
+
+                /**
+                 * The forms of `observance.NEW_YEAR_GREETINGS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms newYearGreetings() {
+                    return r.entity("observance.NEW_YEAR_GREETINGS");
+                }
+
+                /**
+                 * The forms of `observance.NIGHT_VIGIL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nightVigil() {
+                    return r.entity("observance.NIGHT_VIGIL");
+                }
+
+                /**
+                 * The forms of `observance.OFFERINGS_IN_BASKETS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms offeringsInBaskets() {
+                    return r.entity("observance.OFFERINGS_IN_BASKETS");
+                }
+
+                /**
+                 * The forms of `observance.OX_HONOURED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms oxHonoured() {
+                    return r.entity("observance.OX_HONOURED");
+                }
+
+                /**
+                 * The forms of `observance.PHULPATI_AT_HOME` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms phulpatiAtHome() {
+                    return r.entity("observance.PHULPATI_AT_HOME");
+                }
+
+                /**
+                 * The forms of `observance.PHULPATI_PROCESSION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms phulpatiProcession() {
+                    return r.entity("observance.PHULPATI_PROCESSION");
+                }
+
+                /**
+                 * The forms of `observance.PILGRIMAGE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pilgrimage() {
+                    return r.entity("observance.PILGRIMAGE");
+                }
+
+                /**
+                 * The forms of `observance.POLE_RAISED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms poleRaised() {
+                    return r.entity("observance.POLE_RAISED");
+                }
+
+                /**
+                 * The forms of `observance.PRAYER_FLAGS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prayerFlags() {
+                    return r.entity("observance.PRAYER_FLAGS");
+                }
+
+                /**
+                 * The forms of `observance.PROCESSION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms procession() {
+                    return r.entity("observance.PROCESSION");
+                }
+
+                /**
+                 * The forms of `observance.QURBANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms qurbani() {
+                    return r.entity("observance.QURBANI");
+                }
+
+                /**
+                 * The forms of `observance.RAKHI_TIED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rakhiTied() {
+                    return r.entity("observance.RAKHI_TIED");
+                }
+
+                /**
+                 * The forms of `observance.RAMA_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ramaWorship() {
+                    return r.entity("observance.RAMA_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.RANGOLI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rangoli() {
+                    return r.entity("observance.RANGOLI");
+                }
+
+                /**
+                 * The forms of `observance.RED_DRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms redDress() {
+                    return r.entity("observance.RED_DRESS");
+                }
+
+                /**
+                 * The forms of `observance.RIVER_BATH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms riverBath() {
+                    return r.entity("observance.RIVER_BATH");
+                }
+
+                /**
+                 * The forms of `observance.SAKELA_DANCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sakelaDance() {
+                    return r.entity("observance.SAKELA_DANCE");
+                }
+
+                /**
+                 * The forms of `observance.SAPTARSHI_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms saptarshiWorship() {
+                    return r.entity("observance.SAPTARSHI_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.SARASWATI_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms saraswatiWorship() {
+                    return r.entity("observance.SARASWATI_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.SATIRE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms satire() {
+                    return r.entity("observance.SATIRE");
+                }
+
+                /**
+                 * The forms of `observance.SCRIPTURE_READING` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms scriptureReading() {
+                    return r.entity("observance.SCRIPTURE_READING");
+                }
+
+                /**
+                 * The forms of `observance.SELF_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms selfWorship() {
+                    return r.entity("observance.SELF_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.SHIVA_PARVATI_WORSHIP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shivaParvatiWorship() {
+                    return r.entity("observance.SHIVA_PARVATI_WORSHIP");
+                }
+
+                /**
+                 * The forms of `observance.SONG_AND_DANCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms songAndDance() {
+                    return r.entity("observance.SONG_AND_DANCE");
+                }
+
+                /**
+                 * The forms of `observance.STUPA_VISIT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms stupaVisit() {
+                    return r.entity("observance.STUPA_VISIT");
+                }
+
+                /**
+                 * The forms of `observance.SWEETS_SHARED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sweetsShared() {
+                    return r.entity("observance.SWEETS_SHARED");
+                }
+
+                /**
+                 * The forms of `observance.SWINGS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms swings() {
+                    return r.entity("observance.SWINGS");
+                }
+
+                /**
+                 * The forms of `observance.TEMPLE_OFFERINGS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms templeOfferings() {
+                    return r.entity("observance.TEMPLE_OFFERINGS");
+                }
+
+                /**
+                 * The forms of `observance.TEMPLE_VISIT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms templeVisit() {
+                    return r.entity("observance.TEMPLE_VISIT");
+                }
+
+                /**
+                 * The forms of `observance.TIKA_FROM_ELDERS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tikaFromElders() {
+                    return r.entity("observance.TIKA_FROM_ELDERS");
+                }
+
+                /**
+                 * The forms of `observance.TIKA_FROM_SISTERS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tikaFromSisters() {
+                    return r.entity("observance.TIKA_FROM_SISTERS");
+                }
+
+                /**
+                 * The forms of `observance.TRADITIONAL_DRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms traditionalDress() {
+                    return r.entity("observance.TRADITIONAL_DRESS");
+                }
+
+                /**
+                 * The forms of `observance.VILLAGE_ASSEMBLY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms villageAssembly() {
+                    return r.entity("observance.VILLAGE_ASSEMBLY");
+                }
+
+                /**
+                 * The forms of `observance.WINTER_FOODS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms winterFoods() {
+                    return r.entity("observance.WINTER_FOODS");
+                }
+
+                /**
+                 * The forms of `observance.ZAKAT_AL_FITR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms zakatAlFitr() {
+                    return r.entity("observance.ZAKAT_AL_FITR");
+                }
+            }
+
+
+            /**
              * The messages under `paksha`.
              *
              * @return the group
@@ -19627,6 +20657,196 @@ public final class Messages {
                  */
                 public EntityForms virgo() {
                     return r.entity("rashi.VIRGO");
+                }
+            }
+
+
+            /**
+             * The messages under `region`.
+             *
+             * @return the group
+             */
+            public SdkEntityRegion region() {
+                return new SdkEntityRegion(r);
+            }
+
+            /** The messages under `SdkEntityRegion`, each rendered by its own key. */
+            public static final class SdkEntityRegion {
+                private final Renderer r;
+
+                SdkEntityRegion(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `region.HILLS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hills() {
+                    return r.entity("region.HILLS");
+                }
+
+                /**
+                 * The forms of `region.IN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms in() {
+                    return r.entity("region.IN");
+                }
+
+                /**
+                 * The forms of `region.IN_AP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inAp() {
+                    return r.entity("region.IN_AP");
+                }
+
+                /**
+                 * The forms of `region.IN_AS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inAs() {
+                    return r.entity("region.IN_AS");
+                }
+
+                /**
+                 * The forms of `region.IN_BR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inBr() {
+                    return r.entity("region.IN_BR");
+                }
+
+                /**
+                 * The forms of `region.IN_GJ` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inGj() {
+                    return r.entity("region.IN_GJ");
+                }
+
+                /**
+                 * The forms of `region.IN_HR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inHr() {
+                    return r.entity("region.IN_HR");
+                }
+
+                /**
+                 * The forms of `region.IN_KA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inKa() {
+                    return r.entity("region.IN_KA");
+                }
+
+                /**
+                 * The forms of `region.IN_KL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inKl() {
+                    return r.entity("region.IN_KL");
+                }
+
+                /**
+                 * The forms of `region.IN_MH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inMh() {
+                    return r.entity("region.IN_MH");
+                }
+
+                /**
+                 * The forms of `region.IN_OD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inOd() {
+                    return r.entity("region.IN_OD");
+                }
+
+                /**
+                 * The forms of `region.IN_TG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inTg() {
+                    return r.entity("region.IN_TG");
+                }
+
+                /**
+                 * The forms of `region.IN_TN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inTn() {
+                    return r.entity("region.IN_TN");
+                }
+
+                /**
+                 * The forms of `region.IN_UP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inUp() {
+                    return r.entity("region.IN_UP");
+                }
+
+                /**
+                 * The forms of `region.IN_WB` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inWb() {
+                    return r.entity("region.IN_WB");
+                }
+
+                /**
+                 * The forms of `region.KATHMANDU_VALLEY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kathmanduValley() {
+                    return r.entity("region.KATHMANDU_VALLEY");
+                }
+
+                /**
+                 * The forms of `region.NP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms np() {
+                    return r.entity("region.NP");
+                }
+
+                /**
+                 * The forms of `region.NP_P3` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npP3() {
+                    return r.entity("region.NP_P3");
+                }
+
+                /**
+                 * The forms of `region.TERAI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms terai() {
+                    return r.entity("region.TERAI");
                 }
             }
 
@@ -26993,6 +28213,58 @@ public final class Messages {
             SdkVoice(Renderer r) {
                 this.r = r;
             }
+
+            /**
+             * The messages under `festival`.
+             *
+             * @return the group
+             */
+            public SdkVoiceFestival festival() {
+                return new SdkVoiceFestival(r);
+            }
+
+            /** The messages under `SdkVoiceFestival`, each rendered by its own key. */
+            public static final class SdkVoiceFestival {
+                private final Renderer r;
+
+                SdkVoiceFestival(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * `sdk.voice.festival.about`
+                 *
+                 * @param festival `festival`
+                 * @return the text
+                 */
+                public String about(String festival) {
+                    return r.render("sdk.voice.festival.about", Map.ofEntries(Map.entry("festival", Map.of("$entity", festival))));
+                }
+
+                /**
+                 * `sdk.voice.festival.observance`
+                 *
+                 * @param act `act`
+                 * @return the text
+                 */
+                public String observance(String act) {
+                    return r.render("sdk.voice.festival.observance", Map.ofEntries(Map.entry("act", Map.of("$entity", act))));
+                }
+
+                /**
+                 * `sdk.voice.festival.who`
+                 *
+                 * @param communities `communities`
+                 * @param regions `regions`
+                 * @param shape `shape`
+                 * @param tradition `tradition`
+                 * @return the text
+                 */
+                public String who(List<?> communities, List<?> regions, String shape, TraditionKey tradition) {
+                    return r.render("sdk.voice.festival.who", Map.ofEntries(Map.entry("communities", communities), Map.entry("regions", regions), Map.entry("shape", shape), Map.entry("tradition", Map.of("$entity", tradition.value()))));
+                }
+            }
+
 
             /**
              * The messages under `rashifal`.

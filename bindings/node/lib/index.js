@@ -9572,15 +9572,20 @@ export class AlmanacArea extends Area {
    *
    * @example
    * const { rules } = sdk.almanac.festivalPack('INDIA_CENTRAL');
+   * // With `about`, each described festival's words: render each item.
+   * const { about } = sdk.almanac.festivalPack('NEPAL_PANCHANGA', { about: true });
    *
    * @param {string} pack A pack the SDK ships.
-   * @returns {object} `{ pack, rules }`
+   * @param {{ about?: boolean }} [options] `about` to describe each festival
+   *   (`03-design/festival-about.md`).
+   * @returns {object} `{ pack, rules }`, and `about` and `unwritten` when asked
    */
-  festivalPack(pack) {
+  festivalPack(pack, options = {}) {
     if (typeof pack !== 'string') {
       throw new TypeError("festivalPack: expected a pack's name, e.g. 'INDIA_CENTRAL'");
     }
-    return deepFreeze(JSON.parse(run(this, (inner) => inner.almanacFestivalPack(JSON.stringify({ pack })))));
+    const asked = options.about ? { pack, about: true } : { pack };
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.almanacFestivalPack(JSON.stringify(asked)))));
   }
 
   /**

@@ -641,19 +641,24 @@ final class ElectRequest extends _Request {
 /// [`PackRequest`] as the bindings write it.
 final class PackRequest extends _Request {
   const PackRequest({
+    this.about,
     required this.pack,
   });
+
+  /// Whether to describe each festival: what it is, how it is kept and who keeps it where.
+  final bool? about;
 
   /// A pack the SDK ships, by name.
   final String pack;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
+    if (about case final aboutValue?) 'about': aboutValue,
     'pack': pack,
   };
 
   @override
-  List<Object?> get _fields => [pack];
+  List<Object?> get _fields => [about, pack];
 }
 
 /// The request as a binding writes it.

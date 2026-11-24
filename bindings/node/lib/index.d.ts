@@ -8844,8 +8844,9 @@ export declare class AlmanacArea {
    *
    * @example
    * const { rules } = sdk.almanac.festivalPack('INDIA_CENTRAL');
+   * const { about } = sdk.almanac.festivalPack('NEPAL_PANCHANGA', { about: true });
    */
-  festivalPack(pack: string): FestivalPackListing;
+  festivalPack(pack: string, options?: { readonly about?: boolean }): FestivalPackListing;
 
   /**
    * The times a muhurta rule set leaves over a range, ranked best first,
@@ -8994,6 +8995,27 @@ export interface FestivalPackListing {
   readonly pack: string;
   /** Its rows, by key. */
   readonly rules: readonly FestivalPackRow[];
+  /** Asked with `about`: each described festival and group, rules first. */
+  readonly about?: readonly FestivalAbout[];
+  /** Asked with `about`: the rules and groups not described yet, by key. */
+  readonly unwritten?: readonly string[];
+}
+
+/**
+ * A festival described (`03-design/festival-about.md`): render each item with
+ * `sdk.intl.render(item.key, item.params)`.
+ */
+export interface FestivalAbout {
+  /** The festival's rule key or its group's key. */
+  readonly key: string;
+  /** Two to four sentences on what it is and why it is kept. */
+  readonly about: PlanItem;
+  /** The acts it is kept with, in a page's order. */
+  readonly observance: readonly PlanItem[];
+  /** Who keeps it and where. */
+  readonly who: PlanItem;
+  /** The works its facts come from. */
+  readonly sources: readonly string[];
 }
 
 /** One rule of a pack. */

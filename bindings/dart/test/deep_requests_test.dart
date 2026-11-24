@@ -1688,7 +1688,7 @@ void main() {
       path: [],
       dropping: [],
       members: 0,
-      written: PackRequest(pack: 'INDIA_CENTRAL').toJson(),
+      written: PackRequest(about: true, pack: 'INDIA_CENTRAL').toJson(),
     );
   });
 

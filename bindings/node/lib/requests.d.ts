@@ -391,6 +391,10 @@ export interface ElectRequest {
  */
 export interface PackRequest {
   /**
+   * Whether to describe each festival: what it is, how it is kept and who keeps it where.
+   */
+  readonly about?: boolean;
+  /**
    * A pack the SDK ships, by name.
    */
   readonly pack: string;

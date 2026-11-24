@@ -348,8 +348,9 @@ final List<Surface> requests = [
     Param('zone', Scalar('Object')),
   ], fields: (v) => [v.altitudeM, v.calendar, v.first, v.last, v.latitudeDeg, v.longitudeDeg, v.muhurta, v.utcOffsetSeconds, v.zone]),
   Built<PackRequest>('PackRequest', PackRequest.new, [
+    Param('about', Scalar('bool')),
     Param('pack', Scalar('String')),
-  ], fields: (v) => [v.pack]),
+  ], fields: (v) => [v.about, v.pack]),
   Built<FestivalCalendarRequest>('FestivalCalendarRequest', FestivalCalendarRequest.new, [
     Param('alarm', Named('FeedAlarm')),
     Param('altitudeM', Scalar('double')),

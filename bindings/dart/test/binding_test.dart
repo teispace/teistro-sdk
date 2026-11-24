@@ -1311,6 +1311,35 @@ void main() {
     );
   });
 
+  test('a pack asked with about describes its festivals, each item '
+      'rendering in the locale (SR-153)', () {
+    final ctx = context();
+    expect(
+      ctx.almanac.festivalPack('NEPAL_PANCHANGA').containsKey('about'),
+      isFalse,
+    );
+    final nepal = ctx.almanac.festivalPack('NEPAL_PANCHANGA', about: true);
+    final about =
+        (nepal['about']! as List<Object?>).cast<Map<String, Object?>>();
+    final tihar = about.firstWhere((said) => said['key'] == 'TIHAR');
+    final items =
+        [
+          tihar['about'],
+          ...(tihar['observance']! as List<Object?>),
+          tihar['who'],
+        ].cast<Map<String, Object?>>();
+    for (final item in items) {
+      final key = item['key']! as String;
+      final rendered = ctx.intl.render(
+        key,
+        item['params']! as Map<String, Object?>,
+      );
+      expect(rendered.fallback, isFalse, reason: key);
+      expect(rendered.warningList, isEmpty, reason: key);
+    }
+    expect(nepal['unwritten'], isNot(contains('TIHAR')));
+  });
+
   test('the locale engine renders typed parameters, and says where '
       'from', () {
     final ctx = context();

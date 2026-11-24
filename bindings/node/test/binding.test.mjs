@@ -7737,6 +7737,17 @@ test('a festival pack lists its rules with their values', () => {
   assert.deepEqual(janmashtami.map((fast) => [fast.kind, fast.ifUnable]), [['UPAVASA', undefined], ['PHALAHARA', true]]);
   const jain = ctx.almanac.festivalPack('JAIN').rules;
   assert.deepEqual(jain.find((rule) => rule.key === 'DASA_LAKSHANA').meta.communities, ['DIGAMBARA']);
+  // Asked with about, each described festival renders whole (SR-153).
+  assert.equal(ctx.almanac.festivalPack('INDIA_CENTRAL').about, undefined);
+  const nepal = ctx.almanac.festivalPack('NEPAL_PANCHANGA', { about: true });
+  const tihar = nepal.about.find((said) => said.key === 'TIHAR');
+  assert.ok(tihar.sources.length > 0);
+  for (const item of [tihar.about, ...tihar.observance, tihar.who]) {
+    const rendered = ctx.intl.render(item.key, item.params);
+    assert.equal(rendered.isFallback, false, item.key);
+    assert.deepEqual(rendered.warnings, [], item.key);
+  }
+  assert.ok(!nepal.unwritten.includes('TIHAR'));
   assert.throws(() => ctx.almanac.festivalPack(null), TypeError);
   assert.throws(() => ctx.almanac.festivalPack('NO_SUCH_PACK'), (error) => error.field === 'pack.pack');
   ctx.dispose();

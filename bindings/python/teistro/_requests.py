@@ -1129,6 +1129,9 @@ class ElectRequest(TypedDict, total=False):
 class PackRequest(TypedDict, total=False):
     """`PackRequest` as the bindings write it."""
 
+    about: bool
+    """Whether to describe each festival: what it is, how it is kept and who keeps it where."""
+
     pack: Required[str]
     """A pack the SDK ships, by name."""
 
