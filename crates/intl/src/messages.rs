@@ -12416,6 +12416,2323 @@ pub mod sdk {
 
     /// The `voice` group.
     pub mod voice {
+        /// The `muhurta` group.
+        pub mod muhurta {
+            /// The `avoided` group.
+            pub mod avoided {
+                /// The message `sdk.voice.muhurta.avoided.ASHTAMA_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::AshtamaLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = AshtamaLagna;
+                /// assert_eq!(AshtamaLagna::KEY, "sdk.voice.muhurta.avoided.ASHTAMA_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshtamaLagna;
+
+                impl crate::TypedMessage for AshtamaLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.ASHTAMA_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.ASHUBHA_YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::AshubhaYoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = AshubhaYoga;
+                /// assert_eq!(AshubhaYoga::KEY, "sdk.voice.muhurta.avoided.ASHUBHA_YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshubhaYoga;
+
+                impl crate::TypedMessage for AshubhaYoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.ASHUBHA_YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.CHANDRABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Chandrabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Chandrabala;
+                /// assert_eq!(Chandrabala::KEY, "sdk.voice.muhurta.avoided.CHANDRABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Chandrabala;
+
+                impl crate::TypedMessage for Chandrabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.CHANDRABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.CHOGHADIYA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Choghadiya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Choghadiya;
+                /// assert_eq!(Choghadiya::KEY, "sdk.voice.muhurta.avoided.CHOGHADIYA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Choghadiya;
+
+                impl crate::TypedMessage for Choghadiya {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.CHOGHADIYA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.GHATA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Ghata;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Ghata;
+                /// assert_eq!(Ghata::KEY, "sdk.voice.muhurta.avoided.GHATA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Ghata;
+
+                impl crate::TypedMessage for Ghata {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.GHATA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.KAALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Kaala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kaala { variant: 2 };
+                /// assert_eq!(Kaala::KEY, "sdk.voice.muhurta.avoided.KAALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kaala {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Kaala {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.KAALA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.KARANA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Karana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Karana;
+                /// assert_eq!(Karana::KEY, "sdk.voice.muhurta.avoided.KARANA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Karana;
+
+                impl crate::TypedMessage for Karana {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.KARANA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.KARTARI`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Kartari;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kartari;
+                /// assert_eq!(Kartari::KEY, "sdk.voice.muhurta.avoided.KARTARI");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kartari;
+
+                impl crate::TypedMessage for Kartari {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.KARTARI";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.KUNAVAMSA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Kunavamsa;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kunavamsa;
+                /// assert_eq!(Kunavamsa::KEY, "sdk.voice.muhurta.avoided.KUNAVAMSA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kunavamsa;
+
+                impl crate::TypedMessage for Kunavamsa {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.KUNAVAMSA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Lagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Lagna;
+                /// assert_eq!(Lagna::KEY, "sdk.voice.muhurta.avoided.LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Lagna;
+
+                impl crate::TypedMessage for Lagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.LAGNA_TYAJYA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::LagnaTyajya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = LagnaTyajya;
+                /// assert_eq!(LagnaTyajya::KEY, "sdk.voice.muhurta.avoided.LAGNA_TYAJYA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LagnaTyajya;
+
+                impl crate::TypedMessage for LagnaTyajya {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.LAGNA_TYAJYA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::MaleficInLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MaleficInLagna;
+                /// assert_eq!(MaleficInLagna::KEY, "sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MaleficInLagna;
+
+                impl crate::TypedMessage for MaleficInLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MARS_IN_EIGHTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::MarsInEighth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MarsInEighth;
+                /// assert_eq!(MarsInEighth::KEY, "sdk.voice.muhurta.avoided.MARS_IN_EIGHTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MarsInEighth;
+
+                impl crate::TypedMessage for MarsInEighth {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MARS_IN_EIGHTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Month;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Month;
+                /// assert_eq!(Month::KEY, "sdk.voice.muhurta.avoided.MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Month;
+
+                impl crate::TypedMessage for Month {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::MoonInDusthana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MoonInDusthana { variant: 2 };
+                /// assert_eq!(MoonInDusthana::KEY, "sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonInDusthana {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for MoonInDusthana {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MOON_JOINED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::MoonJoined;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MoonJoined;
+                /// assert_eq!(MoonJoined::KEY, "sdk.voice.muhurta.avoided.MOON_JOINED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonJoined;
+
+                impl crate::TypedMessage for MoonJoined {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MOON_JOINED";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.MUHURTA_YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::MuhurtaYoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MuhurtaYoga;
+                /// assert_eq!(MuhurtaYoga::KEY, "sdk.voice.muhurta.avoided.MUHURTA_YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MuhurtaYoga;
+
+                impl crate::TypedMessage for MuhurtaYoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.MUHURTA_YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.NAKSHATRA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Nakshatra;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Nakshatra;
+                /// assert_eq!(Nakshatra::KEY, "sdk.voice.muhurta.avoided.NAKSHATRA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nakshatra;
+
+                impl crate::TypedMessage for Nakshatra {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.NAKSHATRA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.PADA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Pada;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Pada;
+                /// assert_eq!(Pada::KEY, "sdk.voice.muhurta.avoided.PADA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Pada;
+
+                impl crate::TypedMessage for Pada {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.PADA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::PanchakaRemainder;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = PanchakaRemainder;
+                /// assert_eq!(PanchakaRemainder::KEY, "sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PanchakaRemainder;
+
+                impl crate::TypedMessage for PanchakaRemainder {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.PRADOSHA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Pradosha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Pradosha;
+                /// assert_eq!(Pradosha::KEY, "sdk.voice.muhurta.avoided.PRADOSHA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Pradosha;
+
+                impl crate::TypedMessage for Pradosha {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.PRADOSHA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::SeventhOccupied;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SeventhOccupied;
+                /// assert_eq!(SeventhOccupied::KEY, "sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SeventhOccupied;
+
+                impl crate::TypedMessage for SeventhOccupied {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.SOLAR_MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::SolarMonth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SolarMonth;
+                /// assert_eq!(SolarMonth::KEY, "sdk.voice.muhurta.avoided.SOLAR_MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SolarMonth;
+
+                impl crate::TypedMessage for SolarMonth {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.SOLAR_MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.TARABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Tarabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tarabala;
+                /// assert_eq!(Tarabala::KEY, "sdk.voice.muhurta.avoided.TARABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tarabala;
+
+                impl crate::TypedMessage for Tarabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.TARABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.TITHI`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Tithi;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tithi;
+                /// assert_eq!(Tithi::KEY, "sdk.voice.muhurta.avoided.TITHI");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tithi;
+
+                impl crate::TypedMessage for Tithi {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.TITHI";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::UnwantedPlacement;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = UnwantedPlacement;
+                /// assert_eq!(UnwantedPlacement::KEY, "sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct UnwantedPlacement;
+
+                impl crate::TypedMessage for UnwantedPlacement {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.VARA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Vara;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Vara;
+                /// assert_eq!(Vara::KEY, "sdk.voice.muhurta.avoided.VARA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Vara;
+
+                impl crate::TypedMessage for Vara {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.VARA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.VARJYAM`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Varjyam;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Varjyam { variant: 2 };
+                /// assert_eq!(Varjyam::KEY, "sdk.voice.muhurta.avoided.VARJYAM");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Varjyam {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Varjyam {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.VARJYAM";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.VENUS_IN_SIXTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::VenusInSixth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = VenusInSixth;
+                /// assert_eq!(VenusInSixth::KEY, "sdk.voice.muhurta.avoided.VENUS_IN_SIXTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct VenusInSixth;
+
+                impl crate::TypedMessage for VenusInSixth {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.VENUS_IN_SIXTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.VRISHA_VASTU`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::VrishaVastu;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = VrishaVastu;
+                /// assert_eq!(VrishaVastu::KEY, "sdk.voice.muhurta.avoided.VRISHA_VASTU");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct VrishaVastu;
+
+                impl crate::TypedMessage for VrishaVastu {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.VRISHA_VASTU";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.avoided.YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::avoided::Yoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Yoga;
+                /// assert_eq!(Yoga::KEY, "sdk.voice.muhurta.avoided.YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Yoga;
+
+                impl crate::TypedMessage for Yoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.avoided.YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+            }
+
+            /// The `despite` group.
+            pub mod despite {
+                /// The message `sdk.voice.muhurta.despite.ASHTAMA_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::AshtamaLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = AshtamaLagna;
+                /// assert_eq!(AshtamaLagna::KEY, "sdk.voice.muhurta.despite.ASHTAMA_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshtamaLagna;
+
+                impl crate::TypedMessage for AshtamaLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.ASHTAMA_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.ASHUBHA_YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::AshubhaYoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = AshubhaYoga { yoga: teistro_core::catalogue::AshubhaYoga::ALL[0] };
+                /// assert_eq!(AshubhaYoga::KEY, "sdk.voice.muhurta.despite.ASHUBHA_YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct AshubhaYoga {
+                    /// The `yoga` parameter.
+                    pub yoga: teistro_core::catalogue::AshubhaYoga,
+                }
+
+                impl crate::TypedMessage for AshubhaYoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.ASHUBHA_YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("yoga", crate::Value::catalogued(self.yoga)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.CHANDRABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Chandrabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Chandrabala;
+                /// assert_eq!(Chandrabala::KEY, "sdk.voice.muhurta.despite.CHANDRABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Chandrabala;
+
+                impl crate::TypedMessage for Chandrabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.CHANDRABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.CHOGHADIYA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Choghadiya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Choghadiya { choghadiya: teistro_core::catalogue::Choghadiya::ALL[0] };
+                /// assert_eq!(Choghadiya::KEY, "sdk.voice.muhurta.despite.CHOGHADIYA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Choghadiya {
+                    /// The `choghadiya` parameter.
+                    pub choghadiya: teistro_core::catalogue::Choghadiya,
+                }
+
+                impl crate::TypedMessage for Choghadiya {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.CHOGHADIYA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("choghadiya", crate::Value::catalogued(self.choghadiya)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.GHATA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Ghata;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Ghata;
+                /// assert_eq!(Ghata::KEY, "sdk.voice.muhurta.despite.GHATA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Ghata;
+
+                impl crate::TypedMessage for Ghata {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.GHATA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.KAALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Kaala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kaala { kaala: teistro_core::catalogue::Kaala::ALL[0] };
+                /// assert_eq!(Kaala::KEY, "sdk.voice.muhurta.despite.KAALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kaala {
+                    /// The `kaala` parameter.
+                    pub kaala: teistro_core::catalogue::Kaala,
+                }
+
+                impl crate::TypedMessage for Kaala {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.KAALA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("kaala", crate::Value::catalogued(self.kaala)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.KARANA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Karana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Karana { karana: teistro_core::catalogue::Karana::ALL[0] };
+                /// assert_eq!(Karana::KEY, "sdk.voice.muhurta.despite.KARANA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Karana {
+                    /// The `karana` parameter.
+                    pub karana: teistro_core::catalogue::Karana,
+                }
+
+                impl crate::TypedMessage for Karana {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.KARANA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("karana", crate::Value::catalogued(self.karana)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.KARTARI`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Kartari;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kartari {
+                ///     second: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                ///     twelfth: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(Kartari::KEY, "sdk.voice.muhurta.despite.KARTARI");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kartari {
+                    /// The `second` parameter.
+                    pub second: Vec<crate::Value>,
+                    /// The `twelfth` parameter.
+                    pub twelfth: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for Kartari {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.KARTARI";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("second", crate::Value::List(self.second.clone())),
+                            ("twelfth", crate::Value::List(self.twelfth.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.KUNAVAMSA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Kunavamsa;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Kunavamsa {
+                ///     lord: teistro_core::catalogue::Graha::ALL[0],
+                ///     navamsa: teistro_core::catalogue::Rashi::ALL[0],
+                /// };
+                /// assert_eq!(Kunavamsa::KEY, "sdk.voice.muhurta.despite.KUNAVAMSA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Kunavamsa {
+                    /// The `lord` parameter.
+                    pub lord: teistro_core::catalogue::Graha,
+                    /// The `navamsa` parameter.
+                    pub navamsa: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for Kunavamsa {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.KUNAVAMSA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("lord", crate::Value::catalogued(self.lord)),
+                            ("navamsa", crate::Value::catalogued(self.navamsa)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Lagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Lagna { sign: teistro_core::catalogue::Rashi::ALL[0] };
+                /// assert_eq!(Lagna::KEY, "sdk.voice.muhurta.despite.LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Lagna {
+                    /// The `sign` parameter.
+                    pub sign: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for Lagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("sign", crate::Value::catalogued(self.sign)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.LAGNA_TYAJYA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::LagnaTyajya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = LagnaTyajya { sign: teistro_core::catalogue::Rashi::ALL[0] };
+                /// assert_eq!(LagnaTyajya::KEY, "sdk.voice.muhurta.despite.LAGNA_TYAJYA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LagnaTyajya {
+                    /// The `sign` parameter.
+                    pub sign: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for LagnaTyajya {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.LAGNA_TYAJYA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("sign", crate::Value::catalogued(self.sign)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::MaleficInLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MaleficInLagna {
+                ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(MaleficInLagna::KEY, "sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MaleficInLagna {
+                    /// The `grahas` parameter.
+                    pub grahas: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for MaleficInLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("grahas", crate::Value::List(self.grahas.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MARS_IN_EIGHTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::MarsInEighth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MarsInEighth;
+                /// assert_eq!(MarsInEighth::KEY, "sdk.voice.muhurta.despite.MARS_IN_EIGHTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MarsInEighth;
+
+                impl crate::TypedMessage for MarsInEighth {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MARS_IN_EIGHTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Month;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Month { masa: teistro_core::catalogue::Masa::ALL[0] };
+                /// assert_eq!(Month::KEY, "sdk.voice.muhurta.despite.MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Month {
+                    /// The `masa` parameter.
+                    pub masa: teistro_core::catalogue::Masa,
+                }
+
+                impl crate::TypedMessage for Month {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("masa", crate::Value::catalogued(self.masa)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MOON_IN_DUSTHANA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::MoonInDusthana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MoonInDusthana { house: 2 };
+                /// assert_eq!(MoonInDusthana::KEY, "sdk.voice.muhurta.despite.MOON_IN_DUSTHANA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonInDusthana {
+                    /// The `house` parameter.
+                    pub house: i64,
+                }
+
+                impl crate::TypedMessage for MoonInDusthana {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MOON_IN_DUSTHANA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("house", crate::Value::Int(self.house)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MOON_JOINED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::MoonJoined;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MoonJoined {
+                ///     with: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(MoonJoined::KEY, "sdk.voice.muhurta.despite.MOON_JOINED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MoonJoined {
+                    /// The `with` parameter.
+                    pub with: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for MoonJoined {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MOON_JOINED";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("with", crate::Value::List(self.with.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.MUHURTA_YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::MuhurtaYoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MuhurtaYoga { yoga: teistro_core::catalogue::MuhurtaYoga::ALL[0] };
+                /// assert_eq!(MuhurtaYoga::KEY, "sdk.voice.muhurta.despite.MUHURTA_YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MuhurtaYoga {
+                    /// The `yoga` parameter.
+                    pub yoga: teistro_core::catalogue::MuhurtaYoga,
+                }
+
+                impl crate::TypedMessage for MuhurtaYoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.MUHURTA_YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("yoga", crate::Value::catalogued(self.yoga)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.NAKSHATRA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Nakshatra;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+                /// assert_eq!(Nakshatra::KEY, "sdk.voice.muhurta.despite.NAKSHATRA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nakshatra {
+                    /// The `nakshatra` parameter.
+                    pub nakshatra: teistro_core::catalogue::Nakshatra,
+                }
+
+                impl crate::TypedMessage for Nakshatra {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.NAKSHATRA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.PADA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Pada;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Pada { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+                /// assert_eq!(Pada::KEY, "sdk.voice.muhurta.despite.PADA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Pada {
+                    /// The `nakshatra` parameter.
+                    pub nakshatra: teistro_core::catalogue::Nakshatra,
+                }
+
+                impl crate::TypedMessage for Pada {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.PADA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.PANCHAKA_REMAINDER`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::PanchakaRemainder;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = PanchakaRemainder { panchaka: teistro_core::catalogue::Panchaka::ALL[0] };
+                /// assert_eq!(PanchakaRemainder::KEY, "sdk.voice.muhurta.despite.PANCHAKA_REMAINDER");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct PanchakaRemainder {
+                    /// The `panchaka` parameter.
+                    pub panchaka: teistro_core::catalogue::Panchaka,
+                }
+
+                impl crate::TypedMessage for PanchakaRemainder {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.PANCHAKA_REMAINDER";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("panchaka", crate::Value::catalogued(self.panchaka)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.PRADOSHA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Pradosha;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Pradosha { tithi: teistro_core::catalogue::Tithi::ALL[0] };
+                /// assert_eq!(Pradosha::KEY, "sdk.voice.muhurta.despite.PRADOSHA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Pradosha {
+                    /// The `tithi` parameter.
+                    pub tithi: teistro_core::catalogue::Tithi,
+                }
+
+                impl crate::TypedMessage for Pradosha {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.PRADOSHA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("tithi", crate::Value::catalogued(self.tithi)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.SEVENTH_OCCUPIED`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::SeventhOccupied;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SeventhOccupied {
+                ///     by: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(SeventhOccupied::KEY, "sdk.voice.muhurta.despite.SEVENTH_OCCUPIED");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SeventhOccupied {
+                    /// The `by` parameter.
+                    pub by: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for SeventhOccupied {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.SEVENTH_OCCUPIED";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("by", crate::Value::List(self.by.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.SOLAR_MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::SolarMonth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SolarMonth { sign: teistro_core::catalogue::Rashi::ALL[0] };
+                /// assert_eq!(SolarMonth::KEY, "sdk.voice.muhurta.despite.SOLAR_MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SolarMonth {
+                    /// The `sign` parameter.
+                    pub sign: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for SolarMonth {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.SOLAR_MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("sign", crate::Value::catalogued(self.sign)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.TARABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Tarabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tarabala;
+                /// assert_eq!(Tarabala::KEY, "sdk.voice.muhurta.despite.TARABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tarabala;
+
+                impl crate::TypedMessage for Tarabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.TARABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.TITHI`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Tithi;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0] };
+                /// assert_eq!(Tithi::KEY, "sdk.voice.muhurta.despite.TITHI");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tithi {
+                    /// The `tithi` parameter.
+                    pub tithi: teistro_core::catalogue::Tithi,
+                }
+
+                impl crate::TypedMessage for Tithi {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.TITHI";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("tithi", crate::Value::catalogued(self.tithi)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.UNWANTED_PLACEMENT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::UnwantedPlacement;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = UnwantedPlacement {
+                ///     by: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                ///     house: 2,
+                /// };
+                /// assert_eq!(UnwantedPlacement::KEY, "sdk.voice.muhurta.despite.UNWANTED_PLACEMENT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct UnwantedPlacement {
+                    /// The `by` parameter.
+                    pub by: Vec<crate::Value>,
+                    /// The `house` parameter.
+                    pub house: i64,
+                }
+
+                impl crate::TypedMessage for UnwantedPlacement {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.UNWANTED_PLACEMENT";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("by", crate::Value::List(self.by.clone())),
+                            ("house", crate::Value::Int(self.house)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.VARA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Vara;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
+                /// assert_eq!(Vara::KEY, "sdk.voice.muhurta.despite.VARA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Vara {
+                    /// The `vara` parameter.
+                    pub vara: teistro_core::catalogue::Vara,
+                }
+
+                impl crate::TypedMessage for Vara {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.VARA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("vara", crate::Value::catalogued(self.vara)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.VARJYAM`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Varjyam;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Varjyam { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] };
+                /// assert_eq!(Varjyam::KEY, "sdk.voice.muhurta.despite.VARJYAM");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Varjyam {
+                    /// The `nakshatra` parameter.
+                    pub nakshatra: teistro_core::catalogue::Nakshatra,
+                }
+
+                impl crate::TypedMessage for Varjyam {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.VARJYAM";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.VENUS_IN_SIXTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::VenusInSixth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = VenusInSixth;
+                /// assert_eq!(VenusInSixth::KEY, "sdk.voice.muhurta.despite.VENUS_IN_SIXTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct VenusInSixth;
+
+                impl crate::TypedMessage for VenusInSixth {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.VENUS_IN_SIXTH";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.VRISHA_VASTU`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::VrishaVastu;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = VrishaVastu;
+                /// assert_eq!(VrishaVastu::KEY, "sdk.voice.muhurta.despite.VRISHA_VASTU");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct VrishaVastu;
+
+                impl crate::TypedMessage for VrishaVastu {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.VRISHA_VASTU";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.despite.YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::despite::Yoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] };
+                /// assert_eq!(Yoga::KEY, "sdk.voice.muhurta.despite.YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Yoga {
+                    /// The `yoga` parameter.
+                    pub yoga: teistro_core::catalogue::Yoga,
+                }
+
+                impl crate::TypedMessage for Yoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.despite.YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("yoga", crate::Value::catalogued(self.yoga)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The `favours` group.
+            pub mod favours {
+                /// The message `sdk.voice.muhurta.favours.ABHIJIT`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Abhijit;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Abhijit { variant: 2 };
+                /// assert_eq!(Abhijit::KEY, "sdk.voice.muhurta.favours.ABHIJIT");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Abhijit {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Abhijit {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.ABHIJIT";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::BeneficInLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = BeneficInLagna {
+                ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(BeneficInLagna::KEY, "sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct BeneficInLagna {
+                    /// The `grahas` parameter.
+                    pub grahas: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for BeneficInLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("grahas", crate::Value::List(self.grahas.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.CHANDRABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Chandrabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Chandrabala;
+                /// assert_eq!(Chandrabala::KEY, "sdk.voice.muhurta.favours.CHANDRABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Chandrabala;
+
+                impl crate::TypedMessage for Chandrabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.CHANDRABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.CHOGHADIYA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Choghadiya;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Choghadiya { choghadiya: teistro_core::catalogue::Choghadiya::ALL[0] };
+                /// assert_eq!(Choghadiya::KEY, "sdk.voice.muhurta.favours.CHOGHADIYA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Choghadiya {
+                    /// The `choghadiya` parameter.
+                    pub choghadiya: teistro_core::catalogue::Choghadiya,
+                }
+
+                impl crate::TypedMessage for Choghadiya {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.CHOGHADIYA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("choghadiya", crate::Value::catalogued(self.choghadiya)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.EXALTED_IN_LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::ExaltedInLagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = ExaltedInLagna {
+                ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(ExaltedInLagna::KEY, "sdk.voice.muhurta.favours.EXALTED_IN_LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct ExaltedInLagna {
+                    /// The `grahas` parameter.
+                    pub grahas: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for ExaltedInLagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.EXALTED_IN_LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("grahas", crate::Value::List(self.grahas.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.KARANA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Karana;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Karana { karana: teistro_core::catalogue::Karana::ALL[0], variant: 2 };
+                /// assert_eq!(Karana::KEY, "sdk.voice.muhurta.favours.KARANA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Karana {
+                    /// The `karana` parameter.
+                    pub karana: teistro_core::catalogue::Karana,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Karana {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.KARANA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("karana", crate::Value::catalogued(self.karana)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.KENDRA_BENEFICS`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::KendraBenefics;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = KendraBenefics {
+                ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(KendraBenefics::KEY, "sdk.voice.muhurta.favours.KENDRA_BENEFICS");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct KendraBenefics {
+                    /// The `grahas` parameter.
+                    pub grahas: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for KendraBenefics {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.KENDRA_BENEFICS";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("grahas", crate::Value::List(self.grahas.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.LAGNA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Lagna;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Lagna { sign: teistro_core::catalogue::Rashi::ALL[0] };
+                /// assert_eq!(Lagna::KEY, "sdk.voice.muhurta.favours.LAGNA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Lagna {
+                    /// The `sign` parameter.
+                    pub sign: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for Lagna {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.LAGNA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("sign", crate::Value::catalogued(self.sign)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::LuminaryInEleventh;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = LuminaryInEleventh {
+                ///     grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+                /// };
+                /// assert_eq!(LuminaryInEleventh::KEY, "sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct LuminaryInEleventh {
+                    /// The `grahas` parameter.
+                    pub grahas: Vec<crate::Value>,
+                }
+
+                impl crate::TypedMessage for LuminaryInEleventh {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("grahas", crate::Value::List(self.grahas.clone())),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Month;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Month { masa: teistro_core::catalogue::Masa::ALL[0] };
+                /// assert_eq!(Month::KEY, "sdk.voice.muhurta.favours.MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Month {
+                    /// The `masa` parameter.
+                    pub masa: teistro_core::catalogue::Masa,
+                }
+
+                impl crate::TypedMessage for Month {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("masa", crate::Value::catalogued(self.masa)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.MUHURTA_YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::MuhurtaYoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = MuhurtaYoga { yoga: teistro_core::catalogue::MuhurtaYoga::ALL[0] };
+                /// assert_eq!(MuhurtaYoga::KEY, "sdk.voice.muhurta.favours.MUHURTA_YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct MuhurtaYoga {
+                    /// The `yoga` parameter.
+                    pub yoga: teistro_core::catalogue::MuhurtaYoga,
+                }
+
+                impl crate::TypedMessage for MuhurtaYoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.MUHURTA_YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("yoga", crate::Value::catalogued(self.yoga)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.NAKSHATRA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Nakshatra;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0], variant: 2 };
+                /// assert_eq!(Nakshatra::KEY, "sdk.voice.muhurta.favours.NAKSHATRA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Nakshatra {
+                    /// The `nakshatra` parameter.
+                    pub nakshatra: teistro_core::catalogue::Nakshatra,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Nakshatra {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.NAKSHATRA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.SOLAR_MONTH`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::SolarMonth;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = SolarMonth { sign: teistro_core::catalogue::Rashi::ALL[0] };
+                /// assert_eq!(SolarMonth::KEY, "sdk.voice.muhurta.favours.SOLAR_MONTH");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct SolarMonth {
+                    /// The `sign` parameter.
+                    pub sign: teistro_core::catalogue::Rashi,
+                }
+
+                impl crate::TypedMessage for SolarMonth {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.SOLAR_MONTH";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("sign", crate::Value::catalogued(self.sign)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.TARABALA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Tarabala;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tarabala;
+                /// assert_eq!(Tarabala::KEY, "sdk.voice.muhurta.favours.TARABALA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tarabala;
+
+                impl crate::TypedMessage for Tarabala {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.TARABALA";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.TITHI`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Tithi;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0], variant: 2 };
+                /// assert_eq!(Tithi::KEY, "sdk.voice.muhurta.favours.TITHI");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Tithi {
+                    /// The `tithi` parameter.
+                    pub tithi: teistro_core::catalogue::Tithi,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Tithi {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.TITHI";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("tithi", crate::Value::catalogued(self.tithi)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.VARA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Vara;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0], variant: 2 };
+                /// assert_eq!(Vara::KEY, "sdk.voice.muhurta.favours.VARA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Vara {
+                    /// The `vara` parameter.
+                    pub vara: teistro_core::catalogue::Vara,
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                }
+
+                impl crate::TypedMessage for Vara {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.VARA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("vara", crate::Value::catalogued(self.vara)),
+                            ("variant", crate::Value::Int(self.variant)),
+                        ])
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.VRISHA_VASTU`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::VrishaVastu;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = VrishaVastu;
+                /// assert_eq!(VrishaVastu::KEY, "sdk.voice.muhurta.favours.VRISHA_VASTU");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct VrishaVastu;
+
+                impl crate::TypedMessage for VrishaVastu {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.VRISHA_VASTU";
+                    fn params(&self) -> crate::Params {
+                        crate::Params::new()
+                    }
+                }
+
+                /// The message `sdk.voice.muhurta.favours.YOGA`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::muhurta::favours::Yoga;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = Yoga { variant: 2, yoga: teistro_core::catalogue::Yoga::ALL[0] };
+                /// assert_eq!(Yoga::KEY, "sdk.voice.muhurta.favours.YOGA");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// // An entity's record may be a pack's; without it the message says what is missing.
+                /// assert!(!rendered.text.is_empty());
+                /// ```
+                #[derive(Clone, Debug, PartialEq)]
+                pub struct Yoga {
+                    /// The `variant` parameter.
+                    pub variant: i64,
+                    /// The `yoga` parameter.
+                    pub yoga: teistro_core::catalogue::Yoga,
+                }
+
+                impl crate::TypedMessage for Yoga {
+                    const KEY: &'static str = "sdk.voice.muhurta.favours.YOGA";
+                    fn params(&self) -> crate::Params {
+                        crate::params([
+                            ("variant", crate::Value::Int(self.variant)),
+                            ("yoga", crate::Value::catalogued(self.yoga)),
+                        ])
+                    }
+                }
+
+            }
+
+            /// The message `sdk.voice.muhurta.line`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::muhurta::Line;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Line {
+            ///     avoided: 2,
+            ///     count: 2,
+            ///     limbs: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+            ///     variant: 2,
+            /// };
+            /// assert_eq!(Line::KEY, "sdk.voice.muhurta.line");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Line {
+                /// The `avoided` parameter.
+                pub avoided: i64,
+                /// The `count` parameter.
+                pub count: i64,
+                /// The `limbs` parameter.
+                pub limbs: Vec<crate::Value>,
+                /// The `variant` parameter.
+                pub variant: i64,
+            }
+
+            impl crate::TypedMessage for Line {
+                const KEY: &'static str = "sdk.voice.muhurta.line";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("avoided", crate::Value::Int(self.avoided)),
+                        ("count", crate::Value::Int(self.count)),
+                        ("limbs", crate::Value::List(self.limbs.clone())),
+                        ("variant", crate::Value::Int(self.variant)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `rashifal` group.
         pub mod rashifal {
             /// The `area` group.

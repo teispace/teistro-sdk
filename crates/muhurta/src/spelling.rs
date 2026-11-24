@@ -409,6 +409,7 @@ mod tests {
                 what: "YOGA_TEXT".to_owned(),
                 why: "a reason".to_owned(),
             }],
+            reasons: Vec::new(),
         }
     }
 

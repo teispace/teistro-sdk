@@ -18728,6 +18728,7 @@ final class MuhurtaAnswer {
     required this.windowsBlackedOut,
     required this.ranking,
     required this.unjudged,
+    required this.reasons,
     required this.provenance,
   });
 
@@ -18744,9 +18745,66 @@ final class MuhurtaAnswer {
   final MuhurtaRanking ranking;
   final List<MuhurtaUnjudged> unjudged;
 
+  /// Why each window is good, in its order, when the request set
+  /// `reasons`; empty otherwise.
+  final List<MuhurtaReasons> reasons;
+
   /// What computed it and under what: the asta criterion and the zodiac's
   /// instant among the applied conventions, and the hash of the value.
   final Provenance provenance;
+}
+
+/// One reason a window is good, or a caution against it:
+/// `intl.render(reason.intent, reason.params)` says it.
+final class MuhurtaReason {
+  const MuhurtaReason({
+    required this.intent,
+    required this.params,
+    required this.side,
+    required this.key,
+    required this.clause,
+  });
+
+  /// A message key of the voice pack, as
+  /// `sdk.voice.muhurta.avoided.MARS_IN_EIGHTH`.
+  final String intent;
+
+  /// Its slots: the clause's members and a `variant`.
+  final Map<String, Object?> params;
+
+  /// `FOR`, `DESPITE` or `AVOIDED`.
+  final String side;
+
+  /// The clause's key, as `MARS_IN_EIGHTH`.
+  final String key;
+
+  /// For `FOR` and `DESPITE`, the clause's index in the window's clauses;
+  /// null for `AVOIDED`, which says an absence.
+  final int? clause;
+}
+
+/// Why a window is good, in words (`03-design/muhurta-reasons.md`): a short
+/// line and the list, `FOR`, then `DESPITE`, then `AVOIDED`.
+final class MuhurtaReasons {
+  const MuhurtaReasons({required this.line, required this.reasons});
+
+  /// The "why this date" line.
+  final MuhurtaReasonLine line;
+
+  /// The list.
+  final List<MuhurtaReason> reasons;
+}
+
+/// The "why this date" line: `intl.render(line.intent, line.params)` says it.
+final class MuhurtaReasonLine {
+  const MuhurtaReasonLine({required this.intent, required this.params});
+
+  /// `sdk.voice.muhurta.line`.
+  final String intent;
+
+  /// Its slots: the qualifying `limbs`, their `count`, the doshas `avoided`,
+  /// the cautions `despite` and the `variant`.
+  final Map<String, Object?> params;
 }
 
 /// The `muhurta` section: the envelope's value, its members resolved, with
@@ -18823,6 +18881,25 @@ MuhurtaAnswer _muhurtaAnswer(String json) {
         MuhurtaUnjudged(
           what: raw['what']! as String,
           why: raw['why']! as String,
+        ),
+    ]),
+    reasons: List.unmodifiable([
+      for (final raw in each(value['reasons'] ?? const <Object?>[]))
+        MuhurtaReasons(
+          line: MuhurtaReasonLine(
+            intent: at(raw['line'])['intent']! as String,
+            params: Map.unmodifiable(at(at(raw['line'])['params'])),
+          ),
+          reasons: List.unmodifiable([
+            for (final one in each(raw['reasons']))
+              MuhurtaReason(
+                intent: one['intent']! as String,
+                params: Map.unmodifiable(at(one['params'])),
+                side: one['side']! as String,
+                key: one['key']! as String,
+                clause: one['clause'] as int?,
+              ),
+          ]),
         ),
     ]),
     provenance: Provenance.fromJson(at(envelope['provenance'])),

@@ -9,7 +9,7 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_muhurta::sources::Over;
-use teistro_muhurta::{Answer, ProviderSources, search};
+use teistro_muhurta::{Answer, ProviderSources, reasons, search};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::local_day::local_midnight;
@@ -158,7 +158,11 @@ impl AlmanacArea<'_> {
         };
         let days = found(&almanac)?;
         let sources = ProviderSources::new(&over, *place, zodiac_at)?.with_days(&days.value);
-        let answer = search(&sources, &request.over(from, to))?;
+        let mut answer = search(&sources, &request.over(from, to))?;
+        if request.reasons() {
+            answer.reasons =
+                reasons::of_answer(&answer, request.rules(), request.native().is_some())?;
+        }
         let mut provenance = days.provenance.clone();
         provenance.input_hash = content_hash(&MuhurtaInput {
             from: from.to_string(),

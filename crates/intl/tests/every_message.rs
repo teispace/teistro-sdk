@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 444 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 525 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -767,6 +767,115 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::time::UnknownTime, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::Schemes, true);
     renders(&intl, &teistro_intl::messages::sdk::settings::effect::vargas::UnattestedDn, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::AshtamaLagna, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::AshubhaYoga, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Chandrabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Choghadiya, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Ghata, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Kaala { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Karana, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Kartari, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Kunavamsa, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Lagna, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::LagnaTyajya, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::MaleficInLagna, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::MarsInEighth, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Month, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::MoonInDusthana { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::MoonJoined, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::MuhurtaYoga, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Nakshatra, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Pada, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::PanchakaRemainder, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Pradosha, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::SeventhOccupied, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::SolarMonth, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Tarabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Tithi, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::UnwantedPlacement, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Vara, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Varjyam { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::VenusInSixth, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::VrishaVastu, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::avoided::Yoga, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::AshtamaLagna, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::AshubhaYoga { yoga: teistro_core::catalogue::AshubhaYoga::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Chandrabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Choghadiya { choghadiya: teistro_core::catalogue::Choghadiya::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Ghata, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Kaala { kaala: teistro_core::catalogue::Kaala::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Karana { karana: teistro_core::catalogue::Karana::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Kartari {
+        second: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        twelfth: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Kunavamsa {
+        lord: teistro_core::catalogue::Graha::ALL[0],
+        navamsa: teistro_core::catalogue::Rashi::ALL[0],
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Lagna { sign: teistro_core::catalogue::Rashi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::LagnaTyajya { sign: teistro_core::catalogue::Rashi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::MaleficInLagna {
+        grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::MarsInEighth, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Month { masa: teistro_core::catalogue::Masa::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::MoonInDusthana { house: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::MoonJoined {
+        with: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::MuhurtaYoga { yoga: teistro_core::catalogue::MuhurtaYoga::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Pada { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::PanchakaRemainder { panchaka: teistro_core::catalogue::Panchaka::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Pradosha { tithi: teistro_core::catalogue::Tithi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::SeventhOccupied {
+        by: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::SolarMonth { sign: teistro_core::catalogue::Rashi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Tarabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::UnwantedPlacement {
+        by: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        house: 2,
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Vara { vara: teistro_core::catalogue::Vara::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Varjyam { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::VenusInSixth, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::VrishaVastu, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::despite::Yoga { yoga: teistro_core::catalogue::Yoga::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Abhijit { variant: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::BeneficInLagna {
+        grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Chandrabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Choghadiya { choghadiya: teistro_core::catalogue::Choghadiya::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::ExaltedInLagna {
+        grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Karana { karana: teistro_core::catalogue::Karana::ALL[0], variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::KendraBenefics {
+        grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Lagna { sign: teistro_core::catalogue::Rashi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::LuminaryInEleventh {
+        grahas: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+    }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Month { masa: teistro_core::catalogue::Masa::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::MuhurtaYoga { yoga: teistro_core::catalogue::MuhurtaYoga::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Nakshatra { nakshatra: teistro_core::catalogue::Nakshatra::ALL[0], variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::SolarMonth { sign: teistro_core::catalogue::Rashi::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Tarabala, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Tithi { tithi: teistro_core::catalogue::Tithi::ALL[0], variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Vara { vara: teistro_core::catalogue::Vara::ALL[0], variant: 2 }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::VrishaVastu, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::favours::Yoga { variant: 2, yoga: teistro_core::catalogue::Yoga::ALL[0] }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::muhurta::Line {
+        avoided: 2,
+        count: 2,
+        limbs: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+        variant: 2,
+    }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Care { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Excellent { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::health::Good { variant: 2 }, true);

@@ -6821,6 +6821,7 @@ function muhurtaFrom(json) {
   return deepFreeze({
     ...value,
     closed: value.closed.map(({ date, by }) => ({ date: dateFrom(date), by })),
+    reasons: value.reasons ?? [],
     provenance: decodeProvenance(provenance),
   });
 }

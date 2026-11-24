@@ -12,6 +12,7 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Place;
 use teistro_muhurta::activity::Unjudged;
+use teistro_muhurta::reasons::{Side, WindowReasons};
 use teistro_muhurta::search::ClosedDay;
 use teistro_muhurta::{Answer, Bar, Clause, Judgement, Ranking, Score};
 use teistro_time::ZoneSpec;
@@ -145,13 +146,41 @@ pub struct ElectedWindow {
     /// not score.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub score: Option<Score>,
+    /// Why it is good, in words, when the request's `muhurta` set
+    /// `reasons` (`03-design/muhurta-reasons.md`): a `FOR` reason's
+    /// `clause` indexes `holds`, a `DESPITE` reason's indexes `fails`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasons: Option<WindowReasons>,
 }
 
 impl ElectedWindow {
     /// A judgement as the `rank`-th window, its clauses split by whether
-    /// each counts for the time.
-    fn ranked(rank: usize, judgement: Judgement) -> ElectedWindow {
+    /// each counts for the time, and its reasons pointed at the split.
+    fn ranked(rank: usize, judgement: Judgement, reasons: Option<WindowReasons>) -> ElectedWindow {
         let open = judgement.open();
+        // A clause's place in its own half: how many of its side came before.
+        let (mut held_for, mut held_against) = (0, 0);
+        let places: Vec<usize> = judgement
+            .clauses
+            .iter()
+            .map(|clause| {
+                let count = if clause.favourable() {
+                    &mut held_for
+                } else {
+                    &mut held_against
+                };
+                *count += 1;
+                *count - 1
+            })
+            .collect();
+        let reasons = reasons.map(|mut said| {
+            for reason in &mut said.reasons {
+                if reason.side != Side::Avoided {
+                    reason.clause = reason.clause.and_then(|at| places.get(at).copied());
+                }
+            }
+            said
+        });
         let (holds, fails) = judgement.clauses.into_iter().partition(Clause::favourable);
         ElectedWindow {
             rank,
@@ -161,6 +190,7 @@ impl ElectedWindow {
             fails,
             barred_by: judgement.barred_by,
             score: judgement.score,
+            reasons,
         }
     }
 }
@@ -190,12 +220,13 @@ pub struct Elections {
 
 impl From<Answer> for Elections {
     fn from(answer: Answer) -> Elections {
+        let mut reasons = answer.reasons.into_iter();
         Elections {
             windows: answer
                 .windows
                 .into_iter()
                 .zip(1..)
-                .map(|(judgement, rank)| ElectedWindow::ranked(rank, judgement))
+                .map(|(judgement, rank)| ElectedWindow::ranked(rank, judgement, reasons.next()))
                 .collect(),
             closed: answer.closed,
             days_judged: answer.days_judged,
@@ -293,7 +324,7 @@ mod tests {
             },
         ];
         let judged = Judgement::of(Interval::literal(T + 0.1, T + 0.2), &held, &rules);
-        let window = ElectedWindow::ranked(3, judged.clone());
+        let window = ElectedWindow::ranked(3, judged.clone(), None);
         assert_eq!(window.rank, 3);
         assert_eq!(window.open, judged.open());
         assert_eq!(
@@ -318,6 +349,7 @@ mod tests {
             windows_blacked_out: 0,
             ranking: Ranking::Texts,
             unjudged: Vec::new(),
+            reasons: Vec::new(),
         };
         let elections = Elections::from(answer);
         let ranks: Vec<usize> = elections.windows.iter().map(|w| w.rank).collect();

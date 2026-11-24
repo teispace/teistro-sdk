@@ -281,3 +281,115 @@ fn a_journey_towards_the_days_shool_waits_for_its_release() {
         "{south:?}"
     );
 }
+
+/// Why a window is good (SR-154): asked, every window of a month of
+/// marriage windows comes with its reasons, each pointing at a clause the
+/// window holds, and every item renders in en-Latn and ne-Deva-NP with no
+/// warning, from the locale itself, final (Q42: reviewed after shipping). Not
+/// asked, the answer carries none, and hashes as it did.
+#[test]
+fn every_window_says_why_in_english_and_nepali() {
+    use teistro::catalogue::{Nakshatra, Rashi};
+    use teistro::muhurta::Native;
+    use teistro::muhurta::reasons::{Side, intents};
+    const TAGS: [&str; 2] = ["en-Latn", "ne-Deva-NP"];
+    let sdk = context();
+    let engine = sdk.locale_engine();
+    let (from, to) = (date(11, 20), date(12, 20));
+    let plain = MuhurtaRequest::new(ActivityRules::raman_marriage()).at_most(200);
+    let quiet = sdk
+        .almanac()
+        .muhurta(&from, &to, &place(), clock(), &plain)
+        .unwrap();
+    assert!(
+        quiet.value.reasons.is_empty(),
+        "reasons only when asked for"
+    );
+
+    // Read against a native, so the doshas that need one are watched too.
+    let asked = plain.clone().with_reasons().with_native(Native {
+        star: Nakshatra::Rohini,
+        moon_sign: Rashi::Taurus,
+        lagna: Some(Rashi::Leo),
+    });
+    let found = sdk
+        .almanac()
+        .muhurta(&from, &to, &place(), clock(), &asked)
+        .unwrap()
+        .value;
+    assert!(
+        !found.windows.is_empty(),
+        "a month after Devuthani holds windows"
+    );
+    assert_eq!(found.reasons.len(), found.windows.len());
+
+    for tag in TAGS {
+        for key in intents() {
+            let rendered = engine.render_in(tag, &key, &teistro::Params::new());
+            assert_eq!(
+                rendered.resolved_from.as_deref(),
+                Some(tag),
+                "{tag} lacks {key}"
+            );
+        }
+    }
+    let mut said = std::collections::BTreeSet::new();
+    for (window, why) in found.windows.iter().zip(&found.reasons) {
+        for reason in &why.reasons {
+            if reason.side != Side::Avoided {
+                let index = reason.clause.unwrap();
+                assert_eq!(window.clauses[index].kind.key(), reason.key);
+            }
+        }
+        let items = std::iter::once((why.line.intent.clone(), why.line.params.clone())).chain(
+            why.reasons
+                .iter()
+                .map(|r| (r.intent.clone(), r.params.clone())),
+        );
+        for (intent, params) in items {
+            said.insert(intent.clone());
+            for tag in TAGS {
+                let rendered = engine.render_in(tag, &intent, &params);
+                assert!(rendered.warnings.is_empty(), "{tag} {intent}: {rendered:?}");
+                assert_eq!(
+                    rendered.resolved_from.as_deref(),
+                    Some(tag),
+                    "{tag} {intent}"
+                );
+                assert!(!rendered.is_draft, "{tag} {intent} is final");
+                assert!(!rendered.text.contains('{'), "{tag}: {}", rendered.text);
+            }
+        }
+    }
+    // The election record carries them too, each pointed at its half.
+    let elected = sdk
+        .almanac()
+        .elect(&teistro::finders::ElectRequest {
+            first: from.clone(),
+            last: to.clone(),
+            place: place(),
+            clock: clock().into(),
+            muhurta: asked.clone(),
+        })
+        .unwrap()
+        .value;
+    assert_eq!(elected.windows.len(), found.windows.len());
+    for window in &elected.windows {
+        let why = window.reasons.as_ref().unwrap();
+        for reason in &why.reasons {
+            let half = match reason.side {
+                Side::For => &window.holds,
+                Side::Despite => &window.fails,
+                Side::Avoided => continue,
+            };
+            assert_eq!(half[reason.clause.unwrap()].kind.key(), reason.key);
+        }
+    }
+    // A month of real windows reaches all three runs.
+    for side in ["favours.", "despite.", "avoided."] {
+        assert!(
+            said.iter().any(|i| i.contains(side)),
+            "no {side} said: {said:?}"
+        );
+    }
+}

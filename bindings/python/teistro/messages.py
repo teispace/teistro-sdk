@@ -2484,6 +2484,11 @@ class MessagesSdkVoice:
 
 
     @property
+    def muhurta(self) -> MessagesSdkVoiceMuhurta:
+        """The messages under `muhurta`."""
+        return MessagesSdkVoiceMuhurta(self._r)
+
+    @property
     def rashifal(self) -> MessagesSdkVoiceRashifal:
         """The messages under `rashifal`."""
         return MessagesSdkVoiceRashifal(self._r)
@@ -3301,6 +3306,506 @@ class MessagesSdkVoiceRashifalAreaHealth:
             "sdk.voice.rashifal.area.HEALTH.MIXED",
             {"variant": variant},
         )
+
+
+class MessagesSdkVoiceMuhurta:
+    """The messages under `MessagesSdkVoiceMuhurta`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def avoided(self) -> MessagesSdkVoiceMuhurtaAvoided:
+        """The messages under `avoided`."""
+        return MessagesSdkVoiceMuhurtaAvoided(self._r)
+
+    @property
+    def despite(self) -> MessagesSdkVoiceMuhurtaDespite:
+        """The messages under `despite`."""
+        return MessagesSdkVoiceMuhurtaDespite(self._r)
+
+    @property
+    def favours(self) -> MessagesSdkVoiceMuhurtaFavours:
+        """The messages under `favours`."""
+        return MessagesSdkVoiceMuhurtaFavours(self._r)
+
+    def line(self, *, avoided: int, count: int, limbs: Sequence[object], variant: int) -> str:
+        """`sdk.voice.muhurta.line`"""
+        return self._r.render(
+            "sdk.voice.muhurta.line",
+            {"avoided": avoided, "count": count, "limbs": limbs, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceMuhurtaFavours:
+    """The messages under `MessagesSdkVoiceMuhurtaFavours`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def abhijit(self, *, variant: int) -> str:
+        """`sdk.voice.muhurta.favours.ABHIJIT`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.ABHIJIT",
+            {"variant": variant},
+        )
+
+    def benefic_in_lagna(self, *, grahas: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA",
+            {"grahas": grahas},
+        )
+
+    def chandrabala(self) -> str:
+        """`sdk.voice.muhurta.favours.CHANDRABALA`"""
+        return self._r.render("sdk.voice.muhurta.favours.CHANDRABALA")
+
+    def choghadiya(self, *, choghadiya: ChoghadiyaKey) -> str:
+        """`sdk.voice.muhurta.favours.CHOGHADIYA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.CHOGHADIYA",
+            {"choghadiya": {"$entity": choghadiya.value}},
+        )
+
+    def exalted_in_lagna(self, *, grahas: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.favours.EXALTED_IN_LAGNA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.EXALTED_IN_LAGNA",
+            {"grahas": grahas},
+        )
+
+    def karana(self, *, karana: KaranaKey, variant: int) -> str:
+        """`sdk.voice.muhurta.favours.KARANA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.KARANA",
+            {"karana": {"$entity": karana.value}, "variant": variant},
+        )
+
+    def kendra_benefics(self, *, grahas: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.favours.KENDRA_BENEFICS`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.KENDRA_BENEFICS",
+            {"grahas": grahas},
+        )
+
+    def lagna(self, *, sign: RashiKey) -> str:
+        """`sdk.voice.muhurta.favours.LAGNA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.LAGNA",
+            {"sign": {"$entity": sign.value}},
+        )
+
+    def luminary_in_eleventh(self, *, grahas: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH",
+            {"grahas": grahas},
+        )
+
+    def month(self, *, masa: MasaKey) -> str:
+        """`sdk.voice.muhurta.favours.MONTH`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.MONTH",
+            {"masa": {"$entity": masa.value}},
+        )
+
+    def muhurta_yoga(self, *, yoga: MuhurtaYogaKey) -> str:
+        """`sdk.voice.muhurta.favours.MUHURTA_YOGA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.MUHURTA_YOGA",
+            {"yoga": {"$entity": yoga.value}},
+        )
+
+    def nakshatra(self, *, nakshatra: NakshatraKey, variant: int) -> str:
+        """`sdk.voice.muhurta.favours.NAKSHATRA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.NAKSHATRA",
+            {"nakshatra": {"$entity": nakshatra.value}, "variant": variant},
+        )
+
+    def solar_month(self, *, sign: RashiKey) -> str:
+        """`sdk.voice.muhurta.favours.SOLAR_MONTH`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.SOLAR_MONTH",
+            {"sign": {"$entity": sign.value}},
+        )
+
+    def tarabala(self) -> str:
+        """`sdk.voice.muhurta.favours.TARABALA`"""
+        return self._r.render("sdk.voice.muhurta.favours.TARABALA")
+
+    def tithi(self, *, tithi: TithiKey, variant: int) -> str:
+        """`sdk.voice.muhurta.favours.TITHI`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.TITHI",
+            {"tithi": {"$entity": tithi.value}, "variant": variant},
+        )
+
+    def vara(self, *, vara: VaraKey, variant: int) -> str:
+        """`sdk.voice.muhurta.favours.VARA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.VARA",
+            {"vara": {"$entity": vara.value}, "variant": variant},
+        )
+
+    def vrisha_vastu(self) -> str:
+        """`sdk.voice.muhurta.favours.VRISHA_VASTU`"""
+        return self._r.render("sdk.voice.muhurta.favours.VRISHA_VASTU")
+
+    def yoga(self, *, variant: int, yoga: YogaKey) -> str:
+        """`sdk.voice.muhurta.favours.YOGA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.favours.YOGA",
+            {"variant": variant, "yoga": {"$entity": yoga.value}},
+        )
+
+
+class MessagesSdkVoiceMuhurtaDespite:
+    """The messages under `MessagesSdkVoiceMuhurtaDespite`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ashtama_lagna(self) -> str:
+        """`sdk.voice.muhurta.despite.ASHTAMA_LAGNA`"""
+        return self._r.render("sdk.voice.muhurta.despite.ASHTAMA_LAGNA")
+
+    def ashubha_yoga(self, *, yoga: AshubhaYogaKey) -> str:
+        """`sdk.voice.muhurta.despite.ASHUBHA_YOGA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.ASHUBHA_YOGA",
+            {"yoga": {"$entity": yoga.value}},
+        )
+
+    def chandrabala(self) -> str:
+        """`sdk.voice.muhurta.despite.CHANDRABALA`"""
+        return self._r.render("sdk.voice.muhurta.despite.CHANDRABALA")
+
+    def choghadiya(self, *, choghadiya: ChoghadiyaKey) -> str:
+        """`sdk.voice.muhurta.despite.CHOGHADIYA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.CHOGHADIYA",
+            {"choghadiya": {"$entity": choghadiya.value}},
+        )
+
+    def ghata(self) -> str:
+        """`sdk.voice.muhurta.despite.GHATA`"""
+        return self._r.render("sdk.voice.muhurta.despite.GHATA")
+
+    def kaala(self, *, kaala: KaalaKey) -> str:
+        """`sdk.voice.muhurta.despite.KAALA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.KAALA",
+            {"kaala": {"$entity": kaala.value}},
+        )
+
+    def karana(self, *, karana: KaranaKey) -> str:
+        """`sdk.voice.muhurta.despite.KARANA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.KARANA",
+            {"karana": {"$entity": karana.value}},
+        )
+
+    def kartari(self, *, second: Sequence[object], twelfth: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.despite.KARTARI`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.KARTARI",
+            {"second": second, "twelfth": twelfth},
+        )
+
+    def kunavamsa(self, *, lord: GrahaKey, navamsa: RashiKey) -> str:
+        """`sdk.voice.muhurta.despite.KUNAVAMSA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.KUNAVAMSA",
+            {"lord": {"$entity": lord.value}, "navamsa": {"$entity": navamsa.value}},
+        )
+
+    def lagna(self, *, sign: RashiKey) -> str:
+        """`sdk.voice.muhurta.despite.LAGNA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.LAGNA",
+            {"sign": {"$entity": sign.value}},
+        )
+
+    def lagna_tyajya(self, *, sign: RashiKey) -> str:
+        """`sdk.voice.muhurta.despite.LAGNA_TYAJYA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.LAGNA_TYAJYA",
+            {"sign": {"$entity": sign.value}},
+        )
+
+    def malefic_in_lagna(self, *, grahas: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA",
+            {"grahas": grahas},
+        )
+
+    def mars_in_eighth(self) -> str:
+        """`sdk.voice.muhurta.despite.MARS_IN_EIGHTH`"""
+        return self._r.render("sdk.voice.muhurta.despite.MARS_IN_EIGHTH")
+
+    def month(self, *, masa: MasaKey) -> str:
+        """`sdk.voice.muhurta.despite.MONTH`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.MONTH",
+            {"masa": {"$entity": masa.value}},
+        )
+
+    def moon_in_dusthana(self, *, house: int) -> str:
+        """`sdk.voice.muhurta.despite.MOON_IN_DUSTHANA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.MOON_IN_DUSTHANA",
+            {"house": house},
+        )
+
+    def moon_joined(self, *, with_: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.despite.MOON_JOINED`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.MOON_JOINED",
+            {"with": with_},
+        )
+
+    def muhurta_yoga(self, *, yoga: MuhurtaYogaKey) -> str:
+        """`sdk.voice.muhurta.despite.MUHURTA_YOGA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.MUHURTA_YOGA",
+            {"yoga": {"$entity": yoga.value}},
+        )
+
+    def nakshatra(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.voice.muhurta.despite.NAKSHATRA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.NAKSHATRA",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def pada(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.voice.muhurta.despite.PADA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.PADA",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def panchaka_remainder(self, *, panchaka: PanchakaKey) -> str:
+        """`sdk.voice.muhurta.despite.PANCHAKA_REMAINDER`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.PANCHAKA_REMAINDER",
+            {"panchaka": {"$entity": panchaka.value}},
+        )
+
+    def pradosha(self, *, tithi: TithiKey) -> str:
+        """`sdk.voice.muhurta.despite.PRADOSHA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.PRADOSHA",
+            {"tithi": {"$entity": tithi.value}},
+        )
+
+    def seventh_occupied(self, *, by: Sequence[object]) -> str:
+        """`sdk.voice.muhurta.despite.SEVENTH_OCCUPIED`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.SEVENTH_OCCUPIED",
+            {"by": by},
+        )
+
+    def solar_month(self, *, sign: RashiKey) -> str:
+        """`sdk.voice.muhurta.despite.SOLAR_MONTH`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.SOLAR_MONTH",
+            {"sign": {"$entity": sign.value}},
+        )
+
+    def tarabala(self) -> str:
+        """`sdk.voice.muhurta.despite.TARABALA`"""
+        return self._r.render("sdk.voice.muhurta.despite.TARABALA")
+
+    def tithi(self, *, tithi: TithiKey) -> str:
+        """`sdk.voice.muhurta.despite.TITHI`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.TITHI",
+            {"tithi": {"$entity": tithi.value}},
+        )
+
+    def unwanted_placement(self, *, by: Sequence[object], house: int) -> str:
+        """`sdk.voice.muhurta.despite.UNWANTED_PLACEMENT`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.UNWANTED_PLACEMENT",
+            {"by": by, "house": house},
+        )
+
+    def vara(self, *, vara: VaraKey) -> str:
+        """`sdk.voice.muhurta.despite.VARA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.VARA",
+            {"vara": {"$entity": vara.value}},
+        )
+
+    def varjyam(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.voice.muhurta.despite.VARJYAM`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.VARJYAM",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def venus_in_sixth(self) -> str:
+        """`sdk.voice.muhurta.despite.VENUS_IN_SIXTH`"""
+        return self._r.render("sdk.voice.muhurta.despite.VENUS_IN_SIXTH")
+
+    def vrisha_vastu(self) -> str:
+        """`sdk.voice.muhurta.despite.VRISHA_VASTU`"""
+        return self._r.render("sdk.voice.muhurta.despite.VRISHA_VASTU")
+
+    def yoga(self, *, yoga: YogaKey) -> str:
+        """`sdk.voice.muhurta.despite.YOGA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.despite.YOGA",
+            {"yoga": {"$entity": yoga.value}},
+        )
+
+
+class MessagesSdkVoiceMuhurtaAvoided:
+    """The messages under `MessagesSdkVoiceMuhurtaAvoided`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def ashtama_lagna(self) -> str:
+        """`sdk.voice.muhurta.avoided.ASHTAMA_LAGNA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.ASHTAMA_LAGNA")
+
+    def ashubha_yoga(self) -> str:
+        """`sdk.voice.muhurta.avoided.ASHUBHA_YOGA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.ASHUBHA_YOGA")
+
+    def chandrabala(self) -> str:
+        """`sdk.voice.muhurta.avoided.CHANDRABALA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.CHANDRABALA")
+
+    def choghadiya(self) -> str:
+        """`sdk.voice.muhurta.avoided.CHOGHADIYA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.CHOGHADIYA")
+
+    def ghata(self) -> str:
+        """`sdk.voice.muhurta.avoided.GHATA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.GHATA")
+
+    def kaala(self, *, variant: int) -> str:
+        """`sdk.voice.muhurta.avoided.KAALA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.avoided.KAALA",
+            {"variant": variant},
+        )
+
+    def karana(self) -> str:
+        """`sdk.voice.muhurta.avoided.KARANA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.KARANA")
+
+    def kartari(self) -> str:
+        """`sdk.voice.muhurta.avoided.KARTARI`"""
+        return self._r.render("sdk.voice.muhurta.avoided.KARTARI")
+
+    def kunavamsa(self) -> str:
+        """`sdk.voice.muhurta.avoided.KUNAVAMSA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.KUNAVAMSA")
+
+    def lagna(self) -> str:
+        """`sdk.voice.muhurta.avoided.LAGNA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.LAGNA")
+
+    def lagna_tyajya(self) -> str:
+        """`sdk.voice.muhurta.avoided.LAGNA_TYAJYA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.LAGNA_TYAJYA")
+
+    def malefic_in_lagna(self) -> str:
+        """`sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA")
+
+    def mars_in_eighth(self) -> str:
+        """`sdk.voice.muhurta.avoided.MARS_IN_EIGHTH`"""
+        return self._r.render("sdk.voice.muhurta.avoided.MARS_IN_EIGHTH")
+
+    def month(self) -> str:
+        """`sdk.voice.muhurta.avoided.MONTH`"""
+        return self._r.render("sdk.voice.muhurta.avoided.MONTH")
+
+    def moon_in_dusthana(self, *, variant: int) -> str:
+        """`sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA`"""
+        return self._r.render(
+            "sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA",
+            {"variant": variant},
+        )
+
+    def moon_joined(self) -> str:
+        """`sdk.voice.muhurta.avoided.MOON_JOINED`"""
+        return self._r.render("sdk.voice.muhurta.avoided.MOON_JOINED")
+
+    def muhurta_yoga(self) -> str:
+        """`sdk.voice.muhurta.avoided.MUHURTA_YOGA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.MUHURTA_YOGA")
+
+    def nakshatra(self) -> str:
+        """`sdk.voice.muhurta.avoided.NAKSHATRA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.NAKSHATRA")
+
+    def pada(self) -> str:
+        """`sdk.voice.muhurta.avoided.PADA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.PADA")
+
+    def panchaka_remainder(self) -> str:
+        """`sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER`"""
+        return self._r.render("sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER")
+
+    def pradosha(self) -> str:
+        """`sdk.voice.muhurta.avoided.PRADOSHA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.PRADOSHA")
+
+    def seventh_occupied(self) -> str:
+        """`sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED`"""
+        return self._r.render("sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED")
+
+    def solar_month(self) -> str:
+        """`sdk.voice.muhurta.avoided.SOLAR_MONTH`"""
+        return self._r.render("sdk.voice.muhurta.avoided.SOLAR_MONTH")
+
+    def tarabala(self) -> str:
+        """`sdk.voice.muhurta.avoided.TARABALA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.TARABALA")
+
+    def tithi(self) -> str:
+        """`sdk.voice.muhurta.avoided.TITHI`"""
+        return self._r.render("sdk.voice.muhurta.avoided.TITHI")
+
+    def unwanted_placement(self) -> str:
+        """`sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT`"""
+        return self._r.render("sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT")
+
+    def vara(self) -> str:
+        """`sdk.voice.muhurta.avoided.VARA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.VARA")
+
+    def varjyam(self, *, variant: int) -> str:
+        """`sdk.voice.muhurta.avoided.VARJYAM`"""
+        return self._r.render(
+            "sdk.voice.muhurta.avoided.VARJYAM",
+            {"variant": variant},
+        )
+
+    def venus_in_sixth(self) -> str:
+        """`sdk.voice.muhurta.avoided.VENUS_IN_SIXTH`"""
+        return self._r.render("sdk.voice.muhurta.avoided.VENUS_IN_SIXTH")
+
+    def vrisha_vastu(self) -> str:
+        """`sdk.voice.muhurta.avoided.VRISHA_VASTU`"""
+        return self._r.render("sdk.voice.muhurta.avoided.VRISHA_VASTU")
+
+    def yoga(self) -> str:
+        """`sdk.voice.muhurta.avoided.YOGA`"""
+        return self._r.render("sdk.voice.muhurta.avoided.YOGA")
 
 
 class MessagesSdkSettings:
