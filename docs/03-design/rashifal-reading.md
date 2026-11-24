@@ -162,7 +162,10 @@ A sign holds nine nakshatra padas, and each pada has its name syllable
 (`teistro_core::catalogue::Nakshatra`, spelled as Muhurta Chintamani p. 173
 prints it, C299). The plan lists
 the sign's nine in the padas' order, as entity slots a pack writes in its own
-script.
+script and convention. Nepali prints the short-vowel forms and Hindi the long
+ones, both from the same IAST syllable, so the spelling rule is the locale's
+and the syllable is the SDK's. en-Latn-NP romanizes the Nepali set and names
+the sign Nepal's way, "Mesh (Aries)" (C2332).
 
 ## Where it lives
 
