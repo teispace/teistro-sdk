@@ -10,6 +10,15 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## Unreleased
+
+- **The seven choghadiya in plain words (SR-155).** `packs/states` gives
+  each `choghadiya.<KEY>` a `phala` and a `phalaProse` in English, Hindi,
+  Nepali and Sanskrit (and the derived `sa-Latn`), so the day's panel
+  names what every period favours in the same words as Rahu Kaal, Gulika
+  and Yamaganda; the tithi, vara, nakshatra and yoga readings were there
+  already. No number moves.
+
 ## 1.0.0-rc.11
 
 The eleventh release candidate of 1.0.0. A muhurta window says why it is
