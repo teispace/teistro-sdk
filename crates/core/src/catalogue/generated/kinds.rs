@@ -204,9 +204,15 @@ pub enum Kind {
     ScoreBand = 166,
     /// Whom a government's holiday is for, as its notice's clause says: the whole country, a community, a region, women employees, and the rest (`03-design/nepal-gazette-holidays.md`). Nepal's VS 2083 notice gives every member its clause.
     HolidayScope = 167,
+    /// A people or faith community a festival rule's meta names, as `NEWAR` (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412).
+    Community = 168,
+    /// A region a festival rule's meta names: an ISO 3166 country or subdivision (`NP`, `IN-TN`) or a part a notice names (`KATHMANDU_VALLEY`, `TERAI`) (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412).
+    Region = 169,
+    /// An act a festival is kept with, as `TIKA_FROM_ELDERS` or `LAMPS`: the acts `03-design/festival-about.md` lists for each festival it describes (SR-153), each named once in the SDK's locales and shared by every festival it fits.
+    Observance = 170,
 }
 
-const BY_NAME: [(&str, Kind); 94] = [
+const BY_NAME: [(&str, Kind); 97] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -230,6 +236,7 @@ const BY_NAME: [(&str, Kind); 94] = [
     ("chart_layout", Kind::ChartLayout),
     ("choghadiya", Kind::Choghadiya),
     ("colour", Kind::Colour),
+    ("community", Kind::Community),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
     ("day_marker", Kind::DayMarker),
@@ -264,6 +271,7 @@ const BY_NAME: [(&str, Kind); 94] = [
     ("nadi", Kind::Nadi),
     ("nakshatra", Kind::Nakshatra),
     ("nature", Kind::Nature),
+    ("observance", Kind::Observance),
     ("paksha", Kind::Paksha),
     ("panchaka", Kind::Panchaka),
     ("parity", Kind::Parity),
@@ -271,6 +279,7 @@ const BY_NAME: [(&str, Kind); 94] = [
     ("point", Kind::Point),
     ("point_family", Kind::PointFamily),
     ("rashi", Kind::Rashi),
+    ("region", Kind::Region),
     ("relationship", Kind::Relationship),
     ("rising", Kind::Rising),
     ("ritu", Kind::Ritu),
@@ -305,7 +314,7 @@ const BY_NAME: [(&str, Kind); 94] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 94] = [
+    pub const ALL: [Kind; 97] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -400,6 +409,9 @@ impl Kind {
         Kind::GocharVerdict,
         Kind::ScoreBand,
         Kind::HolidayScope,
+        Kind::Community,
+        Kind::Region,
+        Kind::Observance,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -506,6 +518,9 @@ impl Kind {
             Kind::GocharVerdict => "gochar_verdict",
             Kind::ScoreBand => "score_band",
             Kind::HolidayScope => "holiday_scope",
+            Kind::Community => "community",
+            Kind::Region => "region",
+            Kind::Observance => "observance",
         }
     }
 
@@ -626,6 +641,9 @@ impl Kind {
             Kind::GocharVerdict => 3,
             Kind::ScoreBand => 4,
             Kind::HolidayScope => 9,
+            Kind::Community => 0,
+            Kind::Region => 0,
+            Kind::Observance => 0,
         }
     }
 
@@ -747,6 +765,9 @@ impl Kind {
             165 => Some(Kind::GocharVerdict),
             166 => Some(Kind::ScoreBand),
             167 => Some(Kind::HolidayScope),
+            168 => Some(Kind::Community),
+            169 => Some(Kind::Region),
+            170 => Some(Kind::Observance),
             _ => None,
         }
     }

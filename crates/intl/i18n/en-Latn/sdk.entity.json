@@ -3279,47 +3279,56 @@
     "RAMA_NAVAMI": {
       "name": "Rama Navami",
       "prose": "Rama Navami",
-      "iast": "Rāmanavamī"
+      "iast": "Rāmanavamī",
+      "about": "Rama Navami, the ninth day of Chaitra's bright half, is the birthday of Rama. Devotees fast and worship him at midday, the hour of his birth, and Janakpur, the city of Sita, draws great crowds."
     },
     "JANMASHTAMI": {
       "name": "Krishna Janmashtami",
       "prose": "Krishna Janmashtami",
-      "iast": "Kṛṣṇajanmāṣṭamī"
+      "iast": "Kṛṣṇajanmāṣṭamī",
+      "about": "Krishna Janmashtami, the eighth day of Bhadra's dark half, is the birthday of Krishna. Devotees fast until midnight, the hour of his birth, sing bhajans and visit his temples, Patan's Krishna Mandir above all."
     },
     "VIJAYA_DASHAMI": {
       "name": "Vijaya Dashami",
       "prose": "Vijaya Dashami",
-      "iast": "Vijayādaśamī"
+      "iast": "Vijayādaśamī",
+      "about": "Vijaya Dashami, the tenth day, is Dashain's main day, the day of the goddess's victory. From the auspicious hour, the elders put a red tika on the foreheads of the young and jamara behind their ears with a blessing. The visits to relatives for tika go on until the full moon."
     },
     "LAKSHMI_PUJA": {
       "name": "Lakshmi Puja",
       "prose": "Lakshmi Puja",
-      "iast": "Lakṣmīpūjā"
+      "iast": "Lakṣmīpūjā",
+      "about": "Lakshmi Puja, the new moon of Kartik, is Tihar's main day. In the morning the cow is worshipped as Lakshmi; in the evening the goddess of wealth is welcomed into the house with lamps, a path of red earth from the door to the shrine, and a puja for prosperity in the year ahead. That night the girls' bhailo begins."
     },
     "HARITALIKA": {
       "name": "Haritalika Teej",
       "prose": "Haritalika Teej",
-      "iast": "Haritālikā"
+      "iast": "Haritālikā",
+      "about": "Haritalika, the third day of Bhadra's bright half, is the day of the Teej fast. Married women fast, many without even water, for their husbands' long life and the family's good, and unmarried women for a good husband, as Parvati did. They worship Shiva and Parvati and spend the day in song and dance."
     },
     "NAVARATRA_ARAMBHA": {
       "name": "Navaratra Begins",
       "prose": "Navaratra Begins",
-      "iast": "Navarātrārambha"
+      "iast": "Navarātrārambha",
+      "about": "Ghatasthapana, the first day of Ashwin's bright half, opens Dashain and the nine nights of the Navaratri. A kalash of water is set up as the goddess's seat, and barley and maize are sown beside it in a dark room. Their yellow shoots, the jamara, are given with the tika on Vijaya Dashami."
     },
     "YAMA_DWITIYA": {
       "name": "Yama Dwitiya",
       "prose": "Yama Dwitiya",
-      "iast": "Yamadvitīyā"
+      "iast": "Yamadvitīyā",
+      "about": "Bhai Tika, the second day of Kartik's bright half, closes Tihar. Sisters pray to Yama for their brothers' long life, give them a tika of seven colours and a garland of makhamali flowers, and feed them; brothers give gifts in return. The day recalls the welcome Yamuna gave her brother Yama."
     },
     "SHIVARATRI": {
       "name": "Maha Shivaratri",
       "prose": "Maha Shivaratri",
-      "iast": "Mahāśivarātri"
+      "iast": "Mahāśivarātri",
+      "about": "Maha Shivaratri, the fourteenth night of the dark half in Falgun, is the great night of Shiva. Devotees fast and keep vigil through the night, and great crowds, among them sadhus from Nepal and India, come to Pashupatinath. Fires are lit against the last of the winter's cold."
     },
     "RAKSHABANDHAN": {
       "name": "Raksha Bandhan",
       "prose": "Raksha Bandhan",
-      "iast": "Rakṣābandhana"
+      "iast": "Rakṣābandhana",
+      "about": "Janai Purnima, the full moon of Shrawan, is the day men who wear the sacred thread change it after bathing and the priest's mantras. Everyone receives a protective thread, the doro, on the wrist, and sisters tie rakhi on their brothers' wrists. Pilgrims go to Gosainkunda, and in the valley the Newars eat kwati, a soup of nine beans."
     },
     "BALI_PRATIPADA": {
       "name": "Bali Pratipada",
@@ -3354,12 +3363,14 @@
     "HOLI_HILLS": {
       "name": "Holi in the Hills",
       "prose": "Holi in the Hills",
-      "iast": "Pahāḍī Holī"
+      "iast": "Pahāḍī Holī",
+      "about": "Holi, Fagu Purnima, is the festival of colours at the full moon of Falgun, and the hills keep it a day before the Terai. A week earlier the chir, a pole hung with strips of cloth, is raised at Basantapur in Kathmandu. On the day, people throw coloured powder and water at one another."
     },
     "HOLI_TERAI": {
       "name": "Holi in the Terai",
       "prose": "Holi in the Terai",
-      "iast": "Tarāī Holī"
+      "iast": "Tarāī Holī",
+      "about": "The Terai keeps Holi on the day after the hills, as northern India does. The night before, Holika's bonfire recalls the burning of the demoness Holika and the escape of the devotee Prahlad. On the day, people play with colours, visit their neighbours and share sweets."
     },
     "EKADASHI_SMARTA": {
       "name": "Smarta Ekadashi",
@@ -3509,7 +3520,8 @@
     "RISHI_PANCHAMI": {
       "name": "Rishi Panchami",
       "prose": "Rishi Panchami",
-      "iast": "Ṛṣi Pañcamī"
+      "iast": "Ṛṣi Pañcamī",
+      "about": "Rishi Panchami, the fifth day of Bhadra's bright half, closes Teej. Women bathe in rivers, cleansing themselves with twigs of the datiwan plant, and worship the seven sages, the Saptarshi, for purity."
     },
     "GAURA_SAPTAMI": {
       "name": "Gaura Saptami",
@@ -3644,12 +3656,14 @@
     "MHA_PUJA": {
       "name": "Mha Puja",
       "prose": "Mha Puja",
-      "iast": "Mhapūjā"
+      "iast": "Mhapūjā",
+      "about": "Mha Puja, the worship of the body, is kept by the Newars on the first day of Kartik's bright half, which is also the new year of Nepal Sambat. Each member of the family sits before a mandala drawn for them, and the self is worshipped for health and long life in the year ahead."
     },
     "NEPAL_SAMBAT_NEW_YEAR": {
       "name": "Nepal Sambat New Year",
       "prose": "Nepal Sambat New Year",
-      "iast": "Nepāla Saṃvat Navavarṣa"
+      "iast": "Nepāla Saṃvat Navavarṣa",
+      "about": "Nepal Sambat's new year falls on the first day of Kartik's bright half, the day of Mha Puja. The era is held to begin in 879 CE, and the Newars greet it with processions and Mha Puja; the state names Nepal Sambat a national era."
     },
     "HARIBODHINI_EKADASHI": {
       "name": "Haribodhini Ekadashi",
@@ -3744,7 +3758,8 @@
     "GHODE_JATRA": {
       "name": "Ghode Jatra",
       "prose": "Ghode Jatra",
-      "iast": "Ghoḍe Jātrā"
+      "iast": "Ghoḍe Jātrā",
+      "about": "Ghode Jatra, the horse festival, falls on the new moon of Chaitra. The Nepal Army holds horse races and displays at Tundikhel, said to keep down the demon Tundi buried beneath it, and the valley's goddesses are carried in procession."
     },
     "MATSYANARAYANA_MELA": {
       "name": "Machhenarayan Mela",
@@ -3809,7 +3824,8 @@
     "MESHA_SANKRANTI": {
       "name": "Mesha Sankranti",
       "prose": "Mesha sankranti, the Bikram Sambat new year",
-      "iast": "Meṣasaṅkrānti"
+      "iast": "Meṣasaṅkrānti",
+      "about": "Mesha Sankranti, the first of Baishakh, is the new year of Bikram Sambat, Nepal's official calendar, the day the Sun enters Aries. People greet the new year, and in Bhaktapur the Bisket Jatra pulls Bhairav's chariot and raises the yosin pole."
     },
     "VRISHABHA_SANKRANTI": {
       "name": "Vrishabha Sankranti",
@@ -3854,7 +3870,8 @@
     "MAKARA_SANKRANTI": {
       "name": "Makara Sankranti",
       "prose": "Makara sankranti, the sun's turn north",
-      "iast": "Makarasaṅkrānti"
+      "iast": "Makarasaṅkrānti",
+      "about": "Maghe Sankranti, the first of Magh, is the day the Sun enters Capricorn and turns north, toward the warmer half of the year. Families eat sesame laddus, chaku, ghee, sweet potato and yam, and bathe at holy confluences such as Devghat. The Tharu keep the day as Maghi, their new year."
     },
     "KUMBHA_SANKRANTI": {
       "name": "Kumbha Sankranti",
@@ -4082,12 +4099,14 @@
     "SONAM_LHOSAR": {
       "name": "Sonam Lhosar",
       "prose": "Sonam Lhosar, the Tamang new year",
-      "iast": "Sonam Lhosar"
+      "iast": "Sonam Lhosar",
+      "about": "Sonam Lhosar, the new moon of Magh, is the new year of the Tamang people. Families clean their homes and visit the monastery, and the new year is greeted with songs and dances to the damphu drum."
     },
     "TAMU_LHOSAR": {
       "name": "Tamu Lhosar",
       "prose": "Tamu Lhosar, the Gurung new year, Poush 15",
-      "iast": "Tamu Lhosar"
+      "iast": "Tamu Lhosar",
+      "about": "Tamu Lhosar, on the fifteenth of Poush, is the new year of the Gurung people, the turn of their twelve-year cycle. Gurungs gather in traditional dress and greet the year with feasts, songs and dances."
     },
     "MARTYRS_DAY": {
       "name": "Martyrs' Day",
@@ -4102,7 +4121,8 @@
     "GYALPO_LHOSAR": {
       "name": "Gyalpo Lhosar",
       "prose": "Gyalpo Lhosar, the Sherpa and Tibetan new year",
-      "iast": "Gyalpo Lhosar"
+      "iast": "Gyalpo Lhosar",
+      "about": "Gyalpo Lhosar, the new moon of Falgun, is the new year of the Sherpa and other Himalayan Buddhist peoples, the first day of the Tibetan calendar. Monasteries hold prayers and masked dances, prayer flags are renewed, and families visit one another."
     },
     "SAMVATSARA_ARAMBHA": {
       "name": "Samvatsara Arambha",
@@ -4150,7 +4170,8 @@
     },
     "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS": {
       "name": "Rato Machhindranath Rath Jatra Begins",
-      "prose": "Rato Machhindranath Rath Jatra Begins"
+      "prose": "Rato Machhindranath Rath Jatra Begins",
+      "about": "Rato Machhindranath's chariot festival, the longest in Patan, begins when the god of rain is set on his towering chariot. Over the following weeks the chariot is pulled through Patan to Jawalakhel. There, at Bhoto Jatra, the god's jewelled vest, the bhoto, is held up for all to see."
     },
     "PASHUPATINATH_DAMAN_PUSHPARPAN": {
       "name": "Pashupatinath Daman Pushparpan",
@@ -4166,7 +4187,8 @@
     },
     "BUDDHA_JAYANTI": {
       "name": "Buddha Jayanti",
-      "prose": "Buddha Jayanti"
+      "prose": "Buddha Jayanti",
+      "about": "Buddha Jayanti, the full moon of Baishakh, marks the birth of the Buddha at Lumbini in Nepal, and also his enlightenment and his passing. Buddhists visit Lumbini and the stupas of Swayambhu and Boudha, light lamps and give alms."
     },
     "CHANDI_PURNIMA": {
       "name": "Chandi Purnima",
@@ -4178,7 +4200,8 @@
     },
     "UBHAULI": {
       "name": "Ubhauli",
-      "prose": "Ubhauli"
+      "prose": "Ubhauli",
+      "about": "Ubhauli, the full moon of Baishakh, is the Kirat peoples' festival of spring, when the Rai, Limbu, Yakkha and Sunuwar begin the year's farming and move up toward the hills. They worship nature and their ancestors for good crops, and dance the sakela in great circles."
     },
     "APARA_EKADASHI": {
       "name": "Apara Ekadashi",
@@ -4310,7 +4333,8 @@
     },
     "GAI_JATRA": {
       "name": "Gai Jatra",
-      "prose": "Gai Jatra"
+      "prose": "Gai Jatra",
+      "about": "Gai Jatra, the day after Janai Purnima, is the Newar procession for those who died in the year. Each bereaved family sends a cow, or a child dressed as one, around the city. The day has also become one of satire and comedy."
     },
     "ROPAI_JATRA": {
       "name": "Ropai Jatra",
@@ -4370,7 +4394,8 @@
     },
     "INDRA_JATRA": {
       "name": "Indra Jatra",
-      "prose": "Indra Jatra"
+      "prose": "Indra Jatra",
+      "about": "Indra Jatra is Kathmandu's great festival of Bhadra, honouring Indra, the god of rain. A tall pole, the lingo, is raised at Hanuman Dhoka, masked dancers fill the squares, and the living goddess Kumari is pulled through the old city in her chariot."
     },
     "BHAKTAPUR_SIDDHA_POKHARI_MELA": {
       "name": "Bhaktapur Siddha Pokhari Mela",
@@ -4394,7 +4419,8 @@
     },
     "JITIYA": {
       "name": "Jitiya",
-      "prose": "Jitiya"
+      "prose": "Jitiya",
+      "about": "Jitiya, the Jivitputrika vrata of Ashwin's dark half, is kept by the mothers of Mithila and of the Tharu people. They fast, without even water, for their children's long life and well-being."
     },
     "INDIRA_EKADASHI": {
       "name": "Indira Ekadashi",
@@ -4426,11 +4452,13 @@
     },
     "PHULPATI": {
       "name": "Phulpati",
-      "prose": "Phulpati"
+      "prose": "Phulpati",
+      "about": "Phulpati, the seventh day of Dashain, brings the goddess in as a bundle of sacred leaves, flowers and fruit. The royal phulpati is carried from Gorkha and received in Kathmandu with a procession and an army salute on its way to Hanuman Dhoka. Each home brings its own into the room where the jamara grows."
     },
     "MAHA_ASHTAMI": {
       "name": "Maha Ashtami",
-      "prose": "Maha Ashtami"
+      "prose": "Maha Ashtami",
+      "about": "Maha Ashtami, the eighth day of Dashain, is given to the fiercest forms of the goddess, Kali and the valley's Taleju. Offerings are made at her temples through the day and through the night that follows, the Kalaratri."
     },
     "BUDDHAVATAR": {
       "name": "Buddhavatar",
@@ -4510,7 +4538,8 @@
     },
     "KUKUR_TIHAR": {
       "name": "Kukur Tihar",
-      "prose": "Kukur Tihar"
+      "prose": "Kukur Tihar",
+      "about": "Kukur Tihar, the second day of Tihar, honours the dog as the messenger of Yama, the god of death. Dogs are given a tika and a garland of flowers and fed well."
     },
     "NARAK_CHATURDASHI": {
       "name": "Narak Chaturdashi",
@@ -4518,7 +4547,8 @@
     },
     "GOVARDHAN_PUJA": {
       "name": "Govardhan Puja",
-      "prose": "Govardhan Puja"
+      "prose": "Govardhan Puja",
+      "about": "Govardhan Puja, the first day of Kartik's bright half, recalls Krishna lifting Mount Govardhan to shelter the people of Braj from Indra's storm. A small hill of cow dung is made and worshipped as the mountain, and oxen are honoured with tika and garlands."
     },
     "HALI_TIHAR": {
       "name": "Hali Tihar",
@@ -4526,7 +4556,8 @@
     },
     "CHHATH": {
       "name": "Chhath",
-      "prose": "Chhath"
+      "prose": "Chhath",
+      "about": "Chhath is the Terai's and Mithila's festival of the Sun and of Chhathi Maiya, kept over four days of Kartik's bright half. Worshippers fast, without water from Kharna, and stand in rivers and ponds to offer arghya to the setting Sun on the sixth and to the rising Sun the next morning. The offerings of thekua, fruit and sugarcane are carried in bamboo baskets."
     },
     "GOPASHTAMI": {
       "name": "Gopashtami",
@@ -4578,7 +4609,8 @@
     },
     "GURU_NANAK_JAYANTI": {
       "name": "Guru Nanak Jayanti",
-      "prose": "Guru Nanak Jayanti"
+      "prose": "Guru Nanak Jayanti",
+      "about": "Guru Nanak Jayanti, the full moon of Kartik, is the birthday of Guru Nanak, the first Guru of the Sikhs. Sikhs read the Guru Granth Sahib through, take out processions, and serve a free meal to all at the gurdwara's langar."
     },
     "KARTIK_SNAN_ENDS": {
       "name": "Kartik Snan Ends",
@@ -4634,7 +4666,8 @@
     },
     "UDHAULI": {
       "name": "Udhauli",
-      "prose": "Udhauli"
+      "prose": "Udhauli",
+      "about": "Udhauli, the full moon of Mangsir, is the Kirat peoples' festival of the harvest and of the move down toward the warmer valleys before winter. They thank nature and their ancestors for the crops and dance the sakela again."
     },
     "YOMARI_PUNHI": {
       "name": "Yomari Punhi",
@@ -4686,7 +4719,8 @@
     },
     "BASANTA_PANCHAMI": {
       "name": "Basanta Panchami",
-      "prose": "Basanta Panchami"
+      "prose": "Basanta Panchami",
+      "about": "Basanta Panchami, the fifth day of Magh's bright half, welcomes spring and honours Saraswati, the goddess of learning. Students worship her at schools and temples, and small children are taught their first letters."
     },
     "SKANDA_SHASHTHI": {
       "name": "Skanda Shashthi",
@@ -4890,7 +4924,8 @@
     },
     "MAGHI_THARU": {
       "name": "Maghi",
-      "prose": "Maghi, the Tharu new year, Magh 1"
+      "prose": "Maghi, the Tharu new year, Magh 1",
+      "about": "Maghi, the first of Magh, is the new year of the Tharu people and their greatest festival. Families feast, villages choose their headman, the badghar, for the year, and the days are spent in dances and visits."
     },
     "MAKAR_SNAN": {
       "name": "Makar Snan",
@@ -5050,7 +5085,8 @@
     },
     "CHRISTMAS": {
       "name": "Christmas",
-      "prose": "Christmas, 25 December"
+      "prose": "Christmas, 25 December",
+      "about": "Christmas, on 25 December, celebrates the birth of Jesus Christ. Christians go to church services, sing carols, decorate their homes, and share meals and gifts."
     },
     "INDIA_REPUBLIC_DAY": {
       "name": "Republic Day of India",
@@ -5513,7 +5549,8 @@
     "GAURA_PARVA": {
       "name": "Gaura Parva",
       "prose": "Gaura Parva",
-      "iast": "Gaurā Parva"
+      "iast": "Gaurā Parva",
+      "about": "Gaura is the great festival of Nepal's far west, kept in Bhadra for the goddess Gaura, Parvati, and for Shiva. Women fast and soak five grains, the biruda, and the villages dance the deuda through the nights."
     },
     "BIRUDA_PANCHAMI": {
       "name": "Biruda Panchami",
@@ -6168,11 +6205,13 @@
     },
     "EID_AL_FITR": {
       "name": "Eid al-Fitr",
-      "prose": "Eid al-Fitr"
+      "prose": "Eid al-Fitr",
+      "about": "Eid al-Fitr ends Ramadan, the month of fasting, on the first day of Shawwal, once the new crescent is seen. Muslims gather for the Eid prayer, give zakat al-fitr to the poor, and visit and feast with family and friends."
     },
     "EID_AL_ADHA": {
       "name": "Eid al-Adha",
-      "prose": "Eid al-Adha"
+      "prose": "Eid al-Adha",
+      "about": "Eid al-Adha, the feast of the sacrifice on the tenth of Dhu al-Hijja, recalls Ibrahim's readiness to sacrifice his son at God's command. After the Eid prayer, families who can sacrifice an animal and share its meat with relatives and the poor."
     },
     "MAWLID": {
       "name": "Mawlid",
@@ -6268,7 +6307,8 @@
     },
     "TEEJ": {
       "name": "Teej",
-      "prose": "Teej"
+      "prose": "Teej",
+      "about": "Teej is the women's festival of Bhadra's bright half, kept for Parvati, who fasted to win Shiva as her husband. It runs from the feast of the dar, through the fast of Haritalika, to the bath of Rishi Panchami. Women dress in red, and sing and dance at Shiva's temples."
     },
     "SANDHYA_ARGHYA": {
       "name": "Sandhya Arghya",
@@ -6603,6 +6643,16 @@
       "name": "Phalguna Amavasya Manvadi",
       "prose": "Phalguna Amavasya Manvadi",
       "iast": "Phālguna Amāvāsyā Manvādi"
+    },
+    "DASHAIN": {
+      "name": "Dashain",
+      "prose": "Dashain",
+      "about": "Dashain is Nepal's longest and most widely kept festival, fifteen days of the bright half of Ashwin. It honours the goddess Durga and recalls her victory over the demon Mahishasura, the triumph of good over evil. Families gather from far away, and the elders give the young tika and jamara with their blessing."
+    },
+    "TIHAR": {
+      "name": "Tihar",
+      "prose": "Tihar",
+      "about": "Tihar, the festival of lights, is kept over five days as Kartik's dark half turns into its bright half. Its days honour in turn the crow, the dog, the cow and Lakshmi, the goddess of wealth, and the ox and the self, and they end with Bhai Tika, when sisters honour their brothers. Houses are cleaned and lit with lamps, and groups go from house to house singing deusi and bhailo."
     }
   },
   "agni_vasa": {
@@ -8487,6 +8537,520 @@
     "OFFICES_OPEN": {
       "name": "National day, offices open",
       "prose": "National day, offices open"
+    }
+  },
+  "observance": {
+    "KALASH_SET_UP": {
+      "name": "A kalash set up as the goddess's seat",
+      "prose": "A kalash set up as the goddess's seat"
+    },
+    "JAMARA_SOWN": {
+      "name": "Barley and maize sown for jamara",
+      "prose": "Barley and maize sown for jamara"
+    },
+    "DURGA_WORSHIP": {
+      "name": "Worship of Durga in her forms",
+      "prose": "Worship of Durga in her forms"
+    },
+    "TEMPLE_OFFERINGS": {
+      "name": "Offerings at the goddess's temples",
+      "prose": "Offerings at the goddess's temples"
+    },
+    "PHULPATI_PROCESSION": {
+      "name": "The phulpati carried in procession to Hanuman Dhoka",
+      "prose": "The phulpati carried in procession to Hanuman Dhoka"
+    },
+    "PHULPATI_AT_HOME": {
+      "name": "Phulpati brought into the room where the jamara grows",
+      "prose": "Phulpati brought into the room where the jamara grows"
+    },
+    "TIKA_FROM_ELDERS": {
+      "name": "Tika and jamara from the elders, with their blessing",
+      "prose": "Tika and jamara from the elders, with their blessing"
+    },
+    "FAMILY_VISITS": {
+      "name": "Visits to relatives",
+      "prose": "Visits to relatives"
+    },
+    "FEAST": {
+      "name": "A family feast",
+      "prose": "A family feast"
+    },
+    "NEW_CLOTHES": {
+      "name": "New clothes",
+      "prose": "New clothes"
+    },
+    "SWINGS": {
+      "name": "Bamboo swings, the ping",
+      "prose": "Bamboo swings, the ping"
+    },
+    "KITES": {
+      "name": "Kites",
+      "prose": "Kites"
+    },
+    "LAMPS": {
+      "name": "Lamps and lights at every door",
+      "prose": "Lamps and lights at every door"
+    },
+    "RANGOLI": {
+      "name": "Coloured patterns at the door",
+      "prose": "Coloured patterns at the door"
+    },
+    "DEUSI_BHAILO": {
+      "name": "Deusi and bhailo sung from house to house",
+      "prose": "Deusi and bhailo sung from house to house"
+    },
+    "FLOWER_GARLANDS": {
+      "name": "Garlands of marigold and makhamali",
+      "prose": "Garlands of marigold and makhamali"
+    },
+    "DOG_HONOURED": {
+      "name": "Dogs honoured with tika, a garland and food",
+      "prose": "Dogs honoured with tika, a garland and food"
+    },
+    "COW_HONOURED": {
+      "name": "The cow worshipped as Lakshmi",
+      "prose": "The cow worshipped as Lakshmi"
+    },
+    "LAKSHMI_WORSHIP": {
+      "name": "Lakshmi welcomed into the house with an evening puja",
+      "prose": "Lakshmi welcomed into the house with an evening puja"
+    },
+    "GOVARDHAN_HILL": {
+      "name": "A small hill of cow dung made and worshipped as Govardhan",
+      "prose": "A small hill of cow dung made and worshipped as Govardhan"
+    },
+    "OX_HONOURED": {
+      "name": "Oxen honoured with tika and garlands",
+      "prose": "Oxen honoured with tika and garlands"
+    },
+    "MANDALA_FOR_EACH": {
+      "name": "A mandala drawn for each member of the family",
+      "prose": "A mandala drawn for each member of the family"
+    },
+    "SELF_WORSHIP": {
+      "name": "The self worshipped for health and long life",
+      "prose": "The self worshipped for health and long life"
+    },
+    "TIKA_FROM_SISTERS": {
+      "name": "A tika of seven colours from sisters",
+      "prose": "A tika of seven colours from sisters"
+    },
+    "GIFTS_TO_SISTERS": {
+      "name": "Gifts from brothers to their sisters",
+      "prose": "Gifts from brothers to their sisters"
+    },
+    "DAR_FEAST": {
+      "name": "A feast the evening before the fast, the dar",
+      "prose": "A feast the evening before the fast, the dar"
+    },
+    "FAST": {
+      "name": "A fast",
+      "prose": "A fast"
+    },
+    "RED_DRESS": {
+      "name": "Red saris and bangles",
+      "prose": "Red saris and bangles"
+    },
+    "SONG_AND_DANCE": {
+      "name": "Songs and dances",
+      "prose": "Songs and dances"
+    },
+    "SHIVA_PARVATI_WORSHIP": {
+      "name": "Worship of Shiva and Parvati",
+      "prose": "Worship of Shiva and Parvati"
+    },
+    "RIVER_BATH": {
+      "name": "A bath in a river or at a confluence",
+      "prose": "A bath in a river or at a confluence"
+    },
+    "SAPTARSHI_WORSHIP": {
+      "name": "Worship of the seven sages",
+      "prose": "Worship of the seven sages"
+    },
+    "ARGHYA_TO_SUN": {
+      "name": "Arghya offered to the setting and the rising Sun, standing in water",
+      "prose": "Arghya offered to the setting and the rising Sun, standing in water"
+    },
+    "OFFERINGS_IN_BASKETS": {
+      "name": "Thekua, fruit and sugarcane carried in bamboo baskets",
+      "prose": "Thekua, fruit and sugarcane carried in bamboo baskets"
+    },
+    "NIGHT_VIGIL": {
+      "name": "A vigil through the night",
+      "prose": "A vigil through the night"
+    },
+    "TEMPLE_VISIT": {
+      "name": "A visit to the god's temple",
+      "prose": "A visit to the god's temple"
+    },
+    "BONFIRES": {
+      "name": "Fires lit against the cold",
+      "prose": "Fires lit against the cold"
+    },
+    "CHIR_RAISED": {
+      "name": "The chir pole raised, a week before",
+      "prose": "The chir pole raised, a week before"
+    },
+    "COLOURS": {
+      "name": "Coloured powder and water thrown in play",
+      "prose": "Coloured powder and water thrown in play"
+    },
+    "HOLIKA_BONFIRE": {
+      "name": "Holika's bonfire the night before",
+      "prose": "Holika's bonfire the night before"
+    },
+    "SWEETS_SHARED": {
+      "name": "Sweets shared with neighbours",
+      "prose": "Sweets shared with neighbours"
+    },
+    "JANAI_CHANGED": {
+      "name": "The sacred thread, the janai, changed",
+      "prose": "The sacred thread, the janai, changed"
+    },
+    "DORO_TIED": {
+      "name": "A protective thread, the doro, tied on the wrist",
+      "prose": "A protective thread, the doro, tied on the wrist"
+    },
+    "RAKHI_TIED": {
+      "name": "Rakhi tied by sisters on their brothers' wrists",
+      "prose": "Rakhi tied by sisters on their brothers' wrists"
+    },
+    "KWATI": {
+      "name": "Kwati, a soup of nine beans",
+      "prose": "Kwati, a soup of nine beans"
+    },
+    "PILGRIMAGE": {
+      "name": "A pilgrimage",
+      "prose": "A pilgrimage"
+    },
+    "MIDNIGHT_PUJA": {
+      "name": "Worship at midnight, the hour of his birth",
+      "prose": "Worship at midnight, the hour of his birth"
+    },
+    "BHAJAN": {
+      "name": "Devotional songs, bhajan and kirtan",
+      "prose": "Devotional songs, bhajan and kirtan"
+    },
+    "RAMA_WORSHIP": {
+      "name": "Worship of Rama at midday, the hour of his birth",
+      "prose": "Worship of Rama at midday, the hour of his birth"
+    },
+    "WINTER_FOODS": {
+      "name": "Sesame laddus, chaku, ghee, sweet potato and yam",
+      "prose": "Sesame laddus, chaku, ghee, sweet potato and yam"
+    },
+    "NEW_YEAR_GREETINGS": {
+      "name": "New year greetings",
+      "prose": "New year greetings"
+    },
+    "CHARIOT_PROCESSION": {
+      "name": "A chariot pulled through the city",
+      "prose": "A chariot pulled through the city"
+    },
+    "POLE_RAISED": {
+      "name": "A tall pole raised",
+      "prose": "A tall pole raised"
+    },
+    "SARASWATI_WORSHIP": {
+      "name": "Worship of Saraswati at schools and temples",
+      "prose": "Worship of Saraswati at schools and temples"
+    },
+    "FIRST_LETTERS": {
+      "name": "Small children taught their first letters",
+      "prose": "Small children taught their first letters"
+    },
+    "MASKED_DANCES": {
+      "name": "Masked dances in the squares",
+      "prose": "Masked dances in the squares"
+    },
+    "KUMARI_CHARIOT": {
+      "name": "The living goddess Kumari pulled in her chariot",
+      "prose": "The living goddess Kumari pulled in her chariot"
+    },
+    "COW_PROCESSION": {
+      "name": "A cow, or a child dressed as one, sent through the city for each family's dead",
+      "prose": "A cow, or a child dressed as one, sent through the city for each family's dead"
+    },
+    "SATIRE": {
+      "name": "Satire and comedy",
+      "prose": "Satire and comedy"
+    },
+    "HORSE_RACES": {
+      "name": "Horse races and displays at Tundikhel",
+      "prose": "Horse races and displays at Tundikhel"
+    },
+    "PROCESSION": {
+      "name": "A procession",
+      "prose": "A procession"
+    },
+    "BHOTO_SHOWN": {
+      "name": "The god's jewelled vest, the bhoto, held up for all to see",
+      "prose": "The god's jewelled vest, the bhoto, held up for all to see"
+    },
+    "NATURE_WORSHIP": {
+      "name": "Worship of nature and the ancestors",
+      "prose": "Worship of nature and the ancestors"
+    },
+    "SAKELA_DANCE": {
+      "name": "The sakela dance, in a great circle",
+      "prose": "The sakela dance, in a great circle"
+    },
+    "VILLAGE_ASSEMBLY": {
+      "name": "The village chooses its headman for the year",
+      "prose": "The village chooses its headman for the year"
+    },
+    "BIRUDA": {
+      "name": "Five grains soaked, the biruda",
+      "prose": "Five grains soaked, the biruda"
+    },
+    "DEUDA_DANCE": {
+      "name": "The deuda danced through the nights",
+      "prose": "The deuda danced through the nights"
+    },
+    "MONASTERY_VISIT": {
+      "name": "Prayers at the monastery",
+      "prose": "Prayers at the monastery"
+    },
+    "PRAYER_FLAGS": {
+      "name": "New prayer flags",
+      "prose": "New prayer flags"
+    },
+    "TRADITIONAL_DRESS": {
+      "name": "Traditional dress",
+      "prose": "Traditional dress"
+    },
+    "STUPA_VISIT": {
+      "name": "Visits to Lumbini and the stupas",
+      "prose": "Visits to Lumbini and the stupas"
+    },
+    "ALMS": {
+      "name": "Alms and gifts to the poor",
+      "prose": "Alms and gifts to the poor"
+    },
+    "EID_PRAYER": {
+      "name": "The Eid prayer, in congregation",
+      "prose": "The Eid prayer, in congregation"
+    },
+    "ZAKAT_AL_FITR": {
+      "name": "Zakat al-fitr given to the poor before the prayer",
+      "prose": "Zakat al-fitr given to the poor before the prayer"
+    },
+    "QURBANI": {
+      "name": "An animal sacrificed and its meat shared with family and the poor",
+      "prose": "An animal sacrificed and its meat shared with family and the poor"
+    },
+    "CHURCH_SERVICE": {
+      "name": "A church service",
+      "prose": "A church service"
+    },
+    "CAROLS": {
+      "name": "Carols",
+      "prose": "Carols"
+    },
+    "GIFTS": {
+      "name": "Gifts",
+      "prose": "Gifts"
+    },
+    "SCRIPTURE_READING": {
+      "name": "The Guru Granth Sahib read through",
+      "prose": "The Guru Granth Sahib read through"
+    },
+    "LANGAR": {
+      "name": "A free meal for all at the gurdwara's langar",
+      "prose": "A free meal for all at the gurdwara's langar"
+    }
+  },
+  "community": {
+    "NEWAR": {
+      "name": "Newar",
+      "prose": "Newar"
+    },
+    "THARU": {
+      "name": "Tharu",
+      "prose": "Tharu"
+    },
+    "KIRAT": {
+      "name": "Kirat",
+      "prose": "Kirat"
+    },
+    "SHERPA": {
+      "name": "Sherpa",
+      "prose": "Sherpa"
+    },
+    "TAMANG": {
+      "name": "Tamang",
+      "prose": "Tamang"
+    },
+    "GURUNG": {
+      "name": "Gurung",
+      "prose": "Gurung"
+    },
+    "MAGAR": {
+      "name": "Magar",
+      "prose": "Magar"
+    },
+    "CHHANTYAL": {
+      "name": "Chhantyal",
+      "prose": "Chhantyal"
+    },
+    "DURA": {
+      "name": "Dura",
+      "prose": "Dura"
+    },
+    "MAITHIL": {
+      "name": "Maithil",
+      "prose": "Maithil"
+    },
+    "BHOJPURI": {
+      "name": "Bhojpuri",
+      "prose": "Bhojpuri"
+    },
+    "MUSLIM": {
+      "name": "Muslim",
+      "prose": "Muslim"
+    },
+    "BRAHMIN": {
+      "name": "Brahmin",
+      "prose": "Brahmin"
+    },
+    "VISHWAKARMA": {
+      "name": "Vishwakarma",
+      "prose": "Vishwakarma"
+    },
+    "BANKS": {
+      "name": "banking",
+      "prose": "banking"
+    },
+    "PARSI": {
+      "name": "Parsi",
+      "prose": "Parsi"
+    },
+    "NADAR": {
+      "name": "Nadar",
+      "prose": "Nadar"
+    },
+    "RAVIDASSIA": {
+      "name": "Ravidassia",
+      "prose": "Ravidassia"
+    },
+    "SANTHAL": {
+      "name": "Santhal",
+      "prose": "Santhal"
+    },
+    "DIGAMBARA": {
+      "name": "Digambara Jain",
+      "prose": "Digambara Jain"
+    },
+    "SHVETAMBARA": {
+      "name": "Shvetambara Jain",
+      "prose": "Shvetambara Jain"
+    },
+    "STHANAKVASI": {
+      "name": "Sthanakvasi Jain",
+      "prose": "Sthanakvasi Jain"
+    },
+    "TERAPANTH": {
+      "name": "Terapanth Jain",
+      "prose": "Terapanth Jain"
+    },
+    "TAPAGACHHA": {
+      "name": "Tapagachchha Jain",
+      "prose": "Tapagachchha Jain"
+    },
+    "KHARATARA_GACHHA": {
+      "name": "Kharatara Gachchha Jain",
+      "prose": "Kharatara Gachchha Jain"
+    },
+    "ACHALGACHHA": {
+      "name": "Achalgachchha Jain",
+      "prose": "Achalgachchha Jain"
+    },
+    "SIKH": {
+      "name": "Sikh",
+      "prose": "Sikh"
+    },
+    "CHRISTIAN": {
+      "name": "Christian",
+      "prose": "Christian"
+    }
+  },
+  "region": {
+    "NP": {
+      "name": "Nepal",
+      "prose": "Nepal"
+    },
+    "KATHMANDU_VALLEY": {
+      "name": "the Kathmandu valley",
+      "prose": "the Kathmandu valley"
+    },
+    "NP_P3": {
+      "name": "Bagmati Province",
+      "prose": "Bagmati Province"
+    },
+    "HILLS": {
+      "name": "the hills",
+      "prose": "the hills"
+    },
+    "TERAI": {
+      "name": "the Terai",
+      "prose": "the Terai"
+    },
+    "IN": {
+      "name": "India",
+      "prose": "India"
+    },
+    "IN_AP": {
+      "name": "Andhra Pradesh",
+      "prose": "Andhra Pradesh"
+    },
+    "IN_AS": {
+      "name": "Assam",
+      "prose": "Assam"
+    },
+    "IN_BR": {
+      "name": "Bihar",
+      "prose": "Bihar"
+    },
+    "IN_GJ": {
+      "name": "Gujarat",
+      "prose": "Gujarat"
+    },
+    "IN_HR": {
+      "name": "Haryana",
+      "prose": "Haryana"
+    },
+    "IN_KA": {
+      "name": "Karnataka",
+      "prose": "Karnataka"
+    },
+    "IN_KL": {
+      "name": "Kerala",
+      "prose": "Kerala"
+    },
+    "IN_MH": {
+      "name": "Maharashtra",
+      "prose": "Maharashtra"
+    },
+    "IN_OD": {
+      "name": "Odisha",
+      "prose": "Odisha"
+    },
+    "IN_TG": {
+      "name": "Telangana",
+      "prose": "Telangana"
+    },
+    "IN_TN": {
+      "name": "Tamil Nadu",
+      "prose": "Tamil Nadu"
+    },
+    "IN_UP": {
+      "name": "Uttar Pradesh",
+      "prose": "Uttar Pradesh"
+    },
+    "IN_WB": {
+      "name": "West Bengal",
+      "prose": "West Bengal"
     }
   }
 }

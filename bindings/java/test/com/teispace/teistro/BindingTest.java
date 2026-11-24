@@ -1232,6 +1232,31 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a pack asked with about describes its festivals (SR-153)", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .locale("en-Latn").testProvider(true).build())) {
+                check(!sky.almanac().festivalPack("NEPAL_PANCHANGA").containsKey("about"), "not unasked");
+                Map<?, ?> nepal = sky.almanac().festivalPack("NEPAL_PANCHANGA", true);
+                Map<?, ?> tihar = ((List<?>) nepal.get("about")).stream()
+                        .map(said -> (Map<?, ?>) said)
+                        .filter(said -> "TIHAR".equals(said.get("key")))
+                        .findFirst().orElseThrow();
+                List<Object> items = new java.util.ArrayList<>();
+                items.add(tihar.get("about"));
+                items.addAll((List<?>) tihar.get("observance"));
+                items.add(tihar.get("who"));
+                for (Object raw : items) {
+                    Map<?, ?> item = (Map<?, ?>) raw;
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> params = (Map<String, Object>) item.get("params");
+                    IntlRender said = sky.intl().render((String) item.get("key"), params);
+                    same(0, said.isFallback(), (String) item.get("key"));
+                    check(!said.text().startsWith("{"), said.text());
+                }
+                check(!((List<?>) nepal.get("unwritten")).contains("TIHAR"), "Tihar is described");
+            }
+        });
+
         tests.put("a message renders in the context's locale", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .locale("en-Latn").testProvider(true).build())) {

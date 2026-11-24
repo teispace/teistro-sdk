@@ -2489,6 +2489,7 @@
   {
     "record": "almanac.festivalPack",
     "request": {
+      "about": true,
       "pack": "INDIA_CENTRAL"
     }
   },

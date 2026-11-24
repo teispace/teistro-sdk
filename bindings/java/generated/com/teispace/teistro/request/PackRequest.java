@@ -11,9 +11,10 @@ import java.util.Objects;
 /**
  * `PackRequest` as the bindings write it.
  *
+ * @param about Whether to describe each festival: what it is, how it is kept and who keeps it where. Null leaves the SDK's default.
  * @param pack A pack the SDK ships, by name.
  */
-public record PackRequest(String pack) implements RequestJson {
+public record PackRequest(Boolean about, String pack) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -26,6 +27,66 @@ public record PackRequest(String pack) implements RequestJson {
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param pack A pack the SDK ships, by name.
+     */
+    public PackRequest(String pack) {
+        this(null, pack);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link PackRequest} a field at a time. */
+    public static final class Builder {
+        private Boolean about;
+        private String pack;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code about}.
+         *
+         * @param about Whether to describe each festival: what it is, how it is kept and who keeps it where. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder about(boolean about) {
+            this.about = about;
+            return this;
+        }
+
+        /**
+         * Sets {@code pack}.
+         *
+         * @param pack A pack the SDK ships, by name.
+         * @return this builder
+         */
+        public Builder pack(String pack) {
+            this.pack = pack;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public PackRequest build() {
+            return new PackRequest(about, pack);
+        }
+    }
+
+    /**
      * A {@code PackRequest} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
@@ -35,12 +96,16 @@ public record PackRequest(String pack) implements RequestJson {
     public static PackRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "PackRequest");
         return new PackRequest(
+            Read.orNull(json.get("about"), present -> Read.bool(present, "PackRequest.about")),
             Read.text(Read.required(json.get("pack"), "PackRequest.pack"), "PackRequest.pack"));
     }
 
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (about != null) {
+            json.put("about", about);
+        }
         json.put("pack", pack);
         return json;
     }

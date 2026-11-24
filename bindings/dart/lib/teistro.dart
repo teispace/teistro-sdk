@@ -2894,11 +2894,16 @@ final class AlmanacArea extends _Area {
   /// ```dart
   /// final rows = sdk.almanac.festivalPack('INDIA_CENTRAL')['rules'];
   /// ```
-  Map<String, Object?> festivalPack(String pack) =>
+  ///
+  /// With [about], the listing also holds `about`, each described festival
+  /// and group as `{key, about, observance, who, sources}` whose items render
+  /// with `intl.render`, and `unwritten`, the keys not described yet
+  /// (`03-design/festival-about.md`).
+  Map<String, Object?> festivalPack(String pack, {bool about = false}) =>
       jsonDecode(
             _context._guarded(
               () => _context._inner.almanacFestivalPack(
-                jsonEncode({'pack': pack}),
+                jsonEncode({'pack': pack, if (about) 'about': true}),
               ),
             ),
           )

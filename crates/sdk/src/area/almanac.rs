@@ -80,6 +80,7 @@ impl core::fmt::Debug for AlmanacArea<'_> {
     }
 }
 
+mod about;
 mod anniversaries;
 mod cells;
 mod changes;
@@ -104,6 +105,7 @@ mod sait;
 mod sankalpa_words;
 mod sentences;
 
+pub use about::FestivalAbout;
 #[cfg(feature = "schema")]
 pub(crate) use anniversaries::AnniversariesAsked;
 pub use anniversaries::{AnniversariesRequest, MOST_ANNIVERSARIES, MOST_YEARS};

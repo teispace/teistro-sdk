@@ -1,0 +1,5 @@
+kind: community
+number: 168
+version: 1
+open: true
+doc: "A people or faith community a festival rule's meta names, as `NEWAR` (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412)."

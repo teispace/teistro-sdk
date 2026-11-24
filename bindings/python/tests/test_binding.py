@@ -1527,6 +1527,16 @@ class AnEngine(WithLibrary):
             self.assertTrue(fasts[1]["ifUnable"])
             jain = {row["key"]: row for row in ctx.almanac.festival_pack("JAIN")["rules"]}
             self.assertEqual(jain["DASA_LAKSHANA"]["meta"]["communities"], ["DIGAMBARA"])
+            # Asked with about, each described festival renders whole (SR-153).
+            self.assertNotIn("about", listing)
+            nepal = ctx.almanac.festival_pack("NEPAL_PANCHANGA", about=True)
+            tihar = next(said for said in nepal["about"] if said["key"] == "TIHAR")
+            self.assertTrue(tihar["sources"])
+            for item in [tihar["about"], *tihar["observance"], tihar["who"]]:
+                rendered = ctx.intl.render(item["key"], item["params"])
+                self.assertFalse(rendered.is_fallback, item["key"])
+                self.assertEqual(rendered.warning_count, 0, item["key"])
+            self.assertNotIn("TIHAR", nepal["unwritten"])
             with self.assertRaises(TeistroError) as unread:
                 ctx.almanac.festival_pack("NO_SUCH_PACK")
             self.assertEqual(unread.exception.field, "pack.pack")
