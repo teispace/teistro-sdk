@@ -37,6 +37,17 @@ the previous release, not by nobody having looked.
 - **Changed:** the hi and sa packs' size budgets rise to hold the voice
   (`docs/05-testing/pack-budgets.json`).
 
+**Why a muhurta window is good (SR-154).**
+**Numbers:** none. A search that does not ask for `reasons` answers and hashes as before.
+- **Added:** a muhurta search asked with `reasons` answers, for every window, a "why this
+  date" line and a list in three runs: what favours it (`FOR`), what holds against it
+  without barring it (`DESPITE`) and the doshas it avoided (`AVOIDED`). Each item is an
+  intent of the voice pack (`sdk.voice.muhurta.*`) whose slots are the clause's members in
+  full keys, and a `FOR` or `DESPITE` reason points at its clause in the window's `holds`
+  or `fails`. "Avoided" names only a dosha the search judges for every window, and the
+  rite's own bars (`docs/03-design/muhurta-reasons.md`). The election record carries them
+  too. en and ne ship final; every binding reads them as typed records (`MuhurtaReasons`).
+
 ## 1.0.0-rc.10
 
 The tenth release candidate of 1.0.0. The rashifal gains its reading voice:
