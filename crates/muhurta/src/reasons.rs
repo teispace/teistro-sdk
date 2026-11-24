@@ -482,5 +482,6 @@ fn lift(params: &mut Params, path: &str, name: &str, value: Json, members: &[(&s
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 #[path = "reasons/tests.rs"]
 mod tests;
