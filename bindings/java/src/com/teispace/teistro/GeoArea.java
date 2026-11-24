@@ -2,6 +2,7 @@ package com.teispace.teistro;
 
 import com.teispace.teistro.request.GeoSource;
 import com.teispace.teistro.request.PlaceListing;
+import com.teispace.teistro.request.PlaceLookup;
 import com.teispace.teistro.request.PlaceNamesRequest;
 import com.teispace.teistro.request.PlaceRequest;
 import com.teispace.teistro.request.PlaceReverse;
@@ -102,6 +103,23 @@ public final class GeoArea {
     public Map<String, Object> names(PlaceNamesRequest request) {
         String json = Json.write(request);
         return JsonRead.object(Json.read(context.locked((lib, raw) -> Calls.geoNames(lib, raw, json))));
+    }
+
+    /**
+     * A place by its id, named in {@code lang}, with its id line, zone,
+     * population and landmark class: {@code {asked, place, moved}},
+     * {@code moved} when the id asked was retired and {@code place} is the
+     * one that replaced it, whose id a caller stores instead; {@code place}
+     * null for an id the provider does not know.
+     *
+     * @param request the place's id and the language to name it in
+     * @return the place looked up
+     * @throws TeistroException with {@link Status#CAPABILITY} on {@code geo}
+     *     for a context with no provider
+     */
+    public Map<String, Object> place(PlaceLookup request) {
+        String json = Json.write(request);
+        return JsonRead.object(Json.read(context.locked((lib, raw) -> Calls.geoPlace(lib, raw, json))));
     }
 
     /**

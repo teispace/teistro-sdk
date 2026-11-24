@@ -9,8 +9,8 @@ use teistro_core::math::{asin, atan2, cos, sin};
 
 use crate::catalogue::{
     ChosenName, FoundPlace, LangTag, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind,
-    PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, Population,
-    label,
+    PlaceListing, PlaceLookup, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch,
+    Population, label,
 };
 use crate::{GeoPoint, GeoTable, country_code, field_of, refused, subdivision_code};
 
@@ -84,6 +84,12 @@ pub struct TablePlace {
     /// Its number of people, or `null`.
     #[serde(default)]
     pub population: Option<Population>,
+    /// Its IANA time zone, or `null`.
+    #[serde(default)]
+    pub zone: Option<String>,
+    /// What a landmark is (`temple`), or `null`.
+    #[serde(default)]
+    pub class: Option<String>,
 }
 
 /// Lower case, with runs of white space as one space and none at the ends:
@@ -264,6 +270,9 @@ impl<'a> Catalogue<'a> {
             longitude_deg: place.longitude_deg,
             population: place.population,
             parents,
+            line: None,
+            zone: place.zone.clone(),
+            class: place.class.clone(),
         }
     }
 
@@ -401,6 +410,16 @@ impl GeoTable {
                 .collect(),
             admin,
         }
+    }
+
+    /// The place an id names in the table, which retires none.
+    pub(crate) fn place_of(&self, asked: &PlaceLookup) -> Option<NamedPlace> {
+        let catalogue = Catalogue::of(&self.places);
+        let place = catalogue.by_id.get(asked.id.as_str()).copied()?;
+        Some(catalogue.named(
+            place,
+            asked.lang.as_deref().and_then(LangTag::parse).as_ref(),
+        ))
     }
 
     /// The table's names of a place, as written.
@@ -591,6 +610,20 @@ mod tests {
             langs: vec!["ne".into()],
         };
         assert_eq!(names(&table(), &unknown).unwrap().all, Vec::new());
+
+        // A place by its id, named in the language asked (SR-164).
+        let lookup = |id: &str| PlaceLookup {
+            id: id.into(),
+            lang: Some("ne".into()),
+        };
+        let found = crate::place(&table(), &lookup("pkr")).unwrap();
+        assert!(!found.moved);
+        let found = found.place.unwrap();
+        assert_eq!((found.id.as_str(), found.name.as_str()), ("pkr", "पोखरा"));
+        assert_eq!(
+            crate::place(&table(), &lookup("nowhere")).unwrap().place,
+            None
+        );
 
         let listing = |json: &str| {
             let asked: PlaceListing = serde_json::from_str(json).unwrap();

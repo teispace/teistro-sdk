@@ -37,10 +37,10 @@ mod catalogue;
 mod table;
 
 pub use catalogue::{
-    ChosenName, FOCUS_SCALE_M, FoundPlace, LangTag, MOST_FOUND, MOST_LISTED, NamedPlace, NearPlace,
-    NearbyPlaces, ParentPlace, PlaceKind, PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest,
-    PlaceReverse, PlaceSearch, Population, PopulationKind, SearchFocus, label, list, names,
-    reverse, search,
+    ChosenName, FOCUS_SCALE_M, FoundPlace, LangTag, LookedUpPlace, MOST_FOUND, MOST_LISTED,
+    NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind, PlaceListing, PlaceLookup,
+    PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, Population,
+    PopulationKind, SearchFocus, label, list, names, place, reverse, search,
 };
 pub use table::{TableName, TablePlace};
 
@@ -451,6 +451,26 @@ pub trait GeoProvider: Send + Sync {
         Ok(PlaceNames::none(asked))
     }
 
+    /// The place an id names, a retired id followed to the place that
+    /// replaced it (§12.7, SR-164); `None` by default, and for an id the
+    /// provider does not know.
+    ///
+    /// ```
+    /// use teistro_port_geo::{GeoProvider, GeoTable, PlaceLookup};
+    ///
+    /// let table = GeoTable::from_json(r#"{"source": {"name": "t", "version": "1", "dataVersion": "1", "tzdb": null}, "areas": []}"#)?;
+    /// assert!(table.place(&PlaceLookup { id: "np/1".into(), lang: None })?.is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`GeoProvider::zone_at`].
+    fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+        let _ = asked;
+        Ok(None)
+    }
+
     /// The places of a unit, ranked by population (§12.6); none by
     /// default.
     ///
@@ -509,6 +529,10 @@ impl<P: GeoProvider + ?Sized> GeoProvider for &P {
         (**self).names(asked)
     }
 
+    fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+        (**self).place(asked)
+    }
+
     fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
         (**self).list(asked)
     }
@@ -550,6 +574,10 @@ impl<P: GeoProvider + ?Sized> GeoProvider for Arc<P> {
 
     fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
         (**self).names(asked)
+    }
+
+    fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+        (**self).place(asked)
     }
 
     fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
@@ -980,6 +1008,10 @@ impl GeoProvider for GeoTable {
 
     fn names(&self, asked: &PlaceNamesRequest) -> Result<PlaceNames, Error> {
         Ok(self.place_names(asked))
+    }
+
+    fn place(&self, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+        Ok(self.place_of(asked))
     }
 
     fn list(&self, asked: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {

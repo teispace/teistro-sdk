@@ -637,6 +637,10 @@ public final class BindingTest {
                         Json.read("{\"id\": \"np-ktm\", \"langs\": [\"ne\", \"sa\"]}")));
                 same("काठमाडौं", Reads.object(Reads.object(((List<?>) names.get("best")).get(0)).get("name")).get("text"),
                         "its Nepali name");
+                Map<String, Object> found = placed.geo().place(com.teispace.teistro.request.PlaceLookup.of(
+                        Json.read("{\"id\": \"np-ktm\", \"lang\": \"ne\"}")));
+                same("काठमाडौं", Reads.object(found.get("place")).get("name"), "a place read back by its id");
+                same(false, found.get("moved"), "an id not retired");
                 List<?> listed = placed.geo().list(
                         com.teispace.teistro.request.PlaceListing.of(Json.read("{\"within\": \"NP-P3\"}")));
                 same(2, listed.size(), "the province's places");

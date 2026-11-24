@@ -10821,6 +10821,9 @@ void _engineTests() {
     final best = names['best']! as List<Object?>;
     expect(((best[0]! as Map)['name']! as Map)['text'], 'काठमाडौं');
     expect((best[1]! as Map)['asked'], 'sa');
+    final found = ctx.geo.place(const PlaceLookup(id: 'np-ktm', lang: 'ne'));
+    expect((found['place']! as Map)['name'], 'काठमाडौं');
+    expect(found['moved'], false);
     final listed = ctx.geo.list(const PlaceListing(within: 'NP-P3'));
     expect(listed.map((place) => (place! as Map)['id']), ['np-ktm', 'np-ltp']);
     expect(((listed[1]! as Map)['population']! as Map)['kind'], 'MODELLED');

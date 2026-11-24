@@ -898,6 +898,7 @@ fn the_surface(report: &mut Report) {
         ("geo.list", "present"),
         ("geo.load", "present"),
         ("geo.names", "present"),
+        ("geo.place", "present"),
         ("geo.resolve", "present"),
         ("geo.reverse", "present"),
         ("geo.search", "present"),

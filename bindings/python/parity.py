@@ -3696,6 +3696,7 @@ def main() -> None:
         ("geo.search", ctx.geo.search),
         ("geo.reverse", ctx.geo.reverse),
         ("geo.names", ctx.geo.names),
+        ("geo.place", ctx.geo.place),
         ("geo.list", ctx.geo.list),
         ("chart.layout", ctx.chart.layout),
         ("chart.found", ctx.chart.found),

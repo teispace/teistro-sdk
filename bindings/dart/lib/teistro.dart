@@ -1177,6 +1177,19 @@ final class GeoArea extends _Area {
           )
           as Map<String, Object?>;
 
+  /// A place by its id, named in `lang`, with its id line, zone,
+  /// population and landmark class: `{asked, place, moved}`, `moved` when
+  /// the id asked was retired and `place` is the one that replaced it, whose
+  /// id a caller stores instead; `place` null for an id the provider does
+  /// not know.
+  Map<String, Object?> place(PlaceLookup request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoPlace(jsonEncode(request)),
+            ),
+          )
+          as Map<String, Object?>;
+
   /// The places of a unit (its id or ISO 3166 code), by admin level and
   /// kind, ranked by population, each with `{people, kind}`, `kind`
   /// `COUNTED` or `MODELLED`.

@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+- **A saved place read back, on teigeodata 1.2 (SR-164).** `geo.place`
+  (`sdk.geo().place`, `ts_geo_place`, every binding and the MCP tool)
+  answers `{asked, place, moved}`: a place by its id, a retired id followed
+  to the place that replaced it and `moved` said, so a caller stores the
+  new id. `NamedPlace` gains `zone` (its IANA zone), `class` (a landmark's
+  kind) and `line` (the id line, `null` until teigeodata's engine exposes a
+  pack's licence). The teigeodata adapter moves to `v1.2.0`, which reads
+  the live catalog's entries. Numbers: none.
 **Every festival described, as a corpus a consumer loads (SR-153, stage b).**
 **Numbers:** none. No day moves; a listing asked with `about` gains subjects.
 - **Added:** 709 more festivals described in English and Nepali, beside stage (a)'s 42:

@@ -108,9 +108,9 @@ pub use teistro_core::coverage::Clipped;
 pub use area::{GeoArea, PlaceRequest};
 pub use teistro_port_geo::{
     AdminUnit, ChosenName, FoundPlace, GeoBox, GeoPoint, GeoProvider, GeoSource, GeoTable,
-    GroundHeight, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind, PlaceListing,
-    PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch, Population,
-    PopulationKind, ResolvedPlace, SearchFocus, TableName, TablePlace,
+    GroundHeight, LookedUpPlace, NamedPlace, NearPlace, NearbyPlaces, ParentPlace, PlaceKind,
+    PlaceListing, PlaceLookup, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch,
+    Population, PopulationKind, ResolvedPlace, SearchFocus, TableName, TablePlace,
 };
 // The sankalpa said by a tradition's template (SR-29).
 pub use area::{FestivalAbout, PackForm, PackListing, PackRequest, PackRow};
