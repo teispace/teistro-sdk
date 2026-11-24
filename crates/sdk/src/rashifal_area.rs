@@ -212,10 +212,7 @@ impl ChartArea<'_> {
         let bands = self.context().settings().rashifal.score_bands;
         #[cfg(not(feature = "rashifal-reading"))]
         if batch.readings {
-            return Err(Error::unsupported(
-                "the reading voice is the `rashifal-reading` feature, which this build leaves out",
-            )
-            .with_field("rashifal.readings"));
+            return Err(Error::left_out("rashifal-reading").with_field("rashifal.readings"));
         }
         #[cfg(feature = "rashifal-reading")]
         let readings = match batch.baseline.filter(|_| batch.readings) {
