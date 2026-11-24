@@ -12,6 +12,11 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+- **Hijri months in Nepali (SR-161).** ne-Deva-NP names the twelve Hijri
+  months in Devanagari as Nepali print spells them (मुहर्रम … जिल्हिज्जा)
+  and leads its dates and month titles with हिजरी, where it wrote CLDR's
+  English names and "AH". A test holds every Hindi, Nepali and Sanskrit
+  calendar message free of Latin letters.
 - **A saved place read back, on teigeodata 1.2 (SR-164).** `geo.place`
   (`sdk.geo().place`, `ts_geo_place`, every binding and the MCP tool)
   answers `{asked, place, moved}`: a place by its id, a retired id followed

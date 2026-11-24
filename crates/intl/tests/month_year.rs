@@ -166,9 +166,7 @@ fn every_calendar_and_locale_writes_a_title_and_a_run() {
                     "{what}"
                 );
                 assert!(!kinds_contain_day(&answer), "{what}");
-                // Nepali writes the Hijri months and era in Latin letters.
-                let latin = calendar == "HIJRI_TABULAR" && locale == "ne-Deva-NP";
-                if locale.contains("-Deva") && !latin {
+                if locale.contains("-Deva") {
                     assert!(
                         !answer.text.chars().any(|c| c.is_ascii_alphanumeric()),
                         "{what}"
@@ -432,4 +430,40 @@ fn every_fortnight_has_a_short_and_every_rashi_an_indian_name() {
         panic!("en-Latn has no rashi.SAGITTARIUS");
     };
     assert_eq!(dhanu.form("indic"), Some("Dhanu"));
+}
+
+/// SR-161: a Devanagari calendar message writes no Latin letter. Nepali
+/// read the Hijri months and era as `Muharram` and `AH` until the
+/// tithipatra asked for them in its own script. The ISO week's numeric form
+/// keeps the standard's `W` (`2026-W05-1`), which is notation, not a word.
+#[test]
+fn no_devanagari_calendar_message_holds_a_latin_letter() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let mut read = 0;
+    for tag in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        for (key, entry) in &tree.locales[tag].namespaces["sdk.calendar"].entries {
+            let Entry::Message(source) = entry else {
+                continue;
+            };
+            let message = teistro_intl::mf2::parse(source).unwrap();
+            for pattern in message.patterns() {
+                for part in &pattern.0 {
+                    let teistro_intl::mf2::ast::Part::Text(text) = part else {
+                        continue;
+                    };
+                    read += 1;
+                    let text = if key == "ISO_WEEK.date.numeric" {
+                        text.replace('W', "")
+                    } else {
+                        text.clone()
+                    };
+                    assert!(
+                        !text.chars().any(|c| c.is_ascii_alphabetic()),
+                        "{tag} sdk.calendar.{key}: {text:?}"
+                    );
+                }
+            }
+        }
+    }
+    assert!(read > 200, "only {read} pieces of text read");
 }
