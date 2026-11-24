@@ -1659,7 +1659,7 @@ pub fn rust(model: &Model, paths: RustPaths<'_>) -> String {
 /// intl` writes beside the accessors (`crates/intl/tests/every_message.rs`).
 /// A run example is a doctest, and llvm's source coverage runs none, so
 /// without this an accessor's `params` is measured as never run. A message
-/// with no example (a date's) has no line here either.
+/// with no example (a date and time's) has no line here either.
 ///
 /// ```
 /// # use teistro_intl::generate::Model;
@@ -1769,7 +1769,10 @@ fn rust_sample(name: &str, kind: &ParamType, model: &Model, module: &str) -> Opt
         }
         ParamType::Ghati => String::from("teistro_intl::Ghati { ghati: 12, pala: 30, vipala: 0 }"),
         ParamType::Instant => String::from("teistro_core::quantity::JulianDay::J2000"),
-        ParamType::Date | ParamType::DateTime => return None,
+        ParamType::Date => String::from(
+            "teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6)",
+        ),
+        ParamType::DateTime => return None,
     })
 }
 

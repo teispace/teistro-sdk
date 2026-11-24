@@ -12953,6 +12953,26 @@ pub mod sdk {
                 /// The `INGRESS` group.
                 pub mod ingress {
                     /// The message `sdk.voice.rashifal.event.INGRESS.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::ingress::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.event.INGRESS.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct Good {
                         /// The `date` parameter.
@@ -12981,6 +13001,26 @@ pub mod sdk {
                     }
 
                     /// The message `sdk.voice.rashifal.event.INGRESS.NOT_GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::ingress::NotGood;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = NotGood {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.event.INGRESS.NOT_GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct NotGood {
                         /// The `date` parameter.
@@ -13013,6 +13053,26 @@ pub mod sdk {
                 /// The `STATION_DIRECT` group.
                 pub mod station_direct {
                     /// The message `sdk.voice.rashifal.event.STATION_DIRECT.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::station_direct::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.event.STATION_DIRECT.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct Good {
                         /// The `date` parameter.
@@ -13041,6 +13101,26 @@ pub mod sdk {
                     }
 
                     /// The message `sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::station_direct::NotGood;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = NotGood {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct NotGood {
                         /// The `date` parameter.
@@ -13073,6 +13153,26 @@ pub mod sdk {
                 /// The `STATION_RETROGRADE` group.
                 pub mod station_retrograde {
                     /// The message `sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::station_retrograde::Good;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = Good {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(Good::KEY, "sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct Good {
                         /// The `date` parameter.
@@ -13101,6 +13201,26 @@ pub mod sdk {
                     }
 
                     /// The message `sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD`.
+                    ///
+                    /// ```
+                    /// use teistro_intl::messages::sdk::voice::rashifal::event::station_retrograde::NotGood;
+                    /// use teistro_intl::source::Tree;
+                    /// use teistro_intl::{Intl, TypedMessage};
+                    ///
+                    /// let message = NotGood {
+                    ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                    ///     graha: teistro_core::catalogue::Graha::ALL[0],
+                    ///     house: 2,
+                    ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+                    ///     variant: 2,
+                    /// };
+                    /// assert_eq!(NotGood::KEY, "sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD");
+                    /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                    ///     .expect("plural rules for every locale");
+                    /// let rendered = intl.render_typed(&message);
+                    /// // An entity's record may be a pack's; without it the message says what is missing.
+                    /// assert!(!rendered.text.is_empty());
+                    /// ```
                     #[derive(Clone, Debug, PartialEq)]
                     pub struct NotGood {
                         /// The `date` parameter.
@@ -14328,6 +14448,23 @@ pub mod sdk {
             /// The `week` group.
             pub mod week {
                 /// The message `sdk.voice.rashifal.week.BEST_DAY`.
+                ///
+                /// ```
+                /// use teistro_intl::messages::sdk::voice::rashifal::week::BestDay;
+                /// use teistro_intl::source::Tree;
+                /// use teistro_intl::{Intl, TypedMessage};
+                ///
+                /// let message = BestDay {
+                ///     date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+                ///     variant: 2,
+                /// };
+                /// assert_eq!(BestDay::KEY, "sdk.voice.rashifal.week.BEST_DAY");
+                /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+                ///     .expect("plural rules for every locale");
+                /// let rendered = intl.render_typed(&message);
+                /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+                /// assert!(!rendered.text.is_empty());
+                /// ```
                 #[derive(Clone, Debug, PartialEq)]
                 pub struct BestDay {
                     /// The `date` parameter.
