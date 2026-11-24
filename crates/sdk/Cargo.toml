@@ -103,7 +103,7 @@ locale-sa-latn = []
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rashifal-reading", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -124,6 +124,8 @@ pakshi = ["chart", "dep:teistro-pakshi"]
 prashna = ["chart", "dep:teistro-prashna"]
 rectification = ["chart", "dep:teistro-rectification"]
 rashifal = ["chart", "dep:teistro-rashifal", "teistro-interpret/rashifal"]
+# The rashifal's reading voice (`03-design/rashifal-reading.md`, SR-152).
+rashifal-reading = ["rashifal", "teistro-interpret/rashifal-reading"]
 remedies = ["chart", "dep:teistro-remedies"]
 research = ["chart", "dep:teistro-research"]
 svg = ["chart", "dep:teistro-render-svg"]

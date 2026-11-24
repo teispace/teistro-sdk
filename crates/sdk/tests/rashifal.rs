@@ -672,3 +672,97 @@ fn every_word_a_rashifal_answer_carries_is_named_in_each_locale() {
         }
     }
 }
+
+/// A batch asking for the reading voice with `readings`, its period the
+/// baseline's.
+#[cfg(feature = "rashifal-reading")]
+fn november_read(first: u8, last: u8, baseline: &str) -> RashifalBatch {
+    RashifalBatch::from_json(&format!(
+        r#"{{"periods": [{{"first": {{"year": 2026, "month": 11, "day": {first}}},
+            "last": {{"year": 2026, "month": 11, "day": {last}}},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700}}], "baseline": "{baseline}", "readings": true}}"#
+    ))
+    .unwrap()
+}
+
+/// The reading voice through the façade (`03-design/rashifal-reading.md`):
+/// twelve plans a period, every item naming facts the answer carries, a
+/// week's days read one by one and its best day only when one leads.
+#[cfg(feature = "rashifal-reading")]
+#[test]
+fn a_period_is_said_in_the_reading_voice_with_its_facts() {
+    use teistro::interpret::rashifal_reading::{Fact, ReadingItem, ReadingPlan};
+    let sdk = context();
+    let items = |plan: &ReadingPlan| -> Vec<ReadingItem> {
+        std::iter::once(plan.headline.clone())
+            .chain(plan.parts.iter().flat_map(|part| part.items.clone()))
+            .chain(plan.why.clone())
+            .chain(plan.areas.iter().map(|area| area.note.clone()))
+            .collect()
+    };
+    for (first, last, period) in [(15, 15, "DAILY"), (15, 21, "WEEKLY"), (1, 30, "MONTHLY")] {
+        let answers = sdk
+            .chart()
+            .rashifal_answers(&november_read(first, last, period))
+            .unwrap()
+            .value;
+        let answer = &answers[0];
+        let plans = answer.readings.as_ref().expect("readings were asked for");
+        assert_eq!(plans.len(), 12, "{period}");
+        let scores = answer
+            .period
+            .readings
+            .iter()
+            .map(|read| read.rashi)
+            .collect::<Vec<Rashi>>();
+        assert_eq!(
+            plans.iter().map(|plan| plan.rashi).collect::<Vec<_>>(),
+            scores
+        );
+        for (plan, read) in plans.iter().zip(&answer.period.readings) {
+            assert_eq!(plan.areas.len(), 4);
+            assert_eq!(plan.syllables.len(), 9);
+            for item in items(plan) {
+                assert!(!item.rests_on.is_empty(), "{period} {}", item.intent);
+                for fact in &item.rests_on {
+                    if let Fact::Event { index } = fact {
+                        assert!(*index < read.events.len(), "{period} {}", item.intent);
+                    }
+                    if let Fact::Day { index } = fact {
+                        assert!(*index < 7, "{period} {}", item.intent);
+                    }
+                }
+            }
+            if period == "WEEKLY" {
+                // A best day is the week's strict highest, read as its own day.
+                if let Some(best) = plan.best_day {
+                    assert!(best < 7);
+                }
+            } else {
+                assert_eq!(plan.best_day, None);
+            }
+        }
+        // The same batch reads alike.
+        let again = sdk
+            .chart()
+            .rashifal_answers(&november_read(first, last, period))
+            .unwrap()
+            .value;
+        assert_eq!(again[0].readings, answer.readings, "{period}");
+    }
+    // A reading needs its period.
+    let refused = RashifalBatch::from_json(
+        r#"{"periods": [{"first": {"year": 2026, "month": 11, "day": 15},
+            "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700}], "readings": true}"#,
+    )
+    .unwrap_err();
+    assert_eq!(refused.field(), Some("rashifal.readings"));
+    // Not asked, not said.
+    let plain = sdk
+        .chart()
+        .rashifal_answers(&november(15, 15, "DAILY"))
+        .unwrap()
+        .value;
+    assert!(plain[0].readings.is_none());
+}

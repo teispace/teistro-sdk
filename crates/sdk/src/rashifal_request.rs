@@ -347,6 +347,10 @@ pub(crate) struct BatchAsked {
     /// Whether each sign's reading is composed into a narrative plan.
     #[serde(default)]
     plans: bool,
+    /// Whether each sign's period is said in the reading voice, for the
+    /// period `baseline` names (`03-design/rashifal-reading.md`).
+    #[serde(default)]
+    readings: bool,
 }
 
 /// Periods to read, as a binding asks them: each a [`RashifalRequest`],
@@ -361,6 +365,10 @@ pub struct RashifalBatch {
     /// Whether each sign's reading is said in words, as
     /// [`InterpretArea::rashifal`](crate::InterpretArea::rashifal) says it.
     pub plans: bool,
+    /// Whether each sign's period is said in the reading voice
+    /// (`03-design/rashifal-reading.md`, SR-152), for the period
+    /// [`baseline`](Self::baseline) names, which it then needs.
+    pub readings: bool,
 }
 
 impl RashifalBatch {
@@ -372,7 +380,8 @@ impl RashifalBatch {
     /// `snapshot`, `events` and `spells`; and `baseline`, a
     /// [`Period`](teistro_rashifal::baseline::Period), when the baseline
     /// engine's score is wanted; and `plans: true` for each sign's reading
-    /// in words.
+    /// in words; and `readings: true` for each sign in the reading voice,
+    /// for the period `baseline` names.
     ///
     /// ```
     /// use teistro::{RashifalBatch, Snapshot};
@@ -387,6 +396,7 @@ impl RashifalBatch {
     /// assert_eq!(asked.periods[0].snapshot(), Snapshot::Clock { hour: 6, minute: 0 });
     /// assert_eq!(asked.periods[0].events().len(), 2);
     /// assert!(!asked.plans, "words only when asked for");
+    /// assert!(!asked.readings, "the reading voice only when asked for");
     /// let typo = RashifalBatch::from_json(
     ///     r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4},
     ///         "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700, "spell": [4]}]}"#,
@@ -400,7 +410,8 @@ impl RashifalBatch {
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
     /// read, no period at all, a place or offset out of range, both or
-    /// neither of `utcOffsetSeconds` and `zone`, and whatever [`RashifalRequest::check`] refuses, each named under
+    /// neither of `utcOffsetSeconds` and `zone`, `readings` with no
+    /// `baseline` period to read them for, and whatever [`RashifalRequest::check`] refuses, each named under
     /// `rashifal`.
     pub fn from_json(text: &str) -> Result<RashifalBatch, Error> {
         let asked: BatchAsked = teistro_core::strict::read(text, RASHIFAL)?;
@@ -418,10 +429,17 @@ impl RashifalBatch {
                     .map_err(|why| why.under(&under))
             })
             .collect::<Result<Vec<_>, Error>>()?;
+        if asked.readings && asked.baseline.is_none() {
+            return Err(Error::invalid_arg(
+                "a reading is said for a period: name it in `baseline`",
+            )
+            .with_field("rashifal.readings"));
+        }
         Ok(RashifalBatch {
             periods,
             baseline: asked.baseline,
             plans: asked.plans,
+            readings: asked.readings,
         })
     }
 }
@@ -465,4 +483,10 @@ pub struct RashifalAnswer {
     /// (`03-design/rashifal.md`, "Said in words").
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub plans: Option<Vec<crate::Plan>>,
+    /// Each sign's period in the reading voice, Aries to Pisces, when the
+    /// batch asked for it: intents a reading pack words, each naming the
+    /// facts it rests on (`03-design/rashifal-reading.md`, SR-152).
+    #[cfg(feature = "rashifal-reading")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub readings: Option<Vec<teistro_interpret::rashifal_reading::ReadingPlan>>,
 }

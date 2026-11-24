@@ -210,9 +210,30 @@ impl ChartArea<'_> {
         // through a derived context (`03-design/rashifal.md`, "The score
         // band").
         let bands = self.context().settings().rashifal.score_bands;
+        #[cfg(not(feature = "rashifal-reading"))]
+        if batch.readings {
+            return Err(Error::unsupported(
+                "the reading voice is the `rashifal-reading` feature, which this build leaves out",
+            )
+            .with_field("rashifal.readings"));
+        }
+        #[cfg(feature = "rashifal-reading")]
+        let readings = match batch.baseline.filter(|_| batch.readings) {
+            Some(asked) => batch
+                .periods
+                .iter()
+                .zip(&value)
+                .map(|(request, period)| self.readings_of(request, period, asked, bands).map(Some))
+                .collect::<Result<Vec<_>, Error>>()?,
+            None => vec![None; value.len()],
+        };
+        #[cfg(feature = "rashifal-reading")]
+        let mut readings = readings.into_iter();
         let answers = value
             .into_iter()
             .map(|period| RashifalAnswer {
+                #[cfg(feature = "rashifal-reading")]
+                readings: readings.next().flatten(),
                 plans: batch.plans.then(|| {
                     period
                         .readings
@@ -231,6 +252,85 @@ impl ChartArea<'_> {
             })
             .collect();
         Ok(Envelope::sealing(answers, provenance))
+    }
+
+    /// Each sign's period in the reading voice
+    /// (`03-design/rashifal-reading.md`): the baseline's score for `asked`,
+    /// a week's daily scores read one day at a time, and a day's Moon turn
+    /// from her own events, which a score never counts (C2331).
+    #[cfg(feature = "rashifal-reading")]
+    fn readings_of(
+        self,
+        request: &RashifalRequest,
+        period: &RashifalPeriod,
+        asked: teistro_rashifal::Period,
+        bands: teistro_core::settings::ScoreBands,
+    ) -> Result<Vec<teistro_interpret::rashifal_reading::ReadingPlan>, Error> {
+        use teistro_interpret::rashifal_reading::{DayScore, MoonTurn, ReadingInput, reading};
+        use teistro_rashifal::Period;
+        let prepared = self.prepared(request)?;
+        let (first, _, days) = request.days()?;
+        let calendar = system_of(request.first().calendar)?;
+        // A week's days, each read as its own day at the same snapshot.
+        let daily = if asked == Period::Weekly {
+            let requests = (0..i64::from(days))
+                .map(|at| {
+                    let date = calendar.date_of(first.plus_days(at))?;
+                    Ok(
+                        RashifalRequest::day(date, *request.place(), request.clock().clone())
+                            .at(request.snapshot()),
+                    )
+                })
+                .collect::<Result<Vec<_>, Error>>()?;
+            Some(self.rashifal_many(&requests)?.value)
+        } else {
+            None
+        };
+        // A day's Moon: her own ingress within it, with its local time.
+        let moon = if asked == Period::Daily {
+            let asked_moon = request.clone().with_events([Graha::Moon]);
+            let read = self.rashifal_many(std::slice::from_ref(&asked_moon))?.value;
+            let midnight = local_midnight(first, prepared.clock.offset_on(first)?)?;
+            Some((read, midnight))
+        } else {
+            None
+        };
+        let mut plans = Vec::with_capacity(12);
+        for read in &period.readings {
+            let score = period.baseline_score(read.rashi, asked, bands);
+            let day_scores: Vec<DayScore> = daily
+                .iter()
+                .flatten()
+                .map(|day| DayScore {
+                    overall: day.baseline_score(read.rashi, Period::Daily, bands).overall,
+                })
+                .collect();
+            let moon_turn = moon.as_ref().and_then(|(periods, midnight)| {
+                let mine = periods.first()?.of(read.rashi);
+                let turn = mine.events.iter().find(|from| {
+                    from.event.hit.graha == Graha::Moon
+                        && matches!(from.event.hit.event, HitEvent::SignIngress { .. })
+                })?;
+                let minutes = minute_of_day(turn.event.hit.instant.get() - midnight.get());
+                Some(MoonTurn {
+                    minutes,
+                    from_house: (turn.house + 10) % 12 + 1,
+                    to_house: turn.house,
+                    good_after: turn.good_house,
+                })
+            });
+            plans.push(reading(&ReadingInput {
+                reading: read,
+                score: &score,
+                period: asked,
+                first_day: first.get(),
+                span: (prepared.window.0.get(), prepared.window.1.get()),
+                bands,
+                moon_turn,
+                days: &day_scores,
+            }));
+        }
+        Ok(plans)
     }
 
     /// What a period needs before the sky is placed: its reference day, the
@@ -374,6 +474,18 @@ fn snapshot_convention(snapshot: Snapshot) -> Convention {
             "a period is read at one instant of its middle day, sunrise unless asked otherwise (C358, C359)",
         ),
     }
+}
+
+/// The minute of the day a fraction of a day after midnight falls in,
+/// 0 to 1439.
+#[cfg(feature = "rashifal-reading")]
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "clamped to 0..=1439 before the cast"
+)]
+fn minute_of_day(fraction: f64) -> u16 {
+    (fraction * 1440.0).floor().clamp(0.0, 1439.0) as u16
 }
 
 /// Midnight starting `day` at a civil offset, in UTC.
