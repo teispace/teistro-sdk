@@ -219,13 +219,10 @@ struct Swept {
     midnight: usize,
 }
 
-/// SR-160: every sankranti at Kathmandu from 1800 to 2399, its window and
-/// its maha punya kala read on the day the almanac gives it, held to the
-/// day `MonthStartRule::Punyakala` begins the solar month on under the
-/// same sky. A disagreement is one of the two kinds `Swept` names, and
-/// each is counted.
-#[test]
-fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
+/// Every sankranti at Kathmandu whose civil day falls in `years`
+/// (first and last, inclusive), swept as
+/// `every_window_from_1800_to_2399_falls_on_the_month_rules_day` says.
+fn sweep(years: (i32, i32)) -> Swept {
     use teistro_calendar::MonthStartRule;
     use teistro_calendar::gregorian::{fixed_from_gregorian, gregorian_from_fixed};
     use teistro_calendar::solar::DayArc;
@@ -248,8 +245,8 @@ fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
             .unwrap()
             .value
     };
-    let first = fixed_from_gregorian(1800, 1, 1);
-    let last = fixed_from_gregorian(2399, 12, 31);
+    let first = fixed_from_gregorian(years.0, 1, 1);
+    let last = fixed_from_gregorian(years.1, 12, 31);
     let mut next = days_around(first, first)[0]
         .sun
         .signs
@@ -258,7 +255,6 @@ fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
         .whole
         .to;
     let mut swept = Swept::default();
-    let started = std::time::Instant::now();
     loop {
         let (civil, fraction) = local_day(&clock, next);
         if civil.plus_days(1) > last {
@@ -310,16 +306,43 @@ fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
         }
         next = days[2].sun.signs.last().unwrap().whole.to;
     }
+    swept
+}
+
+/// SR-160: every sankranti at Kathmandu from 1800 to 2399, its window and
+/// its maha punya kala read on the day the almanac gives it, held to the
+/// day `MonthStartRule::Punyakala` begins the solar month on under the
+/// same sky. A disagreement is one of the two kinds `Swept` names, and
+/// each is counted. The six centuries are swept side by side.
+#[test]
+fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
+    let started = std::time::Instant::now();
+    let swept = std::thread::scope(|scope| {
+        let workers: Vec<_> = (0..6)
+            .map(|century| {
+                let from = 1800 + 100 * century;
+                scope.spawn(move || sweep((from, from + 99)))
+            })
+            .collect();
+        workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .fold(Swept::default(), |sum, part| Swept {
+                entries: sum.entries + part.entries,
+                agree: sum.agree + part.agree,
+                twilight: sum.twilight + part.twilight,
+                midnight: sum.midnight + part.midnight,
+            })
+    });
     println!("swept {swept:?} in {:?}", started.elapsed());
-    assert_eq!(swept.entries, 600 * 12, "{swept:?}");
     assert_eq!(
         swept,
         Swept {
             entries: 600 * 12,
-            agree: 0,
-            twilight: 0,
-            midnight: 0
+            agree: 7119,
+            twilight: 61,
+            midnight: 20
         },
-        "pinned once measured"
+        "every entry, and every one the month rule parts from"
     );
 }
