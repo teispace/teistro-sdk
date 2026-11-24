@@ -5726,6 +5726,24 @@ class AnEngine(WithLibrary):
             knobs = {c.knob for c in answer.provenance.applied_conventions}
             self.assertLessEqual({"muhurta.asta", "muhurta.zodiacAt"}, knobs)
 
+            # Asked, each window says why it is good (SR-154), and every item
+            # renders from the pack with no warning; not asked, none.
+            self.assertEqual(answer.reasons, ())
+            why = ctx.almanac.of(**days, muhurta={**asked, "reasons": True}).muhurta
+            assert why is not None
+            self.assertEqual(len(why.reasons), len(why.windows))
+            for window, said in zip(why.windows, why.reasons):
+                self.assertEqual(said.line.intent, "sdk.voice.muhurta.line")
+                for reason in said.reasons:
+                    self.assertEqual(reason.clause is None, reason.side == "AVOIDED", reason.intent)
+                    if reason.clause is not None:
+                        self.assertLess(reason.clause, len(window.clauses))
+                for intent, params in [(said.line.intent, said.line.params), *((r.intent, r.params) for r in said.reasons)]:
+                    rendered = ctx.intl.render(intent, params)
+                    self.assertFalse(rendered.is_fallback, intent)
+                    self.assertEqual(rendered.warning_count, 0, intent)
+                    self.assertNotIn("{", rendered.text, intent)
+
             # A clause answered is a bar a request may name, as it was read.
             amrit = next(k for k in kinds if isinstance(k, ChoghadiyaClause) and k.choghadiya == Choghadiya.AMRIT)
             rules: ActivityRules = {

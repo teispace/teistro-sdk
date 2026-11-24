@@ -17654,6 +17654,7 @@ final class MuhurtaRequest extends _Facade {
     this.most = 50,
     this.asta,
     this.direction,
+    this.reasons = false,
   });
 
   /// A [MuhurtaActivity], or the rules spelt out.
@@ -17679,6 +17680,10 @@ final class MuhurtaRequest extends _Facade {
   /// `shool` holds a window to its release.
   final Direction? direction;
 
+  /// Whether each window's reasons are said in words: why it is good, as a
+  /// short line and a longer list ([MuhurtaAnswer.reasons]).
+  final bool reasons;
+
   /// Its JSON, as the SDK reads it.
   @override
   Object? get _wire => <String, Object?>{
@@ -17689,6 +17694,7 @@ final class MuhurtaRequest extends _Facade {
     'most': most,
     if (asta != null) 'asta': _named(asta!, 'asta', (AstaCriterion a) => a.key),
     if (direction != null) 'direction': direction!.fullKey,
+    if (reasons) 'reasons': true,
   };
 
   String get _json => jsonEncode(_wire);
