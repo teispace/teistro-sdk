@@ -30,15 +30,18 @@ Format, `clippy -D warnings`, `cargo deny check`, `cargo vet --locked`,
 
 It runs as parallel jobs. `checks` runs the format, the lints, the
 dependency policy and the documentation, and `tests` the workspace's
-tests beside it, the longest step on its own (30 of `checks`'s 37
-minutes on 2026-11-22). `families` builds
+tests beside it in three shards: `sdk` (the façade's suite, 280 s of
+one binary), `boundary` (the MCP server, the C boundary and the façade's
+doctests) and `kernel` (the workspace less those packages, so a new
+package is tested without an edit). One job ran all 275 test binaries one
+after another, 14 minutes after a 3-minute build (2026-11-24). `families` builds
 the façade, the boundary, its tests and the wasm module with no module
 family, which is the wasm `panchanga` profile. It runs the family test
 there, and again with the chart area alone, where each family read off a
 chart is refused and writes its sections empty
 (`03-design/wasm-profiles.md`). The measured pages are split across
-three `pages` shards. Each shard holds a third
-of the pages by their measured time on CI, so the run takes about as
+five `pages` shards. Each shard holds a fifth
+of the pages by their median time on CI (about 18 minutes each), so the run takes about as
 long as its slowest job rather than the sum of all of them, which was
 27 minutes in one job on 2026-10-08. The job branch protection requires
 is still called `fast-check`: it runs once every other job has finished

@@ -87,19 +87,40 @@ jobs:
         if: ${{ !cancelled() }}
         run: cargo xtask check-guides
 
-  # The workspace's tests, a job of their own: the longest step of the
-  # fast check, run beside the lints rather than after them.
+  # The workspace's tests, beside the lints rather than after them, in
+  # three shards balanced by each package's time on CI (2026-11-24: one
+  # job ran 275 test binaries one after another, 14 minutes after a
+  # 3-minute build). The last shard is the workspace less the first two's
+  # packages, so a package added later is tested without an edit.
   tests:
-    name: tests
+    name: tests (${{ matrix.shard.name }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          # The façade's own tests: its suite binary alone is 280 s.
+          - name: sdk
+            run: cargo test -p teistro --lib --bins --tests --examples --no-fail-fast
+          # The server and the boundary, and the façade's doctests.
+          - name: boundary
+            run: |
+              status=0
+              cargo test -p teistro-mcp -p teistro-ffi --no-fail-fast || status=1
+              cargo test -p teistro --doc --no-fail-fast || status=1
+              exit $status
+          - name: kernel
+            run: cargo test --workspace --exclude teistro --exclude teistro-mcp --exclude teistro-ffi --no-fail-fast
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: tests-${{ matrix.shard.name }}
       - name: Unit tests
-        run: cargo test --workspace --no-fail-fast
+        run: ${{ matrix.shard.run }}
 
   # The build with no module family, which is the wasm module's `panchanga`
   # profile (docs/03-design/wasm-profiles.md): the boundary and the wasm
@@ -152,10 +173,315 @@ jobs:
         if: ${{ !cancelled() }}
         run: cargo test -p teistro --no-default-features --features builtin-compact --test left_out_locale
 
-  # A third of the measured pages, balanced by each step's time on CI
-  # (the shards are rebalanced by hand when a page grows).
+  # The measured pages in five shards, balanced by each step's median
+  # time over four green runs (about 18 minutes each; three shards ran 20
+  # to 30, 2026-11-24). Rebalance the same way when one shard grows past
+  # the others: the order within a shard is free, every check only reads.
   pages-1:
-    name: pages (1 of 3)
+    name: pages (1 of 5)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Built once, so a page that fails does not stop the pages after it
+      # and a build that fails does not repeat in every step.
+      - name: Build the tasks
+        id: build
+        run: cargo build -p xtask
+      - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-ffi
+      - name: Houses page (the degeneracy flag, the cusp signs and the shift reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-houses
+      - name: Absence page (proving a rise or a set does not happen without walking the window)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-absence
+      - name: Dasha page (the Vimshottari seed, balance, tree and cycle end, decided by the corpus)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-dashas
+      - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-lots
+      - name: Matching page (the Ashta Koota over every pair of the 108 padas, its exceptions and what each knob moves, C259 to C264)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-matching
+      - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-progressed-angles
+      - name: Binding exercise page (which of each binding's own surface its tests and examples ever touch)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-exercised
+      - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-muntha
+      - name: Locale coverage page (each locale's share of the catalogue members and base messages, held to its floor)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-locale-coverage
+      - name: Saait page (the committee's VS 2083 muhurta sheet, row by row, against the four rites' rules under its sky and the modern one, and the days of the year each rite leaves open)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-saait
+      - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-agreement
+      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-arudhas
+      - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-kalachakra
+      - name: Mobile sizes page (each mobile slice as built and as an app strips it, without the built-in and with the recorded adapter, every row recorded)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-mobile-sizes
+      - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-batching
+      - name: Rashifal page (what each of the baseline engine's choices moves in a year of rashifal at Kathmandu)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-rashifal
+      - name: Western aspects page (Leo's orbs and Lilly's moieties over the corpus, where the two models part, C240)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-western-aspects
+      - name: Synastry page (every pair of the corpus's births read in the tropical zodiac and in each chart's own, where the two part, C241)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-synastry
+      - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-midpoints
+
+  pages-2:
+    name: pages (2 of 5)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Built once, so a page that fails does not stop the pages after it
+      # and a build that fails does not repeat in every step.
+      - name: Build the tasks
+        id: build
+        run: cargo build -p xtask
+      - name: Catalogue gate
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-catalogue
+      - name: Document schema (the JSON Schema of a sealed chart document is what the types generate)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-document-schema
+      - name: Classical chart page (which parts of a chart founded over the Surya Siddhanta are the text's)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-classical-chart
+      - name: Eclipses page (every solar and lunar eclipse of 1900 to 2100 against NASA's Five Millennium Canon, both ways, the placings and shadow rule chosen between, and 214 cities' local circumstances against NASA's bulletins)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-eclipses
+      - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-surface
+      - name: Dasha coverage page (the catalogue against the build, every system it does not compute listed with its blocker and its refusal measured)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-dasha-coverage
+      - name: Outer planets page (Uranus, Neptune and Pluto against the corpus's recording, and C239's parallax)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-outer-planets
+      - name: Vimshopaka page (the schemes' weights and scoring decided over the corpus, beside BPHS)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-vimshopaka
+      - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-intl
+      - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-state
+      - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-samvatsara
+      - name: App speed page (what an app pays per request under each setup, every median over the recorded native engine inside twice its budget)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-app-speed
+      - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-reception
+      - name: Costs page (each entry point's cost relative to a plain chart, rendered from the record, which prices every entry point on its example)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-costs
+      - name: Conformance document gate (the corpus tests reproduce the checked-in scores)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-conformance
+      - name: Dossier page (each section's bytes against the JSON of what it writes, over the corpus)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-dossier
+      - name: Result detail page (each record's brief and full answers in tokens, every brief held to its answer schema)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-detail-tokens
+      - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-dasha-systems
+      - name: Sect page (Valens's horizon against the chart's own sunrise and sunset and the recorded day births)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-sect
+      - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-state-readings
+
+  pages-3:
+    name: pages (3 of 5)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Built once, so a page that fails does not stop the pages after it
+      # and a build that fails does not repeat in every step.
+      - name: Build the tasks
+        id: build
+        run: cargo build -p xtask
+      - name: Calendar tables gate (the official rows and the engine reproduce the checked-in table)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-calendars
+      - name: Time tables gate (the IERS series and the leap-second list reproduce the checked-in tables)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-time
+      - name: Almanac shape page (which of a day's lists are ragged, and what a rectangular layout would waste)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-almanac
+      - name: Pluto page (the fitted tables' span, size and worst error at each tier)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-pluto
+      - name: Declinations page (Leo's parallels over the corpus, contrary and aspected, and the planets past the obliquity, C243)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-declinations
+      - name: Western houses page (the corpus's planets in Placidus against six other divisions, the ascendant's reach of one sidereal hour, C249, C250)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-western-houses
+      - name: Bhava bala page (the built module against every recorded house, each reading's forks measured)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-bhava-bala
+      - name: Rule prose page (every rule rendered to English, and the renderings two different meanings would share)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-rule-doc
+      - name: Answer shapes (the field masks' embedded answer schemas reproduce from the records)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-answers
+      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-research
+      - name: Topocentric centre page (the parallax, the aberration and the points that take neither, over six recorded pairs)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-topocentric
+      - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-jaimini
+      - name: Micro budgets page (the kernels' criterion figures, every median inside twice the performance page's budget)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-micro
+      - name: Rectification page (how much of a day the purifier keeps under each reading, and the verse's pranapada against the SDK's point, X2 and X8)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-rectification
+      - name: Sizes page (what every shipped artefact weighs, the record complete and the page rendered from it)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-sizes
+      - name: Mutants page (each kernel crate's floor and named survivors, rendered from the record, no floor lowered against main)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-mutants
+      - name: Bhava chalit falsification page (the measured disagreement reproduces)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-chalit
+      - name: Ritu page (the season Nepal's daily panchanga printed against the shipped reading and every rival, and the ayana on the same days)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-ritu
+      - name: Fortitudes page (the accidental fortitudes' readings over the corpus, each crux's rival counted)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-fortitudes
+      - name: Composer page (every recorded chart's narrative plan said in each strict locale, without a fallback or a warning)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-interpret
+
+  pages-4:
+    name: pages (4 of 5)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Built once, so a page that fails does not stop the pages after it
+      # and a build that fails does not repeat in every step.
+      - name: Build the tasks
+        id: build
+        run: cargo build -p xtask
+      - name: Lunar accuracy gate (the catalogued rates reproduce the checked-in page)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-moon
+      - name: Panchanga conventions page (the measured conventions of the recorded daily panchanga reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-panchanga
+      - name: Varga tables page (the recorded divisional charts' derived tables reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-vargas
+      - name: KP page (each sub lord's margin in minutes of birth time read back through the founder, over the recorded births)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-kp
+      - name: Surface areas page (which boundary modules a consumer reaches, and what a namespaced surface would group by)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-areas
+      - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-terms
+      - name: Composites page (every pair of the corpus's births made one chart both ways, the turned lagna and the composite against the Davison, C247, C248)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-composites
+      - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-ashtakavarga
+      - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-serial
+      - name: Hit list page (each ingress and exact aspect of a year read back through a founded chart, over the recorded births)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-hits
+      - name: FFI cost page (what each binding pays to cross, every figure held to the results schema)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-ffi-cost
+      - name: Property register (each of the quality bar's property invariants held by a named test, its boundary generator called)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-properties
+      - name: Baseline map page (the shim's call surface and the stored settings' rows, every refusal's anchor alive and no entry point left unmapped)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-compat
+      - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-coverage
+      - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-lints
+      - name: Derived points page (the recorded upagrahas and special lagnas reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-points
+      - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-schema
+      - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-sade-sati
+      - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-nepal-month
+      - name: Golden drawings (a real chart in every shipped layout, two locales and both themes, byte for byte)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-render
+      - name: Annual chart page (the Sun's return to where it stood at birth, over every recorded birth, against the tropical and the mean rival)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: cargo xtask check-varshaphala
+
+  pages-5:
+    name: pages (5 of 5)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -171,343 +497,66 @@ jobs:
       - name: Golden-vector corpus (schema, manifest, settings hashes, forbidden terms)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-fixtures
-      - name: Catalogue gate
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-catalogue
-      - name: Calendar tables gate (the official rows and the engine reproduce the checked-in table)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-calendars
-      - name: Time tables gate (the IERS series and the leap-second list reproduce the checked-in tables)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-time
-      - name: Lunar accuracy gate (the catalogued rates reproduce the checked-in page)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-moon
-      - name: FFI gate (the boundary crates reproduce the checked-in API description and C header)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-ffi
-      - name: Panchanga conventions page (the measured conventions of the recorded daily panchanga reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-panchanga
-      - name: Varga tables page (the recorded divisional charts' derived tables reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-vargas
       - name: Drishti page (the aspect systems' invariants and their counts over the corpus reproduce)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-aspect
-      - name: Houses page (the degeneracy flag, the cusp signs and the shift reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-houses
-      - name: Document schema (the JSON Schema of a sealed chart document is what the types generate)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-document-schema
-      - name: Almanac shape page (which of a day's lists are ragged, and what a rectangular layout would waste)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-almanac
       - name: Lunisolar month page (the sankranti count that decides adhika and kshaya, over a millennium)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-lunisolar
-      - name: Absence page (proving a rise or a set does not happen without walking the window)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-absence
-      - name: Classical chart page (which parts of a chart founded over the Surya Siddhanta are the text's)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-classical-chart
-      - name: KP page (each sub lord's margin in minutes of birth time read back through the founder, over the recorded births)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-kp
       - name: Nepal day page (the tithi, nakshatra and yoga ends, the vriddhi and kshaya days and the sunrise Nepal's daily panchanga printed against the committee's Surya Siddhanta and its rivals)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-nepal-day
-      - name: Eclipses page (every solar and lunar eclipse of 1900 to 2100 against NASA's Five Millennium Canon, both ways, the placings and shadow rule chosen between, and 214 cities' local circumstances against NASA's bulletins)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-eclipses
-      - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-surface
-      - name: Pluto page (the fitted tables' span, size and worst error at each tier)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-pluto
-      - name: Surface areas page (which boundary modules a consumer reaches, and what a namespaced surface would group by)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-areas
       - name: Rust consumer surface page (how many crates each area needs, and what only the C boundary composes)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-rust-surface
-      - name: Dasha page (the Vimshottari seed, balance, tree and cycle end, decided by the corpus)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-dashas
       - name: Rashi dashas page (the sign-based dashas decided over the corpus, beside the other schools' readings)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-rashi-dashas
-      - name: Dasha coverage page (the catalogue against the build, every system it does not compute listed with its blocker and its refusal measured)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-dasha-coverage
-      - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-terms
       - name: Review sheets (every Pancha Pakshi and Lal Kitab table cell, from the kernels, for a reader to vet)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-review-sheets
-      - name: Lots page (Valens's lots over the corpus, each reading of Fortune by night counted)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-lots
-      - name: Outer planets page (Uranus, Neptune and Pluto against the corpus's recording, and C239's parallax)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-outer-planets
-      - name: Declinations page (Leo's parallels over the corpus, contrary and aspected, and the planets past the obliquity, C243)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-declinations
-      - name: Composites page (every pair of the corpus's births made one chart both ways, the turned lagna and the composite against the Davison, C247, C248)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-composites
-      - name: Western houses page (the corpus's planets in Placidus against six other divisions, the ascendant's reach of one sidereal hour, C249, C250)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-western-houses
-      - name: Matching page (the Ashta Koota over every pair of the 108 padas, its exceptions and what each knob moves, C259 to C264)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-matching
-      - name: Progressed angles page (each way of moving Leo's meridian against his own map over the corpus, C237's size by age)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-progressed-angles
-      - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-ashtakavarga
-      - name: Vimshopaka page (the schemes' weights and scoring decided over the corpus, beside BPHS)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-vimshopaka
-      - name: Bhava bala page (the built module against every recorded house, each reading's forks measured)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-bhava-bala
       - name: Yogas page (every rule of the engine's evaluated over every recorded chart, each reading of its condition language measured)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-yogas
-      - name: Rule prose page (every rule rendered to English, and the renderings two different meanings would share)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-rule-doc
       - name: Rule readings page (every shipped rule's four-language reading, and both shortfalls listed by name rather than counted)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-interpretations
-      - name: Binding exercise page (which of each binding's own surface its tests and examples ever touch)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-exercised
       - name: Accuracy document gate (the measurement tests reproduce the checked-in document)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-accuracy
       - name: Version gate (one version across the workspace, both package manifests and the API description)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-versions
-
-  pages-2:
-    name: pages (2 of 3)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      # Built once, so a page that fails does not stop the pages after it
-      # and a build that fails does not repeat in every step.
-      - name: Build the tasks
-        id: build
-        run: cargo build -p xtask
-      - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-intl
-      - name: Answer shapes (the field masks' embedded answer schemas reproduce from the records)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-answers
-      # Moved from pages (1 of 3), which ran 33 minutes to this shard's 16
-      # (2026-11-09): these two were 7.5 of them.
-      - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-muntha
-      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-research
-      - name: Locale coverage page (each locale's share of the catalogue members and base messages, held to its floor)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-locale-coverage
-      - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-state
-      - name: Canonical form page (the seal, the number grammar and the form's invariants reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-serial
-      - name: Topocentric centre page (the parallax, the aberration and the points that take neither, over six recorded pairs)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-topocentric
-      - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-jaimini
       - name: Gochar page (how the transits' verdicts fall over the recorded births, and who obstructs whom over sixty years of sky)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-gochar
-      - name: Hit list page (each ingress and exact aspect of a year read back through a founded chart, over the recorded births)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-hits
       - name: Muhurta page (the baseline's regression through the search, the asta against the published almanac, every window held constant)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-muhurta
-      - name: Saait page (the committee's VS 2083 muhurta sheet, row by row, against the four rites' rules under its sky and the modern one, and the days of the year each rite leaves open)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-saait
       - name: Nepal Sambat page (the committee's 51 page headers of VS 2082 and 2083 against each page's first day, said in Nepali, and the year's count against the almanac's own lunar years over six centuries)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-nepal-sambat
-      - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-samvatsara
-      - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-agreement
-      - name: App speed page (what an app pays per request under each setup, every median over the recorded native engine inside twice its budget)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-app-speed
-      - name: FFI cost page (what each binding pays to cross, every figure held to the results schema)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-ffi-cost
-      - name: Micro budgets page (the kernels' criterion figures, every median inside twice the performance page's budget)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-micro
-      - name: Property register (each of the quality bar's property invariants held by a named test, its boundary generator called)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-properties
       - name: A/B page (the SDK through Node against the baseline engine, interleaved; a request measurably slower through the SDK fails)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-ab
-      - name: Baseline map page (the shim's call surface and the stored settings' rows, every refusal's anchor alive and no entry point left unmapped)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-compat
-      - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-arudhas
-      - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-reception
       - name: Antiscia page (Lilly's antiscia over the corpus under the moieties, Leo's orbs and 1°, and how many are parallels too, C244)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-antiscia
       - name: Time lords page (Valens's releasing and profection over the corpus, C223's shared sign and C224's loosing counted)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-time-lords
-      - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-kalachakra
       - name: Doshas page (the engine's dosha rules measured, and the seventeen it computes in code written as rules)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-doshas
-      - name: Rectification page (how much of a day the purifier keeps under each reading, and the verse's pranapada against the SDK's point, X2 and X8)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-rectification
-      - name: Sizes page (what every shipped artefact weighs, the record complete and the page rendered from it)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-sizes
-      - name: Mobile sizes page (each mobile slice as built and as an app strips it, without the built-in and with the recorded adapter, every row recorded)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-mobile-sizes
-      - name: Costs page (each entry point's cost relative to a plain chart, rendered from the record, which prices every entry point on its example)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-costs
-      - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-coverage
-      - name: Mutants page (each kernel crate's floor and named survivors, rendered from the record, no floor lowered against main)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-mutants
-      - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-lints
-
-  pages-3:
-    name: pages (3 of 3)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      # Built once, so a page that fails does not stop the pages after it
-      # and a build that fails does not repeat in every step.
-      - name: Build the tasks
-        id: build
-        run: cargo build -p xtask
-      # Here and not in pages 2, the critical path: it compiles the
-      # corpus tests of every crate that scores a section.
-      - name: Conformance document gate (the corpus tests reproduce the checked-in scores)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-conformance
-      - name: Bhava chalit falsification page (the measured disagreement reproduces)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-chalit
-      - name: Derived points page (the recorded upagrahas and special lagnas reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-points
-      - name: Chart document page (the shape, the types and the member lists a schema would claim reproduce)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-schema
-      - name: Dossier page (each section's bytes against the JSON of what it writes, over the corpus)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-dossier
       - name: Dossier tokens page (keys and each locale's names, tokens over the corpus)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-dossier-tokens
-      - name: Result detail page (each record's brief and full answers in tokens, every brief held to its answer schema)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-detail-tokens
-      - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-batching
-      - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-sade-sati
-      - name: Rashifal page (what each of the baseline engine's choices moves in a year of rashifal at Kathmandu)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-rashifal
       - name: Festival page (the shipped rules against the published holidays, and what a decade of each rule reaches)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-festival
-      - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-nepal-month
-      - name: Ritu page (the season Nepal's daily panchanga printed against the shipped reading and every rival, and the ayana on the same days)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-ritu
-      - name: Golden drawings (a real chart in every shipped layout, two locales and both themes, byte for byte)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-render
-      - name: Dasha systems page (the eight other nakshatra-seeded systems decided over the corpus)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-dasha-systems
-      - name: Annual chart page (the Sun's return to where it stood at birth, over every recorded birth, against the tropical and the mean rival)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-varshaphala
-      - name: Sect page (Valens's horizon against the chart's own sunrise and sunset and the recorded day births)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-sect
-      - name: Fortitudes page (the accidental fortitudes' readings over the corpus, each crux's rival counted)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-fortitudes
-      - name: Western aspects page (Leo's orbs and Lilly's moieties over the corpus, where the two models part, C240)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-western-aspects
-      - name: Synastry page (every pair of the corpus's births read in the tropical zodiac and in each chart's own, where the two part, C241)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-synastry
-      - name: Midpoints page (Leo's equal distances over the corpus at three orbs from the axis, on the far point and beside an aspect, C245, C246)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-midpoints
       - name: Shadbala page (every component of the engine's reproduced over the corpus, beside BPHS ch. 27)
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: cargo xtask check-shadbala
-      - name: Composer page (every recorded chart's narrative plan said in each strict locale, without a fallback or a warning)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-interpret
-      - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: cargo xtask check-state-readings
 
   # The one check branch protection requires: it passes when every job
   # above passed, so the jobs can run in parallel and the rule still names
@@ -515,7 +564,7 @@ jobs:
   fast-check:
     name: fast-check
     if: always()
-    needs: [checks, tests, families, pages-1, pages-2, pages-3]
+    needs: [checks, tests, families, pages-1, pages-2, pages-3, pages-4, pages-5]
     runs-on: ubuntu-latest
     steps:
       - name: Every job of the fast check passed
