@@ -1619,6 +1619,9 @@ __all__ = [
     "MuhurtaRequest",
     "MuhurtaNative",
     "MuhurtaAnswer",
+    "MuhurtaReason",
+    "MuhurtaReasonLine",
+    "MuhurtaReasons",
     "MuhurtaWindow",
     "MuhurtaClause",
     "MuhurtaClauseKind",
@@ -11077,6 +11080,46 @@ class MuhurtaUnjudged:
 
 
 @dataclass(frozen=True)
+class MuhurtaReasonLine:
+    """The "why this date" line: `sdk.intl.render(line.intent, line.params)`
+    says it. Its slots are the qualifying `limbs`, their `count`, how many
+    doshas were `avoided`, how many cautions remain (`despite`) and the
+    `variant`."""
+
+    intent: str
+    params: Dict[str, Any]
+
+
+@dataclass(frozen=True)
+class MuhurtaReason:
+    """One reason a window is good, or a caution against it."""
+
+    intent: str
+    """A message key of the voice pack, as
+    `sdk.voice.muhurta.avoided.MARS_IN_EIGHTH`."""
+
+    params: Dict[str, Any]
+    """Its slots: the clause's members and a `variant`."""
+
+    side: Literal["FOR", "DESPITE", "AVOIDED"]
+    key: str
+    """The clause's key, as `MARS_IN_EIGHTH`."""
+
+    clause: Optional[int]
+    """For `FOR` and `DESPITE`, the clause's index in the window's
+    `clauses`; `None` for `AVOIDED`, which says an absence."""
+
+
+@dataclass(frozen=True)
+class MuhurtaReasons:
+    """Why a window is good, in words (`03-design/muhurta-reasons.md`): a
+    short line and the list, `FOR`, then `DESPITE`, then `AVOIDED`."""
+
+    line: MuhurtaReasonLine
+    reasons: Tuple[MuhurtaReason, ...]
+
+
+@dataclass(frozen=True)
 class MuhurtaAnswer:
     """A muhurta search's answer (`03-design/muhurta-at-the-boundary.md`
     §4): the windows judged, best first under the ranking, the days the
@@ -11100,6 +11143,10 @@ class MuhurtaAnswer:
     """`TEXTS` or `BASELINE`."""
 
     unjudged: Tuple[MuhurtaUnjudged, ...]
+    reasons: Tuple[MuhurtaReasons, ...]
+    """Why each window is good, in its order, when the request set
+    `reasons`; empty otherwise."""
+
     provenance: Provenance
     """What computed it and under what: the asta criterion and the zodiac's
     instant among the applied conventions, and the hash of the value."""
@@ -19346,6 +19393,22 @@ def _muhurta_answer(text: str) -> MuhurtaAnswer:
         windows_blacked_out=value["windowsBlackedOut"],
         ranking=value["ranking"],
         unjudged=tuple(MuhurtaUnjudged(what=u["what"], why=u["why"]) for u in value["unjudged"]),
+        reasons=tuple(
+            MuhurtaReasons(
+                line=MuhurtaReasonLine(intent=r["line"]["intent"], params=dict(r["line"]["params"])),
+                reasons=tuple(
+                    MuhurtaReason(
+                        intent=one["intent"],
+                        params=dict(one["params"]),
+                        side=one["side"],
+                        key=one["key"],
+                        clause=one.get("clause"),
+                    )
+                    for one in r["reasons"]
+                ),
+            )
+            for r in value.get("reasons", ())
+        ),
         provenance=decode_provenance(envelope["provenance"]),
     )
 

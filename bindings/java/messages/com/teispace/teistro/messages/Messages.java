@@ -26995,6 +26995,865 @@ public final class Messages {
             }
 
             /**
+             * The messages under `muhurta`.
+             *
+             * @return the group
+             */
+            public SdkVoiceMuhurta muhurta() {
+                return new SdkVoiceMuhurta(r);
+            }
+
+            /** The messages under `SdkVoiceMuhurta`, each rendered by its own key. */
+            public static final class SdkVoiceMuhurta {
+                private final Renderer r;
+
+                SdkVoiceMuhurta(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `avoided`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceMuhurtaAvoided avoided() {
+                    return new SdkVoiceMuhurtaAvoided(r);
+                }
+
+                /** The messages under `SdkVoiceMuhurtaAvoided`, each rendered by its own key. */
+                public static final class SdkVoiceMuhurtaAvoided {
+                    private final Renderer r;
+
+                    SdkVoiceMuhurtaAvoided(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.ASHTAMA_LAGNA`
+                     *
+                     * @return the text
+                     */
+                    public String ashtamaLagna() {
+                        return r.render("sdk.voice.muhurta.avoided.ASHTAMA_LAGNA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.ASHUBHA_YOGA`
+                     *
+                     * @return the text
+                     */
+                    public String ashubhaYoga() {
+                        return r.render("sdk.voice.muhurta.avoided.ASHUBHA_YOGA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.CHANDRABALA`
+                     *
+                     * @return the text
+                     */
+                    public String chandrabala() {
+                        return r.render("sdk.voice.muhurta.avoided.CHANDRABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.CHOGHADIYA`
+                     *
+                     * @return the text
+                     */
+                    public String choghadiya() {
+                        return r.render("sdk.voice.muhurta.avoided.CHOGHADIYA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.GHATA`
+                     *
+                     * @return the text
+                     */
+                    public String ghata() {
+                        return r.render("sdk.voice.muhurta.avoided.GHATA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.KAALA`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String kaala(long variant) {
+                        return r.render("sdk.voice.muhurta.avoided.KAALA", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.KARANA`
+                     *
+                     * @return the text
+                     */
+                    public String karana() {
+                        return r.render("sdk.voice.muhurta.avoided.KARANA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.KARTARI`
+                     *
+                     * @return the text
+                     */
+                    public String kartari() {
+                        return r.render("sdk.voice.muhurta.avoided.KARTARI", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.KUNAVAMSA`
+                     *
+                     * @return the text
+                     */
+                    public String kunavamsa() {
+                        return r.render("sdk.voice.muhurta.avoided.KUNAVAMSA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.LAGNA`
+                     *
+                     * @return the text
+                     */
+                    public String lagna() {
+                        return r.render("sdk.voice.muhurta.avoided.LAGNA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.LAGNA_TYAJYA`
+                     *
+                     * @return the text
+                     */
+                    public String lagnaTyajya() {
+                        return r.render("sdk.voice.muhurta.avoided.LAGNA_TYAJYA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA`
+                     *
+                     * @return the text
+                     */
+                    public String maleficInLagna() {
+                        return r.render("sdk.voice.muhurta.avoided.MALEFIC_IN_LAGNA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MARS_IN_EIGHTH`
+                     *
+                     * @return the text
+                     */
+                    public String marsInEighth() {
+                        return r.render("sdk.voice.muhurta.avoided.MARS_IN_EIGHTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MONTH`
+                     *
+                     * @return the text
+                     */
+                    public String month() {
+                        return r.render("sdk.voice.muhurta.avoided.MONTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String moonInDusthana(long variant) {
+                        return r.render("sdk.voice.muhurta.avoided.MOON_IN_DUSTHANA", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MOON_JOINED`
+                     *
+                     * @return the text
+                     */
+                    public String moonJoined() {
+                        return r.render("sdk.voice.muhurta.avoided.MOON_JOINED", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.MUHURTA_YOGA`
+                     *
+                     * @return the text
+                     */
+                    public String muhurtaYoga() {
+                        return r.render("sdk.voice.muhurta.avoided.MUHURTA_YOGA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.NAKSHATRA`
+                     *
+                     * @return the text
+                     */
+                    public String nakshatra() {
+                        return r.render("sdk.voice.muhurta.avoided.NAKSHATRA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.PADA`
+                     *
+                     * @return the text
+                     */
+                    public String pada() {
+                        return r.render("sdk.voice.muhurta.avoided.PADA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER`
+                     *
+                     * @return the text
+                     */
+                    public String panchakaRemainder() {
+                        return r.render("sdk.voice.muhurta.avoided.PANCHAKA_REMAINDER", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.PRADOSHA`
+                     *
+                     * @return the text
+                     */
+                    public String pradosha() {
+                        return r.render("sdk.voice.muhurta.avoided.PRADOSHA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED`
+                     *
+                     * @return the text
+                     */
+                    public String seventhOccupied() {
+                        return r.render("sdk.voice.muhurta.avoided.SEVENTH_OCCUPIED", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.SOLAR_MONTH`
+                     *
+                     * @return the text
+                     */
+                    public String solarMonth() {
+                        return r.render("sdk.voice.muhurta.avoided.SOLAR_MONTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.TARABALA`
+                     *
+                     * @return the text
+                     */
+                    public String tarabala() {
+                        return r.render("sdk.voice.muhurta.avoided.TARABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.TITHI`
+                     *
+                     * @return the text
+                     */
+                    public String tithi() {
+                        return r.render("sdk.voice.muhurta.avoided.TITHI", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT`
+                     *
+                     * @return the text
+                     */
+                    public String unwantedPlacement() {
+                        return r.render("sdk.voice.muhurta.avoided.UNWANTED_PLACEMENT", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.VARA`
+                     *
+                     * @return the text
+                     */
+                    public String vara() {
+                        return r.render("sdk.voice.muhurta.avoided.VARA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.VARJYAM`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String varjyam(long variant) {
+                        return r.render("sdk.voice.muhurta.avoided.VARJYAM", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.VENUS_IN_SIXTH`
+                     *
+                     * @return the text
+                     */
+                    public String venusInSixth() {
+                        return r.render("sdk.voice.muhurta.avoided.VENUS_IN_SIXTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.VRISHA_VASTU`
+                     *
+                     * @return the text
+                     */
+                    public String vrishaVastu() {
+                        return r.render("sdk.voice.muhurta.avoided.VRISHA_VASTU", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.avoided.YOGA`
+                     *
+                     * @return the text
+                     */
+                    public String yoga() {
+                        return r.render("sdk.voice.muhurta.avoided.YOGA", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `despite`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceMuhurtaDespite despite() {
+                    return new SdkVoiceMuhurtaDespite(r);
+                }
+
+                /** The messages under `SdkVoiceMuhurtaDespite`, each rendered by its own key. */
+                public static final class SdkVoiceMuhurtaDespite {
+                    private final Renderer r;
+
+                    SdkVoiceMuhurtaDespite(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.ASHTAMA_LAGNA`
+                     *
+                     * @return the text
+                     */
+                    public String ashtamaLagna() {
+                        return r.render("sdk.voice.muhurta.despite.ASHTAMA_LAGNA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.ASHUBHA_YOGA`
+                     *
+                     * @param yoga `yoga`
+                     * @return the text
+                     */
+                    public String ashubhaYoga(AshubhaYogaKey yoga) {
+                        return r.render("sdk.voice.muhurta.despite.ASHUBHA_YOGA", Map.ofEntries(Map.entry("yoga", Map.of("$entity", yoga.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.CHANDRABALA`
+                     *
+                     * @return the text
+                     */
+                    public String chandrabala() {
+                        return r.render("sdk.voice.muhurta.despite.CHANDRABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.CHOGHADIYA`
+                     *
+                     * @param choghadiya `choghadiya`
+                     * @return the text
+                     */
+                    public String choghadiya(ChoghadiyaKey choghadiya) {
+                        return r.render("sdk.voice.muhurta.despite.CHOGHADIYA", Map.ofEntries(Map.entry("choghadiya", Map.of("$entity", choghadiya.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.GHATA`
+                     *
+                     * @return the text
+                     */
+                    public String ghata() {
+                        return r.render("sdk.voice.muhurta.despite.GHATA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.KAALA`
+                     *
+                     * @param kaala `kaala`
+                     * @return the text
+                     */
+                    public String kaala(KaalaKey kaala) {
+                        return r.render("sdk.voice.muhurta.despite.KAALA", Map.ofEntries(Map.entry("kaala", Map.of("$entity", kaala.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.KARANA`
+                     *
+                     * @param karana `karana`
+                     * @return the text
+                     */
+                    public String karana(KaranaKey karana) {
+                        return r.render("sdk.voice.muhurta.despite.KARANA", Map.ofEntries(Map.entry("karana", Map.of("$entity", karana.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.KARTARI`
+                     *
+                     * @param second `second`
+                     * @param twelfth `twelfth`
+                     * @return the text
+                     */
+                    public String kartari(List<?> second, List<?> twelfth) {
+                        return r.render("sdk.voice.muhurta.despite.KARTARI", Map.ofEntries(Map.entry("second", second), Map.entry("twelfth", twelfth)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.KUNAVAMSA`
+                     *
+                     * @param lord `lord`
+                     * @param navamsa `navamsa`
+                     * @return the text
+                     */
+                    public String kunavamsa(GrahaKey lord, RashiKey navamsa) {
+                        return r.render("sdk.voice.muhurta.despite.KUNAVAMSA", Map.ofEntries(Map.entry("lord", Map.of("$entity", lord.value())), Map.entry("navamsa", Map.of("$entity", navamsa.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.LAGNA`
+                     *
+                     * @param sign `sign`
+                     * @return the text
+                     */
+                    public String lagna(RashiKey sign) {
+                        return r.render("sdk.voice.muhurta.despite.LAGNA", Map.ofEntries(Map.entry("sign", Map.of("$entity", sign.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.LAGNA_TYAJYA`
+                     *
+                     * @param sign `sign`
+                     * @return the text
+                     */
+                    public String lagnaTyajya(RashiKey sign) {
+                        return r.render("sdk.voice.muhurta.despite.LAGNA_TYAJYA", Map.ofEntries(Map.entry("sign", Map.of("$entity", sign.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA`
+                     *
+                     * @param grahas `grahas`
+                     * @return the text
+                     */
+                    public String maleficInLagna(List<?> grahas) {
+                        return r.render("sdk.voice.muhurta.despite.MALEFIC_IN_LAGNA", Map.ofEntries(Map.entry("grahas", grahas)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MARS_IN_EIGHTH`
+                     *
+                     * @return the text
+                     */
+                    public String marsInEighth() {
+                        return r.render("sdk.voice.muhurta.despite.MARS_IN_EIGHTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MONTH`
+                     *
+                     * @param masa `masa`
+                     * @return the text
+                     */
+                    public String month(MasaKey masa) {
+                        return r.render("sdk.voice.muhurta.despite.MONTH", Map.ofEntries(Map.entry("masa", Map.of("$entity", masa.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MOON_IN_DUSTHANA`
+                     *
+                     * @param house `house`
+                     * @return the text
+                     */
+                    public String moonInDusthana(long house) {
+                        return r.render("sdk.voice.muhurta.despite.MOON_IN_DUSTHANA", Map.ofEntries(Map.entry("house", house)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MOON_JOINED`
+                     *
+                     * @param with `with`
+                     * @return the text
+                     */
+                    public String moonJoined(List<?> with) {
+                        return r.render("sdk.voice.muhurta.despite.MOON_JOINED", Map.ofEntries(Map.entry("with", with)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.MUHURTA_YOGA`
+                     *
+                     * @param yoga `yoga`
+                     * @return the text
+                     */
+                    public String muhurtaYoga(MuhurtaYogaKey yoga) {
+                        return r.render("sdk.voice.muhurta.despite.MUHURTA_YOGA", Map.ofEntries(Map.entry("yoga", Map.of("$entity", yoga.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.NAKSHATRA`
+                     *
+                     * @param nakshatra `nakshatra`
+                     * @return the text
+                     */
+                    public String nakshatra(NakshatraKey nakshatra) {
+                        return r.render("sdk.voice.muhurta.despite.NAKSHATRA", Map.ofEntries(Map.entry("nakshatra", Map.of("$entity", nakshatra.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.PADA`
+                     *
+                     * @param nakshatra `nakshatra`
+                     * @return the text
+                     */
+                    public String pada(NakshatraKey nakshatra) {
+                        return r.render("sdk.voice.muhurta.despite.PADA", Map.ofEntries(Map.entry("nakshatra", Map.of("$entity", nakshatra.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.PANCHAKA_REMAINDER`
+                     *
+                     * @param panchaka `panchaka`
+                     * @return the text
+                     */
+                    public String panchakaRemainder(PanchakaKey panchaka) {
+                        return r.render("sdk.voice.muhurta.despite.PANCHAKA_REMAINDER", Map.ofEntries(Map.entry("panchaka", Map.of("$entity", panchaka.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.PRADOSHA`
+                     *
+                     * @param tithi `tithi`
+                     * @return the text
+                     */
+                    public String pradosha(TithiKey tithi) {
+                        return r.render("sdk.voice.muhurta.despite.PRADOSHA", Map.ofEntries(Map.entry("tithi", Map.of("$entity", tithi.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.SEVENTH_OCCUPIED`
+                     *
+                     * @param by `by`
+                     * @return the text
+                     */
+                    public String seventhOccupied(List<?> by) {
+                        return r.render("sdk.voice.muhurta.despite.SEVENTH_OCCUPIED", Map.ofEntries(Map.entry("by", by)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.SOLAR_MONTH`
+                     *
+                     * @param sign `sign`
+                     * @return the text
+                     */
+                    public String solarMonth(RashiKey sign) {
+                        return r.render("sdk.voice.muhurta.despite.SOLAR_MONTH", Map.ofEntries(Map.entry("sign", Map.of("$entity", sign.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.TARABALA`
+                     *
+                     * @return the text
+                     */
+                    public String tarabala() {
+                        return r.render("sdk.voice.muhurta.despite.TARABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.TITHI`
+                     *
+                     * @param tithi `tithi`
+                     * @return the text
+                     */
+                    public String tithi(TithiKey tithi) {
+                        return r.render("sdk.voice.muhurta.despite.TITHI", Map.ofEntries(Map.entry("tithi", Map.of("$entity", tithi.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.UNWANTED_PLACEMENT`
+                     *
+                     * @param by `by`
+                     * @param house `house`
+                     * @return the text
+                     */
+                    public String unwantedPlacement(List<?> by, long house) {
+                        return r.render("sdk.voice.muhurta.despite.UNWANTED_PLACEMENT", Map.ofEntries(Map.entry("by", by), Map.entry("house", house)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.VARA`
+                     *
+                     * @param vara `vara`
+                     * @return the text
+                     */
+                    public String vara(VaraKey vara) {
+                        return r.render("sdk.voice.muhurta.despite.VARA", Map.ofEntries(Map.entry("vara", Map.of("$entity", vara.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.VARJYAM`
+                     *
+                     * @param nakshatra `nakshatra`
+                     * @return the text
+                     */
+                    public String varjyam(NakshatraKey nakshatra) {
+                        return r.render("sdk.voice.muhurta.despite.VARJYAM", Map.ofEntries(Map.entry("nakshatra", Map.of("$entity", nakshatra.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.VENUS_IN_SIXTH`
+                     *
+                     * @return the text
+                     */
+                    public String venusInSixth() {
+                        return r.render("sdk.voice.muhurta.despite.VENUS_IN_SIXTH", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.VRISHA_VASTU`
+                     *
+                     * @return the text
+                     */
+                    public String vrishaVastu() {
+                        return r.render("sdk.voice.muhurta.despite.VRISHA_VASTU", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.despite.YOGA`
+                     *
+                     * @param yoga `yoga`
+                     * @return the text
+                     */
+                    public String yoga(YogaKey yoga) {
+                        return r.render("sdk.voice.muhurta.despite.YOGA", Map.ofEntries(Map.entry("yoga", Map.of("$entity", yoga.value()))));
+                    }
+                }
+
+
+                /**
+                 * The messages under `favours`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceMuhurtaFavours favours() {
+                    return new SdkVoiceMuhurtaFavours(r);
+                }
+
+                /** The messages under `SdkVoiceMuhurtaFavours`, each rendered by its own key. */
+                public static final class SdkVoiceMuhurtaFavours {
+                    private final Renderer r;
+
+                    SdkVoiceMuhurtaFavours(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.ABHIJIT`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String abhijit(long variant) {
+                        return r.render("sdk.voice.muhurta.favours.ABHIJIT", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA`
+                     *
+                     * @param grahas `grahas`
+                     * @return the text
+                     */
+                    public String beneficInLagna(List<?> grahas) {
+                        return r.render("sdk.voice.muhurta.favours.BENEFIC_IN_LAGNA", Map.ofEntries(Map.entry("grahas", grahas)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.CHANDRABALA`
+                     *
+                     * @return the text
+                     */
+                    public String chandrabala() {
+                        return r.render("sdk.voice.muhurta.favours.CHANDRABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.CHOGHADIYA`
+                     *
+                     * @param choghadiya `choghadiya`
+                     * @return the text
+                     */
+                    public String choghadiya(ChoghadiyaKey choghadiya) {
+                        return r.render("sdk.voice.muhurta.favours.CHOGHADIYA", Map.ofEntries(Map.entry("choghadiya", Map.of("$entity", choghadiya.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.EXALTED_IN_LAGNA`
+                     *
+                     * @param grahas `grahas`
+                     * @return the text
+                     */
+                    public String exaltedInLagna(List<?> grahas) {
+                        return r.render("sdk.voice.muhurta.favours.EXALTED_IN_LAGNA", Map.ofEntries(Map.entry("grahas", grahas)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.KARANA`
+                     *
+                     * @param karana `karana`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String karana(KaranaKey karana, long variant) {
+                        return r.render("sdk.voice.muhurta.favours.KARANA", Map.ofEntries(Map.entry("karana", Map.of("$entity", karana.value())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.KENDRA_BENEFICS`
+                     *
+                     * @param grahas `grahas`
+                     * @return the text
+                     */
+                    public String kendraBenefics(List<?> grahas) {
+                        return r.render("sdk.voice.muhurta.favours.KENDRA_BENEFICS", Map.ofEntries(Map.entry("grahas", grahas)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.LAGNA`
+                     *
+                     * @param sign `sign`
+                     * @return the text
+                     */
+                    public String lagna(RashiKey sign) {
+                        return r.render("sdk.voice.muhurta.favours.LAGNA", Map.ofEntries(Map.entry("sign", Map.of("$entity", sign.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH`
+                     *
+                     * @param grahas `grahas`
+                     * @return the text
+                     */
+                    public String luminaryInEleventh(List<?> grahas) {
+                        return r.render("sdk.voice.muhurta.favours.LUMINARY_IN_ELEVENTH", Map.ofEntries(Map.entry("grahas", grahas)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.MONTH`
+                     *
+                     * @param masa `masa`
+                     * @return the text
+                     */
+                    public String month(MasaKey masa) {
+                        return r.render("sdk.voice.muhurta.favours.MONTH", Map.ofEntries(Map.entry("masa", Map.of("$entity", masa.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.MUHURTA_YOGA`
+                     *
+                     * @param yoga `yoga`
+                     * @return the text
+                     */
+                    public String muhurtaYoga(MuhurtaYogaKey yoga) {
+                        return r.render("sdk.voice.muhurta.favours.MUHURTA_YOGA", Map.ofEntries(Map.entry("yoga", Map.of("$entity", yoga.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.NAKSHATRA`
+                     *
+                     * @param nakshatra `nakshatra`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String nakshatra(NakshatraKey nakshatra, long variant) {
+                        return r.render("sdk.voice.muhurta.favours.NAKSHATRA", Map.ofEntries(Map.entry("nakshatra", Map.of("$entity", nakshatra.value())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.SOLAR_MONTH`
+                     *
+                     * @param sign `sign`
+                     * @return the text
+                     */
+                    public String solarMonth(RashiKey sign) {
+                        return r.render("sdk.voice.muhurta.favours.SOLAR_MONTH", Map.ofEntries(Map.entry("sign", Map.of("$entity", sign.value()))));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.TARABALA`
+                     *
+                     * @return the text
+                     */
+                    public String tarabala() {
+                        return r.render("sdk.voice.muhurta.favours.TARABALA", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.TITHI`
+                     *
+                     * @param tithi `tithi`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String tithi(TithiKey tithi, long variant) {
+                        return r.render("sdk.voice.muhurta.favours.TITHI", Map.ofEntries(Map.entry("tithi", Map.of("$entity", tithi.value())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.VARA`
+                     *
+                     * @param vara `vara`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String vara(VaraKey vara, long variant) {
+                        return r.render("sdk.voice.muhurta.favours.VARA", Map.ofEntries(Map.entry("vara", Map.of("$entity", vara.value())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.VRISHA_VASTU`
+                     *
+                     * @return the text
+                     */
+                    public String vrishaVastu() {
+                        return r.render("sdk.voice.muhurta.favours.VRISHA_VASTU", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.muhurta.favours.YOGA`
+                     *
+                     * @param variant `variant`
+                     * @param yoga `yoga`
+                     * @return the text
+                     */
+                    public String yoga(long variant, YogaKey yoga) {
+                        return r.render("sdk.voice.muhurta.favours.YOGA", Map.ofEntries(Map.entry("variant", variant), Map.entry("yoga", Map.of("$entity", yoga.value()))));
+                    }
+                }
+
+
+                /**
+                 * `sdk.voice.muhurta.line`
+                 *
+                 * @param avoided `avoided`
+                 * @param count `count`
+                 * @param limbs `limbs`
+                 * @param variant `variant`
+                 * @return the text
+                 */
+                public String line(long avoided, long count, List<?> limbs, long variant) {
+                    return r.render("sdk.voice.muhurta.line", Map.ofEntries(Map.entry("avoided", avoided), Map.entry("count", count), Map.entry("limbs", limbs), Map.entry("variant", variant)));
+                }
+            }
+
+
+            /**
              * The messages under `rashifal`.
              *
              * @return the group

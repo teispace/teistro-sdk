@@ -51,6 +51,7 @@ final class AlmanacReads {
                     Map<?, ?> u = Reads.object(raw);
                     return new MuhurtaUnjudged(Reads.string(u, "what"), Reads.string(u, "why"));
                 }),
+                value.get("reasons") == null ? List.of() : Reads.each(value, "reasons", MuhurtaReasons::read),
                 provenance(envelope));
     }
 

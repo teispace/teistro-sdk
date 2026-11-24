@@ -21,8 +21,8 @@ schema = ["dep:schemars", "dep:serde_json", "teistro-intl/words-schema", "teistr
 # a build that leaves the family out leaves its crate out here too.
 rashifal = ["dep:teistro-rashifal"]
 # The rashifal's reading voice (`03-design/rashifal-reading.md`, SR-152):
-# intents a reading pack words, each naming the facts it rests on. Off
-# unless asked, so a build without it carries none of it.
+# intents a reading pack words, each naming the facts it rests on. On with
+# the façade's `rashifal` family, which is a family and not a switch.
 rashifal-reading = ["rashifal"]
 
 [dependencies]

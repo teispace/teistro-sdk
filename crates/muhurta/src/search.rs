@@ -916,6 +916,11 @@ pub struct Answer {
     pub ranking: Ranking,
     /// What the rules ask that was not judged.
     pub unjudged: Vec<Unjudged>,
+    /// Why each window is good, in its order, when the request asks
+    /// (`03-design/muhurta-reasons.md`); left out of the JSON when empty,
+    /// so an answer that does not ask is the bytes it always was.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reasons: Vec<crate::reasons::WindowReasons>,
 }
 
 /// Runs a search.
@@ -1061,6 +1066,7 @@ pub fn search<S: Sources + ?Sized>(sources: &S, request: &Request) -> Result<Ans
         windows_blacked_out,
         ranking: request.ranking,
         unjudged: rules.unjudged.iter().cloned().chain(unjudged).collect(),
+        reasons: Vec::new(),
     })
 }
 

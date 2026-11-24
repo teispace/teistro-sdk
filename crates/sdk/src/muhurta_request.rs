@@ -200,6 +200,10 @@ pub struct MuhurtaRequest {
     most: usize,
     asta: Criterion,
     direction: Option<Direction>,
+    // Left out when false, so a request that does not ask hashes as it
+    // always did.
+    #[serde(skip_serializing_if = "core::ops::Not::not")]
+    reasons: bool,
 }
 
 impl MuhurtaRequest {
@@ -223,6 +227,7 @@ impl MuhurtaRequest {
             most: Self::MOST,
             asta: Criterion::SURYA_SIDDHANTA,
             direction: None,
+            reasons: false,
         }
     }
 
@@ -282,6 +287,31 @@ impl MuhurtaRequest {
     pub const fn towards(mut self, direction: Direction) -> MuhurtaRequest {
         self.direction = Some(direction);
         self
+    }
+
+    /// With each window's reasons in words: why it is good, as a short
+    /// line and a longer list (`03-design/muhurta-reasons.md`, SR-154).
+    ///
+    /// ```
+    /// use teistro::MuhurtaRequest;
+    /// use teistro::muhurta::ActivityRules;
+    ///
+    /// let asked = MuhurtaRequest::new(ActivityRules::raman_marriage());
+    /// assert!(!asked.reasons(), "reasons only when asked for");
+    /// let written = MuhurtaRequest::from_json(r#"{"rules": "RAMAN_MARRIAGE", "reasons": true}"#)?;
+    /// assert_eq!(written, asked.with_reasons());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn with_reasons(mut self) -> MuhurtaRequest {
+        self.reasons = true;
+        self
+    }
+
+    /// Whether each window's reasons are said.
+    #[must_use]
+    pub const fn reasons(&self) -> bool {
+        self.reasons
     }
 
     /// Where the rite goes, if anywhere.
@@ -404,6 +434,9 @@ impl MuhurtaRequest {
         if let Some(direction) = asked.direction {
             request = request.towards(direction);
         }
+        if asked.reasons {
+            request = request.with_reasons();
+        }
         if let Some(asta) = &asked.asta {
             request = request.with_asta(match asta {
                 Value::String(name) => named(name, &ASTA, "asta")?,
@@ -441,7 +474,8 @@ fn named<T: Copy>(name: &str, names: &[(&str, T)], field: &str) -> Result<T, Err
 /// A muhurta search to run over an almanac's days
 /// (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's
 /// name or spelt out, and how the windows are ranked, how many are kept,
-/// how asta is seen and where a journey goes.
+/// how asta is seen, where a journey goes, and whether each window's
+/// reasons are said in words.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaRequest"))]
@@ -462,6 +496,9 @@ pub(crate) struct Asked {
     asta: Option<Value>,
     #[serde(default)]
     direction: Option<Direction>,
+    /// Whether each window's reasons are said in words.
+    #[serde(default)]
+    reasons: bool,
 }
 
 /// How the rules may be asked: by an [`Activity`]'s name, or spelt out
