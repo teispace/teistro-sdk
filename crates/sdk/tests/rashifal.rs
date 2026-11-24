@@ -768,7 +768,7 @@ fn a_period_is_said_in_the_reading_voice_with_its_facts() {
 /// The voice packs say every plan (SR-152 S2): each intent the composer can
 /// name is in en-Latn and ne-Deva-NP, and every item of a month of days, its
 /// weeks, the month and a year renders in both with no warning, from the
-/// locale itself, marked draft until review (Q42).
+/// locale itself, final (Q42: reviewed after shipping).
 #[test]
 fn every_reading_renders_in_english_and_nepali() {
     use teistro::interpret::rashifal_reading::{ReadingItem, intents};
@@ -823,7 +823,7 @@ fn every_reading_renders_in_english_and_nepali() {
                             "{tag} {}",
                             item.intent
                         );
-                        assert!(rendered.is_draft, "{tag} {} is unreviewed", item.intent);
+                        assert!(!rendered.is_draft, "{tag} {} is final", item.intent);
                         assert!(!rendered.text.contains('{'), "{tag}: {}", rendered.text);
                     }
                 }
