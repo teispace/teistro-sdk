@@ -267,7 +267,7 @@ public final class ChartArea {
      * @return the reading, with what sealed it
      */
     public RashifalSealed rashifal(RashifalRequest request) {
-        return RashifalReads.rashifal(context, request, null, false);
+        return RashifalReads.rashifal(context, request, null, false, false);
     }
 
     /**
@@ -279,7 +279,7 @@ public final class ChartArea {
      * @return the reading, with what sealed it
      */
     public RashifalSealed rashifal(RashifalRequest request, String baseline) {
-        return RashifalReads.rashifal(context, request, baseline, false);
+        return RashifalReads.rashifal(context, request, baseline, false, false);
     }
 
     /**
@@ -293,7 +293,23 @@ public final class ChartArea {
      * @return the reading, with what sealed it
      */
     public RashifalSealed rashifal(RashifalRequest request, String baseline, boolean plans) {
-        return RashifalReads.rashifal(context, request, baseline, plans);
+        return RashifalReads.rashifal(context, request, baseline, plans, false);
+    }
+
+    /**
+     * One period read for each of the twelve signs, with each sign in the
+     * reading voice beside it when {@code readings} asks
+     * ({@code 03-design/rashifal-reading.md}): intents, hedges and the facts
+     * each item rests on.
+     *
+     * @param request the period, its place and what to read
+     * @param baseline the baseline's name; readings need one
+     * @param plans whether each sign's reading is said in words
+     * @param readings whether each sign is said in the reading voice
+     * @return the reading, with what sealed it
+     */
+    public RashifalSealed rashifal(RashifalRequest request, String baseline, boolean plans, boolean readings) {
+        return RashifalReads.rashifal(context, request, baseline, plans, readings);
     }
 
     /**
@@ -304,7 +320,7 @@ public final class ChartArea {
      * @return one reading per request, in order, with the batch's provenance
      */
     public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline) {
-        return RashifalReads.rashifalMany(context, requests, baseline, false);
+        return RashifalReads.rashifalMany(context, requests, baseline, false, false);
     }
 
     /**
@@ -317,7 +333,22 @@ public final class ChartArea {
      * @return one reading per request, in order, with the batch's provenance
      */
     public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline, boolean plans) {
-        return RashifalReads.rashifalMany(context, requests, baseline, plans);
+        return RashifalReads.rashifalMany(context, requests, baseline, plans, false);
+    }
+
+    /**
+     * Several periods read in one call, each sign in the reading voice beside
+     * each when {@code readings} asks.
+     *
+     * @param requests the periods
+     * @param baseline the baseline's name; readings need one
+     * @param plans whether each sign's reading is said in words
+     * @param readings whether each sign is said in the reading voice
+     * @return one reading per request, in order, with the batch's provenance
+     */
+    public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline, boolean plans,
+            boolean readings) {
+        return RashifalReads.rashifalMany(context, requests, baseline, plans, readings);
     }
 
     /**

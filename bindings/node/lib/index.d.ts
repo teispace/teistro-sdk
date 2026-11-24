@@ -1399,16 +1399,90 @@ export interface BaselineScore {
   /** The five grahas the baseline names, in its order. */
   readonly keyInfluences: readonly { readonly graha: Graha | 'unknown'; readonly house: number; readonly verdict: GocharVerdict }[];
   /** The sign lord's lucky elements. */
-  readonly lucky: { readonly colour: Colour; readonly number: number; readonly day: Vara | 'unknown'; readonly direction: Direction | 'unknown' };
+  readonly lucky: LuckyElements;
 }
 
-/** One period's answer: the reading, the baseline's twelve scores and the twelve plans when asked. */
+/** A sign lord's lucky elements, as the baseline engine gives them. */
+export interface LuckyElements {
+  readonly colour: Colour;
+  readonly number: number;
+  readonly day: Vara | 'unknown';
+  readonly direction: Direction | 'unknown';
+}
+
+/** How firmly a reading item is said, from its facts; nothing is certain. */
+export type ReadingHedge = 'FIRM' | 'LIKELY' | 'POSSIBLE' | 'MAY';
+
+/** The four areas a reader sees, read from the baseline's life areas. */
+export type ReadingArea = 'WORK' | 'MONEY' | 'LOVE_FAMILY' | 'HEALTH';
+
+/** Where in the period a part of the reading falls. */
+export type ReadingFrame =
+  | 'WHOLE'
+  | 'BEFORE_MOON'
+  | 'AFTER_MOON'
+  | 'START'
+  | 'MIDDLE'
+  | 'END'
+  | 'FIRST_HALF'
+  | 'SECOND_HALF'
+  | 'SLOW'
+  | 'QUARTER1'
+  | 'QUARTER2'
+  | 'QUARTER3'
+  | 'QUARTER4';
+
+/** A fact a reading item rests on, as an index into the answer that carries it. */
+export type ReadingFact =
+  | { readonly fact: 'TRANSIT'; readonly graha: Graha | 'unknown' }
+  | { readonly fact: 'EVENT' | 'INFLUENCE' | 'DAY'; readonly index: number }
+  | { readonly fact: 'AREA_BAND'; readonly area: ReadingArea }
+  | { readonly fact: 'SATURN' | 'BAND' | 'MOON_TURN' | 'LUCKY' | 'SYLLABLES' };
+
+/**
+ * One thing a reading says: an intent a reading pack words, its slots, how
+ * firmly, and the facts it rests on; `sdk.intl.render(item.intent,
+ * item.params)` says it in a locale whose pack carries the intent.
+ */
+export interface ReadingItem {
+  readonly intent: string;
+  readonly params: Readonly<Record<string, unknown>>;
+  readonly hedge: ReadingHedge;
+  readonly caution: boolean;
+  /** Which of the pack's wordings to say; a pack reads it modulo its count. */
+  readonly variant: number;
+  readonly restsOn: readonly ReadingFact[];
+}
+
+/** A sign's period in the reading voice (SR-152, `03-design/rashifal-reading.md`). */
+export interface ReadingPlan {
+  readonly rashi: Rashi;
+  readonly period: BaselinePeriod;
+  readonly headline: ReadingItem;
+  readonly parts: readonly { readonly frame: ReadingFrame; readonly items: readonly ReadingItem[] }[];
+  readonly why: readonly ReadingItem[];
+  readonly areas: readonly {
+    readonly area: ReadingArea;
+    readonly score: number;
+    readonly band: ScoreBand;
+    readonly note: ReadingItem;
+  }[];
+  /** A week's best day as an index into its days, when one day leads; `null` otherwise. */
+  readonly bestDay: number | null;
+  readonly lucky: LuckyElements;
+  /** The sign's nine name syllables in IAST, its padas' in order; a locale spells them. */
+  readonly syllables: readonly string[];
+}
+
+/** One period's answer: the reading, the baseline's twelve scores and the twelve plans and readings when asked. */
 export interface RashifalAnswer {
   readonly period: RashifalPeriod;
   /** Aries to Pisces; `null` unless a baseline period was asked. */
   readonly baseline: readonly BaselineScore[] | null;
   /** Each sign's reading in words, Aries to Pisces; `null` unless `plans` was asked. */
   readonly plans: readonly (readonly PlanItem[])[] | null;
+  /** Each sign in the reading voice, Aries to Pisces; `null` unless `readings` was asked. */
+  readonly readings: readonly ReadingPlan[] | null;
 }
 
 /** One period's answer as `rashifal` hands it out, with what sealed it. */
@@ -8322,19 +8396,26 @@ export declare class ChartArea {
   /**
    * One period of civil days at a place read for each of the twelve signs
    * (`03-design/rashifal.md`); with `baseline`, the baseline engine's score
-   * of each sign for that period; with `plans`, each sign's reading in words.
+   * of each sign for that period; with `plans`, each sign's reading in words;
+   * with `readings`, each sign in the reading voice for the `baseline` period.
    *
    * @example
    * const week = ctx.chart.rashifal({ first, last, place, utcOffsetSeconds: 20700 }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
    * const sealed = week.provenance.inputHash;
    */
-  rashifal(request: RashifalRequest, baseline?: BaselinePeriod | null, plans?: boolean): RashifalSealed;
+  rashifal(
+    request: RashifalRequest,
+    baseline?: BaselinePeriod | null,
+    plans?: boolean,
+    readings?: boolean,
+  ): RashifalSealed;
   /** Many periods, each read as `rashifal` reads it alone, under one founder. */
   rashifalMany(
     requests: readonly RashifalRequest[],
     baseline?: BaselinePeriod | null,
     plans?: boolean,
+    readings?: boolean,
   ): RashifalAnswers;
 }
 

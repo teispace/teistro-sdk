@@ -12,12 +12,15 @@ import java.util.Map;
  * @param plans each sign's reading in words, Aries to Pisces, each plan a list of
  *     {@code {key, params}} that {@code intl().render} says; may be null, unless
  *     plans were asked
+ * @param readings each sign in the reading voice, Aries to Pisces; may be null,
+ *     unless readings were asked
  */
 public record RashifalAnswer(RashifalPeriod period, List<BaselineScore> baseline,
-        List<List<Map<String, Object>>> plans) {
+        List<List<Map<String, Object>>> plans, List<ReadingPlan> readings) {
     /** Keeps the lists unmodifiable. */
     public RashifalAnswer {
         baseline = baseline == null ? null : List.copyOf(baseline);
         plans = plans == null ? null : plans.stream().map(List::copyOf).toList();
+        readings = readings == null ? null : List.copyOf(readings);
     }
 }

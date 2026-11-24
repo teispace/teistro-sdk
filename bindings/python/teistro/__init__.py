@@ -2151,6 +2151,11 @@ __all__ = [
     "KeyInfluence",
     "LuckyElements",
     "BaselineScore",
+    "ReadingFact",
+    "ReadingItem",
+    "ReadingPart",
+    "AreaReading",
+    "ReadingPlan",
     "RashifalAnswer",
     "RashifalAnswers",
     "MundaneIngress",
@@ -3993,7 +3998,11 @@ class ChartArea(_Area):
 
 
     def rashifal(
-        self, request: "RashifalRequest", baseline: Optional[str] = None, plans: bool = False
+        self,
+        request: "RashifalRequest",
+        baseline: Optional[str] = None,
+        plans: bool = False,
+        readings: bool = False,
     ) -> "RashifalSealed":
         """One period of civil days at a place read for each of the twelve
         signs (`03-design/rashifal.md`): the sky at sunrise on the middle
@@ -4004,20 +4013,30 @@ class ChartArea(_Area):
         as the baseline engine reckons it, `BASELINE` and unsourced (C361).
         With `plans`, each sign's reading in words: twelve plans, Aries to
         Pisces, each a list of `PlanItem` that `sdk.intl.render(item["key"],
-        item["params"])` says.
+        item["params"])` says. With `readings` (and a `baseline` period),
+        each sign in the reading voice (`03-design/rashifal-reading.md`):
+        twelve `ReadingPlan`s whose items name the facts they rest on.
 
         >>> # week = ctx.chart.rashifal({"first": first, "last": last, "place": place, "utcOffsetSeconds": 20700}, "WEEKLY")
         >>> # leo = next(r for r in week.period.readings if r.rashi is Rashi.LEO)
         >>> # sealed = week.provenance.input_hash
         """
-        many = self.rashifal_many([request], baseline, plans)
+        many = self.rashifal_many([request], baseline, plans, readings)
         one = many.value[0]
         return RashifalSealed(
-            period=one.period, baseline=one.baseline, plans=one.plans, provenance=many.provenance
+            period=one.period,
+            baseline=one.baseline,
+            plans=one.plans,
+            readings=one.readings,
+            provenance=many.provenance,
         )
 
     def rashifal_many(
-        self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None, plans: bool = False
+        self,
+        requests: Sequence["RashifalRequest"],
+        baseline: Optional[str] = None,
+        plans: bool = False,
+        readings: bool = False,
     ) -> "RashifalAnswers":
         """Many periods, each read as `rashifal` reads it alone, under one
         founder, as the envelope: the answers in the requests' order and the
@@ -4033,6 +4052,8 @@ class ChartArea(_Area):
             asked["baseline"] = baseline
         if plans:
             asked["plans"] = True
+        if readings:
+            asked["readings"] = True
         answered = self._context._through_provider(lambda: self._context.inner.rashifal(json.dumps(asked)))
         envelope = json.loads(answered)
         return RashifalAnswers(
@@ -13910,10 +13931,88 @@ class BaselineScore:
     lucky: LuckyElements
 
 
+ReadingHedge = Literal["FIRM", "LIKELY", "POSSIBLE", "MAY"]
+"""How firmly a reading item is said, from its facts; nothing is certain."""
+
+ReadingArea = Literal["WORK", "MONEY", "LOVE_FAMILY", "HEALTH"]
+"""The four areas a reader sees, read from the baseline's life areas."""
+
+ReadingFrame = Literal[
+    "WHOLE", "BEFORE_MOON", "AFTER_MOON", "START", "MIDDLE", "END", "FIRST_HALF", "SECOND_HALF",
+    "SLOW", "QUARTER1", "QUARTER2", "QUARTER3", "QUARTER4",
+]
+"""Where in the period a part of the reading falls."""
+
+
+@dataclass(frozen=True)
+class ReadingFact:
+    """A fact a reading item rests on, as an index into the answer that
+    carries it (`03-design/rashifal-reading.md`)."""
+
+    fact: Literal["TRANSIT", "SATURN", "EVENT", "INFLUENCE", "BAND", "AREA_BAND", "DAY", "MOON_TURN", "LUCKY", "SYLLABLES"]
+    graha: Optional[Graha] = None
+    """A `TRANSIT`'s graha."""
+    index: Optional[int] = None
+    """An `EVENT`'s, an `INFLUENCE`'s or a `DAY`'s index."""
+    area: Optional[ReadingArea] = None
+    """An `AREA_BAND`'s area."""
+
+
+@dataclass(frozen=True)
+class ReadingItem:
+    """One thing a reading says: an intent a reading pack words, its slots,
+    how firmly, and the facts it rests on. `sdk.intl.render(item.intent,
+    item.params)` says it in a locale whose pack carries the intent."""
+
+    intent: str
+    params: Dict[str, Any]
+    hedge: ReadingHedge
+    caution: bool
+    variant: int
+    """Which of the pack's wordings to say; a pack reads it modulo its count."""
+    rests_on: Tuple[ReadingFact, ...]
+
+
+@dataclass(frozen=True)
+class ReadingPart:
+    """A part of the reading: where it falls and what it says, in order."""
+
+    frame: ReadingFrame
+    items: Tuple[ReadingItem, ...]
+
+
+@dataclass(frozen=True)
+class AreaReading:
+    """One area as a page shows it: its score, band and note."""
+
+    area: ReadingArea
+    score: int
+    band: ScoreBand
+    note: ReadingItem
+
+
+@dataclass(frozen=True)
+class ReadingPlan:
+    """A sign's period in the reading voice (SR-152): a headline, the
+    reading part by part, the why, the four areas, the week's best day, the
+    lucky items and the sign's nine name syllables in IAST."""
+
+    rashi: Rashi
+    period: Literal["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]
+    headline: ReadingItem
+    parts: Tuple[ReadingPart, ...]
+    why: Tuple[ReadingItem, ...]
+    areas: Tuple[AreaReading, ...]
+    best_day: Optional[int]
+    """A week's best day as an index into its days, when one day leads."""
+    lucky: LuckyElements
+    syllables: Tuple[str, ...]
+
+
 @dataclass(frozen=True)
 class RashifalAnswer:
     """One period's answer: the reading, the baseline's twelve scores and
-    the twelve plans when asked."""
+    the twelve plans and readings when asked."""
 
     period: RashifalPeriod
     baseline: Optional[Tuple[BaselineScore, ...]]
@@ -13921,6 +14020,9 @@ class RashifalAnswer:
     plans: "Optional[Tuple[List[PlanItem], ...]]"
     """Each sign's reading in words, Aries to Pisces; `None` unless `plans`
     was asked."""
+    readings: Optional[Tuple[ReadingPlan, ...]]
+    """Each sign in the reading voice, Aries to Pisces; `None` unless
+    `readings` was asked."""
 
 
 @dataclass(frozen=True)
@@ -17910,17 +18012,56 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
                 KeyInfluence(graha=_member(Graha, k["graha"]), house=k["house"], verdict=_member(GocharVerdict, k["verdict"]))
                 for k in one["keyInfluences"]
             ),
-            lucky=LuckyElements(
-                colour=_member(Colour, lucky["colour"]),
-                number=lucky["number"],
-                day=_member(Vara, lucky["day"]),
-                direction=_member(Direction, lucky["direction"]),
+            lucky=lucky_of(lucky),
+        )
+
+    def lucky_of(lucky: Mapping[str, Any]) -> LuckyElements:
+        return LuckyElements(
+            colour=_member(Colour, lucky["colour"]),
+            number=lucky["number"],
+            day=_member(Vara, lucky["day"]),
+            direction=_member(Direction, lucky["direction"]),
+        )
+
+    def fact(one: Mapping[str, Any]) -> ReadingFact:
+        graha = one.get("graha")
+        return ReadingFact(
+            fact=one["fact"],
+            graha=None if graha is None else _member(Graha, graha),
+            index=one.get("index"),
+            area=one.get("area"),
+        )
+
+    def item(one: Mapping[str, Any]) -> ReadingItem:
+        return ReadingItem(
+            intent=one["intent"],
+            params=dict(one["params"]),
+            hedge=one["hedge"],
+            caution=bool(one["caution"]),
+            variant=one["variant"],
+            rests_on=tuple(fact(f) for f in one["restsOn"]),
+        )
+
+    def plan(one: Mapping[str, Any]) -> ReadingPlan:
+        return ReadingPlan(
+            rashi=_member(Rashi, one["rashi"]),
+            period=one["period"],
+            headline=item(one["headline"]),
+            parts=tuple(ReadingPart(frame=p["frame"], items=tuple(item(i) for i in p["items"])) for p in one["parts"]),
+            why=tuple(item(i) for i in one["why"]),
+            areas=tuple(
+                AreaReading(area=a["area"], score=a["score"], band=_member(ScoreBand, a["band"]), note=item(a["note"]))
+                for a in one["areas"]
             ),
+            best_day=one.get("bestDay"),
+            lucky=lucky_of(one["lucky"]),
+            syllables=tuple(one["syllables"]),
         )
 
     limbs = period["panchanga"]
     baseline = raw.get("baseline")
     plans = raw.get("plans")
+    readings = raw.get("readings")
     return RashifalAnswer(
         period=RashifalPeriod(
             first=_serde_date(period["first"]),
@@ -17941,6 +18082,7 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
         ),
         baseline=None if baseline is None else tuple(score(one) for one in baseline),
         plans=None if plans is None else tuple(plans),
+        readings=None if readings is None else tuple(plan(one) for one in readings),
     )
 
 

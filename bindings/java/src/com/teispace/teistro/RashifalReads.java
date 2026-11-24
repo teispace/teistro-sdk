@@ -24,15 +24,19 @@ final class RashifalReads {
      * {@code "MONTHLY"} or {@code "YEARLY"}), each sign's score as the
      * baseline engine reckons it, {@code BASELINE} and unsourced (C361).
      * With {@code plans}, each sign's reading in words, Aries to Pisces.
+     * With {@code readings} (and a baseline period), each sign in the reading
+     * voice ({@code 03-design/rashifal-reading.md}).
      *
      * @param context the context to read it under
      * @param request the period
      * @param baseline the baseline period to score; may be null for none
      * @param plans whether each sign's reading is said in words
+     * @param readings whether each sign is said in the reading voice
      * @return the answer, with what sealed it
      */
-    static RashifalSealed rashifal(Context context, RashifalRequest request, String baseline, boolean plans) {
-        RashifalAnswers many = rashifalMany(context, List.of(request), baseline, plans);
+    static RashifalSealed rashifal(Context context, RashifalRequest request, String baseline, boolean plans,
+            boolean readings) {
+        RashifalAnswers many = rashifalMany(context, List.of(request), baseline, plans, readings);
         return new RashifalSealed(many.value().get(0), many.provenance());
     }
 
@@ -43,10 +47,11 @@ final class RashifalReads {
      * @param requests the periods
      * @param baseline the baseline period to score; may be null for none
      * @param plans whether each sign's reading is said in words
+     * @param readings whether each sign is said in the reading voice
      * @return one answer a period, in their order, with the batch's provenance
      */
     static RashifalAnswers rashifalMany(Context context, List<RashifalRequest> requests, String baseline,
-            boolean plans) {
+            boolean plans, boolean readings) {
         if (requests == null) {
             throw Reads.invalid("requests is a list of rashifal periods, such as "
                     + "List.of(RashifalRequest.of(date, place, 20_700))", "requests");
@@ -62,6 +67,9 @@ final class RashifalReads {
         }
         if (plans) {
             asked.put("plans", true);
+        }
+        if (readings) {
+            asked.put("readings", true);
         }
         String json = Json.write(asked);
         String answered = context.locked((lib, raw) -> Calls.rashifal(lib, raw, json));
@@ -116,7 +124,7 @@ final class RashifalReads {
         return asked;
     }
 
-    private static <E extends Member> E member(Map<?, ?> object, String key, String kind,
+    private static <E> E member(Map<?, ?> object, String key, String kind,
             java.util.function.Function<String, java.util.Optional<E>> byKey) {
         String text = Reads.string(object, key);
         return Reads.member(byKey.apply(text), kind, text);
@@ -195,9 +203,56 @@ final class RashifalReads {
                 }));
     }
 
+    private static LuckyElements lucky(Map<?, ?> lucky) {
+        return new LuckyElements(member(lucky, "colour", "Colour", Colour::byKey), Reads.integer(lucky, "number"),
+                member(lucky, "day", "Vara", Vara::byKey),
+                member(lucky, "direction", "Direction", Direction::byKey));
+    }
+
+    private static ReadingPlan.Item item(Object raw) {
+        Map<?, ?> one = Reads.object(raw);
+        return new ReadingPlan.Item(
+                Reads.string(one, "intent"),
+                JsonRead.object(Reads.field(one, "params")),
+                member(one, "hedge", "ReadingHedge", ReadingPlan.Hedge::byKey),
+                Reads.flag(one, "caution"),
+                JsonRead.whole(Reads.field(one, "variant")),
+                Reads.each(one, "restsOn", f -> {
+                    Map<?, ?> fact = Reads.object(f);
+                    return new ReadingPlan.Fact(
+                            Reads.string(fact, "fact"),
+                            fact.get("graha") == null ? null : graha(fact.get("graha")),
+                            Reads.optionalInteger(fact, "index"),
+                            fact.get("area") == null ? null
+                                    : member(fact, "area", "ReadingArea", ReadingPlan.Area::byKey));
+                }));
+    }
+
+    private static ReadingPlan plan(Object raw) {
+        Map<?, ?> one = Reads.object(raw);
+        return new ReadingPlan(
+                member(one, "rashi", "Rashi", Rashi::byKey),
+                Reads.string(one, "period"),
+                item(Reads.field(one, "headline")),
+                Reads.each(one, "parts", p -> {
+                    Map<?, ?> part = Reads.object(p);
+                    return new ReadingPlan.Part(member(part, "frame", "ReadingFrame", ReadingPlan.Frame::byKey),
+                            Reads.each(part, "items", RashifalReads::item));
+                }),
+                Reads.each(one, "why", RashifalReads::item),
+                Reads.each(one, "areas", a -> {
+                    Map<?, ?> area = Reads.object(a);
+                    return new ReadingPlan.AreaReading(member(area, "area", "ReadingArea", ReadingPlan.Area::byKey),
+                            Reads.integer(area, "score"), member(area, "band", "ScoreBand", ScoreBand::byKey),
+                            item(Reads.field(area, "note")));
+                }),
+                Reads.optionalInteger(one, "bestDay"),
+                lucky(Reads.object(one, "lucky")),
+                Reads.each(one, "syllables", Reads::string));
+    }
+
     private static BaselineScore score(Object raw) {
         Map<?, ?> one = Reads.object(raw);
-        Map<?, ?> lucky = Reads.object(one, "lucky");
         return new BaselineScore(
                 Reads.integer(one, "overall"),
                 member(one, "band", "ScoreBand", ScoreBand::byKey),
@@ -214,9 +269,7 @@ final class RashifalReads {
                     return new KeyInfluence(graha(Reads.field(o, "graha")), Reads.integer(o, "house"),
                             member(o, "verdict", "GocharVerdict", GocharVerdict::byKey));
                 }),
-                new LuckyElements(member(lucky, "colour", "Colour", Colour::byKey), Reads.integer(lucky, "number"),
-                        member(lucky, "day", "Vara", Vara::byKey),
-                        member(lucky, "direction", "Direction", Direction::byKey)));
+                lucky(Reads.object(one, "lucky")));
     }
 
     /** One period's answer from {@code ts_rashifal}'s JSON, its keys made members. */
@@ -226,6 +279,7 @@ final class RashifalReads {
         double instant = Reads.number(period, "instant");
         Object baseline = raw.get("baseline");
         Object plans = raw.get("plans");
+        Object readings = raw.get("readings");
         return new RashifalAnswer(
                 new RashifalPeriod(
                         Reads.serdeDate(Reads.field(period, "first")),
@@ -249,6 +303,7 @@ final class RashifalReads {
                 baseline == null ? null : Reads.array(baseline).stream().map(RashifalReads::score).toList(),
                 plans == null ? null : JsonRead.list(plans).stream()
                         .map(plan -> JsonRead.list(plan).stream().map(JsonRead::object).toList())
-                        .toList());
+                        .toList(),
+                readings == null ? null : Reads.array(readings).stream().map(RashifalReads::plan).toList());
     }
 }

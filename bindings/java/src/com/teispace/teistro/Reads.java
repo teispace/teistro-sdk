@@ -114,8 +114,8 @@ final class Reads {
         return Collections.unmodifiableList(out);
     }
 
-    /** A catalogue member by its key, or a refusal naming both. */
-    static <E extends Member> E member(Optional<E> found, String kind, Object key) {
+    /** A member (of the catalogue, or a binding's own enum) by its key, or a refusal naming both. */
+    static <E> E member(Optional<E> found, String kind, Object key) {
         return found.orElseThrow(() -> internal("the library drew a " + kind + " this build does not know: " + key));
     }
 

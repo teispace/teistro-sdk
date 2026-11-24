@@ -2931,6 +2931,32 @@ public final class BindingTest {
                     check(!rendered.text().isEmpty(), "Saturn's standing said");
                     same(0, rendered.isFallback(), "the locale carries it");
                 }
+                check(read.readings() == null, "the reading voice only when asked for");
+                RashifalSealed voiced = sky.chart().rashifal(RashifalRequest.of(
+                        Civil.date(Calendar.GREGORIAN, 2026, 10, 4), kathmandu, 20_700)
+                        .withLast(Civil.date(Calendar.GREGORIAN, 2026, 10, 10)), "WEEKLY", false, true);
+                same(12, voiced.readings().size(), "a reading a sign (SR-152)");
+                for (int k = 0; k < 12; k++) {
+                    ReadingPlan plan = voiced.readings().get(k);
+                    same(voiced.period().readings().get(k).rashi(), plan.rashi(), "Aries to Pisces");
+                    same("WEEKLY", plan.period(), "the period's kind");
+                    same(List.of(ReadingPlan.Frame.START, ReadingPlan.Frame.MIDDLE, ReadingPlan.Frame.END),
+                            plan.parts().stream().map(ReadingPlan.Part::frame).limit(3).toList(),
+                            "a week's start, middle and end");
+                    same(List.of(ReadingPlan.Area.values()),
+                            plan.areas().stream().map(ReadingPlan.AreaReading::area).toList(), "the four areas");
+                    same(9, plan.syllables().size(), "the sign's nine padas");
+                    List<ReadingPlan.Item> said = new java.util.ArrayList<>(plan.why());
+                    said.add(plan.headline());
+                    plan.parts().forEach(part -> said.addAll(part.items()));
+                    plan.areas().forEach(area -> said.add(area.note()));
+                    for (ReadingPlan.Item item : said) {
+                        check(!item.restsOn().isEmpty(), item.intent() + " rests on its facts");
+                    }
+                }
+                same("rashifal.readings", refusal(() -> sky.chart().rashifal(
+                        RashifalRequest.of(first, kathmandu, 20_700), null, false, true)).field(),
+                        "readings need a baseline");
                 same(Status.UNSUPPORTED, refusal(() -> sky.engine().names()).status(),
                         "the built-in engine describes no operations of its own");
             }
