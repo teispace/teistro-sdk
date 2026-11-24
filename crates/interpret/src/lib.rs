@@ -73,6 +73,8 @@ mod placements;
 mod positions;
 #[cfg(feature = "rashifal")]
 mod rashifal;
+#[cfg(feature = "rashifal-reading")]
+pub mod rashifal_reading;
 mod readings;
 mod sade_sati;
 mod states;

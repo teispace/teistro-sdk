@@ -20,6 +20,10 @@ schema = ["dep:schemars", "dep:serde_json", "teistro-intl/words-schema", "teistr
 # which reads a `RashiReading`: on with the façade's `rashifal` family, so
 # a build that leaves the family out leaves its crate out here too.
 rashifal = ["dep:teistro-rashifal"]
+# The rashifal's reading voice (`03-design/rashifal-reading.md`, SR-152):
+# intents a reading pack words, each naming the facts it rests on. Off
+# unless asked, so a build without it carries none of it.
+rashifal-reading = ["rashifal"]
 
 [dependencies]
 teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.9" }
