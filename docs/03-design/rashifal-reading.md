@@ -1,7 +1,8 @@
 # The rashifal's reading voice (SR-152)
 
-Status: `building`, 2026-11-24; S1 (the plan, in every binding) built,
-S2 (the en and ne packs) next.
+Status: `building`, 2026-11-24; S1 (the plan, in every binding) and S2
+(the en and ne packs, draft until review) built; S3 (hi and sa) and S4 (the
+lucky items traced) next.
 
 A second register for the rashifal, `reading`, beside the technical one the
 [`rashifal`](rashifal.md) composer says ("Saturn in the 12th: Sade Sati
@@ -102,10 +103,11 @@ SDK decides everything a checker must trust:
 - **who is named**: grahas only in the why and in the events, and the Moon
   only on a day.
 
-A pack's message for an intent (`reading.rashifal.area.WORK.GOOD`,
-`reading.rashifal.why.TRANSIT`, `reading.rashifal.caution.HOUSE_8` and so on)
-holds that language's patterns as variants. The pack chooses the words; it
-never chooses a fact.
+A pack's message for an intent (`sdk.voice.rashifal.line.WORK.GOOD`,
+`sdk.voice.rashifal.why.TRANSIT.GOOD` and so on) holds that language's
+patterns as variants. The pack chooses the words; it never chooses a fact.
+`intents()` lists every intent and frame label, and a test holds each pack
+to the list.
 
 ### The parts of each period
 
@@ -133,9 +135,14 @@ A pack carries several wordings of each intent. The plan names one by
 - a day's reading avoids the variant the previous day used for the same key
   where the pack has more than one, so consecutive days differ.
 
-The variant is a number the plan carries, not a string: the wording lives in
-the pack, and a pack with fewer variants reads the number modulo its count.
-So a pack may add wordings without changing any answer but the words.
+The variant is a number the plan carries in the item's slots, beside its
+`hedge`, not a string: the wording lives in the pack, which selects on it
+with `{$variant :integer cycle=N}`, the number modulo its own N wordings. So
+a pack may add wordings without changing any answer but the words, and
+`intl.render(item.intent, item.params)` is the whole call. The other slots
+are civil: an event's `date` and a week's best day's `date` in the request's
+calendar, and the Moon's change of sign as a local `time`, so a pack never
+names a zone.
 
 ### The lucky items
 
@@ -176,14 +183,19 @@ the sign Nepal's way, "Mesh (Aries)" (C2332).
 
 ## Where it lives
 
-- **`teistro-interpret::rashifal_reading`**, behind a `rashifal-reading`
-  feature, off by default, so a build without it carries no code and no
-  wording for it. It reads a `RashiReading` and its `BaselineScore`, and
-  nothing else.
-- **The messages** are keyed under `sdk.reading.rashifal.*` in a pack of their
-  own (`.tbundle`, `intl.loadPack`), en and ne first, then hi and sa. Every
-  variant ships marked unreviewed until the consumer's native reviewers sign
-  it off (Q42, SR-75).
+- **`teistro-interpret::rashifal_reading`**, behind that crate's
+  `rashifal-reading` feature. The façade turns it on with its `rashifal`
+  family, so a build that keeps the rashifal keeps its reading voice and one
+  that leaves the family out has neither: a family is a crate's worth of
+  answers, and the voice is part of the rashifal's (the
+  `families-are-forwarded` rule holds `full` to the families). It reads a
+  `RashiReading` and its `BaselineScore`, and nothing else.
+- **The messages** live in the `sdk.voice` namespace, under
+  `sdk.voice.rashifal.*`: en and ne first, then hi and sa. Both mark the
+  namespace `draft` in their `_meta.json`, so every render says `is_draft`
+  until the consumer's native reviewers sign it off (Q42, SR-75). Shared pieces
+  (the house's ordinal and theme, the area names, the frame labels) are
+  helper messages an intent calls with `:msg`.
 - **The façade and every binding** answer `rashifal.reading(...)` with the
   plan as data: the items, their variants and their facts. A binding says
   the plan through its intl engine as it says any plan.

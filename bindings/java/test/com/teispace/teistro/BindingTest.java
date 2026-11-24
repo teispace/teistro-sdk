@@ -2952,6 +2952,10 @@ public final class BindingTest {
                     plan.areas().forEach(area -> spoken.add(area.note()));
                     for (ReadingPlan.Item item : spoken) {
                         check(!item.restsOn().isEmpty(), item.intent() + " rests on its facts");
+                        IntlRender heard = sky.intl().render(item.intent(), item.params());
+                        same(0, heard.isFallback(), item.intent() + " is in the pack");
+                        same(0L, heard.warningCount(), item.intent() + " renders without a warning");
+                        check(!heard.text().contains("{"), item.intent() + ": " + heard.text());
                     }
                 }
                 same("rashifal.readings", refusal(() -> sky.chart().rashifal(

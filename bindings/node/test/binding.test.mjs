@@ -7532,7 +7532,12 @@ test('a rashifal period is read for each of the twelve signs', () => {
     assert.deepEqual(plan.areas.map((area) => area.area), ['WORK', 'MONEY', 'LOVE_FAMILY', 'HEALTH']);
     assert.equal(plan.syllables.length, 9);
     const items = [plan.headline, ...plan.why, ...plan.parts.flatMap((part) => part.items)];
-    assert.ok(items.every((item) => item.restsOn.length > 0 && item.intent.startsWith('reading.rashifal.')));
+    assert.ok(items.every((item) => item.restsOn.length > 0 && item.intent.startsWith('sdk.voice.rashifal.')));
+    for (const item of items) {
+      const said = ctx.intl.render(item.intent, item.params);
+      assert.ok(!said.isFallback && !said.text.includes('{'), item.intent);
+      assert.deepEqual(said.warnings, [], item.intent);
+    }
     assert.ok(plan.bestDay === null || plan.bestDay < 7);
     for (const item of items) {
       for (const fact of item.restsOn) {

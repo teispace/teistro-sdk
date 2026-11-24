@@ -25,6 +25,7 @@ pub(crate) static SOURCES: &[(&str, &[(&str, &str)])] = &[
             ("sdk.rite.json", include_str!("../i18n/en-Latn/sdk.rite.json")),
             ("sdk.sankalpa.json", include_str!("../i18n/en-Latn/sdk.sankalpa.json")),
             ("sdk.settings.json", include_str!("../i18n/en-Latn/sdk.settings.json")),
+            ("sdk.voice.json", include_str!("../i18n/en-Latn/sdk.voice.json")),
         ],
     ),
     (
@@ -75,6 +76,7 @@ pub(crate) static SOURCES: &[(&str, &[(&str, &str)])] = &[
             ("sdk.rite.json", include_str!("../i18n/ne-Deva-NP/sdk.rite.json")),
             ("sdk.sankalpa.json", include_str!("../i18n/ne-Deva-NP/sdk.sankalpa.json")),
             ("sdk.settings.json", include_str!("../i18n/ne-Deva-NP/sdk.settings.json")),
+            ("sdk.voice.json", include_str!("../i18n/ne-Deva-NP/sdk.voice.json")),
         ],
     ),
     (

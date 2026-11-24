@@ -5,8 +5,9 @@
 //! The composer chooses everything a checker must trust: which facts are
 //! said, how firmly ([`Hedge`]), how many cautions and who is named. A
 //! language's pack maps each intent to its own patterns and never chooses a
-//! fact (C2362). The wording is picked among a pack's variants by
-//! [`ReadingItem::variant`], a seeded number (C2360).
+//! fact (C2362). The wording is picked among a pack's variants by the
+//! item's `variant` slot, a seeded number a pack reads with `cycle=N`
+//! (C2360).
 //!
 //! It reads a [`RashiReading`], the baseline's score of it and, for a week,
 //! the daily scores of its days. It judges nothing the reading has not.
@@ -17,13 +18,13 @@ use teistro_core::settings::ScoreBands;
 use teistro_gochar::Verdict;
 use teistro_gochar::hits::HitEvent;
 use teistro_gochar::sade_sati::Phase;
-use teistro_intl::{Params, Value};
+use teistro_intl::{ClockTime, Params, Value};
 use teistro_rashifal::baseline::{BaselineScore, LuckyElements};
 use teistro_rashifal::{Period, RashiReading};
 
 /// The four areas a reader sees, each read from the baseline's life areas
 /// (`03-design/rashifal-reading.md`, "The four areas"). Its name is the
-/// reading pack's (`reading.rashifal.areaName.WORK`), since the grouping is
+/// voice pack's (`sdk.voice.rashifal.best`), since the grouping is
 /// the reader's voice and not a kind of the texts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -86,6 +87,7 @@ impl ReadingArea {
 /// Nothing is said as certain.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ReadingHedge"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Hedge {
     /// An excellent band with two facts agreeing.
@@ -101,6 +103,7 @@ pub enum Hedge {
 /// A fact an item rests on, as an index into the answer that carries it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ReadingFact"))]
 #[serde(tag = "fact", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Fact {
     /// A graha's house and verdict from the sign (`reading.gochar.grahas`).
@@ -141,14 +144,20 @@ pub enum Fact {
 }
 
 /// One thing said: an intent, its slots, how firmly, and the facts.
+///
+/// `intl.render(item.intent, item.params)` says it: the slots carry
+/// everything a pack selects on, the item's own facts (a graha, a house, a
+/// date) and two of its own, `hedge` (the [`Hedge`]'s key) and `variant`,
+/// the seeded number a pack reads as one of its wordings with
+/// `:integer cycle=N` (C2360).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct ReadingItem {
-    /// The intent, a message key of the reading pack
-    /// (`reading.rashifal.area.WORK.GOOD`).
+    /// The intent, a message key of the voice pack
+    /// (`sdk.voice.rashifal.line.WORK.GOOD`).
     pub intent: String,
-    /// Its slots.
+    /// Its slots, with its `hedge` and `variant`.
     #[cfg_attr(
         feature = "schema",
         schemars(with = "std::collections::BTreeMap<String, serde_json::Value>")
@@ -158,16 +167,48 @@ pub struct ReadingItem {
     pub hedge: Hedge,
     /// Whether it is a caution, which the period's budget counts.
     pub caution: bool,
-    /// Which of the pack's wordings of the intent to say; a pack with fewer
-    /// reads it modulo its count (C2360).
-    pub variant: u32,
     /// The facts it says; never empty.
     pub rests_on: Vec<Fact>,
+}
+
+impl Hedge {
+    /// The member's key, as serde writes it.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Hedge::Firm => "FIRM",
+            Hedge::Likely => "LIKELY",
+            Hedge::Possible => "POSSIBLE",
+            Hedge::May => "MAY",
+        }
+    }
+}
+
+impl ReadingItem {
+    /// The wording the pack is asked for: the `variant` slot.
+    #[must_use]
+    pub fn variant(&self) -> Option<i64> {
+        match self.params.get("variant") {
+            Some(Value::Int(variant)) => Some(*variant),
+            _ => None,
+        }
+    }
+
+    /// Says a caution past the budget as a possibility, its slot with it.
+    fn soften(&mut self) {
+        self.caution = false;
+        self.hedge = Hedge::Possible;
+        self.params.insert(
+            String::from("hedge"),
+            Value::Str(String::from(self.hedge.key())),
+        );
+    }
 }
 
 /// Where in the period a part of the reading falls.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ReadingFrame"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Frame {
     /// The whole period.
@@ -266,8 +307,8 @@ pub struct DayScore {
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct MoonTurn {
-    /// The local time, minutes after midnight.
-    pub minutes: u16,
+    /// The local time she changes sign.
+    pub time: ClockTime,
     /// Her house from the sign before it.
     pub from_house: u8,
     /// Her house after it.
@@ -296,9 +337,15 @@ pub struct ReadingInput<'a> {
     pub moon_turn: Option<MoonTurn>,
     /// A week's daily scores, its days in order.
     pub days: &'a [DayScore],
+    /// Each day's civil date (a [`Value::Date`]), as `days`: a week's best
+    /// day is said by it.
+    pub day_dates: &'a [Value],
+    /// Each event's civil date (a [`Value::Date`]), as `reading.events`:
+    /// an ingress or station is said by it.
+    pub event_dates: &'a [Value],
 }
 
-const NS: &str = "reading.rashifal";
+const NS: &str = "sdk.voice.rashifal";
 
 /// The period's key, as serde writes it.
 const fn period_key(period: Period) -> &'static str {
@@ -351,6 +398,8 @@ const WEIGHT: [Graha; 9] = [
 ///     bands: ScoreBands::DEFAULT,
 ///     moon_turn: None,
 ///     days: &[],
+///     day_dates: &[],
+///     event_dates: &[],
 /// });
 /// // Every item names the facts it rests on.
 /// assert!(plan.parts.iter().flat_map(|part| &part.items).all(|item| !item.rests_on.is_empty()));
@@ -375,6 +424,70 @@ pub fn reading(input: &ReadingInput<'_>) -> ReadingPlan {
         lucky: input.score.lucky,
         syllables: syllables(input.reading.rashi),
     }
+}
+
+/// Every intent the composer can name, and every frame label a page
+/// shows, as message keys: a voice pack carries each of them, which its
+/// tests hold it to.
+///
+/// ```
+/// use teistro_interpret::rashifal_reading::intents;
+///
+/// let all = intents();
+/// assert!(all.iter().any(|key| key == "sdk.voice.rashifal.line.WORK.GOOD"));
+/// assert!(all.iter().all(|key| key.starts_with("sdk.voice.rashifal.")));
+/// ```
+#[must_use]
+pub fn intents() -> Vec<String> {
+    const BANDS: [&str; 4] = ["EXCELLENT", "GOOD", "MIXED", "CARE"];
+    const VERDICTS: [&str; 3] = ["GOOD", "OBSTRUCTED", "NOT_GOOD"];
+    const FRAMES: [&str; 13] = [
+        "WHOLE",
+        "BEFORE_MOON",
+        "AFTER_MOON",
+        "START",
+        "MIDDLE",
+        "END",
+        "FIRST_HALF",
+        "SECOND_HALF",
+        "SLOW",
+        "QUARTER1",
+        "QUARTER2",
+        "QUARTER3",
+        "QUARTER4",
+    ];
+    let mut out = vec![
+        key(&["headline", "SPLIT"]),
+        key(&["why", "MOON_TURN"]),
+        key(&["week", "BEST_DAY"]),
+    ];
+    for band in BANDS {
+        out.push(key(&["headline", band]));
+        out.push(key(&["week", band]));
+        for area in ReadingArea::ALL {
+            out.push(key(&["area", area.key(), band]));
+            out.push(key(&["line", area.key(), band]));
+        }
+    }
+    for verdict in VERDICTS {
+        out.push(key(&["why", "TRANSIT", verdict]));
+        out.push(key(&["year", "SLOW", verdict]));
+    }
+    for phase in ["RISING", "PEAK", "SETTING", "DHAIYA"] {
+        out.push(key(&["why", "SATURN", phase]));
+    }
+    for kind in ["INGRESS", "STATION_RETROGRADE", "STATION_DIRECT"] {
+        for good in ["GOOD", "NOT_GOOD"] {
+            out.push(key(&["event", kind, good]));
+        }
+    }
+    for good in ["GOOD", "NOT_GOOD"] {
+        out.push(key(&["moon", good]));
+    }
+    for frame in FRAMES {
+        out.push(key(&["frame", frame]));
+    }
+    out
 }
 
 /// Builds items, numbering each intent's wordings so that no intent repeats
@@ -407,7 +520,7 @@ impl Sayer {
     fn say(
         &mut self,
         intent: String,
-        params: Params,
+        mut params: Params,
         hedge: Hedge,
         rests_on: Vec<Fact>,
     ) -> ReadingItem {
@@ -417,12 +530,13 @@ impl Sayer {
         let variant =
             u32::try_from(base.wrapping_add(occurrence) % u64::from(u32::MAX)).unwrap_or_default();
         self.used.push((intent.clone(), variant));
+        params.insert(String::from("variant"), Value::Int(i64::from(variant)));
+        params.insert(String::from("hedge"), Value::Str(String::from(hedge.key())));
         ReadingItem {
             caution: hedge == Hedge::May,
             intent,
             params,
             hedge,
-            variant,
             rests_on,
         }
     }
@@ -453,6 +567,17 @@ fn key(parts: &[&str]) -> String {
 
 fn entity(kind: &str, member: &str) -> Value {
     Value::Entity(format!("{kind}.{member}"))
+}
+
+/// The house of an area's leading transit, or 0 when none leads: a pack
+/// selects a house's own line on it and its general line on `*`.
+fn house_of(fact: Option<&(Graha, u8, Verdict)>) -> Value {
+    Value::Int(fact.map_or(0, |(_, house, _)| i64::from(*house)))
+}
+
+/// The period's kind as a slot, for a line that names it.
+fn period_slot(period: Period) -> Value {
+    Value::Str(String::from(period_key(period)))
 }
 
 /// The hedge a band says an area or the whole with.
@@ -509,10 +634,10 @@ fn area_readings(input: &ReadingInput<'_>, say: &mut Sayer) -> Vec<AreaReading> 
             let facts = feeding(input, *area, wanted);
             let mut rests_on = vec![Fact::AreaBand { area: *area }];
             let mut params = Params::new();
-            if let Some((graha, house, _)) = facts.first() {
+            params.insert(String::from("house"), house_of(facts.first()));
+            if let Some((graha, _, _)) = facts.first() {
                 rests_on.push(Fact::Transit { graha: *graha });
                 params.insert(String::from("graha"), entity("graha", graha.key()));
-                params.insert(String::from("house"), Value::Int(i64::from(*house)));
             }
             let note = say.say(
                 key(&["area", area.key(), band.key()]),
@@ -571,6 +696,7 @@ fn headline(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) ->
             String::from("worst"),
             Value::Str(String::from(worst.area.key())),
         );
+        params.insert(String::from("period"), period_slot(input.period));
         return say.say(
             key(&["headline", "SPLIT"]),
             params,
@@ -581,9 +707,11 @@ fn headline(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) ->
             ],
         );
     }
+    let mut params = Params::new();
+    params.insert(String::from("period"), period_slot(input.period));
     say.say(
         key(&["headline", band.key()]),
-        Params::new(),
+        params,
         hedge_of(band, 1),
         vec![Fact::Band],
     )
@@ -595,7 +723,7 @@ fn why(input: &ReadingInput<'_>, say: &mut Sayer) -> Vec<ReadingItem> {
     let mut items = Vec::new();
     if let Some(turn) = input.moon_turn.filter(|_| moon_named(input.period)) {
         let mut params = Params::new();
-        params.insert(String::from("minutes"), Value::Int(i64::from(turn.minutes)));
+        params.insert(String::from("time"), Value::Time(turn.time));
         params.insert(String::from("house"), Value::Int(i64::from(turn.to_house)));
         let hedge = if turn.good_after {
             Hedge::Likely
@@ -652,12 +780,30 @@ fn why(input: &ReadingInput<'_>, say: &mut Sayer) -> Vec<ReadingItem> {
             vec![Fact::Saturn],
         ));
     }
-    if input.period != Period::Daily {
+    // A week's and a month's events are its why (§7.2); a month's largest
+    // opens its second half instead, and a year's are said by quarter.
+    let split = (input.period == Period::Monthly)
+        .then(|| largest_event(input))
+        .flatten();
+    if matches!(input.period, Period::Weekly | Period::Monthly) {
         for (index, from) in input.reading.events.iter().enumerate() {
-            items.push(event_item(index, from, say));
+            if Some(index) != split {
+                items.push(event_item(input, index, from, say));
+            }
         }
     }
     items
+}
+
+/// The index of a period's largest event: the first by the guide's weight.
+fn largest_event(input: &ReadingInput<'_>) -> Option<usize> {
+    WEIGHT.iter().find_map(|graha| {
+        input
+            .reading
+            .events
+            .iter()
+            .position(|from| from.event.hit.graha == *graha)
+    })
 }
 
 const fn phase_key(phase: Phase) -> &'static str {
@@ -669,9 +815,17 @@ const fn phase_key(phase: Phase) -> &'static str {
 }
 
 /// An ingress or station, said with its house and whether it is good.
-fn event_item(index: usize, from: &teistro_rashifal::EventFrom, say: &mut Sayer) -> ReadingItem {
+fn event_item(
+    input: &ReadingInput<'_>,
+    index: usize,
+    from: &teistro_rashifal::EventFrom,
+    say: &mut Sayer,
+) -> ReadingItem {
     let hit = from.event.hit;
     let mut params = Params::new();
+    if let Some(date) = input.event_dates.get(index) {
+        params.insert(String::from("date"), date.clone());
+    }
     params.insert(String::from("graha"), entity("graha", hit.graha.key()));
     params.insert(
         String::from("rashi"),
@@ -736,8 +890,7 @@ fn keep_the_budget(period: Period, parts: &mut [ReadingPart]) {
             }
             let per_part = matches!(period, Period::Monthly | Period::Yearly);
             if left == 0 || (per_part && in_part == 1) {
-                item.caution = false;
-                item.hedge = Hedge::Possible;
+                item.soften();
             } else {
                 left = left.saturating_sub(1);
                 in_part += 1;
@@ -767,9 +920,9 @@ fn area_lines(
         let facts = feeding(input, area.area, Some(verdict));
         let mut rests_on = vec![Fact::AreaBand { area: area.area }];
         let mut params = Params::new();
-        if let Some((graha, house, _)) = facts.first() {
+        params.insert(String::from("house"), house_of(facts.first()));
+        if let Some((graha, _, _)) = facts.first() {
             rests_on.push(Fact::Transit { graha: *graha });
-            params.insert(String::from("house"), Value::Int(i64::from(*house)));
         }
         let mut hedge = hedge_of(area.band, facts.len());
         if floor && hedge == Hedge::May {
@@ -812,7 +965,7 @@ fn daily(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> Ve
     };
     // Split at the Moon's turn: the areas before, her new house after.
     let mut params = Params::new();
-    params.insert(String::from("minutes"), Value::Int(i64::from(turn.minutes)));
+    params.insert(String::from("time"), Value::Time(turn.time));
     params.insert(String::from("house"), Value::Int(i64::from(turn.to_house)));
     let good = if turn.good_after { "GOOD" } else { "NOT_GOOD" };
     let hedge = if turn.good_after {
@@ -881,6 +1034,9 @@ fn weekly(
             String::from("day"),
             Value::Int(i64::try_from(index).unwrap_or_default()),
         );
+        if let Some(date) = input.day_dates.get(index) {
+            params.insert(String::from("date"), date.clone());
+        }
         let item = say.say(
             key(&["week", "BEST_DAY"]),
             params,
@@ -908,12 +1064,8 @@ fn strict_best(days: &[DayScore]) -> Option<usize> {
 /// A month: two halves, split at its largest event.
 fn monthly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> Vec<ReadingPart> {
     let events = &input.reading.events;
-    let largest = WEIGHT.iter().find_map(|graha| {
-        events
-            .iter()
-            .position(|from| from.event.hit.graha == *graha)
-    });
-    let Some((split, from)) = largest.and_then(|at| Some((at, events.get(at)?))) else {
+    let Some((split, from)) = largest_event(input).and_then(|at| Some((at, events.get(at)?)))
+    else {
         let lines = area_lines(input, areas, say);
         return vec![ReadingPart {
             frame: Frame::Whole,
@@ -921,7 +1073,7 @@ fn monthly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> 
         }];
     };
     let first = area_lines(input, areas, say);
-    let second = vec![event_item(split, from, say)];
+    let second = vec![event_item(input, split, from, say)];
     vec![
         ReadingPart {
             frame: Frame::FirstHalf,
@@ -989,7 +1141,7 @@ fn yearly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> V
             3
         };
         if let Some(items) = quarters.get_mut(quarter) {
-            items.push(event_item(index, from, say));
+            items.push(event_item(input, index, from, say));
         }
     }
     for (frame, items) in frames.into_iter().zip(quarters) {

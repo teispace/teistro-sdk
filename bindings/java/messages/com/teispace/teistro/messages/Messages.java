@@ -26976,6 +26976,1317 @@ public final class Messages {
 
         }
 
+
+        /**
+         * The messages under `voice`.
+         *
+         * @return the group
+         */
+        public SdkVoice voice() {
+            return new SdkVoice(r);
+        }
+
+        /** The messages under `SdkVoice`, each rendered by its own key. */
+        public static final class SdkVoice {
+            private final Renderer r;
+
+            SdkVoice(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * The messages under `rashifal`.
+             *
+             * @return the group
+             */
+            public SdkVoiceRashifal rashifal() {
+                return new SdkVoiceRashifal(r);
+            }
+
+            /** The messages under `SdkVoiceRashifal`, each rendered by its own key. */
+            public static final class SdkVoiceRashifal {
+                private final Renderer r;
+
+                SdkVoiceRashifal(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The messages under `area`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalArea area() {
+                    return new SdkVoiceRashifalArea(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalArea`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalArea {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalArea(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `HEALTH`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaHealth health() {
+                        return new SdkVoiceRashifalAreaHealth(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaHealth`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaHealth {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaHealth(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.HEALTH.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.area.HEALTH.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.HEALTH.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.area.HEALTH.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.HEALTH.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.area.HEALTH.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.HEALTH.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.area.HEALTH.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `LOVE_FAMILY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLoveFamily loveFamily() {
+                        return new SdkVoiceRashifalAreaLoveFamily(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLoveFamily`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLoveFamily {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLoveFamily(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.LOVE_FAMILY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.area.LOVE_FAMILY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.LOVE_FAMILY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.area.LOVE_FAMILY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.LOVE_FAMILY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.area.LOVE_FAMILY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `MONEY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaMoney money() {
+                        return new SdkVoiceRashifalAreaMoney(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaMoney`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaMoney {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaMoney(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.MONEY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.area.MONEY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.MONEY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.area.MONEY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.MONEY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.area.MONEY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.MONEY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.area.MONEY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `WORK`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaWork work() {
+                        return new SdkVoiceRashifalAreaWork(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaWork`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaWork {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaWork(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.WORK.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.area.WORK.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.WORK.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.area.WORK.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.WORK.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.area.WORK.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.area.WORK.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.area.WORK.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * `sdk.voice.rashifal.best`
+                 *
+                 * @param best `best`
+                 * @return the text
+                 */
+                public String best(String best) {
+                    return r.render("sdk.voice.rashifal.best", Map.ofEntries(Map.entry("best", best)));
+                }
+
+                /**
+                 * The messages under `event`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalEvent event() {
+                    return new SdkVoiceRashifalEvent(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalEvent`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalEvent {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalEvent(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `INGRESS`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalEventIngress ingress() {
+                        return new SdkVoiceRashifalEventIngress(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalEventIngress`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalEventIngress {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalEventIngress(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.INGRESS.GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.INGRESS.GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.INGRESS.NOT_GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String notGood(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.INGRESS.NOT_GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `STATION_DIRECT`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalEventStationDirect stationDirect() {
+                        return new SdkVoiceRashifalEventStationDirect(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalEventStationDirect`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalEventStationDirect {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalEventStationDirect(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.STATION_DIRECT.GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.STATION_DIRECT.GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String notGood(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `STATION_RETROGRADE`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalEventStationRetrograde stationRetrograde() {
+                        return new SdkVoiceRashifalEventStationRetrograde(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalEventStationRetrograde`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalEventStationRetrograde {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalEventStationRetrograde(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD`
+                         *
+                         * @param date `date`
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param rashi `rashi`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String notGood(DateValue date, GrahaKey graha, long house, RashiKey rashi, long variant) {
+                            return r.render("sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * The messages under `frame`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalFrame frame() {
+                    return new SdkVoiceRashifalFrame(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalFrame`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalFrame {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalFrame(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.AFTER_MOON`
+                     *
+                     * @return the text
+                     */
+                    public String afterMoon() {
+                        return r.render("sdk.voice.rashifal.frame.AFTER_MOON", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.BEFORE_MOON`
+                     *
+                     * @return the text
+                     */
+                    public String beforeMoon() {
+                        return r.render("sdk.voice.rashifal.frame.BEFORE_MOON", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.END`
+                     *
+                     * @return the text
+                     */
+                    public String end() {
+                        return r.render("sdk.voice.rashifal.frame.END", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.FIRST_HALF`
+                     *
+                     * @return the text
+                     */
+                    public String firstHalf() {
+                        return r.render("sdk.voice.rashifal.frame.FIRST_HALF", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.MIDDLE`
+                     *
+                     * @return the text
+                     */
+                    public String middle() {
+                        return r.render("sdk.voice.rashifal.frame.MIDDLE", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.QUARTER1`
+                     *
+                     * @return the text
+                     */
+                    public String quarter1() {
+                        return r.render("sdk.voice.rashifal.frame.QUARTER1", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.QUARTER2`
+                     *
+                     * @return the text
+                     */
+                    public String quarter2() {
+                        return r.render("sdk.voice.rashifal.frame.QUARTER2", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.QUARTER3`
+                     *
+                     * @return the text
+                     */
+                    public String quarter3() {
+                        return r.render("sdk.voice.rashifal.frame.QUARTER3", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.QUARTER4`
+                     *
+                     * @return the text
+                     */
+                    public String quarter4() {
+                        return r.render("sdk.voice.rashifal.frame.QUARTER4", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.SECOND_HALF`
+                     *
+                     * @return the text
+                     */
+                    public String secondHalf() {
+                        return r.render("sdk.voice.rashifal.frame.SECOND_HALF", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.SLOW`
+                     *
+                     * @return the text
+                     */
+                    public String slow() {
+                        return r.render("sdk.voice.rashifal.frame.SLOW", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.START`
+                     *
+                     * @return the text
+                     */
+                    public String start() {
+                        return r.render("sdk.voice.rashifal.frame.START", Map.of());
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.frame.WHOLE`
+                     *
+                     * @return the text
+                     */
+                    public String whole() {
+                        return r.render("sdk.voice.rashifal.frame.WHOLE", Map.of());
+                    }
+                }
+
+
+                /**
+                 * The messages under `headline`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalHeadline headline() {
+                    return new SdkVoiceRashifalHeadline(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalHeadline`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalHeadline {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalHeadline(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.headline.CARE`
+                     *
+                     * @param period `period`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String care(String period, long variant) {
+                        return r.render("sdk.voice.rashifal.headline.CARE", Map.ofEntries(Map.entry("period", period), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.headline.EXCELLENT`
+                     *
+                     * @param period `period`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String excellent(String period, long variant) {
+                        return r.render("sdk.voice.rashifal.headline.EXCELLENT", Map.ofEntries(Map.entry("period", period), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.headline.GOOD`
+                     *
+                     * @param period `period`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String good(String period, long variant) {
+                        return r.render("sdk.voice.rashifal.headline.GOOD", Map.ofEntries(Map.entry("period", period), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.headline.MIXED`
+                     *
+                     * @param period `period`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String mixed(String period, long variant) {
+                        return r.render("sdk.voice.rashifal.headline.MIXED", Map.ofEntries(Map.entry("period", period), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.headline.SPLIT`
+                     *
+                     * @param best `best`
+                     * @param variant `variant`
+                     * @param worst `worst`
+                     * @return the text
+                     */
+                    public String split(String best, long variant, String worst) {
+                        return r.render("sdk.voice.rashifal.headline.SPLIT", Map.ofEntries(Map.entry("best", best), Map.entry("variant", variant), Map.entry("worst", worst)));
+                    }
+                }
+
+
+                /**
+                 * The messages under `line`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalLine line() {
+                    return new SdkVoiceRashifalLine(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalLine`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalLine {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalLine(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `HEALTH`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalLineHealth health() {
+                        return new SdkVoiceRashifalLineHealth(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalLineHealth`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalLineHealth {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalLineHealth(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.HEALTH.CARE`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.HEALTH.CARE", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.HEALTH.EXCELLENT`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.HEALTH.EXCELLENT", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.HEALTH.GOOD`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.HEALTH.GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.HEALTH.MIXED`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.HEALTH.MIXED", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `LOVE_FAMILY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalLineLoveFamily loveFamily() {
+                        return new SdkVoiceRashifalLineLoveFamily(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalLineLoveFamily`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalLineLoveFamily {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalLineLoveFamily(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.LOVE_FAMILY.CARE`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.LOVE_FAMILY.CARE", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.LOVE_FAMILY.GOOD`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.LOVE_FAMILY.GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.LOVE_FAMILY.MIXED`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.LOVE_FAMILY.MIXED", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `MONEY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalLineMoney money() {
+                        return new SdkVoiceRashifalLineMoney(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalLineMoney`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalLineMoney {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalLineMoney(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.MONEY.CARE`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.MONEY.CARE", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.MONEY.EXCELLENT`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.MONEY.EXCELLENT", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.MONEY.GOOD`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.MONEY.GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.MONEY.MIXED`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.MONEY.MIXED", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `WORK`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalLineWork work() {
+                        return new SdkVoiceRashifalLineWork(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalLineWork`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalLineWork {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalLineWork(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.WORK.CARE`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.WORK.CARE", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.WORK.EXCELLENT`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.WORK.EXCELLENT", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.WORK.GOOD`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.WORK.GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.line.WORK.MIXED`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.line.WORK.MIXED", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * The messages under `moon`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalMoon moon() {
+                    return new SdkVoiceRashifalMoon(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalMoon`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalMoon {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalMoon(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.moon.GOOD`
+                     *
+                     * @param house `house`
+                     * @param time `time`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String good(long house, TimeValue time, long variant) {
+                        return r.render("sdk.voice.rashifal.moon.GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("time", Map.of("$time", time.json())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.moon.NOT_GOOD`
+                     *
+                     * @param house `house`
+                     * @param time `time`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String notGood(long house, TimeValue time, long variant) {
+                        return r.render("sdk.voice.rashifal.moon.NOT_GOOD", Map.ofEntries(Map.entry("house", house), Map.entry("time", Map.of("$time", time.json())), Map.entry("variant", variant)));
+                    }
+                }
+
+
+                /**
+                 * `sdk.voice.rashifal.nth`
+                 *
+                 * @param house `house`
+                 * @return the text
+                 */
+                public String nth(long house) {
+                    return r.render("sdk.voice.rashifal.nth", Map.ofEntries(Map.entry("house", house)));
+                }
+
+                /**
+                 * `sdk.voice.rashifal.theme`
+                 *
+                 * @param house `house`
+                 * @return the text
+                 */
+                public String theme(long house) {
+                    return r.render("sdk.voice.rashifal.theme", Map.ofEntries(Map.entry("house", house)));
+                }
+
+                /**
+                 * The messages under `week`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalWeek week() {
+                    return new SdkVoiceRashifalWeek(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalWeek`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalWeek {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalWeek(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.week.BEST_DAY`
+                     *
+                     * @param date `date`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String bestDay(DateValue date, long variant) {
+                        return r.render("sdk.voice.rashifal.week.BEST_DAY", Map.ofEntries(Map.entry("date", Map.of("$date", date.json())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.week.CARE`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String care(long variant) {
+                        return r.render("sdk.voice.rashifal.week.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.week.EXCELLENT`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String excellent(long variant) {
+                        return r.render("sdk.voice.rashifal.week.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.week.GOOD`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String good(long variant) {
+                        return r.render("sdk.voice.rashifal.week.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.week.MIXED`
+                     *
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String mixed(long variant) {
+                        return r.render("sdk.voice.rashifal.week.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                    }
+                }
+
+
+                /**
+                 * The messages under `why`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalWhy why() {
+                    return new SdkVoiceRashifalWhy(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalWhy`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalWhy {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalWhy(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * `sdk.voice.rashifal.why.MOON_TURN`
+                     *
+                     * @param house `house`
+                     * @param time `time`
+                     * @param variant `variant`
+                     * @return the text
+                     */
+                    public String moonTurn(long house, TimeValue time, long variant) {
+                        return r.render("sdk.voice.rashifal.why.MOON_TURN", Map.ofEntries(Map.entry("house", house), Map.entry("time", Map.of("$time", time.json())), Map.entry("variant", variant)));
+                    }
+
+                    /**
+                     * The messages under `SATURN`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalWhySaturn saturn() {
+                        return new SdkVoiceRashifalWhySaturn(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalWhySaturn`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalWhySaturn {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalWhySaturn(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.SATURN.DHAIYA`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String dhaiya(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.SATURN.DHAIYA", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.SATURN.PEAK`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String peak(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.SATURN.PEAK", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.SATURN.RISING`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String rising(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.SATURN.RISING", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.SATURN.SETTING`
+                         *
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String setting(long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.SATURN.SETTING", Map.ofEntries(Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `TRANSIT`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalWhyTransit transit() {
+                        return new SdkVoiceRashifalWhyTransit(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalWhyTransit`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalWhyTransit {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalWhyTransit(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.TRANSIT.GOOD`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.TRANSIT.GOOD", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.TRANSIT.NOT_GOOD`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String notGood(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.TRANSIT.NOT_GOOD", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String obstructed(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * `sdk.voice.rashifal.worst`
+                 *
+                 * @param worst `worst`
+                 * @return the text
+                 */
+                public String worst(String worst) {
+                    return r.render("sdk.voice.rashifal.worst", Map.ofEntries(Map.entry("worst", worst)));
+                }
+
+                /**
+                 * The messages under `year`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalYear year() {
+                    return new SdkVoiceRashifalYear(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalYear`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalYear {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalYear(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `SLOW`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalYearSlow slow() {
+                        return new SdkVoiceRashifalYearSlow(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalYearSlow`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalYearSlow {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalYearSlow(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.year.SLOW.GOOD`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.year.SLOW.GOOD", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.year.SLOW.NOT_GOOD`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String notGood(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.year.SLOW.NOT_GOOD", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.year.SLOW.OBSTRUCTED`
+                         *
+                         * @param graha `graha`
+                         * @param house `house`
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String obstructed(GrahaKey graha, long house, long variant) {
+                            return r.render("sdk.voice.rashifal.year.SLOW.OBSTRUCTED", Map.ofEntries(Map.entry("graha", Map.of("$entity", graha.value())), Map.entry("house", house), Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
     }
 
 }

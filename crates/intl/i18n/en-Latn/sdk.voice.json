@@ -1,0 +1,128 @@
+{
+  "rashifal": {
+    "nth": ".input {$house :integer select=ordinal} .match $house one {{{$house}st}} two {{{$house}nd}} few {{{$house}rd}} * {{{$house}th}}",
+    "theme": ".input {$house :integer} .match $house 1 {{your energy and confidence}} 2 {{savings and speech}} 3 {{courage, siblings and short trips}} 4 {{home and peace of mind}} 5 {{study, children and ideas}} 6 {{competition, debts and routine}} 7 {{your partner and partnerships}} 8 {{the unexpected}} 9 {{luck, faith and teachers}} 10 {{work and standing}} 11 {{income, gains and friends}} 12 {{spending, rest and distant travel}} * {{your energy and confidence}}",
+    "best": ".input {$best :string} .match $best WORK {{work}} MONEY {{money}} LOVE_FAMILY {{love and family}} * {{health}}",
+    "worst": ".input {$worst :string} .match $worst WORK {{work}} MONEY {{money}} LOVE_FAMILY {{love and family}} * {{health}}",
+    "frame": {
+      "WHOLE": "Overall",
+      "BEFORE_MOON": "Earlier in the day",
+      "AFTER_MOON": "Later in the day",
+      "START": "Early in the week",
+      "MIDDLE": "Midweek",
+      "END": "By the weekend",
+      "FIRST_HALF": "The first half of the month",
+      "SECOND_HALF": "The second half of the month",
+      "SLOW": "The year's slow planets",
+      "QUARTER1": "The first quarter",
+      "QUARTER2": "The second quarter",
+      "QUARTER3": "The third quarter",
+      "QUARTER4": "The last quarter"
+    },
+    "headline": {
+      "EXCELLENT": ".input {$period :string} .input {$variant :integer cycle=3} .match $period $variant DAILY 0 {{An excellent day overall.}} DAILY 1 {{A day that goes your way.}} DAILY * {{Things fall into place today.}} WEEKLY 0 {{An excellent week overall.}} WEEKLY 1 {{A week that goes your way.}} WEEKLY * {{Things fall into place this week.}} MONTHLY 0 {{An excellent month overall.}} MONTHLY 1 {{A month that goes your way.}} MONTHLY * {{Things fall into place this month.}} * 0 {{An excellent year overall.}} * 1 {{A year that goes your way.}} * * {{Things fall into place this year.}}",
+      "GOOD": ".input {$period :string} .input {$variant :integer cycle=3} .match $period $variant DAILY 0 {{A good day overall.}} DAILY 1 {{A day that moves well.}} DAILY * {{Plans move forward today.}} WEEKLY 0 {{A good week overall.}} WEEKLY 1 {{A week that moves well.}} WEEKLY * {{Plans move forward this week.}} MONTHLY 0 {{A good month overall.}} MONTHLY 1 {{A month that moves well.}} MONTHLY * {{Plans move forward this month.}} * 0 {{A good year overall.}} * 1 {{A year that moves well.}} * * {{Plans move forward this year.}}",
+      "MIXED": ".input {$period :string} .input {$variant :integer cycle=2} .match $period $variant DAILY 0 {{A mixed day: some things move, some take time.}} DAILY * {{A day of ups and downs, steady on the whole.}} WEEKLY 0 {{A mixed week: some things move, some take time.}} WEEKLY * {{A week of ups and downs, steady on the whole.}} MONTHLY 0 {{A mixed month: some things move, some take time.}} MONTHLY * {{A month of ups and downs, steady on the whole.}} * 0 {{A mixed year: some things move, some take time.}} * * {{A year of ups and downs, steady on the whole.}}",
+      "CARE": ".input {$period :string} .input {$variant :integer cycle=2} .match $period $variant DAILY 0 {{A day for care and patience.}} DAILY * {{Go steadily today; patience pays.}} WEEKLY 0 {{A week for care and patience.}} WEEKLY * {{Go steadily this week; patience pays.}} MONTHLY 0 {{A month for care and patience.}} MONTHLY * {{Go steadily this month; patience pays.}} * 0 {{A year for care and patience.}} * * {{Go steadily this year; patience pays.}}",
+      "SPLIT": ".input {$variant :integer cycle=2} .match $variant 0 {{Good going for {sdk.voice.rashifal.best :msg}; {sdk.voice.rashifal.worst :msg} asks for patience.}} * {{Support for {sdk.voice.rashifal.best :msg}, patience for {sdk.voice.rashifal.worst :msg}.}}"
+    },
+    "why": {
+      "TRANSIT": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} in your {sdk.voice.rashifal.nth :msg} house supports {sdk.voice.rashifal.theme :msg}.}} * {{{$graha} in your {sdk.voice.rashifal.nth :msg} house: support for {sdk.voice.rashifal.theme :msg}.}}",
+        "OBSTRUCTED": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} in your {sdk.voice.rashifal.nth :msg} house supports {sdk.voice.rashifal.theme :msg}, though results may come slowly.}} * {{{$graha} in your {sdk.voice.rashifal.nth :msg} house: support for {sdk.voice.rashifal.theme :msg}, partly held back.}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} in your {sdk.voice.rashifal.nth :msg} house: {sdk.voice.rashifal.theme :msg} asks for patience.}} * {{With {$graha} in your {sdk.voice.rashifal.nth :msg} house, give {sdk.voice.rashifal.theme :msg} a little more care.}}"
+      },
+      "MOON_TURN": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{The Moon moves into your {sdk.voice.rashifal.nth :msg} house at {$time}: attention turns to {sdk.voice.rashifal.theme :msg}.}} * {{From {$time} the Moon is in your {sdk.voice.rashifal.nth :msg} house, and focus turns to {sdk.voice.rashifal.theme :msg}.}}",
+      "SATURN": {
+        "RISING": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{Saturn in your 12th house, the first phase of sade sati: watch spending and rest well.}} * {{Sade sati's first phase, with Saturn in your 12th: slow work, but no effort is wasted.}}",
+        "PEAK": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{Saturn in your 1st house, the middle phase of sade sati: more effort, steady results.}} * {{Sade sati's middle phase, with Saturn in your 1st: work counts, even when it is slow.}}",
+        "SETTING": ".input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{Saturn in your 2nd house, the last phase of sade sati: things ease step by step.}} * {{Sade sati's last phase, with Saturn in your 2nd: easier days come, step by step.}}",
+        "DHAIYA": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 4 0 {{Saturn's dhaiya in your 4th house (Kantaka Shani): give home and peace of mind time.}} 4 * {{Saturn in your 4th house, its dhaiya: home asks for steady time and care.}} 8 0 {{Saturn's dhaiya in your 8th house (Ashtama Shani): patience with the unexpected.}} 8 * {{Saturn in your 8th house, its dhaiya: take the unexpected calmly.}} * 0 {{Saturn in your {sdk.voice.rashifal.nth :msg} house: a spell of slow, steady effort.}} * * {{Saturn in your {sdk.voice.rashifal.nth :msg} house: a spell of slow, steady effort.}}"
+      }
+    },
+    "event": {
+      "INGRESS": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{From {$date}, {$graha} moves into {$rashi}, your {sdk.voice.rashifal.nth :msg} house: {sdk.voice.rashifal.theme :msg} improves.}} * {{{$graha} enters {$rashi} on {$date}, a turn for the better in {sdk.voice.rashifal.theme :msg}.}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{From {$date}, {$graha} moves into {$rashi}, your {sdk.voice.rashifal.nth :msg} house: give {sdk.voice.rashifal.theme :msg} more care.}} * {{{$graha} enters {$rashi} on {$date}; {sdk.voice.rashifal.theme :msg} may ask for patience.}}"
+      },
+      "STATION_RETROGRADE": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} turns retrograde on {$date} in your {sdk.voice.rashifal.nth :msg} house: a time to look again at {sdk.voice.rashifal.theme :msg}.}} * {{From {$date}, {$graha} turns back in your {sdk.voice.rashifal.nth :msg} house: revisit {sdk.voice.rashifal.theme :msg}.}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} turns retrograde on {$date} in your {sdk.voice.rashifal.nth :msg} house: go over {sdk.voice.rashifal.theme :msg} again before deciding.}} * {{From {$date}, {$graha} turns back in your {sdk.voice.rashifal.nth :msg} house: no need to rush {sdk.voice.rashifal.theme :msg}.}}"
+      },
+      "STATION_DIRECT": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} turns direct on {$date}: stalled matters of {sdk.voice.rashifal.theme :msg} move again.}} * {{From {$date}, {$graha} moves forward in your {sdk.voice.rashifal.nth :msg} house, and {sdk.voice.rashifal.theme :msg} pick up.}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$house :integer} .input {$date :date style=long} .input {$variant :integer cycle=2} .match $variant 0 {{{$graha} turns direct on {$date}: matters of {sdk.voice.rashifal.theme :msg} move, slowly.}} * {{From {$date}, {$graha} moves forward in your {sdk.voice.rashifal.nth :msg} house; give {sdk.voice.rashifal.theme :msg} time.}}"
+      }
+    },
+    "moon": {
+      "GOOD": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{After {$time}, things ease and {sdk.voice.rashifal.theme :msg} come to the fore.}} * {{From {$time} the day lightens, and attention turns to {sdk.voice.rashifal.theme :msg}.}}",
+      "NOT_GOOD": ".input {$time :time} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{After {$time}, the mind may feel crowded; a calm pace helps.}} * {{From {$time}, go gently: {sdk.voice.rashifal.theme :msg} may need a little care.}}"
+    },
+    "line": {
+      "WORK": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 10 0 {{Work moves forward, and your effort is noticed.}} 10 * {{Respect comes your way at work.}} * 0 {{Progress at work is likely.}} * * {{Effort at work pays off well.}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 3 0 {{A colleague's help gets work done.}} 3 * {{Teamwork moves things along.}} 11 0 {{A colleague's help gets work done.}} 11 * {{Your work is noticed.}} * 0 {{Work moves forward.}} * * {{Progress at work is likely.}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Your responsibilities may grow; take them one at a time.}} * * {{Work moves at its own pace.}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Work may be slow, but it gets done if you stay patient.}} * * {{Things at work may take longer; patience helps.}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 11 0 {{A new source of income may open.}} 11 * {{Gains come with little effort.}} * 0 {{Money matters go well.}} * * {{Gains come with little effort.}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 2 0 {{Money that was held up may come back.}} 2 * {{Savings grow steadily.}} 11 0 {{A new source of income may open.}} 11 * {{Income gets support.}} * 0 {{Money matters move well.}} * * {{Income gets support.}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Money matters stay steady.}} * * {{No need to rush big money decisions.}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 12 0 {{Spending may rise; keep to a budget.}} 12 * {{Keep spending to what you planned.}} * 0 {{Keep the paperwork clear in any deal.}} * * {{No need to rush money decisions.}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Closeness grows, at home and in love.}} * * {{Home feels warm and easy.}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 2 0 {{Guests may drop in.}} 2 * {{Family time feels easy.}} 4 0 {{Home feels warm and easy.}} 4 * {{Family time feels easy.}} 5 0 {{Closeness grows in love.}} 5 * {{Time with loved ones goes well.}} 7 0 {{Things with your partner feel easy.}} 7 * {{Closeness grows in love.}} * 0 {{Time with loved ones goes well.}} * * {{Home feels warm and easy.}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Saying what you feel keeps things close.}} * * {{An elder's advice proves useful.}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant 4 0 {{Home may need more of your time; a calm word keeps things light.}} 4 * {{Home asks for patience; a calm word helps.}} * 0 {{Don't let a small thing become a misunderstanding.}} * * {{A calm word keeps things close.}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Energy stays high.}} * * {{You feel well and rested.}}",
+        "GOOD": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Energy stays steady.}} * * {{You feel well and rested.}}",
+        "MIXED": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{Regular meals and sleep help.}} * * {{Energy stays steady with good rest.}}",
+        "CARE": ".input {$house :integer} .input {$variant :integer cycle=2} .match $house $variant * 0 {{You may tire easily; rest well.}} * * {{Keep your routine regular and rest well.}}"
+      }
+    },
+    "area": {
+      "WORK": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{progress likely}} * {{your work is noticed}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{work moves forward}} * {{help from colleagues}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{steady, at its own pace}} * {{responsibilities may grow}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{patience helps}} * {{may be slow}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{gains likely}} * {{income gets support}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{steady income}} * {{money moves well}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{keep to a budget}} * {{no need to rush}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{spending may rise}} * {{keep papers clear}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{closeness grows}} * {{warm at home}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{easy at home}} * {{good company}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{talk it over}} * {{small efforts help}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{patience helps}} * {{a calm word helps}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{energy stays high}} * {{you feel well}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{energy steady}} * {{well rested}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{rest well}} * {{regular meals help}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{rest well}} * {{keep a steady routine}}"
+      }
+    },
+    "week": {
+      "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Things go especially well.}} * {{The best stretch of the week.}}",
+      "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Things move well.}} * {{A smooth stretch.}}",
+      "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{A mixed stretch; take things steadily.}} * {{Some things move, some wait.}}",
+      "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{A slower stretch; go gently.}} * {{Patience helps here.}}",
+      "BEST_DAY": ".input {$date :date style=full} .input {$variant :integer cycle=2} .match $variant 0 {{The week's best day looks like {$date}.}} * {{{$date} looks like the best day of the week.}}"
+    },
+    "year": {
+      "SLOW": {
+        "GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{This year {$graha} in your {sdk.voice.rashifal.nth :msg} house supports {sdk.voice.rashifal.theme :msg}.}} * {{Through the year, {$graha} brings support for {sdk.voice.rashifal.theme :msg}.}}",
+        "OBSTRUCTED": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{This year {$graha} in your {sdk.voice.rashifal.nth :msg} house supports {sdk.voice.rashifal.theme :msg}, though gains may come slowly.}} * {{Through the year, {$graha} supports {sdk.voice.rashifal.theme :msg}, partly held back.}}",
+        "NOT_GOOD": ".input {$graha :entity kind=graha} .input {$house :integer} .input {$variant :integer cycle=2} .match $variant 0 {{This year {$graha} in your {sdk.voice.rashifal.nth :msg} house asks for patience with {sdk.voice.rashifal.theme :msg}.}} * {{With {$graha} in your {sdk.voice.rashifal.nth :msg} house this year, give {sdk.voice.rashifal.theme :msg} steady care.}}"
+      }
+    }
+  }
+}

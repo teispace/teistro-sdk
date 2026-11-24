@@ -1022,6 +1022,20 @@ const FRACTION_DIGITS: usize = 100;
 /// `minimumIntegerDigits` allows.
 const INTEGER_DIGITS: usize = 21;
 
+/// The selection key of `value` under `cycle=n`: its whole part modulo
+/// `n`, never negative, as the digits a variant key spells.
+fn cycled(value: f64, n: u32) -> String {
+    let whole = value.trunc().rem_euclid(f64::from(n));
+    // `whole` lies in `0..n`, so it fits a `u32` exactly.
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a remainder in 0..n, n a u32"
+    )]
+    let rest = whole as u32;
+    rest.to_string()
+}
+
 /// A decimal string with `min` to `max` fraction digits, trailing zeros
 /// beyond `min` removed, no exponent, `-0` normalised.
 ///
@@ -2523,13 +2537,29 @@ impl<'a> Eval<'a> {
         let grouping = !options
             .get("useGrouping")
             .is_some_and(|g| g == "false" || g == "never");
+        let keys = match options.get("cycle") {
+            // `cycle=N` selects on the value modulo N alone: a pack holding
+            // N wordings of a message reads a seeded variant number as one
+            // of them (`03-design/rashifal-reading.md`, C2360).
+            Some(cycle) => {
+                if let Some(n) = cycle.parse::<u32>().ok().filter(|n| *n > 0) {
+                    Keys::Exact(vec![cycled(value, n)])
+                } else {
+                    self.warn(format!(
+                        "`cycle={cycle}` is not a count of wordings from 1; ignored"
+                    ));
+                    Keys::None
+                }
+            }
+            None => Keys::Plural {
+                decimal: decimal.clone(),
+                ordinal: options.get("select").is_some_and(|s| s == "ordinal"),
+            },
+        };
         Formatted {
             value: Self::source_value(operand),
             parts: text_parts(self.style.localise_with(&decimal, grouping)),
-            keys: Keys::Plural {
-                decimal,
-                ordinal: options.get("select").is_some_and(|s| s == "ordinal"),
-            },
+            keys,
         }
     }
 
@@ -3568,6 +3598,37 @@ mod tests {
         assert_eq!(widest.text.len(), "1.".len() + 100);
         let padded = say(&mut intl, "minimumIntegerDigits=21");
         assert_eq!(padded.text.split('.').next().map(str::len), Some(21 + 6));
+    }
+
+    /// `cycle=N` reads a seeded variant number as one of N wordings: the
+    /// value modulo N picks the key, exact match only, never a plural
+    /// category; a count below 1 is ignored with a warning.
+    #[test]
+    fn a_cycle_selects_the_value_modulo_its_count() {
+        let intl = intl("en-Latn");
+        let source = ".input {$v :integer cycle=3} .match $v 0 {{zero}} 1 {{one}} * {{two}}";
+        for (v, said) in [
+            (0_i64, "zero"),
+            (1, "one"),
+            (2, "two"),
+            (3, "zero"),
+            (4_294_967_295, "zero"),
+            (-1, "two"),
+        ] {
+            let rendered = intl
+                .render_source(source, &params([("v", Value::from(v))]))
+                .unwrap_or_else(|e| panic!("{e}"));
+            assert_eq!(rendered.text, said, "{v}");
+            assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        }
+        let broken = intl
+            .render_source(
+                ".input {$v :integer cycle=0} .match $v 0 {{zero}} * {{other}}",
+                &params([("v", Value::from(4_i64))]),
+            )
+            .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(broken.text, "other");
+        assert!(broken.warnings.iter().any(|w| w.contains("cycle=0")));
     }
 
     #[test]

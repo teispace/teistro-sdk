@@ -2488,6 +2488,134 @@ export function messages(r) {
           },
         },
       },
+      voice: {
+        rashifal: {
+          area: {
+            health: {
+              care: (p) => r.render('sdk.voice.rashifal.area.HEALTH.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.area.HEALTH.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.area.HEALTH.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.area.HEALTH.MIXED', { variant: p.variant }),
+            },
+            loveFamily: {
+              care: (p) => r.render('sdk.voice.rashifal.area.LOVE_FAMILY.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.area.LOVE_FAMILY.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.area.LOVE_FAMILY.MIXED', { variant: p.variant }),
+            },
+            money: {
+              care: (p) => r.render('sdk.voice.rashifal.area.MONEY.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.area.MONEY.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.area.MONEY.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.area.MONEY.MIXED', { variant: p.variant }),
+            },
+            work: {
+              care: (p) => r.render('sdk.voice.rashifal.area.WORK.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.area.WORK.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.area.WORK.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.area.WORK.MIXED', { variant: p.variant }),
+            },
+          },
+          best: (p) => r.render('sdk.voice.rashifal.best', { best: p.best }),
+          event: {
+            ingress: {
+              good: (p) => r.render('sdk.voice.rashifal.event.INGRESS.GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+              notGood: (p) => r.render('sdk.voice.rashifal.event.INGRESS.NOT_GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+            },
+            stationDirect: {
+              good: (p) => r.render('sdk.voice.rashifal.event.STATION_DIRECT.GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+              notGood: (p) => r.render('sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+            },
+            stationRetrograde: {
+              good: (p) => r.render('sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+              notGood: (p) => r.render('sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD', { date: { '$date': p.date }, graha: { '$entity': p.graha }, house: p.house, rashi: { '$entity': p.rashi }, variant: p.variant }),
+            },
+          },
+          frame: {
+            afterMoon: () => r.render('sdk.voice.rashifal.frame.AFTER_MOON'),
+            beforeMoon: () => r.render('sdk.voice.rashifal.frame.BEFORE_MOON'),
+            end: () => r.render('sdk.voice.rashifal.frame.END'),
+            firstHalf: () => r.render('sdk.voice.rashifal.frame.FIRST_HALF'),
+            middle: () => r.render('sdk.voice.rashifal.frame.MIDDLE'),
+            quarter1: () => r.render('sdk.voice.rashifal.frame.QUARTER1'),
+            quarter2: () => r.render('sdk.voice.rashifal.frame.QUARTER2'),
+            quarter3: () => r.render('sdk.voice.rashifal.frame.QUARTER3'),
+            quarter4: () => r.render('sdk.voice.rashifal.frame.QUARTER4'),
+            secondHalf: () => r.render('sdk.voice.rashifal.frame.SECOND_HALF'),
+            slow: () => r.render('sdk.voice.rashifal.frame.SLOW'),
+            start: () => r.render('sdk.voice.rashifal.frame.START'),
+            whole: () => r.render('sdk.voice.rashifal.frame.WHOLE'),
+          },
+          headline: {
+            care: (p) => r.render('sdk.voice.rashifal.headline.CARE', { period: p.period, variant: p.variant }),
+            excellent: (p) => r.render('sdk.voice.rashifal.headline.EXCELLENT', { period: p.period, variant: p.variant }),
+            good: (p) => r.render('sdk.voice.rashifal.headline.GOOD', { period: p.period, variant: p.variant }),
+            mixed: (p) => r.render('sdk.voice.rashifal.headline.MIXED', { period: p.period, variant: p.variant }),
+            split: (p) => r.render('sdk.voice.rashifal.headline.SPLIT', { best: p.best, variant: p.variant, worst: p.worst }),
+          },
+          line: {
+            health: {
+              care: (p) => r.render('sdk.voice.rashifal.line.HEALTH.CARE', { house: p.house, variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.line.HEALTH.EXCELLENT', { house: p.house, variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.line.HEALTH.GOOD', { house: p.house, variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.line.HEALTH.MIXED', { house: p.house, variant: p.variant }),
+            },
+            loveFamily: {
+              care: (p) => r.render('sdk.voice.rashifal.line.LOVE_FAMILY.CARE', { house: p.house, variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT', { house: p.house, variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.line.LOVE_FAMILY.GOOD', { house: p.house, variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.line.LOVE_FAMILY.MIXED', { house: p.house, variant: p.variant }),
+            },
+            money: {
+              care: (p) => r.render('sdk.voice.rashifal.line.MONEY.CARE', { house: p.house, variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.line.MONEY.EXCELLENT', { house: p.house, variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.line.MONEY.GOOD', { house: p.house, variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.line.MONEY.MIXED', { house: p.house, variant: p.variant }),
+            },
+            work: {
+              care: (p) => r.render('sdk.voice.rashifal.line.WORK.CARE', { house: p.house, variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.line.WORK.EXCELLENT', { house: p.house, variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.line.WORK.GOOD', { house: p.house, variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.line.WORK.MIXED', { house: p.house, variant: p.variant }),
+            },
+          },
+          moon: {
+            good: (p) => r.render('sdk.voice.rashifal.moon.GOOD', { house: p.house, time: { '$time': p.time }, variant: p.variant }),
+            notGood: (p) => r.render('sdk.voice.rashifal.moon.NOT_GOOD', { house: p.house, time: { '$time': p.time }, variant: p.variant }),
+          },
+          nth: (p) => r.render('sdk.voice.rashifal.nth', { house: p.house }),
+          theme: (p) => r.render('sdk.voice.rashifal.theme', { house: p.house }),
+          week: {
+            bestDay: (p) => r.render('sdk.voice.rashifal.week.BEST_DAY', { date: { '$date': p.date }, variant: p.variant }),
+            care: (p) => r.render('sdk.voice.rashifal.week.CARE', { variant: p.variant }),
+            excellent: (p) => r.render('sdk.voice.rashifal.week.EXCELLENT', { variant: p.variant }),
+            good: (p) => r.render('sdk.voice.rashifal.week.GOOD', { variant: p.variant }),
+            mixed: (p) => r.render('sdk.voice.rashifal.week.MIXED', { variant: p.variant }),
+          },
+          why: {
+            moonTurn: (p) => r.render('sdk.voice.rashifal.why.MOON_TURN', { house: p.house, time: { '$time': p.time }, variant: p.variant }),
+            saturn: {
+              dhaiya: (p) => r.render('sdk.voice.rashifal.why.SATURN.DHAIYA', { house: p.house, variant: p.variant }),
+              peak: (p) => r.render('sdk.voice.rashifal.why.SATURN.PEAK', { house: p.house, variant: p.variant }),
+              rising: (p) => r.render('sdk.voice.rashifal.why.SATURN.RISING', { house: p.house, variant: p.variant }),
+              setting: (p) => r.render('sdk.voice.rashifal.why.SATURN.SETTING', { house: p.house, variant: p.variant }),
+            },
+            transit: {
+              good: (p) => r.render('sdk.voice.rashifal.why.TRANSIT.GOOD', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+              notGood: (p) => r.render('sdk.voice.rashifal.why.TRANSIT.NOT_GOOD', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+              obstructed: (p) => r.render('sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+            },
+          },
+          worst: (p) => r.render('sdk.voice.rashifal.worst', { worst: p.worst }),
+          year: {
+            slow: {
+              good: (p) => r.render('sdk.voice.rashifal.year.SLOW.GOOD', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+              notGood: (p) => r.render('sdk.voice.rashifal.year.SLOW.NOT_GOOD', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+              obstructed: (p) => r.render('sdk.voice.rashifal.year.SLOW.OBSTRUCTED', { graha: { '$entity': p.graha }, house: p.house, variant: p.variant }),
+            },
+          },
+        },
+      },
     },
   };
 }

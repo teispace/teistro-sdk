@@ -6530,14 +6530,15 @@ final class ReadingFact {
 
 /// One thing a reading says: an intent a reading pack words, its slots,
 /// how firmly, and the facts it rests on;
-/// `ctx.intl.render(item.intent, item.params)` says it.
+/// `ctx.intl.render(item.intent, item.params)` says it, the params carrying
+/// its `hedge` and its `variant`, the seeded number a pack reads as one of
+/// its wordings.
 final class ReadingItem {
   const ReadingItem({
     required this.intent,
     required this.params,
     required this.hedge,
     required this.caution,
-    required this.variant,
     required this.restsOn,
   });
 
@@ -6552,9 +6553,6 @@ final class ReadingItem {
 
   /// Whether it is a caution, which the period's budget counts.
   final bool caution;
-
-  /// Which of the pack's wordings to say; a pack reads it modulo its count.
-  final int variant;
 
   /// The facts it says; never empty.
   final List<ReadingFact> restsOn;
@@ -18985,7 +18983,6 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
     ),
     hedge: byKey(ReadingHedge.values, one['hedge']! as String, (h) => h.key),
     caution: one['caution']! as bool,
-    variant: one['variant']! as int,
     restsOn: List<ReadingFact>.unmodifiable([
       for (final fact in rows(one['restsOn']))
         ReadingFact(

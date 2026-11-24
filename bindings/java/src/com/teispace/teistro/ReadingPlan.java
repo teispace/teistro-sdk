@@ -137,13 +137,13 @@ public record ReadingPlan(Rashi rashi, String period, Item headline, List<Part> 
      * One thing a reading says; {@code intl().render(item.intent(), item.params())} says it.
      *
      * @param intent the intent, a message key of the reading pack
-     * @param params its slots
+     * @param params its slots, with its {@code hedge} and its {@code variant}, the seeded number
+     *     a pack reads as one of its wordings
      * @param hedge how firmly it is said
      * @param caution whether it is a caution, which the period's budget counts
-     * @param variant which of the pack's wordings to say; a pack reads it modulo its count
      * @param restsOn the facts it says; never empty
      */
-    public record Item(String intent, Map<String, Object> params, Hedge hedge, boolean caution, long variant,
+    public record Item(String intent, Map<String, Object> params, Hedge hedge, boolean caution,
             List<Fact> restsOn) {
         /** Keeps the slots and facts unmodifiable. */
         public Item {

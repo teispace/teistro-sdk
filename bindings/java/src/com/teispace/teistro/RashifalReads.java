@@ -216,7 +216,6 @@ final class RashifalReads {
                 JsonRead.object(Reads.field(one, "params")),
                 member(one, "hedge", "ReadingHedge", ReadingPlan.Hedge::byKey),
                 Reads.flag(one, "caution"),
-                JsonRead.whole(Reads.field(one, "variant")),
                 Reads.each(one, "restsOn", f -> {
                     Map<?, ?> fact = Reads.object(f);
                     return new ReadingPlan.Fact(

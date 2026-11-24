@@ -98,6 +98,9 @@ final class SweepTest {
         if (type == com.teispace.teistro.messages.Messages.TimeValue.class) {
             return new com.teispace.teistro.messages.Messages.TimeValue(6, 5, 0);
         }
+        if (type == com.teispace.teistro.messages.Messages.DateValue.class) {
+            return new com.teispace.teistro.messages.Messages.DateValue("GREGORIAN", 2026, 11, 24);
+        }
         if (type == List.class) {
             return List.of("x");
         }

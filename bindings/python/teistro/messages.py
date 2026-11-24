@@ -2470,6 +2470,838 @@ class MessagesSdk:
         """The messages under `settings`."""
         return MessagesSdkSettings(self._r)
 
+    @property
+    def voice(self) -> MessagesSdkVoice:
+        """The messages under `voice`."""
+        return MessagesSdkVoice(self._r)
+
+
+class MessagesSdkVoice:
+    """The messages under `MessagesSdkVoice`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def rashifal(self) -> MessagesSdkVoiceRashifal:
+        """The messages under `rashifal`."""
+        return MessagesSdkVoiceRashifal(self._r)
+
+
+class MessagesSdkVoiceRashifal:
+    """The messages under `MessagesSdkVoiceRashifal`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def area(self) -> MessagesSdkVoiceRashifalArea:
+        """The messages under `area`."""
+        return MessagesSdkVoiceRashifalArea(self._r)
+
+    def best(self, *, best: str) -> str:
+        """`sdk.voice.rashifal.best`"""
+        return self._r.render(
+            "sdk.voice.rashifal.best",
+            {"best": best},
+        )
+
+    @property
+    def event(self) -> MessagesSdkVoiceRashifalEvent:
+        """The messages under `event`."""
+        return MessagesSdkVoiceRashifalEvent(self._r)
+
+    @property
+    def frame(self) -> MessagesSdkVoiceRashifalFrame:
+        """The messages under `frame`."""
+        return MessagesSdkVoiceRashifalFrame(self._r)
+
+    @property
+    def headline(self) -> MessagesSdkVoiceRashifalHeadline:
+        """The messages under `headline`."""
+        return MessagesSdkVoiceRashifalHeadline(self._r)
+
+    @property
+    def line(self) -> MessagesSdkVoiceRashifalLine:
+        """The messages under `line`."""
+        return MessagesSdkVoiceRashifalLine(self._r)
+
+    @property
+    def moon(self) -> MessagesSdkVoiceRashifalMoon:
+        """The messages under `moon`."""
+        return MessagesSdkVoiceRashifalMoon(self._r)
+
+    def nth(self, *, house: int) -> str:
+        """`sdk.voice.rashifal.nth`"""
+        return self._r.render(
+            "sdk.voice.rashifal.nth",
+            {"house": house},
+        )
+
+    def theme(self, *, house: int) -> str:
+        """`sdk.voice.rashifal.theme`"""
+        return self._r.render(
+            "sdk.voice.rashifal.theme",
+            {"house": house},
+        )
+
+    @property
+    def week(self) -> MessagesSdkVoiceRashifalWeek:
+        """The messages under `week`."""
+        return MessagesSdkVoiceRashifalWeek(self._r)
+
+    @property
+    def why(self) -> MessagesSdkVoiceRashifalWhy:
+        """The messages under `why`."""
+        return MessagesSdkVoiceRashifalWhy(self._r)
+
+    def worst(self, *, worst: str) -> str:
+        """`sdk.voice.rashifal.worst`"""
+        return self._r.render(
+            "sdk.voice.rashifal.worst",
+            {"worst": worst},
+        )
+
+    @property
+    def year(self) -> MessagesSdkVoiceRashifalYear:
+        """The messages under `year`."""
+        return MessagesSdkVoiceRashifalYear(self._r)
+
+
+class MessagesSdkVoiceRashifalYear:
+    """The messages under `MessagesSdkVoiceRashifalYear`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def slow(self) -> MessagesSdkVoiceRashifalYearSlow:
+        """The messages under `SLOW`."""
+        return MessagesSdkVoiceRashifalYearSlow(self._r)
+
+
+class MessagesSdkVoiceRashifalYearSlow:
+    """The messages under `MessagesSdkVoiceRashifalYearSlow`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.year.SLOW.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.year.SLOW.GOOD",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+    def not_good(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.year.SLOW.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.year.SLOW.NOT_GOOD",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+    def obstructed(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.year.SLOW.OBSTRUCTED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.year.SLOW.OBSTRUCTED",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalWhy:
+    """The messages under `MessagesSdkVoiceRashifalWhy`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def moon_turn(self, *, house: int, time: TimeValue, variant: int) -> str:
+        """`sdk.voice.rashifal.why.MOON_TURN`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.MOON_TURN",
+            {"house": house, "time": {"$time": time}, "variant": variant},
+        )
+
+    @property
+    def saturn(self) -> MessagesSdkVoiceRashifalWhySaturn:
+        """The messages under `SATURN`."""
+        return MessagesSdkVoiceRashifalWhySaturn(self._r)
+
+    @property
+    def transit(self) -> MessagesSdkVoiceRashifalWhyTransit:
+        """The messages under `TRANSIT`."""
+        return MessagesSdkVoiceRashifalWhyTransit(self._r)
+
+
+class MessagesSdkVoiceRashifalWhyTransit:
+    """The messages under `MessagesSdkVoiceRashifalWhyTransit`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.TRANSIT.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.TRANSIT.GOOD",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+    def not_good(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.TRANSIT.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.TRANSIT.NOT_GOOD",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+    def obstructed(self, *, graha: GrahaKey, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.TRANSIT.OBSTRUCTED",
+            {"graha": {"$entity": graha.value}, "house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalWhySaturn:
+    """The messages under `MessagesSdkVoiceRashifalWhySaturn`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def dhaiya(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.SATURN.DHAIYA`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.SATURN.DHAIYA",
+            {"house": house, "variant": variant},
+        )
+
+    def peak(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.SATURN.PEAK`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.SATURN.PEAK",
+            {"house": house, "variant": variant},
+        )
+
+    def rising(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.SATURN.RISING`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.SATURN.RISING",
+            {"house": house, "variant": variant},
+        )
+
+    def setting(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.why.SATURN.SETTING`"""
+        return self._r.render(
+            "sdk.voice.rashifal.why.SATURN.SETTING",
+            {"house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalWeek:
+    """The messages under `MessagesSdkVoiceRashifalWeek`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def best_day(self, *, date: DateValue, variant: int) -> str:
+        """`sdk.voice.rashifal.week.BEST_DAY`"""
+        return self._r.render(
+            "sdk.voice.rashifal.week.BEST_DAY",
+            {"date": {"$date": date}, "variant": variant},
+        )
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.week.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.week.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.week.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.week.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.week.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.week.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.week.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.week.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalMoon:
+    """The messages under `MessagesSdkVoiceRashifalMoon`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, house: int, time: TimeValue, variant: int) -> str:
+        """`sdk.voice.rashifal.moon.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.moon.GOOD",
+            {"house": house, "time": {"$time": time}, "variant": variant},
+        )
+
+    def not_good(self, *, house: int, time: TimeValue, variant: int) -> str:
+        """`sdk.voice.rashifal.moon.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.moon.NOT_GOOD",
+            {"house": house, "time": {"$time": time}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalLine:
+    """The messages under `MessagesSdkVoiceRashifalLine`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def health(self) -> MessagesSdkVoiceRashifalLineHealth:
+        """The messages under `HEALTH`."""
+        return MessagesSdkVoiceRashifalLineHealth(self._r)
+
+    @property
+    def love_family(self) -> MessagesSdkVoiceRashifalLineLoveFamily:
+        """The messages under `LOVE_FAMILY`."""
+        return MessagesSdkVoiceRashifalLineLoveFamily(self._r)
+
+    @property
+    def money(self) -> MessagesSdkVoiceRashifalLineMoney:
+        """The messages under `MONEY`."""
+        return MessagesSdkVoiceRashifalLineMoney(self._r)
+
+    @property
+    def work(self) -> MessagesSdkVoiceRashifalLineWork:
+        """The messages under `WORK`."""
+        return MessagesSdkVoiceRashifalLineWork(self._r)
+
+
+class MessagesSdkVoiceRashifalLineWork:
+    """The messages under `MessagesSdkVoiceRashifalLineWork`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.WORK.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.WORK.CARE",
+            {"house": house, "variant": variant},
+        )
+
+    def excellent(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.WORK.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.WORK.EXCELLENT",
+            {"house": house, "variant": variant},
+        )
+
+    def good(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.WORK.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.WORK.GOOD",
+            {"house": house, "variant": variant},
+        )
+
+    def mixed(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.WORK.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.WORK.MIXED",
+            {"house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalLineMoney:
+    """The messages under `MessagesSdkVoiceRashifalLineMoney`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.MONEY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.MONEY.CARE",
+            {"house": house, "variant": variant},
+        )
+
+    def excellent(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.MONEY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.MONEY.EXCELLENT",
+            {"house": house, "variant": variant},
+        )
+
+    def good(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.MONEY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.MONEY.GOOD",
+            {"house": house, "variant": variant},
+        )
+
+    def mixed(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.MONEY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.MONEY.MIXED",
+            {"house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalLineLoveFamily:
+    """The messages under `MessagesSdkVoiceRashifalLineLoveFamily`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.LOVE_FAMILY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.LOVE_FAMILY.CARE",
+            {"house": house, "variant": variant},
+        )
+
+    def excellent(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.LOVE_FAMILY.EXCELLENT",
+            {"house": house, "variant": variant},
+        )
+
+    def good(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.LOVE_FAMILY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.LOVE_FAMILY.GOOD",
+            {"house": house, "variant": variant},
+        )
+
+    def mixed(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.LOVE_FAMILY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.LOVE_FAMILY.MIXED",
+            {"house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalLineHealth:
+    """The messages under `MessagesSdkVoiceRashifalLineHealth`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.HEALTH.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.HEALTH.CARE",
+            {"house": house, "variant": variant},
+        )
+
+    def excellent(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.HEALTH.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.HEALTH.EXCELLENT",
+            {"house": house, "variant": variant},
+        )
+
+    def good(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.HEALTH.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.HEALTH.GOOD",
+            {"house": house, "variant": variant},
+        )
+
+    def mixed(self, *, house: int, variant: int) -> str:
+        """`sdk.voice.rashifal.line.HEALTH.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.line.HEALTH.MIXED",
+            {"house": house, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalHeadline:
+    """The messages under `MessagesSdkVoiceRashifalHeadline`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, period: str, variant: int) -> str:
+        """`sdk.voice.rashifal.headline.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.headline.CARE",
+            {"period": period, "variant": variant},
+        )
+
+    def excellent(self, *, period: str, variant: int) -> str:
+        """`sdk.voice.rashifal.headline.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.headline.EXCELLENT",
+            {"period": period, "variant": variant},
+        )
+
+    def good(self, *, period: str, variant: int) -> str:
+        """`sdk.voice.rashifal.headline.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.headline.GOOD",
+            {"period": period, "variant": variant},
+        )
+
+    def mixed(self, *, period: str, variant: int) -> str:
+        """`sdk.voice.rashifal.headline.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.headline.MIXED",
+            {"period": period, "variant": variant},
+        )
+
+    def split(self, *, best: str, variant: int, worst: str) -> str:
+        """`sdk.voice.rashifal.headline.SPLIT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.headline.SPLIT",
+            {"best": best, "variant": variant, "worst": worst},
+        )
+
+
+class MessagesSdkVoiceRashifalFrame:
+    """The messages under `MessagesSdkVoiceRashifalFrame`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def after_moon(self) -> str:
+        """`sdk.voice.rashifal.frame.AFTER_MOON`"""
+        return self._r.render("sdk.voice.rashifal.frame.AFTER_MOON")
+
+    def before_moon(self) -> str:
+        """`sdk.voice.rashifal.frame.BEFORE_MOON`"""
+        return self._r.render("sdk.voice.rashifal.frame.BEFORE_MOON")
+
+    def end(self) -> str:
+        """`sdk.voice.rashifal.frame.END`"""
+        return self._r.render("sdk.voice.rashifal.frame.END")
+
+    def first_half(self) -> str:
+        """`sdk.voice.rashifal.frame.FIRST_HALF`"""
+        return self._r.render("sdk.voice.rashifal.frame.FIRST_HALF")
+
+    def middle(self) -> str:
+        """`sdk.voice.rashifal.frame.MIDDLE`"""
+        return self._r.render("sdk.voice.rashifal.frame.MIDDLE")
+
+    def quarter1(self) -> str:
+        """`sdk.voice.rashifal.frame.QUARTER1`"""
+        return self._r.render("sdk.voice.rashifal.frame.QUARTER1")
+
+    def quarter2(self) -> str:
+        """`sdk.voice.rashifal.frame.QUARTER2`"""
+        return self._r.render("sdk.voice.rashifal.frame.QUARTER2")
+
+    def quarter3(self) -> str:
+        """`sdk.voice.rashifal.frame.QUARTER3`"""
+        return self._r.render("sdk.voice.rashifal.frame.QUARTER3")
+
+    def quarter4(self) -> str:
+        """`sdk.voice.rashifal.frame.QUARTER4`"""
+        return self._r.render("sdk.voice.rashifal.frame.QUARTER4")
+
+    def second_half(self) -> str:
+        """`sdk.voice.rashifal.frame.SECOND_HALF`"""
+        return self._r.render("sdk.voice.rashifal.frame.SECOND_HALF")
+
+    def slow(self) -> str:
+        """`sdk.voice.rashifal.frame.SLOW`"""
+        return self._r.render("sdk.voice.rashifal.frame.SLOW")
+
+    def start(self) -> str:
+        """`sdk.voice.rashifal.frame.START`"""
+        return self._r.render("sdk.voice.rashifal.frame.START")
+
+    def whole(self) -> str:
+        """`sdk.voice.rashifal.frame.WHOLE`"""
+        return self._r.render("sdk.voice.rashifal.frame.WHOLE")
+
+
+class MessagesSdkVoiceRashifalEvent:
+    """The messages under `MessagesSdkVoiceRashifalEvent`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def ingress(self) -> MessagesSdkVoiceRashifalEventIngress:
+        """The messages under `INGRESS`."""
+        return MessagesSdkVoiceRashifalEventIngress(self._r)
+
+    @property
+    def station_direct(self) -> MessagesSdkVoiceRashifalEventStationDirect:
+        """The messages under `STATION_DIRECT`."""
+        return MessagesSdkVoiceRashifalEventStationDirect(self._r)
+
+    @property
+    def station_retrograde(self) -> MessagesSdkVoiceRashifalEventStationRetrograde:
+        """The messages under `STATION_RETROGRADE`."""
+        return MessagesSdkVoiceRashifalEventStationRetrograde(self._r)
+
+
+class MessagesSdkVoiceRashifalEventStationRetrograde:
+    """The messages under `MessagesSdkVoiceRashifalEventStationRetrograde`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.STATION_RETROGRADE.GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+    def not_good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.STATION_RETROGRADE.NOT_GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalEventStationDirect:
+    """The messages under `MessagesSdkVoiceRashifalEventStationDirect`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.STATION_DIRECT.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.STATION_DIRECT.GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+    def not_good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.STATION_DIRECT.NOT_GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalEventIngress:
+    """The messages under `MessagesSdkVoiceRashifalEventIngress`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.INGRESS.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.INGRESS.GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+    def not_good(self, *, date: DateValue, graha: GrahaKey, house: int, rashi: RashiKey, variant: int) -> str:
+        """`sdk.voice.rashifal.event.INGRESS.NOT_GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.event.INGRESS.NOT_GOOD",
+            {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalArea:
+    """The messages under `MessagesSdkVoiceRashifalArea`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def health(self) -> MessagesSdkVoiceRashifalAreaHealth:
+        """The messages under `HEALTH`."""
+        return MessagesSdkVoiceRashifalAreaHealth(self._r)
+
+    @property
+    def love_family(self) -> MessagesSdkVoiceRashifalAreaLoveFamily:
+        """The messages under `LOVE_FAMILY`."""
+        return MessagesSdkVoiceRashifalAreaLoveFamily(self._r)
+
+    @property
+    def money(self) -> MessagesSdkVoiceRashifalAreaMoney:
+        """The messages under `MONEY`."""
+        return MessagesSdkVoiceRashifalAreaMoney(self._r)
+
+    @property
+    def work(self) -> MessagesSdkVoiceRashifalAreaWork:
+        """The messages under `WORK`."""
+        return MessagesSdkVoiceRashifalAreaWork(self._r)
+
+
+class MessagesSdkVoiceRashifalAreaWork:
+    """The messages under `MessagesSdkVoiceRashifalAreaWork`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.WORK.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.WORK.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.WORK.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.WORK.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.WORK.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.WORK.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.WORK.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.WORK.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaMoney:
+    """The messages under `MessagesSdkVoiceRashifalAreaMoney`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.MONEY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.MONEY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.MONEY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.MONEY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.MONEY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.MONEY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.MONEY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.MONEY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLoveFamily:
+    """The messages under `MessagesSdkVoiceRashifalAreaLoveFamily`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.LOVE_FAMILY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.LOVE_FAMILY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.LOVE_FAMILY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.LOVE_FAMILY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.LOVE_FAMILY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.LOVE_FAMILY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaHealth:
+    """The messages under `MessagesSdkVoiceRashifalAreaHealth`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.HEALTH.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.HEALTH.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.HEALTH.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.HEALTH.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.HEALTH.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.HEALTH.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.area.HEALTH.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.area.HEALTH.MIXED",
+            {"variant": variant},
+        )
+
 
 class MessagesSdkSettings:
     """The messages under `MessagesSdkSettings`, each rendered by its own key."""

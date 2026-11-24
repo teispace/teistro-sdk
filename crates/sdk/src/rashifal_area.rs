@@ -210,11 +210,6 @@ impl ChartArea<'_> {
         // through a derived context (`03-design/rashifal.md`, "The score
         // band").
         let bands = self.context().settings().rashifal.score_bands;
-        #[cfg(not(feature = "rashifal-reading"))]
-        if batch.readings {
-            return Err(Error::left_out("rashifal-reading").with_field("rashifal.readings"));
-        }
-        #[cfg(feature = "rashifal-reading")]
         let readings = match batch.baseline.filter(|_| batch.readings) {
             Some(asked) => batch
                 .periods
@@ -224,12 +219,10 @@ impl ChartArea<'_> {
                 .collect::<Result<Vec<_>, Error>>()?,
             None => vec![None; value.len()],
         };
-        #[cfg(feature = "rashifal-reading")]
         let mut readings = readings.into_iter();
         let answers = value
             .into_iter()
             .map(|period| RashifalAnswer {
-                #[cfg(feature = "rashifal-reading")]
                 readings: readings.next().flatten(),
                 plans: batch.plans.then(|| {
                     period
@@ -255,7 +248,6 @@ impl ChartArea<'_> {
     /// (`03-design/rashifal-reading.md`): the baseline's score for `asked`,
     /// a week's daily scores read one day at a time, and a day's Moon turn
     /// from her own events, which a score never counts (C2331).
-    #[cfg(feature = "rashifal-reading")]
     fn readings_of(
         self,
         request: &RashifalRequest,
@@ -264,6 +256,7 @@ impl ChartArea<'_> {
         bands: teistro_core::settings::ScoreBands,
     ) -> Result<Vec<teistro_interpret::rashifal_reading::ReadingPlan>, Error> {
         use teistro_interpret::rashifal_reading::{DayScore, MoonTurn, ReadingInput, reading};
+        use teistro_intl::{ClockTime, Value};
         use teistro_rashifal::Period;
         let prepared = self.prepared(request)?;
         let (first, _, days) = request.days()?;
@@ -292,8 +285,27 @@ impl ChartArea<'_> {
         } else {
             None
         };
+        // A day's civil date in the request's calendar, as a pack says it.
+        let date_of =
+            |day: FixedDay| -> Result<Value, Error> { Ok(Value::Date(calendar.date_of(day)?)) };
+        // An instant's civil date where the request is read, at that day's
+        // own offset.
+        let civil = |instant: JulianDay<Utc>| -> Result<Value, Error> {
+            let (guess, _) = FixedDay::from_jd(instant);
+            let offset = prepared.clock.offset_on(guess)?;
+            let local = JulianDay::<Utc>::try_new(instant.get() + offset.days())?;
+            date_of(FixedDay::from_jd(local).0)
+        };
+        let day_dates = (0..i64::from(days))
+            .map(|at| date_of(first.plus_days(at)))
+            .collect::<Result<Vec<_>, Error>>()?;
         let mut plans = Vec::with_capacity(12);
         for read in &period.readings {
+            let event_dates = read
+                .events
+                .iter()
+                .map(|from| civil(from.event.hit.instant))
+                .collect::<Result<Vec<_>, Error>>()?;
             let score = period.baseline_score(read.rashi, asked, bands);
             let day_scores: Vec<DayScore> = daily
                 .iter()
@@ -310,7 +322,11 @@ impl ChartArea<'_> {
                 })?;
                 let minutes = minute_of_day(turn.event.hit.instant.get() - midnight.get());
                 Some(MoonTurn {
-                    minutes,
+                    time: ClockTime::new(
+                        u8::try_from(minutes / 60).ok()?,
+                        u8::try_from(minutes % 60).ok()?,
+                        0,
+                    ),
                     from_house: (turn.house + 10) % 12 + 1,
                     to_house: turn.house,
                     good_after: turn.good_house,
@@ -325,6 +341,12 @@ impl ChartArea<'_> {
                 bands,
                 moon_turn,
                 days: &day_scores,
+                day_dates: if asked == Period::Weekly {
+                    &day_dates
+                } else {
+                    &[]
+                },
+                event_dates: &event_dates,
             }));
         }
         Ok(plans)
@@ -475,7 +497,6 @@ fn snapshot_convention(snapshot: Snapshot) -> Convention {
 
 /// The minute of the day a fraction of a day after midnight falls in,
 /// 0 to 1439.
-#[cfg(feature = "rashifal-reading")]
 #[expect(
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
