@@ -388,7 +388,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 394 messages to read, 57 that render a value and
+**`ne-Deva-NP`** — 475 messages to read, 57 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -407,7 +407,7 @@ need no reading.
 | `sdk.rite` | 13 |
 | `sdk.sankalpa` | 5 |
 | `sdk.settings` | 130 |
-| `sdk.voice` | 78 |
+| `sdk.voice` | 159 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —
@@ -436,10 +436,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 5092 | 149 |
-| `ne-Deva-NP` | 5092 | 8 |
-| `sa-Deva` | 5092 | 193 |
-| `sa-Latn` | 5092 | 193 |
+| `hi-Deva-IN` | 5173 | 230 |
+| `ne-Deva-NP` | 5173 | 8 |
+| `sa-Deva` | 5173 | 274 |
+| `sa-Latn` | 5173 | 274 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

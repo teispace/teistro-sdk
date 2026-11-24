@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
+ * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen, where a journey goes, and whether each window's reasons are said in words.
  *
  * @param asta How asta is seen: a criterion the SDK names, or one spelt out. Null leaves the SDK's default.
  * @param daysWithWindows The {@code daysWithWindows} field. Null leaves the SDK's default.
@@ -17,9 +17,10 @@ import java.util.Objects;
  * @param most The {@code most} field. Null leaves the SDK's default.
  * @param nativeValue The native a day is read against. Null leaves the SDK's default.
  * @param ranking How windows are ordered (crux C162); the texts' order by default. Null leaves the SDK's default.
+ * @param reasons Whether each window's reasons are said in words. Null leaves the SDK's default.
  * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
  */
-public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, MuhurtaRanking ranking, MuhurtaRequestRules rules) implements RequestJson {
+public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, MuhurtaRanking ranking, Boolean reasons, MuhurtaRequestRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,7 +39,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
      * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
      */
     public MuhurtaRequest(MuhurtaRequestRules rules) {
-        this(null, null, null, null, null, null, rules);
+        this(null, null, null, null, null, null, null, rules);
     }
 
     /**
@@ -59,6 +60,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         private Long most;
         private MuhurtaNative nativeValue;
         private MuhurtaRanking ranking;
+        private Boolean reasons;
         private MuhurtaRequestRules rules;
 
         private Builder() {}
@@ -130,6 +132,17 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         }
 
         /**
+         * Sets {@code reasons}.
+         *
+         * @param reasons Whether each window's reasons are said in words. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder reasons(boolean reasons) {
+            this.reasons = reasons;
+            return this;
+        }
+
+        /**
          * Sets {@code rules}.
          *
          * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
@@ -147,7 +160,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
          * @throws NullPointerException naming a required field left unset
          */
         public MuhurtaRequest build() {
-            return new MuhurtaRequest(asta, daysWithWindows, direction, most, nativeValue, ranking, rules);
+            return new MuhurtaRequest(asta, daysWithWindows, direction, most, nativeValue, ranking, reasons, rules);
         }
     }
 
@@ -167,6 +180,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
             Read.orNull(json.get("most"), present -> Read.integer(present, "MuhurtaRequest.most")),
             Read.orNull(json.get("native"), present -> MuhurtaNative.of(present)),
             Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", MuhurtaRanking::byKey)),
+            Read.orNull(json.get("reasons"), present -> Read.bool(present, "MuhurtaRequest.reasons")),
             MuhurtaRequestRules.of(Read.required(json.get("rules"), "MuhurtaRequest.rules")));
     }
 
@@ -190,6 +204,9 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         }
         if (ranking != null) {
             json.put("ranking", ranking.toJson());
+        }
+        if (reasons != null) {
+            json.put("reasons", reasons);
         }
         json.put("rules", rules.toJson());
         return json;

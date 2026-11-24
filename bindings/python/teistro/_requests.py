@@ -2607,7 +2607,7 @@ class HorizonSample(TypedDict, total=False):
 
 
 class MuhurtaRequest(TypedDict, total=False):
-    """A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes."""
+    """A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen, where a journey goes, and whether each window's reasons are said in words."""
 
     asta: Optional[MuhurtaRequestAsta]
     """How asta is seen: a criterion the SDK names, or one spelt out."""
@@ -2621,6 +2621,9 @@ class MuhurtaRequest(TypedDict, total=False):
     native: Optional[MuhurtaNative]
 
     ranking: MuhurtaRanking
+
+    reasons: bool
+    """Whether each window's reasons are said in words."""
 
     rules: Required[MuhurtaRequestRules]
     """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
