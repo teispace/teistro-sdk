@@ -1796,7 +1796,245 @@ enum ObservanceKey {
   carols('observance.CAROLS'),
   gifts('observance.GIFTS'),
   scriptureReading('observance.SCRIPTURE_READING'),
-  langar('observance.LANGAR');
+  langar('observance.LANGAR'),
+  baliImage('observance.BALI_IMAGE'),
+  giftsToWives('observance.GIFTS_TO_WIVES'),
+  rishiTarpana('observance.RISHI_TARPANA'),
+  vedaRecitation('observance.VEDA_RECITATION'),
+  shraddha('observance.SHRADDHA'),
+  brahminsFed('observance.BRAHMINS_FED'),
+  sumangaliFed('observance.SUMANGALI_FED'),
+  deityBathed('observance.DEITY_BATHED'),
+  ramayanaRead('observance.RAMAYANA_READ'),
+  navadvipaParikrama('observance.NAVADVIPA_PARIKRAMA'),
+  ploughingPaused('observance.PLOUGHING_PAUSED'),
+  swingsHung('observance.SWINGS_HUNG'),
+  pitha('observance.PITHA'),
+  springAwaited('observance.SPRING_AWAITED'),
+  toolsWorshipped('observance.TOOLS_WORSHIPPED'),
+  garlandAtStatue('observance.GARLAND_AT_STATUE'),
+  poetryReading('observance.POETRY_READING'),
+  fireworks('observance.FIREWORKS'),
+  rally('observance.RALLY'),
+  flagHoisted('observance.FLAG_HOISTED'),
+  parade('observance.PARADE'),
+  prayerMeeting('observance.PRAYER_MEETING'),
+  stationsOfCross('observance.STATIONS_OF_CROSS'),
+  jainTemple('observance.JAIN_TEMPLE'),
+  nirvanaLaddu('observance.NIRVANA_LADDU'),
+  kalpasutraRead('observance.KALPASUTRA_READ'),
+  pratikramana('observance.PRATIKRAMANA'),
+  forgivenessAsked('observance.FORGIVENESS_ASKED'),
+  tenVirtues('observance.TEN_VIRTUES'),
+  tattvarthaRead('observance.TATTVARTHA_READ'),
+  ayambil('observance.AYAMBIL'),
+  siddhachakraWorship('observance.SIDDHACHAKRA_WORSHIP'),
+  greensAvoided('observance.GREENS_AVOIDED'),
+  snakeWorship('observance.SNAKE_WORSHIP'),
+  flowersGathered('observance.FLOWERS_GATHERED'),
+  storiesTold('observance.STORIES_TOLD'),
+  gauriWorship('observance.GAURI_WORSHIP'),
+  arghyaToMoon('observance.ARGHYA_TO_MOON'),
+  predawnMeal('observance.PREDAWN_MEAL'),
+  clayFigures('observance.CLAY_FIGURES'),
+  immersion('observance.IMMERSION'),
+  songsOfThePoet('observance.SONGS_OF_THE_POET'),
+  waterOnHeads('observance.WATER_ON_HEADS'),
+  staleFood('observance.STALE_FOOD'),
+  fortVisit('observance.FORT_VISIT'),
+  banksClosed('observance.BANKS_CLOSED'),
+  swingOfKrishna('observance.SWING_OF_KRISHNA'),
+  easterVigil('observance.EASTER_VIGIL'),
+  newLedgers('observance.NEW_LEDGERS'),
+  pandalVisits('observance.PANDAL_VISITS'),
+  nightPuja('observance.NIGHT_PUJA'),
+  memorialGathering('observance.MEMORIAL_GATHERING'),
+  sirenAtHour('observance.SIREN_AT_HOUR'),
+  pookalam('observance.POOKALAM'),
+  sadya('observance.SADYA'),
+  vishukkani('observance.VISHUKKANI'),
+  moneyFromElders('observance.MONEY_FROM_ELDERS'),
+  pesahaBread('observance.PESAHA_BREAD'),
+  footWashing('observance.FOOT_WASHING'),
+  pongalBoiled('observance.PONGAL_BOILED'),
+  kolam('observance.KOLAM'),
+  cattleHonoured('observance.CATTLE_HONOURED'),
+  outings('observance.OUTINGS'),
+  kavadi('observance.KAVADI'),
+  booksWorshipped('observance.BOOKS_WORSHIPPED'),
+  mejiBurnt('observance.MEJI_BURNT'),
+  traditionalGames('observance.TRADITIONAL_GAMES'),
+  gamosaGiven('observance.GAMOSA_GIVEN'),
+  lampsInFields('observance.LAMPS_IN_FIELDS'),
+  naamPrasanga('observance.NAAM_PRASANGA'),
+  bhaona('observance.BHAONA'),
+  ancestorRites('observance.ANCESTOR_RITES'),
+  karamBranch('observance.KARAM_BRANCH'),
+  awardGiven('observance.AWARD_GIVEN'),
+  vachanaSinging('observance.VACHANA_SINGING'),
+  mathaWorship('observance.MATHA_WORSHIP'),
+  baginaGiven('observance.BAGINA_GIVEN'),
+  stateFlag('observance.STATE_FLAG'),
+  newCropBlessed('observance.NEW_CROP_BLESSED'),
+  midnightMass('observance.MIDNIGHT_MASS'),
+  sesameJaggery('observance.SESAME_JAGGERY'),
+  oldThingsBurnt('observance.OLD_THINGS_BURNT'),
+  flowerStack('observance.FLOWER_STACK'),
+  circleDance('observance.CIRCLE_DANCE'),
+  giftsToWorkers('observance.GIFTS_TO_WORKERS'),
+  offeringToWater('observance.OFFERING_TO_WATER'),
+  runForUnity('observance.RUN_FOR_UNITY'),
+  nagarKirtan('observance.NAGAR_KIRTAN'),
+  holiMilan('observance.HOLI_MILAN'),
+  newRiceOffered('observance.NEW_RICE_OFFERED'),
+  eldersGreeted('observance.ELDERS_GREETED'),
+  banyanWorship('observance.BANYAN_WORSHIP'),
+  moonWorship('observance.MOON_WORSHIP'),
+  boatsFloated('observance.BOATS_FLOATED'),
+  eldestChildHonoured('observance.ELDEST_CHILD_HONOURED'),
+  pyreBurned('observance.PYRE_BURNED'),
+  ganeshWorship('observance.GANESH_WORSHIP'),
+  moonAvoided('observance.MOON_AVOIDED'),
+  imageImmersed('observance.IMAGE_IMMERSED'),
+  vishnuWorship('observance.VISHNU_WORSHIP'),
+  shivaWorship('observance.SHIVA_WORSHIP'),
+  holyBath('observance.HOLY_BATH'),
+  tarpan('observance.TARPAN'),
+  feedingBrahmins('observance.FEEDING_BRAHMINS'),
+  durvaWorship('observance.DURVA_WORSHIP'),
+  dubdhago('observance.DUBDHAGO'),
+  gauraBroughtHome('observance.GAURA_BROUGHT_HOME'),
+  sacredThreadArm('observance.SACRED_THREAD_ARM'),
+  deityProcession('observance.DEITY_PROCESSION'),
+  charhePuja('observance.CHARHE_PUJA'),
+  riverGoddessWorship('observance.RIVER_GODDESS_WORSHIP'),
+  tulsiPlanted('observance.TULSI_PLANTED'),
+  tributeProgrammes('observance.TRIBUTE_PROGRAMMES'),
+  statueGarlanded('observance.STATUE_GARLANDED'),
+  crowsFed('observance.CROWS_FED'),
+  lalitaWorship('observance.LALITA_WORSHIP'),
+  kuchhiFeast('observance.KUCHHI_FEAST'),
+  tulsiWedding('observance.TULSI_WEDDING'),
+  lampVigil('observance.LAMP_VIGIL'),
+  satbijScattered('observance.SATBIJ_SCATTERED'),
+  fair('observance.FAIR'),
+  newGrain('observance.NEW_GRAIN'),
+  cowshedWorship('observance.COWSHED_WORSHIP'),
+  sesameOffered('observance.SESAME_OFFERED'),
+  moonGreeted('observance.MOON_GREETED'),
+  treeCircled('observance.TREE_CIRCLED'),
+  abhisheka('observance.ABHISHEKA'),
+  spoutBath('observance.SPOUT_BATH'),
+  motherHonoured('observance.MOTHER_HONOURED'),
+  giftsOfWater('observance.GIFTS_OF_WATER'),
+  lampOilOffered('observance.LAMP_OIL_OFFERED'),
+  waterSourcesCleaned('observance.WATER_SOURCES_CLEANED'),
+  bara('observance.BARA'),
+  hymnsSung('observance.HYMNS_SUNG'),
+  guruHonoured('observance.GURU_HONOURED'),
+  khatRace('observance.KHAT_RACE'),
+  damanakaOffered('observance.DAMANAKA_OFFERED'),
+  vowsTaken('observance.VOWS_TAKEN'),
+  stupaCircled('observance.STUPA_CIRCLED'),
+  snakeImages('observance.SNAKE_IMAGES'),
+  milkOffered('observance.MILK_OFFERED'),
+  frogsFed('observance.FROGS_FED'),
+  ricePlanting('observance.RICE_PLANTING'),
+  kushGathered('observance.KUSH_GATHERED'),
+  fatherHonoured('observance.FATHER_HONOURED'),
+  anantaThread('observance.ANANTA_THREAD'),
+  animalSacrifice('observance.ANIMAL_SACRIFICE'),
+  belInvited('observance.BEL_INVITED'),
+  swordProcession('observance.SWORD_PROCESSION'),
+  goddessFarewell('observance.GODDESS_FAREWELL'),
+  saraiDance('observance.SARAI_DANCE'),
+  dawnBath('observance.DAWN_BATH'),
+  skyLamp('observance.SKY_LAMP'),
+  pondBath('observance.POND_BATH'),
+  parana('observance.PARANA'),
+  lampForYama('observance.LAMP_FOR_YAMA'),
+  purchases('observance.PURCHASES'),
+  cowAndCalf('observance.COW_AND_CALF'),
+  oilBath('observance.OIL_BATH'),
+  gamesOfChance('observance.GAMES_OF_CHANCE'),
+  cowherdsHonoured('observance.COWHERDS_HONOURED'),
+  gourdGiven('observance.GOURD_GIVEN'),
+  amlaWorship('observance.AMLA_WORSHIP'),
+  homa('observance.HOMA'),
+  eternalLamp('observance.ETERNAL_LAMP'),
+  giftsToBrahmins('observance.GIFTS_TO_BRAHMINS'),
+  weddingReenacted('observance.WEDDING_REENACTED'),
+  gitaRecited('observance.GITA_RECITED'),
+  newRice('observance.NEW_RICE'),
+  yomari('observance.YOMARI'),
+  learningHonoured('observance.LEARNING_HONOURED'),
+  culturalProgramme('observance.CULTURAL_PROGRAMME'),
+  nahayKhayMeal('observance.NAHAY_KHAY_MEAL'),
+  kheerOffered('observance.KHEER_OFFERED'),
+  imageBathed('observance.IMAGE_BATHED'),
+  tsampaOffered('observance.TSAMPA_OFFERED'),
+  kalashProcession('observance.KALASH_PROCESSION'),
+  swasthaniReading('observance.SWASTHANI_READING'),
+  sesameUsed('observance.SESAME_USED'),
+  tarpana('observance.TARPANA'),
+  sunWorship('observance.SUN_WORSHIP'),
+  reflectionViewed('observance.REFLECTION_VIEWED'),
+  manvadiRites('observance.MANVADI_RITES'),
+  mangoBlossomEaten('observance.MANGO_BLOSSOM_EATEN'),
+  palanquinProcession('observance.PALANQUIN_PROCESSION'),
+  coldFood('observance.COLD_FOOD'),
+  narasimhaWorship('observance.NARASIMHA_WORSHIP'),
+  kumarWorship('observance.KUMAR_WORSHIP'),
+  effigyBurned('observance.EFFIGY_BURNED'),
+  ironRingsOnDoors('observance.IRON_RINGS_ON_DOORS'),
+  chariotsClash('observance.CHARIOTS_CLASH'),
+  imagesDisplayed('observance.IMAGES_DISPLAYED'),
+  maskedDance('observance.MASKED_DANCE'),
+  poleLowered('observance.POLE_LOWERED'),
+  militaryParade('observance.MILITARY_PARADE'),
+  dollsBeaten('observance.DOLLS_BEATEN'),
+  threadOfSixteenKnots('observance.THREAD_OF_SIXTEEN_KNOTS'),
+  tulasiPlanted('observance.TULASI_PLANTED'),
+  teachersHonoured('observance.TEACHERS_HONOURED'),
+  pavitraOffered('observance.PAVITRA_OFFERED'),
+  kaliWorship('observance.KALI_WORSHIP'),
+  upakarmaRite('observance.UPAKARMA_RITE'),
+  satyanarayanPuja('observance.SATYANARAYAN_PUJA'),
+  moonArghya('observance.MOON_ARGHYA'),
+  ganeshaWorship('observance.GANESHA_WORSHIP'),
+  torchesThrown('observance.TORCHES_THROWN'),
+  curdAndBeatenRice('observance.CURD_AND_BEATEN_RICE'),
+  neemLeavesEaten('observance.NEEM_LEAVES_EATEN'),
+  seedsScattered('observance.SEEDS_SCATTERED'),
+  idolBathed('observance.IDOL_BATHED'),
+  spiritsFed('observance.SPIRITS_FED'),
+  herbalBath('observance.HERBAL_BATH'),
+  wreathsLaid('observance.WREATHS_LAID'),
+  lightsDisplay('observance.LIGHTS_DISPLAY'),
+  drills('observance.DRILLS'),
+  awards('observance.AWARDS'),
+  seminars('observance.SEMINARS'),
+  literaryRecital('observance.LITERARY_RECITAL'),
+  vermilionThrown('observance.VERMILION_THROWN'),
+  giftsOfFood('observance.GIFTS_OF_FOOD'),
+  kheer('observance.KHEER'),
+  earthWorship('observance.EARTH_WORSHIP'),
+  lakheDance('observance.LAKHE_DANCE'),
+  circumambulation('observance.CIRCUMAMBULATION'),
+  healthCamps('observance.HEALTH_CAMPS'),
+  treePlanting('observance.TREE_PLANTING'),
+  bloodDonation('observance.BLOOD_DONATION'),
+  candleVigil('observance.CANDLE_VIGIL'),
+  yogaSessions('observance.YOGA_SESSIONS'),
+  sportsEvents('observance.SPORTS_EVENTS'),
+  exhibitions('observance.EXHIBITIONS'),
+  vaccination('observance.VACCINATION'),
+  moonAndLakshmiNarayan('observance.MOON_AND_LAKSHMI_NARAYAN'),
+  waterSplashed('observance.WATER_SPLASHED'),
+  bhakka('observance.BHAKKA'),
+  dauraSuruwal('observance.DAURA_SURUWAL'),
+  filmScreenings('observance.FILM_SCREENINGS'),
+  brothersFed('observance.BROTHERS_FED');
 
   const ObservanceKey(this.key);
 
@@ -4951,85 +5189,323 @@ final class MessagesSdkEntityObservance {
 
   final Renderer _r;
 
+  EntityForms get abhisheka => _r.entity('observance.ABHISHEKA');
   EntityForms get alms => _r.entity('observance.ALMS');
+  EntityForms get amlaWorship => _r.entity('observance.AMLA_WORSHIP');
+  EntityForms get anantaThread => _r.entity('observance.ANANTA_THREAD');
+  EntityForms get ancestorRites => _r.entity('observance.ANCESTOR_RITES');
+  EntityForms get animalSacrifice => _r.entity('observance.ANIMAL_SACRIFICE');
+  EntityForms get arghyaToMoon => _r.entity('observance.ARGHYA_TO_MOON');
   EntityForms get arghyaToSun => _r.entity('observance.ARGHYA_TO_SUN');
+  EntityForms get awards => _r.entity('observance.AWARDS');
+  EntityForms get awardGiven => _r.entity('observance.AWARD_GIVEN');
+  EntityForms get ayambil => _r.entity('observance.AYAMBIL');
+  EntityForms get baginaGiven => _r.entity('observance.BAGINA_GIVEN');
+  EntityForms get baliImage => _r.entity('observance.BALI_IMAGE');
+  EntityForms get banksClosed => _r.entity('observance.BANKS_CLOSED');
+  EntityForms get banyanWorship => _r.entity('observance.BANYAN_WORSHIP');
+  EntityForms get bara => _r.entity('observance.BARA');
+  EntityForms get belInvited => _r.entity('observance.BEL_INVITED');
   EntityForms get bhajan => _r.entity('observance.BHAJAN');
+  EntityForms get bhakka => _r.entity('observance.BHAKKA');
+  EntityForms get bhaona => _r.entity('observance.BHAONA');
   EntityForms get bhotoShown => _r.entity('observance.BHOTO_SHOWN');
   EntityForms get biruda => _r.entity('observance.BIRUDA');
+  EntityForms get bloodDonation => _r.entity('observance.BLOOD_DONATION');
+  EntityForms get boatsFloated => _r.entity('observance.BOATS_FLOATED');
   EntityForms get bonfires => _r.entity('observance.BONFIRES');
+  EntityForms get booksWorshipped => _r.entity('observance.BOOKS_WORSHIPPED');
+  EntityForms get brahminsFed => _r.entity('observance.BRAHMINS_FED');
+  EntityForms get brothersFed => _r.entity('observance.BROTHERS_FED');
+  EntityForms get candleVigil => _r.entity('observance.CANDLE_VIGIL');
   EntityForms get carols => _r.entity('observance.CAROLS');
+  EntityForms get cattleHonoured => _r.entity('observance.CATTLE_HONOURED');
+  EntityForms get charhePuja => _r.entity('observance.CHARHE_PUJA');
+  EntityForms get chariotsClash => _r.entity('observance.CHARIOTS_CLASH');
   EntityForms get chariotProcession => _r.entity('observance.CHARIOT_PROCESSION');
   EntityForms get chirRaised => _r.entity('observance.CHIR_RAISED');
   EntityForms get churchService => _r.entity('observance.CHURCH_SERVICE');
+  EntityForms get circleDance => _r.entity('observance.CIRCLE_DANCE');
+  EntityForms get circumambulation => _r.entity('observance.CIRCUMAMBULATION');
+  EntityForms get clayFigures => _r.entity('observance.CLAY_FIGURES');
+  EntityForms get coldFood => _r.entity('observance.COLD_FOOD');
   EntityForms get colours => _r.entity('observance.COLOURS');
+  EntityForms get cowherdsHonoured => _r.entity('observance.COWHERDS_HONOURED');
+  EntityForms get cowshedWorship => _r.entity('observance.COWSHED_WORSHIP');
+  EntityForms get cowAndCalf => _r.entity('observance.COW_AND_CALF');
   EntityForms get cowHonoured => _r.entity('observance.COW_HONOURED');
   EntityForms get cowProcession => _r.entity('observance.COW_PROCESSION');
+  EntityForms get crowsFed => _r.entity('observance.CROWS_FED');
+  EntityForms get culturalProgramme => _r.entity('observance.CULTURAL_PROGRAMME');
+  EntityForms get curdAndBeatenRice => _r.entity('observance.CURD_AND_BEATEN_RICE');
+  EntityForms get damanakaOffered => _r.entity('observance.DAMANAKA_OFFERED');
   EntityForms get darFeast => _r.entity('observance.DAR_FEAST');
+  EntityForms get dauraSuruwal => _r.entity('observance.DAURA_SURUWAL');
+  EntityForms get dawnBath => _r.entity('observance.DAWN_BATH');
+  EntityForms get deityBathed => _r.entity('observance.DEITY_BATHED');
+  EntityForms get deityProcession => _r.entity('observance.DEITY_PROCESSION');
   EntityForms get deudaDance => _r.entity('observance.DEUDA_DANCE');
   EntityForms get deusiBhailo => _r.entity('observance.DEUSI_BHAILO');
   EntityForms get dogHonoured => _r.entity('observance.DOG_HONOURED');
+  EntityForms get dollsBeaten => _r.entity('observance.DOLLS_BEATEN');
   EntityForms get doroTied => _r.entity('observance.DORO_TIED');
+  EntityForms get drills => _r.entity('observance.DRILLS');
+  EntityForms get dubdhago => _r.entity('observance.DUBDHAGO');
   EntityForms get durgaWorship => _r.entity('observance.DURGA_WORSHIP');
+  EntityForms get durvaWorship => _r.entity('observance.DURVA_WORSHIP');
+  EntityForms get earthWorship => _r.entity('observance.EARTH_WORSHIP');
+  EntityForms get easterVigil => _r.entity('observance.EASTER_VIGIL');
+  EntityForms get effigyBurned => _r.entity('observance.EFFIGY_BURNED');
   EntityForms get eidPrayer => _r.entity('observance.EID_PRAYER');
+  EntityForms get eldersGreeted => _r.entity('observance.ELDERS_GREETED');
+  EntityForms get eldestChildHonoured => _r.entity('observance.ELDEST_CHILD_HONOURED');
+  EntityForms get eternalLamp => _r.entity('observance.ETERNAL_LAMP');
+  EntityForms get exhibitions => _r.entity('observance.EXHIBITIONS');
+  EntityForms get fair => _r.entity('observance.FAIR');
   EntityForms get familyVisits => _r.entity('observance.FAMILY_VISITS');
   EntityForms get fast => _r.entity('observance.FAST');
+  EntityForms get fatherHonoured => _r.entity('observance.FATHER_HONOURED');
   EntityForms get feast => _r.entity('observance.FEAST');
+  EntityForms get feedingBrahmins => _r.entity('observance.FEEDING_BRAHMINS');
+  EntityForms get filmScreenings => _r.entity('observance.FILM_SCREENINGS');
+  EntityForms get fireworks => _r.entity('observance.FIREWORKS');
   EntityForms get firstLetters => _r.entity('observance.FIRST_LETTERS');
+  EntityForms get flagHoisted => _r.entity('observance.FLAG_HOISTED');
+  EntityForms get flowersGathered => _r.entity('observance.FLOWERS_GATHERED');
   EntityForms get flowerGarlands => _r.entity('observance.FLOWER_GARLANDS');
+  EntityForms get flowerStack => _r.entity('observance.FLOWER_STACK');
+  EntityForms get footWashing => _r.entity('observance.FOOT_WASHING');
+  EntityForms get forgivenessAsked => _r.entity('observance.FORGIVENESS_ASKED');
+  EntityForms get fortVisit => _r.entity('observance.FORT_VISIT');
+  EntityForms get frogsFed => _r.entity('observance.FROGS_FED');
+  EntityForms get gamesOfChance => _r.entity('observance.GAMES_OF_CHANCE');
+  EntityForms get gamosaGiven => _r.entity('observance.GAMOSA_GIVEN');
+  EntityForms get ganeshaWorship => _r.entity('observance.GANESHA_WORSHIP');
+  EntityForms get ganeshWorship => _r.entity('observance.GANESH_WORSHIP');
+  EntityForms get garlandAtStatue => _r.entity('observance.GARLAND_AT_STATUE');
+  EntityForms get gauraBroughtHome => _r.entity('observance.GAURA_BROUGHT_HOME');
+  EntityForms get gauriWorship => _r.entity('observance.GAURI_WORSHIP');
   EntityForms get gifts => _r.entity('observance.GIFTS');
+  EntityForms get giftsOfFood => _r.entity('observance.GIFTS_OF_FOOD');
+  EntityForms get giftsOfWater => _r.entity('observance.GIFTS_OF_WATER');
+  EntityForms get giftsToBrahmins => _r.entity('observance.GIFTS_TO_BRAHMINS');
   EntityForms get giftsToSisters => _r.entity('observance.GIFTS_TO_SISTERS');
+  EntityForms get giftsToWives => _r.entity('observance.GIFTS_TO_WIVES');
+  EntityForms get giftsToWorkers => _r.entity('observance.GIFTS_TO_WORKERS');
+  EntityForms get gitaRecited => _r.entity('observance.GITA_RECITED');
+  EntityForms get goddessFarewell => _r.entity('observance.GODDESS_FAREWELL');
+  EntityForms get gourdGiven => _r.entity('observance.GOURD_GIVEN');
   EntityForms get govardhanHill => _r.entity('observance.GOVARDHAN_HILL');
+  EntityForms get greensAvoided => _r.entity('observance.GREENS_AVOIDED');
+  EntityForms get guruHonoured => _r.entity('observance.GURU_HONOURED');
+  EntityForms get healthCamps => _r.entity('observance.HEALTH_CAMPS');
+  EntityForms get herbalBath => _r.entity('observance.HERBAL_BATH');
   EntityForms get holikaBonfire => _r.entity('observance.HOLIKA_BONFIRE');
+  EntityForms get holiMilan => _r.entity('observance.HOLI_MILAN');
+  EntityForms get holyBath => _r.entity('observance.HOLY_BATH');
+  EntityForms get homa => _r.entity('observance.HOMA');
   EntityForms get horseRaces => _r.entity('observance.HORSE_RACES');
+  EntityForms get hymnsSung => _r.entity('observance.HYMNS_SUNG');
+  EntityForms get idolBathed => _r.entity('observance.IDOL_BATHED');
+  EntityForms get imagesDisplayed => _r.entity('observance.IMAGES_DISPLAYED');
+  EntityForms get imageBathed => _r.entity('observance.IMAGE_BATHED');
+  EntityForms get imageImmersed => _r.entity('observance.IMAGE_IMMERSED');
+  EntityForms get immersion => _r.entity('observance.IMMERSION');
+  EntityForms get ironRingsOnDoors => _r.entity('observance.IRON_RINGS_ON_DOORS');
+  EntityForms get jainTemple => _r.entity('observance.JAIN_TEMPLE');
   EntityForms get jamaraSown => _r.entity('observance.JAMARA_SOWN');
   EntityForms get janaiChanged => _r.entity('observance.JANAI_CHANGED');
+  EntityForms get kalashProcession => _r.entity('observance.KALASH_PROCESSION');
   EntityForms get kalashSetUp => _r.entity('observance.KALASH_SET_UP');
+  EntityForms get kaliWorship => _r.entity('observance.KALI_WORSHIP');
+  EntityForms get kalpasutraRead => _r.entity('observance.KALPASUTRA_READ');
+  EntityForms get karamBranch => _r.entity('observance.KARAM_BRANCH');
+  EntityForms get kavadi => _r.entity('observance.KAVADI');
+  EntityForms get khatRace => _r.entity('observance.KHAT_RACE');
+  EntityForms get kheer => _r.entity('observance.KHEER');
+  EntityForms get kheerOffered => _r.entity('observance.KHEER_OFFERED');
   EntityForms get kites => _r.entity('observance.KITES');
+  EntityForms get kolam => _r.entity('observance.KOLAM');
+  EntityForms get kuchhiFeast => _r.entity('observance.KUCHHI_FEAST');
   EntityForms get kumariChariot => _r.entity('observance.KUMARI_CHARIOT');
+  EntityForms get kumarWorship => _r.entity('observance.KUMAR_WORSHIP');
+  EntityForms get kushGathered => _r.entity('observance.KUSH_GATHERED');
   EntityForms get kwati => _r.entity('observance.KWATI');
+  EntityForms get lakheDance => _r.entity('observance.LAKHE_DANCE');
   EntityForms get lakshmiWorship => _r.entity('observance.LAKSHMI_WORSHIP');
+  EntityForms get lalitaWorship => _r.entity('observance.LALITA_WORSHIP');
   EntityForms get lamps => _r.entity('observance.LAMPS');
+  EntityForms get lampsInFields => _r.entity('observance.LAMPS_IN_FIELDS');
+  EntityForms get lampForYama => _r.entity('observance.LAMP_FOR_YAMA');
+  EntityForms get lampOilOffered => _r.entity('observance.LAMP_OIL_OFFERED');
+  EntityForms get lampVigil => _r.entity('observance.LAMP_VIGIL');
   EntityForms get langar => _r.entity('observance.LANGAR');
+  EntityForms get learningHonoured => _r.entity('observance.LEARNING_HONOURED');
+  EntityForms get lightsDisplay => _r.entity('observance.LIGHTS_DISPLAY');
+  EntityForms get literaryRecital => _r.entity('observance.LITERARY_RECITAL');
   EntityForms get mandalaForEach => _r.entity('observance.MANDALA_FOR_EACH');
+  EntityForms get mangoBlossomEaten => _r.entity('observance.MANGO_BLOSSOM_EATEN');
+  EntityForms get manvadiRites => _r.entity('observance.MANVADI_RITES');
+  EntityForms get maskedDance => _r.entity('observance.MASKED_DANCE');
   EntityForms get maskedDances => _r.entity('observance.MASKED_DANCES');
+  EntityForms get mathaWorship => _r.entity('observance.MATHA_WORSHIP');
+  EntityForms get mejiBurnt => _r.entity('observance.MEJI_BURNT');
+  EntityForms get memorialGathering => _r.entity('observance.MEMORIAL_GATHERING');
+  EntityForms get midnightMass => _r.entity('observance.MIDNIGHT_MASS');
   EntityForms get midnightPuja => _r.entity('observance.MIDNIGHT_PUJA');
+  EntityForms get militaryParade => _r.entity('observance.MILITARY_PARADE');
+  EntityForms get milkOffered => _r.entity('observance.MILK_OFFERED');
   EntityForms get monasteryVisit => _r.entity('observance.MONASTERY_VISIT');
+  EntityForms get moneyFromElders => _r.entity('observance.MONEY_FROM_ELDERS');
+  EntityForms get moonAndLakshmiNarayan => _r.entity('observance.MOON_AND_LAKSHMI_NARAYAN');
+  EntityForms get moonArghya => _r.entity('observance.MOON_ARGHYA');
+  EntityForms get moonAvoided => _r.entity('observance.MOON_AVOIDED');
+  EntityForms get moonGreeted => _r.entity('observance.MOON_GREETED');
+  EntityForms get moonWorship => _r.entity('observance.MOON_WORSHIP');
+  EntityForms get motherHonoured => _r.entity('observance.MOTHER_HONOURED');
+  EntityForms get naamPrasanga => _r.entity('observance.NAAM_PRASANGA');
+  EntityForms get nagarKirtan => _r.entity('observance.NAGAR_KIRTAN');
+  EntityForms get nahayKhayMeal => _r.entity('observance.NAHAY_KHAY_MEAL');
+  EntityForms get narasimhaWorship => _r.entity('observance.NARASIMHA_WORSHIP');
   EntityForms get natureWorship => _r.entity('observance.NATURE_WORSHIP');
+  EntityForms get navadvipaParikrama => _r.entity('observance.NAVADVIPA_PARIKRAMA');
+  EntityForms get neemLeavesEaten => _r.entity('observance.NEEM_LEAVES_EATEN');
   EntityForms get newClothes => _r.entity('observance.NEW_CLOTHES');
+  EntityForms get newCropBlessed => _r.entity('observance.NEW_CROP_BLESSED');
+  EntityForms get newGrain => _r.entity('observance.NEW_GRAIN');
+  EntityForms get newLedgers => _r.entity('observance.NEW_LEDGERS');
+  EntityForms get newRice => _r.entity('observance.NEW_RICE');
+  EntityForms get newRiceOffered => _r.entity('observance.NEW_RICE_OFFERED');
   EntityForms get newYearGreetings => _r.entity('observance.NEW_YEAR_GREETINGS');
+  EntityForms get nightPuja => _r.entity('observance.NIGHT_PUJA');
   EntityForms get nightVigil => _r.entity('observance.NIGHT_VIGIL');
+  EntityForms get nirvanaLaddu => _r.entity('observance.NIRVANA_LADDU');
   EntityForms get offeringsInBaskets => _r.entity('observance.OFFERINGS_IN_BASKETS');
+  EntityForms get offeringToWater => _r.entity('observance.OFFERING_TO_WATER');
+  EntityForms get oilBath => _r.entity('observance.OIL_BATH');
+  EntityForms get oldThingsBurnt => _r.entity('observance.OLD_THINGS_BURNT');
+  EntityForms get outings => _r.entity('observance.OUTINGS');
   EntityForms get oxHonoured => _r.entity('observance.OX_HONOURED');
+  EntityForms get palanquinProcession => _r.entity('observance.PALANQUIN_PROCESSION');
+  EntityForms get pandalVisits => _r.entity('observance.PANDAL_VISITS');
+  EntityForms get parade => _r.entity('observance.PARADE');
+  EntityForms get parana => _r.entity('observance.PARANA');
+  EntityForms get pavitraOffered => _r.entity('observance.PAVITRA_OFFERED');
+  EntityForms get pesahaBread => _r.entity('observance.PESAHA_BREAD');
   EntityForms get phulpatiAtHome => _r.entity('observance.PHULPATI_AT_HOME');
   EntityForms get phulpatiProcession => _r.entity('observance.PHULPATI_PROCESSION');
   EntityForms get pilgrimage => _r.entity('observance.PILGRIMAGE');
+  EntityForms get pitha => _r.entity('observance.PITHA');
+  EntityForms get ploughingPaused => _r.entity('observance.PLOUGHING_PAUSED');
+  EntityForms get poetryReading => _r.entity('observance.POETRY_READING');
+  EntityForms get poleLowered => _r.entity('observance.POLE_LOWERED');
   EntityForms get poleRaised => _r.entity('observance.POLE_RAISED');
+  EntityForms get pondBath => _r.entity('observance.POND_BATH');
+  EntityForms get pongalBoiled => _r.entity('observance.PONGAL_BOILED');
+  EntityForms get pookalam => _r.entity('observance.POOKALAM');
+  EntityForms get pratikramana => _r.entity('observance.PRATIKRAMANA');
   EntityForms get prayerFlags => _r.entity('observance.PRAYER_FLAGS');
+  EntityForms get prayerMeeting => _r.entity('observance.PRAYER_MEETING');
+  EntityForms get predawnMeal => _r.entity('observance.PREDAWN_MEAL');
   EntityForms get procession => _r.entity('observance.PROCESSION');
+  EntityForms get purchases => _r.entity('observance.PURCHASES');
+  EntityForms get pyreBurned => _r.entity('observance.PYRE_BURNED');
   EntityForms get qurbani => _r.entity('observance.QURBANI');
   EntityForms get rakhiTied => _r.entity('observance.RAKHI_TIED');
+  EntityForms get rally => _r.entity('observance.RALLY');
+  EntityForms get ramayanaRead => _r.entity('observance.RAMAYANA_READ');
   EntityForms get ramaWorship => _r.entity('observance.RAMA_WORSHIP');
   EntityForms get rangoli => _r.entity('observance.RANGOLI');
   EntityForms get redDress => _r.entity('observance.RED_DRESS');
+  EntityForms get reflectionViewed => _r.entity('observance.REFLECTION_VIEWED');
+  EntityForms get ricePlanting => _r.entity('observance.RICE_PLANTING');
+  EntityForms get rishiTarpana => _r.entity('observance.RISHI_TARPANA');
   EntityForms get riverBath => _r.entity('observance.RIVER_BATH');
+  EntityForms get riverGoddessWorship => _r.entity('observance.RIVER_GODDESS_WORSHIP');
+  EntityForms get runForUnity => _r.entity('observance.RUN_FOR_UNITY');
+  EntityForms get sacredThreadArm => _r.entity('observance.SACRED_THREAD_ARM');
+  EntityForms get sadya => _r.entity('observance.SADYA');
   EntityForms get sakelaDance => _r.entity('observance.SAKELA_DANCE');
   EntityForms get saptarshiWorship => _r.entity('observance.SAPTARSHI_WORSHIP');
+  EntityForms get saraiDance => _r.entity('observance.SARAI_DANCE');
   EntityForms get saraswatiWorship => _r.entity('observance.SARASWATI_WORSHIP');
+  EntityForms get satbijScattered => _r.entity('observance.SATBIJ_SCATTERED');
   EntityForms get satire => _r.entity('observance.SATIRE');
+  EntityForms get satyanarayanPuja => _r.entity('observance.SATYANARAYAN_PUJA');
   EntityForms get scriptureReading => _r.entity('observance.SCRIPTURE_READING');
+  EntityForms get seedsScattered => _r.entity('observance.SEEDS_SCATTERED');
   EntityForms get selfWorship => _r.entity('observance.SELF_WORSHIP');
+  EntityForms get seminars => _r.entity('observance.SEMINARS');
+  EntityForms get sesameJaggery => _r.entity('observance.SESAME_JAGGERY');
+  EntityForms get sesameOffered => _r.entity('observance.SESAME_OFFERED');
+  EntityForms get sesameUsed => _r.entity('observance.SESAME_USED');
   EntityForms get shivaParvatiWorship => _r.entity('observance.SHIVA_PARVATI_WORSHIP');
+  EntityForms get shivaWorship => _r.entity('observance.SHIVA_WORSHIP');
+  EntityForms get shraddha => _r.entity('observance.SHRADDHA');
+  EntityForms get siddhachakraWorship => _r.entity('observance.SIDDHACHAKRA_WORSHIP');
+  EntityForms get sirenAtHour => _r.entity('observance.SIREN_AT_HOUR');
+  EntityForms get skyLamp => _r.entity('observance.SKY_LAMP');
+  EntityForms get snakeImages => _r.entity('observance.SNAKE_IMAGES');
+  EntityForms get snakeWorship => _r.entity('observance.SNAKE_WORSHIP');
+  EntityForms get songsOfThePoet => _r.entity('observance.SONGS_OF_THE_POET');
   EntityForms get songAndDance => _r.entity('observance.SONG_AND_DANCE');
+  EntityForms get spiritsFed => _r.entity('observance.SPIRITS_FED');
+  EntityForms get sportsEvents => _r.entity('observance.SPORTS_EVENTS');
+  EntityForms get spoutBath => _r.entity('observance.SPOUT_BATH');
+  EntityForms get springAwaited => _r.entity('observance.SPRING_AWAITED');
+  EntityForms get staleFood => _r.entity('observance.STALE_FOOD');
+  EntityForms get stateFlag => _r.entity('observance.STATE_FLAG');
+  EntityForms get stationsOfCross => _r.entity('observance.STATIONS_OF_CROSS');
+  EntityForms get statueGarlanded => _r.entity('observance.STATUE_GARLANDED');
+  EntityForms get storiesTold => _r.entity('observance.STORIES_TOLD');
+  EntityForms get stupaCircled => _r.entity('observance.STUPA_CIRCLED');
   EntityForms get stupaVisit => _r.entity('observance.STUPA_VISIT');
+  EntityForms get sumangaliFed => _r.entity('observance.SUMANGALI_FED');
+  EntityForms get sunWorship => _r.entity('observance.SUN_WORSHIP');
+  EntityForms get swasthaniReading => _r.entity('observance.SWASTHANI_READING');
   EntityForms get sweetsShared => _r.entity('observance.SWEETS_SHARED');
   EntityForms get swings => _r.entity('observance.SWINGS');
+  EntityForms get swingsHung => _r.entity('observance.SWINGS_HUNG');
+  EntityForms get swingOfKrishna => _r.entity('observance.SWING_OF_KRISHNA');
+  EntityForms get swordProcession => _r.entity('observance.SWORD_PROCESSION');
+  EntityForms get tarpan => _r.entity('observance.TARPAN');
+  EntityForms get tarpana => _r.entity('observance.TARPANA');
+  EntityForms get tattvarthaRead => _r.entity('observance.TATTVARTHA_READ');
+  EntityForms get teachersHonoured => _r.entity('observance.TEACHERS_HONOURED');
   EntityForms get templeOfferings => _r.entity('observance.TEMPLE_OFFERINGS');
   EntityForms get templeVisit => _r.entity('observance.TEMPLE_VISIT');
+  EntityForms get tenVirtues => _r.entity('observance.TEN_VIRTUES');
+  EntityForms get threadOfSixteenKnots => _r.entity('observance.THREAD_OF_SIXTEEN_KNOTS');
   EntityForms get tikaFromElders => _r.entity('observance.TIKA_FROM_ELDERS');
   EntityForms get tikaFromSisters => _r.entity('observance.TIKA_FROM_SISTERS');
+  EntityForms get toolsWorshipped => _r.entity('observance.TOOLS_WORSHIPPED');
+  EntityForms get torchesThrown => _r.entity('observance.TORCHES_THROWN');
   EntityForms get traditionalDress => _r.entity('observance.TRADITIONAL_DRESS');
+  EntityForms get traditionalGames => _r.entity('observance.TRADITIONAL_GAMES');
+  EntityForms get treeCircled => _r.entity('observance.TREE_CIRCLED');
+  EntityForms get treePlanting => _r.entity('observance.TREE_PLANTING');
+  EntityForms get tributeProgrammes => _r.entity('observance.TRIBUTE_PROGRAMMES');
+  EntityForms get tsampaOffered => _r.entity('observance.TSAMPA_OFFERED');
+  EntityForms get tulasiPlanted => _r.entity('observance.TULASI_PLANTED');
+  EntityForms get tulsiPlanted => _r.entity('observance.TULSI_PLANTED');
+  EntityForms get tulsiWedding => _r.entity('observance.TULSI_WEDDING');
+  EntityForms get upakarmaRite => _r.entity('observance.UPAKARMA_RITE');
+  EntityForms get vaccination => _r.entity('observance.VACCINATION');
+  EntityForms get vachanaSinging => _r.entity('observance.VACHANA_SINGING');
+  EntityForms get vedaRecitation => _r.entity('observance.VEDA_RECITATION');
+  EntityForms get vermilionThrown => _r.entity('observance.VERMILION_THROWN');
   EntityForms get villageAssembly => _r.entity('observance.VILLAGE_ASSEMBLY');
+  EntityForms get vishnuWorship => _r.entity('observance.VISHNU_WORSHIP');
+  EntityForms get vishukkani => _r.entity('observance.VISHUKKANI');
+  EntityForms get vowsTaken => _r.entity('observance.VOWS_TAKEN');
+  EntityForms get waterOnHeads => _r.entity('observance.WATER_ON_HEADS');
+  EntityForms get waterSourcesCleaned => _r.entity('observance.WATER_SOURCES_CLEANED');
+  EntityForms get waterSplashed => _r.entity('observance.WATER_SPLASHED');
+  EntityForms get weddingReenacted => _r.entity('observance.WEDDING_REENACTED');
   EntityForms get winterFoods => _r.entity('observance.WINTER_FOODS');
+  EntityForms get wreathsLaid => _r.entity('observance.WREATHS_LAID');
+  EntityForms get yogaSessions => _r.entity('observance.YOGA_SESSIONS');
+  EntityForms get yomari => _r.entity('observance.YOMARI');
   EntityForms get zakatAlFitr => _r.entity('observance.ZAKAT_AL_FITR');
 }
 

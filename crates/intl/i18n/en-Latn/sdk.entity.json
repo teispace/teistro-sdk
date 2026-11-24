@@ -9676,10 +9676,6 @@
       "name": "Arghya offered to the Moon when it rises",
       "prose": "Arghya offered to the Moon when it rises"
     },
-    "GANESHA_WORSHIP": {
-      "name": "Worship of Ganesha",
-      "prose": "Worship of Ganesha"
-    },
     "TORCHES_THROWN": {
       "name": "Burning torches thrown out of the house at dusk",
       "prose": "Burning torches thrown out of the house at dusk"
@@ -9687,26 +9683,6 @@
     "CURD_AND_BEATEN_RICE": {
       "name": "Curd and beaten rice, dahi-chiura, eaten together",
       "prose": "Curd and beaten rice, dahi-chiura, eaten together"
-    },
-    "NEEM_LEAVES_EATEN": {
-      "name": "Bitter neem leaves eaten",
-      "prose": "Bitter neem leaves eaten"
-    },
-    "SEEDS_SCATTERED": {
-      "name": "Seven kinds of grain scattered for the dead",
-      "prose": "Seven kinds of grain scattered for the dead"
-    },
-    "IDOL_BATHED": {
-      "name": "The god's image bathed in public",
-      "prose": "The god's image bathed in public"
-    },
-    "SPIRITS_FED": {
-      "name": "Offerings set out for spirits at the crossroads",
-      "prose": "Offerings set out for spirits at the crossroads"
-    },
-    "HERBAL_BATH": {
-      "name": "A ritual bath with datiwan stalks",
-      "prose": "A ritual bath with datiwan stalks"
     },
     "WREATHS_LAID": {
       "name": "Wreaths and garlands laid at statues and memorials",
@@ -9792,10 +9768,6 @@
       "name": "Lakshmi and Vishnu worshipped on a decked bed",
       "prose": "Lakshmi and Vishnu worshipped on a decked bed"
     },
-    "WATER_SPLASHED": {
-      "name": "Water and mud splashed on one another in play",
-      "prose": "Water and mud splashed on one another in play"
-    },
     "BHAKKA": {
       "name": "Bhakka, steamed rice-flour cakes, made and shared",
       "prose": "Bhakka, steamed rice-flour cakes, made and shared"
@@ -9807,10 +9779,6 @@
     "FILM_SCREENINGS": {
       "name": "Film screenings and awards",
       "prose": "Film screenings and awards"
-    },
-    "BROTHERS_FED": {
-      "name": "Brothers fed a meal by their sisters",
-      "prose": "Brothers fed a meal by their sisters"
     }
   },
   "community": {

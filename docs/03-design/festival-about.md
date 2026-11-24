@@ -177,7 +177,9 @@ large to embed is a pack that is loaded, not a bundle** (C2417).
   consumer loaded, and a subject with no entry is still `unwritten`.
 - **An act's name stays embedded.** An act is one short line, recurs
   across festivals, and a listing names it in every answer, so the
-  `observance` records stay in `i18n/`.
+  `observance` records stay in `i18n/`: all 310, stage (a)'s and stage
+  (b)'s, named in English, Nepali, Hindi and Sanskrit, so none falls back
+  to Latin.
 - **Stage (a)'s forty-two `about` forms stay embedded,** because the
   consumer's launch shows those days with no download (addendum 13's
   "top 40 first").
@@ -200,6 +202,13 @@ describe looked wrong. They stay `unwritten` until the rule is checked:
 the print's Magha day is Skanda Shashthi), `BHAKTAPUR_CHANDI_BHAGAWATI_JATRA`
 (sources give Baishakh's full moon), and the local jatras whose only
 witness is the panchanga's own entry.
+
+A subject's key must be one a pack lists. Fifty-one written subjects were
+another key's name instead: forty-nine aliases a festival is also called by
+(`BHAI_TIKA` for `YAMA_DWITIYA`, the month-named sankrantis), whose lead is
+described, and `BHOTO_JATRA` and `SIRUWA_PAVANI`, which only the holiday
+notices name. The generator holds them back and names them, so no text is
+written that no listing reaches.
 
 - **C2417.** Descriptions beyond stage (a)'s are a loaded corpus, one
   bundle a locale and a release asset each. The embedded bundle grows by
