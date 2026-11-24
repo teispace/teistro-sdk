@@ -57,6 +57,13 @@ pub enum Side {
 
 impl Side {
     /// The intent's segment for the run: `favours`, `despite` or `avoided`.
+    ///
+    /// ```
+    /// use teistro_muhurta::reasons::Side;
+    ///
+    /// assert_eq!(Side::For.segment(), "favours");
+    /// assert_eq!(Side::Avoided.segment(), "avoided");
+    /// ```
     #[must_use]
     pub const fn segment(self) -> &'static str {
         match self {
@@ -68,6 +75,29 @@ impl Side {
 }
 
 /// One reason: an intent, its slots, and what it says.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Grade, Judgement};
+///
+/// // A window on a Thursday in Rohini, under Raman's marriage rules.
+/// let rules = ActivityRules::raman_marriage();
+/// let day = Interval::literal(2_460_000.5, 2_460_001.5);
+/// let held = [
+///     Clause { kind: ClauseKind::Vara { vara: Vara::Guruvara, grade: Grade::Best }, at: day },
+///     Clause { kind: ClauseKind::Nakshatra { nakshatra: Nakshatra::Rohini, grade: Grade::Best }, at: day },
+/// ];
+/// let window = Judgement::of(Interval::literal(2_460_000.7, 2_460_000.8), &held, &rules);
+/// use teistro_muhurta::reasons::{Side, of_window, watched};
+///
+/// let said = of_window(&window, 0, &rules, &watched(&rules, false))?;
+/// let first = &said.reasons[0];
+/// assert_eq!(first.side, Side::For);
+/// assert_eq!(first.intent, "sdk.voice.muhurta.favours.NAKSHATRA");
+/// assert!(first.clause.is_some(), "a favour says a clause the window holds");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaReason"))]
@@ -94,6 +124,27 @@ pub struct Reason {
 
 /// The "why this date" line: an intent and its slots, the qualifying
 /// limbs and how much the list says.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Grade, Judgement};
+///
+/// // A window on a Thursday in Rohini, under Raman's marriage rules.
+/// let rules = ActivityRules::raman_marriage();
+/// let day = Interval::literal(2_460_000.5, 2_460_001.5);
+/// let held = [
+///     Clause { kind: ClauseKind::Vara { vara: Vara::Guruvara, grade: Grade::Best }, at: day },
+///     Clause { kind: ClauseKind::Nakshatra { nakshatra: Nakshatra::Rohini, grade: Grade::Best }, at: day },
+/// ];
+/// let window = Judgement::of(Interval::literal(2_460_000.7, 2_460_000.8), &held, &rules);
+/// use teistro_muhurta::reasons::{of_window, watched};
+///
+/// let said = of_window(&window, 0, &rules, &watched(&rules, false))?;
+/// assert_eq!(said.line.intent, "sdk.voice.muhurta.line");
+/// assert!(said.line.params.contains_key("limbs"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaReasonLine"))]
@@ -110,6 +161,29 @@ pub struct Line {
 }
 
 /// Why one window is good: a short line and the longer list.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Grade, Judgement};
+///
+/// // A window on a Thursday in Rohini, under Raman's marriage rules.
+/// let rules = ActivityRules::raman_marriage();
+/// let day = Interval::literal(2_460_000.5, 2_460_001.5);
+/// let held = [
+///     Clause { kind: ClauseKind::Vara { vara: Vara::Guruvara, grade: Grade::Best }, at: day },
+///     Clause { kind: ClauseKind::Nakshatra { nakshatra: Nakshatra::Rohini, grade: Grade::Best }, at: day },
+/// ];
+/// let window = Judgement::of(Interval::literal(2_460_000.7, 2_460_000.8), &held, &rules);
+/// use teistro_muhurta::reasons::{Side, of_window, watched};
+///
+/// let said = of_window(&window, 0, &rules, &watched(&rules, false))?;
+/// // The list runs `FOR`, then `DESPITE`, then `AVOIDED`.
+/// let sides: Vec<Side> = said.reasons.iter().map(|reason| reason.side).collect();
+/// assert_eq!(sides.first(), Some(&Side::For));
+/// assert_eq!(sides.last(), Some(&Side::Avoided));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "MuhurtaReasons"))]
@@ -171,6 +245,14 @@ pub fn watched(rules: &ActivityRules, native: bool) -> Vec<ClauseKey> {
 }
 
 /// Whether a clause of this kind can favour a window.
+///
+/// ```
+/// use teistro_muhurta::clause::ClauseKey;
+/// use teistro_muhurta::reasons::can_favour;
+///
+/// assert!(can_favour(ClauseKey::Nakshatra));
+/// assert!(!can_favour(ClauseKey::MarsInEighth), "a dosha never favours");
+/// ```
 #[must_use]
 pub const fn can_favour(key: ClauseKey) -> bool {
     matches!(
@@ -197,6 +279,14 @@ pub const fn can_favour(key: ClauseKey) -> bool {
 }
 
 /// Whether a clause of this kind can hold against a window.
+///
+/// ```
+/// use teistro_muhurta::clause::ClauseKey;
+/// use teistro_muhurta::reasons::can_go_against;
+///
+/// assert!(can_go_against(ClauseKey::MarsInEighth));
+/// assert!(!can_go_against(ClauseKey::Abhijit), "Abhijit only favours");
+/// ```
 #[must_use]
 pub const fn can_go_against(key: ClauseKey) -> bool {
     !matches!(
@@ -283,6 +373,37 @@ fn key_name(key: ClauseKey) -> String {
 ///
 /// `INTERNAL` if a clause does not serialise, which one this crate built
 /// cannot do.
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Grade, Judgement};
+///
+/// // A window on a Thursday in Rohini, under Raman's marriage rules.
+/// let rules = ActivityRules::raman_marriage();
+/// let day = Interval::literal(2_460_000.5, 2_460_001.5);
+/// let held = [
+///     Clause { kind: ClauseKind::Vara { vara: Vara::Guruvara, grade: Grade::Best }, at: day },
+///     Clause { kind: ClauseKind::Nakshatra { nakshatra: Nakshatra::Rohini, grade: Grade::Best }, at: day },
+/// ];
+/// let window = Judgement::of(Interval::literal(2_460_000.7, 2_460_000.8), &held, &rules);
+/// use teistro_muhurta::reasons::of_answer;
+/// use teistro_muhurta::{Answer, Ranking};
+///
+/// let answer = Answer {
+///     windows: vec![window.clone(), window],
+///     closed: Vec::new(),
+///     days_judged: 1,
+///     days_cut: 1,
+///     windows_blacked_out: 0,
+///     ranking: Ranking::default(),
+///     unjudged: Vec::new(),
+///     reasons: Vec::new(),
+/// };
+/// let said = of_answer(&answer, &rules, false)?;
+/// assert_eq!(said.len(), 2, "one per window, in its order");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub fn of_answer(
     answer: &Answer,
     rules: &ActivityRules,
@@ -303,6 +424,29 @@ pub fn of_answer(
 /// # Errors
 ///
 /// As [`of_answer`].
+///
+/// ```
+/// use teistro_core::catalogue::{Nakshatra, Vara};
+/// use teistro_core::interval::Interval;
+/// use teistro_muhurta::{ActivityRules, Clause, ClauseKind, Grade, Judgement};
+///
+/// // A window on a Thursday in Rohini, under Raman's marriage rules.
+/// let rules = ActivityRules::raman_marriage();
+/// let day = Interval::literal(2_460_000.5, 2_460_001.5);
+/// let held = [
+///     Clause { kind: ClauseKind::Vara { vara: Vara::Guruvara, grade: Grade::Best }, at: day },
+///     Clause { kind: ClauseKind::Nakshatra { nakshatra: Nakshatra::Rohini, grade: Grade::Best }, at: day },
+/// ];
+/// let window = Judgement::of(Interval::literal(2_460_000.7, 2_460_000.8), &held, &rules);
+/// use teistro_muhurta::reasons::{of_window, watched};
+///
+/// let watch = watched(&rules, false);
+/// let first = of_window(&window, 0, &rules, &watch)?;
+/// // The same window says the same reasons whichever its place.
+/// let later = of_window(&window, 1, &rules, &watch)?;
+/// assert_eq!(first.reasons.len(), later.reasons.len());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
 pub fn of_window(
     window: &Judgement,
     index: usize,
