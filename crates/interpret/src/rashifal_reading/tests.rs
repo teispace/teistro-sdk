@@ -9,7 +9,7 @@ use teistro_core::quantity::JulianDay;
 use teistro_core::settings::ScoreBands;
 use teistro_gochar::Transit;
 use teistro_gochar::hits::{Hit, HitEvent, Motion};
-use teistro_intl::ClockTime;
+use teistro_intl::{ClockTime, Value};
 use teistro_rashifal::baseline::{BaselineScore, Panchanga, baseline_score};
 use teistro_rashifal::{Period, PeriodEvent, RashiReading, RashifalRules, rashifal};
 
@@ -20,12 +20,6 @@ const START: f64 = 2_461_000.5;
 /// A sky with Saturn in Pisces, the nodes opposite and the rest in Aries,
 /// and two events: Jupiter enters Taurus early, Saturn turns late.
 fn sky() -> [RashiReading; 12] {
-    let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
-    transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
-    transits[Graha::Jupiter as usize] = Transit::new(Rashi::Gemini, 20.0);
-    transits[Graha::Venus as usize] = Transit::new(Rashi::Aquarius, 2.0);
-    transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
-    transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
     let events = [
         PeriodEvent {
             hit: Hit {
@@ -49,7 +43,18 @@ fn sky() -> [RashiReading; 12] {
             sign: Rashi::Pisces,
         },
     ];
-    rashifal(&transits, &events, &RashifalRules::default())
+    sky_with(&events)
+}
+
+/// The same sky with other events.
+fn sky_with(events: &[PeriodEvent]) -> [RashiReading; 12] {
+    let mut transits = [Transit::new(Rashi::Aries, 5.0); 9];
+    transits[Graha::Saturn as usize] = Transit::new(Rashi::Pisces, 12.0);
+    transits[Graha::Jupiter as usize] = Transit::new(Rashi::Gemini, 20.0);
+    transits[Graha::Venus as usize] = Transit::new(Rashi::Aquarius, 2.0);
+    transits[Graha::Rahu as usize] = Transit::new(Rashi::Virgo, 3.0);
+    transits[Graha::Ketu as usize] = Transit::new(Rashi::Pisces, 3.0);
+    rashifal(&transits, events, &RashifalRules::default())
 }
 
 fn score(reading: &RashiReading, period: Period) -> BaselineScore {
@@ -94,8 +99,21 @@ fn plan(
     first_day: i64,
     moon_turn: Option<MoonTurn>,
 ) -> ReadingPlan {
-    let score = score(reading, period);
     let days: &[DayScore] = if period == Period::Weekly { &WEEK } else { &[] };
+    dated(reading, period, first_day, moon_turn, days, &[], &[])
+}
+
+/// A plan with its days, and its days' and events' dates, given.
+fn dated(
+    reading: &RashiReading,
+    period: Period,
+    first_day: i64,
+    moon_turn: Option<MoonTurn>,
+    days: &[DayScore],
+    day_dates: &[Value],
+    event_dates: &[Value],
+) -> ReadingPlan {
+    let score = score(reading, period);
     super::reading(&ReadingInput {
         reading,
         score: &score,
@@ -105,8 +123,8 @@ fn plan(
         bands: ScoreBands::DEFAULT,
         moon_turn,
         days,
-        day_dates: &[],
-        event_dates: &[],
+        day_dates,
+        event_dates,
     })
 }
 
@@ -395,4 +413,126 @@ fn every_intent_said_is_one_the_list_names() {
             }
         }
     }
+}
+
+#[test]
+fn a_good_moon_turn_is_said_as_likely() {
+    let turn = MoonTurn {
+        good_after: true,
+        ..TURN
+    };
+    let plan = plan(&sky()[0], Period::Daily, 739_000, Some(turn));
+    let said: Vec<&ReadingItem> = items(&plan)
+        .into_iter()
+        .filter(|item| item.rests_on == [Fact::MoonTurn])
+        .collect();
+    assert_eq!(said.len(), 2, "the why and the part after her turn");
+    assert!(
+        said.iter()
+            .all(|item| item.hedge == super::Hedge::Likely && !item.caution)
+    );
+}
+
+#[test]
+fn a_short_week_reads_the_days_it_has_and_dates_its_best() {
+    let days = [
+        DayScore { overall: 50 },
+        DayScore { overall: 70 },
+        DayScore { overall: 60 },
+    ];
+    let dates = [Value::Int(1), Value::Int(2), Value::Int(3)];
+    let events = [Value::Int(10), Value::Int(11)];
+    let week = dated(
+        &sky()[0],
+        Period::Weekly,
+        739_000,
+        None,
+        &days,
+        &dates,
+        &events,
+    );
+    let frames: Vec<Frame> = week.parts.iter().map(|part| part.frame).collect();
+    assert_eq!(frames, [Frame::Start, Frame::Middle, Frame::Whole]);
+    assert_eq!(week.best_day, Some(1));
+    let best = items(&week)
+        .into_iter()
+        .find(|item| item.rests_on == [Fact::Day { index: 1 }])
+        .unwrap();
+    assert_eq!(best.params.get("date"), Some(&Value::Int(2)));
+    let event = items(&week)
+        .into_iter()
+        .find(|item| item.rests_on == [Fact::Event { index: 0 }])
+        .unwrap();
+    assert_eq!(event.params.get("date"), Some(&Value::Int(10)));
+}
+
+#[test]
+fn a_tied_week_names_no_best_day() {
+    let days = [DayScore { overall: 60 }, DayScore { overall: 60 }];
+    let week = dated(&sky()[0], Period::Weekly, 739_000, None, &days, &[], &[]);
+    assert_eq!(week.best_day, None);
+    let frames: Vec<Frame> = week.parts.iter().map(|part| part.frame).collect();
+    assert_eq!(frames, [Frame::Start, Frame::Whole]);
+}
+
+#[test]
+fn a_month_without_events_reads_whole_and_a_year_s_middle_quarters_hold_theirs() {
+    let quiet = &sky_with(&[])[0];
+    let month = plan(quiet, Period::Monthly, 739_000, None);
+    let frames: Vec<Frame> = month.parts.iter().map(|part| part.frame).collect();
+    assert_eq!(frames, [Frame::Whole]);
+    let station = |day: f64, graha: Graha, sign: Rashi| PeriodEvent {
+        hit: Hit {
+            instant: JulianDay::literal(START + day),
+            graha,
+            event: HitEvent::Station {
+                turns: Motion::Direct,
+            },
+        },
+        sign,
+    };
+    let busy = &sky_with(&[
+        station(100.0, Graha::Mars, Rashi::Aries),
+        station(200.0, Graha::Mercury, Rashi::Aries),
+    ])[0];
+    let year = plan(busy, Period::Yearly, 739_000, None);
+    let frames: Vec<Frame> = year.parts.iter().map(|part| part.frame).collect();
+    assert_eq!(
+        frames,
+        [Frame::Slow, Frame::Quarter2, Frame::Quarter3, Frame::Whole]
+    );
+    let direct = items(&year)
+        .into_iter()
+        .filter(|item| item.intent.contains(".STATION_DIRECT."))
+        .count();
+    assert_eq!(direct, 2);
+}
+
+#[test]
+fn no_areas_say_no_lines_and_a_part_of_cautions_keeps_its_order() {
+    let read = &sky()[0];
+    let score = score(read, Period::Daily);
+    let input = ReadingInput {
+        reading: read,
+        score: &score,
+        period: Period::Daily,
+        first_day: 1,
+        span: span(Period::Daily),
+        bands: ScoreBands::DEFAULT,
+        moon_turn: None,
+        days: &[],
+        day_dates: &[],
+        event_dates: &[],
+    };
+    let mut say = super::Sayer::new(&input);
+    assert_eq!(super::area_lines(&input, &[], &mut say), []);
+    let plan = plan(read, Period::Daily, 739_000, None);
+    let caution = |intent: &str| ReadingItem {
+        intent: String::from(intent),
+        caution: true,
+        ..plan.headline.clone()
+    };
+    let mut cautions = [caution("a"), caution("b")];
+    super::keep_items_caution_off_the_end(&mut cautions);
+    assert_eq!([&*cautions[0].intent, &*cautions[1].intent], ["a", "b"]);
 }
