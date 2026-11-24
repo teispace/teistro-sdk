@@ -4778,6 +4778,7 @@ void main() {
           ),
         ],
         plans: true,
+        readings: true,
       ).toJson(),
     );
   });

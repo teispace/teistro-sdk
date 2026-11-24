@@ -141,7 +141,7 @@ names it.
 - `almanac.skyView`: `atmosphere`, `ecliptic`, `eclipticStepDeg`, `horizon`, `horizonStepDeg`, `obliquityDeg`, `siderealTimeDeg`.
 - `chart.disagreements`: `otherSettingsHash`.
 - `chart.found`: `charts.foundation.chalit`, `charts.foundation.clock`, `charts.foundation.day`, `charts.foundation.day_lagna_deg`, `charts.foundation.grahas.distance_au`, `charts.foundation.grahas.latitude_deg`, `charts.foundation.grahas.tropical_deg`, `charts.foundation.lilith`, `charts.foundation.outer`, `charts.foundation.steps`, `charts.foundation.timing`, `charts.shadbala.grahas.ashubha_rashmi`, `charts.shadbala.grahas.cheshta`, `charts.shadbala.grahas.dig`, `charts.shadbala.grahas.drik`, `charts.shadbala.grahas.ishta`, `charts.shadbala.grahas.kaala`, `charts.shadbala.grahas.kashta`, `charts.shadbala.grahas.naisargika`, `charts.shadbala.grahas.sthana`, `charts.shadbala.grahas.subha_rashmi`, `charts.shadbala.grahas.virupas`, `charts.shadbala.rules`, `fortitudes.dignities`, `fortitudes.rules`, `fortitudes.sky`, `hashes`, `kp.chart.cusps`, `kp.chart.system`, `lots.fortuneReversed`, `lots.request`.
-- `chart.rashifal`: `period.readings.gochar`, `period.readings.holds`, `period.reference`, `period.scored`.
+- `chart.rashifal`: `period.readings.gochar`, `period.readings.holds`, `period.reference`, `period.scored`, `readings`.
 - `verify.issue`: `receipt.calculationVersion`, `receipt.catalogueVersion`, `receipt.locale`, `receipt.packs`, `receipt.provider`, `receipt.request`, `receipt.sdkVersion`, `receipt.settings`, `receipt.tzdb`.
 
 ## The fields of the larger answers

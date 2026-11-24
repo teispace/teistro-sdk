@@ -7254,7 +7254,8 @@
           }
         }
       ],
-      "plans": true
+      "plans": true,
+      "readings": true
     }
   },
   {

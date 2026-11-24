@@ -1845,6 +1845,9 @@ class BatchAsked(TypedDict, total=False):
     plans: bool
     """Whether each sign's reading is composed into a narrative plan."""
 
+    readings: bool
+    """Whether each sign's period is said in the reading voice, for the period `baseline` names (`03-design/rashifal-reading.md`)."""
+
 
 class RelocationRequest(TypedDict, total=False):
     """A chart's instant recast at other places."""
