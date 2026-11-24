@@ -2029,7 +2029,7 @@ fn engine_answer<T: serde::Serialize>(
 /// The geo port's records: a place resolved through the context's
 /// provider, and the place catalogue's questions (`03-design/geo-port.md`
 /// §5 and §12).
-fn geo_records() -> [Record; 5] {
+fn geo_records() -> [Record; 6] {
     [
         Record {
             name: "geo.resolve",
