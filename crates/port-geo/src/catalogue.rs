@@ -1630,7 +1630,7 @@ mod tests {
         ] {
             let why = place(&none, &asked).unwrap_err();
             assert_eq!(
-                (why.status(), why.field()),
+                (why.status, why.field()),
                 (Status::InvalidArg, Some(field))
             );
         }
@@ -1665,7 +1665,7 @@ mod tests {
         };
         let why = place(&malformed, &asked).unwrap_err();
         assert_eq!(
-            (why.status(), why.field()),
+            (why.status, why.field()),
             (Status::Provider, Some("place.name"))
         );
     }
