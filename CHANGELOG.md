@@ -37,6 +37,17 @@ the previous release, not by nobody having looked.
   communities are named in Hindi and Sanskrit.
   Numbers: `GEN_Z_MARTYRS_DAY`'s tier, now national by VS 2083's latest
   decision; nothing reckoned.
+- **The gazette years' days (SR-157).** Durva ashtami, and Gaura parva
+  with it, takes the earlier day the 8th touches (*Nirnayasindhu*
+  "सा पूर्वा ग्राह्या"); its Agastya bar moves from Bhadra 22 to Bhadra 20
+  and steps back a fortnight more when the dark 8th is barred too; Indra
+  Jatra takes the later day when the 14th holds both sunrises. Every Nepal
+  Gazette holiday of VS 2076 to 2083 is now held to its rule's day, or to a
+  named exception (Holi 2079, Dura Mhaipru Nakuma) (C2420).
+  Numbers: Durva ashtami and Gaura parva a day earlier wherever the 8th
+  begins in the earlier day's daylight (of 2019 to 2027: 2020, 2022, 2024,
+  2027) and a fortnight earlier in 2019 and 2023; Indra Jatra a day later
+  in 2019.
 - **The western sign beside the Indian one (SR-156).** Each rashi in
   `en-Latn` and `en-Latn-NP` carries `western` (Aries … Pisces), so Nepal's
   English heads a sign "Mesh (Aries)" from one record; typed as an optional

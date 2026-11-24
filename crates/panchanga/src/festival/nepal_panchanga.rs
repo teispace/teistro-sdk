@@ -55,6 +55,9 @@ use super::{
 /// (C602).
 const PURVAHNA: Window = Window::DayMuhurta { from: 1, to: 6 };
 
+/// The whole daylight, its fifteen muhurtas.
+const DAYLIGHT: Window = Window::DayMuhurta { from: 1, to: 15 };
+
 /// The last fifth of the daylight.
 const SAYAHNA: Window = Window::Part {
     part: DayPart::Sayahna,
@@ -353,7 +356,14 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
+    (
+        "INDRA_JATRA",
+        Masa::Bhadrapada,
+        Tithi::ShuklaChaturdashi,
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: कुमारीइन्द्रयात्रा; the later day when the 14th holds both sunrises, the eve of the full moon's day, as the Nepal Gazette's notice of VS 2076 keeps it on Bhadra 27 (13 September 2019) (C2420)",
+    ),
     (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
@@ -435,8 +445,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         "DURVA_ASHTAMI",
         Masa::Bhadrapada,
         Tithi::ShuklaAshtami,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), Bhadra 22 of the Bikram Sambat, so VS 2083 prints Shravana's dark 8th (C608)",
+        Fit::EarlierAny(DAYLIGHT),
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); the earlier day, joined to the 7th, \"सा पूर्वा ग्राह्या\" (Nirnayasindhu pp. 262–263, Hemadri's Vriddha Yama), whenever the 8th touches its daylight; barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), counted from the sankranti's own day: Bhadra 20 of the Bikram Sambat, and a fortnight earlier again when that 8th is barred too, so VS 2083 prints Shravana's dark 8th (C608); the Nepal Gazette's Gaura parva, VS 2076 to 2083, on every one of these days (C2420)",
     ),
     (
         "CHATHA",
@@ -948,7 +958,7 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 9] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 150] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -1320,12 +1330,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
         Masa::Bhadrapada,
         Tithi::ShuklaChaturdashi,
         "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: अनन्त चतुर्दशीव्रत",
-    ),
-    (
-        "INDRA_JATRA",
-        Masa::Bhadrapada,
-        Tithi::ShuklaChaturdashi,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: कुमारीइन्द्रयात्रा",
     ),
     (
         "BHAKTAPUR_SIDDHA_POKHARI_MELA",
@@ -2482,7 +2486,7 @@ fn barred(key: &str) -> Option<Barred> {
         "DURVA_ASHTAMI" => Some(Barred::From {
             calendar: Calendar::BikramSambat,
             month: 5,
-            day: 22,
+            day: 20,
             instead: Tithi::KrishnaAshtami,
         }),
         "GAURA_SAPTAMI" => Some(with(Tithi::KrishnaSaptami)),

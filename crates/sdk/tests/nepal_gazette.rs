@@ -1,7 +1,8 @@
 //! Nepal's gazetted holidays (`03-design/nepal-gazette-holidays.md`, SR-123):
 //! the set each Nepal pack's listing carries, every year's festivals named
-//! in the catalogue, and VS 2083's days held to the days `NEPAL_PANCHANGA`
-//! reckons for the festivals each holiday names.
+//! in the catalogue, and every year's days held to the days
+//! `NEPAL_PANCHANGA` reckons for the festivals each holiday names, or to a
+//! named exception (SR-157).
 
 #![allow(
     clippy::unwrap_used,
@@ -16,9 +17,9 @@ use teistro::festival::{Holiday, HolidaySet};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 
-/// The Bikram Sambat days each key of `NEPAL_PANCHANGA` falls on over VS
-/// 2083, at Kathmandu over the committee's sky.
-fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
+/// The Bikram Sambat days each key of `NEPAL_PANCHANGA` falls on over a
+/// VS year, at Kathmandu over the committee's sky.
+fn reckoned(year: i32) -> BTreeMap<String, Vec<(u8, u8)>> {
     let place = Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
@@ -34,11 +35,13 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
         CalendarDate::defined(Calendar::Gregorian, year, month, day)
     };
     let mut days: BTreeMap<String, Vec<(u8, u8)>> = BTreeMap::new();
-    // VS 2083 is 14 April 2026 to 13 April 2027, in three spans.
+    // A VS year begins in mid-April: read from the 10th to the 16th a year
+    // on, in three spans, and keep the days of that year.
+    let ad = year - 57;
     for (from, to) in [
-        ((2026, 4, 14), (2026, 8, 16)),
-        ((2026, 8, 17), (2026, 12, 15)),
-        ((2026, 12, 16), (2027, 4, 13)),
+        ((ad, 4, 10), (ad, 8, 16)),
+        ((ad, 8, 17), (ad, 12, 15)),
+        ((ad, 12, 16), (ad + 1, 4, 16)),
     ] {
         let found = sdk
             .almanac()
@@ -66,7 +69,7 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
             .chain(found.added.iter().map(|day| (&day.key, &day.day)));
         for (key, day) in on {
             let bs = sdk.calendar().convert(day, Calendar::BikramSambat).unwrap();
-            if bs.year == 2083 {
+            if bs.year == year {
                 days.entry(key.clone())
                     .or_default()
                     .push((bs.month, bs.day));
@@ -173,53 +176,84 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
     assert!(several[3].notice.ne.starts_with("धान्य पूर्णिमा"));
 }
 
+/// The gazette's days the pack's rules do not give, each with its reason:
+/// `(VS year, festival)`. A rule change that moves another year's day, or
+/// mends one of these, fails the test below until this list says so.
+const EXCEPTIONS: [(i32, &str, &str); 3] = [
+    (
+        2079,
+        "HOLI_HILLS",
+        "the Holika fire a day early, Falgun 22 (6 March 2023): the rule takes the later day when the later pradosha holds part of the full moon, standing the earlier day's bhadra against it; whether that bhadra stood is not encoded (C199, C2420)",
+    ),
+    (
+        2079,
+        "HOLI_TERAI",
+        "the day after HOLI_HILLS, Falgun 23, so a day early with it (C2420)",
+    ),
+    (
+        2083,
+        "DURA_MHAIPRU_NAKUMA",
+        "the Dura community's day, Poush 15, which no rule of the pack reckons (C2420)",
+    ),
+];
+
 #[test]
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
-    let days = reckoned();
+    let listed = FestivalPack::NepalPanchanga.listing().rules;
     let mut held = 0;
-    for holiday in HolidaySet::NepalGazette.holidays_of(2083) {
-        let Some(first) = &holiday.first else {
-            continue;
-        };
-        let first = (first.month, first.day);
-        let last = holiday
-            .last
-            .as_ref()
-            .map_or(first, |day| (day.month, day.day));
-        for key in &holiday.festivals {
-            let Some(on) = days.get(key) else {
-                assert!(
-                    FestivalPack::NepalPanchanga
-                        .listing()
-                        .rules
-                        .iter()
-                        .all(|row| row.key != *key),
-                    "{key} is in the pack and has no day in VS 2083"
-                );
+    let mut excepted = Vec::new();
+    for year in HolidaySet::NepalGazette.years() {
+        let days = reckoned(year);
+        for holiday in HolidaySet::NepalGazette.holidays_of(year) {
+            let Some(first) = &holiday.first else {
                 continue;
             };
+            let first = (first.month, first.day);
+            let last = holiday
+                .last
+                .as_ref()
+                .map_or(first, |day| (day.month, day.day));
+            for key in &holiday.festivals {
+                let kept = days
+                    .get(key)
+                    .is_some_and(|on| on.iter().any(|&day| (first..=last).contains(&day)));
+                if EXCEPTIONS
+                    .iter()
+                    .any(|&(y, k, _)| (y, k) == (year, key.as_str()))
+                {
+                    assert!(!kept, "VS {year} {key} is held now: drop its exception");
+                    excepted.push((year, key.clone()));
+                    continue;
+                }
+                assert!(
+                    days.contains_key(key) || listed.iter().all(|row| row.key != *key),
+                    "VS {year}: {key} is in the pack and has no day"
+                );
+                if !days.contains_key(key) {
+                    continue;
+                }
+                assert!(
+                    kept,
+                    "VS {year} {key}: the pack gives {:?}, {} prints {first:?} to {last:?}",
+                    days[key], holiday.source
+                );
+                held += 1;
+            }
+        }
+        // The festival days a span is read with are the days the pack reckons.
+        for (key, day) in HolidaySet::NepalGazette.festival_days(year) {
             assert!(
-                on.iter().any(|&day| (first..=last).contains(&day)),
-                "{key}: the pack gives {on:?}, {} prints {first:?} to {last:?}",
-                holiday.source
+                days.get(&key)
+                    .is_some_and(|on| on.contains(&(day.month, day.day))),
+                "VS {year} {key}: the notice is read with {day:?}, the pack gives {:?}",
+                days.get(&key)
             );
-            held += 1;
         }
     }
-    // Every festival named by a holiday with a printed day, 47, but Dura
-    // Mhaipru Nakuma, which the pack has no rule for. The six holidays the
-    // notice gives "on the day of" (the two Eids, Mawlid, Guru Nanak
-    // Jayanti, Bhoto Jatra, Sirua Pavani) print no day to hold.
-    assert_eq!(held, 46);
-    // The festival days a span is read with are the days the pack reckons.
-    for (key, day) in HolidaySet::NepalGazette.festival_days(2083) {
-        assert!(
-            days.get(&key)
-                .is_some_and(|on| on.contains(&(day.month, day.day))),
-            "{key}: the notice is read with {day:?}, the pack gives {:?}",
-            days.get(&key)
-        );
-    }
+    assert_eq!(excepted.len(), EXCEPTIONS.len(), "{excepted:?}");
+    // Every festival named by a dated holiday of VS 2076 to 2083 the pack
+    // reckons, but the exceptions above (SR-157).
+    assert_eq!(held, 0, "the count of held days, pinned once measured");
 }
 
 /// What SR-163 asked of a notice's record (`nepal-gazette-holidays.md` §6):

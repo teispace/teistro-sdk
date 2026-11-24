@@ -22,8 +22,24 @@ use crate::span::Span;
 /// apart, in days: a paksha's, with room for a long one.
 const NEAREST_DAYS: f64 = 30.0;
 
+/// How far a day barred `FROM` one can step back, the bar holding on two
+/// fortnights' days, and so how far a rule barred `WITH` it looks.
+const STEPPED_DAYS: f64 = 2.0 * NEAREST_DAYS;
+
+/// How many fortnights a barred day steps back at most.
+const MOST_STEPS: usize = 3;
+
+/// The same tithi number in the other fortnight.
+const fn twin(tithi: Tithi) -> Tithi {
+    match Tithi::from_id((tithi.id() + 15) % 30) {
+        Some(twin) => twin,
+        None => tithi,
+    }
+}
+
 /// When a rule's day is barred, and the tithi kept in its place: the last
-/// occurrence of `instead` before the barred one, judged by the rule's own
+/// occurrence of `instead`, or its twin a fortnight away, before the barred
+/// one (stepping back again as each variant says), judged by the rule's own
 /// window and guards.
 ///
 /// ```
@@ -33,13 +49,13 @@ const NEAREST_DAYS: f64 = 30.0;
 /// let agastya = Barred::From {
 ///     calendar: Calendar::BikramSambat,
 ///     month: 5,
-///     day: 22,
+///     day: 20,
 ///     instead: Tithi::KrishnaAshtami,
 /// };
 /// assert_eq!(
 ///     serde_json::to_value(&agastya)?,
 ///     serde_json::json!({
-///         "kind": "FROM", "calendar": "BIKRAM_SAMBAT", "month": 5, "day": 22,
+///         "kind": "FROM", "calendar": "BIKRAM_SAMBAT", "month": 5, "day": 20,
 ///         "instead": "KRISHNA_ASHTAMI",
 ///     }),
 /// );
@@ -57,7 +73,11 @@ const NEAREST_DAYS: f64 = 30.0;
 pub enum Barred {
     /// From this day of a calendar's year on: a day falling on it or
     /// later in its year is barred, as the Durva fast is once Agastya has
-    /// risen, Bhadra 22 of the Bikram Sambat (C608).
+    /// risen, Bhadra 20 of the Bikram Sambat (C608, C2420). The day kept
+    /// instead is the `instead` tithi's last before, and when the bar holds
+    /// that one too, the same number a fortnight earlier again, as the
+    /// Nepal Gazette keeps Gaura parva on the nija Shravana's bright 8th in
+    /// VS 2080 (24 August 2023).
     From {
         /// The calendar the day is counted in.
         calendar: Calendar,
@@ -70,8 +90,10 @@ pub enum Barred {
     },
     /// When the named rule's day in the same lunar month is barred `FROM` a
     /// day, as the Gaura parva's bright 5th and 7th are with its 8th
-    /// (C686). The named rule is asked for too; one barred only `WITH`
-    /// another never moves this one.
+    /// (C686): kept on the `instead` tithi, or the same number in the other
+    /// fortnight, last before the named rule's kept day, so the 5th and
+    /// 7th follow the 8th however far it steps back. The named rule is
+    /// asked for too; one barred only `WITH` another never moves this one.
     With {
         /// The rule's key.
         rule: String,
@@ -173,7 +195,7 @@ impl Barred {
                     && other.barred
                     && other.month == kept.month
                     && other.adhika == kept.adhika
-                    && (other.tithi.from.get() - kept.tithi.from.get()).abs() < NEAREST_DAYS
+                    && (other.tithi.from.get() - kept.tithi.from.get()).abs() < STEPPED_DAYS
             })),
         }
     }
@@ -181,7 +203,9 @@ impl Barred {
 
 /// What `rule` keeps of `judged`, its occurrence `whole` in `month`: the
 /// judged day, or when its bar holds, the day judged for the last
-/// occurrence of the bar's tithi before `whole`, marked
+/// occurrence of the bar's tithi (or its twin a fortnight away) before
+/// `whole`, stepping back again while the bar holds there (`FROM`) or
+/// before the named rule's kept day (`WITH`), marked
 /// [`Observance::barred`] and named in the barred day's month.
 ///
 /// # Errors
@@ -203,22 +227,45 @@ pub(super) fn keep(
         return Ok(judged);
     }
     let instead = bar.instead();
-    let Some(occurrence) = tithis.iter().rev().find(|held| {
-        held.member == instead
-            && held.whole.to.get() <= whole.from.get()
-            && whole.from.get() - held.whole.from.get() < NEAREST_DAYS
-    }) else {
-        return Ok(Err(format!(
-            "its day is barred, and the days do not reach the {} before it",
-            instead.key()
-        )));
+    let tithi = |held: &&Span<Tithi>| held.member == instead || held.member == twin(instead);
+    let mut before = match bar {
+        Barred::From { .. } => whole.from.get(),
+        Barred::With { rule: named, .. } => rites
+            .kept
+            .iter()
+            .filter(|other| other.rule == *named && other.barred && other.month == kept.month)
+            .map(|other| other.tithi.from.get())
+            .min_by(|a, b| {
+                (a - kept.tithi.from.get())
+                    .abs()
+                    .total_cmp(&(b - kept.tithi.from.get()).abs())
+            })
+            .unwrap_or(whole.from.get()),
     };
-    Ok(
-        judge(rule, occurrence.whole, month, days, tithis, rites)?.map(|judged| {
+    for _ in 0..MOST_STEPS {
+        let Some(occurrence) = tithis.iter().rev().filter(tithi).find(|held| {
+            held.whole.from.get() < before && before - held.whole.from.get() < NEAREST_DAYS
+        }) else {
+            return Ok(Err(format!(
+                "its day is barred, and the days do not reach the {} before it",
+                instead.key()
+            )));
+        };
+        let judged = judge(rule, occurrence.whole, month, days, tithis, rites)?;
+        if let (Barred::From { .. }, Ok(Some(again))) = (bar, &judged)
+            && bar.holds(again, rites)?
+        {
+            before = occurrence.whole.from.get();
+            continue;
+        }
+        return Ok(judged.map(|judged| {
             judged.map(|observance| Observance {
                 barred: true,
                 ..observance
             })
-        }),
-    )
+        }));
+    }
+    Ok(Err(format!(
+        "its day is barred, and so are the {MOST_STEPS} fortnights' days before it"
+    )))
 }
