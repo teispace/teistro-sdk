@@ -503,13 +503,13 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-core"
-version = "1.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v1.1.0#6d449834c58b0dfe43392fd11bf8a32c2d06e174"
+version = "1.2.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v1.2.0#70f5cfe846e611f769f8d55a9a329732469789f1"
 
 [[package]]
 name = "teigeodata-engine"
-version = "1.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v1.1.0#6d449834c58b0dfe43392fd11bf8a32c2d06e174"
+version = "1.2.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v1.2.0#70f5cfe846e611f769f8d55a9a329732469789f1"
 dependencies = [
  "arc-swap",
  "libm",
@@ -521,8 +521,8 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-format"
-version = "1.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v1.1.0#6d449834c58b0dfe43392fd11bf8a32c2d06e174"
+version = "1.2.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v1.2.0#70f5cfe846e611f769f8d55a9a329732469789f1"
 dependencies = [
  "blake3",
  "libm",
@@ -532,8 +532,8 @@ dependencies = [
 
 [[package]]
 name = "teigeodata-names"
-version = "1.1.0"
-source = "git+https://github.com/teispace/teigeodata?tag=v1.1.0#6d449834c58b0dfe43392fd11bf8a32c2d06e174"
+version = "1.2.0"
+source = "git+https://github.com/teispace/teigeodata?tag=v1.2.0#70f5cfe846e611f769f8d55a9a329732469789f1"
 dependencies = [
  "libm",
  "unicode-normalization",
