@@ -605,10 +605,10 @@ Padmini and Parama ekadashi took `ONLY` with `month` empty at sunrise (§3.10, C
 texts' principle that a festival of a doubled month is kept in the nija
 month; a kshaya lunation answers to both its names, so a rule of either
 keeps its tithi there. Every observance a month rule placed says which,
-as `malamasa` (`festival-malamasa.md`). The Nepal Sambat new year is
-`FIRST` (*Dharmasindhu* p. 31, C2041), and the SDK reads the lunation
-beside a range for every rule, not only a `FIRST` one, when that lunation
-is an adhika month.
+as `malamasa` (`festival-malamasa.md`). The Nepal Sambat new year keeps
+the nija month with the Mha puja (C2418, which supersedes C2041's
+`FIRST`), and the SDK reads the lunation beside a range for every rule,
+not only a `FIRST` one, when that lunation is an adhika month.
 
 ### 3.8 A barred day: `barred`
 

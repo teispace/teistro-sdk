@@ -29,6 +29,7 @@ Ranked as `LANE-RULES.md` asks; page numbers are of the page images read.
 | 1 | *Nirnayasindhu* (Dhakal's edition, VS 2071), p. 28 | the *Kaladarsha*: what is barred is kept in the second month, and the gods' rites too; Hemadri's halves of a tithi in a kshaya lunation, for a death or a birth |
 | 2 | Kane, *History of Dharmaśāstra* V.1 pp. 88–89 | the year's beginning on the adhika's first day by some, on the shuddha's by the *Mayukha*, which puts every festival in the shuddha month; the samsarpa (the adhika before a kshaya) barred like any adhika |
 | 1 | the committee's prints, VS 2082 p. 15 and VS 2083 p. 17 | the Nepal Sambat new year printed on Kartika's bright first, beside the Mha puja |
+| 1 | the Nepal Gazette's holiday notices, VS 2076 to 2081 | the beginning of Nepal Sambat on one day with the Mha puja or Govardhan puja, so the year keeps the nija Kartika with them (C2418) |
 
 No printed patro for 1963–64 or 1982–83, the two kshaya years in the
 SDK's tested span before 2028, was found (C2045).
@@ -41,7 +42,7 @@ Every case follows from p. 3's principle, read per rule:
   month, and is kept there. The clause is `NIJA`.
 - **A rule's own exception.** A rule whose source keeps it in the adhika
   month says so with its `inAdhika` (`festival-rule-language.md` §3.7):
-  `FIRST` (Dashahara, p. 38; the Nepal Sambat new year, p. 31, C2041),
+  `FIRST` (Dashahara, p. 38),
   `ONLY` (Padmini and Parama ekadashi) or `ALSO` (a rule kept every
   month). The clause is `ADHIKA`.
 - **A kshaya lunation.** It is both months (p. 3), so a festival of either

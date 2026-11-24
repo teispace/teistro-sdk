@@ -1668,12 +1668,12 @@ fn bs_2085_keeps_its_festivals_through_a_doubled_kartika_and_a_kshaya_pausha() {
     let sdk = Context::builder().nepal_official([]).build().unwrap();
     let year = nepal_observances(&sdk, (2028, 5, 15), (2029, 4, 20));
     keeps_every_rule_of(&nepal_observances(&sdk, (2027, 6, 1), (2028, 3, 1)), &year);
-    // The year's beginning is kept on the adhika Kartika's first day
-    // (Dharmasindhu p. 31, crux C2041); the rest of Tihar waits for the
-    // nija month, as every festival with another time does (pp. 3-4).
+    // Tihar after Lakshmi puja waits for the nija month, as every festival
+    // with another time does (pp. 3-4), and the Nepal Sambat year begins
+    // with the Mha puja there, the adhika month being Anala (C2418).
     assert_eq!(
         clause_of(&year, "NEPAL_SAMBAT_NEW_YEAR"),
-        [((2028, 10, 18), Some(MalamasaClause::Adhika))]
+        [((2028, 11, 17), Some(MalamasaClause::Nija))]
     );
     assert_eq!(
         clause_of(&year, "YAMA_DWITIYA"),
@@ -1701,6 +1701,89 @@ fn bs_2085_keeps_its_festivals_through_a_doubled_kartika_and_a_kshaya_pausha() {
     for row in &short {
         assert!(year.contains(row), "{row:?}");
     }
+}
+
+/// Days from the civil epoch to a Gregorian date, for the gaps between
+/// festivals.
+fn day_number((year, month, day): (i32, u8, u8)) -> i64 {
+    let (y, m) = if month <= 2 {
+        (i64::from(year) - 1, i64::from(month) + 12)
+    } else {
+        (i64::from(year), i64::from(month))
+    };
+    365 * y + y.div_euclid(4) - y.div_euclid(100)
+        + y.div_euclid(400)
+        + (153 * (m - 3) + 2) / 5
+        + i64::from(day)
+}
+
+/// Tihar's days in every year of the built-in sky's six centuries at
+/// Kathmandu (SR-158): the Mha puja, the Govardhan puja and the Nepal
+/// Sambat new year are one day, Kartika's bright first; Bhai tika is one
+/// or two days after it; and Lakshmi puja, Ashwina's new moon at dusk,
+/// one or two days before it, except when Kartika is doubled. Then the
+/// adhika lunation stands between Ashwina's new moon and the nija
+/// Kartika, and the rest of Tihar is kept a month on (*Dharmasindhu*
+/// pp. 3-4), as the committee's former executive director computed BS
+/// 2085's (Onlinekhabar, Kartik 2083: the malmas from Kartik 3 to
+/// Mangsir 1, Govardhan puja Mangsir 2, Bhai tika Mangsir 3). The years
+/// that split are named.
+#[test]
+fn tihar_holds_together_but_across_a_doubled_kartika() {
+    const KEYS: [&str; 5] = [
+        "LAKSHMI_PUJA",
+        "MHA_PUJA",
+        "GOVARDHAN_PUJA",
+        "NEPAL_SAMBAT_NEW_YEAR",
+        "YAMA_DWITIYA",
+    ];
+    let years: Vec<i32> = (1800..2400).collect();
+    let tihars: Vec<(i32, Vec<Placed>)> = std::thread::scope(|scope| {
+        let workers: Vec<_> = years
+            .chunks(150)
+            .map(|chunk| {
+                scope.spawn(move || {
+                    let sdk = Context::builder().nepal_official([]).build().unwrap();
+                    chunk
+                        .iter()
+                        .map(|&year| {
+                            let mut rows = nepal_observances(&sdk, (year, 10, 1), (year, 12, 20));
+                            rows.retain(|row| KEYS.contains(&row.0.as_str()));
+                            (year, rows)
+                        })
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+        workers
+            .into_iter()
+            .flat_map(|worker| worker.join().unwrap())
+            .collect()
+    });
+    let mut split = Vec::new();
+    for (year, rows) in &tihars {
+        let day = |key: &str| {
+            let days: Vec<_> = rows.iter().filter(|row| row.0 == key).collect();
+            assert_eq!(days.len(), 1, "{year} {key}: {days:?}");
+            (day_number(days[0].1), days[0].2)
+        };
+        let (mha, clause) = day("MHA_PUJA");
+        assert_eq!(day("GOVARDHAN_PUJA").0, mha, "{year}: {rows:?}");
+        assert_eq!(day("NEPAL_SAMBAT_NEW_YEAR").0, mha, "{year}: {rows:?}");
+        assert!(
+            (1..=2).contains(&(day("YAMA_DWITIYA").0 - mha)),
+            "{year}: {rows:?}"
+        );
+        let before = mha - day("LAKSHMI_PUJA").0;
+        if (1..=2).contains(&before) {
+            continue;
+        }
+        // Only the adhika lunation between them parts the two.
+        assert!((29..=31).contains(&before), "{year}: {rows:?}");
+        assert_eq!(clause, Some(MalamasaClause::Nija), "{year}: {rows:?}");
+        split.push(*year);
+    }
+    assert_eq!(split, [2028], "the years a doubled Kartika splits");
 }
 
 #[test]

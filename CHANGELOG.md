@@ -12,6 +12,19 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+- **The Nepal Sambat year in a doubled Kartika (SR-158).** In BS 2085
+  (2028) Kartika is doubled, and the new year moves from the adhika
+  month's first day, 18 October 2028, to the Mha puja's day in the nija
+  month, 17 November: the gazette's holiday notices and the committee's
+  print keep the two on one day, and the adhika month is Anala, not
+  Kachhala (C2418, superseding C2041). `nepal_sambat()` counts that Anala
+  in the closing year 1148. Tihar itself still parts across the adhika
+  month, Lakshmi puja on 17 October and the rest a month on, as the
+  committee's former executive director computes it. A test holds Tihar
+  together in every other year from 1800 to 2399.
+  Numbers: the Nepal Sambat new year and the Nepal Sambat year of the days
+  of an adhika Kartika; nothing else.
+
 - **The maha punya kala (SR-160).** A sankranti's punya kala now carries
   `maha`, the five nadis of the window nearest the entry, which the
   *Dharmasindhu*'s Pausha chapter calls the most meritorious (C2421). It

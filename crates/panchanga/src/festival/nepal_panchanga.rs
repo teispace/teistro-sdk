@@ -639,7 +639,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         Masa::Kartika,
         Tithi::ShuklaPratipada,
         Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; in a doubled Kartika the year begins on the adhika month's first day, Dharmasindhu p. 31 (चैत्रस्य मलमासत्वे वत्सरारम्भनिमित्तकं ... मलमासप्रतिपद्येव कुर्यात्), as the Nepal Sambat calendar begins it, while Mha puja keeps the nija month (C2041)",
+        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; the Nepal Gazette's holiday notices, VS 2076 to 2081, put नेपाल संवत् प्रारम्भ on one day with the Mha puja or Govardhan puja, and a doubled Kartika is Anala, a month of its own name, so the year waits for the nija Kachhala with the Mha puja (C2418)",
     ),
     (
         "PASHUPATI_HALESI_MELA",
@@ -2454,18 +2454,17 @@ const COUNTED: [(&str, &str, i8, &str); 5] = [
     ),
 ];
 
-/// The rules a doubled Jyeshtha keeps in its adhika month (C606),
-/// the year a doubled Kartika begins there (C2041), and the one the
-/// print names only there (C607); a monthly rule is kept in an
-/// adhika month too.
+/// The rules a doubled Jyeshtha keeps in its adhika month (C606) and
+/// the one the print names only there (C607); a monthly rule is kept in
+/// an adhika month too. The Nepal Sambat new year is not among them: it
+/// keeps the nija Kachhala with the Mha puja (C2418).
 fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
     match key {
         "DASHAHARA_SNANA_ARAMBHA"
         | "GANGA_DASHAHARA"
         | "GANGA_PUJA"
         | "RAMESHWAR_PUJA"
-        | "GURU_PADMASAMBHAVA_JAYANTI"
-        | "NEPAL_SAMBAT_NEW_YEAR" => InAdhika::First,
+        | "GURU_PADMASAMBHAVA_JAYANTI" => InAdhika::First,
         "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
         _ if month.is_none() => InAdhika::Also,
         _ => InAdhika::Nija,
