@@ -57,6 +57,14 @@ The `phala` and `readings` examples, in Rust and every binding, read
 it runs any example, with the same builder and the same file names
 (`teistro_intl::pack::file_name`) as the command above.
 
+## From a release
+
+Each GitHub release carries every corpus built, one `.tbundle` a locale,
+named `teistro-<corpus>-<version>-<tag>.tbundle`
+(`teistro-readings-1.0.0-ne-Deva-NP.tbundle`) and listed in
+`checksums.txt` and `manifest.json`'s `corpusBundles`, so a consumer
+downloads the locale it writes in rather than building it.
+
 ## Loading one
 
 The bytes are the whole interface — a file beside your binary, a download,

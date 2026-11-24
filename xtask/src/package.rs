@@ -726,6 +726,14 @@ fn write_stage(
         ));
     }
     merged["localeBundles"] = Value::Array(bundles);
+    let corpora = corpus_bundles(root, dist, version)?;
+    for bundle in &corpora {
+        written.push(rel(
+            root,
+            &dist.join(bundle["file"].as_str().unwrap_or_default()),
+        ));
+    }
+    merged["corpusBundles"] = Value::Array(corpora);
     let merged = &merged;
     let manifest = dist.join("manifest.json");
     fs::write(&manifest, format!("{}\n", to_json(merged)))?;
@@ -830,7 +838,9 @@ fn checksum_list(merged: &Value) -> String {
         }
     }
     let bundle = merged.get("mcpb").into_iter();
-    let locales = merged["localeBundles"].as_array().into_iter().flatten();
+    let locales = ["localeBundles", "corpusBundles"]
+        .into_iter()
+        .flat_map(|list| merged[list].as_array().into_iter().flatten());
     for file in merged["maven"]["files"]
         .as_array()
         .into_iter()
@@ -851,6 +861,49 @@ fn checksum_list(merged: &Value) -> String {
 /// The release's name for a locale's bundle.
 pub(crate) fn locale_bundle_name(version: &str, tag: &str) -> String {
     format!("teistro-intl-{version}-{tag}.tbundle")
+}
+
+/// The corpora the library does not embed, each a root under `packs/`
+/// in the shape of `i18n/` (`packs/README.md`).
+const CORPORA: &str = "packs";
+
+/// The release's name for one locale of a corpus.
+pub(crate) fn corpus_bundle_name(corpus: &str, version: &str, tag: &str) -> String {
+    format!("teistro-{corpus}-{version}-{tag}.tbundle")
+}
+
+/// Every corpus under `packs/` (the readings, the state readings, the
+/// festival descriptions), one bundle a locale, as release assets: the
+/// records are loaded, not embedded (`03-design/interpretation-records.md`
+/// §3), so a consumer needs a file to load, and the release is where it
+/// comes from. One record each, the corpus, the locale, the file and its
+/// digest, for the manifest and the checksum list.
+fn corpus_bundles(root: &Path, dist: &Path, version: &str) -> io::Result<Vec<Value>> {
+    let mut corpora: Vec<_> = fs::read_dir(root.join(CORPORA))?
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    corpora.sort();
+    let mut records = Vec::new();
+    for corpus in corpora {
+        let tree = teistro_intl::source::Tree::load(&root.join(CORPORA).join(&corpus))
+            .map_err(|e| io::Error::other(format!("the {corpus} corpus: {e}")))?;
+        for (tag, locale) in &tree.locales {
+            let bytes = teistro_intl::pack::build_bundle(locale)
+                .map_err(|e| io::Error::other(format!("{corpus} {tag}'s bundle: {e}")))?;
+            let file = corpus_bundle_name(&corpus, version, tag);
+            fs::write(dist.join(&file), &bytes)?;
+            records.push(json!({
+                "corpus": corpus,
+                "locale": tag,
+                "file": file,
+                "bytes": bytes.len(),
+                "sha256": hex(&Sha256::digest(&bytes)),
+            }));
+        }
+    }
+    Ok(records)
 }
 
 /// Every locale's bundle, as a release asset (SR-150): the bytes the
@@ -1410,6 +1463,49 @@ mod tests {
         }
         let merged = json!({ "localeBundles": records });
         assert!(checksum_list(&merged).contains(&super::locale_bundle_name("1.2.3", "ne-Deva-NP")));
+        std::fs::remove_dir_all(&dist).unwrap();
+    }
+
+    /// Every corpus under `packs/` is staged, a bundle a locale, each one
+    /// loading into a context beside the embedded locales and listed with
+    /// its digest.
+    #[test]
+    fn every_corpus_is_staged_as_bundles_a_context_loads() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
+        let dist = std::env::temp_dir().join(format!("teistro-corpora-{}", std::process::id()));
+        std::fs::create_dir_all(&dist).unwrap();
+        let records = super::corpus_bundles(&root, &dist, "1.2.3").unwrap();
+        let corpora: std::collections::BTreeSet<&str> = records
+            .iter()
+            .filter_map(|r| r["corpus"].as_str())
+            .collect();
+        assert!(
+            corpora.contains("readings") && corpora.contains("states"),
+            "{corpora:?}"
+        );
+        let tree = teistro_intl::source::Tree::load(&root.join(crate::intl::SOURCES)).unwrap();
+        let mut intl = teistro_intl::Intl::from_tree(&tree).unwrap();
+        for record in &records {
+            let file = record["file"].as_str().unwrap();
+            let (corpus, tag) = (
+                record["corpus"].as_str().unwrap(),
+                record["locale"].as_str().unwrap(),
+            );
+            assert_eq!(file, super::corpus_bundle_name(corpus, "1.2.3", tag));
+            let bytes = std::fs::read(dist.join(file)).unwrap();
+            assert_eq!(
+                record["sha256"],
+                crate::hashes::hex(&Sha256::digest(&bytes))
+            );
+            intl.load_pack(&bytes)
+                .unwrap_or_else(|e| panic!("{file}: {e}"));
+        }
+        let merged = json!({ "corpusBundles": records });
+        assert!(checksum_list(&merged).contains(&super::corpus_bundle_name(
+            "readings",
+            "1.2.3",
+            "ne-Deva-NP"
+        )));
         std::fs::remove_dir_all(&dist).unwrap();
     }
 

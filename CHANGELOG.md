@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every festival described, as a corpus a consumer loads (SR-153, stage b).**
+**Numbers:** none. No day moves; a listing asked with `about` gains subjects.
+- **Added:** 709 more festivals described in English and Nepali, beside stage (a)'s 42:
+  what each day is, how it is kept and the works the facts come from. Their acts and
+  sources are in the SDK, so a listing asked with `about` names them in every build; their
+  `about` sentences are a corpus loaded at run time (`packs/festivals`), not embedded, so
+  no artefact grows by them (`docs/03-design/festival-about.md` §7, C2417). Twenty-seven
+  subjects stay `unwritten` until a source confirms them or their date rule is checked.
+- **Added:** each release ships every corpus under `packs/` as
+  `teistro-<corpus>-<version>-<tag>.tbundle` (the readings, the state readings and the
+  festival descriptions), listed in `checksums.txt` and `manifest.json`'s `corpusBundles`.
+- **Changed:** 238 more acts (`observance`) are named in English and Nepali.
 - **The seven choghadiya in plain words (SR-155).** `packs/states` gives
   each `choghadiya.<KEY>` a `phala` and a `phalaProse` in English, Hindi,
   Nepali and Sanskrit (and the derived `sa-Latn`), so the day's panel
