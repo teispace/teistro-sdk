@@ -6,14 +6,18 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
-| `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 373 | 0.0% |
-| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 373 | 96.5% |
-| `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 373 of 373 | 100.0% |
-| `sa-Deva` | base | 661 of 672 | 98.4% | 360 of 373 | 96.5% |
-| `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 373 | 96.5% |
+| `en-Latn` | strict | 672 of 672 | 100.0% | 451 of 451 | 100.0% |
+| `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 451 | 0.0% |
+| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 451 | 79.8% |
+| `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 451 of 451 | 100.0% |
+| `sa-Deva` | base | 661 of 672 | 98.4% | 360 of 451 | 79.8% |
+| `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 451 | 79.8% |
 
-672 members of 45 kinds, 373 messages.
+672 members of 45 kinds, 451 messages.
+
+`en-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.voice`.
+
+`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.voice`.
 
 ## By kind
 
