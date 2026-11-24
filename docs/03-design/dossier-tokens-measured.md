@@ -40,4 +40,4 @@ columns against each other, not as a model's bill.
 | `ne-Deva-NP` names | 4 294 573 | 2 749 621 | 2 107 329 | 39 760 | 1.36 |
 | `sa-Deva` names | 4 299 981 | 2 751 291 | 2 109 077 | 39 793 | 1.36 |
 | `sa-Latn` names | 3 145 959 | 2 838 609 | 1 839 229 | 34 702 | 1.19 |
-| the document's canonical JSON | 7 038 804 | 7 038 521 | 3 943 616 | 74 407 | 2.55 |
+| the document's canonical JSON | 7 038 910 | 7 038 627 | 3 943 616 | 74 407 | 2.55 |
