@@ -1,5 +1,8 @@
 # The rashifal's reading voice (SR-152)
 
+Status: `building`, 2026-11-24; S1 (the plan, in every binding) built,
+S2 (the en and ne packs) next.
+
 A second register for the rashifal, `reading`, beside the technical one the
 [`rashifal`](rashifal.md) composer says ("Saturn in the 12th: Sade Sati
 rising"). It is what the national dailies and calendar apps print: a headline,
