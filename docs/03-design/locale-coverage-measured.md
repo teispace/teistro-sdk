@@ -15,10 +15,6 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 672 members of 45 kinds, 451 messages.
 
-`en-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.voice`.
-
-`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.voice`.
-
 ## By kind
 
 | kind | members | `en-Latn` | `en-Latn-NP` | `hi-Deva-IN` | `ne-Deva-NP` | `sa-Deva` | `sa-Latn` |
