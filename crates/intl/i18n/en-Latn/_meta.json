@@ -7,7 +7,6 @@
   "group": ",",
   "fallback": [],
   "completeness": "strict",
-  "draft": ["sdk.voice"],
   "contexts": {
     "gender": ["m", "f", "n"]
   },

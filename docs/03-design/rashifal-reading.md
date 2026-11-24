@@ -1,7 +1,7 @@
 # The rashifal's reading voice (SR-152)
 
 Status: `building`, 2026-11-24; S1 (the plan, in every binding) and S2
-(the en and ne packs, draft until review) built; S3 (hi and sa) and S4 (the
+(the en and ne packs, final) built; S3 (hi and sa) and S4 (the
 lucky items traced) next.
 
 A second register for the rashifal, `reading`, beside the technical one the
@@ -24,7 +24,7 @@ is good (v. 2). The **score** and its band are the baseline's formula, which
 is unsourced (C361), and the band's lines are the consumer's design
 (`rashifal.md`, "The score band"). The **wording** is the consumer's voice:
 its survey of the dailies (hub `docs/02-research/notes/rashifal-voice.md`),
-reviewed by native readers (Q42).
+reviewed by the maintainer after shipping (Q42).
 
 So the reading voice keeps them apart. A plan says which facts each sentence
 rests on, the facts are the SDK's, and the sentences are a pack's.
@@ -42,11 +42,10 @@ One `ReadingPlan` per sign and period, in the order a page shows it:
 | `lucky` | colour, number, day and direction, as entity slots | the sign's lord (below) |
 | `syllables` | the sign's nine name syllables (चु, चे, चो, ला…), as entity slots | the nine nakshatra padas the sign holds |
 
-An `Item` is the interpret crate's: a message key and its parameters. A
-reading item adds two fields:
+An `Item` is the interpret crate's: a message key and its parameters. Its
+parameters always hold `variant`, the wording chosen among the pack's
+variants for that key (below), and `hedge`. A reading item adds the fields:
 
-- **`variant`**, the wording chosen among the pack's variants for that key
-  (below);
 - **`rests_on`**, the facts it says, each a `Fact`:
   - `TRANSIT { graha }`: the graha's house and verdict from the sign;
   - `SATURN`: Saturn's standing, its phase or spell;
@@ -191,9 +190,9 @@ the sign Nepal's way, "Mesh (Aries)" (C2332).
   `families-are-forwarded` rule holds `full` to the families). It reads a
   `RashiReading` and its `BaselineScore`, and nothing else.
 - **The messages** live in the `sdk.voice` namespace, under
-  `sdk.voice.rashifal.*`: en and ne first, then hi and sa. Both mark the
-  namespace `draft` in their `_meta.json`, so every render says `is_draft`
-  until the consumer's native reviewers sign it off (Q42, SR-75). Shared pieces
+  `sdk.voice.rashifal.*`: en and ne first, then hi and sa. They ship final,
+  with no `draft` mark: the maintainer reviews after shipping (Q42, decided
+  2026-11-10), and `tests/draft.rs` pins every locale's list empty. Shared pieces
   (the house's ordinal and theme, the area names, the frame labels) are
   helper messages an intent calls with `:msg`.
 - **The façade and every binding** answer `rashifal.reading(...)` with the
