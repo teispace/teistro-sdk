@@ -24,7 +24,7 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field. Null leaves the SDK's default.
  * @param longitudeDeg The {@code longitudeDeg} field. Null leaves the SDK's default.
  * @param markers The {@code markers} field. Null leaves the SDK's default.
- * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
+ * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen, where a journey goes, and whether each window's reasons are said in words. Null leaves the SDK's default.
  * @param nepalSambat The {@code nepalSambat} field. Null leaves the SDK's default.
  * @param place A place as `geo.resolve` answered it, in place of `latitudeDeg`, `longitudeDeg` and `zone`: its coordinates, its zone, and its ground height as the observer's unless `altitudeM` states one. Null leaves the SDK's default.
  * @param sky The {@code sky} field. Null leaves the SDK's default.
@@ -243,7 +243,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code muhurta}.
          *
-         * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
+         * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen, where a journey goes, and whether each window's reasons are said in words. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder muhurta(MuhurtaRequest muhurta) {

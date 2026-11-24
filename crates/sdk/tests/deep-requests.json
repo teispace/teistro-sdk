@@ -1466,6 +1466,7 @@
           "star": "nakshatra.BHARANI"
         },
         "ranking": "BASELINE",
+        "reasons": true,
         "rules": {
           "bars": [
             {
@@ -2313,6 +2314,7 @@
           "star": "nakshatra.BHARANI"
         },
         "ranking": "BASELINE",
+        "reasons": true,
         "rules": {
           "bars": [
             {
