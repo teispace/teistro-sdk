@@ -4692,6 +4692,24 @@ test('an almanac carries the muhurta search it was asked for', () => {
   const knobs = answer.provenance.appliedConventions.map((c) => c.knob);
   assert.ok(knobs.includes('muhurta.asta') && knobs.includes('muhurta.zodiacAt'), knobs.join());
 
+  // Asked, each window says why it is good (SR-154), and every item renders
+  // from the pack with no warning; not asked, none.
+  assert.deepEqual(answer.reasons, []);
+  const why = ctx.almanac.of({ ...days, muhurta: { ...asked, reasons: true } }).muhurta;
+  assert.equal(why.reasons.length, why.windows.length);
+  why.reasons.forEach((said, w) => {
+    assert.equal(said.line.intent, 'sdk.voice.muhurta.line');
+    for (const reason of said.reasons) {
+      assert.equal(reason.clause == null, reason.side === 'AVOIDED', reason.intent);
+      if (reason.clause != null) assert.equal(why.windows[w].clauses[reason.clause].clause, reason.key);
+    }
+    for (const item of [said.line, ...said.reasons]) {
+      const rendered = ctx.intl.render(item.intent, item.params);
+      assert.ok(!rendered.isFallback && !rendered.text.includes('{'), item.intent);
+      assert.deepEqual(rendered.warnings, [], item.intent);
+    }
+  });
+
   // A clause answered is a bar a request may name, as it was read.
   const { at: _, ...amrit } = clauses.find((c) => c.clause === 'CHOGHADIYA' && c.choghadiya === 'choghadiya.AMRIT');
   const graded = { best: [], middling: [], rejected: [], otherwise: 'MIDDLING' };

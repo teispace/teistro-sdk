@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.teispace.teistro.blob.IntlRender;
 import com.teispace.teistro.request.MatchingRequest;
 import com.teispace.teistro.request.SadeSatiRequest;
 import com.teispace.teistro.request.ThemePatch;
@@ -58,6 +59,31 @@ final class VedicTest {
                 MuhurtaAnswer answer = almanac.muhurta().orElseThrow();
                 check(!answer.windows().isEmpty(), "windows found");
                 same("TEXTS", answer.ranking(), "ranked by the texts");
+                // Asked, each window says why it is good (SR-154), and every item renders from
+                // the pack with no warning; not asked, none.
+                check(answer.reasons().isEmpty(), "reasons only when asked for");
+                MuhurtaAnswer why = days.apply(to, Map.of("rules", "RAMAN_MARRIAGE", "native",
+                        Map.of("star", "ROHINI", "moonSign", "TAURUS", "lagna", "LEO"), "daysWithWindows", 9,
+                        "most", 1000, "reasons", true)).muhurta().orElseThrow();
+                same(why.windows().size(), why.reasons().size(), "a window's reasons each");
+                for (int w = 0; w < why.reasons().size(); w += 1) {
+                    MuhurtaReasons said = why.reasons().get(w);
+                    same("sdk.voice.muhurta.line", said.line().intent(), "the line's intent");
+                    IntlRender line = sky.intl().render(said.line().intent(), said.line().params());
+                    same(0L, line.warningCount(), "the line renders without a warning");
+                    check(!line.text().contains("{"), line.text());
+                    for (MuhurtaReasons.Reason reason : said.reasons()) {
+                        same(reason.side().equals("AVOIDED"), reason.clause() == null, reason.intent());
+                        if (reason.clause() != null) {
+                            same(reason.key(), why.windows().get(w).clauses().get(reason.clause()).kind().clause(),
+                                    reason.intent() + " points at its clause");
+                        }
+                        IntlRender heard = sky.intl().render(reason.intent(), reason.params());
+                        same(0, heard.isFallback(), reason.intent() + " is in the pack");
+                        same(0L, heard.warningCount(), reason.intent() + " renders without a warning");
+                        check(!heard.text().contains("{"), reason.intent() + ": " + heard.text());
+                    }
+                }
                 for (int k = 0; k < plain.size(); k += 1) {
                     same(plain.at(k).provenance().contentHash(), almanac.at(k).provenance().contentHash(),
                             "the days are the ones asked without a search");
