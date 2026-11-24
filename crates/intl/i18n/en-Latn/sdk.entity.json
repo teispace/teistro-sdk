@@ -8859,6 +8859,958 @@
     "LANGAR": {
       "name": "A free meal for all at the gurdwara's langar",
       "prose": "A free meal for all at the gurdwara's langar"
+    },
+    "BALI_IMAGE": {
+      "name": "An image of King Bali drawn or shaped and worshipped",
+      "prose": "An image of King Bali drawn or shaped and worshipped"
+    },
+    "GIFTS_TO_WIVES": {
+      "name": "Gifts from husbands to their wives",
+      "prose": "Gifts from husbands to their wives"
+    },
+    "RISHI_TARPANA": {
+      "name": "Water offered to the seers of the Veda",
+      "prose": "Water offered to the seers of the Veda"
+    },
+    "VEDA_RECITATION": {
+      "name": "The Veda's recitation begun afresh",
+      "prose": "The Veda's recitation begun afresh"
+    },
+    "SHRADDHA": {
+      "name": "Shraddha, with pinda and water offered to the dead",
+      "prose": "Shraddha, with pinda and water offered to the dead"
+    },
+    "BRAHMINS_FED": {
+      "name": "Brahmins fed",
+      "prose": "Brahmins fed"
+    },
+    "SUMANGALI_FED": {
+      "name": "A married woman fed and honoured",
+      "prose": "A married woman fed and honoured"
+    },
+    "DEITY_BATHED": {
+      "name": "The image bathed and dressed",
+      "prose": "The image bathed and dressed"
+    },
+    "RAMAYANA_READ": {
+      "name": "The Ramayana read aloud",
+      "prose": "The Ramayana read aloud"
+    },
+    "NAVADVIPA_PARIKRAMA": {
+      "name": "A walk round the nine islands of Navadvip",
+      "prose": "A walk round the nine islands of Navadvip"
+    },
+    "PLOUGHING_PAUSED": {
+      "name": "No ploughing while the earth rests",
+      "prose": "No ploughing while the earth rests"
+    },
+    "SWINGS_HUNG": {
+      "name": "Swings hung from the trees",
+      "prose": "Swings hung from the trees"
+    },
+    "PITHA": {
+      "name": "Rice cakes, pitha, made at home",
+      "prose": "Rice cakes, pitha, made at home"
+    },
+    "SPRING_AWAITED": {
+      "name": "Pilgrims at the source wait for the spring to well up",
+      "prose": "Pilgrims at the source wait for the spring to well up"
+    },
+    "TOOLS_WORSHIPPED": {
+      "name": "Tools and machines cleaned and worshipped",
+      "prose": "Tools and machines cleaned and worshipped"
+    },
+    "GARLAND_AT_STATUE": {
+      "name": "Garlands laid at a statue or portrait",
+      "prose": "Garlands laid at a statue or portrait"
+    },
+    "POETRY_READING": {
+      "name": "Readings of the poet's verse",
+      "prose": "Readings of the poet's verse"
+    },
+    "FIREWORKS": {
+      "name": "Fireworks",
+      "prose": "Fireworks"
+    },
+    "RALLY": {
+      "name": "Rallies and public meetings",
+      "prose": "Rallies and public meetings"
+    },
+    "FLAG_HOISTED": {
+      "name": "The national flag raised",
+      "prose": "The national flag raised"
+    },
+    "PARADE": {
+      "name": "A parade",
+      "prose": "A parade"
+    },
+    "PRAYER_MEETING": {
+      "name": "Prayer meetings",
+      "prose": "Prayer meetings"
+    },
+    "STATIONS_OF_CROSS": {
+      "name": "The Stations of the Cross walked in prayer",
+      "prose": "The Stations of the Cross walked in prayer"
+    },
+    "JAIN_TEMPLE": {
+      "name": "Worship at the Jain temple",
+      "prose": "Worship at the Jain temple"
+    },
+    "NIRVANA_LADDU": {
+      "name": "A laddu offered at the temple at dawn",
+      "prose": "A laddu offered at the temple at dawn"
+    },
+    "KALPASUTRA_READ": {
+      "name": "The Kalpasutra read by the monks",
+      "prose": "The Kalpasutra read by the monks"
+    },
+    "PRATIKRAMANA": {
+      "name": "Pratikramana, the rite of confession and repentance",
+      "prose": "Pratikramana, the rite of confession and repentance"
+    },
+    "FORGIVENESS_ASKED": {
+      "name": "Forgiveness asked of all, michchhami dukkadam",
+      "prose": "Forgiveness asked of all, michchhami dukkadam"
+    },
+    "TEN_VIRTUES": {
+      "name": "One of the ten virtues taken up each day",
+      "prose": "One of the ten virtues taken up each day"
+    },
+    "TATTVARTHA_READ": {
+      "name": "The Tattvartha Sutra read, a chapter a day",
+      "prose": "The Tattvartha Sutra read, a chapter a day"
+    },
+    "AYAMBIL": {
+      "name": "One plain meal a day of boiled grain, the ayambil",
+      "prose": "One plain meal a day of boiled grain, the ayambil"
+    },
+    "SIDDHACHAKRA_WORSHIP": {
+      "name": "Worship of the Siddhachakra",
+      "prose": "Worship of the Siddhachakra"
+    },
+    "GREENS_AVOIDED": {
+      "name": "No green vegetables eaten",
+      "prose": "No green vegetables eaten"
+    },
+    "SNAKE_WORSHIP": {
+      "name": "The serpent gods worshipped with milk and flowers",
+      "prose": "The serpent gods worshipped with milk and flowers"
+    },
+    "FLOWERS_GATHERED": {
+      "name": "Flowers gathered in the evening by groups of young wives, singing",
+      "prose": "Flowers gathered in the evening by groups of young wives, singing"
+    },
+    "STORIES_TOLD": {
+      "name": "The day's story told by an elder woman",
+      "prose": "The day's story told by an elder woman"
+    },
+    "GAURI_WORSHIP": {
+      "name": "Worship of Gauri",
+      "prose": "Worship of Gauri"
+    },
+    "ARGHYA_TO_MOON": {
+      "name": "Arghya offered to the moon, with curd and fruit",
+      "prose": "Arghya offered to the moon, with curd and fruit"
+    },
+    "PREDAWN_MEAL": {
+      "name": "A meal eaten before dawn, ahead of the fast",
+      "prose": "A meal eaten before dawn, ahead of the fast"
+    },
+    "CLAY_FIGURES": {
+      "name": "Clay figures made and sung to by the sisters",
+      "prose": "Clay figures made and sung to by the sisters"
+    },
+    "IMMERSION": {
+      "name": "The images immersed in a river or pond",
+      "prose": "The images immersed in a river or pond"
+    },
+    "SONGS_OF_THE_POET": {
+      "name": "The poet's songs sung",
+      "prose": "The poet's songs sung"
+    },
+    "WATER_ON_HEADS": {
+      "name": "Elders pour water on the heads of the young as a blessing",
+      "prose": "Elders pour water on the heads of the young as a blessing"
+    },
+    "STALE_FOOD": {
+      "name": "Food cooked the day before eaten cold, the hearth left to rest",
+      "prose": "Food cooked the day before eaten cold, the hearth left to rest"
+    },
+    "FORT_VISIT": {
+      "name": "Visits to the forts associated with him",
+      "prose": "Visits to the forts associated with him"
+    },
+    "BANKS_CLOSED": {
+      "name": "Banks closed to the public while they close their books",
+      "prose": "Banks closed to the public while they close their books"
+    },
+    "SWING_OF_KRISHNA": {
+      "name": "Radha and Krishna rocked on a swing",
+      "prose": "Radha and Krishna rocked on a swing"
+    },
+    "EASTER_VIGIL": {
+      "name": "The Easter Vigil, with a new fire and the paschal candle",
+      "prose": "The Easter Vigil, with a new fire and the paschal candle"
+    },
+    "NEW_LEDGERS": {
+      "name": "New account books opened in the shops, the haal khata",
+      "prose": "New account books opened in the shops, the haal khata"
+    },
+    "PANDAL_VISITS": {
+      "name": "Crowds going round the decorated pandals",
+      "prose": "Crowds going round the decorated pandals"
+    },
+    "NIGHT_PUJA": {
+      "name": "Worship through the night",
+      "prose": "Worship through the night"
+    },
+    "MEMORIAL_GATHERING": {
+      "name": "Gatherings in his or her memory",
+      "prose": "Gatherings in his or her memory"
+    },
+    "SIREN_AT_HOUR": {
+      "name": "Conches and sirens sounded at the hour of his birth",
+      "prose": "Conches and sirens sounded at the hour of his birth"
+    },
+    "POOKALAM": {
+      "name": "A carpet of flowers, the pookalam, laid at the door",
+      "prose": "A carpet of flowers, the pookalam, laid at the door"
+    },
+    "SADYA": {
+      "name": "A feast served on a plantain leaf, the sadya",
+      "prose": "A feast served on a plantain leaf, the sadya"
+    },
+    "VISHUKKANI": {
+      "name": "The first sight of the year, the kani, arranged overnight and seen on waking",
+      "prose": "The first sight of the year, the kani, arranged overnight and seen on waking"
+    },
+    "MONEY_FROM_ELDERS": {
+      "name": "Coins or notes given by the elders to the young",
+      "prose": "Coins or notes given by the elders to the young"
+    },
+    "PESAHA_BREAD": {
+      "name": "Unleavened bread and coconut milk shared at home",
+      "prose": "Unleavened bread and coconut milk shared at home"
+    },
+    "FOOT_WASHING": {
+      "name": "The washing of feet in church",
+      "prose": "The washing of feet in church"
+    },
+    "PONGAL_BOILED": {
+      "name": "New rice boiled with milk and jaggery until it brims over",
+      "prose": "New rice boiled with milk and jaggery until it brims over"
+    },
+    "KOLAM": {
+      "name": "A rice-flour pattern, the kolam, drawn at the door",
+      "prose": "A rice-flour pattern, the kolam, drawn at the door"
+    },
+    "CATTLE_HONOURED": {
+      "name": "Cattle bathed, decorated and fed",
+      "prose": "Cattle bathed, decorated and fed"
+    },
+    "OUTINGS": {
+      "name": "Family outings and visits",
+      "prose": "Family outings and visits"
+    },
+    "KAVADI": {
+      "name": "Kavadi carried to the god's hill shrine, some devotees pierced",
+      "prose": "Kavadi carried to the god's hill shrine, some devotees pierced"
+    },
+    "BOOKS_WORSHIPPED": {
+      "name": "Books and instruments laid before the goddess",
+      "prose": "Books and instruments laid before the goddess"
+    },
+    "MEJI_BURNT": {
+      "name": "The meji, a tower of straw and bamboo, burnt at dawn",
+      "prose": "The meji, a tower of straw and bamboo, burnt at dawn"
+    },
+    "TRADITIONAL_GAMES": {
+      "name": "Traditional games and sports",
+      "prose": "Traditional games and sports"
+    },
+    "GAMOSA_GIVEN": {
+      "name": "Gamosas given to elders and friends",
+      "prose": "Gamosas given to elders and friends"
+    },
+    "LAMPS_IN_FIELDS": {
+      "name": "Lamps lit at the tulsi plant, the granary and the fields",
+      "prose": "Lamps lit at the tulsi plant, the granary and the fields"
+    },
+    "NAAM_PRASANGA": {
+      "name": "Congregational singing of the Lord's name at the namghar",
+      "prose": "Congregational singing of the Lord's name at the namghar"
+    },
+    "BHAONA": {
+      "name": "Bhaona, the Vaishnava dance-drama",
+      "prose": "Bhaona, the Vaishnava dance-drama"
+    },
+    "ANCESTOR_RITES": {
+      "name": "Offerings to the ancestors",
+      "prose": "Offerings to the ancestors"
+    },
+    "KARAM_BRANCH": {
+      "name": "A branch of the karam tree set up and danced around through the night",
+      "prose": "A branch of the karam tree set up and danced around through the night"
+    },
+    "AWARD_GIVEN": {
+      "name": "An award given in his name",
+      "prose": "An award given in his name"
+    },
+    "VACHANA_SINGING": {
+      "name": "His vachanas recited and sung",
+      "prose": "His vachanas recited and sung"
+    },
+    "MATHA_WORSHIP": {
+      "name": "Special worship at the matha",
+      "prose": "Special worship at the matha"
+    },
+    "BAGINA_GIVEN": {
+      "name": "Trays of gifts, the bagina, given to married women",
+      "prose": "Trays of gifts, the bagina, given to married women"
+    },
+    "STATE_FLAG": {
+      "name": "The state's flag raised and its awards given",
+      "prose": "The state's flag raised and its awards given"
+    },
+    "NEW_CROP_BLESSED": {
+      "name": "The new crop blessed in church and eaten at a family meal",
+      "prose": "The new crop blessed in church and eaten at a family meal"
+    },
+    "MIDNIGHT_MASS": {
+      "name": "Midnight mass",
+      "prose": "Midnight mass"
+    },
+    "SESAME_JAGGERY": {
+      "name": "Sesame and jaggery shared with friends and neighbours",
+      "prose": "Sesame and jaggery shared with friends and neighbours"
+    },
+    "OLD_THINGS_BURNT": {
+      "name": "Old things thrown on a bonfire at dawn",
+      "prose": "Old things thrown on a bonfire at dawn"
+    },
+    "FLOWER_STACK": {
+      "name": "Flowers stacked in tiers into a cone, the bathukamma",
+      "prose": "Flowers stacked in tiers into a cone, the bathukamma"
+    },
+    "CIRCLE_DANCE": {
+      "name": "Women sing and dance in a circle",
+      "prose": "Women sing and dance in a circle"
+    },
+    "GIFTS_TO_WORKERS": {
+      "name": "Gifts and tips for those who serve through the year",
+      "prose": "Gifts and tips for those who serve through the year"
+    },
+    "OFFERING_TO_WATER": {
+      "name": "Offerings to a river or the sea",
+      "prose": "Offerings to a river or the sea"
+    },
+    "RUN_FOR_UNITY": {
+      "name": "Marches and runs for national unity",
+      "prose": "Marches and runs for national unity"
+    },
+    "NAGAR_KIRTAN": {
+      "name": "A procession singing hymns, the nagar kirtan",
+      "prose": "A procession singing hymns, the nagar kirtan"
+    },
+    "HOLI_MILAN": {
+      "name": "Holi milan, gatherings of greeting after the colours",
+      "prose": "Holi milan, gatherings of greeting after the colours"
+    },
+    "NEW_RICE_OFFERED": {
+      "name": "The first rice of the new crop offered to the goddess, then eaten",
+      "prose": "The first rice of the new crop offered to the goddess, then eaten"
+    },
+    "ELDERS_GREETED": {
+      "name": "Elders greeted and blessings sought",
+      "prose": "Elders greeted and blessings sought"
+    },
+    "BANYAN_WORSHIP": {
+      "name": "Worship at a banyan tree, with the story of Savitri told",
+      "prose": "Worship at a banyan tree, with the story of Savitri told"
+    },
+    "MOON_WORSHIP": {
+      "name": "Worship of the moon at night",
+      "prose": "Worship of the moon at night"
+    },
+    "BOATS_FLOATED": {
+      "name": "Small boats with lamps floated on the water",
+      "prose": "Small boats with lamps floated on the water"
+    },
+    "ELDEST_CHILD_HONOURED": {
+      "name": "The eldest child honoured with lamps, new clothes and a feast",
+      "prose": "The eldest child honoured with lamps, new clothes and a feast"
+    },
+    "PYRE_BURNED": {
+      "name": "A pyre of wood and dung cakes burned at the crossroads",
+      "prose": "A pyre of wood and dung cakes burned at the crossroads"
+    },
+    "GANESH_WORSHIP": {
+      "name": "Worship of Ganesh",
+      "prose": "Worship of Ganesh"
+    },
+    "MOON_AVOIDED": {
+      "name": "Care taken not to look at the moon",
+      "prose": "Care taken not to look at the moon"
+    },
+    "IMAGE_IMMERSED": {
+      "name": "The clay image immersed in water",
+      "prose": "The clay image immersed in water"
+    },
+    "VISHNU_WORSHIP": {
+      "name": "Worship of Vishnu",
+      "prose": "Worship of Vishnu"
+    },
+    "SHIVA_WORSHIP": {
+      "name": "Worship of Shiva",
+      "prose": "Worship of Shiva"
+    },
+    "HOLY_BATH": {
+      "name": "A bath at a sacred lake or pond",
+      "prose": "A bath at a sacred lake or pond"
+    },
+    "TARPAN": {
+      "name": "Water and sesame offered to the ancestors, the tarpan",
+      "prose": "Water and sesame offered to the ancestors, the tarpan"
+    },
+    "FEEDING_BRAHMINS": {
+      "name": "Brahmins and relatives fed after the rite",
+      "prose": "Brahmins and relatives fed after the rite"
+    },
+    "DURVA_WORSHIP": {
+      "name": "Durva grass offered in worship",
+      "prose": "Durva grass offered in worship"
+    },
+    "DUBDHAGO": {
+      "name": "The durva thread, the dubdhago, consecrated and worn by women",
+      "prose": "The durva thread, the dubdhago, consecrated and worn by women"
+    },
+    "GAURA_BROUGHT_HOME": {
+      "name": "Gaura, shaped from grasses and grain stalks, brought home to music",
+      "prose": "Gaura, shaped from grasses and grain stalks, brought home to music"
+    },
+    "SACRED_THREAD_ARM": {
+      "name": "A consecrated thread tied on the arm",
+      "prose": "A consecrated thread tied on the arm"
+    },
+    "DEITY_PROCESSION": {
+      "name": "The god carried through the streets in a palanquin",
+      "prose": "The god carried through the streets in a palanquin"
+    },
+    "CHARHE_PUJA": {
+      "name": "A household puja on the dark fourteenth",
+      "prose": "A household puja on the dark fourteenth"
+    },
+    "RIVER_GODDESS_WORSHIP": {
+      "name": "Worship of the river goddess Ganga with lamps and flowers",
+      "prose": "Worship of the river goddess Ganga with lamps and flowers"
+    },
+    "TULSI_PLANTED": {
+      "name": "Tulsi sprigs planted or set in the household shrine",
+      "prose": "Tulsi sprigs planted or set in the household shrine"
+    },
+    "TRIBUTE_PROGRAMMES": {
+      "name": "Readings, talks and tributes in his memory",
+      "prose": "Readings, talks and tributes in his memory"
+    },
+    "STATUE_GARLANDED": {
+      "name": "Garlands laid at his statue",
+      "prose": "Garlands laid at his statue"
+    },
+    "CROWS_FED": {
+      "name": "Food set out for the crows",
+      "prose": "Food set out for the crows"
+    },
+    "LALITA_WORSHIP": {
+      "name": "Worship of the goddess Lalita",
+      "prose": "Worship of the goddess Lalita"
+    },
+    "KUCHHI_FEAST": {
+      "name": "A family feast seated in order of age, on leaf plates",
+      "prose": "A family feast seated in order of age, on leaf plates"
+    },
+    "TULSI_WEDDING": {
+      "name": "Tulsi married to Vishnu as Damodar or the shaligram",
+      "prose": "Tulsi married to Vishnu as Damodar or the shaligram"
+    },
+    "LAMP_VIGIL": {
+      "name": "A night's vigil with oil lamps",
+      "prose": "A night's vigil with oil lamps"
+    },
+    "SATBIJ_SCATTERED": {
+      "name": "Seven kinds of grain, the satbij, scattered for the dead",
+      "prose": "Seven kinds of grain, the satbij, scattered for the dead"
+    },
+    "FAIR": {
+      "name": "A fair at the shrine",
+      "prose": "A fair at the shrine"
+    },
+    "NEW_GRAIN": {
+      "name": "Dishes of the new grain offered and eaten",
+      "prose": "Dishes of the new grain offered and eaten"
+    },
+    "COWSHED_WORSHIP": {
+      "name": "Worship at the cowshed",
+      "prose": "Worship at the cowshed"
+    },
+    "SESAME_OFFERED": {
+      "name": "Sesame offered in worship and given to the poor",
+      "prose": "Sesame offered in worship and given to the poor"
+    },
+    "MOON_GREETED": {
+      "name": "The young crescent sought and greeted after sunset",
+      "prose": "The young crescent sought and greeted after sunset"
+    },
+    "TREE_CIRCLED": {
+      "name": "A pipal tree worshipped and circled with a thread",
+      "prose": "A pipal tree worshipped and circled with a thread"
+    },
+    "ABHISHEKA": {
+      "name": "The image ritually bathed",
+      "prose": "The image ritually bathed"
+    },
+    "SPOUT_BATH": {
+      "name": "A bath under stone water spouts",
+      "prose": "A bath under stone water spouts"
+    },
+    "MOTHER_HONOURED": {
+      "name": "Mothers honoured with sweets and gifts",
+      "prose": "Mothers honoured with sweets and gifts"
+    },
+    "GIFTS_OF_WATER": {
+      "name": "Water, fans and sandals given for the summer heat",
+      "prose": "Water, fans and sandals given for the summer heat"
+    },
+    "LAMP_OIL_OFFERED": {
+      "name": "Mustard oil and black sesame offered",
+      "prose": "Mustard oil and black sesame offered"
+    },
+    "WATER_SOURCES_CLEANED": {
+      "name": "Wells, ponds and stone spouts cleaned",
+      "prose": "Wells, ponds and stone spouts cleaned"
+    },
+    "BARA": {
+      "name": "Bara, fried lentil cakes, made and shared",
+      "prose": "Bara, fried lentil cakes, made and shared"
+    },
+    "HYMNS_SUNG": {
+      "name": "His verses and hymns sung",
+      "prose": "His verses and hymns sung"
+    },
+    "GURU_HONOURED": {
+      "name": "Teachers and gurus honoured",
+      "prose": "Teachers and gurus honoured"
+    },
+    "KHAT_RACE": {
+      "name": "Chariots and palanquins of the gods pulled and raced",
+      "prose": "Chariots and palanquins of the gods pulled and raced"
+    },
+    "DAMANAKA_OFFERED": {
+      "name": "Sprigs of damanaka, the fragrant southernwood, offered to the god",
+      "prose": "Sprigs of damanaka, the fragrant southernwood, offered to the god"
+    },
+    "VOWS_TAKEN": {
+      "name": "Vows of abstinence taken for the season",
+      "prose": "Vows of abstinence taken for the season"
+    },
+    "STUPA_CIRCLED": {
+      "name": "Stupas and shrines circled with offerings",
+      "prose": "Stupas and shrines circled with offerings"
+    },
+    "SNAKE_IMAGES": {
+      "name": "Pictures of the nagas pasted above doors and worshipped",
+      "prose": "Pictures of the nagas pasted above doors and worshipped"
+    },
+    "MILK_OFFERED": {
+      "name": "Milk and rice offered to the serpent gods",
+      "prose": "Milk and rice offered to the serpent gods"
+    },
+    "FROGS_FED": {
+      "name": "Food left out for the frogs in the fields",
+      "prose": "Food left out for the frogs in the fields"
+    },
+    "RICE_PLANTING": {
+      "name": "Rice planting acted out, with play in the mud",
+      "prose": "Rice planting acted out, with play in the mud"
+    },
+    "KUSH_GATHERED": {
+      "name": "Kush grass gathered for the year's rites",
+      "prose": "Kush grass gathered for the year's rites"
+    },
+    "FATHER_HONOURED": {
+      "name": "Fathers honoured with sweets and gifts",
+      "prose": "Fathers honoured with sweets and gifts"
+    },
+    "ANANTA_THREAD": {
+      "name": "A fourteen-knotted thread tied on the arm",
+      "prose": "A fourteen-knotted thread tied on the arm"
+    },
+    "ANIMAL_SACRIFICE": {
+      "name": "Animals offered in sacrifice to the goddess",
+      "prose": "Animals offered in sacrifice to the goddess"
+    },
+    "BEL_INVITED": {
+      "name": "A bel tree invited to hold the goddess",
+      "prose": "A bel tree invited to hold the goddess"
+    },
+    "SWORD_PROCESSION": {
+      "name": "Swords carried in procession by men dressed as gods",
+      "prose": "Swords carried in procession by men dressed as gods"
+    },
+    "GODDESS_FAREWELL": {
+      "name": "The goddess bid farewell and her image immersed",
+      "prose": "The goddess bid farewell and her image immersed"
+    },
+    "SARAI_DANCE": {
+      "name": "The sarai, danced with swords and shields to the naumati band",
+      "prose": "The sarai, danced with swords and shields to the naumati band"
+    },
+    "DAWN_BATH": {
+      "name": "A bath before dawn",
+      "prose": "A bath before dawn"
+    },
+    "SKY_LAMP": {
+      "name": "A lamp hung high on a pole each evening",
+      "prose": "A lamp hung high on a pole each evening"
+    },
+    "POND_BATH": {
+      "name": "A bath in a sacred pond",
+      "prose": "A bath in a sacred pond"
+    },
+    "PARANA": {
+      "name": "The fast broken on the twelfth day",
+      "prose": "The fast broken on the twelfth day"
+    },
+    "LAMP_FOR_YAMA": {
+      "name": "A lamp set out facing south for Yama",
+      "prose": "A lamp set out facing south for Yama"
+    },
+    "PURCHASES": {
+      "name": "Metal vessels, gold or silver bought",
+      "prose": "Metal vessels, gold or silver bought"
+    },
+    "COW_AND_CALF": {
+      "name": "A cow and her calf worshipped",
+      "prose": "A cow and her calf worshipped"
+    },
+    "OIL_BATH": {
+      "name": "An oil bath before dawn",
+      "prose": "An oil bath before dawn"
+    },
+    "GAMES_OF_CHANCE": {
+      "name": "Cards and dice played through the night",
+      "prose": "Cards and dice played through the night"
+    },
+    "COWHERDS_HONOURED": {
+      "name": "Cows and cowherds worshipped",
+      "prose": "Cows and cowherds worshipped"
+    },
+    "GOURD_GIVEN": {
+      "name": "An ash gourd given with coins hidden in it",
+      "prose": "An ash gourd given with coins hidden in it"
+    },
+    "AMLA_WORSHIP": {
+      "name": "Worship at the foot of an amla tree",
+      "prose": "Worship at the foot of an amla tree"
+    },
+    "HOMA": {
+      "name": "Oblations offered into the sacred fire",
+      "prose": "Oblations offered into the sacred fire"
+    },
+    "ETERNAL_LAMP": {
+      "name": "A great lamp kept burning through the night",
+      "prose": "A great lamp kept burning through the night"
+    },
+    "GIFTS_TO_BRAHMINS": {
+      "name": "Gifts to Brahmins and the poor",
+      "prose": "Gifts to Brahmins and the poor"
+    },
+    "WEDDING_REENACTED": {
+      "name": "The wedding of Rama and Sita re-enacted",
+      "prose": "The wedding of Rama and Sita re-enacted"
+    },
+    "GITA_RECITED": {
+      "name": "The Bhagavad Gita recited",
+      "prose": "The Bhagavad Gita recited"
+    },
+    "NEW_RICE": {
+      "name": "Dishes of the new rice harvest",
+      "prose": "Dishes of the new rice harvest"
+    },
+    "YOMARI": {
+      "name": "Yomari, rice-flour dumplings filled with chaku and sesame",
+      "prose": "Yomari, rice-flour dumplings filled with chaku and sesame"
+    },
+    "LEARNING_HONOURED": {
+      "name": "Talks and programmes in the person's honour",
+      "prose": "Talks and programmes in the person's honour"
+    },
+    "CULTURAL_PROGRAMME": {
+      "name": "Cultural programmes and dances",
+      "prose": "Cultural programmes and dances"
+    },
+    "NAHAY_KHAY_MEAL": {
+      "name": "A bath, and a single meal of rice, lentils and gourd",
+      "prose": "A bath, and a single meal of rice, lentils and gourd"
+    },
+    "KHEER_OFFERED": {
+      "name": "Jaggery rice pudding and roti offered at dusk",
+      "prose": "Jaggery rice pudding and roti offered at dusk"
+    },
+    "IMAGE_BATHED": {
+      "name": "The god's image bathed in public",
+      "prose": "The god's image bathed in public"
+    },
+    "TSAMPA_OFFERED": {
+      "name": "Tsampa offered at the household shrine",
+      "prose": "Tsampa offered at the household shrine"
+    },
+    "KALASH_PROCESSION": {
+      "name": "A kalash of holy water carried in procession",
+      "prose": "A kalash of holy water carried in procession"
+    },
+    "SWASTHANI_READING": {
+      "name": "The Swasthani Vrata Katha read each evening",
+      "prose": "The Swasthani Vrata Katha read each evening"
+    },
+    "SESAME_USED": {
+      "name": "Sesame used in the bath, the food and the gifts",
+      "prose": "Sesame used in the bath, the food and the gifts"
+    },
+    "TARPANA": {
+      "name": "Water offered to the ancestors, the tarpana",
+      "prose": "Water offered to the ancestors, the tarpana"
+    },
+    "SUN_WORSHIP": {
+      "name": "Worship of the Sun at sunrise",
+      "prose": "Worship of the Sun at sunrise"
+    },
+    "REFLECTION_VIEWED": {
+      "name": "The linga seen reflected in water",
+      "prose": "The linga seen reflected in water"
+    },
+    "MANVADI_RITES": {
+      "name": "A bath, a shraddha and gifts on a manvadi day",
+      "prose": "A bath, a shraddha and gifts on a manvadi day"
+    },
+    "MANGO_BLOSSOM_EATEN": {
+      "name": "Mango blossom eaten, and oil rubbed on the body",
+      "prose": "Mango blossom eaten, and oil rubbed on the body"
+    },
+    "PALANQUIN_PROCESSION": {
+      "name": "The god carried round the town in a palanquin, the khat",
+      "prose": "The god carried round the town in a palanquin, the khat"
+    },
+    "COLD_FOOD": {
+      "name": "Food cooked the day before eaten cold",
+      "prose": "Food cooked the day before eaten cold"
+    },
+    "NARASIMHA_WORSHIP": {
+      "name": "Worship of Narasimha at dusk, the hour he appeared",
+      "prose": "Worship of Narasimha at dusk, the hour he appeared"
+    },
+    "KUMAR_WORSHIP": {
+      "name": "Worship of Kumar, Kartikeya, at home",
+      "prose": "Worship of Kumar, Kartikeya, at home"
+    },
+    "EFFIGY_BURNED": {
+      "name": "An effigy of Ghantakarna dragged out and burned",
+      "prose": "An effigy of Ghantakarna dragged out and burned"
+    },
+    "IRON_RINGS_ON_DOORS": {
+      "name": "Iron rings or nails fixed on doors against evil",
+      "prose": "Iron rings or nails fixed on doors against evil"
+    },
+    "CHARIOTS_CLASH": {
+      "name": "The gods' chariots run and clashed together",
+      "prose": "The gods' chariots run and clashed together"
+    },
+    "IMAGES_DISPLAYED": {
+      "name": "Images of Dipankara and paubha paintings shown in the courtyards",
+      "prose": "Images of Dipankara and paubha paintings shown in the courtyards"
+    },
+    "MASKED_DANCE": {
+      "name": "A masked dancer as the god goes round the town",
+      "prose": "A masked dancer as the god goes round the town"
+    },
+    "POLE_LOWERED": {
+      "name": "Indra's pole lowered at Hanuman Dhoka",
+      "prose": "Indra's pole lowered at Hanuman Dhoka"
+    },
+    "MILITARY_PARADE": {
+      "name": "A parade and displays by the army at Tundikhel",
+      "prose": "A parade and displays by the army at Tundikhel"
+    },
+    "DOLLS_BEATEN": {
+      "name": "Cloth dolls made by girls and beaten with sticks by boys",
+      "prose": "Cloth dolls made by girls and beaten with sticks by boys"
+    },
+    "THREAD_OF_SIXTEEN_KNOTS": {
+      "name": "A thread of sixteen knots worn through the vow",
+      "prose": "A thread of sixteen knots worn through the vow"
+    },
+    "TULASI_PLANTED": {
+      "name": "A tulasi sapling planted and worshipped",
+      "prose": "A tulasi sapling planted and worshipped"
+    },
+    "TEACHERS_HONOURED": {
+      "name": "Teachers and gurus honoured with gifts",
+      "prose": "Teachers and gurus honoured with gifts"
+    },
+    "PAVITRA_OFFERED": {
+      "name": "A garland of knotted threads, the pavitra, offered to the god",
+      "prose": "A garland of knotted threads, the pavitra, offered to the god"
+    },
+    "KALI_WORSHIP": {
+      "name": "Worship of the goddess Kali",
+      "prose": "Worship of the goddess Kali"
+    },
+    "UPAKARMA_RITE": {
+      "name": "The upakarma rite, with offerings of water to the sages",
+      "prose": "The upakarma rite, with offerings of water to the sages"
+    },
+    "SATYANARAYAN_PUJA": {
+      "name": "The Satyanarayan puja and its story",
+      "prose": "The Satyanarayan puja and its story"
+    },
+    "MOON_ARGHYA": {
+      "name": "Arghya offered to the Moon when it rises",
+      "prose": "Arghya offered to the Moon when it rises"
+    },
+    "GANESHA_WORSHIP": {
+      "name": "Worship of Ganesha",
+      "prose": "Worship of Ganesha"
+    },
+    "TORCHES_THROWN": {
+      "name": "Burning torches thrown out of the house at dusk",
+      "prose": "Burning torches thrown out of the house at dusk"
+    },
+    "CURD_AND_BEATEN_RICE": {
+      "name": "Curd and beaten rice, dahi-chiura, eaten together",
+      "prose": "Curd and beaten rice, dahi-chiura, eaten together"
+    },
+    "NEEM_LEAVES_EATEN": {
+      "name": "Bitter neem leaves eaten",
+      "prose": "Bitter neem leaves eaten"
+    },
+    "SEEDS_SCATTERED": {
+      "name": "Seven kinds of grain scattered for the dead",
+      "prose": "Seven kinds of grain scattered for the dead"
+    },
+    "IDOL_BATHED": {
+      "name": "The god's image bathed in public",
+      "prose": "The god's image bathed in public"
+    },
+    "SPIRITS_FED": {
+      "name": "Offerings set out for spirits at the crossroads",
+      "prose": "Offerings set out for spirits at the crossroads"
+    },
+    "HERBAL_BATH": {
+      "name": "A ritual bath with datiwan stalks",
+      "prose": "A ritual bath with datiwan stalks"
+    },
+    "WREATHS_LAID": {
+      "name": "Wreaths and garlands laid at statues and memorials",
+      "prose": "Wreaths and garlands laid at statues and memorials"
+    },
+    "LIGHTS_DISPLAY": {
+      "name": "Buildings lit and lamps lit at dusk",
+      "prose": "Buildings lit and lamps lit at dusk"
+    },
+    "DRILLS": {
+      "name": "Safety drills and public awareness programmes",
+      "prose": "Safety drills and public awareness programmes"
+    },
+    "AWARDS": {
+      "name": "Awards and honours presented",
+      "prose": "Awards and honours presented"
+    },
+    "SEMINARS": {
+      "name": "Talks, seminars and public programmes",
+      "prose": "Talks, seminars and public programmes"
+    },
+    "LITERARY_RECITAL": {
+      "name": "Poetry readings and literary gatherings",
+      "prose": "Poetry readings and literary gatherings"
+    },
+    "VERMILION_THROWN": {
+      "name": "Vermilion powder thrown over the crowds",
+      "prose": "Vermilion powder thrown over the crowds"
+    },
+    "GIFTS_OF_FOOD": {
+      "name": "Milk, curd and fresh vegetables given to relatives and neighbours",
+      "prose": "Milk, curd and fresh vegetables given to relatives and neighbours"
+    },
+    "KHEER": {
+      "name": "Kheer, rice cooked in milk, eaten with family",
+      "prose": "Kheer, rice cooked in milk, eaten with family"
+    },
+    "EARTH_WORSHIP": {
+      "name": "The earth worshipped before planting",
+      "prose": "The earth worshipped before planting"
+    },
+    "LAKHE_DANCE": {
+      "name": "The lakhe dance",
+      "prose": "The lakhe dance"
+    },
+    "CIRCUMAMBULATION": {
+      "name": "Rounds made of the temple",
+      "prose": "Rounds made of the temple"
+    },
+    "HEALTH_CAMPS": {
+      "name": "Free health camps and screening",
+      "prose": "Free health camps and screening"
+    },
+    "TREE_PLANTING": {
+      "name": "Trees planted and public places cleaned",
+      "prose": "Trees planted and public places cleaned"
+    },
+    "BLOOD_DONATION": {
+      "name": "Blood donation drives",
+      "prose": "Blood donation drives"
+    },
+    "CANDLE_VIGIL": {
+      "name": "A candlelight vigil",
+      "prose": "A candlelight vigil"
+    },
+    "YOGA_SESSIONS": {
+      "name": "Group yoga and meditation sessions",
+      "prose": "Group yoga and meditation sessions"
+    },
+    "SPORTS_EVENTS": {
+      "name": "Sports events and runs",
+      "prose": "Sports events and runs"
+    },
+    "EXHIBITIONS": {
+      "name": "Exhibitions and performances",
+      "prose": "Exhibitions and performances"
+    },
+    "VACCINATION": {
+      "name": "Vaccination campaigns",
+      "prose": "Vaccination campaigns"
+    },
+    "MOON_AND_LAKSHMI_NARAYAN": {
+      "name": "Lakshmi and Vishnu worshipped on a decked bed",
+      "prose": "Lakshmi and Vishnu worshipped on a decked bed"
+    },
+    "WATER_SPLASHED": {
+      "name": "Water and mud splashed on one another in play",
+      "prose": "Water and mud splashed on one another in play"
+    },
+    "BHAKKA": {
+      "name": "Bhakka, steamed rice-flour cakes, made and shared",
+      "prose": "Bhakka, steamed rice-flour cakes, made and shared"
+    },
+    "DAURA_SURUWAL": {
+      "name": "Daura-suruwal, gunyu-cholo and the dhaka topi worn",
+      "prose": "Daura-suruwal, gunyu-cholo and the dhaka topi worn"
+    },
+    "FILM_SCREENINGS": {
+      "name": "Film screenings and awards",
+      "prose": "Film screenings and awards"
+    },
+    "BROTHERS_FED": {
+      "name": "Brothers fed a meal by their sisters",
+      "prose": "Brothers fed a meal by their sisters"
     }
   },
   "community": {

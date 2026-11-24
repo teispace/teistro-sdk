@@ -2,7 +2,7 @@
 
 Status: `building`, 2026-11-24. Stage (a): forty-two subjects in English and
 Nepali; stage (b): the rest of the catalogue, and Hindi and Sanskrit.
-Cruxes C2410 to C2416.
+Cruxes C2410 to C2417.
 
 Every festival has a name in each locale but no words about it. The
 consumer's brief (addendum 13 §2, tithipatra hub,
@@ -162,3 +162,45 @@ subject (C2414).
   generate thousands of typed accessors in each binding. The bundle's
   size is then the only cost, and stage (b) measures it against the pack
   budgets before it writes the rest.
+
+## 7. Stage (b): the rest as a loaded corpus
+
+Stage (a) put forty-two descriptions in the embedded bundle and measured
+about 1 KB per subject (45 KB in `ne-Deva-NP`). The catalogue's other
+subjects at that rate are about 0.7 MB a locale, and in the embedded
+bundle that would ride in every artefact the SDK builds, which is the case
+`interpretation-records.md` §3 settled for the readings: **a corpus too
+large to embed is a pack that is loaded, not a bundle** (C2417).
+
+- **The facts stay in the SDK** (`festival-about.json`): every subject's
+  acts and sources. A listing asked with `about` answers them whatever the
+  consumer loaded, and a subject with no entry is still `unwritten`.
+- **An act's name stays embedded.** An act is one short line, recurs
+  across festivals, and a listing names it in every answer, so the
+  `observance` records stay in `i18n/`.
+- **Stage (a)'s forty-two `about` forms stay embedded,** because the
+  consumer's launch shows those days with no download (addendum 13's
+  "top 40 first").
+- **Every other `about` form is in `packs/festivals/<locale>/sdk.entity.json`.**
+  A loaded record merges its forms onto the embedded one, so the pack
+  carries only `about` and the name stands. The release ships it as
+  `teistro-festivals-<version>-<tag>.tbundle`, beside the readings and the
+  state readings (`packs/README.md`).
+
+Without the corpus, a subject from stage (b) still lists its acts, its
+who and its sources. Only its `about` item has no form to say, and the
+renderer reports that as it reports any missing form. The test that every
+subject renders whole loads the corpus first, as a consumer would.
+
+The texts were written per pack from each day's rule, and each was checked
+against its cited sources (C2410). Twenty-seven subjects are held back
+because no source confirms them, or because the date rule they would
+describe looked wrong. They stay `unwritten` until the rule is checked:
+`CHAMPA_SHASHTHI` (the Khandoba day is Margashirsha's bright sixth, and
+the print's Magha day is Skanda Shashthi), `BHAKTAPUR_CHANDI_BHAGAWATI_JATRA`
+(sources give Baishakh's full moon), and the local jatras whose only
+witness is the panchanga's own entry.
+
+- **C2417.** Descriptions beyond stage (a)'s are a loaded corpus, one
+  bundle a locale and a release asset each. The embedded bundle grows by
+  the acts' names alone.

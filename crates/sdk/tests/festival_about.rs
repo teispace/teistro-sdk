@@ -23,6 +23,32 @@ fn described(pack: FestivalPack) -> teistro::PackListing {
         .festival_pack(&PackRequest { pack, about: true })
 }
 
+/// A context with the festival corpus loaded, as a consumer loads the
+/// release's `teistro-festivals-<version>-<tag>.tbundle`: stage (a)'s
+/// subjects are embedded, the rest are words this corpus carries
+/// (`03-design/festival-about.md` §7).
+fn with_corpus() -> Context {
+    let root = concat!(env!("CARGO_MANIFEST_DIR"), "/../../packs/festivals");
+    let tree = teistro_intl::source::Tree::load(std::path::Path::new(root)).unwrap();
+    let sdk = Context::builder().build().unwrap();
+    for locale in tree.locales.values() {
+        let bundle = teistro_intl::pack::build_bundle(locale).unwrap();
+        sdk.intl().load_pack(&bundle).unwrap();
+    }
+    sdk
+}
+
+/// Every subject a shipped pack describes, each once, with the listing
+/// that described it first.
+fn every_described() -> Vec<teistro::FestivalAbout> {
+    let mut seen = BTreeSet::new();
+    FestivalPack::ALL
+        .into_iter()
+        .flat_map(|pack| described(pack).about)
+        .filter(|about| seen.insert(about.key.clone()))
+        .collect()
+}
+
 /// Whether `text` is written in Devanagari, as a Nepali form must be.
 fn devanagari(text: &str) -> bool {
     text.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c))
@@ -50,22 +76,16 @@ fn a_listing_describes_only_when_asked() {
             .all(|key| !keys.contains(key.as_str())),
         "a subject is described or unwritten, never both"
     );
-    let every: BTreeSet<&str> = FestivalFacts::all()
-        .iter()
-        .map(|f| f.key.as_str())
-        .collect();
-    assert_eq!(
-        keys, every,
-        "Nepal's national panchanga holds every subject"
-    );
+    let every: BTreeSet<String> = FestivalFacts::all().iter().map(|f| f.key.clone()).collect();
+    let reached: BTreeSet<String> = every_described().into_iter().map(|a| a.key).collect();
+    assert_eq!(reached, every, "a shipped pack lists every subject the data describes");
 }
 
 #[test]
 fn every_subject_renders_whole_in_english_and_nepali() {
-    let sdk = Context::builder().build().unwrap();
+    let sdk = with_corpus();
     let engine = sdk.locale_engine();
-    let listed = described(FestivalPack::NepalPanchanga);
-    for about in &listed.about {
+    for about in &every_described() {
         assert!(!about.sources.is_empty(), "{} cites a source", about.key);
         let items = std::iter::once(&about.about)
             .chain(&about.observance)
