@@ -10,7 +10,17 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.11
+
+The eleventh release candidate of 1.0.0. A muhurta window says why it is
+good, the rashifal's reading voice speaks Hindi and Sanskrit, and a festival
+pack can describe its days: what each is, how it is kept and who keeps it
+where, for the forty-two days Nepal's national panchanga marks most. It is
+released on GitHub only; no package goes to a registry.
+**Numbers:** none. Measured against 1.0.0-rc.10's tree: no chart, day,
+festival, window, score, band or settings hash moves. Each addition is said
+only when a request asks for it (`reasons`, `readings`, `about`), and an
+answer that does not ask is unchanged, hash for hash.
 
 **What a festival is, how it is kept, and who keeps it where (SR-153, stage a).**
 **Numbers:** none. No day moves; a listing asked with `about` gains descriptions.

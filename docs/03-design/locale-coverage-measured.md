@@ -6,14 +6,14 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 672 of 672 | 100.0% | 532 of 532 | 100.0% |
-| `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 532 | 0.0% |
-| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 360 of 532 | 67.7% |
-| `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 532 of 532 | 100.0% |
-| `sa-Deva` | base | 661 of 672 | 98.4% | 360 of 532 | 67.7% |
-| `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 532 | 67.7% |
+| `en-Latn` | strict | 672 of 672 | 100.0% | 535 of 535 | 100.0% |
+| `en-Latn-NP` | base | 12 of 672 | 1.8% | 0 of 535 | 0.0% |
+| `hi-Deva-IN` | base | 662 of 672 | 98.5% | 438 of 535 | 81.9% |
+| `ne-Deva-NP` | strict | 672 of 672 | 100.0% | 535 of 535 | 100.0% |
+| `sa-Deva` | base | 661 of 672 | 98.4% | 438 of 535 | 81.9% |
+| `sa-Latn` | base | 661 of 672 | 98.4% | 360 of 535 | 67.3% |
 
-672 members of 45 kinds, 532 messages.
+672 members of 45 kinds, 535 messages.
 
 ## By kind
 

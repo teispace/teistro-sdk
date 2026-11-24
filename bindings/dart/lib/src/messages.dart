@@ -363,6 +363,41 @@ enum ColourKey {
   final String key;
 }
 
+enum CommunityKey {
+  newar('community.NEWAR'),
+  tharu('community.THARU'),
+  kirat('community.KIRAT'),
+  sherpa('community.SHERPA'),
+  tamang('community.TAMANG'),
+  gurung('community.GURUNG'),
+  magar('community.MAGAR'),
+  chhantyal('community.CHHANTYAL'),
+  dura('community.DURA'),
+  maithil('community.MAITHIL'),
+  bhojpuri('community.BHOJPURI'),
+  muslim('community.MUSLIM'),
+  brahmin('community.BRAHMIN'),
+  vishwakarma('community.VISHWAKARMA'),
+  banks('community.BANKS'),
+  parsi('community.PARSI'),
+  nadar('community.NADAR'),
+  ravidassia('community.RAVIDASSIA'),
+  santhal('community.SANTHAL'),
+  digambara('community.DIGAMBARA'),
+  shvetambara('community.SHVETAMBARA'),
+  sthanakvasi('community.STHANAKVASI'),
+  terapanth('community.TERAPANTH'),
+  tapagachha('community.TAPAGACHHA'),
+  kharataraGachha('community.KHARATARA_GACHHA'),
+  achalgachha('community.ACHALGACHHA'),
+  sikh('community.SIKH'),
+  christian('community.CHRISTIAN');
+
+  const CommunityKey(this.key);
+
+  final String key;
+}
+
 enum DashaFamilyKey {
   udu('dasha_family.UDU'),
   rashi('dasha_family.RASHI'),
@@ -1339,7 +1374,9 @@ enum FestivalKey {
   manvadiPaushaShuklaEkadashi('festival.MANVADI_PAUSHA_SHUKLA_EKADASHI'),
   manvadiMaghaShuklaSaptami('festival.MANVADI_MAGHA_SHUKLA_SAPTAMI'),
   manvadiPhalgunaPurnima('festival.MANVADI_PHALGUNA_PURNIMA'),
-  manvadiPhalgunaAmavasya('festival.MANVADI_PHALGUNA_AMAVASYA');
+  manvadiPhalgunaAmavasya('festival.MANVADI_PHALGUNA_AMAVASYA'),
+  dashain('festival.DASHAIN'),
+  tihar('festival.TIHAR');
 
   const FestivalKey(this.key);
 
@@ -1679,6 +1716,93 @@ enum NatureKey {
   final String key;
 }
 
+enum ObservanceKey {
+  kalashSetUp('observance.KALASH_SET_UP'),
+  jamaraSown('observance.JAMARA_SOWN'),
+  durgaWorship('observance.DURGA_WORSHIP'),
+  templeOfferings('observance.TEMPLE_OFFERINGS'),
+  phulpatiProcession('observance.PHULPATI_PROCESSION'),
+  phulpatiAtHome('observance.PHULPATI_AT_HOME'),
+  tikaFromElders('observance.TIKA_FROM_ELDERS'),
+  familyVisits('observance.FAMILY_VISITS'),
+  feast('observance.FEAST'),
+  newClothes('observance.NEW_CLOTHES'),
+  swings('observance.SWINGS'),
+  kites('observance.KITES'),
+  lamps('observance.LAMPS'),
+  rangoli('observance.RANGOLI'),
+  deusiBhailo('observance.DEUSI_BHAILO'),
+  flowerGarlands('observance.FLOWER_GARLANDS'),
+  dogHonoured('observance.DOG_HONOURED'),
+  cowHonoured('observance.COW_HONOURED'),
+  lakshmiWorship('observance.LAKSHMI_WORSHIP'),
+  govardhanHill('observance.GOVARDHAN_HILL'),
+  oxHonoured('observance.OX_HONOURED'),
+  mandalaForEach('observance.MANDALA_FOR_EACH'),
+  selfWorship('observance.SELF_WORSHIP'),
+  tikaFromSisters('observance.TIKA_FROM_SISTERS'),
+  giftsToSisters('observance.GIFTS_TO_SISTERS'),
+  darFeast('observance.DAR_FEAST'),
+  fast('observance.FAST'),
+  redDress('observance.RED_DRESS'),
+  songAndDance('observance.SONG_AND_DANCE'),
+  shivaParvatiWorship('observance.SHIVA_PARVATI_WORSHIP'),
+  riverBath('observance.RIVER_BATH'),
+  saptarshiWorship('observance.SAPTARSHI_WORSHIP'),
+  arghyaToSun('observance.ARGHYA_TO_SUN'),
+  offeringsInBaskets('observance.OFFERINGS_IN_BASKETS'),
+  nightVigil('observance.NIGHT_VIGIL'),
+  templeVisit('observance.TEMPLE_VISIT'),
+  bonfires('observance.BONFIRES'),
+  chirRaised('observance.CHIR_RAISED'),
+  colours('observance.COLOURS'),
+  holikaBonfire('observance.HOLIKA_BONFIRE'),
+  sweetsShared('observance.SWEETS_SHARED'),
+  janaiChanged('observance.JANAI_CHANGED'),
+  doroTied('observance.DORO_TIED'),
+  rakhiTied('observance.RAKHI_TIED'),
+  kwati('observance.KWATI'),
+  pilgrimage('observance.PILGRIMAGE'),
+  midnightPuja('observance.MIDNIGHT_PUJA'),
+  bhajan('observance.BHAJAN'),
+  ramaWorship('observance.RAMA_WORSHIP'),
+  winterFoods('observance.WINTER_FOODS'),
+  newYearGreetings('observance.NEW_YEAR_GREETINGS'),
+  chariotProcession('observance.CHARIOT_PROCESSION'),
+  poleRaised('observance.POLE_RAISED'),
+  saraswatiWorship('observance.SARASWATI_WORSHIP'),
+  firstLetters('observance.FIRST_LETTERS'),
+  maskedDances('observance.MASKED_DANCES'),
+  kumariChariot('observance.KUMARI_CHARIOT'),
+  cowProcession('observance.COW_PROCESSION'),
+  satire('observance.SATIRE'),
+  horseRaces('observance.HORSE_RACES'),
+  procession('observance.PROCESSION'),
+  bhotoShown('observance.BHOTO_SHOWN'),
+  natureWorship('observance.NATURE_WORSHIP'),
+  sakelaDance('observance.SAKELA_DANCE'),
+  villageAssembly('observance.VILLAGE_ASSEMBLY'),
+  biruda('observance.BIRUDA'),
+  deudaDance('observance.DEUDA_DANCE'),
+  monasteryVisit('observance.MONASTERY_VISIT'),
+  prayerFlags('observance.PRAYER_FLAGS'),
+  traditionalDress('observance.TRADITIONAL_DRESS'),
+  stupaVisit('observance.STUPA_VISIT'),
+  alms('observance.ALMS'),
+  eidPrayer('observance.EID_PRAYER'),
+  zakatAlFitr('observance.ZAKAT_AL_FITR'),
+  qurbani('observance.QURBANI'),
+  churchService('observance.CHURCH_SERVICE'),
+  carols('observance.CAROLS'),
+  gifts('observance.GIFTS'),
+  scriptureReading('observance.SCRIPTURE_READING'),
+  langar('observance.LANGAR');
+
+  const ObservanceKey(this.key);
+
+  final String key;
+}
+
 enum PakshaKey {
   shukla('paksha.SHUKLA'),
   krishna('paksha.KRISHNA');
@@ -1806,6 +1930,32 @@ enum RashiKey {
   pisces('rashi.PISCES');
 
   const RashiKey(this.key);
+
+  final String key;
+}
+
+enum RegionKey {
+  np('region.NP'),
+  kathmanduValley('region.KATHMANDU_VALLEY'),
+  npP3('region.NP_P3'),
+  hills('region.HILLS'),
+  terai('region.TERAI'),
+  in$('region.IN'),
+  inAp('region.IN_AP'),
+  inAs('region.IN_AS'),
+  inBr('region.IN_BR'),
+  inGj('region.IN_GJ'),
+  inHr('region.IN_HR'),
+  inKa('region.IN_KA'),
+  inKl('region.IN_KL'),
+  inMh('region.IN_MH'),
+  inOd('region.IN_OD'),
+  inTg('region.IN_TG'),
+  inTn('region.IN_TN'),
+  inUp('region.IN_UP'),
+  inWb('region.IN_WB');
+
+  const RegionKey(this.key);
 
   final String key;
 }
@@ -2500,6 +2650,7 @@ final class EntityForms {
     required this.name,
     required this.prose,
     this.abbrev,
+    this.about,
     this.indic,
     this.locative,
     this.short,
@@ -2520,6 +2671,7 @@ final class EntityForms {
       name: text('name') ?? '',
       prose: text('prose') ?? '',
       abbrev: text('abbrev'),
+      about: text('about'),
       indic: text('indic'),
       locative: text('locative'),
       short: text('short'),
@@ -2538,6 +2690,7 @@ final class EntityForms {
   final String name;
   final String prose;
   final String? abbrev;
+  final String? about;
   final String? indic;
   final String? locative;
   final String? short;
@@ -3440,6 +3593,41 @@ final class MessagesSdkEntityColour {
   EntityForms get yellow => _r.entity('colour.YELLOW');
 }
 
+final class MessagesSdkEntityCommunity {
+  const MessagesSdkEntityCommunity(this._r);
+
+  final Renderer _r;
+
+  EntityForms get achalgachha => _r.entity('community.ACHALGACHHA');
+  EntityForms get banks => _r.entity('community.BANKS');
+  EntityForms get bhojpuri => _r.entity('community.BHOJPURI');
+  EntityForms get brahmin => _r.entity('community.BRAHMIN');
+  EntityForms get chhantyal => _r.entity('community.CHHANTYAL');
+  EntityForms get christian => _r.entity('community.CHRISTIAN');
+  EntityForms get digambara => _r.entity('community.DIGAMBARA');
+  EntityForms get dura => _r.entity('community.DURA');
+  EntityForms get gurung => _r.entity('community.GURUNG');
+  EntityForms get kharataraGachha => _r.entity('community.KHARATARA_GACHHA');
+  EntityForms get kirat => _r.entity('community.KIRAT');
+  EntityForms get magar => _r.entity('community.MAGAR');
+  EntityForms get maithil => _r.entity('community.MAITHIL');
+  EntityForms get muslim => _r.entity('community.MUSLIM');
+  EntityForms get nadar => _r.entity('community.NADAR');
+  EntityForms get newar => _r.entity('community.NEWAR');
+  EntityForms get parsi => _r.entity('community.PARSI');
+  EntityForms get ravidassia => _r.entity('community.RAVIDASSIA');
+  EntityForms get santhal => _r.entity('community.SANTHAL');
+  EntityForms get sherpa => _r.entity('community.SHERPA');
+  EntityForms get shvetambara => _r.entity('community.SHVETAMBARA');
+  EntityForms get sikh => _r.entity('community.SIKH');
+  EntityForms get sthanakvasi => _r.entity('community.STHANAKVASI');
+  EntityForms get tamang => _r.entity('community.TAMANG');
+  EntityForms get tapagachha => _r.entity('community.TAPAGACHHA');
+  EntityForms get terapanth => _r.entity('community.TERAPANTH');
+  EntityForms get tharu => _r.entity('community.THARU');
+  EntityForms get vishwakarma => _r.entity('community.VISHWAKARMA');
+}
+
 final class MessagesSdkEntityDashaFamily {
   const MessagesSdkEntityDashaFamily(this._r);
 
@@ -3780,6 +3968,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get darKhaneDin => _r.entity('festival.DAR_KHANE_DIN');
   EntityForms get dasaLakshana => _r.entity('festival.DASA_LAKSHANA');
   EntityForms get dashaharaSnanaArambha => _r.entity('festival.DASHAHARA_SNANA_ARAMBHA');
+  EntityForms get dashain => _r.entity('festival.DASHAIN');
   EntityForms get dashainTika => _r.entity('festival.DASHAIN_TIKA');
   EntityForms get dashamiShraddha => _r.entity('festival.DASHAMI_SHRADDHA');
   EntityForms get dattatreyaJayanti => _r.entity('festival.DATTATREYA_JAYANTI');
@@ -4282,6 +4471,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get thirdOnam => _r.entity('festival.THIRD_ONAM');
   EntityForms get thiruvalluvarDay => _r.entity('festival.THIRUVALLUVAR_DAY');
   EntityForms get thiruvonam => _r.entity('festival.THIRUVONAM');
+  EntityForms get tihar => _r.entity('festival.TIHAR');
   EntityForms get tilakundaChaturthi => _r.entity('festival.TILAKUNDA_CHATURTHI');
   EntityForms get tokhaChandeshwariJatra => _r.entity('festival.TOKHA_CHANDESHWARI_JATRA');
   EntityForms get tokhaSapanTirthaSnan => _r.entity('festival.TOKHA_SAPAN_TIRTHA_SNAN');
@@ -4756,6 +4946,93 @@ final class MessagesSdkEntityNature {
   EntityForms get neutral => _r.entity('nature.NEUTRAL');
 }
 
+final class MessagesSdkEntityObservance {
+  const MessagesSdkEntityObservance(this._r);
+
+  final Renderer _r;
+
+  EntityForms get alms => _r.entity('observance.ALMS');
+  EntityForms get arghyaToSun => _r.entity('observance.ARGHYA_TO_SUN');
+  EntityForms get bhajan => _r.entity('observance.BHAJAN');
+  EntityForms get bhotoShown => _r.entity('observance.BHOTO_SHOWN');
+  EntityForms get biruda => _r.entity('observance.BIRUDA');
+  EntityForms get bonfires => _r.entity('observance.BONFIRES');
+  EntityForms get carols => _r.entity('observance.CAROLS');
+  EntityForms get chariotProcession => _r.entity('observance.CHARIOT_PROCESSION');
+  EntityForms get chirRaised => _r.entity('observance.CHIR_RAISED');
+  EntityForms get churchService => _r.entity('observance.CHURCH_SERVICE');
+  EntityForms get colours => _r.entity('observance.COLOURS');
+  EntityForms get cowHonoured => _r.entity('observance.COW_HONOURED');
+  EntityForms get cowProcession => _r.entity('observance.COW_PROCESSION');
+  EntityForms get darFeast => _r.entity('observance.DAR_FEAST');
+  EntityForms get deudaDance => _r.entity('observance.DEUDA_DANCE');
+  EntityForms get deusiBhailo => _r.entity('observance.DEUSI_BHAILO');
+  EntityForms get dogHonoured => _r.entity('observance.DOG_HONOURED');
+  EntityForms get doroTied => _r.entity('observance.DORO_TIED');
+  EntityForms get durgaWorship => _r.entity('observance.DURGA_WORSHIP');
+  EntityForms get eidPrayer => _r.entity('observance.EID_PRAYER');
+  EntityForms get familyVisits => _r.entity('observance.FAMILY_VISITS');
+  EntityForms get fast => _r.entity('observance.FAST');
+  EntityForms get feast => _r.entity('observance.FEAST');
+  EntityForms get firstLetters => _r.entity('observance.FIRST_LETTERS');
+  EntityForms get flowerGarlands => _r.entity('observance.FLOWER_GARLANDS');
+  EntityForms get gifts => _r.entity('observance.GIFTS');
+  EntityForms get giftsToSisters => _r.entity('observance.GIFTS_TO_SISTERS');
+  EntityForms get govardhanHill => _r.entity('observance.GOVARDHAN_HILL');
+  EntityForms get holikaBonfire => _r.entity('observance.HOLIKA_BONFIRE');
+  EntityForms get horseRaces => _r.entity('observance.HORSE_RACES');
+  EntityForms get jamaraSown => _r.entity('observance.JAMARA_SOWN');
+  EntityForms get janaiChanged => _r.entity('observance.JANAI_CHANGED');
+  EntityForms get kalashSetUp => _r.entity('observance.KALASH_SET_UP');
+  EntityForms get kites => _r.entity('observance.KITES');
+  EntityForms get kumariChariot => _r.entity('observance.KUMARI_CHARIOT');
+  EntityForms get kwati => _r.entity('observance.KWATI');
+  EntityForms get lakshmiWorship => _r.entity('observance.LAKSHMI_WORSHIP');
+  EntityForms get lamps => _r.entity('observance.LAMPS');
+  EntityForms get langar => _r.entity('observance.LANGAR');
+  EntityForms get mandalaForEach => _r.entity('observance.MANDALA_FOR_EACH');
+  EntityForms get maskedDances => _r.entity('observance.MASKED_DANCES');
+  EntityForms get midnightPuja => _r.entity('observance.MIDNIGHT_PUJA');
+  EntityForms get monasteryVisit => _r.entity('observance.MONASTERY_VISIT');
+  EntityForms get natureWorship => _r.entity('observance.NATURE_WORSHIP');
+  EntityForms get newClothes => _r.entity('observance.NEW_CLOTHES');
+  EntityForms get newYearGreetings => _r.entity('observance.NEW_YEAR_GREETINGS');
+  EntityForms get nightVigil => _r.entity('observance.NIGHT_VIGIL');
+  EntityForms get offeringsInBaskets => _r.entity('observance.OFFERINGS_IN_BASKETS');
+  EntityForms get oxHonoured => _r.entity('observance.OX_HONOURED');
+  EntityForms get phulpatiAtHome => _r.entity('observance.PHULPATI_AT_HOME');
+  EntityForms get phulpatiProcession => _r.entity('observance.PHULPATI_PROCESSION');
+  EntityForms get pilgrimage => _r.entity('observance.PILGRIMAGE');
+  EntityForms get poleRaised => _r.entity('observance.POLE_RAISED');
+  EntityForms get prayerFlags => _r.entity('observance.PRAYER_FLAGS');
+  EntityForms get procession => _r.entity('observance.PROCESSION');
+  EntityForms get qurbani => _r.entity('observance.QURBANI');
+  EntityForms get rakhiTied => _r.entity('observance.RAKHI_TIED');
+  EntityForms get ramaWorship => _r.entity('observance.RAMA_WORSHIP');
+  EntityForms get rangoli => _r.entity('observance.RANGOLI');
+  EntityForms get redDress => _r.entity('observance.RED_DRESS');
+  EntityForms get riverBath => _r.entity('observance.RIVER_BATH');
+  EntityForms get sakelaDance => _r.entity('observance.SAKELA_DANCE');
+  EntityForms get saptarshiWorship => _r.entity('observance.SAPTARSHI_WORSHIP');
+  EntityForms get saraswatiWorship => _r.entity('observance.SARASWATI_WORSHIP');
+  EntityForms get satire => _r.entity('observance.SATIRE');
+  EntityForms get scriptureReading => _r.entity('observance.SCRIPTURE_READING');
+  EntityForms get selfWorship => _r.entity('observance.SELF_WORSHIP');
+  EntityForms get shivaParvatiWorship => _r.entity('observance.SHIVA_PARVATI_WORSHIP');
+  EntityForms get songAndDance => _r.entity('observance.SONG_AND_DANCE');
+  EntityForms get stupaVisit => _r.entity('observance.STUPA_VISIT');
+  EntityForms get sweetsShared => _r.entity('observance.SWEETS_SHARED');
+  EntityForms get swings => _r.entity('observance.SWINGS');
+  EntityForms get templeOfferings => _r.entity('observance.TEMPLE_OFFERINGS');
+  EntityForms get templeVisit => _r.entity('observance.TEMPLE_VISIT');
+  EntityForms get tikaFromElders => _r.entity('observance.TIKA_FROM_ELDERS');
+  EntityForms get tikaFromSisters => _r.entity('observance.TIKA_FROM_SISTERS');
+  EntityForms get traditionalDress => _r.entity('observance.TRADITIONAL_DRESS');
+  EntityForms get villageAssembly => _r.entity('observance.VILLAGE_ASSEMBLY');
+  EntityForms get winterFoods => _r.entity('observance.WINTER_FOODS');
+  EntityForms get zakatAlFitr => _r.entity('observance.ZAKAT_AL_FITR');
+}
+
 final class MessagesSdkEntityPaksha {
   const MessagesSdkEntityPaksha(this._r);
 
@@ -4885,6 +5162,32 @@ final class MessagesSdkEntityRashi {
   EntityForms get scorpio => _r.entity('rashi.SCORPIO');
   EntityForms get taurus => _r.entity('rashi.TAURUS');
   EntityForms get virgo => _r.entity('rashi.VIRGO');
+}
+
+final class MessagesSdkEntityRegion {
+  const MessagesSdkEntityRegion(this._r);
+
+  final Renderer _r;
+
+  EntityForms get hills => _r.entity('region.HILLS');
+  EntityForms get in$ => _r.entity('region.IN');
+  EntityForms get inAp => _r.entity('region.IN_AP');
+  EntityForms get inAs => _r.entity('region.IN_AS');
+  EntityForms get inBr => _r.entity('region.IN_BR');
+  EntityForms get inGj => _r.entity('region.IN_GJ');
+  EntityForms get inHr => _r.entity('region.IN_HR');
+  EntityForms get inKa => _r.entity('region.IN_KA');
+  EntityForms get inKl => _r.entity('region.IN_KL');
+  EntityForms get inMh => _r.entity('region.IN_MH');
+  EntityForms get inOd => _r.entity('region.IN_OD');
+  EntityForms get inTg => _r.entity('region.IN_TG');
+  EntityForms get inTn => _r.entity('region.IN_TN');
+  EntityForms get inUp => _r.entity('region.IN_UP');
+  EntityForms get inWb => _r.entity('region.IN_WB');
+  EntityForms get kathmanduValley => _r.entity('region.KATHMANDU_VALLEY');
+  EntityForms get np => _r.entity('region.NP');
+  EntityForms get npP3 => _r.entity('region.NP_P3');
+  EntityForms get terai => _r.entity('region.TERAI');
 }
 
 final class MessagesSdkEntityRelationship {
@@ -5551,6 +5854,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityChartLayout get chartLayout => MessagesSdkEntityChartLayout(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
   MessagesSdkEntityColour get colour => MessagesSdkEntityColour(_r);
+  MessagesSdkEntityCommunity get community => MessagesSdkEntityCommunity(_r);
   MessagesSdkEntityDashaFamily get dashaFamily => MessagesSdkEntityDashaFamily(_r);
   MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
   MessagesSdkEntityDayMarker get dayMarker => MessagesSdkEntityDayMarker(_r);
@@ -5583,6 +5887,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityNadi get nadi => MessagesSdkEntityNadi(_r);
   MessagesSdkEntityNakshatra get nakshatra => MessagesSdkEntityNakshatra(_r);
   MessagesSdkEntityNature get nature => MessagesSdkEntityNature(_r);
+  MessagesSdkEntityObservance get observance => MessagesSdkEntityObservance(_r);
   MessagesSdkEntityPaksha get paksha => MessagesSdkEntityPaksha(_r);
   MessagesSdkEntityPanchaka get panchaka => MessagesSdkEntityPanchaka(_r);
   MessagesSdkEntityParity get parity => MessagesSdkEntityParity(_r);
@@ -5590,6 +5895,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityPoint get point => MessagesSdkEntityPoint(_r);
   MessagesSdkEntityPointFamily get pointFamily => MessagesSdkEntityPointFamily(_r);
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
+  MessagesSdkEntityRegion get region => MessagesSdkEntityRegion(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
   MessagesSdkEntityRising get rising => MessagesSdkEntityRising(_r);
   MessagesSdkEntityRitu get ritu => MessagesSdkEntityRitu(_r);
@@ -6203,6 +6509,19 @@ final class MessagesSdkSettings {
   MessagesSdkSettingsEffect get effect => MessagesSdkSettingsEffect(_r);
 }
 
+final class MessagesSdkVoiceFestival {
+  const MessagesSdkVoiceFestival(this._r);
+
+  final Renderer _r;
+
+  String about({required String festival}) =>
+      _r.render('sdk.voice.festival.about', {'festival': {r'$entity': festival}});
+  String observance({required String act}) =>
+      _r.render('sdk.voice.festival.observance', {'act': {r'$entity': act}});
+  String who({required List<Object> communities, required List<Object> regions, required String shape, required TraditionKey tradition}) =>
+      _r.render('sdk.voice.festival.who', {'communities': communities, 'regions': regions, 'shape': shape, 'tradition': {r'$entity': tradition.key}});
+}
+
 final class MessagesSdkVoiceMuhurtaAvoided {
   const MessagesSdkVoiceMuhurtaAvoided(this._r);
 
@@ -6697,6 +7016,7 @@ final class MessagesSdkVoice {
 
   final Renderer _r;
 
+  MessagesSdkVoiceFestival get festival => MessagesSdkVoiceFestival(_r);
   MessagesSdkVoiceMuhurta get muhurta => MessagesSdkVoiceMuhurta(_r);
   MessagesSdkVoiceRashifal get rashifal => MessagesSdkVoiceRashifal(_r);
 }
