@@ -436,9 +436,9 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 5092 | 149 |
+| `hi-Deva-IN` | 5092 | 71 |
 | `ne-Deva-NP` | 5092 | 8 |
-| `sa-Deva` | 5092 | 193 |
+| `sa-Deva` | 5092 | 115 |
 | `sa-Latn` | 5092 | 193 |
 
 ```console
