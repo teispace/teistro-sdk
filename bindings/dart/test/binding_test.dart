@@ -11633,6 +11633,50 @@ void _engineTests() {
       expect(rendered.fallback, isFalse);
     }
 
+    // Each sign in the reading voice (SR-152): intents, hedges and the
+    // facts each item rests on, in the period's own order.
+    final voiced = ctx.chart.rashifal(
+      week,
+      baseline: BaselinePeriod.weekly,
+      readings: true,
+    );
+    final readings = voiced.readings!;
+    expect(readings, hasLength(12));
+    expect(
+      [for (final r in readings) r.rashi],
+      [for (final r in voiced.period.readings) r.rashi],
+    );
+    for (final reading in readings) {
+      expect(reading.period, BaselinePeriod.weekly);
+      expect(reading.headline.intent, startsWith('reading.rashifal.'));
+      expect(reading.parts.map((part) => part.frame).take(3), [
+        ReadingFrame.start,
+        ReadingFrame.middle,
+        ReadingFrame.end,
+      ]);
+      expect(reading.areas.map((area) => area.area), ReadingArea.values);
+      expect(reading.syllables, hasLength(9));
+      for (final item in [
+        reading.headline,
+        ...reading.why,
+        for (final part in reading.parts) ...part.items,
+        for (final area in reading.areas) area.note,
+      ]) {
+        expect(item.restsOn, isNotEmpty, reason: item.intent);
+      }
+    }
+    expect(
+      () => ctx.chart.rashifal(week, readings: true),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rashifal.readings',
+        ),
+      ),
+    );
+    expect(read.readings, isNull);
+
     // 06:00 at +05:45 is 00:15 UTC on the reference day.
     final six = ctx.chart.rashifal(like(snapshot: const AtClock(hour: 6)));
     expect(six.period.instant, closeTo(2461320.5 + 15 / 1440, 1e-9));

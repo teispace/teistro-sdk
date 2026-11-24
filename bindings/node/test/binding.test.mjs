@@ -7524,6 +7524,24 @@ test('a rashifal period is read for each of the twelve signs', () => {
     assert.deepEqual(rendered.warnings, []);
   }
 
+  // Each sign in the reading voice (SR-152): intents with their facts.
+  const voiced = ctx.chart.rashifal(week, 'WEEKLY', false, true);
+  assert.deepEqual(voiced.readings.map((plan) => plan.rashi), voiced.period.readings.map((one) => one.rashi));
+  for (const plan of voiced.readings) {
+    assert.equal(plan.period, 'WEEKLY');
+    assert.deepEqual(plan.areas.map((area) => area.area), ['WORK', 'MONEY', 'LOVE_FAMILY', 'HEALTH']);
+    assert.equal(plan.syllables.length, 9);
+    const items = [plan.headline, ...plan.why, ...plan.parts.flatMap((part) => part.items)];
+    assert.ok(items.every((item) => item.restsOn.length > 0 && item.intent.startsWith('reading.rashifal.')));
+    assert.ok(plan.bestDay === null || plan.bestDay < 7);
+    for (const item of items) {
+      for (const fact of item.restsOn) {
+        if (fact.fact === 'TRANSIT') assert.ok(fact.graha.startsWith('graha.'), fact.graha);
+      }
+    }
+  }
+  assert.equal(read.readings, null, 'the reading voice only when asked for');
+
   // 06:00 at +05:45 is 00:15 UTC on the reference day.
   const six = ctx.chart.rashifal({ ...week, snapshot: { at: 'CLOCK', hour: 6, minute: 0 } });
   assert.ok(Math.abs(six.period.instant - (2461320.5 + 15 / 1440)) < 1e-9);

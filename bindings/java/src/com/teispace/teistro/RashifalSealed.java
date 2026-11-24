@@ -40,4 +40,13 @@ public record RashifalSealed(RashifalAnswer answer, Provenance provenance) {
     public List<List<Map<String, Object>>> plans() {
         return answer.plans();
     }
+
+    /**
+     * Each sign in the reading voice.
+     *
+     * @return Aries to Pisces; null unless readings were asked
+     */
+    public List<ReadingPlan> readings() {
+        return answer.readings();
+    }
 }

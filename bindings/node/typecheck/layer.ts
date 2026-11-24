@@ -124,6 +124,10 @@ import type {
   RashifalAnswer,
   RashifalAnswers,
   RashifalSealed,
+  ReadingArea,
+  ReadingHedge,
+  ReadingItem,
+  ReadingPlan,
   RashifalRequest,
   BaselineScore,
   NameSyllable,
@@ -2605,10 +2609,23 @@ function theRashifal(ctx: Context): string {
     answer.baseline?.length ?? 0,
     read.provenance.inputHash,
     String(misread),
+    theReadingVoice(ctx.chart.rashifal(week, 'WEEKLY', false, true)),
   ].join();
 }
 
 void theRashifal;
+
+// A rashifal in the reading voice: each item's facts a narrowed union.
+function theReadingVoice(voiced: RashifalSealed): string {
+  const plan: ReadingPlan | undefined = voiced.readings?.[0];
+  const item: ReadingItem | undefined = plan?.parts[0]?.items[0];
+  const fact = item?.restsOn[0];
+  const said = fact?.fact === 'TRANSIT' ? fact.graha : fact?.fact === 'EVENT' ? String(fact.index) : 'NONE';
+  const hedge: ReadingHedge | undefined = item?.hedge;
+  // @ts-expect-error an area is one of the four
+  const nowhere: ReadingArea = 'TRAVEL';
+  return [said, hedge ?? 'NONE', plan?.areas[0]?.area ?? 'NONE', plan?.bestDay ?? 'NONE', String(nowhere)].join();
+}
 
 // A chart's avakahada, read down to its syllable's own fields.
 function theAvakahada(ctx: Context): string {

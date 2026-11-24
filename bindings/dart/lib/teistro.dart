@@ -1588,17 +1588,28 @@ final class ChartArea extends _Area {
   /// final leo = week.period.readings[Rashi.leo.id];
   /// final sealed = week.provenance.inputHash;
   /// ```
+  ///
+  /// With [readings] (and a [baseline] period), each sign in the reading
+  /// voice (`03-design/rashifal-reading.md`): twelve [ReadingPlan]s whose
+  /// items name the facts they rest on.
   RashifalSealed rashifal(
     RashifalRequest request, {
     BaselinePeriod? baseline,
     bool plans = false,
+    bool readings = false,
   }) {
-    final many = rashifalMany([request], baseline: baseline, plans: plans);
+    final many = rashifalMany(
+      [request],
+      baseline: baseline,
+      plans: plans,
+      readings: readings,
+    );
     final one = many.value.single;
     return RashifalSealed(
       period: one.period,
       baseline: one.baseline,
       plans: one.plans,
+      readings: one.readings,
       provenance: many.provenance,
     );
   }
@@ -1610,6 +1621,7 @@ final class ChartArea extends _Area {
     List<RashifalRequest> requests, {
     BaselinePeriod? baseline,
     bool plans = false,
+    bool readings = false,
   }) {
     final envelope =
         jsonDecode(
@@ -1619,6 +1631,7 @@ final class ChartArea extends _Area {
                     'periods': [for (final one in requests) one._record],
                     if (baseline case final baseline?) 'baseline': baseline.key,
                     if (plans) 'plans': true,
+                    if (readings) 'readings': true,
                   }),
                 ),
               ),
@@ -6408,11 +6421,227 @@ final class BaselineScore {
 
 /// One period's answer: the reading, the baseline's twelve scores and the
 /// twelve plans when asked.
+/// How firmly a reading item is said, from its facts; nothing is certain.
+enum ReadingHedge {
+  /// An excellent band with two facts agreeing.
+  firm('FIRM'),
+
+  /// One good fact.
+  likely('LIKELY'),
+
+  /// A good fact obstructed, or a mixed band.
+  possible('POSSIBLE'),
+
+  /// A caution.
+  may('MAY');
+
+  const ReadingHedge(this.key);
+
+  /// The key the wire spells it with.
+  final String key;
+}
+
+/// The four areas a reader sees, read from the baseline's life areas.
+enum ReadingArea {
+  /// The baseline's CAREER.
+  work('WORK'),
+
+  /// The baseline's FINANCE.
+  money('MONEY'),
+
+  /// The mean of RELATIONSHIPS and FAMILY (C2359).
+  loveFamily('LOVE_FAMILY'),
+
+  /// The baseline's HEALTH.
+  health('HEALTH');
+
+  const ReadingArea(this.key);
+
+  /// The key the wire spells it with.
+  final String key;
+}
+
+/// Where in the period a part of the reading falls.
+enum ReadingFrame {
+  /// The whole period.
+  whole('WHOLE'),
+
+  /// A day before the Moon's change of sign.
+  beforeMoon('BEFORE_MOON'),
+
+  /// A day after it.
+  afterMoon('AFTER_MOON'),
+
+  /// A week's first two days.
+  start('START'),
+
+  /// A week's middle three.
+  middle('MIDDLE'),
+
+  /// A week's last two.
+  end('END'),
+
+  /// A month before its largest event.
+  firstHalf('FIRST_HALF'),
+
+  /// A month from it.
+  secondHalf('SECOND_HALF'),
+
+  /// A year's slow grahas.
+  slow('SLOW'),
+
+  /// A year's first quarter.
+  quarter1('QUARTER1'),
+
+  /// Its second.
+  quarter2('QUARTER2'),
+
+  /// Its third.
+  quarter3('QUARTER3'),
+
+  /// Its fourth.
+  quarter4('QUARTER4');
+
+  const ReadingFrame(this.key);
+
+  /// The key the wire spells it with.
+  final String key;
+}
+
+/// A fact a reading item rests on, as an index into the answer that
+/// carries it: its [kind] (`TRANSIT`, `SATURN`, `EVENT`, `INFLUENCE`,
+/// `BAND`, `AREA_BAND`, `DAY`, `MOON_TURN`, `LUCKY` or `SYLLABLES`) and the
+/// field that kind names.
+final class ReadingFact {
+  const ReadingFact({required this.kind, this.graha, this.index, this.area});
+
+  /// What kind of fact.
+  final String kind;
+
+  /// A `TRANSIT`'s graha.
+  final Graha? graha;
+
+  /// An `EVENT`'s, an `INFLUENCE`'s or a `DAY`'s index.
+  final int? index;
+
+  /// An `AREA_BAND`'s area.
+  final ReadingArea? area;
+}
+
+/// One thing a reading says: an intent a reading pack words, its slots,
+/// how firmly, and the facts it rests on;
+/// `ctx.intl.render(item.intent, item.params)` says it.
+final class ReadingItem {
+  const ReadingItem({
+    required this.intent,
+    required this.params,
+    required this.hedge,
+    required this.caution,
+    required this.variant,
+    required this.restsOn,
+  });
+
+  /// The intent, a message key of the reading pack.
+  final String intent;
+
+  /// Its slots.
+  final Map<String, Object?> params;
+
+  /// How firmly it is said.
+  final ReadingHedge hedge;
+
+  /// Whether it is a caution, which the period's budget counts.
+  final bool caution;
+
+  /// Which of the pack's wordings to say; a pack reads it modulo its count.
+  final int variant;
+
+  /// The facts it says; never empty.
+  final List<ReadingFact> restsOn;
+}
+
+/// A part of the reading: where it falls and what it says, in order.
+final class ReadingPart {
+  const ReadingPart({required this.frame, required this.items});
+
+  /// Where it falls.
+  final ReadingFrame frame;
+
+  /// What it says.
+  final List<ReadingItem> items;
+}
+
+/// One area as a page shows it: its score, band and note.
+final class AreaReading {
+  const AreaReading({
+    required this.area,
+    required this.score,
+    required this.band,
+    required this.note,
+  });
+
+  /// The area.
+  final ReadingArea area;
+
+  /// Its score, 0 to 100.
+  final int score;
+
+  /// Its band under the overall's thresholds.
+  final ScoreBand band;
+
+  /// Its one-line note.
+  final ReadingItem note;
+}
+
+/// A sign's period in the reading voice (SR-152,
+/// `03-design/rashifal-reading.md`).
+final class ReadingPlan {
+  const ReadingPlan({
+    required this.rashi,
+    required this.period,
+    required this.headline,
+    required this.parts,
+    required this.why,
+    required this.areas,
+    required this.bestDay,
+    required this.lucky,
+    required this.syllables,
+  });
+
+  /// The sign.
+  final Rashi rashi;
+
+  /// The period's kind.
+  final BaselinePeriod period;
+
+  /// The line over the reading.
+  final ReadingItem headline;
+
+  /// The reading, part by part.
+  final List<ReadingPart> parts;
+
+  /// The plain why.
+  final List<ReadingItem> why;
+
+  /// The four areas.
+  final List<AreaReading> areas;
+
+  /// A week's best day as an index into its days, when one day leads.
+  final int? bestDay;
+
+  /// The sign's lucky items.
+  final LuckyElements lucky;
+
+  /// The sign's nine name syllables in IAST, its padas' in order.
+  final List<String> syllables;
+}
+
 final class RashifalAnswer {
   const RashifalAnswer({
     required this.period,
     required this.baseline,
     required this.plans,
+    required this.readings,
   });
 
   /// The reading.
@@ -6425,6 +6654,10 @@ final class RashifalAnswer {
   /// `{key, params}` that `ctx.intl.render(item['key'], item['params'])`
   /// says. Null unless `plans` was asked.
   final List<List<Map<String, Object?>>>? plans;
+
+  /// Each sign in the reading voice, Aries to Pisces; null unless
+  /// `readings` was asked.
+  final List<ReadingPlan>? readings;
 }
 
 /// One period's answer as [ChartArea.rashifal] hands it out, with what
@@ -6434,6 +6667,7 @@ final class RashifalSealed extends RashifalAnswer {
     required super.period,
     required super.baseline,
     required super.plans,
+    required super.readings,
     required this.provenance,
   });
 
@@ -18700,6 +18934,13 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
     );
   }
 
+  LuckyElements luckyOf(Map<String, Object?> lucky) => LuckyElements(
+    colour: _key(lucky['colour'], Colour.byKey, Colour.unknown),
+    number: lucky['number']! as int,
+    day: _key(lucky['day'], Vara.byKey, Vara.unknown),
+    direction: _key(lucky['direction'], Direction.byKey, Direction.unknown),
+  );
+
   BaselineScore score(Map<String, Object?> one) {
     final lucky = one['lucky']! as Map<String, Object?>;
     return BaselineScore(
@@ -18722,18 +18963,99 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
             ),
           ),
       ]),
-      lucky: LuckyElements(
-        colour: _key(lucky['colour'], Colour.byKey, Colour.unknown),
-        number: lucky['number']! as int,
-        day: _key(lucky['day'], Vara.byKey, Vara.unknown),
-        direction: _key(lucky['direction'], Direction.byKey, Direction.unknown),
-      ),
+      lucky: luckyOf(lucky),
     );
   }
+
+  T byKey<T extends Enum>(List<T> values, String key, String Function(T) of) =>
+      values.firstWhere(
+        (one) => of(one) == key,
+        orElse:
+            () =>
+                throw TeistroException(
+                  Status.internal,
+                  'a reading answered a member this build does not know: $key',
+                ),
+      );
+
+  ReadingItem item(Map<String, Object?> one) => ReadingItem(
+    intent: one['intent']! as String,
+    params: Map<String, Object?>.unmodifiable(
+      one['params']! as Map<String, Object?>,
+    ),
+    hedge: byKey(ReadingHedge.values, one['hedge']! as String, (h) => h.key),
+    caution: one['caution']! as bool,
+    variant: one['variant']! as int,
+    restsOn: List<ReadingFact>.unmodifiable([
+      for (final fact in rows(one['restsOn']))
+        ReadingFact(
+          kind: fact['fact']! as String,
+          graha:
+              fact['graha'] == null
+                  ? null
+                  : _key(fact['graha'], Graha.byKey, Graha.unknown),
+          index: fact['index'] as int?,
+          area:
+              fact['area'] == null
+                  ? null
+                  : byKey(
+                    ReadingArea.values,
+                    fact['area']! as String,
+                    (a) => a.key,
+                  ),
+        ),
+    ]),
+  );
+
+  ReadingPlan plan(Map<String, Object?> one) => ReadingPlan(
+    rashi: _key(one['rashi'], Rashi.byKey, Rashi.unknown),
+    period: byKey(
+      BaselinePeriod.values,
+      one['period']! as String,
+      (p) => p.key,
+    ),
+    headline: item(one['headline']! as Map<String, Object?>),
+    parts: List<ReadingPart>.unmodifiable([
+      for (final part in rows(one['parts']))
+        ReadingPart(
+          frame: byKey(
+            ReadingFrame.values,
+            part['frame']! as String,
+            (f) => f.key,
+          ),
+          items: List<ReadingItem>.unmodifiable([
+            for (final i in rows(part['items'])) item(i),
+          ]),
+        ),
+    ]),
+    why: List<ReadingItem>.unmodifiable([
+      for (final i in rows(one['why'])) item(i),
+    ]),
+    areas: List<AreaReading>.unmodifiable([
+      for (final area in rows(one['areas']))
+        AreaReading(
+          area: byKey(
+            ReadingArea.values,
+            area['area']! as String,
+            (a) => a.key,
+          ),
+          score: area['score']! as int,
+          band: _key(area['band'], ScoreBand.byKey, ScoreBand.unknown),
+          note: item(area['note']! as Map<String, Object?>),
+        ),
+    ]),
+    bestDay: one['bestDay'] as int?,
+    lucky: luckyOf(one['lucky']! as Map<String, Object?>),
+    syllables: List<String>.unmodifiable([
+      for (final syllable in one['syllables']! as List<Object?>)
+        syllable! as String,
+    ]),
+  );
 
   final limbs = period['panchanga']! as Map<String, Object?>;
   final baseline = raw['baseline'] as List<Object?>?;
   final plans = raw['plans'] as List<Object?>?;
+  final readings = raw['readings'] as List<Object?>?;
   return RashifalAnswer(
     period: RashifalPeriod(
       first: _serdeDate(period['first']! as Map<String, Object?>),
@@ -18774,6 +19096,12 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
             : List<List<Map<String, Object?>>>.unmodifiable([
               for (final plan in plans)
                 List<Map<String, Object?>>.unmodifiable(rows(plan)),
+            ]),
+    readings:
+        readings == null
+            ? null
+            : List<ReadingPlan>.unmodifiable([
+              for (final one in readings) plan(one! as Map<String, Object?>),
             ]),
   );
 }
