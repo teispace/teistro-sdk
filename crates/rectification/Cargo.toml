@@ -18,11 +18,11 @@ publish = false
 schema = ["dep:schemars", "teistro-aspect/schema", "teistro-core/schema", "teistro-dasha/schema", "teistro-points/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.10" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.10" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.10" }
-teistro-points = { path = "../points", version = "=1.0.0-rc.10" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.10" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.11" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.11" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.11" }
+teistro-points = { path = "../points", version = "=1.0.0-rc.11" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.11" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

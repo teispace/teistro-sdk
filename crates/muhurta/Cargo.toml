@@ -17,16 +17,16 @@ publish = false
 schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-intl/words-schema", "teistro-panchanga/schema", "teistro-port-ephemeris/schema"]
 
 [dependencies]
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.10" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.10" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.10" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.10" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.11" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.11" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.11" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.11" }
 # A window's reasons are intents a voice pack words (`reasons.rs`).
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.10", default-features = false }
-teistro-matching = { path = "../matching", version = "=1.0.0-rc.10" }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.10" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.10" }
-teistro-time = { path = "../time", version = "=1.0.0-rc.10" }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.11", default-features = false }
+teistro-matching = { path = "../matching", version = "=1.0.0-rc.11" }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.11" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.11" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.11" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }

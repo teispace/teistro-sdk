@@ -39,7 +39,10 @@ while read -r id head conclusion; do
   failed="$(gh api "repos/${repo}/actions/runs/${id}/jobs?per_page=100" \
     --jq '[.jobs[] | select(.conclusion == "failure") | .name] | join(",")')"
   [ "${failed}" = sizes ] || continue
-  changed="$(gh api "repos/${repo}/compare/${head}...${sha}" --jq '[.files[].filename] | sort | join(",")')"
+  # The two trees, not the API's three-dot compare: after a rebase merge
+  # the merge base is the old main, and the whole release would differ.
+  git cat-file -e "${head}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${head}" || continue
+  changed="$(git diff --name-only "${head}" "${sha}" | sort | paste -sd, -)"
   [ "${changed}" = "$(printf '%s\n' "${record[@]}" | sort | paste -sd, -)" ] || continue
   dir="$(mktemp -d)"
   if gh run download "${id}" --repo "${repo}" --name sizes-record --dir "${dir}" >/dev/null 2>&1 &&

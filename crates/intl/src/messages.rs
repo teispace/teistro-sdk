@@ -5324,6 +5324,10 @@ pub mod sdk {
         pub mod colour {
         }
 
+        /// The `community` group.
+        pub mod community {
+        }
+
         /// The `dasha_family` group.
         pub mod dasha_family {
         }
@@ -5452,6 +5456,10 @@ pub mod sdk {
         pub mod nature {
         }
 
+        /// The `observance` group.
+        pub mod observance {
+        }
+
         /// The `paksha` group.
         pub mod paksha {
         }
@@ -5478,6 +5486,10 @@ pub mod sdk {
 
         /// The `rashi` group.
         pub mod rashi {
+        }
+
+        /// The `region` group.
+        pub mod region {
         }
 
         /// The `relationship` group.
@@ -12416,6 +12428,114 @@ pub mod sdk {
 
     /// The `voice` group.
     pub mod voice {
+        /// The `festival` group.
+        pub mod festival {
+            /// The message `sdk.voice.festival.about`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::festival::About;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = About { festival: String::from("festival.RAMA_NAVAMI") };
+            /// assert_eq!(About::KEY, "sdk.voice.festival.about");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct About {
+                /// The `festival` parameter.
+                pub festival: String,
+            }
+
+            impl crate::TypedMessage for About {
+                const KEY: &'static str = "sdk.voice.festival.about";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("festival", crate::Value::entity(&self.festival)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.voice.festival.observance`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::festival::Observance;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Observance { act: String::from("observance.KALASH_SET_UP") };
+            /// assert_eq!(Observance::KEY, "sdk.voice.festival.observance");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Observance {
+                /// The `act` parameter.
+                pub act: String,
+            }
+
+            impl crate::TypedMessage for Observance {
+                const KEY: &'static str = "sdk.voice.festival.observance";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("act", crate::Value::entity(&self.act)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.voice.festival.who`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::voice::festival::Who;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage};
+            ///
+            /// let message = Who {
+            ///     communities: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+            ///     regions: vec![teistro_intl::Value::Str(String::from("one")), teistro_intl::Value::Str(String::from("two"))],
+            ///     shape: String::from("shape"),
+            ///     tradition: teistro_core::catalogue::Tradition::ALL[0],
+            /// };
+            /// assert_eq!(Who::KEY, "sdk.voice.festival.who");
+            /// let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// // An entity's record may be a pack's; without it the message says what is missing.
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Who {
+                /// The `communities` parameter.
+                pub communities: Vec<crate::Value>,
+                /// The `regions` parameter.
+                pub regions: Vec<crate::Value>,
+                /// The `shape` parameter.
+                pub shape: String,
+                /// The `tradition` parameter.
+                pub tradition: teistro_core::catalogue::Tradition,
+            }
+
+            impl crate::TypedMessage for Who {
+                const KEY: &'static str = "sdk.voice.festival.who";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("communities", crate::Value::List(self.communities.clone())),
+                        ("regions", crate::Value::List(self.regions.clone())),
+                        ("shape", crate::Value::Str(self.shape.clone())),
+                        ("tradition", crate::Value::catalogued(self.tradition)),
+                    ])
+                }
+            }
+
+        }
+
         /// The `muhurta` group.
         pub mod muhurta {
             /// The `avoided` group.
