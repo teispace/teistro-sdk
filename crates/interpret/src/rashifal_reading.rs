@@ -595,6 +595,16 @@ const fn moon_named(period: Period) -> bool {
     matches!(period, Period::Daily)
 }
 
+/// The grahas a period may name, in the guide's weight: the Moon, who
+/// weighs last, only on a day.
+fn nameable(period: Period) -> &'static [Graha] {
+    if moon_named(period) {
+        &WEIGHT
+    } else {
+        WEIGHT.split_last().map_or(&[], |(_, rest)| rest)
+    }
+}
+
 /// The transits feeding an area, strongest first in the guide's order,
 /// keeping only those whose verdict is `wanted` (or any when `None`).
 fn feeding(
@@ -602,9 +612,8 @@ fn feeding(
     area: ReadingArea,
     wanted: Option<Verdict>,
 ) -> Vec<(Graha, u8, Verdict)> {
-    WEIGHT
+    nameable(input.period)
         .iter()
-        .filter(|graha| **graha != Graha::Moon || moon_named(input.period))
         .filter_map(|graha| {
             let gochar = input
                 .reading
@@ -683,10 +692,10 @@ fn ranked(areas: &[AreaReading]) -> Vec<&AreaReading> {
 fn headline(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> ReadingItem {
     let band = input.score.band();
     let ranked = ranked(areas);
-    if let (Some(best), Some(worst)) = (ranked.first(), ranked.last())
-        && best.band != worst.band
-        && matches!(best.band, ScoreBand::Excellent | ScoreBand::Good)
-    {
+    let split = ranked.first().zip(ranked.last()).filter(|(best, worst)| {
+        best.band != worst.band && matches!(best.band, ScoreBand::Excellent | ScoreBand::Good)
+    });
+    if let Some((best, worst)) = split {
         let mut params = Params::new();
         params.insert(
             String::from("best"),
@@ -743,31 +752,28 @@ fn why(input: &ReadingInput<'_>, say: &mut Sayer) -> Vec<ReadingItem> {
     } else {
         Verdict::Good
     };
-    let strongest = WEIGHT
-        .iter()
-        .filter(|graha| **graha != Graha::Moon || moon_named(input.period))
-        .find_map(|graha| {
-            input
-                .reading
-                .gochar
-                .grahas
-                .iter()
-                .find(|g| g.graha == *graha && g.verdict == wanted)
-        });
-    if let Some(gochar) = strongest {
+    let strongest = nameable(input.period).iter().find_map(|graha| {
+        input
+            .reading
+            .gochar
+            .grahas
+            .iter()
+            .find(|g| g.graha == *graha && g.verdict == wanted)
+    });
+    items.extend(strongest.map(|gochar| {
         let mut params = Params::new();
         params.insert(String::from("graha"), entity("graha", gochar.graha.key()));
         params.insert(String::from("house"), Value::Int(i64::from(gochar.house)));
         let hedge = if care { Hedge::May } else { Hedge::Likely };
-        items.push(say.say(
+        say.say(
             key(&["why", "TRANSIT", gochar.verdict.key()]),
             params,
             hedge,
             vec![Fact::Transit {
                 graha: gochar.graha,
             }],
-        ));
-    }
+        )
+    }));
     let saturn = input.reading.saturn;
     if saturn.sade_sati.is_some() || saturn.spell {
         let mut params = Params::new();
@@ -949,7 +955,8 @@ fn area_lines(
         let caution = line(worst, false, say);
         items.push(caution);
     }
-    if let Some(second) = second.filter(|area| area.area != worst.area || !cautions) {
+    // The second is good and a caution's worst is not, so they differ.
+    if let Some(second) = second {
         items.push(line(second, true, say));
     }
     items
@@ -1022,11 +1029,7 @@ fn weekly(
             items: vec![item],
         });
     }
-    let lines = area_lines(input, areas, say);
-    parts.push(ReadingPart {
-        frame: Frame::Whole,
-        items: lines,
-    });
+    let mut lines = area_lines(input, areas, say);
     let best = strict_best(days);
     if let Some(index) = best {
         let mut params = Params::new();
@@ -1037,16 +1040,17 @@ fn weekly(
         if let Some(date) = input.day_dates.get(index) {
             params.insert(String::from("date"), date.clone());
         }
-        let item = say.say(
+        lines.push(say.say(
             key(&["week", "BEST_DAY"]),
             params,
             Hedge::Likely,
             vec![Fact::Day { index }],
-        );
-        if let Some(whole) = parts.last_mut() {
-            whole.items.push(item);
-        }
+        ));
     }
+    parts.push(ReadingPart {
+        frame: Frame::Whole,
+        items: lines,
+    });
     (parts, best)
 }
 
@@ -1090,15 +1094,18 @@ fn monthly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> 
 fn yearly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> Vec<ReadingPart> {
     const SLOW: [Graha; 4] = [Graha::Jupiter, Graha::Saturn, Graha::Rahu, Graha::Ketu];
     let mut parts = Vec::new();
-    let mut slow = Vec::new();
-    for graha in SLOW {
-        if let Some(gochar) = input
-            .reading
-            .gochar
-            .grahas
-            .iter()
-            .find(|g| g.graha == graha)
-        {
+    let slow = SLOW
+        .iter()
+        .filter_map(|graha| {
+            input
+                .reading
+                .gochar
+                .grahas
+                .iter()
+                .find(|g| g.graha == *graha)
+        })
+        .map(|gochar| {
+            let graha = gochar.graha;
             let mut params = Params::new();
             params.insert(String::from("graha"), entity("graha", graha.key()));
             params.insert(String::from("house"), Value::Int(i64::from(gochar.house)));
@@ -1107,14 +1114,14 @@ fn yearly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> V
                 Verdict::Obstructed => Hedge::Possible,
                 _ => Hedge::May,
             };
-            slow.push(say.say(
+            say.say(
                 key(&["year", "SLOW", gochar.verdict.key()]),
                 params,
                 hedge,
                 vec![Fact::Transit { graha }],
-            ));
-        }
-    }
+            )
+        })
+        .collect();
     parts.push(ReadingPart {
         frame: Frame::Slow,
         items: slow,
@@ -1127,24 +1134,26 @@ fn yearly(input: &ReadingInput<'_>, areas: &[AreaReading], say: &mut Sayer) -> V
         Frame::Quarter3,
         Frame::Quarter4,
     ];
-    let mut quarters: [Vec<ReadingItem>; 4] = Default::default();
-    for (index, from) in input.reading.events.iter().enumerate() {
-        let at = (from.event.hit.instant.get() - start) / length * 4.0;
-        // An event at the period's very end belongs to its last quarter.
-        let quarter = if at < 1.0 {
-            0
-        } else if at < 2.0 {
-            1
-        } else if at < 3.0 {
-            2
-        } else {
-            3
-        };
-        if let Some(items) = quarters.get_mut(quarter) {
-            items.push(event_item(input, index, from, say));
-        }
-    }
-    for (frame, items) in frames.into_iter().zip(quarters) {
+    // Each event said in order, with the quarter it falls in: the number of
+    // quarter marks it has passed, so one at the period's very end belongs
+    // to its last quarter.
+    let said: Vec<(usize, ReadingItem)> = input
+        .reading
+        .events
+        .iter()
+        .enumerate()
+        .map(|(index, from)| {
+            let at = (from.event.hit.instant.get() - start) / length * 4.0;
+            let quarter = [1.0, 2.0, 3.0].iter().filter(|mark| at >= **mark).count();
+            (quarter, event_item(input, index, from, say))
+        })
+        .collect();
+    for (quarter, frame) in frames.into_iter().enumerate() {
+        let items: Vec<ReadingItem> = said
+            .iter()
+            .filter(|(at, _)| *at == quarter)
+            .map(|(_, item)| item.clone())
+            .collect();
         if !items.is_empty() {
             parts.push(ReadingPart { frame, items });
         }
@@ -1163,10 +1172,12 @@ fn keep_items_caution_off_the_end(items: &mut [ReadingItem]) {
     if !items.last().is_some_and(|item| item.caution) {
         return;
     }
-    if let Some(at) = items.iter().rposition(|item| !item.caution) {
-        if let Some(tail) = items.get_mut(at..) {
-            tail.rotate_left(1);
-        }
+    if let Some(tail) = items
+        .iter()
+        .rposition(|item| !item.caution)
+        .and_then(|at| items.get_mut(at..))
+    {
+        tail.rotate_left(1);
     }
 }
 
