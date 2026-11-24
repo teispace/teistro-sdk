@@ -2168,7 +2168,7 @@ export interface HorizonSample {
 }
 
 /**
- * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
+ * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen, where a journey goes, and whether each window's reasons are said in words.
  */
 export interface MuhurtaRequest {
   /**
@@ -2180,6 +2180,10 @@ export interface MuhurtaRequest {
   readonly most?: number;
   readonly native?: MuhurtaNative | null;
   readonly ranking?: MuhurtaRanking;
+  /**
+   * Whether each window's reasons are said in words.
+   */
+  readonly reasons?: boolean;
   /**
    * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
    */
