@@ -1029,6 +1029,36 @@
       "phalaProse": "Yamagaṇḍakālaḥ yamena śāsitaḥ dinamānāṣṭamāṃśaḥ, vārānusāraṃ bhinnasamayasthaḥ. Ayaṃ śubhakāryārambhe varjyaḥ, viśeṣato yātrārambhe niṣiddhaḥ — asmin ārabdhā yātrā vighnakleśakarī, kāryaṃ ca niṣphalaprāyam. Mṛtyukārakayamasambaddhatvāt maṅgalakārye tyājyaḥ."
     }
   },
+  "choghadiya": {
+    "UDVEG": {
+      "phala": "Udvegaḥ sūryasya caturghaṭikā — cintākālaḥ, śubhakāryārambhe varjyaḥ.",
+      "phalaProse": "Udvegaḥ sūryasya caturghaṭikā, vyākulatārthakaḥ. Asmin vivāhagṛhapraveśanavodyamādīni śubhakāryāṇi nārabheta. Sūryasya rājapadādhipatyāt rājakāryāṇi adhikārisambaddhakāryāṇi ca asmin sidhyanti."
+    },
+    "CHAR": {
+      "phala": "Caraḥ śukrasya caturghaṭikā — calakālaḥ, yātrāyai praśastaḥ.",
+      "phalaProse": "Caraḥ śukrasya caturghaṭikā, gatyarthakaḥ. Calakāryeṣu praśastaḥ — yātrārambhe, vāhanakraye, sthānāntarakārye ca. Sthirakāryeṣu madhyamaḥ, na tvaśubhaḥ."
+    },
+    "LAABH": {
+      "phala": "Lābhaḥ budhasya caturghaṭikā — lābhakālaḥ, vāṇijyavidyayoḥ praśastaḥ.",
+      "phalaProse": "Lābhaḥ budhasya caturghaṭikā, prāptyarthakaḥ. Vāṇijye, krayavikraye, gaṇanākārye, vidyārambhe, navakauśalābhyāse ca praśastaḥ; asmin ārabdhaṃ kāryaṃ lābhapradam."
+    },
+    "AMRIT": {
+      "phala": "Amṛtaṃ candrasya caturghaṭikā — sarvottamakālaḥ, sarvakāryeṣu śubham.",
+      "phalaProse": "Amṛtaṃ candrasya caturghaṭikā, saptasu śreṣṭhatamam. Asmin sarvavidhaṃ śubhakāryam ārabheta — saṃskārāḥ, yātrā, vāṇijyam, auṣadhaṃ, navodyamāśca."
+    },
+    "KAAL": {
+      "phala": "Kālaḥ śaneḥ caturghaṭikā — hānikālaḥ, śubhakāryeṣu varjyaḥ.",
+      "phalaProse": "Kālaḥ śaneḥ caturghaṭikā. Asmin śubhakāryāṇi nārabheta, hāniranuvartate iti. Pariśramaḥ, jīrṇoddhāraḥ, dhanasañcayakāryāṇi ca apavādatvena grāhyāṇi."
+    },
+    "SHUBHA": {
+      "phala": "Śubhaḥ bṛhaspateḥ caturghaṭikā — maṅgalakālaḥ, saṃskāreṣu praśastaḥ.",
+      "phalaProse": "Śubhaḥ bṛhaspateḥ caturghaṭikā. Vivāhe, dharmānuṣṭhāne, pūjāyāṃ, vidyāyāṃ, sarvasaṃskāreṣu ca praśastaḥ; gurujanadarśanāya ayaṃ śreṣṭhaḥ."
+    },
+    "ROG": {
+      "phala": "Rogaḥ bhaumasya caturghaṭikā — rogakālaḥ, śubhakāryeṣu varjyaḥ.",
+      "phalaProse": "Rogaḥ bhaumasya caturghaṭikā. Asmin śubhakāryaṃ, yātrā, cikitsārambhaśca varjyāḥ. Spardhā, vivādaḥ, śatruviruddhakāryāṇi ca apavādatvena grāhyāṇi."
+    }
+  },
   "rashi": {
     "AQUARIUS": {
       "ishtaDevata": "Kumbhakārakāṃśe iṣṭadevatā śaniḥ / śivaḥ.",
