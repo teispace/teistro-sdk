@@ -10,6 +10,54 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
+## 1.0.0-rc.10
+
+The tenth release candidate of 1.0.0. The rashifal gains its reading voice:
+the headline, the short reading, the plain why, the four areas and the lucky
+items that the dailies and calendar apps print, each sentence naming the
+facts it rests on, worded in English and Nepali. It is released on GitHub
+only; no package goes to a registry.
+**Numbers:** none. Measured against 1.0.0-rc.9's tree: no chart, day,
+festival, score, band or settings hash moves. The reading voice is a second
+register over the facts and score rc.9 already answered, and it is said only
+when a batch asks for it.
+
+**The rashifal's reading voice (SR-152 S1 and S2, C2359 to C2363).**
+**Numbers:** none. A batch that does not ask for `readings` answers as before.
+- **Added:** `readings: true` beside a `baseline` period answers each sign's
+  `ReadingPlan`: a `headline`, the reading's `parts` (a day split at the
+  Moon's change of sign, a week's start, middle and end from its daily
+  scores, a month's halves at its largest event, a year's slow grahas and
+  quarters), a plain `why`, four `areas` (WORK, MONEY, LOVE_FAMILY and
+  HEALTH, each with its band and a note), the `lucky` colour, number, day
+  and direction, and the sign's nine name `syllables`
+  (`03-design/rashifal-reading.md`). A batch asking for readings without a
+  period is refused at `rashifal.readings`.
+- **Added:** every item is an intent with its slots, so
+  `intl.render(item.intent, item.params)` is the whole call. It names the
+  facts it rests on (`ReadingFact`: a transit, Saturn, an event, an
+  influence, a band, the lucky items or the syllables), how firmly it is
+  said (`ReadingHedge`) and whether it is a caution; a period keeps its
+  caution budget and no part ends on one. Every fact an item names exists in
+  the same answer.
+- **Added:** a seeded `variant` picks among a pack's wordings, so a day
+  reads the same everywhere and the next day differs. The intl engine
+  selects on `:integer cycle=N`, the value modulo N (C2360).
+- **Added:** the `sdk.voice` namespace in `en-Latn` and `ne-Deva-NP`, final,
+  from the consumer's voice guide; the maintainer reviews it after shipping
+  (Q42). Hindi and Sanskrit follow (S3).
+- **Added:** the readings in every binding (Python, Node, Dart and Java)
+  as typed plans, and through `ts_rashifal` over the C ABI. The voice is
+  part of the `rashifal` family, behind the `rashifal-reading` feature (in
+  `full`); a build without it refuses readings as CAPABILITY rather than
+  leaving them out.
+- **Changed:** the `en-Latn` bundle grows to about 255 KB and `ne-Deva-NP`
+  to about 362 KB; their budgets are 290,000 and 405,000 bytes.
+
+**Tests.**
+- **Fixed:** the MCP server's stdio reader is held at a line split across
+  reads by a fixed test, where only a pipe's chance split reached it.
+
 ## 1.0.0-rc.9
 
 The ninth release candidate of 1.0.0. It brings the days Nepal's calendars
