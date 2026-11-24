@@ -294,123 +294,6 @@
     "MINA_SANKRANTI": {
       "about": "Mina Sankranti is the Sun's entry into Pisces, which opens Chaitra, the last month of the Bikram Sambat year, usually in mid-March. Like Mithuna, Kanya and Dhanu it is a Shadashiti sankranti, whose holy period falls in the hours after the crossing. The devout bathe and give alms."
     },
-    "BAISAKH_SANKRANTI": {
-      "about": "Baisakh Sankranti is Mesha Sankranti named by its month: the Sun's entry into Aries on the first of Baisakh, in mid-April, which begins the Bikram Sambat year. It is a public holiday. People bathe, greet the new year and visit temples, and in Bhaktapur the Bisket Jatra fells the yosin pole and pulls Bhairav's chariot."
-    },
-    "JESTHA_SANKRANTI": {
-      "about": "Jestha Sankranti is Vrishabha Sankranti named by the month it opens: the Sun's entry into Taurus on the first of Jestha, usually in mid-May. It is a Vishnupadi sankranti, its holy period in the hours before the crossing. The devout keep it with a bath and alms."
-    },
-    "ASAR_SANKRANTI": {
-      "about": "Asar Sankranti is Mithuna Sankranti named by the month it opens: the Sun's entry into Gemini on the first of Asar, usually in mid-June, as the monsoon and the rice planting begin. It is a Shadashiti sankranti, its holy period in the hours after the crossing, and is kept with a bath and alms."
-    },
-    "SAUNE_SANKRANTI": {
-      "about": "Saune Sankranti is the Nepali name for Karkata Sankranti, the first of Shrawan, when the Sun enters Cancer in mid-July and its southward half-year begins. In the hills, and above all in Karnali, families burn torches of straw or pine at dusk and throw them out of the house to cast off luto, the itch and sickness of the muddy planting season. The demon Kandakarna is worshipped the same evening."
-    },
-    "SHRAWAN_SANKRANTI": {
-      "about": "Shrawan Sankranti is Karkata Sankranti named by its month: the first of Shrawan, in mid-July, when the Sun enters Cancer. The national panchanga marks it as the start of Dakshinayana and lists the Kandakarak puja the same day. It opens Shrawan, the month many devote to Shiva, and in the hills torches are thrown out at dusk to cast off luto."
-    },
-    "BHADRA_SANKRANTI": {
-      "about": "Bhadra Sankranti is Simha Sankranti named by its month: the first of Bhadra, in mid-August, when the Sun enters Leo. It is a Vishnupadi sankranti, kept with a bath and alms. The national panchanga sets several local observances on it, among them Walke Parva and Kirtipur's Bagh Bhairav jatra."
-    },
-    "ASHWIN_SANKRANTI": {
-      "about": "Ashwin Sankranti is Kanya Sankranti named by its month: the first of Ashwin, in mid-September, when the Sun enters Virgo. Across Nepal it is the day of the Vishwakarma Puja, when workshops, factories and drivers worship their tools, machines and vehicles. It is also kept as Vastu Diwas, the day of architecture and building."
-    },
-    "KARTIK_SANKRANTI": {
-      "about": "Kartik Sankranti is Tula Sankranti named by its month: the first of Kartik, in mid-October, when the Sun enters Libra. With Mesha it is one of the two equinoctial sankrantis, the vishuva, held especially holy for bathing and giving. It usually falls in the season of Dashain and Tihar."
-    },
-    "MANGSIR_SANKRANTI": {
-      "about": "Mangsir Sankranti is Vrishchika Sankranti named by its month: the first of Mangsir, in mid-November, when the Sun enters Scorpio. It is a Vishnupadi sankranti, its holy period in the hours before the crossing, and the devout mark it with a bath and alms as the rice harvest is brought in."
-    },
-    "POUSH_SANKRANTI": {
-      "about": "Poush Sankranti is Dhanu Sankranti named by its month: the first of Poush, in mid-December, when the Sun enters Sagittarius. It opens a month held unsuited to weddings and other auspicious rites, which resume at Maghe Sankranti. The day is kept with a bath and alms, and the same date is National Flag Day."
-    },
-    "MAGHE_SANKRANTI": {
-      "about": "Maghe Sankranti, Makara Sankranti, falls on the first of Magh in mid-January, when the Sun enters Capricorn and its northward half-year, Uttarayana, is reckoned to begin. It marks the turn from the cold months. People bathe at confluences such as Devghat, and families gather to eat sesame laddus, chaku, ghee, sweet potato and yam; it is also Maghi, the Tharu new year."
-    },
-    "FALGUN_SANKRANTI": {
-      "about": "Falgun Sankranti is Kumbha Sankranti named by its month: the first of Falgun, in mid-February, when the Sun enters Aquarius. It is a Vishnupadi sankranti, its holy period in the hours before the crossing. A bath and gifts to the needy mark the day as the winter eases."
-    },
-    "CHAITRA_SANKRANTI": {
-      "about": "Chaitra Sankranti is Mina Sankranti named by its month: the first of Chaitra, in mid-March, when the Sun enters Pisces and the last month of the Bikram Sambat year begins. It is a Shadashiti sankranti, its holy period in the hours after the crossing, and is kept with a bath and alms."
-    },
-    "JANAI_PURNIMA": {
-      "about": "Janai Purnima, the full moon of Shrawan, is the day Hindu men who wear the sacred thread change it after a bath and the upakarma rite. Priests tie a protective doro on the wrists of all who come, and sisters tie rakhi on their brothers. Pilgrims climb to Gosainkunda and bathe at Kumbheshwar in Patan, and Newars eat kwati, a soup of sprouted beans."
-    },
-    "RISHI_TARPANI": {
-      "about": "Rishi Tarpani is a name for Janai Purnima, the full moon of Shrawan, taken from the rite at its heart. In the upakarma that begins the year's Vedic study, Brahmins offer water to the sages who first heard the Vedas, the rishi tarpan, after a bath in a river or at home. They then put on a new sacred thread."
-    },
-    "SARASWATI_PUJA": {
-      "about": "Saraswati Puja is Basanta Panchami named by its worship: the fifth day of Magh's bright half, given to Saraswati, goddess of learning, speech and the arts. Schools and colleges hold her puja, students set their books and pens before her, and small children are taught their first letters. Crowds visit her shrine at Swayambhu and other temples."
-    },
-    "SHREE_PANCHAMI": {
-      "about": "Shree Panchami is another name for Basanta Panchami, the fifth day of Magh's bright half, which welcomes spring. The day honours Saraswati, goddess of learning, and is held auspicious for beginnings, so children start their letters and many choose it for weddings and the sacred-thread rite. Students worship the goddess at schools and temples."
-    },
-    "DAHI_CHIURA_KHANE_DIN": {
-      "about": "Dahi Chiura Khane Din, the fifteenth of Asar in late June, is the day of curd and beaten rice in the middle of the rice-planting season. Farmers and townspeople alike eat dahi-chiura, and the planting is done with songs and play in the mud. Since VS 2062 the state has kept the same day as National Paddy Day."
-    },
-    "GHYU_CHAKU_KHANE_DIN": {
-      "about": "Ghyu Chaku Khane Din, the day of eating ghee and chaku, is a name for Maghe Sankranti, the first of Magh in mid-January. Families gather to eat ghee, chaku made from boiled-down cane juice, sesame laddus, sweet potato and yam, foods held to warm the body in the cold. Married daughters often come home, and many bathe at the rivers."
-    },
-    "UTTARAYANA_ARAMBHA": {
-      "about": "Uttarayana Arambha, the start of the Sun's northward half-year, is how the calendar names Makara Sankranti, the first of Magh in mid-January. The Sun's six months in the north are held auspicious, and the hours after the crossing are a holy period for bathing and giving. The day is kept as Maghe Sankranti, with river baths and winter foods."
-    },
-    "DAKSHINAYANA_ARAMBHA": {
-      "about": "Dakshinayana Arambha, the start of the Sun's southward half-year, is how the national panchanga names Karkata Sankranti, the first of Shrawan in mid-July, when the Sun enters Cancer. The six months that follow are the gods' night in the old reckoning. The hours before the crossing are a holy period for bathing and giving alms."
-    },
-    "LUTO_FALNE_DIN": {
-      "about": "Luto Falne Din, the day of throwing out the itch, is a name for Saune Sankranti, the first of Shrawan in mid-July. After weeks of planting rice in mud, families light torches of straw or pine at dusk and fling them out of the house or from the rooftops, calling on luto, scabies and sickness, to leave. The custom is strongest in Karnali and the western hills."
-    },
-    "RASHTRIYA_EKATA_DIWAS": {
-      "about": "Rashtriya Ekata Diwas, National Unity Day, falls on the twenty-seventh of Poush, in January, the birth anniversary of Prithvi Narayan Shah, the king of Gorkha who unified the Nepali state in the eighteenth century. The day is kept with garlands at his statues and programmes on national unity. It has been listed as Prithvi Jayanti and made a public holiday again since VS 2080."
-    },
-    "BUBAKO_MUKH_HERNE_DIN": {
-      "about": "Bubako Mukh Herne Din, the day of looking upon one's father's face, is Kushe Aunsi, the new moon of Bhadra, Nepal's Father's Day. Sons and daughters visit their fathers with sweets and gifts and receive their blessing. Those whose fathers have died perform shraddha, many at Gokarneshwar on the Bagmati, known as Uttar Gaya. Priests also gather kush grass that day for the year's rites."
-    },
-    "UDHAULI_PARVA": {
-      "about": "Udhauli Parva, on the full moon of Mangsir, is the Kirat festival of the harvest and of the move down to warmer valleys before winter. Rai, Limbu, Yakkha and Sunuwar communities thank nature and their ancestors for the crops and dance the sakela, or sakewa, in great circles. The Ministry of Home Affairs gives Kirat communities a holiday for it."
-    },
-    "GHYA_CHAKU_SALHU": {
-      "about": "Ghya Chaku Salhu is the Newar name for Maghe Sankranti, the first of Magh in mid-January: salhu is the first day of a solar month, and ghya and chaku are ghee and boiled-down cane sugar. Newar families eat ghee, chaku, sesame sweets and yam together and share them with married daughters and relatives."
-    },
-    "BISKA_JATRA": {
-      "about": "Biska Jatra, Bisket Jatra, is Bhaktapur's new-year festival, nine days and eight nights around the first of Baisakh in mid-April. The chariots of Bhairav and Bhadrakali are pulled through the city in a tug of war between its upper and lower halves. On the year's last day a tall pole, the yosin, is raised, and its felling on the first of Baisakh marks the new year."
-    },
-    "KWATI_KHANE_DIN": {
-      "about": "Kwati Khane Din, the day of eating kwati, is Janai Purnima, the full moon of Shrawan, which the Newars call Kwati Punhi. Families soak and sprout nine kinds of beans and cook them into kwati, a thick soup held to restore strength after the planting season. It is eaten the same day the sacred thread is changed."
-    },
-    "SHATABIJ_ROPAN": {
-      "about": "Shatabij Ropan, the sowing of the hundred seeds, is the central rite of Bala Chaturdashi, the fourteenth of Mangsir's dark half. Families who lost someone in the year keep vigil with lamps at Pashupati through the night, then walk through the Mrigasthali forest scattering seven kinds of grain, the satbij, for the dead."
-    },
-    "JANA_BAHA_DYAH_NHAVAN": {
-      "about": "Jana Baha Dyah Nhavan is the yearly public bath of Jana Baha Dyah, Seto Machhindranath, the white Karunamaya of Kathmandu, on the eighth day of Poush's bright half, in December or January. The image is brought out of its temple at Jana Baha in Kel Tole, bathed before crowds of Buddhists and Hindus, and freshly painted before it returns to its shrine."
-    },
-    "PISHACHA_CHATURDASHI": {
-      "about": "Pishacha Chaturdashi, the fourteenth of Chaitra's dark half, is the night when spirits are held to roam, and the Newars keep it within Pahan Charhe. Food is set out for the spirits, and in Kathmandu Luku Mahadyo, a Shiva kept in a pit, is brought into the open and worshipped. The mother goddesses are carried in palanquins through the old city, and families invite married daughters to a feast."
-    },
-    "NIMKO_PAAT_KHANE_DIN": {
-      "about": "Nimko Paat Khane Din, the day of eating neem leaves, is the first day of Chaitra's bright half, when the lunar year, the samvatsara, begins. The Dharmasindhu prescribes eating neem leaves that morning, after rubbing the body with oil and bathing, for health in the year ahead, and the calendar's yearly reading of the new year's planetary rulers is heard the same day."
-    },
-    "JYOTISH_DIWAS": {
-      "about": "Jyotish Diwas, Astrology Day, is kept on the first day of Chaitra's bright half, the start of the lunar year, the samvatsara, which tradition holds to be the day creation and the reckoning of time began. Astrologers and the panchanga's makers mark it with gatherings and talks on Nepal's tradition of jyotisha, the astronomy and astrology behind the calendar."
-    },
-    "MOHARATRI": {
-      "about": "Moharatri, the night of enchantment, is a name for the night of Krishna Janmashtami, the eighth of Bhadra's dark half, when Krishna's birth at midnight is recalled. Devotees fast through the day and keep vigil, singing bhajans until midnight, when Krishna is worshipped. In Patan the crowds gather at the Krishna Mandir in Mangal Bazaar."
-    },
-    "SAPTARSHI_PUJA": {
-      "about": "Saptarshi Puja, the worship of the seven sages, is the heart of Rishi Panchami, the fifth of Bhadra's bright half and the last day of Teej. Women bathe in a river, brushing their teeth many times with stalks of the datiwan plant, then worship the seven sages and Arundhati. They keep a fast for purification from faults of the past year."
-    },
-    "PAUSHE_AUNSI": {
-      "about": "Paushe Aunsi is the new moon that falls in the solar month of Poush, in December or January, the new moon of Margashirsha by the lunar month. The national panchanga names it Gaya Mauni Aunsi. Like every new moon it is a day for offerings to the ancestors, the darsha shraddha, and a river bath."
-    },
-    "NAYA_BARSHA": {
-      "about": "Naya Barsha, New Year, is the first of Baisakh, in mid-April, when the Bikram Sambat year begins with the Sun's entry into Aries. It is a public holiday across Nepal. People exchange greetings, visit temples and relatives and go on outings, and in Bhaktapur the Bisket Jatra fells the yosin pole that evening."
-    },
-    "NEPAL_SAMBAT_ARAMBHA": {
-      "about": "Nepal Sambat Arambha, the start of the Nepal Sambat year, falls on the first day of Kartik's bright half, during Tihar. The era is counted from 879 CE, and the state recognises it as a national era. Newar communities greet the year with processions and cultural programmes, and families perform Mha Puja, the worship of the self, the same evening."
-    },
-    "YOSIN_THANEGU": {
-      "about": "Yosin Thanegu, the raising of the yosin, takes place in Bhaktapur on the last day of Chaitra, during Bisket Jatra. A tall wooden pole hung with two long banners is hauled upright with ropes at Yosinkhel by crowds of men. It stands through the night and is pulled down the next evening, on the first of Baisakh, to mark the new year."
-    },
     "LOKTANTRA_DIWAS": {
       "about": "Loktantra Diwas, Democracy Day, falls on the eleventh of Baisakh, in late April. It recalls the night of Baisakh 11, VS 2063 (24 April 2006), when King Gyanendra restored the dissolved House of Representatives after nineteen days of mass protest, the second People's Movement. The day is kept with programmes honouring the movement and those who died in it."
     },
@@ -1857,12 +1740,6 @@
     "MAWLID": {
       "about": "Mawlid, or Milad-un-Nabi, the twelfth of the Islamic month of Rabi al-Awwal, marks the birth of the Prophet Muhammad, kept on that date by Sunni Muslims, while many Shia keep the seventeenth. Gatherings recite the story of his birth and poems in his praise, mosques and streets are lit, processions are taken out, and food is given to the poor; some Muslims do not keep the day."
     },
-    "SIRUWA_PAVANI": {
-      "about": "Siruwa Pavani is the new-year festival of the Tharu and other communities of the eastern Terai, kept at the start of Baisakh. Elders bless the young by pouring cool water on their heads, people splash water and mud on one another in play, and families feast and visit. The Ministry of Home Affairs gives a holiday for it in Jhapa, Morang, Sunsari, Siraha and Saptari."
-    },
-    "BHOTO_JATRA": {
-      "about": "Bhoto Jatra closes the long chariot festival of Rato Machhindranath, Patan's god of rain, at Jawalakhel, usually in May or June. Before the crowds, and in the presence of the head of state, an official holds up the god's jewelled vest, the bhoto, from each side of the chariot so that all may see it. The day is a holiday in the Kathmandu Valley."
-    },
     "GAI_PUJA": {
       "about": "Gai Puja, the worship of the cow, is kept in Tihar as the goddess Lakshmi's own day for the cow. Cows are bathed, given a tika and garlands of marigold and fed the best of the house's food. The texts set the cows' worship and play on the first day of Kartik's bright half, with Govardhan Puja, while many households in the hills honour the cow on the morning of Lakshmi Puja."
     },
@@ -1892,36 +1769,6 @@
     },
     "CHHATH_NAHAY_KHAY": {
       "about": "Nahay Khay, 'bathe and eat', is the first of Chhath's four days, the fourth of Kartik's bright half. Those who will keep the fast clean the house, bathe in a river or pond, and eat a single pure meal, cooked without onion or garlic, of rice, lentils and bottle gourd; the family eats after them."
-    },
-    "BHAI_TIKA": {
-      "about": "Bhai Tika falls on the second tithi of the bright half of Kartik, the fifth and last day of Tihar. Sisters draw a mandala for each brother, ring him with a line of oil and water, and give him a seven-coloured tika and a garland of makhamali flowers for long life, recalling Yamuna's worship of her brother Yama. Brothers give gifts in return, and the sisters feed them."
-    },
-    "GHATASTHAPANA": {
-      "about": "Ghatasthapana, the setting up of the sacred jar, falls on the first tithi of the bright half of Ashwin and opens Dashain's nine nights, the Navaratri. At an auspicious hour a kalash of water is set up in the house's puja room as the seat of Durga, and barley and maize are sown in sand around it to sprout as jamara, which is tended in the dark and given with the tika on the tenth day."
-    },
-    "DEEPAMALIKA": {
-      "about": "Deepamalika, the row of lamps, is a name for the new-moon night of Kartik, the third day of Tihar, when Lakshmi, goddess of wealth, is worshipped. Houses are cleaned, painted footprints lead the goddess in from the door, and rows of lamps and candles are lit on sills, roofs and steps so that she will enter. Girls go from house to house singing bhailo."
-    },
-    "KAKABALI": {
-      "about": "Kakabali, the offering to the crow, is a name for Kag Tihar, the first day of Tihar, on the thirteenth tithi of the dark half before Kartik's new moon. Crows, seen as messengers of Yama, god of death, are honoured with the first portion of the day's food, set out on leaf plates on roofs and in courtyards so that no sad news comes to the house."
-    },
-    "DASHAIN_TIKA": {
-      "about": "Dashain Tika falls on Vijaya Dashami, the tenth tithi of the bright half of Ashwin, which recalls Durga's victory over the demon Mahishasura. At the auspicious hour elders give red tika of rice, curd and vermilion and the jamara grown since Ghatasthapana to younger relatives with blessings, and families visit their elders to receive tika for several days after."
-    },
-    "PITRI_VISARJAN": {
-      "about": "Pitri Visarjan, the farewell to the ancestors, is the new-moon day that closes the sixteen days of Sorah Shraddha before Dashain. The ancestors, held to have come to their descendants during the fortnight, are offered a last shraddha of pinda and water, especially for those whose death date is unknown, and are bid farewell. Ghatasthapana follows the next day."
-    },
-    "SANDHYA_ARGHYA": {
-      "about": "Sandhya Arghya, the evening offering, falls on the sixth tithi of the bright half of Kartik, the main day of Chhath. After a fast without water, those keeping the vow stand in a river or pond at dusk and offer arghya to the setting Sun and to Chhathi Maiya, with bamboo baskets of thekua, fruit and sugarcane carried to the bank by their families."
-    },
-    "DALA_PUJA": {
-      "about": "Dala Puja, the worship of the baskets, is a name for the evening of the sixth tithi of Kartik's bright half during Chhath. Bamboo baskets, the dala and sup, are filled with thekua, fruits, sugarcane and lamps, worshipped at home and carried to the riverbank, where they are held up to the setting Sun as the arghya is given, while women sing Chhath songs."
-    },
-    "USHA_ARGHYA": {
-      "about": "Usha Arghya, the dawn offering, falls on the seventh tithi of the bright half of Kartik, the last day of Chhath. Before sunrise those keeping the vow return to the river or pond and stand in the water to offer arghya to the rising Sun. They then break the fast of some thirty-six hours, and the prasad from the baskets is shared."
-    },
-    "CHHATH_SAMAPAN": {
-      "about": "Chhath Samapan, the close of Chhath, is the morning of the seventh tithi of Kartik's bright half. When arghya has been given to the rising Sun at the riverbank, the four-day festival ends: those keeping the vow break their fast with prasad, and thekua and fruit from the baskets are shared among family and neighbours."
     },
     "DARSHA_SHRADDHA": {
       "about": "Darsha Shraddha is the shraddha of every new moon, the darsha, offered to the ancestors in the afternoon, the time the texts set for it. Householders who keep it offer water with sesame and pinda to three generations of forebears on each new moon of the year, and in Nepal several new moons, such as Kushe Aunsi and Gaya Aunsi, draw crowds to the tirthas."

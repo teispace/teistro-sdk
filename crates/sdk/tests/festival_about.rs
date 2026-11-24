@@ -78,7 +78,10 @@ fn a_listing_describes_only_when_asked() {
     );
     let every: BTreeSet<String> = FestivalFacts::all().iter().map(|f| f.key.clone()).collect();
     let reached: BTreeSet<String> = every_described().into_iter().map(|a| a.key).collect();
-    assert_eq!(reached, every, "a shipped pack lists every subject the data describes");
+    assert_eq!(
+        reached, every,
+        "a shipped pack lists every subject the data describes"
+    );
 }
 
 #[test]
