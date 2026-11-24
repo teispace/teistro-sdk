@@ -25,7 +25,7 @@ fn renders<M: TypedMessage>(intl: &Intl, message: &M, clean: bool) {
 
 #[test]
 #[rustfmt::skip]
-#[expect(clippy::too_many_lines, reason = "one line a message, 444 messages")]
+#[expect(clippy::too_many_lines, reason = "one line a message, 451 messages")]
 fn every_typed_message_renders_from_the_sdk_sources() {
     let intl = Intl::from_tree(&Tree::sdk().expect("the SDK's sources"))
         .expect("plural rules for every locale");
@@ -784,6 +784,48 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Good { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::area::work::Mixed { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Best { best: String::from("best") }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::ingress::Good {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::ingress::NotGood {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::station_direct::Good {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::station_direct::NotGood {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::station_retrograde::Good {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::event::station_retrograde::NotGood {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        graha: teistro_core::catalogue::Graha::ALL[0],
+        house: 2,
+        rashi: teistro_core::catalogue::Rashi::ALL[0],
+        variant: 2,
+    }, false);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::AfterMoon, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::BeforeMoon, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::frame::End, true);
@@ -830,6 +872,10 @@ fn every_typed_message_renders_from_the_sdk_sources() {
     }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Nth { house: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::Theme { house: 2 }, true);
+    renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::BestDay {
+        date: teistro_calendar::CalendarDate::defined(teistro_core::catalogue::Calendar::Gregorian, 2026, 9, 6),
+        variant: 2,
+    }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Care { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Excellent { variant: 2 }, true);
     renders(&intl, &teistro_intl::messages::sdk::voice::rashifal::week::Good { variant: 2 }, true);

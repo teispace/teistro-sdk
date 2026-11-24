@@ -140,7 +140,7 @@ impl Brief {
 /// A caller's own field mask over a record's full answer: the paths they
 /// chose, kept as [`Brief::Keeps`] keeps a brief's, but named at call
 /// time (`03-design/result-detail.md` D6). Made only by
-/// [`Record::fields`](crate::records::Record::fields), which checks every
+/// `Record::fields` (the `masks` feature), which checks every
 /// path against the record's answer schema, so a mask in hand names no
 /// field its record lacks. A mask selects from the full answer, never
 /// from a brief one (crux C1260).
