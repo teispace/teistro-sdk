@@ -24364,6 +24364,24 @@
       "number": 70,
       "doc": "A festival or observance a festival rule decides, by the rule's key, as `SHIVARATRI`; the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs.",
       "open": true
+    },
+    {
+      "kind": "community",
+      "number": 168,
+      "doc": "A people or faith community a festival rule's meta names, as `NEWAR` (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412).",
+      "open": true
+    },
+    {
+      "kind": "region",
+      "number": 169,
+      "doc": "A region a festival rule's meta names: an ISO 3166 country or subdivision (`NP`, `IN-TN`) or a part a notice names (`KATHMANDU_VALLEY`, `TERAI`) (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412).",
+      "open": true
+    },
+    {
+      "kind": "observance",
+      "number": 170,
+      "doc": "An act a festival is kept with, as `TIKA_FROM_ELDERS` or `LAMPS`: the acts `03-design/festival-about.md` lists for each festival it describes (SR-153), each named once in the SDK's locales and shared by every festival it fits.",
+      "open": true
     }
   ]
 }

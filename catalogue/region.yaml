@@ -1,0 +1,5 @@
+kind: region
+number: 169
+version: 1
+open: true
+doc: "A region a festival rule's meta names: an ISO 3166 country or subdivision (`NP`, `IN-TN`) or a part a notice names (`KATHMANDU_VALLEY`, `TERAI`) (`03-design/festival-metadata.md` §1); the shipped packs' keys are named in the SDK's locales, and a consumer's own rules bring theirs (`03-design/festival-about.md`, C2412)."

@@ -1,0 +1,524 @@
+[
+  {
+    "key": "DASHAIN",
+    "observance": [
+      "JAMARA_SOWN",
+      "DURGA_WORSHIP",
+      "TIKA_FROM_ELDERS",
+      "FAMILY_VISITS",
+      "FEAST",
+      "NEW_CLOTHES",
+      "SWINGS",
+      "KITES"
+    ],
+    "sources": [
+      "`03-design/festival-groups.md` §2: the group's members and its source",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Dashain",
+      "Devi Mahatmya (Markandeya Purana chs. 81 to 93)"
+    ]
+  },
+  {
+    "key": "NAVARATRA_ARAMBHA",
+    "observance": [
+      "KALASH_SET_UP",
+      "JAMARA_SOWN",
+      "DURGA_WORSHIP"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Navaratra of Ashvina",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Dashain"
+    ]
+  },
+  {
+    "key": "PHULPATI",
+    "observance": [
+      "PHULPATI_PROCESSION",
+      "PHULPATI_AT_HOME",
+      "DURGA_WORSHIP"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the patrika's entry on the seventh of Ashvina",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Dashain"
+    ]
+  },
+  {
+    "key": "MAHA_ASHTAMI",
+    "observance": [
+      "DURGA_WORSHIP",
+      "TEMPLE_OFFERINGS",
+      "FAST"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Mahashtami of Ashvina",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Dashain"
+    ]
+  },
+  {
+    "key": "VIJAYA_DASHAMI",
+    "observance": [
+      "TIKA_FROM_ELDERS",
+      "FAMILY_VISITS",
+      "FEAST",
+      "NEW_CLOTHES"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Vijayadashami of Ashvina",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Dashain"
+    ]
+  },
+  {
+    "key": "TIHAR",
+    "observance": [
+      "LAMPS",
+      "RANGOLI",
+      "DEUSI_BHAILO",
+      "FLOWER_GARLANDS",
+      "TIKA_FROM_SISTERS"
+    ],
+    "sources": [
+      "`03-design/festival-groups.md` §2: the group's members and its source",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Tihar",
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Yamapanchaka of Kartika"
+    ]
+  },
+  {
+    "key": "KUKUR_TIHAR",
+    "observance": [
+      "DOG_HONOURED",
+      "LAMPS"
+    ],
+    "sources": [
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Tihar"
+    ]
+  },
+  {
+    "key": "LAKSHMI_PUJA",
+    "observance": [
+      "COW_HONOURED",
+      "LAKSHMI_WORSHIP",
+      "LAMPS",
+      "RANGOLI",
+      "DEUSI_BHAILO"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Dipavali of Kartika",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Tihar"
+    ]
+  },
+  {
+    "key": "GOVARDHAN_PUJA",
+    "observance": [
+      "GOVARDHAN_HILL",
+      "OX_HONOURED"
+    ],
+    "sources": [
+      "Bhagavata Purana 10.24 to 10.25",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Tihar"
+    ]
+  },
+  {
+    "key": "MHA_PUJA",
+    "observance": [
+      "MANDALA_FOR_EACH",
+      "SELF_WORSHIP",
+      "FEAST"
+    ],
+    "sources": [
+      "Robert I. Levy, Mesocosm: Hinduism and the Organization of a Traditional Newar City in Nepal (Berkeley: University of California Press, 1990), the account of Mha Puja",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "YAMA_DWITIYA",
+    "observance": [
+      "TIKA_FROM_SISTERS",
+      "FLOWER_GARLANDS",
+      "GIFTS_TO_SISTERS",
+      "FEAST"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Yamadvitiya of Kartika",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Tihar"
+    ]
+  },
+  {
+    "key": "TEEJ",
+    "observance": [
+      "DAR_FEAST",
+      "FAST",
+      "RED_DRESS",
+      "SONG_AND_DANCE",
+      "RIVER_BATH"
+    ],
+    "sources": [
+      "`03-design/festival-groups.md` §2: the group's members and its source",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Teej"
+    ]
+  },
+  {
+    "key": "HARITALIKA",
+    "observance": [
+      "FAST",
+      "SHIVA_PARVATI_WORSHIP",
+      "SONG_AND_DANCE",
+      "RED_DRESS"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Haritalika of Bhadrapada",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Teej"
+    ]
+  },
+  {
+    "key": "RISHI_PANCHAMI",
+    "observance": [
+      "RIVER_BATH",
+      "SAPTARSHI_WORSHIP",
+      "FAST"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Rishipanchami of Bhadrapada",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Teej"
+    ]
+  },
+  {
+    "key": "CHHATH",
+    "observance": [
+      "FAST",
+      "ARGHYA_TO_SUN",
+      "OFFERINGS_IN_BASKETS",
+      "RIVER_BATH"
+    ],
+    "sources": [
+      "`03-design/festival-groups.md` §2: the group's members and its source",
+      "the national panchanga, VS 2082 and VS 2083, the day's entry"
+    ]
+  },
+  {
+    "key": "SHIVARATRI",
+    "observance": [
+      "FAST",
+      "NIGHT_VIGIL",
+      "TEMPLE_VISIT",
+      "BONFIRES"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Shivaratri of Magha",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Shivaratri"
+    ]
+  },
+  {
+    "key": "HOLI_HILLS",
+    "observance": [
+      "CHIR_RAISED",
+      "COLOURS",
+      "SWEETS_SHARED"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Holi"
+    ]
+  },
+  {
+    "key": "HOLI_TERAI",
+    "observance": [
+      "HOLIKA_BONFIRE",
+      "COLOURS",
+      "SWEETS_SHARED"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Holi"
+    ]
+  },
+  {
+    "key": "RAKSHABANDHAN",
+    "observance": [
+      "JANAI_CHANGED",
+      "DORO_TIED",
+      "RAKHI_TIED",
+      "KWATI",
+      "PILGRIMAGE"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Shravani of Shravana",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Janai Purnima"
+    ]
+  },
+  {
+    "key": "JANMASHTAMI",
+    "observance": [
+      "FAST",
+      "MIDNIGHT_PUJA",
+      "BHAJAN",
+      "TEMPLE_VISIT"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888) pp. 49 to 50",
+      "Bhagavata Purana 10.3"
+    ]
+  },
+  {
+    "key": "RAMA_NAVAMI",
+    "observance": [
+      "FAST",
+      "RAMA_WORSHIP",
+      "TEMPLE_VISIT"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888) p. 33",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "MAKARA_SANKRANTI",
+    "observance": [
+      "WINTER_FOODS",
+      "RIVER_BATH",
+      "FAMILY_VISITS"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Makara sankranti",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Maghe Sankranti"
+    ]
+  },
+  {
+    "key": "MESHA_SANKRANTI",
+    "observance": [
+      "NEW_YEAR_GREETINGS",
+      "CHARIOT_PROCESSION",
+      "POLE_RAISED"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "Robert I. Levy, Mesocosm: Hinduism and the Organization of a Traditional Newar City in Nepal (Berkeley: University of California Press, 1990), the account of Biska"
+    ]
+  },
+  {
+    "key": "BASANTA_PANCHAMI",
+    "observance": [
+      "SARASWATI_WORSHIP",
+      "FIRST_LETTERS"
+    ],
+    "sources": [
+      "Kashinatha Upadhyaya, Dharmasindhu (Bombay: Nirnayasagara, 1888), the Vasantapanchami of Magha",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Basanta Panchami"
+    ]
+  },
+  {
+    "key": "JITIYA",
+    "observance": [
+      "FAST",
+      "SONG_AND_DANCE"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "the national panchanga, VS 2082 and VS 2083, the day's entry"
+    ]
+  },
+  {
+    "key": "INDRA_JATRA",
+    "observance": [
+      "POLE_RAISED",
+      "MASKED_DANCES",
+      "KUMARI_CHARIOT"
+    ],
+    "sources": [
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Indra Jatra",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "GAI_JATRA",
+    "observance": [
+      "COW_PROCESSION",
+      "SATIRE"
+    ],
+    "sources": [
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Gai Jatra",
+      "Robert I. Levy, Mesocosm: Hinduism and the Organization of a Traditional Newar City in Nepal (Berkeley: University of California Press, 1990), the account of Saparu",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "GHODE_JATRA",
+    "observance": [
+      "HORSE_RACES",
+      "PROCESSION"
+    ],
+    "sources": [
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Ghode Jatra",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "RATO_MACHHINDRANATH_RATH_JATRA_BEGINS",
+    "observance": [
+      "CHARIOT_PROCESSION",
+      "BHOTO_SHOWN"
+    ],
+    "sources": [
+      "John K. Locke, Karunamaya: The Cult of Avalokitesvara-Matsyendranath in the Valley of Nepal (Kathmandu: Sahayogi, 1980)",
+      "Mary M. Anderson, The Festivals of Nepal (London: Allen & Unwin, 1971), the chapter on Machhendranath"
+    ]
+  },
+  {
+    "key": "NEPAL_SAMBAT_NEW_YEAR",
+    "observance": [
+      "NEW_YEAR_GREETINGS",
+      "PROCESSION",
+      "MANDALA_FOR_EACH"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "Robert I. Levy, Mesocosm: Hinduism and the Organization of a Traditional Newar City in Nepal (Berkeley: University of California Press, 1990), the account of Mha Puja"
+    ]
+  },
+  {
+    "key": "UBHAULI",
+    "observance": [
+      "NATURE_WORSHIP",
+      "SAKELA_DANCE"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Rai and Limbu",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "UDHAULI",
+    "observance": [
+      "NATURE_WORSHIP",
+      "SAKELA_DANCE",
+      "FEAST"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Rai and Limbu",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "MAGHI_THARU",
+    "observance": [
+      "FEAST",
+      "VILLAGE_ASSEMBLY",
+      "SONG_AND_DANCE",
+      "FAMILY_VISITS"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Tharu",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "GAURA_PARVA",
+    "observance": [
+      "FAST",
+      "BIRUDA",
+      "DEUDA_DANCE"
+    ],
+    "sources": [
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them",
+      "the national panchanga, VS 2082 and VS 2083, the day's entry"
+    ]
+  },
+  {
+    "key": "SONAM_LHOSAR",
+    "observance": [
+      "NEW_YEAR_GREETINGS",
+      "MONASTERY_VISIT",
+      "SONG_AND_DANCE"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Tamang",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "TAMU_LHOSAR",
+    "observance": [
+      "NEW_YEAR_GREETINGS",
+      "TRADITIONAL_DRESS",
+      "FEAST",
+      "SONG_AND_DANCE"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Gurung",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "GYALPO_LHOSAR",
+    "observance": [
+      "NEW_YEAR_GREETINGS",
+      "MONASTERY_VISIT",
+      "PRAYER_FLAGS",
+      "FEAST"
+    ],
+    "sources": [
+      "Dor Bahadur Bista, People of Nepal (Kathmandu: Department of Publicity, 1967), the chapter on the Sherpa",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "BUDDHA_JAYANTI",
+    "observance": [
+      "STUPA_VISIT",
+      "LAMPS",
+      "ALMS"
+    ],
+    "sources": [
+      "United Nations General Assembly resolution 54/115 (1999), International recognition of the Day of Vesak",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "EID_AL_FITR",
+    "observance": [
+      "EID_PRAYER",
+      "ZAKAT_AL_FITR",
+      "FEAST",
+      "FAMILY_VISITS"
+    ],
+    "sources": [
+      "the Qur'an 2:183 to 2:185",
+      "`03-design/hijri-sighted.md`: the day the new crescent of Shawwal is seen"
+    ]
+  },
+  {
+    "key": "EID_AL_ADHA",
+    "observance": [
+      "EID_PRAYER",
+      "QURBANI",
+      "FEAST"
+    ],
+    "sources": [
+      "the Qur'an 37:99 to 37:111 and 22:36 to 22:37",
+      "`03-design/hijri-sighted.md`"
+    ]
+  },
+  {
+    "key": "CHRISTMAS",
+    "observance": [
+      "CHURCH_SERVICE",
+      "CAROLS",
+      "GIFTS",
+      "FEAST"
+    ],
+    "sources": [
+      "Luke 2:1 to 2:20",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  },
+  {
+    "key": "GURU_NANAK_JAYANTI",
+    "observance": [
+      "SCRIPTURE_READING",
+      "PROCESSION",
+      "LANGAR"
+    ],
+    "sources": [
+      "W. H. McLeod, Guru Nanak and the Sikh Religion (Oxford: Clarendon Press, 1968)",
+      "the Ministry of Home Affairs' yearly holiday notices, VS 2076 to 2083 (Nepal Gazette, part 5), as `crates/panchanga/data/np-holidays/` holds them"
+    ]
+  }
+]

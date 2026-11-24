@@ -10,6 +10,7 @@ use teistro_panchanga::festival::{
 };
 
 use super::AlmanacArea;
+use super::about::FestivalAbout;
 use crate::festival_request::{FestivalPack, pack};
 
 /// The field a pack listing's refusals are named under.
@@ -22,6 +23,8 @@ const PACK: &str = "pack";
 ///
 /// let asked = PackRequest::from_json(r#"{"pack": "INDIA_CENTRAL"}"#)?;
 /// assert_eq!(asked.pack, FestivalPack::IndiaCentral);
+/// assert!(!asked.about);
+/// assert!(PackRequest::from_json(r#"{"pack": "NEPAL", "about": true}"#)?.about);
 /// assert_eq!(PackRequest::from_json(r#"{"pack": "X"}"#).unwrap_err().field(), Some("pack.pack"));
 /// # Ok::<(), teistro::Error>(())
 /// ```
@@ -29,6 +32,10 @@ const PACK: &str = "pack";
 pub struct PackRequest {
     /// The pack.
     pub pack: FestivalPack,
+    /// Whether to describe each festival and group the SDK describes
+    /// (`03-design/festival-about.md`, SR-153); false leaves the listing
+    /// as it was.
+    pub about: bool,
 }
 
 /// [`PackRequest`] as the bindings write it.
@@ -38,6 +45,10 @@ pub struct PackRequest {
 pub(crate) struct PackAsked {
     /// A pack the SDK ships, by name.
     pack: String,
+    /// Whether to describe each festival: what it is, how it is kept and
+    /// who keeps it where.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    about: bool,
 }
 
 impl PackRequest {
@@ -51,6 +62,7 @@ impl PackRequest {
         let asked: PackAsked = teistro_core::strict::read(text, PACK)?;
         Ok(PackRequest {
             pack: pack(&asked.pack, "pack.pack")?,
+            about: asked.about,
         })
     }
 }
@@ -118,7 +130,7 @@ impl PackRow {
 }
 
 /// A pack's rules.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct PackListing {
     /// The pack's name.
@@ -131,6 +143,14 @@ pub struct PackListing {
     /// festivals by key, kept apart from the notice's words.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub holidays: Vec<Holiday>,
+    /// Asked with `about`, each of the pack's rules and groups the SDK
+    /// describes, its rules first, by key (`03-design/festival-about.md`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub about: Vec<FestivalAbout>,
+    /// Asked with `about`, the keys of the pack's rules and groups the SDK
+    /// does not describe yet, in the same order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unwritten: Vec<String>,
 }
 
 impl FestivalPack {
@@ -202,7 +222,38 @@ impl FestivalPack {
                 .iter()
                 .flat_map(|set| set.holidays())
                 .collect(),
+            about: Vec::new(),
+            unwritten: Vec::new(),
         }
+    }
+
+    /// Its listing with each rule and group described: the rows' own meta,
+    /// a group's its main member's (`03-design/festival-about.md` §4).
+    fn described(self) -> PackListing {
+        let mut listed = self.listing();
+        let groups = self.groups();
+        let subjects = listed
+            .rules
+            .iter()
+            .map(|row| (row.key.as_str(), &row.meta))
+            .chain(groups.iter().filter_map(|group| {
+                let main = listed.rules.iter().find(|row| row.key == group.main)?;
+                Some((group.key.as_str(), &main.meta))
+            }));
+        let mut about: Vec<FestivalAbout> = Vec::new();
+        let mut unwritten: Vec<String> = Vec::new();
+        for (key, meta) in subjects {
+            if about.iter().any(|said| said.key == key) || unwritten.iter().any(|k| k == key) {
+                continue;
+            }
+            match FestivalAbout::of(key, meta) {
+                Some(said) => about.push(said),
+                None => unwritten.push(key.to_owned()),
+            }
+        }
+        listed.about = about;
+        listed.unwritten = unwritten;
+        listed
     }
 
     /// The holiday notices of the pack's country: Nepal's gazette, every
@@ -233,7 +284,7 @@ impl AlmanacArea<'_> {
     /// use teistro::{Context, FestivalPack, PackRequest};
     ///
     /// let sdk = Context::builder().build().map_err(|_| "a context")?;
-    /// let listed = sdk.almanac().festival_pack(&PackRequest { pack: FestivalPack::NepalPanchanga });
+    /// let listed = sdk.almanac().festival_pack(&PackRequest { pack: FestivalPack::NepalPanchanga, about: false });
     /// let row = listed.rules.iter().find(|row| row.key == "GAI_JATRA").ok_or("listed")?;
     /// assert_eq!(row.meta.communities, ["NEWAR"]);
     /// assert_eq!(row.unsourced, ["tradition", "fast"]);
@@ -241,6 +292,10 @@ impl AlmanacArea<'_> {
     /// ```
     #[must_use]
     pub fn festival_pack(self, request: &PackRequest) -> PackListing {
-        request.pack.listing()
+        if request.about {
+            request.pack.described()
+        } else {
+            request.pack.listing()
+        }
     }
 }

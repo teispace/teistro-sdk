@@ -125,6 +125,11 @@
       }
     }
   },
+  "festival": {
+    "about": ".input {$festival :entity kind=festival form=about} {{{$festival}}}",
+    "observance": ".input {$act :entity kind=observance} {{{$act}}}",
+    "who": ".input {$shape :string} .match $shape t_c_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_cs_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_r {{{$regions :list type=and}मा मनाइने {$tradition :entity kind=tradition} चाड।}} c_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने चाड।}} cs_r {{{$regions :list type=and}मा {$communities :list type=and} समुदायले मनाउने चाड।}} r {{{$regions :list type=and}मा मनाइने चाड।}} t_c {{{$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t_cs {{{$communities :list type=and} समुदायले मनाउने {$tradition :entity kind=tradition} चाड।}} t {{{$tradition :entity kind=tradition} चाड।}} c {{{$communities :list type=and} समुदायले मनाउने चाड।}} cs {{{$communities :list type=and} समुदायले मनाउने चाड।}} * {{सबैले मनाउने चाड।}}"
+  },
   "muhurta": {
     "line": ".input {$count :integer} .input {$avoided :integer} .input {$variant :integer cycle=2} .match $count $avoided $variant 0 one 0 {{दिनका कुनै अङ्ग विशेष छैनन्, तर यो समय {$avoided :integer} दोषबाट मुक्त छ।}} 0 one * {{{$avoided :integer} दोषबाट मुक्त, यद्यपि दिनका अङ्ग उत्तम छैनन्।}} 0 * 0 {{दिनका कुनै अङ्ग विशेष छैनन्, तर यो समय {$avoided :integer} दोषबाट मुक्त छ।}} 0 * * {{{$avoided :integer} दोषबाट मुक्त, यद्यपि दिनका अङ्ग उत्तम छैनन्।}} * one 0 {{{$limbs :list type=and} ले यो समयलाई साथ दिन्छन्, र यो {$avoided :integer} दोषबाट मुक्त छ।}} * one * {{{$limbs :list type=and} का कारण रोजिएको, {$avoided :integer} दोषबाट मुक्त।}} * * 0 {{{$limbs :list type=and} ले यो समयलाई साथ दिन्छन्, र यो {$avoided :integer} दोषबाट मुक्त छ।}} * * * {{{$limbs :list type=and} का कारण रोजिएको, {$avoided :integer} दोषबाट मुक्त।}}",
     "favours": {

@@ -125,6 +125,11 @@
       }
     }
   },
+  "festival": {
+    "about": ".input {$festival :entity kind=festival form=about} {{{$festival}}}",
+    "observance": ".input {$act :entity kind=observance} {{{$act}}}",
+    "who": ".input {$shape :string} .match $shape t_c_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} community in {$regions :list type=and}.}} t_cs_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} communities in {$regions :list type=and}.}} t_r {{A festival of the {$tradition :entity kind=tradition} tradition, kept in {$regions :list type=and}.}} c_r {{Kept by the {$communities :list type=and} community in {$regions :list type=and}.}} cs_r {{Kept by the {$communities :list type=and} communities in {$regions :list type=and}.}} r {{Kept in {$regions :list type=and}.}} t_c {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} community.}} t_cs {{A festival of the {$tradition :entity kind=tradition} tradition, kept by the {$communities :list type=and} communities.}} t {{A festival of the {$tradition :entity kind=tradition} tradition.}} c {{Kept by the {$communities :list type=and} community.}} cs {{Kept by the {$communities :list type=and} communities.}} * {{Kept by all.}}"
+  },
   "muhurta": {
     "line": ".input {$count :integer} .input {$avoided :integer} .input {$variant :integer cycle=2} .match $count $avoided $variant 0 one 0 {{No limb of the day stands out, but the time is clear of {$avoided} dosha.}} 0 one * {{Clear of {$avoided} dosha, though no limb of the day is among the best.}} 0 * 0 {{No limb of the day stands out, but the time is clear of {$avoided} doshas.}} 0 * * {{Clear of {$avoided} doshas, though no limb of the day is among the best.}} * one 0 {{{$limbs :list type=and} favour it, and it is clear of {$avoided} dosha.}} * one * {{Chosen for {$limbs :list type=and}, and clear of {$avoided} dosha.}} * * 0 {{{$limbs :list type=and} favour it, and it is clear of {$avoided} doshas.}} * * * {{Chosen for {$limbs :list type=and}, and clear of {$avoided} doshas.}}",
     "favours": {

@@ -30,6 +30,7 @@ use crate::Panchanga;
 use crate::month::LunarMonth;
 use crate::span::Span;
 
+mod about;
 mod anniversary;
 mod barred;
 mod dated;
@@ -64,6 +65,7 @@ pub mod region;
 mod sait;
 mod vrata;
 
+pub use about::FestivalFacts;
 pub use anniversary::{
     Anniversary, AnniversaryDay, AnniversaryKind, DayClause, DayRule, FirstYearAdhika, Half,
     InSamsarpa, JanmaOptions, MonthClause, Origin, OriginFound, TithiShape, anniversaries,

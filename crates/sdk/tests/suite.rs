@@ -85,6 +85,7 @@ mod engine_request;
 mod every_profile;
 #[cfg(feature = "builtin-ephemeris")]
 mod festival;
+mod festival_about;
 #[cfg(feature = "builtin-ephemeris")]
 mod festival_calendar;
 #[cfg(feature = "builtin-ephemeris")]
