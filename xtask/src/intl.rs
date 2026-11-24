@@ -445,18 +445,33 @@ fn no_two_festivals_share_a_name(tree: &Tree) -> usize {
 /// Hindi and Sanskrit are at `base` completeness, and these are the kinds
 /// §4h of that page leaves for want of a settled name: the eras, whose
 /// Hindi forms change every Hindi date, Hindi's festival kinds, and
-/// Sanskrit's traditions and mundane charts. The list fails both ways, as
+/// Sanskrit's traditions and mundane charts; and, in both, the acts,
+/// communities and regions festival descriptions name, which Hindi and
+/// Sanskrit gain with their descriptions (`03-design/festival-about.md`,
+/// stage b). The list fails both ways, as
 /// [`UNNAMED`] does: a member that falls back and is not counted here
 /// fails, and so does a count that is now too high, so the list can only
 /// shrink. `festival` may never stand here (C2080).
 pub(crate) const LATIN_FALLBACK: &[(&str, &[(&str, usize)])] = &[
-    ("hi-Deva-IN", &[("era", 10), ("festival_kind", 4)]),
+    (
+        "hi-Deva-IN",
+        &[
+            ("community", 28),
+            ("era", 10),
+            ("festival_kind", 4),
+            ("observance", 80),
+            ("region", 19),
+        ],
+    ),
     (
         "sa-Deva",
         &[
+            ("community", 28),
             ("era", 11),
             ("festival_kind", 4),
             ("mundane_kind", 13),
+            ("observance", 80),
+            ("region", 19),
             ("tradition", 7),
         ],
     ),
