@@ -765,14 +765,15 @@ fn a_period_is_said_in_the_reading_voice_with_its_facts() {
     assert!(plain[0].readings.is_none());
 }
 
-/// The voice packs say every plan (SR-152 S2): each intent the composer can
-/// name is in en-Latn and ne-Deva-NP, and every item of a month of days, its
-/// weeks, the month and a year renders in both with no warning, from the
-/// locale itself, final (Q42: reviewed after shipping).
+/// The voice packs say every plan (SR-152 S2 and S3): each intent the
+/// composer can name is in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva, and
+/// every item of a month of days, its weeks, the month and a year renders in
+/// each with no warning, from the locale itself, final (Q42: reviewed after
+/// shipping).
 #[test]
-fn every_reading_renders_in_english_and_nepali() {
+fn every_reading_renders_in_all_four_languages() {
     use teistro::interpret::rashifal_reading::{ReadingItem, intents};
-    const TAGS: [&str; 2] = ["en-Latn", "ne-Deva-NP"];
+    const TAGS: [&str; 4] = ["en-Latn", "ne-Deva-NP", "hi-Deva-IN", "sa-Deva"];
     let sdk = context();
     let engine = sdk.locale_engine();
     let mut asked: Vec<RashifalBatch> = (1..=30)

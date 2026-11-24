@@ -1,8 +1,8 @@
 # The rashifal's reading voice (SR-152)
 
-Status: `building`, 2026-11-24; S1 (the plan, in every binding) and S2
-(the en and ne packs, final) built; S3 (hi and sa) and S4 (the
-lucky items traced) next.
+Status: `building`, 2026-11-24; S1 (the plan, in every binding), S2
+(the en and ne packs, final) and S3 (the hi and sa packs, final) built;
+S4 (the lucky items traced) next.
 
 A second register for the rashifal, `reading`, beside the technical one the
 [`rashifal`](rashifal.md) composer says ("Saturn in the 12th: Sade Sati
@@ -194,7 +194,12 @@ the sign Nepal's way, "Mesh (Aries)" (C2332).
   with no `draft` mark: the maintainer reviews after shipping (Q42, decided
   2026-11-10), and `tests/draft.rs` pins every locale's list empty. Shared pieces
   (the house's ordinal and theme, the area names, the frame labels) are
-  helper messages an intent calls with `:msg`.
+  helper messages an intent calls with `:msg`. Sanskrit names a graha
+  or a rashi by its stem (सूर्य, मेष), so its sentences compound them
+  (`सूर्यग्रहः`, `मेषराशिम्`) and say a house's theme as a compound stem with
+  `-विषये`; Hindi follows the Nepali wording's sense. sa-Latn derives its
+  entities from sa-Deva but not yet its messages, so it reads the voice from
+  its fallback.
 - **The façade and every binding** answer `rashifal.reading(...)` with the
   plan as data: the items, their variants and their facts. A binding says
   the plan through its intl engine as it says any plan.
