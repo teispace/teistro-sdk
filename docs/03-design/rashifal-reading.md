@@ -143,10 +143,14 @@ Each item is traced to that graha's own attribute in the texts:
   south-east, Mars south, Rahu south-west, Saturn west, Moon north-west,
   Mercury north, Jupiter north-east). The table matches.
 - **day**: the graha's own weekday, the vara it lords. The table matches.
-- **colour**: the graha's colour, BPHS ch. 3. The table gives the Sun orange
-  for the text's copper red and Saturn blue for the text's dark; both are
-  checked against the text before S4 ships, and a colour the text does not
-  give is left out, not guessed.
+- **colour**: the text's colour of the graha, as the consumer asked (it
+  replaces the baseline's table). Brihat Jataka ch. 2 (v. 4 or 5, by
+  edition) gives the seven: the Sun copper, the Moon white, Mars deep red,
+  Mercury green, Jupiter yellow, Venus variegated and Saturn black. The Narada
+  Purana's list agrees. Against the baseline's table, the Sun (orange), Venus
+  (white) and Saturn (blue) change. The `colour` kind gains COPPER, VARIEGATED
+  and BLACK, appended. The verse number is read from N. Chidambaram Iyer's
+  1885 translation (public domain) before S4 ships (C2361).
 - **number**: the graha's number is numerology's, not jyotisha's: Cheiro's
   single numbers of the planets (p. 22), which `teistro-numerology` already
   cites (Sun 1, Moon 2, Jupiter 3, Mercury 5, Venus 6, Saturn 8, Mars 9). The
