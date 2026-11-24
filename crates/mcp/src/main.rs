@@ -538,3 +538,32 @@ fn bound<T: std::str::FromStr>(option: &str, value: Option<String>) -> Result<Op
         .map(Some)
         .map_err(|_| format!("`{option}` takes a count or `none`, not `{value}`"))
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use std::io::BufReader;
+
+    use super::*;
+
+    /// A line the reader's buffer holds only in pieces is read whole, and
+    /// one past the bound keeps its first `most + 1` bytes. A pipe hands a
+    /// long message over in chunks or all at once as the system pleases,
+    /// so the arm reading a piece with no newline in it is held here and
+    /// not left to the stdio tests' timing (verify's mcp branch floor read
+    /// 81.2% on one run and 80.8% on the next, 2026-11-24).
+    #[test]
+    fn a_line_read_in_pieces_is_read_whole() {
+        let mut input = BufReader::with_capacity(4, &b"{\"a\":12345}\nlonger than six\nlast"[..]);
+        let mut line = Vec::new();
+        assert!(read_line(&mut input, None, &mut line).unwrap());
+        assert_eq!(line, b"{\"a\":12345}");
+        assert!(read_line(&mut input, Some(6), &mut line).unwrap());
+        assert_eq!(line, b"longer ");
+        assert!(read_line(&mut input, None, &mut line).unwrap());
+        assert_eq!(line, b"last");
+        assert!(!read_line(&mut input, None, &mut line).unwrap());
+    }
+}
