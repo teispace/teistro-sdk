@@ -4826,6 +4826,16 @@ void main() {
     );
   });
 
+  test('geo.place: PlaceLookup', () {
+    _holds(
+      'geo.place',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PlaceLookup(id: 'np-ktm', lang: 'ne').toJson(),
+    );
+  });
+
   test('geo.resolve: PlaceRequest', () {
     _holds(
       'geo.resolve',

@@ -388,14 +388,14 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 476 messages to read, 59 that render a value and
+**`ne-Deva-NP`** — 475 messages to read, 60 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
 |---|---:|
 | `sdk.amount` | 6 |
 | `sdk.aspect` | 2 |
-| `sdk.calendar` | 74 |
+| `sdk.calendar` | 73 |
 | `sdk.condition` | 11 |
 | `sdk.day` | 18 |
 | `sdk.karaka` | 2 |

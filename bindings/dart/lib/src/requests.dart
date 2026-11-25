@@ -2186,6 +2186,29 @@ final class PlaceNamesRequest extends _Request {
   List<Object?> get _fields => [id, langs];
 }
 
+/// A place by its id: what `geo.place` reads (SR-164). A provider follows a retired id to the place that replaced it, so the answer's `id` is the survivor's: a caller that saved `id` stores the answer's instead.
+final class PlaceLookup extends _Request {
+  const PlaceLookup({
+    required this.id,
+    this.lang,
+  });
+
+  /// The place's id, as an answer gave it.
+  final String id;
+
+  /// The language to name it in, or `null`.
+  final String? lang;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'id': id,
+    if (lang case final langValue?) 'lang': langValue,
+  };
+
+  @override
+  List<Object?> get _fields => [id, lang];
+}
+
 /// A place to resolve, as `geo.resolve` reads it.
 final class PlaceRequest extends _Request {
   const PlaceRequest({
@@ -16832,6 +16855,9 @@ abstract final class Records {
   /// `geo.names`, whose request is [PlaceNamesRequest].
   static const geoNames = RecordOf<PlaceNamesRequest>._('geo.names');
 
+  /// `geo.place`, whose request is [PlaceLookup].
+  static const geoPlace = RecordOf<PlaceLookup>._('geo.place');
+
   /// `geo.resolve`, whose request is [PlaceRequest].
   static const geoResolve = RecordOf<PlaceRequest>._('geo.resolve');
 
@@ -16956,6 +16982,7 @@ abstract final class Records {
     chartRelocated,
     geoList,
     geoNames,
+    geoPlace,
     geoResolve,
     geoReverse,
     geoSearch,

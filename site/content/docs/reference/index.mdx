@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 121 entry points over 30 structs and 192 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 122 entry points over 30 structs and 192 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **3**, SDK **1.0.0-rc.11**, symbol prefix `ts_`.
 
@@ -108,6 +108,7 @@ ABI version **3**, SDK **1.0.0-rc.11**, symbol prefix `ts_`.
 | [`ts_geo_search`](geo/ts_geo_search) | The places matching a name, best first, as the context's geo provider ranks them, answered as canonical JSON: a list of `{place, score}`, each place `{id, name, nameLang, label, kind, level, code, latitudeDeg, longitudeDeg, population, parents}`. |
 | [`ts_geo_reverse`](geo/ts_geo_reverse) | The named places nearest a point and the admin units holding it, from the context's geo provider, answered as canonical JSON `{near, admin}`: `near` the nearest places, nearest first, each `{place, distanceM, bearingDeg, inside}`; `admin` the units holding the point coarse to fine, each a place as `ts_geo_search` answers one. |
 | [`ts_geo_names`](geo/ts_geo_names) | A place's names from the context's geo provider, answered as canonical JSON `{id, best, all}`: `all` every name, each `{text, lang, script, type, origin, machine}` (`origin` `REVIEWED` for a name a person corrected against a source), and `best` one `{asked, name}` per language asked, `name` null where the place has none in it. |
+| [`ts_geo_place`](geo/ts_geo_place) | A place by its id from the context's geo provider, answered as canonical JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with its id line (`line`), IANA zone (`zone`), population and landmark `class`, null for an id the provider does not know or holds as removed; `moved` true when the id asked was retired and `place` is the one that replaced it, under its own id, which a caller stores instead (SR-164). |
 | [`ts_geo_list`](geo/ts_geo_list) | The places of an admin unit from the context's geo provider, ranked by population (most first, a place with none after), answered as canonical JSON: a list of places as `ts_geo_search` answers them, each with `population` `{people, kind}`, `kind` `COUNTED` or `MODELLED`. |
 
 ### Locale engine

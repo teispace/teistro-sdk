@@ -1,4 +1,4 @@
 {
   "title": "Geo",
-  "pages": ["ts_geo_resolve", "ts_geo_load", "ts_geo_search", "ts_geo_reverse", "ts_geo_names", "ts_geo_list"]
+  "pages": ["ts_geo_resolve", "ts_geo_load", "ts_geo_search", "ts_geo_reverse", "ts_geo_names", "ts_geo_place", "ts_geo_list"]
 }

@@ -1258,6 +1258,20 @@ export interface PlaceNamesRequest {
 }
 
 /**
+ * A place by its id: what `geo.place` reads (SR-164). A provider follows a retired id to the place that replaced it, so the answer's `id` is the survivor's: a caller that saved `id` stores the answer's instead.
+ */
+export interface PlaceLookup {
+  /**
+   * The place's id, as an answer gave it.
+   */
+  readonly id: string;
+  /**
+   * The language to name it in, or `null`.
+   */
+  readonly lang?: string | null;
+}
+
+/**
  * A place to resolve, as `geo.resolve` reads it.
  */
 export interface PlaceRequest {
@@ -11265,6 +11279,7 @@ export interface RecordRequests {
   readonly 'chart.relocated': RelocationRequest;
   readonly 'geo.list': PlaceListing;
   readonly 'geo.names': PlaceNamesRequest;
+  readonly 'geo.place': PlaceLookup;
   readonly 'geo.resolve': PlaceRequest;
   readonly 'geo.reverse': PlaceReverse;
   readonly 'geo.search': PlaceSearch;
