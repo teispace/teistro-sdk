@@ -233,6 +233,15 @@ answers as before.
      lost the same amount of code. What stays is the value reader's one
      copy per type and the buffering serde does for internally tagged
      enums, which the request shapes need.
+   - **The second lever (SR-159).** That one copy per type was still two:
+     `serde_path_to_error` wraps the value reader and every visitor, so
+     each type's reader was built over the wrapper and its visitors'
+     over both (1.98 MB of the 19.7 MB rc.11 module before `wasm-opt`,
+     10%). `strict` now reads through its own reader of a `&Value`: it
+     walks arrays, objects and enum bodies with the path as a chain of
+     borrowed steps, written out only when a read fails, and hands every
+     scalar to `serde_json`'s own reader, so a scalar is read and refused
+     exactly as before. The paths a refusal names are the same.
    - **The data is not a lever.** A third of the raw module is data, and
      two items are most of it: the locale bundles (one copy each,
      checked against the bundles the build wrote) and the time-zone
