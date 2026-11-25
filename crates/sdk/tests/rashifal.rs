@@ -840,6 +840,78 @@ fn every_reading_renders_in_all_four_languages() {
     );
 }
 
+/// A year is scored from its months (C2422): each Gregorian month of the
+/// window asked on its own as `MONTHLY`, the twelve signs' rounded mean is
+/// the year's overall, each area's mean its area, the band read from that
+/// overall, and a headline that names a band names that one.
+#[test]
+fn a_year_is_scored_as_the_mean_of_its_months() {
+    let sdk = context();
+    let period = |first: (i32, u8, u8), last: (i32, u8, u8), baseline: &str| {
+        RashifalBatch::from_json(&format!(
+            r#"{{"periods": [{{"first": {{"year": {}, "month": {}, "day": {}}},
+            "last": {{"year": {}, "month": {}, "day": {}}},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700}}], "baseline": "{baseline}", "readings": true}}"#,
+            first.0, first.1, first.2, last.0, last.1, last.2
+        ))
+        .unwrap()
+    };
+    let answer =
+        |batch: &RashifalBatch| sdk.chart().rashifal_answers(batch).unwrap().value.remove(0);
+    let year = answer(&period((2026, 4, 14), (2027, 4, 13), "YEARLY"));
+    // April's tail, May to March whole, and April's head: thirteen months.
+    let mut bounds = vec![((2026, 4, 14), (2026, 4, 30))];
+    for (y, m, days) in [
+        (2026, 5, 31),
+        (2026, 6, 30),
+        (2026, 7, 31),
+        (2026, 8, 31),
+        (2026, 9, 30),
+        (2026, 10, 31),
+        (2026, 11, 30),
+        (2026, 12, 31),
+        (2027, 1, 31),
+        (2027, 2, 28),
+        (2027, 3, 31),
+    ] {
+        bounds.push(((y, m, 1), (y, m, days)));
+    }
+    bounds.push(((2027, 4, 1), (2027, 4, 13)));
+    let months: Vec<_> = bounds
+        .iter()
+        .map(|&(first, last)| answer(&period(first, last, "MONTHLY")).baseline.unwrap())
+        .collect();
+    let mean = |scores: Vec<u8>| {
+        let count = u32::try_from(scores.len()).unwrap();
+        let total: u32 = scores.into_iter().map(u32::from).sum();
+        u8::try_from((total * 2 + count) / (count * 2)).unwrap()
+    };
+    let scores = year.baseline.unwrap();
+    let plans = year.readings.unwrap();
+    for (sign, (score, plan)) in scores.iter().zip(&plans).enumerate() {
+        assert_eq!(
+            score.overall,
+            mean(months.iter().map(|month| month[sign].overall).collect()),
+            "sign {sign}"
+        );
+        for (at, (area, value)) in score.areas.iter().enumerate() {
+            assert_eq!(
+                *value,
+                mean(months.iter().map(|month| month[sign].areas[at].1).collect()),
+                "sign {sign} {area:?}"
+            );
+        }
+        assert_eq!(score.band(), ScoreBands::DEFAULT.band(score.overall));
+        let headline = &plan.headline.intent;
+        assert!(
+            headline.ends_with("SPLIT") || headline.ends_with(score.band().key()),
+            "sign {sign}: {headline} under {:?}",
+            score.band()
+        );
+    }
+}
+
 /// Each band is named for each period a score is weighed for, in every
 /// locale the consumer shows (SR-162): a year's reading never says "a day".
 #[test]

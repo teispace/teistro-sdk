@@ -107,6 +107,20 @@ the previous release, not by nobody having looked.
   names what every period favours in the same words as Rahu Kaal, Gulika
   and Yamaganda; the tithi, vara, nakshatra and yoga readings were there
   already. No number moves.
+- **A rashifal area's name, and its note as a line of its own.** The
+  reading voice gains `sdk.voice.rashifal.areaName` (`$area`: WORK, MONEY,
+  LOVE_FAMILY or HEALTH) and `areaLine.<AREA>.<BAND>`, each area note as a
+  line that stands alone, read with the note's own slots so its `variant`
+  picks the matching wording. English writes the lines in sentence case;
+  Hindi, Nepali and Sanskrit's notes already stand alone and are reused.
+  No number moves.
+- **A year scored from its months (C2422).** A `YEARLY` baseline's
+  overall and areas are now the rounded means of the window's months in
+  its calendar, each scored as `MONTHLY`, and the band and the reading's
+  headline are read from that mean, so a year never says a word its
+  months do not. **Numbers:** every `YEARLY` baseline's `overall`,
+  `areas` and `band` move to the months' mean; its key influences and
+  lucky items, and every other period's scores, do not.
 
 ## 1.0.0-rc.11
 

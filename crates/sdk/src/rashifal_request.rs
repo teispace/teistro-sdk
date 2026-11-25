@@ -238,6 +238,40 @@ impl RashifalRequest {
             })?;
         Ok((first, last, days))
     }
+
+    /// The period's months in its own calendar, each clipped to the
+    /// period and read as this request reads, with no events reported:
+    /// what a year is scored from (C2422). A month runs while the date's
+    /// year, month and leap month stay the same, so a calendar that
+    /// repeats a month counts each.
+    pub(crate) fn months(&self) -> Result<Vec<RashifalRequest>, Error> {
+        let calendar = crate::area::system_of(self.first.calendar)?;
+        let (first, _, days) = self.days()?;
+        let month_of = |date: &CalendarDate| {
+            (
+                date.year,
+                date.month,
+                date.leap.is_some_and(teistro_calendar::Leap::month),
+            )
+        };
+        let mut months: Vec<(CalendarDate, CalendarDate)> = Vec::new();
+        for at in 0..i64::from(days) {
+            let date = calendar.date_of(first.plus_days(at))?;
+            match months.last_mut() {
+                Some((opened, closed)) if month_of(opened) == month_of(&date) => *closed = date,
+                _ => months.push((date.clone(), date)),
+            }
+        }
+        Ok(months
+            .into_iter()
+            .map(|(opened, closed)| RashifalRequest {
+                first: opened,
+                last: closed,
+                events: Vec::new(),
+                ..self.clone()
+            })
+            .collect())
+    }
 }
 
 /// One period read for each of the twelve signs.
@@ -360,7 +394,9 @@ pub(crate) struct BatchAsked {
 pub struct RashifalBatch {
     /// The periods, in the order they are answered.
     pub periods: Vec<RashifalRequest>,
-    /// The period the baseline's score is read for, or none.
+    /// The period the baseline's score is read for, or none. A `YEARLY`
+    /// score's overall, areas and band are the mean of the period's
+    /// months in its calendar, each read as `MONTHLY` (C2422).
     pub baseline: Option<Period>,
     /// Whether each sign's reading is said in words, as
     /// [`InterpretArea::rashifal`](crate::InterpretArea::rashifal) says it.
@@ -475,7 +511,10 @@ impl PeriodAsked {
 pub struct RashifalAnswer {
     /// The period read.
     pub period: RashifalPeriod,
-    /// The baseline engine's score of each sign, `BASELINE` (C361).
+    /// The baseline engine's score of each sign, `BASELINE` (C361); for
+    /// a `YEARLY` baseline, its overall, areas and band the rounded mean
+    /// of the period's months in its calendar, each scored `MONTHLY`
+    /// (C2422).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub baseline: Option<Vec<BaselineScore>>,
     /// What each sign's reading says, Aries to Pisces: one plan a sign,

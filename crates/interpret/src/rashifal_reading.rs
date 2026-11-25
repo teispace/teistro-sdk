@@ -24,8 +24,9 @@ use teistro_rashifal::{Period, RashiReading};
 
 /// The four areas a reader sees, each read from the baseline's life areas
 /// (`03-design/rashifal-reading.md`, "The four areas"). Its name is the
-/// voice pack's (`sdk.voice.rashifal.best`), since the grouping is
-/// the reader's voice and not a kind of the texts.
+/// voice pack's (`sdk.voice.rashifal.areaName`, read with `$area` set to
+/// [`ReadingArea::key`]), since the grouping is the reader's voice and not
+/// a kind of the texts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -261,7 +262,10 @@ pub struct AreaReading {
     pub score: u8,
     /// Its band under the overall's thresholds.
     pub band: ScoreBand,
-    /// Its one-line note.
+    /// Its one-line note, said beside the area's name
+    /// (`sdk.voice.rashifal.area.WORK.GOOD`). A page that shows it alone
+    /// renders `areaLine` in place of `area` in the intent with the same
+    /// slots: the same `variant` picks the matching line.
     pub note: ReadingItem,
 }
 
@@ -435,6 +439,9 @@ pub fn reading(input: &ReadingInput<'_>) -> ReadingPlan {
 ///
 /// let all = intents();
 /// assert!(all.iter().any(|key| key == "sdk.voice.rashifal.line.WORK.GOOD"));
+/// // An area's name, and its note as a line that stands alone.
+/// assert!(all.iter().any(|key| key == "sdk.voice.rashifal.areaName"));
+/// assert!(all.iter().any(|key| key == "sdk.voice.rashifal.areaLine.WORK.GOOD"));
 /// assert!(all.iter().all(|key| key.starts_with("sdk.voice.rashifal.")));
 /// ```
 #[must_use]
@@ -457,6 +464,7 @@ pub fn intents() -> Vec<String> {
         "QUARTER4",
     ];
     let mut out = vec![
+        key(&["areaName"]),
         key(&["headline", "SPLIT"]),
         key(&["why", "MOON_TURN"]),
         key(&["week", "BEST_DAY"]),
@@ -466,6 +474,7 @@ pub fn intents() -> Vec<String> {
         out.push(key(&["week", band]));
         for area in ReadingArea::ALL {
             out.push(key(&["area", area.key(), band]));
+            out.push(key(&["areaLine", area.key(), band]));
             out.push(key(&["line", area.key(), band]));
         }
     }

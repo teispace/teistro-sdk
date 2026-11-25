@@ -529,6 +529,60 @@ pub fn baseline_score(
     }
 }
 
+impl BaselineScore {
+    /// A year scored from its months (C2422): the overall and each area
+    /// the mean of the months' scores, rounded half up as the baseline
+    /// rounds, the band read from that overall under `bands`, so the
+    /// year's word and its number are one; the key influences and the
+    /// lucky elements are the year's own. No months leaves the year as it
+    /// was scored.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Rashi;
+    /// # use teistro_gochar::Transit;
+    /// # use teistro_core::catalogue::{Tithi, Yoga};
+    /// # use teistro_rashifal::baseline::Panchanga;
+    /// # use teistro_rashifal::{RashifalRules, rashifal};
+    /// # let read = rashifal(&[Transit::new(Rashi::Aries, 5.0); 9], &[], &RashifalRules::default());
+    /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+    /// use teistro_rashifal::Period;
+    /// use teistro_rashifal::baseline::{BaselineScore, ScoreBands, baseline_score};
+    ///
+    /// let score = |period| baseline_score(&read[0], &[], &[false; 9], panchanga, period, ScoreBands::DEFAULT);
+    /// let month = score(Period::Monthly);
+    /// let year = BaselineScore::of_months(score(Period::Yearly), &[month.clone(), month.clone()], ScoreBands::DEFAULT);
+    /// // Two equal months make the year's number and word theirs.
+    /// assert_eq!((year.overall, year.band(), year.areas), (month.overall, month.band(), month.areas));
+    /// ```
+    #[must_use]
+    pub fn of_months(
+        year: BaselineScore,
+        months: &[BaselineScore],
+        bands: ScoreBands,
+    ) -> BaselineScore {
+        let Some(count) = u32::try_from(months.len()).ok().filter(|n| *n > 0) else {
+            return year;
+        };
+        // The mean of whole scores, rounded half up.
+        let mean = |total: u32| u8::try_from((total * 2 + count) / (count * 2)).unwrap_or(100);
+        let overall = mean(months.iter().map(|month| u32::from(month.overall)).sum());
+        let areas = year.areas.map(|(area, _)| {
+            let total = months
+                .iter()
+                .filter_map(|month| month.areas.iter().find(|(one, _)| *one == area))
+                .map(|(_, score)| u32::from(*score))
+                .sum();
+            (area, mean(total))
+        });
+        BaselineScore {
+            overall,
+            areas,
+            band: bands.band(overall),
+            ..year
+        }
+    }
+}
+
 /// A sign's lord.
 fn lord_of(rashi: Rashi) -> Graha {
     rashi.attributes().lord

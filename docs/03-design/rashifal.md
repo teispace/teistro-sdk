@@ -87,6 +87,11 @@ does this:
   events of C360's set here, every graha but the Moon, whatever a
   request asks to be reported (C2331): a period carries them as
   `scored`, beside each sign's reported `events`.
+- **A year from its months.** The SDK scores a `YEARLY` baseline as the
+  rounded mean of the window's months in its calendar, each clipped to
+  the window and scored as `MONTHLY`, the overall and each area alike,
+  and bands that mean (C2422, `rashifal-reading.md`). The year's own
+  reading keeps its key influences and lucky elements.
 - **Life areas.** Eight are scored, each from a fixed house map, and the
   overall area counts the 1st and 4th houses twice.
 - **Key influences.** Five grahas with weight 8 or more are named, and

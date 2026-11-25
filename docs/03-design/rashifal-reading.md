@@ -78,6 +78,15 @@ LOVE_FAMILY's mean is rounded as the overall is (C2359). The other four
 baseline areas (EDUCATION, SPIRITUALITY and the overall's own houses) are
 not shown; the overall band already reads them.
 
+A pack names each area in `sdk.voice.rashifal.areaName` (`$area` is the
+area's key) and writes each note twice: `area.<AREA>.<BAND>`, a phrase said
+beside that name ("help from colleagues"), and `areaLine.<AREA>.<BAND>`, the
+same note as a line that stands alone ("Help from colleagues"), with the
+same slots and the same `variant` cycle. The SDK says the `area` intent; a
+page showing the note on its own renders `areaLine` with the item's slots.
+Where a language's phrase already stands alone, its `areaLine` is the
+`area` message itself, by `:msg`.
+
 ### Intents: what the SDK chooses, and what a pack writes
 
 The voice guide (hub `docs/02-research/notes/rashifal-voice.md`) writes each
@@ -222,4 +231,5 @@ the sign Nepal's way, "Mesh (Aries)" (C2332).
 | C2360 | the wording's choice | a seeded variant number in the plan, the wording in the pack | the same day reads the same in every binding, and a pack can add wordings without a code release |
 | C2362 | sentence keys across languages | intents chosen and traced in Rust; each language's pack maps an intent to its own patterns | the guide writes each language natively with different pattern counts (82 ne, 46 hi, 46 en, 16 sa), so a shared sentence key would force translation. Rejected: patterns with their fact conditions in the pack (the choice of fact would then live in data no test traces) |
 | C2363 | the week's best day | named only when one day's own score is the week's strict highest | the consumer asked for it only when computed; a tie names none, so a week never contradicts its days |
+| C2422 | a year's number and word | the year's overall and areas are the rounded means of its months' scores in the request's calendar, each month (clipped to the window) read as `MONTHLY`; the band and the headline are read from that mean; the key influences and the lucky items stay the year's own | the consumer's year page shows the mean of the months it lists, and a headline read from the year's single reference day could contradict all twelve. Rejected: banding the reference day's score and showing the mean beside it (two numbers for one year), and dropping the headline's band for a year |
 | C2361 | the lucky items | the sign lord's, traced to the graha's own attributes; an item no text gives is left out | the consumer asked for traceable items and for none made up |
