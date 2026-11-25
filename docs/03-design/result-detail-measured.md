@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 381 628 | 124 858 | 32.7% |
+| the envelope | 381 611 | 124 841 | 32.7% |
 | the value | 356 553 | 120 884 | 33.9% |
-| the provenance | 24 368 | 2947 | 12.1% |
+| the provenance | 24 351 | 2930 | 12.0% |
 
 20 of the 69 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -59,7 +59,7 @@ value.
 | `almanac.digest` | 3568 | 185 | 5.2% | `format`, `days`, `size`, `seal` |
 | `almanac.elect` | 2638 | 877 | 33.2% | `windows.rank`, `windows.at`, `windows.open`, `windows.holds.clause`, `windows.holds.grade`, `windows.fails.clause`, `windows.barredBy`, `closed`, `daysJudged`, `daysCut`, `windowsBlackedOut`, `ranking`, `unjudged` |
 | `almanac.festivalPack` | 3520 | 1644 | 46.7% | `pack`, `rules.key`, `rules.form`, `rules.meta`, `rules.subjectTo`, `rules.lastYear` |
-| `almanac.festival_calendar` | 6630 | 5882 | 88.7% | the whole value |
+| `almanac.festival_calendar` | 6624 | 5874 | 88.7% | the whole value |
 | `almanac.firstYear` | 12 566 | 4197 | 33.4% | `key`, `origin`, `dayOne`, `eleventhDay`, `sapindana`, `rites.rite`, `rites.place`, `rites.month`, `rites.adhika`, `rites.day`, `rites.form`, `rites.year`, `rites.observance.day` |
 | `almanac.household` | 1445 | 306 | 21.2% | `observers.key`, `observers.pureAt`, `observers.periods.key`, `observers.periods.kind`, `observers.periods.relation`, `observers.periods.start`, `observers.periods.end`, `observers.periods.length`, `observers.periods.days` |
 | `almanac.limbAngles` | 821 | 250 | 30.5% | the whole value |
@@ -69,7 +69,7 @@ value.
 | `almanac.occurrences` | 4093 | 1320 | 32.3% | `keys`, `years.year`, `years.days`, `years.festivals.observances.rule`, `years.festivals.observances.day`, `years.festivals.observances.tithi`, `years.festivals.observances.month`, `years.festivals.ekadashis`, `years.festivals.unjudged` |
 | `almanac.pakshi` | 14 020 | 2726 | 19.4% | `date`, `reading.day`, `reading.bird`, `reading.deathBird`, `reading.deadToday`, `reading.eaters`, `reading.yamas.half`, `reading.yamas.yama`, `reading.yamas.span`, `reading.yamas.activity`, `reading.yamas.quality` |
 | `almanac.people` | 3819 | 1748 | 45.8% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
-| `almanac.publishedReasons` | 884 | 128 | 14.5% | the whole value |
+| `almanac.publishedReasons` | 873 | 119 | 13.6% | the whole value |
 | `almanac.sankalpa` | 1390 | 819 | 58.9% | the whole value |
 | `almanac.sankalpaWords` | 1860 | 1294 | 69.6% | the whole value |
 | `almanac.sentences` | 3694 | 1005 | 27.2% | `sentences.text`, `locale`, `withheld`, `draft` |
