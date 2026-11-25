@@ -1172,4 +1172,73 @@ mod tests {
         let nested = deserialize_str::<Vec<Vec<u8>>>("[[1], [2, 256]]", "grid").unwrap_err();
         assert_eq!(nested.field(), Some("grid[1][1]"));
     }
+
+    #[test]
+    fn every_variant_and_key_reads_as_serde_json_reads_it() {
+        use std::collections::BTreeMap;
+
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+        enum Side {
+            Left,
+            Right,
+        }
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+        struct Id(u8);
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Marker;
+        #[derive(Debug, PartialEq, Deserialize)]
+        enum Figure {
+            Dot,
+            Pair(u8, u8),
+            Box { width: u8 },
+            Wrapped(Id),
+        }
+        // Keys read as the types serde_json reads them as.
+        let sides: BTreeMap<Side, u8> = deserialize_str(r#"{"Left": 1}"#, "sides").unwrap();
+        assert_eq!(sides.get(&Side::Left), Some(&1));
+        let ids: BTreeMap<Id, u8> = deserialize_str(r#"{"7": 1}"#, "ids").unwrap();
+        assert_eq!(ids.get(&Id(7)), Some(&1));
+        let wide: BTreeMap<i128, Option<u8>> = deserialize_str(r#"{"-9": 1}"#, "wide").unwrap();
+        assert_eq!(wide.get(&-9), Some(&Some(1)));
+        let maybe: BTreeMap<Option<u8>, u8> = deserialize_str(r#"{"3": 1}"#, "maybe").unwrap();
+        assert_eq!(maybe.get(&Some(3)), Some(&1));
+        let flag = deserialize_str::<BTreeMap<bool, u8>>(r#"{"yes": 1}"#, "flags").unwrap_err();
+        assert_eq!(flag.field(), Some("flags.yes"));
+        // Every variant's body, and a body of the wrong kind named by its
+        // variant.
+        let shapes: Vec<Figure> = deserialize_str(
+            r#"["Dot", {"Pair": [1, 2]}, {"Box": {"width": 3}}, {"Wrapped": 4}]"#,
+            "shapes",
+        )
+        .unwrap();
+        assert_eq!(
+            shapes,
+            [
+                Figure::Dot,
+                Figure::Pair(1, 2),
+                Figure::Box { width: 3 },
+                Figure::Wrapped(Id(4))
+            ]
+        );
+        let tuple = deserialize_str::<Figure>(r#"{"Pair": 1}"#, "shape").unwrap_err();
+        assert_eq!(tuple.field(), Some("shape.Pair"));
+        let record = deserialize_str::<Figure>(r#"{"Box": [3]}"#, "shape").unwrap_err();
+        assert_eq!(record.field(), Some("shape.Box"));
+        assert!(record.to_string().contains("struct variant"), "{record}");
+        let inner = deserialize_str::<Figure>(r#"{"Box": {"width": 300}}"#, "shape").unwrap_err();
+        assert_eq!(inner.field(), Some("shape.Box.width"));
+        assert_eq!(deserialize_str::<Marker>("null", "marker").unwrap(), Marker);
+        // A refusal names what it was given, of every kind.
+        for (given, named) in [
+            ("null", "null"),
+            ("true", "boolean"),
+            ("-1", "integer `-1`"),
+            ("1.5", "floating point"),
+            (r#"{"a": 1}"#, "map"),
+        ] {
+            let refused =
+                deserialize_str::<Figure>(&format!(r#"{{"Pair": {given}}}"#), "shape").unwrap_err();
+            assert!(refused.to_string().contains(named), "{given}: {refused}");
+        }
+    }
 }

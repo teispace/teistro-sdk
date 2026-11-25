@@ -1063,7 +1063,8 @@ test('every catalogue enum has a complete id table', () => {
   // `LOWER_LIMB_NO_REFRACTION`.
   // 1600 since `TsAyanamsha` gained `KETAKI`.
   // 1601 since `TsCalendar` gained `HIJRI_SIGHTED`.
-  assert.equal(entries, 1601, 'every member of every enum is in a table');
+  // 1602 since `TsHolidayScope` gained `OFFICES_AND_SCHOOLS` (SR-163).
+  assert.equal(entries, 1602, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3844,8 +3845,8 @@ test('the place catalogue: a search across scripts, a point named, a place\'s na
   const names = ctx.geo.names({ id: 'np-ktm', langs: ['ne', 'sa'] });
   assert.equal(names.best[0].name.text, 'काठमाडौं');
   assert.equal(names.best[1].asked, 'sa');
-  const found = ctx.geo.place({ id: 'np-ktm', lang: 'ne' });
-  assert.deepEqual([found.place.name, found.moved], ['काठमाडौं', false]);
+  const read = ctx.geo.place({ id: 'np-ktm', lang: 'ne' });
+  assert.deepEqual([read.place.name, read.moved], ['काठमाडौं', false]);
   const listed = ctx.geo.list({ within: 'NP', depth: null, kinds: ['SETTLEMENT'] });
   assert.deepEqual(listed.map((place) => place.id), ['np-ktm', 'np-ltp', 'np-pkr']);
   assert.equal(listed[1].population.kind, 'MODELLED');

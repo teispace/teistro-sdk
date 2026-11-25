@@ -196,6 +196,8 @@ class TheCatalogue(unittest.TestCase):
             # `Ayanamsha`'s `KETAKI`.
             + 1
             # `Calendar`'s `HIJRI_SIGHTED`, the moon-sighted months.
+            + 1
+            # `HolidayScope`'s `OFFICES_AND_SCHOOLS` (SR-163).
             + 1,
         )
 
