@@ -83,7 +83,7 @@ fn reckoned(year: i32) -> BTreeMap<String, Vec<(u8, u8)>> {
 fn every_nepal_pack_lists_the_gazette_and_no_other_pack_does() {
     // Every year's, VS 2076 to 2083.
     let every = HolidaySet::NepalGazette.holidays().len();
-    assert_eq!(every, 346);
+    assert_eq!(every, 347);
     for pack in FestivalPack::ALL {
         let listed = pack.listing();
         let nepal = matches!(pack, FestivalPack::Nepal | FestivalPack::NepalPanchanga);

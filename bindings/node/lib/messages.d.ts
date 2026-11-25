@@ -43,7 +43,7 @@ export type GocharVerdictKey = 'gochar_verdict.GOOD' | 'gochar_verdict.OBSTRUCTE
 export type GowriKey = 'gowri.UTHI' | 'gowri.AMIRTHAM' | 'gowri.ROGAM' | 'gowri.LAABAM' | 'gowri.DHANAM' | 'gowri.SUGAM' | 'gowri.SORAM' | 'gowri.VISHAM';
 export type GrahaKey = 'graha.SUN' | 'graha.MOON' | 'graha.MARS' | 'graha.MERCURY' | 'graha.JUPITER' | 'graha.VENUS' | 'graha.SATURN' | 'graha.RAHU' | 'graha.KETU' | 'graha.URANUS' | 'graha.NEPTUNE' | 'graha.PLUTO';
 export type GunaKey = 'guna.SATTVA' | 'guna.RAJAS' | 'guna.TAMAS';
-export type HolidayScopeKey = 'holiday_scope.NATIONAL' | 'holiday_scope.CONCERNED' | 'holiday_scope.COMMUNITY' | 'holiday_scope.REGION' | 'holiday_scope.RELIGION' | 'holiday_scope.WOMEN' | 'holiday_scope.SCHOOLS' | 'holiday_scope.DISABILITY' | 'holiday_scope.OFFICES_OPEN';
+export type HolidayScopeKey = 'holiday_scope.NATIONAL' | 'holiday_scope.CONCERNED' | 'holiday_scope.COMMUNITY' | 'holiday_scope.REGION' | 'holiday_scope.RELIGION' | 'holiday_scope.WOMEN' | 'holiday_scope.SCHOOLS' | 'holiday_scope.DISABILITY' | 'holiday_scope.OFFICES_OPEN' | 'holiday_scope.OFFICES_AND_SCHOOLS';
 export type HouseSystemKey = 'house_system.WHOLE_SIGN' | 'house_system.PLACIDUS' | 'house_system.KOCH' | 'house_system.REGIOMONTANUS' | 'house_system.CAMPANUS' | 'house_system.EQUAL' | 'house_system.MERIDIAN' | 'house_system.ALCABITIUS' | 'house_system.PORPHYRY' | 'house_system.TOPOCENTRIC' | 'house_system.MORINUS' | 'house_system.SRIPATI' | 'house_system.EQUAL_MC' | 'house_system.EQUAL_ARIES' | 'house_system.VEHLOW' | 'house_system.CARTER' | 'house_system.HORIZON' | 'house_system.SUNSHINE' | 'house_system.PULLEN_SD' | 'house_system.PULLEN_SR' | 'house_system.KRUSINSKI' | 'house_system.APC';
 export type KaalaKey = 'kaala.RAHU_KAALA' | 'kaala.YAMAGHANDA' | 'kaala.GULIKA_KAALA';
 export type KaranaKey = 'karana.BAVA' | 'karana.BALAVA' | 'karana.KAULAVA' | 'karana.TAITILA' | 'karana.GARIJA' | 'karana.VANIJA' | 'karana.VISHTI' | 'karana.SHAKUNI' | 'karana.CHATUSHPADA' | 'karana.NAGA' | 'karana.KIMSTUGHNA';
@@ -66,7 +66,7 @@ export type PayaKey = 'paya.SUVARNA' | 'paya.RAJATA' | 'paya.TAMRA' | 'paya.LOHA
 export type PointKey = 'point.LAGNA' | 'point.DHUMA' | 'point.VYATIPATA' | 'point.PARIVESHA' | 'point.INDRACHAPA' | 'point.UPAKETU' | 'point.GULIKA' | 'point.MANDI' | 'point.BHAVA_LAGNA' | 'point.HORA_LAGNA' | 'point.GHATI_LAGNA' | 'point.VARNADA_LAGNA' | 'point.PRANAPADA_LAGNA' | 'point.KALA' | 'point.MRITYU' | 'point.ARDHAPRAHARA' | 'point.KARAKAMSHA' | 'point.A1' | 'point.A12' | 'point.MC' | 'point.DESCENDANT' | 'point.IC' | 'point.VIGHATI_LAGNA' | 'point.SREE_LAGNA' | 'point.INDU_LAGNA' | 'point.BHRIGU_BINDU' | 'point.YOGI' | 'point.AVAYOGI' | 'point.SAHAYOGI' | 'point.TRISPHUTA' | 'point.CHATUSSPHUTA' | 'point.PANCHASPHUTA' | 'point.PRANA_SPHUTA' | 'point.DEHA_SPHUTA' | 'point.MRITYU_SPHUTA' | 'point.BEEJA_SPHUTA' | 'point.KSHETRA_SPHUTA' | 'point.YAMAGHANTAKA' | 'point.SWAMSHA' | 'point.A2' | 'point.A3' | 'point.A4' | 'point.A5' | 'point.A6' | 'point.A7' | 'point.A8' | 'point.A9' | 'point.A10' | 'point.A11';
 export type PointFamilyKey = 'point_family.ANGLE' | 'point_family.SPECIAL_LAGNA' | 'point_family.UPAGRAHA_SOLAR' | 'point_family.UPAGRAHA_DAY' | 'point_family.ARUDHA' | 'point_family.SPHUTA' | 'point_family.JAIMINI' | 'point_family.MIDPOINT';
 export type RashiKey = 'rashi.ARIES' | 'rashi.TAURUS' | 'rashi.GEMINI' | 'rashi.CANCER' | 'rashi.LEO' | 'rashi.VIRGO' | 'rashi.LIBRA' | 'rashi.SCORPIO' | 'rashi.SAGITTARIUS' | 'rashi.CAPRICORN' | 'rashi.AQUARIUS' | 'rashi.PISCES';
-export type RegionKey = 'region.NP' | 'region.KATHMANDU_VALLEY' | 'region.NP_P3' | 'region.HILLS' | 'region.TERAI' | 'region.IN' | 'region.IN_AP' | 'region.IN_AS' | 'region.IN_BR' | 'region.IN_GJ' | 'region.IN_HR' | 'region.IN_KA' | 'region.IN_KL' | 'region.IN_MH' | 'region.IN_OD' | 'region.IN_TG' | 'region.IN_TN' | 'region.IN_UP' | 'region.IN_WB';
+export type RegionKey = 'region.NP' | 'region.KATHMANDU_VALLEY' | 'region.NP_P3' | 'region.HILLS' | 'region.TERAI' | 'region.IN' | 'region.IN_AP' | 'region.IN_AS' | 'region.IN_BR' | 'region.IN_GJ' | 'region.IN_HR' | 'region.IN_KA' | 'region.IN_KL' | 'region.IN_MH' | 'region.IN_OD' | 'region.IN_TG' | 'region.IN_TN' | 'region.IN_UP' | 'region.IN_WB' | 'region.NP_JHAPA' | 'region.NP_MORANG' | 'region.NP_SUNSARI' | 'region.NP_SAPTARI' | 'region.NP_SIRAHA' | 'region.NP_UDAYAPUR' | 'region.NP_DHANUSHA' | 'region.NP_MAHOTTARI' | 'region.NP_SARLAHI' | 'region.NP_RAUTAHAT' | 'region.NP_BARA' | 'region.NP_PARSA' | 'region.NP_NAWALPARASI_EAST' | 'region.NP_NAWALPARASI_WEST' | 'region.NP_RUPANDEHI' | 'region.NP_KAPILVASTU' | 'region.NP_DANG' | 'region.NP_BANKE' | 'region.NP_BARDIYA' | 'region.NP_KAILALI' | 'region.NP_KANCHANPUR';
 export type RelationshipKey = 'relationship.GREAT_FRIEND' | 'relationship.FRIEND' | 'relationship.NEUTRAL' | 'relationship.ENEMY' | 'relationship.GREAT_ENEMY';
 export type RisingKey = 'rising.SIRSHODAYA' | 'rising.PRISHTODAYA' | 'rising.UBHAYODAYA';
 export type RituKey = 'ritu.VASANTA' | 'ritu.GRISHMA' | 'ritu.VARSHA' | 'ritu.SHARAD' | 'ritu.HEMANTA' | 'ritu.SHISHIRA';
@@ -112,9 +112,14 @@ export interface EntityForms {
   readonly prose: string;
   readonly abbrev?: string;
   readonly about?: string;
+  readonly day?: string;
   readonly indic?: string;
   readonly locative?: string;
+  readonly month?: string;
   readonly short?: string;
+  readonly week?: string;
+  readonly western?: string;
+  readonly year?: string;
   readonly glyph?: string;
   readonly gender?: Gender;
   /**
@@ -1596,6 +1601,7 @@ export interface Messages {
         readonly concerned: () => EntityForms;
         readonly disability: () => EntityForms;
         readonly national: () => EntityForms;
+        readonly officesAndSchools: () => EntityForms;
         readonly officesOpen: () => EntityForms;
         readonly region: () => EntityForms;
         readonly religion: () => EntityForms;
@@ -2190,7 +2196,28 @@ export interface Messages {
         readonly inWb: () => EntityForms;
         readonly kathmanduValley: () => EntityForms;
         readonly np: () => EntityForms;
+        readonly npBanke: () => EntityForms;
+        readonly npBara: () => EntityForms;
+        readonly npBardiya: () => EntityForms;
+        readonly npDang: () => EntityForms;
+        readonly npDhanusha: () => EntityForms;
+        readonly npJhapa: () => EntityForms;
+        readonly npKailali: () => EntityForms;
+        readonly npKanchanpur: () => EntityForms;
+        readonly npKapilvastu: () => EntityForms;
+        readonly npMahottari: () => EntityForms;
+        readonly npMorang: () => EntityForms;
+        readonly npNawalparasiEast: () => EntityForms;
+        readonly npNawalparasiWest: () => EntityForms;
         readonly npP3: () => EntityForms;
+        readonly npParsa: () => EntityForms;
+        readonly npRautahat: () => EntityForms;
+        readonly npRupandehi: () => EntityForms;
+        readonly npSaptari: () => EntityForms;
+        readonly npSarlahi: () => EntityForms;
+        readonly npSiraha: () => EntityForms;
+        readonly npSunsari: () => EntityForms;
+        readonly npUdayapur: () => EntityForms;
         readonly terai: () => EntityForms;
       };
       readonly relationship: {

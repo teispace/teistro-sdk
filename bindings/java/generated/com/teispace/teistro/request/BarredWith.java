@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686). The named rule is asked for too; one barred only `WITH` another never moves this one.
+ * When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686): kept on the `instead` tithi, or the same number in the other fortnight, last before the named rule's kept day, so the 5th and 7th follow the 8th however far it steps back. The named rule is asked for too; one barred only `WITH` another never moves this one.
  *
  * @param instead The tithi kept in the barred day's place.
  * @param rule The rule's key.

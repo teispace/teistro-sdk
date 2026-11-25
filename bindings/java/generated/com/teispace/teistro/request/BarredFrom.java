@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 22 of the Bikram Sambat (C608).
+ * From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 20 of the Bikram Sambat (C608, C2420). The day kept instead is the `instead` tithi's last before, and when the bar holds that one too, the same number a fortnight earlier again, as the Nepal Gazette keeps Gaura parva on the nija Shravana's bright 8th in VS 2080 (24 August 2023).
  *
  * @param calendar The calendar the day is counted in.
  * @param day Its day of the month, 1 for the first.

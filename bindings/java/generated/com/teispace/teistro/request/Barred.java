@@ -6,7 +6,7 @@ package com.teispace.teistro.request;
 import java.util.Map;
 
 /**
- * When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead` before the barred one, judged by the rule's own window and guards.
+ * When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead`, or its twin a fortnight away, before the barred one (stepping back again as each variant says), judged by the rule's own window and guards.
  */
 public sealed interface Barred extends RequestJson permits BarredFrom, BarredWith {
     /**

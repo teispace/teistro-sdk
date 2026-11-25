@@ -3440,6 +3440,7 @@ export const HolidayScope = /* @__PURE__ */ Object.freeze({
   Schools: 'holiday_scope.SCHOOLS',
   Disability: 'holiday_scope.DISABILITY',
   OfficesOpen: 'holiday_scope.OFFICES_OPEN',
+  OfficesAndSchools: 'holiday_scope.OFFICES_AND_SCHOOLS',
 });
 
 /**
@@ -3456,6 +3457,7 @@ export const HolidayScopeById = /* @__PURE__ */ new Map([
   [6, 'holiday_scope.SCHOOLS'],
   [7, 'holiday_scope.DISABILITY'],
   [8, 'holiday_scope.OFFICES_OPEN'],
+  [9, 'holiday_scope.OFFICES_AND_SCHOOLS'],
 ]);
 
 /** Every Status by name. */

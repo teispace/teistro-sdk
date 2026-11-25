@@ -6999,6 +6999,7 @@ export type HolidayScope =
   | 'holiday_scope.SCHOOLS'
   | 'holiday_scope.DISABILITY'
   | 'holiday_scope.OFFICES_OPEN'
+  | 'holiday_scope.OFFICES_AND_SCHOOLS'
   | 'unknown';
 
 /** Every HolidayScope by name; the values are the strings the union accepts. */
@@ -7039,6 +7040,10 @@ export declare const HolidayScope: {
    * Not a holiday: a day kept nationally on which offices open
    */
   readonly OfficesOpen: 'holiday_scope.OFFICES_OPEN';
+  /**
+   * A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082
+   */
+  readonly OfficesAndSchools: 'holiday_scope.OFFICES_AND_SCHOOLS';
 };
 
 /**

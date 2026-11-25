@@ -1526,7 +1526,9 @@ public final class Messages {
         /** `holiday_scope.DISABILITY`. */
         DISABILITY("holiday_scope.DISABILITY"),
         /** `holiday_scope.OFFICES_OPEN`. */
-        OFFICES_OPEN("holiday_scope.OFFICES_OPEN");
+        OFFICES_OPEN("holiday_scope.OFFICES_OPEN"),
+        /** `holiday_scope.OFFICES_AND_SCHOOLS`. */
+        OFFICES_AND_SCHOOLS("holiday_scope.OFFICES_AND_SCHOOLS");
 
         private final String value;
 
@@ -3872,14 +3874,19 @@ public final class Messages {
      * @param prose the `prose` form; empty when the record lacks it
      * @param abbrev the `abbrev` form, or null
      * @param about the `about` form, or null
+     * @param day the `day` form, or null
      * @param indic the `indic` form, or null
      * @param locative the `locative` form, or null
+     * @param month the `month` form, or null
      * @param short_ the `short` form, or null
+     * @param week the `week` form, or null
+     * @param western the `western` form, or null
+     * @param year the `year` form, or null
      * @param glyph its glyph, or null
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String abbrev, String about, String indic, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String about, String day, String indic, String locative, String month, String short_, String week, String western, String year, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3897,9 +3904,14 @@ public final class Messages {
                     text(forms, "prose", ""),
                     text(forms, "abbrev", null),
                     text(forms, "about", null),
+                    text(forms, "day", null),
                     text(forms, "indic", null),
                     text(forms, "locative", null),
+                    text(forms, "month", null),
                     text(forms, "short", null),
+                    text(forms, "week", null),
+                    text(forms, "western", null),
+                    text(forms, "year", null),
                     text(forms, "glyph", null),
                     gender(text(forms, "gender", null)),
                     all(forms));
@@ -17547,6 +17559,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `holiday_scope.OFFICES_AND_SCHOOLS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms officesAndSchools() {
+                    return r.entity("holiday_scope.OFFICES_AND_SCHOOLS");
+                }
+
+                /**
                  * The forms of `holiday_scope.OFFICES_OPEN` in the current locale.
                  *
                  * @return the forms
@@ -22916,12 +22937,201 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `region.NP_BANKE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBanke() {
+                    return r.entity("region.NP_BANKE");
+                }
+
+                /**
+                 * The forms of `region.NP_BARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBara() {
+                    return r.entity("region.NP_BARA");
+                }
+
+                /**
+                 * The forms of `region.NP_BARDIYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBardiya() {
+                    return r.entity("region.NP_BARDIYA");
+                }
+
+                /**
+                 * The forms of `region.NP_DANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npDang() {
+                    return r.entity("region.NP_DANG");
+                }
+
+                /**
+                 * The forms of `region.NP_DHANUSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npDhanusha() {
+                    return r.entity("region.NP_DHANUSHA");
+                }
+
+                /**
+                 * The forms of `region.NP_JHAPA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npJhapa() {
+                    return r.entity("region.NP_JHAPA");
+                }
+
+                /**
+                 * The forms of `region.NP_KAILALI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKailali() {
+                    return r.entity("region.NP_KAILALI");
+                }
+
+                /**
+                 * The forms of `region.NP_KANCHANPUR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKanchanpur() {
+                    return r.entity("region.NP_KANCHANPUR");
+                }
+
+                /**
+                 * The forms of `region.NP_KAPILVASTU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKapilvastu() {
+                    return r.entity("region.NP_KAPILVASTU");
+                }
+
+                /**
+                 * The forms of `region.NP_MAHOTTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npMahottari() {
+                    return r.entity("region.NP_MAHOTTARI");
+                }
+
+                /**
+                 * The forms of `region.NP_MORANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npMorang() {
+                    return r.entity("region.NP_MORANG");
+                }
+
+                /**
+                 * The forms of `region.NP_NAWALPARASI_EAST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npNawalparasiEast() {
+                    return r.entity("region.NP_NAWALPARASI_EAST");
+                }
+
+                /**
+                 * The forms of `region.NP_NAWALPARASI_WEST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npNawalparasiWest() {
+                    return r.entity("region.NP_NAWALPARASI_WEST");
+                }
+
+                /**
                  * The forms of `region.NP_P3` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms npP3() {
                     return r.entity("region.NP_P3");
+                }
+
+                /**
+                 * The forms of `region.NP_PARSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npParsa() {
+                    return r.entity("region.NP_PARSA");
+                }
+
+                /**
+                 * The forms of `region.NP_RAUTAHAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npRautahat() {
+                    return r.entity("region.NP_RAUTAHAT");
+                }
+
+                /**
+                 * The forms of `region.NP_RUPANDEHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npRupandehi() {
+                    return r.entity("region.NP_RUPANDEHI");
+                }
+
+                /**
+                 * The forms of `region.NP_SAPTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSaptari() {
+                    return r.entity("region.NP_SAPTARI");
+                }
+
+                /**
+                 * The forms of `region.NP_SARLAHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSarlahi() {
+                    return r.entity("region.NP_SARLAHI");
+                }
+
+                /**
+                 * The forms of `region.NP_SIRAHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSiraha() {
+                    return r.entity("region.NP_SIRAHA");
+                }
+
+                /**
+                 * The forms of `region.NP_SUNSARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSunsari() {
+                    return r.entity("region.NP_SUNSARI");
+                }
+
+                /**
+                 * The forms of `region.NP_UDAYAPUR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npUdayapur() {
+                    return r.entity("region.NP_UDAYAPUR");
                 }
 
                 /**

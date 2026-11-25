@@ -6,6 +6,7 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::indexing_slicing,
+    clippy::panic,
     reason = "tests fail by panicking, saying why, and index the nine and the twelve"
 )]
 

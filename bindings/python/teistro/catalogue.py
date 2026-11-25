@@ -4201,6 +4201,9 @@ class HolidayScope(Catalogued):
     OFFICES_OPEN = 8
     """Not a holiday: a day kept nationally on which offices open"""
 
+    OFFICES_AND_SCHOOLS = 9
+    """A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -7809,6 +7812,7 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "SCHOOLS",
         7: "DISABILITY",
         8: "OFFICES_OPEN",
+        9: "OFFICES_AND_SCHOOLS",
         -1: "UNKNOWN",
     },
     "Status": {

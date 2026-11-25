@@ -8282,22 +8282,38 @@
     "EXCELLENT": {
       "short": "Uttama",
       "name": "Uttamadina",
-      "prose": "Uttamadina"
+      "prose": "Uttamadina",
+      "day": "Uttamadina",
+      "month": "Uttamamāsa",
+      "week": "Uttamasaptāha",
+      "year": "Uttamavarṣa"
     },
     "GOOD": {
       "short": "Śobhana",
       "name": "Śobhanadina",
-      "prose": "Śobhanadina"
+      "prose": "Śobhanadina",
+      "day": "Śobhanadina",
+      "month": "Śobhanamāsa",
+      "week": "Śobhanasaptāha",
+      "year": "Śobhanavarṣa"
     },
     "MIXED": {
       "short": "Miśra",
       "name": "Miśradina",
-      "prose": "Miśradina"
+      "prose": "Miśradina",
+      "day": "Miśradina",
+      "month": "Miśramāsa",
+      "week": "Miśrasaptāha",
+      "year": "Miśravarṣa"
     },
     "CARE": {
       "short": "Sāvadhāna",
       "name": "Sāvadhānadina",
-      "prose": "Sāvadhānadina"
+      "prose": "Sāvadhānadina",
+      "day": "Sāvadhānadina",
+      "month": "Sāvadhānamāsa",
+      "week": "Sāvadhānasaptāha",
+      "year": "Sāvadhānavarṣa"
     }
   },
   "holiday_scope": {
@@ -8336,6 +8352,286 @@
     "OFFICES_OPEN": {
       "name": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni",
       "prose": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni"
+    },
+    "OFFICES_AND_SCHOOLS": {
+      "name": "Śāsakīyakāryālayebhyaḥ Śikṣaṇasaṃsthābhyaśca Eva Avakāśaḥ",
+      "prose": "Śāsakīyakāryālayebhyaḥ Śikṣaṇasaṃsthābhyaśca Eva Avakāśaḥ"
+    }
+  },
+  "region": {
+    "NP": {
+      "name": "Nepālaḥ",
+      "prose": "Nepālaḥ"
+    },
+    "KATHMANDU_VALLEY": {
+      "name": "Kāṭhamāḍauṃupatyakā",
+      "prose": "Kāṭhamāḍauṃupatyakā"
+    },
+    "NP_P3": {
+      "name": "Bāgamatīpradeśaḥ",
+      "prose": "Bāgamatīpradeśaḥ"
+    },
+    "HILLS": {
+      "name": "Pārvatyapradeśaḥ",
+      "prose": "Pārvatyapradeśaḥ"
+    },
+    "TERAI": {
+      "name": "Tarāīpradeśaḥ",
+      "prose": "Tarāīpradeśaḥ"
+    },
+    "IN": {
+      "name": "Bhāratam",
+      "prose": "Bhāratam"
+    },
+    "IN_AP": {
+      "name": "Āndhrapradeśaḥ",
+      "prose": "Āndhrapradeśaḥ"
+    },
+    "IN_AS": {
+      "name": "Asamaḥ",
+      "prose": "Asamaḥ"
+    },
+    "IN_BR": {
+      "name": "Bihāraḥ",
+      "prose": "Bihāraḥ"
+    },
+    "IN_GJ": {
+      "name": "Gurjarapradeśaḥ",
+      "prose": "Gurjarapradeśaḥ"
+    },
+    "IN_HR": {
+      "name": "Hariyāṇā",
+      "prose": "Hariyāṇā"
+    },
+    "IN_KA": {
+      "name": "Karṇāṭakam",
+      "prose": "Karṇāṭakam"
+    },
+    "IN_KL": {
+      "name": "Keralam",
+      "prose": "Keralam"
+    },
+    "IN_MH": {
+      "name": "Mahārāṣṭram",
+      "prose": "Mahārāṣṭram"
+    },
+    "IN_OD": {
+      "name": "Oḍiśā",
+      "prose": "Oḍiśā"
+    },
+    "IN_TG": {
+      "name": "Telaṅgāṇā",
+      "prose": "Telaṅgāṇā"
+    },
+    "IN_TN": {
+      "name": "Tamiḷanāḍu",
+      "prose": "Tamiḷanāḍu"
+    },
+    "IN_UP": {
+      "name": "Uttarapradeśaḥ",
+      "prose": "Uttarapradeśaḥ"
+    },
+    "IN_WB": {
+      "name": "Paścimavaṅgaḥ",
+      "prose": "Paścimavaṅgaḥ"
+    },
+    "NP_JHAPA": {
+      "name": "Jhāpā",
+      "prose": "Jhāpā"
+    },
+    "NP_MORANG": {
+      "name": "Moraṅgaḥ",
+      "prose": "Moraṅgaḥ"
+    },
+    "NP_SUNSARI": {
+      "name": "Sunasarī",
+      "prose": "Sunasarī"
+    },
+    "NP_SAPTARI": {
+      "name": "Saptarī",
+      "prose": "Saptarī"
+    },
+    "NP_SIRAHA": {
+      "name": "Sirahā",
+      "prose": "Sirahā"
+    },
+    "NP_UDAYAPUR": {
+      "name": "Udayapuram",
+      "prose": "Udayapuram"
+    },
+    "NP_DHANUSHA": {
+      "name": "Dhanuṣā",
+      "prose": "Dhanuṣā"
+    },
+    "NP_MAHOTTARI": {
+      "name": "Mahottarī",
+      "prose": "Mahottarī"
+    },
+    "NP_SARLAHI": {
+      "name": "Sarlāhī",
+      "prose": "Sarlāhī"
+    },
+    "NP_RAUTAHAT": {
+      "name": "Rautahaṭaḥ",
+      "prose": "Rautahaṭaḥ"
+    },
+    "NP_BARA": {
+      "name": "Bārā",
+      "prose": "Bārā"
+    },
+    "NP_PARSA": {
+      "name": "Parsā",
+      "prose": "Parsā"
+    },
+    "NP_NAWALPARASI_EAST": {
+      "name": "Pūrvanavalaparāsī",
+      "prose": "Pūrvanavalaparāsī"
+    },
+    "NP_NAWALPARASI_WEST": {
+      "name": "Paścimanavalaparāsī",
+      "prose": "Paścimanavalaparāsī"
+    },
+    "NP_RUPANDEHI": {
+      "name": "Rūpandehī",
+      "prose": "Rūpandehī"
+    },
+    "NP_KAPILVASTU": {
+      "name": "Kapilavastu",
+      "prose": "Kapilavastu"
+    },
+    "NP_DANG": {
+      "name": "Dāṅ",
+      "prose": "Dāṅ"
+    },
+    "NP_BANKE": {
+      "name": "Bām̐ke",
+      "prose": "Bām̐ke"
+    },
+    "NP_BARDIYA": {
+      "name": "Bardiyā",
+      "prose": "Bardiyā"
+    },
+    "NP_KAILALI": {
+      "name": "Kailālī",
+      "prose": "Kailālī"
+    },
+    "NP_KANCHANPUR": {
+      "name": "Kañcanapuram",
+      "prose": "Kañcanapuram"
+    }
+  },
+  "community": {
+    "NEWAR": {
+      "name": "Nevārajanāḥ",
+      "prose": "Nevārajanāḥ"
+    },
+    "THARU": {
+      "name": "Thārūjanāḥ",
+      "prose": "Thārūjanāḥ"
+    },
+    "KIRAT": {
+      "name": "Kirātāḥ",
+      "prose": "Kirātāḥ"
+    },
+    "SHERPA": {
+      "name": "Śerpājanāḥ",
+      "prose": "Śerpājanāḥ"
+    },
+    "TAMANG": {
+      "name": "Tāmāṅjanāḥ",
+      "prose": "Tāmāṅjanāḥ"
+    },
+    "GURUNG": {
+      "name": "Guruṅjanāḥ",
+      "prose": "Guruṅjanāḥ"
+    },
+    "MAGAR": {
+      "name": "Magarajanāḥ",
+      "prose": "Magarajanāḥ"
+    },
+    "CHHANTYAL": {
+      "name": "Chantyālajanāḥ",
+      "prose": "Chantyālajanāḥ"
+    },
+    "DURA": {
+      "name": "Durājanāḥ",
+      "prose": "Durājanāḥ"
+    },
+    "MAITHIL": {
+      "name": "Maithilāḥ",
+      "prose": "Maithilāḥ"
+    },
+    "BHOJPURI": {
+      "name": "Bhojapurībhāṣiṇaḥ",
+      "prose": "Bhojapurībhāṣiṇaḥ"
+    },
+    "MUSLIM": {
+      "name": "Islāmānuyāyinaḥ",
+      "prose": "Islāmānuyāyinaḥ"
+    },
+    "BRAHMIN": {
+      "name": "Brāhmaṇāḥ",
+      "prose": "Brāhmaṇāḥ"
+    },
+    "VISHWAKARMA": {
+      "name": "Viśvakarmasamudāyaḥ",
+      "prose": "Viśvakarmasamudāyaḥ"
+    },
+    "BANKS": {
+      "name": "Adhikoṣakṣetram",
+      "prose": "Adhikoṣakṣetram"
+    },
+    "PARSI": {
+      "name": "Pārasīkāḥ",
+      "prose": "Pārasīkāḥ"
+    },
+    "NADAR": {
+      "name": "Nāḍārajanāḥ",
+      "prose": "Nāḍārajanāḥ"
+    },
+    "RAVIDASSIA": {
+      "name": "Ravidāsapanthinaḥ",
+      "prose": "Ravidāsapanthinaḥ"
+    },
+    "SANTHAL": {
+      "name": "Santhālajanāḥ",
+      "prose": "Santhālajanāḥ"
+    },
+    "DIGAMBARA": {
+      "name": "Digambarajaināḥ",
+      "prose": "Digambarajaināḥ"
+    },
+    "SHVETAMBARA": {
+      "name": "Śvetāmbarajaināḥ",
+      "prose": "Śvetāmbarajaināḥ"
+    },
+    "STHANAKVASI": {
+      "name": "Sthānakavāsijaināḥ",
+      "prose": "Sthānakavāsijaināḥ"
+    },
+    "TERAPANTH": {
+      "name": "Terāpanthijaināḥ",
+      "prose": "Terāpanthijaināḥ"
+    },
+    "TAPAGACHHA": {
+      "name": "Tapāgacchajaināḥ",
+      "prose": "Tapāgacchajaināḥ"
+    },
+    "KHARATARA_GACHHA": {
+      "name": "Kharataragacchajaināḥ",
+      "prose": "Kharataragacchajaināḥ"
+    },
+    "ACHALGACHHA": {
+      "name": "Acalagacchajaināḥ",
+      "prose": "Acalagacchajaināḥ"
+    },
+    "SIKH": {
+      "name": "Sikkhāḥ",
+      "prose": "Sikkhāḥ"
+    },
+    "CHRISTIAN": {
+      "name": "Khrīṣṭīyāḥ",
+      "prose": "Khrīṣṭīyāḥ"
     }
   },
   "observance": {

@@ -15351,12 +15351,12 @@ final class DatedRuleTithiInMonth extends _Request {
   List<Object?> get _fields => [at, calendar, days, month, tithi, twice];
 }
 
-/// When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead` before the barred one, judged by the rule's own window and guards.
+/// When a rule's day is barred, and the tithi kept in its place: the last occurrence of `instead`, or its twin a fortnight away, before the barred one (stepping back again as each variant says), judged by the rule's own window and guards.
 sealed class Barred extends _Request {
   const Barred();
 }
 
-/// From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 22 of the Bikram Sambat (C608).
+/// From this day of a calendar's year on: a day falling on it or later in its year is barred, as the Durva fast is once Agastya has risen, Bhadra 20 of the Bikram Sambat (C608, C2420). The day kept instead is the `instead` tithi's last before, and when the bar holds that one too, the same number a fortnight earlier again, as the Nepal Gazette keeps Gaura parva on the nija Shravana's bright 8th in VS 2080 (24 August 2023).
 final class BarredFrom extends Barred {
   const BarredFrom({
     required this.calendar,
@@ -15390,7 +15390,7 @@ final class BarredFrom extends Barred {
   List<Object?> get _fields => [calendar, day, instead, month];
 }
 
-/// When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686). The named rule is asked for too; one barred only `WITH` another never moves this one.
+/// When the named rule's day in the same lunar month is barred `FROM` a day, as the Gaura parva's bright 5th and 7th are with its 8th (C686): kept on the `instead` tithi, or the same number in the other fortnight, last before the named rule's kept day, so the 5th and 7th follow the 8th however far it steps back. The named rule is asked for too; one barred only `WITH` another never moves this one.
 final class BarredWith extends Barred {
   const BarredWith({
     required this.instead,

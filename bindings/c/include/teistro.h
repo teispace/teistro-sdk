@@ -5388,6 +5388,10 @@ typedef enum ts_holiday_scope {
      * Not a holiday: a day kept nationally on which offices open
      */
     TS_HOLIDAY_SCOPE_OFFICES_OPEN = 8,
+    /**
+     * A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082
+     */
+    TS_HOLIDAY_SCOPE_OFFICES_AND_SCHOOLS = 9,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_HOLIDAY_SCOPE_UNKNOWN = -1,
 } ts_holiday_scope;

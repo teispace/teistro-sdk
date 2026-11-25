@@ -54,6 +54,11 @@ public enum HolidayScope implements Catalogued {
      */
     OFFICES_OPEN(8, "OFFICES_OPEN"),
 
+    /**
+     * A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082
+     */
+    OFFICES_AND_SCHOOLS(9, "OFFICES_AND_SCHOOLS"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

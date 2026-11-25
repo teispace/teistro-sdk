@@ -8497,8 +8497,8 @@
       "name": "Excellent",
       "prose": "excellent",
       "day": "An excellent day",
-      "week": "An excellent week",
       "month": "An excellent month",
+      "week": "An excellent week",
       "year": "An excellent year"
     },
     "GOOD": {
@@ -8506,8 +8506,8 @@
       "name": "Good",
       "prose": "good",
       "day": "A good day",
-      "week": "A good week",
       "month": "A good month",
+      "week": "A good week",
       "year": "A good year"
     },
     "MIXED": {
@@ -8515,8 +8515,8 @@
       "name": "Mixed",
       "prose": "mixed",
       "day": "A mixed day",
-      "week": "A mixed week",
       "month": "A mixed month",
+      "week": "A mixed week",
       "year": "A mixed year"
     },
     "CARE": {
@@ -8524,8 +8524,8 @@
       "name": "A day for care",
       "prose": "a day for care",
       "day": "A day for care",
-      "week": "A week for care",
       "month": "A month for care",
+      "week": "A week for care",
       "year": "A year for care"
     }
   },

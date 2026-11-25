@@ -7712,6 +7712,12 @@
           "value": 8,
           "doc": "Not a holiday: a day kept nationally on which offices open",
           "key": "OFFICES_OPEN"
+        },
+        {
+          "name": "OfficesAndSchools",
+          "value": 9,
+          "doc": "A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082",
+          "key": "OFFICES_AND_SCHOOLS"
         }
       ],
       "source": "catalogue/catalogue.json"
