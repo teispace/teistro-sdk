@@ -10,8 +10,22 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.12
 
+The twelfth release candidate of 1.0.0. Every festival is described, the
+rest as a corpus a consumer loads; a rashifal area has its own name and
+line and a year is scored from its months; a build may leave out three
+texts it does not show; a saved place is read back by its id; a sankranti
+carries its maha punya kala; and the Nepal Sambat year keeps Kachhala's
+first day, in a doubled Kartika too. It is released on GitHub only; no
+package goes to a registry.
+
+- **One reader for every request (SR-159).** `strict` reads a parsed value
+  through its own reader, which keeps the path as borrowed steps and writes
+  it out only when a read fails, and hands every scalar to `serde_json`'s
+  reader; `serde_path_to_error`, which wrapped the reader and every visitor
+  in a second copy, is gone. A refusal names the same path as before.
+  Numbers: none; the wasm module is smaller.
 - **The Nepal Sambat year in a doubled Kartika (SR-158).** In BS 2085
   (2028) Kartika is doubled, and the new year moves from the adhika
   month's first day, 18 October 2028, to the nija Kachhala's first day,
@@ -89,6 +103,7 @@ the previous release, not by nobody having looked.
   build and `cc-by-4.0` for a lite one). The teigeodata adapter moves to
   `v1.3.0`, which reads the live catalog's entries and says a pack's
   licence. Numbers: none.
+
 **Every festival described, as a corpus a consumer loads (SR-153, stage b).**
 **Numbers:** none. No day moves; a listing asked with `about` gains subjects.
 - **Added:** 709 more festivals described in English and Nepali, beside stage (a)'s 42:
