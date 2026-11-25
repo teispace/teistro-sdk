@@ -2925,6 +2925,18 @@ class MessagesSdkVoiceRashifal:
         """The messages under `area`."""
         return MessagesSdkVoiceRashifalArea(self._r)
 
+    @property
+    def area_line(self) -> MessagesSdkVoiceRashifalAreaLine:
+        """The messages under `areaLine`."""
+        return MessagesSdkVoiceRashifalAreaLine(self._r)
+
+    def area_name(self, *, area: str) -> str:
+        """`sdk.voice.rashifal.areaName`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaName",
+            {"area": area},
+        )
+
     def best(self, *, best: str) -> str:
         """`sdk.voice.rashifal.best`"""
         return self._r.render(
@@ -3552,6 +3564,178 @@ class MessagesSdkVoiceRashifalEventIngress:
         return self._r.render(
             "sdk.voice.rashifal.event.INGRESS.NOT_GOOD",
             {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLine:
+    """The messages under `MessagesSdkVoiceRashifalAreaLine`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def health(self) -> MessagesSdkVoiceRashifalAreaLineHealth:
+        """The messages under `HEALTH`."""
+        return MessagesSdkVoiceRashifalAreaLineHealth(self._r)
+
+    @property
+    def love_family(self) -> MessagesSdkVoiceRashifalAreaLineLoveFamily:
+        """The messages under `LOVE_FAMILY`."""
+        return MessagesSdkVoiceRashifalAreaLineLoveFamily(self._r)
+
+    @property
+    def money(self) -> MessagesSdkVoiceRashifalAreaLineMoney:
+        """The messages under `MONEY`."""
+        return MessagesSdkVoiceRashifalAreaLineMoney(self._r)
+
+    @property
+    def work(self) -> MessagesSdkVoiceRashifalAreaLineWork:
+        """The messages under `WORK`."""
+        return MessagesSdkVoiceRashifalAreaLineWork(self._r)
+
+
+class MessagesSdkVoiceRashifalAreaLineWork:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineWork`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineMoney:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineMoney`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineLoveFamily:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineLoveFamily`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineHealth:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineHealth`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.MIXED",
+            {"variant": variant},
         )
 
 

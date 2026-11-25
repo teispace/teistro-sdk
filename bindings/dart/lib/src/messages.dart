@@ -7269,6 +7269,77 @@ final class MessagesSdkVoiceRashifalArea {
   MessagesSdkVoiceRashifalAreaWork get work => MessagesSdkVoiceRashifalAreaWork(_r);
 }
 
+final class MessagesSdkVoiceRashifalAreaLineHealth {
+  const MessagesSdkVoiceRashifalAreaLineHealth(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineLoveFamily {
+  const MessagesSdkVoiceRashifalAreaLineLoveFamily(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineMoney {
+  const MessagesSdkVoiceRashifalAreaLineMoney(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineWork {
+  const MessagesSdkVoiceRashifalAreaLineWork(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLine {
+  const MessagesSdkVoiceRashifalAreaLine(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalAreaLineHealth get health => MessagesSdkVoiceRashifalAreaLineHealth(_r);
+  MessagesSdkVoiceRashifalAreaLineLoveFamily get loveFamily => MessagesSdkVoiceRashifalAreaLineLoveFamily(_r);
+  MessagesSdkVoiceRashifalAreaLineMoney get money => MessagesSdkVoiceRashifalAreaLineMoney(_r);
+  MessagesSdkVoiceRashifalAreaLineWork get work => MessagesSdkVoiceRashifalAreaLineWork(_r);
+}
+
 final class MessagesSdkVoiceRashifalEventIngress {
   const MessagesSdkVoiceRashifalEventIngress(this._r);
 
@@ -7514,6 +7585,9 @@ final class MessagesSdkVoiceRashifal {
   final Renderer _r;
 
   MessagesSdkVoiceRashifalArea get area => MessagesSdkVoiceRashifalArea(_r);
+  MessagesSdkVoiceRashifalAreaLine get areaLine => MessagesSdkVoiceRashifalAreaLine(_r);
+  String areaName({required String area}) =>
+      _r.render('sdk.voice.rashifal.areaName', {'area': area});
   String best({required String best}) =>
       _r.render('sdk.voice.rashifal.best', {'best': best});
   MessagesSdkVoiceRashifalEvent get event => MessagesSdkVoiceRashifalEvent(_r);

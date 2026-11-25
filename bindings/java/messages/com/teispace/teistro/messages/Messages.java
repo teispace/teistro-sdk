@@ -31692,6 +31692,271 @@ public final class Messages {
 
 
                 /**
+                 * The messages under `areaLine`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalAreaLine areaLine() {
+                    return new SdkVoiceRashifalAreaLine(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalAreaLine`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalAreaLine {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalAreaLine(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `HEALTH`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineHealth health() {
+                        return new SdkVoiceRashifalAreaLineHealth(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineHealth`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineHealth {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineHealth(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `LOVE_FAMILY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineLoveFamily loveFamily() {
+                        return new SdkVoiceRashifalAreaLineLoveFamily(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineLoveFamily`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineLoveFamily {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineLoveFamily(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `MONEY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineMoney money() {
+                        return new SdkVoiceRashifalAreaLineMoney(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineMoney`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineMoney {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineMoney(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `WORK`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineWork work() {
+                        return new SdkVoiceRashifalAreaLineWork(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineWork`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineWork {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineWork(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * `sdk.voice.rashifal.areaName`
+                 *
+                 * @param area `area`
+                 * @return the text
+                 */
+                public String areaName(String area) {
+                    return r.render("sdk.voice.rashifal.areaName", Map.ofEntries(Map.entry("area", area)));
+                }
+
+                /**
                  * `sdk.voice.rashifal.best`
                  *
                  * @param best `best`

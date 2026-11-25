@@ -2998,6 +2998,33 @@ export function messages(r) {
               mixed: (p) => r.render('sdk.voice.rashifal.area.WORK.MIXED', { variant: p.variant }),
             },
           },
+          areaLine: {
+            health: {
+              care: (p) => r.render('sdk.voice.rashifal.areaLine.HEALTH.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.areaLine.HEALTH.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.areaLine.HEALTH.MIXED', { variant: p.variant }),
+            },
+            loveFamily: {
+              care: (p) => r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED', { variant: p.variant }),
+            },
+            money: {
+              care: (p) => r.render('sdk.voice.rashifal.areaLine.MONEY.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.areaLine.MONEY.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.areaLine.MONEY.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.areaLine.MONEY.MIXED', { variant: p.variant }),
+            },
+            work: {
+              care: (p) => r.render('sdk.voice.rashifal.areaLine.WORK.CARE', { variant: p.variant }),
+              excellent: (p) => r.render('sdk.voice.rashifal.areaLine.WORK.EXCELLENT', { variant: p.variant }),
+              good: (p) => r.render('sdk.voice.rashifal.areaLine.WORK.GOOD', { variant: p.variant }),
+              mixed: (p) => r.render('sdk.voice.rashifal.areaLine.WORK.MIXED', { variant: p.variant }),
+            },
+          },
+          areaName: (p) => r.render('sdk.voice.rashifal.areaName', { area: p.area }),
           best: (p) => r.render('sdk.voice.rashifal.best', { best: p.best }),
           event: {
             ingress: {
