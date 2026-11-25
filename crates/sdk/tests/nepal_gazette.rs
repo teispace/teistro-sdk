@@ -192,11 +192,20 @@ const EXCEPTIONS: [(i32, &str, &str); 2] = [
     ),
 ];
 
+/// The festival days a notice's span is read with that the pack does not
+/// reckon, each with what the notice prints and why it is not the rule's.
+const READ_EXCEPTIONS: [(i32, &str, &str); 1] = [(
+    2079,
+    "GAI_PUJA",
+    "Kartik 8 (25 October 2022), the new moon's eclipse day, where the notice lists गाई तिहार between Lakshmi puja's day and Mha puja's; the pack gives Kartik 9, the bright 1st holding more than 18 ghatis past its sunrise, the later day Dharmasindhu p. 78 keeps the cows' play on (C2301); what moved the notice's day is open (C2427)",
+)];
+
 #[test]
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
     let listed = FestivalPack::NepalPanchanga.listing().rules;
     let mut held = 0;
     let mut excepted = Vec::new();
+    let mut read_excepted = Vec::new();
     for year in HolidaySet::NepalGazette.years() {
         let days = reckoned(year);
         for holiday in HolidaySet::NepalGazette.holidays_of(year) {
@@ -237,18 +246,36 @@ fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
         }
         // The festival days a span is read with are the days the pack reckons.
         for (key, day) in HolidaySet::NepalGazette.festival_days(year) {
+            let read = days
+                .get(&key)
+                .is_some_and(|on| on.contains(&(day.month, day.day)));
+            if READ_EXCEPTIONS
+                .iter()
+                .any(|&(y, k, _)| (y, k) == (year, key.as_str()))
+            {
+                assert!(
+                    !read,
+                    "VS {year} {key} is read as reckoned now: drop its exception"
+                );
+                read_excepted.push((year, key));
+                continue;
+            }
             assert!(
-                days.get(&key)
-                    .is_some_and(|on| on.contains(&(day.month, day.day))),
+                read,
                 "VS {year} {key}: the notice is read with {day:?}, the pack gives {:?}",
                 days.get(&key)
             );
         }
     }
     assert_eq!(excepted.len(), EXCEPTIONS.len(), "{excepted:?}");
+    assert_eq!(
+        read_excepted.len(),
+        READ_EXCEPTIONS.len(),
+        "{read_excepted:?}"
+    );
     // Every festival named by a dated holiday of VS 2076 to 2083 the pack
     // reckons, but the exceptions above (SR-157).
-    assert_eq!(held, 0, "the count of held days, pinned once measured");
+    assert_eq!(held, 381, "the count of held days");
 }
 
 /// What SR-163 asked of a notice's record (`nepal-gazette-holidays.md` §6):
