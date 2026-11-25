@@ -1766,6 +1766,7 @@ for (const day of week) {
   put(`day-${i}-named-panchaka-count`, day.namedPanchaka.length);
   put(`day-${i}-rahu-vasa-count`, day.rahuVasa.length);
   put(`day-${i}-punya-kala-count`, day.punyaKala.length);
+  put(`day-${i}-maha-punya-kala-count`, day.mahaPunyaKala.length);
   for (const [limb, spans] of [
     ['tithi', day.tithi],
     ['nakshatra', day.nakshatra],
@@ -1783,6 +1784,7 @@ for (const day of week) {
     ['named-panchaka', day.namedPanchaka],
     ['rahu-vasa', day.rahuVasa],
     ['punya-kala', day.punyaKala],
+    ['maha-punya-kala', day.mahaPunyaKala],
   ]) {
     spans.forEach((span, j) => {
       put(`day-${i}-${limb}-${j}`, span.member);
@@ -2823,6 +2825,7 @@ for (const [path, member] of [
   ['geo.search', shape.geo.search],
   ['geo.reverse', shape.geo.reverse],
   ['geo.names', shape.geo.names],
+  ['geo.place', shape.geo.place],
   ['geo.list', shape.geo.list],
   ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],

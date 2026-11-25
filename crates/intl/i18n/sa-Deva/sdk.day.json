@@ -16,5 +16,6 @@
   "ritu": "ऋतुः {$ritu :entity kind=ritu}।",
   "ayana": "अयनम् {$ayana :entity kind=ayana}म्।",
   "kaala": "{$kaala :entity kind=kaala}ः {$from :time} आरभ्य {$to :time} पर्यन्तम्।",
-  "abhijit": "अभिजिन्मुहूर्तः {$from :time} आरभ्य {$to :time} पर्यन्तम्।"
+  "abhijit": "अभिजिन्मुहूर्तः {$from :time} आरभ्य {$to :time} पर्यन्तम्।",
+  "punyaKala": "{$rashi :entity kind=rashi}सङ्क्रान्तेः पुण्यकालः {$from :time} आरभ्य {$to :time} पर्यन्तम्, महापुण्यकालः {$mahaFrom :time} आरभ्य {$mahaTo :time} पर्यन्तम्।"
 }

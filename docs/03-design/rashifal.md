@@ -87,6 +87,11 @@ does this:
   events of C360's set here, every graha but the Moon, whatever a
   request asks to be reported (C2331): a period carries them as
   `scored`, beside each sign's reported `events`.
+- **A year from its months.** The SDK scores a `YEARLY` baseline as the
+  rounded mean of the window's months in its calendar, each clipped to
+  the window and scored as `MONTHLY`, the overall and each area alike,
+  and bands that mean (C2422, `rashifal-reading.md`). The year's own
+  reading keeps its key influences and lucky elements.
 - **Life areas.** Eight are scored, each from a fixed house map, and the
   overall area counts the 1st and 4th houses twice.
 - **Key influences.** Five grahas with weight 8 or more are named, and
@@ -120,6 +125,16 @@ the consumer's design, kept so that every surface answers the same word.
   under the context's settings, and is a field of the score's JSON
   (`"band": "GOOD"`), so the C ABI, Node, wasm, Python, Dart, Java and MCP
   answer it with no rule of their own.
+- **It is named for its period (SR-162).** A score is weighed for a day,
+  a week, a month or a year, and its JSON says which (`"period":
+  "MONTHLY"`). Each `score_band` record carries `day`, `week`, `month` and
+  `year` forms ("A month for care", "सावधानीको महिना", "सावधानी का
+  महीना", "सावधानमास") beside `short` and the day's `name`, and
+  `BaselineScore::band_form()` (or `Period::band_form()`) names the form to
+  read, so a heading never calls a year a day. Forms rather than a
+  pattern: Sanskrit compounds the band and the period ("सावधानमास"),
+  Nepali and Hindi put the care band in the genitive and the others
+  before the noun, which one "{band} {span}" cannot say.
 
 ### One type per concept
 

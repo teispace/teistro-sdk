@@ -1400,6 +1400,7 @@ class HolidayScopeKey(enum.StrEnum):
     SCHOOLS = "holiday_scope.SCHOOLS"
     DISABILITY = "holiday_scope.DISABILITY"
     OFFICES_OPEN = "holiday_scope.OFFICES_OPEN"
+    OFFICES_AND_SCHOOLS = "holiday_scope.OFFICES_AND_SCHOOLS"
 
 
 class HouseSystemKey(enum.StrEnum):
@@ -2060,6 +2061,27 @@ class RegionKey(enum.StrEnum):
     IN_TN = "region.IN_TN"
     IN_UP = "region.IN_UP"
     IN_WB = "region.IN_WB"
+    NP_JHAPA = "region.NP_JHAPA"
+    NP_MORANG = "region.NP_MORANG"
+    NP_SUNSARI = "region.NP_SUNSARI"
+    NP_SAPTARI = "region.NP_SAPTARI"
+    NP_SIRAHA = "region.NP_SIRAHA"
+    NP_UDAYAPUR = "region.NP_UDAYAPUR"
+    NP_DHANUSHA = "region.NP_DHANUSHA"
+    NP_MAHOTTARI = "region.NP_MAHOTTARI"
+    NP_SARLAHI = "region.NP_SARLAHI"
+    NP_RAUTAHAT = "region.NP_RAUTAHAT"
+    NP_BARA = "region.NP_BARA"
+    NP_PARSA = "region.NP_PARSA"
+    NP_NAWALPARASI_EAST = "region.NP_NAWALPARASI_EAST"
+    NP_NAWALPARASI_WEST = "region.NP_NAWALPARASI_WEST"
+    NP_RUPANDEHI = "region.NP_RUPANDEHI"
+    NP_KAPILVASTU = "region.NP_KAPILVASTU"
+    NP_DANG = "region.NP_DANG"
+    NP_BANKE = "region.NP_BANKE"
+    NP_BARDIYA = "region.NP_BARDIYA"
+    NP_KAILALI = "region.NP_KAILALI"
+    NP_KANCHANPUR = "region.NP_KANCHANPUR"
 
 
 class RelationshipKey(enum.StrEnum):
@@ -2698,11 +2720,21 @@ class EntityForms:
 
     about: Optional[str] = None
 
+    day: Optional[str] = None
+
     indic: Optional[str] = None
 
     locative: Optional[str] = None
 
+    month: Optional[str] = None
+
     short: Optional[str] = None
+
+    week: Optional[str] = None
+
+    western: Optional[str] = None
+
+    year: Optional[str] = None
 
     glyph: Optional[str] = None
 
@@ -2732,9 +2764,14 @@ class EntityForms:
             prose=text("prose") or "",
             abbrev=text("abbrev"),
             about=text("about"),
+            day=text("day"),
             indic=text("indic"),
             locative=text("locative"),
+            month=text("month"),
             short=text("short"),
+            week=text("week"),
+            western=text("western"),
+            year=text("year"),
             forms={
                 name: value
                 for name, value in forms.items()
@@ -2887,6 +2924,18 @@ class MessagesSdkVoiceRashifal:
     def area(self) -> MessagesSdkVoiceRashifalArea:
         """The messages under `area`."""
         return MessagesSdkVoiceRashifalArea(self._r)
+
+    @property
+    def area_line(self) -> MessagesSdkVoiceRashifalAreaLine:
+        """The messages under `areaLine`."""
+        return MessagesSdkVoiceRashifalAreaLine(self._r)
+
+    def area_name(self, *, area: str) -> str:
+        """`sdk.voice.rashifal.areaName`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaName",
+            {"area": area},
+        )
 
     def best(self, *, best: str) -> str:
         """`sdk.voice.rashifal.best`"""
@@ -3515,6 +3564,178 @@ class MessagesSdkVoiceRashifalEventIngress:
         return self._r.render(
             "sdk.voice.rashifal.event.INGRESS.NOT_GOOD",
             {"date": {"$date": date}, "graha": {"$entity": graha.value}, "house": house, "rashi": {"$entity": rashi.value}, "variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLine:
+    """The messages under `MessagesSdkVoiceRashifalAreaLine`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def health(self) -> MessagesSdkVoiceRashifalAreaLineHealth:
+        """The messages under `HEALTH`."""
+        return MessagesSdkVoiceRashifalAreaLineHealth(self._r)
+
+    @property
+    def love_family(self) -> MessagesSdkVoiceRashifalAreaLineLoveFamily:
+        """The messages under `LOVE_FAMILY`."""
+        return MessagesSdkVoiceRashifalAreaLineLoveFamily(self._r)
+
+    @property
+    def money(self) -> MessagesSdkVoiceRashifalAreaLineMoney:
+        """The messages under `MONEY`."""
+        return MessagesSdkVoiceRashifalAreaLineMoney(self._r)
+
+    @property
+    def work(self) -> MessagesSdkVoiceRashifalAreaLineWork:
+        """The messages under `WORK`."""
+        return MessagesSdkVoiceRashifalAreaLineWork(self._r)
+
+
+class MessagesSdkVoiceRashifalAreaLineWork:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineWork`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.WORK.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.WORK.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineMoney:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineMoney`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.MONEY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.MONEY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineLoveFamily:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineLoveFamily`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED",
+            {"variant": variant},
+        )
+
+
+class MessagesSdkVoiceRashifalAreaLineHealth:
+    """The messages under `MessagesSdkVoiceRashifalAreaLineHealth`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def care(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.CARE`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.CARE",
+            {"variant": variant},
+        )
+
+    def excellent(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT",
+            {"variant": variant},
+        )
+
+    def good(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.GOOD`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.GOOD",
+            {"variant": variant},
+        )
+
+    def mixed(self, *, variant: int) -> str:
+        """`sdk.voice.rashifal.areaLine.HEALTH.MIXED`"""
+        return self._r.render(
+            "sdk.voice.rashifal.areaLine.HEALTH.MIXED",
+            {"variant": variant},
         )
 
 
@@ -8780,9 +9001,114 @@ class MessagesSdkEntityRegion:
         return self._r.entity("region.NP")
 
     @property
+    def np_banke(self) -> EntityForms:
+        """The forms of `region.NP_BANKE` in the current locale."""
+        return self._r.entity("region.NP_BANKE")
+
+    @property
+    def np_bara(self) -> EntityForms:
+        """The forms of `region.NP_BARA` in the current locale."""
+        return self._r.entity("region.NP_BARA")
+
+    @property
+    def np_bardiya(self) -> EntityForms:
+        """The forms of `region.NP_BARDIYA` in the current locale."""
+        return self._r.entity("region.NP_BARDIYA")
+
+    @property
+    def np_dang(self) -> EntityForms:
+        """The forms of `region.NP_DANG` in the current locale."""
+        return self._r.entity("region.NP_DANG")
+
+    @property
+    def np_dhanusha(self) -> EntityForms:
+        """The forms of `region.NP_DHANUSHA` in the current locale."""
+        return self._r.entity("region.NP_DHANUSHA")
+
+    @property
+    def np_jhapa(self) -> EntityForms:
+        """The forms of `region.NP_JHAPA` in the current locale."""
+        return self._r.entity("region.NP_JHAPA")
+
+    @property
+    def np_kailali(self) -> EntityForms:
+        """The forms of `region.NP_KAILALI` in the current locale."""
+        return self._r.entity("region.NP_KAILALI")
+
+    @property
+    def np_kanchanpur(self) -> EntityForms:
+        """The forms of `region.NP_KANCHANPUR` in the current locale."""
+        return self._r.entity("region.NP_KANCHANPUR")
+
+    @property
+    def np_kapilvastu(self) -> EntityForms:
+        """The forms of `region.NP_KAPILVASTU` in the current locale."""
+        return self._r.entity("region.NP_KAPILVASTU")
+
+    @property
+    def np_mahottari(self) -> EntityForms:
+        """The forms of `region.NP_MAHOTTARI` in the current locale."""
+        return self._r.entity("region.NP_MAHOTTARI")
+
+    @property
+    def np_morang(self) -> EntityForms:
+        """The forms of `region.NP_MORANG` in the current locale."""
+        return self._r.entity("region.NP_MORANG")
+
+    @property
+    def np_nawalparasi_east(self) -> EntityForms:
+        """The forms of `region.NP_NAWALPARASI_EAST` in the current locale."""
+        return self._r.entity("region.NP_NAWALPARASI_EAST")
+
+    @property
+    def np_nawalparasi_west(self) -> EntityForms:
+        """The forms of `region.NP_NAWALPARASI_WEST` in the current locale."""
+        return self._r.entity("region.NP_NAWALPARASI_WEST")
+
+    @property
     def np_p3(self) -> EntityForms:
         """The forms of `region.NP_P3` in the current locale."""
         return self._r.entity("region.NP_P3")
+
+    @property
+    def np_parsa(self) -> EntityForms:
+        """The forms of `region.NP_PARSA` in the current locale."""
+        return self._r.entity("region.NP_PARSA")
+
+    @property
+    def np_rautahat(self) -> EntityForms:
+        """The forms of `region.NP_RAUTAHAT` in the current locale."""
+        return self._r.entity("region.NP_RAUTAHAT")
+
+    @property
+    def np_rupandehi(self) -> EntityForms:
+        """The forms of `region.NP_RUPANDEHI` in the current locale."""
+        return self._r.entity("region.NP_RUPANDEHI")
+
+    @property
+    def np_saptari(self) -> EntityForms:
+        """The forms of `region.NP_SAPTARI` in the current locale."""
+        return self._r.entity("region.NP_SAPTARI")
+
+    @property
+    def np_sarlahi(self) -> EntityForms:
+        """The forms of `region.NP_SARLAHI` in the current locale."""
+        return self._r.entity("region.NP_SARLAHI")
+
+    @property
+    def np_siraha(self) -> EntityForms:
+        """The forms of `region.NP_SIRAHA` in the current locale."""
+        return self._r.entity("region.NP_SIRAHA")
+
+    @property
+    def np_sunsari(self) -> EntityForms:
+        """The forms of `region.NP_SUNSARI` in the current locale."""
+        return self._r.entity("region.NP_SUNSARI")
+
+    @property
+    def np_udayapur(self) -> EntityForms:
+        """The forms of `region.NP_UDAYAPUR` in the current locale."""
+        return self._r.entity("region.NP_UDAYAPUR")
 
     @property
     def terai(self) -> EntityForms:
@@ -11622,6 +11948,11 @@ class MessagesSdkEntityHolidayScope:
     def national(self) -> EntityForms:
         """The forms of `holiday_scope.NATIONAL` in the current locale."""
         return self._r.entity("holiday_scope.NATIONAL")
+
+    @property
+    def offices_and_schools(self) -> EntityForms:
+        """The forms of `holiday_scope.OFFICES_AND_SCHOOLS` in the current locale."""
+        return self._r.entity("holiday_scope.OFFICES_AND_SCHOOLS")
 
     @property
     def offices_open(self) -> EntityForms:
@@ -17865,6 +18196,13 @@ class MessagesSdkDay:
         return self._r.render(
             "sdk.day.nakshatra",
             {"ends": ends, "nakshatra": {"$entity": nakshatra.value}, "until": {"$time": until}},
+        )
+
+    def punya_kala(self, *, from_: TimeValue, maha_from: TimeValue, maha_to: TimeValue, rashi: RashiKey, to: TimeValue) -> str:
+        """`sdk.day.punyaKala`"""
+        return self._r.render(
+            "sdk.day.punyaKala",
+            {"from": {"$time": from_}, "mahaFrom": {"$time": maha_from}, "mahaTo": {"$time": maha_to}, "rashi": {"$entity": rashi.value}, "to": {"$time": to}},
         )
 
     def ritu(self, *, ritu: RituKey) -> str:

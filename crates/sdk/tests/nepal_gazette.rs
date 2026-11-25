@@ -1,7 +1,8 @@
 //! Nepal's gazetted holidays (`03-design/nepal-gazette-holidays.md`, SR-123):
 //! the set each Nepal pack's listing carries, every year's festivals named
-//! in the catalogue, and VS 2083's days held to the days `NEPAL_PANCHANGA`
-//! reckons for the festivals each holiday names.
+//! in the catalogue, and every year's days held to the days
+//! `NEPAL_PANCHANGA` reckons for the festivals each holiday names, or to a
+//! named exception (SR-157).
 
 #![allow(
     clippy::unwrap_used,
@@ -16,9 +17,9 @@ use teistro::festival::{Holiday, HolidaySet};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 
-/// The Bikram Sambat days each key of `NEPAL_PANCHANGA` falls on over VS
-/// 2083, at Kathmandu over the committee's sky.
-fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
+/// The Bikram Sambat days each key of `NEPAL_PANCHANGA` falls on over a
+/// VS year, at Kathmandu over the committee's sky.
+fn reckoned(year: i32) -> BTreeMap<String, Vec<(u8, u8)>> {
     let place = Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
@@ -34,11 +35,13 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
         CalendarDate::defined(Calendar::Gregorian, year, month, day)
     };
     let mut days: BTreeMap<String, Vec<(u8, u8)>> = BTreeMap::new();
-    // VS 2083 is 14 April 2026 to 13 April 2027, in three spans.
+    // A VS year begins in mid-April: read from the 10th to the 16th a year
+    // on, in three spans, and keep the days of that year.
+    let ad = year - 57;
     for (from, to) in [
-        ((2026, 4, 14), (2026, 8, 16)),
-        ((2026, 8, 17), (2026, 12, 15)),
-        ((2026, 12, 16), (2027, 4, 13)),
+        ((ad, 4, 10), (ad, 8, 16)),
+        ((ad, 8, 17), (ad, 12, 15)),
+        ((ad, 12, 16), (ad + 1, 4, 16)),
     ] {
         let found = sdk
             .almanac()
@@ -66,7 +69,7 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
             .chain(found.added.iter().map(|day| (&day.key, &day.day)));
         for (key, day) in on {
             let bs = sdk.calendar().convert(day, Calendar::BikramSambat).unwrap();
-            if bs.year == 2083 {
+            if bs.year == year {
                 days.entry(key.clone())
                     .or_default()
                     .push((bs.month, bs.day));
@@ -80,7 +83,7 @@ fn reckoned() -> BTreeMap<String, Vec<(u8, u8)>> {
 fn every_nepal_pack_lists_the_gazette_and_no_other_pack_does() {
     // Every year's, VS 2076 to 2083.
     let every = HolidaySet::NepalGazette.holidays().len();
-    assert_eq!(every, 346);
+    assert_eq!(every, 347);
     for pack in FestivalPack::ALL {
         let listed = pack.listing();
         let nepal = matches!(pack, FestivalPack::Nepal | FestivalPack::NepalPanchanga);
@@ -98,7 +101,7 @@ fn every_nepal_pack_lists_the_gazette_and_no_other_pack_does() {
         .iter()
         .filter(|holiday| holiday["year"] == 2083)
         .collect();
-    assert_eq!(of_2083.len(), 45);
+    assert_eq!(of_2083.len(), 46);
     assert_eq!(of_2083[8]["festivals"][3], "JYAPU_DIWAS");
     assert_eq!(of_2083[8]["scope"], "NATIONAL");
     assert_eq!(of_2083[8]["first"]["month"], 9);
@@ -173,51 +176,181 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
     assert!(several[3].notice.ne.starts_with("धान्य पूर्णिमा"));
 }
 
+/// The gazette's days the pack's rules do not give, each with its reason:
+/// `(VS year, festival)`. A rule change that moves another year's day, or
+/// mends one of these, fails the test below until this list says so.
+const EXCEPTIONS: [(i32, &str, &str); 2] = [
+    (
+        2076,
+        "KIJA_PUJA",
+        "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
+    ),
+    (
+        2077,
+        "GAURA_PARVA",
+        "Bhadra 10 (26 August 2020), the day after the rule's: Durva ashtami's 8th began past midday on Bhadra 9 and the rule takes the earlier day whenever the 8th touches its daylight; what moved the notice's day is open (C2426)",
+    ),
+];
+
+/// The festival days a notice's span is read with that the pack does not
+/// reckon, each with what the notice prints and why it is not the rule's.
+const READ_EXCEPTIONS: [(i32, &str, &str); 1] = [(
+    2079,
+    "GAI_PUJA",
+    "Kartik 8 (25 October 2022), the new moon's eclipse day, where the notice lists गाई तिहार between Lakshmi puja's day and Mha puja's; the pack gives Kartik 9, the bright 1st holding more than 18 ghatis past its sunrise, the later day Dharmasindhu p. 78 keeps the cows' play on (C2301); what moved the notice's day is open (C2427)",
+)];
+
 #[test]
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
-    let days = reckoned();
+    let listed = FestivalPack::NepalPanchanga.listing().rules;
     let mut held = 0;
-    for holiday in HolidaySet::NepalGazette.holidays_of(2083) {
-        let Some(first) = &holiday.first else {
-            continue;
-        };
-        let first = (first.month, first.day);
-        let last = holiday
-            .last
-            .as_ref()
-            .map_or(first, |day| (day.month, day.day));
-        for key in &holiday.festivals {
-            let Some(on) = days.get(key) else {
-                assert!(
-                    FestivalPack::NepalPanchanga
-                        .listing()
-                        .rules
-                        .iter()
-                        .all(|row| row.key != *key),
-                    "{key} is in the pack and has no day in VS 2083"
-                );
+    let mut excepted = Vec::new();
+    let mut read_excepted = Vec::new();
+    for year in HolidaySet::NepalGazette.years() {
+        let days = reckoned(year);
+        for holiday in HolidaySet::NepalGazette.holidays_of(year) {
+            let Some(first) = &holiday.first else {
                 continue;
             };
+            let first = (first.month, first.day);
+            let last = holiday
+                .last
+                .as_ref()
+                .map_or(first, |day| (day.month, day.day));
+            for key in &holiday.festivals {
+                let kept = days
+                    .get(key)
+                    .is_some_and(|on| on.iter().any(|&day| (first..=last).contains(&day)));
+                if EXCEPTIONS
+                    .iter()
+                    .any(|&(y, k, _)| (y, k) == (year, key.as_str()))
+                {
+                    assert!(!kept, "VS {year} {key} is held now: drop its exception");
+                    excepted.push((year, key.clone()));
+                    continue;
+                }
+                assert!(
+                    days.contains_key(key) || listed.iter().all(|row| row.key != *key),
+                    "VS {year}: {key} is in the pack and has no day"
+                );
+                if !days.contains_key(key) {
+                    continue;
+                }
+                assert!(
+                    kept,
+                    "VS {year} {key}: the pack gives {:?}, {} prints {first:?} to {last:?}",
+                    days[key], holiday.source
+                );
+                held += 1;
+            }
+        }
+        // The festival days a span is read with are the days the pack reckons.
+        for (key, day) in HolidaySet::NepalGazette.festival_days(year) {
+            let read = days
+                .get(&key)
+                .is_some_and(|on| on.contains(&(day.month, day.day)));
+            if READ_EXCEPTIONS
+                .iter()
+                .any(|&(y, k, _)| (y, k) == (year, key.as_str()))
+            {
+                assert!(
+                    !read,
+                    "VS {year} {key} is read as reckoned now: drop its exception"
+                );
+                read_excepted.push((year, key));
+                continue;
+            }
             assert!(
-                on.iter().any(|&day| (first..=last).contains(&day)),
-                "{key}: the pack gives {on:?}, {} prints {first:?} to {last:?}",
-                holiday.source
+                read,
+                "VS {year} {key}: the notice is read with {day:?}, the pack gives {:?}",
+                days.get(&key)
             );
-            held += 1;
         }
     }
-    // Every festival named by a holiday with a printed day, 47, but Dura
-    // Mhaipru Nakuma, which the pack has no rule for. The six holidays the
-    // notice gives "on the day of" (the two Eids, Mawlid, Guru Nanak
-    // Jayanti, Bhoto Jatra, Sirua Pavani) print no day to hold.
-    assert_eq!(held, 46);
-    // The festival days a span is read with are the days the pack reckons.
-    for (key, day) in HolidaySet::NepalGazette.festival_days(2083) {
-        assert!(
-            days.get(&key)
-                .is_some_and(|on| on.contains(&(day.month, day.day))),
-            "{key}: the notice is read with {day:?}, the pack gives {:?}",
-            days.get(&key)
-        );
+    assert_eq!(excepted.len(), EXCEPTIONS.len(), "{excepted:?}");
+    assert_eq!(
+        read_excepted.len(),
+        READ_EXCEPTIONS.len(),
+        "{read_excepted:?}"
+    );
+    // Every festival named by a dated holiday of VS 2076 to 2083 the pack
+    // reckons, but the exceptions above (SR-157).
+    assert_eq!(held, 381, "the count of held days");
+}
+
+/// What SR-163 asked of a notice's record (`nepal-gazette-holidays.md` §6):
+/// the clause apart, a later decision typed with its document, each
+/// year's documents, the weekly rest days, and every region, district and
+/// community a holiday names said in every Devanagari locale.
+#[test]
+fn a_notice_carries_its_clauses_changes_documents_and_rest_days() {
+    let json = serde_json::to_value(FestivalPack::NepalPanchanga.listing()).unwrap();
+    let holidays = json["holidays"].as_array().unwrap();
+    let gen_z = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["clause"] == "8 (ग)")
+        .unwrap();
+    assert_eq!(gen_z["scope"], "NATIONAL");
+    assert_eq!(gen_z["changes"][0]["kind"], "RESCOPED");
+    assert_eq!(gen_z["changes"][0]["scopeBefore"], "OFFICES_OPEN");
+    assert_eq!(gen_z["changes"][0]["document"]["decided"]["month"], 5);
+    let mourning = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["changes"][0]["kind"] == "ADDED")
+        .unwrap();
+    assert_eq!(
+        mourning["scope"], "OFFICES_OPEN",
+        "a day of mourning, offices open"
+    );
+    let terai = holidays
+        .iter()
+        .find(|holiday| holiday["year"] == 2083 && holiday["festivals"][0] == "HOLI_TERAI")
+        .unwrap();
+    assert_eq!(terai["districts"].as_array().unwrap().len(), 21);
+    let years = json["holidayYears"].as_array().unwrap();
+    assert_eq!(years.len(), 8);
+    let latest = years.last().unwrap();
+    assert_eq!(latest["notice"]["sha256"].as_str().unwrap().len(), 64);
+    assert_eq!(latest["notice"]["retrieved"], "2026-09-14");
+    let rest = json["restDays"].as_array().unwrap();
+    assert_eq!(rest[0]["vara"], "SHANIVARA");
+    assert_eq!(rest[1]["scope"], "OFFICES_AND_SCHOOLS");
+
+    let set = HolidaySet::NepalGazette;
+    let cancelled = set.years().into_iter().flat_map(|year| set.cancelled(year));
+    let named: std::collections::BTreeSet<String> = set
+        .holidays()
+        .into_iter()
+        .chain(cancelled)
+        .flat_map(|holiday| {
+            let regions = holiday
+                .regions
+                .iter()
+                .chain(&holiday.districts)
+                .map(|key| format!("region.{key}"));
+            let communities = holiday
+                .communities
+                .iter()
+                .map(|key| format!("community.{key}"));
+            regions.chain(communities).collect::<Vec<_>>()
+        })
+        .chain([format!(
+            "holiday_scope.{}",
+            HolidayScope::OfficesAndSchools.key()
+        )])
+        .collect();
+    assert!(named.len() > 30, "{named:?}");
+    let devanagari = |name: &str| name.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c));
+    for locale in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        let reader = Context::builder().locale(locale).build().unwrap();
+        let latin: Vec<String> = named
+            .iter()
+            .filter_map(|key| {
+                let entity = reader.intl().entity(key).unwrap();
+                let name = entity.form("name").unwrap().to_owned();
+                (!devanagari(&name)).then(|| format!("{key}: {name}"))
+            })
+            .collect();
+        assert!(latin.is_empty(), "{locale} names in Latin: {latin:?}");
     }
 }

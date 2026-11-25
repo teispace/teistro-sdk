@@ -1,11 +1,12 @@
 {
   "year": 2077,
   "notice": "Nepal Gazette vol. 69 no. 51, part 5 (Chaitra 17, 2076): the Ministry of Home Affairs' notice of the public, festival and substitute holidays of VS 2077",
+  "document": {"decided": [2076, 12, 17]},
   "holidays": [
     {"clause": "2.1 (क)", "scope": "NATIONAL", "festivals": ["MESHA_SANKRANTI"], "first": [1, 1], "ne": "नव वर्ष", "en": "New Year"},
     {"clause": "2.1 (ख)", "scope": "NATIONAL", "festivals": ["SHIVARATRI"], "first": [11, 27], "ne": "महाशिवरात्री", "en": "Maha Shivaratri"},
     {"clause": "2.1 (ग)", "scope": "REGION", "festivals": ["HOLI_HILLS"], "regions": ["HILLS"], "first": [12, 15], "ne": "फागुपूर्णिमा - हिमाली र पहाडी जिल्ला लगायतका ५६ जिल्ला", "en": "Fagu Purnima, in the 56 districts, the mountain and hill districts among them"},
-    {"clause": "2.1 (ग)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "first": [12, 16], "ne": "फागुपूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँकि, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
+    {"clause": "2.1 (ग)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SAPTARI", "NP_SIRAHA", "NP_UDAYAPUR", "NP_DHANUSHA", "NP_MAHOTTARI", "NP_SARLAHI", "NP_RAUTAHAT", "NP_BARA", "NP_PARSA", "NP_NAWALPARASI_EAST", "NP_NAWALPARASI_WEST", "NP_RUPANDEHI", "NP_KAPILVASTU", "NP_DANG", "NP_BANKE", "NP_BARDIYA", "NP_KAILALI", "NP_KANCHANPUR"], "first": [12, 16], "ne": "फागुपूर्णिमा - झापा, मोरङ्ग, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँकि, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
     {"clause": "2.2 (क)", "scope": "COMMUNITY", "festivals": ["UBHAULI", "CHANDI_PURNIMA"], "communities": ["KIRAT"], "first": [1, 25], "ne": "उभौली पर्व - चण्डी पूर्णिमा (वैशाख पूर्णिमा)", "en": "Ubhauli: Chandi Purnima (the full moon of Baisakh)"},
     {"clause": "2.2 (ख)", "scope": "CONCERNED", "festivals": ["GAURA_PARVA"], "first": [5, 10], "ne": "गौरा पर्व", "en": "Gaura Parva"},
     {"clause": "2.2 (ग)", "scope": "RELIGION", "festivals": ["EID_AL_FITR"], "communities": ["MUSLIM"], "ne": "ईद (इदुल फित्र) का दिन", "en": "On the day of Eid (Eid al-Fitr)"},
@@ -16,7 +17,7 @@
     {"clause": "2.2 (ज)", "scope": "COMMUNITY", "festivals": ["MAKARA_SANKRANTI", "MAGHI_THARU"], "communities": ["THARU", "MAGAR", "CHHANTYAL"], "first": [10, 1], "ne": "माघे सक्रान्ति एवं माघी पर्व", "en": "Maghe Sankranti and Maghi"},
     {"clause": "2.2 (झ)", "scope": "CONCERNED", "festivals": ["SONAM_LHOSAR"], "first": [10, 30], "ne": "सोनम ल्होसार", "en": "Sonam Lhosar"},
     {"clause": "2.2 (ञ)", "scope": "COMMUNITY", "festivals": ["GYALPO_LHOSAR"], "communities": ["SHERPA"], "first": [12, 1], "ne": "ग्याल्पो ल्होसार", "en": "Gyalpo Lhosar"},
-    {"clause": "2.2 (ट)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
+    {"clause": "2.2 (ट)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SIRAHA", "NP_SAPTARI"], "ne": "सिरुवा पावनी - झापा, मोरङ्ग, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
     {"clause": "2.2 (ठ)", "scope": "REGION", "festivals": [], "ne": "धवथाम्बु छेउचिक - सम्बन्धित जिल्लाहरु", "en": "Dhawathambu Chheuchik, in the districts concerned"},
     {"clause": "3 (क)", "scope": "WOMEN", "festivals": ["HARITALIKA"], "first": [5, 5], "ne": "हरितालिका (तीज)", "en": "Haritalika (Teej)"},
     {"clause": "3 (ख)", "scope": "WOMEN", "festivals": ["JITIYA"], "first": [5, 25], "ne": "जितिया पर्व", "en": "Jitiya"},

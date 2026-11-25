@@ -199,27 +199,47 @@ impl ChartArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`ChartArea::rashifal_many`].
+    /// As [`ChartArea::rashifal_many`]; `readings` in a build without the
+    /// `rashifal-reading` feature is `UNSUPPORTED` naming
+    /// `rashifal.readings`.
     pub fn rashifal_answers(
         self,
         batch: &RashifalBatch,
     ) -> Result<Envelope<Vec<RashifalAnswer>>, Error> {
+        if batch.readings {
+            crate::texts::Text::RashifalReading.require("rashifal.readings")?;
+        }
         let Envelope { value, provenance } = self.rashifal_many(&batch.periods)?;
         let interpret = self.context().interpret();
         // Each score banded as the context's settings band it, per call
         // through a derived context (`03-design/rashifal.md`, "The score
         // band").
         let bands = self.context().settings().rashifal.score_bands;
+        let scores = match batch.baseline {
+            Some(asked) => batch
+                .periods
+                .iter()
+                .zip(&value)
+                .map(|(request, period)| self.scores_of(request, period, asked, bands).map(Some))
+                .collect::<Result<Vec<_>, Error>>()?,
+            None => vec![None; value.len()],
+        };
         let readings = match batch.baseline.filter(|_| batch.readings) {
             Some(asked) => batch
                 .periods
                 .iter()
                 .zip(&value)
-                .map(|(request, period)| self.readings_of(request, period, asked, bands).map(Some))
+                .zip(&scores)
+                .map(|((request, period), scores)| {
+                    let scores = scores.as_deref().unwrap_or_default();
+                    self.readings_of(request, period, scores, asked, bands)
+                        .map(Some)
+                })
                 .collect::<Result<Vec<_>, Error>>()?,
             None => vec![None; value.len()],
         };
         let mut readings = readings.into_iter();
+        let mut scores = scores.into_iter();
         let answers = value
             .into_iter()
             .map(|period| RashifalAnswer {
@@ -231,27 +251,54 @@ impl ChartArea<'_> {
                         .map(|reading| interpret.rashifal(reading))
                         .collect()
                 }),
-                baseline: batch.baseline.map(|asked| {
-                    period
-                        .readings
-                        .iter()
-                        .map(|reading| period.baseline_score(reading.rashi, asked, bands))
-                        .collect()
-                }),
+                baseline: scores.next().flatten(),
                 period,
             })
             .collect();
         Ok(Envelope::sealing(answers, provenance))
     }
 
+    /// Each sign's baseline score for `asked`, Aries to Pisces: read at
+    /// the period's reference day, but a year's overall, areas and band
+    /// from the mean of its months, each read as a month (C2422), so that
+    /// the year's word agrees with the months it is made of.
+    fn scores_of(
+        self,
+        request: &RashifalRequest,
+        period: &RashifalPeriod,
+        asked: teistro_rashifal::Period,
+        bands: teistro_core::settings::ScoreBands,
+    ) -> Result<Vec<teistro_rashifal::baseline::BaselineScore>, Error> {
+        use teistro_rashifal::Period;
+        use teistro_rashifal::baseline::BaselineScore;
+        let months = if asked == Period::Yearly {
+            self.rashifal_many(&request.months()?)?.value
+        } else {
+            Vec::new()
+        };
+        Ok(period
+            .readings
+            .iter()
+            .map(|reading| {
+                let own = period.baseline_score(reading.rashi, asked, bands);
+                let monthly: Vec<BaselineScore> = months
+                    .iter()
+                    .map(|month| month.baseline_score(reading.rashi, Period::Monthly, bands))
+                    .collect();
+                BaselineScore::of_months(own, &monthly, bands)
+            })
+            .collect())
+    }
+
     /// Each sign's period in the reading voice
-    /// (`03-design/rashifal-reading.md`): the baseline's score for `asked`,
+    /// (`03-design/rashifal-reading.md`): the sign's score in `scores`,
     /// a week's daily scores read one day at a time, and a day's Moon turn
     /// from her own events, which a score never counts (C2331).
     fn readings_of(
         self,
         request: &RashifalRequest,
         period: &RashifalPeriod,
+        scores: &[teistro_rashifal::baseline::BaselineScore],
         asked: teistro_rashifal::Period,
         bands: teistro_core::settings::ScoreBands,
     ) -> Result<Vec<teistro_interpret::rashifal_reading::ReadingPlan>, Error> {
@@ -300,13 +347,12 @@ impl ChartArea<'_> {
             .map(|at| date_of(first.plus_days(at)))
             .collect::<Result<Vec<_>, Error>>()?;
         let mut plans = Vec::with_capacity(12);
-        for read in &period.readings {
+        for (read, score) in period.readings.iter().zip(scores) {
             let event_dates = read
                 .events
                 .iter()
                 .map(|from| civil(from.event.hit.instant))
                 .collect::<Result<Vec<_>, Error>>()?;
-            let score = period.baseline_score(read.rashi, asked, bands);
             let day_scores: Vec<DayScore> = daily
                 .iter()
                 .flatten()
@@ -334,7 +380,7 @@ impl ChartArea<'_> {
             });
             plans.push(reading(&ReadingInput {
                 reading: read,
-                score: &score,
+                score,
                 period: asked,
                 first_day: first.get(),
                 span: (prepared.window.0.get(), prepared.window.1.get()),

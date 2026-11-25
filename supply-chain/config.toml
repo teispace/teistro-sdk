@@ -570,10 +570,6 @@ criteria = "safe-to-deploy"
 version = "1.0.151"
 criteria = "safe-to-deploy"
 
-[[exemptions.serde_path_to_error]]
-version = "0.1.20"
-criteria = "safe-to-deploy"
-
 [[exemptions.sha1]]
 version = "0.11.0"
 criteria = "safe-to-deploy"

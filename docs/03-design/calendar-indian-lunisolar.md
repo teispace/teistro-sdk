@@ -397,7 +397,10 @@ October 2025, the day after Kartika's new moon, prints
 "ने.सं.११४६ प्रारम्भ", and VS 2083's row of 10 November 2026 opens 1147.
 So the Nepal Sambat year is the Vikrama year less 937 until Kartika, and
 less 936 from Kachhala on. A day carries its amanta month and its
-sunrise. The count needs no lunar-year search, because the year's middle
+sunrise. When Kartika itself is doubled, its adhika month is Anala and
+closes the old year: the year opens with the nija Kachhala and the Mha
+puja, BS 2085's 1149 on 17 November 2028, a month after Lakshmi puja
+(C2418). The count needs no lunar-year search, because the year's middle
 is a month or so either side of the day's sunrise moved by the months
 between. The year is the civil year that middle falls in, less 880. The
 middle stands about three months from a civil new year at its nearest

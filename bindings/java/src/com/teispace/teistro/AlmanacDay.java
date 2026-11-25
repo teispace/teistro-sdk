@@ -400,6 +400,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The maha punya kala inside {@link #punyaKala()}, on the same day (Dharmasindhu, the Pausha chapter, crux
+     * C2421): the five ghatis of the window nearest the sankranti, or the whole window when it is shorter;
+     * {@code whole} and {@code inside} are both the five ghatis.
+     *
+     * @return the spans
+     */
+    public List<Span<Rashi>> mahaPunyaKala() {
+        Panchanga.MahaPunyaKala c = batch.decoded().mahaPunyaKala();
+        return spans("maha_punya_kala", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala, c::marginMinutes), Rashi::of);
+    }
+
+    /**
      * The homa ahuti, when the request asked for it: the graha whose mouth an oblation falls in, by the Moon's
      * nakshatra counted from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751), one
      * span for each stretch the two stars both held; empty when not asked for.

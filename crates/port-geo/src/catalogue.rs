@@ -153,6 +153,20 @@ pub struct NamedPlace {
     /// Its admin units, coarse to fine; a level the data does not hold is
     /// absent.
     pub parents: Vec<ParentPlace>,
+    /// The id line the place's id belongs to, where a provider numbers
+    /// more than one (teigeodata's `odbl` main and `cc-by-4.0` lite): an id
+    /// is looked up again only in data of its line; `null` for a provider
+    /// with one.
+    #[serde(default)]
+    pub line: Option<String>,
+    /// Its IANA time zone (`Asia/Kathmandu`), or `null` where the data
+    /// gives none.
+    #[serde(default)]
+    pub zone: Option<String>,
+    /// What a landmark is (`temple`, `palace`, `airport`), the provider's
+    /// own word, or `null`.
+    #[serde(default)]
+    pub class: Option<String>,
 }
 
 /// A place a search found, and its score.
@@ -343,6 +357,56 @@ pub struct PlaceNamesRequest {
     /// for none.
     #[serde(default)]
     pub langs: Vec<String>,
+}
+
+/// A place by its id: what `geo.place` reads (SR-164). A provider follows
+/// a retired id to the place that replaced it, so the answer's `id` is the
+/// survivor's: a caller that saved `id` stores the answer's instead.
+///
+/// ```
+/// use teistro_port_geo::PlaceLookup;
+///
+/// let asked: PlaceLookup = serde_json::from_str(r#"{"id": "tgd:np/54s", "lang": "ne"}"#)?;
+/// assert!(asked.checked().is_ok());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PlaceLookup {
+    /// The place's id, as an answer gave it.
+    pub id: String,
+    /// The language to name it in, or `null`.
+    #[serde(default)]
+    pub lang: Option<String>,
+}
+
+/// What `geo.place` answers: the place an id names, and whether the id
+/// was retired for it.
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LookedUpPlace {
+    /// The id asked.
+    pub asked: String,
+    /// The place, under its current id; `null` for an id the provider does
+    /// not know or holds as removed.
+    pub place: Option<NamedPlace>,
+    /// Whether the id asked was retired and `place` is the one that
+    /// replaced it: a caller that kept the id stores `place.id` instead.
+    pub moved: bool,
+}
+
+impl PlaceLookup {
+    /// The request checked: an id, and the language a tag.
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` named by the field.
+    pub fn checked(&self) -> Result<(), Error> {
+        written(&self.id, "id", "a place's id")?;
+        tagged(self.lang.as_deref(), "lang")
+    }
 }
 
 /// The places of a unit: what `geo.list` reads.
@@ -781,6 +845,28 @@ pub fn names(provider: &dyn GeoProvider, asked: &PlaceNamesRequest) -> Result<Pl
     Ok(answer)
 }
 
+/// The place an id names, as `provider` holds it, a retired id followed to
+/// its survivor: the request checked, the answer checked, and `moved` when
+/// the place answered is under another id.
+///
+/// # Errors
+///
+/// As [`search`].
+pub fn place(provider: &dyn GeoProvider, asked: &PlaceLookup) -> Result<LookedUpPlace, Error> {
+    asked.checked()?;
+    let found = provider.place(asked)?;
+    if let Some(found) = &found {
+        found
+            .check("place")
+            .map_err(|why| restated(why, Status::Provider))?;
+    }
+    Ok(LookedUpPlace {
+        asked: asked.id.clone(),
+        moved: found.as_ref().is_some_and(|found| found.id != asked.id),
+        place: found,
+    })
+}
+
 /// The places of a unit, as `provider` lists and ranks them: the request
 /// checked, at most `limit`, every answer checked.
 ///
@@ -847,6 +933,7 @@ mod tests {
         nearby: NearbyPlaces,
         names: Option<PlaceNames>,
         listed: Vec<NamedPlace>,
+        looked_up: Option<NamedPlace>,
     }
 
     impl GeoProvider for Canned {
@@ -889,6 +976,10 @@ mod tests {
         fn list(&self, _: &PlaceListing) -> Result<Vec<NamedPlace>, Error> {
             Ok(self.listed.clone())
         }
+
+        fn place(&self, _: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+            Ok(self.looked_up.clone())
+        }
     }
 
     fn parent(id: &str, name: &str, level: u8) -> ParentPlace {
@@ -916,6 +1007,9 @@ mod tests {
                 kind: Some(PopulationKind::Counted),
             }),
             parents: vec![parent("np", "Nepal", 0), parent("kaski", "Kaski", 2)],
+            line: None,
+            zone: Some("Asia/Kathmandu".into()),
+            class: None,
         }
     }
 
@@ -1510,6 +1604,67 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(why.field(), Some("langs[1]"));
+    }
+
+    /// A place by its id (SR-164): the request refused on its field, the
+    /// survivor answered under its own id, and a malformed answer the
+    /// provider's failure.
+    #[test]
+    fn a_place_by_its_id_is_the_survivor_checked() {
+        let none = Canned::default();
+        for (asked, field) in [
+            (
+                PlaceLookup {
+                    id: " ".into(),
+                    lang: None,
+                },
+                "id",
+            ),
+            (
+                PlaceLookup {
+                    id: "p0".into(),
+                    lang: Some("1".into()),
+                },
+                "lang",
+            ),
+        ] {
+            let why = place(&none, &asked).unwrap_err();
+            assert_eq!((why.status, why.field()), (Status::InvalidArg, Some(field)));
+        }
+        let asked = PlaceLookup {
+            id: "p0".into(),
+            lang: None,
+        };
+        let unknown = place(&none, &asked).unwrap();
+        assert_eq!((unknown.place, unknown.moved), (None, false));
+        let survivor = Canned {
+            looked_up: Some(pokhara()),
+            ..Canned::default()
+        };
+        let found = place(&survivor, &asked).unwrap();
+        assert!(found.moved);
+        let found = found.place.unwrap();
+        assert_eq!(
+            (found.id.as_str(), found.zone.as_deref()),
+            ("p1", Some("Asia/Kathmandu"))
+        );
+        let kept = PlaceLookup {
+            id: "p1".into(),
+            lang: None,
+        };
+        assert!(!place(&survivor, &kept).unwrap().moved);
+        let malformed = Canned {
+            looked_up: Some(NamedPlace {
+                name: String::new(),
+                ..pokhara()
+            }),
+            ..Canned::default()
+        };
+        let why = place(&malformed, &asked).unwrap_err();
+        assert_eq!(
+            (why.status, why.field()),
+            (Status::Provider, Some("place.name"))
+        );
     }
 
     #[test]

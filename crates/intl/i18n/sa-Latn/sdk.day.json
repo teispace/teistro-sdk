@@ -16,5 +16,6 @@
   "ritu": "Ṛtuḥ {$ritu :entity kind=ritu}.",
   "ayana": "Ayanam {$ayana :entity kind=ayana}m.",
   "kaala": "{$kaala :entity kind=kaala}ḥ {$from :time} ārabhya {$to :time} paryantam.",
-  "abhijit": "Abhijinmuhūrtaḥ {$from :time} ārabhya {$to :time} paryantam."
+  "abhijit": "Abhijinmuhūrtaḥ {$from :time} ārabhya {$to :time} paryantam.",
+  "punyaKala": "{$rashi :entity kind=rashi}saṅkrānteḥ puṇyakālaḥ {$from :time} ārabhya {$to :time} paryantam, mahāpuṇyakālaḥ {$mahaFrom :time} ārabhya {$mahaTo :time} paryantam."
 }

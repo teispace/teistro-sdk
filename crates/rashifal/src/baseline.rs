@@ -47,6 +47,28 @@ pub enum Period {
     Yearly,
 }
 
+impl Period {
+    /// The form of a `score_band` record that names a band for this
+    /// period: `day`, `week`, `month` or `year` ("A week for care"), so a
+    /// heading names the period its score was weighed for (SR-162).
+    ///
+    /// ```
+    /// use teistro_rashifal::Period;
+    ///
+    /// assert_eq!(Period::Daily.band_form(), "day");
+    /// assert_eq!(Period::Yearly.band_form(), "year");
+    /// ```
+    #[must_use]
+    pub const fn band_form(self) -> &'static str {
+        match self {
+            Period::Daily => "day",
+            Period::Weekly => "week",
+            Period::Monthly => "month",
+            Period::Yearly => "year",
+        }
+    }
+}
+
 /// What the baseline reads of the reference day's panchanga: the tithi
 /// running at sunrise, the yoga running then, and how many of the five
 /// muhurta yogas (Amrita Siddhi, Sarvartha Siddhi, Siddha, Dvipushkara,
@@ -184,6 +206,8 @@ pub struct BaselineScore {
     /// with, [`BaselineScore::band`]. Not a field a caller sets: it is
     /// read from `overall`, so it cannot disagree with it.
     band: ScoreBand,
+    /// The period it was weighed for, [`BaselineScore::period`].
+    period: Period,
 }
 
 impl BaselineScore {
@@ -211,6 +235,36 @@ impl BaselineScore {
     #[must_use]
     pub const fn band(&self) -> ScoreBand {
         self.band
+    }
+
+    /// The period it was weighed for.
+    #[must_use]
+    pub const fn period(&self) -> Period {
+        self.period
+    }
+
+    /// The form of the band's `score_band` record that names it for this
+    /// score's period ([`Period::band_form`]): read the band's entity and
+    /// take this form for a heading ("A month for care").
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::{Rashi, Tithi, Yoga};
+    /// # use teistro_gochar::Transit;
+    /// # let transits = [Transit::new(Rashi::Aries, 5.0); 9];
+    /// # use teistro_rashifal::{RashifalRules, rashifal};
+    /// # let read = rashifal(&transits, &[], &RashifalRules::default());
+    /// # use teistro_rashifal::baseline::Panchanga;
+    /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+    /// use teistro_rashifal::Period;
+    /// use teistro_rashifal::baseline::{ScoreBands, baseline_score};
+    ///
+    /// let score = baseline_score(&read[0], &[], &[false; 9], panchanga, Period::Monthly, ScoreBands::DEFAULT);
+    /// assert_eq!(score.band_form(), "month");
+    /// assert_eq!(serde_json::to_value(&score).unwrap()["period"], "MONTHLY");
+    /// ```
+    #[must_use]
+    pub const fn band_form(&self) -> &'static str {
+        self.period.band_form()
     }
 }
 
@@ -471,6 +525,61 @@ pub fn baseline_score(
         key_influences: weighed,
         lucky: lucky(lord_of(reading.rashi)),
         band: bands.band(overall),
+        period,
+    }
+}
+
+impl BaselineScore {
+    /// A year scored from its months (C2422): the overall and each area
+    /// the mean of the months' scores, rounded half up as the baseline
+    /// rounds, the band read from that overall under `bands`, so the
+    /// year's word and its number are one; the key influences and the
+    /// lucky elements are the year's own. No months leaves the year as it
+    /// was scored.
+    ///
+    /// ```
+    /// # use teistro_core::catalogue::Rashi;
+    /// # use teistro_gochar::Transit;
+    /// # use teistro_core::catalogue::{Tithi, Yoga};
+    /// # use teistro_rashifal::baseline::Panchanga;
+    /// # use teistro_rashifal::{RashifalRules, rashifal};
+    /// # let read = rashifal(&[Transit::new(Rashi::Aries, 5.0); 9], &[], &RashifalRules::default());
+    /// # let panchanga = Panchanga { tithi: Tithi::ShuklaPratipada, yoga: Yoga::Priti, muhurta_yogas: 1 };
+    /// use teistro_rashifal::Period;
+    /// use teistro_rashifal::baseline::{BaselineScore, ScoreBands, baseline_score};
+    ///
+    /// let score = |period| baseline_score(&read[0], &[], &[false; 9], panchanga, period, ScoreBands::DEFAULT);
+    /// let month = score(Period::Monthly);
+    /// let year = BaselineScore::of_months(score(Period::Yearly), &[month.clone(), month.clone()], ScoreBands::DEFAULT);
+    /// // Two equal months make the year's number and word theirs.
+    /// assert_eq!((year.overall, year.band(), year.areas), (month.overall, month.band(), month.areas));
+    /// ```
+    #[must_use]
+    pub fn of_months(
+        year: BaselineScore,
+        months: &[BaselineScore],
+        bands: ScoreBands,
+    ) -> BaselineScore {
+        let Some(count) = u32::try_from(months.len()).ok().filter(|n| *n > 0) else {
+            return year;
+        };
+        // The mean of whole scores, rounded half up.
+        let mean = |total: u32| u8::try_from((total * 2 + count) / (count * 2)).unwrap_or(100);
+        let overall = mean(months.iter().map(|month| u32::from(month.overall)).sum());
+        let areas = year.areas.map(|(area, _)| {
+            let total = months
+                .iter()
+                .filter_map(|month| month.areas.iter().find(|(one, _)| *one == area))
+                .map(|(_, score)| u32::from(*score))
+                .sum();
+            (area, mean(total))
+        });
+        BaselineScore {
+            overall,
+            areas,
+            band: bands.band(overall),
+            ..year
+        }
     }
 }
 

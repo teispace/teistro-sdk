@@ -110,6 +110,33 @@
         "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{पर्याप्त आराम लिनुहोला}} * {{दिनचर्या नियमित राख्नुहोला}}"
       }
     },
+    "areaName": ".input {$area :string} .match $area WORK {{पेशा}} MONEY {{धन}} LOVE_FAMILY {{सम्बन्ध र परिवार}} * {{स्वास्थ्य}}",
+    "areaLine": {
+      "WORK": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.WORK.EXCELLENT :msg}}}",
+        "GOOD": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.WORK.GOOD :msg}}}",
+        "MIXED": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.WORK.MIXED :msg}}}",
+        "CARE": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.WORK.CARE :msg}}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.MONEY.EXCELLENT :msg}}}",
+        "GOOD": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.MONEY.GOOD :msg}}}",
+        "MIXED": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.MONEY.MIXED :msg}}}",
+        "CARE": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.MONEY.CARE :msg}}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.LOVE_FAMILY.EXCELLENT :msg}}}",
+        "GOOD": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.LOVE_FAMILY.GOOD :msg}}}",
+        "MIXED": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.LOVE_FAMILY.MIXED :msg}}}",
+        "CARE": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.LOVE_FAMILY.CARE :msg}}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.HEALTH.EXCELLENT :msg}}}",
+        "GOOD": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.HEALTH.GOOD :msg}}}",
+        "MIXED": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.HEALTH.MIXED :msg}}}",
+        "CARE": ".input {$variant :integer cycle=2} {{{sdk.voice.rashifal.area.HEALTH.CARE :msg}}}"
+      }
+    },
     "week": {
       "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{काम निकै राम्रोसँग अघि बढ्नेछन्।}} * {{हप्ताको सबैभन्दा सहज समय रहनेछ।}}",
       "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{काम सहजै अघि बढ्नेछन्।}} * {{समय राम्रो बित्नेछ।}}",

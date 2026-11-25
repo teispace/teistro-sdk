@@ -1526,7 +1526,9 @@ public final class Messages {
         /** `holiday_scope.DISABILITY`. */
         DISABILITY("holiday_scope.DISABILITY"),
         /** `holiday_scope.OFFICES_OPEN`. */
-        OFFICES_OPEN("holiday_scope.OFFICES_OPEN");
+        OFFICES_OPEN("holiday_scope.OFFICES_OPEN"),
+        /** `holiday_scope.OFFICES_AND_SCHOOLS`. */
+        OFFICES_AND_SCHOOLS("holiday_scope.OFFICES_AND_SCHOOLS");
 
         private final String value;
 
@@ -3872,14 +3874,19 @@ public final class Messages {
      * @param prose the `prose` form; empty when the record lacks it
      * @param abbrev the `abbrev` form, or null
      * @param about the `about` form, or null
+     * @param day the `day` form, or null
      * @param indic the `indic` form, or null
      * @param locative the `locative` form, or null
+     * @param month the `month` form, or null
      * @param short_ the `short` form, or null
+     * @param week the `week` form, or null
+     * @param western the `western` form, or null
+     * @param year the `year` form, or null
      * @param glyph its glyph, or null
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String abbrev, String about, String indic, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String about, String day, String indic, String locative, String month, String short_, String week, String western, String year, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3897,9 +3904,14 @@ public final class Messages {
                     text(forms, "prose", ""),
                     text(forms, "abbrev", null),
                     text(forms, "about", null),
+                    text(forms, "day", null),
                     text(forms, "indic", null),
                     text(forms, "locative", null),
+                    text(forms, "month", null),
                     text(forms, "short", null),
+                    text(forms, "week", null),
+                    text(forms, "western", null),
+                    text(forms, "year", null),
                     text(forms, "glyph", null),
                     gender(text(forms, "gender", null)),
                     all(forms));
@@ -6107,6 +6119,20 @@ public final class Messages {
              */
             public String nakshatra(String ends, NakshatraKey nakshatra, TimeValue until) {
                 return r.render("sdk.day.nakshatra", Map.ofEntries(Map.entry("ends", ends), Map.entry("nakshatra", Map.of("$entity", nakshatra.value())), Map.entry("until", Map.of("$time", until.json()))));
+            }
+
+            /**
+             * `sdk.day.punyaKala`
+             *
+             * @param from `from`
+             * @param mahaFrom `mahaFrom`
+             * @param mahaTo `mahaTo`
+             * @param rashi `rashi`
+             * @param to `to`
+             * @return the text
+             */
+            public String punyaKala(TimeValue from, TimeValue mahaFrom, TimeValue mahaTo, RashiKey rashi, TimeValue to) {
+                return r.render("sdk.day.punyaKala", Map.ofEntries(Map.entry("from", Map.of("$time", from.json())), Map.entry("mahaFrom", Map.of("$time", mahaFrom.json())), Map.entry("mahaTo", Map.of("$time", mahaTo.json())), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("to", Map.of("$time", to.json()))));
             }
 
             /**
@@ -17533,6 +17559,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `holiday_scope.OFFICES_AND_SCHOOLS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms officesAndSchools() {
+                    return r.entity("holiday_scope.OFFICES_AND_SCHOOLS");
+                }
+
+                /**
                  * The forms of `holiday_scope.OFFICES_OPEN` in the current locale.
                  *
                  * @return the forms
@@ -22902,12 +22937,201 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `region.NP_BANKE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBanke() {
+                    return r.entity("region.NP_BANKE");
+                }
+
+                /**
+                 * The forms of `region.NP_BARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBara() {
+                    return r.entity("region.NP_BARA");
+                }
+
+                /**
+                 * The forms of `region.NP_BARDIYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npBardiya() {
+                    return r.entity("region.NP_BARDIYA");
+                }
+
+                /**
+                 * The forms of `region.NP_DANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npDang() {
+                    return r.entity("region.NP_DANG");
+                }
+
+                /**
+                 * The forms of `region.NP_DHANUSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npDhanusha() {
+                    return r.entity("region.NP_DHANUSHA");
+                }
+
+                /**
+                 * The forms of `region.NP_JHAPA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npJhapa() {
+                    return r.entity("region.NP_JHAPA");
+                }
+
+                /**
+                 * The forms of `region.NP_KAILALI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKailali() {
+                    return r.entity("region.NP_KAILALI");
+                }
+
+                /**
+                 * The forms of `region.NP_KANCHANPUR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKanchanpur() {
+                    return r.entity("region.NP_KANCHANPUR");
+                }
+
+                /**
+                 * The forms of `region.NP_KAPILVASTU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npKapilvastu() {
+                    return r.entity("region.NP_KAPILVASTU");
+                }
+
+                /**
+                 * The forms of `region.NP_MAHOTTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npMahottari() {
+                    return r.entity("region.NP_MAHOTTARI");
+                }
+
+                /**
+                 * The forms of `region.NP_MORANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npMorang() {
+                    return r.entity("region.NP_MORANG");
+                }
+
+                /**
+                 * The forms of `region.NP_NAWALPARASI_EAST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npNawalparasiEast() {
+                    return r.entity("region.NP_NAWALPARASI_EAST");
+                }
+
+                /**
+                 * The forms of `region.NP_NAWALPARASI_WEST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npNawalparasiWest() {
+                    return r.entity("region.NP_NAWALPARASI_WEST");
+                }
+
+                /**
                  * The forms of `region.NP_P3` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms npP3() {
                     return r.entity("region.NP_P3");
+                }
+
+                /**
+                 * The forms of `region.NP_PARSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npParsa() {
+                    return r.entity("region.NP_PARSA");
+                }
+
+                /**
+                 * The forms of `region.NP_RAUTAHAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npRautahat() {
+                    return r.entity("region.NP_RAUTAHAT");
+                }
+
+                /**
+                 * The forms of `region.NP_RUPANDEHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npRupandehi() {
+                    return r.entity("region.NP_RUPANDEHI");
+                }
+
+                /**
+                 * The forms of `region.NP_SAPTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSaptari() {
+                    return r.entity("region.NP_SAPTARI");
+                }
+
+                /**
+                 * The forms of `region.NP_SARLAHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSarlahi() {
+                    return r.entity("region.NP_SARLAHI");
+                }
+
+                /**
+                 * The forms of `region.NP_SIRAHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSiraha() {
+                    return r.entity("region.NP_SIRAHA");
+                }
+
+                /**
+                 * The forms of `region.NP_SUNSARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npSunsari() {
+                    return r.entity("region.NP_SUNSARI");
+                }
+
+                /**
+                 * The forms of `region.NP_UDAYAPUR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms npUdayapur() {
+                    return r.entity("region.NP_UDAYAPUR");
                 }
 
                 /**
@@ -31466,6 +31690,271 @@ public final class Messages {
 
                 }
 
+
+                /**
+                 * The messages under `areaLine`.
+                 *
+                 * @return the group
+                 */
+                public SdkVoiceRashifalAreaLine areaLine() {
+                    return new SdkVoiceRashifalAreaLine(r);
+                }
+
+                /** The messages under `SdkVoiceRashifalAreaLine`, each rendered by its own key. */
+                public static final class SdkVoiceRashifalAreaLine {
+                    private final Renderer r;
+
+                    SdkVoiceRashifalAreaLine(Renderer r) {
+                        this.r = r;
+                    }
+
+                    /**
+                     * The messages under `HEALTH`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineHealth health() {
+                        return new SdkVoiceRashifalAreaLineHealth(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineHealth`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineHealth {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineHealth(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.HEALTH.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.HEALTH.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `LOVE_FAMILY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineLoveFamily loveFamily() {
+                        return new SdkVoiceRashifalAreaLineLoveFamily(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineLoveFamily`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineLoveFamily {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineLoveFamily(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `MONEY`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineMoney money() {
+                        return new SdkVoiceRashifalAreaLineMoney(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineMoney`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineMoney {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineMoney(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.MONEY.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.MONEY.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+
+                    /**
+                     * The messages under `WORK`.
+                     *
+                     * @return the group
+                     */
+                    public SdkVoiceRashifalAreaLineWork work() {
+                        return new SdkVoiceRashifalAreaLineWork(r);
+                    }
+
+                    /** The messages under `SdkVoiceRashifalAreaLineWork`, each rendered by its own key. */
+                    public static final class SdkVoiceRashifalAreaLineWork {
+                        private final Renderer r;
+
+                        SdkVoiceRashifalAreaLineWork(Renderer r) {
+                            this.r = r;
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.CARE`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String care(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.CARE", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.EXCELLENT`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String excellent(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.EXCELLENT", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.GOOD`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String good(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.GOOD", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+
+                        /**
+                         * `sdk.voice.rashifal.areaLine.WORK.MIXED`
+                         *
+                         * @param variant `variant`
+                         * @return the text
+                         */
+                        public String mixed(long variant) {
+                            return r.render("sdk.voice.rashifal.areaLine.WORK.MIXED", Map.ofEntries(Map.entry("variant", variant)));
+                        }
+                    }
+
+                }
+
+
+                /**
+                 * `sdk.voice.rashifal.areaName`
+                 *
+                 * @param area `area`
+                 * @return the text
+                 */
+                public String areaName(String area) {
+                    return r.render("sdk.voice.rashifal.areaName", Map.ofEntries(Map.entry("area", area)));
+                }
 
                 /**
                  * `sdk.voice.rashifal.best`

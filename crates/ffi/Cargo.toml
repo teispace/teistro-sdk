@@ -26,28 +26,28 @@ serde_json = "1"
 # boundary keeps what only a C caller needs -- the handles, the
 # `struct_size` handshake, the blob writer, the panic guard, the
 # `last_error` slot -- and the composition has one home.
-teistro = { path = "../sdk", version = "=1.0.0-rc.11", default-features = false }
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.11" }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.11" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.11" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.11" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.11" }
-teistro-houses = { path = "../houses", version = "=1.0.0-rc.11" }
-teistro-idl = { path = "../idl", version = "=1.0.0-rc.11", default-features = false }
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.11", default-features = false }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.11" }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.11" }
-teistro-serial = { path = "../serial", version = "=1.0.0-rc.11", optional = true }
-teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.11" }
-teistro-state = { path = "../state", version = "=1.0.0-rc.11" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.11" }
-teistro-time = { path = "../time", version = "=1.0.0-rc.11" }
+teistro = { path = "../sdk", version = "=1.0.0-rc.12", default-features = false }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.12" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.12" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.12" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.12" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.12" }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.12" }
+teistro-idl = { path = "../idl", version = "=1.0.0-rc.12", default-features = false }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.12", default-features = false }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.12" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.12" }
+teistro-serial = { path = "../serial", version = "=1.0.0-rc.12", optional = true }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.12" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.12" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.12" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.12" }
 
 # The plugin loader (ADR-0029), the port's own, which a wasm build has no
 # use for: a wasm module cannot open a shared library, so there it has the
 # built-in and a host provider, and `src/provider.rs` is compiled out.
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.11", features = ["load"] }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.12", features = ["load"] }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028). It is a feature because a shared
@@ -77,9 +77,16 @@ locale-hi-deva-in = ["teistro/locale-hi-deva-in"]
 locale-ne-deva-np = ["teistro/locale-ne-deva-np"]
 locale-sa-deva = ["teistro/locale-sa-deva"]
 locale-sa-latn = ["teistro/locale-sa-latn"]
+# The texts a build may leave out, forwarded to the façade (core#241): one
+# feature each, `texts` naming them all. A text left out is refused as
+# `UNSUPPORTED` naming its feature.
+texts = ["teistro/texts"]
+festival-about = ["teistro/festival-about"]
+muhurta-reasons = ["teistro/muhurta-reasons"]
+rashifal-reading = ["teistro/rashifal-reading"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
-full = ["teistro/full", "locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["teistro/full", "locales", "texts", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area, and the document reader only it uses.
 chart = ["teistro/chart", "dep:teistro-serial"]
 kp = ["chart", "teistro/kp"]
@@ -90,7 +97,6 @@ pakshi = ["chart", "teistro/pakshi"]
 prashna = ["chart", "teistro/prashna"]
 rectification = ["chart", "teistro/rectification"]
 rashifal = ["chart", "teistro/rashifal"]
-# The rashifal's reading voice (SR-152): `readings` in a rashifal batch.
 remedies = ["chart", "teistro/remedies"]
 research = ["chart", "teistro/research"]
 svg = ["chart", "teistro/svg"]

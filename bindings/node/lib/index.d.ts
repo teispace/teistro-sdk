@@ -248,6 +248,7 @@ import type {
   PlaceSearch,
   PlaceReverse,
   PlaceNamesRequest,
+  PlaceLookup,
   PlaceListing,
   PlaceKind,
   HarmonicRequest,
@@ -6194,6 +6195,12 @@ export declare class AlmanacDay {
    */
   readonly punyaKala: readonly Span<Rashi>[];
   /**
+   * The maha punya kala inside `punyaKala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five
+   * ghatis of the window nearest the sankranti, or the whole window when it is shorter; `whole` and `inside` are both
+   * the five ghatis.
+   */
+  readonly mahaPunyaKala: readonly Span<Rashi>[];
+  /**
    * The homa ahuti, when the request asked with `homaAhuti: true`: the graha whose mouth an oblation falls in, by
    * the Moon's nakshatra counted from the Sun's in threes (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux
    * C751), one span for each stretch the two stars both held; empty when not asked for.
@@ -8273,6 +8280,8 @@ export declare class GeoArea {
   reverse(request: PlaceReverse): NearbyPlaces;
   /** A place's names, and the one chosen for each language asked. */
   names(request: PlaceNamesRequest): PlaceNames;
+  /** A place by its id, a retired id followed to the place that replaced it. */
+  place(request: PlaceLookup): LookedUpPlace;
   /** The places of a unit, ranked by population. */
   list(request: PlaceListing): readonly NamedPlace[];
 }
@@ -8290,6 +8299,19 @@ export interface NamedPlace {
   readonly longitudeDeg: number;
   readonly population: Population | null;
   readonly parents: readonly ParentPlace[];
+  /** The id line the id belongs to (`odbl`, `cc-by-4.0`), or null. */
+  readonly line: string | null;
+  /** Its IANA time zone, or null. */
+  readonly zone: string | null;
+  /** What a landmark is (`temple`), or null. */
+  readonly class: string | null;
+}
+
+/** A place by its id: `moved` when the id asked was retired for `place`'s. */
+export interface LookedUpPlace {
+  readonly asked: string;
+  readonly place: NamedPlace | null;
+  readonly moved: boolean;
 }
 
 /** The people of a place, with how they were reckoned where known. */

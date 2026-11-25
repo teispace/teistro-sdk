@@ -58,7 +58,7 @@ Where the two counts differ, and why:
   counted as shipped.
 - **The "no rule" festivals are not all unreckonable.** The reviewed table
   gives a computable rule to ten of the 24. Two of those are now shipped:
-  the Nepal Sambat new year, which is kept on Mha puja's day, and the start
+  the Nepal Sambat new year, Kachhala's first day at sunrise (C2423), and the start
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 

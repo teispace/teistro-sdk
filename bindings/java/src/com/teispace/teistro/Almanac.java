@@ -29,7 +29,7 @@ public final class Almanac extends AbstractList<AlmanacDay> {
             "horas", "muhurtas", "moon_events", "muhurta_yogas", "varjyam", "nakshatra_shool", "chandra_vasa",
             "chandrashtama", "amrit_kalam", "lagnas", "agni_vasa", "rahu_vasa",
             "punya_kala", "homa_ahuti", "ashubha_yogas", "bhadra_vasa", "shiva_vasa", "named_panchaka",
-            "markers", "gowri", "uncertainty");
+            "markers", "gowri", "uncertainty", "maha_punya_kala");
 
     private final Panchanga decoded;
     private final Map<String, int[]> starts = new HashMap<>();
@@ -81,6 +81,7 @@ public final class Almanac extends AbstractList<AlmanacDay> {
                 case "markers" -> counts::markers;
                 case "gowri" -> counts::gowri;
                 case "uncertainty" -> counts::uncertainty;
+                case "maha_punya_kala" -> counts::mahaPunyaKala;
                 default -> throw new IllegalStateException(name);
             };
             starts.put(name, Reads.starts(counts.length(), column));

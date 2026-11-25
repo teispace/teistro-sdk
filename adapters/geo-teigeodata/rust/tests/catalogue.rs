@@ -20,8 +20,9 @@ use teigeodata_format::component::Component;
 use teistro_core::error::Status;
 use teistro_geo_teigeodata::{NO_PACKS, TeigeodataGeo};
 use teistro_port_geo::{
-    FoundPlace, GeoPoint, GeoProvider, NamedPlace, PlaceKind, PlaceListing, PlaceNamesRequest,
-    PlaceReverse, PlaceSearch, PopulationKind, SearchFocus, list, names, reverse, search,
+    FoundPlace, GeoPoint, GeoProvider, NamedPlace, PlaceKind, PlaceListing, PlaceLookup,
+    PlaceNamesRequest, PlaceReverse, PlaceSearch, PopulationKind, SearchFocus, list, names, place,
+    reverse, search,
 };
 
 fn searched(geo: &TeigeodataGeo, query: &str, lang: Option<&str>) -> Vec<FoundPlace> {
@@ -437,6 +438,70 @@ fn a_places_names_are_chosen_per_language_with_a_fallback_to_its_script() {
     };
     let why = names(&geo, &malformed).unwrap_err();
     assert_eq!((why.status, why.field()), (Status::InvalidArg, Some("id")));
+}
+
+/// A saved place read back by its id (SR-164): its record named as asked,
+/// with its zone, not moved; a retired id answered with the place that
+/// replaced it, where the packs carry the redirect (teigeodata D-382).
+#[test]
+fn a_place_is_read_back_by_its_id_and_a_retired_id_follows_its_survivor() {
+    let Some(geo) = common::provider("place") else {
+        return;
+    };
+    let city = searched(&geo, "Pokhara", None)
+        .into_iter()
+        .find(|hit| hit.place.kind == PlaceKind::Admin)
+        .expect("Pokhara metropolitan city")
+        .place;
+    let asked = PlaceLookup {
+        id: city.id.clone(),
+        lang: Some("ne".into()),
+    };
+    let found = place(&geo, &asked).unwrap();
+    assert!(!found.moved);
+    let read = found.place.unwrap();
+    assert_eq!(
+        (read.id.as_str(), read.name.as_str()),
+        (city.id.as_str(), "पोखरा")
+    );
+    assert_eq!(read.zone.as_deref(), Some("Asia/Kathmandu"));
+    // The id line is the pack's licence, the same whichever call named it;
+    // a pack built before manifests carried one says none.
+    assert_eq!(read.line, city.line);
+    assert!(
+        matches!(read.line.as_deref(), None | Some("odbl" | "cc-by-4.0")),
+        "{:?}",
+        read.line
+    );
+    assert_eq!(
+        (read.latitude_deg, read.longitude_deg),
+        (city.latitude_deg, city.longitude_deg)
+    );
+    let unknown = PlaceLookup {
+        id: "tgd:np/zzzzzz".into(),
+        lang: None,
+    };
+    assert_eq!(place(&geo, &unknown).unwrap().place, None);
+    let malformed = PlaceLookup {
+        id: "Pokhara".into(),
+        lang: None,
+    };
+    let why = place(&geo, &malformed).unwrap_err();
+    assert_eq!((why.status, why.field()), (Status::InvalidArg, Some("id")));
+    // Gundu gaun's id, retired into Gundu's in Nepal's 2026.11.2 build.
+    let retired = PlaceLookup {
+        id: "tgd:np/54s".into(),
+        lang: None,
+    };
+    match place(&geo, &retired).unwrap() {
+        found if found.moved => {
+            assert_eq!(
+                found.place.map(|place| place.id).as_deref(),
+                Some("tgd:np/54t")
+            );
+        }
+        found => eprintln!("SKIP  redirect: the packs carry none for tgd:np/54s ({found:?})"),
+    }
 }
 
 #[test]

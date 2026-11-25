@@ -605,10 +605,10 @@ Padmini and Parama ekadashi took `ONLY` with `month` empty at sunrise (§3.10, C
 texts' principle that a festival of a doubled month is kept in the nija
 month; a kshaya lunation answers to both its names, so a rule of either
 keeps its tithi there. Every observance a month rule placed says which,
-as `malamasa` (`festival-malamasa.md`). The Nepal Sambat new year is
-`FIRST` (*Dharmasindhu* p. 31, C2041), and the SDK reads the lunation
-beside a range for every rule, not only a `FIRST` one, when that lunation
-is an adhika month.
+as `malamasa` (`festival-malamasa.md`). The Nepal Sambat new year keeps
+the nija month with Govardhan puja (C2418, which supersedes C2041's
+`FIRST`), and the SDK reads the lunation beside a range for every rule,
+not only a `FIRST` one, when that lunation is an adhika month.
 
 ### 3.8 A barred day: `barred`
 
@@ -622,8 +622,11 @@ is an adhika month.
 A rule's day is judged as always. `FROM` bars it when it falls on that day
 of a calendar's year or later; `WITH` bars it when the named rule's day in
 the same lunar month was barred `FROM` one. A barred day gives way to the
-last occurrence of `instead` before it, judged by the rule's own window and
-guards; the answer marks the observance `barred`, with that tithi and the
+last occurrence of `instead` (or the same number in the other fortnight)
+before it, judged by the rule's own window and guards, and when the bar
+holds that day too, the same a fortnight earlier again, three steps at
+most. A rule barred `WITH` another takes its tithi's last occurrence
+before the named rule's kept day, so it follows however far that steps; the answer marks the observance `barred`, with that tithi and the
 barred day's month. A rule kept on no single tithi, an unshipped calendar,
 a month or day 0, a rule barred with itself, and one barred with a rule the
 request does not hold are refused by their fields. A caller who replaces
@@ -634,12 +637,26 @@ never a dead end.
 दूर्वापूजनव्रतं कन्यार्केऽगस्त्योदये च वर्ज्यम्", and its note gives what
 replaces the day: "भाद्रपदशुक्लाष्टम्यामगस्त्योदये भाविनि सति
 पूर्वकृष्णाष्टम्यामेव कुर्यात्", the dark 8th before. p. 58 puts Agastya's
-rising on the 21st day after the Sun enters Simha, which the Bikram
-Sambat, counting Bhadra from that ingress, names Bhadra 22. The Kanya half
+rising on the 21st day after the Sun enters Simha. Counted from the
+ingress's own day, as an ordinal counts, that is Bhadra 20 of the Bikram
+Sambat (C2420; read once as Bhadra 22, C608, which the gazette refutes:
+VS 2076 keeps Gaura parva on the dark 8th of Bhadra 6, 23 August 2019,
+with the bright 8th on Bhadra 20). When the dark 8th falls after the
+rising too, as in VS 2080 with the adhika Shravana (7 September 2023,
+Bhadra 21), the gazette keeps the nija Shravana's bright 8th a fortnight
+earlier (24 August 2023), the Sun in Simha, as the note's adhika verse
+asks, "सिंहस्थे सोत्तमा सूर्ये": the step back again. The Kanya half
 of the bar is not encoded: the gazette keeps Gaura parva on Bhadra 10 of
 2081 (26 August 2024), the dark 8th before a bright 8th (11 September,
 Bhadra 26) that the Sun in Simha would not bar, so the bar is the rising
 and not the sign (C608).
+
+The day itself is the earlier, the 8th joined to the 7th: "सा पूर्वा
+ग्राह्या" (*Nirnayasindhu* pp. 262–263, after Hemadri's Vriddha Yama),
+the fit `EARLIER_ANY` over the whole daylight. The gazette keeps it so in
+VS 2079 (3 September 2022, the 8th from 09:40) and 2081 (26 August 2024,
+from 08:27), and on the later day when the 8th begins after sunset
+(VS 2078, 2082) or before sunrise (VS 2083).
 
 **Measured.** In VS 2082 the bright 8th falls on Bhadra 15 (31 August
 2025) and stands; in VS 2083 on Asoj 3 (19 September 2026), barred, and

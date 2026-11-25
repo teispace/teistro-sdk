@@ -640,7 +640,7 @@ impl Kind {
             Kind::Colour => 6,
             Kind::GocharVerdict => 3,
             Kind::ScoreBand => 4,
-            Kind::HolidayScope => 9,
+            Kind::HolidayScope => 10,
             Kind::Community => 0,
             Kind::Region => 0,
             Kind::Observance => 0,

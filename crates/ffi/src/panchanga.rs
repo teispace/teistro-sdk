@@ -41,6 +41,7 @@ use teistro_core::time::{ClockReading, UtcOffset};
 use teistro_idl::blob::{FixedValue, Writer};
 use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::omen::YogaCause;
+use teistro_panchanga::punya::PunyaKala;
 use teistro_panchanga::span::{Span, Sunrises};
 
 use crate::blob::TsBlob;
@@ -658,6 +659,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.markers.len(),
         day.gowri.len(),
         usize::from(day.uncertainty.is_some()),
+        usize::from(maha_punya_kala(day).is_some()),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -928,6 +930,7 @@ struct RaggedRows {
     markers: Vec<Vec<FixedValue>>,
     gowri: Vec<Vec<FixedValue>>,
     uncertainty: Vec<Vec<FixedValue>>,
+    maha_punya_kala: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -998,8 +1001,18 @@ impl RaggedRows {
                     ]
                 })
                 .collect(),
+            maha_punya_kala: owned_span_rows(
+                days,
+                |day| maha_punya_kala(day).into_iter().collect(),
+                |m| m.id(),
+            )?,
         })
     }
+}
+
+/// The day's maha punya kala as the span its section writes.
+fn maha_punya_kala(day: &Panchanga) -> Option<Span<teistro_core::catalogue::Rashi>> {
+    day.punya_kala.as_ref().and_then(PunyaKala::maha_span)
 }
 
 /// The JSON sections answered beside the days, each the canonical
@@ -1141,6 +1154,7 @@ pub fn encode(
         writer.rows("markers", &ragged.markers)?;
         writer.rows("gowri", &ragged.gowri)?;
         writer.rows("uncertainty", &ragged.uncertainty)?;
+        writer.rows("maha_punya_kala", &ragged.maha_punya_kala)?;
         writer.finish()
     };
     write().map_err(|error| {

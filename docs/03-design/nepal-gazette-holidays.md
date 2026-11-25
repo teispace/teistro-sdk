@@ -102,7 +102,7 @@ limits its four to "the religion, culture, geographic area and place
 concerned"; Gai Jatra's and Dura Mhaipru Nakuma's clauses then name a
 community, Sirua Pavani's five districts, and Gaura Parva's nothing, so
 Gaura Parva is `CONCERNED` and the others `COMMUNITY` and `REGION`. Sirua
-Pavani's districts have no key and stay in its notice.
+Pavani's districts are keyed in `districts` (§6).
 
 **The festivals named.** A clause names a festival by the words a reader
 would, and the key is the festival so named: "नव वर्ष" is
@@ -185,5 +185,66 @@ the latest notice.
 The first build: nothing reckoned. `NEPAL_PANCHANGA`'s and `NEPAL`'s pack listings gain
 `holidays`, and their rules the notice's tiers; the festival names of
 `BALA_CHATURDASHI` and `LOKTANTRA_DIWAS` change in the locales named above.
-Clause 1's Saturdays are not carried: they name no festival, and a
-weekday is the calendar's.
+Clause 1's Saturdays were not carried then: they name no festival, and
+a weekday is the calendar's. §6 carries them as rest days.
+
+## 6. A notice's own record: clauses, changes, documents, rest days (SR-163)
+
+The consumer that reads these holidays needs to show the notice as a
+reader of the gazette would: which clause a holiday is, what a later
+decision changed and when, where the notice can be read, and which days
+of the week are rest days. Before this section the listing carried those
+facts only inside `source`'s text, and the weekly rest days not at all.
+
+**The clause** is a field, `clause`, the notice's own numbering
+("2.1 (क)"); absent for a holiday a later decision added. `source` keeps
+its words.
+
+**A change** is typed. Each holiday carries `changes`, in order, one per
+later decision that touched it:
+
+| field | meaning |
+|---|---|
+| `kind` | `ADDED` (a holiday the notice did not list), `DATED` (the day a clause gave as the festival's own), `CANCELLED`, `RESCOPED` (whom it is for) |
+| `document` | the decision, as below |
+| `scopeBefore` | for `RESCOPED`, the scope the clause gave |
+
+The data's amendments gain `RESCOPES` (a clause and its new scope) beside
+`ADDS`, `DATES` and `CANCELS`, and each amendment the day it was decided.
+
+**A document** is `{citation, url, sha256, retrieved, decided}`: the
+citation as `source` writes it, the address it was read at, the SHA-256 of
+the file read (absent for a page, which changes), the civil day it was
+retrieved, ISO 8601, and the Bikram Sambat day it was decided or
+published. The listing's `holidayYears` gives each year's notice and its
+amendments as documents, once each; a change carries its own.
+
+**Rest days** are `restDays`: `{set, vara, scope, first, last, document,
+source}`. Saturday is a rest day for everyone (`NATIONAL`), as every
+year's notice opens; Sunday for government offices and educational
+institutions (`OFFICES_AND_SCHOOLS`, a new `holiday_scope` member) from
+Chaitra 23, 2082 (6 April 2026), by the Council of Ministers' decision of
+Chaitra 22, 2082 (5 April 2026), with no last day: the government ruled out
+reversing it in August 2026. A rest day is a weekday's, so the calendar
+gives its dates; the record says whom and since when.
+
+**Districts** are keys. Where a clause names districts, `districts` lists
+them as region members, `NP_` and the district's name (`NP_JHAPA`,
+`NP_NAWALPARASI_EAST`), each named in every locale; `regions` keeps the
+part of the country (`TERAI`) where the clause names one too. So Sirua
+Pavani's five districts and VS 2083's Terai Holi's twenty-one are no longer
+only in the notice's words.
+
+**Names.** Every region, community and district a holiday names is named
+in every strict locale. A notice's own words stay Nepali and English: it is
+printed in Nepali, and a Hindi or Sanskrit reader is given its festivals'
+names, which every locale carries (agreed with the consumer, SR-163).
+
+**VS 2083's cabinet decision of Bhadra 18** (3 September 2026, reported by
+Kantipur that day; no gazette notice found): Bhadra 23, Gen Z Martyrs'
+Day, a public holiday across the country for 2083 (clause 8 (ग), offices
+open, `RESCOPED` to `NATIONAL`); Bhadra 22 a day of national mourning for
+the Rasuwa flood's dead, the flag at half mast, which is not a holiday and
+is listed as clause 8's days are, offices open, `ADDED`. The consumer's
+own list read Bhadra 22 as a public holiday; the decision as reported
+says mourning only (C2419).

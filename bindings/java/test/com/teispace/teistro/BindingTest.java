@@ -637,6 +637,10 @@ public final class BindingTest {
                         Json.read("{\"id\": \"np-ktm\", \"langs\": [\"ne\", \"sa\"]}")));
                 same("काठमाडौं", Reads.object(Reads.object(((List<?>) names.get("best")).get(0)).get("name")).get("text"),
                         "its Nepali name");
+                Map<String, Object> found = placed.geo().place(com.teispace.teistro.request.PlaceLookup.of(
+                        Json.read("{\"id\": \"np-ktm\", \"lang\": \"ne\"}")));
+                same("काठमाडौं", Reads.object(found.get("place")).get("name"), "a place read back by its id");
+                same(false, found.get("moved"), "an id not retired");
                 List<?> listed = placed.geo().list(
                         com.teispace.teistro.request.PlaceListing.of(Json.read("{\"within\": \"NP-P3\"}")));
                 same(2, listed.size(), "the province's places");
@@ -2916,7 +2920,14 @@ public final class BindingTest {
                         check(kala.inside().fromJd() >= day.day().sunrise()
                                 && kala.inside().toJd() <= day.day().sunset(), "a punya kala by day");
                         kalas += 1;
+                        // Its maha punya kala lies inside it (C2421).
+                        Span<Rashi> maha = day.mahaPunyaKala().get(0);
+                        check(maha.member() == kala.member()
+                                && maha.inside().fromJd() >= kala.inside().fromJd()
+                                && maha.inside().toJd() <= kala.inside().toJd()
+                                && maha.inside().fromJd() < maha.inside().toJd(), "a maha punya kala inside it");
                     }
+                    check(day.mahaPunyaKala().size() == day.punyaKala().size(), "a maha punya kala a window");
                 }
                 check(kalas <= 1, "a sankranti a month: " + kalas);
                 RashifalSealed read = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700));

@@ -104,6 +104,7 @@
       "prose": "Aries",
       "iast": "Meṣa",
       "indic": "Mesha",
+      "western": "Aries",
       "glyph": "♈",
       "gender": "m"
     },
@@ -113,6 +114,7 @@
       "prose": "Taurus",
       "iast": "Vṛṣabha",
       "indic": "Vrishabha",
+      "western": "Taurus",
       "glyph": "♉",
       "gender": "f"
     },
@@ -122,6 +124,7 @@
       "prose": "Gemini",
       "iast": "Mithuna",
       "indic": "Mithuna",
+      "western": "Gemini",
       "glyph": "♊",
       "gender": "m"
     },
@@ -131,6 +134,7 @@
       "prose": "Cancer",
       "iast": "Karka",
       "indic": "Karka",
+      "western": "Cancer",
       "glyph": "♋",
       "gender": "f"
     },
@@ -140,6 +144,7 @@
       "prose": "Leo",
       "iast": "Siṃha",
       "indic": "Simha",
+      "western": "Leo",
       "glyph": "♌",
       "gender": "m"
     },
@@ -149,6 +154,7 @@
       "prose": "Virgo",
       "iast": "Kanyā",
       "indic": "Kanya",
+      "western": "Virgo",
       "glyph": "♍",
       "gender": "f"
     },
@@ -158,6 +164,7 @@
       "prose": "Libra",
       "iast": "Tulā",
       "indic": "Tula",
+      "western": "Libra",
       "glyph": "♎",
       "gender": "m"
     },
@@ -167,6 +174,7 @@
       "prose": "Scorpio",
       "iast": "Vṛścika",
       "indic": "Vrishchika",
+      "western": "Scorpio",
       "glyph": "♏",
       "gender": "f"
     },
@@ -176,6 +184,7 @@
       "prose": "Sagittarius",
       "iast": "Dhanu",
       "indic": "Dhanu",
+      "western": "Sagittarius",
       "glyph": "♐",
       "gender": "m"
     },
@@ -185,6 +194,7 @@
       "prose": "Capricorn",
       "iast": "Makara",
       "indic": "Makara",
+      "western": "Capricorn",
       "glyph": "♑",
       "gender": "f"
     },
@@ -194,6 +204,7 @@
       "prose": "Aquarius",
       "iast": "Kumbha",
       "indic": "Kumbha",
+      "western": "Aquarius",
       "glyph": "♒",
       "gender": "m"
     },
@@ -203,6 +214,7 @@
       "prose": "Pisces",
       "iast": "Mīna",
       "indic": "Mina",
+      "western": "Pisces",
       "glyph": "♓",
       "gender": "f"
     }
@@ -8483,22 +8495,38 @@
     "EXCELLENT": {
       "short": "Excellent",
       "name": "Excellent",
-      "prose": "excellent"
+      "prose": "excellent",
+      "day": "An excellent day",
+      "month": "An excellent month",
+      "week": "An excellent week",
+      "year": "An excellent year"
     },
     "GOOD": {
       "short": "Good",
       "name": "Good",
-      "prose": "good"
+      "prose": "good",
+      "day": "A good day",
+      "month": "A good month",
+      "week": "A good week",
+      "year": "A good year"
     },
     "MIXED": {
       "short": "Mixed",
       "name": "Mixed",
-      "prose": "mixed"
+      "prose": "mixed",
+      "day": "A mixed day",
+      "month": "A mixed month",
+      "week": "A mixed week",
+      "year": "A mixed year"
     },
     "CARE": {
       "short": "Care",
       "name": "A day for care",
-      "prose": "a day for care"
+      "prose": "a day for care",
+      "day": "A day for care",
+      "month": "A month for care",
+      "week": "A week for care",
+      "year": "A year for care"
     }
   },
   "holiday_scope": {
@@ -8537,6 +8565,10 @@
     "OFFICES_OPEN": {
       "name": "National day, offices open",
       "prose": "National day, offices open"
+    },
+    "OFFICES_AND_SCHOOLS": {
+      "name": "Holiday for government offices and educational institutions",
+      "prose": "Holiday for government offices and educational institutions"
     }
   },
   "observance": {
@@ -9971,6 +10003,90 @@
     "IN_WB": {
       "name": "West Bengal",
       "prose": "West Bengal"
+    },
+    "NP_JHAPA": {
+      "name": "Jhapa",
+      "prose": "Jhapa"
+    },
+    "NP_MORANG": {
+      "name": "Morang",
+      "prose": "Morang"
+    },
+    "NP_SUNSARI": {
+      "name": "Sunsari",
+      "prose": "Sunsari"
+    },
+    "NP_SAPTARI": {
+      "name": "Saptari",
+      "prose": "Saptari"
+    },
+    "NP_SIRAHA": {
+      "name": "Siraha",
+      "prose": "Siraha"
+    },
+    "NP_UDAYAPUR": {
+      "name": "Udayapur",
+      "prose": "Udayapur"
+    },
+    "NP_DHANUSHA": {
+      "name": "Dhanusha",
+      "prose": "Dhanusha"
+    },
+    "NP_MAHOTTARI": {
+      "name": "Mahottari",
+      "prose": "Mahottari"
+    },
+    "NP_SARLAHI": {
+      "name": "Sarlahi",
+      "prose": "Sarlahi"
+    },
+    "NP_RAUTAHAT": {
+      "name": "Rautahat",
+      "prose": "Rautahat"
+    },
+    "NP_BARA": {
+      "name": "Bara",
+      "prose": "Bara"
+    },
+    "NP_PARSA": {
+      "name": "Parsa",
+      "prose": "Parsa"
+    },
+    "NP_NAWALPARASI_EAST": {
+      "name": "Nawalparasi (Bardaghat Susta East)",
+      "prose": "Nawalparasi (Bardaghat Susta East)"
+    },
+    "NP_NAWALPARASI_WEST": {
+      "name": "Nawalparasi (Bardaghat Susta West)",
+      "prose": "Nawalparasi (Bardaghat Susta West)"
+    },
+    "NP_RUPANDEHI": {
+      "name": "Rupandehi",
+      "prose": "Rupandehi"
+    },
+    "NP_KAPILVASTU": {
+      "name": "Kapilvastu",
+      "prose": "Kapilvastu"
+    },
+    "NP_DANG": {
+      "name": "Dang",
+      "prose": "Dang"
+    },
+    "NP_BANKE": {
+      "name": "Banke",
+      "prose": "Banke"
+    },
+    "NP_BARDIYA": {
+      "name": "Bardiya",
+      "prose": "Bardiya"
+    },
+    "NP_KAILALI": {
+      "name": "Kailali",
+      "prose": "Kailali"
+    },
+    "NP_KANCHANPUR": {
+      "name": "Kanchanpur",
+      "prose": "Kanchanpur"
     }
   }
 }

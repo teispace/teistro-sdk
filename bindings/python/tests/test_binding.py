@@ -1032,6 +1032,8 @@ class TheLocaleEngine(WithLibrary):
         names = sky.geo.names({"id": "np-ktm", "langs": ["ne", "sa"]})
         self.assertEqual(names["best"][0]["name"]["text"], "काठमाडौं")
         self.assertEqual(names["best"][1]["asked"], "sa")
+        found = sky.geo.place({"id": "np-ktm", "lang": "ne"})
+        self.assertEqual((found["place"]["name"], found["moved"]), ("काठमाडौं", False))
         listed = sky.geo.list({"within": "NP", "depth": None, "kinds": ["SETTLEMENT"]})
         self.assertEqual([place["id"] for place in listed], ["np-ktm", "np-ltp", "np-pkr"])
         self.assertEqual(listed[1]["population"]["kind"], "MODELLED")
@@ -7892,6 +7894,12 @@ class ADaysOmens(AJuneWeek):
         self.assertGreaterEqual(kala.inside.from_jd, day.day.sunrise)
         self.assertLessEqual(kala.inside.to_jd, day.day.sunset)
         self.assertLess(kala.inside.from_jd, kala.inside.to_jd)
+        # Its maha punya kala lies inside the window (C2421).
+        [maha] = day.maha_punya_kala
+        self.assertIs(maha.member, Rashi.GEMINI)
+        self.assertGreaterEqual(maha.inside.from_jd, kala.inside.from_jd)
+        self.assertLessEqual(maha.inside.to_jd, kala.inside.to_jd)
+        self.assertLess(maha.inside.from_jd, maha.inside.to_jd)
 
 
 class AnAlmanacDay(WithLibrary):

@@ -2362,6 +2362,16 @@ export class AlmanacDay {
   }
 
   /**
+   * The maha punya kala inside `punyaKala`, on the same day (Dharmasindhu,
+   * the Pausha chapter, crux C2421): the five ghatis of the window nearest
+   * the sankranti, or the whole window when it is shorter; `whole` and
+   * `inside` are both the five ghatis.
+   */
+  get mahaPunyaKala() {
+    return this.#spans('mahaPunyaKala', RashiById);
+  }
+
+  /**
    * The homa ahuti, when the request asked with `homaAhuti: true`: the
    * graha whose mouth an oblation falls in, by the Moon's nakshatra
    * counted from the Sun's in threes (Muhurta Chintamani,
@@ -3257,6 +3267,20 @@ export class GeoArea extends Area {
    */
   names(request) {
     return deepFreeze(JSON.parse(run(this, (inner) => inner.geoNames(JSON.stringify(request)))));
+  }
+
+  /**
+   * A place by its id, named in `lang`, with its id line, zone, population
+   * and landmark class: `{asked, place, moved}`, `moved` when the id asked
+   * was retired and `place` is the one that replaced it, whose id a caller
+   * stores instead; `place` null for an id the provider does not know.
+   *
+   * @param {{ id: string, lang?: string | null }} request
+   * @returns {object} the place looked up, frozen
+   * @throws {TeistroError} `INVALID_ARG` on `id` or `lang`
+   */
+  place(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.geoPlace(JSON.stringify(request)))));
   }
 
   /**

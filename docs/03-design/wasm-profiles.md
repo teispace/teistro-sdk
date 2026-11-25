@@ -134,6 +134,36 @@ A refusal names the remedy: asked for a locale it left out, a build
 says which feature embeds it and which bundle loads it
 (`tests/left_out_locale.rs`, run by fast-check without any locale).
 
+## Text switches (core#241)
+
+Three texts are words a page may never show, and they are a sixth of
+`en-Latn`'s sources: a festival's description (SR-153: `sdk.voice.festival`,
+the observances and each festival's `about` form, 20.7 kB of `en-Latn`'s
+319 kB), why a muhurta window is good (SR-154: `sdk.voice.muhurta`, 8.4 kB)
+and the rashifal's reading voice (SR-152: `sdk.voice.rashifal`, 19.4 kB);
+`ne-Deva-NP` carries 86 kB of them. Each is a switch of `teistro`, forwarded
+by `teistro-ffi` and the wasm crate as a locale is:
+
+- `festival-about`, `muhurta-reasons` and `rashifal-reading`; `texts`
+  names them all and `full` names `texts`, so a build that asks for
+  everything is unchanged.
+- `crates/sdk/build.rs` leaves a text's words out of every bundle when its
+  switch is off, or when the family that says it is
+  (`teistro_intl::pack::TEXT_SWITCHES` lists each switch's keys and forms,
+  `pack::without` takes them out). The code stays: the answer types name
+  the composers, and the words are the bytes.
+- A request for a text the build leaves out is refused as `UNSUPPORTED`
+  naming the feature (`pack.about`, `muhurta.reasons`,
+  `rashifal.readings`), not answered with keys no bundle words
+  (`tests/left_out_text.rs`, run by fast-check without any text).
+- A text's words come back with a bundle that carries them: the release's
+  `.tbundle` for a locale is built whole.
+- Communities, regions and traditions stay with every build, since the
+  holiday notices name them as well.
+
+The `panchanga` module keeps `festival-about` and `muhurta-reasons`, so it
+answers as before.
+
 ## Order of work
 
 1. `cargo xtask wasm-crates`, which reads a module's name section and
@@ -203,6 +233,15 @@ says which feature embeds it and which bundle loads it
      lost the same amount of code. What stays is the value reader's one
      copy per type and the buffering serde does for internally tagged
      enums, which the request shapes need.
+   - **The second lever (SR-159).** That one copy per type was still two:
+     `serde_path_to_error` wraps the value reader and every visitor, so
+     each type's reader was built over the wrapper and its visitors'
+     over both (1.98 MB of the 19.7 MB rc.11 module before `wasm-opt`,
+     10%). `strict` now reads through its own reader of a `&Value`: it
+     walks arrays, objects and enum bodies with the path as a chain of
+     borrowed steps, written out only when a read fails, and hands every
+     scalar to `serde_json`'s own reader, so a scalar is read and refused
+     exactly as before. The paths a refusal names are the same.
    - **The data is not a lever.** A third of the raw module is data, and
      two items are most of it: the locale bundles (one copy each,
      checked against the bundles the build wrote) and the time-zone

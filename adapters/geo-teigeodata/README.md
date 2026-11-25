@@ -22,14 +22,14 @@ TG-26 app pack) answers a point abroad with the world's levels 0 and 1, or
 none, and a listing there with fewer places (C2209).
 
 Every resolution carries the source `{name: "teigeodata", version:
-"1.1.0", dataVersion, tzdb}`. `dataVersion` names each pack the engine
+"1.3.0", dataVersion, tzdb}`. `dataVersion` names each pack the engine
 holds as `address.component.release`, highest precedence first, joined by
 ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), or `none` while
 the store has installed nothing. `tzdb` is the release the packs' zone
 rules state (`2026f`), or `null` without rules.
 
 The crate stands outside the SDK workspace (ADR-0019), with its own
-`Cargo.lock`, and depends on teigeodata by git at tag `v1.1.0`. teigeodata
+`Cargo.lock`, and depends on teigeodata by git at tag `v1.3.0`. teigeodata
 is Apache-2.0, so the adapter is public and nothing it links changes its
 licence. The packs carry their sources' own terms (`Layer::attribution`),
 which an application shows wherever it shows the data.

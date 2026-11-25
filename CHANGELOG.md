@@ -10,7 +10,110 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## Unreleased
+## 1.0.0-rc.12
+
+The twelfth release candidate of 1.0.0. Every festival is described, the
+rest as a corpus a consumer loads; a rashifal area has its own name and
+line and a year is scored from its months; a build may leave out three
+texts it does not show; a saved place is read back by its id; a sankranti
+carries its maha punya kala; and the Nepal Sambat year keeps Kachhala's
+first day, in a doubled Kartika too. It is released on GitHub only; no
+package goes to a registry.
+
+- **The Holika fire in Nepal (C199).** Nepal's packs keep the fire on the
+  earlier day whenever its pradosha holds the full moon, as Narada's
+  reading in *Nirnayasindhu* has it and as all eight of the gazette's hill
+  Holi days of VS 2076 to 2083 fall, where *Dharmasindhu* takes the later
+  day when the later pradosha holds part of it. India's packs are
+  unchanged. Numbers: `HOLIKA`, `HOLI_HILLS`, `HOLI_TERAI` and `FAGU_PURNIMA`
+  move a day earlier in Nepal's packs in the years both pradoshas hold the
+  full moon (6 March 2023 among them).
+- **The Dura new year (C2424).** `DURA_MHAIPRU_NAKUMA`, Poush 15 every
+  year, as the Dura keep their year and as the gazette's notice of VS 2083
+  gives it. Numbers: the Nepal packs gain one day a year.
+- **One reader for every request (SR-159).** `strict` reads a parsed value
+  through its own reader, which keeps the path as borrowed steps and writes
+  it out only when a read fails, and hands every scalar to `serde_json`'s
+  reader; `serde_path_to_error`, which wrapped the reader and every visitor
+  in a second copy, is gone. A refusal names the same path as before.
+  Numbers: none; the wasm module is smaller.
+- **The Nepal Sambat year in a doubled Kartika (SR-158).** In BS 2085
+  (2028) Kartika is doubled, and the new year moves from the adhika
+  month's first day, 18 October 2028, to the nija Kachhala's first day,
+  17 November, with the Mha puja and Govardhan puja: the adhika month is
+  Anala, not Kachhala (C2418, superseding C2041). `nepal_sambat()` counts that Anala
+  in the closing year 1148. Tihar itself still parts across the adhika
+  month, Lakshmi puja on 17 October and the rest a month on, as the
+  committee's former executive director computes it. A test holds Tihar
+  together in every other year from 1800 to 2399.
+  Numbers: the Nepal Sambat new year and the Nepal Sambat year of the days
+  of an adhika Kartika; nothing else.
+- **The Nepal Sambat new year at sunrise (C2423).** The new year is
+  Kachhala's first day, the sunrise after Kartika's new moon, where the
+  Nepal Sambat calendar already opened the year; the festival read
+  Kartika's bright first at midday, the Mha puja's time. When the first
+  begins after a sunrise and holds the next, the new year is the later
+  day, with Govardhan puja, as the Nepal Gazette's notices of VS 2076 and
+  2077 print it (28 and 29 October 2019, 15 and 16 November 2020).
+  Numbers: `NEPAL_SAMBAT_NEW_YEAR` moves a day later in those years, and
+  `festival.days` of `NEPAL_PANCHANGA` and `NEPAL` with it; nothing else.
+- **A holiday notice's own record (SR-163).** Each holiday carries its
+  `clause`, its `districts` (region keys such as `NP_JHAPA`, named in every
+  locale) and `changes`: what a later decision did (`ADDED`, `DATED`,
+  `CANCELLED`, `RESCOPED`), with the decision's document. The pack listing
+  gains `holidayYears`, each notice's and decision's address, file SHA-256
+  and retrieval day, and `restDays`: Saturday for everyone, and Sunday for
+  government offices and educational institutions from Chaitra 23, 2082
+  (`holiday_scope.OFFICES_AND_SCHOOLS`, new). VS 2083 gains the cabinet's
+  decision of Bhadra 18: Gen Z Martyrs' Day a public holiday, and Bhadra 22
+  a day of national mourning kept with offices open (C2419). Regions and
+  communities are named in Hindi and Sanskrit.
+  Numbers: `GEN_Z_MARTYRS_DAY`'s tier, now national by VS 2083's latest
+  decision; nothing reckoned.
+- **The gazette years' days (SR-157).** Durva ashtami, and Gaura parva
+  with it, takes the earlier day the 8th touches (*Nirnayasindhu*
+  "सा पूर्वा ग्राह्या"); its Agastya bar moves from Bhadra 22 to Bhadra 20
+  and steps back a fortnight more when the dark 8th is barred too; Indra
+  Jatra takes the later day when the 14th holds both sunrises. Every Nepal
+  Gazette holiday of VS 2076 to 2083 is now held to its rule's day, or to a
+  named exception (Holi 2079, Dura Mhaipru Nakuma) (C2420).
+  Numbers: Durva ashtami and Gaura parva a day earlier wherever the 8th
+  begins in the earlier day's daylight (of 2019 to 2027: 2020, 2022, 2024,
+  2027) and a fortnight earlier in 2019 and 2023; Indra Jatra a day later
+  in 2019.
+- **The western sign beside the Indian one (SR-156).** Each rashi in
+  `en-Latn` and `en-Latn-NP` carries `western` (Aries … Pisces), so Nepal's
+  English heads a sign "Mesh (Aries)" from one record; typed as an optional
+  `western` field in every binding. Numbers: none.
+- **A score band named for its period (SR-162).** `score_band` records
+  gain `day`, `week`, `month` and `year` forms in every locale, a baseline
+  score carries its `period`, and `band_form()` names the form to read.
+  Numbers: none.
+
+- **The maha punya kala (SR-160).** A sankranti's punya kala now carries
+  `maha`, the five nadis of the window nearest the entry, which the
+  *Dharmasindhu*'s Pausha chapter calls the most meritorious (C2421). It
+  crosses as span section 44, `maha_punya_kala`, read by every binding,
+  and the day's sentences say both windows in every locale. A façade test
+  reads every sankranti at Kathmandu from 1800 to 2399 and holds each
+  window to the day `MonthStartRule::Punyakala` begins the month on, but
+  for the twilights and the stretch between the clock's midnight and the
+  night's middle, which it counts.
+
+- **Hijri months in Nepali (SR-161).** ne-Deva-NP names the twelve Hijri
+  months in Devanagari as Nepali print spells them (मुहर्रम … जिल्हिज्जा)
+  and leads its dates and month titles with हिजरी, where it wrote CLDR's
+  English names and "AH". A test holds every Hindi, Nepali and Sanskrit
+  calendar message free of Latin letters.
+- **A saved place read back, on teigeodata 1.3 (SR-164).** `geo.place`
+  (`sdk.geo().place`, `ts_geo_place`, every binding and the MCP tool)
+  answers `{asked, place, moved}`: a place by its id, a retired id followed
+  to the place that replaced it and `moved` said, so a caller stores the
+  new id. `NamedPlace` gains `zone` (its IANA zone), `class` (a landmark's
+  kind) and `line` (the id line: the pack's licence, `odbl` for a main
+  build and `cc-by-4.0` for a lite one). The teigeodata adapter moves to
+  `v1.3.0`, which reads the live catalog's entries and says a pack's
+  licence. Numbers: none.
 
 **Every festival described, as a corpus a consumer loads (SR-153, stage b).**
 **Numbers:** none. No day moves; a listing asked with `about` gains subjects.
@@ -30,6 +133,29 @@ the previous release, not by nobody having looked.
   names what every period favours in the same words as Rahu Kaal, Gulika
   and Yamaganda; the tithi, vara, nakshatra and yoga readings were there
   already. No number moves.
+- **Texts a build may leave out (core#241).** Three new switches of
+  `teistro`, forwarded by `teistro-ffi` and the wasm crate:
+  `festival-about`, `muhurta-reasons` and `rashifal-reading`, which
+  `texts` and `full` name. A build without one carries none of the
+  text's words in its bundles (about 49 kB of `en-Latn`'s sources for the
+  three) and refuses a request for it as `UNSUPPORTED` naming the
+  feature. A build that names `full`, the default, is unchanged.
+  No number moves.
+
+- **A rashifal area's name, and its note as a line of its own.** The
+  reading voice gains `sdk.voice.rashifal.areaName` (`$area`: WORK, MONEY,
+  LOVE_FAMILY or HEALTH) and `areaLine.<AREA>.<BAND>`, each area note as a
+  line that stands alone, read with the note's own slots so its `variant`
+  picks the matching wording. English writes the lines in sentence case;
+  Hindi, Nepali and Sanskrit's notes already stand alone and are reused.
+  No number moves.
+- **A year scored from its months (C2422).** A `YEARLY` baseline's
+  overall and areas are now the rounded means of the window's months in
+  its calendar, each scored as `MONTHLY`, and the band and the reading's
+  headline are read from that mean, so a year never says a word its
+  months do not. **Numbers:** every `YEARLY` baseline's `overall`,
+  `areas` and `band` move to the months' mean; its key influences and
+  lucky items, and every other period's scores, do not.
 
 ## 1.0.0-rc.11
 

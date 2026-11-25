@@ -41,13 +41,16 @@ pub enum HolidayScope {
     Disability = 7,
     /// Not a holiday: a day kept nationally on which offices open
     OfficesOpen = 8,
+    /// A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082
+    OfficesAndSchools = 9,
 }
 
-const BY_KEY: [(&str, HolidayScope); 9] = [
+const BY_KEY: [(&str, HolidayScope); 10] = [
     ("COMMUNITY", HolidayScope::Community),
     ("CONCERNED", HolidayScope::Concerned),
     ("DISABILITY", HolidayScope::Disability),
     ("NATIONAL", HolidayScope::National),
+    ("OFFICES_AND_SCHOOLS", HolidayScope::OfficesAndSchools),
     ("OFFICES_OPEN", HolidayScope::OfficesOpen),
     ("REGION", HolidayScope::Region),
     ("RELIGION", HolidayScope::Religion),
@@ -63,7 +66,7 @@ impl HolidayScope {
     pub const KIND: Kind = Kind::HolidayScope;
 
     /// Every member, in id order.
-    pub const ALL: [HolidayScope; 9] = [
+    pub const ALL: [HolidayScope; 10] = [
         HolidayScope::National,
         HolidayScope::Concerned,
         HolidayScope::Community,
@@ -73,6 +76,7 @@ impl HolidayScope {
         HolidayScope::Schools,
         HolidayScope::Disability,
         HolidayScope::OfficesOpen,
+        HolidayScope::OfficesAndSchools,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -94,6 +98,7 @@ impl HolidayScope {
             HolidayScope::Schools => "SCHOOLS",
             HolidayScope::Disability => "DISABILITY",
             HolidayScope::OfficesOpen => "OFFICES_OPEN",
+            HolidayScope::OfficesAndSchools => "OFFICES_AND_SCHOOLS",
         }
     }
 
@@ -116,6 +121,7 @@ impl HolidayScope {
             HolidayScope::Schools => "holiday_scope.SCHOOLS",
             HolidayScope::Disability => "holiday_scope.DISABILITY",
             HolidayScope::OfficesOpen => "holiday_scope.OFFICES_OPEN",
+            HolidayScope::OfficesAndSchools => "holiday_scope.OFFICES_AND_SCHOOLS",
         }
     }
 
@@ -138,6 +144,7 @@ impl HolidayScope {
             HolidayScope::Schools => "A holiday only for educational institutions",
             HolidayScope::Disability => "A holiday only for employees with disabilities",
             HolidayScope::OfficesOpen => "Not a holiday: a day kept nationally on which offices open",
+            HolidayScope::OfficesAndSchools => "A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082",
         }
     }
 
@@ -160,6 +167,7 @@ impl HolidayScope {
             HolidayScope::Schools => None,
             HolidayScope::Disability => None,
             HolidayScope::OfficesOpen => None,
+            HolidayScope::OfficesAndSchools => None,
         }
     }
 
@@ -182,6 +190,7 @@ impl HolidayScope {
             HolidayScope::Schools => Mark::Verified,
             HolidayScope::Disability => Mark::Verified,
             HolidayScope::OfficesOpen => Mark::Verified,
+            HolidayScope::OfficesAndSchools => Mark::Verified,
         }
     }
 
@@ -204,6 +213,7 @@ impl HolidayScope {
             HolidayScope::Schools => false,
             HolidayScope::Disability => false,
             HolidayScope::OfficesOpen => false,
+            HolidayScope::OfficesAndSchools => false,
         }
     }
 
@@ -227,6 +237,7 @@ impl HolidayScope {
             HolidayScope::Schools => &[Source { text: "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays", reference: "4: शिक\u{94d}षण स\u{902}स\u{94d}थाको लागि मात\u{94d}र" }],
             HolidayScope::Disability => &[Source { text: "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays", reference: "6.2: अपाङ\u{94d}गता भएका कर\u{94d}मचारीको लागि मात\u{94d}र" }],
             HolidayScope::OfficesOpen => &[Source { text: "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays", reference: "8: राष\u{94d}ट\u{94d}रियर\u{942}पमा मनाइन\u{947} तर कार\u{94d}यालय ख\u{941}ल\u{94d}न\u{947} प\u{94d}रक\u{943}तिका दिवस" }],
+            HolidayScope::OfficesAndSchools => &[Source { text: "The Council of Ministers' decision of Chaitra 22, 2082, published in the Nepal Gazette", reference: "सरकारी कार\u{94d}यालय र श\u{948}क\u{94d}षिक स\u{902}स\u{94d}थामा आइतबार साप\u{94d}ताहिक बिदा" }],
         }
     }
 
@@ -249,6 +260,7 @@ impl HolidayScope {
             HolidayScope::Schools => &[],
             HolidayScope::Disability => &[],
             HolidayScope::OfficesOpen => &[],
+            HolidayScope::OfficesAndSchools => &[],
         }
     }
 
@@ -297,7 +309,7 @@ impl HolidayScope {
     /// use teistro_core::catalogue::HolidayScope;
     ///
     /// assert_eq!(HolidayScope::from_id(0), Some(HolidayScope::National));
-    /// assert_eq!(HolidayScope::from_id(9), None);
+    /// assert_eq!(HolidayScope::from_id(10), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<HolidayScope> {
@@ -311,6 +323,7 @@ impl HolidayScope {
             6 => Some(HolidayScope::Schools),
             7 => Some(HolidayScope::Disability),
             8 => Some(HolidayScope::OfficesOpen),
+            9 => Some(HolidayScope::OfficesAndSchools),
             _ => None,
         }
     }

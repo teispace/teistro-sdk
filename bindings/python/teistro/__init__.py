@@ -479,6 +479,7 @@ from ._requests import (
     PlaceSearch as PlaceSearch,
     PlaceReverse as PlaceReverse,
     PlaceNamesRequest as PlaceNamesRequest,
+    PlaceLookup as PlaceLookup,
     PlaceListing as PlaceListing,
     GradedRule as GradedRule,
     GrahaClass as GrahaClass,
@@ -3629,6 +3630,14 @@ class GeoArea(_Area):
         """A place's names, each with its language, script, type and origin,
         and the one chosen for each language asked: `{id, best, all}`."""
         return cast(Dict[str, Any], json.loads(self._context.inner.geo_names(json.dumps(request))))
+
+    def place(self, request: PlaceLookup) -> Dict[str, Any]:
+        """A place by its id, named in `lang`, with its id line, zone,
+        population and landmark class: `{asked, place, moved}`, `moved` when
+        the id asked was retired and `place` is the one that replaced it,
+        whose id a caller stores instead; `place` None for an id the
+        provider does not know."""
+        return cast(Dict[str, Any], json.loads(self._context.inner.geo_place(json.dumps(request))))
 
     def list(self, request: PlaceListing) -> List[Dict[str, Any]]:
         """The places of a unit (its id or ISO 3166 code), by admin level
@@ -24269,6 +24278,15 @@ class AlmanacDay:
         return self._spans("punya_kala", self.batch.decoded.punya_kala, Rashi)
 
     @property
+    def maha_punya_kala(self) -> list[Span[Rashi]]:
+        """The maha punya kala inside ``punya_kala``, on the same day
+        (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of
+        the window nearest the sankranti, or the whole window when it is
+        shorter; ``whole`` and ``inside`` are both the five ghatis.
+        """
+        return self._spans("maha_punya_kala", self.batch.decoded.maha_punya_kala, Rashi)
+
+    @property
     def homa_ahuti(self) -> list[Span[Graha]]:
         """The homa ahuti, when `homa_ahuti=True` asked for it: the graha
         whose mouth an oblation falls in, by the Moon's nakshatra counted
@@ -24492,6 +24510,7 @@ class Almanac:
             "markers",
             "gowri",
             "uncertainty",
+            "maha_punya_kala",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

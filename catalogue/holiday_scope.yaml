@@ -66,3 +66,10 @@ members:
       - text: "Nepal Gazette vol. 75 no. 67, part 5 (Falgun 18, 2082): the Ministry of Home Affairs notice of VS 2083's holidays"
         ref: "8: राष्ट्रियरूपमा मनाइने तर कार्यालय खुल्ने प्रकृतिका दिवस"
     mark: V
+  - key: OFFICES_AND_SCHOOLS
+    id: 9
+    doc: "A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082"
+    sources:
+      - text: "The Council of Ministers' decision of Chaitra 22, 2082, published in the Nepal Gazette"
+        ref: "सरकारी कार्यालय र शैक्षिक संस्थामा आइतबार साप्ताहिक बिदा"
+    mark: V

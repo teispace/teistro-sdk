@@ -52,12 +52,16 @@ tabular at all.
 
 en-Latn names the months and date forms as CLDR's English `islamic`
 calendar does (Muharram, Safar, Rabiʻ I … Dhuʻl-Hijjah), and writes "AH"
-in the date. CLDR gives Nepali no Hijri month names of its own: its
-`ne` data keeps the English ones, and orders the date "AH 1446 Ramadan 1".
-ne-Deva-NP, which must carry every key en-Latn names, says exactly that,
-with its own digits and weekday. No vetted Nepali or Hindi name for the
-era or the calendar is in hand, so `era.HIJRI` and the calendar are
-listed as unnamed in `xtask/src/intl.rs`, and Hindi falls back to English.
+in the date. CLDR gives Nepali no Hijri month names of its own: its `ne`
+data keeps the English ones. ne-Deva-NP writes them as Nepali print does,
+without the nukta: मुहर्रम, सफर, रबिउल अव्वल, रबिउस्सानी, जमादिउल अव्वल,
+जमादिउस्सानी, रजब, शाबान, रमजान, शव्वाल, जिल्कदा, जिल्हिज्जा (SR-161).
+It leads the date with the era, as it does शक and बंगाब्द: "हिजरी १४४६
+रमजान १". Hindi spells the months with the nukta (रमज़ान) and puts
+हिजरी after the year; Sanskrit follows Hindi without it. The era is
+हिजरी संवत् (हि.सं.) in Nepali and हिजरी सन् in Hindi. A test holds every
+Devanagari calendar message free of Latin letters, the ISO week's `W`
+aside.
 
 ## A sighted calendar
 

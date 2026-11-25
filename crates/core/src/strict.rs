@@ -53,9 +53,13 @@
 
 use std::cell::RefCell;
 use std::fmt;
+use std::fmt::Write as _;
 
-use serde::Serialize;
-use serde::de::{DeserializeOwned, DeserializeSeed, MapAccess, SeqAccess, Visitor};
+use serde::de::{
+    DeserializeOwned, DeserializeSeed, EnumAccess, IntoDeserializer, MapAccess, SeqAccess,
+    Unexpected, VariantAccess, Visitor,
+};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::{Map, Value};
 
 use crate::error::Error;
@@ -327,9 +331,15 @@ fn unread(given: &Value, read: &Value, path: &str) -> Option<(String, bool)> {
 ///
 /// JSON that is not the type, named where it failed.
 pub fn deserialize<T: DeserializeOwned>(given: &Value, root: &str) -> Result<T, Error> {
-    serde_path_to_error::deserialize(given).map_err(|err| {
-        let at = under(root, &err.path().to_string());
-        not_json(&at, err.inner())
+    let track = Track::default();
+    T::deserialize(Reader {
+        value: given,
+        step: &Step::Root,
+        track: &track,
+    })
+    .map_err(|err| {
+        let path = track.0.take().unwrap_or_else(|| String::from("."));
+        not_json(&under(root, &path), &err)
     })
 }
 
@@ -350,6 +360,533 @@ pub fn deserialize<T: DeserializeOwned>(given: &Value, root: &str) -> Result<T, 
 /// failed.
 pub fn deserialize_str<T: DeserializeOwned>(text: &str, root: &str) -> Result<T, Error> {
     deserialize(&parse(text, root)?, root)
+}
+
+// Reading a type from a value, naming a failure by the value's path.
+//
+// A reader that wraps another deserialiser to watch the path instantiates
+// every type's deserialiser twice, once over the wrapper and once over
+// what it wraps; in the wasm module that was a tenth of the code (SR-159).
+// This reader is the only deserialiser a type is read through: it walks
+// the arrays, objects and enum bodies itself, keeping the path as a chain
+// of borrowed steps, and hands every other value to `serde_json`'s own
+// reader of a `&Value`, so a scalar reads, and is refused, exactly as
+// `serde_json` reads it. The path is written out only when a read fails.
+
+/// Where a value stands: a step from its container, or the root.
+enum Step<'a> {
+    Root,
+    Index(&'a Step<'a>, usize),
+    Key(&'a Step<'a>, &'a str),
+}
+
+impl Step<'_> {
+    /// The path as `serde_path_to_error` wrote it: `.` for the root, keys
+    /// joined by dots, an index in brackets with no dot before it.
+    fn path(&self) -> String {
+        let mut steps = Vec::new();
+        let mut at = self;
+        loop {
+            match at {
+                Step::Root => break,
+                Step::Index(parent, _) | Step::Key(parent, _) => {
+                    steps.push(at);
+                    at = parent;
+                }
+            }
+        }
+        if steps.is_empty() {
+            return String::from(".");
+        }
+        let mut path = String::new();
+        for step in steps.into_iter().rev() {
+            match step {
+                Step::Index(_, index) => {
+                    let _ = write!(path, "[{index}]");
+                }
+                Step::Key(_, key) => {
+                    if !path.is_empty() {
+                        path.push('.');
+                    }
+                    path.push_str(key);
+                }
+                Step::Root => {}
+            }
+        }
+        path
+    }
+}
+
+/// The path of the innermost value a read failed at: the first to fail
+/// is the deepest, since a failure returns through every container.
+#[derive(Default)]
+struct Track(RefCell<Option<String>>);
+
+impl Track {
+    /// Records `step` as where the read failed, unless a deeper value
+    /// already has, and hands the failure on.
+    fn failed(&self, step: &Step<'_>, err: serde_json::Error) -> serde_json::Error {
+        self.0.borrow_mut().get_or_insert_with(|| step.path());
+        err
+    }
+}
+
+/// A value read with its path.
+struct Reader<'de, 'a> {
+    value: &'de Value,
+    step: &'a Step<'a>,
+    track: &'a Track,
+}
+
+impl<'de> Reader<'de, '_> {
+    /// An array, element by element, refused as `serde_json` refuses one
+    /// with elements the type left unread.
+    fn items<V: Visitor<'de>>(
+        self,
+        items: &'de [Value],
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        let mut access = Items {
+            iter: items.iter(),
+            index: 0,
+            step: self.step,
+            track: self.track,
+        };
+        let read = visitor.visit_seq(&mut access)?;
+        if access.iter.len() == 0 {
+            Ok(read)
+        } else {
+            Err(serde::de::Error::invalid_length(
+                items.len(),
+                &"fewer elements in array",
+            ))
+        }
+    }
+
+    /// An object, entry by entry, refused as `serde_json` refuses one
+    /// with entries the type left unread.
+    fn entries<V: Visitor<'de>>(
+        self,
+        entries: &'de Map<String, Value>,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        let mut access = Entries {
+            iter: entries.iter(),
+            value: None,
+            step: self.step,
+            track: self.track,
+        };
+        let read = visitor.visit_map(&mut access)?;
+        if access.iter.len() == 0 {
+            Ok(read)
+        } else {
+            Err(serde::de::Error::invalid_length(
+                entries.len(),
+                &"fewer elements in map",
+            ))
+        }
+    }
+}
+
+/// Hands a method to `serde_json`'s reader of the value itself.
+macro_rules! as_serde_json {
+    ($($method:ident)*) => {
+        $(
+            fn $method<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+                self.value.$method(visitor)
+            }
+        )*
+    };
+}
+
+impl<'de> Deserializer<'de> for Reader<'de, '_> {
+    type Error = serde_json::Error;
+
+    fn deserialize_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+        match self.value {
+            Value::Array(items) => self.items(items, visitor),
+            Value::Object(entries) => self.entries(entries, visitor),
+            scalar => scalar.deserialize_any(visitor),
+        }
+    }
+
+    as_serde_json! {
+        deserialize_bool deserialize_i8 deserialize_i16 deserialize_i32 deserialize_i64
+        deserialize_i128 deserialize_u8 deserialize_u16 deserialize_u32 deserialize_u64
+        deserialize_u128 deserialize_f32 deserialize_f64 deserialize_char deserialize_str
+        deserialize_string deserialize_bytes deserialize_byte_buf deserialize_unit
+        deserialize_identifier deserialize_ignored_any
+    }
+
+    fn deserialize_unit_struct<V: Visitor<'de>>(
+        self,
+        name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.value.deserialize_unit_struct(name, visitor)
+    }
+
+    fn deserialize_option<V: Visitor<'de>>(
+        self,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        match self.value {
+            Value::Null => visitor.visit_none(),
+            _ => visitor.visit_some(self),
+        }
+    }
+
+    fn deserialize_newtype_struct<V: Visitor<'de>>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        visitor.visit_newtype_struct(self)
+    }
+
+    fn deserialize_seq<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+        match self.value {
+            Value::Array(items) => self.items(items, visitor),
+            other => other.deserialize_seq(visitor),
+        }
+    }
+
+    fn deserialize_tuple<V: Visitor<'de>>(
+        self,
+        _len: usize,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_tuple_struct<V: Visitor<'de>>(
+        self,
+        _name: &'static str,
+        _len: usize,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.deserialize_seq(visitor)
+    }
+
+    fn deserialize_map<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+        match self.value {
+            Value::Object(entries) => self.entries(entries, visitor),
+            other => other.deserialize_map(visitor),
+        }
+    }
+
+    fn deserialize_struct<V: Visitor<'de>>(
+        self,
+        name: &'static str,
+        fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        match self.value {
+            Value::Array(items) => self.items(items, visitor),
+            Value::Object(entries) => self.entries(entries, visitor),
+            other => other.deserialize_struct(name, fields, visitor),
+        }
+    }
+
+    fn deserialize_enum<V: Visitor<'de>>(
+        self,
+        name: &'static str,
+        variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        let Value::Object(entries) = self.value else {
+            // A unit variant by name, or a value no enum is.
+            return self.value.deserialize_enum(name, variants, visitor);
+        };
+        let mut iter = entries.iter();
+        match (iter.next(), iter.next()) {
+            (Some((variant, value)), None) => visitor.visit_enum(Variant {
+                name: variant,
+                value,
+                step: self.step,
+                track: self.track,
+            }),
+            _ => Err(serde::de::Error::invalid_value(
+                Unexpected::Map,
+                &"map with a single key",
+            )),
+        }
+    }
+}
+
+/// An array's elements, each read with its index.
+struct Items<'de, 'a> {
+    iter: std::slice::Iter<'de, Value>,
+    index: usize,
+    step: &'a Step<'a>,
+    track: &'a Track,
+}
+
+impl<'de> SeqAccess<'de> for Items<'de, '_> {
+    type Error = serde_json::Error;
+
+    fn next_element_seed<S: DeserializeSeed<'de>>(
+        &mut self,
+        seed: S,
+    ) -> Result<Option<S::Value>, serde_json::Error> {
+        let Some(value) = self.iter.next() else {
+            return Ok(None);
+        };
+        let step = Step::Index(self.step, self.index);
+        self.index += 1;
+        seed.deserialize(Reader {
+            value,
+            step: &step,
+            track: self.track,
+        })
+        .map(Some)
+        .map_err(|err| self.track.failed(&step, err))
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.iter.len())
+    }
+}
+
+/// An object's entries, each value read with its key.
+struct Entries<'de, 'a> {
+    iter: serde_json::map::Iter<'de>,
+    value: Option<(&'de str, &'de Value)>,
+    step: &'a Step<'a>,
+    track: &'a Track,
+}
+
+impl<'de> MapAccess<'de> for Entries<'de, '_> {
+    type Error = serde_json::Error;
+
+    fn next_key_seed<S: DeserializeSeed<'de>>(
+        &mut self,
+        seed: S,
+    ) -> Result<Option<S::Value>, serde_json::Error> {
+        let Some((key, value)) = self.iter.next() else {
+            return Ok(None);
+        };
+        self.value = Some((key, value));
+        // A key refused (a field the record does not have) is named by
+        // itself, as `serde_path_to_error` named it.
+        seed.deserialize(Key(key))
+            .map(Some)
+            .map_err(|err| self.track.failed(&Step::Key(self.step, key), err))
+    }
+
+    fn next_value_seed<S: DeserializeSeed<'de>>(
+        &mut self,
+        seed: S,
+    ) -> Result<S::Value, serde_json::Error> {
+        let Some((key, value)) = self.value.take() else {
+            return Err(serde::de::Error::custom("value is missing"));
+        };
+        let step = Step::Key(self.step, key);
+        seed.deserialize(Reader {
+            value,
+            step: &step,
+            track: self.track,
+        })
+        .map_err(|err| self.track.failed(&step, err))
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.iter.len())
+    }
+}
+
+/// An enum written as an object of one key, its variant, read with the
+/// variant as the step to its body.
+struct Variant<'de, 'a> {
+    name: &'de str,
+    value: &'de Value,
+    step: &'a Step<'a>,
+    track: &'a Track,
+}
+
+impl<'de, 'a> EnumAccess<'de> for Variant<'de, 'a> {
+    type Error = serde_json::Error;
+    type Variant = Body<'de, 'a>;
+
+    fn variant_seed<S: DeserializeSeed<'de>>(
+        self,
+        seed: S,
+    ) -> Result<(S::Value, Body<'de, 'a>), serde_json::Error> {
+        let named = seed.deserialize(serde::de::value::BorrowedStrDeserializer::<
+            serde_json::Error,
+        >::new(self.name))?;
+        Ok((
+            named,
+            Body {
+                variant: self.name,
+                value: self.value,
+                step: self.step,
+                track: self.track,
+            },
+        ))
+    }
+}
+
+/// A variant's body.
+struct Body<'de, 'a> {
+    variant: &'de str,
+    value: &'de Value,
+    step: &'a Step<'a>,
+    track: &'a Track,
+}
+
+impl<'de> Body<'de, '_> {
+    /// Reads the body under the variant's step, recording a failure there.
+    fn read<R>(
+        self,
+        read: impl FnOnce(Reader<'de, '_>) -> Result<R, serde_json::Error>,
+    ) -> Result<R, serde_json::Error> {
+        let step = Step::Key(self.step, self.variant);
+        read(Reader {
+            value: self.value,
+            step: &step,
+            track: self.track,
+        })
+        .map_err(|err| self.track.failed(&step, err))
+    }
+}
+
+impl<'de> VariantAccess<'de> for Body<'de, '_> {
+    type Error = serde_json::Error;
+
+    fn unit_variant(self) -> Result<(), serde_json::Error> {
+        <()>::deserialize(self.value)
+    }
+
+    fn newtype_variant_seed<S: DeserializeSeed<'de>>(
+        self,
+        seed: S,
+    ) -> Result<S::Value, serde_json::Error> {
+        self.read(|body| seed.deserialize(body))
+    }
+
+    fn tuple_variant<V: Visitor<'de>>(
+        self,
+        _len: usize,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.read(|body| match body.value {
+            Value::Array(items) if items.is_empty() => visitor.visit_unit(),
+            Value::Array(items) => body.items(items, visitor),
+            other => Err(serde::de::Error::invalid_type(
+                unexpected(other),
+                &"tuple variant",
+            )),
+        })
+    }
+
+    fn struct_variant<V: Visitor<'de>>(
+        self,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.read(|body| match body.value {
+            Value::Object(entries) => body.entries(entries, visitor),
+            other => Err(serde::de::Error::invalid_type(
+                unexpected(other),
+                &"struct variant",
+            )),
+        })
+    }
+}
+
+/// What a value is, as a refusal names it.
+fn unexpected(value: &Value) -> Unexpected<'_> {
+    match value {
+        Value::Null => Unexpected::Unit,
+        Value::Bool(flag) => Unexpected::Bool(*flag),
+        Value::Number(number) => number
+            .as_u64()
+            .map(Unexpected::Unsigned)
+            .or_else(|| number.as_i64().map(Unexpected::Signed))
+            .unwrap_or_else(|| Unexpected::Float(number.as_f64().unwrap_or(f64::NAN))),
+        Value::String(text) => Unexpected::Str(text),
+        Value::Array(_) => Unexpected::Seq,
+        Value::Object(_) => Unexpected::Map,
+    }
+}
+
+/// An object's key, read as `serde_json` reads one: a string, or a number
+/// or a flag written as one.
+struct Key<'de>(&'de str);
+
+/// Reads a key as a number of the type asked, as `serde_json` does.
+macro_rules! numeric_key {
+    ($($method:ident $visit:ident $number:ty),*) => {
+        $(
+            fn $method<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+                match self.0.parse::<$number>() {
+                    Ok(number) => visitor.$visit(number),
+                    Err(_) => Err(serde::de::Error::invalid_type(Unexpected::Str(self.0), &visitor)),
+                }
+            }
+        )*
+    };
+}
+
+impl<'de> Deserializer<'de> for Key<'de> {
+    type Error = serde_json::Error;
+
+    fn deserialize_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+        visitor.visit_borrowed_str(self.0)
+    }
+
+    numeric_key! {
+        deserialize_i8 visit_i8 i8, deserialize_i16 visit_i16 i16,
+        deserialize_i32 visit_i32 i32, deserialize_i64 visit_i64 i64,
+        deserialize_i128 visit_i128 i128, deserialize_u8 visit_u8 u8,
+        deserialize_u16 visit_u16 u16, deserialize_u32 visit_u32 u32,
+        deserialize_u64 visit_u64 u64, deserialize_u128 visit_u128 u128,
+        deserialize_f32 visit_f32 f32, deserialize_f64 visit_f64 f64
+    }
+
+    fn deserialize_bool<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, serde_json::Error> {
+        match self.0 {
+            "true" => visitor.visit_bool(true),
+            "false" => visitor.visit_bool(false),
+            other => Err(serde::de::Error::invalid_type(
+                Unexpected::Str(other),
+                &visitor,
+            )),
+        }
+    }
+
+    fn deserialize_option<V: Visitor<'de>>(
+        self,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        // A key is never null.
+        visitor.visit_some(self)
+    }
+
+    fn deserialize_newtype_struct<V: Visitor<'de>>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        visitor.visit_newtype_struct(self)
+    }
+
+    fn deserialize_enum<V: Visitor<'de>>(
+        self,
+        name: &'static str,
+        variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, serde_json::Error> {
+        self.0
+            .into_deserializer()
+            .deserialize_enum(name, variants, visitor)
+    }
+
+    serde::forward_to_deserialize_any! {
+        char str string bytes byte_buf unit unit_struct seq tuple tuple_struct
+        map struct identifier ignored_any
+    }
 }
 
 /// A path the reader reported, under the caller's own root: `.` is the
@@ -555,5 +1092,153 @@ mod tests {
         let err =
             read::<Vec<Shape>>(r#"[{"kind": "circle", "radius": "big"}]"#, "shapes").unwrap_err();
         assert_eq!(err.field(), Some("shapes[0]"));
+    }
+
+    /// An enum written as an object of one key, as serde writes one by
+    /// default, with a body of each kind.
+    #[derive(Debug, PartialEq, Serialize, serde::Deserialize)]
+    enum Mark {
+        Dot,
+        At(u8),
+        Pair(u8, u8),
+        Box { side: u8 },
+    }
+
+    /// The paths a refusal names, each as the wrapping reader named it
+    /// before SR-159: an enum's body under its variant, an element by its
+    /// index, a record by its own path when a field is missing.
+    #[test]
+    fn every_failure_is_named_where_it_stands() {
+        let field = |text: &str| {
+            deserialize_str::<Vec<Mark>>(text, "marks")
+                .unwrap_err()
+                .field()
+                .map(String::from)
+        };
+        assert_eq!(field(r#"[{"At": 300}]"#).as_deref(), Some("marks[0].At"));
+        assert_eq!(
+            field(r#"[{"Pair": [1, "x"]}]"#).as_deref(),
+            Some("marks[0].Pair[1]")
+        );
+        assert_eq!(
+            field(r#"[{"Box": {"side": -1}}]"#).as_deref(),
+            Some("marks[0].Box.side")
+        );
+        assert_eq!(field(r#"[{"Box": {}}]"#).as_deref(), Some("marks[0].Box"));
+        assert_eq!(field(r#"["Dot", "Line"]"#).as_deref(), Some("marks[1]"));
+        assert_eq!(
+            field(r#"[{"At": 1, "Dot": null}]"#).as_deref(),
+            Some("marks[0]")
+        );
+        assert_eq!(field(r#"[{"Pair": 1}]"#).as_deref(), Some("marks[0].Pair"));
+        assert_eq!(field(r#"{"Dot": null}"#).as_deref(), Some("marks"));
+        let marks: Vec<Mark> = deserialize_str(
+            r#"["Dot", {"Dot": null}, {"At": 2}, {"Pair": [1, 2]}, {"Box": {"side": 3}}]"#,
+            "marks",
+        )
+        .unwrap();
+        assert_eq!(
+            marks,
+            [
+                Mark::Dot,
+                Mark::Dot,
+                Mark::At(2),
+                Mark::Pair(1, 2),
+                Mark::Box { side: 3 }
+            ]
+        );
+    }
+
+    /// A key read as a number or a flag, as `serde_json` reads one; an
+    /// array longer than a tuple; an option.
+    #[test]
+    fn keys_tuples_and_options_read_as_serde_json_reads_them() {
+        use std::collections::BTreeMap;
+        let years: BTreeMap<i32, Option<u8>> =
+            deserialize_str(r#"{"-2": 1, "2026": null}"#, "years").unwrap();
+        assert_eq!(years, BTreeMap::from([(-2, Some(1)), (2026, None)]));
+        let refused = deserialize_str::<BTreeMap<u8, u8>>(r#"{"x": 1}"#, "years").unwrap_err();
+        // A key that is not a number is named by itself, as every refused
+        // key is.
+        assert_eq!(refused.field(), Some("years.x"));
+        let flags: BTreeMap<bool, u8> = deserialize_str(r#"{"true": 1}"#, "flags").unwrap();
+        assert_eq!(flags.get(&true), Some(&1));
+        let long = deserialize_str::<(u8, u8)>("[1, 2, 3]", "pair").unwrap_err();
+        assert_eq!(long.field(), Some("pair"));
+        assert!(
+            long.to_string().contains("fewer elements in array"),
+            "{long}"
+        );
+        let nested = deserialize_str::<Vec<Vec<u8>>>("[[1], [2, 256]]", "grid").unwrap_err();
+        assert_eq!(nested.field(), Some("grid[1][1]"));
+    }
+
+    #[test]
+    fn every_variant_and_key_reads_as_serde_json_reads_it() {
+        use std::collections::BTreeMap;
+
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+        enum Side {
+            Left,
+            Right,
+        }
+        #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+        struct Id(u8);
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct Marker;
+        #[derive(Debug, PartialEq, Deserialize)]
+        enum Figure {
+            Dot,
+            Pair(u8, u8),
+            Box { width: u8 },
+            Wrapped(Id),
+        }
+        // Keys read as the types serde_json reads them as.
+        let sides: BTreeMap<Side, u8> = deserialize_str(r#"{"Left": 1}"#, "sides").unwrap();
+        assert_eq!(sides.get(&Side::Left), Some(&1));
+        let ids: BTreeMap<Id, u8> = deserialize_str(r#"{"7": 1}"#, "ids").unwrap();
+        assert_eq!(ids.get(&Id(7)), Some(&1));
+        let wide: BTreeMap<i128, Option<u8>> = deserialize_str(r#"{"-9": 1}"#, "wide").unwrap();
+        assert_eq!(wide.get(&-9), Some(&Some(1)));
+        let maybe: BTreeMap<Option<u8>, u8> = deserialize_str(r#"{"3": 1}"#, "maybe").unwrap();
+        assert_eq!(maybe.get(&Some(3)), Some(&1));
+        let flag = deserialize_str::<BTreeMap<bool, u8>>(r#"{"yes": 1}"#, "flags").unwrap_err();
+        assert_eq!(flag.field(), Some("flags.yes"));
+        // Every variant's body, and a body of the wrong kind named by its
+        // variant.
+        let shapes: Vec<Figure> = deserialize_str(
+            r#"["Dot", {"Pair": [1, 2]}, {"Box": {"width": 3}}, {"Wrapped": 4}]"#,
+            "shapes",
+        )
+        .unwrap();
+        assert_eq!(
+            shapes,
+            [
+                Figure::Dot,
+                Figure::Pair(1, 2),
+                Figure::Box { width: 3 },
+                Figure::Wrapped(Id(4))
+            ]
+        );
+        let tuple = deserialize_str::<Figure>(r#"{"Pair": 1}"#, "shape").unwrap_err();
+        assert_eq!(tuple.field(), Some("shape.Pair"));
+        let record = deserialize_str::<Figure>(r#"{"Box": [3]}"#, "shape").unwrap_err();
+        assert_eq!(record.field(), Some("shape.Box"));
+        assert!(record.to_string().contains("struct variant"), "{record}");
+        let inner = deserialize_str::<Figure>(r#"{"Box": {"width": 300}}"#, "shape").unwrap_err();
+        assert_eq!(inner.field(), Some("shape.Box.width"));
+        assert_eq!(deserialize_str::<Marker>("null", "marker").unwrap(), Marker);
+        // A refusal names what it was given, of every kind.
+        for (given, named) in [
+            ("null", "null"),
+            ("true", "boolean"),
+            ("-1", "integer `-1`"),
+            ("1.5", "floating point"),
+            (r#"{"a": 1}"#, "map"),
+        ] {
+            let refused =
+                deserialize_str::<Figure>(&format!(r#"{{"Pair": {given}}}"#), "shape").unwrap_err();
+            assert!(refused.to_string().contains(named), "{given}: {refused}");
+        }
     }
 }

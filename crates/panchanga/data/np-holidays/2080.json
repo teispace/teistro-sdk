@@ -1,6 +1,7 @@
 {
   "year": 2080,
   "notice": "Nepal Gazette vol. 72 no. 65, part 5 (Chaitra 2, 2079): the Ministry of Home Affairs' notice of the public, festival and substitute holidays of VS 2080",
+  "document": {"decided": [2079, 12, 2]},
   "holidays": [
     {"clause": "2.1 (क)", "scope": "NATIONAL", "festivals": ["MESHA_SANKRANTI"], "first": [1, 1], "ne": "नव वर्ष", "en": "New Year"},
     {"clause": "2.1 (ख)", "scope": "NATIONAL", "festivals": ["UBHAULI", "CHANDI_PURNIMA"], "first": [1, 22], "ne": "राई, लिम्बू, याक्खा, सुनुवारलगायतका किराँत समुदायको उभौली पर्व - चण्डी पूर्णिमा (वैशाख पूर्णिमा)", "en": "Ubhauli of the Kirat community, the Rai, Limbu, Yakkha, Sunuwar and others: Chandi Purnima (the full moon of Baisakh)"},
@@ -20,10 +21,10 @@
     {"clause": "2.1 (त)", "scope": "NATIONAL", "festivals": ["EID_AL_FITR"], "ne": "इस्लाम धर्मावलम्बीहरूको पर्व ईद (ईद उल फित्र) का दिन", "en": "On the day of Eid (Eid al-Fitr)"},
     {"clause": "2.1 (थ)", "scope": "NATIONAL", "festivals": ["EID_AL_ADHA"], "ne": "इस्लाम धर्मावलम्बीहरूको पर्व बकर ईद (ईद उल अजहा) का दिन", "en": "On the day of Bakr Eid (Eid al-Adha)"},
     {"clause": "2.1 (द)", "scope": "REGION", "festivals": ["HOLI_HILLS"], "regions": ["HILLS"], "first": [12, 11], "ne": "फागुपूर्णिमा - हिमाली र पहाडी लगायतका ५६ जिल्ला", "en": "Fagu Purnima, in the 56 districts, the mountain and hill districts among them"},
-    {"clause": "2.1 (द)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "first": [12, 12], "ne": "फागुपूर्णिमा - झापा, मोरङ, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
+    {"clause": "2.1 (द)", "scope": "REGION", "festivals": ["HOLI_TERAI"], "regions": ["TERAI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SAPTARI", "NP_SIRAHA", "NP_UDAYAPUR", "NP_DHANUSHA", "NP_MAHOTTARI", "NP_SARLAHI", "NP_RAUTAHAT", "NP_BARA", "NP_PARSA", "NP_NAWALPARASI_EAST", "NP_NAWALPARASI_WEST", "NP_RUPANDEHI", "NP_KAPILVASTU", "NP_DANG", "NP_BANKE", "NP_BARDIYA", "NP_KAILALI", "NP_KANCHANPUR"], "first": [12, 12], "ne": "फागुपूर्णिमा - झापा, मोरङ, सुनसरी, सप्तरी, सिराहा, उदयपुर, धनुषा, महोत्तरी, सर्लाही, रौतहट, बारा, पर्सा, नवलपरासी (बर्दघाट सुस्ता पूर्व), नवलपरासी (बर्दघाट सुस्ता पश्चिम), रुपन्देही, कपिलवस्तु, दाङ, बाँके, बर्दिया, कैलाली, कञ्चनपुर", "en": "Fagu Purnima, in the Terai districts: Jhapa, Morang, Sunsari, Saptari, Siraha, Udayapur, Dhanusha, Mahottari, Sarlahi, Rautahat, Bara, Parsa, Nawalparasi (Bardaghat Susta East), Nawalparasi (Bardaghat Susta West), Rupandehi, Kapilvastu, Dang, Banke, Bardiya, Kailali and Kanchanpur"},
     {"clause": "2.2 (क)", "scope": "CONCERNED", "festivals": ["GAURA_PARVA"], "first": [5, 7], "ne": "गौरा पर्व", "en": "Gaura Parva"},
     {"clause": "2.2 (ख)", "scope": "COMMUNITY", "festivals": ["GAI_JATRA"], "communities": ["NEWAR"], "first": [5, 14], "ne": "गाईजात्रा", "en": "Gai Jatra"},
-    {"clause": "2.2 (ग)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "ne": "सिरुवा पावनी - झापा, मोरङ, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
+    {"clause": "2.2 (ग)", "scope": "REGION", "festivals": ["SIRUWA_PAVANI"], "districts": ["NP_JHAPA", "NP_MORANG", "NP_SUNSARI", "NP_SIRAHA", "NP_SAPTARI"], "ne": "सिरुवा पावनी - झापा, मोरङ, सुनसरी, सिराहा, सप्तरी", "en": "Sirua Pavani, in the districts: Jhapa, Morang, Sunsari, Siraha and Saptari"},
     {"clause": "3 (क)", "scope": "WOMEN", "festivals": ["HARITALIKA"], "first": [6, 1], "ne": "हरितालिका (तीज) व्रत", "en": "The Haritalika (Teej) vrata"},
     {"clause": "3 (ख)", "scope": "WOMEN", "festivals": ["JITIYA"], "first": [6, 20], "ne": "जितिया पर्व", "en": "Jitiya"},
     {"clause": "4", "scope": "SCHOOLS", "festivals": ["BASANTA_PANCHAMI"], "first": [11, 2], "ne": "वसन्त पञ्चमी", "en": "Basanta Panchami"},
@@ -48,7 +49,7 @@
     {"clause": "8 (ग)", "scope": "OFFICES_OPEN", "festivals": ["MARTYRS_DAY"], "first": [10, 16], "ne": "सहिद दिवस", "en": "Martyrs' Day"}
   ],
   "amendments": [
-    {"DATES": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Chaitra 28, 2080", "clause": "2.1 (त)", "on": [12, 29]}},
-    {"CANCELS": {"notice": "Nepal Gazette vol. 73 no. 54, part 5 (Magh 29, 2080): the Ministry of Home Affairs' second notice, that VS 2080's Janayuddha Day holiday no longer stands", "clause": "6.1 (घ)"}}
+    {"DATES": {"by": {"notice": "The Ministry of Home Affairs' notice on a public holiday of Chaitra 28, 2080", "decided": [2080, 12, 28]}, "clause": "2.1 (त)", "on": [12, 29]}},
+    {"CANCELS": {"by": {"notice": "Nepal Gazette vol. 73 no. 54, part 5 (Magh 29, 2080): the Ministry of Home Affairs' second notice, that VS 2080's Janayuddha Day holiday no longer stands", "decided": [2080, 10, 29]}, "clause": "6.1 (घ)"}}
   ]
 }

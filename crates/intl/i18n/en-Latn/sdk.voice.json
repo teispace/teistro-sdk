@@ -110,6 +110,33 @@
         "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{rest well}} * {{keep a steady routine}}"
       }
     },
+    "areaName": ".input {$area :string} .match $area WORK {{Work}} MONEY {{Money}} LOVE_FAMILY {{Love and family}} * {{Health}}",
+    "areaLine": {
+      "WORK": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Progress is likely at work}} * {{Your work is noticed}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Work moves forward}} * {{Help from colleagues}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{Work keeps its own pace}} * {{Responsibilities may grow}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{Patience helps at work}} * {{Work may be slow}}"
+      },
+      "MONEY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Gains are likely}} * {{Income gets support}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Income stays steady}} * {{Money moves well}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{Keep to a budget}} * {{No need to rush money decisions}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{Spending may rise}} * {{Keep the paperwork clear}}"
+      },
+      "LOVE_FAMILY": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Closeness grows}} * {{Home feels warm}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Things are easy at home}} * {{Good company}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{Talk things over}} * {{Small efforts help}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{Patience helps at home}} * {{A calm word helps}}"
+      },
+      "HEALTH": {
+        "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Energy stays high}} * {{You feel well}}",
+        "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Energy stays steady}} * {{You feel rested}}",
+        "MIXED": ".input {$variant :integer cycle=2} .match $variant 0 {{Rest well}} * {{Regular meals help}}",
+        "CARE": ".input {$variant :integer cycle=2} .match $variant 0 {{Rest well}} * {{Keep a steady routine}}"
+      }
+    },
     "week": {
       "EXCELLENT": ".input {$variant :integer cycle=2} .match $variant 0 {{Things go especially well.}} * {{The best stretch of the week.}}",
       "GOOD": ".input {$variant :integer cycle=2} .match $variant 0 {{Things move well.}} * {{A smooth stretch.}}",

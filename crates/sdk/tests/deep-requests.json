@@ -7298,6 +7298,13 @@
     }
   },
   {
+    "record": "geo.place",
+    "request": {
+      "id": "np-ktm",
+      "lang": "ne"
+    }
+  },
+  {
     "record": "geo.resolve",
     "request": {
       "latitudeDeg": 1.5,

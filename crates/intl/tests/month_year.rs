@@ -166,9 +166,7 @@ fn every_calendar_and_locale_writes_a_title_and_a_run() {
                     "{what}"
                 );
                 assert!(!kinds_contain_day(&answer), "{what}");
-                // Nepali writes the Hijri months and era in Latin letters.
-                let latin = calendar == "HIJRI_TABULAR" && locale == "ne-Deva-NP";
-                if locale.contains("-Deva") && !latin {
+                if locale.contains("-Deva") {
                     assert!(
                         !answer.text.chars().any(|c| c.is_ascii_alphanumeric()),
                         "{what}"
@@ -432,4 +430,90 @@ fn every_fortnight_has_a_short_and_every_rashi_an_indian_name() {
         panic!("en-Latn has no rashi.SAGITTARIUS");
     };
     assert_eq!(dhanu.form("indic"), Some("Dhanu"));
+}
+
+/// A rashi's `western` is the tropical sign a locale's readers search by
+/// (SR-156, `docs/03-design/entity-names.md` §4f): both English locales
+/// carry it, so Nepal's English heads a page "Mesh (Aries)" from one
+/// record; it is English `name`'s word, and the Devanagari locales, whose
+/// readers search by the Indian name, carry none.
+#[test]
+fn every_english_rashi_names_its_western_sign() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let entity = |tag: &str, key: &str| {
+        let Some(Entry::Entity(entity)) =
+            tree.locales[tag].namespaces["sdk.entity"].entries.get(key)
+        else {
+            panic!("{tag} has no {key}");
+        };
+        entity.clone()
+    };
+    for rashi in [
+        "ARIES",
+        "TAURUS",
+        "GEMINI",
+        "CANCER",
+        "LEO",
+        "VIRGO",
+        "LIBRA",
+        "SCORPIO",
+        "SAGITTARIUS",
+        "CAPRICORN",
+        "AQUARIUS",
+        "PISCES",
+    ] {
+        let key = format!("rashi.{rashi}");
+        let western = entity("en-Latn", &key).name().to_owned();
+        for tag in ["en-Latn", "en-Latn-NP"] {
+            assert_eq!(
+                entity(tag, &key).form("western"),
+                Some(western.as_str()),
+                "{tag} {key}"
+            );
+        }
+        for tag in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva", "sa-Latn"] {
+            assert_eq!(entity(tag, &key).form("western"), None, "{tag} {key}");
+        }
+    }
+    let nepal = entity("en-Latn-NP", "rashi.ARIES");
+    assert_eq!(
+        (nepal.name(), nepal.form("western")),
+        ("Mesh", Some("Aries"))
+    );
+}
+
+/// SR-161: a Devanagari calendar message writes no Latin letter. Nepali
+/// read the Hijri months and era as `Muharram` and `AH` until the
+/// tithipatra asked for them in its own script. The ISO week's numeric form
+/// keeps the standard's `W` (`2026-W05-1`), which is notation, not a word.
+#[test]
+fn no_devanagari_calendar_message_holds_a_latin_letter() {
+    let tree = Tree::load(&sdk_root()).unwrap();
+    let mut read = 0;
+    for tag in ["hi-Deva-IN", "ne-Deva-NP", "sa-Deva"] {
+        for (key, entry) in &tree.locales[tag].namespaces["sdk.calendar"].entries {
+            let Entry::Message(source) = entry else {
+                continue;
+            };
+            let message = teistro_intl::mf2::parse(source).unwrap();
+            for pattern in message.patterns() {
+                for part in &pattern.0 {
+                    let teistro_intl::mf2::ast::Part::Text(text) = part else {
+                        continue;
+                    };
+                    read += 1;
+                    let text = if key == "ISO_WEEK.date.numeric" {
+                        text.replace('W', "")
+                    } else {
+                        text.clone()
+                    };
+                    assert!(
+                        !text.chars().any(|c| c.is_ascii_alphabetic()),
+                        "{tag} sdk.calendar.{key}: {text:?}"
+                    );
+                }
+            }
+        }
+    }
+    assert!(read > 200, "only {read} pieces of text read");
 }

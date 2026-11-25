@@ -14,16 +14,17 @@ use std::str::FromStr;
 
 use teigeodata_core::{E6, E7, IsoCode, PlaceId, PlaceKind as Kind, Point};
 use teigeodata_engine::{
-    Engine, Error as EngineError, NameInfo, NameType, Origin, Place, PopulationSource, Scratch,
+    Engine, Error as EngineError, Layer, NameInfo, NameType, Origin, Place, PopulationSource,
+    Scratch,
 };
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
     ChosenName, FoundPlace, GeoPoint, LangTag, NamedPlace, NearPlace, NearbyPlaces, ParentPlace,
-    PlaceKind, PlaceListing, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse, PlaceSearch,
-    Population, PopulationKind, label,
+    PlaceKind, PlaceListing, PlaceLookup, PlaceName, PlaceNames, PlaceNamesRequest, PlaceReverse,
+    PlaceSearch, Population, PopulationKind, label,
 };
 
-use crate::{NAME_BYTES, failed};
+use crate::{NAME_BYTES, failed, name_of};
 
 /// How many more places a search or a reverse asks the engine for than it
 /// answers, so that the timezone areas it leaves out do not shorten the
@@ -265,7 +266,40 @@ fn named(
         longitude_deg: place.point.lon_degrees(),
         population: population_of(engine, place, field)?,
         parents,
+        // The pack's licence names its id line (teigeodata D-368).
+        line: engine
+            .layer(place.layer)
+            .and_then(Layer::licence)
+            .map(str::to_owned),
+        zone: zone_of(engine, place, field)?,
+        class: engine
+            .class(place)
+            .map_err(|why| failed(&why, field))?
+            .map(str::to_owned),
     }))
+}
+
+/// The IANA zone of `place`, from its own timezone area (`Engine::tz_of`);
+/// `None` where the packs hold no place zones.
+fn zone_of(engine: &Engine, place: &Place, field: &str) -> Result<Option<String>, Error> {
+    match optional(engine.tz_of(place), field)? {
+        Some(area) => name_of(engine, &area, field),
+        None => Ok(None),
+    }
+}
+
+/// The place an id names, a retired id followed to its survivor by the
+/// engine's redirects (D-382, at most four hops), named in `lang` (§12.7).
+pub(crate) fn place(engine: &Engine, asked: &PlaceLookup) -> Result<Option<NamedPlace>, Error> {
+    let Some(found) = place_by_id(engine, &asked.id, "id")? else {
+        return Ok(None);
+    };
+    named(
+        engine,
+        &found,
+        lang_of(asked.lang.as_deref()).as_ref(),
+        "place",
+    )
 }
 
 /// The language a request names, read by the port's rule.

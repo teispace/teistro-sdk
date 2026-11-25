@@ -1344,7 +1344,8 @@ Where a text does speak, it mostly agrees with the fit:
   adhika month (C606).
 - pp. 55–56 bar the Durva vrata once Agastya has risen, and the note keeps
   it then on the dark 8th before. In VS 2083 Bhadrapada's bright 8th falls
-  after Bhadra 22, the 21st day from the Sun's entry into Simha (p. 58),
+  after Bhadra 20, the 21st day from the Sun's entry into Simha (p. 58,
+counted from the ingress's day, C2420),
   and the committee prints the vrata on that dark 8th, as the pack keeps
   it (`barred`, C608).
 - p. 57 gives Vamana dwadashi to madhyahna with Shravana, where the fit

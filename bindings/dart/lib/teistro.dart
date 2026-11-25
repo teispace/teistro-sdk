@@ -1177,6 +1177,19 @@ final class GeoArea extends _Area {
           )
           as Map<String, Object?>;
 
+  /// A place by its id, named in `lang`, with its id line, zone,
+  /// population and landmark class: `{asked, place, moved}`, `moved` when
+  /// the id asked was retired and `place` is the one that replaced it, whose
+  /// id a caller stores instead; `place` null for an id the provider does
+  /// not know.
+  Map<String, Object?> place(PlaceLookup request) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.geoPlace(jsonEncode(request)),
+            ),
+          )
+          as Map<String, Object?>;
+
   /// The places of a unit (its id or ISO 3166 code), by admin level and
   /// kind, ranked by population, each with `{people, kind}`, `kind`
   /// `COUNTED` or `MODELLED`.
@@ -35714,6 +35727,7 @@ final class Almanac {
       'markers': counts.markers,
       'gowri': counts.gowri,
       'uncertainty': counts.uncertainty,
+      'mahaPunyaKala': counts.mahaPunyaKala,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -36137,6 +36151,25 @@ final class AlmanacDay {
     final c = batch.decoded.punyaKala;
     return _spans(
       'punyaKala',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      c.marginMinutes,
+      Rashi.byId,
+    );
+  }
+
+  /// The maha punya kala inside [punyaKala], on the same day (Dharmasindhu,
+  /// the Pausha chapter, crux C2421): the five ghatis of the window nearest
+  /// the sankranti, or the whole window when it is shorter; `whole` and
+  /// `inside` are both the five ghatis.
+  List<Span<Rashi>> get mahaPunyaKala {
+    final c = batch.decoded.mahaPunyaKala;
+    return _spans(
+      'mahaPunyaKala',
       c.member,
       c.wholeFrom,
       c.wholeTo,

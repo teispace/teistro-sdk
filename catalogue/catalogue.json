@@ -24336,6 +24336,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "OFFICES_AND_SCHOOLS",
+          "id": 9,
+          "doc": "A holiday only for government offices and educational institutions: Nepal's Sunday rest day from Chaitra 23, 2082",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "The Council of Ministers' decision of Chaitra 22, 2082, published in the Nepal Gazette",
+              "ref": "सरकारी कार्यालय र शैक्षिक संस्थामा आइतबार साप्ताहिक बिदा"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     }

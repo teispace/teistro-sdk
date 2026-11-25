@@ -5,7 +5,9 @@
 #![allow(
     clippy::unwrap_used,
     clippy::indexing_slicing,
-    reason = "tests fail by panicking and index what they asked for"
+    clippy::print_stdout,
+    clippy::panic,
+    reason = "tests fail by panicking, index what they asked for, and the sweep prints what it measured"
 )]
 
 use teistro::Panchanga;
@@ -163,4 +165,184 @@ fn the_tables_and_the_day_boundary_are_settings() {
             .collect::<Vec<_>>()
     };
     assert_eq!(windows(&shipped), windows(&midnight));
+}
+
+/// Why a window can keep another day than the month rule gives it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Parting {
+    /// Makara in the three ghatis after sunset, or Karka in the three
+    /// before sunrise (C2421).
+    Twilight,
+    /// An entry between the night's middle and the nearer clock midnight.
+    Midnight,
+}
+
+/// The parting an entry at `at` (a Julian day, `fraction` of its civil
+/// day gone) falls in, read from the days around it; nothing when it
+/// falls in neither.
+fn parting(days: &[Panchanga], sign: Rashi, at: f64, fraction: f64) -> Option<Parting> {
+    let ghatis = |a: f64, b: f64| (b - a) / GHATI;
+    let night = days
+        .iter()
+        .find(|d| d.day.sunset.get() <= at && at < d.day.next_sunrise.get())?;
+    let (sunset, sunrise) = (night.day.sunset.get(), night.day.next_sunrise.get());
+    let twilight = match sign {
+        Rashi::Capricorn => ghatis(sunset, at) < 3.0,
+        Rashi::Cancer => ghatis(at, sunrise) < 3.0,
+        _ => false,
+    };
+    if twilight {
+        return Some(Parting::Twilight);
+    }
+    // The clock midnight nearer the entry: the one its day began with,
+    // or, past noon, the one that ends it.
+    let began = at - fraction;
+    let clock_midnight = if fraction > 0.5 { began + 1.0 } else { began };
+    let middle = f64::midpoint(sunset, sunrise);
+    let (lo, hi) = (middle.min(clock_midnight), middle.max(clock_midnight));
+    (lo <= at && at <= hi).then_some(Parting::Midnight)
+}
+
+/// What the sweep found: the entries whose window fell on the day the
+/// month-start rule gives, and the two kinds that may not.
+#[derive(Debug, Default, PartialEq)]
+struct Swept {
+    entries: usize,
+    agree: usize,
+    /// Makara in the three ghatis after sunset or Karka in the three
+    /// before sunrise: the window keeps the twilight's day, the month the
+    /// night's (C2421).
+    twilight: usize,
+    /// An entry between the clock's midnight and the middle of the night,
+    /// either side: the window turns on the night's middle, the month on
+    /// the clock's.
+    midnight: usize,
+}
+
+/// Every sankranti at Kathmandu whose civil day falls in `years`
+/// (first and last, inclusive), swept as
+/// `every_window_from_1800_to_2399_falls_on_the_month_rules_day` says.
+fn sweep(years: (i32, i32)) -> Swept {
+    use teistro_calendar::MonthStartRule;
+    use teistro_calendar::gregorian::{fixed_from_gregorian, gregorian_from_fixed};
+    use teistro_calendar::solar::DayArc;
+    use teistro_calendar::solar::rule::local_day;
+
+    let sdk = context(None);
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let clock = UtcOffset::literal(5, 45, 0);
+    let days_around = |from: teistro::FixedDay, to: teistro::FixedDay| {
+        let date = |fixed| {
+            let (year, month, day) = gregorian_from_fixed(fixed);
+            CalendarDate::defined(Calendar::Gregorian, year, month, day)
+        };
+        sdk.almanac()
+            .of(&date(from), &date(to), &place, clock)
+            .unwrap()
+            .value
+    };
+    let first = fixed_from_gregorian(years.0, 1, 1);
+    let last = fixed_from_gregorian(years.1, 12, 31);
+    let mut next = days_around(first, first)[0]
+        .sun
+        .signs
+        .last()
+        .unwrap()
+        .whole
+        .to;
+    let mut swept = Swept::default();
+    loop {
+        let (civil, fraction) = local_day(&clock, next);
+        if civil.plus_days(1) > last {
+            break;
+        }
+        let days = days_around(civil.plus_days(-1), civil.plus_days(1));
+        let held: Vec<(&Panchanga, &PunyaKala)> = kalas(&days)
+            .into_iter()
+            .filter(|(_, kala)| near(kala.sankranti.get(), next.get()))
+            .collect();
+        assert_eq!(held.len(), 1, "one window for the entry at {next}");
+        let (day, kala) = held[0];
+        let sign = kala.span.member;
+        // The maha punya kala lies inside the window, five ghatis or all of it.
+        let (inside, maha) = (kala.span.inside, kala.maha);
+        assert!(inside.from.get() <= maha.from.get() && maha.to.get() <= inside.to.get());
+        assert!(
+            near(maha.days(), (5.0 * GHATI).min(inside.days())),
+            "{sign:?} at {next}"
+        );
+        let arc_of = |fixed: teistro::FixedDay| {
+            let (year, month, on) = gregorian_from_fixed(fixed);
+            let record = days
+                .iter()
+                .find(|d| (d.day.date.year, d.day.date.month, d.day.date.day) == (year, month, on))
+                .unwrap();
+            Ok::<_, teistro::Error>(DayArc {
+                sunrise: record.day.sunrise,
+                sunset: record.day.sunset,
+            })
+        };
+        let ruled = MonthStartRule::Punyakala
+            .month_start_by(u8::try_from(sign.id()).unwrap(), next, &clock, &arc_of)
+            .unwrap();
+        let (year, month, on) = gregorian_from_fixed(ruled);
+        swept.entries += 1;
+        if (day.day.date.year, day.day.date.month, day.day.date.day) == (year, month, on) {
+            swept.agree += 1;
+            next = days[2].sun.signs.last().unwrap().whole.to;
+            continue;
+        }
+        match parting(&days, sign, next.get(), fraction) {
+            Some(Parting::Twilight) => swept.twilight += 1,
+            Some(Parting::Midnight) => swept.midnight += 1,
+            None => panic!(
+                "{sign:?} at {next}: window on {:?}, the month on {year}-{month}-{on}",
+                day.day.date
+            ),
+        }
+        next = days[2].sun.signs.last().unwrap().whole.to;
+    }
+    swept
+}
+
+/// SR-160: every sankranti at Kathmandu from 1800 to 2399, its window and
+/// its maha punya kala read on the day the almanac gives it, held to the
+/// day `MonthStartRule::Punyakala` begins the solar month on under the
+/// same sky. A disagreement is one of the two kinds `Swept` names, and
+/// each is counted. The six centuries are swept side by side.
+#[test]
+fn every_window_from_1800_to_2399_falls_on_the_month_rules_day() {
+    let started = std::time::Instant::now();
+    let swept = std::thread::scope(|scope| {
+        let workers: Vec<_> = (0..6)
+            .map(|century| {
+                let from = 1800 + 100 * century;
+                scope.spawn(move || sweep((from, from + 99)))
+            })
+            .collect();
+        workers
+            .into_iter()
+            .map(|worker| worker.join().unwrap())
+            .fold(Swept::default(), |sum, part| Swept {
+                entries: sum.entries + part.entries,
+                agree: sum.agree + part.agree,
+                twilight: sum.twilight + part.twilight,
+                midnight: sum.midnight + part.midnight,
+            })
+    });
+    println!("swept {swept:?} in {:?}", started.elapsed());
+    assert_eq!(
+        swept,
+        Swept {
+            entries: 600 * 12,
+            agree: 7119,
+            twilight: 61,
+            midnight: 20
+        },
+        "every entry, and every one the month rule parts from"
+    );
 }

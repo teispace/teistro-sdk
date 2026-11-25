@@ -571,6 +571,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("markers", "markers"),
             count("gowri", "gowri"),
             count("uncertainty", "uncertainty"),
+            count("maha_punya_kala", "maha_punya_kala"),
         ],
     )
 }
@@ -952,6 +953,7 @@ pub fn panchanga() -> BlobSchema {
             span_section(41, "markers", "The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.", "The marker.", "DayMarker"),
             panchanga_gowri_section(42),
             panchanga_uncertainty_section(43),
+            span_section(44, "maha_punya_kala", "The maha punya kala inside `punya_kala`, on the same day (Dharmasindhu, the Pausha chapter, crux C2421): the five ghatis of the window nearest the sankranti, after it for a window that follows the entry, before it for one that precedes it, around it at the equinoxes, the morning's first five or the afternoon's last for an entry at night; the whole window when it is shorter. `whole` and `inside` are both the five ghatis. Empty when `punya_kala` is.", "The sign the Sun entered.", "Rashi"),
         ],
     }
 }

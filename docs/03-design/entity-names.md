@@ -721,6 +721,19 @@ Singha, Kanya, Tula, Brishchik, Dhanu, Makar, Kumbha, Meen. They are its
 says "Dhanu" there; the romanisation above stays every other locale's
 `indic`, and `iast` stays the IAST.
 
+**The western sign (SR-156, 2026-11-24).** English readers search by the
+tropical sign ("Aries horoscope today"), so a page in Nepal's English
+heads a sign "Mesh (Aries)". Each rashi in both English locales carries
+`western`, the English sign name (Aries … Pisces), typed in every binding
+as an optional field like `indic`. The Devanagari locales carry none: their
+readers search by the Indian name their `name` already is, and a form a
+locale lacks reads as absent rather than as another locale's word. No
+pattern joins the pair: only English carries the form, and the consumer
+places it ("Mesh (Aries)" in a heading, "Aries" alone in a page's
+metadata). A locale whose order differs would bring the pattern with its
+form. `crates/intl/tests/month_year.rs` holds the form in both English
+locales and its absence in the others.
+
 ## 4g. The rashifal's words (SR-124, 2026-11-15)
 
 A consumer's home page shows a sign's rashifal as words: the life areas
@@ -854,7 +867,7 @@ other than Latin to its script (C2080, C2081):
   `sa-Deva` must name a festival as `ne-Deva-NP` must;
 - no member of any kind falls back to a Latin-script locale, except the
   members `LATIN_FALLBACK` in `xtask/src/intl.rs` counts, kind by kind:
-  14 in Hindi and 35 in Sanskrit (below). The list fails both ways and can
+  94 in Hindi and 115 in Sanskrit (below). The list fails both ways and can
   only shrink, and `festival` may never stand on it. A record a Devanagari locale holds itself fails when
   a form other than `iast` has Latin letters and no Devanagari one (`J2000
   युगादि` passes).
@@ -894,7 +907,12 @@ prints, so naming them moves dates and wants its own pass against the
 date tests; the four festival kinds in both (the lexicon's test reads
 Hindi's fallback through them); and Sanskrit's seven traditions and
 thirteen mundane chart kinds, phrases Sanskrit needs composed rather
-than copied (प्रवेशात् पूर्वम् अमावास्या).
+than copied (प्रवेशात् पूर्वम् अमावास्या).; and the festivals' acts, the `observance`
+records (80 in each), which their descriptions brought (SR-153). The
+regions, districts and communities a holiday or a festival names are
+named in both, Hindi by its usual spelling (काठमांडू घाटी, तामांग) and
+Sanskrit as a people or a land (नेवारजनाः, किराताः, पार्वत्यप्रदेशः), so a
+holiday says whom it is for in every locale (SR-163).
 
 ## 5. What this does not settle
 

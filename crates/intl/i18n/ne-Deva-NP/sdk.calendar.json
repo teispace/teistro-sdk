@@ -69,25 +69,25 @@
   }
  },
  "HIJRI_TABULAR": {
-  "monthName": ".input {$month :integer} .match $month 1 {{Muharram}} 2 {{Safar}} 3 {{Rabiʻ I}} 4 {{Rabiʻ II}} 5 {{Jumada I}} 6 {{Jumada II}} 7 {{Rajab}} 8 {{Shaʻban}} 9 {{Ramadan}} 10 {{Shawwal}} 11 {{Dhuʻl-Qiʻdah}} 12 {{Dhuʻl-Hijjah}} * {{{$month}}}",
-  "monthShort": ".input {$month :integer} .match $month 1 {{Muh.}} 2 {{Saf.}} 3 {{Rab. I}} 4 {{Rab. II}} 5 {{Jum. I}} 6 {{Jum. II}} 7 {{Raj.}} 8 {{Sha.}} 9 {{Ram.}} 10 {{Shaw.}} 11 {{Dhuʻl-Q.}} 12 {{Dhuʻl-H.}} * {{{$month}}}",
-  "monthYear": "AH {$year :integer useGrouping=false} {$monthName}",
-  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{AH {$year :integer useGrouping=false} {$monthName} – {$untilYear :integer useGrouping=false} {$untilMonthName}}} * {{AH {$year :integer useGrouping=false} {$monthName}–{$untilMonthName}}}",
+  "monthName": ".input {$month :integer} .match $month 1 {{मुहर्रम}} 2 {{सफर}} 3 {{रबिउल अव्वल}} 4 {{रबिउस्सानी}} 5 {{जमादिउल अव्वल}} 6 {{जमादिउस्सानी}} 7 {{रजब}} 8 {{शाबान}} 9 {{रमजान}} 10 {{शव्वाल}} 11 {{जिल्कदा}} 12 {{जिल्हिज्जा}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
+  "monthYear": "हिजरी {$year :integer useGrouping=false} {$monthName}",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{हिजरी {$year :integer useGrouping=false} {$monthName} – {$untilYear :integer useGrouping=false} {$untilMonthName}}} * {{हिजरी {$year :integer useGrouping=false} {$monthName}–{$untilMonthName}}}",
   "date": {
-   "numeric": "AH {$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
-   "long": "AH {$year :integer useGrouping=false} {$monthName} {$day :integer}",
-   "full": "AH {$year :integer useGrouping=false} {$monthName} {$day :integer}, {$weekdayName}"
+   "numeric": "हिजरी {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+   "long": "हिजरी {$year :integer useGrouping=false} {$monthName} {$day :integer}",
+   "full": "{$weekdayName}, हिजरी {$year :integer useGrouping=false} {$monthName} {$day :integer}"
   }
  },
  "HIJRI_SIGHTED": {
   "monthName": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
   "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthShort :msg}",
-  "monthYear": "AH {$year :integer useGrouping=false} {$monthName}",
-  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{AH {$year :integer useGrouping=false} {$monthName} – {$untilYear :integer useGrouping=false} {$untilMonthName}}} * {{AH {$year :integer useGrouping=false} {$monthName}–{$untilMonthName}}}",
+  "monthYear": "हिजरी {$year :integer useGrouping=false} {$monthName}",
+  "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{हिजरी {$year :integer useGrouping=false} {$monthName} – {$untilYear :integer useGrouping=false} {$untilMonthName}}} * {{हिजरी {$year :integer useGrouping=false} {$monthName}–{$untilMonthName}}}",
   "date": {
-   "numeric": "AH {$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}",
-   "long": "AH {$year :integer useGrouping=false} {$monthName} {$day :integer}",
-   "full": "AH {$year :integer useGrouping=false} {$monthName} {$day :integer}, {$weekdayName}"
+   "numeric": "हिजरी {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+   "long": "हिजरी {$year :integer useGrouping=false} {$monthName} {$day :integer}",
+   "full": "{$weekdayName}, हिजरी {$year :integer useGrouping=false} {$monthName} {$day :integer}"
   }
  },
  "TIBETAN_PHUGPA": {

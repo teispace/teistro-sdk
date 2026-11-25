@@ -18,7 +18,7 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
-teistro-core = { path = "../core", version = "=1.0.0-rc.11" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.12" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

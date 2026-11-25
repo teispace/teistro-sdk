@@ -2029,7 +2029,7 @@ fn engine_answer<T: serde::Serialize>(
 /// The geo port's records: a place resolved through the context's
 /// provider, and the place catalogue's questions (`03-design/geo-port.md`
 /// §5 and §12).
-fn geo_records() -> [Record; 5] {
+fn geo_records() -> [Record; 6] {
     [
         Record {
             name: "geo.resolve",
@@ -2085,6 +2085,19 @@ fn geo_records() -> [Record; 5] {
             compares: None,
             brief: Brief::Whole,
             schemas: schemas!(crate::PlaceNamesRequest => crate::PlaceNames),
+        },
+        Record {
+            name: "geo.place",
+            boundary: "ts_geo_place",
+            title: "A place by its id, a retired id followed to its survivor, with its id line, zone and population",
+            reads: None,
+            run: |context, json| {
+                let asked: crate::PlaceLookup = teistro_core::strict::read(json, "geo")?;
+                Answered::plain(&context.geo().place(&asked)?)
+            },
+            compares: None,
+            brief: Brief::Whole,
+            schemas: schemas!(crate::PlaceLookup => crate::LookedUpPlace),
         },
         Record {
             name: "geo.list",

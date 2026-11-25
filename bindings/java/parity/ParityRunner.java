@@ -1932,6 +1932,7 @@ public final class ParityRunner {
             surface("geo.search", () -> ctx.geo().search(null));
             surface("geo.reverse", () -> ctx.geo().reverse(null));
             surface("geo.names", () -> ctx.geo().names(null));
+            surface("geo.place", () -> ctx.geo().place(null));
             surface("geo.list", () -> ctx.geo().list(null));
             surface("chart.layout", () -> ctx.chart().layout(""));
             surface("chart.found", () -> ctx.chart().found(0, place, 0, ChartOptions.none()));
@@ -3230,6 +3231,7 @@ public final class ParityRunner {
             put(d + "-named-panchaka-count", almanacDay.namedPanchaka().size());
             put(d + "-rahu-vasa-count", almanacDay.rahuVasa().size());
             put(d + "-punya-kala-count", almanacDay.punyaKala().size());
+            put(d + "-maha-punya-kala-count", almanacDay.mahaPunyaKala().size());
             putSpans(d + "-tithi", almanacDay.tithi(), Tithi::fullKey);
             putSpans(d + "-nakshatra", almanacDay.nakshatra(), Nakshatra::fullKey);
             putSpans(d + "-yoga", almanacDay.yoga(), Yoga::fullKey);
@@ -3246,6 +3248,7 @@ public final class ParityRunner {
             putSpans(d + "-named-panchaka", almanacDay.namedPanchaka(), Panchaka::fullKey);
             putSpans(d + "-rahu-vasa", almanacDay.rahuVasa(), Direction::fullKey);
             putSpans(d + "-punya-kala", almanacDay.punyaKala(), Rashi::fullKey);
+            putSpans(d + "-maha-punya-kala", almanacDay.mahaPunyaKala(), Rashi::fullKey);
             for (int j = 0; j < almanacDay.kaalas().size(); j += 1) {
                 KaalaPeriod kaala = almanacDay.kaalas().get(j);
                 put(d + "-kaala-" + j, kaala.kaala().fullKey());

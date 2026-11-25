@@ -21,48 +21,48 @@ autotests = false
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }
-teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.11" }
-teistro-astro = { path = "../astro", version = "=1.0.0-rc.11" }
-teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.11" }
-teistro-chart = { path = "../chart", version = "=1.0.0-rc.11" }
-teistro-core = { path = "../core", version = "=1.0.0-rc.11" }
-teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.11", optional = true }
-teistro-hellenistic = { path = "../hellenistic", version = "=1.0.0-rc.11", optional = true }
-teistro-matching = { path = "../matching", version = "=1.0.0-rc.11", optional = true }
-teistro-lalkitab = { path = "../lalkitab", version = "=1.0.0-rc.11", optional = true }
-teistro-pakshi = { path = "../pakshi", version = "=1.0.0-rc.11", optional = true }
-teistro-numerology = { path = "../numerology", version = "=1.0.0-rc.11", optional = true }
-teistro-research = { path = "../research", version = "=1.0.0-rc.11", optional = true }
-teistro-prashna = { path = "../prashna", version = "=1.0.0-rc.11", optional = true }
-teistro-remedies = { path = "../remedies", version = "=1.0.0-rc.11", optional = true }
-teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.11", optional = true }
-teistro-rectification = { path = "../rectification", version = "=1.0.0-rc.11", optional = true }
-teistro-houses = { path = "../houses", version = "=1.0.0-rc.11" }
-teistro-interpret = { path = "../interpret", version = "=1.0.0-rc.11", optional = true }
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.11", default-features = false }
-teistro-idl = { path = "../idl", version = "=1.0.0-rc.11", default-features = false }
-teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.11" }
-teistro-points = { path = "../points", version = "=1.0.0-rc.11" }
-teistro-rules = { path = "../rules", version = "=1.0.0-rc.11", optional = true }
-teistro-strength = { path = "../strength", version = "=1.0.0-rc.11", optional = true }
-teistro-tajika = { path = "../tajika", version = "=1.0.0-rc.11", optional = true }
-teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.11", optional = true }
-teistro-kp = { path = "../kp", version = "=1.0.0-rc.11", optional = true }
-teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.11", optional = true }
-teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.11" }
-teistro-port-geo = { path = "../port-geo", version = "=1.0.0-rc.11" }
-teistro-serial = { path = "../serial", version = "=1.0.0-rc.11", optional = true }
-teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.11" }
-teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.11" }
-teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.11", optional = true }
-teistro-state = { path = "../state", version = "=1.0.0-rc.11" }
-teistro-time = { path = "../time", version = "=1.0.0-rc.11" }
-teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.11" }
-teistro-western = { path = "../western", version = "=1.0.0-rc.11", optional = true }
-teistro-ephemeris-builtin = { path = "../ephemeris-builtin", version = "=1.0.0-rc.11", optional = true, default-features = false }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.12" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.12" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.12" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.12" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.12" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.12", optional = true }
+teistro-hellenistic = { path = "../hellenistic", version = "=1.0.0-rc.12", optional = true }
+teistro-matching = { path = "../matching", version = "=1.0.0-rc.12", optional = true }
+teistro-lalkitab = { path = "../lalkitab", version = "=1.0.0-rc.12", optional = true }
+teistro-pakshi = { path = "../pakshi", version = "=1.0.0-rc.12", optional = true }
+teistro-numerology = { path = "../numerology", version = "=1.0.0-rc.12", optional = true }
+teistro-research = { path = "../research", version = "=1.0.0-rc.12", optional = true }
+teistro-prashna = { path = "../prashna", version = "=1.0.0-rc.12", optional = true }
+teistro-remedies = { path = "../remedies", version = "=1.0.0-rc.12", optional = true }
+teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.12", optional = true }
+teistro-rectification = { path = "../rectification", version = "=1.0.0-rc.12", optional = true }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.12" }
+teistro-interpret = { path = "../interpret", version = "=1.0.0-rc.12", optional = true }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.12", default-features = false }
+teistro-idl = { path = "../idl", version = "=1.0.0-rc.12", default-features = false }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.12" }
+teistro-points = { path = "../points", version = "=1.0.0-rc.12" }
+teistro-rules = { path = "../rules", version = "=1.0.0-rc.12", optional = true }
+teistro-strength = { path = "../strength", version = "=1.0.0-rc.12", optional = true }
+teistro-tajika = { path = "../tajika", version = "=1.0.0-rc.12", optional = true }
+teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.12", optional = true }
+teistro-kp = { path = "../kp", version = "=1.0.0-rc.12", optional = true }
+teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.12", optional = true }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.12" }
+teistro-port-geo = { path = "../port-geo", version = "=1.0.0-rc.12" }
+teistro-serial = { path = "../serial", version = "=1.0.0-rc.12", optional = true }
+teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.12" }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.12" }
+teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.12", optional = true }
+teistro-state = { path = "../state", version = "=1.0.0-rc.12" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.12" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.12" }
+teistro-western = { path = "../western", version = "=1.0.0-rc.12", optional = true }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", version = "=1.0.0-rc.12", optional = true, default-features = false }
 
 [build-dependencies]
-teistro-intl = { path = "../intl", version = "=1.0.0-rc.11", default-features = false }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.12", default-features = false }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028) — the same feature the boundary
@@ -98,12 +98,25 @@ locale-hi-deva-in = []
 locale-ne-deva-np = []
 locale-sa-deva = []
 locale-sa-latn = []
+# The texts a build may leave out of its bundles (core#241,
+# `03-design/wasm-profiles.md`, "Text switches"): a festival's description
+# (SR-153), why a muhurta window is good (SR-154) and the rashifal's
+# reading voice (SR-152), each its words in every embedded locale. `texts`
+# names them all and `full` names `texts`. A build without one keeps the
+# code and every other answer, refuses a request for the text as
+# `UNSUPPORTED` naming the feature, and still renders the words once a
+# pack carrying them is loaded. A switch whose family is off says nothing,
+# and its words are left out with the family.
+texts = ["festival-about", "muhurta-reasons", "rashifal-reading"]
+festival-about = []
+muhurta-reasons = []
+rashifal-reading = []
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["locales", "texts", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -223,6 +236,9 @@ name = "lazy_locales"
 
 [[test]]
 name = "left_out_locale"
+
+[[test]]
+name = "left_out_text"
 
 [[test]]
 name = "occurrences"

@@ -6,7 +6,8 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    FestivalMeta, Holiday, HolidaySet, PublishedEntry, Significance, SubjectTo,
+    FestivalMeta, Holiday, HolidaySet, HolidayYear, PublishedEntry, RestDay, Significance,
+    SubjectTo,
 };
 
 use super::AlmanacArea;
@@ -57,9 +58,13 @@ impl PackRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` naming the key under `pack` that is not JSON of its
-    /// kind, or a name no pack has.
+    /// kind, or a name no pack has; `about` in a build without the
+    /// `festival-about` feature is `UNSUPPORTED` naming `pack.about`.
     pub fn from_json(text: &str) -> Result<PackRequest, Error> {
         let asked: PackAsked = teistro_core::strict::read(text, PACK)?;
+        if asked.about {
+            crate::texts::Text::FestivalAbout.require("pack.about")?;
+        }
         Ok(PackRequest {
             pack: pack(&asked.pack, "pack.pack")?,
             about: asked.about,
@@ -143,6 +148,19 @@ pub struct PackListing {
     /// festivals by key, kept apart from the notice's words.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub holidays: Vec<Holiday>,
+    /// Each year's notice and the decisions amending it, as documents:
+    /// where each was read, its file's SHA-256 and the day it was
+    /// retrieved (`03-design/nepal-gazette-holidays.md` §6).
+    #[serde(
+        default,
+        rename = "holidayYears",
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    pub holiday_years: Vec<HolidayYear>,
+    /// The days of the week the pack's country keeps as rest days, for
+    /// whom and since when (§6).
+    #[serde(default, rename = "restDays", skip_serializing_if = "Vec::is_empty")]
+    pub rest_days: Vec<RestDay>,
     /// Asked with `about`, each of the pack's rules and groups the SDK
     /// describes, its rules first, by key (`03-design/festival-about.md`).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -221,6 +239,16 @@ impl FestivalPack {
                 .holiday_sets()
                 .iter()
                 .flat_map(|set| set.holidays())
+                .collect(),
+            holiday_years: self
+                .holiday_sets()
+                .iter()
+                .flat_map(|set| set.documents())
+                .collect(),
+            rest_days: self
+                .holiday_sets()
+                .iter()
+                .flat_map(|set| set.rest_days())
                 .collect(),
             about: Vec::new(),
             unwritten: Vec::new(),

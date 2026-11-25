@@ -1477,7 +1477,8 @@ enum HolidayScopeKey {
   women('holiday_scope.WOMEN'),
   schools('holiday_scope.SCHOOLS'),
   disability('holiday_scope.DISABILITY'),
-  officesOpen('holiday_scope.OFFICES_OPEN');
+  officesOpen('holiday_scope.OFFICES_OPEN'),
+  officesAndSchools('holiday_scope.OFFICES_AND_SCHOOLS');
 
   const HolidayScopeKey(this.key);
 
@@ -2183,7 +2184,28 @@ enum RegionKey {
   inTg('region.IN_TG'),
   inTn('region.IN_TN'),
   inUp('region.IN_UP'),
-  inWb('region.IN_WB');
+  inWb('region.IN_WB'),
+  npJhapa('region.NP_JHAPA'),
+  npMorang('region.NP_MORANG'),
+  npSunsari('region.NP_SUNSARI'),
+  npSaptari('region.NP_SAPTARI'),
+  npSiraha('region.NP_SIRAHA'),
+  npUdayapur('region.NP_UDAYAPUR'),
+  npDhanusha('region.NP_DHANUSHA'),
+  npMahottari('region.NP_MAHOTTARI'),
+  npSarlahi('region.NP_SARLAHI'),
+  npRautahat('region.NP_RAUTAHAT'),
+  npBara('region.NP_BARA'),
+  npParsa('region.NP_PARSA'),
+  npNawalparasiEast('region.NP_NAWALPARASI_EAST'),
+  npNawalparasiWest('region.NP_NAWALPARASI_WEST'),
+  npRupandehi('region.NP_RUPANDEHI'),
+  npKapilvastu('region.NP_KAPILVASTU'),
+  npDang('region.NP_DANG'),
+  npBanke('region.NP_BANKE'),
+  npBardiya('region.NP_BARDIYA'),
+  npKailali('region.NP_KAILALI'),
+  npKanchanpur('region.NP_KANCHANPUR');
 
   const RegionKey(this.key);
 
@@ -2881,9 +2903,14 @@ final class EntityForms {
     required this.prose,
     this.abbrev,
     this.about,
+    this.day,
     this.indic,
     this.locative,
+    this.month,
     this.short,
+    this.week,
+    this.western,
+    this.year,
     this.glyph,
     this.gender,
     this.forms = const <String, String>{},
@@ -2902,9 +2929,14 @@ final class EntityForms {
       prose: text('prose') ?? '',
       abbrev: text('abbrev'),
       about: text('about'),
+      day: text('day'),
       indic: text('indic'),
       locative: text('locative'),
+      month: text('month'),
       short: text('short'),
+      week: text('week'),
+      western: text('western'),
+      year: text('year'),
       forms: <String, String>{
         for (final entry in forms.entries)
           if (entry.value is String) entry.key: entry.value! as String,
@@ -2921,9 +2953,14 @@ final class EntityForms {
   final String prose;
   final String? abbrev;
   final String? about;
+  final String? day;
   final String? indic;
   final String? locative;
+  final String? month;
   final String? short;
+  final String? week;
+  final String? western;
+  final String? year;
   final String? glyph;
   final Gender? gender;
   /// Every form the locale carries, including any a loaded pack
@@ -3459,6 +3496,8 @@ final class MessagesSdkDay {
       _r.render('sdk.day.moonset', {'at': {r'$time': at.json}, 'when': when});
   String nakshatra({required String ends, required NakshatraKey nakshatra, required TimeValue until}) =>
       _r.render('sdk.day.nakshatra', {'ends': ends, 'nakshatra': {r'$entity': nakshatra.key}, 'until': {r'$time': until.json}});
+  String punyaKala({required TimeValue from, required TimeValue mahaFrom, required TimeValue mahaTo, required RashiKey rashi, required TimeValue to}) =>
+      _r.render('sdk.day.punyaKala', {'from': {r'$time': from.json}, 'mahaFrom': {r'$time': mahaFrom.json}, 'mahaTo': {r'$time': mahaTo.json}, 'rashi': {r'$entity': rashi.key}, 'to': {r'$time': to.json}});
   String ritu({required RituKey ritu}) =>
       _r.render('sdk.day.ritu', {'ritu': {r'$entity': ritu.key}});
   String sankranti({required TimeValue at, required RashiKey rashi, required String when}) =>
@@ -4937,6 +4976,7 @@ final class MessagesSdkEntityHolidayScope {
   EntityForms get concerned => _r.entity('holiday_scope.CONCERNED');
   EntityForms get disability => _r.entity('holiday_scope.DISABILITY');
   EntityForms get national => _r.entity('holiday_scope.NATIONAL');
+  EntityForms get officesAndSchools => _r.entity('holiday_scope.OFFICES_AND_SCHOOLS');
   EntityForms get officesOpen => _r.entity('holiday_scope.OFFICES_OPEN');
   EntityForms get region => _r.entity('holiday_scope.REGION');
   EntityForms get religion => _r.entity('holiday_scope.RELIGION');
@@ -5646,7 +5686,28 @@ final class MessagesSdkEntityRegion {
   EntityForms get inWb => _r.entity('region.IN_WB');
   EntityForms get kathmanduValley => _r.entity('region.KATHMANDU_VALLEY');
   EntityForms get np => _r.entity('region.NP');
+  EntityForms get npBanke => _r.entity('region.NP_BANKE');
+  EntityForms get npBara => _r.entity('region.NP_BARA');
+  EntityForms get npBardiya => _r.entity('region.NP_BARDIYA');
+  EntityForms get npDang => _r.entity('region.NP_DANG');
+  EntityForms get npDhanusha => _r.entity('region.NP_DHANUSHA');
+  EntityForms get npJhapa => _r.entity('region.NP_JHAPA');
+  EntityForms get npKailali => _r.entity('region.NP_KAILALI');
+  EntityForms get npKanchanpur => _r.entity('region.NP_KANCHANPUR');
+  EntityForms get npKapilvastu => _r.entity('region.NP_KAPILVASTU');
+  EntityForms get npMahottari => _r.entity('region.NP_MAHOTTARI');
+  EntityForms get npMorang => _r.entity('region.NP_MORANG');
+  EntityForms get npNawalparasiEast => _r.entity('region.NP_NAWALPARASI_EAST');
+  EntityForms get npNawalparasiWest => _r.entity('region.NP_NAWALPARASI_WEST');
   EntityForms get npP3 => _r.entity('region.NP_P3');
+  EntityForms get npParsa => _r.entity('region.NP_PARSA');
+  EntityForms get npRautahat => _r.entity('region.NP_RAUTAHAT');
+  EntityForms get npRupandehi => _r.entity('region.NP_RUPANDEHI');
+  EntityForms get npSaptari => _r.entity('region.NP_SAPTARI');
+  EntityForms get npSarlahi => _r.entity('region.NP_SARLAHI');
+  EntityForms get npSiraha => _r.entity('region.NP_SIRAHA');
+  EntityForms get npSunsari => _r.entity('region.NP_SUNSARI');
+  EntityForms get npUdayapur => _r.entity('region.NP_UDAYAPUR');
   EntityForms get terai => _r.entity('region.TERAI');
 }
 
@@ -7208,6 +7269,77 @@ final class MessagesSdkVoiceRashifalArea {
   MessagesSdkVoiceRashifalAreaWork get work => MessagesSdkVoiceRashifalAreaWork(_r);
 }
 
+final class MessagesSdkVoiceRashifalAreaLineHealth {
+  const MessagesSdkVoiceRashifalAreaLineHealth(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.HEALTH.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineLoveFamily {
+  const MessagesSdkVoiceRashifalAreaLineLoveFamily(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.LOVE_FAMILY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineMoney {
+  const MessagesSdkVoiceRashifalAreaLineMoney(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.MONEY.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLineWork {
+  const MessagesSdkVoiceRashifalAreaLineWork(this._r);
+
+  final Renderer _r;
+
+  String care({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.CARE', {'variant': variant});
+  String excellent({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.EXCELLENT', {'variant': variant});
+  String good({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.GOOD', {'variant': variant});
+  String mixed({required int variant}) =>
+      _r.render('sdk.voice.rashifal.areaLine.WORK.MIXED', {'variant': variant});
+}
+
+final class MessagesSdkVoiceRashifalAreaLine {
+  const MessagesSdkVoiceRashifalAreaLine(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkVoiceRashifalAreaLineHealth get health => MessagesSdkVoiceRashifalAreaLineHealth(_r);
+  MessagesSdkVoiceRashifalAreaLineLoveFamily get loveFamily => MessagesSdkVoiceRashifalAreaLineLoveFamily(_r);
+  MessagesSdkVoiceRashifalAreaLineMoney get money => MessagesSdkVoiceRashifalAreaLineMoney(_r);
+  MessagesSdkVoiceRashifalAreaLineWork get work => MessagesSdkVoiceRashifalAreaLineWork(_r);
+}
+
 final class MessagesSdkVoiceRashifalEventIngress {
   const MessagesSdkVoiceRashifalEventIngress(this._r);
 
@@ -7453,6 +7585,9 @@ final class MessagesSdkVoiceRashifal {
   final Renderer _r;
 
   MessagesSdkVoiceRashifalArea get area => MessagesSdkVoiceRashifalArea(_r);
+  MessagesSdkVoiceRashifalAreaLine get areaLine => MessagesSdkVoiceRashifalAreaLine(_r);
+  String areaName({required String area}) =>
+      _r.render('sdk.voice.rashifal.areaName', {'area': area});
   String best({required String best}) =>
       _r.render('sdk.voice.rashifal.best', {'best': best});
   MessagesSdkVoiceRashifalEvent get event => MessagesSdkVoiceRashifalEvent(_r);

@@ -55,6 +55,9 @@ use super::{
 /// (C602).
 const PURVAHNA: Window = Window::DayMuhurta { from: 1, to: 6 };
 
+/// The whole daylight, its fifteen muhurtas.
+const DAYLIGHT: Window = Window::DayMuhurta { from: 1, to: 15 };
+
 /// The last fifth of the daylight.
 const SAYAHNA: Window = Window::Part {
     part: DayPart::Sayahna,
@@ -355,6 +358,13 @@ impl Fit {
 /// where the day is printed.
 const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
     (
+        "INDRA_JATRA",
+        Masa::Bhadrapada,
+        Tithi::ShuklaChaturdashi,
+        Fit::UdayaLater,
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: कुमारीइन्द्रयात्रा; the later day when the 14th holds both sunrises, the eve of the full moon's day, as the Nepal Gazette's notice of VS 2076 keeps it on Bhadra 27 (13 September 2019) (C2420)",
+    ),
+    (
         "CHAITE_DASHAIN",
         Masa::Chaitra,
         Tithi::ShuklaAshtami,
@@ -435,8 +445,8 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         "DURVA_ASHTAMI",
         Masa::Bhadrapada,
         Tithi::ShuklaAshtami,
-        Fit::Udaya,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), Bhadra 22 of the Bikram Sambat, so VS 2083 prints Shravana's dark 8th (C608)",
+        Fit::EarlierAny(DAYLIGHT),
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); the earlier day, joined to the 7th, \"सा पूर्वा ग्राह्या\" (Nirnayasindhu pp. 262–263, Hemadri's Vriddha Yama), whenever the 8th touches its daylight; barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), counted from the sankranti's own day: Bhadra 20 of the Bikram Sambat, and a fortnight earlier again when that 8th is barred too, so VS 2083 prints Shravana's dark 8th (C608); the Nepal Gazette's Gaura parva, VS 2076 to 2083, on every one of these days but VS 2077's, a day later (C2420, C2426)",
     ),
     (
         "CHATHA",
@@ -633,13 +643,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         Tithi::ShuklaPratipada,
         Fit::Share(MADHYAHNA),
         "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: म्हपूजा",
-    ),
-    (
-        "NEPAL_SAMBAT_NEW_YEAR",
-        Masa::Kartika,
-        Tithi::ShuklaPratipada,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; in a doubled Kartika the year begins on the adhika month's first day, Dharmasindhu p. 31 (चैत्रस्य मलमासत्वे वत्सरारम्भनिमित्तकं ... मलमासप्रतिपद्येव कुर्यात्), as the Nepal Sambat calendar begins it, while Mha puja keeps the nija month (C2041)",
     ),
     (
         "PASHUPATI_HALESI_MELA",
@@ -1322,12 +1325,6 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
         "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: अनन्त चतुर्दशीव्रत",
     ),
     (
-        "INDRA_JATRA",
-        Masa::Bhadrapada,
-        Tithi::ShuklaChaturdashi,
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 13: कुमारीइन्द्रयात्रा",
-    ),
-    (
         "BHAKTAPUR_SIDDHA_POKHARI_MELA",
         Masa::Bhadrapada,
         Tithi::Purnima,
@@ -1512,6 +1509,12 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
         Masa::Kartika,
         Tithi::ShuklaPratipada,
         "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: गोवर्धनपूजा",
+    ),
+    (
+        "NEPAL_SAMBAT_NEW_YEAR",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, the sunrise after Kartika's new moon, where the Nepal Sambat calendar opens the year; the Nepal Gazette's holiday notices of VS 2076 and 2077 print नेपाल संवत प्रारम्भ with Govardhan puja and Bhai tika on the day after the Mha puja, and those of VS 2078 to 2081 within Tihar's span; a doubled Kartika is Anala, a month of its own name, so the year waits for the nija Kachhala (C2418)",
     ),
     (
         "HALI_TIHAR",
@@ -2454,18 +2457,17 @@ const COUNTED: [(&str, &str, i8, &str); 5] = [
     ),
 ];
 
-/// The rules a doubled Jyeshtha keeps in its adhika month (C606),
-/// the year a doubled Kartika begins there (C2041), and the one the
-/// print names only there (C607); a monthly rule is kept in an
-/// adhika month too.
+/// The rules a doubled Jyeshtha keeps in its adhika month (C606) and
+/// the one the print names only there (C607); a monthly rule is kept in
+/// an adhika month too. The Nepal Sambat new year is not among them: it
+/// keeps the nija Kachhala (C2418).
 fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
     match key {
         "DASHAHARA_SNANA_ARAMBHA"
         | "GANGA_DASHAHARA"
         | "GANGA_PUJA"
         | "RAMESHWAR_PUJA"
-        | "GURU_PADMASAMBHAVA_JAYANTI"
-        | "NEPAL_SAMBAT_NEW_YEAR" => InAdhika::First,
+        | "GURU_PADMASAMBHAVA_JAYANTI" => InAdhika::First,
         "ANALA_PUNHI" | "PADMINI_EKADASHI" | "PARAMA_EKADASHI" => InAdhika::Only,
         _ if month.is_none() => InAdhika::Also,
         _ => InAdhika::Nija,
@@ -2483,7 +2485,7 @@ fn barred(key: &str) -> Option<Barred> {
         "DURVA_ASHTAMI" => Some(Barred::From {
             calendar: Calendar::BikramSambat,
             month: 5,
-            day: 22,
+            day: 20,
             instead: Tithi::KrishnaAshtami,
         }),
         "GAURA_SAPTAMI" => Some(with(Tithi::KrishnaSaptami)),

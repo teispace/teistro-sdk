@@ -15,7 +15,8 @@ use std::ffi::CString;
 use teistro_core::Status;
 use teistro_ffi::context::TsEphemeris;
 use teistro_ffi::geo::{
-    ts_geo_list, ts_geo_load, ts_geo_names, ts_geo_resolve, ts_geo_reverse, ts_geo_search,
+    ts_geo_list, ts_geo_load, ts_geo_names, ts_geo_place, ts_geo_resolve, ts_geo_reverse,
+    ts_geo_search,
 };
 use teistro_ffi::string::TsString;
 
@@ -193,6 +194,18 @@ fn the_place_catalogue_answers_from_the_loaded_table() {
     // Sanskrit has no name tagged; the table offers its Devanagari one.
     assert_eq!(names["best"][1]["asked"], "sa");
 
+    // A place by its id (SR-164): its record, named as asked, not moved.
+    let found = ask(&ctx, ts_geo_place, r#"{"id": "np-ktm", "lang": "ne"}"#)
+        .1
+        .unwrap();
+    assert_eq!(found["place"]["name"], "काठमाडौं");
+    assert_eq!(
+        (found["asked"].clone(), found["moved"].clone()),
+        ("np-ktm".into(), false.into())
+    );
+    let unknown = ask(&ctx, ts_geo_place, r#"{"id": "nowhere"}"#).1.unwrap();
+    assert!(unknown["place"].is_null());
+
     let listed = ask(
         &ctx,
         ts_geo_list,
@@ -220,6 +233,7 @@ fn the_place_catalogue_answers_from_the_loaded_table() {
             "longitudeDeg",
         ),
         (ts_geo_names, r#"{"id": "np", "langs": ["1"]}"#, "langs[0]"),
+        (ts_geo_place, r#"{"id": "np", "lang": "1"}"#, "lang"),
         (ts_geo_list, r#"{"within": "NP", "limit": 5000}"#, "limit"),
         (ts_geo_list, r#"{"within": "NP", "parent": "x"}"#, "geo"),
     ] {

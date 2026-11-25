@@ -265,13 +265,15 @@ struct Turns {
 }
 
 /// The Nepal Sambat year the lunar year holding a day gives: its Vikrama
-/// number less 937 until Kartika, and less 936 from Kachhala on.
+/// number less 937 until Kartika, and less 936 from Kachhala on, Anala
+/// repeating Kartika still the old year (C2418).
 fn by_the_lunar_year(day: &Panchanga, years: &[LunarYear]) -> Option<i32> {
     let sunrise = day.day.sunrise.get();
     let year = years
         .iter()
         .find(|year| (year.began.get()..year.ended.get()).contains(&sunrise))?;
-    let from_kachhala = teistro_panchanga::nepal_sambat::month_of(day.month.amanta) <= 5;
+    let counted_by = teistro_panchanga::nepal_sambat::year_month(day.month.amanta, day.month.kind);
+    let from_kachhala = teistro_panchanga::nepal_sambat::month_of(counted_by) <= 5;
     Some(year.vikrama - 937 + i32::from(from_kachhala))
 }
 

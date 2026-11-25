@@ -7,7 +7,9 @@
 //! amanta Kartika and Kaula amanta Ashwina, and an adhika month, whichever
 //! it repeats, is Anala. Its halves are the pakshas, *thwa* the bright
 //! and *gā* the dark. Its year opens at Kachhala's first day, the sunrise
-//! after Kartika's new moon. Nepal's panchanga committee prints all four
+//! after Kartika's new moon; when Kartika is doubled, the adhika month is
+//! Anala closing the old year, and the year opens at the nija Kachhala
+//! (C2418). Nepal's panchanga committee prints all four
 //! in every page header, and VS 2082's and 2083's 51 headers are the
 //! measured page (`03-design/nepal-sambat-measured.md`).
 //!
@@ -78,7 +80,9 @@ const YEAR_AT_ZERO: i32 = -880;
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NepalSambatDate {
     /// The year, which opens at Kachhala's first day: 1146 from
-    /// 2025-10-22, 1147 from 2026-11-10.
+    /// 2025-10-22, 1147 from 2026-11-10. A doubled Kartika's adhika month
+    /// is Anala and still the old year: 1149 opens on 2028-11-17, the nija
+    /// Kachhala's first day.
     pub year: i32,
     /// The month, counted from 1 for Kachhala (amanta Kartika) to 12 for
     /// Kaula (amanta Ashwina). An adhika month keeps the number of the
@@ -116,7 +120,10 @@ impl NepalSambatDate {
     #[must_use]
     pub fn of(day: &Panchanga) -> NepalSambatDate {
         NepalSambatDate {
-            year: year_of(day.month.amanta, day.day.sunrise),
+            year: year_of(
+                year_month(day.month.amanta, day.month.kind),
+                day.day.sunrise,
+            ),
             month: month_of(day.month.amanta),
             kind: day.month.kind,
             paksha: day.month.paksha,
@@ -179,6 +186,26 @@ impl NepalSambatDate {
             write_in_full(&mut value, path, kind);
         }
         Ok(value)
+    }
+}
+
+/// The month a day's year is counted by: its own, but Ashwina for Anala
+/// repeating Kartika, which falls before the nija Kachhala opens the year
+/// (C2418). An Anala elsewhere in the year is inside it already.
+///
+/// ```
+/// use teistro_calendar::lunisolar::MonthKind;
+/// use teistro_core::catalogue::Masa;
+/// use teistro_panchanga::nepal_sambat::year_month;
+///
+/// assert_eq!(year_month(Masa::Kartika, MonthKind::Adhika), Masa::Ashwina);
+/// assert_eq!(year_month(Masa::Kartika, MonthKind::Nija), Masa::Kartika);
+/// ```
+#[must_use]
+pub const fn year_month(amanta: Masa, kind: MonthKind) -> Masa {
+    match (amanta, kind) {
+        (Masa::Kartika, MonthKind::Adhika) => Masa::Ashwina,
+        _ => amanta,
     }
 }
 
@@ -252,5 +279,26 @@ mod tests {
         assert_eq!(month_of(Masa::Phalguna), 5);
         assert_eq!(month_of(Masa::Chaitra), 6);
         assert_eq!(month_of(Masa::Ashwina), 12);
+    }
+
+    /// Anala repeating Kartika closes the old year; any other Anala, and
+    /// every ordinary month, is counted by its own month.
+    #[test]
+    fn a_doubled_kartika_closes_the_old_year() {
+        assert_eq!(year_month(Masa::Kartika, MonthKind::Adhika), Masa::Ashwina);
+        assert_eq!(year_month(Masa::Kartika, MonthKind::Nija), Masa::Kartika);
+        assert_eq!(year_month(Masa::Chaitra, MonthKind::Adhika), Masa::Chaitra);
+        // 2028-10-25, inside the adhika Kartika, is still NS 1148.
+        assert_eq!(
+            year_of(
+                year_month(Masa::Kartika, MonthKind::Adhika),
+                JulianDay::literal(2_462_069.5)
+            ),
+            1148
+        );
+        assert_eq!(
+            year_of(Masa::Kartika, JulianDay::literal(2_462_092.5)),
+            1149
+        );
     }
 }
