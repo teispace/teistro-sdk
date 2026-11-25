@@ -446,7 +446,7 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
         Masa::Bhadrapada,
         Tithi::ShuklaAshtami,
         Fit::EarlierAny(DAYLIGHT),
-        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); the earlier day, joined to the 7th, \"सा पूर्वा ग्राह्या\" (Nirnayasindhu pp. 262–263, Hemadri's Vriddha Yama), whenever the 8th touches its daylight; barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), counted from the sankranti's own day: Bhadra 20 of the Bikram Sambat, and a fortnight earlier again when that 8th is barred too, so VS 2083 prints Shravana's dark 8th (C608); the Nepal Gazette's Gaura parva, VS 2076 to 2083, on every one of these days (C2420)",
+        "Nepal's national panchanga, VS 2082 p. 11 and VS 2083 p. 12: दूर्वाष्टमीव्रत; the third of three tithis a source gives (C620); the earlier day, joined to the 7th, \"सा पूर्वा ग्राह्या\" (Nirnayasindhu pp. 262–263, Hemadri's Vriddha Yama), whenever the 8th touches its daylight; barred once Agastya has risen, Dharmasindhu p. 56 and its note, \"पूर्वकृष्णाष्टम्यामेव कुर्यात्\", Agastya rising on the 21st day after the Sun enters Simha (p. 58), counted from the sankranti's own day: Bhadra 20 of the Bikram Sambat, and a fortnight earlier again when that 8th is barred too, so VS 2083 prints Shravana's dark 8th (C608); the Nepal Gazette's Gaura parva, VS 2076 to 2083, on every one of these days but VS 2077's, a day later (C2420, C2426)",
     ),
     (
         "CHATHA",
