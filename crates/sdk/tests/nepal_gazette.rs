@@ -179,7 +179,7 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
 /// The gazette's days the pack's rules do not give, each with its reason:
 /// `(VS year, festival)`. A rule change that moves another year's day, or
 /// mends one of these, fails the test below until this list says so.
-const EXCEPTIONS: [(i32, &str, &str); 4] = [
+const EXCEPTIONS: [(i32, &str, &str); 3] = [
     (
         2076,
         "KIJA_PUJA",
@@ -194,11 +194,6 @@ const EXCEPTIONS: [(i32, &str, &str); 4] = [
         2079,
         "HOLI_TERAI",
         "the day after HOLI_HILLS, Falgun 23, so a day early with it (C2420)",
-    ),
-    (
-        2083,
-        "DURA_MHAIPRU_NAKUMA",
-        "the Dura community's day, Poush 15, which no rule of the pack reckons (C2420)",
     ),
 ];
 

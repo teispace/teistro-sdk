@@ -20,6 +20,9 @@ carries its maha punya kala; and the Nepal Sambat year keeps Kachhala's
 first day, in a doubled Kartika too. It is released on GitHub only; no
 package goes to a registry.
 
+- **The Dura new year (C2424).** `DURA_MHAIPRU_NAKUMA`, Poush 15 every
+  year, as the Dura keep their year and as the gazette's notice of VS 2083
+  gives it. Numbers: the Nepal packs gain one day a year.
 - **One reader for every request (SR-159).** `strict` reads a parsed value
   through its own reader, which keeps the path as borrowed steps and writes
   it out only when a read fails, and hands every scalar to `serde_json`'s

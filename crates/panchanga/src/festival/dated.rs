@@ -1914,6 +1914,12 @@ impl DatedRule {
                 "Nepal's national panchanga, VS 2082 p. 19 and VS 2083 p. 20: \"तमुल्होछार\" on Poush 15",
             ),
             bs(
+                "DURA_MHAIPRU_NAKUMA",
+                9,
+                15,
+                "Naresh Kumar Dura, The Sacraments and Festivals in Dura Community (Tribhuvan University, 2024), §5.2.7 pp. 99-101: the Dura year from Poush 15 (Poush Pandhra, Mahipru Nakuma) to Poush 14; the Nepal Gazette's notice of VS 2083, clause 2.2: दुरा म्हैप्रु नकुमा on Poush 15 (C2424)",
+            ),
+            bs(
                 "MARTYRS_DAY",
                 10,
                 16,

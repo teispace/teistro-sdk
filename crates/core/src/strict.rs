@@ -1158,7 +1158,9 @@ mod tests {
             deserialize_str(r#"{"-2": 1, "2026": null}"#, "years").unwrap();
         assert_eq!(years, BTreeMap::from([(-2, Some(1)), (2026, None)]));
         let refused = deserialize_str::<BTreeMap<u8, u8>>(r#"{"x": 1}"#, "years").unwrap_err();
-        assert_eq!(refused.field(), Some("years"));
+        // A key that is not a number is named by itself, as every refused
+        // key is.
+        assert_eq!(refused.field(), Some("years.x"));
         let flags: BTreeMap<bool, u8> = deserialize_str(r#"{"true": 1}"#, "flags").unwrap();
         assert_eq!(flags.get(&true), Some(&1));
         let long = deserialize_str::<(u8, u8)>("[1, 2, 3]", "pair").unwrap_err();
