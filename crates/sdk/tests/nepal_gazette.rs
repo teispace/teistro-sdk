@@ -179,11 +179,18 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
 /// The gazette's days the pack's rules do not give, each with its reason:
 /// `(VS year, festival)`. A rule change that moves another year's day, or
 /// mends one of these, fails the test below until this list says so.
-const EXCEPTIONS: [(i32, &str, &str); 1] = [(
-    2076,
-    "KIJA_PUJA",
-    "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
-)];
+const EXCEPTIONS: [(i32, &str, &str); 2] = [
+    (
+        2076,
+        "KIJA_PUJA",
+        "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
+    ),
+    (
+        2077,
+        "GAURA_PARVA",
+        "Bhadra 10 (26 August 2020), the day after the rule's: Durva ashtami's 8th began past midday on Bhadra 9 and the rule takes the earlier day whenever the 8th touches its daylight; what moved the notice's day is open (C2426)",
+    ),
+];
 
 #[test]
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {
