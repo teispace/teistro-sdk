@@ -436,10 +436,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 5910 | 885 |
-| `ne-Deva-NP` | 5910 | 8 |
-| `sa-Deva` | 5910 | 929 |
-| `sa-Latn` | 5910 | 1007 |
+| `hi-Deva-IN` | 5894 | 249 |
+| `ne-Deva-NP` | 5894 | 8 |
+| `sa-Deva` | 5894 | 293 |
+| `sa-Latn` | 5894 | 371 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

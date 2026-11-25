@@ -8337,5 +8337,1247 @@
       "name": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni",
       "prose": "Rāṣṭriyadivasaḥ, Kāryālayāni Udghāṭitāni"
     }
+  },
+  "observance": {
+    "KALASH_SET_UP": {
+      "name": "Devyāsanarūpeṇa Kalaśasthāpanam",
+      "prose": "Devyāsanarūpeṇa Kalaśasthāpanam"
+    },
+    "JAMARA_SOWN": {
+      "name": "Jamarārthaṃ Yavamakkābījavapanam",
+      "prose": "Jamarārthaṃ Yavamakkābījavapanam"
+    },
+    "DURGA_WORSHIP": {
+      "name": "Durgāyā Vividharūpāṇāṃ Pūjanam",
+      "prose": "Durgāyā Vividharūpāṇāṃ Pūjanam"
+    },
+    "TEMPLE_OFFERINGS": {
+      "name": "Devīmandireṣu Dakṣiṇopahārārpaṇam",
+      "prose": "Devīmandireṣu Dakṣiṇopahārārpaṇam"
+    },
+    "PHULPATI_PROCESSION": {
+      "name": "Hanumānaḍhokāparyantaṃ Phūlapātyāḥ Śobhāyātrā",
+      "prose": "Hanumānaḍhokāparyantaṃ Phūlapātyāḥ Śobhāyātrā"
+    },
+    "PHULPATI_AT_HOME": {
+      "name": "Jamarāsthāpanakakṣe Phūlapātīpraveśanam",
+      "prose": "Jamarāsthāpanakakṣe Phūlapātīpraveśanam"
+    },
+    "TIKA_FROM_ELDERS": {
+      "name": "Gurujanebhyaḥ Sāśīrvādaṃ Ṭīkājamarāgrahaṇam",
+      "prose": "Gurujanebhyaḥ Sāśīrvādaṃ Ṭīkājamarāgrahaṇam"
+    },
+    "FAMILY_VISITS": {
+      "name": "Bandhugṛhagamanam",
+      "prose": "Bandhugṛhagamanam"
+    },
+    "FEAST": {
+      "name": "Kuṭumbabhojanam",
+      "prose": "Kuṭumbabhojanam"
+    },
+    "NEW_CLOTHES": {
+      "name": "Navavastradhāraṇam",
+      "prose": "Navavastradhāraṇam"
+    },
+    "SWINGS": {
+      "name": "Piṅākhyā Vaṃśadolā",
+      "prose": "Piṅākhyā Vaṃśadolā"
+    },
+    "KITES": {
+      "name": "Pataṅgoḍḍayanam",
+      "prose": "Pataṅgoḍḍayanam"
+    },
+    "LAMPS": {
+      "name": "Pratidvāraṃ Dīpaprakāśaḥ",
+      "prose": "Pratidvāraṃ Dīpaprakāśaḥ"
+    },
+    "RANGOLI": {
+      "name": "Dvāre Raṅgavallīracanā",
+      "prose": "Dvāre Raṅgavallīracanā"
+    },
+    "DEUSI_BHAILO": {
+      "name": "Gṛhe Gṛhe Deusībhailogānam",
+      "prose": "Gṛhe Gṛhe Deusībhailogānam"
+    },
+    "FLOWER_GARLANDS": {
+      "name": "Sayapatrīmakhamalīpuṣpamālāḥ",
+      "prose": "Sayapatrīmakhamalīpuṣpamālāḥ"
+    },
+    "DOG_HONOURED": {
+      "name": "Ṭīkāmālābhojanaiḥ Kukkurasatkāraḥ",
+      "prose": "Ṭīkāmālābhojanaiḥ Kukkurasatkāraḥ"
+    },
+    "COW_HONOURED": {
+      "name": "Lakṣmīrūpeṇa Gopūjanam",
+      "prose": "Lakṣmīrūpeṇa Gopūjanam"
+    },
+    "LAKSHMI_WORSHIP": {
+      "name": "Sāyampūjayā Gṛhe Lakṣmyāvāhanam",
+      "prose": "Sāyampūjayā Gṛhe Lakṣmyāvāhanam"
+    },
+    "GOVARDHAN_HILL": {
+      "name": "Gomayena Laghuparvataṃ Nirmāya Govardhanapūjanam",
+      "prose": "Gomayena Laghuparvataṃ Nirmāya Govardhanapūjanam"
+    },
+    "OX_HONOURED": {
+      "name": "Ṭīkāmālābhirvṛṣabhasatkāraḥ",
+      "prose": "Ṭīkāmālābhirvṛṣabhasatkāraḥ"
+    },
+    "MANDALA_FOR_EACH": {
+      "name": "Pratikuṭumbijanaṃ Maṇḍalalekhanam",
+      "prose": "Pratikuṭumbijanaṃ Maṇḍalalekhanam"
+    },
+    "SELF_WORSHIP": {
+      "name": "Ārogyadīrghāyurarthamātmapūjanam",
+      "prose": "Ārogyadīrghāyurarthamātmapūjanam"
+    },
+    "TIKA_FROM_SISTERS": {
+      "name": "Bhaginībhyaḥ Saptavarṇaṭīkā",
+      "prose": "Bhaginībhyaḥ Saptavarṇaṭīkā"
+    },
+    "GIFTS_TO_SISTERS": {
+      "name": "Bhrātṛbhirbhaginībhya Upahāradānam",
+      "prose": "Bhrātṛbhirbhaginībhya Upahāradānam"
+    },
+    "DAR_FEAST": {
+      "name": "Upavāsapūrvasandhyāyāṃ Darabhojanam",
+      "prose": "Upavāsapūrvasandhyāyāṃ Darabhojanam"
+    },
+    "FAST": {
+      "name": "Upavāsaḥ",
+      "prose": "Upavāsaḥ"
+    },
+    "RED_DRESS": {
+      "name": "Raktaśāṭīkaṅkaṇadhāraṇam",
+      "prose": "Raktaśāṭīkaṅkaṇadhāraṇam"
+    },
+    "SONG_AND_DANCE": {
+      "name": "Gītanṛtyam",
+      "prose": "Gītanṛtyam"
+    },
+    "SHIVA_PARVATI_WORSHIP": {
+      "name": "Śivapārvatīpūjanam",
+      "prose": "Śivapārvatīpūjanam"
+    },
+    "RIVER_BATH": {
+      "name": "Nadyāṃ Saṅgame Vā Snānam",
+      "prose": "Nadyāṃ Saṅgame Vā Snānam"
+    },
+    "SAPTARSHI_WORSHIP": {
+      "name": "Saptarṣipūjanam",
+      "prose": "Saptarṣipūjanam"
+    },
+    "ARGHYA_TO_SUN": {
+      "name": "Jale Sthitvāstamayodayayoḥ Sūryāyārghyadānam",
+      "prose": "Jale Sthitvāstamayodayayoḥ Sūryāyārghyadānam"
+    },
+    "OFFERINGS_IN_BASKETS": {
+      "name": "Vaṃśapiṭakeṣu Ṭhekuvāphalekṣuvahanam",
+      "prose": "Vaṃśapiṭakeṣu Ṭhekuvāphalekṣuvahanam"
+    },
+    "NIGHT_VIGIL": {
+      "name": "Rātrijāgaraṇam",
+      "prose": "Rātrijāgaraṇam"
+    },
+    "TEMPLE_VISIT": {
+      "name": "Devālayadarśanam",
+      "prose": "Devālayadarśanam"
+    },
+    "BONFIRES": {
+      "name": "Śītanivāraṇāyāgniprajvālanam",
+      "prose": "Śītanivāraṇāyāgniprajvālanam"
+    },
+    "CHIR_RAISED": {
+      "name": "Saptāhapūrvaṃ Cīrotthāpanam",
+      "prose": "Saptāhapūrvaṃ Cīrotthāpanam"
+    },
+    "COLOURS": {
+      "name": "Raṅgacūrṇajalakrīḍā",
+      "prose": "Raṅgacūrṇajalakrīḍā"
+    },
+    "HOLIKA_BONFIRE": {
+      "name": "Pūrvarātrau Holikādahanam",
+      "prose": "Pūrvarātrau Holikādahanam"
+    },
+    "SWEETS_SHARED": {
+      "name": "Prativeśibhiḥ Saha Miṣṭānnavitaraṇam",
+      "prose": "Prativeśibhiḥ Saha Miṣṭānnavitaraṇam"
+    },
+    "JANAI_CHANGED": {
+      "name": "Yajñopavītaparivartanam",
+      "prose": "Yajñopavītaparivartanam"
+    },
+    "DORO_TIED": {
+      "name": "Maṇibandhe Rakṣāsūtrabandhanam",
+      "prose": "Maṇibandhe Rakṣāsūtrabandhanam"
+    },
+    "RAKHI_TIED": {
+      "name": "Bhaginībhirbhrātṛmaṇibandhe Rākhībandhanam",
+      "prose": "Bhaginībhirbhrātṛmaṇibandhe Rākhībandhanam"
+    },
+    "KWATI": {
+      "name": "Navavidhaśimbīyūṣaḥ Kvām̐ṭī",
+      "prose": "Navavidhaśimbīyūṣaḥ Kvām̐ṭī"
+    },
+    "PILGRIMAGE": {
+      "name": "Tīrthayātrā",
+      "prose": "Tīrthayātrā"
+    },
+    "MIDNIGHT_PUJA": {
+      "name": "Janmavelāyāṃ Niśīthe Pūjanam",
+      "prose": "Janmavelāyāṃ Niśīthe Pūjanam"
+    },
+    "BHAJAN": {
+      "name": "Bhajanakīrtanam",
+      "prose": "Bhajanakīrtanam"
+    },
+    "RAMA_WORSHIP": {
+      "name": "Janmavelāyāṃ Madhyāhne Rāmapūjanam",
+      "prose": "Janmavelāyāṃ Madhyāhne Rāmapūjanam"
+    },
+    "WINTER_FOODS": {
+      "name": "Tilamodakacākughṛtamadhukandapiṇḍālusevanam",
+      "prose": "Tilamodakacākughṛtamadhukandapiṇḍālusevanam"
+    },
+    "NEW_YEAR_GREETINGS": {
+      "name": "Navavarṣaśubhakāmanāḥ",
+      "prose": "Navavarṣaśubhakāmanāḥ"
+    },
+    "CHARIOT_PROCESSION": {
+      "name": "Nagare Rathākarṣaṇam",
+      "prose": "Nagare Rathākarṣaṇam"
+    },
+    "POLE_RAISED": {
+      "name": "Uccastambhotthāpanam",
+      "prose": "Uccastambhotthāpanam"
+    },
+    "SARASWATI_WORSHIP": {
+      "name": "Vidyālayeṣu Mandireṣu Ca Sarasvatīpūjanam",
+      "prose": "Vidyālayeṣu Mandireṣu Ca Sarasvatīpūjanam"
+    },
+    "FIRST_LETTERS": {
+      "name": "Bālānāmakṣarārambhaḥ",
+      "prose": "Bālānāmakṣarārambhaḥ"
+    },
+    "MASKED_DANCES": {
+      "name": "Catvareṣu Mukhāvaraṇanṛtyam",
+      "prose": "Catvareṣu Mukhāvaraṇanṛtyam"
+    },
+    "KUMARI_CHARIOT": {
+      "name": "Jīvantyā Devyāḥ Kumāryā Rathayātrā",
+      "prose": "Jīvantyā Devyāḥ Kumāryā Rathayātrā"
+    },
+    "COW_PROCESSION": {
+      "name": "Pratikuṭumbaṃ Mṛtanimittaṃ Gorgoveṣabālasya Vā Nagaraparikramā",
+      "prose": "Pratikuṭumbaṃ Mṛtanimittaṃ Gorgoveṣabālasya Vā Nagaraparikramā"
+    },
+    "SATIRE": {
+      "name": "Vyaṅgyaṃ Hāsyaṃ Ca",
+      "prose": "Vyaṅgyaṃ Hāsyaṃ Ca"
+    },
+    "HORSE_RACES": {
+      "name": "Ṭum̐ḍikhele Aśvadhāvanaṃ Pradarśanāni Ca",
+      "prose": "Ṭum̐ḍikhele Aśvadhāvanaṃ Pradarśanāni Ca"
+    },
+    "PROCESSION": {
+      "name": "Śobhāyātrā",
+      "prose": "Śobhāyātrā"
+    },
+    "BHOTO_SHOWN": {
+      "name": "Devasya Ratnakhacitabhoṭokañcukasya Sārvajanikapradarśanam",
+      "prose": "Devasya Ratnakhacitabhoṭokañcukasya Sārvajanikapradarśanam"
+    },
+    "NATURE_WORSHIP": {
+      "name": "Prakṛtipitṛpūjanam",
+      "prose": "Prakṛtipitṛpūjanam"
+    },
+    "SAKELA_DANCE": {
+      "name": "Mahāmaṇḍalākāreṇa Sākelānṛtyam",
+      "prose": "Mahāmaṇḍalākāreṇa Sākelānṛtyam"
+    },
+    "VILLAGE_ASSEMBLY": {
+      "name": "Grāmavāsibhiḥ Saṃvatsarārthaṃ Baḍagharavaraṇam",
+      "prose": "Grāmavāsibhiḥ Saṃvatsarārthaṃ Baḍagharavaraṇam"
+    },
+    "BIRUDA": {
+      "name": "Biruḍārthaṃ Pañcadhānyanimajjanam",
+      "prose": "Biruḍārthaṃ Pañcadhānyanimajjanam"
+    },
+    "DEUDA_DANCE": {
+      "name": "Rātriṣu Deuḍānṛtyam",
+      "prose": "Rātriṣu Deuḍānṛtyam"
+    },
+    "MONASTERY_VISIT": {
+      "name": "Vihāre Prārthanā",
+      "prose": "Vihāre Prārthanā"
+    },
+    "PRAYER_FLAGS": {
+      "name": "Nūtanaprārthanādhvajāḥ",
+      "prose": "Nūtanaprārthanādhvajāḥ"
+    },
+    "TRADITIONAL_DRESS": {
+      "name": "Pāramparikaveṣadhāraṇam",
+      "prose": "Pāramparikaveṣadhāraṇam"
+    },
+    "STUPA_VISIT": {
+      "name": "Lumbinīstūpānāṃ Darśanam",
+      "prose": "Lumbinīstūpānāṃ Darśanam"
+    },
+    "ALMS": {
+      "name": "Dīnebhyo Dānaṃ Bhikṣā Ca",
+      "prose": "Dīnebhyo Dānaṃ Bhikṣā Ca"
+    },
+    "EID_PRAYER": {
+      "name": "Sāmūhika Īdanamājaḥ",
+      "prose": "Sāmūhika Īdanamājaḥ"
+    },
+    "ZAKAT_AL_FITR": {
+      "name": "Namājātpūrvaṃ Dīnebhyaḥ Phitrādānam",
+      "prose": "Namājātpūrvaṃ Dīnebhyaḥ Phitrādānam"
+    },
+    "QURBANI": {
+      "name": "Paśoḥ Kurbānī, Tanmāṃsasya Bandhudīnaiḥ Saha Vibhājanam",
+      "prose": "Paśoḥ Kurbānī, Tanmāṃsasya Bandhudīnaiḥ Saha Vibhājanam"
+    },
+    "CHURCH_SERVICE": {
+      "name": "Girijāgṛhe Sāmūhikārādhanā",
+      "prose": "Girijāgṛhe Sāmūhikārādhanā"
+    },
+    "CAROLS": {
+      "name": "Kairolagītāni",
+      "prose": "Kairolagītāni"
+    },
+    "GIFTS": {
+      "name": "Upahāradānam",
+      "prose": "Upahāradānam"
+    },
+    "SCRIPTURE_READING": {
+      "name": "Gurugranthasāhibasyākhaṇḍapāṭhaḥ",
+      "prose": "Gurugranthasāhibasyākhaṇḍapāṭhaḥ"
+    },
+    "LANGAR": {
+      "name": "Gurudvārasya Laṅgare Sarvebhyo Niḥśulkabhojanam",
+      "prose": "Gurudvārasya Laṅgare Sarvebhyo Niḥśulkabhojanam"
+    },
+    "BALI_IMAGE": {
+      "name": "Balirājapratikṛtiracanā Pūjanaṃ Ca",
+      "prose": "Balirājapratikṛtiracanā Pūjanaṃ Ca"
+    },
+    "GIFTS_TO_WIVES": {
+      "name": "Patibhiḥ Patnībhya Upahāradānam",
+      "prose": "Patibhiḥ Patnībhya Upahāradānam"
+    },
+    "RISHI_TARPANA": {
+      "name": "Vedarṣitarpaṇam",
+      "prose": "Vedarṣitarpaṇam"
+    },
+    "VEDA_RECITATION": {
+      "name": "Vedapāṭhasya Punarārambhaḥ",
+      "prose": "Vedapāṭhasya Punarārambhaḥ"
+    },
+    "SHRADDHA": {
+      "name": "Piṇḍodakadānasahitaṃ Śrāddham",
+      "prose": "Piṇḍodakadānasahitaṃ Śrāddham"
+    },
+    "BRAHMINS_FED": {
+      "name": "Brāhmaṇabhojanam",
+      "prose": "Brāhmaṇabhojanam"
+    },
+    "SUMANGALI_FED": {
+      "name": "Suvāsinībhojanaṃ Satkāraśca",
+      "prose": "Suvāsinībhojanaṃ Satkāraśca"
+    },
+    "DEITY_BATHED": {
+      "name": "Pratimābhiṣekaḥ Śṛṅgāraśca",
+      "prose": "Pratimābhiṣekaḥ Śṛṅgāraśca"
+    },
+    "RAMAYANA_READ": {
+      "name": "Rāmāyaṇapārāyaṇam",
+      "prose": "Rāmāyaṇapārāyaṇam"
+    },
+    "NAVADVIPA_PARIKRAMA": {
+      "name": "Navadvīpaparikramā",
+      "prose": "Navadvīpaparikramā"
+    },
+    "PLOUGHING_PAUSED": {
+      "name": "Bhūmerviśrāntikāle Halakarṣaṇavarjanam",
+      "prose": "Bhūmerviśrāntikāle Halakarṣaṇavarjanam"
+    },
+    "SWINGS_HUNG": {
+      "name": "Vṛkṣeṣu Dolābandhanam",
+      "prose": "Vṛkṣeṣu Dolābandhanam"
+    },
+    "PITHA": {
+      "name": "Gṛhe Pīṭhānirmāṇam",
+      "prose": "Gṛhe Pīṭhānirmāṇam"
+    },
+    "SPRING_AWAITED": {
+      "name": "Srotomūle Tīrthayātriṇāṃ Jalodgamapratīkṣā",
+      "prose": "Srotomūle Tīrthayātriṇāṃ Jalodgamapratīkṣā"
+    },
+    "TOOLS_WORSHIPPED": {
+      "name": "Upakaraṇayantrāṇāṃ Śodhanaṃ Pūjanaṃ Ca",
+      "prose": "Upakaraṇayantrāṇāṃ Śodhanaṃ Pūjanaṃ Ca"
+    },
+    "GARLAND_AT_STATUE": {
+      "name": "Pratimāyāṃ Citre Vā Mālyārpaṇam",
+      "prose": "Pratimāyāṃ Citre Vā Mālyārpaṇam"
+    },
+    "POETRY_READING": {
+      "name": "Kavikāvyapāṭhaḥ",
+      "prose": "Kavikāvyapāṭhaḥ"
+    },
+    "FIREWORKS": {
+      "name": "Agnikrīḍā",
+      "prose": "Agnikrīḍā"
+    },
+    "RALLY": {
+      "name": "Janayātrāḥ Sabhāśca",
+      "prose": "Janayātrāḥ Sabhāśca"
+    },
+    "FLAG_HOISTED": {
+      "name": "Rāṣṭradhvajārohaṇam",
+      "prose": "Rāṣṭradhvajārohaṇam"
+    },
+    "PARADE": {
+      "name": "Pathasañcalanam",
+      "prose": "Pathasañcalanam"
+    },
+    "PRAYER_MEETING": {
+      "name": "Prārthanāsabhāḥ",
+      "prose": "Prārthanāsabhāḥ"
+    },
+    "STATIONS_OF_CROSS": {
+      "name": "Krūsamārgasthāneṣu Prārthanā",
+      "prose": "Krūsamārgasthāneṣu Prārthanā"
+    },
+    "JAIN_TEMPLE": {
+      "name": "Jinālaye Pūjanam",
+      "prose": "Jinālaye Pūjanam"
+    },
+    "NIRVANA_LADDU": {
+      "name": "Pratyūṣe Jinālaye Nirvāṇamodakārpaṇam",
+      "prose": "Pratyūṣe Jinālaye Nirvāṇamodakārpaṇam"
+    },
+    "KALPASUTRA_READ": {
+      "name": "Munibhiḥ Kalpasūtravācanam",
+      "prose": "Munibhiḥ Kalpasūtravācanam"
+    },
+    "PRATIKRAMANA": {
+      "name": "Doṣālocanaprāyaścittātmakaṃ Pratikramaṇam",
+      "prose": "Doṣālocanaprāyaścittātmakaṃ Pratikramaṇam"
+    },
+    "FORGIVENESS_ASKED": {
+      "name": "Micchāmi Dukkaḍamiti Sarvebhyaḥ Kṣamāyācanā",
+      "prose": "Micchāmi Dukkaḍamiti Sarvebhyaḥ Kṣamāyācanā"
+    },
+    "TEN_VIRTUES": {
+      "name": "Pratidinaṃ Daśadharmeṣvekaikasyārādhanam",
+      "prose": "Pratidinaṃ Daśadharmeṣvekaikasyārādhanam"
+    },
+    "TATTVARTHA_READ": {
+      "name": "Pratyahamekaikādhyāyaśastattvārthasūtrapāṭhaḥ",
+      "prose": "Pratyahamekaikādhyāyaśastattvārthasūtrapāṭhaḥ"
+    },
+    "AYAMBIL": {
+      "name": "Āyambilam, Pratyahamekavāraṃ Nīrasakvathitadhānyabhojanam",
+      "prose": "Āyambilam, Pratyahamekavāraṃ Nīrasakvathitadhānyabhojanam"
+    },
+    "SIDDHACHAKRA_WORSHIP": {
+      "name": "Siddhacakrapūjanam",
+      "prose": "Siddhacakrapūjanam"
+    },
+    "GREENS_AVOIDED": {
+      "name": "Haritaśākavarjanam",
+      "prose": "Haritaśākavarjanam"
+    },
+    "SNAKE_WORSHIP": {
+      "name": "Kṣīrapuṣpairnāgadevatāpūjanam",
+      "prose": "Kṣīrapuṣpairnāgadevatāpūjanam"
+    },
+    "FLOWERS_GATHERED": {
+      "name": "Navavadhūbhiḥ Sāyaṃ Sagītaṃ Puṣpāvacayaḥ",
+      "prose": "Navavadhūbhiḥ Sāyaṃ Sagītaṃ Puṣpāvacayaḥ"
+    },
+    "STORIES_TOLD": {
+      "name": "Vṛddhastriyā Dinakathāvācanam",
+      "prose": "Vṛddhastriyā Dinakathāvācanam"
+    },
+    "GAURI_WORSHIP": {
+      "name": "Gaurīpūjanam",
+      "prose": "Gaurīpūjanam"
+    },
+    "ARGHYA_TO_MOON": {
+      "name": "Dadhiphalasahitaṃ Candrāyārghyadānam",
+      "prose": "Dadhiphalasahitaṃ Candrāyārghyadānam"
+    },
+    "PREDAWN_MEAL": {
+      "name": "Upavāsāt Prāk Pratyūṣe Bhojanam",
+      "prose": "Upavāsāt Prāk Pratyūṣe Bhojanam"
+    },
+    "CLAY_FIGURES": {
+      "name": "Bhaginībhirmṛtpratimānirmāṇaṃ Gītagānaṃ Ca",
+      "prose": "Bhaginībhirmṛtpratimānirmāṇaṃ Gītagānaṃ Ca"
+    },
+    "IMMERSION": {
+      "name": "Nadyāṃ Puṣkariṇyāṃ Vā Pratimāvisarjanam",
+      "prose": "Nadyāṃ Puṣkariṇyāṃ Vā Pratimāvisarjanam"
+    },
+    "SONGS_OF_THE_POET": {
+      "name": "Kavigītagānam",
+      "prose": "Kavigītagānam"
+    },
+    "WATER_ON_HEADS": {
+      "name": "Āśīrvādarūpeṇa Vṛddhaiḥ Kaniṣṭhānāṃ Śirasi Jalasecanam",
+      "prose": "Āśīrvādarūpeṇa Vṛddhaiḥ Kaniṣṭhānāṃ Śirasi Jalasecanam"
+    },
+    "STALE_FOOD": {
+      "name": "Pūrvadinapakvaśītānnabhojanaṃ Cullīviśrāmaśca",
+      "prose": "Pūrvadinapakvaśītānnabhojanaṃ Cullīviśrāmaśca"
+    },
+    "FORT_VISIT": {
+      "name": "Tatsambaddhadurgadarśanam",
+      "prose": "Tatsambaddhadurgadarśanam"
+    },
+    "BANKS_CLOSED": {
+      "name": "Lekhāsamāpanārthamadhikoṣāṇāṃ Janasevāvirāmaḥ",
+      "prose": "Lekhāsamāpanārthamadhikoṣāṇāṃ Janasevāvirāmaḥ"
+    },
+    "SWING_OF_KRISHNA": {
+      "name": "Rādhākṛṣṇayordolāndolanam",
+      "prose": "Rādhākṛṣṇayordolāndolanam"
+    },
+    "EASTER_VIGIL": {
+      "name": "Navāgnipāskaladīpasahitamīsṭarajāgaraṇam",
+      "prose": "Navāgnipāskaladīpasahitamīsṭarajāgaraṇam"
+    },
+    "NEW_LEDGERS": {
+      "name": "Āpaṇeṣu Hālakhātāsañjñakanavalekhāpustakārambhaḥ",
+      "prose": "Āpaṇeṣu Hālakhātāsañjñakanavalekhāpustakārambhaḥ"
+    },
+    "PANDAL_VISITS": {
+      "name": "Alaṅkṛtapaṇḍāladarśanāya Janasammardaḥ",
+      "prose": "Alaṅkṛtapaṇḍāladarśanāya Janasammardaḥ"
+    },
+    "NIGHT_PUJA": {
+      "name": "Sarvarātraṃ Pūjanam",
+      "prose": "Sarvarātraṃ Pūjanam"
+    },
+    "MEMORIAL_GATHERING": {
+      "name": "Tatsmṛtau Sabhāḥ",
+      "prose": "Tatsmṛtau Sabhāḥ"
+    },
+    "SIREN_AT_HOUR": {
+      "name": "Janmavelāyāṃ Śaṅkhaghoṣaḥ Sāyaranadhvaniśca",
+      "prose": "Janmavelāyāṃ Śaṅkhaghoṣaḥ Sāyaranadhvaniśca"
+    },
+    "POOKALAM": {
+      "name": "Dvāre Pūkalamākhyaṃ Puṣpāstaraṇam",
+      "prose": "Dvāre Pūkalamākhyaṃ Puṣpāstaraṇam"
+    },
+    "SADYA": {
+      "name": "Kadalīpatre Pariveṣitaṃ Sadyabhojanam",
+      "prose": "Kadalīpatre Pariveṣitaṃ Sadyabhojanam"
+    },
+    "VISHUKKANI": {
+      "name": "Rātrau Sajjitasya Kaṇeḥ Prabodhakṣaṇe Varṣārambhadarśanam",
+      "prose": "Rātrau Sajjitasya Kaṇeḥ Prabodhakṣaṇe Varṣārambhadarśanam"
+    },
+    "MONEY_FROM_ELDERS": {
+      "name": "Gurujanaiḥ Kaniṣṭhebhyo Mudrādānam",
+      "prose": "Gurujanaiḥ Kaniṣṭhebhyo Mudrādānam"
+    },
+    "PESAHA_BREAD": {
+      "name": "Gṛhe'kiṇvitaroṭikānārikelakṣīravibhājanam",
+      "prose": "Gṛhe'kiṇvitaroṭikānārikelakṣīravibhājanam"
+    },
+    "FOOT_WASHING": {
+      "name": "Girijāgṛhe Pādaprakṣālanam",
+      "prose": "Girijāgṛhe Pādaprakṣālanam"
+    },
+    "PONGAL_BOILED": {
+      "name": "Utsecanaparyantaṃ Kṣīraguḍasahitanavataṇḍulapākaḥ",
+      "prose": "Utsecanaparyantaṃ Kṣīraguḍasahitanavataṇḍulapākaḥ"
+    },
+    "KOLAM": {
+      "name": "Dvāre Taṇḍulacūrṇena Kolamaracanā",
+      "prose": "Dvāre Taṇḍulacūrṇena Kolamaracanā"
+    },
+    "CATTLE_HONOURED": {
+      "name": "Godhanasya Snāpanamalaṅkaraṇaṃ Bhojanaṃ Ca",
+      "prose": "Godhanasya Snāpanamalaṅkaraṇaṃ Bhojanaṃ Ca"
+    },
+    "OUTINGS": {
+      "name": "Sakuṭumbaṃ Bhramaṇaṃ Bandhudarśanaṃ Ca",
+      "prose": "Sakuṭumbaṃ Bhramaṇaṃ Bandhudarśanaṃ Ca"
+    },
+    "KAVADI": {
+      "name": "Giridevālayaparyantaṃ Kāvaḍīvahanaṃ Keṣāñcidbhaktānāṃ Dehavedhanaṃ Ca",
+      "prose": "Giridevālayaparyantaṃ Kāvaḍīvahanaṃ Keṣāñcidbhaktānāṃ Dehavedhanaṃ Ca"
+    },
+    "BOOKS_WORSHIPPED": {
+      "name": "Devyāḥ Purato Granthavādyasthāpanam",
+      "prose": "Devyāḥ Purato Granthavādyasthāpanam"
+    },
+    "MEJI_BURNT": {
+      "name": "Pratyūṣe Palālavaṃśanirmitamejīdahanam",
+      "prose": "Pratyūṣe Palālavaṃśanirmitamejīdahanam"
+    },
+    "TRADITIONAL_GAMES": {
+      "name": "Pāramparikakrīḍāḥ",
+      "prose": "Pāramparikakrīḍāḥ"
+    },
+    "GAMOSA_GIVEN": {
+      "name": "Gurujanamitrebhyo Gāmosādānam",
+      "prose": "Gurujanamitrebhyo Gāmosādānam"
+    },
+    "LAMPS_IN_FIELDS": {
+      "name": "Tulasīkoṣṭhāgārakṣetreṣu Dīpaprajvālanam",
+      "prose": "Tulasīkoṣṭhāgārakṣetreṣu Dīpaprajvālanam"
+    },
+    "NAAM_PRASANGA": {
+      "name": "Nāmaghare Sāmūhikaṃ Nāmaprasaṅgakīrtanam",
+      "prose": "Nāmaghare Sāmūhikaṃ Nāmaprasaṅgakīrtanam"
+    },
+    "BHAONA": {
+      "name": "Bhāonākhyaṃ Vaiṣṇavanṛtyanāṭakam",
+      "prose": "Bhāonākhyaṃ Vaiṣṇavanṛtyanāṭakam"
+    },
+    "ANCESTOR_RITES": {
+      "name": "Pitṛbhyaḥ Samarpaṇam",
+      "prose": "Pitṛbhyaḥ Samarpaṇam"
+    },
+    "KARAM_BRANCH": {
+      "name": "Karamavṛkṣaśākhāṃ Saṃsthāpya Parito Rātrinṛtyam",
+      "prose": "Karamavṛkṣaśākhāṃ Saṃsthāpya Parito Rātrinṛtyam"
+    },
+    "AWARD_GIVEN": {
+      "name": "Tannāmnā Puraskārapradānam",
+      "prose": "Tannāmnā Puraskārapradānam"
+    },
+    "VACHANA_SINGING": {
+      "name": "Tadvacanānāṃ Pāṭho Gānaṃ Ca",
+      "prose": "Tadvacanānāṃ Pāṭho Gānaṃ Ca"
+    },
+    "MATHA_WORSHIP": {
+      "name": "Maṭhe Viśeṣapūjanam",
+      "prose": "Maṭhe Viśeṣapūjanam"
+    },
+    "BAGINA_GIVEN": {
+      "name": "Suvāsinībhyo Bāginākhyopahārapātradānam",
+      "prose": "Suvāsinībhyo Bāginākhyopahārapātradānam"
+    },
+    "STATE_FLAG": {
+      "name": "Rājyadhvajārohaṇaṃ Rājyapuraskārapradānaṃ Ca",
+      "prose": "Rājyadhvajārohaṇaṃ Rājyapuraskārapradānaṃ Ca"
+    },
+    "NEW_CROP_BLESSED": {
+      "name": "Girijāgṛhe Navasasyāśīrvādaḥ Sakuṭumbaṃ Tadbhojanaṃ Ca",
+      "prose": "Girijāgṛhe Navasasyāśīrvādaḥ Sakuṭumbaṃ Tadbhojanaṃ Ca"
+    },
+    "MIDNIGHT_MASS": {
+      "name": "Niśīthārādhanā",
+      "prose": "Niśīthārādhanā"
+    },
+    "SESAME_JAGGERY": {
+      "name": "Mitraprativeśibhiḥ Saha Tilaguḍavitaraṇam",
+      "prose": "Mitraprativeśibhiḥ Saha Tilaguḍavitaraṇam"
+    },
+    "OLD_THINGS_BURNT": {
+      "name": "Pratyūṣe Jīrṇavastūnāmagnau Prakṣepaḥ",
+      "prose": "Pratyūṣe Jīrṇavastūnāmagnau Prakṣepaḥ"
+    },
+    "FLOWER_STACK": {
+      "name": "Staraśaḥ Puṣpāṇi Saṃyojya Śaṅkvākārabatukammāracanā",
+      "prose": "Staraśaḥ Puṣpāṇi Saṃyojya Śaṅkvākārabatukammāracanā"
+    },
+    "CIRCLE_DANCE": {
+      "name": "Strīṇāṃ Maṇḍalākāreṇa Gītanṛtyam",
+      "prose": "Strīṇāṃ Maṇḍalākāreṇa Gītanṛtyam"
+    },
+    "GIFTS_TO_WORKERS": {
+      "name": "Saṃvatsaraṃ Sevākāribhya Upahārapāritoṣikadānam",
+      "prose": "Saṃvatsaraṃ Sevākāribhya Upahārapāritoṣikadānam"
+    },
+    "OFFERING_TO_WATER": {
+      "name": "Nadyāṃ Samudre Vā Samarpaṇam",
+      "prose": "Nadyāṃ Samudre Vā Samarpaṇam"
+    },
+    "RUN_FOR_UNITY": {
+      "name": "Rāṣṭraikyārthaṃ Padayātrā Dhāvanaṃ Ca",
+      "prose": "Rāṣṭraikyārthaṃ Padayātrā Dhāvanaṃ Ca"
+    },
+    "NAGAR_KIRTAN": {
+      "name": "Bhajanagānasahitā Nagaraparikramā Nagarakīrtanam",
+      "prose": "Bhajanagānasahitā Nagaraparikramā Nagarakīrtanam"
+    },
+    "HOLI_MILAN": {
+      "name": "Raṅgakrīḍānantaraṃ Holīmilanasammelanam",
+      "prose": "Raṅgakrīḍānantaraṃ Holīmilanasammelanam"
+    },
+    "NEW_RICE_OFFERED": {
+      "name": "Navasasyasya Prathamataṇḍulānāṃ Devyai Nivedanaṃ Tato Bhojanaṃ Ca",
+      "prose": "Navasasyasya Prathamataṇḍulānāṃ Devyai Nivedanaṃ Tato Bhojanaṃ Ca"
+    },
+    "ELDERS_GREETED": {
+      "name": "Gurujanābhivādanamāśīrgrahaṇaṃ Ca",
+      "prose": "Gurujanābhivādanamāśīrgrahaṇaṃ Ca"
+    },
+    "BANYAN_WORSHIP": {
+      "name": "Sāvitrīkathāśravaṇasahitaṃ Vaṭavṛkṣapūjanam",
+      "prose": "Sāvitrīkathāśravaṇasahitaṃ Vaṭavṛkṣapūjanam"
+    },
+    "MOON_WORSHIP": {
+      "name": "Rātrau Candrapūjanam",
+      "prose": "Rātrau Candrapūjanam"
+    },
+    "BOATS_FLOATED": {
+      "name": "Sadīpalaghunaukānāṃ Jale Pravāhaṇam",
+      "prose": "Sadīpalaghunaukānāṃ Jale Pravāhaṇam"
+    },
+    "ELDEST_CHILD_HONOURED": {
+      "name": "Nīrājanena Navavastrairbhojanena Ca Jyeṣṭhāpatyasatkāraḥ",
+      "prose": "Nīrājanena Navavastrairbhojanena Ca Jyeṣṭhāpatyasatkāraḥ"
+    },
+    "PYRE_BURNED": {
+      "name": "Catuṣpathe Kāṣṭhagomayapiṇḍacitidahanam",
+      "prose": "Catuṣpathe Kāṣṭhagomayapiṇḍacitidahanam"
+    },
+    "GANESH_WORSHIP": {
+      "name": "Gaṇeśapūjanam",
+      "prose": "Gaṇeśapūjanam"
+    },
+    "MOON_AVOIDED": {
+      "name": "Candradarśanaparihāraḥ",
+      "prose": "Candradarśanaparihāraḥ"
+    },
+    "IMAGE_IMMERSED": {
+      "name": "Mṛnmayapratimāyā Jale Visarjanam",
+      "prose": "Mṛnmayapratimāyā Jale Visarjanam"
+    },
+    "VISHNU_WORSHIP": {
+      "name": "Viṣṇupūjanam",
+      "prose": "Viṣṇupūjanam"
+    },
+    "SHIVA_WORSHIP": {
+      "name": "Śivapūjanam",
+      "prose": "Śivapūjanam"
+    },
+    "HOLY_BATH": {
+      "name": "Puṇyasarasi Kuṇḍe Vā Snānam",
+      "prose": "Puṇyasarasi Kuṇḍe Vā Snānam"
+    },
+    "TARPAN": {
+      "name": "Pitṛbhyastilodakatarpaṇam",
+      "prose": "Pitṛbhyastilodakatarpaṇam"
+    },
+    "FEEDING_BRAHMINS": {
+      "name": "Śrāddhānantaraṃ Brāhmaṇabandhubhojanam",
+      "prose": "Śrāddhānantaraṃ Brāhmaṇabandhubhojanam"
+    },
+    "DURVA_WORSHIP": {
+      "name": "Dūrvārpaṇena Pūjanam",
+      "prose": "Dūrvārpaṇena Pūjanam"
+    },
+    "DUBDHAGO": {
+      "name": "Strībhirabhimantritadubadhāgodhāraṇam",
+      "prose": "Strībhirabhimantritadubadhāgodhāraṇam"
+    },
+    "GAURA_BROUGHT_HOME": {
+      "name": "Tṛṇasasyanālanirmitāyā Gaurāyā Vādyaghoṣeṇa Gṛhānayanam",
+      "prose": "Tṛṇasasyanālanirmitāyā Gaurāyā Vādyaghoṣeṇa Gṛhānayanam"
+    },
+    "SACRED_THREAD_ARM": {
+      "name": "Bāhāvabhimantritasūtrabandhanam",
+      "prose": "Bāhāvabhimantritasūtrabandhanam"
+    },
+    "DEITY_PROCESSION": {
+      "name": "Śibikāyāṃ Devasya Mārgeṣu Paribhramaṇam",
+      "prose": "Śibikāyāṃ Devasya Mārgeṣu Paribhramaṇam"
+    },
+    "CHARHE_PUJA": {
+      "name": "Cahresañjñakakṛṣṇacaturdaśyāṃ Gṛhapūjanam",
+      "prose": "Cahresañjñakakṛṣṇacaturdaśyāṃ Gṛhapūjanam"
+    },
+    "RIVER_GODDESS_WORSHIP": {
+      "name": "Dīpapuṣpairgaṅgāpūjanam",
+      "prose": "Dīpapuṣpairgaṅgāpūjanam"
+    },
+    "TULSI_PLANTED": {
+      "name": "Gṛhadevasthāne Tulasīropaṇam",
+      "prose": "Gṛhadevasthāne Tulasīropaṇam"
+    },
+    "TRIBUTE_PROGRAMMES": {
+      "name": "Tatsmṛtau Pāṭhapravacanaśraddhāñjalayaḥ",
+      "prose": "Tatsmṛtau Pāṭhapravacanaśraddhāñjalayaḥ"
+    },
+    "STATUE_GARLANDED": {
+      "name": "Tatpratimāyāṃ Mālyārpaṇam",
+      "prose": "Tatpratimāyāṃ Mālyārpaṇam"
+    },
+    "CROWS_FED": {
+      "name": "Kākebhyo'nnadānam",
+      "prose": "Kākebhyo'nnadānam"
+    },
+    "LALITA_WORSHIP": {
+      "name": "Lalitādevīpūjanam",
+      "prose": "Lalitādevīpūjanam"
+    },
+    "KUCHHI_FEAST": {
+      "name": "Vayaḥkrameṇopaviśya Patrapātreṣu Kuṭumbabhojanam",
+      "prose": "Vayaḥkrameṇopaviśya Patrapātreṣu Kuṭumbabhojanam"
+    },
+    "TULSI_WEDDING": {
+      "name": "Dāmodareṇa Śālagrāmeṇa Vā Tulasīvivāhaḥ",
+      "prose": "Dāmodareṇa Śālagrāmeṇa Vā Tulasīvivāhaḥ"
+    },
+    "LAMP_VIGIL": {
+      "name": "Tailadīpai Rātrijāgaraṇam",
+      "prose": "Tailadīpai Rātrijāgaraṇam"
+    },
+    "SATBIJ_SCATTERED": {
+      "name": "Mṛtanimittaṃ Satabījākhyasaptadhānyavikiraṇam",
+      "prose": "Mṛtanimittaṃ Satabījākhyasaptadhānyavikiraṇam"
+    },
+    "FAIR": {
+      "name": "Devasthāne Melakaḥ",
+      "prose": "Devasthāne Melakaḥ"
+    },
+    "NEW_GRAIN": {
+      "name": "Navānnavyañjananivedanaṃ Bhojanaṃ Ca",
+      "prose": "Navānnavyañjananivedanaṃ Bhojanaṃ Ca"
+    },
+    "COWSHED_WORSHIP": {
+      "name": "Goṣṭhapūjanam",
+      "prose": "Goṣṭhapūjanam"
+    },
+    "SESAME_OFFERED": {
+      "name": "Pūjāyāṃ Tilārpaṇaṃ Dīnebhyastiladānaṃ Ca",
+      "prose": "Pūjāyāṃ Tilārpaṇaṃ Dīnebhyastiladānaṃ Ca"
+    },
+    "MOON_GREETED": {
+      "name": "Sūryāstottaraṃ Bālacandradarśanaṃ Namaskāraśca",
+      "prose": "Sūryāstottaraṃ Bālacandradarśanaṃ Namaskāraśca"
+    },
+    "TREE_CIRCLED": {
+      "name": "Aśvatthapūjanaṃ Sūtreṇa Pradakṣiṇā Ca",
+      "prose": "Aśvatthapūjanaṃ Sūtreṇa Pradakṣiṇā Ca"
+    },
+    "ABHISHEKA": {
+      "name": "Pratimābhiṣekaḥ",
+      "prose": "Pratimābhiṣekaḥ"
+    },
+    "SPOUT_BATH": {
+      "name": "Śilājaladhārāsu Snānam",
+      "prose": "Śilājaladhārāsu Snānam"
+    },
+    "MOTHER_HONOURED": {
+      "name": "Miṣṭānnopahārairmātṛsatkāraḥ",
+      "prose": "Miṣṭānnopahārairmātṛsatkāraḥ"
+    },
+    "GIFTS_OF_WATER": {
+      "name": "Grīṣmārthaṃ Jalavyajanopānaddānam",
+      "prose": "Grīṣmārthaṃ Jalavyajanopānaddānam"
+    },
+    "LAMP_OIL_OFFERED": {
+      "name": "Sarṣapatailakṛṣṇatilārpaṇam",
+      "prose": "Sarṣapatailakṛṣṇatilārpaṇam"
+    },
+    "WATER_SOURCES_CLEANED": {
+      "name": "Kūpapuṣkariṇīśilādhārāśodhanam",
+      "prose": "Kūpapuṣkariṇīśilādhārāśodhanam"
+    },
+    "BARA": {
+      "name": "Bārānirmāṇaṃ Vitaraṇaṃ Ca",
+      "prose": "Bārānirmāṇaṃ Vitaraṇaṃ Ca"
+    },
+    "HYMNS_SUNG": {
+      "name": "Tatpadyabhajanagānam",
+      "prose": "Tatpadyabhajanagānam"
+    },
+    "GURU_HONOURED": {
+      "name": "Gurupūjanaṃ Satkāraśca",
+      "prose": "Gurupūjanaṃ Satkāraśca"
+    },
+    "KHAT_RACE": {
+      "name": "Devarathakhaṭānāmākarṣaṇaṃ Dhāvanaṃ Ca",
+      "prose": "Devarathakhaṭānāmākarṣaṇaṃ Dhāvanaṃ Ca"
+    },
+    "DAMANAKA_OFFERED": {
+      "name": "Devāya Sugandhidamanakārpaṇam",
+      "prose": "Devāya Sugandhidamanakārpaṇam"
+    },
+    "VOWS_TAKEN": {
+      "name": "Cāturmāsyārthaṃ Saṃyamavratagrahaṇam",
+      "prose": "Cāturmāsyārthaṃ Saṃyamavratagrahaṇam"
+    },
+    "STUPA_CIRCLED": {
+      "name": "Sopahāraṃ Stūpadevasthānapradakṣiṇā",
+      "prose": "Sopahāraṃ Stūpadevasthānapradakṣiṇā"
+    },
+    "SNAKE_IMAGES": {
+      "name": "Dvāropari Nāgacitrasthāpanaṃ Pūjanaṃ Ca",
+      "prose": "Dvāropari Nāgacitrasthāpanaṃ Pūjanaṃ Ca"
+    },
+    "MILK_OFFERED": {
+      "name": "Nāgebhyaḥ Kṣīrataṇḍulārpaṇam",
+      "prose": "Nāgebhyaḥ Kṣīrataṇḍulārpaṇam"
+    },
+    "FROGS_FED": {
+      "name": "Kṣetrasthamaṇḍūkebhyo'nnadānam",
+      "prose": "Kṣetrasthamaṇḍūkebhyo'nnadānam"
+    },
+    "RICE_PLANTING": {
+      "name": "Paṅkakelisahito Dhānyaropaṇābhinayaḥ",
+      "prose": "Paṅkakelisahito Dhānyaropaṇābhinayaḥ"
+    },
+    "KUSH_GATHERED": {
+      "name": "Vārṣikakarmārthaṃ Kuśotpāṭanam",
+      "prose": "Vārṣikakarmārthaṃ Kuśotpāṭanam"
+    },
+    "FATHER_HONOURED": {
+      "name": "Miṣṭānnopahāraiḥ Pitṛsatkāraḥ",
+      "prose": "Miṣṭānnopahāraiḥ Pitṛsatkāraḥ"
+    },
+    "ANANTA_THREAD": {
+      "name": "Bāhau Caturdaśagranthikānantasūtrabandhanam",
+      "prose": "Bāhau Caturdaśagranthikānantasūtrabandhanam"
+    },
+    "ANIMAL_SACRIFICE": {
+      "name": "Devyai Paśubaliḥ",
+      "prose": "Devyai Paśubaliḥ"
+    },
+    "BEL_INVITED": {
+      "name": "Devyadhiṣṭhānārthaṃ Bilvanimantraṇam",
+      "prose": "Devyadhiṣṭhānārthaṃ Bilvanimantraṇam"
+    },
+    "SWORD_PROCESSION": {
+      "name": "Devaveṣadhāribhiḥ Puruṣaiḥ Khaḍgasahitā Śobhāyātrā",
+      "prose": "Devaveṣadhāribhiḥ Puruṣaiḥ Khaḍgasahitā Śobhāyātrā"
+    },
+    "GODDESS_FAREWELL": {
+      "name": "Devīvisarjanaṃ Pratimānimajjanaṃ Ca",
+      "prose": "Devīvisarjanaṃ Pratimānimajjanaṃ Ca"
+    },
+    "SARAI_DANCE": {
+      "name": "Naumatīvādyatālena Khaḍgaphalakadhāriṇāṃ Sarāyanṛtyam",
+      "prose": "Naumatīvādyatālena Khaḍgaphalakadhāriṇāṃ Sarāyanṛtyam"
+    },
+    "DAWN_BATH": {
+      "name": "Aruṇodaye Snānam",
+      "prose": "Aruṇodaye Snānam"
+    },
+    "SKY_LAMP": {
+      "name": "Pratisāyamuccayaṣṭyāmākāśadīpabandhanam",
+      "prose": "Pratisāyamuccayaṣṭyāmākāśadīpabandhanam"
+    },
+    "POND_BATH": {
+      "name": "Puṇyakuṇḍe Snānam",
+      "prose": "Puṇyakuṇḍe Snānam"
+    },
+    "PARANA": {
+      "name": "Dvādaśyāṃ Pāraṇam",
+      "prose": "Dvādaśyāṃ Pāraṇam"
+    },
+    "LAMP_FOR_YAMA": {
+      "name": "Yamāya Dakṣiṇābhimukhadīpadānam",
+      "prose": "Yamāya Dakṣiṇābhimukhadīpadānam"
+    },
+    "PURCHASES": {
+      "name": "Dhātupātrasvarṇarajatakrayaṇam",
+      "prose": "Dhātupātrasvarṇarajatakrayaṇam"
+    },
+    "COW_AND_CALF": {
+      "name": "Savatsadhenupūjanam",
+      "prose": "Savatsadhenupūjanam"
+    },
+    "OIL_BATH": {
+      "name": "Aruṇodaye Tailābhyaṅgasnānam",
+      "prose": "Aruṇodaye Tailābhyaṅgasnānam"
+    },
+    "GAMES_OF_CHANCE": {
+      "name": "Sarvarātraṃ Patrakākṣadyūtakrīḍā",
+      "prose": "Sarvarātraṃ Patrakākṣadyūtakrīḍā"
+    },
+    "COWHERDS_HONOURED": {
+      "name": "Gogopālapūjanam",
+      "prose": "Gogopālapūjanam"
+    },
+    "GOURD_GIVEN": {
+      "name": "Antarnihitamudrākūṣmāṇḍadānam",
+      "prose": "Antarnihitamudrākūṣmāṇḍadānam"
+    },
+    "AMLA_WORSHIP": {
+      "name": "Dhātrīvṛkṣamūle Pūjanam",
+      "prose": "Dhātrīvṛkṣamūle Pūjanam"
+    },
+    "HOMA": {
+      "name": "Homaḥ",
+      "prose": "Homaḥ"
+    },
+    "ETERNAL_LAMP": {
+      "name": "Sarvarātramakhaṇḍadīpaprajvālanam",
+      "prose": "Sarvarātramakhaṇḍadīpaprajvālanam"
+    },
+    "GIFTS_TO_BRAHMINS": {
+      "name": "Brāhmaṇebhyo Dīnebhyaśca Dānam",
+      "prose": "Brāhmaṇebhyo Dīnebhyaśca Dānam"
+    },
+    "WEDDING_REENACTED": {
+      "name": "Sītārāmavivāhābhinayaḥ",
+      "prose": "Sītārāmavivāhābhinayaḥ"
+    },
+    "GITA_RECITED": {
+      "name": "Bhagavadgītāpāṭhaḥ",
+      "prose": "Bhagavadgītāpāṭhaḥ"
+    },
+    "NEW_RICE": {
+      "name": "Navaśālivyañjanāni",
+      "prose": "Navaśālivyañjanāni"
+    },
+    "YOMARI": {
+      "name": "Cākutilapūritāstaṇḍulapiṣṭakāḥ Yomarī",
+      "prose": "Cākutilapūritāstaṇḍulapiṣṭakāḥ Yomarī"
+    },
+    "LEARNING_HONOURED": {
+      "name": "Tatsmṛtau Pravacanāni Kāryakramāśca",
+      "prose": "Tatsmṛtau Pravacanāni Kāryakramāśca"
+    },
+    "CULTURAL_PROGRAMME": {
+      "name": "Sāṃskṛtikakāryakramā Nṛtyāni Ca",
+      "prose": "Sāṃskṛtikakāryakramā Nṛtyāni Ca"
+    },
+    "NAHAY_KHAY_MEAL": {
+      "name": "Snānānantaramodanasūpālābubhirekabhaktam",
+      "prose": "Snānānantaramodanasūpālābubhirekabhaktam"
+    },
+    "KHEER_OFFERED": {
+      "name": "Sāyaṃ Guḍapāyasaroṭikānivedanam",
+      "prose": "Sāyaṃ Guḍapāyasaroṭikānivedanam"
+    },
+    "IMAGE_BATHED": {
+      "name": "Sarvajanasamakṣaṃ Devapratimāsnānam",
+      "prose": "Sarvajanasamakṣaṃ Devapratimāsnānam"
+    },
+    "TSAMPA_OFFERED": {
+      "name": "Gṛhadevasthāne Sāmpārpaṇam",
+      "prose": "Gṛhadevasthāne Sāmpārpaṇam"
+    },
+    "KALASH_PROCESSION": {
+      "name": "Puṇyajalakalaśayātrā",
+      "prose": "Puṇyajalakalaśayātrā"
+    },
+    "SWASTHANI_READING": {
+      "name": "Pratisāyaṃ Svasthānīvratakathāvācanam",
+      "prose": "Pratisāyaṃ Svasthānīvratakathāvācanam"
+    },
+    "SESAME_USED": {
+      "name": "Snāne Bhojane Dāne Ca Tilopayogaḥ",
+      "prose": "Snāne Bhojane Dāne Ca Tilopayogaḥ"
+    },
+    "TARPANA": {
+      "name": "Pitṛbhyo Jalāñjalinā Tarpaṇam",
+      "prose": "Pitṛbhyo Jalāñjalinā Tarpaṇam"
+    },
+    "SUN_WORSHIP": {
+      "name": "Sūryodaye Sūryapūjanam",
+      "prose": "Sūryodaye Sūryapūjanam"
+    },
+    "REFLECTION_VIEWED": {
+      "name": "Jale Pratibimbitaliṅgadarśanam",
+      "prose": "Jale Pratibimbitaliṅgadarśanam"
+    },
+    "MANVADI_RITES": {
+      "name": "Manvāditithau Snānaśrāddhadānāni",
+      "prose": "Manvāditithau Snānaśrāddhadānāni"
+    },
+    "MANGO_BLOSSOM_EATEN": {
+      "name": "Āmramañjarībhakṣaṇaṃ Tailābhyaṅgaśca",
+      "prose": "Āmramañjarībhakṣaṇaṃ Tailābhyaṅgaśca"
+    },
+    "PALANQUIN_PROCESSION": {
+      "name": "Khaṭākhyaśibikāyāṃ Devasya Nagaraparikramā",
+      "prose": "Khaṭākhyaśibikāyāṃ Devasya Nagaraparikramā"
+    },
+    "COLD_FOOD": {
+      "name": "Pūrvadinapakvaśītānnabhojanam",
+      "prose": "Pūrvadinapakvaśītānnabhojanam"
+    },
+    "NARASIMHA_WORSHIP": {
+      "name": "Prādurbhāvavelāyāṃ Sāyaṃ Nṛsiṃhapūjanam",
+      "prose": "Prādurbhāvavelāyāṃ Sāyaṃ Nṛsiṃhapūjanam"
+    },
+    "KUMAR_WORSHIP": {
+      "name": "Gṛhe Kumārasya Kārttikeyasya Pūjanam",
+      "prose": "Gṛhe Kumārasya Kārttikeyasya Pūjanam"
+    },
+    "EFFIGY_BURNED": {
+      "name": "Ghaṇṭākarṇapratikṛterākarṣaṇaṃ Dahanaṃ Ca",
+      "prose": "Ghaṇṭākarṇapratikṛterākarṣaṇaṃ Dahanaṃ Ca"
+    },
+    "IRON_RINGS_ON_DOORS": {
+      "name": "Aniṣṭanivāraṇāya Dvāreṣvayovalayakīlanikhananam",
+      "prose": "Aniṣṭanivāraṇāya Dvāreṣvayovalayakīlanikhananam"
+    },
+    "CHARIOTS_CLASH": {
+      "name": "Devarathānāṃ Dhāvanaṃ Parasparasaṅghaṭṭanaṃ Ca",
+      "prose": "Devarathānāṃ Dhāvanaṃ Parasparasaṅghaṭṭanaṃ Ca"
+    },
+    "IMAGES_DISPLAYED": {
+      "name": "Vihārāṅgaṇeṣu Dīpaṅkarapratimāpaubhācitrapradarśanam",
+      "prose": "Vihārāṅgaṇeṣu Dīpaṅkarapratimāpaubhācitrapradarśanam"
+    },
+    "MASKED_DANCE": {
+      "name": "Devarūpeṇa Mukhāvaraṇadhārinartakasya Nagaraparikramā",
+      "prose": "Devarūpeṇa Mukhāvaraṇadhārinartakasya Nagaraparikramā"
+    },
+    "POLE_LOWERED": {
+      "name": "Hanumānaḍhokāyāmindradhvajāvatāraṇam",
+      "prose": "Hanumānaḍhokāyāmindradhvajāvatāraṇam"
+    },
+    "MILITARY_PARADE": {
+      "name": "Ṭum̐ḍikhele Sainyasañcalanaṃ Pradarśanāni Ca",
+      "prose": "Ṭum̐ḍikhele Sainyasañcalanaṃ Pradarśanāni Ca"
+    },
+    "DOLLS_BEATEN": {
+      "name": "Kanyākṛtavastraputtalikānāṃ Bālakairdaṇḍatāḍanam",
+      "prose": "Kanyākṛtavastraputtalikānāṃ Bālakairdaṇḍatāḍanam"
+    },
+    "THREAD_OF_SIXTEEN_KNOTS": {
+      "name": "Vratakāle Ṣoḍaśagranthikasūtradhāraṇam",
+      "prose": "Vratakāle Ṣoḍaśagranthikasūtradhāraṇam"
+    },
+    "TULASI_PLANTED": {
+      "name": "Tulasīpādaparopaṇaṃ Pūjanaṃ Ca",
+      "prose": "Tulasīpādaparopaṇaṃ Pūjanaṃ Ca"
+    },
+    "TEACHERS_HONOURED": {
+      "name": "Sadakṣiṇaṃ Guruśikṣakasatkāraḥ",
+      "prose": "Sadakṣiṇaṃ Guruśikṣakasatkāraḥ"
+    },
+    "PAVITRA_OFFERED": {
+      "name": "Devāya Granthilasūtramālārūpaṃ Pavitrāropaṇam",
+      "prose": "Devāya Granthilasūtramālārūpaṃ Pavitrāropaṇam"
+    },
+    "KALI_WORSHIP": {
+      "name": "Kālīdevīpūjanam",
+      "prose": "Kālīdevīpūjanam"
+    },
+    "UPAKARMA_RITE": {
+      "name": "Ṛṣitarpaṇasahitamupākarma",
+      "prose": "Ṛṣitarpaṇasahitamupākarma"
+    },
+    "SATYANARAYAN_PUJA": {
+      "name": "Satyanārāyaṇapūjā Kathā Ca",
+      "prose": "Satyanārāyaṇapūjā Kathā Ca"
+    },
+    "MOON_ARGHYA": {
+      "name": "Candrodaye Candrāyārghyadānam",
+      "prose": "Candrodaye Candrāyārghyadānam"
+    },
+    "TORCHES_THROWN": {
+      "name": "Sāyaṃ Prajvalitolkānāṃ Gṛhādbahiḥ Prakṣepaḥ",
+      "prose": "Sāyaṃ Prajvalitolkānāṃ Gṛhādbahiḥ Prakṣepaḥ"
+    },
+    "CURD_AND_BEATEN_RICE": {
+      "name": "Dadhicipiṭakabhojanam",
+      "prose": "Dadhicipiṭakabhojanam"
+    },
+    "WREATHS_LAID": {
+      "name": "Pratimāsmārakeṣu Mālyārpaṇam",
+      "prose": "Pratimāsmārakeṣu Mālyārpaṇam"
+    },
+    "LIGHTS_DISPLAY": {
+      "name": "Sāyaṃ Bhavanālaṅkaraṇaṃ Dīpaprajvālanaṃ Ca",
+      "prose": "Sāyaṃ Bhavanālaṅkaraṇaṃ Dīpaprajvālanaṃ Ca"
+    },
+    "DRILLS": {
+      "name": "Surakṣābhyāso Janajāgaraṇakāryakramāśca",
+      "prose": "Surakṣābhyāso Janajāgaraṇakāryakramāśca"
+    },
+    "AWARDS": {
+      "name": "Puraskārasammānapradānam",
+      "prose": "Puraskārasammānapradānam"
+    },
+    "SEMINARS": {
+      "name": "Pravacanagoṣṭhīsārvajanikakāryakramāḥ",
+      "prose": "Pravacanagoṣṭhīsārvajanikakāryakramāḥ"
+    },
+    "LITERARY_RECITAL": {
+      "name": "Kāvyapāṭhaḥ Sāhityagoṣṭhī Ca",
+      "prose": "Kāvyapāṭhaḥ Sāhityagoṣṭhī Ca"
+    },
+    "VERMILION_THROWN": {
+      "name": "Janasammardopari Sindūravikiraṇam",
+      "prose": "Janasammardopari Sindūravikiraṇam"
+    },
+    "GIFTS_OF_FOOD": {
+      "name": "Bandhuprativeśibhyaḥ Kṣīradadhinavaśākadānam",
+      "prose": "Bandhuprativeśibhyaḥ Kṣīradadhinavaśākadānam"
+    },
+    "KHEER": {
+      "name": "Sakuṭumbaṃ Pāyasabhojanam",
+      "prose": "Sakuṭumbaṃ Pāyasabhojanam"
+    },
+    "EARTH_WORSHIP": {
+      "name": "Ropaṇātprāgbhūmipūjanam",
+      "prose": "Ropaṇātprāgbhūmipūjanam"
+    },
+    "LAKHE_DANCE": {
+      "name": "Lākhenṛtyam",
+      "prose": "Lākhenṛtyam"
+    },
+    "CIRCUMAMBULATION": {
+      "name": "Devālayapradakṣiṇā",
+      "prose": "Devālayapradakṣiṇā"
+    },
+    "HEALTH_CAMPS": {
+      "name": "Niḥśulkārogyaśibirāṇi Parīkṣaṇāni Ca",
+      "prose": "Niḥśulkārogyaśibirāṇi Parīkṣaṇāni Ca"
+    },
+    "TREE_PLANTING": {
+      "name": "Vṛkṣāropaṇaṃ Sārvajanikasthalaśodhanaṃ Ca",
+      "prose": "Vṛkṣāropaṇaṃ Sārvajanikasthalaśodhanaṃ Ca"
+    },
+    "BLOOD_DONATION": {
+      "name": "Raktadānaśibirāṇi",
+      "prose": "Raktadānaśibirāṇi"
+    },
+    "CANDLE_VIGIL": {
+      "name": "Madhūcchiṣṭavartikādīpairjāgaraṇam",
+      "prose": "Madhūcchiṣṭavartikādīpairjāgaraṇam"
+    },
+    "YOGA_SESSIONS": {
+      "name": "Sāmūhikayogadhyānābhyāsaḥ",
+      "prose": "Sāmūhikayogadhyānābhyāsaḥ"
+    },
+    "SPORTS_EVENTS": {
+      "name": "Krīḍāpratiyogitā Dhāvanaṃ Ca",
+      "prose": "Krīḍāpratiyogitā Dhāvanaṃ Ca"
+    },
+    "EXHIBITIONS": {
+      "name": "Pradarśanyaḥ Prastutayaśca",
+      "prose": "Pradarśanyaḥ Prastutayaśca"
+    },
+    "VACCINATION": {
+      "name": "Ṭīkākaraṇābhiyānam",
+      "prose": "Ṭīkākaraṇābhiyānam"
+    },
+    "MOON_AND_LAKSHMI_NARAYAN": {
+      "name": "Alaṅkṛtaśayyāyāṃ Lakṣmīnārāyaṇapūjanam",
+      "prose": "Alaṅkṛtaśayyāyāṃ Lakṣmīnārāyaṇapūjanam"
+    },
+    "BHAKKA": {
+      "name": "Bhakkānirmāṇaṃ Vitaraṇaṃ Ca",
+      "prose": "Bhakkānirmāṇaṃ Vitaraṇaṃ Ca"
+    },
+    "DAURA_SURUWAL": {
+      "name": "Daurāsuruvālagunyūcolīḍhākāṭopīdhāraṇam",
+      "prose": "Daurāsuruvālagunyūcolīḍhākāṭopīdhāraṇam"
+    },
+    "FILM_SCREENINGS": {
+      "name": "Calacitrapradarśanaṃ Puraskārapradānaṃ Ca",
+      "prose": "Calacitrapradarśanaṃ Puraskārapradānaṃ Ca"
+    }
   }
 }
