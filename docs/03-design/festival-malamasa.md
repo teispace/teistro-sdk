@@ -29,7 +29,7 @@ Ranked as `LANE-RULES.md` asks; page numbers are of the page images read.
 | 1 | *Nirnayasindhu* (Dhakal's edition, VS 2071), p. 28 | the *Kaladarsha*: what is barred is kept in the second month, and the gods' rites too; Hemadri's halves of a tithi in a kshaya lunation, for a death or a birth |
 | 2 | Kane, *History of Dharmaśāstra* V.1 pp. 88–89 | the year's beginning on the adhika's first day by some, on the shuddha's by the *Mayukha*, which puts every festival in the shuddha month; the samsarpa (the adhika before a kshaya) barred like any adhika |
 | 1 | the committee's prints, VS 2082 p. 15 and VS 2083 p. 17 | the Nepal Sambat new year printed on Kartika's bright first, beside the Mha puja |
-| 1 | the Nepal Gazette's holiday notices, VS 2076 to 2081 | the beginning of Nepal Sambat on one day with the Mha puja or Govardhan puja, so the year keeps the nija Kartika with them (C2418) |
+| 1 | the Nepal Gazette's holiday notices, VS 2076 to 2081 | the beginning of Nepal Sambat with Govardhan puja, on the day after the Mha puja in VS 2076 and 2077, so the year keeps the nija Kartika with them (C2418, C2423) |
 
 No printed patro for 1963–64 or 1982–83, the two kshaya years in the
 SDK's tested span before 2028, was found (C2045).

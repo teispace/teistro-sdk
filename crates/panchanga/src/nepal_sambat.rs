@@ -9,7 +9,7 @@
 //! and *gā* the dark. Its year opens at Kachhala's first day, the sunrise
 //! after Kartika's new moon; when Kartika is doubled, the adhika month is
 //! Anala closing the old year, and the year opens at the nija Kachhala
-//! with the Mha puja (C2418). Nepal's panchanga committee prints all four
+//! (C2418). Nepal's panchanga committee prints all four
 //! in every page header, and VS 2082's and 2083's 51 headers are the
 //! measured page (`03-design/nepal-sambat-measured.md`).
 //!

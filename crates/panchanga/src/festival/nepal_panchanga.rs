@@ -356,7 +356,7 @@ impl Fit {
 
 /// The fitted rules: key, month (amanta, the nija month), tithi, fit, and
 /// where the day is printed.
-const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
+const RULES: [(&str, Masa, Tithi, Fit, &str); 74] = [
     (
         "INDRA_JATRA",
         Masa::Bhadrapada,
@@ -643,13 +643,6 @@ const RULES: [(&str, Masa, Tithi, Fit, &str); 75] = [
         Tithi::ShuklaPratipada,
         Fit::Share(MADHYAHNA),
         "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: म्हपूजा",
-    ),
-    (
-        "NEPAL_SAMBAT_NEW_YEAR",
-        Masa::Kartika,
-        Tithi::ShuklaPratipada,
-        Fit::Share(MADHYAHNA),
-        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, which the print opens on Mha puja's day, so read as MHA_PUJA is; the Nepal Gazette's holiday notices, VS 2076 to 2081, put नेपाल संवत् प्रारम्भ on one day with the Mha puja or Govardhan puja, and a doubled Kartika is Anala, a month of its own name, so the year waits for the nija Kachhala with the Mha puja (C2418)",
     ),
     (
         "PASHUPATI_HALESI_MELA",
@@ -958,7 +951,7 @@ const BY_TEXT: [(&str, Masa, Tithi, Fit, &str); 9] = [
 /// is printed. Each also gives every day a patro printed in Nepal verified
 /// for it from 2013 to 2027, by a back-test kept outside the repository
 /// (`festival-classification.md`).
-const AT_SUNRISE: [(&str, Masa, Tithi, &str); 150] = [
+const AT_SUNRISE: [(&str, Masa, Tithi, &str); 151] = [
     (
         "SAMVATSARA_ARAMBHA",
         Masa::Chaitra,
@@ -1516,6 +1509,12 @@ const AT_SUNRISE: [(&str, Masa, Tithi, &str); 150] = [
         Masa::Kartika,
         Tithi::ShuklaPratipada,
         "Nepal's national panchanga, VS 2082 p. 15 and VS 2083 p. 17: गोवर्धनपूजा",
+    ),
+    (
+        "NEPAL_SAMBAT_NEW_YEAR",
+        Masa::Kartika,
+        Tithi::ShuklaPratipada,
+        "Nepal's national panchanga, VS 2082 p. 15: ने.सं.११४६ प्रारम्भ; VS 2083 p. 17: ने.सं.११४७ प्रारम्भ: Kachhala's first day, the sunrise after Kartika's new moon, where the Nepal Sambat calendar opens the year; the Nepal Gazette's holiday notices of VS 2076 and 2077 print नेपाल संवत प्रारम्भ with Govardhan puja and Bhai tika on the day after the Mha puja, and those of VS 2078 to 2081 within Tihar's span; a doubled Kartika is Anala, a month of its own name, so the year waits for the nija Kachhala (C2418)",
     ),
     (
         "HALI_TIHAR",
@@ -2461,7 +2460,7 @@ const COUNTED: [(&str, &str, i8, &str); 5] = [
 /// The rules a doubled Jyeshtha keeps in its adhika month (C606) and
 /// the one the print names only there (C607); a monthly rule is kept in
 /// an adhika month too. The Nepal Sambat new year is not among them: it
-/// keeps the nija Kachhala with the Mha puja (C2418).
+/// keeps the nija Kachhala (C2418).
 fn in_adhika(key: &str, month: Option<Masa>) -> InAdhika {
     match key {
         "DASHAHARA_SNANA_ARAMBHA"

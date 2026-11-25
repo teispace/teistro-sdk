@@ -14,16 +14,24 @@ the previous release, not by nobody having looked.
 
 - **The Nepal Sambat year in a doubled Kartika (SR-158).** In BS 2085
   (2028) Kartika is doubled, and the new year moves from the adhika
-  month's first day, 18 October 2028, to the Mha puja's day in the nija
-  month, 17 November: the gazette's holiday notices and the committee's
-  print keep the two on one day, and the adhika month is Anala, not
-  Kachhala (C2418, superseding C2041). `nepal_sambat()` counts that Anala
+  month's first day, 18 October 2028, to the nija Kachhala's first day,
+  17 November, with the Mha puja and Govardhan puja: the adhika month is
+  Anala, not Kachhala (C2418, superseding C2041). `nepal_sambat()` counts that Anala
   in the closing year 1148. Tihar itself still parts across the adhika
   month, Lakshmi puja on 17 October and the rest a month on, as the
   committee's former executive director computes it. A test holds Tihar
   together in every other year from 1800 to 2399.
   Numbers: the Nepal Sambat new year and the Nepal Sambat year of the days
   of an adhika Kartika; nothing else.
+- **The Nepal Sambat new year at sunrise (C2423).** The new year is
+  Kachhala's first day, the sunrise after Kartika's new moon, where the
+  Nepal Sambat calendar already opened the year; the festival read
+  Kartika's bright first at midday, the Mha puja's time. When the first
+  begins after a sunrise and holds the next, the new year is the later
+  day, with Govardhan puja, as the Nepal Gazette's notices of VS 2076 and
+  2077 print it (28 and 29 October 2019, 15 and 16 November 2020).
+  Numbers: `NEPAL_SAMBAT_NEW_YEAR` moves a day later in those years, and
+  `festival.days` of `NEPAL_PANCHANGA` and `NEPAL` with it; nothing else.
 - **A holiday notice's own record (SR-163).** Each holiday carries its
   `clause`, its `districts` (region keys such as `NP_JHAPA`, named in every
   locale) and `changes`: what a later decision did (`ADDED`, `DATED`,

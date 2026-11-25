@@ -1670,7 +1670,7 @@ fn bs_2085_keeps_its_festivals_through_a_doubled_kartika_and_a_kshaya_pausha() {
     keeps_every_rule_of(&nepal_observances(&sdk, (2027, 6, 1), (2028, 3, 1)), &year);
     // Tihar after Lakshmi puja waits for the nija month, as every festival
     // with another time does (pp. 3-4), and the Nepal Sambat year begins
-    // with the Mha puja there, the adhika month being Anala (C2418).
+    // with the nija Kachhala there, the adhika month being Anala (C2418).
     assert_eq!(
         clause_of(&year, "NEPAL_SAMBAT_NEW_YEAR"),
         [((2028, 11, 17), Some(MalamasaClause::Nija))]
@@ -1718,10 +1718,14 @@ fn day_number((year, month, day): (i32, u8, u8)) -> i64 {
 }
 
 /// Tihar's days in every year of the built-in sky's six centuries at
-/// Kathmandu (SR-158): the Mha puja, the Govardhan puja and the Nepal
-/// Sambat new year are one day, Kartika's bright first; Bhai tika is one
-/// or two days after it; and Lakshmi puja, Ashwina's new moon at dusk,
-/// one or two days before it, except when Kartika is doubled. Then the
+/// Kathmandu (SR-158): the Govardhan puja and the Nepal Sambat new year
+/// are one day, Kartika's bright first at sunrise; the Mha puja, the first
+/// at midday, is that day or the one before, when the first begins after
+/// a sunrise and holds the next, as in VS 2076 and 2077, whose gazette
+/// notices print the new year with Govardhan puja on the day after the
+/// Mha puja; Bhai tika is up to two days after the Mha puja; and Lakshmi
+/// puja, Ashwina's new moon at dusk, one or two days before it, except
+/// when Kartika is doubled. Then the
 /// adhika lunation stands between Ashwina's new moon and the nija
 /// Kartika, and the rest of Tihar is kept a month on (*Dharmasindhu*
 /// pp. 3-4), as the committee's former executive director computed BS
@@ -1761,6 +1765,8 @@ fn tihar_holds_together_but_across_a_doubled_kartika() {
             .collect()
     });
     let mut split = Vec::new();
+    let mut apart = Vec::new();
+    let mut with_mha = Vec::new();
     for (year, rows) in &tihars {
         let day = |key: &str| {
             let days: Vec<_> = rows.iter().filter(|row| row.0 == key).collect();
@@ -1768,12 +1774,20 @@ fn tihar_holds_together_but_across_a_doubled_kartika() {
             (day_number(days[0].1), days[0].2)
         };
         let (mha, clause) = day("MHA_PUJA");
-        assert_eq!(day("GOVARDHAN_PUJA").0, mha, "{year}: {rows:?}");
-        assert_eq!(day("NEPAL_SAMBAT_NEW_YEAR").0, mha, "{year}: {rows:?}");
-        assert!(
-            (1..=2).contains(&(day("YAMA_DWITIYA").0 - mha)),
-            "{year}: {rows:?}"
-        );
+        let first = day("GOVARDHAN_PUJA").0;
+        assert_eq!(day("NEPAL_SAMBAT_NEW_YEAR").0, first, "{year}: {rows:?}");
+        assert!((0..=1).contains(&(first - mha)), "{year}: {rows:?}");
+        if first > mha {
+            apart.push(*year);
+        }
+        // Bhai tika is the bright second at the afternoon: a short first
+        // tithi, gone before the afternoon of its own sunrise day, puts
+        // it on the Mha puja's day.
+        let tika = day("YAMA_DWITIYA").0 - mha;
+        assert!((0..=2).contains(&tika), "{year}: {rows:?}");
+        if tika == 0 {
+            with_mha.push(*year);
+        }
         let before = mha - day("LAKSHMI_PUJA").0;
         if (1..=2).contains(&before) {
             continue;
@@ -1784,6 +1798,10 @@ fn tihar_holds_together_but_across_a_doubled_kartika() {
         split.push(*year);
     }
     assert_eq!(split, [2028], "the years a doubled Kartika splits");
+    assert_eq!(with_mha, [1800], "the years Bhai tika is the Mha puja's day");
+    // The gazette's two years with the new year after the Mha puja.
+    assert!(apart.contains(&2019) && apart.contains(&2020), "{apart:?}");
+    assert_eq!(apart.len(), 0, "the years the Mha puja is the day before: {apart:?}");
 }
 
 #[test]
