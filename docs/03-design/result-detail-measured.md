@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 20 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 68 records
+## Over 69 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 381 059 | 124 310 | 32.6% |
-| the value | 356 005 | 120 364 | 33.8% |
+| the envelope | 381 466 | 124 717 | 32.7% |
+| the value | 356 405 | 120 764 | 33.9% |
 | the provenance | 24 354 | 2926 | 12.0% |
 
-20 of the 68 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+20 of the 69 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 259 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -85,11 +85,12 @@ value.
 | `chart.mundane` | 812 | 182 | 22.4% | the whole value |
 | `chart.rashifal` | 17 985 | 4743 | 26.4% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
 | `chart.relocated` | 1120 | 493 | 44.0% | the whole value |
-| `geo.list` | 404 | 404 | 100.0% | the whole value |
+| `geo.list` | 442 | 442 | 100.0% | the whole value |
 | `geo.names` | 316 | 316 | 100.0% | the whole value |
+| `geo.place` | 274 | 274 | 100.0% | the whole value |
 | `geo.resolve` | 229 | 229 | 100.0% | the whole value |
-| `geo.reverse` | 840 | 840 | 100.0% | the whole value |
-| `geo.search` | 221 | 221 | 100.0% | the whole value |
+| `geo.reverse` | 916 | 916 | 100.0% | the whole value |
+| `geo.search` | 240 | 240 | 100.0% | the whole value |
 | `intl.date` | 238 | 238 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
 | `intl.inWords` | 218 | 218 | 100.0% | the whole value |
@@ -184,8 +185,8 @@ marked.
 - `chart.mundane`: `instant` 12 (kept), `kind` 12 (kept), `latitudeDeg` 10 (kept), `longitudeDeg` 9 (kept), `utcOffsetSeconds` 9 (kept), `altitudeM` 8 (kept).
 - `chart.rashifal`: `period` 13 600 (kept), `baseline` 3591 (kept).
 - `chart.relocated`: `places` 353 (kept), `obliquityDeg` 13 (kept), `instant` 10 (kept).
-- `geo.list`: `parents` 160 (kept), `population` 48 (kept), `label` 31 (kept), `latitudeDeg` 20 (kept), `longitudeDeg` 20 (kept), `id` 18 (kept), `kind` 18 (kept), `name` 17 (kept), `nameLang` 16 (kept), `level` 12 (kept), `code` 10 (kept).
-- `geo.reverse`: `near` 534 (kept), `admin` 296 (kept).
+- `geo.list`: `parents` 160 (kept), `population` 48 (kept), `label` 31 (kept), `latitudeDeg` 20 (kept), `longitudeDeg` 20 (kept), `id` 18 (kept), `kind` 18 (kept), `name` 17 (kept), `nameLang` 16 (kept), `class` 12 (kept), `level` 12 (kept), `code` 10 (kept), `line` 10 (kept), `zone` 10 (kept).
+- `geo.reverse`: `near` 572 (kept), `admin` 334 (kept).
 - `intl.lexicon`: `entries` 3571 (kept), `locale` 12 (kept).
 - `matching.naam`: `porutham` 602 (kept), `ashta` 563 (kept), `bride` 41 (kept), `groom` 39 (kept), `varga` 35 (kept).
 - `naming.check`: `check` 985 (kept), `refused` 12 (kept).

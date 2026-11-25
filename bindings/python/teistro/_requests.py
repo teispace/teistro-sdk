@@ -59,6 +59,7 @@ __all__ = [
     "RelocationRequest",
     "PlaceListing",
     "PlaceNamesRequest",
+    "PlaceLookup",
     "PlaceRequest",
     "PlaceReverse",
     "PlaceSearch",
@@ -1895,6 +1896,16 @@ class PlaceNamesRequest(TypedDict, total=False):
 
     langs: Sequence[str]
     """The languages to choose a name in (`ne`, `en`, `hi`, `sa`); empty for none."""
+
+
+class PlaceLookup(TypedDict, total=False):
+    """A place by its id: what `geo.place` reads (SR-164). A provider follows a retired id to the place that replaced it, so the answer's `id` is the survivor's: a caller that saved `id` stores the answer's instead."""
+
+    id: Required[str]
+    """The place's id, as an answer gave it."""
+
+    lang: Optional[str]
+    """The language to name it in, or `null`."""
 
 
 class PlaceRequest(TypedDict, total=False):
@@ -11145,7 +11156,7 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 """
 
 
-RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.blackouts', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.limbAngles', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.list', 'geo.names', 'geo.resolve', 'geo.reverse', 'geo.search', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.render', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.blackouts', 'almanac.cells', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.limbAngles', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.occurrences', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sankalpaWords', 'almanac.sentences', 'almanac.skyPose', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'calendar.in_era', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'geo.list', 'geo.names', 'geo.place', 'geo.resolve', 'geo.reverse', 'geo.search', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.render', 'intl.time', 'matching.band', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'settings.diff', 'settings.explain', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
 """A record entry point's name, `area.operation`, whose request is typed."""
 
 
@@ -11274,6 +11285,9 @@ class RecordCalls:
 
     @overload
     def record(self, name: Literal['geo.names'], request: PlaceNamesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['geo.place'], request: PlaceLookup, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
 
     @overload
     def record(self, name: Literal['geo.resolve'], request: PlaceRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...

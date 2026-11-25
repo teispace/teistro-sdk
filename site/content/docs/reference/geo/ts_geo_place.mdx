@@ -1,0 +1,66 @@
+---
+title: ts_geo_place
+description: "A place by its id from the context's geo provider, answered as canonical JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with its id line (`line`), IANA zone (`zone`), population and landmark `class`, null for an id the provider does not know or holds as removed; `moved` true when the id asked was retired and `place` is the one that replaced it, under its own id, which a caller stores instead (SR-164)."
+---
+
+A place by its id from the context's geo provider, answered as canonical JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with its id line (`line`), IANA zone (`zone`), population and landmark `class`, null for an id the provider does not know or holds as removed; `moved` true when the id asked was retired and `place` is the one that replaced it, under its own id, which a caller stores instead (SR-164).
+
+`request_json` is `{"id", "lang"}`: an id an answer gave, and a BCP 47 tag to name the place in. An empty id or a malformed tag is `INVALID_ARG` on `id` or `lang`.
+
+<Tabs items={['Node', 'Python', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.geo.place
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.geo.place
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.geo().place
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.geo().place
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_geo_place(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `geo.place` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/geo.rs`.

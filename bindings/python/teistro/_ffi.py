@@ -4655,6 +4655,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_geo_names.restype = ctypes.c_int32
+        self.ts_geo_place: Any = library.ts_geo_place
+        self.ts_geo_place.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_geo_place.restype = ctypes.c_int32
         self.ts_geo_list: Any = library.ts_geo_list
         self.ts_geo_list.argtypes = [
             ctypes.POINTER(_Context),
@@ -6124,6 +6131,34 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_geo_names(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def geo_place(self, request_json: str) -> str:
+        """A place by its id from the context's geo provider, answered as canonical
+        JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with
+        its id line (`line`), IANA zone (`zone`), population and landmark
+        `class`, null for an id the provider does not know or holds as removed;
+        `moved` true when the id asked was retired and `place` is the one that
+        replaced it, under its own id, which a caller stores instead (SR-164).
+
+        `request_json` is `{"id", "lang"}`: an id an answer gave, and a BCP 47
+        tag to name the place in. An empty id or a malformed tag is
+        `INVALID_ARG` on `id` or `lang`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_geo_place(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

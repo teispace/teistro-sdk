@@ -51,6 +51,7 @@ public final class Requests {
             Map.entry("chart.relocated", RelocationRequest::of),
             Map.entry("geo.list", PlaceListing::of),
             Map.entry("geo.names", PlaceNamesRequest::of),
+            Map.entry("geo.place", PlaceLookup::of),
             Map.entry("geo.resolve", PlaceRequest::of),
             Map.entry("geo.reverse", PlaceReverse::of),
             Map.entry("geo.search", PlaceSearch::of),
@@ -201,6 +202,9 @@ public final class Requests {
 
     /** {@code geo.names}, whose request is {@link PlaceNamesRequest}. */
     public static final RecordOf<PlaceNamesRequest> GEO_NAMES = new RecordOf<>("geo.names");
+
+    /** {@code geo.place}, whose request is {@link PlaceLookup}. */
+    public static final RecordOf<PlaceLookup> GEO_PLACE = new RecordOf<>("geo.place");
 
     /** {@code geo.resolve}, whose request is {@link PlaceRequest}. */
     public static final RecordOf<PlaceRequest> GEO_RESOLVE = new RecordOf<>("geo.resolve");

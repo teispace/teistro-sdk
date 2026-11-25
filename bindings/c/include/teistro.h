@@ -11045,6 +11045,22 @@ ts_status ts_geo_reverse(const ts_context * context, const char * request_json, 
 ts_status ts_geo_names(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * A place by its id from the context's geo provider, answered as canonical
+ * JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with
+ * its id line (`line`), IANA zone (`zone`), population and landmark
+ * `class`, null for an id the provider does not know or holds as removed;
+ * `moved` true when the id asked was retired and `place` is the one that
+ * replaced it, under its own id, which a caller stores instead (SR-164).
+ *
+ * `request_json` is `{"id", "lang"}`: an id an answer gave, and a BCP 47
+ * tag to name the place in. An empty id or a malformed tag is
+ * `INVALID_ARG` on `id` or `lang`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_geo_place(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * The places of an admin unit from the context's geo provider, ranked by
  * population (most first, a place with none after), answered as canonical
  * JSON: a list of places as `ts_geo_search` answers them, each with

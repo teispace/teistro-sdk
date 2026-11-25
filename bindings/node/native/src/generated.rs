@@ -5244,6 +5244,31 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// A place by its id from the context's geo provider, answered as canonical
+    /// JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with
+    /// its id line (`line`), IANA zone (`zone`), population and landmark
+    /// `class`, null for an id the provider does not know or holds as removed;
+    /// `moved` true when the id asked was retired and `place` is the one that
+    /// replaced it, under its own id, which a caller stores instead (SR-164).
+    ///
+    /// `request_json` is `{"id", "lang"}`: an id an answer gave, and a BCP 47
+    /// tag to name the place in. An empty id or a malformed tag is
+    /// `INVALID_ARG` on `id` or `lang`.
+    #[napi]
+    pub fn geo_place(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::geo::ts_geo_place(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// The places of an admin unit from the context's geo provider, ranked by
     /// population (most first, a place with none after), answered as canonical
     /// JSON: a list of places as `ts_geo_search` answers them, each with

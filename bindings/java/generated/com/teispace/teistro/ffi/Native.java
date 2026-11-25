@@ -4409,6 +4409,7 @@ public final class Native {
         "ts_geo_search",
         "ts_geo_reverse",
         "ts_geo_names",
+        "ts_geo_place",
         "ts_geo_list",
         "ts_intl_load_pack",
         "ts_intl_set_locale",
@@ -4985,6 +4986,20 @@ public final class Native {
      * answers no names.
      */
     public final MethodHandle ts_geo_names;
+
+    /**
+     * A place by its id from the context's geo provider, answered as canonical
+     * JSON `{asked, place, moved}`: `place` as `ts_geo_list` answers one, with
+     * its id line (`line`), IANA zone (`zone`), population and landmark
+     * `class`, null for an id the provider does not know or holds as removed;
+     * `moved` true when the id asked was retired and `place` is the one that
+     * replaced it, under its own id, which a caller stores instead (SR-164).
+     *
+     * `request_json` is `{"id", "lang"}`: an id an answer gave, and a BCP 47
+     * tag to name the place in. An empty id or a malformed tag is
+     * `INVALID_ARG` on `id` or `lang`.
+     */
+    public final MethodHandle ts_geo_place;
 
     /**
      * The places of an admin unit from the context's geo provider, ranked by
@@ -6387,6 +6402,7 @@ public final class Native {
         ts_geo_search = linker.downcallHandle(symbols.find("ts_geo_search").orElseThrow(() -> missing("ts_geo_search")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_geo_reverse = linker.downcallHandle(symbols.find("ts_geo_reverse").orElseThrow(() -> missing("ts_geo_reverse")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_geo_names = linker.downcallHandle(symbols.find("ts_geo_names").orElseThrow(() -> missing("ts_geo_names")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_geo_place = linker.downcallHandle(symbols.find("ts_geo_place").orElseThrow(() -> missing("ts_geo_place")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_geo_list = linker.downcallHandle(symbols.find("ts_geo_list").orElseThrow(() -> missing("ts_geo_list")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_load_pack = linker.downcallHandle(symbols.find("ts_intl_load_pack").orElseThrow(() -> missing("ts_intl_load_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS));
         ts_intl_set_locale = linker.downcallHandle(symbols.find("ts_intl_set_locale").orElseThrow(() -> missing("ts_intl_set_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));

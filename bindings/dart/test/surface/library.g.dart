@@ -661,6 +661,10 @@ final List<Surface> requests = [
     Param('id', Scalar('String')),
     Param('langs', ListOf(Scalar('String'), (items) => List<String>.from(items))),
   ], fields: (v) => [v.id, v.langs]),
+  Built<PlaceLookup>('PlaceLookup', PlaceLookup.new, [
+    Param('id', Scalar('String')),
+    Param('lang', Scalar('String')),
+  ], fields: (v) => [v.id, v.lang]),
   Built<PlaceRequest>('PlaceRequest', PlaceRequest.new, [
     Param('latitudeDeg', Scalar('double')),
     Param('longitudeDeg', Scalar('double')),

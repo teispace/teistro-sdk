@@ -1629,10 +1629,7 @@ mod tests {
             ),
         ] {
             let why = place(&none, &asked).unwrap_err();
-            assert_eq!(
-                (why.status, why.field()),
-                (Status::InvalidArg, Some(field))
-            );
+            assert_eq!((why.status, why.field()), (Status::InvalidArg, Some(field)));
         }
         let asked = PlaceLookup {
             id: "p0".into(),
