@@ -311,7 +311,7 @@ replays it on a context with no provider: `HELD`.
 ## 10. The teigeodata adapter (SR-88)
 
 `adapters/geo-teigeodata/rust` (`teistro-geo-teigeodata`) is the first
-provider over a real engine: teigeodata at its tag `v1.2.0` (§13.1; it was
+provider over a real engine: teigeodata at its tag `v1.3.0` (§13.1; it was
 `v0.3.1` until SR-142 and `v1.1.0` until SR-164), by git, in a
 standalone crate with its own lock, outside the workspace like the
 ephemeris adapters (ADR-0019). It is public, since teigeodata is
@@ -325,7 +325,7 @@ that answers:
 | `zone_at` | `tz_at`, then the area's canonical name, which is its tzdb name (as `tgd` reads it); where no area outline holds the point, the zone of the settlement or locality it lies within (`mark_inside`, `tz_of`; C2218) |
 | `height_at` | `elevation_at`: metres above EGM2008, the DEM product's name as `source` (`NASADEM`), its north-south spacing as `resolutionM` |
 | `admin_at` | `admin_at`, coarse to fine, each unit's `admin_level`, `iso_code` (`NP`, `NP-P3`) and canonical name |
-| `source` | `teigeodata`, `1.2.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), and `tz_version()` as `tzdb`; `none` while the store has installed nothing (§13.2) |
+| `source` | `teigeodata`, `1.3.0`, every pack as `address.component.release` joined by ` + ` (`np.places.2026.11.0 + world.baseline.2026.11.0`), and `tz_version()` as `tzdb`; `none` while the store has installed nothing (§13.2) |
 | `at_sea` | a `world` layer installed, neither `tz_at` nor `admin_at` holding the point, and the nearest settlement, locality or unit lying inside a unit the packs hold (§5, C2216) |
 
 A point no pack covers answers `None` or an empty list. An engine error
@@ -617,16 +617,16 @@ and sets `moved` itself, so no provider can claim a move it did not make.
 The answer is a record rather than a bare nullable place, so every binding
 reads it with the shapes it already has.
 
-`line` stays `null` from teigeodata 1.2.0: a pack's licence is in its
-manifest, which the engine's `Layer` does not expose (it exposes the
-address, component, release and attribution). It is asked for upstream;
-the adapter fills it when the engine says it.
+`line` is the place's pack's licence, `Layer::licence` from teigeodata
+1.3.0: `odbl` for a main build, `cc-by-4.0` for a lite one, and `null` for
+a pack whose manifest carries none.
 
 ## 13. Over teigeodata's store, and on the web (SR-142)
 
-### 13.1 teigeodata 1.1.0, then 1.2.0
+### 13.1 teigeodata 1.1.0, then 1.2.0 and 1.3.0
 
-SR-164 moves the adapter to `v1.2.0`: the live signed catalog's entries
+SR-164 moves the adapter to `v1.3.0`, whose `Layer::licence` gives
+`line`, by way of `v1.2.0`: the live signed catalog's entries
 name their files under a release folder, which readers before 1.2 refuse
 (teigeodata D-384), and a place's landmark class is 1.2's (D-381). The
 engine kept every call the adapter makes. Verify's `TEIGEODATA_DATA` stays

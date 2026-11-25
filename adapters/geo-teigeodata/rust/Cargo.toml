@@ -52,7 +52,7 @@ zone-rules = ["teigeodata-engine/tz-rules"]
 probe-baseline = []
 
 [dependencies]
-# The engine at v1.2.0, with what every feature set reads: the admin
+# The engine at v1.3.0, with what every feature set reads: the admin
 # hierarchy and its outlines (`admin`, `admin-index`), the names a place
 # is called by in each language and script (`names`), the timezone areas
 # (`timezone`, `timezone-index`), each place's population (`extra`), and
@@ -60,7 +60,7 @@ probe-baseline = []
 # run (`shared`). The features above add the rest. Packs of format 1
 # (teigeodata's data releases from `data-2026.11.15`) need a reader at
 # v1.0.0 or later; this one also reads the earlier formats.
-teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v1.2.0", default-features = false, features = [
+teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v1.3.0", default-features = false, features = [
   "admin",
   "admin-index",
   "names",
@@ -70,10 +70,10 @@ teigeodata-engine = { git = "https://github.com/teispace/teigeodata", tag = "v1.
   "shared",
 ] }
 # The engine's grid point, from the same tag.
-teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v1.2.0" }
+teigeodata-core = { git = "https://github.com/teispace/teigeodata", tag = "v1.3.0" }
 # The pack format's place flags (`places::FLAG_FORMER`, a former unit),
 # which the engine reports and does not name; already in the engine's graph.
-teigeodata-format = { git = "https://github.com/teispace/teigeodata", tag = "v1.2.0", default-features = false }
+teigeodata-format = { git = "https://github.com/teispace/teigeodata", tag = "v1.3.0", default-features = false }
 teistro-core = { path = "../../../crates/core" }
 teistro-port-geo = { path = "../../../crates/port-geo" }
 teistro-port-timezone = { path = "../../../crates/port-timezone" }

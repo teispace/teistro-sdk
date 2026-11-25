@@ -26,7 +26,7 @@
 //!
 //! The adapter depends on the SDK's port and never the reverse: it is a
 //! standalone crate outside the SDK workspace (ADR-0019), built against
-//! teigeodata's `v1.2.0` tag.
+//! teigeodata's `v1.3.0` tag.
 
 #[cfg(feature = "mmap")]
 use std::path::Path;
@@ -55,7 +55,7 @@ pub const NAME: &str = "teigeodata";
 /// The version of teigeodata's engine this adapter is built against, the
 /// tag its `Cargo.toml` names; a test holds it to the version the lock
 /// resolved.
-pub const ENGINE_VERSION: &str = "1.2.0";
+pub const ENGINE_VERSION: &str = "1.3.0";
 
 /// The source's `dataVersion` while the engine holds no pack: a provider
 /// over a store that has installed nothing yet (§13.2).

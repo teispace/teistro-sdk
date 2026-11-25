@@ -17,14 +17,15 @@ the previous release, not by nobody having looked.
   and leads its dates and month titles with हिजरी, where it wrote CLDR's
   English names and "AH". A test holds every Hindi, Nepali and Sanskrit
   calendar message free of Latin letters.
-- **A saved place read back, on teigeodata 1.2 (SR-164).** `geo.place`
+- **A saved place read back, on teigeodata 1.3 (SR-164).** `geo.place`
   (`sdk.geo().place`, `ts_geo_place`, every binding and the MCP tool)
   answers `{asked, place, moved}`: a place by its id, a retired id followed
   to the place that replaced it and `moved` said, so a caller stores the
   new id. `NamedPlace` gains `zone` (its IANA zone), `class` (a landmark's
-  kind) and `line` (the id line, `null` until teigeodata's engine exposes a
-  pack's licence). The teigeodata adapter moves to `v1.2.0`, which reads
-  the live catalog's entries. Numbers: none.
+  kind) and `line` (the id line: the pack's licence, `odbl` for a main
+  build and `cc-by-4.0` for a lite one). The teigeodata adapter moves to
+  `v1.3.0`, which reads the live catalog's entries and says a pack's
+  licence. Numbers: none.
 **Every festival described, as a corpus a consumer loads (SR-153, stage b).**
 **Numbers:** none. No day moves; a listing asked with `about` gains subjects.
 - **Added:** 709 more festivals described in English and Nepali, beside stage (a)'s 42:

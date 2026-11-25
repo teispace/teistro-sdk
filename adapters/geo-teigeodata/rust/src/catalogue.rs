@@ -14,7 +14,8 @@ use std::str::FromStr;
 
 use teigeodata_core::{E6, E7, IsoCode, PlaceId, PlaceKind as Kind, Point};
 use teigeodata_engine::{
-    Engine, Error as EngineError, NameInfo, NameType, Origin, Place, PopulationSource, Scratch,
+    Engine, Error as EngineError, Layer, NameInfo, NameType, Origin, Place, PopulationSource,
+    Scratch,
 };
 use teistro_core::error::{Error, Status};
 use teistro_port_geo::{
@@ -265,9 +266,11 @@ fn named(
         longitude_deg: place.point.lon_degrees(),
         population: population_of(engine, place, field)?,
         parents,
-        // teigeodata 1.2 keeps a pack's licence, the id line (D-368), in a
-        // manifest its engine does not expose; `null` until it does.
-        line: None,
+        // The pack's licence names its id line (teigeodata D-368).
+        line: engine
+            .layer(place.layer)
+            .and_then(Layer::licence)
+            .map(str::to_owned),
         zone: zone_of(engine, place, field)?,
         class: engine
             .class(place)

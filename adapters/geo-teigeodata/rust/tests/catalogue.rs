@@ -465,6 +465,14 @@ fn a_place_is_read_back_by_its_id_and_a_retired_id_follows_its_survivor() {
         (city.id.as_str(), "पोखरा")
     );
     assert_eq!(read.zone.as_deref(), Some("Asia/Kathmandu"));
+    // The id line is the pack's licence, the same whichever call named it;
+    // a pack built before manifests carried one says none.
+    assert_eq!(read.line, city.line);
+    assert!(
+        matches!(read.line.as_deref(), None | Some("odbl" | "cc-by-4.0")),
+        "{:?}",
+        read.line
+    );
     assert_eq!(
         (read.latitude_deg, read.longitude_deg),
         (city.latitude_deg, city.longitude_deg)
