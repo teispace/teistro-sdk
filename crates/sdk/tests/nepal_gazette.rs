@@ -179,23 +179,11 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
 /// The gazette's days the pack's rules do not give, each with its reason:
 /// `(VS year, festival)`. A rule change that moves another year's day, or
 /// mends one of these, fails the test below until this list says so.
-const EXCEPTIONS: [(i32, &str, &str); 3] = [
-    (
-        2076,
-        "KIJA_PUJA",
-        "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
-    ),
-    (
-        2079,
-        "HOLI_HILLS",
-        "the Holika fire a day early, Falgun 22 (6 March 2023): the rule takes the later day when the later pradosha holds part of the full moon, standing the earlier day's bhadra against it; whether that bhadra stood is not encoded (C199, C2420)",
-    ),
-    (
-        2079,
-        "HOLI_TERAI",
-        "the day after HOLI_HILLS, Falgun 23, so a day early with it (C2420)",
-    ),
-];
+const EXCEPTIONS: [(i32, &str, &str); 1] = [(
+    2076,
+    "KIJA_PUJA",
+    "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
+)];
 
 #[test]
 fn every_printed_day_holds_the_day_the_pack_reckons_for_its_festivals() {

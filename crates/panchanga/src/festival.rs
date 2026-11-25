@@ -4283,8 +4283,27 @@ impl FestivalRule {
                 }
             })
             .collect();
+        if let Some(holika) = rules.iter_mut().find(|rule| rule.key == "HOLIKA") {
+            holika.nepal_holika();
+        }
         rules.push(FestivalRule::purnima_vrata());
         rules
+    }
+
+    /// The Holika fire as Nepal keeps it (C199): on the earlier day
+    /// whenever its pradosha holds the full moon at all, bhadra's mukha
+    /// left out, and on the later only when the later pradosha alone holds
+    /// it. This is Narada's reading, which *Nirnayasindhu* pp. 462-464
+    /// quotes beside *Dharmasindhu* p. 94's later day. The Nepal Gazette's
+    /// hill Holi of VS 2076 to 2083 and the 2016 reports keep it: nine
+    /// printed days, four of them in years the two readings part, and
+    /// none on *Dharmasindhu*'s later day.
+    fn nepal_holika(&mut self) {
+        self.decide = vec![Guard::new([case(Case::LaterOnly)], Choice::Later)];
+        self.otherwise = Choice::Earlier;
+        self.source = String::from(
+            "Nirnayasindhu (Dhakal, VS 2071) pp. 462-464, Narada's reading: प्रदोषव्यापिनी चेत्स्याद्यदा पूर्वदिने तदा। भद्रामुखं वर्जयित्वा, the earlier day whenever its pradosha holds the full moon, bhadra's mukha left out, the later only when the later pradosha alone holds it, against Dharmasindhu p. 94's later day; the Nepal Gazette's hill Holi of VS 2076 to 2083 (6 March 2023 among them) and the reports of 22 March 2016 keep it (C199)",
+        );
     }
 
     /// Nepal's monthly full-moon fast, पूर्णिमाव्रत (`festival-rules.md`

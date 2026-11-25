@@ -20,6 +20,14 @@ carries its maha punya kala; and the Nepal Sambat year keeps Kachhala's
 first day, in a doubled Kartika too. It is released on GitHub only; no
 package goes to a registry.
 
+- **The Holika fire in Nepal (C199).** Nepal's packs keep the fire on the
+  earlier day whenever its pradosha holds the full moon, as Narada's
+  reading in *Nirnayasindhu* has it and as all eight of the gazette's hill
+  Holi days of VS 2076 to 2083 fall, where *Dharmasindhu* takes the later
+  day when the later pradosha holds part of it. India's packs are
+  unchanged. Numbers: `HOLIKA`, `HOLI_HILLS`, `HOLI_TERAI` and `FAGU_PURNIMA`
+  move a day earlier in Nepal's packs in the years both pradoshas hold the
+  full moon (6 March 2023 among them).
 - **The Dura new year (C2424).** `DURA_MHAIPRU_NAKUMA`, Poush 15 every
   year, as the Dura keep their year and as the gazette's notice of VS 2083
   gives it. Numbers: the Nepal packs gain one day a year.
