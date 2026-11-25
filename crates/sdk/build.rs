@@ -33,7 +33,7 @@
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
-use teistro_intl::pack::build_bundle;
+use teistro_intl::pack::{TEXT_SWITCHES, TextSwitch, build_bundle, without};
 use teistro_intl::source::Tree;
 
 fn main() {
@@ -42,6 +42,11 @@ fn main() {
     let tree = Tree::sdk().unwrap_or_else(|e| panic!("the i18n/ sources load: {e}"));
     let manifest = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"))
         .expect("the package's own manifest");
+    // The texts this build cannot say, which no bundle carries (core#241).
+    let silent: Vec<TextSwitch> = TEXT_SWITCHES
+        .into_iter()
+        .filter(|switch| !said(switch, &manifest))
+        .collect();
     let mut entries = String::new();
     let mut left_out = String::new();
     for (tag, locale) in &tree.locales {
@@ -49,7 +54,8 @@ fn main() {
             let _ = write!(left_out, "{tag:?}, ");
             continue;
         }
-        let bytes = build_bundle(locale).unwrap_or_else(|e| panic!("{tag}: {e}"));
+        let bytes =
+            build_bundle(&without(locale, &silent)).unwrap_or_else(|e| panic!("{tag}: {e}"));
         let path = out.join(format!("{tag}.tbundle"));
         std::fs::write(&path, bytes).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
         let _ = writeln!(
@@ -73,6 +79,26 @@ fn feature(tag: &str) -> String {
     format!("locale-{}", tag.to_ascii_lowercase())
 }
 
+/// Whether a feature of this package is on. One the manifest does not
+/// declare stops the build, so a switch cannot be named and not wired.
+fn on(feature: &str, manifest: &str) -> bool {
+    assert!(
+        manifest.contains(&format!("\n{feature} = [")),
+        "no feature `{feature}` in crates/sdk/Cargo.toml"
+    );
+    let var = format!(
+        "CARGO_FEATURE_{}",
+        feature.to_ascii_uppercase().replace('-', "_")
+    );
+    println!("cargo:rerun-if-env-changed={var}");
+    std::env::var_os(var).is_some()
+}
+
+/// Whether this build says a text: its switch on, and its family's too.
+fn said(switch: &TextSwitch, manifest: &str) -> bool {
+    on(switch.feature, manifest) && switch.family.is_none_or(|family| on(family, manifest))
+}
+
 /// Whether this build embeds `tag`: the root always, any other when its
 /// feature is on. A locale with no feature declared in the manifest stops
 /// the build, so every locale `teistro-intl` carries can be left out.
@@ -85,10 +111,5 @@ fn embedded(tag: &str, manifest: &str) -> bool {
         manifest.contains(&format!("\n{feature} = [")),
         "{tag} has no feature `{feature}` in crates/sdk/Cargo.toml: declare it and add it to `locales`"
     );
-    let var = format!(
-        "CARGO_FEATURE_{}",
-        feature.to_ascii_uppercase().replace('-', "_")
-    );
-    println!("cargo:rerun-if-env-changed={var}");
-    std::env::var_os(var).is_some()
+    on(&feature, manifest)
 }

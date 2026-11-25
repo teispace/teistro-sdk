@@ -49,6 +49,7 @@ mod asked;
 mod composites;
 mod context;
 mod coverage;
+mod texts;
 mod days_request;
 mod dossier_names;
 mod engine_request;

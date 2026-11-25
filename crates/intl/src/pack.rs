@@ -162,6 +162,122 @@ pub fn build(locale: &LocaleSource, namespace: &str) -> Result<Vec<u8>, PackErro
     build_with(locale, namespace, true)
 }
 
+/// A text a build may leave out of the SDK's bundles: the façade's
+/// switch that keeps it, the family it speaks for, and what it is (core#241,
+/// `03-design/wasm-profiles.md`, "Text switches"). A bundle keeps the text
+/// only when the switch is on and the family, if it names one, is too:
+/// words a build cannot say are bytes it carries for nothing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TextSwitch {
+    /// The façade's feature, which every crate above it forwards by the
+    /// same name.
+    pub feature: &'static str,
+    /// The module family the text is said by, `None` for one every build
+    /// has.
+    pub family: Option<&'static str>,
+    /// The full keys it is: every entry whose key starts with one.
+    pub keys: &'static [&'static str],
+    /// The entity forms it is, each `(key prefix, form)`: the form alone
+    /// is left out, the entity kept.
+    pub forms: &'static [(&'static str, &'static str)],
+}
+
+/// Every text switch, in the façade's order.
+///
+/// ```
+/// use teistro_intl::pack::TEXT_SWITCHES;
+///
+/// let named: Vec<&str> = TEXT_SWITCHES.iter().map(|switch| switch.feature).collect();
+/// assert_eq!(named, ["festival-about", "muhurta-reasons", "rashifal-reading"]);
+/// ```
+pub const TEXT_SWITCHES: [TextSwitch; 3] = [
+    // A festival's description: what it is, how it is kept, who keeps it
+    // (SR-153). Its communities, regions and traditions stay, since the
+    // holiday notices name them too.
+    TextSwitch {
+        feature: "festival-about",
+        family: None,
+        keys: &["sdk.voice.festival.", "sdk.entity.observance."],
+        forms: &[("sdk.entity.festival.", "about")],
+    },
+    // Why a muhurta window is good (SR-154).
+    TextSwitch {
+        feature: "muhurta-reasons",
+        family: Some("muhurta"),
+        keys: &["sdk.voice.muhurta."],
+        forms: &[],
+    },
+    // The rashifal's reading voice (SR-152).
+    TextSwitch {
+        feature: "rashifal-reading",
+        family: Some("rashifal"),
+        keys: &["sdk.voice.rashifal."],
+        forms: &[],
+    },
+];
+
+impl TextSwitch {
+    /// Whether a full key is this text's, whole.
+    ///
+    /// ```
+    /// use teistro_intl::pack::TEXT_SWITCHES;
+    ///
+    /// let [about, ..] = TEXT_SWITCHES;
+    /// assert!(about.holds("sdk.entity.observance.TIKA"));
+    /// // A festival is kept; only its `about` form is the text's.
+    /// assert!(!about.holds("sdk.entity.festival.TIHAR"));
+    /// ```
+    #[must_use]
+    pub fn holds(&self, key: &str) -> bool {
+        self.keys.iter().any(|prefix| key.starts_with(prefix))
+    }
+}
+
+/// A locale with the texts of `left_out` taken out: each key a switch
+/// holds, and each form it names from the entities it names it on. A
+/// namespace left empty is dropped.
+///
+/// ```
+/// # use teistro_intl::sdk_root;
+/// # use teistro_intl::source::Tree;
+/// # let tree = Tree::load(&sdk_root())?;
+/// # let english = tree.base().ok_or("the base locale")?;
+/// use teistro_intl::pack::{TEXT_SWITCHES, without};
+///
+/// let lean = without(english, &TEXT_SWITCHES);
+/// assert!(!lean.namespaces["sdk.voice"].entries.keys().any(|key| key.starts_with("rashifal.")));
+/// let tihar = &lean.namespaces["sdk.entity"].entries["festival.TIHAR"];
+/// assert!(matches!(tihar, teistro_intl::source::Entry::Entity(e) if e.form("about").is_none()));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[must_use]
+pub fn without(locale: &LocaleSource, left_out: &[TextSwitch]) -> LocaleSource {
+    let mut lean = locale.clone();
+    for (name, namespace) in &mut lean.namespaces {
+        let full = |key: &str| format!("{name}.{key}");
+        namespace
+            .entries
+            .retain(|key, _| !left_out.iter().any(|switch| switch.holds(&full(key))));
+        namespace
+            .order
+            .retain(|key| !left_out.iter().any(|switch| switch.holds(&full(key))));
+        for (key, entry) in &mut namespace.entries {
+            let Entry::Entity(entity) = entry else {
+                continue;
+            };
+            let key = full(key);
+            for (prefix, form) in left_out.iter().flat_map(|switch| switch.forms) {
+                if key.starts_with(prefix) {
+                    entity.forms.remove(*form);
+                }
+            }
+        }
+    }
+    lean.namespaces
+        .retain(|_, namespace| !namespace.entries.is_empty());
+    lean
+}
+
 /// One locale as a bundle: the metadata once, then every namespace as a
 /// pack without metadata, each verified on its own; the container's CRC
 /// covers the whole file and its SHA-256 the payload.

@@ -58,9 +58,13 @@ impl PackRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` naming the key under `pack` that is not JSON of its
-    /// kind, or a name no pack has.
+    /// kind, or a name no pack has; `about` in a build without the
+    /// `festival-about` feature is `UNSUPPORTED` naming `pack.about`.
     pub fn from_json(text: &str) -> Result<PackRequest, Error> {
         let asked: PackAsked = teistro_core::strict::read(text, PACK)?;
+        if asked.about {
+            crate::texts::Text::FestivalAbout.require("pack.about")?;
+        }
         Ok(PackRequest {
             pack: pack(&asked.pack, "pack.pack")?,
             about: asked.about,

@@ -107,6 +107,15 @@ the previous release, not by nobody having looked.
   names what every period favours in the same words as Rahu Kaal, Gulika
   and Yamaganda; the tithi, vara, nakshatra and yoga readings were there
   already. No number moves.
+- **Texts a build may leave out (core#241).** Three new switches of
+  `teistro`, forwarded by `teistro-ffi` and the wasm crate:
+  `festival-about`, `muhurta-reasons` and `rashifal-reading`, which
+  `texts` and `full` name. A build without one carries none of the
+  text's words in its bundles (about 49 kB of `en-Latn`'s sources for the
+  three) and refuses a request for it as `UNSUPPORTED` naming the
+  feature. A build that names `full`, the default, is unchanged.
+  No number moves.
+
 - **A rashifal area's name, and its note as a line of its own.** The
   reading voice gains `sdk.voice.rashifal.areaName` (`$area`: WORK, MONEY,
   LOVE_FAMILY or HEALTH) and `areaLine.<AREA>.<BAND>`, each area note as a

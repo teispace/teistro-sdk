@@ -172,6 +172,9 @@ jobs:
       - name: A locale left out refused by name and loaded from its bundle (SR-150)
         if: ${{ !cancelled() }}
         run: cargo test -p teistro --no-default-features --features builtin-compact --test left_out_locale
+      - name: A text left out refused by name and carrying no words (core#241)
+        if: ${{ !cancelled() }}
+        run: cargo test -p teistro --no-default-features --features builtin-compact --test left_out_text
 
   # The measured pages in five shards, balanced by each step's median
   # time over four green runs (about 18 minutes each; three shards ran 20

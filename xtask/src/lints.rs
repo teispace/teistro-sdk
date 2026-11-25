@@ -2223,9 +2223,10 @@ fn tiers_turn_on_their_base(root: &Path, outcome: &mut Outcome) {
 /// notice, since that build is right.
 ///
 /// The rule reads the set from the façade's optional crates, so a ninth
-/// family cannot be added without the lines that carry it. The locale
-/// switches (`locales` and each `locale-…`, SR-150) are held the same way:
-/// `full` names the group, and each switch is forwarded down the line.
+/// family cannot be added without the lines that carry it. The switches
+/// are held the same way, the locales (`locales` and each `locale-…`,
+/// SR-150) and the texts (`texts` and each feature it names, core#241):
+/// `full` names each group, and each switch is forwarded down the line.
 fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "families-are-forwarded";
     const CRATES: [&str; 3] = ["crates/sdk", "crates/ffi", "bindings/wasm/native"];
@@ -2242,20 +2243,30 @@ fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
         return;
     };
     let families = sdk.families();
-    // The façade's locale switches (SR-150) cross the same three manifests
-    // as a family does, though no crate stands behind them: `full` names
-    // the `locales` group, and the boundary and the wasm crate forward each
-    // switch they name to the crate beneath them.
+    // The façade's switches, its locales (SR-150) and its texts (core#241),
+    // cross the same three manifests as a family does, though no crate
+    // stands behind them: `full` names each group, and the boundary and
+    // the wasm crate forward each switch they name to the crate beneath
+    // them.
+    const GROUPS: [&str; 2] = ["locales", "texts"];
+    let texts = sdk.list("texts");
     let switches: Vec<String> = sdk
         .features
         .keys()
-        .filter(|name| *name == "locales" || name.starts_with("locale-"))
+        .filter(|name| {
+            GROUPS.contains(&name.as_str()) || name.starts_with("locale-") || texts.contains(name)
+        })
         .cloned()
         .collect();
     let in_full: Vec<String> = families
         .iter()
         .cloned()
-        .chain(switches.iter().filter(|name| *name == "locales").cloned())
+        .chain(
+            switches
+                .iter()
+                .filter(|name| GROUPS.contains(&name.as_str()))
+                .cloned(),
+        )
         .collect();
     let mut wanted: Vec<(&Manifest, &str, Vec<String>)> = vec![
         (sdk, "full", in_full.clone()),

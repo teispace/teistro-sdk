@@ -57,6 +57,8 @@ impl AlmanacArea<'_> {
     /// A request [`MuhurtaRequest::check`] refuses; a context with no
     /// ephemeris; a calendar the SDK does not ship; a range the wrong way
     /// round or longer than the almanac's; or whatever the search refuses.
+    /// Reasons asked of a build without the `muhurta-reasons` feature are
+    /// `UNSUPPORTED` naming `muhurta.reasons`.
     pub fn muhurta(
         self,
         from: &CalendarDate,
@@ -124,6 +126,9 @@ impl AlmanacArea<'_> {
         ) -> Result<Envelope<Vec<Panchanga>>, Error>,
     ) -> Result<(Envelope<Answer>, Envelope<Vec<Panchanga>>), Error> {
         request.check()?;
+        if request.reasons() {
+            crate::texts::Text::MuhurtaReasons.require("muhurta.reasons")?;
+        }
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let resolved = self.context.resolved();
         let settings = &resolved.settings;

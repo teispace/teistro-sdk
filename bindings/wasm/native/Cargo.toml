@@ -45,12 +45,18 @@ locale-hi-deva-in = ["teistro-ffi/locale-hi-deva-in"]
 locale-ne-deva-np = ["teistro-ffi/locale-ne-deva-np"]
 locale-sa-deva = ["teistro-ffi/locale-sa-deva"]
 locale-sa-latn = ["teistro-ffi/locale-sa-latn"]
+# The texts a module may leave out, forwarded (core#241): a module built
+# without one refuses a request for it and carries none of its words.
+texts = ["teistro-ffi/texts"]
+festival-about = ["teistro-ffi/festival-about"]
+muhurta-reasons = ["teistro-ffi/muhurta-reasons"]
+rashifal-reading = ["teistro-ffi/rashifal-reading"]
 # `publishedVerify`, in the full module; a profile's leaves it out.
 signed-packs = ["teistro-ffi/signed-packs"]
 muhurta = ["teistro-ffi/muhurta"]
 # The package's profiles, each a module of its own beside the full one:
 # `panchanga` is the calendars, the almanac and the muhurta search.
-panchanga = ["builtin-compact", "locales", "muhurta"]
+panchanga = ["builtin-compact", "locales", "muhurta", "festival-about", "muhurta-reasons"]
 builtin-compact = ["teistro-ffi/builtin-compact"]
 builtin-standard = ["teistro-ffi/builtin-standard"]
 builtin-full = ["teistro-ffi/builtin-full"]

@@ -98,12 +98,25 @@ locale-hi-deva-in = []
 locale-ne-deva-np = []
 locale-sa-deva = []
 locale-sa-latn = []
+# The texts a build may leave out of its bundles (core#241,
+# `03-design/wasm-profiles.md`, "Text switches"): a festival's description
+# (SR-153), why a muhurta window is good (SR-154) and the rashifal's
+# reading voice (SR-152), each its words in every embedded locale. `texts`
+# names them all and `full` names `texts`. A build without one keeps the
+# code and every other answer, refuses a request for the text as
+# `UNSUPPORTED` naming the feature, and still renders the words once a
+# pack carrying them is loaded. A switch whose family is off says nothing,
+# and its words are left out with the family.
+texts = ["festival-about", "muhurta-reasons", "rashifal-reading"]
+festival-about = []
+muhurta-reasons = []
+rashifal-reading = []
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
 # into the family as `CAPABILITY`. `full` names them all and is the
 # default, so a build that names none is the `panchanga` profile.
-full = ["locales", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
+full = ["locales", "texts", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]
 # The chart area: `ChartArea`, the interpretation area and the crates only
 # they reach. Every family read off a chart requires it.
 chart = [
@@ -223,6 +236,9 @@ name = "lazy_locales"
 
 [[test]]
 name = "left_out_locale"
+
+[[test]]
+name = "left_out_text"
 
 [[test]]
 name = "occurrences"

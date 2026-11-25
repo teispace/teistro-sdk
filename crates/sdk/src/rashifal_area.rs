@@ -199,11 +199,16 @@ impl ChartArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`ChartArea::rashifal_many`].
+    /// As [`ChartArea::rashifal_many`]; `readings` in a build without the
+    /// `rashifal-reading` feature is `UNSUPPORTED` naming
+    /// `rashifal.readings`.
     pub fn rashifal_answers(
         self,
         batch: &RashifalBatch,
     ) -> Result<Envelope<Vec<RashifalAnswer>>, Error> {
+        if batch.readings {
+            crate::texts::Text::RashifalReading.require("rashifal.readings")?;
+        }
         let Envelope { value, provenance } = self.rashifal_many(&batch.periods)?;
         let interpret = self.context().interpret();
         // Each score banded as the context's settings band it, per call
