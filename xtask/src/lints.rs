@@ -2228,6 +2228,12 @@ fn tiers_turn_on_their_base(root: &Path, outcome: &mut Outcome) {
 /// SR-150) and the texts (`texts` and each feature it names, core#241):
 /// `full` names each group, and each switch is forwarded down the line.
 fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
+    // The façade's switches, its locales (SR-150) and its texts (core#241),
+    // cross the same three manifests as a family does, though no crate
+    // stands behind them: `full` names each group, and the boundary and
+    // the wasm crate forward each switch they name to the crate beneath
+    // them.
+    const GROUPS: [&str; 2] = ["locales", "texts"];
     const RULE: &str = "families-are-forwarded";
     const CRATES: [&str; 3] = ["crates/sdk", "crates/ffi", "bindings/wasm/native"];
     let manifests = CRATES.map(|dir| Manifest::read(root, dir));
@@ -2243,12 +2249,6 @@ fn families_are_forwarded(root: &Path, outcome: &mut Outcome) {
         return;
     };
     let families = sdk.families();
-    // The façade's switches, its locales (SR-150) and its texts (core#241),
-    // cross the same three manifests as a family does, though no crate
-    // stands behind them: `full` names each group, and the boundary and
-    // the wasm crate forward each switch they name to the crate beneath
-    // them.
-    const GROUPS: [&str; 2] = ["locales", "texts"];
     let texts = sdk.list("texts");
     let switches: Vec<String> = sdk
         .features

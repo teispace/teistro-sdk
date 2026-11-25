@@ -660,6 +660,12 @@ fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
     );
     for (text, nepal) in text.iter().zip(&nepal) {
         // Bhai Tika keeps the text's aparahna (C2329).
+        // Nepal keeps the Holika fire by Narada's reading (C199).
+        if text.key == "HOLIKA" {
+            assert_eq!(nepal.at, text.at);
+            assert_eq!(nepal.otherwise, Choice::Earlier);
+            continue;
+        }
         if text.at.in_daylight() && text.key != "YAMA_DWITIYA" {
             assert_eq!(*nepal, text.clone().udaya(), "{}", text.key);
             assert_eq!(nepal.at, Window::Sunrise);

@@ -15,9 +15,17 @@ pub(crate) enum Text {
     FestivalAbout,
     /// Why a muhurta window is good (SR-154): `reasons` in a muhurta
     /// request.
+    #[cfg_attr(
+        not(feature = "muhurta"),
+        allow(dead_code, reason = "asked for by the muhurta family alone")
+    )]
     MuhurtaReasons,
     /// The rashifal's reading voice (SR-152): `readings` in a rashifal
     /// batch.
+    #[cfg_attr(
+        not(feature = "rashifal"),
+        allow(dead_code, reason = "asked for by the rashifal family alone")
+    )]
     RashifalReading,
 }
 

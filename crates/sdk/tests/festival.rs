@@ -983,7 +983,7 @@ const KEPT_INTERNATIONAL_DAYS: [(&str, Day, Day); 56] = [
 /// of VS 2083 its rule gives: the days a patro printed in Nepal verified for
 /// it over those years, through its own Bikram Sambat table, where it
 /// verified them (C1800 to C1805).
-const MORE_KEPT_DAYS: [(&str, Day, Day); 29] = [
+const MORE_KEPT_DAYS: [(&str, Day, Day); 30] = [
     ("BODE_JIBRO_CHHEDNE_JATRA", (2025, 4, 15), (2026, 4, 15)),
     ("SINDOOR_JATRA", (2025, 4, 15), (2026, 4, 15)),
     ("WORLD_HERITAGE_DAY", (2025, 4, 18), (2026, 4, 18)),
@@ -1005,6 +1005,7 @@ const MORE_KEPT_DAYS: [(&str, Day, Day); 29] = [
     ("WORLD_FREEDOM_DAY", (2025, 11, 9), (2026, 11, 9)),
     ("INTERNATIONAL_STUDENTS_DAY", (2025, 11, 17), (2026, 11, 17)),
     ("NATIONAL_FLAG_DAY", (2025, 12, 16), (2026, 12, 16)),
+    ("DURA_MHAIPRU_NAKUMA", (2025, 12, 30), (2026, 12, 30)),
     ("NATIONAL_DRESS_DAY", (2026, 1, 1), (2027, 1, 1)),
     ("NATIONAL_TOPI_DAY", (2026, 1, 1), (2027, 1, 1)),
     ("NATIONAL_BHAKKA_DAY", (2026, 1, 13), (2027, 1, 13)),
@@ -1799,16 +1800,17 @@ fn tihar_holds_together_but_across_a_doubled_kartika() {
     }
     // The gazette's two years with the new year after the Mha puja.
     assert!(apart.contains(&2019) && apart.contains(&2020), "{apart:?}");
-    // The years a doubled Kartika splits, those Bhai tika is the Mha
-    // puja's day, and how many the Mha puja is the day before the new year.
+    // The years a doubled Kartika splits, named; how many Bhai tika is
+    // the Mha puja's day, and how many the Mha puja is the day before the
+    // new year, counted (51 and 114 of the 600).
     assert_eq!(
-        (split.as_slice(), with_mha.as_slice(), apart.len()),
+        (split.as_slice(), with_mha.len(), apart.len()),
         (
             [2028, 2085, 2169, 2188, 2207, 2226, 2348, 2367].as_slice(),
-            [1800].as_slice(),
-            0
+            51,
+            114
         ),
-        "{apart:?}"
+        "{with_mha:?} {apart:?}"
     );
 }
 
