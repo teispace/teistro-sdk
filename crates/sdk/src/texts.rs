@@ -23,6 +23,7 @@ pub(crate) enum Text {
 
 impl Text {
     /// Every text, in the switches' order.
+    #[cfg(test)]
     pub(crate) const ALL: [Text; 3] = [
         Text::FestivalAbout,
         Text::MuhurtaReasons,
@@ -66,6 +67,7 @@ impl Text {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::Text;
     use teistro_intl::pack::TEXT_SWITCHES;

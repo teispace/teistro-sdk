@@ -244,10 +244,20 @@ impl TextSwitch {
 /// # let english = tree.base().ok_or("the base locale")?;
 /// use teistro_intl::pack::{TEXT_SWITCHES, without};
 ///
+/// use teistro_intl::source::Entry;
+///
+/// let described = |entries: &std::collections::BTreeMap<String, Entry>| {
+///     entries.iter().any(|(key, entry)| {
+///         key.starts_with("festival.")
+///             && matches!(entry, Entry::Entity(e) if e.form("about").is_some())
+///     })
+/// };
+/// assert!(described(&english.namespaces["sdk.entity"].entries));
 /// let lean = without(english, &TEXT_SWITCHES);
-/// assert!(!lean.namespaces["sdk.voice"].entries.keys().any(|key| key.starts_with("rashifal.")));
-/// let tihar = &lean.namespaces["sdk.entity"].entries["festival.TIHAR"];
-/// assert!(matches!(tihar, teistro_intl::source::Entry::Entity(e) if e.form("about").is_none()));
+/// assert!(lean.namespaces.get("sdk.voice").is_none_or(|voice| {
+///     !voice.entries.keys().any(|key| key.starts_with("rashifal."))
+/// }));
+/// assert!(!described(&lean.namespaces["sdk.entity"].entries));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]

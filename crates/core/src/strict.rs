@@ -601,7 +601,7 @@ impl<'de> Deserializer<'de> for Reader<'de, '_> {
         let mut iter = entries.iter();
         match (iter.next(), iter.next()) {
             (Some((variant, value)), None) => visitor.visit_enum(Variant {
-                variant,
+                name: variant,
                 value,
                 step: self.step,
                 track: self.track,
@@ -667,7 +667,11 @@ impl<'de> MapAccess<'de> for Entries<'de, '_> {
             return Ok(None);
         };
         self.value = Some((key, value));
-        seed.deserialize(Key(key)).map(Some)
+        // A key refused (a field the record does not have) is named by
+        // itself, as `serde_path_to_error` named it.
+        seed.deserialize(Key(key))
+            .map(Some)
+            .map_err(|err| self.track.failed(&Step::Key(self.step, key), err))
     }
 
     fn next_value_seed<S: DeserializeSeed<'de>>(
@@ -694,7 +698,7 @@ impl<'de> MapAccess<'de> for Entries<'de, '_> {
 /// An enum written as an object of one key, its variant, read with the
 /// variant as the step to its body.
 struct Variant<'de, 'a> {
-    variant: &'de str,
+    name: &'de str,
     value: &'de Value,
     step: &'a Step<'a>,
     track: &'a Track,
@@ -710,11 +714,11 @@ impl<'de, 'a> EnumAccess<'de> for Variant<'de, 'a> {
     ) -> Result<(S::Value, Body<'de, 'a>), serde_json::Error> {
         let named = seed.deserialize(serde::de::value::BorrowedStrDeserializer::<
             serde_json::Error,
-        >::new(self.variant))?;
+        >::new(self.name))?;
         Ok((
             named,
             Body {
-                variant: self.variant,
+                variant: self.name,
                 value: self.value,
                 step: self.step,
                 track: self.track,
@@ -1156,7 +1160,7 @@ mod tests {
         let refused = deserialize_str::<BTreeMap<u8, u8>>(r#"{"x": 1}"#, "years").unwrap_err();
         assert_eq!(refused.field(), Some("years"));
         let flags: BTreeMap<bool, u8> = deserialize_str(r#"{"true": 1}"#, "flags").unwrap();
-        assert_eq!(flags[&true], 1);
+        assert_eq!(flags.get(&true), Some(&1));
         let long = deserialize_str::<(u8, u8)>("[1, 2, 3]", "pair").unwrap_err();
         assert_eq!(long.field(), Some("pair"));
         assert!(

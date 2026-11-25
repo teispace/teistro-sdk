@@ -179,7 +179,12 @@ fn every_entry_naming_more_than_one_festival_keeps_them_apart_from_its_notice() 
 /// The gazette's days the pack's rules do not give, each with its reason:
 /// `(VS year, festival)`. A rule change that moves another year's day, or
 /// mends one of these, fails the test below until this list says so.
-const EXCEPTIONS: [(i32, &str, &str); 3] = [
+const EXCEPTIONS: [(i32, &str, &str); 4] = [
+    (
+        2076,
+        "KIJA_PUJA",
+        "the cabinet's added holiday of Kartik 13, the day after Bhai tika, where the committee prints किजापूजा in Yama dwitiya's row, Kartik 12 (VS 2076 p. 15, C2304, C2423)",
+    ),
     (
         2079,
         "HOLI_HILLS",
