@@ -1798,10 +1798,18 @@ fn tihar_holds_together_but_across_a_doubled_kartika() {
         split.push(*year);
     }
     assert_eq!(split, [2028], "the years a doubled Kartika splits");
-    assert_eq!(with_mha, [1800], "the years Bhai tika is the Mha puja's day");
+    assert_eq!(
+        with_mha,
+        [1800],
+        "the years Bhai tika is the Mha puja's day"
+    );
     // The gazette's two years with the new year after the Mha puja.
     assert!(apart.contains(&2019) && apart.contains(&2020), "{apart:?}");
-    assert_eq!(apart.len(), 0, "the years the Mha puja is the day before: {apart:?}");
+    assert_eq!(
+        apart.len(),
+        0,
+        "the years the Mha puja is the day before: {apart:?}"
+    );
 }
 
 #[test]

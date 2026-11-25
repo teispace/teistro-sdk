@@ -49,7 +49,6 @@ mod asked;
 mod composites;
 mod context;
 mod coverage;
-mod texts;
 mod days_request;
 mod dossier_names;
 mod engine_request;
@@ -59,6 +58,7 @@ mod reading;
 #[cfg(feature = "svg")]
 mod render;
 mod scale;
+mod texts;
 mod time_request;
 
 #[cfg(feature = "muhurta")]
