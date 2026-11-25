@@ -19312,15 +19312,6 @@ public final class Messages {
                 }
 
                 /**
-                 * The forms of `observance.BROTHERS_FED` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms brothersFed() {
-                    return r.entity("observance.BROTHERS_FED");
-                }
-
-                /**
                  * The forms of `observance.CANDLE_VIGIL` in the current locale.
                  *
                  * @return the forms
@@ -19888,15 +19879,6 @@ public final class Messages {
                 }
 
                 /**
-                 * The forms of `observance.GANESHA_WORSHIP` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms ganeshaWorship() {
-                    return r.entity("observance.GANESHA_WORSHIP");
-                }
-
-                /**
                  * The forms of `observance.GANESH_WORSHIP` in the current locale.
                  *
                  * @return the forms
@@ -20059,15 +20041,6 @@ public final class Messages {
                 }
 
                 /**
-                 * The forms of `observance.HERBAL_BATH` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms herbalBath() {
-                    return r.entity("observance.HERBAL_BATH");
-                }
-
-                /**
                  * The forms of `observance.HOLIKA_BONFIRE` in the current locale.
                  *
                  * @return the forms
@@ -20119,15 +20092,6 @@ public final class Messages {
                  */
                 public EntityForms hymnsSung() {
                     return r.entity("observance.HYMNS_SUNG");
-                }
-
-                /**
-                 * The forms of `observance.IDOL_BATHED` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms idolBathed() {
-                    return r.entity("observance.IDOL_BATHED");
                 }
 
                 /**
@@ -20686,15 +20650,6 @@ public final class Messages {
                  */
                 public EntityForms navadvipaParikrama() {
                     return r.entity("observance.NAVADVIPA_PARIKRAMA");
-                }
-
-                /**
-                 * The forms of `observance.NEEM_LEAVES_EATEN` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms neemLeavesEaten() {
-                    return r.entity("observance.NEEM_LEAVES_EATEN");
                 }
 
                 /**
@@ -21265,15 +21220,6 @@ public final class Messages {
                 }
 
                 /**
-                 * The forms of `observance.SEEDS_SCATTERED` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms seedsScattered() {
-                    return r.entity("observance.SEEDS_SCATTERED");
-                }
-
-                /**
                  * The forms of `observance.SELF_WORSHIP` in the current locale.
                  *
                  * @return the forms
@@ -21406,15 +21352,6 @@ public final class Messages {
                  */
                 public EntityForms songAndDance() {
                     return r.entity("observance.SONG_AND_DANCE");
-                }
-
-                /**
-                 * The forms of `observance.SPIRITS_FED` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms spiritsFed() {
-                    return r.entity("observance.SPIRITS_FED");
                 }
 
                 /**
@@ -21865,15 +21802,6 @@ public final class Messages {
                  */
                 public EntityForms waterSourcesCleaned() {
                     return r.entity("observance.WATER_SOURCES_CLEANED");
-                }
-
-                /**
-                 * The forms of `observance.WATER_SPLASHED` in the current locale.
-                 *
-                 * @return the forms
-                 */
-                public EntityForms waterSplashed() {
-                    return r.entity("observance.WATER_SPLASHED");
                 }
 
                 /**

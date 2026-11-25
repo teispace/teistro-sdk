@@ -1893,14 +1893,8 @@ class ObservanceKey(enum.StrEnum):
     UPAKARMA_RITE = "observance.UPAKARMA_RITE"
     SATYANARAYAN_PUJA = "observance.SATYANARAYAN_PUJA"
     MOON_ARGHYA = "observance.MOON_ARGHYA"
-    GANESHA_WORSHIP = "observance.GANESHA_WORSHIP"
     TORCHES_THROWN = "observance.TORCHES_THROWN"
     CURD_AND_BEATEN_RICE = "observance.CURD_AND_BEATEN_RICE"
-    NEEM_LEAVES_EATEN = "observance.NEEM_LEAVES_EATEN"
-    SEEDS_SCATTERED = "observance.SEEDS_SCATTERED"
-    IDOL_BATHED = "observance.IDOL_BATHED"
-    SPIRITS_FED = "observance.SPIRITS_FED"
-    HERBAL_BATH = "observance.HERBAL_BATH"
     WREATHS_LAID = "observance.WREATHS_LAID"
     LIGHTS_DISPLAY = "observance.LIGHTS_DISPLAY"
     DRILLS = "observance.DRILLS"
@@ -1922,11 +1916,9 @@ class ObservanceKey(enum.StrEnum):
     EXHIBITIONS = "observance.EXHIBITIONS"
     VACCINATION = "observance.VACCINATION"
     MOON_AND_LAKSHMI_NARAYAN = "observance.MOON_AND_LAKSHMI_NARAYAN"
-    WATER_SPLASHED = "observance.WATER_SPLASHED"
     BHAKKA = "observance.BHAKKA"
     DAURA_SURUWAL = "observance.DAURA_SURUWAL"
     FILM_SCREENINGS = "observance.FILM_SCREENINGS"
-    BROTHERS_FED = "observance.BROTHERS_FED"
 
 
 class PakshaKey(enum.StrEnum):
@@ -9407,11 +9399,6 @@ class MessagesSdkEntityObservance:
         return self._r.entity("observance.BRAHMINS_FED")
 
     @property
-    def brothers_fed(self) -> EntityForms:
-        """The forms of `observance.BROTHERS_FED` in the current locale."""
-        return self._r.entity("observance.BROTHERS_FED")
-
-    @property
     def candle_vigil(self) -> EntityForms:
         """The forms of `observance.CANDLE_VIGIL` in the current locale."""
         return self._r.entity("observance.CANDLE_VIGIL")
@@ -9727,11 +9714,6 @@ class MessagesSdkEntityObservance:
         return self._r.entity("observance.GAMOSA_GIVEN")
 
     @property
-    def ganesha_worship(self) -> EntityForms:
-        """The forms of `observance.GANESHA_WORSHIP` in the current locale."""
-        return self._r.entity("observance.GANESHA_WORSHIP")
-
-    @property
     def ganesh_worship(self) -> EntityForms:
         """The forms of `observance.GANESH_WORSHIP` in the current locale."""
         return self._r.entity("observance.GANESH_WORSHIP")
@@ -9822,11 +9804,6 @@ class MessagesSdkEntityObservance:
         return self._r.entity("observance.HEALTH_CAMPS")
 
     @property
-    def herbal_bath(self) -> EntityForms:
-        """The forms of `observance.HERBAL_BATH` in the current locale."""
-        return self._r.entity("observance.HERBAL_BATH")
-
-    @property
     def holika_bonfire(self) -> EntityForms:
         """The forms of `observance.HOLIKA_BONFIRE` in the current locale."""
         return self._r.entity("observance.HOLIKA_BONFIRE")
@@ -9855,11 +9832,6 @@ class MessagesSdkEntityObservance:
     def hymns_sung(self) -> EntityForms:
         """The forms of `observance.HYMNS_SUNG` in the current locale."""
         return self._r.entity("observance.HYMNS_SUNG")
-
-    @property
-    def idol_bathed(self) -> EntityForms:
-        """The forms of `observance.IDOL_BATHED` in the current locale."""
-        return self._r.entity("observance.IDOL_BATHED")
 
     @property
     def images_displayed(self) -> EntityForms:
@@ -10170,11 +10142,6 @@ class MessagesSdkEntityObservance:
     def navadvipa_parikrama(self) -> EntityForms:
         """The forms of `observance.NAVADVIPA_PARIKRAMA` in the current locale."""
         return self._r.entity("observance.NAVADVIPA_PARIKRAMA")
-
-    @property
-    def neem_leaves_eaten(self) -> EntityForms:
-        """The forms of `observance.NEEM_LEAVES_EATEN` in the current locale."""
-        return self._r.entity("observance.NEEM_LEAVES_EATEN")
 
     @property
     def new_clothes(self) -> EntityForms:
@@ -10492,11 +10459,6 @@ class MessagesSdkEntityObservance:
         return self._r.entity("observance.SCRIPTURE_READING")
 
     @property
-    def seeds_scattered(self) -> EntityForms:
-        """The forms of `observance.SEEDS_SCATTERED` in the current locale."""
-        return self._r.entity("observance.SEEDS_SCATTERED")
-
-    @property
     def self_worship(self) -> EntityForms:
         """The forms of `observance.SELF_WORSHIP` in the current locale."""
         return self._r.entity("observance.SELF_WORSHIP")
@@ -10570,11 +10532,6 @@ class MessagesSdkEntityObservance:
     def song_and_dance(self) -> EntityForms:
         """The forms of `observance.SONG_AND_DANCE` in the current locale."""
         return self._r.entity("observance.SONG_AND_DANCE")
-
-    @property
-    def spirits_fed(self) -> EntityForms:
-        """The forms of `observance.SPIRITS_FED` in the current locale."""
-        return self._r.entity("observance.SPIRITS_FED")
 
     @property
     def sports_events(self) -> EntityForms:
@@ -10825,11 +10782,6 @@ class MessagesSdkEntityObservance:
     def water_sources_cleaned(self) -> EntityForms:
         """The forms of `observance.WATER_SOURCES_CLEANED` in the current locale."""
         return self._r.entity("observance.WATER_SOURCES_CLEANED")
-
-    @property
-    def water_splashed(self) -> EntityForms:
-        """The forms of `observance.WATER_SPLASHED` in the current locale."""
-        return self._r.entity("observance.WATER_SPLASHED")
 
     @property
     def wedding_reenacted(self) -> EntityForms:

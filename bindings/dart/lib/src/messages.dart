@@ -2001,14 +2001,8 @@ enum ObservanceKey {
   upakarmaRite('observance.UPAKARMA_RITE'),
   satyanarayanPuja('observance.SATYANARAYAN_PUJA'),
   moonArghya('observance.MOON_ARGHYA'),
-  ganeshaWorship('observance.GANESHA_WORSHIP'),
   torchesThrown('observance.TORCHES_THROWN'),
   curdAndBeatenRice('observance.CURD_AND_BEATEN_RICE'),
-  neemLeavesEaten('observance.NEEM_LEAVES_EATEN'),
-  seedsScattered('observance.SEEDS_SCATTERED'),
-  idolBathed('observance.IDOL_BATHED'),
-  spiritsFed('observance.SPIRITS_FED'),
-  herbalBath('observance.HERBAL_BATH'),
   wreathsLaid('observance.WREATHS_LAID'),
   lightsDisplay('observance.LIGHTS_DISPLAY'),
   drills('observance.DRILLS'),
@@ -2030,11 +2024,9 @@ enum ObservanceKey {
   exhibitions('observance.EXHIBITIONS'),
   vaccination('observance.VACCINATION'),
   moonAndLakshmiNarayan('observance.MOON_AND_LAKSHMI_NARAYAN'),
-  waterSplashed('observance.WATER_SPLASHED'),
   bhakka('observance.BHAKKA'),
   dauraSuruwal('observance.DAURA_SURUWAL'),
-  filmScreenings('observance.FILM_SCREENINGS'),
-  brothersFed('observance.BROTHERS_FED');
+  filmScreenings('observance.FILM_SCREENINGS');
 
   const ObservanceKey(this.key);
 
@@ -5216,7 +5208,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get bonfires => _r.entity('observance.BONFIRES');
   EntityForms get booksWorshipped => _r.entity('observance.BOOKS_WORSHIPPED');
   EntityForms get brahminsFed => _r.entity('observance.BRAHMINS_FED');
-  EntityForms get brothersFed => _r.entity('observance.BROTHERS_FED');
   EntityForms get candleVigil => _r.entity('observance.CANDLE_VIGIL');
   EntityForms get carols => _r.entity('observance.CAROLS');
   EntityForms get cattleHonoured => _r.entity('observance.CATTLE_HONOURED');
@@ -5280,7 +5271,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get frogsFed => _r.entity('observance.FROGS_FED');
   EntityForms get gamesOfChance => _r.entity('observance.GAMES_OF_CHANCE');
   EntityForms get gamosaGiven => _r.entity('observance.GAMOSA_GIVEN');
-  EntityForms get ganeshaWorship => _r.entity('observance.GANESHA_WORSHIP');
   EntityForms get ganeshWorship => _r.entity('observance.GANESH_WORSHIP');
   EntityForms get garlandAtStatue => _r.entity('observance.GARLAND_AT_STATUE');
   EntityForms get gauraBroughtHome => _r.entity('observance.GAURA_BROUGHT_HOME');
@@ -5299,14 +5289,12 @@ final class MessagesSdkEntityObservance {
   EntityForms get greensAvoided => _r.entity('observance.GREENS_AVOIDED');
   EntityForms get guruHonoured => _r.entity('observance.GURU_HONOURED');
   EntityForms get healthCamps => _r.entity('observance.HEALTH_CAMPS');
-  EntityForms get herbalBath => _r.entity('observance.HERBAL_BATH');
   EntityForms get holikaBonfire => _r.entity('observance.HOLIKA_BONFIRE');
   EntityForms get holiMilan => _r.entity('observance.HOLI_MILAN');
   EntityForms get holyBath => _r.entity('observance.HOLY_BATH');
   EntityForms get homa => _r.entity('observance.HOMA');
   EntityForms get horseRaces => _r.entity('observance.HORSE_RACES');
   EntityForms get hymnsSung => _r.entity('observance.HYMNS_SUNG');
-  EntityForms get idolBathed => _r.entity('observance.IDOL_BATHED');
   EntityForms get imagesDisplayed => _r.entity('observance.IMAGES_DISPLAYED');
   EntityForms get imageBathed => _r.entity('observance.IMAGE_BATHED');
   EntityForms get imageImmersed => _r.entity('observance.IMAGE_IMMERSED');
@@ -5369,7 +5357,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get narasimhaWorship => _r.entity('observance.NARASIMHA_WORSHIP');
   EntityForms get natureWorship => _r.entity('observance.NATURE_WORSHIP');
   EntityForms get navadvipaParikrama => _r.entity('observance.NAVADVIPA_PARIKRAMA');
-  EntityForms get neemLeavesEaten => _r.entity('observance.NEEM_LEAVES_EATEN');
   EntityForms get newClothes => _r.entity('observance.NEW_CLOTHES');
   EntityForms get newCropBlessed => _r.entity('observance.NEW_CROP_BLESSED');
   EntityForms get newGrain => _r.entity('observance.NEW_GRAIN');
@@ -5433,7 +5420,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get satire => _r.entity('observance.SATIRE');
   EntityForms get satyanarayanPuja => _r.entity('observance.SATYANARAYAN_PUJA');
   EntityForms get scriptureReading => _r.entity('observance.SCRIPTURE_READING');
-  EntityForms get seedsScattered => _r.entity('observance.SEEDS_SCATTERED');
   EntityForms get selfWorship => _r.entity('observance.SELF_WORSHIP');
   EntityForms get seminars => _r.entity('observance.SEMINARS');
   EntityForms get sesameJaggery => _r.entity('observance.SESAME_JAGGERY');
@@ -5449,7 +5435,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get snakeWorship => _r.entity('observance.SNAKE_WORSHIP');
   EntityForms get songsOfThePoet => _r.entity('observance.SONGS_OF_THE_POET');
   EntityForms get songAndDance => _r.entity('observance.SONG_AND_DANCE');
-  EntityForms get spiritsFed => _r.entity('observance.SPIRITS_FED');
   EntityForms get sportsEvents => _r.entity('observance.SPORTS_EVENTS');
   EntityForms get spoutBath => _r.entity('observance.SPOUT_BATH');
   EntityForms get springAwaited => _r.entity('observance.SPRING_AWAITED');
@@ -5500,7 +5485,6 @@ final class MessagesSdkEntityObservance {
   EntityForms get vowsTaken => _r.entity('observance.VOWS_TAKEN');
   EntityForms get waterOnHeads => _r.entity('observance.WATER_ON_HEADS');
   EntityForms get waterSourcesCleaned => _r.entity('observance.WATER_SOURCES_CLEANED');
-  EntityForms get waterSplashed => _r.entity('observance.WATER_SPLASHED');
   EntityForms get weddingReenacted => _r.entity('observance.WEDDING_REENACTED');
   EntityForms get winterFoods => _r.entity('observance.WINTER_FOODS');
   EntityForms get wreathsLaid => _r.entity('observance.WREATHS_LAID');
